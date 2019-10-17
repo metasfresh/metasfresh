@@ -32,8 +32,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.KeyNamePair;
@@ -59,6 +57,8 @@ import de.metas.picking.service.PackingItemGroupingKey;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -304,7 +304,7 @@ public class ProductKey extends TerminalKey
 	{
 		final BigDecimal unallocQty = getQtyUnallocated(2);
 
-		BigDecimal allocQty = getQty().getAsBigDecimal();
+		BigDecimal allocQty = getQty().toBigDecimal();
 		if (allocQty.scale() > 2)
 		{
 			allocQty = allocQty.setScale(2, BigDecimal.ROUND_HALF_UP);
@@ -346,7 +346,7 @@ public class ProductKey extends TerminalKey
 		}
 		final Quantity qtyUnallocated = unallocPackingItem.getQtySum();
 
-		return qtyUnallocated.getAsBigDecimal();
+		return qtyUnallocated.toBigDecimal();
 	}
 
 	public I_C_UOM getQtyUnallocatedUOM()

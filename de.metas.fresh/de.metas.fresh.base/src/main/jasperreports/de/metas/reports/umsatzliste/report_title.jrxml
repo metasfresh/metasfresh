@@ -41,7 +41,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center">
-					<font size="14" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="14" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Headline}]]></textFieldExpression>
 			</textField>

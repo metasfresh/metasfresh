@@ -1,9 +1,5 @@
 package de.metas.ordercandidate.api.impl;
 
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -27,19 +23,19 @@ import javax.annotation.Nullable;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrx;
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.PO;
-import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -49,8 +45,8 @@ import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.currency.ICurrencyDAO;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.api.IOLCandBL;
@@ -71,12 +67,13 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
-import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.Percent;
 import de.metas.workflow.api.IWFExecutionFactory;
+import lombok.NonNull;
 
 public class OLCandBL implements IOLCandBL
 {
@@ -85,8 +82,10 @@ public class OLCandBL implements IOLCandBL
 	@Override
 	public void process(@NonNull final OLCandProcessorDescriptor processor)
 	{
-		final OLCandRegistry olCandRegistry = Adempiere.getBean(OLCandRegistry.class);
-		final OLCandRepository olCandRepo = Adempiere.getBean(OLCandRepository.class);
+		final SpringContextHolder springContextHolder = SpringContextHolder.instance;
+		final OLCandRegistry olCandRegistry =  springContextHolder.getBean(OLCandRegistry.class);
+		final OLCandRepository olCandRepo =  springContextHolder.getBean(OLCandRepository.class);
+
 		final OLCandSource candidatesSource = olCandRepo.getForProcessor(processor);
 
 		OLCandsProcessorExecutor.builder()
@@ -116,9 +115,10 @@ public class OLCandBL implements IOLCandBL
 			final IOLCandEffectiveValuesBL effectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 			final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
-			final int bpartnerId = effectiveValuesBL.getBill_BPartner_Effective_ID(olCand);
+			final BPartnerId bpartnerId = effectiveValuesBL.getBillBPartnerEffectiveId(olCand);
 
-			final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemId(Env.getCtx(), bpartnerId, SOTrx.SALES, ITrx.TRXNAME_None);
+			// we don't know if the C_BPartner already exists outside this transaction
+			final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemIdInTrx(bpartnerId, SOTrx.SALES);
 			return pricingSystemId;
 		}
 	}
@@ -155,7 +155,7 @@ public class OLCandBL implements IOLCandBL
 			final I_C_OLCand olCand,
 			final BigDecimal qtyOverride,
 			final PricingSystemId pricingSystemIdOverride,
-			final Timestamp date)
+			final LocalDate date)
 	{
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
@@ -167,15 +167,15 @@ public class OLCandBL implements IOLCandBL
 		final IOLCandEffectiveValuesBL effectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
-		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(effectiveValuesBL.getBill_BPartner_Effective_ID(olCand));
+		final BPartnerId billBPartnerId = effectiveValuesBL.getBillBPartnerEffectiveId(olCand);
 
 		final I_C_BPartner_Location dropShipLocation = effectiveValuesBL.getDropShip_Location_Effective(olCand);
 
-		pricingCtx.setC_Country_ID(dropShipLocation.getC_Location().getC_Country_ID());
+		pricingCtx.setCountryId(CountryId.ofRepoId(dropShipLocation.getC_Location().getC_Country_ID()));
 
 		final BigDecimal qty = qtyOverride != null ? qtyOverride : olCand.getQty();
 
-		final PricingSystemId pricingSystemId = Util.coalesceSuppliers(
+		final PricingSystemId pricingSystemId = CoalesceUtil.coalesceSuppliers(
 				() -> pricingSystemIdOverride,
 				() -> getPricingSystemId(olCand, OLCandOrderDefaults.NULL));
 
@@ -198,7 +198,7 @@ public class OLCandBL implements IOLCandBL
 			throw new AdempiereException("@M_PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @Bill_Location@ " + dropShipLocation.getC_BPartner_Location_ID());
 		}
 		pricingCtx.setPriceListId(PriceListId.ofRepoId(pl.getM_PriceList_ID()));
-		pricingCtx.setProductId(ProductId.ofRepoIdOrNull(effectiveValuesBL.getM_Product_Effective_ID(olCand)));
+		pricingCtx.setProductId(effectiveValuesBL.getM_Product_Effective_ID(olCand));
 
 		pricingResult = pricingBL.calculatePrice(pricingCtx);
 
@@ -243,9 +243,7 @@ public class OLCandBL implements IOLCandBL
 					+ "\n Pricing result: " + pricingResult);
 		}
 
-		final int currencyPrecision = Services.get(ICurrencyDAO.class).getStdPrecision(currencyId.getRepoId());
-		final BigDecimal priceActual = discount.subtractFromBase(priceEntered, currencyPrecision);
-
+		final BigDecimal priceActual = discount.subtractFromBase(priceEntered, pricingResult.getPrecision().toInt());
 		pricingResult.setPriceStd(priceActual);
 
 		pricingResult.setDisallowDiscount(false); // avoid exception
@@ -271,7 +269,7 @@ public class OLCandBL implements IOLCandBL
 
 		if (olCandRefs.isEmpty())
 		{
-			throw new AdempiereException("Missing order line candiates for given olCandQuery")
+			throw new AdempiereException("addAttachment - Missing order line candiates for given olCandQuery")
 					.appendParametersToMessage()
 					.setParameter("olCandQuery", olCandQuery);
 		}

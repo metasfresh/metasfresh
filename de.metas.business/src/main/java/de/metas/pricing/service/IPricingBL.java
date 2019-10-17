@@ -25,6 +25,7 @@ package de.metas.pricing.service;
 import java.math.BigDecimal;
 import java.util.Set;
 
+import de.metas.location.CountryId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -44,38 +45,22 @@ public interface IPricingBL extends ISingletonService
 
 	/**
 	 * Creates an editable pricing context
-	 *
-	 * @return
 	 */
 	IEditablePricingContext createPricingContext();
 
 	/**
 	 * Creates and editable pricing context, initialized with given values.
 	 *
-	 * @param M_Product_ID
-	 * @param C_BPartner_ID
 	 * @param C_UOM_ID the uom of the given {@code qty}.
-	 * @param qty
-	 * @param isSOTrx
-	 * @return
 	 */
 	IEditablePricingContext createInitialContext(int M_Product_ID, int C_BPartner_ID, int C_UOM_ID, BigDecimal qty, boolean isSOTrx);
 
-	/**
-	 * Calculate pricing
-	 *
-	 * @param pricingCtx
-	 * @return
-	 */
 	IPricingResult calculatePrice(IPricingContext pricingCtx);
 
 	/**
 	 * Creates an initial {@link IPricingResult}. Copies some of the given <code>pricingCtx</code>'s properties to the pricing result.
 	 *
 	 * This result will be updated later by {@link IPricingRule}s
-	 *
-	 * @param pricingCtx
-	 * @return
 	 */
 	IPricingResult createInitialResult(IPricingContext pricingCtx);
 
@@ -83,5 +68,5 @@ public interface IPricingBL extends ISingletonService
 
 	PriceLimitRuleResult computePriceLimit(PriceLimitRuleContext context);
 
-	Set<Integer> getPriceLimitCountryIds();
+	Set<CountryId> getPriceLimitCountryIds();
 }

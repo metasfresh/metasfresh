@@ -35,11 +35,11 @@ import de.metas.util.Loggables;
 
 public abstract class AbstractPriceListBasedRule implements IPricingRule
 {
-	protected final transient Logger log = LogManager.getLogger(getClass());
+	private static final transient Logger log = LogManager.getLogger(AbstractPriceListBasedRule.class);
 
 	@Override
 	@OverridingMethodsMustInvokeSuper
-	public boolean applies(IPricingContext pricingCtx, IPricingResult result)
+	public boolean applies(final IPricingContext pricingCtx, final IPricingResult result)
 	{
 		if (result.isCalculated())
 		{
@@ -56,7 +56,7 @@ public abstract class AbstractPriceListBasedRule implements IPricingRule
 		if (pricingCtx.getPriceListId() == null)
 		{
 			final String msg = "pricingCtx {} contains no priceList";
-			Loggables.get().addLog(msg, pricingCtx);
+			Loggables.addLog(msg, pricingCtx);
 			log.error(msg, pricingCtx);
 			Trace.printStack();
 			return false; // false;

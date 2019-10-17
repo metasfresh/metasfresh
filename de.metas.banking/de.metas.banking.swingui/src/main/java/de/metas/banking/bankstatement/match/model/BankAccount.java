@@ -5,10 +5,11 @@ import java.util.Comparator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
-import org.compiere.util.Env;
 
 import de.metas.banking.model.I_C_BP_BankAccount;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -98,11 +99,9 @@ public class BankAccount
 			name.append(accountNo.trim());
 		}
 
-		final String currencyISOCode = Services.get(ICurrencyDAO.class).getISO_Code(Env.getCtx(), bankAccountPO.getC_Currency_ID());
-		if (!Check.isEmpty(currencyISOCode, true))
-		{
-			name.append(" ").append(currencyISOCode);
-		}
+		final CurrencyId currencyId = CurrencyId.ofRepoId(bankAccountPO.getC_Currency_ID());
+		final CurrencyCode currencyISOCode = Services.get(ICurrencyDAO.class).getCurrencyCodeById(currencyId);
+		name.append(" ").append(currencyISOCode.toThreeLetterCode());
 
 		this.name = name.toString();
 	}
@@ -119,7 +118,7 @@ public class BankAccount
 	{
 		// NOTE: this method is used list/combobox renderers
 		return name;
-	};
+	}
 
 	@Override
 	public int hashCode()

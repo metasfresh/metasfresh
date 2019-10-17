@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
@@ -54,9 +56,12 @@ public abstract class AbstractJavaValidationRule implements IValidationRule, INa
 	}
 
 	@Override
-	public void registerException(@NonNull final String tableName, @NonNull final String columnName)
+	public void registerException(
+			@NonNull final String tableName,
+			@NonNull final String columnName,
+			@Nullable final String description)
 	{
-		final ValueNamePair exception = new ValueNamePair(tableName, columnName);
+		final ValueNamePair exception = new ValueNamePair(tableName, columnName, description);
 
 		exceptionTableAndColumns.add(exception);
 	}

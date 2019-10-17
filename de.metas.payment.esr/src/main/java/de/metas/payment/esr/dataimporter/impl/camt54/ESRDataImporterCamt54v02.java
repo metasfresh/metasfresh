@@ -19,7 +19,9 @@ import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.IMsgBL;
+import de.metas.money.CurrencyId;
 import de.metas.payment.camt054_001_02.AccountNotification2;
 import de.metas.payment.camt054_001_02.ActiveOrHistoricCurrencyAndAmount;
 import de.metas.payment.camt054_001_02.AmountAndCurrencyExchange3;
@@ -39,7 +41,6 @@ import de.metas.payment.esr.dataimporter.ESRTransaction;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -332,7 +333,8 @@ public class ESRDataImporterCamt54v02
 		final AmountAndCurrencyExchangeDetails3 transactionInstdAmt = transactionDetailAmt.getInstdAmt();
 		final ActiveOrHistoricCurrencyAndAmount amt = transactionInstdAmt.getAmt();
 
-		final String headerCurrencyISO = header.getC_BP_BankAccount().getC_Currency().getISO_Code();
+		final CurrencyId currencyId = CurrencyId.ofRepoId(header.getC_BP_BankAccount().getC_Currency_ID());
+		final String headerCurrencyISO = Services.get(ICurrencyDAO.class).getCurrencyCodeById(currencyId).toThreeLetterCode(); 
 		if (!headerCurrencyISO.equalsIgnoreCase(amt.getCcy()))
 		{
 			final IMsgBL msgBL = Services.get(IMsgBL.class);

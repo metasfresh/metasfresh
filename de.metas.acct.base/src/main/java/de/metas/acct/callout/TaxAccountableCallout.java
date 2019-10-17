@@ -26,14 +26,15 @@ package de.metas.acct.callout;
 import java.math.BigDecimal;
 import java.util.Properties;
 
-import org.adempiere.acct.api.ITaxAccountable;
-import org.adempiere.acct.api.ITaxAcctBL;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.util.Env;
 
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.tax.ITaxAccountable;
+import de.metas.acct.tax.ITaxAcctBL;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Services;
 
@@ -80,9 +81,9 @@ import de.metas.util.Services;
 		// Calculate Tax Amt
 		final BigDecimal taxBaseAmt = taxAccountable.getTaxBaseAmt();
 		final boolean taxIncluded = false;
-		final int precision = taxAccountable.getPrecision();
+		final CurrencyPrecision precision = taxAccountable.getPrecision();
 		final ITaxBL taxBL = Services.get(ITaxBL.class);
-		final BigDecimal taxAmt = taxBL.calculateTax(tax, taxBaseAmt, taxIncluded, precision);
+		final BigDecimal taxAmt = taxBL.calculateTax(tax, taxBaseAmt, taxIncluded, precision.toInt());
 
 		final BigDecimal totalAmt = taxBaseAmt.add(taxAmt);
 
@@ -124,9 +125,9 @@ import de.metas.util.Services;
 		// Calculate TaxAmt
 		final BigDecimal taxTotalAmt = taxAccountable.getTaxTotalAmt();
 		final boolean taxIncluded = true;
-		final int precision = taxAccountable.getPrecision();
+		final CurrencyPrecision precision = taxAccountable.getPrecision();
 		final ITaxBL taxBL = Services.get(ITaxBL.class);
-		final BigDecimal taxAmt = taxBL.calculateTax(tax, taxTotalAmt, taxIncluded, precision);
+		final BigDecimal taxAmt = taxBL.calculateTax(tax, taxTotalAmt, taxIncluded, precision.toInt());
 
 		final BigDecimal taxBaseAmt = taxTotalAmt.subtract(taxAmt);
 
@@ -164,9 +165,9 @@ import de.metas.util.Services;
 		if (taxId > 0)
 		{
 			final Properties ctx = Env.getCtx();
-			final I_C_AcctSchema acctSchema = taxAccountable.getC_AcctSchema();
+			final AcctSchemaId acctSchemaId = taxAccountable.getAcctSchemaId();
 			final ITaxAcctBL taxAcctBL = Services.get(ITaxAcctBL.class);
-			final I_C_ValidCombination taxAcct = taxAcctBL.getC_ValidCombination(ctx, taxId, acctSchema, taxAcctType);
+			final I_C_ValidCombination taxAcct = taxAcctBL.getC_ValidCombination(ctx, taxId, acctSchemaId, taxAcctType);
 			taxAccountable.setTax_Acct(taxAcct);
 		}
 		else

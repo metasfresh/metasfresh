@@ -7,10 +7,11 @@ import javax.annotation.Nullable;
 
 import org.compiere.model.I_M_Locator;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.NonNull;
 import lombok.Value;
 
@@ -40,7 +41,6 @@ import lombok.Value;
 public class LocatorId implements RepoIdAware
 {
 	int repoId;
-
 	WarehouseId warehouseId;
 
 	public static LocatorId ofRepoId(@NonNull final WarehouseId warehouseId, final int repoId)
@@ -92,5 +92,18 @@ public class LocatorId implements RepoIdAware
 		int repoId1Norm = repoId1 > 0 ? repoId1 : -1;
 		int repoId2Norm = repoId2 > 0 ? repoId2 : -1;
 		return repoId1Norm == repoId2Norm;
+	}
+
+	private LocatorId(final int repoId, @NonNull final WarehouseId warehouseId)
+	{
+		Check.assumeGreaterThanZero(repoId, "M_Locator_ID");
+		this.repoId = repoId;
+		this.warehouseId = warehouseId;
+	}
+
+	@JsonValue
+	public String toJson()
+	{
+		return warehouseId.getRepoId() + "_" + repoId;
 	}
 }

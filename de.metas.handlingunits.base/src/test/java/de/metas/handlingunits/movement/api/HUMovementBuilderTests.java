@@ -8,16 +8,12 @@ import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Properties;
 import java.util.function.Consumer;
 
-import org.adempiere.acct.api.IAcctSchemaDAO;
-import org.adempiere.acct.api.impl.AcctSchemaDAO;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Warehouse;
@@ -26,6 +22,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Node;
 
+import de.metas.acct.AcctSchemaTestHelper;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
@@ -70,20 +68,12 @@ public class HUMovementBuilderTests
 		// we need this to make sure that movementLine.getAD_Org() does not fail with the created M_MovementLines.
 		org = InterfaceWrapperHelper.newInstance(I_AD_Org.class);
 		InterfaceWrapperHelper.save(org);
-			
+
 		Env.setContext(testsupport.helper.ctx, Env.CTXNAME_AD_Org_ID, org.getAD_Org_ID());
 
-		// we need this too, to avoid a DBNoConnectionException
-		final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.newInstance(I_C_AcctSchema.class, testsupport.helper.ctx);
-		InterfaceWrapperHelper.save(acctSchema);
-		Services.registerService(IAcctSchemaDAO.class, new AcctSchemaDAO()
-		{
-			@Override
-			public I_C_AcctSchema retrieveAcctSchema(final Properties ctx, final int ad_Client_ID, final int ad_Org_ID)
-			{
-				return acctSchema;
-			}
-		});
+		// final AcctSchemaId acctSchemaId = AcctSchemaTestHelper.newAcctSchema().build();
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(1);
+		AcctSchemaTestHelper.registerAcctSchemaDAOWhichAlwaysProvides(acctSchemaId);
 	}
 
 	@Test

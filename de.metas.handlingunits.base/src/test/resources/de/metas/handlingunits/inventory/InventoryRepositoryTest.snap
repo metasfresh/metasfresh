@@ -1,0 +1,50 @@
+de.metas.handlingunits.inventory.InventoryRepositoryTest.saveInventoryLine=[
+  {
+    "id": 100013,
+    "docBaseAndSubType": {
+      "docBaseType": "MMI",
+      "docSubType": "ISH"
+    },
+    "inventoryType": "PHYSICAL",
+    "lines": [
+      {
+        "id": 100014,
+        "orgId": 1,
+        "asiId": 100008,
+        "productId": 40,
+        "storageAttributesKey": "10§&§11§&§12",
+        "locatorId": "100002_100003",
+        "huAggregationType": "MULTI_HU",
+        "inventoryType": "PHYSICAL",
+        "inventoryLineHUs": [
+          {
+            "id": 100015,
+            "huId": 100,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": "10",
+              "uomId": 100001
+            },
+            "qtyCount": {
+              "qty": "1",
+              "uomId": 100001
+            }
+          },
+          {
+            "id": 100016,
+            "huId": 200,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": "20",
+              "uomId": 100001
+            },
+            "qtyCount": {
+              "qty": "2",
+              "uomId": 100001
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

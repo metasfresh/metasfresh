@@ -30,6 +30,7 @@ import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.printing.api.IPrintingQueueQuery;
 import de.metas.process.PInstanceId;
+import de.metas.security.permissions.Access;
 
 /* package */class PrintingQueueQuery implements IPrintingQueueQuery
 {
@@ -41,7 +42,7 @@ import de.metas.process.PInstanceId;
 	private int ignoreC_Printing_Queue_ID = -1;
 	private ISqlQueryFilter filter;
 
-	private Boolean applyAccessFilterRW = null;
+	private Access requiredAccess = null;
 
 	private Integer copies = null;
 
@@ -73,7 +74,7 @@ import de.metas.process.PInstanceId;
 				.append(modelFromRecordId)
 				.append(modelToRecordId)
 				.append(modelFilter)
-				.append(applyAccessFilterRW)
+				.append(requiredAccess)
 				.append(aggregationKey)
 				.toHashcode();
 	}
@@ -100,7 +101,7 @@ import de.metas.process.PInstanceId;
 				.append(modelFromRecordId, other.modelFromRecordId)
 				.append(modelToRecordId, other.modelToRecordId)
 				.append(modelFilter, other.modelFilter)
-				.append(applyAccessFilterRW, other.applyAccessFilterRW)
+				.append(requiredAccess, other.requiredAccess)
 				.isEqual();
 	}
 
@@ -119,7 +120,7 @@ import de.metas.process.PInstanceId;
 		queryNew.modelFromRecordId = modelFromRecordId;
 		queryNew.modelToRecordId = modelToRecordId;
 		queryNew.modelFilter = modelFilter;
-		queryNew.applyAccessFilterRW = applyAccessFilterRW;
+		queryNew.requiredAccess = requiredAccess;
 		return queryNew;
 	}
 
@@ -255,16 +256,17 @@ import de.metas.process.PInstanceId;
 		this.modelFilter = modelFilter;
 	}
 
+	
 	@Override
-	public Boolean getApplyAccessFilterRW()
+	public Access getRequiredAccess()
 	{
-		return applyAccessFilterRW;
+		return requiredAccess;
 	}
 
 	@Override
-	public void setApplyAccessFilterRW(Boolean applyAccessFilterRW)
+	public void setRequiredAccess(final Access requiredAccess)
 	{
-		this.applyAccessFilterRW = applyAccessFilterRW;
+		this.requiredAccess = requiredAccess;
 	}
 
 	@Override

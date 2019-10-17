@@ -1,17 +1,24 @@
 package de.metas.ordercandidate.api;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IProductPriceAware;
-import de.metas.util.Services;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -40,74 +47,78 @@ import lombok.NonNull;
 
 public final class OLCand implements IProductPriceAware
 {
-	public static OLCand of(final I_C_OLCand candidate)
-	{
-		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
-		return new OLCand(candidate, PricingSystemId.NULL, olCandEffectiveValuesBL);
-	}
-
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL;
 
-	private final I_C_OLCand candidate;
+	private final I_C_OLCand olCandRecord;
 
-	private final OLCandBPartnerInfo bpartnerInfo;
-	private final OLCandBPartnerInfo billBPartnerInfo;
-	private final OLCandBPartnerInfo dropShipBPartnerInfo;
-	private final OLCandBPartnerInfo handOverBPartnerInfo;
+	private LocalDate dateDoc;
+
+	private final BPartnerInfo bpartnerInfo;
+	private final BPartnerInfo billBPartnerInfo;
+	private final BPartnerInfo dropShipBPartnerInfo;
+	private final BPartnerInfo handOverBPartnerInfo;
 	private final PricingSystemId pricingSystemId;
 
 	@Getter
-	private final String externalId;
+	private final String externalLineId;
+
+	@Getter
+	private final String externalHeaderId;
 
 	@Builder
 	private OLCand(
+			@NonNull final IOLCandEffectiveValuesBL olCandEffectiveValuesBL,
+			//
 			@NonNull final I_C_OLCand candidate,
-			final PricingSystemId pricingSystemId,
-			final IOLCandEffectiveValuesBL olCandEffectiveValuesBL)
+			@Nullable final PricingSystemId pricingSystemId)
 	{
-		this.candidate = candidate;
-		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL != null ? olCandEffectiveValuesBL : Services.get(IOLCandEffectiveValuesBL.class);
+		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL;
 
-		bpartnerInfo = OLCandBPartnerInfo.builder()
-				.bpartnerId(this.olCandEffectiveValuesBL.getC_BPartner_Effective_ID(candidate))
-				.bpartnerLocationId(this.olCandEffectiveValuesBL.getC_BP_Location_Effective_ID(candidate))
-				.contactId(this.olCandEffectiveValuesBL.getAD_User_Effective_ID(candidate))
+		this.olCandRecord = candidate;
+
+		this.dateDoc = TimeUtil.asLocalDate(candidate.getDateOrdered());
+
+		this.bpartnerInfo = BPartnerInfo.builder()
+				.bpartnerId(this.olCandEffectiveValuesBL.getBPartnerEffectiveId(candidate))
+				.bpartnerLocationId(this.olCandEffectiveValuesBL.getLocationEffectiveId(candidate))
+				.contactId(this.olCandEffectiveValuesBL.getContactEffectiveId(candidate))
 				.build();
-		billBPartnerInfo = OLCandBPartnerInfo.builder()
-				.bpartnerId(this.olCandEffectiveValuesBL.getBill_BPartner_Effective_ID(candidate))
-				.bpartnerLocationId(this.olCandEffectiveValuesBL.getBill_Location_Effective_ID(candidate))
-				.contactId(this.olCandEffectiveValuesBL.getBill_User_Effective_ID(candidate))
+		this.billBPartnerInfo = BPartnerInfo.builder()
+				.bpartnerId(this.olCandEffectiveValuesBL.getBillBPartnerEffectiveId(candidate))
+				.bpartnerLocationId(this.olCandEffectiveValuesBL.getBillLocationEffectiveId(candidate))
+				.contactId(this.olCandEffectiveValuesBL.getBillContactEffectiveId(candidate))
 				.build();
-		dropShipBPartnerInfo = OLCandBPartnerInfo.builder()
-				.bpartnerId(this.olCandEffectiveValuesBL.getDropShip_BPartner_Effective_ID(candidate))
-				.bpartnerLocationId(this.olCandEffectiveValuesBL.getDropShip_Location_Effective_ID(candidate))
-				.contactId(this.olCandEffectiveValuesBL.getDropShip_User_Effective_ID(candidate))
+		this.dropShipBPartnerInfo = BPartnerInfo.builder()
+				.bpartnerId(this.olCandEffectiveValuesBL.getDropShipBPartnerEffectiveId(candidate))
+				.bpartnerLocationId(this.olCandEffectiveValuesBL.getDropShipLocationEffectiveId(candidate))
+				.contactId(this.olCandEffectiveValuesBL.getDropShipContactEffectiveId(candidate))
 				.build();
-		handOverBPartnerInfo = OLCandBPartnerInfo.builder()
-				.bpartnerId(this.olCandEffectiveValuesBL.getHandOver_Partner_Effective_ID(candidate))
-				.bpartnerLocationId(this.olCandEffectiveValuesBL.getHandOver_Location_Effective_ID(candidate))
+		this.handOverBPartnerInfo = BPartnerInfo.builder()
+				.bpartnerId(this.olCandEffectiveValuesBL.getHandOverPartnerEffectiveId(candidate))
+				.bpartnerLocationId(this.olCandEffectiveValuesBL.getHandOverLocationEffectiveId(candidate))
 				// .contactId(this.xolCandEffectiveValuesBL.getHandOver_User_Effective_ID(candidate))
 				.build();
 
 		this.pricingSystemId = pricingSystemId;
-		
-		this.externalId = candidate.getExternalId();
+
+		this.externalLineId = candidate.getExternalLineId();
+		this.externalHeaderId = candidate.getExternalHeaderId();
 	}
 
 	@Override
 	public String toString()
 	{
-		return MoreObjects.toStringHelper(this).addValue(candidate).toString();
+		return MoreObjects.toStringHelper(this).addValue(olCandRecord).toString();
 	}
 
 	public I_C_OLCand unbox()
 	{
-		return candidate;
+		return olCandRecord;
 	}
 
 	public int getId()
 	{
-		return candidate.getC_OLCand_ID();
+		return olCandRecord.getC_OLCand_ID();
 	}
 
 	public TableRecordReference toTableRecordReference()
@@ -117,30 +128,30 @@ public final class OLCand implements IProductPriceAware
 
 	public int getAD_Client_ID()
 	{
-		return candidate.getAD_Client_ID();
+		return olCandRecord.getAD_Client_ID();
 	}
 
 	public int getAD_Org_ID()
 	{
-		return candidate.getAD_Org_ID();
+		return olCandRecord.getAD_Org_ID();
 	}
 
-	public OLCandBPartnerInfo getBPartnerInfo()
+	public BPartnerInfo getBPartnerInfo()
 	{
 		return bpartnerInfo;
 	}
 
-	public OLCandBPartnerInfo getBillBPartnerInfo()
+	public BPartnerInfo getBillBPartnerInfo()
 	{
 		return billBPartnerInfo;
 	}
 
-	public OLCandBPartnerInfo getDropShipBPartnerInfo()
+	public BPartnerInfo getDropShipBPartnerInfo()
 	{
 		return dropShipBPartnerInfo;
 	}
 
-	public OLCandBPartnerInfo getHandOverBPartnerInfo()
+	public BPartnerInfo getHandOverBPartnerInfo()
 	{
 		return handOverBPartnerInfo;
 	}
@@ -152,119 +163,129 @@ public final class OLCand implements IProductPriceAware
 
 	public int getC_Charge_ID()
 	{
-		return candidate.getC_Charge_ID();
+		return olCandRecord.getC_Charge_ID();
 	}
 
 	public int getM_Product_ID()
 	{
-		return olCandEffectiveValuesBL.getM_Product_Effective_ID(candidate);
+		return ProductId.toRepoId(olCandEffectiveValuesBL.getM_Product_Effective_ID(olCandRecord));
 	}
 
 	public int getC_UOM_ID()
 	{
-		return olCandEffectiveValuesBL.getC_UOM_Effective_ID(candidate);
+		return olCandEffectiveValuesBL.getC_UOM_Effective_ID(olCandRecord);
 	}
 
 	public int getM_AttributeSet_ID()
 	{
-		return candidate.getM_AttributeSet_ID();
+		return olCandRecord.getM_AttributeSet_ID();
 	}
 
 	public int getM_AttributeSetInstance_ID()
 	{
-		return candidate.getM_AttributeSetInstance_ID();
+		return olCandRecord.getM_AttributeSetInstance_ID();
 	}
 
-	public int getM_Warehouse_Dest_ID()
+	public WarehouseId getWarehouseDestId()
 	{
-		return candidate.getM_Warehouse_Dest_ID();
+		return WarehouseId.ofRepoIdOrNull(olCandRecord.getM_Warehouse_Dest_ID());
 	}
 
 	public boolean isManualPrice()
 	{
-		return candidate.isManualPrice();
+		return olCandRecord.isManualPrice();
 	}
 
 	public BigDecimal getPriceActual()
 	{
-		return candidate.getPriceActual();
+		return olCandRecord.getPriceActual();
 	}
 
 	public boolean isManualDiscount()
 	{
-		return candidate.isManualDiscount();
+		return olCandRecord.isManualDiscount();
 	}
 
 	public BigDecimal getDiscount()
 	{
-		return candidate.getDiscount();
+		return olCandRecord.getDiscount();
 	}
 
 	public int getC_Currency_ID()
 	{
-		return candidate.getC_Currency_ID();
+		return olCandRecord.getC_Currency_ID();
 	}
 
 	public String getProductDescription()
 	{
-		return candidate.getProductDescription();
+		return olCandRecord.getProductDescription();
 	}
 
 	public int getLine()
 	{
-		return candidate.getLine();
+		return olCandRecord.getLine();
 	}
 
 	public boolean isProcessed()
 	{
-		return candidate.isProcessed();
+		return olCandRecord.isProcessed();
 	}
 
 	public void setProcessed(final boolean processed)
 	{
-		candidate.setProcessed(true);
+		olCandRecord.setProcessed(true);
 	}
 
 	public boolean isError()
 	{
-		return candidate.isError();
+		return olCandRecord.isError();
 	}
 
 	public void setError(final String errorMsg, final int adNoteId)
 	{
-		candidate.setIsError(true);
-		candidate.setErrorMsg(errorMsg);
-		candidate.setAD_Note_ID(adNoteId);
+		olCandRecord.setIsError(true);
+		olCandRecord.setErrorMsg(errorMsg);
+		olCandRecord.setAD_Note_ID(adNoteId);
 	}
 
 	public BigDecimal getQty()
 	{
-		return candidate.getQty();
+		return olCandRecord.getQty();
 	}
 
 	public String getPOReference()
 	{
-		return candidate.getPOReference();
+		return olCandRecord.getPOReference();
 	}
 
-	public Timestamp getDatePromised()
+	public LocalDate getDateDoc()
 	{
-		return olCandEffectiveValuesBL.getDatePromised_Effective(candidate);
+		return dateDoc;
+	}
+
+	public void setDateDoc(@NonNull final LocalDate dateDoc)
+	{
+		this.dateDoc = dateDoc;
+	}
+
+	public ZonedDateTime getDatePromised()
+	{
+		return olCandEffectiveValuesBL.getDatePromised_Effective(olCandRecord);
 	}
 
 	public int getAD_InputDataSource_ID()
 	{
-		return candidate.getAD_InputDataSource_ID();
+		return olCandRecord.getAD_InputDataSource_ID();
 	}
 
 	public int getAD_DataDestination_ID()
 	{
-		return candidate.getAD_DataDestination_ID();
+		return olCandRecord.getAD_DataDestination_ID();
 	}
 
 	public boolean isImportedWithIssues()
 	{
-		final org.adempiere.process.rpl.model.I_C_OLCand rplCandidate = InterfaceWrapperHelper.create(candidate, org.adempiere.process.rpl.model.I_C_OLCand.class);
+		final org.adempiere.process.rpl.model.I_C_OLCand rplCandidate = InterfaceWrapperHelper.create(olCandRecord, org.adempiere.process.rpl.model.I_C_OLCand.class);
 		return rplCandidate.isImportedWithIssues();
 	}
 
@@ -297,39 +318,58 @@ public final class OLCand implements IProductPriceAware
 		{
 			return getPricingSystemId();
 		}
+		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_DateOrdered))
+		{
+			return getDateDoc();
+		}
 		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_DatePromised_Effective))
 		{
 			return getDatePromised();
 		}
 		else
 		{
-			return InterfaceWrapperHelper.getValueByColumnId(candidate, column.getAdColumnId());
+			return InterfaceWrapperHelper.getValueByColumnId(olCandRecord, column.getAdColumnId());
 		}
 	}
 
 	@Override
 	public int getM_ProductPrice_ID()
 	{
-		return candidate.getM_ProductPrice_ID();
+		return olCandRecord.getM_ProductPrice_ID();
 	}
 
 	@Override
 	public boolean isExplicitProductPriceAttribute()
 	{
-		return candidate.isExplicitProductPriceAttribute();
+		return olCandRecord.isExplicitProductPriceAttribute();
 	}
 
 	public int getFlatrateConditionsId()
 	{
-		return candidate.getC_Flatrate_Conditions_ID();
+		return olCandRecord.getC_Flatrate_Conditions_ID();
 	}
 
 	public int getHUPIProductItemId()
 	{
-		if (candidate.getM_HU_PI_Item_Product_Override_ID() > 0)
+		if (olCandRecord.getM_HU_PI_Item_Product_Override_ID() > 0)
 		{
-			return candidate.getM_HU_PI_Item_Product_Override_ID();
+			return olCandRecord.getM_HU_PI_Item_Product_Override_ID();
 		}
-		return candidate.getM_HU_PI_Item_Product_ID();
+		return olCandRecord.getM_HU_PI_Item_Product_ID();
+	}
+
+	public InvoicableQtyBasedOn getInvoicableQtyBasedOn()
+	{
+		return InvoicableQtyBasedOn.fromRecordString(olCandRecord.getInvoicableQtyBasedOn());
+	}
+
+	public LocalDate getPresetDateInvoiced()
+	{
+		return TimeUtil.asLocalDate(olCandRecord.getPresetDateInvoiced());
+	}
+
+	public LocalDate getPresetDateShipped()
+	{
+		return TimeUtil.asLocalDate(olCandRecord.getPresetDateShipped());
 	}
 }

@@ -33,7 +33,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.LegacyAdapters;
@@ -56,6 +55,8 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 
 /**
@@ -74,7 +75,7 @@ public class VLocatorDialog extends CDialog
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param frame frame
 	 * @param title title
 	 * @param mLocator locator
@@ -146,7 +147,7 @@ public class VLocatorDialog extends CDialog
 
 	/**
 	 * Static component init
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	private void jbInit() throws Exception
@@ -208,7 +209,7 @@ public class VLocatorDialog extends CDialog
 	private void initLocator()
 	{
 		// Load Warehouse
-		String sql = "SELECT M_Warehouse_ID, Name FROM M_Warehouse";
+		String sql = "SELECT M_Warehouse_ID, Name, Description FROM M_Warehouse";
 		if (m_only_Warehouse_ID != null)
 		{
 			sql += " WHERE M_Warehouse_ID=" + m_only_Warehouse_ID.getRepoId();
@@ -218,7 +219,7 @@ public class VLocatorDialog extends CDialog
 				sql,
 				I_M_Warehouse.Table_Name,
 				IUserRolePermissions.SQL_NOTQUALIFIED,
-				IUserRolePermissions.SQL_RO)
+				Access.READ)
 				+ " ORDER BY 2";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -227,7 +228,7 @@ public class VLocatorDialog extends CDialog
 			pstmt = DB.prepareStatement(sqlFinal, ITrx.TRXNAME_None);
 			rs = pstmt.executeQuery();
 			while (rs.next())
-				fWarehouse.addItem(KeyNamePair.of(rs.getInt(1), rs.getString(2)));
+				fWarehouse.addItem(KeyNamePair.of(rs.getInt(1), rs.getString(2), rs.getString(3)/*help*/));
 			rs.close();
 			pstmt.close();
 		}
@@ -265,7 +266,7 @@ public class VLocatorDialog extends CDialog
 
 	/**
 	 * ActionListener
-	 * 
+	 *
 	 * @param e event
 	 */
 	@Override
@@ -300,7 +301,7 @@ public class VLocatorDialog extends CDialog
 
 	/**
 	 * KeyListener - nop
-	 * 
+	 *
 	 * @param e event
 	 */
 	@Override
@@ -311,7 +312,7 @@ public class VLocatorDialog extends CDialog
 
 	/**
 	 * KeyListener
-	 * 
+	 *
 	 * @param e event
 	 */
 	@Override
@@ -323,7 +324,7 @@ public class VLocatorDialog extends CDialog
 
 	/**
 	 * KeyListener - nop
-	 * 
+	 *
 	 * @param e event
 	 */
 	@Override
@@ -396,7 +397,7 @@ public class VLocatorDialog extends CDialog
 		{
 			return;
 		}
-		
+
 		// Defaults
 		m_M_Warehouse_ID = null;
 		// m_M_WarehouseName = "";
@@ -489,9 +490,9 @@ public class VLocatorDialog extends CDialog
 					fX.getText(),
 					fY.getText(),
 					fZ.getText());
-			
+
 			m_M_Locator_ID = locator.getM_Locator_ID();
-			
+
 			final MLocator locatorPO = LegacyAdapters.convertToPO(locator);
 			fLocator.addItem(locatorPO);
 			fLocator.setSelectedItem(locatorPO);
@@ -502,7 +503,7 @@ public class VLocatorDialog extends CDialog
 
 	/**
 	 * Get Selected value
-	 * 
+	 *
 	 * @return value as Integer
 	 */
 	public Integer getValue()
@@ -515,7 +516,7 @@ public class VLocatorDialog extends CDialog
 
 	/**
 	 * Get result
-	 * 
+	 *
 	 * @return true if changed
 	 */
 	public boolean isChanged()

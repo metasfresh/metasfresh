@@ -1,11 +1,19 @@
 package org.compiere.util;
 
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Properties;
 
-import org.adempiere.ad.security.TableAccessLevel;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IValuePreferenceBL.IUserValuePreference;
+import org.adempiere.warehouse.WarehouseId;
+
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.organization.OrgId;
+import de.metas.security.RoleId;
+import de.metas.security.TableAccessLevel;
+import de.metas.user.UserId;
 
 /*
  * #%L
@@ -101,14 +109,14 @@ public class LoginContext
 		return Env.getContextAsInt(getCtx(), name);
 	}
 
-	public void setProperty(final String name, final Timestamp valueDate)
+	private void setProperty(final String name, final LocalDate valueDate)
 	{
-		Env.setContext(getCtx(), name, valueDate);
+		Env.setContext(getCtx(), name, TimeUtil.asDate(valueDate));
 	}
 
-	private Timestamp getPropertyAsDate(final String name)
+	private LocalDate getPropertyAsLocalDate(final String name)
 	{
-		return Env.getContextAsDate(getCtx(), name);
+		return TimeUtil.asLocalDate(Env.getContextAsDate(getCtx(), name));
 	}
 
 	private boolean getPropertyAsBoolean(final String name)
@@ -141,21 +149,22 @@ public class LoginContext
 		setProperty(Env.CTXNAME_AD_Language, AD_Language);
 	}
 
-	public void setUser(final int AD_User_ID, final String username)
+	public void setUser(final UserId userId, final String username)
 	{
-		setProperty(Env.CTXNAME_AD_User_ID, AD_User_ID);
+		setProperty(Env.CTXNAME_AD_User_ID, UserId.toRepoId(userId));
 		setProperty(Env.CTXNAME_AD_User_Name, username);
-		setProperty(Env.CTXNAME_SalesRep_ID, AD_User_ID);
+		setProperty(Env.CTXNAME_SalesRep_ID, UserId.toRepoId(userId));
 	}
 
-	public int getAD_User_ID()
+	public UserId getUserId()
 	{
-		return getMandatoryPropertyAsInt(Env.CTXNAME_AD_User_ID);
+		return UserId.ofRepoId(getMandatoryPropertyAsInt(Env.CTXNAME_AD_User_ID));
 	}
 
-	public Optional<Integer> getAD_User_ID_IfExists()
+	public Optional<UserId> getUserIdIfExists()
 	{
-		return getOptionalPropertyAsInt(Env.CTXNAME_AD_User_ID);
+		return getOptionalPropertyAsInt(Env.CTXNAME_AD_User_ID)
+				.map(UserId::ofRepoId);
 	}
 
 	public void setSysAdmin(final boolean sysAdmin)
@@ -163,9 +172,9 @@ public class LoginContext
 		setProperty("#SysAdmin", sysAdmin);
 	}
 
-	public void setRole(final int AD_Role_ID, final String roleName)
+	public void setRole(final RoleId roleId, final String roleName)
 	{
-		setProperty(Env.CTXNAME_AD_Role_ID, AD_Role_ID);
+		setProperty(Env.CTXNAME_AD_Role_ID, RoleId.toRepoId(roleId));
 		setProperty(Env.CTXNAME_AD_Role_Name, roleName);
 
 		Ini.setProperty(Ini.P_ROLE, roleName);
@@ -186,37 +195,37 @@ public class LoginContext
 		return getPropertyAsBoolean(Env.CTXNAME_IsAllowLoginDateOverride);
 	}
 
-	public int getAD_Role_ID()
+	public RoleId getRoleId()
 	{
-		return getMandatoryPropertyAsInt(Env.CTXNAME_AD_Role_ID);
+		return RoleId.ofRepoId(getMandatoryPropertyAsInt(Env.CTXNAME_AD_Role_ID));
 	}
 
-	public void setClient(final int AD_Client_ID, final String clientName)
+	public void setClient(final ClientId clientId, final String clientName)
 	{
-		setProperty(Env.CTXNAME_AD_Client_ID, AD_Client_ID);
+		setProperty(Env.CTXNAME_AD_Client_ID, ClientId.toRepoId(clientId));
 		setProperty(Env.CTXNAME_AD_Client_Name, clientName);
 
 		Ini.setProperty(Ini.P_CLIENT, clientName);
 	}
 
-	public int getAD_Client_ID()
+	public ClientId getClientId()
 	{
-		return getMandatoryPropertyAsInt(Env.CTXNAME_AD_Client_ID);
+		return ClientId.ofRepoId(getMandatoryPropertyAsInt(Env.CTXNAME_AD_Client_ID));
 	}
 
-	public Timestamp getLoginDate()
+	public LocalDate getLoginDate()
 	{
-		return getPropertyAsDate(Env.CTXNAME_Date);
+		return getPropertyAsLocalDate(Env.CTXNAME_Date);
 	}
 
-	public void setLoginDate(final Timestamp date)
+	public void setLoginDate(final LocalDate date)
 	{
 		setProperty(Env.CTXNAME_Date, date);
 	}
 
-	public void setOrg(final int AD_Org_ID, final String orgName)
+	public void setOrg(final OrgId orgId, final String orgName)
 	{
-		setProperty(Env.CTXNAME_AD_Org_ID, AD_Org_ID);
+		setProperty(Env.CTXNAME_AD_Org_ID, OrgId.toRepoId(orgId));
 		setProperty(Env.CTXNAME_AD_Org_Name, orgName);
 
 		Ini.setProperty(Ini.P_ORG, orgName);
@@ -227,21 +236,20 @@ public class LoginContext
 		setProperty(Env.CTXNAME_User_Org, userOrgs);
 	}
 
-	public int getAD_Org_ID()
+	public OrgId getOrgId()
 	{
-		return getMandatoryPropertyAsInt(Env.CTXNAME_AD_Org_ID);
+		return OrgId.ofRepoId(getMandatoryPropertyAsInt(Env.CTXNAME_AD_Org_ID));
 	}
 
-	public void setWarehouse(final int M_Warehouse_ID, final String warehouseName)
+	public void setWarehouse(final WarehouseId warehouseId, final String warehouseName)
 	{
-		setProperty(Env.CTXNAME_M_Warehouse_ID, M_Warehouse_ID);
-
+		setProperty(Env.CTXNAME_M_Warehouse_ID, WarehouseId.toRepoId(warehouseId));
 		Ini.setProperty(Ini.P_WAREHOUSE, warehouseName);
 	}
 
-	public int getM_Warehouse_ID()
+	public WarehouseId getWarehouseId()
 	{
-		return getPropertyAsInt(Env.CTXNAME_M_Warehouse_ID);
+		return WarehouseId.ofRepoIdOrNull(getPropertyAsInt(Env.CTXNAME_M_Warehouse_ID));
 	}
 
 	public void setPrinterName(final String printerName)
@@ -251,16 +259,16 @@ public class LoginContext
 		Ini.setProperty(Ini.P_PRINTER, printerName);
 	}
 
-	public void setAcctSchema(final int C_AcctSchema_ID, final int C_Currency_ID, final boolean hasAlias)
+	public void setAcctSchema(final AcctSchema acctSchema)
 	{
-		setProperty("$C_AcctSchema_ID", C_AcctSchema_ID);
-		setProperty("$C_Currency_ID", C_Currency_ID);
-		setProperty("$HasAlias", hasAlias);
+		setProperty("$C_AcctSchema_ID", acctSchema.getId().getRepoId());
+		setProperty("$C_Currency_ID", acctSchema.getCurrencyId().getRepoId());
+		setProperty("$HasAlias", acctSchema.getValidCombinationOptions().isUseAccountAlias());
 	}
 
-	public int getC_AcctSchema_ID()
+	public AcctSchemaId getAcctSchemaId()
 	{
-		return getPropertyAsInt("$C_AcctSchema_ID");
+		return AcctSchemaId.ofRepoIdOrNull(getPropertyAsInt("$C_AcctSchema_ID"));
 	}
 
 	public void setRemoteAddr(final String remoteAddr)

@@ -12,8 +12,8 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
-import org.compiere.util.Env;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
@@ -23,6 +23,7 @@ import de.metas.handlingunits.materialtracking.IHUMaterialTrackingBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Check;
@@ -84,7 +85,7 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 
 	private final I_M_Warehouse getM_Warehouse(final IRangeAwareParams params, final String warehouseParameterName)
 	{
-		final int warehouseId = params.getParameterAsInt(warehouseParameterName);
+		final int warehouseId = params.getParameterAsInt(warehouseParameterName, -1);
 		if (warehouseId <= 0)
 		{
 			throw new FillMandatoryException(warehouseParameterName);
@@ -108,13 +109,13 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 		final I_C_BPartner orgBPartner = bpartnerOrgBL.retrieveLinkedBPartner(org);
 		Check.assumeNotNull(orgBPartner, "Org BPartner shall exist for {}", org);
 
-		final org.compiere.model.I_C_BPartner_Location orgBPLocation = bpartnerOrgBL.retrieveOrgBPLocation(Env.getCtx(), org.getAD_Org_ID(), ITrx.TRXNAME_None);
+		final BPartnerLocationId orgBPLocationId = bpartnerOrgBL.retrieveOrgBPLocationId(OrgId.ofRepoId(org.getAD_Org_ID()));
 
 		HUs2DDOrderProducer.newProducer()
 				.setContext(getCtx())
 				.setM_Locator_To(locatorTo)
 				.setBpartnerId(orgBPartner.getC_BPartner_ID())
-				.setBpartnerLocationId(orgBPLocation.getC_BPartner_Location_ID())
+				.setBpartnerLocationId(BPartnerLocationId.toRepoId(orgBPLocationId))
 				.setHUs(retriveHUs())
 				.process();
 		return MSG_OK;

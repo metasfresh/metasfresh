@@ -94,12 +94,14 @@ public class C_Letter_CreateFrom_MKTG_ContactPerson extends JavaProcess
 
 		final I_MKTG_Campaign_ContactPerson campaignContactPerson = load(campaignContactPersonId, I_MKTG_Campaign_ContactPerson.class);
 
-		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(getCtx(), C_Letter_CreateFromMKTG_ContactPerson_Async.class);
+		final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), C_Letter_CreateFromMKTG_ContactPerson_Async.class);
 		queue.newBlock()
 				.setContext(getCtx())
 				.newWorkpackage()
 				.setC_Async_Batch(asyncbatch) // set the async batch in workpackage in order to track it
 				.addElement(campaignContactPerson)
+				.setUserInChargeId(getAD_User_ID())
 				.build();
 	}
 }

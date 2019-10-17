@@ -32,11 +32,9 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_Issue;
 
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
@@ -44,6 +42,8 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.document.engine.IDocument;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
@@ -159,9 +159,9 @@ public class C_Flatrate_Term_Extend_And_Notify_User
 		catch (final RuntimeException e)
 		{
 			final I_C_Flatrate_Term contract = context.getContract();
-			final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(e);
+			final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(e);
 			addLog("Error extending C_FlatrateTerm_ID={} with C_Flatrate_Data_ID={}; AD_Issue_ID={}; {} with message={}",
-					contract.getC_Flatrate_Term_ID(), contract.getC_Flatrate_Data_ID(), issue.getAD_Issue_ID(), e.getClass().getName(), e.getMessage());
+					contract.getC_Flatrate_Term_ID(), contract.getC_Flatrate_Data_ID(), issueId, e.getClass().getName(), e.getMessage());
 			return false;
 			}
 		}

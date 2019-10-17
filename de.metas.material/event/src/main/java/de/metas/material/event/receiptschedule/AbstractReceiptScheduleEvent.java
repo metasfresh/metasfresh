@@ -42,10 +42,9 @@ import lombok.ToString;
 @ToString
 public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 {
-	@NonNull
+
 	private final EventDescriptor eventDescriptor;
 
-	@NonNull
 	private final MaterialDescriptor materialDescriptor;
 
 	private final BigDecimal reservedQuantity;
@@ -53,8 +52,8 @@ public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 	private final int receiptScheduleId;
 
 	public AbstractReceiptScheduleEvent(
-			final EventDescriptor eventDescriptor,
-			final MaterialDescriptor materialDescriptor,
+			@NonNull final EventDescriptor eventDescriptor,
+			@NonNull final MaterialDescriptor materialDescriptor,
 			final BigDecimal reservedQuantity,
 			final int receiptScheduleId)
 	{
@@ -69,13 +68,15 @@ public abstract class AbstractReceiptScheduleEvent implements MaterialEvent
 	public abstract BigDecimal getReservedQuantityDelta();
 
 	@OverridingMethodsMustInvokeSuper
-	public void validate()
+	public AbstractReceiptScheduleEvent validate()
 	{
 		checkIdGreaterThanZero("receiptScheduleId", receiptScheduleId);
 
 		Check.errorIf(eventDescriptor == null, "eventDescriptor may not be null");
 		Check.errorIf(materialDescriptor == null, "materialDescriptor may not be null");
 		Check.errorIf(reservedQuantity == null, "reservedQuantity may not be null");
+
+		return this;
 	}
 
 }

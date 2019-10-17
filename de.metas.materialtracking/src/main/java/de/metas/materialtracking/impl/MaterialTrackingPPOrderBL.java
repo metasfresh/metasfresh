@@ -1,5 +1,7 @@
 package de.metas.materialtracking.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.materialtracking
@@ -33,12 +35,14 @@ import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class MaterialTrackingPPOrderBL implements IMaterialTrackingPPOrderBL
 {
@@ -53,19 +57,23 @@ public class MaterialTrackingPPOrderBL implements IMaterialTrackingPPOrderBL
 	private final IQueryFilter<I_PP_Order> qualityInspectionFilter = new EqualsQueryFilter<I_PP_Order>(I_PP_Order.COLUMN_OrderType, C_DocType_DOCSUBTYPE_QualityInspection);
 
 	@Override
-	public boolean isQualityInspection(final I_PP_Order ppOrder)
+	public boolean isQualityInspection(final int ppOrderId)
+	{
+		final I_PP_Order ppOrderRecord = loadOutOfTrx(ppOrderId, I_PP_Order.class);
+		return isQualityInspection(ppOrderRecord);
+	}
+
+	@Override
+	public boolean isQualityInspection(@NonNull final I_PP_Order ppOrder)
 	{
 		// NOTE: keep in sync with #qualityInspectionFilter
-
-		Check.assumeNotNull(ppOrder, "ppOrder not null");
 		final String orderType = ppOrder.getOrderType();
 		return C_DocType_DOCSUBTYPE_QualityInspection.equals(orderType);
 	}
 
 	@Override
-	public void assertQualityInspectionOrder(final I_PP_Order ppOrder)
+	public void assertQualityInspectionOrder(@NonNull final I_PP_Order ppOrder)
 	{
-		Check.assumeNotNull(ppOrder, "ppOrder not null");
 		Check.assume(isQualityInspection(ppOrder), "Order shall be Quality Inspection Order: {}", ppOrder);
 	}
 
@@ -102,9 +110,10 @@ public class MaterialTrackingPPOrderBL implements IMaterialTrackingPPOrderBL
 
 		final List<I_M_InOutLine> allIssuedInOutLines = new ArrayList<>();
 
-		for (final I_PP_Cost_Collector cc : ppCostCollectorDAO.retrieveForOrder(ppOrder))
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+		for (final I_PP_Cost_Collector cc : ppCostCollectorDAO.getByOrderId(ppOrderId))
 		{
-			if (!ppCostCollectorBL.isMaterialIssue(cc, true))
+			if (!ppCostCollectorBL.isAnyComponentIssueOrCoProduct(cc))
 			{
 				continue;
 			}

@@ -26,18 +26,13 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
@@ -46,13 +41,16 @@ import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_PP_Product_Planning;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.storage.IStorageRecord;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -75,7 +73,6 @@ import lombok.NonNull;
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
 
 	// Parameters
-	private final Properties ctx;
 	private final IAttributeSetInstanceAware attributeSetInstanceAware;
 
 	/** Current locator */
@@ -99,26 +96,22 @@ import lombok.NonNull;
 	// Org, Organization BP, In Transit Warehouse /Locator
 	//
 	private OrgId orgId;
-	private I_C_BPartner orgBPartner;
-	private I_C_BPartner_Location orgBPLocation;
+	private BPartnerLocationId orgBPLocationId;
 	private WarehouseId inTransitWarehouseId;
 
 	public RawMaterialsReturnDDOrderLineCandidate(
-			@NonNull final Properties ctx,
 			@NonNull final IAttributeSetInstanceAware attributeSetInstanceAware,
 			@NonNull final I_M_Locator locator)
 	{
-		this.ctx = ctx;
-
 		this.attributeSetInstanceAware = attributeSetInstanceAware;
-		this.uom = productBL.getStockingUOM(attributeSetInstanceAware.getM_Product());
+		this.uom = productBL.getStockUOM(attributeSetInstanceAware.getM_Product_ID());
 
 		this.locator = locator;
 
 		this.dateOrdered = SystemTime.asTimestamp();
 	}
 
-	private final void loadIfNeeded()
+	private void loadIfNeeded()
 	{
 		if (loaded)
 		{
@@ -136,7 +129,7 @@ import lombok.NonNull;
 		}
 	}
 
-	private final void load()
+	private void load()
 	{
 		notValidReasons.clear();
 
@@ -158,9 +151,9 @@ import lombok.NonNull;
 		// Retrieve Product Planning
 		final ProductPlanningQuery query = ProductPlanningQuery
 				.builder()
-				.orgId(warehouse.getAD_Org_ID())
+				.orgId(OrgId.ofRepoId(warehouse.getAD_Org_ID()))
 				.warehouseId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
-				.plantId(warehousePlant == null ? 0 : warehousePlant.getS_Resource_ID())
+				.plantId(warehousePlant != null ? ResourceId.ofRepoId(warehousePlant.getS_Resource_ID()) : null)
 				.productId(ProductId.ofRepoId(attributeSetInstanceAware.getM_Product_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(attributeSetInstanceAware.getM_AttributeSetInstance_ID()))
 				.build();
@@ -230,13 +223,7 @@ import lombok.NonNull;
 		//
 		// Org / Linked BPartner
 		orgId = OrgId.ofRepoId(rawMaterialsWarehouse.getAD_Org_ID());
-		orgBPartner = bpartnerOrgBL.retrieveLinkedBPartner(orgId.getRepoId());
-		if (orgBPartner == null)
-		{
-			notValidReasons.add("@NotFound@ @AD_OrgBP_ID@: " + orgId);
-			return;
-		}
-		orgBPLocation = bpartnerOrgBL.retrieveOrgBPLocation(ctx, orgId.getRepoId(), ITrx.TRXNAME_None);
+		orgBPLocationId = bpartnerOrgBL.retrieveOrgBPLocationId(orgId);
 
 		//
 		// InTransit Warehouse
@@ -326,16 +313,10 @@ import lombok.NonNull;
 		return orgId;
 	}
 
-	public I_C_BPartner getOrgBPartner()
+	public BPartnerLocationId getOrgBPLocationId()
 	{
 		loadIfNeeded();
-		return orgBPartner;
-	}
-
-	public I_C_BPartner_Location getOrgBPLocation()
-	{
-		loadIfNeeded();
-		return orgBPLocation;
+		return orgBPLocationId;
 	}
 
 	public int getPlanner_ID()

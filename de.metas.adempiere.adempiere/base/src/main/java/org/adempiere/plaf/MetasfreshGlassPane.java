@@ -12,6 +12,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Objects;
 
 import javax.swing.JPanel;
 import javax.swing.RootPaneContainer;
@@ -20,13 +21,12 @@ import javax.swing.UIManager;
 
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 
 /*
  * #%L
@@ -232,7 +232,7 @@ public class MetasfreshGlassPane extends JPanel
 	 */
 	public void setMessagePlain(final String messagePlain)
 	{
-		if (Check.equals(_messagePlain, messagePlain))
+		if (Objects.equals(_messagePlain, messagePlain))
 		{
 			return;
 		}
@@ -381,7 +381,7 @@ public class MetasfreshGlassPane extends JPanel
 			//
 			// Calculate coordinates
 			final FontMetrics textFontMetrics = g.getFontMetrics(textFont);
-			final String message = Util.coalesce(getMessagePlain(), "");
+			final String message = CoalesceUtil.coalesce(getMessagePlain(), "");
 			final int messageWidth = textFontMetrics.stringWidth(message);
 			final int messageHeight = textFontMetrics.getAscent() + textFontMetrics.getDescent();
 			//

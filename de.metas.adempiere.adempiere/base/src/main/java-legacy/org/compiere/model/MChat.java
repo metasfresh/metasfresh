@@ -23,30 +23,30 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.adempiere.user.api.IUserDAO;
 import org.apache.ecs.xhtml.b;
 import org.apache.ecs.xhtml.hr;
 import org.apache.ecs.xhtml.p;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.logging.LogManager;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 /**
  * 	Chat Model
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: MChat.java,v 1.4 2006/07/30 00:51:05 jjanke Exp $
  */
 public class MChat extends X_CM_Chat
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -5053130533036069784L;
 
@@ -92,11 +92,11 @@ public class MChat extends X_CM_Chat
 		list.toArray (retValue);
 		return retValue;
 	}	//	get
-	
+
 	/**	Logger	*/
 	private static Logger s_log = LogManager.getLogger(MChat.class);
-	
-	
+
+
 	/**************************************************************************
 	 * 	Standard Constructor
 	 *	@param ctx context
@@ -124,7 +124,7 @@ public class MChat extends X_CM_Chat
 	 *	@param Description description
 	 *	@param trxName transaction
 	 */
-	public MChat (Properties ctx, int AD_Table_ID, int Record_ID, 
+	public MChat (Properties ctx, int AD_Table_ID, int Record_ID,
 		String Description, String trxName)
 	{
 		this (ctx, 0, trxName);
@@ -143,13 +143,13 @@ public class MChat extends X_CM_Chat
 	{
 		super (ctx, rs, trxName);
 	}	//	MChat
-	
+
 	/**	The Lines						*/
 	private MChatEntry[] 		m_entries = null;
 	/**	Date Format						*/
 	private SimpleDateFormat	m_format = null;
-	
-	
+
+
 	/**
 	 *	Get Entries
 	 *	@param reload reload data
@@ -189,10 +189,10 @@ public class MChat extends X_CM_Chat
 		return m_entries;
 	}	// getEntries
 
-	
+
 	/**
      * Set Description
-     * 
+     *
      * @param Description
      */
 	@Override
@@ -203,7 +203,7 @@ public class MChat extends X_CM_Chat
 		else
 			super.setDescription (getAD_Table_ID() + "#" + getRecord_ID());
 	}	//	setDescription
-	
+
 	/**
 	 * 	Get History as htlp paragraph
 	 * 	@param ConfidentialType confidentiality
@@ -225,7 +225,7 @@ public class MChat extends X_CM_Chat
 				history.addElement(new hr());
 			//	User & Date
 			b b = new b();
-			final I_AD_User user = Services.get(IUserDAO.class).retrieveUser(entry.getCreatedBy());
+			final I_AD_User user = Services.get(IUserDAO.class).getById(entry.getCreatedBy());
 			b.addElement(user.getName());
 			b.addElement(" \t");
 			Timestamp created = entry.getCreated();
@@ -237,13 +237,13 @@ public class MChat extends X_CM_Chat
 			//
 			p p = new p();
 			String data = entry.getCharacterData();
-			data = Util.maskHTML(data, true);
+			data = StringUtils.maskHTML(data, true);
 			p.addElement(data);
 			history.addElement(p);
 		}	//	entry
 		//
 		return history;
 	}	//	getHistory
-	
-	
+
+
 }	//	MChat

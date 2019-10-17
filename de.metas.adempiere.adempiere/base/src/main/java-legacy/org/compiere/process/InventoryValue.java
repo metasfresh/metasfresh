@@ -18,14 +18,15 @@ package org.compiere.process;
 
 import java.sql.Timestamp;
 
-import org.adempiere.acct.api.IAcctSchemaDAO;
+import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.MClient;
 import org.compiere.util.DB;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
@@ -99,9 +100,9 @@ public class InventoryValue extends JavaProcess
 			+ ",M_CostElement_ID=" + p_M_CostElement_ID);
 		
 		final I_M_Warehouse wh = Services.get(IWarehouseDAO.class).getById(WarehouseId.ofRepoId(p_M_Warehouse_ID));
-		MClient c = MClient.get(getCtx(), wh.getAD_Client_ID());
-
-		final I_C_AcctSchema as = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(getCtx(), wh.getAD_Client_ID(), wh.getAD_Org_ID()); 
+		ClientId clientId = ClientId.ofRepoId(wh.getAD_Client_ID());
+		final OrgId orgId = OrgId.ofRepoId(wh.getAD_Org_ID());
+		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getByCliendAndOrg(clientId, orgId); 
 		
 		//  Delete (just to be sure)
 		StringBuffer sql = new StringBuffer ("DELETE FROM T_InventoryValue WHERE AD_PInstance_ID=");
@@ -272,15 +273,15 @@ public class InventoryValue extends JavaProcess
 			msg = "No Prices";
 
 		//	Convert if different Currency
-		if (as.getC_Currency_ID() != p_C_Currency_ID)
+		if (as.getCurrencyId().getRepoId() != p_C_Currency_ID)
 		{
 			sql = new StringBuffer ("UPDATE T_InventoryValue iv "
 				+ "SET CostStandard= "
 					+ "(SELECT currencyConvert(iv.CostStandard,acs.C_Currency_ID,iv.C_Currency_ID,iv.DateValue,null, iv.AD_Client_ID,iv.AD_Org_ID) "
-					+ "FROM C_AcctSchema acs WHERE acs.C_AcctSchema_ID=" + as.getC_AcctSchema_ID() + "),"
+					+ "FROM C_AcctSchema acs WHERE acs.C_AcctSchema_ID=" + as.getId().getRepoId() + "),"
 				+ "	Cost= "
 					+ "(SELECT currencyConvert(iv.Cost,acs.C_Currency_ID,iv.C_Currency_ID,iv.DateValue,null, iv.AD_Client_ID,iv.AD_Org_ID) "
-					+ "FROM C_AcctSchema acs WHERE acs.C_AcctSchema_ID=" + as.getC_AcctSchema_ID() + ") "
+					+ "FROM C_AcctSchema acs WHERE acs.C_AcctSchema_ID=" + as.getId().getRepoId() + ") "
 				+ "WHERE iv.AD_PInstance_ID=" + getAD_PInstance_ID());
 			no = DB.executeUpdateEx (sql.toString(), get_TrxName());
 			log.debug("Converted=" + no);

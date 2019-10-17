@@ -3,6 +3,10 @@ package de.metas.process;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableSet;
@@ -37,10 +41,11 @@ import com.google.common.collect.ImmutableSet;
  */
 public interface IProcessPreconditionsContext
 {
-	/**
-	 * @return underlying AD_Window_ID or <code>-1</code> if not available
-	 */
-	int getAD_Window_ID();
+	@Nullable
+	AdWindowId getAdWindowId();
+
+	@Nullable
+	AdTabId getAdTabId();
 
 	/**
 	 * @return underlying table name or <code>null</code>
@@ -58,34 +63,31 @@ public interface IProcessPreconditionsContext
 	 * @return all selected rows's model(s)
 	 */
 	<T> List<T> getSelectedModels(final Class<T> modelClass);
-	
+
 	/** @return single Record_ID; throws exception otherwise */
 	int getSingleSelectedRecordId();
 
 	/**
 	 * Gets how many rows were selected.
 	 * In case the size is not determined, an exception is thrown.
-	 * 
+	 *
 	 * Instead of calling this method, always consider using {@link #isNoSelection()}, {@link #isSingleSelection()}, {@link #isMoreThanOneSelected()} if applicable.
 	 */
-	int getSelectionSize();
+	SelectionSize getSelectionSize();
 
-	/** @return true if there is no selected rows */
 	default boolean isNoSelection()
 	{
-		return getSelectionSize() <= 0;
+		return getSelectionSize().isNoSelection();
 	}
 
-	/** @return true if only one row is selected */
 	default boolean isSingleSelection()
 	{
-		return getSelectionSize() == 1;
+		return getSelectionSize().isSingleSelection();
 	}
 
-	/** @return true if there are more then one selected row */
 	default boolean isMoreThanOneSelected()
 	{
-		return getSelectionSize() > 1;
+		return getSelectionSize().isMoreThanOneSelected();
 	}
 
 	/** @return selected included rows of current single selected document */
@@ -93,4 +95,5 @@ public interface IProcessPreconditionsContext
 	{
 		return ImmutableSet.of();
 	}
+
 }

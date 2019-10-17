@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.ISubProducerAttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
@@ -36,6 +36,7 @@ import de.metas.interfaces.I_C_BP_Relation;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -63,7 +64,7 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 {
 	static final String ATTRIBUTEVALUETYPE = X_M_Attribute.ATTRIBUTEVALUETYPE_Number;
 
-	private static final String CACHE_PREFIX = I_M_AttributeValue.Table_Name;
+	private static final String CACHE_PREFIX = IAttributeDAO.CACHEKEY_ATTRIBUTE_VALUE;
 
 	/**
 	 * Cache: C_BPartner_ID to list of sub-producer partners (as KeyNamePair)
@@ -76,9 +77,6 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 			.additionalTableNameToResetFor(I_C_BPartner.Table_Name)
 			.additionalTableNameToResetFor(I_C_BP_Relation.Table_Name)
 			.build();
-
-	private static final ITranslatableString DISPLAYNAME_None = Services.get(IMsgBL.class).translatable("NoneOrEmpty");
-	private static final ConcurrentHashMap<String, KeyNamePair> adLanguage2keyNamePairNone = new ConcurrentHashMap<>();
 
 	private static final CtxName CTXNAME_M_HU_ID = CtxNames.parse("M_HU_ID/-1");
 	private static final CtxName CTXNAME_C_BPartner_ID = CtxNames.parse("C_BPartner_ID/-1");
@@ -134,16 +132,14 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 
 	static final KeyNamePair staticNullValue()
 	{
-		final String adLanguage = Env.getAD_Language(Env.getCtx());
+		final ITranslatableString displayNameTrl = Services.get(IMsgBL.class).translatable("NoneOrEmpty");
 
-		final KeyNamePair nullValue = KeyNamePair.of(0, DISPLAYNAME_None.translate(adLanguage));
-		if (adLanguage == null)
-		{
-			return nullValue; // guard against NPE, which happened when running this code via async-processor on an "embedded server"
-		}
+		final String adLanguage = Env.getAD_Language(Env.getCtx());
+		final String displayName = adLanguage != null ? displayNameTrl.translate(adLanguage) : displayNameTrl.getDefaultValue();
+
 		// NOTE: we use KeyNamePair's Key=0 because "-1" is specially handled by KeyNamePair (see KeyNamePair.getID() which returns null)
 		// and we run in some weird problems
-		return adLanguage2keyNamePairNone.computeIfAbsent(adLanguage, key -> nullValue);
+		return KeyNamePair.of(0, displayName);
 
 	}
 
@@ -254,9 +250,9 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 	}
 
 	@Override
-	public int getM_AttributeValue_ID(final Object valueKey)
+	public AttributeValueId getAttributeValueIdOrNull(final Object valueKey)
 	{
-		return -1;
+		return null;
 	}
 
 	/**
@@ -355,14 +351,10 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 
 	/**
 	 * Convert given {@link I_C_BPartner} to a {@link KeyNamePair}.
-	 *
-	 * @param bpartner
-	 * @return
 	 */
-	private static final KeyNamePair toKeyNamePair(final I_C_BPartner bpartner)
+	private static final KeyNamePair toKeyNamePair(@NonNull final I_C_BPartner bpartner)
 	{
-		Check.assumeNotNull(bpartner, "bpartner not null");
-		return new KeyNamePair(bpartner.getC_BPartner_ID(), bpartner.getName());
+		return KeyNamePair.of(bpartner.getC_BPartner_ID(), bpartner.getName(), bpartner.getDescription());
 	}
 
 }

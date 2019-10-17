@@ -123,7 +123,7 @@ public class LUTUJoinOrMergeBL implements ILUTUJoinOrMergeBL
 
 				mergeBuilder.setCUProductId(storage.getProductId());
 				mergeBuilder.setCUUOM(storage.getQty().getUOM());
-				mergeBuilder.setCUQty(storage.getQty().getAsBigDecimal());
+				mergeBuilder.setCUQty(storage.getQty().toBigDecimal());
 				mergeBuilder.setCUTrxReferencedModel(storage.getM_HU());
 
 				mergeBuilder.mergeTUs();

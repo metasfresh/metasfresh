@@ -1,15 +1,15 @@
 package de.metas.material.dispo.service.event.handler.shipmentschedule;
 
-import static de.metas.material.event.EventTestHelper.CLIENT_ID;
-import static de.metas.material.event.EventTestHelper.ORG_ID;
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static java.math.BigDecimal.ZERO;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
 
@@ -25,7 +25,6 @@ import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHan
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -51,15 +50,12 @@ import mockit.Mocked;
 
 public class ShipmentScheduleDeletedHandlerTests
 {
-	@Mocked
-	private PostMaterialEventService postMaterialEventService;
-
 	private AvailableToPromiseRepository atpRepository;
 	private ShipmentScheduleCreatedHandler shipmentScheduleCreatedHandler;
 
 	private ShipmentScheduleDeletedHandler shipmentScheduleDeletedHandler;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -68,7 +64,9 @@ public class ShipmentScheduleDeletedHandlerTests
 
 		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
 
-		atpRepository = new AvailableToPromiseRepository();
+		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
+
+		atpRepository = Mockito.spy(AvailableToPromiseRepository.class);
 
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
 				new DemandCandiateHandler(
@@ -83,7 +81,6 @@ public class ShipmentScheduleDeletedHandlerTests
 		shipmentScheduleCreatedHandler = new ShipmentScheduleCreatedHandler(
 				candidateChangeHandler,
 				candidateRepositoryRetrieval);
-		atpRepository = new AvailableToPromiseRepository();
 
 		shipmentScheduleDeletedHandler = new ShipmentScheduleDeletedHandler(candidateChangeHandler, candidateRepositoryRetrieval);
 	}
@@ -93,7 +90,7 @@ public class ShipmentScheduleDeletedHandlerTests
 	{
 		final int shipmentScheduleId = ShipmentScheduleCreatedHandlerTests.performTest(shipmentScheduleCreatedHandler, atpRepository);
 
-		final EventDescriptor eventDescriptor = EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID);
+		final EventDescriptor eventDescriptor = EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID);
 		final ShipmentScheduleDeletedEvent shipmentScheduleDeletedEvent = ShipmentScheduleDeletedEvent
 				.builder()
 				.eventDescriptor(eventDescriptor)
@@ -101,7 +98,6 @@ public class ShipmentScheduleDeletedHandlerTests
 				.build();
 
 		shipmentScheduleDeletedHandler.handleEvent(shipmentScheduleDeletedEvent);
-
 
 		final List<I_MD_Candidate> allRecords = DispoTestUtils.retrieveAllRecords();
 		assertThat(allRecords).hasSize(2);

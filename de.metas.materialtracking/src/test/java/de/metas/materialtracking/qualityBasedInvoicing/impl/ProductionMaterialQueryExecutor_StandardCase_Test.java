@@ -27,16 +27,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.X_PP_Order_BOMLine;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -108,13 +106,13 @@ public class ProductionMaterialQueryExecutor_StandardCase_Test
 				);
 		this.expectedMaterial_WashedCarrot = new PlainProductionMaterial(ProductionMaterialType.PRODUCED, data.pCarrot_Washed, new BigDecimal("100"), uom1);
 
-		data.createPP_Order_BOMLine(ppOrder, X_PP_Order_BOMLine.COMPONENTTYPE_Component,
+		data.createPP_Order_BOMLine(ppOrder, BOMComponentType.Component,
 				data.pCarrot_Unwashed,
 				new BigDecimal("200"),
 				uom2);
 		this.expectedMaterial_UnwashedCarrot = new PlainProductionMaterial(ProductionMaterialType.RAW, data.pCarrot_Unwashed, new BigDecimal("200"), uom2);
 
-		data.createPP_Order_BOMLine(ppOrder, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product,
+		data.createPP_Order_BOMLine(ppOrder, BOMComponentType.CoProduct,
 				data.pCarrot_Big,
 				new BigDecimal("-50"), // co-products have negative issued qty
 				uom3);

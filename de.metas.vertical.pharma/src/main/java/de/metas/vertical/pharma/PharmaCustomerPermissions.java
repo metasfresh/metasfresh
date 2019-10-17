@@ -6,8 +6,14 @@ import org.adempiere.model.InterfaceWrapperHelper;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.util.Services;
 import de.metas.vertical.pharma.model.I_C_BPartner;
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -36,13 +42,13 @@ import lombok.ToString;
 @ToString
 public final class PharmaCustomerPermissions
 {
-	public static PharmaCustomerPermissions of(final org.compiere.model.I_C_BPartner bpartner)
+	public static PharmaCustomerPermissions of(@NonNull final org.compiere.model.I_C_BPartner bpartner)
 	{
 		if (!bpartner.isCustomer())
 		{
 			return NONE;
 		}
-		
+
 		final I_C_BPartner pharmaBPartner = InterfaceWrapperHelper.create(bpartner, I_C_BPartner.class);
 
 		final ImmutableSet.Builder<PharmaCustomerPermission> permissionsBuilder = ImmutableSet.builder();
@@ -66,6 +72,10 @@ public final class PharmaCustomerPermissions
 		{
 			permissionsBuilder.add(PharmaCustomerPermission.VETERINARY_PHARMACY);
 		}
+		if (pharmaBPartner.isPharmaCustomerNarcoticsPermission())
+		{
+			permissionsBuilder.add(PharmaCustomerPermission.PHARMA_NARCOTICS);
+		}
 
 		final ImmutableSet<PharmaCustomerPermission> permissions = permissionsBuilder.build();
 		if (permissions.isEmpty())
@@ -85,11 +95,6 @@ public final class PharmaCustomerPermissions
 		this.permissions = ImmutableSet.copyOf(permissions);
 	}
 
-	public boolean hasNoPermissions()
-	{
-		return permissions.isEmpty();
-	}
-
 	public boolean hasAtLeastOnePermission()
 	{
 		return !permissions.isEmpty();
@@ -103,5 +108,28 @@ public final class PharmaCustomerPermissions
 	public boolean hasOnlyPermission(final PharmaCustomerPermission permission)
 	{
 		return permissions.size() == 1 && permissions.contains(permission);
+	}
+
+	public ITranslatableString toTrlString()
+	{
+		if (permissions.isEmpty())
+		{
+			return TranslatableStrings.anyLanguage("-");
+		}
+
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+		final TranslatableStringBuilder builder = TranslatableStrings.builder();
+		for (final PharmaCustomerPermission permission : permissions)
+		{
+			if (!builder.isEmpty())
+			{
+				builder.append(", ");
+			}
+
+			builder.append(msgBL.translatable(permission.getDisplayNameAdMessage()));
+		}
+
+		return builder.build();
 	}
 }

@@ -31,17 +31,22 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.util.TimeUtil;
 
+import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedSpiProviderService;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionHandlerDAO;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
+import de.metas.order.OrderLineId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.util.Check;
@@ -60,8 +65,10 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 		final List<T> result = new ArrayList<>();
 		for (final I_C_OrderLine orderLine : orderLines)
 		{
+			final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
+
 			final List<T> invoiceCandidates = InterfaceWrapperHelper.createList(
-					invoiceCandDAO.retrieveInvoiceCandidatesForOrderLine(orderLine),
+					invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId),
 					clazz);
 			result.addAll(invoiceCandidates);
 		}
@@ -108,7 +115,9 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 		// set values from the referencedObject's material tracking
 		//
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
-		final I_M_Material_Tracking materialTracking = materialTrackingDAO.retrieveMaterialTrackingForModel(referencedObject);
+
+		// only normal non-quality-inspection PP_Orders have >1 material tracking, and those are not referenced by invoice candidates
+		final I_M_Material_Tracking materialTracking = materialTrackingDAO.retrieveSingleMaterialTrackingForModel(referencedObject);
 		if (materialTracking == null)
 		{
 			return; // the referenced object is not linked to a tracking
@@ -119,7 +128,7 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 		icExt.setM_Material_Tracking(materialTracking);
 
 		// get the tracking's config and set its C_DocType
-		// task 09668: for "two-phase" material trackings (with downpayment and finla settlement), the packaging shall *not* be part of the invoice
+		// task 09668: for "two-phase" material tracking's (with downpayment and final settlement), the packaging shall *not* be part of the invoice
 		final IQualityBasedSpiProviderService qualityBasedSpiProviderService = Services.get(IQualityBasedSpiProviderService.class);
 		final IQualityBasedConfig config = qualityBasedSpiProviderService.getQualityBasedConfigProvider().provideConfigFor(materialTracking);
 		if (config.getOverallNumberOfInvoicings() == 1)
@@ -128,7 +137,8 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 		}
 
 		// ----------------
-		ic.setM_PricingSystem_ID(materialTracking.getC_Flatrate_Term().getM_PricingSystem_ID());
+		final I_C_Flatrate_Term flatrateTerm = Services.get(IFlatrateDAO.class).getById(materialTracking.getC_Flatrate_Term_ID());
+		ic.setM_PricingSystem_ID(flatrateTerm.getM_PricingSystem_ID());
 
 		if (!InterfaceWrapperHelper.isInstanceOf(referencedObject, I_M_InOutLine.class))
 		{
@@ -143,18 +153,20 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 		final boolean processedPLVFiltering = true; // in the material tracking context, only processed PLVs matter.
 		final I_M_PriceList_Version plv = priceListBL.getCurrentPriceListVersionOrNull(
 				PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()),
-				inOut.getC_BPartner_Location().getC_Location().getC_Country_ID(),
-				inOut.getMovementDate(),
+				CountryId.ofRepoId(inOut.getC_BPartner_Location().getC_Location().getC_Country_ID()),
+				TimeUtil.asLocalDate(inOut.getMovementDate()),
 				SOTrx.ofBoolean(inOut.isSOTrx()),
 				processedPLVFiltering);
-		ic.setM_PriceList_Version(plv);
+		ic.setM_PriceList_Version_ID(plv.getM_PriceList_Version_ID());
 	}
 
 	@Override
 	public List<I_C_Invoice_Candidate> retrieveRelatedICs(final Object model)
 	{
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
-		final I_M_Material_Tracking materialTrackingForModel = materialTrackingDAO.retrieveMaterialTrackingForModel(model);
+
+		// only normal non-quality-inspection PP_Orders have >1 material tracking, and those are not referenced by invoice candidates
+		final I_M_Material_Tracking materialTrackingForModel = materialTrackingDAO.retrieveSingleMaterialTrackingForModel(model);
 		if (materialTrackingForModel == null)
 		{
 			return Collections.emptyList();

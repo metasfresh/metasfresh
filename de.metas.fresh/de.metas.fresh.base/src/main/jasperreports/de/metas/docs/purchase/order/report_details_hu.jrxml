@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-12-19T19:09:23 -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/order/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -50,35 +49,35 @@
 			<textField>
 				<reportElement key="textField-16" x="37" y="0" width="160" height="12" forecolor="#000000" uuid="cc865de1-ba79-4626-8225-97b970793c85"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{PackingMaterial}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-19" x="434" y="0" width="33" height="12" forecolor="#000000" uuid="6f1930f9-1292-4d66-95af-bc9e25e2269b"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Price}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="402" y="0" width="40" height="12" forecolor="#000000" uuid="e89d2bd1-1b57-4f42-8d58-1c239cc401a7"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="495" y="0" width="50" height="12" forecolor="#000000" uuid="aa28c598-8cbd-430f-a499-12e047837514"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-19" x="353" y="0" width="47" height="12" forecolor="#000000" uuid="b2e0de09-003e-4fd6-92e9-51bc92bc73db"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
@@ -234,7 +233,7 @@
 			<textField>
 				<reportElement key="textField-52" mode="Transparent" x="37" y="0" width="160" height="12" forecolor="#000000" uuid="a7783f39-30e2-4c41-9e5e-0fd3626183a6"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" isItalic="false" pdfFontName="Helvetica-Oblique"/>
+					<font fontName="Arial" size="9" isBold="true" isItalic="false" pdfFontName="Helvetica-Oblique"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{TotalAmount}]]></textFieldExpression>
 			</textField>
@@ -247,7 +246,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="9" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true" isItalic="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{LINESUM_SUM}]]></textFieldExpression>
 			</textField>

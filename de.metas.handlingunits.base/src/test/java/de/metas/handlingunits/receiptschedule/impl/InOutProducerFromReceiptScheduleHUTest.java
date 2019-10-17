@@ -26,9 +26,9 @@ import static org.junit.Assert.assertThat;
  */
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -36,7 +36,6 @@ import java.util.Set;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.TimeUtil;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -48,7 +47,11 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.MailboxRepository;
+import de.metas.email.templates.MailTemplateRepository;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -60,7 +63,13 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.LotNumberQuarantineRepository;
+import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
 
 /**
  * Test creation of material receipts ({@link I_M_InOut}s) from scheduled receipts ({@link I_M_ReceiptSchedule}s) and how line aggregations are made based on products, packing and ASIs.
@@ -69,16 +78,21 @@ import de.metas.product.LotNumberQuarantineRepository;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {
-		StartupListener.class,
+		StartupListener.class, ShutdownListener.class,
+		//
 		DistributeAndMoveReceiptCreator.class,
 		LotNumberQuarantineRepository.class,
-		ShutdownListener.class })
+		//
+		MailService.class, MailboxRepository.class, MailTemplateRepository.class
+})
 public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocationWithWeightAttributeTest
 {
 	@Override
 	protected void afterInitialize()
 	{
 		super.afterInitialize();
+
+		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
 
 		final I_C_DocType docType = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_DocType.class);
 		docType.setDocBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt);
@@ -96,6 +110,14 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 		//
 		// Generate receipt
 		final I_M_InOut receipt = generateReceiptFromReceiptSchedule(paloxes);
+
+		final StockQtyAndUOMQty qtys_4300 = StockQtyAndUOMQtys.create(
+				new BigDecimal("4300"), ProductId.ofRepoId(pTomato.getM_Product_ID()),
+				new BigDecimal("4300"), UomId.ofRepoId(uomKg.getC_UOM_ID()));
+
+		final StockQtyAndUOMQty qtys_10 = StockQtyAndUOMQtys.create(
+				new BigDecimal("10"), ProductId.ofRepoId(pPaloxe.getM_Product_ID()),
+				new BigDecimal("10"), UomId.ofRepoId(uomEach.getC_UOM_ID()));
 
 		//
 		// Validate Receipt
@@ -124,11 +146,11 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 				.newHUAssignmentExpectation().hu(paloxes.get(9)).luHU(null).tuHU(null).endExpectation()
 				.newHUAssignmentExpectation().hu(paloxes.get(9)).luHU(null).tuHU(paloxes.get(9)).endExpectation()
 				//
-				.product(pTomato).movementQty("4300").noASIDescription()
+				.qtys(qtys_4300).noASIDescription()
 				.inDispute(false)
 				.endExpectation()
 			.newInOutLineExpectation()
-				.product(pPaloxe).movementQty("10").noASIDescription()
+			.qtys(qtys_10).noASIDescription()
 				.inDispute(false)
 				.endExpectation()
 			.assertExpected(receipt); // lines count expected: 2
@@ -175,6 +197,30 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 		// Generate Receipt
 		final I_M_InOut receipt = generateReceiptFromReceiptSchedule(paloxes);
 
+		final StockQtyAndUOMQty qtys_408_5 = StockQtyAndUOMQtys.create(
+				new BigDecimal("408.5000"), ProductId.ofRepoId(pTomato.getM_Product_ID()),
+				new BigDecimal("408.5000"), UomId.ofRepoId(uomKg.getC_UOM_ID()));
+
+		final StockQtyAndUOMQty qtys_21_5 = StockQtyAndUOMQtys.create(
+				new BigDecimal("21.5000"), ProductId.ofRepoId(pTomato.getM_Product_ID()),
+				new BigDecimal("21.5000"), UomId.ofRepoId(uomKg.getC_UOM_ID()));
+
+		final StockQtyAndUOMQty qtys_387 = StockQtyAndUOMQtys.create(
+				new BigDecimal("387.0000"), ProductId.ofRepoId(pTomato.getM_Product_ID()),
+				new BigDecimal("387.0000"), UomId.ofRepoId(uomKg.getC_UOM_ID()));
+
+		final StockQtyAndUOMQty qtys_43 = StockQtyAndUOMQtys.create(
+				new BigDecimal("43.0000"), ProductId.ofRepoId(pTomato.getM_Product_ID()),
+				new BigDecimal("43.0000"), UomId.ofRepoId(uomKg.getC_UOM_ID()));
+
+		final StockQtyAndUOMQty qtys_433_x_8 = StockQtyAndUOMQtys.create(
+				new BigDecimal(430 * 8), ProductId.ofRepoId(pTomato.getM_Product_ID()),
+				new BigDecimal(430 * 8), UomId.ofRepoId(uomKg.getC_UOM_ID()));
+
+		final StockQtyAndUOMQty qtys_10 = StockQtyAndUOMQtys.create(
+				new BigDecimal("10"), ProductId.ofRepoId(pPaloxe.getM_Product_ID()),
+				new BigDecimal("10"), UomId.ofRepoId(uomEach.getC_UOM_ID()));
+
 		//
 		// Validate generated receipt
 		// @formatter:off
@@ -186,7 +232,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 					.referencesPackagingMaterialLineIdx(5) // does reference the 6th iol
 					//
 					.packagingmaterialLine(false)  // is not a packaging material line
-					.product(pTomato).movementQty("408.5000")
+					.qtys(qtys_408_5)
 					.noASIDescription()
 					.noQualityDiscountPercent().noQualityNote()
 					.inDispute(false)
@@ -197,7 +243,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 					.referencesPackagingMaterialLineIdx(0) // does *not* reference packaging iol, because it has no HUs
 					//
 					.packagingmaterialLine(false)  // is not a packaging material line
-					.product(pTomato).movementQty("21.5000")
+					.qtys(qtys_21_5)
 					.noASIDescription()
 					.qualityDiscountPercent("5").qualityNote(HUTestHelper.QUALITYNOTICE_Test1)
 					.inDispute(true)
@@ -210,7 +256,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 					.referencesPackagingMaterialLineIdx(5) // does reference the 6th iol
 					//
 					.packagingmaterialLine(false)  // is not a packaging material line
-					.product(pTomato).movementQty("387.0000")
+					.qtys(qtys_387)
 					.noASIDescription()
 					.noQualityDiscountPercent().noQualityNote()
 					.inDispute(false)
@@ -221,7 +267,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 					.referencesPackagingMaterialLineIdx(0) // does *not* reference packaging iol, because it has no HUs
 					//
 					.packagingmaterialLine(false)  // is not a packaging material line
-					.product(pTomato).movementQty("43.0000")
+					.qtys(qtys_43)
 					.noASIDescription()
 					.qualityDiscountPercent("10").qualityNote(HUTestHelper.QUALITYNOTICE_Test2)
 					.inDispute(true)
@@ -248,8 +294,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 					.referencesPackagingMaterialLineIdx(5) // does reference the 6th iol
 					//
 					.packagingmaterialLine(false)  // is not a packaging material line
-					.product(pTomato)
-					.movementQty(430 * 8)
+					.qtys(qtys_433_x_8)
 					.noASIDescription()
 					.noQualityDiscountPercent()
 					.noQualityNote()
@@ -260,7 +305,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 					.referencesPackagingMaterialLineIdx(0) // is packaging material and does not reference another packing material line
 					//
 					.packagingmaterialLine(true)
-					.product(pPaloxe).movementQty("10").noASIDescription()
+					.qtys(qtys_10).noASIDescription()
 					.noQualityDiscountPercent().noQualityNote()
 					.endExpectation()
 				//
@@ -310,6 +355,18 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 		// Process receipt schedules and get the resulting Receipt document
 		final I_M_InOut receipt = generateReceiptFromReceiptSchedule(paloxes);
 
+		final StockQtyAndUOMQty qtys_4235_75 = StockQtyAndUOMQtys.create(
+				new BigDecimal("4235.75") /* 4450(total) - QtyWithIssues */, ProductId.ofRepoId(pTomato.getM_Product_ID()),
+				new BigDecimal("4235.75"), UomId.ofRepoId(uomKg.getC_UOM_ID()));
+
+		final StockQtyAndUOMQty qtys_64_25 = StockQtyAndUOMQtys.create(
+				new BigDecimal("64.25") /* 435*5% + 425*10% */, ProductId.ofRepoId(pTomato.getM_Product_ID()),
+				new BigDecimal("64.25"), UomId.ofRepoId(uomKg.getC_UOM_ID()));
+
+		final StockQtyAndUOMQty qtys_10 = StockQtyAndUOMQtys.create(
+				new BigDecimal("10"), ProductId.ofRepoId(pPaloxe.getM_Product_ID()),
+				new BigDecimal("10"), UomId.ofRepoId(uomEach.getC_UOM_ID()));
+
 		//
 		// Validate generated receipt
 		// @formatter:off
@@ -337,24 +394,21 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 					.newHUAssignmentExpectation().hu(paloxes.get(9)).luHU(null).tuHU(null).endExpectation()
 					.newHUAssignmentExpectation().hu(paloxes.get(9)).luHU(null).tuHU(paloxes.get(9)).endExpectation()
 					//
-					.product(pTomato)
-					.movementQty("4235.75") // = 4450(total) - QtyWithIssues
+					.qtys(qtys_4235_75)
 					.noQualityDiscountPercent()
 					.noASIDescription()
 					.inDispute(false)
 					.endExpectation()
 				.newInOutLineExpectation()// Quality issue: NOK
 					.qtyEnteredTU(0)
-					.product(pTomato)
-					.movementQty("64.25") // = 435*5% + 425*10%
+					.qtys(qtys_64_25)
 					.qualityDiscountPercent("1.49") // = 64.25 / 4235.75 * 100 = 1.4941860465
 					.noASIDescription()
 					.inDispute(true)
 					.endExpectation()
 				.newInOutLineExpectation() // Packing materials line
 					.qtyEnteredTU(0)
-					.product(pPaloxe)
-					.movementQty("10")
+					.qtys(qtys_10)
 					.noQualityDiscountPercent()
 					.noASIDescription()
 					.inDispute(false)
@@ -373,8 +427,8 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	{
 		final List<I_M_HU> paloxes = createStandardHUsAndAssignThemToTheReceiptSchedule();
 
-		final Date lotNumberDate1 = TimeUtil.getDay(2016, 01, 22);
-		final Date lotNumberDate2 = TimeUtil.getDay(2016, 01, 23);
+		final LocalDate lotNumberDate1 = LocalDate.of(2016, 01, 22);
+		final LocalDate lotNumberDate2 = LocalDate.of(2016, 01, 23);
 
 		//
 		// Set attributes:
@@ -382,13 +436,14 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 			for (int i = 0; i < 10; i++)
 			{
 				final I_M_HU paloxe = paloxes.get(i);
-				final Date lotNumberDate = i <= 4 ? lotNumberDate1 : lotNumberDate2;
-				final IAttributeStorage as = attributeStorageFactory.getAttributeStorage(paloxe);
-				as.setValue(attr_LotNumberDate, lotNumberDate);
-				as.saveChangesIfNeeded();
+				final LocalDate lotNumberDate = i <= 4 ? lotNumberDate1 : lotNumberDate2;
+				final IAttributeStorage atributeStorage = attributeStorageFactory.getAttributeStorage(paloxe);
+				atributeStorage.setValue(attr_LotNumberDate, lotNumberDate);
+				atributeStorage.saveChangesIfNeeded();
 				HUAttributeExpectation.newExpectation()
-						.attribute(attr_LotNumberDate).valueDate(lotNumberDate)
-						.assertExpected("precondition: AS for paloxe", as);
+						.attribute(attr_LotNumberDate)
+						.valueDate(lotNumberDate)
+						.assertExpected("precondition: AS for paloxe", atributeStorage);
 			}
 			// FIXME: workaround to make sure our changes are pushed back to database
 			helper.commitThreadInheritedTrx(huContext);
@@ -398,6 +453,14 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 		// Generate receipt
 		final I_M_InOut receipt = generateReceiptFromReceiptSchedule(paloxes);
 
+		final StockQtyAndUOMQty qtys_2150 = StockQtyAndUOMQtys.create(
+				new BigDecimal(4300 / 2), ProductId.ofRepoId(pTomato.getM_Product_ID()),
+				new BigDecimal(4300 / 2), UomId.ofRepoId(uomKg.getC_UOM_ID()));
+
+		final StockQtyAndUOMQty qtys_10 = StockQtyAndUOMQtys.create(
+				new BigDecimal("10"), ProductId.ofRepoId(pPaloxe.getM_Product_ID()),
+				new BigDecimal("10"), UomId.ofRepoId(uomEach.getC_UOM_ID()));
+
 		//
 		// Validate Receipt
 		//@formatter:off
@@ -405,19 +468,19 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 			.newInOutLineExpectation()
 				.qtyEnteredTU(10 / 2)
 				//
-				.product(pTomato).movementQty(4300 / 2)
+				.qtys(qtys_2150)
 				.inDispute(false)
 				.attribute(attr_LotNumberDate, lotNumberDate1)
 				.endExpectation()
 			.newInOutLineExpectation()
 				.qtyEnteredTU(10 / 2)
 				//
-				.product(pTomato).movementQty(4300 / 2)
+				.qtys(qtys_2150)
 				.inDispute(false)
 				.attribute(attr_LotNumberDate, lotNumberDate2)
 				.endExpectation()
 			.newInOutLineExpectation()
-				.product(pPaloxe).movementQty(10)
+				.qtys(qtys_10)
 				.inDispute(false)
 				.endExpectation()
 			.assertExpected(receipt); // lines count expected: 3

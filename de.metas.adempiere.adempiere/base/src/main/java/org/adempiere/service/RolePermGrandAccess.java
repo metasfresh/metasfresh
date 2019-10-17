@@ -1,8 +1,9 @@
 package org.adempiere.service;
 
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
+import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Form;
@@ -16,16 +17,27 @@ import org.compiere.model.X_C_Invoice;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import com.google.common.base.Preconditions;
-
 import ch.qos.logback.classic.Level;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
+import de.metas.security.IRoleDAO;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.Role;
+import de.metas.security.RoleId;
+import de.metas.security.requests.CreateDocActionAccessRequest;
+import de.metas.security.requests.CreateFormAccessRequest;
+import de.metas.security.requests.CreateProcessAccessRequest;
+import de.metas.security.requests.CreateTaskAccessRequest;
+import de.metas.security.requests.CreateWindowAccessRequest;
+import de.metas.security.requests.CreateWorkflowAccessRequest;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -55,7 +67,7 @@ import lombok.experimental.UtilityClass;
 public class RolePermGrandAccess
 {
 	private static final Logger logger = LogManager.getLogger(RolePermGrandAccess.class);
-	
+
 	public void grantAccess(@NonNull final I_AD_Role_PermRequest request)
 	{
 		if (request.getAD_Window_ID() > 0)
@@ -92,25 +104,44 @@ public class RolePermGrandAccess
 
 	private void grantWindowAccess(@NonNull final I_AD_Role_PermRequest request)
 	{
-		final int AD_Window_ID = request.getAD_Window_ID();
+		final AdWindowId adWindowId = AdWindowId.ofRepoId(request.getAD_Window_ID());
 
-		Preconditions.checkArgument(AD_Window_ID > 0, "invalid AD_Window_ID");
-		final I_AD_Window window = InterfaceWrapperHelper.loadOutOfTrx(AD_Window_ID, I_AD_Window.class);
+		final RoleId roleId = RoleId.ofRepoId(request.getAD_Role_ID());
+		final Role role = Services.get(IRoleDAO.class).getById(roleId);
 
-		Services.get(IUserRolePermissionsDAO.class).createWindowAccess(request.getAD_Role(), AD_Window_ID, request.isReadWrite());
-		logGranted(I_AD_Window.COLUMNNAME_AD_Window_ID, window.getName());
+		Services.get(IUserRolePermissionsDAO.class)
+				.createWindowAccess(CreateWindowAccessRequest.builder()
+						.roleId(role.getId())
+						.clientId(role.getClientId())
+						.orgId(role.getOrgId())
+						.adWindowId(adWindowId)
+						.readWrite(request.isReadWrite())
+						.build());
+
+		final ITranslatableString windowName = Services.get(IADWindowDAO.class).retrieveWindowName(adWindowId);
+		logGranted(I_AD_Window.COLUMNNAME_AD_Window_ID, windowName);
 	}
 
 	private void grantProcessAccess(@NonNull final I_AD_Role_PermRequest request)
 	{
-		final int AD_Process_ID = request.getAD_Process_ID();
+		final AdProcessId processId = AdProcessId.ofRepoId(request.getAD_Process_ID());
+
+		final RoleId roleId = RoleId.ofRepoId(request.getAD_Role_ID());
+		final Role role = Services.get(IRoleDAO.class).getById(roleId);
 
 		request.setIsReadWrite(true); // we always need read write access to processes
 
-		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-		final I_AD_Process adProcess = adProcessDAO.getById(AD_Process_ID);
+		Services.get(IUserRolePermissionsDAO.class)
+				.createProcessAccess(CreateProcessAccessRequest.builder()
+						.roleId(role.getId())
+						.clientId(role.getClientId())
+						.orgId(role.getOrgId())
+						.adProcessId(processId)
+						.readWrite(request.isReadWrite())
+						.build());
 
-		Services.get(IUserRolePermissionsDAO.class).createProcessAccess(request.getAD_Role(), AD_Process_ID, request.isReadWrite());
+		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+		final I_AD_Process adProcess = adProcessDAO.getById(processId);
 		logGranted(I_AD_Process.COLUMNNAME_AD_Process_ID, adProcess.getName());
 
 		//
@@ -129,8 +160,19 @@ public class RolePermGrandAccess
 	{
 		final int AD_Form_ID = request.getAD_Form_ID();
 
+		final RoleId roleId = RoleId.ofRepoId(request.getAD_Role_ID());
+		final Role role = Services.get(IRoleDAO.class).getById(roleId);
+
+		Services.get(IUserRolePermissionsDAO.class)
+				.createFormAccess(CreateFormAccessRequest.builder()
+						.roleId(role.getId())
+						.clientId(role.getClientId())
+						.orgId(role.getOrgId())
+						.adFormId(AD_Form_ID)
+						.readWrite(request.isReadWrite())
+						.build());
+
 		final I_AD_Form form = InterfaceWrapperHelper.loadOutOfTrx(AD_Form_ID, I_AD_Form.class);
-		Services.get(IUserRolePermissionsDAO.class).createFormAccess(request.getAD_Role(), AD_Form_ID, request.isReadWrite());
 		logGranted(I_AD_Form.COLUMNNAME_AD_Form_ID, form.getName());
 	}
 
@@ -138,32 +180,71 @@ public class RolePermGrandAccess
 	{
 		final int AD_Workflow_ID = request.getAD_Workflow_ID();
 
+		final RoleId roleId = RoleId.ofRepoId(request.getAD_Role_ID());
+		final Role role = Services.get(IRoleDAO.class).getById(roleId);
+
+		Services.get(IUserRolePermissionsDAO.class)
+				.createWorkflowAccess(CreateWorkflowAccessRequest.builder()
+						.roleId(role.getId())
+						.clientId(role.getClientId())
+						.orgId(role.getOrgId())
+						.adWorkflowId(AD_Workflow_ID)
+						.readWrite(request.isReadWrite())
+						.build());
+
 		final I_AD_Workflow wf = InterfaceWrapperHelper.loadOutOfTrx(AD_Workflow_ID, I_AD_Workflow.class);
-		Services.get(IUserRolePermissionsDAO.class).createWorkflowAccess(request.getAD_Role(), AD_Workflow_ID, request.isReadWrite());
 		logGranted(I_AD_Workflow.COLUMNNAME_AD_Workflow_ID, wf.getName());
 	}
 
 	private void grantTaskAccess(@NonNull final I_AD_Role_PermRequest request)
 	{
 		final int AD_Task_ID = request.getAD_Task_ID();
+
+		final RoleId roleId = RoleId.ofRepoId(request.getAD_Role_ID());
+		final Role role = Services.get(IRoleDAO.class).getById(roleId);
+
+		Services.get(IUserRolePermissionsDAO.class)
+				.createTaskAccess(CreateTaskAccessRequest.builder()
+						.roleId(role.getId())
+						.clientId(role.getClientId())
+						.orgId(role.getOrgId())
+						.adTaskId(AD_Task_ID)
+						.readWrite(request.isReadWrite())
+						.build());
+
 		final I_AD_Task task = InterfaceWrapperHelper.loadOutOfTrx(AD_Task_ID, I_AD_Task.class);
-		Services.get(IUserRolePermissionsDAO.class).createTaskAccess(request.getAD_Role(), AD_Task_ID, request.isReadWrite());
 		logGranted(I_AD_Task.COLUMNNAME_AD_Task_ID, task.getName());
 	}
 
 	private void grantDocActionAccess(@NonNull final I_AD_Role_PermRequest request)
 	{
-		final int C_DocType_ID = request.getC_DocType_ID();
+		final DocTypeId docTypeId = DocTypeId.ofRepoId(request.getC_DocType_ID());
 		final String docAction = request.getDocAction();
-
-		final I_C_DocType docType = InterfaceWrapperHelper.loadOutOfTrx(C_DocType_ID, I_C_DocType.class);
 
 		final ADRefListItem docActionItem = Services.get(IADReferenceDAO.class).retrieveListItemOrNull(X_C_Invoice.DOCACTION_AD_Reference_ID, docAction);
 		Check.assumeNotNull(docActionItem, "docActionItem is missing for {}", docAction);
 		final int docActionRefListId = docActionItem.getRefListId();
 
-		Services.get(IUserRolePermissionsDAO.class).createDocumentActionAccess(request.getAD_Role(), C_DocType_ID, docActionRefListId);
+		final RoleId roleId = RoleId.ofRepoId(request.getAD_Role_ID());
+		final Role role = Services.get(IRoleDAO.class).getById(roleId);
+
+		Services.get(IUserRolePermissionsDAO.class)
+				.createDocumentActionAccess(CreateDocActionAccessRequest.builder()
+						.roleId(role.getId())
+						.clientId(role.getClientId())
+						.orgId(role.getOrgId())
+						.docTypeId(docTypeId)
+						.docActionRefListId(docActionRefListId)
+						.readWrite(request.isReadWrite())
+						.build());
+
+		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
 		logGranted(I_C_DocType.COLUMNNAME_C_DocType_ID, docType.getName() + "/" + docAction);
+	}
+
+	private void logGranted(final String type, final ITranslatableString name)
+	{
+		logGranted(type, name.translate(Env.getAD_Language()));
 	}
 
 	private void logGranted(final String type, final String name)

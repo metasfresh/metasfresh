@@ -14,6 +14,7 @@ import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -79,7 +80,7 @@ public final class DocumentUserNotificationsProducer<ModelType>
 	 * @param document
 	 * @param recipientUserId
 	 */
-	public DocumentUserNotificationsProducer<ModelType> notify(final ModelType document, final int recipientUserId)
+	public DocumentUserNotificationsProducer<ModelType> notify(final ModelType document, final UserId recipientUserId)
 	{
 		if (document == null)
 		{
@@ -98,21 +99,21 @@ public final class DocumentUserNotificationsProducer<ModelType>
 		return this;
 	}
 
-	private final UserNotificationRequest createUserNotification(@NonNull final ModelType document, final int recipientUserId)
+	private final UserNotificationRequest createUserNotification(@NonNull final ModelType document, final UserId recipientUserId)
 	{
 		Check.assumeNotNull(document, "document not null");
 
 		//
 		// Get the recipient
-		final int recipientUserIdToUse;
-		if (recipientUserId > 0)
+		final UserId recipientUserIdToUse;
+		if (recipientUserId != null)
 		{
 			recipientUserIdToUse = recipientUserId;
 		}
 		else
 		{
 			recipientUserIdToUse = extractRecipientUser(document);
-			if (recipientUserIdToUse < 0)
+			if (recipientUserIdToUse == null)
 			{
 				throw new AdempiereException("No recipient found for " + document);
 			}
@@ -144,10 +145,10 @@ public final class DocumentUserNotificationsProducer<ModelType>
 		return params != null ? params : ImmutableList.of();
 	}
 
-	private int extractRecipientUser(final ModelType document)
+	private UserId extractRecipientUser(final ModelType document)
 	{
 		final Integer createdBy = InterfaceWrapperHelper.getValueOrNull(document, "CreatedBy");
-		return createdBy == null ? -1 : createdBy;
+		return createdBy == null ? null : UserId.ofRepoIdOrNull(createdBy);
 	}
 
 	private void postNotification(final UserNotificationRequest notification)

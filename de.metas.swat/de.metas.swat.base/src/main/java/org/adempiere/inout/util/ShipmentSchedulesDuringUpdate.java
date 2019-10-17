@@ -1,7 +1,5 @@
 package org.adempiere.inout.util;
 
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -33,6 +31,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -45,12 +44,10 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.shipping.ShipperId;
+import lombok.NonNull;
 
 /**
- * Helper class to manage the shipments that might actually be created in the end.
- *
- * @author ts
- *
+ * Helper class to manage the shipments (a.k.a {@link DeliveryGroupCandidate}s) that might actually be created in the end.
  */
 public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUpdate
 {
@@ -101,9 +98,12 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 		orderKey2Candidate.put(orderKey, deliveryGroupCandidate);
 	}
 
-	private static ArrayKey createOrderKey(final Integer groupId, final WarehouseId warehouseId, final String bpartnerAddress)
+	private static ArrayKey createOrderKey(
+			final DeliveryGroupCandidateGroupId groupId,
+			final WarehouseId warehouseId,
+			final String bpartnerAddress)
 	{
-		return Util.mkKey(bpartnerAddress, warehouseId, groupId);
+		return ArrayKey.of(bpartnerAddress, warehouseId, groupId);
 	}
 
 	@Override
@@ -179,12 +179,10 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	}
 
 	/**
-	 *
 	 * @param shipperId
 	 * @param bPartNerLocationId
 	 * @return the inOut with the given parameters
 	 * @throws IllegalStateException if no inOut with the given bPartnerLocationId and shipperId has been added
-	 *
 	 */
 	@Override
 	public DeliveryGroupCandidate getInOutForShipper(
@@ -203,12 +201,15 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	}
 
 	@Override
-	public DeliveryGroupCandidate getInOutForOrderId(
-			final int groupId,
+	public DeliveryGroupCandidate getInOutForRecordRef(
+			final TableRecordReference tableRecordRef,
 			final WarehouseId warehouseId,
 			final String bpartnerAddress)
 	{
-		final ArrayKey key = createOrderKey(groupId, warehouseId, bpartnerAddress);
+		final ArrayKey key = createOrderKey(
+				DeliveryGroupCandidateGroupId.of(tableRecordRef),
+				warehouseId,
+				bpartnerAddress);
 		final DeliveryGroupCandidate inOut = orderKey2Candidate.get(key);
 		return inOut;
 	}

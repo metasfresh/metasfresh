@@ -32,8 +32,6 @@ public interface I_C_OrderLine
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_AD_Client>(I_C_OrderLine.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -43,7 +41,7 @@ public interface I_C_OrderLine
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -53,15 +51,11 @@ public interface I_C_OrderLine
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_AD_Org>(I_C_OrderLine.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
@@ -88,17 +82,38 @@ public interface I_C_OrderLine
 	 */
 	public int getAD_OrgTrx_ID();
 
-	public org.compiere.model.I_AD_Org getAD_OrgTrx();
-
-	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx);
-
     /** Column definition for AD_OrgTrx_ID */
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_AD_Org> COLUMN_AD_OrgTrx_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_AD_Org>(I_C_OrderLine.class, "AD_OrgTrx_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_OrgTrx_ID */
     public static final String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
 
 	/**
-	 * Set Base_PricingSystem_ID.
+	 * Set Ansprechpartner.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_User_ID (int AD_User_ID);
+
+	/**
+	 * Get Ansprechpartner.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_User_ID();
+
+    /** Column definition for AD_User_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_AD_User> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_AD_User>(I_C_OrderLine.class, "AD_User_ID", org.compiere.model.I_AD_User.class);
+    /** Column name AD_User_ID */
+    public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
+
+	/**
+	 * Set Preissystem.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -107,7 +122,7 @@ public interface I_C_OrderLine
 	public void setBase_PricingSystem_ID (int Base_PricingSystem_ID);
 
 	/**
-	 * Get Base_PricingSystem_ID.
+	 * Get Preissystem.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -115,14 +130,33 @@ public interface I_C_OrderLine
 	 */
 	public int getBase_PricingSystem_ID();
 
-	public org.compiere.model.I_M_PricingSystem getBase_PricingSystem();
-
-	public void setBase_PricingSystem(org.compiere.model.I_M_PricingSystem Base_PricingSystem);
-
     /** Column definition for Base_PricingSystem_ID */
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_PricingSystem> COLUMN_Base_PricingSystem_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_PricingSystem>(I_C_OrderLine.class, "Base_PricingSystem_ID", org.compiere.model.I_M_PricingSystem.class);
     /** Column name Base_PricingSystem_ID */
     public static final String COLUMNNAME_Base_PricingSystem_ID = "Base_PricingSystem_ID";
+
+	/**
+	 * Set Anschrift-Text.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBPartnerAddress (java.lang.String BPartnerAddress);
+
+	/**
+	 * Get Anschrift-Text.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getBPartnerAddress();
+
+    /** Column definition for BPartnerAddress */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_BPartnerAddress = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "BPartnerAddress", null);
+    /** Column name BPartnerAddress */
+    public static final String COLUMNNAME_BPartnerAddress = "BPartnerAddress";
 
 	/**
 	 * Set Kostenstelle.
@@ -143,10 +177,6 @@ public interface I_C_OrderLine
 	 * <br>Virtual Column: false
 	 */
 	public int getC_Activity_ID();
-
-	public org.compiere.model.I_C_Activity getC_Activity();
-
-	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity);
 
     /** Column definition for C_Activity_ID */
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Activity> COLUMN_C_Activity_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Activity>(I_C_OrderLine.class, "C_Activity_ID", org.compiere.model.I_C_Activity.class);
@@ -173,10 +203,6 @@ public interface I_C_OrderLine
 	 */
 	public int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
     /** Column definition for C_BPartner_ID */
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_BPartner>(I_C_OrderLine.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
@@ -201,10 +227,6 @@ public interface I_C_OrderLine
 	 * <br>Virtual Column: false
 	 */
 	public int getC_BPartner_Location_ID();
-
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location();
-
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location);
 
     /** Column definition for C_BPartner_Location_ID */
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_BPartner_Location>(I_C_OrderLine.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
@@ -260,10 +282,6 @@ public interface I_C_OrderLine
 	 */
 	public int getC_Charge_ID();
 
-	public org.compiere.model.I_C_Charge getC_Charge();
-
-	public void setC_Charge(org.compiere.model.I_C_Charge C_Charge);
-
     /** Column definition for C_Charge_ID */
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Charge> COLUMN_C_Charge_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Charge>(I_C_OrderLine.class, "C_Charge_ID", org.compiere.model.I_C_Charge.class);
     /** Column name C_Charge_ID */
@@ -315,10 +333,6 @@ public interface I_C_OrderLine
 	 * <br>Virtual Column: false
 	 */
 	public int getC_Currency_ID();
-
-	public org.compiere.model.I_C_Currency getC_Currency();
-
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
 
     /** Column definition for C_Currency_ID */
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Currency>(I_C_OrderLine.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
@@ -426,10 +440,6 @@ public interface I_C_OrderLine
 	 */
 	public int getC_PaymentTerm_Override_ID();
 
-	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm_Override();
-
-	public void setC_PaymentTerm_Override(org.compiere.model.I_C_PaymentTerm C_PaymentTerm_Override);
-
     /** Column definition for C_PaymentTerm_Override_ID */
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_PaymentTerm> COLUMN_C_PaymentTerm_Override_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_PaymentTerm>(I_C_OrderLine.class, "C_PaymentTerm_Override_ID", org.compiere.model.I_C_PaymentTerm.class);
     /** Column name C_PaymentTerm_Override_ID */
@@ -454,10 +464,6 @@ public interface I_C_OrderLine
 	 * <br>Virtual Column: false
 	 */
 	public int getC_Project_ID();
-
-	public org.compiere.model.I_C_Project getC_Project();
-
-	public void setC_Project(org.compiere.model.I_C_Project C_Project);
 
     /** Column definition for C_Project_ID */
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Project> COLUMN_C_Project_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Project>(I_C_OrderLine.class, "C_Project_ID", org.compiere.model.I_C_Project.class);
@@ -523,6 +529,81 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_C_ProjectTask_ID = "C_ProjectTask_ID";
 
 	/**
+	 * Set Steuer.
+	 * Tax identifier
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Tax_ID (int C_Tax_ID);
+
+	/**
+	 * Get Steuer.
+	 * Tax identifier
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Tax_ID();
+
+    /** Column definition for C_Tax_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Tax> COLUMN_C_Tax_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Tax>(I_C_OrderLine.class, "C_Tax_ID", org.compiere.model.I_C_Tax.class);
+    /** Column name C_Tax_ID */
+    public static final String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
+
+	/**
+	 * Set Steuerkategorie.
+	 * Steuerkategorie
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_TaxCategory_ID (int C_TaxCategory_ID);
+
+	/**
+	 * Get Steuerkategorie.
+	 * Steuerkategorie
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_TaxCategory_ID();
+
+    /** Column definition for C_TaxCategory_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_TaxCategory> COLUMN_C_TaxCategory_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_TaxCategory>(I_C_OrderLine.class, "C_TaxCategory_ID", org.compiere.model.I_C_TaxCategory.class);
+    /** Column name C_TaxCategory_ID */
+    public static final String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
+
+	/**
+	 * Set Maßeinheit.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_UOM>(I_C_OrderLine.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Date this record was created
 	 *
@@ -551,93 +632,6 @@ public interface I_C_OrderLine
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_AD_User>(I_C_OrderLine.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Steuerkategorie.
-	 * Steuerkategorie
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_TaxCategory_ID (int C_TaxCategory_ID);
-
-	/**
-	 * Get Steuerkategorie.
-	 * Steuerkategorie
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_TaxCategory_ID();
-
-	public org.compiere.model.I_C_TaxCategory getC_TaxCategory();
-
-	public void setC_TaxCategory(org.compiere.model.I_C_TaxCategory C_TaxCategory);
-
-    /** Column definition for C_TaxCategory_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_TaxCategory> COLUMN_C_TaxCategory_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_TaxCategory>(I_C_OrderLine.class, "C_TaxCategory_ID", org.compiere.model.I_C_TaxCategory.class);
-    /** Column name C_TaxCategory_ID */
-    public static final String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
-
-	/**
-	 * Set Steuer.
-	 * Tax identifier
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_Tax_ID (int C_Tax_ID);
-
-	/**
-	 * Get Steuer.
-	 * Tax identifier
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_Tax_ID();
-
-	public org.compiere.model.I_C_Tax getC_Tax();
-
-	public void setC_Tax(org.compiere.model.I_C_Tax C_Tax);
-
-    /** Column definition for C_Tax_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Tax> COLUMN_C_Tax_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Tax>(I_C_OrderLine.class, "C_Tax_ID", org.compiere.model.I_C_Tax.class);
-    /** Column name C_Tax_ID */
-    public static final String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
-
-	/**
-	 * Set Maßeinheit.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_UOM>(I_C_OrderLine.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Lieferdatum.
@@ -957,6 +951,31 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_GroupCompensationType = "GroupCompensationType";
 
 	/**
+	 * Set Abr. Menge basiert auf.
+	 * Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setInvoicableQtyBasedOn (java.lang.String InvoicableQtyBasedOn);
+
+	/**
+	 * Get Abr. Menge basiert auf.
+	 * Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getInvoicableQtyBasedOn();
+
+    /** Column definition for InvoicableQtyBasedOn */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_InvoicableQtyBasedOn = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "InvoicableQtyBasedOn", null);
+    /** Column name InvoicableQtyBasedOn */
+    public static final String COLUMNNAME_InvoicableQtyBasedOn = "InvoicableQtyBasedOn";
+
+	/**
 	 * Set Aktiv.
 	 * The record is active in the system
 	 *
@@ -1078,6 +1097,31 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_IsIndividualDescription = "IsIndividualDescription";
 
 	/**
+	 * Set Manueller Rabatt.
+	 * Ein Rabatt, der von Hand eingetragen wurde, wird vom Provisionssystem nicht überschrieben
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsManualDiscount (boolean IsManualDiscount);
+
+	/**
+	 * Get Manueller Rabatt.
+	 * Ein Rabatt, der von Hand eingetragen wurde, wird vom Provisionssystem nicht überschrieben
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isManualDiscount();
+
+    /** Column definition for IsManualDiscount */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_IsManualDiscount = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "IsManualDiscount", null);
+    /** Column name IsManualDiscount */
+    public static final String COLUMNNAME_IsManualDiscount = "IsManualDiscount";
+
+	/**
 	 * Set Manuelle Zahlungsbedingung.
 	 * Die Zahlungsbedingung wurde vom Nutzer ausgewählt und soll nicht durch das System überschrieben werden
 	 *
@@ -1124,6 +1168,29 @@ public interface I_C_OrderLine
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_IsManualPrice = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "IsManualPrice", null);
     /** Column name IsManualPrice */
     public static final String COLUMNNAME_IsManualPrice = "IsManualPrice";
+
+	/**
+	 * Set Verpackungsmaterial.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setIsPackagingMaterial (boolean IsPackagingMaterial);
+
+	/**
+	 * Get Verpackungsmaterial.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public boolean isPackagingMaterial();
+
+    /** Column definition for IsPackagingMaterial */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_IsPackagingMaterial = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "IsPackagingMaterial", null);
+    /** Column name IsPackagingMaterial */
+    public static final String COLUMNNAME_IsPackagingMaterial = "IsPackagingMaterial";
 
 	/**
 	 * Set Price Editable.
@@ -1195,6 +1262,29 @@ public interface I_C_OrderLine
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_IsTempPricingConditions = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "IsTempPricingConditions", null);
     /** Column name IsTempPricingConditions */
     public static final String COLUMNNAME_IsTempPricingConditions = "IsTempPricingConditions";
+
+	/**
+	 * Set Benutze abw. Adresse.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setIsUseBPartnerAddress (boolean IsUseBPartnerAddress);
+
+	/**
+	 * Get Benutze abw. Adresse.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public boolean isUseBPartnerAddress();
+
+    /** Column definition for IsUseBPartnerAddress */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_IsUseBPartnerAddress = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "IsUseBPartnerAddress", null);
+    /** Column name IsUseBPartnerAddress */
+    public static final String COLUMNNAME_IsUseBPartnerAddress = "IsUseBPartnerAddress";
 
 	/**
 	 * Set Zeile Nr..
@@ -1305,35 +1395,6 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Discount Schema Break.
-	 * Trade Discount Break
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_DiscountSchemaBreak_ID (int M_DiscountSchemaBreak_ID);
-
-	/**
-	 * Get Discount Schema Break.
-	 * Trade Discount Break
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_DiscountSchemaBreak_ID();
-
-	public org.compiere.model.I_M_DiscountSchemaBreak getM_DiscountSchemaBreak();
-
-	public void setM_DiscountSchemaBreak(org.compiere.model.I_M_DiscountSchemaBreak M_DiscountSchemaBreak);
-
-    /** Column definition for M_DiscountSchemaBreak_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_DiscountSchemaBreak> COLUMN_M_DiscountSchemaBreak_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_DiscountSchemaBreak>(I_C_OrderLine.class, "M_DiscountSchemaBreak_ID", org.compiere.model.I_M_DiscountSchemaBreak.class);
-    /** Column name M_DiscountSchemaBreak_ID */
-    public static final String COLUMNNAME_M_DiscountSchemaBreak_ID = "M_DiscountSchemaBreak_ID";
-
-	/**
 	 * Set Rabatt Schema.
 	 * Schema um den prozentualen Rabatt zu berechnen
 	 *
@@ -1363,6 +1424,83 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_M_DiscountSchema_ID = "M_DiscountSchema_ID";
 
 	/**
+	 * Set Discount Schema Break.
+	 * Trade Discount Break
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_DiscountSchemaBreak_ID (int M_DiscountSchemaBreak_ID);
+
+	/**
+	 * Get Discount Schema Break.
+	 * Trade Discount Break
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_DiscountSchemaBreak_ID();
+
+	public org.compiere.model.I_M_DiscountSchemaBreak getM_DiscountSchemaBreak();
+
+	public void setM_DiscountSchemaBreak(org.compiere.model.I_M_DiscountSchemaBreak M_DiscountSchemaBreak);
+
+    /** Column definition for M_DiscountSchemaBreak_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_DiscountSchemaBreak> COLUMN_M_DiscountSchemaBreak_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_DiscountSchemaBreak>(I_C_OrderLine.class, "M_DiscountSchemaBreak_ID", org.compiere.model.I_M_DiscountSchemaBreak.class);
+    /** Column name M_DiscountSchemaBreak_ID */
+    public static final String COLUMNNAME_M_DiscountSchemaBreak_ID = "M_DiscountSchemaBreak_ID";
+
+	/**
+	 * Set Version Preisliste.
+	 * Bezeichnet eine einzelne Version der Preisliste
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_PriceList_Version_ID (int M_PriceList_Version_ID);
+
+	/**
+	 * Get Version Preisliste.
+	 * Bezeichnet eine einzelne Version der Preisliste
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_PriceList_Version_ID();
+
+    /** Column definition for M_PriceList_Version_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_PriceList_Version> COLUMN_M_PriceList_Version_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_PriceList_Version>(I_C_OrderLine.class, "M_PriceList_Version_ID", org.compiere.model.I_M_PriceList_Version.class);
+    /** Column name M_PriceList_Version_ID */
+    public static final String COLUMNNAME_M_PriceList_Version_ID = "M_PriceList_Version_ID";
+
+	/**
+	 * Set Produktnotiz.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	public void setM_Product_DocumentNote (java.lang.String M_Product_DocumentNote);
+
+	/**
+	 * Get Produktnotiz.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	public java.lang.String getM_Product_DocumentNote();
+
+    /** Column definition for M_Product_DocumentNote */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_M_Product_DocumentNote = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "M_Product_DocumentNote", null);
+    /** Column name M_Product_DocumentNote */
+    public static final String COLUMNNAME_M_Product_DocumentNote = "M_Product_DocumentNote";
+
+	/**
 	 * Set Produkt.
 	 * Produkt, Leistung, Artikel
 	 *
@@ -1381,10 +1519,6 @@ public interface I_C_OrderLine
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Product_ID();
-
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
 
     /** Column definition for M_Product_ID */
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_Product>(I_C_OrderLine.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
@@ -1448,6 +1582,29 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
+	 * Set Ziel-Lager.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Warehouse_Dest_ID (int M_Warehouse_Dest_ID);
+
+	/**
+	 * Get Ziel-Lager.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Warehouse_Dest_ID();
+
+    /** Column definition for M_Warehouse_Dest_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_Dest_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_Warehouse>(I_C_OrderLine.class, "M_Warehouse_Dest_ID", org.compiere.model.I_M_Warehouse.class);
+    /** Column name M_Warehouse_Dest_ID */
+    public static final String COLUMNNAME_M_Warehouse_Dest_ID = "M_Warehouse_Dest_ID";
+
+	/**
 	 * Set Lager.
 	 * Storage Warehouse and Service Point
 	 *
@@ -1467,10 +1624,6 @@ public interface I_C_OrderLine
 	 */
 	public int getM_Warehouse_ID();
 
-	public org.compiere.model.I_M_Warehouse getM_Warehouse();
-
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
-
     /** Column definition for M_Warehouse_ID */
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_Warehouse>(I_C_OrderLine.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
     /** Column name M_Warehouse_ID */
@@ -1478,6 +1631,8 @@ public interface I_C_OrderLine
 
 	/**
 	 * Set No Price Conditions Indicator.
+	 * Rot bedeutet, dass erforderliche Preis-Konditionen fehlen;
+ gelb bedeutet, dass temporäre Preis-Konditionen nur für die jeweilige Position erstellt wurden.
 	 *
 	 * <br>Type: Color
 	 * <br>Mandatory: false
@@ -1487,6 +1642,8 @@ public interface I_C_OrderLine
 
 	/**
 	 * Get No Price Conditions Indicator.
+	 * Rot bedeutet, dass erforderliche Preis-Konditionen fehlen;
+ gelb bedeutet, dass temporäre Preis-Konditionen nur für die jeweilige Position erstellt wurden.
 	 *
 	 * <br>Type: Color
 	 * <br>Mandatory: false
@@ -1596,6 +1753,75 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_PP_Cost_Collector_ID = "PP_Cost_Collector_ID";
 
 	/**
+	 * Set Vorbelegtes Rechnungsdatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPresetDateInvoiced (java.sql.Timestamp PresetDateInvoiced);
+
+	/**
+	 * Get Vorbelegtes Rechnungsdatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getPresetDateInvoiced();
+
+    /** Column definition for PresetDateInvoiced */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_PresetDateInvoiced = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "PresetDateInvoiced", null);
+    /** Column name PresetDateInvoiced */
+    public static final String COLUMNNAME_PresetDateInvoiced = "PresetDateInvoiced";
+
+	/**
+	 * Set Vorbelegtes Lieferdatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPresetDateShipped (java.sql.Timestamp PresetDateShipped);
+
+	/**
+	 * Get Vorbelegtes Lieferdatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getPresetDateShipped();
+
+    /** Column definition for PresetDateShipped */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_PresetDateShipped = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "PresetDateShipped", null);
+    /** Column name PresetDateShipped */
+    public static final String COLUMNNAME_PresetDateShipped = "PresetDateShipped";
+
+	/**
+	 * Set Preiseinheit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPrice_UOM_ID (int Price_UOM_ID);
+
+	/**
+	 * Get Preiseinheit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPrice_UOM_ID();
+
+    /** Column definition for Price_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_UOM> COLUMN_Price_UOM_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_UOM>(I_C_OrderLine.class, "Price_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name Price_UOM_ID */
+    public static final String COLUMNNAME_Price_UOM_ID = "Price_UOM_ID";
+
+	/**
 	 * Set Einzelpreis.
 	 * Actual Price
 	 *
@@ -1696,6 +1922,29 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_PriceLimit = "PriceLimit";
 
 	/**
+	 * Set Mindestpreis Notiz.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPriceLimitNote (java.lang.String PriceLimitNote);
+
+	/**
+	 * Get Mindestpreis Notiz.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPriceLimitNote();
+
+    /** Column definition for PriceLimitNote */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_PriceLimitNote = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "PriceLimitNote", null);
+    /** Column name PriceLimitNote */
+    public static final String COLUMNNAME_PriceLimitNote = "PriceLimitNote";
+
+	/**
 	 * Set Auszeichnungspreis.
 	 * Auszeichnungspreis
 	 *
@@ -1744,6 +1993,29 @@ public interface I_C_OrderLine
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_PriceList_Std = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "PriceList_Std", null);
     /** Column name PriceList_Std */
     public static final String COLUMNNAME_PriceList_Std = "PriceList_Std";
+
+	/**
+	 * Set Standardpreis.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPriceStd (java.math.BigDecimal PriceStd);
+
+	/**
+	 * Get Standardpreis.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPriceStd();
+
+    /** Column definition for PriceStd */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_PriceStd = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "PriceStd", null);
+    /** Column name PriceStd */
+    public static final String COLUMNNAME_PriceStd = "PriceStd";
 
 	/**
 	 * Set Verarbeitet.
@@ -1871,8 +2143,33 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_QtyEntered = "QtyEntered";
 
 	/**
+	 * Set Bestellte Menge in Preiseinheit.
+	 * Bestellte Menge in Preiseinheit
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyEnteredInPriceUOM (java.math.BigDecimal QtyEnteredInPriceUOM);
+
+	/**
+	 * Get Bestellte Menge in Preiseinheit.
+	 * Bestellte Menge in Preiseinheit
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyEnteredInPriceUOM();
+
+    /** Column definition for QtyEnteredInPriceUOM */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_QtyEnteredInPriceUOM = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "QtyEnteredInPriceUOM", null);
+    /** Column name QtyEnteredInPriceUOM */
+    public static final String COLUMNNAME_QtyEnteredInPriceUOM = "QtyEnteredInPriceUOM";
+
+	/**
 	 * Set Berechn. Menge.
-	 * Menge, die bereits in Rechnung gestellt wurde
+	 * Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1882,7 +2179,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Get Berechn. Menge.
-	 * Menge, die bereits in Rechnung gestellt wurde
+	 * Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -2121,6 +2418,54 @@ public interface I_C_OrderLine
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_S_ResourceAssignment_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "S_ResourceAssignment_ID", null);
     /** Column name S_ResourceAssignment_ID */
     public static final String COLUMNNAME_S_ResourceAssignment_ID = "S_ResourceAssignment_ID";
+
+	/**
+	 * Set Zuordnung Mindesthaltbarkeit.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setShipmentAllocation_BestBefore_Policy (java.lang.String ShipmentAllocation_BestBefore_Policy);
+
+	/**
+	 * Get Zuordnung Mindesthaltbarkeit.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getShipmentAllocation_BestBefore_Policy();
+
+    /** Column definition for ShipmentAllocation_BestBefore_Policy */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_ShipmentAllocation_BestBefore_Policy = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "ShipmentAllocation_BestBefore_Policy", null);
+    /** Column name ShipmentAllocation_BestBefore_Policy */
+    public static final String COLUMNNAME_ShipmentAllocation_BestBefore_Policy = "ShipmentAllocation_BestBefore_Policy";
+
+	/**
+	 * Set Positions-Steuer.
+	 * Betrag der enthaltenen oder zuzgl. Steuer in einer Rechungs- oder Auftragsposition
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTaxAmtInfo (java.math.BigDecimal TaxAmtInfo);
+
+	/**
+	 * Get Positions-Steuer.
+	 * Betrag der enthaltenen oder zuzgl. Steuer in einer Rechungs- oder Auftragsposition
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getTaxAmtInfo();
+
+    /** Column definition for TaxAmtInfo */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_TaxAmtInfo = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "TaxAmtInfo", null);
+    /** Column name TaxAmtInfo */
+    public static final String COLUMNNAME_TaxAmtInfo = "TaxAmtInfo";
 
 	/**
 	 * Get Aktualisiert.

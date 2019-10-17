@@ -44,10 +44,10 @@ public interface IHUWarehouseDAO extends ISingletonService
 	 *
 	 * If given locator is after-picking then it will be returned.
 	 *
-	 * @param locator
+	 * @param locatorRepoId
 	 * @return after-picking locator or null
 	 */
-	I_M_Locator suggestAfterPickingLocator(org.compiere.model.I_M_Locator locator);
+	I_M_Locator suggestAfterPickingLocator(int locatorRepoId);
 
 	/**
 	 * Suggests an after-picking locator in the given <code>warehouse</code>.

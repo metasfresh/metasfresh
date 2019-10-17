@@ -31,16 +31,14 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUCapacityBL;
-import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
@@ -55,6 +53,8 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.product.ProductId;
 import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -128,14 +128,14 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		luProducerDestination.setTUPI(tuPI);
 		// TU Capacity
 		final ProductId cuProductId = ProductId.ofRepoId(lutuConfiguration.getM_Product_ID());
-		final I_C_UOM cuUOM = lutuConfiguration.getC_UOM();
+		final I_C_UOM cuUOM = ILUTUConfigurationFactory.extractUOMOrNull(lutuConfiguration);
 		final boolean qtyCUInfinite = lutuConfiguration.isInfiniteQtyCU();
 		final BigDecimal qtyCUPerTU = qtyCUInfinite ? Quantity.QTY_INFINITE : lutuConfiguration.getQtyCU();
 		luProducerDestination.addCUPerTU(cuProductId, qtyCUPerTU, cuUOM);
 
 		//
 		// Misc configuration
-		luProducerDestination.setC_BPartner(lutuConfiguration.getC_BPartner());
+		luProducerDestination.setC_BPartner(ILUTUConfigurationFactory.extractBPartnerOrNull(lutuConfiguration));
 		luProducerDestination.setC_BPartner_Location_ID(lutuConfiguration.getC_BPartner_Location_ID());
 		luProducerDestination.setHUStatus(lutuConfiguration.getHUStatus());
 
@@ -177,7 +177,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		//
 		// LU/TU configuration (draft)
 		final I_M_HU_LUTU_Configuration lutuConfiguration = InterfaceWrapperHelper.newInstance(I_M_HU_LUTU_Configuration.class, contextProvider);
-		lutuConfiguration.setC_BPartner(bpartner);
+		lutuConfiguration.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
 		lutuConfiguration.setIsActive(true);
 
 		//
@@ -185,10 +185,10 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		final I_M_HU_PI tuPI = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
 		final CapacityInterface tuCapacity = huCapacityBL.getCapacity(tuPIItemProduct, cuProductId, cuUOM);
 		//
-		lutuConfiguration.setM_HU_PI_Item_Product(tuPIItemProduct);
+		lutuConfiguration.setM_HU_PI_Item_Product_ID(tuPIItemProduct.getM_HU_PI_Item_Product_ID());
 		lutuConfiguration.setM_TU_HU_PI(tuPI);
 		lutuConfiguration.setM_Product_ID(cuProductId.getRepoId());
-		lutuConfiguration.setC_UOM(cuUOM);
+		lutuConfiguration.setC_UOM_ID(cuUOM.getC_UOM_ID());
 		if (tuCapacity.isInfiniteCapacity())
 		{
 			lutuConfiguration.setIsInfiniteQtyCU(true);
@@ -197,13 +197,13 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		else
 		{
 			lutuConfiguration.setIsInfiniteQtyCU(false);
-			lutuConfiguration.setQtyCU(tuCapacity.getCapacityQty());
+			lutuConfiguration.setQtyCU(tuCapacity.toBigDecimal());
 		}
 
 		//
 		// LU Configuration
 		final I_M_HU_PI_Item luPIItem;
-		if (noLUForVirtualTU && IHUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID.getRepoId() == tuPIItemProduct.getM_HU_PI_Item_Product_ID())
+		if (noLUForVirtualTU && HUPIItemProductId.isVirtualHU(tuPIItemProduct.getM_HU_PI_Item_Product_ID()))
 		{
 			luPIItem = null; // we don't care if there is a matching PIItem, because with noLUForVirtualTU we don't want to put the virtual HU onto an LU
 		}
@@ -476,14 +476,14 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 
 		//
 		// Calculate how many LUs we need for given total QtyCU (converted to our capacity UOM)
-		final int qtyLUs = qtyCUsTotal_Converted.getAsBigDecimal().divide(qtyCUsPerLU, 0, RoundingMode.UP).intValueExact();
+		final int qtyLUs = qtyCUsTotal_Converted.toBigDecimal().divide(qtyCUsPerLU, 0, RoundingMode.UP).intValueExact();
 		return qtyLUs;
 	}
 
 	@Override
 	public Quantity calculateQtyCUsTotal(final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
-		final I_C_UOM uom = lutuConfiguration.getC_UOM();
+		final I_C_UOM uom = ILUTUConfigurationFactory.extractUOMOrNull(lutuConfiguration);
 
 		//
 		// CU
@@ -543,7 +543,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(lutuConfiguration.getM_Product_ID());
 
 		final Quantity qty = new Quantity(qtyValue, qtyUOM);
-		final I_C_UOM uomTo = lutuConfiguration.getC_UOM();
+		final I_C_UOM uomTo = ILUTUConfigurationFactory.extractUOMOrNull(lutuConfiguration);
 		return uomConversionBL.convertQuantityTo(qty, uomConversionCtx, uomTo);
 	}
 

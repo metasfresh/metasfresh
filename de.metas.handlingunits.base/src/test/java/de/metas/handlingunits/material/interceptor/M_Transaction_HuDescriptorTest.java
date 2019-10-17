@@ -2,14 +2,15 @@ package de.metas.handlingunits.material.interceptor;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Transaction;
@@ -23,8 +24,11 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.inout.InOutAndLineId;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.AttributesKeyPart;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.util.Services;
@@ -57,14 +61,16 @@ public class M_Transaction_HuDescriptorTest
 	private static final BigDecimal FOURTY_TOMATOES_PER_IFCO = new BigDecimal("40");
 	private static final BigDecimal TOTAL_CU_QTY = FOURTY_TOMATOES_PER_IFCO.multiply(THIRTY_IFCOS_PER_PALET);
 
-	private I_M_HU_PI huDefPalet;
-
 	private HUTestHelper helper;
+	private M_Transaction_HuDescriptor huDescriptorCreator;
+
+	private I_M_HU_PI huDefPalet;
 
 	@Before
 	public void init()
 	{
 		helper = new HUTestHelper();
+		huDescriptorCreator = new M_Transaction_HuDescriptor();
 
 		// HU PI: IFCO
 		final I_M_HU_PI huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
@@ -84,9 +90,11 @@ public class M_Transaction_HuDescriptorTest
 	@Test
 	public void createHuDescriptorsForInOutLine()
 	{
+		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+
 		// create an inoutline and a transaction
-		final I_M_InOutLine inOutLine = newInstance(I_M_InOutLine.class);
-		save(inOutLine);
+		final I_M_InOutLine inOutLine = createInOutLine();
 
 		final I_M_Transaction transaction = helper.createMTransaction(
 				X_M_Transaction.MOVEMENTTYPE_VendorReceipts,
@@ -99,7 +107,7 @@ public class M_Transaction_HuDescriptorTest
 		final List<I_M_HU> huPalets = helper.createHUsFromSimplePI(transaction, huDefPalet);
 		assertThat(huPalets).hasSize(1);
 
-		Services.get(IHUAssignmentBL.class).assignHU(inOutLine, huPalets.get(0), ITrx.TRXNAME_ThreadInherited);
+		huAssignmentBL.assignHU(inOutLine, huPalets.get(0), ITrx.TRXNAME_ThreadInherited);
 
 		final IAttributeStorageFactory attributeStorageFactory = helper.getHUContext().getHUAttributeStorageFactory();
 		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(huPalets.get(0));
@@ -107,16 +115,15 @@ public class M_Transaction_HuDescriptorTest
 		attributeStorage.saveChangesIfNeeded();
 
 		// retrieve our countryMadeIn attribute-value and make sure that the AttributeKeys tool will be able to work with it
-		final I_M_AttributeValue attributeValue = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(
+		final AttributeListValue attributeValue = attributesRepo.retrieveAttributeValueOrNull(
 				helper.attr_CountryMadeIn,
 				HUTestHelper.COUNTRYMADEIN_RO);
 		assertThat(attributeValue).isNotNull();
-		assertThat(attributeValue.getM_AttributeValue_ID()).isGreaterThan(0);
 
 		//
 		// invoke the method under test
-		final List<HUDescriptor> huDescriptorsForInOutLine = M_Transaction_HuDescriptor.INSTANCE
-				.createHuDescriptorsForInOutLine(inOutLine, false);
+		final InOutAndLineId inOutLineId = InOutAndLineId.ofRepoId(inOutLine.getM_InOut_ID(), inOutLine.getM_InOutLine_ID());
+		final List<HUDescriptor> huDescriptorsForInOutLine = huDescriptorCreator.createHuDescriptorsForInOutLine(inOutLineId, false);
 
 		assertThat(huDescriptorsForInOutLine).hasSize(1);
 		final HUDescriptor huDescriptor = huDescriptorsForInOutLine.get(0);
@@ -129,6 +136,18 @@ public class M_Transaction_HuDescriptorTest
 
 		assertThat(productDescriptor.getProductId()).isEqualTo(helper.pTomato.getM_Product_ID());
 		assertThat(productDescriptor.getStorageAttributesKey()).isNotEqualTo(AttributesKey.NONE);
-		assertThat(productDescriptor.getStorageAttributesKey().getAttributeValueIds()).containsOnly(attributeValue.getM_AttributeValue_ID());
+		assertThat(productDescriptor.getStorageAttributesKey().getParts()).containsOnly(AttributesKeyPart.ofAttributeValueId(attributeValue.getId()));
+	}
+
+	private I_M_InOutLine createInOutLine()
+	{
+		final I_M_InOut inout = newInstance(I_M_InOut.class);
+		saveRecord(inout);
+
+		final I_M_InOutLine inoutLine = newInstance(I_M_InOutLine.class);
+		inoutLine.setM_InOut_ID(inout.getM_InOut_ID());
+		saveRecord(inoutLine);
+
+		return inoutLine;
 	}
 }

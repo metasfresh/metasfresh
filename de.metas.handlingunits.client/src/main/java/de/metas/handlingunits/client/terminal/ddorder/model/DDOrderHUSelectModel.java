@@ -344,7 +344,9 @@ public class DDOrderHUSelectModel extends AbstractHUSelectModel
 		ddOrderKeyLayout.setEnabledKeys(false);
 		super.setLayoutsEnabled(false);
 
-		super.setSingleWarehouse(pp_Order.getM_Warehouse());
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(pp_Order.getM_Warehouse_ID());
+		final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(warehouseId);
+		super.setSingleWarehouse(warehouse);
 
 		warehouseOverrideId = -1; // protection
 	}

@@ -39,9 +39,6 @@ import de.metas.util.Check;
  * Plain implementation of {@link IVendorReceipt}.
  *
  * NOTE: getter methods will throw an exception if that value was not previously set because we consider all values as being mandatory.
- *
- * @author tsa
- *
  */
 public class PlainVendorReceipt implements IVendorReceipt<Object>
 {
@@ -50,11 +47,6 @@ public class PlainVendorReceipt implements IVendorReceipt<Object>
 	private I_C_UOM qtyReceivedUOM;
 	private IHandlingUnitsInfo handlingUnitsInfo;
 	private I_M_PriceList_Version plv;
-
-	public PlainVendorReceipt()
-	{
-		super();
-	}
 
 	@Override
 	public String toString()

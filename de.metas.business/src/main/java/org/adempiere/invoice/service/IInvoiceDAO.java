@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_AD_Org;
@@ -40,10 +41,17 @@ import org.compiere.model.MInvoiceLine;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.bpartner.BPartnerId;
+import de.metas.invoice.InvoiceId;
 import de.metas.util.ISingletonService;
 
 public interface IInvoiceDAO extends ISingletonService
 {
+	void save(org.compiere.model.I_C_Invoice invoice);
+
+	void delete(org.compiere.model.I_C_Invoice invoice);
+
+	void save(org.compiere.model.I_C_InvoiceLine invoiceLine);
 
 	/**
 	 *
@@ -139,4 +147,9 @@ public interface IInvoiceDAO extends ISingletonService
 	 * @return
 	 */
 	Iterator<I_C_Invoice> retrieveCreditMemosForInvoice(I_C_Invoice invoice);
+
+	org.compiere.model.I_C_Invoice getByIdInTrx(InvoiceId invoiceId);
+
+	Stream<InvoiceId> streamInvoiceIdsByBPartnerId(BPartnerId bpartnerId);
+
 }

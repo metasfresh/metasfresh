@@ -76,15 +76,15 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 		final I_M_HU luHU = huToAssign.getM_LU_HU();
 		final I_M_HU tuHU = huToAssign.getM_TU_HU();
 		final I_M_HU vhu = huToAssign.getVHU();
+
 		huAssignmentBL.createTradingUnitDerivedAssignmentBuilder(ctx, shipmentLine, topLevelHU, luHU, tuHU, trxName)
 				.setVHU(vhu)
 				.setIsTransferPackingMaterials(isTransferPackingMaterials)
 				.build();
 	}
 
-	private final void assertShipment(final I_M_InOut inout)
+	private final void assertShipment(@NonNull final I_M_InOut inout)
 	{
-		Check.assumeNotNull(inout, "shipment not null");
 		Check.assume(inout.isSOTrx(), "inout shall be a shipment: {}", inout);
 	}
 
@@ -230,11 +230,10 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 
 			//
 			// Restore after-picking locator
-			final I_M_Locator shippingLocator = hu.getM_Locator();
-			final I_M_Locator pickingLocator = Services.get(IHUWarehouseDAO.class).suggestAfterPickingLocator(shippingLocator);
+			final I_M_Locator pickingLocator = Services.get(IHUWarehouseDAO.class).suggestAfterPickingLocator(hu.getM_Locator_ID());
 			if (pickingLocator != null)
 			{
-				hu.setM_Locator(pickingLocator);
+				hu.setM_Locator_ID(pickingLocator.getM_Locator_ID());
 			}
 		}
 

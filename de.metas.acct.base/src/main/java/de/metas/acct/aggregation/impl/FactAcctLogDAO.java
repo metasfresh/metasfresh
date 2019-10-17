@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.UUID;
 
-import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -23,6 +22,7 @@ import org.compiere.util.DB;
 import de.metas.acct.aggregation.IFactAcctLogDAO;
 import de.metas.acct.aggregation.IFactAcctLogIterable;
 import de.metas.acct.aggregation.IFactAcctSummaryKey;
+import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.model.I_Fact_Acct_EndingBalance;
 import de.metas.acct.model.I_Fact_Acct_Log;
 import de.metas.acct.model.I_Fact_Acct_Summary;
@@ -176,7 +176,7 @@ public class FactAcctLogDAO implements IFactAcctLogDAO
 			if (rs.next())
 			{
 				final String resultStr = rs.getString(1);
-				Loggables.get().addLog(resultStr);
+				Loggables.addLog(resultStr);
 			}
 
 		}

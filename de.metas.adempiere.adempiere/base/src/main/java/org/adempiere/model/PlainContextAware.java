@@ -30,7 +30,7 @@ import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.Env;
 
-import de.metas.util.Check;
+import lombok.NonNull;
 
 public final class PlainContextAware implements IContextAware
 {
@@ -132,9 +132,8 @@ public final class PlainContextAware implements IContextAware
 		this(ctx, trxName, true); // allowThreadInherited == true for backward compatibility; also see javadoc of isAllowThreadInherited.
 	}
 
-	private PlainContextAware(final Properties ctx, final String trxName, final boolean allowThreadInherited)
+	private PlainContextAware(@NonNull final Properties ctx, final String trxName, final boolean allowThreadInherited)
 	{
-		Check.assumeNotNull(ctx, "ctx not null");
 		this.ctx = ctx;
 
 		this.trxName = trxName;

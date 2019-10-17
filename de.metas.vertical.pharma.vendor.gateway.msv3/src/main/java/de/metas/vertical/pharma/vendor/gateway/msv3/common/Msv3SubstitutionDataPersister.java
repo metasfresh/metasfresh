@@ -5,8 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.service.OrgId;
-
+import de.metas.organization.OrgId;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItemSubstitution;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilitySubstitution;
 import de.metas.vertical.pharma.vendor.gateway.msv3.model.I_MSV3_Substitution;

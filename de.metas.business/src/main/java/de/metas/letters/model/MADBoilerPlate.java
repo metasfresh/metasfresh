@@ -1,6 +1,9 @@
 package de.metas.letters.model;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.getPO;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -54,9 +57,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.user.api.IUserBL;
-import org.adempiere.user.api.IUserDAO;
 import org.compiere.Adempiere;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_User;
@@ -73,7 +73,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_RMA;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.Lookup;
-import org.compiere.model.MBPartner;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MRequest;
@@ -91,6 +90,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
 import de.metas.email.EMail;
 import de.metas.email.EMailAttachment;
@@ -99,6 +99,8 @@ import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
+import de.metas.user.api.IUserBL;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.AllArgsConstructor;
@@ -284,7 +286,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				ITrx.TRXNAME_ThreadInherited // trxName
 		);
 		updateRequestDetails(requestRecord, parent_table_id, parent_record_id, context);
-		InterfaceWrapperHelper.save(requestRecord);
+		saveRecord(requestRecord);
 
 		//
 		// Attach printed letter
@@ -321,7 +323,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			rq.setC_BPartner_ID(parent_record_id);
 		}
-		else if (parent_table_id == InterfaceWrapperHelper.getTableId(I_AD_User.class))
+		else if (parent_table_id == getTableId(I_AD_User.class))
 		{
 			rq.setAD_User_ID(parent_record_id);
 		}
@@ -337,11 +339,11 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			rq.setC_Order_ID(parent_record_id);
 		}
-		else if (parent_table_id == InterfaceWrapperHelper.getTableId(I_C_Invoice.class))
+		else if (parent_table_id == getTableId(I_C_Invoice.class))
 		{
 			rq.setC_Invoice_ID(parent_record_id);
 		}
-		else if (parent_table_id == InterfaceWrapperHelper.getTableId(I_M_Product.class))
+		else if (parent_table_id == getTableId(I_M_Product.class))
 		{
 			rq.setM_Product_ID(parent_record_id);
 		}
@@ -349,7 +351,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			rq.setC_Payment_ID(parent_record_id);
 		}
-		else if (parent_table_id == I_M_InOut.Table_ID)
+		else if (parent_table_id == getTableId(I_M_InOut.class))
 		{
 			rq.setM_InOut_ID(parent_record_id);
 		}
@@ -361,11 +363,11 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			rq.setC_Campaign_ID(parent_record_id);
 		}
-		else if (parent_table_id == InterfaceWrapperHelper.getTableId(I_R_Request.class))
+		else if (parent_table_id == getTableId(I_R_Request.class))
 		{
 			rq.setR_RequestRelated_ID(parent_record_id);
 		}
-		else if (parent_table_id == InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
+		else if (parent_table_id == getTableId(I_C_OrderLine.class))
 		{
 			final MOrderLine oLine = new MOrderLine(Env.getCtx(), parent_record_id, null);
 			if (oLine != null)
@@ -865,7 +867,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			attributesBuilder.setC_BPartner_ID(C_BPartner_ID);
 
-			final MBPartner bp = MBPartner.get(ctx, C_BPartner_ID);
+			final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(C_BPartner_ID);
 			if (email == null)
 			{
 				final I_AD_User contact = getDefaultContactOrFirstWithValidEMail(bp);
@@ -895,7 +897,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		String AD_Language = Env.getAD_Language(ctx);
 		if (C_BPartner_ID > 0)
 		{
-			final MBPartner bp = MBPartner.get(ctx, C_BPartner_ID);
+			final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(C_BPartner_ID);
 			if (bp != null)
 			{
 				AD_Language = bp.getAD_Language();
@@ -937,13 +939,13 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		return attributesBuilder.build();
 	}
 
-	private static I_AD_User getDefaultContactOrFirstWithValidEMail(final MBPartner bpartner)
+	private static I_AD_User getDefaultContactOrFirstWithValidEMail(final I_C_BPartner bpartner)
 	{
 		final IUserBL userBL = Services.get(IUserBL.class);
 
 		I_AD_User firstContact = null;
 		I_AD_User firstValidContact = null;
-		for (final I_AD_User contact : bpartner.getContacts(false))
+		for (final I_AD_User contact : Services.get(IBPartnerDAO.class).retrieveContacts(bpartner))
 		{
 			if (contact.isDefaultContact())
 			{
@@ -1080,7 +1082,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 		public I_AD_User getSalesRepUser()
 		{
-			return InterfaceWrapperHelper.create(get(VAR_SalesRep), I_AD_User.class);
+			return create(get(VAR_SalesRep), I_AD_User.class);
 		}
 
 		public String getEMail()
@@ -1292,7 +1294,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				return (SourceDocument)obj;
 			}
 
-			final PO po = InterfaceWrapperHelper.getPO(obj);
+			final PO po = getPO(obj);
 			return new POSourceDocument(po);
 		}
 	}

@@ -15,7 +15,9 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.process.api.HUProcessDescriptor;
 import de.metas.handlingunits.process.api.HUProcessDescriptor.HUProcessDescriptorBuilder;
 import de.metas.handlingunits.process.api.IMHUProcessDAO;
+import de.metas.process.AdProcessId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class MHUProcessDAO implements IMHUProcessDAO
 {
@@ -28,7 +30,7 @@ public class MHUProcessDAO implements IMHUProcessDAO
 	}
 
 	@Override
-	public HUProcessDescriptor getByProcessIdOrNull(final int processId)
+	public HUProcessDescriptor getByProcessIdOrNull(@NonNull final AdProcessId processId)
 	{
 		return getIndexedHUProcessDescriptors().getByProcessIdOrNull(processId);
 	}
@@ -54,7 +56,7 @@ public class MHUProcessDAO implements IMHUProcessDAO
 	private static HUProcessDescriptor toHUProcessDescriptor(final I_M_HU_Process huProcessRecord)
 	{
 		final HUProcessDescriptorBuilder builder = HUProcessDescriptor.builder()
-				.processId(huProcessRecord.getAD_Process_ID())
+				.processId(AdProcessId.ofRepoId(huProcessRecord.getAD_Process_ID()))
 				.internalName(huProcessRecord.getAD_Process().getValue());
 
 		if (huProcessRecord.isApplyToLUs())
@@ -78,7 +80,7 @@ public class MHUProcessDAO implements IMHUProcessDAO
 
 	private static final class IndexedHUProcessDescriptors
 	{
-		private final ImmutableMap<Integer, HUProcessDescriptor> huProcessDescriptorsByProcessId;
+		private final ImmutableMap<AdProcessId, HUProcessDescriptor> huProcessDescriptorsByProcessId;
 
 		private IndexedHUProcessDescriptors(final List<HUProcessDescriptor> huProcessDescriptors)
 		{
@@ -90,7 +92,7 @@ public class MHUProcessDAO implements IMHUProcessDAO
 			return huProcessDescriptorsByProcessId.values();
 		}
 
-		public HUProcessDescriptor getByProcessIdOrNull(final int processId)
+		public HUProcessDescriptor getByProcessIdOrNull(final AdProcessId processId)
 		{
 			return huProcessDescriptorsByProcessId.get(processId);
 		}

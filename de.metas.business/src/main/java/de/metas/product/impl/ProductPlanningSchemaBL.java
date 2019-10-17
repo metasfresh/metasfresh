@@ -2,19 +2,30 @@ package de.metas.product.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.collections4.IteratorUtils;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_Planning;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.material.planning.ddorder.DistributionNetworkId;
+import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.product.IProductDAO;
 import de.metas.product.IProductPlanningSchemaBL;
-import de.metas.product.model.I_M_Product_PlanningSchema;
-import de.metas.util.Check;
+import de.metas.product.ProductId;
+import de.metas.product.ProductPlanningSchema;
+import de.metas.product.ProductPlanningSchemaId;
+import de.metas.product.ProductPlanningSchemaSelector;
+import de.metas.product.ResourceId;
+import de.metas.user.UserId;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -44,102 +55,108 @@ public class ProductPlanningSchemaBL implements IProductPlanningSchemaBL
 	@Override
 	public List<I_PP_Product_Planning> createDefaultProductPlanningsForAllProducts()
 	{
+		return ProductPlanningSchemaDAO
+				.streamProductsWithNoProductPlanningButWithSchemaSelector()
+				.flatMap(product -> createOrUpdateProductPlanningsForProductSelector(product).stream())
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private List<I_PP_Product_Planning> createOrUpdateProductPlanningsForProductSelector(final I_M_Product product)
+	{
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+		final ProductPlanningSchemaSelector selector = ProductPlanningSchemaSelector.ofNullableCode(product.getM_ProductPlanningSchema_Selector());
+		if (selector == null)
+		{
+			return ImmutableList.of();
+		}
+
+		return createOrUpdateProductPlanningsForSelector(productId, selector);
+	}
+
+	@Override
+	public List<I_PP_Product_Planning> createOrUpdateProductPlanningsForSelector(
+			@NonNull final ProductId productId,
+			@NonNull final ProductPlanningSchemaSelector selector)
+	{
 		final List<I_PP_Product_Planning> createdPlannings = new ArrayList<>();
 
-		final Iterator<I_M_Product> productsWithNoProductPlanning = ProductPlanningSchemaDAO.retrieveProductsWithNoProductPlanning();
-
-		for (final I_M_Product product : IteratorUtils.asIterable(productsWithNoProductPlanning))
+		for (final ProductPlanningSchema productPlanningSchema : ProductPlanningSchemaDAO.retrieveSchemasForSelector(selector))
 		{
-			final String productPlanningSchemaSelector = product.getM_ProductPlanningSchema_Selector();
-			if (Check.isEmpty(productPlanningSchemaSelector))
-			{
-				// nothing to do
-				continue;
-			}
-
-			final List<I_M_Product_PlanningSchema> productPlanningSchemas = ProductPlanningSchemaDAO.retrieveSchemasForSelector(productPlanningSchemaSelector);
-
-			for (final I_M_Product_PlanningSchema productPlanningSchema : productPlanningSchemas)
-			{
-				createdPlannings.add(createUpdateProductPlanning(product, productPlanningSchema));
-			}
+			createdPlannings.add(createOrUpdateProductPlanningAndSave(productId, productPlanningSchema));
 		}
 
 		return createdPlannings;
 	}
 
 	@Override
-	public List<I_PP_Product_Planning> createUpdateDefaultProductPlanningsForSchema(final I_M_Product_PlanningSchema productPlanningSchema)
+	public List<I_PP_Product_Planning> createOrUpdateDefaultProductPlanningsForSchemaId(@NonNull final ProductPlanningSchemaId schemaId)
 	{
+		final IProductDAO productsRepo = Services.get(IProductDAO.class);
+
 		final List<I_PP_Product_Planning> createdPlannings = new ArrayList<>();
 
-		final String schemaSelector = productPlanningSchema.getM_ProductPlanningSchema_Selector();
+		final ProductPlanningSchema schema = ProductPlanningSchemaDAO.getById(schemaId);
+		final ProductPlanningSchemaSelector selector = schema.getSelector();
 
-		final List<I_PP_Product_Planning> productPlanningsForSchema = ProductPlanningSchemaDAO.retrieveProductPlanningsForSchemaID(productPlanningSchema.getM_Product_PlanningSchema_ID());
-
-		for (final I_PP_Product_Planning planning : productPlanningsForSchema)
+		for (final I_PP_Product_Planning planning : ProductPlanningSchemaDAO.retrieveProductPlanningsForSchemaId(schema.getId()))
 		{
-			final I_M_Product product = planning.getM_Product();
-			if (!schemaSelector.equals(product.getM_ProductPlanningSchema_Selector()))
+			final ProductId productId = ProductId.ofRepoId(planning.getM_Product_ID());
+			final I_M_Product product = productsRepo.getById(productId);
+			final ProductPlanningSchemaSelector productSchemaSelector = ProductPlanningSchemaSelector.ofNullableCode(product.getM_ProductPlanningSchema_Selector());
+			if (!selector.equals(productSchemaSelector))
 			{
 				delete(planning);
 			}
 			else
 			{
-				updateProductPlanningFromSchema(planning, productPlanningSchema);
+				updateProductPlanningFromSchemaAndSave(planning, schema);
 			}
 		}
 
-		final List<I_M_Product> productsForSelector = ProductPlanningSchemaDAO.retrieveProductsForSchemaSelector(schemaSelector);
-		for (final I_M_Product product : productsForSelector)
+		for (final ProductId productId : ProductPlanningSchemaDAO.retrieveProductIdsForSchemaSelector(selector))
 		{
-			createdPlannings.add(createUpdateProductPlanning(product, productPlanningSchema));
+			final I_PP_Product_Planning planning = createOrUpdateProductPlanningAndSave(productId, schema);
+			createdPlannings.add(planning);
 		}
 
 		return createdPlannings;
 	}
 
-	private I_PP_Product_Planning createUpdateProductPlanning(final I_M_Product product, final I_M_Product_PlanningSchema schema)
+	private I_PP_Product_Planning createOrUpdateProductPlanningAndSave(final ProductId productId, final ProductPlanningSchema schema)
 	{
-		final I_PP_Product_Planning productPlanning = getCreateProductPlanningForProductAndSchema(product, schema);
+		final ProductPlanningSchemaId schemaId = schema.getId();
 
-		productPlanning.setM_Product(product);
-		productPlanning.setM_Product_PlanningSchema_ID(schema.getM_Product_PlanningSchema_ID());
-
-		updateProductPlanningFromSchema(productPlanning, schema);
-
-		return productPlanning;
-	}
-
-	private I_PP_Product_Planning getCreateProductPlanningForProductAndSchema(
-			final I_M_Product product,
-			final I_M_Product_PlanningSchema schema)
-	{
-		I_PP_Product_Planning productPlanning = ProductPlanningSchemaDAO.retrievePlanningForProductAndSchema(product, schema);
+		I_PP_Product_Planning productPlanning = ProductPlanningSchemaDAO.retrievePlanningForProductAndSchema(productId, schemaId);
 		if (productPlanning == null)
 		{
 			productPlanning = newInstance(I_PP_Product_Planning.class);
 		}
 
+		productPlanning.setM_Product_ID(productId.getRepoId());
+		productPlanning.setM_Product_PlanningSchema_ID(schemaId.getRepoId());
+
+		updateProductPlanningFromSchemaAndSave(productPlanning, schema);
+
 		return productPlanning;
 	}
 
-	private void updateProductPlanningFromSchema(final I_PP_Product_Planning productPlanning, final I_M_Product_PlanningSchema schema)
+	private void updateProductPlanningFromSchemaAndSave(
+			final I_PP_Product_Planning productPlanning,
+			final ProductPlanningSchema schema)
 	{
-		productPlanning.setAD_Org(schema.getAD_Org());
+		productPlanning.setAD_Org_ID(schema.getOrgId().getRepoId());
 		productPlanning.setIsAttributeDependant(schema.isAttributeDependant());
-		productPlanning.setS_Resource_ID(schema.getS_Resource_ID());
-		productPlanning.setM_Warehouse_ID(schema.getM_Warehouse_ID());
-		productPlanning.setPlanner_ID(schema.getPlanner_ID());
-		productPlanning.setIsManufactured(schema.getIsManufactured());
+		productPlanning.setS_Resource_ID(ResourceId.toRepoId(schema.getPlantId()));
+		productPlanning.setM_Warehouse_ID(WarehouseId.toRepoId(schema.getWarehouseId()));
+		productPlanning.setPlanner_ID(UserId.toRepoId(schema.getPlannerId()));
+		productPlanning.setIsManufactured(StringUtils.ofBoolean(schema.getManufactured()));
 		productPlanning.setIsCreatePlan(schema.isCreatePlan());
-		productPlanning.setIsDocComplete(schema.isDocComplete());
-		productPlanning.setAD_Workflow_ID(schema.getAD_Workflow_ID());
-		productPlanning.setDD_NetworkDistribution_ID(schema.getDD_NetworkDistribution_ID());
+		productPlanning.setIsDocComplete(schema.isCompleteGeneratedDocuments());
+		productPlanning.setAD_Workflow_ID(PPRoutingId.toRepoId(schema.getRoutingId()));
+		productPlanning.setDD_NetworkDistribution_ID(DistributionNetworkId.toRepoId(schema.getDistributionNetworkId()));
 		productPlanning.setIsPickDirectlyIfFeasible(schema.isPickDirectlyIfFeasible());
-		productPlanning.setOnMaterialReceiptWithDestWarehouse(schema.getOnMaterialReceiptWithDestWarehouse());
+		productPlanning.setOnMaterialReceiptWithDestWarehouse(schema.getOnMaterialReceiptWithDestWarehouse().getCode());
 
-		save(productPlanning);
+		saveRecord(productPlanning);
 	}
-
 }

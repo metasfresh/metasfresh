@@ -30,11 +30,12 @@ import org.adempiere.mm.attributes.api.IAttributeExcludeBL;
 import org.adempiere.mm.attributes.api.IAttributeExcludeDAO;
 import org.adempiere.model.I_M_AttributeSetExcludeLine;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetExclude;
 
+import de.metas.lang.SOTrx;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class AttributeExcludeBL implements IAttributeExcludeBL
 {
@@ -67,9 +68,9 @@ public class AttributeExcludeBL implements IAttributeExcludeBL
 	}
 
 	@Override
-	public boolean isExcludedAttribute(I_M_Attribute attribute, I_M_AttributeSet attributeSet, int columnId, boolean isSOTrx)
+	public boolean isExcludedAttribute(I_M_Attribute attribute, AttributeSetId attributeSetId, int columnId, SOTrx soTrx)
 	{
-		final I_M_AttributeSetExclude attributeSetExclude = Services.get(IAttributeExcludeDAO.class).retrieveAttributeSetExclude(attributeSet, columnId, isSOTrx);
+		final I_M_AttributeSetExclude attributeSetExclude = Services.get(IAttributeExcludeDAO.class).retrieveAttributeSetExclude(attributeSetId, columnId, soTrx);
 		if (null == attributeSetExclude)
 		{
 			return false;
@@ -94,9 +95,9 @@ public class AttributeExcludeBL implements IAttributeExcludeBL
 	}
 
 	@Override
-	public I_M_AttributeSetExclude getAttributeSetExclude(I_M_AttributeSet attributeSet, int columnId, boolean isSOTrx)
+	public I_M_AttributeSetExclude getAttributeSetExclude(@NonNull final AttributeSetId attributeSetId, int columnId, @NonNull SOTrx soTrx)
 	{
-		return Services.get(IAttributeExcludeDAO.class).retrieveAttributeSetExclude(attributeSet, columnId, isSOTrx);
+		return Services.get(IAttributeExcludeDAO.class).retrieveAttributeSetExclude(attributeSetId, columnId, soTrx);
 	}
 
 }

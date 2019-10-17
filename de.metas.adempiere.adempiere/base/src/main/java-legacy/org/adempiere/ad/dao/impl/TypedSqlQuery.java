@@ -19,8 +19,6 @@
  ******************************************************************************/
 package org.adempiere.ad.dao.impl;
 
-import lombok.NonNull;
-
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -32,6 +30,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -40,12 +41,12 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.ad.persistence.TableModelLoader;
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.text.TokenizedStringBuilder;
+import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
@@ -56,12 +57,17 @@ import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.dao.selection.pagination.PaginationService;
+import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
+import lombok.NonNull;
 
 /**
  *
@@ -100,8 +106,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	private IQueryOrderBy queryOrderBy = null;
 	private List<Object> parameters = null;
 	private IQueryFilter<T> postQueryFilter;
-	private boolean applyAccessFilter = false;
-	private boolean applyAccessFilterRW = false;
+	private Access requiredAccess;
 	private boolean onlyActiveRecords = false;
 	private boolean onlyClient_ID = false;
 	private PInstanceId onlySelectionId;
@@ -112,18 +117,13 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	private List<SqlQueryUnion<T>> unions;
 
-	/**
-	 *
-	 * @param ctx
-	 * @param tableName
-	 * @param whereClause
-	 * @param trxName
-	 */
-	protected TypedSqlQuery(final Properties ctx, final Class<T> modelClass, final String tableName, final String whereClause, final String trxName)
+	protected TypedSqlQuery(
+			@NonNull final Properties ctx,
+			final Class<T> modelClass,
+			final String tableName,
+			final String whereClause,
+			final String trxName)
 	{
-		super();
-		Check.assumeNotNull(ctx, "ctx not null");
-
 		this.modelClass = modelClass;
 		this.tableName = InterfaceWrapperHelper.getTableName(modelClass, tableName);
 
@@ -133,7 +133,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		this.trxName = trxName;
 	}
 
-	public TypedSqlQuery(final Properties ctx, final Class<T> modelClass, final String whereClause, final String trxName)
+	public TypedSqlQuery(
+			final Properties ctx,
+			final Class<T> modelClass,
+			final String whereClause,
+			final String trxName)
 	{
 		this(ctx,
 				modelClass,
@@ -230,17 +234,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public TypedSqlQuery<T> setApplyAccessFilter(final boolean flag)
+	public TypedSqlQuery<T> setRequiredAccess(@Nullable final Access access)
 	{
-		this.applyAccessFilter = flag;
-		return this;
-	}
-
-	@Override
-	public TypedSqlQuery<T> setApplyAccessFilterRW(final boolean RW)
-	{
-		this.applyAccessFilter = true;
-		this.applyAccessFilterRW = RW;
+		this.requiredAccess = access;
 		return this;
 	}
 
@@ -264,8 +260,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		this.onlySelectionId = pinstanceId;
 		return this;
 	}
-
-
 
 	@Override
 	public TypedSqlQuery<T> setNotInSelection(final PInstanceId pinstanceId)
@@ -300,7 +294,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			list = new ArrayList<>();
 		}
 
-		final String sql = buildSQL(null, true);
+		final String sql = buildSQL(null, null, true);
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -309,9 +303,12 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			pstmt = DB.prepareStatement(sql, trxName);
 			rs = createResultSet(pstmt);
 
+			final boolean readOnly = isReadOnlyRecords();
+
 			ET model = null;
 			while ((model = retrieveNextModel(rs, clazz)) != null)
 			{
+				InterfaceWrapperHelper.setSaveDeleteDisabled(model, readOnly);
 				list.add(model);
 
 				if (limit > 0 && list.size() >= limit)
@@ -411,7 +408,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		// metas: end
 
-		final String sql = buildSQL(null, true);
+		final String sql = buildSQL(null/* selectClause */, null/* fromClause */, true/* useOrderByClause */);
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -470,6 +467,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		ET model = null;
 		final String sql = buildSQL(
 				null,    // selectClause: use default (i.e. all columns)
+				null, // fromClause
 				false // useOrderByClause=false because we expect only one record
 		);
 
@@ -534,10 +532,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	{
 		final String keyColumnName = getKeyColumnName();
 
-		final StringBuilder selectClause = new StringBuilder("SELECT ");
-		selectClause.append(keyColumnName);
-		selectClause.append(" FROM ").append(getSqlFrom());
-		final String sql = buildSQL(selectClause, true);
+		final StringBuilder selectClause = new StringBuilder("SELECT ").append(keyColumnName);
+		final StringBuilder fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
+
+		final String sql = buildSQL(selectClause, fromClause, true);
 
 		int id = -1;
 		PreparedStatement pstmt = null;
@@ -577,7 +575,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 */
 	public String getSQL() throws DBException
 	{
-		return buildSQL(null, true);
+		return buildSQL(null, null, true);
 	}
 
 	/**
@@ -660,9 +658,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 					.append(aggregateType.getSqlFunction())
 					.append("(").append(sqlExpression).append(")");
 		}
-		sqlSelect.append(" FROM ").append(getSqlFrom());
 
-		final String sql = buildSQL(sqlSelect, aggregateType.isUseOrderByClause());
+		final StringBuilder fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
+
+		final String sql = buildSQL(sqlSelect, fromClause, aggregateType.isUseOrderByClause());
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -747,10 +746,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		// Build SQL query
 		final StringBuilder sqlSelect = new StringBuilder("SELECT ")
 				.append(distinct ? " DISTINCT " : "")
-				.append(sqlColumnNames)
-				.append(" FROM ").append(getSqlFrom());
+				.append(sqlColumnNames);
+
+		final StringBuilder fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
 		final boolean useOrderByClause = !distinct;
-		final String sql = buildSQL(sqlSelect, useOrderByClause);
+		final String sql = buildSQL(sqlSelect, fromClause, useOrderByClause);
 
 		final List<Map<String, Object>> result = new ArrayList<>();
 		PreparedStatement pstmt = null;
@@ -806,19 +806,21 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	public boolean match() throws DBException
 	{
 		final StringBuilder sqlSelect;
+		final StringBuilder fromClause;
 		if (postQueryFilter != null)
 		{
 			// we expect to build the select with all columns
 			// because we will want to retrieve models and match them again our post-filter
 			sqlSelect = null;
+			fromClause = null;
 		}
 		else
 		{
-			setLimit(1); // we don't need more than one row to decide if it matches
-			sqlSelect = new StringBuilder("SELECT 1 FROM ")
-					.append(getSqlFrom());
+			setLimit(1); // no postQueryFilter => we don't need more than one row to decide if it matches
+			sqlSelect = new StringBuilder("SELECT 1 ");
+			fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
 		}
-		final String sql = buildSQL(sqlSelect, false/*useOrderByClause*/);
+		final String sql = buildSQL(sqlSelect, fromClause, false/* useOrderByClause */);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -886,6 +888,14 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		return iterate(clazz, guaranteed);
 	}
 
+	@Override
+	public <ET extends T> QueryResultPage<ET> paginate(Class<ET> clazz, int pageSize) throws DBException
+	{
+		return Adempiere
+				.getBean(PaginationService.class)
+				.loadFirstPage(clazz, this, pageSize);
+	}
+
 	public <ET extends T> Iterator<ET> iterate(final Class<ET> clazz, final boolean guaranteed) throws DBException
 	{
 		Check.assumeNull(postQueryFilter, "No post-filter shall be defined when iterating");
@@ -902,81 +912,17 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			return it;
 		}
 
-		// metas: 03658: use POBufferedIterator instead of old POIterator, if database paging is supported
-		else if (DB.getDatabase().isPagingSupported())
+		final POBufferedIterator<T, ET> poBufferedIterator = new POBufferedIterator<>(this, clazz, null);
+		if (iteratorBufferSize != null)
 		{
-			final POBufferedIterator<T, ET> poBufferedIterator = new POBufferedIterator<>(this, clazz, null);
-			if (iteratorBufferSize != null)
-			{
-				poBufferedIterator.setBufferSize(iteratorBufferSize);
-			}
-			else if (limit != NO_LIMIT)
-			{   // use the set limit as our buffer size, if a limit has been set
-				poBufferedIterator.setBufferSize(limit);
-			}
-			return poBufferedIterator;
+			poBufferedIterator.setBufferSize(iteratorBufferSize);
 		}
-		else
-		{
-			final String tableName = getTableName();
-			final List<Object[]> idList = retrieveComposedIDs();
-			return new POIterator<>(ctx, tableName, clazz, idList, trxName);
+		else if (limit != NO_LIMIT)
+		{   // use the set limit as our buffer size, if a limit has been set
+			poBufferedIterator.setBufferSize(limit);
 		}
-	}
+		return poBufferedIterator;
 
-	/**
-	 * Get a List of composed IDs for this Query.
-	 *
-	 * @return List of composed IDs
-	 */
-	private final List<Object[]> retrieveComposedIDs()
-	{
-		Check.assumeNull(postQueryFilter, "No post-filter shall be defined when retrieving composed IDs"); // FIXME: not supported
-
-		final StringBuilder sqlBuffer = new StringBuilder();
-		final List<String> keyColumnNames = getKeyColumnNames();
-		for (final String keyColumnName : keyColumnNames)
-		{
-			if (sqlBuffer.length() > 0)
-			{
-				sqlBuffer.append(", ");
-			}
-			sqlBuffer.append(keyColumnName);
-		}
-		sqlBuffer.insert(0, " SELECT ");
-		sqlBuffer.append(" FROM ").append(getSqlFrom());
-		final String sql = buildSQL(sqlBuffer, true);
-
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		final List<Object[]> idList = new ArrayList<>();
-		try
-		{
-			pstmt = DB.prepareStatement(sql, trxName);
-			rs = createResultSet(pstmt);
-			while (rs.next())
-			{
-				final Object[] ids = new Object[keyColumnNames.size()];
-				for (int i = 0; i < ids.length; i++)
-				{
-					ids[i] = rs.getObject(i + 1);
-				}
-				idList.add(ids);
-			}
-		}
-		catch (final SQLException e)
-		{
-			log.info(sql, e);
-			throw new DBException(e, sql, getParametersEffective());
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-
-		return idList;
 	}
 
 	/**
@@ -993,7 +939,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	public <ET> POResultSet<ET> scroll(final Class<ET> clazz) throws DBException
 	{
 		final String tableName = getTableName();
-		final String sql = buildSQL(null, true);
+		final String sql = buildSQL(null, null, true);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		POResultSet<ET> rsPO = null;
@@ -1187,20 +1133,30 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * Build SQL Clause
 	 *
 	 * @param selectClause optional; if null the select clause will be build according to POInfo
+	 * @param fromClause optional; if null the from clause will be build according to {@link #getSqlFrom()}
 	 * @param useOrderByClause true if ORDER BY clause shall be appended
 	 * @return final SQL
 	 */
-	public final String buildSQL(StringBuilder selectClause, final boolean useOrderByClause)
+	public final String buildSQL(
+			@Nullable final StringBuilder selectClause, // TODO change to String
+			@Nullable final StringBuilder fromClause,
+			final boolean useOrderByClause)
 	{
-		if (selectClause == null)
+		StringBuilder selectClauseToUse = selectClause;
+		if (selectClauseToUse == null)
 		{
 			final POInfo info = getPOInfo();
-			selectClause = new StringBuilder()
-					.append("SELECT ").append(info.getSqlSelectColumns())
-					.append("\n FROM ").append(getSqlFrom());
+			selectClauseToUse = new StringBuilder("SELECT ").append(info.getSqlSelectColumns());
+		}
+		StringBuilder fromClauseToUse = fromClause;
+		if (fromClauseToUse == null)
+		{
+			fromClauseToUse = new StringBuilder(" FROM ").append(getSqlFrom());
 		}
 
-		final StringBuilder sqlBuffer = new StringBuilder(selectClause);
+		final StringBuilder sqlBuffer = new StringBuilder(selectClauseToUse)
+				.append(" ")
+				.append(fromClauseToUse);
 
 		final String whereClauseEffective = getWhereClauseEffective();
 		if (whereClauseEffective != null && !whereClauseEffective.isEmpty())
@@ -1210,14 +1166,18 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		//
 		// Build and add UNION SQL queries
-		if (unions != null && !unions.isEmpty())
+		if (unions != null)
 		{
 			for (final SqlQueryUnion<T> union : unions)
 			{
 				final TypedSqlQuery<T> unionQuery = TypedSqlQuery.cast(union.getQuery());
+
 				final boolean unionDistinct = union.isDistinct();
 
-				final String unionSql = unionQuery.buildSQL(selectClause, false); // useOrderByClause=false
+				final String unionSql = unionQuery.buildSQL(
+						selectClause,
+						null/* don't assume the union-query's from-clause is identical! */,
+						false/* useOrderByClause */);
 				sqlBuffer.append("\nUNION ").append(unionDistinct ? "DISTINCT" : "ALL");
 				sqlBuffer.append("\n(\n").append(unionSql).append("\n)\n");
 			}
@@ -1230,11 +1190,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 
 		String sql = sqlBuffer.toString();
-		if (applyAccessFilter)
+		if (requiredAccess != null)
 		{
 			final IUserRolePermissions role = Env.getUserRolePermissions(this.ctx);
-			final boolean applyAccessFilterFullyQualified = true; // metas: shall always be true
-			sql = role.addAccessSQL(sql, getTableName(), applyAccessFilterFullyQualified, applyAccessFilterRW);
+			sql = role.addAccessSQL(sql, getTableName(), IUserRolePermissions.SQL_FULLYQUALIFIED, requiredAccess);
 		}
 
 		// metas: begin
@@ -1306,10 +1265,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	{
 		final String keyColumnName = getKeyColumnName();
 
-		final StringBuilder selectClause = new StringBuilder("SELECT ");
-		selectClause.append(keyColumnName);
-		selectClause.append(" FROM ").append(getSqlFrom());
-		final String sql = buildSQL(selectClause, true);
+		final StringBuilder selectClause = new StringBuilder("SELECT ").append(keyColumnName);
+		final StringBuilder fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
+		final String sql = buildSQL(selectClause, fromClause, true);
 
 		final List<Integer> list = new ArrayList<>();
 		PreparedStatement pstmt = null;
@@ -1341,23 +1299,25 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	public String toString()
 	{
+		final StringBuilder selectClause = new StringBuilder("SELECT *");
+		final StringBuilder fromClause = null;
+		final boolean useOrderByClause = true;
+		String sql = buildSQL(
+				selectClause,
+				fromClause,
+				useOrderByClause);
+
+		final List<Object> sqlParams = getParametersEffective();
+		if (!sqlParams.isEmpty())
+		{
+			final String sqlParamsAsString = sqlParams.stream()
+					.map(DB::TO_SQL)
+					.collect(Collectors.joining(", "));
+			sql += "\n -- " + sqlParamsAsString;
+		}
+
 		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("tableName", tableName)
-				.add("whereClause", whereClause)
-				.add("SqlFrom", this.sqlFrom)
-				.add("postQueryFilter", postQueryFilter)
-				.add("unions", unions != null && !unions.isEmpty() ? unions : null)
-				.add("parameters", parameters != null && !parameters.isEmpty() ? parameters : null)
-				.add("limit", limit > 0 ? limit : null)
-				.add("offset", offset > 0 ? offset : null)
-				.add("trxName", trxName)
-				.add("applyAccessFilter", applyAccessFilter ? Boolean.TRUE : null)
-				.add("applyAccessFilterRW", applyAccessFilterRW ? Boolean.TRUE : null)
-				.add("onlyActiveRecords", onlyActiveRecords ? Boolean.TRUE : null)
-				.add("onlySelectionId", onlySelectionId)
-				.add("notInSelectionId", notInSelectionId)
-				.add("options", options != null && !options.isEmpty() ? options : null)
+				.addValue(sql)
 				.toString();
 	}
 
@@ -1520,8 +1480,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		queryTo.postQueryFilter = postQueryFilter;
 		//
 		queryTo.queryOrderBy = queryOrderBy;
-		queryTo.applyAccessFilter = applyAccessFilter;
-		queryTo.applyAccessFilterRW = applyAccessFilterRW;
+		queryTo.requiredAccess = requiredAccess;
 		queryTo.onlyActiveRecords = onlyActiveRecords;
 		queryTo.onlyClient_ID = onlyClient_ID;
 		queryTo.onlySelectionId = onlySelectionId;
@@ -1565,10 +1524,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 				.append("INSERT INTO T_SELECTION(AD_PINSTANCE_ID, T_SELECTION_ID) ")
 				.append(" SELECT ")
 				.append(pinstanceId.getRepoId())
-				.append(", ").append(keyColumnName)
-				.append(" FROM ").append(getSqlFrom());
+				.append(", ").append(keyColumnName);
+		final StringBuilder fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
 
-		final String sql = buildSQL(selectClause, false);
+		final String sql = buildSQL(selectClause, fromClause, false);
 		final Object[] params = getParametersEffective().toArray();
 
 		final int no = DB.executeUpdateEx(sql, params, trxName);
@@ -1579,7 +1538,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	public PInstanceId createSelection()
 	{
 		// Create new AD_PInstance_ID for our selection
-		final PInstanceId newSelectionId = Services.get(IADPInstanceDAO.class).createPInstanceId();
+		final PInstanceId newSelectionId = Services.get(IADPInstanceDAO.class).createSelectionId();
 
 		// Populate the selection
 		final int count = createSelection(newSelectionId);
@@ -1594,8 +1553,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	public int deleteDirectly()
 	{
-		final StringBuilder sqlDeleteFrom = new StringBuilder("DELETE FROM ").append(getTableName());
-		final String sql = buildSQL(sqlDeleteFrom, false); // useOrderByClause=false
+		final StringBuilder sqlDeleteFrom = new StringBuilder("DELETE ");
+		final StringBuilder fromClause = new StringBuilder(" FROM ").append(getTableName());
+		final String sql = buildSQL(sqlDeleteFrom, fromClause, false); // useOrderByClause=false
 		final Object[] params = getParametersEffective().toArray();
 
 		final int no = DB.executeUpdateEx(sql, params, trxName);
@@ -1692,10 +1652,12 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final List<Object> sqlParams = new ArrayList<>();
 		final String sqlUpdateSet = sqlQueryUpdater.getSql(getCtx(), sqlParams);
 
-		final StringBuilder sqlUpdate = new StringBuilder("UPDATE ").append(getTableName())
+		final StringBuilder sqlUpdate = new StringBuilder("UPDATE ")
+				.append(getTableName())
 				.append(" SET ").append(sqlUpdateSet);
+		final StringBuilder fromClause = new StringBuilder("");
 
-		final String sql = buildSQL(sqlUpdate, false); // useOrderByClause=false
+		final String sql = buildSQL(sqlUpdate, fromClause, false); // useOrderByClause=false
 		final List<Object> sqlWhereClauseParams = getParametersEffective();
 		sqlParams.addAll(sqlWhereClauseParams);
 
@@ -1741,9 +1703,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		{
 			final StringBuilder sqlFrom_Select = new StringBuilder()
 					.append("\n SELECT ").append(info.getSqlSelectColumns())
-					.append("\n , ").append(keyColumnName).append(" as ZZ_RowId")
-					.append("\n FROM ").append(getSqlFrom());
-			final String sqlFrom = buildSQL(sqlFrom_Select, true);
+					.append("\n , ").append(keyColumnName).append(" as ZZ_RowId");
+
+			final StringBuilder fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
+
+			final String sqlFrom = buildSQL(sqlFrom_Select, fromClause, true);
 
 			sql.append("\n FROM (").append(sqlFrom).append(") f ");
 			sqlParams.addAll(getParametersEffective());
@@ -1799,10 +1763,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		//
 		// Build sql: SELECT ... FROM ... WHERE ...
-		sqlFromSelectColumns.asStringBuilder()
-				.insert(0, "SELECT \n")
-				.append("\n FROM ").append(getSqlFrom());
-		final String sqlFrom = buildSQL(sqlFromSelectColumns.asStringBuilder(), false); // useOrderByClause=false
+		sqlFromSelectColumns.asStringBuilder().insert(0, "SELECT \n");
+
+		final StringBuilder fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
+
+		final String sqlFrom = buildSQL(sqlFromSelectColumns.asStringBuilder(), fromClause, false); // useOrderByClause=false
 		sqlParams.addAll(getParametersEffective());
 
 		//
@@ -1819,7 +1784,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final String sql;
 		if (queryInserter.isCreateSelectionOfInsertedRows())
 		{
-			insertSelectionId = Services.get(IADPInstanceDAO.class).createPInstanceId();
+			insertSelectionId = Services.get(IADPInstanceDAO.class).createSelectionId();
 
 			final String toKeyColumnName = queryInserter.getToKeyColumnName();
 			sql = new StringBuilder()

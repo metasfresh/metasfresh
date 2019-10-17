@@ -2,6 +2,8 @@ package de.metas.vertical.pharma.pricing;
 
 import java.util.Set;
 
+import de.metas.location.CountryId;
+
 import de.metas.pricing.limit.IPriceLimitRestrictionsRepository;
 import de.metas.pricing.limit.IPriceLimitRule;
 import de.metas.pricing.limit.PriceLimitRuleContext;
@@ -40,7 +42,7 @@ public class PharmaPriceLimitRule implements IPriceLimitRule
 	}
 
 	@Override
-	public Set<Integer> getPriceCountryIds()
+	public Set<CountryId> getPriceCountryIds()
 	{
 		return Services.get(IPriceLimitRestrictionsRepository.class).getPriceCountryIds();
 	}

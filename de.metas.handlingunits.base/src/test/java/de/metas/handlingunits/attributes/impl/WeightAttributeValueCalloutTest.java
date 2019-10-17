@@ -43,6 +43,7 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.conversion.ConversionHelper;
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -83,7 +84,7 @@ public class WeightAttributeValueCalloutTest extends AbstractHUTest
 		//
 		// IFCO Weight Tare
 		{
-			final I_M_Product pIFCO = helper.pmIFCO.getM_Product();
+			final I_M_Product pIFCO = IHUPackingMaterialDAO.extractProductOrNull(helper.pmIFCO);
 			pIFCO.setWeight(PM_IFCO_WeightTare);
 			InterfaceWrapperHelper.save(pIFCO);
 		}
@@ -91,7 +92,7 @@ public class WeightAttributeValueCalloutTest extends AbstractHUTest
 		//
 		// Pallete Weight Tare
 		{
-			final I_M_Product pPalet = helper.pmPalet.getM_Product();
+			final I_M_Product pPalet = IHUPackingMaterialDAO.extractProductOrNull(helper.pmPalet);
 			pPalet.setWeight(PM_Palet_WeightTare);
 			InterfaceWrapperHelper.save(pPalet);
 		}

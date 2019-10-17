@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Future;
 
-import org.compiere.util.Trx;
+import org.adempiere.ad.trx.api.ITrx;
 
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_Block;
@@ -53,17 +53,17 @@ public interface IWorkPackageQueue
 	/**
 	 * Timeout: wait forever, until we get next item
 	 */
-	public static final int TIMEOUT_Infinite = 0;
+	int TIMEOUT_Infinite = 0;
 
 	/**
 	 * Timeout: if we did not get the item first, don't retry at all
 	 */
-	public static final int TIMEOUT_OneTimeOnly = -1;
+	int TIMEOUT_OneTimeOnly = -1;
 
 	/**
 	 * @task http://dewiki908/mediawiki/index.php/09049_Priorit%C3%A4ten_Strategie_asynch_%28105016248827%29
 	 */
-	public static final IWorkpackagePrioStrategy PRIORITY_AUTO = SizeBasedWorkpackagePrio.INSTANCE;
+	IWorkpackagePrioStrategy PRIORITY_AUTO = SizeBasedWorkpackagePrio.INSTANCE;
 
 	/**
 	 * Retrieves the oldest work package with the highest priority that is supposed to be handled by the <code>AD_Process</code> with the given adProcessId.
@@ -228,7 +228,7 @@ public interface IWorkPackageQueue
 	/**
 	 * Same as {@link #markReadyForProcessing(I_C_Queue_WorkPackage)} but it will do this after given transaction was committed.
 	 * 
-	 * If transaction is {@link Trx#TRXNAME_None} the marking will be performed immediately.
+	 * If transaction is {@link ITrx#TRXNAME_None} the marking will be performed immediately.
 	 * 
 	 * @param workPackage
 	 * @param trxName

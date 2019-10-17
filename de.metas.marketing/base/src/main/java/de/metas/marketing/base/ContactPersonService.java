@@ -5,12 +5,12 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.user.User;
 import org.springframework.stereotype.Service;
 
 import de.metas.i18n.Language;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPerson.ContactPersonBuilder;
+import de.metas.user.User;
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.EmailAddress;
 import de.metas.util.Check;

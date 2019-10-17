@@ -13,11 +13,11 @@ package de.metas.migration.applier.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -38,12 +38,16 @@ import de.metas.migration.exception.ScriptExecutionException;
 import de.metas.migration.executor.IScriptExecutor;
 import de.metas.migration.executor.IScriptExecutorFactory;
 import de.metas.migration.executor.impl.DefaultScriptExecutorFactory;
+import lombok.NonNull;
+import lombok.Setter;
 
 public class ScriptsApplier implements IScriptsApplier
 {
 	private static final transient Logger logger = LoggerFactory.getLogger(ScriptsApplier.class);
 
 	private final IDatabase targetDatabase;
+	@Setter
+	private boolean skipExecutingAfterScripts = false;
 
 	private IScriptsApplierListener listener = NullScriptsApplierListener.instance;
 	private IScriptExecutorFactory scriptExecutorFactory = new DefaultScriptExecutorFactory();
@@ -54,18 +58,11 @@ public class ScriptsApplier implements IScriptsApplier
 
 	private static enum ScriptApplyResult
 	{
-		Applied,
-		Ignored,
+		Applied, Ignored,
 	}
 
-	public ScriptsApplier(final IDatabase targetDatabase)
+	public ScriptsApplier(@NonNull final IDatabase targetDatabase)
 	{
-		super();
-
-		if (targetDatabase == null)
-		{
-			throw new IllegalArgumentException("targetDatabase shall not be null");
-		}
 		this.targetDatabase = targetDatabase;
 	}
 
@@ -124,14 +121,15 @@ public class ScriptsApplier implements IScriptsApplier
 				logger.debug("Script already applied: {}", script);
 
 				countSkippedFromLastAction++;
-				if (countSkippedFromLastAction % 50 == 0)
-				{
-					logger.info("Skipped {} scripts that were already applied", countSkippedFromLastAction);
-				}
 				continue;
 			}
 
+			if(countSkippedFromLastAction > 0)
+			{
+				logger.info("Skipped {} scripts that were already applied", countSkippedFromLastAction);
+			}
 			countSkippedFromLastAction = 0;
+			
 			final ScriptApplyResult result = apply(script);
 			if (result == ScriptApplyResult.Applied)
 			{
@@ -147,6 +145,25 @@ public class ScriptsApplier implements IScriptsApplier
 			{
 				throw new ScriptExecutionException("Invalid ScriptApplyResult: " + result);
 			}
+		}
+
+		//
+		if(countSkippedFromLastAction > 0)
+		{
+			logger.info("Skipped {} scripts that were already applied", countSkippedFromLastAction);
+		}
+		countSkippedFromLastAction = 0;
+
+		//
+		// Execute after migration scripts
+		if (skipExecutingAfterScripts)
+		{
+			logger.info("Skip executing after migration scripts");
+		}
+		else
+		{
+			logger.info("Executing after migration scripts...");
+			getSqlExecutor().executeAfterScripts();
 		}
 	}
 
@@ -230,6 +247,11 @@ public class ScriptsApplier implements IScriptsApplier
 	private IScriptExecutor getExecutor(final IScript script)
 	{
 		return scriptExecutorFactory.createScriptExecutor(targetDatabase, script);
+	}
+
+	private IScriptExecutor getSqlExecutor()
+	{
+		return scriptExecutorFactory.createScriptExecutor(targetDatabase);
 	}
 
 	@Override

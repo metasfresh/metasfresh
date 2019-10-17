@@ -10,12 +10,12 @@ package de.metas.handlingunits.invoicecandidate.ui.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,13 +29,14 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ui.api.IGridTabSummaryInfo;
-import org.compiere.model.I_C_Currency;
 import org.compiere.util.DisplayType;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -45,13 +46,13 @@ public final class HUInvoiceCandidatesSelectionSummaryInfo implements IGridTabSu
 	private static final long serialVersionUID = 1L;
 
 	/** @return new builder */
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
 
 	/** Cast given {@link IGridTabSummaryInfo} to {@link HUInvoiceCandidatesSelectionSummaryInfo} if possible. If not, null is returned */
-	public static final HUInvoiceCandidatesSelectionSummaryInfo castOrNull(final IGridTabSummaryInfo gridTabSummaryInfo)
+	public static HUInvoiceCandidatesSelectionSummaryInfo castOrNull(final IGridTabSummaryInfo gridTabSummaryInfo)
 	{
 		if (gridTabSummaryInfo instanceof HUInvoiceCandidatesSelectionSummaryInfo)
 		{
@@ -285,14 +286,18 @@ public final class HUInvoiceCandidatesSelectionSummaryInfo implements IGridTabSu
 
 		public void addInvoiceCandidate(final I_C_Invoice_Candidate ic)
 		{
+			final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+
 			Check.assumeNotNull(ic, "ic not null");
 
 			final BigDecimal netAmt = ic.getNetAmtToInvoice();
 			final boolean isApprovedForInvoicing = ic.isApprovalForInvoicing();
 			addTotalNetAmt(netAmt, isApprovedForInvoicing, false); // isPackingMaterial TODO
 
-			final I_C_Currency currency = ic.getC_Currency();
-			final String currencySymbol = currency == null ? null : currency.getCurSymbol();
+			final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(ic.getC_Currency_ID());
+			final String currencySymbol = currencyId != null
+					? currencyDAO.getById(currencyId).getSymbol().getDefaultValue()
+					: null;
 			addCurrencySymbol(currencySymbol);
 
 			if (ic.isToRecompute())

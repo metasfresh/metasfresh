@@ -1,10 +1,9 @@
 package de.metas.invoice.export;
 
-import lombok.NonNull;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -16,19 +15,20 @@ import com.google.common.io.ByteStreams;
 
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.attachments.AttachmentConstants;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentTags;
 import de.metas.invoice_gateway.api.InvoiceExportServiceRegistry;
 import de.metas.invoice_gateway.spi.InvoiceExportClient;
 import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import de.metas.invoice_gateway.spi.model.InvoiceExportResult;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
-import de.metas.invoice_gateway.spi.model.InvoiceToExport;
+import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 import de.metas.logging.LogManager;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -55,21 +55,20 @@ import de.metas.util.StringUtils;
 @Service
 public class InvoiceExportService
 {
-
 	private static final Logger logger = LogManager.getLogger(InvoiceExportService.class);
 
-	private final InvoiceToExportFactory exportInvoiceFactory;
+	private final InvoiceToExportFactory invoiceToExportFactory;
 
 	private final InvoiceExportServiceRegistry invoiceExportServiceRegistry;
 
 	private final AttachmentEntryService attachmentEntryService;
 
 	private InvoiceExportService(
-			@NonNull final InvoiceToExportFactory exportInvoiceFactory,
+			@NonNull final InvoiceToExportFactory invoiceToExportFactory,
 			@NonNull final InvoiceExportServiceRegistry invoiceExportServiceRegistry,
 			@NonNull final AttachmentEntryService attachmentEntryService)
 	{
-		this.exportInvoiceFactory = exportInvoiceFactory;
+		this.invoiceToExportFactory = invoiceToExportFactory;
 		this.invoiceExportServiceRegistry = invoiceExportServiceRegistry;
 		this.attachmentEntryService = attachmentEntryService;
 	}
@@ -78,14 +77,19 @@ public class InvoiceExportService
 	{
 		for (final InvoiceId invoiceIdToExport : invoiceIdsToExport)
 		{
-			final InvoiceToExport invoiceToExport = exportInvoiceFactory.getById(invoiceIdToExport);
-			exportInvoice(invoiceToExport);
+			final Optional<InvoiceToExport> invoiceToExport = invoiceToExportFactory.getCreateForId(invoiceIdToExport);
+			if (!invoiceToExport.isPresent())
+			{
+				Loggables.addLog("InvoiceExportService - invoiceToExportFactory was unable to create an exportable representation for the invoice with InvoiceId={}; skipping.", invoiceIdToExport);
+				continue;
+			}
+			exportInvoice(invoiceToExport.get());
 		}
 	}
 
 	private void exportInvoice(@NonNull final InvoiceToExport invoiceToExport)
 	{
-		final ILoggable loggable = Loggables.get().withLogger(logger, Level.DEBUG);
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 
 		final List<InvoiceExportClient> exportClients = invoiceExportServiceRegistry.createExportClients(invoiceToExport);
 		if (exportClients.isEmpty())
@@ -124,14 +128,16 @@ public class InvoiceExportService
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
-
+		final AttachmentTags attachmentTag = AttachmentTags.builder()
+				.tag(AttachmentTags.TAGNAME_IS_DOCUMENT, StringUtils.ofBoolean(true)) // other than the "input" xml with was more or less just a template, this is a document
+				.tag(AttachmentTags.TAGNAME_BPARTNER_RECIPIENT_ID, Integer.toString(exportResult.getRecipientId().getRepoId()))
+				.tag(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER, exportResult.getInvoiceExportProviderId())
+				.build();
 		final AttachmentEntryCreateRequest attachmentEntryCreateRequest = AttachmentEntryCreateRequest
 				.builderFromByteArray(
 						exportResult.getFileName(),
 						byteArrayData)
-				.tag(AttachmentConstants.TAGNAME_IS_DOCUMENT, StringUtils.ofBoolean(true)) // other than the "input" xml with was more or less just a template, this is a document
-				.tag(AttachmentConstants.TAGNAME_BPARTNER_RECIPIENT_ID, Integer.toString(exportResult.getRecipientId().getRepoId()))
-				.tag(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER, exportResult.getInvoiceExportProviderId())
+				.tags(attachmentTag)
 				.build();
 		return attachmentEntryCreateRequest;
 	}

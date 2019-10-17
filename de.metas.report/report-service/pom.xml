@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>metasfresh-report</artifactId>
 		<groupId>de.metas.report</groupId>
-		<version>[1,10.0.0]</version>
+		<version>10.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
@@ -172,6 +172,12 @@
 			<artifactId>jxls-poi</artifactId>
 			<version>1.0.9</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -188,7 +194,7 @@
 							<goal>repackage</goal>
 						</goals>
 						<configuration>
-							<!-- we *also* need the normal main jar to be use in app
+							<!-- we *also* need the normal main jar to be used in app
 							so don't replace the normal jar, but create the executable jar with this classifier -->
 							<classifier>standalone</classifier>
 

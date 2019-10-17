@@ -16,29 +16,28 @@
  *****************************************************************************/
 package org.compiere.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 
-import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_MatchPO;
+import org.compiere.model.I_M_Requisition;
 import org.compiere.model.MCash;
-import org.compiere.model.MInOut;
 import org.compiere.model.MJournal;
 import org.compiere.model.MMovement;
 import org.compiere.model.MOrder;
 import org.compiere.model.MPayment;
 import org.compiere.model.MProjectIssue;
-import org.compiere.model.MRequisition;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
@@ -46,6 +45,9 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_HR_Process;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.api.impl.AcctSchemaPeriodControl;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
@@ -184,17 +186,17 @@ public class FactAcctReset extends JavaProcess
 
 		final Timestamp today = TimeUtil.trunc(new Timestamp (System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
 
-		final I_C_AcctSchema as = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(getCtx());
-		final boolean autoPeriod = as != null && as.isAutoPeriodControl();
+		final AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getByCliendAndOrg(getCtx());
+		final AcctSchemaPeriodControl periodControl = acctSchema.getPeriodControl();
 
-		if (autoPeriod)
+		if (periodControl.isAutomaticPeriodControl())
 		{
-			Timestamp temp = TimeUtil.addDays(today, - as.getPeriod_OpenHistory());
+			Timestamp temp = TimeUtil.addDays(today, - periodControl.getOpenDaysInPast());
 			if ( p_DateAcct_From == null || p_DateAcct_From.before(temp) ) {
 				p_DateAcct_From = temp;
 				log.info("DateAcct From set to: " + p_DateAcct_From);
 			}
-			temp = TimeUtil.addDays(today, as.getPeriod_OpenFuture());
+			temp = TimeUtil.addDays(today, periodControl.getOpenDaysInFuture());
 			if ( p_DateAcct_To == null || p_DateAcct_To.after(temp) ) {
 				p_DateAcct_To = temp;
 				log.info("DateAcct To set to: " + p_DateAcct_To);
@@ -205,13 +207,13 @@ public class FactAcctReset extends JavaProcess
 		m_countReset = 0;
 		//
 		String docBaseType = null;
-		if (AD_Table_ID == InterfaceWrapperHelper.getTableId(I_C_Invoice.class))
+		if (AD_Table_ID == getTableId(I_C_Invoice.class))
 			docBaseType = "IN ('" + X_C_DocType.DOCBASETYPE_APInvoice
 				+ "','" + X_C_DocType.DOCBASETYPE_APCreditMemo
 				+ "','" + X_C_DocType.DOCBASETYPE_ARInvoice
 				+ "','" + X_C_DocType.DOCBASETYPE_ARCreditMemo
 				+ "','" + X_C_DocType.DOCBASETYPE_ARProFormaInvoice + "')";
-		else if (AD_Table_ID == MInOut.Table_ID)
+		else if (AD_Table_ID ==getTableId(I_M_InOut.class))
 			docBaseType = "IN ('" + X_C_DocType.DOCBASETYPE_MaterialDelivery
 				+ "','" + X_C_DocType.DOCBASETYPE_MaterialReceipt + "')";
 		else if (AD_Table_ID == MPayment.Table_ID)
@@ -222,11 +224,11 @@ public class FactAcctReset extends JavaProcess
 				+ "','" + X_C_DocType.DOCBASETYPE_PurchaseOrder + "')";
 		else if (AD_Table_ID == MProjectIssue.Table_ID)
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_ProjectIssue + "'";
-		else if (AD_Table_ID == I_C_BankStatement.Table_ID)
+		else if (AD_Table_ID == getTableId(I_C_BankStatement.class))
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_BankStatement + "'";
 		else if (AD_Table_ID == MCash.Table_ID)
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_CashJournal + "'";
-		else if (AD_Table_ID == InterfaceWrapperHelper.getTableId(I_C_AllocationHdr.class))
+		else if (AD_Table_ID == getTableId(I_C_AllocationHdr.class))
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_PaymentAllocation + "'";
 		else if (AD_Table_ID == MJournal.Table_ID)
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_GLJournal + "'";
@@ -234,9 +236,9 @@ public class FactAcctReset extends JavaProcess
 	//		docBaseType = "= '" + X_C_DocType.DOCBASETYPE_GLDocument + "'";
 		else if (AD_Table_ID == MMovement.Table_ID)
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_MaterialMovement + "'";
-		else if (AD_Table_ID == MRequisition.Table_ID)
+		else if (AD_Table_ID == getTableId(I_M_Requisition.class))
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_PurchaseRequisition + "'";
-		else if (AD_Table_ID == InterfaceWrapperHelper.getTableId(I_M_Inventory.class))
+		else if (AD_Table_ID == getTableId(I_M_Inventory.class))
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory + "'";
 		else if (AD_Table_ID == adTableDAO.retrieveTableId(I_M_MatchInv.Table_Name))
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_MatchInvoice + "'";
@@ -271,7 +273,7 @@ public class FactAcctReset extends JavaProcess
 			+ " INNER JOIN Fact_Acct fact ON (fact.C_Period_ID=pc.C_Period_ID) "
 			+ " WHERE fact.AD_Table_ID=" + AD_Table_ID
 			+ " AND fact.Record_ID=" + TableName + "." + TableName + "_ID";
-		if ( !autoPeriod )
+		if ( !periodControl.isAutomaticPeriodControl() )
 			sql1 += " AND pc.PeriodStatus = 'O'" + docBaseType;
 		if (p_DateAcct_From != null)
 			sql1 += " AND TRUNC(fact.DateAcct) >= " + DB.TO_DATE(p_DateAcct_From);
@@ -286,7 +288,7 @@ public class FactAcctReset extends JavaProcess
 		String sql2 = "DELETE FROM Fact_Acct "
 			+ "WHERE AD_Client_ID=" + p_AD_Client_ID
 			+ " AND AD_Table_ID=" + AD_Table_ID;
-		if ( !autoPeriod )
+		if ( !periodControl.isAutomaticPeriodControl() )
 			sql2 += " AND EXISTS (SELECT 1 FROM C_PeriodControl pc "
 				+ "WHERE pc.PeriodStatus = 'O'" + docBaseType
 				+ " AND Fact_Acct.C_Period_ID=pc.C_Period_ID)";

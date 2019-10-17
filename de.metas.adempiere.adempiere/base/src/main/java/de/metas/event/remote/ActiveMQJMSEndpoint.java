@@ -414,7 +414,7 @@ public class ActiveMQJMSEndpoint implements IEventBusRemoteEndpoint
 			Check.assumeNotNull(eventBus, "eventBus not null");
 			this.eventBusRef = new WeakReference<>(eventBus);
 
-			final String topicName = eventBus.getName();
+			final String topicName = eventBus.getTopicName();
 			this.eventBusId = jms.createEventBusId(topicName);
 			this.jmsConsumer = jms.createTopicConsumer(topicName);
 			this.jmsClientId = jms.getClientID();

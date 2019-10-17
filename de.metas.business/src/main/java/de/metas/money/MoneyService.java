@@ -7,12 +7,20 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
-import de.metas.currency.ConversionType;
+import de.metas.currency.Amount;
+import de.metas.currency.ConversionTypeMethod;
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyConversionResult;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyConversionContext;
-import de.metas.currency.ICurrencyConversionResult;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.product.ProductPrice;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
@@ -64,18 +72,18 @@ public class MoneyService
 
 		final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
-		final ICurrencyConversionContext currencyConversionContext = currencyBL
+		final CurrencyConversionContext currencyConversionContext = currencyBL
 				.createCurrencyConversionContext(
-						SystemTime.asDate(),
-						ConversionType.Spot,
-						Env.getAD_Client_ID(),
-						Env.getAD_Org_ID(Env.getCtx()));
+						SystemTime.asLocalDate(),
+						ConversionTypeMethod.Spot,
+						Env.getClientId(),
+						Env.getOrgId());
 
-		final ICurrencyConversionResult conversionResult = currencyBL.convert(
+		final CurrencyConversionResult conversionResult = currencyBL.convert(
 				currencyConversionContext,
-				money.getValue(),
-				money.getCurrencyId().getRepoId(),
-				targetCurrencyId.getRepoId());
+				money.toBigDecimal(),
+				money.getCurrencyId(),
+				targetCurrencyId);
 
 		final BigDecimal convertedAmount = Check.assumeNotNull(
 				conversionResult.getAmount(),
@@ -95,7 +103,7 @@ public class MoneyService
 		final Currency currency = currencyRepository.getById(input.getCurrencyId());
 
 		final BigDecimal newValue = percent
-				.multiply(input.getValue(), currency.getPrecision());
+				.multiply(input.toBigDecimal(), currency.getPrecision().toInt());
 
 		return Money.of(newValue, input.getCurrencyId());
 	}
@@ -114,7 +122,7 @@ public class MoneyService
 
 		final Currency currency = currencyRepository.getById(input.getCurrencyId());
 
-		final BigDecimal newValue = percent.subtractFromBase(input.getValue(), currency.getPrecision());
+		final BigDecimal newValue = percent.subtractFromBase(input.toBigDecimal(), currency.getPrecision().toInt());
 		return Money.of(newValue, input.getCurrencyId());
 	}
 
@@ -122,10 +130,42 @@ public class MoneyService
 	{
 		final Currency currency = currencyRepository.getById(money.getCurrencyId());
 
-		return TranslatableStringBuilder.newInstance()
-				.append(money.getValue(), DisplayType.Amount)
+		return TranslatableStrings.builder()
+				.append(money.toBigDecimal(), DisplayType.Amount)
 				.append(" ")
-				.append(currency.getThreeLetterCode())
+				.append(currency.getCurrencyCode().toThreeLetterCode())
 				.build();
+	}
+
+	public Amount toAmount(@NonNull final Money money)
+	{
+		return money.toAmount(currencyId -> currencyRepository.getById(currencyId).getCurrencyCode());
+	}
+
+	public Money multiply(
+			@NonNull final Quantity qty,
+			@NonNull final ProductPrice price)
+	{
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
+		final Quantity qtyInPriceUnit = uomConversionBL.convertQuantityTo(
+				qty,
+				UOMConversionContext.of(price.getProductId()), price.getUomId());
+		return multiply(qtyInPriceUnit, price.toMoney());
+	}
+
+	public Money multiply(@NonNull final Quantity qty, @NonNull final Money money)
+	{
+
+		final CurrencyPrecision currencyPrecision = currencyRepository
+				.getById(money.getCurrencyId())
+				.getPrecision();
+
+		final BigDecimal moneyAmount = money.toBigDecimal();
+		final BigDecimal netAmt = qty.toBigDecimal().multiply(moneyAmount);
+
+		return Money.of(
+				currencyPrecision.round(netAmt),
+				money.getCurrencyId());
 	}
 }

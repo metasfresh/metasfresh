@@ -79,11 +79,11 @@ public class Add_Tables_to_DLM
 			final I_AD_Table dlm_Referencing_Table = InterfaceWrapperHelper.create(line.getDLM_Referencing_Table(), I_AD_Table.class);
 			if (dlm_Referencing_Table.isDLM())
 			{
-				Loggables.get().addLog("Table {} is already DLM'ed. Skipping", dlm_Referencing_Table.getTableName());
+				Loggables.addLog("Table {} is already DLM'ed. Skipping", dlm_Referencing_Table.getTableName());
 				continue;
 			}
 
-			trxManager.run(new TrxRunnable()
+			trxManager.runInNewTrx(new TrxRunnable()
 			{
 				@Override
 				public void run(String localTrxName) throws Exception

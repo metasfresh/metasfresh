@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Nullable;
 
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Util.ArrayKey;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
@@ -66,7 +66,7 @@ public final class ProcessClassInfo
 	/**
 	 * @return process class info or {@link #NULL} in case the given <code>processClass</code> is <code>null</code> or in case of failure.
 	 */
-	public static final ProcessClassInfo of(@Nullable final Class<?> processClass)
+	public static ProcessClassInfo of(@Nullable final Class<?> processClass)
 	{
 		if (processClass == null)
 		{
@@ -87,7 +87,7 @@ public final class ProcessClassInfo
 	/**
 	 * @return process class info or {@link #NULL} in case the given <code>processClass</code> is <code>null</code> or in case of failure.
 	 */
-	public static final ProcessClassInfo ofClassname(@Nullable final String classname)
+	public static ProcessClassInfo ofClassname(@Nullable final String classname)
 	{
 		if (Check.isEmpty(classname, true))
 		{
@@ -118,7 +118,7 @@ public final class ProcessClassInfo
 	}
 
 	/** Reset {@link ProcessClassInfo} cache */
-	public static final void resetCache()
+	public static void resetCache()
 	{
 		processClassInfoCache.invalidateAll();
 		processClassInfoCache.cleanUp();
@@ -142,7 +142,7 @@ public final class ProcessClassInfo
 	 * @param processClass
 	 * @return process class info or {@link #NULL} in case of failure.
 	 */
-	private static final ProcessClassInfo createProcessClassInfo(final Class<?> processClass)
+	private static ProcessClassInfo createProcessClassInfo(final Class<?> processClass)
 	{
 		try
 		{
@@ -156,7 +156,7 @@ public final class ProcessClassInfo
 	}
 
 	/** Retrieves the fields which were marked as process parameters */
-	private static final Set<Field> retrieveParameterFields(final Class<?> processClass)
+	private static Set<Field> retrieveParameterFields(final Class<?> processClass)
 	{
 		@SuppressWarnings("unchecked")
 		final Set<Field> paramFields = ReflectionUtils.getAllFields(processClass, ReflectionUtils.withAnnotation(Param.class));
@@ -168,7 +168,7 @@ public final class ProcessClassInfo
 	 * 
 	 * @see ProcessClassParamInfo#createFieldUniqueKey(Field)
 	 */
-	public static final ImmutableMap<ArrayKey, Field> retrieveParameterFieldsIndexedByFieldKey(final Class<?> processClass)
+	public static ImmutableMap<ArrayKey, Field> retrieveParameterFieldsIndexedByFieldKey(final Class<?> processClass)
 	{
 		return retrieveParameterFields(processClass)
 				.stream()
@@ -181,7 +181,7 @@ public final class ProcessClassInfo
 	 * 
 	 * @return
 	 */
-	private static final ImmutableListMultimap<ArrayKey, ProcessClassParamInfo> createProcessClassParamInfos(final Class<?> processClass)
+	private static ImmutableListMultimap<ArrayKey, ProcessClassParamInfo> createProcessClassParamInfos(final Class<?> processClass)
 	{
 		return retrieveParameterFields(processClass)
 				.stream()
@@ -202,12 +202,13 @@ public final class ProcessClassInfo
 		return ProcessClassParamInfo.builder()
 				.field(paramField)
 				.parameterName(paramAnn.parameterName())
-				.mandatory(paramAnn.mandatory())
 				.parameterTo(paramAnn.parameterTo())
+				.mandatory(paramAnn.mandatory())
+				.barcodeScannerType(paramAnn.barcodeScannerType().getTypeOrNull())
 				.build();
 	}
 
-	private static final boolean isRunOutOfTrx(final Class<?> processClass, final Class<?> returnType, final String methodName)
+	private static boolean isRunOutOfTrx(final Class<?> processClass, final Class<?> returnType, final String methodName)
 	{
 		// Get all methods with given format,
 		// from given processClass and it's super classes,
@@ -360,7 +361,7 @@ public final class ProcessClassInfo
 	{
 		return getParameterInfos(parameterName, parameterTo)
 				.stream()
-				.anyMatch(paramInfo -> paramInfo.isMandatory());
+				.anyMatch(ProcessClassParamInfo::isMandatory);
 	}
 
 	public Collection<ProcessClassParamInfo> getParameterInfos()
@@ -399,7 +400,7 @@ public final class ProcessClassInfo
 		}
 
 		// No application context => allowed (but warn)
-		final ApplicationContext context = Adempiere.getSpringApplicationContext();
+		final ApplicationContext context = SpringContextHolder.instance.getApplicationContext();
 		if (context == null)
 		{
 			logger.warn("No application context found to determine if {} is allowed for current profiles. Considering allowed", this);

@@ -140,7 +140,7 @@ public class LULoaderTest extends AbstractHUTest
 	{
 		final I_M_HU_PI_Version piVersion = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersion(huPI);
 		final I_M_HU hu = InterfaceWrapperHelper.newInstance(I_M_HU.class, helper.contextProvider);
-		hu.setC_BPartner(bpartner);
+		hu.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
 		hu.setM_HU_PI_Version(piVersion);
 		hu.setHUStatus(X_M_HU.HUSTATUS_Active);
 

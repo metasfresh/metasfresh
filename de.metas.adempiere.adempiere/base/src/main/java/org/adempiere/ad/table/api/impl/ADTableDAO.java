@@ -38,6 +38,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.UpperCaseQueryFilterModifier;
 import org.adempiere.ad.service.ISequenceDAO;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -49,6 +50,7 @@ import org.compiere.model.MTable;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.DocumentConstants;
@@ -122,19 +124,11 @@ public class ADTableDAO implements IADTableDAO
 	}
 
 	@Override
-	public String retrieveTableName(final int adTableId)
+	public String retrieveTableName(@NonNull final AdTableId adTableId)
 	{
 		final Properties ctx = Env.getCtx();
-
-		// guard against 0 AD_Table_ID
-		if (adTableId <= 0)
-		{
-			return null;
-		}
-
 		@SuppressWarnings("deprecation")
-		final String tableName = MTable.getTableName(ctx, adTableId);
-
+		final String tableName = MTable.getTableName(ctx, adTableId.getRepoId());
 		return tableName;
 	}
 
@@ -271,7 +265,6 @@ public class ADTableDAO implements IADTableDAO
 
 		return queryBL.createQueryBuilder(I_AD_Column.class, table)
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
 				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, table.getAD_Table_ID())
 				.orderBy()
 				.addColumnAscending(I_AD_Column.COLUMNNAME_AD_Column_ID)
@@ -303,5 +296,27 @@ public class ADTableDAO implements IADTableDAO
 				.create()
 				.listDistinct(I_AD_Table.COLUMNNAME_TableName, String.class);
 		return ImmutableSet.copyOf(tableNames);
+	}
+
+	@Override
+	public int getTypeaheadMinLength(@NonNull final String tableName)
+	{
+		final I_AD_Table table = retrieveTable(tableName);
+		final int typeaheadMinLength = table.getACTriggerLength();
+		return typeaheadMinLength > 0 ? typeaheadMinLength : 0;
+	}
+
+	@Override
+	public List<I_AD_Table> retrieveAllImportTables()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_AD_Table.class)
+				.addOnlyActiveRecordsFilter()
+				.addStringLikeFilter(I_AD_Table.COLUMNNAME_TableName, "I_%", /* ignore case */false)
+				.orderBy(I_AD_Table.COLUMNNAME_TableName)
+				.create()
+				.stream()
+				.filter(table -> table.getTableName().startsWith("I_")) // required because "I_%" could match "IMP_blabla" too
+				.collect(ImmutableList.toImmutableList());
 	}
 }

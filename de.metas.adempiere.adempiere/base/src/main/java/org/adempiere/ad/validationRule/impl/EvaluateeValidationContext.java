@@ -1,5 +1,7 @@
 package org.adempiere.ad.validationRule.impl;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -25,15 +27,12 @@ package org.adempiere.ad.validationRule.impl;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.compiere.util.Evaluatee;
 
-import de.metas.util.Check;
-
 public class EvaluateeValidationContext implements IValidationContext
 {
 	private final Evaluatee evaluatee;
 
-	public EvaluateeValidationContext(final Evaluatee evaluatee)
+	public EvaluateeValidationContext(@NonNull final Evaluatee evaluatee)
 	{
-		Check.assumeNotNull(evaluatee, "evaluatee not null");
 		this.evaluatee = evaluatee;
 	}
 

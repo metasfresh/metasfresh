@@ -3,25 +3,19 @@ package de.metas.attachments;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import lombok.NonNull;
-
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.model.X_AD_AttachmentEntry;
 import org.springframework.stereotype.Service;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Splitter;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
-import com.google.common.collect.ImmutableMap;
 
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -48,9 +42,6 @@ import de.metas.util.Check;
 @Service
 public class AttachmentEntryFactory
 {
-	public static final String TAGS_SEPARATOR = "\n";
-	public static final String TAGS_KEY_VALUE_SEPARATOR = "=";
-
 	public static final BiMap<String, AttachmentEntry.Type> AD_RefList_Value2attachmentEntryType = ImmutableBiMap.<String, AttachmentEntry.Type> builder()
 			.put(X_AD_AttachmentEntry.TYPE_Data, AttachmentEntry.Type.Data)
 			.put(X_AD_AttachmentEntry.TYPE_URL, AttachmentEntry.Type.URL)
@@ -88,11 +79,14 @@ public class AttachmentEntryFactory
 		{
 			throw new AdempiereException("Type not supported: " + type).setParameter("request", request);
 		}
-
-		syncTagsToRecord(
-				request.getTags(),
-				attachmentEntryRecord);
-
+		if (request.getTags() != null)
+		{
+			attachmentEntryRecord.setTags(request.getTags().getTagsAsString());
+		}
+		else
+		{
+			attachmentEntryRecord.setTags(null);
+		}
 		// we need to save for type=Data in order not to loose the byte[] if any.
 		// we also save for type==URL so be more "predictable"
 		saveRecord(attachmentEntryRecord);
@@ -103,20 +97,6 @@ public class AttachmentEntryFactory
 
 	public AttachmentEntry toAttachmentEntry(@NonNull final I_AD_AttachmentEntry entryRecord)
 	{
-		final String tagsAsString = entryRecord.getTags();
-
-		final Map<String, String> tags;
-		if (Check.isEmpty(tagsAsString, true))
-		{
-			tags = ImmutableMap.of();
-		}
-		else
-		{
-			tags = Splitter
-					.on(TAGS_SEPARATOR)
-					.withKeyValueSeparator(TAGS_KEY_VALUE_SEPARATOR)
-					.split(tagsAsString);
-		}
 		return AttachmentEntry.builder()
 				.id(AttachmentEntryId.ofRepoIdOrNull(entryRecord.getAD_AttachmentEntry_ID()))
 				.name(entryRecord.getFileName())
@@ -124,7 +104,7 @@ public class AttachmentEntryFactory
 				.filename(entryRecord.getFileName())
 				.mimeType(entryRecord.getContentType())
 				.url(extractUriOrNull(entryRecord))
-				.tags(tags)
+				.tags(AttachmentTags.ofString(entryRecord.getTags()))
 				.build();
 	}
 
@@ -177,43 +157,7 @@ public class AttachmentEntryFactory
 		{
 			attachmentEntryRecord.setURL(null);
 		}
+		attachmentEntryRecord.setTags(attachmentEntry.getTags().getTagsAsString());
 
-		syncTagsToRecord(
-				attachmentEntry.getTags(),
-				attachmentEntryRecord);
-	}
-
-	private void syncTagsToRecord(
-			@NonNull final Map<String, String> tags,
-			@NonNull final I_AD_AttachmentEntry attachmentEntryRecord)
-	{
-		validateTags(tags);
-
-		final String tagsAsString = Joiner
-				.on(TAGS_SEPARATOR)
-				.withKeyValueSeparator(TAGS_KEY_VALUE_SEPARATOR)
-				.join(tags);
-		attachmentEntryRecord.setTags(tagsAsString);
-	}
-
-	private Map<String, String> validateTags(@NonNull final Map<String, String> tags)
-	{
-		for (final Entry<String, String> tag : tags.entrySet())
-		{
-			Check.errorIf(tag.getKey().contains(AttachmentEntryFactory.TAGS_SEPARATOR),
-					"Tags may not contain {}; illegal entry: name={}; value={}",
-					AttachmentEntryFactory.TAGS_SEPARATOR, tag.getKey(), tag.getValue());
-			Check.errorIf(tag.getKey().contains(AttachmentEntryFactory.TAGS_KEY_VALUE_SEPARATOR),
-					"Tags may not contain {}; illegal entry: name={}; value={}",
-					AttachmentEntryFactory.TAGS_KEY_VALUE_SEPARATOR, tag.getKey(), tag.getValue());
-
-			Check.errorIf(tag.getValue().contains(AttachmentEntryFactory.TAGS_SEPARATOR),
-					"Tags may not contain {}; illegal entry: name={}; value={}",
-					AttachmentEntryFactory.TAGS_SEPARATOR, tag.getKey(), tag.getValue());
-			Check.errorIf(tag.getValue().contains(AttachmentEntryFactory.TAGS_KEY_VALUE_SEPARATOR),
-					"Tags may not contain {}; illegal entry: name={}; value={}",
-					AttachmentEntryFactory.TAGS_KEY_VALUE_SEPARATOR, tag.getKey(), tag.getValue());
-		}
-		return tags;
 	}
 }

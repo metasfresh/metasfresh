@@ -28,9 +28,6 @@ import org.compiere.util.TrxRunnable2;
 /**
  * This config is used by {@link ITrxManager#run(String, ITrxRunConfig, org.compiere.util.TrxRunnable)} to decide the particular behavior.<br>
  * Use {@link ITrxManager#newTrxRunConfigBuilder()} to obtain an instance.
- *
- * @author ts
- *
  */
 public interface ITrxRunConfig
 {
@@ -96,7 +93,7 @@ public interface ITrxRunConfig
 	 * Makes e.g. sense with long-running transactions that only do selects (yes, also a select acquires a lock).
 	 * The default is <code>false</code>.
 	 */
-	public boolean isAutoCommit();
+	boolean isAutoCommit();
 
 	TrxPropagation getTrxPropagation();
 

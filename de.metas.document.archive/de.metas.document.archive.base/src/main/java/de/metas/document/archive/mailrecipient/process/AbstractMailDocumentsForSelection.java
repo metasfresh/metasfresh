@@ -157,7 +157,7 @@ public abstract class AbstractMailDocumentsForSelection extends JavaProcess
 		if (logLine.getAD_Archive_ID() <= 0)
 		{
 			final I_C_Doc_Outbound_Log docOutBoundLogRecord = logLine.getC_Doc_Outbound_Log();
-			Loggables.get().addLog(msgBL.getMsg(getCtx(), MSG_EMPTY_AD_Archive_ID, new Object[] { docOutBoundLogRecord.getDocumentNo() }));
+			Loggables.addLog(msgBL.getMsg(getCtx(), MSG_EMPTY_AD_Archive_ID, new Object[] { docOutBoundLogRecord.getDocumentNo() }));
 			collector.collectException(MSG_EMPTY_AD_Archive_ID, docOutBoundLogRecord.getDocumentNo());
 			return false;
 		}

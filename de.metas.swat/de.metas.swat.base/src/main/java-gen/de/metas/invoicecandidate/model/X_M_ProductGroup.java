@@ -14,7 +14,7 @@ public class X_M_ProductGroup extends org.compiere.model.PO implements I_M_Produ
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 803712055L;
+	private static final long serialVersionUID = -1839422585L;
 
     /** Standard Constructor */
     public X_M_ProductGroup (Properties ctx, int M_ProductGroup_ID, String trxName)
@@ -68,18 +68,6 @@ public class X_M_ProductGroup extends org.compiere.model.PO implements I_M_Produ
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Product getM_Product_Proxy() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_Proxy_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product_Proxy(org.compiere.model.I_M_Product M_Product_Proxy)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_Proxy_ID, org.compiere.model.I_M_Product.class, M_Product_Proxy);
-	}
-
 	/** Set Stellvertreter-Produkt.
 		@param M_Product_Proxy_ID 
 		Produkt, dass bei einer Aggregation unterschiedlicher Produkte als Stellvertreter der aggregierten Produkte ausgewiesen werden kann
@@ -106,9 +94,7 @@ public class X_M_ProductGroup extends org.compiere.model.PO implements I_M_Produ
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -116,8 +102,7 @@ public class X_M_ProductGroup extends org.compiere.model.PO implements I_M_Produ
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{

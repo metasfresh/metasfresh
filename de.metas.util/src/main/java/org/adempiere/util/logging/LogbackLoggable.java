@@ -3,8 +3,8 @@ package org.adempiere.util.logging;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
-import de.metas.util.Check;
 import de.metas.util.ILoggable;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -28,27 +28,25 @@ import de.metas.util.ILoggable;
  * #L%
  */
 
-public class LogbackLoggable implements ILoggable
+public final class LogbackLoggable implements ILoggable
 {
 	private final Logger logger;
 	private final Level level;
 
 	/**
-	 * @param logger JUL's logger
+	 * @param logger slf4j logger
 	 * @param level the logging level to be used when {@link #addLog(String)} is called.
 	 */
-	public LogbackLoggable(final Logger logger, final Level level)
+	public LogbackLoggable(@NonNull final Logger logger, @NonNull final Level level)
 	{
-		super();
-		Check.assumeNotNull(logger, "logger not null");
-		Check.assumeNotNull(level, "level not null");
 		this.logger = logger;
 		this.level = level;
 	}
 
 	@Override
-	public void addLog(final String msg, final Object... msgParameters)
+	public ILoggable addLog(final String msg, final Object... msgParameters)
 	{
 		LoggingHelper.log(logger, level, msg, msgParameters);
+		return this;
 	}
 }

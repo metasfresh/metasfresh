@@ -17,6 +17,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -65,15 +66,14 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 	}
 
 	@Override
-	public List<I_PP_Order_Qty> retrieveOrderQtys(final int ppOrderId)
+	public List<I_PP_Order_Qty> retrieveOrderQtys(final PPOrderId ppOrderId)
 	{
 		return retrieveOrderQtys(Env.getCtx(), ppOrderId, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	@Cached(cacheName = I_PP_Order_Qty.Table_Name + "#by#PP_Order_ID", expireMinutes = 10)
-	List<I_PP_Order_Qty> retrieveOrderQtys(@CacheCtx final Properties ctx, final int ppOrderId, @CacheTrx final String trxName)
+	List<I_PP_Order_Qty> retrieveOrderQtys(@CacheCtx final Properties ctx, @NonNull final PPOrderId ppOrderId, @CacheTrx final String trxName)
 	{
-		Preconditions.checkArgument(ppOrderId > 0, "ppOrderId shall be > 0");
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Order_Qty.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
@@ -83,9 +83,8 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 	}
 
 	@Override
-	public I_PP_Order_Qty retrieveOrderQtyForCostCollector(final int ppOrderId, final int costCollectorId)
+	public I_PP_Order_Qty retrieveOrderQtyForCostCollector(@NonNull final PPOrderId ppOrderId, final int costCollectorId)
 	{
-		Preconditions.checkArgument(ppOrderId > 0, "ppOrderId shall be > 0");
 		Preconditions.checkArgument(costCollectorId > 0, "costCollectorId shall be > 0");
 
 		return retrieveOrderQtys(ppOrderId)
@@ -105,6 +104,7 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order_Qty.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_Order_Qty.COLUMN_M_HU_ID, huId)
+				.addNotNull(I_PP_Order_Qty.COLUMN_PP_Order_BOMLine_ID) // it's actually an issue (and not a receipt)
 				.create()
 				.match();
 	}

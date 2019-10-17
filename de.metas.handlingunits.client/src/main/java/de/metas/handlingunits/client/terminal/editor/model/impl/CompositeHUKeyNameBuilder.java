@@ -10,12 +10,12 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,13 +25,12 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
 
 import java.util.List;
 
-import org.compiere.util.Util;
-
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 public class CompositeHUKeyNameBuilder extends AbstractHUKeyNameBuilder<CompositeHUKey>
 {
@@ -94,7 +93,7 @@ public class CompositeHUKeyNameBuilder extends AbstractHUKeyNameBuilder<Composit
 		}
 		else
 		{
-			sb.append(count).append(" x ").append(Util.maskHTML(piName));
+			sb.append(count).append(" x ").append(StringUtils.maskHTML(piName));
 		}
 
 		htmlPartChildrenCount = sb.toString();

@@ -35,6 +35,7 @@ import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IDDOrderBL;
+import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
@@ -62,12 +63,13 @@ public class M_Movement
 		final IMovementBL movementBL = Services.get(IMovementBL.class);
 		final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
 		final IDDOrderBL ddOrderBL = Services.get(IDDOrderBL.class);
+		final IDDOrderDAO ddOrdersRepo = Services.get(IDDOrderDAO.class);
 
 		if (movement.getDD_Order_ID() > 0)
 		{
 			final I_DD_Order order = movement.getDD_Order();
 			order.setIsInTransit(true);
-			InterfaceWrapperHelper.save(order);
+			ddOrdersRepo.save(order);
 		}
 
 		final List<I_M_MovementLine> movementLines = movementDAO.retrieveLines(movement);
@@ -92,21 +94,21 @@ public class M_Movement
 			if (!isMovementReceipt)
 			{
 				final Quantity qtyInTransitNew = qtyInTransit.add(movementQty);
-				ddOrderLineOrAlt.setQtyInTransit(qtyInTransitNew.getQty());
+				ddOrderLineOrAlt.setQtyInTransit(qtyInTransitNew.toBigDecimal());
 			}
 			//
 			// Movement-Receipt: InTransit Warehouse -> Destination Warehouse
 			else
 			{
 				final Quantity qtyInTransitNew = qtyInTransit.subtract(movementQty);
-				ddOrderLineOrAlt.setQtyInTransit(qtyInTransitNew.getQty());
+				ddOrderLineOrAlt.setQtyInTransit(qtyInTransitNew.toBigDecimal());
 
 				final Quantity qtyDelivered = new Quantity(ddOrderLineOrAlt.getQtyDelivered(), uom);
 				final Quantity qtyDeliveredNew = qtyDelivered.add(movementQty);
-				ddOrderLineOrAlt.setQtyDelivered(qtyDeliveredNew.getQty());
+				ddOrderLineOrAlt.setQtyDelivered(qtyDeliveredNew.toBigDecimal());
 			}
 
-			InterfaceWrapperHelper.save(ddOrderLineOrAlt);
+			ddOrdersRepo.save(ddOrderLineOrAlt);
 		}
 	}
 

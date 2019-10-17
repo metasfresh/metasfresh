@@ -1,5 +1,7 @@
 package de.metas.migration.scanner.impl;
 
+import java.io.File;
+
 /*
  * #%L
  * de.metas.migration.base
@@ -13,11 +15,11 @@ package de.metas.migration.scanner.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -28,6 +30,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.metas.migration.ScriptType;
 import de.metas.migration.exception.ScriptException;
 import de.metas.migration.executor.IScriptExecutorFactory;
 import de.metas.migration.scanner.IFileRef;
@@ -95,6 +98,18 @@ public class ScriptScannerFactory implements IScriptScannerFactory
 	}
 
 	@Override
+	public IScriptScanner createScriptScannerByFilename(final String filename)
+	{
+		final IFileRef fileRef = new FileRef(new File(filename));
+		final IScriptScanner scriptScanner = createScriptScanner(fileRef);
+		if (scriptScanner == null)
+		{
+			throw new RuntimeException("No script scanner found for " + filename);
+		}
+		return scriptScanner;
+	}
+
+	@Override
 	public IScriptScanner createScriptScanner(final IFileRef fileRef)
 	{
 		final Class<? extends IScriptScanner> scannerClass = getScriptScannerClassOrNull(fileRef);
@@ -131,9 +146,9 @@ public class ScriptScannerFactory implements IScriptScannerFactory
 	@Override
 	public void registerScriptScannerClassesFor(final IScriptExecutorFactory scriptExecutorFactory)
 	{
-		for (final String scriptType : scriptExecutorFactory.getSupportedScriptTypes())
+		for (final ScriptType scriptType : scriptExecutorFactory.getSupportedScriptTypes())
 		{
-			registerScriptScannerClass(scriptType, SingletonScriptScanner.class);
+			registerScriptScannerClass(scriptType.getFileExtension(), SingletonScriptScanner.class);
 		}
 	}
 

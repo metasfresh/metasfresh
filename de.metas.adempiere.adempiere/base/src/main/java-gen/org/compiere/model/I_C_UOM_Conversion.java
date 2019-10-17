@@ -1,29 +1,10 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for C_UOM_Conversion
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a
  */
+@SuppressWarnings("javadoc")
 public interface I_C_UOM_Conversion 
 {
 
@@ -31,163 +12,313 @@ public interface I_C_UOM_Conversion
     public static final String Table_Name = "C_UOM_Conversion";
 
     /** AD_Table_ID=175 */
-    public static final int Table_ID = MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-    KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 6 - System - Client 
+    /** AccessLevel = 6 - System - Client
      */
-    BigDecimal accessLevel = BigDecimal.valueOf(6);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(6);
 
     /** Load Meta Data */
 
+	/**
+	 * Get Mandant.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Client_ID();
+
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_AD_Client>(I_C_UOM_Conversion.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-	/** Get Client.
-	  * Client/Tenant for this installation.
-	  */
-	public int getAD_Client_ID();
+	/**
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Org_ID (int AD_Org_ID);
 
+	/**
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Org_ID();
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_AD_Org>(I_C_UOM_Conversion.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/** Set Organization.
-	  * Organizational entity within client
-	  */
-	public void setAD_Org_ID (int AD_Org_ID);
+	/**
+	 * Get Erstellt.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
 
-	/** Get Organization.
-	  * Organizational entity within client
-	  */
-	public int getAD_Org_ID();
-
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_C_UOM_Conversion, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_UOM_Conversion, Object>(I_C_UOM_Conversion.class, "Created", null);
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
-	/** Get Created.
-	  * Date this record was created
-	  */
-	public Timestamp getCreated();
+	/**
+	 * Get Erstellt durch.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCreatedBy();
 
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_AD_User>(I_C_UOM_Conversion.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
-	/** Get Created By.
-	  * User who created this records
-	  */
-	public int getCreatedBy();
+	/**
+	 * Set Umrechnung Maßeinheit.
+	 * Unit of Measure Conversion
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_Conversion_ID (int C_UOM_Conversion_ID);
 
+	/**
+	 * Get Umrechnung Maßeinheit.
+	 * Unit of Measure Conversion
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_Conversion_ID();
+
+    /** Column definition for C_UOM_Conversion_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_UOM_Conversion, Object> COLUMN_C_UOM_Conversion_ID = new org.adempiere.model.ModelColumn<I_C_UOM_Conversion, Object>(I_C_UOM_Conversion.class, "C_UOM_Conversion_ID", null);
     /** Column name C_UOM_Conversion_ID */
     public static final String COLUMNNAME_C_UOM_Conversion_ID = "C_UOM_Conversion_ID";
 
-	/** Set UOM Conversion.
-	  * Unit of Measure Conversion
-	  */
-	public void setC_UOM_Conversion_ID (int C_UOM_Conversion_ID);
+	/**
+	 * Set Maßeinheit.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
 
-	/** Get UOM Conversion.
-	  * Unit of Measure Conversion
-	  */
-	public int getC_UOM_Conversion_ID();
+	/**
+	 * Get Maßeinheit.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
 
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_C_UOM>(I_C_UOM_Conversion.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
     /** Column name C_UOM_ID */
     public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
-	/** Set UOM.
-	  * Unit of Measure
-	  */
-	public void setC_UOM_ID (int C_UOM_ID);
+	/**
+	 * Set Ziel-Maßeinheit.
+	 * Maßeinheit, in die eine bestimmte Menge konvertiert werden soll
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_To_ID (int C_UOM_To_ID);
 
-	/** Get UOM.
-	  * Unit of Measure
-	  */
-	public int getC_UOM_ID();
+	/**
+	 * Get Ziel-Maßeinheit.
+	 * Maßeinheit, in die eine bestimmte Menge konvertiert werden soll
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_To_ID();
 
-	public I_C_UOM getC_UOM() throws RuntimeException;
-
+    /** Column definition for C_UOM_To_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_C_UOM> COLUMN_C_UOM_To_ID = new org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_C_UOM>(I_C_UOM_Conversion.class, "C_UOM_To_ID", org.compiere.model.I_C_UOM.class);
     /** Column name C_UOM_To_ID */
     public static final String COLUMNNAME_C_UOM_To_ID = "C_UOM_To_ID";
 
-	/** Set UoM To.
-	  * Target or destination Unit of Measure
-	  */
-	public void setC_UOM_To_ID (int C_UOM_To_ID);
+	/**
+	 * Set Divisor.
+	 * Der Divisor ist der Kehrwert des Umrechnungsfaktors.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDivideRate (java.math.BigDecimal DivideRate);
 
-	/** Get UoM To.
-	  * Target or destination Unit of Measure
-	  */
-	public int getC_UOM_To_ID();
+	/**
+	 * Get Divisor.
+	 * Der Divisor ist der Kehrwert des Umrechnungsfaktors.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getDivideRate();
 
-	public I_C_UOM getC_UOM_To() throws RuntimeException;
-
+    /** Column definition for DivideRate */
+    public static final org.adempiere.model.ModelColumn<I_C_UOM_Conversion, Object> COLUMN_DivideRate = new org.adempiere.model.ModelColumn<I_C_UOM_Conversion, Object>(I_C_UOM_Conversion.class, "DivideRate", null);
     /** Column name DivideRate */
     public static final String COLUMNNAME_DivideRate = "DivideRate";
 
-	/** Set Divide Rate.
-	  * To convert Source number to Target number, the Source is divided
-	  */
-	public void setDivideRate (BigDecimal DivideRate);
+	/**
+	 * Set Aktiv.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsActive (boolean IsActive);
 
-	/** Get Divide Rate.
-	  * To convert Source number to Target number, the Source is divided
-	  */
-	public BigDecimal getDivideRate();
+	/**
+	 * Get Aktiv.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isActive();
 
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_C_UOM_Conversion, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_UOM_Conversion, Object>(I_C_UOM_Conversion.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
-	/** Set Active.
-	  * The record is active in the system
-	  */
-	public void setIsActive (boolean IsActive);
+	/**
+	 * Set Ziel ist Catch-Maßeinheit.
+	 * Legt fest ob die Ziel-Maßeinheit die Parallel-Maßeinheit des Produktes ist, auf die bei einer Catch-Weight-Abrechnung zurückgegriffen wird
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsCatchUOMForProduct (boolean IsCatchUOMForProduct);
 
-	/** Get Active.
-	  * The record is active in the system
-	  */
-	public boolean isActive();
+	/**
+	 * Get Ziel ist Catch-Maßeinheit.
+	 * Legt fest ob die Ziel-Maßeinheit die Parallel-Maßeinheit des Produktes ist, auf die bei einer Catch-Weight-Abrechnung zurückgegriffen wird
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isCatchUOMForProduct();
 
+    /** Column definition for IsCatchUOMForProduct */
+    public static final org.adempiere.model.ModelColumn<I_C_UOM_Conversion, Object> COLUMN_IsCatchUOMForProduct = new org.adempiere.model.ModelColumn<I_C_UOM_Conversion, Object>(I_C_UOM_Conversion.class, "IsCatchUOMForProduct", null);
+    /** Column name IsCatchUOMForProduct */
+    public static final String COLUMNNAME_IsCatchUOMForProduct = "IsCatchUOMForProduct";
+
+	/**
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Product_ID();
+
+    /** Column definition for M_Product_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_M_Product>(I_C_UOM_Conversion.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
-	/** Set Product.
-	  * Product, Service, Item
-	  */
-	public void setM_Product_ID (int M_Product_ID);
+	/**
+	 * Set Faktor.
+	 * Rate to multiple the source by to calculate the target.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setMultiplyRate (java.math.BigDecimal MultiplyRate);
 
-	/** Get Product.
-	  * Product, Service, Item
-	  */
-	public int getM_Product_ID();
+	/**
+	 * Get Faktor.
+	 * Rate to multiple the source by to calculate the target.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getMultiplyRate();
 
-	public I_M_Product getM_Product() throws RuntimeException;
-
+    /** Column definition for MultiplyRate */
+    public static final org.adempiere.model.ModelColumn<I_C_UOM_Conversion, Object> COLUMN_MultiplyRate = new org.adempiere.model.ModelColumn<I_C_UOM_Conversion, Object>(I_C_UOM_Conversion.class, "MultiplyRate", null);
     /** Column name MultiplyRate */
     public static final String COLUMNNAME_MultiplyRate = "MultiplyRate";
 
-	/** Set Multiply Rate.
-	  * Rate to multiple the source by to calculate the target.
-	  */
-	public void setMultiplyRate (BigDecimal MultiplyRate);
+	/**
+	 * Get Aktualisiert.
+	 * Date this record was updated
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getUpdated();
 
-	/** Get Multiply Rate.
-	  * Rate to multiple the source by to calculate the target.
-	  */
-	public BigDecimal getMultiplyRate();
-
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_C_UOM_Conversion, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_UOM_Conversion, Object>(I_C_UOM_Conversion.class, "Updated", null);
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
-	/** Get Updated.
-	  * Date this record was updated
-	  */
-	public Timestamp getUpdated();
+	/**
+	 * Get Aktualisiert durch.
+	 * User who updated this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getUpdatedBy();
 
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_UOM_Conversion, org.compiere.model.I_AD_User>(I_C_UOM_Conversion.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/** Get Updated By.
-	  * User who updated this records
-	  */
-	public int getUpdatedBy();
 }

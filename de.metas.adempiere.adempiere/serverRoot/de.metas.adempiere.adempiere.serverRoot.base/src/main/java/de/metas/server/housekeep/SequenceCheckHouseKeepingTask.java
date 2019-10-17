@@ -3,6 +3,7 @@ package de.metas.server.housekeep;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
+import org.springframework.stereotype.Component;
 
 import de.metas.util.Loggables;
 
@@ -28,6 +29,7 @@ import de.metas.util.Loggables;
  * #L%
  */
 
+@Component
 public class SequenceCheckHouseKeepingTask implements IStartupHouseKeepingTask
 {
 
@@ -36,7 +38,7 @@ public class SequenceCheckHouseKeepingTask implements IStartupHouseKeepingTask
 	{
 		// #1124: checking native sequences is sufficient and takes less time than also checking AD_Sequence records.
 		DB.executeFunctionCallEx(ITrx.TRXNAME_None, "select dba_seq_check_native()", new Object[0]);
-		Loggables.get().addLog("Called the DB function dba_seq_check_native() to ensure that the native sequences are OK");
+		Loggables.addLog("Called the DB function dba_seq_check_native() to ensure that the native sequences are OK");
 	}
 
 }

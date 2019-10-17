@@ -12,6 +12,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.PriceListId;
@@ -67,7 +68,8 @@ public class SubscriptionPricingTestHelper extends PricingTestHelper
 
 	public ProductPriceBuilder newProductPriceBuilder(I_M_PriceList_Version priceListVersion)
 	{
-		return new ProductPriceBuilder(priceListVersion, getDefaultProduct());
+		return new ProductPriceBuilder(priceListVersion, getDefaultProduct())
+				.setTaxCategoryId(getTaxCategoryId());
 	}
 
 	public final I_C_Flatrate_Conditions createFlatrateTermConditions()
@@ -89,7 +91,7 @@ public class SubscriptionPricingTestHelper extends PricingTestHelper
 		pricingCtx.setPriceListVersionId(PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID()));
 		pricingCtx.setProductId(ProductId.ofRepoId(getDefaultProduct().getM_Product_ID()));
 		pricingCtx.setReferencedObject(defautlFlatrateTermConditions);
-		pricingCtx.setC_Country_ID(country.getC_Country_ID());
+		pricingCtx.setCountryId(CountryId.ofRepoId(country.getC_Country_ID()));
 		pricingCtx.setCurrencyId(CurrencyId.ofRepoId(country.getC_Currency_ID()));
 
 		return pricingCtx;

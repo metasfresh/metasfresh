@@ -1,5 +1,9 @@
 package de.metas.edi.sscc18;
 
+
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.edi
@@ -10,24 +14,24 @@ package de.metas.edi.sscc18;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.List;
 
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -36,6 +40,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
+import de.metas.adempiere.model.I_M_Product;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_SSCC;
@@ -183,7 +188,8 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 
 		String getProductValue()
 		{
-			return _desadvLine.getM_Product().getValue();
+			final I_M_Product productRecord = loadOutOfTrx(_desadvLine.getM_Product_ID(), I_M_Product.class);
+			return productRecord.getValue();
 		}
 
 		String getProductName()
@@ -265,9 +271,12 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 
 			TotalQtyCUBreakdownCalculator.Builder builder = TotalQtyCUBreakdownCalculator.builder();
 
+
 			final Quantity qtyCUsTotal = lutuConfigurationFactory.convertQtyToLUTUConfigurationUOM(
-					shipmentSchedule.getQtyOrdered(), shipmentSchedule.getC_UOM(),
+					shipmentSchedule.getQtyOrdered(),
+					Services.get(IProductBL.class).getStockUOM(shipmentSchedule.getM_Product_ID()),
 					lutuConfiguration);
+
 			builder.setQtyCUsTotal(qtyCUsTotal.getQty());
 
 			final BigDecimal qtyTUsTotal = shipmentSchedule.getQtyOrdered_TU();

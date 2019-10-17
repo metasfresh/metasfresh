@@ -3,8 +3,8 @@ package de.metas.handlingunits.pporder.api.impl;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.X_PP_Order;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMultimap;
@@ -20,6 +20,9 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderIssueProducer;
+import de.metas.handlingunits.pporder.api.PPOrderPlanningStatus;
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -62,7 +65,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		return handlingUnitsDAO
 				.createHUQueryBuilder()
-				.addOnlyWithProductId(ppOrderBomLine.getM_Product_ID())
+				.addOnlyWithProductId(ProductId.ofRepoId(ppOrderBomLine.getM_Product_ID()))
 				.addOnlyInWarehouseId(WarehouseId.ofRepoId(ppOrderBomLine.getM_Warehouse_ID()))
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
 				.setExcludeReserved()
@@ -70,27 +73,27 @@ public class HUPPOrderBL implements IHUPPOrderBL
 				.onlyNotLocked();
 	}
 
-	private static final ImmutableMultimap<String, String> fromPlanningStatus2toPlanningStatusAllowed = ImmutableMultimap.<String, String> builder()
-			.put(X_PP_Order.PLANNINGSTATUS_Planning, X_PP_Order.PLANNINGSTATUS_Review)
-			.put(X_PP_Order.PLANNINGSTATUS_Planning, X_PP_Order.PLANNINGSTATUS_Complete)
-			.put(X_PP_Order.PLANNINGSTATUS_Review, X_PP_Order.PLANNINGSTATUS_Planning)
-			.put(X_PP_Order.PLANNINGSTATUS_Review, X_PP_Order.PLANNINGSTATUS_Complete)
-			//.put(X_PP_Order.PLANNINGSTATUS_Complete, X_PP_Order.PLANNINGSTATUS_Planning) // don't allow this transition unless https://github.com/metasfresh/metasfresh/issues/2708 is done
+	private static final ImmutableMultimap<PPOrderPlanningStatus, PPOrderPlanningStatus> fromPlanningStatus2toPlanningStatusAllowed = ImmutableMultimap.<PPOrderPlanningStatus, PPOrderPlanningStatus> builder()
+			.put(PPOrderPlanningStatus.PLANNING, PPOrderPlanningStatus.REVIEW)
+			.put(PPOrderPlanningStatus.PLANNING, PPOrderPlanningStatus.COMPLETE)
+			.put(PPOrderPlanningStatus.REVIEW, PPOrderPlanningStatus.PLANNING)
+			.put(PPOrderPlanningStatus.REVIEW, PPOrderPlanningStatus.COMPLETE)
+			//.put(PPOrderPlanningStatus.COMPLETE, PPOrderPlanningStatus.PLANNING) // don't allow this transition unless https://github.com/metasfresh/metasfresh/issues/2708 is done
 			.build();
 
 	@Override
-	public boolean canChangePlanningStatus(final String fromPlanningStatus, final String toPlanningStatus)
+	public boolean canChangePlanningStatus(final PPOrderPlanningStatus fromPlanningStatus, final PPOrderPlanningStatus toPlanningStatus)
 	{
 		return fromPlanningStatus2toPlanningStatusAllowed.get(fromPlanningStatus).contains(toPlanningStatus);
 	}
 
 	@Override
-	public void processPlanning(@NonNull final String targetPlanningStatus, int ppOrderId)
+	public void processPlanning(@NonNull final PPOrderPlanningStatus targetPlanningStatus, @NonNull final PPOrderId ppOrderId)
 	{
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 
-		final I_PP_Order ppOrder = InterfaceWrapperHelper.load(ppOrderId, I_PP_Order.class);
-		final String planningStatus = ppOrder.getPlanningStatus();
+		final I_PP_Order ppOrder = Services.get(IPPOrderDAO.class).getById(ppOrderId, I_PP_Order.class);
+		final PPOrderPlanningStatus planningStatus = PPOrderPlanningStatus.ofCode(ppOrder.getPlanningStatus());
 		if (Objects.equal(planningStatus, targetPlanningStatus))
 		{
 			throw new IllegalStateException("Already " + targetPlanningStatus);
@@ -100,15 +103,15 @@ public class HUPPOrderBL implements IHUPPOrderBL
 			throw new IllegalStateException("Cannot change planning status from " + planningStatus + " to " + targetPlanningStatus);
 		}
 
-		if (X_PP_Order.PLANNINGSTATUS_Planning.equals(targetPlanningStatus))
+		if (PPOrderPlanningStatus.PLANNING.equals(targetPlanningStatus))
 		{
 			// nothing
 		}
-		else if (X_PP_Order.PLANNINGSTATUS_Review.equals(targetPlanningStatus))
+		else if (PPOrderPlanningStatus.REVIEW.equals(targetPlanningStatus))
 		{
 			// nothing
 		}
-		else if (X_PP_Order.PLANNINGSTATUS_Complete.equals(targetPlanningStatus))
+		else if (PPOrderPlanningStatus.COMPLETE.equals(targetPlanningStatus))
 		{
 			HUPPOrderIssueReceiptCandidatesProcessor.newInstance()
 					.setCandidatesToProcessByPPOrderId(ppOrderId)
@@ -121,7 +124,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 
 		//
 		// Update ppOrder's planning status
-		ppOrder.setPlanningStatus(targetPlanningStatus);
+		ppOrder.setPlanningStatus(targetPlanningStatus.getCode());
 		InterfaceWrapperHelper.save(ppOrder);
 	}
 }

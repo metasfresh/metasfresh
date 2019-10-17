@@ -1,0 +1,25 @@
+-- 2018-10-16T13:47:02.716
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2018-10-16 13:47:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=201
+;
+
+-- 2018-10-16T13:47:11.414
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2018-10-16 13:47:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=203
+;
+
+-- 2018-10-16T13:47:14.285
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2018-10-16 13:47:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=557251
+;
+
+-- 2018-10-16T13:47:15.136
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2018-10-16 13:47:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=557252
+;
+
+-- 2018-10-16T13:47:19.024
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2018-10-16 13:47:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=557261
+;
+

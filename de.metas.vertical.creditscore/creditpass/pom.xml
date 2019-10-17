@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<groupId>de.metas.vertical.creditscore</groupId>
+		<artifactId>de.metas.vertical.creditscore</artifactId>
+		<version>10.0.0</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+
+	<version>10.0.0</version> <!-- needed by versions:set during the jenkins build -->
+	<artifactId>metasfresh-creditscore-creditpass</artifactId>
+	<packaging>jar</packaging>
+
+	<properties>
+		<migration-sql-basedir></migration-sql-basedir>
+		<metasfresh.version>[1,10.0.0]</metasfresh.version>
+	</properties>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-xml</artifactId>
+			<!-- com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.8.8 
+				depends on woodstox-core:5.0.3 and some stax2-api lower than 4.1 -->
+			<exclusions>
+				<exclusion>
+					<groupId>org.codehaus.woodstox</groupId>
+					<artifactId>stax2-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.woodstox</groupId>
+					<artifactId>woodstox-core</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.woodstox</groupId>
+			<artifactId>woodstox-core</artifactId>
+			<version>${woodstox.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.woodstox</groupId>
+			<artifactId>stax2-api</artifactId>
+			<version>${woodstox.stax2-api.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.util</groupId>
+			<artifactId>de.metas.util</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.adempiere.adempiere</groupId>
+			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.vertical.creditscore</groupId>
+			<artifactId>metasfresh-creditscore-base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.banking</groupId>
+			<artifactId>de.metas.banking.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+	</dependencies>
+
+</project>

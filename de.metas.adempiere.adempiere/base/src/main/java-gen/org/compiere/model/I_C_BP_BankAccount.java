@@ -9,7 +9,7 @@ public interface I_C_BP_BankAccount
 {
 
     /** TableName=C_BP_BankAccount */
-    public static final String Table_Name = "C_BP_BankAccount";
+    String Table_Name = "C_BP_BankAccount";
 
     /** AD_Table_ID=298 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
@@ -30,7 +30,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA_City (java.lang.String A_City);
+	void setA_City (java.lang.String A_City);
 
 	/**
 	 * Get Ort.
@@ -40,12 +40,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getA_City();
+	java.lang.String getA_City();
 
     /** Column definition for A_City */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_A_City = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "A_City", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_A_City = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "A_City", null);
     /** Column name A_City */
-    public static final String COLUMNNAME_A_City = "A_City";
+    String COLUMNNAME_A_City = "A_City";
 
 	/**
 	 * Set Land.
@@ -55,7 +55,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA_Country (java.lang.String A_Country);
+	void setA_Country (java.lang.String A_Country);
 
 	/**
 	 * Get Land.
@@ -65,12 +65,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getA_Country();
+	java.lang.String getA_Country();
 
     /** Column definition for A_Country */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_A_Country = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "A_Country", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_A_Country = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "A_Country", null);
     /** Column name A_Country */
-    public static final String COLUMNNAME_A_Country = "A_Country";
+    String COLUMNNAME_A_Country = "A_Country";
 
 	/**
 	 * Set EMail.
@@ -80,7 +80,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA_EMail (java.lang.String A_EMail);
+	void setA_EMail (java.lang.String A_EMail);
 
 	/**
 	 * Get EMail.
@@ -90,12 +90,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getA_EMail();
+	java.lang.String getA_EMail();
 
     /** Column definition for A_EMail */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_A_EMail = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "A_EMail", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_A_EMail = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "A_EMail", null);
     /** Column name A_EMail */
-    public static final String COLUMNNAME_A_EMail = "A_EMail";
+    String COLUMNNAME_A_EMail = "A_EMail";
 
 	/**
 	 * Set Führerschein-Nr..
@@ -105,7 +105,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA_Ident_DL (java.lang.String A_Ident_DL);
+	void setA_Ident_DL (java.lang.String A_Ident_DL);
 
 	/**
 	 * Get Führerschein-Nr..
@@ -115,12 +115,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getA_Ident_DL();
+	java.lang.String getA_Ident_DL();
 
     /** Column definition for A_Ident_DL */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_A_Ident_DL = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "A_Ident_DL", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_A_Ident_DL = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "A_Ident_DL", null);
     /** Column name A_Ident_DL */
-    public static final String COLUMNNAME_A_Ident_DL = "A_Ident_DL";
+    String COLUMNNAME_A_Ident_DL = "A_Ident_DL";
 
 	/**
 	 * Set Ausweis-Nr..
@@ -130,7 +130,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA_Ident_SSN (java.lang.String A_Ident_SSN);
+	void setA_Ident_SSN (java.lang.String A_Ident_SSN);
 
 	/**
 	 * Get Ausweis-Nr..
@@ -140,12 +140,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getA_Ident_SSN();
+	java.lang.String getA_Ident_SSN();
 
     /** Column definition for A_Ident_SSN */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_A_Ident_SSN = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "A_Ident_SSN", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_A_Ident_SSN = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "A_Ident_SSN", null);
     /** Column name A_Ident_SSN */
-    public static final String COLUMNNAME_A_Ident_SSN = "A_Ident_SSN";
+    String COLUMNNAME_A_Ident_SSN = "A_Ident_SSN";
 
 	/**
 	 * Set Name.
@@ -155,7 +155,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setA_Name (java.lang.String A_Name);
+	void setA_Name (java.lang.String A_Name);
 
 	/**
 	 * Get Name.
@@ -165,12 +165,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getA_Name();
+	java.lang.String getA_Name();
 
     /** Column definition for A_Name */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_A_Name = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "A_Name", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_A_Name = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "A_Name", null);
     /** Column name A_Name */
-    public static final String COLUMNNAME_A_Name = "A_Name";
+    String COLUMNNAME_A_Name = "A_Name";
 
 	/**
 	 * Set Bundesstaat / -land.
@@ -180,7 +180,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA_State (java.lang.String A_State);
+	void setA_State (java.lang.String A_State);
 
 	/**
 	 * Get Bundesstaat / -land.
@@ -190,12 +190,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getA_State();
+	java.lang.String getA_State();
 
     /** Column definition for A_State */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_A_State = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "A_State", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_A_State = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "A_State", null);
     /** Column name A_State */
-    public static final String COLUMNNAME_A_State = "A_State";
+    String COLUMNNAME_A_State = "A_State";
 
 	/**
 	 * Set Straße.
@@ -205,7 +205,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA_Street (java.lang.String A_Street);
+	void setA_Street (java.lang.String A_Street);
 
 	/**
 	 * Get Straße.
@@ -215,12 +215,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getA_Street();
+	java.lang.String getA_Street();
 
     /** Column definition for A_Street */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_A_Street = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "A_Street", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_A_Street = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "A_Street", null);
     /** Column name A_Street */
-    public static final String COLUMNNAME_A_Street = "A_Street";
+    String COLUMNNAME_A_Street = "A_Street";
 
 	/**
 	 * Set Postleitzahl.
@@ -230,7 +230,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setA_Zip (java.lang.String A_Zip);
+	void setA_Zip (java.lang.String A_Zip);
 
 	/**
 	 * Get Postleitzahl.
@@ -240,12 +240,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getA_Zip();
+	java.lang.String getA_Zip();
 
     /** Column definition for A_Zip */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_A_Zip = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "A_Zip", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_A_Zip = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "A_Zip", null);
     /** Column name A_Zip */
-    public static final String COLUMNNAME_A_Zip = "A_Zip";
+    String COLUMNNAME_A_Zip = "A_Zip";
 
 	/**
 	 * Set Konto-Nr..
@@ -255,7 +255,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAccountNo (java.lang.String AccountNo);
+	void setAccountNo (java.lang.String AccountNo);
 
 	/**
 	 * Get Konto-Nr..
@@ -265,12 +265,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getAccountNo();
+	java.lang.String getAccountNo();
 
     /** Column definition for AccountNo */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_AccountNo = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "AccountNo", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_AccountNo = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "AccountNo", null);
     /** Column name AccountNo */
-    public static final String COLUMNNAME_AccountNo = "AccountNo";
+    String COLUMNNAME_AccountNo = "AccountNo";
 
 	/**
 	 * Get Mandant.
@@ -280,14 +280,14 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
+	org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_AD_Client>(I_C_BP_BankAccount.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+    String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Sektion.
@@ -297,7 +297,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Sektion.
@@ -307,16 +307,16 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
+	org.compiere.model.I_AD_Org getAD_Org();
 
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+	void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_AD_Org>(I_C_BP_BankAccount.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+    String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Ansprechpartner.
@@ -326,7 +326,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_User_ID (int AD_User_ID);
+	void setAD_User_ID (int AD_User_ID);
 
 	/**
 	 * Get Ansprechpartner.
@@ -336,16 +336,16 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_User_ID();
+	int getAD_User_ID();
 
-	public org.compiere.model.I_AD_User getAD_User();
+	org.compiere.model.I_AD_User getAD_User();
 
-	public void setAD_User(org.compiere.model.I_AD_User AD_User);
+	void setAD_User(org.compiere.model.I_AD_User AD_User);
 
     /** Column definition for AD_User_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_AD_User> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_AD_User>(I_C_BP_BankAccount.class, "AD_User_ID", org.compiere.model.I_AD_User.class);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_AD_User> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "AD_User_ID", org.compiere.model.I_AD_User.class);
     /** Column name AD_User_ID */
-    public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
+    String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
 	 * Set Kontenart.
@@ -355,7 +355,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setBankAccountType (java.lang.String BankAccountType);
+	void setBankAccountType (java.lang.String BankAccountType);
 
 	/**
 	 * Get Kontenart.
@@ -365,12 +365,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getBankAccountType();
+	java.lang.String getBankAccountType();
 
     /** Column definition for BankAccountType */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_BankAccountType = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "BankAccountType", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_BankAccountType = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "BankAccountType", null);
     /** Column name BankAccountType */
-    public static final String COLUMNNAME_BankAccountType = "BankAccountType";
+    String COLUMNNAME_BankAccountType = "BankAccountType";
 
 	/**
 	 * Set Kontonutzung.
@@ -380,7 +380,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setBPBankAcctUse (java.lang.String BPBankAcctUse);
+	void setBPBankAcctUse (java.lang.String BPBankAcctUse);
 
 	/**
 	 * Get Kontonutzung.
@@ -390,12 +390,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getBPBankAcctUse();
+	java.lang.String getBPBankAcctUse();
 
     /** Column definition for BPBankAcctUse */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_BPBankAcctUse = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "BPBankAcctUse", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_BPBankAcctUse = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "BPBankAcctUse", null);
     /** Column name BPBankAcctUse */
-    public static final String COLUMNNAME_BPBankAcctUse = "BPBankAcctUse";
+    String COLUMNNAME_BPBankAcctUse = "BPBankAcctUse";
 
 	/**
 	 * Set Bank.
@@ -405,7 +405,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Bank_ID (int C_Bank_ID);
+	void setC_Bank_ID (int C_Bank_ID);
 
 	/**
 	 * Get Bank.
@@ -415,16 +415,16 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Bank_ID();
+	int getC_Bank_ID();
 
-	public org.compiere.model.I_C_Bank getC_Bank();
+	org.compiere.model.I_C_Bank getC_Bank();
 
-	public void setC_Bank(org.compiere.model.I_C_Bank C_Bank);
+	void setC_Bank(org.compiere.model.I_C_Bank C_Bank);
 
     /** Column definition for C_Bank_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_C_Bank> COLUMN_C_Bank_ID = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_C_Bank>(I_C_BP_BankAccount.class, "C_Bank_ID", org.compiere.model.I_C_Bank.class);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_C_Bank> COLUMN_C_Bank_ID = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "C_Bank_ID", org.compiere.model.I_C_Bank.class);
     /** Column name C_Bank_ID */
-    public static final String COLUMNNAME_C_Bank_ID = "C_Bank_ID";
+    String COLUMNNAME_C_Bank_ID = "C_Bank_ID";
 
 	/**
 	 * Set Bankverbindung.
@@ -434,7 +434,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
+	void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
 
 	/**
 	 * Get Bankverbindung.
@@ -444,12 +444,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BP_BankAccount_ID();
+	int getC_BP_BankAccount_ID();
 
     /** Column definition for C_BP_BankAccount_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_C_BP_BankAccount_ID = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "C_BP_BankAccount_ID", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_C_BP_BankAccount_ID = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "C_BP_BankAccount_ID", null);
     /** Column name C_BP_BankAccount_ID */
-    public static final String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
+    String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
 
 	/**
 	 * Set Geschäftspartner.
@@ -459,7 +459,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
+	void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
 	 * Get Geschäftspartner.
@@ -469,16 +469,16 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_ID();
+	int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
+	org.compiere.model.I_C_BPartner getC_BPartner();
 
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
+	void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
 
     /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_C_BPartner>(I_C_BP_BankAccount.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+    String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
 	 * Set Währung.
@@ -488,7 +488,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Currency_ID (int C_Currency_ID);
+	void setC_Currency_ID (int C_Currency_ID);
 
 	/**
 	 * Get Währung.
@@ -498,16 +498,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Currency_ID();
-
-	public org.compiere.model.I_C_Currency getC_Currency();
-
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
+	int getC_Currency_ID();
 
     /** Column definition for C_Currency_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_C_Currency>(I_C_BP_BankAccount.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
     /** Column name C_Currency_ID */
-    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+    String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
 	 * Get Erstellt.
@@ -517,12 +513,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
     /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "Created", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "Created", null);
     /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+    String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Erstellt durch.
@@ -532,12 +528,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
     /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_AD_User>(I_C_BP_BankAccount.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+    String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Exp. Monat.
@@ -547,7 +543,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCreditCardExpMM (int CreditCardExpMM);
+	void setCreditCardExpMM (int CreditCardExpMM);
 
 	/**
 	 * Get Exp. Monat.
@@ -557,12 +553,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getCreditCardExpMM();
+	int getCreditCardExpMM();
 
     /** Column definition for CreditCardExpMM */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_CreditCardExpMM = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "CreditCardExpMM", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_CreditCardExpMM = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "CreditCardExpMM", null);
     /** Column name CreditCardExpMM */
-    public static final String COLUMNNAME_CreditCardExpMM = "CreditCardExpMM";
+    String COLUMNNAME_CreditCardExpMM = "CreditCardExpMM";
 
 	/**
 	 * Set Exp. Jahr.
@@ -572,7 +568,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCreditCardExpYY (int CreditCardExpYY);
+	void setCreditCardExpYY (int CreditCardExpYY);
 
 	/**
 	 * Get Exp. Jahr.
@@ -582,12 +578,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getCreditCardExpYY();
+	int getCreditCardExpYY();
 
     /** Column definition for CreditCardExpYY */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_CreditCardExpYY = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "CreditCardExpYY", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_CreditCardExpYY = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "CreditCardExpYY", null);
     /** Column name CreditCardExpYY */
-    public static final String COLUMNNAME_CreditCardExpYY = "CreditCardExpYY";
+    String COLUMNNAME_CreditCardExpYY = "CreditCardExpYY";
 
 	/**
 	 * Set Kreditkarten-Nummer.
@@ -597,7 +593,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCreditCardNumber (java.lang.String CreditCardNumber);
+	void setCreditCardNumber (java.lang.String CreditCardNumber);
 
 	/**
 	 * Get Kreditkarten-Nummer.
@@ -607,12 +603,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getCreditCardNumber();
+	java.lang.String getCreditCardNumber();
 
     /** Column definition for CreditCardNumber */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_CreditCardNumber = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "CreditCardNumber", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_CreditCardNumber = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "CreditCardNumber", null);
     /** Column name CreditCardNumber */
-    public static final String COLUMNNAME_CreditCardNumber = "CreditCardNumber";
+    String COLUMNNAME_CreditCardNumber = "CreditCardNumber";
 
 	/**
 	 * Set Kreditkarte.
@@ -622,7 +618,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCreditCardType (java.lang.String CreditCardType);
+	void setCreditCardType (java.lang.String CreditCardType);
 
 	/**
 	 * Get Kreditkarte.
@@ -632,12 +628,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getCreditCardType();
+	java.lang.String getCreditCardType();
 
     /** Column definition for CreditCardType */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_CreditCardType = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "CreditCardType", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_CreditCardType = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "CreditCardType", null);
     /** Column name CreditCardType */
-    public static final String COLUMNNAME_CreditCardType = "CreditCardType";
+    String COLUMNNAME_CreditCardType = "CreditCardType";
 
 	/**
 	 * Set Verifizierungs-Code.
@@ -647,7 +643,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCreditCardVV (java.lang.String CreditCardVV);
+	void setCreditCardVV (java.lang.String CreditCardVV);
 
 	/**
 	 * Get Verifizierungs-Code.
@@ -657,12 +653,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getCreditCardVV();
+	java.lang.String getCreditCardVV();
 
     /** Column definition for CreditCardVV */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_CreditCardVV = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "CreditCardVV", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_CreditCardVV = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "CreditCardVV", null);
     /** Column name CreditCardVV */
-    public static final String COLUMNNAME_CreditCardVV = "CreditCardVV";
+    String COLUMNNAME_CreditCardVV = "CreditCardVV";
 
 	/**
 	 * Set Beschreibung.
@@ -671,7 +667,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (java.lang.String Description);
 
 	/**
 	 * Get Beschreibung.
@@ -680,12 +676,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	java.lang.String getDescription();
 
     /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "Description", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "Description", null);
     /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+    String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set IBAN.
@@ -695,7 +691,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIBAN (java.lang.String IBAN);
+	void setIBAN (java.lang.String IBAN);
 
 	/**
 	 * Get IBAN.
@@ -705,12 +701,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getIBAN();
+	java.lang.String getIBAN();
 
     /** Column definition for IBAN */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_IBAN = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "IBAN", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_IBAN = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "IBAN", null);
     /** Column name IBAN */
-    public static final String COLUMNNAME_IBAN = "IBAN";
+    String COLUMNNAME_IBAN = "IBAN";
 
 	/**
 	 * Set ACH.
@@ -720,7 +716,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsACH (boolean IsACH);
+	void setIsACH (boolean IsACH);
 
 	/**
 	 * Get ACH.
@@ -730,12 +726,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isACH();
+	boolean isACH();
 
     /** Column definition for IsACH */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_IsACH = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "IsACH", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_IsACH = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "IsACH", null);
     /** Column name IsACH */
-    public static final String COLUMNNAME_IsACH = "IsACH";
+    String COLUMNNAME_IsACH = "IsACH";
 
 	/**
 	 * Set Aktiv.
@@ -745,7 +741,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Aktiv.
@@ -755,12 +751,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
     /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "IsActive", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "IsActive", null);
     /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+    String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Addresse verifiziert.
@@ -770,7 +766,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setR_AvsAddr (java.lang.String R_AvsAddr);
+	void setR_AvsAddr (java.lang.String R_AvsAddr);
 
 	/**
 	 * Get Addresse verifiziert.
@@ -780,12 +776,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getR_AvsAddr();
+	java.lang.String getR_AvsAddr();
 
     /** Column definition for R_AvsAddr */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_R_AvsAddr = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "R_AvsAddr", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_R_AvsAddr = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "R_AvsAddr", null);
     /** Column name R_AvsAddr */
-    public static final String COLUMNNAME_R_AvsAddr = "R_AvsAddr";
+    String COLUMNNAME_R_AvsAddr = "R_AvsAddr";
 
 	/**
 	 * Set Postleitzahl verifiziert.
@@ -795,7 +791,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setR_AvsZip (java.lang.String R_AvsZip);
+	void setR_AvsZip (java.lang.String R_AvsZip);
 
 	/**
 	 * Get Postleitzahl verifiziert.
@@ -805,12 +801,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getR_AvsZip();
+	java.lang.String getR_AvsZip();
 
     /** Column definition for R_AvsZip */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_R_AvsZip = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "R_AvsZip", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_R_AvsZip = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "R_AvsZip", null);
     /** Column name R_AvsZip */
-    public static final String COLUMNNAME_R_AvsZip = "R_AvsZip";
+    String COLUMNNAME_R_AvsZip = "R_AvsZip";
 
 	/**
 	 * Set BLZ.
@@ -820,7 +816,7 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setRoutingNo (java.lang.String RoutingNo);
+	void setRoutingNo (java.lang.String RoutingNo);
 
 	/**
 	 * Get BLZ.
@@ -830,12 +826,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getRoutingNo();
+	java.lang.String getRoutingNo();
 
     /** Column definition for RoutingNo */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_RoutingNo = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "RoutingNo", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_RoutingNo = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "RoutingNo", null);
     /** Column name RoutingNo */
-    public static final String COLUMNNAME_RoutingNo = "RoutingNo";
+    String COLUMNNAME_RoutingNo = "RoutingNo";
 
 	/**
 	 * Get Aktualisiert.
@@ -845,12 +841,12 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object>(I_C_BP_BankAccount.class, "Updated", null);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "Updated", null);
     /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+    String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Aktualisiert durch.
@@ -860,10 +856,10 @@ public interface I_C_BP_BankAccount
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
     /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_AD_User>(I_C_BP_BankAccount.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    org.adempiere.model.ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<>(I_C_BP_BankAccount.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+    String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

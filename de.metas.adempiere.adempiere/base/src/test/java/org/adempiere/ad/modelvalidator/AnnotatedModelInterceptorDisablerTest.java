@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_SysConfig;
+import org.compiere.model.I_Test;
 import org.compiere.model.ModelValidator;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,14 +44,19 @@ public class AnnotatedModelInterceptorDisablerTest
 	{
 		AdempiereTestHelper.get().init();
 
-		pointcut = new Pointcut(PointcutType.DocValidate, AnnotatedModelInterceptorDisablerTest.class.getMethod("someTestMethod"), new int[] { ModelValidator.TIMING_AFTER_CLOSE }, false);
+		pointcut = Pointcut.builder()
+				.type(PointcutType.DocValidate)
+				.method(AnnotatedModelInterceptorDisablerTest.class.getMethod("someTestMethod", I_Test.class))
+				.timings(new int[] { ModelValidator.TIMING_AFTER_CLOSE })
+				.build();
+
 		annotatedModelInterceptorDisabler = new AnnotatedModelInterceptorDisabler();
 	}
 
 	/**
 	 * Needed to make our testing pointcut.
 	 */
-	public void someTestMethod()
+	public void someTestMethod(final I_Test testModel)
 	{
 		// no need for any code, we just need a method
 	}

@@ -1,9 +1,11 @@
 package de.metas.material.dispo.commons.repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import javax.annotation.Nullable;
 
+import de.metas.material.dispo.commons.candidate.Candidate;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -32,29 +34,108 @@ import lombok.Value;
 @Value
 public class DateAndSeqNo
 {
-	LocalDateTime date;
+	Instant date;
+
+	/** Can be less or equal to zero which both means "not specified". */
 	int seqNo;
 
-	public boolean isBefore(@NonNull final DateAndSeqNo other)
+	/** Can be null if this instance is not used for a range start or end. */
+	public Operator operator;
+
+	public static DateAndSeqNo atTimeNoSeqNo(@NonNull final Instant date)
 	{
-		final boolean beforeDate = date.isBefore(other.getDate());
-
-		final boolean sameDateDateAndSmallerSeqNo = date.equals(other.getDate()) && seqNo < other.getSeqNo();
-
-		return beforeDate || sameDateDateAndSmallerSeqNo;
+		return builder()
+				.date(date)
+				.build();
 	}
 
-	public DateAndSeqNo latest(@Nullable final DateAndSeqNo other)
+	public static DateAndSeqNo ofCandidate(@NonNull final Candidate candidate)
+	{
+		return builder()
+				.date(candidate.getDate())
+				.seqNo(candidate.getSeqNo())
+				.build();
+	}
+
+	public enum Operator
+	{
+		INCLUSIVE,
+
+		EXCLUSIVE
+	}
+
+	@Builder(toBuilder = true)
+	private DateAndSeqNo(
+			@NonNull final Instant date,
+			final int seqNo,
+			@Nullable final Operator operator)
+	{
+		this.date = date;
+		this.seqNo = seqNo;
+		this.operator = operator;
+	}
+
+	/**
+	 * @return {@code true} if this instances {@code date} is after the {@code other}'s {@code date}
+	 *         or if this instance's {@code seqNo} is greater than the {@code other}'s {@code seqNo}.
+	 */
+	public boolean isAfter(@NonNull final DateAndSeqNo other)
+	{
+		// note that we avoid using equals here, a timestamp and a date that are both "Date" might not be equal even if they have the same time.
+		if (date.isAfter(other.getDate()))
+		{
+			return true;
+		}
+		if (date.isBefore(other.getDate()))
+		{
+			return false;
+		}
+		return seqNo > other.getSeqNo();
+	}
+
+	/**
+	 * Analog to {@link #isAfter(DateAndSeqNo)}.
+	 */
+	public boolean isBefore(@NonNull final DateAndSeqNo other)
+	{
+		// note that we avoid using equals here, a timestamp and a date that are both "Date" might not be equal even if they have the same time.
+		if (date.isBefore(other.getDate()))
+		{
+			return true;
+		}
+		if (date.isAfter(other.getDate()))
+		{
+			return false;
+		}
+		return seqNo < other.getSeqNo();
+	}
+
+	public DateAndSeqNo min(@Nullable final DateAndSeqNo other)
 	{
 		if (other == null)
 		{
 			return this;
 		}
-		if (other.isBefore(this))
+		else
+		{
+			return this.isBefore(other) ? this : other;
+		}
+	}
+
+	public DateAndSeqNo max(@Nullable final DateAndSeqNo other)
+	{
+		if (other == null)
 		{
 			return this;
 		}
+		return this.isAfter(other) ? this : other;
+	}
 
-		return other;
+	public DateAndSeqNo withOperator(@Nullable final Operator operator)
+	{
+		return this
+				.toBuilder()
+				.operator(operator)
+				.build();
 	}
 }

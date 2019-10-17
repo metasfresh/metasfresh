@@ -51,7 +51,6 @@ import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-
 import lombok.NonNull;
 
 /**
@@ -154,12 +153,14 @@ public class Discount implements IPricingRule
 			final ProductId productId = pricingCtx.getProductId();
 			final ProductAndCategoryAndManufacturerId product = productsRepo.retrieveProductAndCategoryAndManufacturerByProductId(productId);
 
-			builder.pricingConditionsBreakQuery(PricingConditionsBreakQuery.builder()
+			final PricingConditionsBreakQuery pricingConditionsBreakQuery = PricingConditionsBreakQuery
+					.builder()
 					.qty(pricingCtx.getQty())
 					.price(result.getPriceStd())
 					.product(product)
 					.attributes(getAttributes(pricingCtx))
-					.build());
+					.build();
+			builder.pricingConditionsBreakQuery(pricingConditionsBreakQuery);
 		}
 
 		return builder.build();

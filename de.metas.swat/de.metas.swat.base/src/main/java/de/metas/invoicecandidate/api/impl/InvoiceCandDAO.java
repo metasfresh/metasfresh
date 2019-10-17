@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.delete;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -27,6 +29,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -48,8 +50,9 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.IQueryOrderByBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
@@ -57,6 +60,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.proxy.Cached;
@@ -78,16 +82,18 @@ import com.google.common.collect.ImmutableSet;
 
 import ch.qos.logback.classic.Level;
 import de.metas.aggregation.model.I_C_Aggregation;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheModel;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.currency.ICurrencyBL;
-import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutDAO;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
@@ -105,11 +111,19 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InventoryLine;
 import de.metas.invoicecandidate.model.I_M_ProductGroup;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -119,6 +133,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 	private static final ModelDynAttributeAccessor<I_C_Invoice_Candidate, Boolean> DYNATTR_IC_Avoid_Recreate //
 			= new ModelDynAttributeAccessor<>(IInvoiceCandDAO.class.getName() + "Avoid_Recreate", Boolean.class);
+
+	@Override
+	public I_C_Invoice_Candidate getById(final InvoiceCandidateId invoiceCandId)
+	{
+		return InterfaceWrapperHelper.load(invoiceCandId.getRepoId(), I_C_Invoice_Candidate.class);
+	}
 
 	@Override
 	public final Iterator<I_C_Invoice_Candidate> retrieveIcForSelection(final Properties ctx, final PInstanceId pinstanceId, final String trxName)
@@ -159,9 +179,14 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final IQueryOrderByBuilder<T> orderBy = queryBuilder.orderBy();
 		orderBy
 				.clear()
-
+				//
 				// order by they header aggregation key to make sure candidates with the same key end up in the same invoice
 				.addColumn(I_C_Invoice_Candidate.COLUMNNAME_HeaderAggregationKey)
+				//
+				// We need to aggregate by DateInvoiced too
+				.addColumn(I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced)
+				.addColumn(I_C_Invoice_Candidate.COLUMNNAME_DateAcct)
+				//
 				// task 08241: return ICs with a set Bill_User_ID first, because, we can aggregate ICs with different Bill_User_IDs into one invoice, however, if there are any ICs with a Bill_User_ID
 				// set, and others with no Bill_User_ID, then we want the Bill_User_ID to end up in the C_Invoice (header) record.
 				.addColumn(I_C_Invoice_Candidate.COLUMNNAME_Bill_User_ID, Direction.Ascending, Nulls.Last)
@@ -196,13 +221,42 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		final int recordId = InterfaceWrapperHelper.getId(model);
 
-		final int deleteCount = Services.get(IQueryBL.class)
+		// i could do all this with "stream", but i find "old-school" easier to debug
+		int deleteCount = 0;
+		final List<I_C_Invoice_Candidate> icRecordsToDelete = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, tableId)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Record_ID, recordId)
 				.create()
-				.delete();
+				.list();
+		for (final I_C_Invoice_Candidate icRecordToDelete : icRecordsToDelete)
+		{
+			setProcessedToFalseIfIcNotNeeded(icRecordToDelete);
+			delete(icRecordToDelete);
+			deleteCount++;
+		}
+
 		return deleteCount;
+	}
+
+	/** Note: no need to save the record; just unset its processed flag to allow deletion if that makes sense. */
+	private void setProcessedToFalseIfIcNotNeeded(@NonNull final I_C_Invoice_Candidate icToDelete)
+	{
+		boolean manuallyFlaggedAsProcessed = icToDelete.isProcessed() && !icToDelete.isProcessed_Calc();
+		if (!manuallyFlaggedAsProcessed)
+		{
+			return;			// nothing to do
+		}
+
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+		boolean hasInvoiceLines = !invoiceCandDAO.retrieveIlForIc(icToDelete).isEmpty();
+		if (hasInvoiceLines)
+		{
+			return;			// nothing to do
+		}
+
+		// icToDelete was manually set to "processed" to be out of the way; in this case, we can unprocess and delete it.
+		icToDelete.setProcessed(false);
 	}
 
 	@Override
@@ -215,7 +269,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		query.setBill_BPartner_ID(billBPartner.getC_BPartner_ID());
 		query.setDateToInvoice(date);
 
-		final int targetCurrencyId = Services.get(ICurrencyBL.class).getBaseCurrency(ctx).getC_Currency_ID();
+		final CurrencyId targetCurrencyId = Services.get(ICurrencyBL.class).getBaseCurrency(ctx).getId();
 		final int adClientId = billBPartner.getAD_Client_ID();
 		final int adOrgId = billBPartner.getAD_Org_ID();
 
@@ -299,11 +353,11 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderLine(final I_C_OrderLine orderLine)
+	public List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Invoice_Candidate.class, orderLine)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_C_OrderLine_ID, orderLine.getC_OrderLine_ID())
+				.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_C_OrderLine_ID, orderLineId)
 				.addOnlyActiveRecordsFilter()
 				//
 				.create()
@@ -323,31 +377,39 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.match();
 	}
 
-	@Cached(cacheName = I_C_InvoiceCandidate_InOutLine.Table_Name + "#by#" + I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
 	@Override
-	public List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(@CacheModel final I_C_Invoice_Candidate invoiceCandidate)
+	public List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
 	{
-		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoIdOrNull(invoiceCandidate.getC_Invoice_Candidate_ID());
+		if (invoiceCandidateId == null)
+		{
+			return ImmutableList.of(); // no associations for new/not saved ICs
+		}
 
+		return retrieveICIOLAssociationsExclRE(invoiceCandidateId);
+	}
+
+	@Override
+	public List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
 		// load all I_C_InvoiceCandidate_InOutLine and filter locally.
 		// i think it's safe to assume that there are not 1000s of records to load and this way the code is simpler
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final List<I_C_InvoiceCandidate_InOutLine> result = queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class, invoiceCandidate)
-				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMN_C_Invoice_Candidate_ID, invoiceCandidate.getC_Invoice_Candidate_ID())
+		return queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
+				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateId)
 				.addOnlyActiveRecordsFilter()
-				.orderBy()
-				.addColumn(I_C_InvoiceCandidate_InOutLine.COLUMN_M_InOutLine_ID).endOrderBy()
+				.orderBy(I_C_InvoiceCandidate_InOutLine.COLUMN_M_InOutLine_ID)
 				.create()
 				.stream(I_C_InvoiceCandidate_InOutLine.class)
-				.filter(iciol -> {
+				.filter(this::isInOutCompletedOrClosed)
+				.collect(ImmutableList.toImmutableList());
+	}
 
-					final I_M_InOut inOut = iciol.getM_InOutLine().getM_InOut();
+	private boolean isInOutCompletedOrClosed(@NonNull final I_C_InvoiceCandidate_InOutLine iciol)
+	{
+		final I_M_InOut inOut = iciol.getM_InOutLine().getM_InOut();
 
-					return inOut.isActive() && docActionBL.isDocumentCompletedOrClosed(inOut);
-				})
-				.collect(Collectors.toList());
-
-		return result;
+		return inOut.isActive() && DocStatus.ofCode(inOut.getDocStatus()).isCompletedOrClosed();
 	}
 
 	@Override
@@ -466,6 +528,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
+	public void saveAll(final Collection<I_C_Invoice_Candidate> invoiceCandidates)
+	{
+		invoiceCandidates.forEach(this::save);
+	}
+
+	@Override
 	public int deleteInvoiceDetails(final I_C_Invoice_Candidate ic)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Detail.class, ic)
@@ -550,11 +618,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final List<I_C_Invoice_Line_Alloc> retrieveIlaForIc(final I_C_Invoice_Candidate invoiceCand)
+	public final List<I_C_Invoice_Line_Alloc> retrieveIlaForIc(@NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
-		final IQueryBuilder<I_C_Invoice_Line_Alloc> ilaQueryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Line_Alloc.class, invoiceCand)
+		final IQueryBuilder<I_C_Invoice_Line_Alloc> ilaQueryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Invoice_Line_Alloc.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Invoice_Line_Alloc.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCand.getC_Invoice_Candidate_ID());
+				.addEqualsFilter(I_C_Invoice_Line_Alloc.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId);
 
 		ilaQueryBuilder.orderBy()
 				.addColumn(I_C_Invoice_Line_Alloc.COLUMN_C_Invoice_Line_Alloc_ID);
@@ -730,10 +799,13 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final void invalidateCandsForBPartnerInvoiceRule(final I_C_BPartner bpartner)
+	public final void invalidateCandsForBPartnerInvoiceRule(final BPartnerId bpartnerId)
 	{
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
+		final I_C_BPartner bpartner = partnerDAO.getById(bpartnerId);
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = retrieveForBillPartnerQuery(bpartner)
-				.addCoalesceEqualsFilter(X_C_Invoice_Candidate.INVOICERULE_KundenintervallNachLieferung,
+				.addCoalesceEqualsFilter(X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery,
 						I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override,
 						I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule)
 				// Not already processed
@@ -829,6 +901,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				//
 				// Order BY: we need to return the not-manual invoice candidates first, because their NetAmtToInvoice is required when we evaluate the manual candidates
 				.orderBy()
+				.addColumn(I_C_Invoice_Candidate.COLUMNNAME_IsFreightCost, Direction.Ascending, Nulls.First)
 				.addColumn(I_C_Invoice_Candidate.COLUMN_IsManual)
 				.addColumn(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID)
 				.endOrderBy()
@@ -846,7 +919,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public InvoiceCandRecomputeTag generateNewRecomputeTag()
 	{
-		final PInstanceId pinstanceId = Services.get(IADPInstanceDAO.class).createPInstanceId();
+		final PInstanceId pinstanceId = Services.get(IADPInstanceDAO.class).createSelectionId();
 		return InvoiceCandRecomputeTag.ofPInstanceId(pinstanceId);
 	}
 
@@ -914,7 +987,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.updateDirectly()
 				.addSetColumnValue(I_C_Invoice_Candidate_Recompute.COLUMNNAME_AD_PInstance_ID, recomputeTag.getPinstanceId())
 				.execute();
-		logger.debug("Marked {} {} records with recompute tag={}", count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag);
+
+		Loggables.withLogger(logger, Level.DEBUG)
+				.addLog("Marked {} {} records with recompute tag={}", count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag);
+
 		logger.debug("Query: {}", query);
 		logger.debug("Tagger: {}", tagRequest);
 
@@ -956,7 +1032,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		final IQuery<I_C_Invoice_Candidate_Recompute> query = queryBuilder.create();
 		final int count = query.deleteDirectly();
-		logger.debug("Deleted {} {} entries for tag={}, onlyInvoiceCandidateIds={}", count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag, onlyInvoiceCandidateIds);
+
+		Loggables.withLogger(logger, Level.DEBUG)
+				.addLog("Deleted {} {} entries for tag={}, onlyInvoiceCandidateIds={}", count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag, onlyInvoiceCandidateIds);
 		logger.debug("Query: {}", query);
 
 		// invalidate the invoice candidate cache after commit
@@ -1024,14 +1102,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.match();
 	}
 
-	@Override
-	public final List<I_C_Invoice_Candidate> retrieveForBillPartner(final I_C_BPartner bpartner)
-	{
-		return retrieveForBillPartnerQuery(bpartner)
-				.create()
-				.list(I_C_Invoice_Candidate.class);
-	}
-
 	private final IQueryBuilder<I_C_Invoice_Candidate> retrieveForBillPartnerQuery(final I_C_BPartner bpartner)
 	{
 		return Services.get(IQueryBL.class)
@@ -1057,7 +1127,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addInSubQueryFilter(I_C_Invoice_Candidate.COLUMN_Bill_BPartner_ID, I_C_BPartner.COLUMN_C_BPartner_ID, bpartnersQuery)
-				.addCoalesceEqualsFilter(X_C_Invoice_Candidate.INVOICERULE_EFFECTIVE_KundenintervallNachLieferung,
+				.addCoalesceEqualsFilter(X_C_Invoice_Candidate.INVOICERULE_EFFECTIVE_CustomerScheduleAfterDelivery,
 						I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override,
 						I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule)
 				//
@@ -1070,24 +1140,40 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final void updateDateInvoiced(final Timestamp dateInvoiced, final PInstanceId selectionId)
+	public final void updateDateInvoiced(
+			@Nullable final LocalDate dateInvoiced,
+			@NonNull final PInstanceId selectionId,
+			final boolean updateOnlyIfNull)
 	{
 		updateColumnForSelection(
 				I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced,    // invoiceCandidateColumnName
 				dateInvoiced,    // value
-				false,    // updateOnlyIfNull
+				updateOnlyIfNull, // updateOnlyIfNull
 				selectionId    // selectionId
 		);
 	}
 
 	@Override
-	public final void updateDateAcct(final Timestamp dateAcct, final PInstanceId selectionId)
+	public final void updateDateAcct(
+			@Nullable final LocalDate dateAcct,
+			@NonNull final PInstanceId selectionId)
 	{
 		updateColumnForSelection(
 				I_C_Invoice_Candidate.COLUMNNAME_DateAcct,    // invoiceCandidateColumnName
 				dateAcct,    // value
 				false,    // updateOnlyIfNull
 				selectionId    // selectionId
+		);
+	}
+
+	@Override
+	public final void updateNullDateAcctFromDateInvoiced(final PInstanceId selectionId)
+	{
+		updateColumnForSelection(
+				I_C_Invoice_Candidate.COLUMNNAME_DateAcct,
+				ModelColumnNameValue.forColumnName(I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced), // value
+				true, // updateOnlyIfNull
+				selectionId // selectionId
 		);
 	}
 
@@ -1112,8 +1198,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		{
 			return;
 		}
-		final Integer paymentTermId = retrievePaymentTermId(selectionId);
-		if (paymentTermId <= 0)
+		final PaymentTermId paymentTermId = retrievePaymentTermId(selectionId);
+		if (paymentTermId == null)
 		{
 			return;
 		}
@@ -1126,7 +1212,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addSetColumnValue(I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_Override_ID, paymentTermId)
 				.execute();
 
-		Loggables.get().withLogger(logger, Level.INFO)
+		Loggables.withLogger(logger, Level.INFO)
 				.addLog("updateMissingPaymentTermIds - {} C_Invoice_Candidates were updated; selectionId={}, paymentTermId={}",
 						updateCount, selectionId, paymentTermId);
 
@@ -1149,14 +1235,14 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		if (selectionToUpdateId == null)
 		{
-			Loggables.get().withLogger(logger, Level.INFO)
+			Loggables.withLogger(logger, Level.INFO)
 					.addLog("updateMissingPaymentTermIds - No C_Invoice_Candidate needs to be updated; selectionId={}",
 							selectionId);
 		}
 		return selectionToUpdateId;
 	}
 
-	private int retrievePaymentTermId(final PInstanceId selectionId)
+	private PaymentTermId retrievePaymentTermId(final PInstanceId selectionId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -1176,23 +1262,31 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.first();
 		if (firstInvoiceCandidateWithPaymentTermId == null)
 		{
-			Loggables.get().withLogger(logger, Level.INFO)
+			Loggables.withLogger(logger, Level.INFO)
 					.addLog("updateMissingPaymentTermIds - No C_Invoice_Candidate selected by selectionId={} has a C_PaymentTerm_ID; nothing to update", selectionId);
-			return -1;
+			return null;
 		}
 
-		final Integer paymentTermId = InterfaceWrapperHelper.getValueOverrideOrValue(
-				firstInvoiceCandidateWithPaymentTermId,
-				I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_ID);
-		return paymentTermId;
+		return CoalesceUtil.coalesceSuppliers(
+				() -> PaymentTermId.ofRepoIdOrNull(firstInvoiceCandidateWithPaymentTermId.getC_PaymentTerm_Override_ID()),
+				() -> PaymentTermId.ofRepoIdOrNull(firstInvoiceCandidateWithPaymentTermId.getC_PaymentTerm_ID()));
 	}
 
-	@Override
-	public final <T> void updateColumnForSelection(
-			final String columnName,
-			final T value,
+	/**
+	 * Mass-update a given invoice candidate column.
+	 *
+	 * If there were any changes, those invoice candidates will be invalidated.
+	 *
+	 * @param invoiceCandidateColumnName {@link I_C_Invoice_Candidate}'s column to update
+	 * @param value value to set (you can also use {@link ModelColumnNameValue})
+	 * @param updateOnlyIfNull if true then it will update only if column value is null (not set)
+	 * @param selectionId invoice candidates selection (AD_PInstance_ID)
+	 */
+	private final <T> void updateColumnForSelection(
+			@NonNull final String columnName,
+			@Nullable final T value,
 			final boolean updateOnlyIfNull,
-			final PInstanceId selectionId)
+			@NonNull final PInstanceId selectionId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -1210,7 +1304,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final PInstanceId selectionToUpdateId = selectionQueryBuilder.create().createSelection();
 		if (selectionToUpdateId == null)
 		{
-			Loggables.get().withLogger(logger, Level.INFO)
+			Loggables.withLogger(logger, Level.INFO)
 					.addLog("updateColumnForSelection - No C_Invoice_Candidate needs to be updated; selectionId={}, columnName={}; updateOnlyIfNull={}, newValue={}",
 							selectionId, columnName, updateOnlyIfNull, value);
 			return;
@@ -1228,7 +1322,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		final int updateCount = updateQuery.updateDirectly(updater);
 
-		Loggables.get().withLogger(logger, Level.INFO)
+		Loggables.withLogger(logger, Level.INFO)
 				.addLog("updateColumnForSelection - {} C_Invoice_Candidates were updated; selectionId={}, columnName={}; updateOnlyIfNull={}, newValue={}",
 						updateCount, selectionId, columnName, updateOnlyIfNull, value);
 
@@ -1240,7 +1334,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public BigDecimal retrieveInvoicableAmount(
 			final Properties ctx,
 			final IInvoiceCandidateQuery query,
-			final int targetCurrencyId,
+			@NonNull final CurrencyId targetCurrencyId,
 			final int adClientId,
 			final int adOrgId,
 			final String amountColumnName,
@@ -1313,7 +1407,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				+ I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID + ","
 				+ I_C_Invoice_Candidate.COLUMNNAME_C_ConversionType_ID;
 
-		final Map<Integer, Map<Integer, BigDecimal>> currencyId2conversion2Amt = new HashMap<>();
+		final HashMap<CurrencyId, HashMap<CurrencyConversionTypeId, BigDecimal>> currencyId2conversion2Amt = new HashMap<>();
 
 		final PreparedStatement pstmt = DB.prepareStatement(sql, trxName);
 		ResultSet rs = null;
@@ -1329,20 +1423,22 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				{
 					continue;
 				}
-				final int currencyId = rs.getInt(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID);
-				final int conversionTypeId = rs.getInt(I_C_Invoice_Candidate.COLUMNNAME_C_ConversionType_ID);
-				Map<Integer, BigDecimal> conversion2Amt = currencyId2conversion2Amt.get(currencyId);
+				final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(rs.getInt(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID));
+				final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(rs.getInt(I_C_Invoice_Candidate.COLUMNNAME_C_ConversionType_ID));
+
+				HashMap<CurrencyConversionTypeId, BigDecimal> conversion2Amt = currencyId2conversion2Amt.get(currencyId);
 				if (conversion2Amt == null)
 				{
 					conversion2Amt = new HashMap<>();
 					currencyId2conversion2Amt.put(currencyId, conversion2Amt);
 				}
+
 				conversion2Amt.put(conversionTypeId, netAmt);
 			}
 		}
 		catch (final SQLException e)
 		{
-			throw new DBException(e);
+			throw new DBException(e, sql, params);
 		}
 		finally
 		{
@@ -1350,23 +1446,24 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		}
 
 		// Conversion date to be used on currency conversion
-		final Timestamp dateConv = SystemTime.asTimestamp();
+		final LocalDate dateConv = SystemTime.asLocalDate();
 
 		BigDecimal result = BigDecimal.ZERO;
-		for (final Integer currencyId : currencyId2conversion2Amt.keySet())
+		for (final CurrencyId currencyId : currencyId2conversion2Amt.keySet())
 		{
-			final Map<Integer, BigDecimal> conversion2Amt = currencyId2conversion2Amt.get(currencyId);
+			final Map<CurrencyConversionTypeId, BigDecimal> conversion2Amt = currencyId2conversion2Amt.get(currencyId);
 
-			for (final Integer conversionTypeId : conversion2Amt.keySet())
+			for (final CurrencyConversionTypeId conversionTypeId : conversion2Amt.keySet())
 			{
 				final BigDecimal amt = conversion2Amt.get(conversionTypeId);
-				final BigDecimal amtConverted = Services.get(ICurrencyBL.class).convert(ctx,
+				final BigDecimal amtConverted = Services.get(ICurrencyBL.class).convert(
 						amt,
 						currencyId,    // CurFrom_ID,
 						targetCurrencyId,    // CurTo_ID,
 						dateConv,    // ConvDate,
 						conversionTypeId,
-						adClientId, adOrgId);
+						ClientId.ofRepoId(adClientId),
+						OrgId.ofRepoId(adOrgId));
 				result = result.add(amtConverted);
 			}
 		}
@@ -1396,9 +1493,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				ic.getSchedulerResult(), ic.isError(), ic.getErrorMsg(), ic.getAD_Note_ID(), ic.getC_Invoice_Candidate_ID()
 		};
 
-		final boolean ignoreError = false;
 		final String trxName = InterfaceWrapperHelper.getTrxName(ic);
-		DB.executeUpdate(sql, sqlParams, ignoreError, trxName);
+		DB.executeUpdateEx(sql, sqlParams, trxName);
 	}
 
 	@Override
@@ -1410,13 +1506,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			return; // nothing to do for us
 		}
 
-		final ImmutableList<Integer> icIds = ics.stream()
+		final ImmutableSet<InvoiceCandidateId> icIds = ics.stream()
 				.filter(Predicates.notNull())
-				.filter(ic -> ic.getC_Invoice_Candidate_ID() > 0)
-				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
+				.map(ic -> InvoiceCandidateId.ofRepoIdOrNull(ic.getC_Invoice_Candidate_ID()))
+				.filter(Predicates.notNull())
 				.distinct()
-				.collect(ImmutableList.toImmutableList());
-
+				.collect(ImmutableSet.toImmutableSet());
 		if (icIds.isEmpty())
 		{
 			return;
@@ -1425,7 +1520,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		// note: invalidate, no matter if Processed or not
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, icIds);
+				.addInArrayFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, icIds);
 
 		invalidateCandsFor(icQueryBuilder);
 	}
@@ -1539,5 +1634,36 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		{
 			DB.close(rs, pstmt);
 		}
+	}
+
+	@Override
+	public InvoiceCandidateId getFirstInvoiceableInvoiceCandId(final OrderId orderId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final ICompositeQueryFilter<I_C_Invoice_Candidate> qtyToInvoiceFilter = queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
+				.setJoinOr()
+				.addCompareFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, Operator.GREATER, BigDecimal.ZERO)
+				.addCompareFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override, Operator.GREATER, BigDecimal.ZERO);
+
+		return queryBL
+				.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addFiltersUnboxed(qtyToInvoiceFilter)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, orderId)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsFreightCost, false)
+				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate)
+				.create()
+				.firstId(InvoiceCandidateId::ofRepoIdOrNull);
+	}
+
+	@Override
+	public void invalidateUninvoicedFreightCostCandidate(@NonNull final OrderId orderId)
+	{
+		final IQueryBuilder<I_C_Invoice_Candidate> freightCostCandQueryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, orderId)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_IsFreightCost, true)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false);
+
+		invalidateCandsFor(freightCostCandQueryBuilder);
 	}
 }

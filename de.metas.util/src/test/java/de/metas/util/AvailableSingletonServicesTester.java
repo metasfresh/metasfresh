@@ -14,8 +14,6 @@ import org.reflections.util.ConfigurationBuilder;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.util.ISingletonService;
-import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -78,6 +76,13 @@ public class AvailableSingletonServicesTester
 	public void test()
 	{
 		final Set<Class<? extends ISingletonService>> singletonServiceInterfaces = getSingletonServiceInterfaces();
+
+		if (singletonServiceInterfaces.isEmpty())
+		{
+			throw new RuntimeException("No classes found. Might be because for some reason Reflections does not work correctly with maven surefire plugin."
+					+ "\n See https://github.com/metasfresh/metasfresh/issues/4773.");
+		}
+
 		singletonServiceInterfaces.stream()
 				.filter(this::isEligible)
 				.forEach(this::test);

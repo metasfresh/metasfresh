@@ -1,0 +1,17 @@
+  {
+    "requestItems": [
+      {
+        "bpartnerIdentifier": "ext-1234567",
+        "bpartnerComposite": {
+          "bpartner": {
+            "code": "other12345",
+            "companyName": "otherCompanyName"
+          }
+        }
+      }
+    ],
+    "syncAdvise": {
+      "ifNotExists": "FAIL",
+      "ifExists": "UPDATE_MERGE"
+    }
+  }

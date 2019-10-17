@@ -2,17 +2,14 @@ package de.metas.material.planning.interceptor;
 
 import java.sql.Timestamp;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 import org.compiere.model.ModelValidator;
 
-import de.metas.material.planning.IResourceProductService;
+import de.metas.material.planning.IResourceDAO;
 import de.metas.util.Services;
 
 /*
@@ -78,17 +75,7 @@ public class S_ResourceType
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void updateProducts(final I_S_ResourceType resourceType)
 	{
-		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
-
-		Services.get(IQueryBL.class).createQueryBuilder(I_S_Resource.class, resourceType)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_Resource.COLUMNNAME_S_ResourceType_ID, resourceType.getS_ResourceType_ID())
-				.create()
-				.list().forEach(r -> {
-
-					final I_M_Product product = resourceProductService.retrieveProductForResource(r);
-					resourceProductService.setResourceTypeToProduct(resourceType, product);
-				});
+		Services.get(IResourceDAO.class).onResourceTypeChanged(resourceType);
 	}
 
 }

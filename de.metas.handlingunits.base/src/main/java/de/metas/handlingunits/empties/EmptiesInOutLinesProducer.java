@@ -15,6 +15,8 @@ import de.metas.handlingunits.impl.PlainPackingMaterialDocumentLineSource;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.IInOutBL;
+import de.metas.product.IProductBL;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -39,8 +41,9 @@ public class EmptiesInOutLinesProducer extends AbstractPackingMaterialDocumentLi
 	}
 
 	//
-	// Services
+	// Services; note that this lineBuilder is shortLived, so it's OK to have those services as members
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
+	private final transient IProductBL productBL = Services.get(IProductBL.class);
 
 	private final IReference<I_M_InOut> _inoutRef;
 
@@ -87,7 +90,10 @@ public class EmptiesInOutLinesProducer extends AbstractPackingMaterialDocumentLi
 	{
 		final I_M_InOut inout = getM_InOut();
 		final I_M_InOutLine inoutLine = inOutBL.newInOutLine(inout, I_M_InOutLine.class);
+		final UomId uomId = productBL.getStockUOMId(packingMaterial.getM_Product_ID());
+
 		inoutLine.setM_Product_ID(packingMaterial.getM_Product_ID());
+		inoutLine.setC_UOM_ID(uomId.getRepoId()); // prevent the system from picking its default-UOM; there might be no UOM-conversion to/from the product's UOM
 		// NOTE: don't save it
 
 		return new EmptiesInOutLinePackingMaterialDocumentLine(inoutLine);

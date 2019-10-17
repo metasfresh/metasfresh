@@ -32,8 +32,6 @@ public interface I_M_HU_Trace
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_M_HU_Trace, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_HU_Trace, org.compiere.model.I_AD_Client>(I_M_HU_Trace.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -59,10 +57,6 @@ public interface I_M_HU_Trace
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_M_HU_Trace, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_HU_Trace, org.compiere.model.I_AD_Org>(I_M_HU_Trace.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
@@ -87,10 +81,6 @@ public interface I_M_HU_Trace
 	 * <br>Virtual Column: false
 	 */
 	public int getC_DocType_ID();
-
-	public org.compiere.model.I_C_DocType getC_DocType();
-
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
 
     /** Column definition for C_DocType_ID */
     public static final org.adempiere.model.ModelColumn<I_M_HU_Trace, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_M_HU_Trace, org.compiere.model.I_C_DocType>(I_M_HU_Trace.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
@@ -224,7 +214,7 @@ public interface I_M_HU_Trace
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Handling Units.
+	 * Set Handling Unit.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -233,7 +223,7 @@ public interface I_M_HU_Trace
 	public void setM_HU_ID (int M_HU_ID);
 
 	/**
-	 * Get Handling Units.
+	 * Get Handling Unit.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -377,10 +367,6 @@ public interface I_M_HU_Trace
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Product_ID();
-
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
 
     /** Column definition for M_Product_ID */
     public static final org.adempiere.model.ModelColumn<I_M_HU_Trace, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_M_HU_Trace, org.compiere.model.I_M_Product>(I_M_HU_Trace.class, "M_Product_ID", org.compiere.model.I_M_Product.class);

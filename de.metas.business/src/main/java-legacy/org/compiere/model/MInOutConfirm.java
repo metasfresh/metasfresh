@@ -26,7 +26,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.user.api.IUserDAO;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.util.Env;
@@ -37,6 +36,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 
 /**
@@ -80,8 +80,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 
 		MInOutConfirm confirm = new MInOutConfirm (ship, confirmType);
 		confirm.saveEx();
-		MInOutLine[] shipLines = ship.getLines();
-		for (MInOutLine sLine : shipLines)
+		for (MInOutLine sLine : ship.getLines())
 		{
 			MInOutLineConfirm cLine = new MInOutLineConfirm (confirm);
 			cLine.setInOutLine(sLine);

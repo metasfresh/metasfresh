@@ -10,12 +10,12 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -37,8 +38,6 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
-
-import com.google.common.base.Optional;
 
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUAware;
@@ -192,7 +191,7 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 	{
 		return _hu;
 	}
-	
+
 	public final int getM_HU_ID()
 	{
 		return _hu.getM_HU_ID();
@@ -221,7 +220,7 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		return getHUStorage().getProductStorageOrNull(productId);
 	}
-	
+
 	public IHUProductStorage getProductStorageOrNull(final ProductId productId)
 	{
 		return getHUStorage().getProductStorageOrNull(productId);
@@ -317,7 +316,7 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 			{
 				//
 				// Always run removal in transaction (thread needs a transaction)
-				Services.get(ITrxManager.class).run(new TrxRunnable()
+				Services.get(ITrxManager.class).runInNewTrx(new TrxRunnable()
 				{
 					@Override
 					public void run(final String localTrxName) throws Exception
@@ -450,9 +449,9 @@ public class HUKey extends AbstractHUKey implements ISplittableHUKey, IHUAware
 
 	/**
 	 * Checks if the underlying HU is destroyed.
-	 * 
+	 *
 	 * NOTE: this method will NEVER refresh the underlying HU before checking it because this method is supported to be called a lot of times and this would not be performant
-	 * 
+	 *
 	 * @return true if the underlying HU is destroyed
 	 */
 	@Override

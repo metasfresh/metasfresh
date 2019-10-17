@@ -30,7 +30,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pricing.model.I_C_PricingRule;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
@@ -45,15 +44,15 @@ import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.adempiere.model.I_M_Product_Category;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.invoicecandidate.FlatrateDataEntryHandler;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -67,12 +66,14 @@ import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.organization.OrgId;
 import de.metas.pricing.rules.MockedPricingRule;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
-import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import mockit.Expectations;
 import mockit.Mocked;
 
@@ -115,6 +116,7 @@ public class FlatrateBLTest extends ContractsTestBase
 		final I_C_PricingRule pricingRule = newInstance(I_C_PricingRule.class);
 		pricingRule.setSeqNo(10);
 		pricingRule.setClassname(MockedPricingRule.class.getName());
+		pricingRule.setName(pricingRule.getClassname());
 		save(pricingRule);
 
 		final I_C_ILCandHandler handler = newInstance(I_C_ILCandHandler.class);
@@ -192,7 +194,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		final I_M_Product product = newInstance(I_M_Product.class);
 		product.setM_Product_Category_ID(20);
-		product.setC_UOM(productUOM);
+		product.setC_UOM_ID(productUOM.getC_UOM_ID());
 		save(product);
 
 		final I_C_Period period = newInstance(I_C_Period.class);
@@ -229,7 +231,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 				final Properties ctx = Env.getCtx();
 
-				final int taxCategoryId = -1;
+				final TaxCategoryId taxCategoryId = null;
 				final boolean isSOTrx = true;
 
 				taxBL.getTax(
@@ -240,7 +242,7 @@ public class FlatrateBLTest extends ContractsTestBase
 						dataEntry.getDate_Reported(),
 						OrgId.ofRepoId(dataEntry.getAD_Org_ID()),
 						(WarehouseId)null,
-						Util.firstGreaterThanZero(currentTerm.getDropShip_Location_ID(), currentTerm.getBill_Location_ID()),
+						CoalesceUtil.firstGreaterThanZero(currentTerm.getDropShip_Location_ID(), currentTerm.getBill_Location_ID()),
 						isSOTrx);
 				minTimes = 0;
 				result = 3;
@@ -432,7 +434,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		// product
 		product = newInstance(I_M_Product.class);
-		product.setM_Product_Category(productCategory);
+		product.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
 		save(product);
 
 		// first conditions

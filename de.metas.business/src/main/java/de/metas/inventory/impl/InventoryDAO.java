@@ -1,17 +1,18 @@
 package de.metas.inventory.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.inventory.IInventoryDAO;
-import de.metas.util.Check;
+import de.metas.inventory.InventoryId;
+import de.metas.inventory.InventoryLineId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -40,35 +41,39 @@ import lombok.NonNull;
 public class InventoryDAO implements IInventoryDAO
 {
 	@Override
-	public boolean hasLines(final int inventoryId)
+	public I_M_Inventory getById(@NonNull final InventoryId inventoryId)
 	{
-		if (inventoryId <= 0)
-		{
-			return false;
-		}
+		return load(inventoryId, I_M_Inventory.class);
+	}
 
-		return createLinesQueryForInventoryId(inventoryId)
+	@Override
+	public I_M_InventoryLine getLineById(@NonNull final InventoryLineId inventoryLineId)
+	{
+		return load(inventoryLineId, I_M_InventoryLine.class);
+	}
+
+	@Override
+	public boolean hasLines(@NonNull final InventoryId inventoryId)
+	{
+		return queryLinesForInventoryId(inventoryId)
 				.create()
 				.match();
 	}
 
 	@Override
-	public <T extends I_M_InventoryLine> List<T> retrieveLinesForInventoryId(final int inventoryId, @NonNull final Class<T> type)
+	public <T extends I_M_InventoryLine> List<T> retrieveLinesForInventoryId(
+			@NonNull final InventoryId inventoryId,
+			@NonNull final Class<T> type)
 	{
-		if (inventoryId <= 0)
-		{
-			return ImmutableList.of();
-		}
-
-		return createLinesQueryForInventoryId(inventoryId)
+		return queryLinesForInventoryId(inventoryId)
 				.create()
 				.list(type);
 	}
 
-	private IQueryBuilder<I_M_InventoryLine> createLinesQueryForInventoryId(final int inventoryId)
+	private IQueryBuilder<I_M_InventoryLine> queryLinesForInventoryId(@NonNull final InventoryId inventoryId)
 	{
-		Check.assume(inventoryId > 0, "inventoryId > 0");
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_InventoryLine.class)
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_InventoryLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_InventoryLine.COLUMNNAME_M_Inventory_ID, inventoryId)
 				.orderBy(I_M_InventoryLine.COLUMN_Line)
@@ -76,7 +81,7 @@ public class InventoryDAO implements IInventoryDAO
 	}
 
 	@Override
-	public void setInventoryLinesProcessed(final int inventoryId, final boolean processed)
+	public void setInventoryLinesProcessed(@NonNull final InventoryId inventoryId, final boolean processed)
 	{
 		Services.get(IQueryBL.class).createQueryBuilder(I_M_InventoryLine.class)
 				.addOnlyActiveRecordsFilter()

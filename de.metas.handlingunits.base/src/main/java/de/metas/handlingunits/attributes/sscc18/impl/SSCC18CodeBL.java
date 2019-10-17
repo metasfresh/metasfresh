@@ -27,7 +27,6 @@ import java.util.Properties;
 
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeBL;
 import de.metas.handlingunits.attributes.sscc18.SSCC18;
@@ -126,22 +125,22 @@ public class SSCC18CodeBL implements ISSCC18CodeBL
 		if (manufacturerCodeSize == 8)
 		{
 			Check.assume(serialNumberSize <= 8, "Serial number too long: {}", serialNumberStr);
-			finalSerialNumber = Util.lpadZero(serialNumberStr, 8, "Manufacturer code size shoult be 8");
+			finalSerialNumber = StringUtils.lpadZero(serialNumberStr, 8, "Manufacturer code size shoult be 8");
 
 			finalManufacturerCode = manufacturerCode_SysConfig;
 		}
 		else if (manufacturerCodeSize == 7)
 		{
-			finalSerialNumber = Util.lpadZero(serialNumberStr, 9, "Manufacturer code size shoult be 9");
+			finalSerialNumber = StringUtils.lpadZero(serialNumberStr, 9, "Manufacturer code size shoult be 9");
 
 			finalManufacturerCode = manufacturerCode_SysConfig;
 		}
 		// manufacturer code smaller than 7
 		else
 		{
-			finalSerialNumber = Util.lpadZero(serialNumberStr, 9, "Manufacturer code size shoult be " + 9);
+			finalSerialNumber = StringUtils.lpadZero(serialNumberStr, 9, "Manufacturer code size shoult be " + 9);
 
-			finalManufacturerCode = Util.lpadZero(manufacturerCode_SysConfig, 7, "Manufacturer code size shoult be " + 7);
+			finalManufacturerCode = StringUtils.lpadZero(manufacturerCode_SysConfig, 7, "Manufacturer code size shoult be " + 7);
 		}
 
 		final int checkDigit = computeCheckDigit(EXTENDED_DIGIT + finalManufacturerCode + finalSerialNumber);

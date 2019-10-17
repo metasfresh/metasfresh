@@ -69,7 +69,7 @@ public interface I_I_DiscountSchema
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Base_PricingSystem_ID.
+	 * Set Preissystem.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -78,7 +78,7 @@ public interface I_I_DiscountSchema
 	public void setBase_PricingSystem_ID (int Base_PricingSystem_ID);
 
 	/**
-	 * Get Base_PricingSystem_ID.
+	 * Get Preissystem.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -169,8 +169,8 @@ public interface I_I_DiscountSchema
     public static final String COLUMNNAME_BreakDiscount = "BreakDiscount";
 
 	/**
-	 * Set Break Value.
-	 * Low Value of trade discount break level
+	 * Set Mengenstufe.
+	 * Mindestmenge ab der die Kondition gilt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -179,8 +179,8 @@ public interface I_I_DiscountSchema
 	public void setBreakValue (java.math.BigDecimal BreakValue);
 
 	/**
-	 * Get Break Value.
-	 * Low Value of trade discount break level
+	 * Get Mengenstufe.
+	 * Mindestmenge ab der die Kondition gilt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -221,6 +221,35 @@ public interface I_I_DiscountSchema
     public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, org.compiere.model.I_C_BPartner>(I_I_DiscountSchema.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
+	 * Set Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Currency_ID();
+
+	public org.compiere.model.I_C_Currency getC_Currency();
+
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
+
+    /** Column definition for C_Currency_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, org.compiere.model.I_C_Currency>(I_I_DiscountSchema.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
 	 * Set Zahlungsbedingung.
@@ -280,6 +309,31 @@ public interface I_I_DiscountSchema
     public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, org.compiere.model.I_AD_User>(I_I_DiscountSchema.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Rabatt %.
+	 * Abschlag in Prozent
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDiscount (java.math.BigDecimal Discount);
+
+	/**
+	 * Get Rabatt %.
+	 * Abschlag in Prozent
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getDiscount();
+
+    /** Column definition for Discount */
+    public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object> COLUMN_Discount = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object>(I_I_DiscountSchema.class, "Discount", null);
+    /** Column name Discount */
+    public static final String COLUMNNAME_Discount = "Discount";
 
 	/**
 	 * Set Discount Schema Import.
@@ -380,27 +434,33 @@ public interface I_I_DiscountSchema
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set IsPriceOverride.
+	 * Set Rabatt Schema.
+	 * Schema um den prozentualen Rabatt zu berechnen
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsPriceOverride (boolean IsPriceOverride);
+	public void setM_DiscountSchema_ID (int M_DiscountSchema_ID);
 
 	/**
-	 * Get IsPriceOverride.
+	 * Get Rabatt Schema.
+	 * Schema um den prozentualen Rabatt zu berechnen
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isPriceOverride();
+	public int getM_DiscountSchema_ID();
 
-    /** Column definition for IsPriceOverride */
-    public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object> COLUMN_IsPriceOverride = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object>(I_I_DiscountSchema.class, "IsPriceOverride", null);
-    /** Column name IsPriceOverride */
-    public static final String COLUMNNAME_IsPriceOverride = "IsPriceOverride";
+	public org.compiere.model.I_M_DiscountSchema getM_DiscountSchema();
+
+	public void setM_DiscountSchema(org.compiere.model.I_M_DiscountSchema M_DiscountSchema);
+
+    /** Column definition for M_DiscountSchema_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, org.compiere.model.I_M_DiscountSchema> COLUMN_M_DiscountSchema_ID = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, org.compiere.model.I_M_DiscountSchema>(I_I_DiscountSchema.class, "M_DiscountSchema_ID", org.compiere.model.I_M_DiscountSchema.class);
+    /** Column name M_DiscountSchema_ID */
+    public static final String COLUMNNAME_M_DiscountSchema_ID = "M_DiscountSchema_ID";
 
 	/**
 	 * Set Discount Schema Break.
@@ -430,35 +490,6 @@ public interface I_I_DiscountSchema
     public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, org.compiere.model.I_M_DiscountSchemaBreak> COLUMN_M_DiscountSchemaBreak_ID = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, org.compiere.model.I_M_DiscountSchemaBreak>(I_I_DiscountSchema.class, "M_DiscountSchemaBreak_ID", org.compiere.model.I_M_DiscountSchemaBreak.class);
     /** Column name M_DiscountSchemaBreak_ID */
     public static final String COLUMNNAME_M_DiscountSchemaBreak_ID = "M_DiscountSchemaBreak_ID";
-
-	/**
-	 * Set Rabatt Schema.
-	 * Schema um den prozentualen Rabatt zu berechnen
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_DiscountSchema_ID (int M_DiscountSchema_ID);
-
-	/**
-	 * Get Rabatt Schema.
-	 * Schema um den prozentualen Rabatt zu berechnen
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_DiscountSchema_ID();
-
-	public org.compiere.model.I_M_DiscountSchema getM_DiscountSchema();
-
-	public void setM_DiscountSchema(org.compiere.model.I_M_DiscountSchema M_DiscountSchema);
-
-    /** Column definition for M_DiscountSchema_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, org.compiere.model.I_M_DiscountSchema> COLUMN_M_DiscountSchema_ID = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, org.compiere.model.I_M_DiscountSchema>(I_I_DiscountSchema.class, "M_DiscountSchema_ID", org.compiere.model.I_M_DiscountSchema.class);
-    /** Column name M_DiscountSchema_ID */
-    public static final String COLUMNNAME_M_DiscountSchema_ID = "M_DiscountSchema_ID";
 
 	/**
 	 * Set Produkt.
@@ -515,7 +546,7 @@ public interface I_I_DiscountSchema
     public static final String COLUMNNAME_PaymentTermValue = "PaymentTermValue";
 
 	/**
-	 * Set PriceBase.
+	 * Set Preisgrundlage.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -524,7 +555,7 @@ public interface I_I_DiscountSchema
 	public void setPriceBase (java.lang.String PriceBase);
 
 	/**
-	 * Get PriceBase.
+	 * Get Preisgrundlage.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -538,29 +569,54 @@ public interface I_I_DiscountSchema
     public static final String COLUMNNAME_PriceBase = "PriceBase";
 
 	/**
-	 * Set Standardpreis.
-	 * Standardpreis
+	 * Set Festpreis.
+	 * Festpreis, ohne ggf. zusätzliche Rabatte
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPriceStd (java.math.BigDecimal PriceStd);
+	public void setPriceStdFixed (java.math.BigDecimal PriceStdFixed);
 
 	/**
-	 * Get Standardpreis.
-	 * Standardpreis
+	 * Get Festpreis.
+	 * Festpreis, ohne ggf. zusätzliche Rabatte
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getPriceStd();
+	public java.math.BigDecimal getPriceStdFixed();
 
-    /** Column definition for PriceStd */
-    public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object> COLUMN_PriceStd = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object>(I_I_DiscountSchema.class, "PriceStd", null);
-    /** Column name PriceStd */
-    public static final String COLUMNNAME_PriceStd = "PriceStd";
+    /** Column definition for PriceStdFixed */
+    public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object> COLUMN_PriceStdFixed = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object>(I_I_DiscountSchema.class, "PriceStdFixed", null);
+    /** Column name PriceStdFixed */
+    public static final String COLUMNNAME_PriceStdFixed = "PriceStdFixed";
+
+	/**
+	 * Set Preisaufschlag.
+	 * Aufschlag auf den Preis, der aus dem Preissystem resultieren würde
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPricingSystemSurchargeAmt (java.math.BigDecimal PricingSystemSurchargeAmt);
+
+	/**
+	 * Get Preisaufschlag.
+	 * Aufschlag auf den Preis, der aus dem Preissystem resultieren würde
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPricingSystemSurchargeAmt();
+
+    /** Column definition for PricingSystemSurchargeAmt */
+    public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object> COLUMN_PricingSystemSurchargeAmt = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object>(I_I_DiscountSchema.class, "PricingSystemSurchargeAmt", null);
+    /** Column name PricingSystemSurchargeAmt */
+    public static final String COLUMNNAME_PricingSystemSurchargeAmt = "PricingSystemSurchargeAmt";
 
 	/**
 	 * Set Verarbeitet.
@@ -611,31 +667,6 @@ public interface I_I_DiscountSchema
     public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object> COLUMN_ProductValue = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object>(I_I_DiscountSchema.class, "ProductValue", null);
     /** Column name ProductValue */
     public static final String COLUMNNAME_ProductValue = "ProductValue";
-
-	/**
-	 * Set Aufschlag auf Standardpreis.
-	 * Amount added to a price as a surcharge
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setStd_AddAmt (java.math.BigDecimal Std_AddAmt);
-
-	/**
-	 * Get Aufschlag auf Standardpreis.
-	 * Amount added to a price as a surcharge
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getStd_AddAmt();
-
-    /** Column definition for Std_AddAmt */
-    public static final org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object> COLUMN_Std_AddAmt = new org.adempiere.model.ModelColumn<I_I_DiscountSchema, Object>(I_I_DiscountSchema.class, "Std_AddAmt", null);
-    /** Column name Std_AddAmt */
-    public static final String COLUMNNAME_Std_AddAmt = "Std_AddAmt";
 
 	/**
 	 * Get Aktualisiert.

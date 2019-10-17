@@ -15,7 +15,7 @@ public class X_M_HU_Item extends org.compiere.model.PO implements I_M_HU_Item, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -4216088L;
+	private static final long serialVersionUID = -1778059188L;
 
     /** Standard Constructor */
     public X_M_HU_Item (Properties ctx, int M_HU_Item_ID, String trxName)
@@ -74,7 +74,7 @@ public class X_M_HU_Item extends org.compiere.model.PO implements I_M_HU_Item, o
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU getM_HU() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU getM_HU()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
 	}
@@ -85,8 +85,8 @@ public class X_M_HU_Item extends org.compiere.model.PO implements I_M_HU_Item, o
 		set_ValueFromPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU);
 	}
 
-	/** Set Handling Units.
-		@param M_HU_ID Handling Units	  */
+	/** Set Handling Unit.
+		@param M_HU_ID Handling Unit	  */
 	@Override
 	public void setM_HU_ID (int M_HU_ID)
 	{
@@ -96,8 +96,8 @@ public class X_M_HU_Item extends org.compiere.model.PO implements I_M_HU_Item, o
 			set_ValueNoCheck (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
 	}
 
-	/** Get Handling Units.
-		@return Handling Units	  */
+	/** Get Handling Unit.
+		@return Handling Unit	  */
 	@Override
 	public int getM_HU_ID () 
 	{
@@ -130,7 +130,7 @@ public class X_M_HU_Item extends org.compiere.model.PO implements I_M_HU_Item, o
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_PackingMaterial getM_HU_PackingMaterial() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_PackingMaterial getM_HU_PackingMaterial()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_PackingMaterial_ID, de.metas.handlingunits.model.I_M_HU_PackingMaterial.class);
 	}
@@ -164,7 +164,7 @@ public class X_M_HU_Item extends org.compiere.model.PO implements I_M_HU_Item, o
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI_Item getM_HU_PI_Item() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_PI_Item getM_HU_PI_Item()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Item_ID, de.metas.handlingunits.model.I_M_HU_PI_Item.class);
 	}

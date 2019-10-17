@@ -26,18 +26,18 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Properties;
+
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
-
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.uom.LegacyUOMConversionUtils;
 
 /**
  *	Scheduling Utilities.
@@ -125,7 +125,7 @@ public class ScheduleUtil
 		m_startDate = start_Date;
 		m_endDate = end_Date;
 		if (m_endDate == null)
-			m_endDate = MUOMConversion.getEndDate(m_ctx, m_startDate, m_C_UOM_ID, qty);
+			m_endDate = computeEndDate(m_ctx, m_startDate, m_C_UOM_ID, qty);
 		log.debug( "- EndDate=" + m_endDate);
 
 
@@ -178,7 +178,9 @@ public class ScheduleUtil
 		sql = Env.getUserRolePermissions(m_ctx).addAccessSQL(
 			"SELECT Name, Date1 FROM C_NonBusinessDay "
 			+ "WHERE TRUNC(Date1) BETWEEN ? AND ?",
-			"C_NonBusinessDay", false, false);	// not qualified - RO
+			"C_NonBusinessDay",
+			IUserRolePermissions.SQL_NOTQUALIFIED,
+			Access.READ);	// not qualified - RO
 		try
 		{
 			Timestamp startDay = TimeUtil.getDay(m_startDate);
@@ -579,7 +581,9 @@ public class ScheduleUtil
 			+ "FROM S_Resource r, S_ResourceType rt "
 			+ "WHERE r.S_Resource_ID=?"
 			+ " AND r.S_ResourceType_ID=rt.S_ResourceType_ID",
-			"r", IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+			"r",
+			IUserRolePermissions.SQL_FULLYQUALIFIED,
+			Access.READ);
 		//
 		try
 		{
@@ -780,7 +784,7 @@ public class ScheduleUtil
 
 		ArrayList<MAssignmentSlot> list = new ArrayList<MAssignmentSlot>();
 		MUOM uom = MUOM.get (m_ctx, m_C_UOM_ID);
-		int minutes = MUOMConversion.convertToMinutes (m_ctx, m_C_UOM_ID, Env.ONE);
+		int minutes = LegacyUOMConversionUtils.convertToMinutes (m_ctx, m_C_UOM_ID, Env.ONE);
 		log.info("Minutes=" + minutes);
 		//
 		if (minutes > 0 && minutes < 60*24)
@@ -881,5 +885,28 @@ public class ScheduleUtil
 	{
 		return m_endDate;
 	}	//	getEndDate
+
+	/**
+	 * Calculate End Date based on start date and qty
+	 * 
+	 * @param ctx context
+	 * @param startDate date
+	 * @param C_UOM_ID UOM
+	 * @param qty qty
+	 * @return end date
+	 */
+	private static Timestamp computeEndDate(Properties ctx, Timestamp startDate, int C_UOM_ID, BigDecimal qty)
+	{
+		GregorianCalendar endDate = new GregorianCalendar();
+		endDate.setTime(startDate);
+		//
+		int minutes = LegacyUOMConversionUtils.convertToMinutes(ctx, C_UOM_ID, qty);
+		endDate.add(Calendar.MINUTE, minutes);
+		//
+		Timestamp retValue = new Timestamp(endDate.getTimeInMillis());
+		// log.info( "TimeUtil.getEndDate", "Start=" + startDate
+		// + ", Qty=" + qty + ", End=" + retValue);
+		return retValue;
+	}	// startDate
 
 }	//	MSchedule

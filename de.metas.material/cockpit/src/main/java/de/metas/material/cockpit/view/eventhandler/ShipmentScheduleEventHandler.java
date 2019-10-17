@@ -100,7 +100,7 @@ public class ShipmentScheduleEventHandler
 		if (shipmentScheduleEvent.getOrderedQuantityDelta().signum() == 0
 				&& shipmentScheduleEvent.getReservedQuantityDelta().signum() == 0)
 		{
-			Loggables.get().addLog("Skipping this event because is has both orderedQuantityDelta and reservedQuantityDelta = zero");
+			Loggables.addLog("Skipping this event because is has both orderedQuantityDelta and reservedQuantityDelta = zero");
 			return;
 		}
 
@@ -140,7 +140,7 @@ public class ShipmentScheduleEventHandler
 					.handleRemoveDetailRequest(RemoveDetailRequest.builder()
 							.detailDataRecordIdentifier(detailIdentifier)
 							.build());
-			Loggables.get().addLog("Deleted {} detail records", deletedCount);
+			Loggables.addLog("Deleted {} detail records", deletedCount);
 		}
 	}
 

@@ -23,11 +23,11 @@ import com.google.common.collect.ImmutableMap;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -77,7 +77,6 @@ public class LogicExpressionResult
 
 	private LogicExpressionResult(final String name, final Boolean value, final ILogicExpression expression, final Map<CtxName, String> usedParameters)
 	{
-		super();
 		this.name = name;
 		this.value = value == null ? false : value;
 		this.expression = expression;
@@ -87,16 +86,17 @@ public class LogicExpressionResult
 	@Override
 	public String toString()
 	{
-		if (_toString == null)
+		String toString = _toString;
+		if (toString == null)
 		{
-			_toString = MoreObjects.toStringHelper(value ? "TRUE" : "FALSE")
+			toString = _toString = MoreObjects.toStringHelper(value ? "TRUE" : "FALSE")
 					.omitNullValues()
 					.add("name", name)
 					.add("expression", expression)
 					.add("usedParameters", usedParameters)
 					.toString();
 		}
-		return _toString;
+		return toString;
 	}
 
 	@Override
@@ -165,7 +165,7 @@ public class LogicExpressionResult
 	{
 		return value;
 	}
-	
+
 	public boolean isTrue()
 	{
 		return value;
@@ -175,7 +175,7 @@ public class LogicExpressionResult
 	{
 		return !value;
 	}
-	
+
 	public String getName()
 	{
 		return name;

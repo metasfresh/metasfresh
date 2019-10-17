@@ -38,7 +38,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
 
-import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.warehouse.WarehouseId;
@@ -66,22 +66,24 @@ import org.compiere.swing.CTextField;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Util;
 import org.jdesktop.swingx.JXTaskPane;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.util.StringUtils;
 
 /**
  * Search Product and return selection
- * 
+ *
  * @author Jorg Janke
  * @version $Id: InfoProduct.java,v 1.4 2006/07/30 00:51:27 jjanke Exp $
- * 
+ *
  * @author Bogdan Ioan, SC ARHIPAC SERVICE SRL <li>FR [ 2012362 ] Info Product: Add Product Category
- * 
+ *
  * @deprecated not used anymore but de.metas.adempiere.gui.search.InfoProduct is used instead
  */
 @Deprecated
@@ -89,7 +91,7 @@ public final class InfoProduct extends Info implements ActionListener,
 		ChangeListener
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -2674502713710863413L;
 
@@ -101,7 +103,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**
 	 * Standard Constructor
-	 * 
+	 *
 	 * @param frame
 	 *            frame
 	 * @param modal
@@ -144,7 +146,9 @@ public final class InfoProduct extends Info implements ActionListener,
 		setStatusDB(Integer.toString(no));
 		// AutoQuery
 		if (value != null && value.length() > 0)
+		{
 			executeQueryOnInit();
+		}
 		p_loadedOK = true;
 		// Focus
 		fieldValue.requestFocus();
@@ -153,8 +157,10 @@ public final class InfoProduct extends Info implements ActionListener,
 		mWindowNo = WindowNo;
 		// End - fer_luck @ centuryon
 		AEnv.positionCenterWindow(frame, getWindow());
-		if (loadResult) // metas: c.ghita@metas.ro
+		if (loadResult)
+		 {
 			executeQueryOnInit(); // metas-2009_0021_AP1_CR046
+		}
 	} // InfoProduct
 
 	/** SQL From */
@@ -456,8 +462,12 @@ public final class InfoProduct extends Info implements ActionListener,
 			warehouseTbl.loadTable(rs);
 			rs = pstmt.executeQuery();
 			if (rs.next())
+			{
 				if (rs.getString("DocumentNote") != null)
+				{
 					fieldDescription.setText(rs.getString("DocumentNote"));
+				}
+			}
 		}
 		catch (Exception e)
 		{
@@ -477,7 +487,9 @@ public final class InfoProduct extends Info implements ActionListener,
 			pstmt.setString(1, (String)obj);
 			rs = pstmt.executeQuery();
 			if (rs.next())
+			{
 				m_M_Product_ID = rs.getInt(1);
+			}
 		}
 		catch (Exception e)
 		{
@@ -540,7 +552,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**
 	 * Dynamic Init
-	 * 
+	 *
 	 * @param value
 	 *            value
 	 * @param M_Warehouse_ID
@@ -555,28 +567,42 @@ public final class InfoProduct extends Info implements ActionListener,
 		int M_PriceList_Version_ID = findPLV(M_PriceList_ID);
 		// Set Value or Name
 		if (value.startsWith("@") && value.endsWith("@"))
+		{
 			fieldName.setText(value.substring(1, value.length() - 1));
+		}
 		else
+		{
 			fieldValue.setText(value);
+		}
 		// Set Warehouse
 		if (M_Warehouse_ID == 0)
+		{
 			M_Warehouse_ID = Env.getContextAsInt(Env.getCtx(),
 					"#M_Warehouse_ID");
+		}
 		if (M_Warehouse_ID != 0)
+		{
 			setWarehouse(M_Warehouse_ID);
+		}
 		// Set PriceList Version
 		if (M_PriceList_Version_ID != 0)
+		{
 			setPriceListVersion(M_PriceList_Version_ID);
+		}
 
 		// Create Grid
 		StringBuffer where = new StringBuffer();
 		where.append("p.IsActive='Y'");
 		if (M_Warehouse_ID != 0)
+		{
 			where.append(" AND p.IsSummary='N'");
+		}
 		// dynamic Where Clause
 		if (p_whereClause != null && p_whereClause.length() > 0)
+		{
 			where.append(" AND ") // replace fully qualified name with alias
-					.append(Util.replace(p_whereClause, "M_Product.", "p."));
+					.append(StringUtils.replace(p_whereClause, "M_Product.", "p."));
+		}
 		//
 		prepareTable(getProductLayout(), s_productFrom, where.toString(),
 				"QtyAvailable DESC, Margin DESC");
@@ -589,7 +615,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**
 	 * Fill Picks with values
-	 * 
+	 *
 	 * @param M_PriceList_ID
 	 *            price list
 	 */
@@ -610,12 +636,15 @@ public final class InfoProduct extends Info implements ActionListener,
 		;
 		// Same PL currency as original one
 		if (M_PriceList_ID != 0)
+		{
 			SQL += " AND EXISTS (SELECT * FROM M_PriceList xp WHERE xp.M_PriceList_ID="
 					+ M_PriceList_ID
 					+ " AND pl.C_Currency_ID=xp.C_Currency_ID)";
+		}
 		// Add Access & Order
-		SQL = Env.getUserRolePermissions().addAccessSQL(SQL, "M_PriceList_Version", true,
-				false) // fully qualidfied - RO
+		SQL = Env.getUserRolePermissions().addAccessSQL(SQL, "M_PriceList_Version",
+				IUserRolePermissions.SQL_FULLYQUALIFIED,
+				Access.READ) // fully qualidfied - RO
 				+ " ORDER BY M_PriceList_Version.Name";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -635,7 +664,9 @@ public final class InfoProduct extends Info implements ActionListener,
 			SQL = Env.getUserRolePermissions().addAccessSQL(
 					"SELECT M_Warehouse_ID, Value || ' - ' || Name AS ValueName "
 							+ "FROM M_Warehouse " + "WHERE IsActive='Y'",
-					"M_Warehouse", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO)
+					"M_Warehouse",
+					IUserRolePermissions.SQL_NOTQUALIFIED,
+					Access.READ)
 					+ " ORDER BY Value";
 			pickWarehouse.addItem(new KeyNamePair(0, ""));
 			pstmt = DB.prepareStatement(SQL, null);
@@ -653,8 +684,9 @@ public final class InfoProduct extends Info implements ActionListener,
 					.getUserRolePermissions()
 					.addAccessSQL(
 							"SELECT M_Product_Category_ID, Value || ' - ' || Name FROM M_Product_Category WHERE IsActive='Y'",
-							"M_Product_Category", IUserRolePermissions.SQL_NOTQUALIFIED,
-							IUserRolePermissions.SQL_RO)
+							"M_Product_Category",
+							IUserRolePermissions.SQL_NOTQUALIFIED,
+							Access.READ)
 					+ " ORDER BY Value";
 			for (KeyNamePair kn : DB.getKeyNamePairs(SQL, true))
 			{
@@ -676,7 +708,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**
 	 * Set Warehouse
-	 * 
+	 *
 	 * @param M_Warehouse_ID
 	 *            warehouse
 	 */
@@ -695,7 +727,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**
 	 * Set PriceList
-	 * 
+	 *
 	 * @param M_PriceList_Version_ID
 	 *            price list
 	 */
@@ -716,7 +748,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**
 	 * Find Price List Version and update context
-	 * 
+	 *
 	 * @param M_PriceList_ID
 	 *            price list
 	 * @return M_PriceList_Version_ID price list version
@@ -724,22 +756,28 @@ public final class InfoProduct extends Info implements ActionListener,
 	private int findPLV(int M_PriceList_ID)
 	{
 		final int p_WindowNo = getWindowNo();
-		
+
 		Timestamp priceDate = null;
 		// Sales Order Date
 		String dateStr = Env.getContext(Env.getCtx(), p_WindowNo, "DateOrdered");
 		if (dateStr != null && dateStr.length() > 0)
+		{
 			priceDate = Env.getContextAsDate(Env.getCtx(), p_WindowNo, "DateOrdered");
+		}
 		else
 		// Invoice Date
 		{
 			dateStr = Env.getContext(Env.getCtx(), p_WindowNo, "DateInvoiced");
 			if (dateStr != null && dateStr.length() > 0)
+			{
 				priceDate = Env.getContextAsDate(Env.getCtx(), p_WindowNo, "DateInvoiced");
+			}
 		}
 		// Today
 		if (priceDate == null)
+		{
 			priceDate = new Timestamp(System.currentTimeMillis());
+		}
 		//
 		log.info("M_PriceList_ID=" + M_PriceList_ID + " - " + priceDate);
 		int retValue = 0;
@@ -760,7 +798,9 @@ public final class InfoProduct extends Info implements ActionListener,
 			{
 				Timestamp plDate = rs.getTimestamp(2);
 				if (!priceDate.before(plDate))
+				{
 					retValue = rs.getInt(1);
+				}
 			}
 		}
 		catch (SQLException e)
@@ -780,7 +820,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**************************************************************************
 	 * Construct SQL Where Clause and define parameters (setParameters needs to set parameters) Includes first AND
-	 * 
+	 *
 	 * @return SQL WHERE clause
 	 */
 	@Override
@@ -792,9 +832,13 @@ public final class InfoProduct extends Info implements ActionListener,
 		int M_PriceList_Version_ID = 0;
 		KeyNamePair pl = (KeyNamePair)pickPriceList.getSelectedItem();
 		if (pl != null)
+		{
 			M_PriceList_Version_ID = pl.getKey();
+		}
 		if (M_PriceList_Version_ID != 0)
+		{
 			where.append(" AND pr.M_PriceList_Version_ID=?");
+		}
 
 		// Optional Product Category
 		if (getM_Product_Category_ID() > 0)
@@ -812,34 +856,44 @@ public final class InfoProduct extends Info implements ActionListener,
 		// => Value
 		String value = fieldValue.getText().toUpperCase();
 		if (!(value.equals("") || value.equals("%")))
+		{
 			where.append(" AND UPPER(p.Value) LIKE ?");
+		}
 
 		// => Name
 		String name = fieldName.getText().toUpperCase();
 		if (!(name.equals("") || name.equals("%")))
+		{
 			where.append(" AND UPPER(p.Name) LIKE ?");
+		}
 
 		// => UPC
 		String upc = fieldUPC.getText().toUpperCase();
 		if (!(upc.equals("") || upc.equals("%")))
+		{
 			where.append(" AND UPPER(p.UPC) LIKE ?");
+		}
 
 		// => SKU
 		String sku = fieldSKU.getText().toUpperCase();
 		if (!(sku.equals("") || sku.equals("%")))
+		{
 			where.append(" AND UPPER(p.SKU) LIKE ?");
+		}
 		// => Vendor
 		String vendor = fieldVendor.getText().toUpperCase();
 		if (!(vendor.equals("") || vendor.equals("%")))
+		{
 			where
 					.append(" AND UPPER(bp.Name) LIKE ? AND ppo.IsCurrentVendor='Y'");
+		}
 
 		return where.toString();
 	} // getSQLWhere
 
 	/**
 	 * Set Parameters for Query (as defined in getSQLWhere)
-	 * 
+	 *
 	 * @param pstmt
 	 *            pstmt
 	 * @param forCount
@@ -856,13 +910,17 @@ public final class InfoProduct extends Info implements ActionListener,
 		int M_Warehouse_ID = 0;
 		KeyNamePair wh = (KeyNamePair)pickWarehouse.getSelectedItem();
 		if (wh != null)
+		{
 			M_Warehouse_ID = wh.getKey();
+		}
 		if (!forCount) // parameters in select
 		{
-			for (int i = 0; i < p_layout.length; i++)
+			for (Info_Column element : p_layout)
 			{
-				if (p_layout[i].getColSQL().indexOf('?') != -1)
+				if (element.getColSQL().indexOf('?') != -1)
+				{
 					pstmt.setInt(index++, M_Warehouse_ID);
+				}
 			}
 		}
 		log
@@ -873,7 +931,9 @@ public final class InfoProduct extends Info implements ActionListener,
 		int M_PriceList_Version_ID = 0;
 		KeyNamePair pl = (KeyNamePair)pickPriceList.getSelectedItem();
 		if (pl != null)
+		{
 			M_PriceList_Version_ID = pl.getKey();
+		}
 		if (M_PriceList_Version_ID != 0)
 		{
 			pstmt.setInt(index++, M_PriceList_Version_ID);
@@ -888,14 +948,18 @@ public final class InfoProduct extends Info implements ActionListener,
 		}
 		// Rest of Parameter in Query for Attribute Search
 		if (m_pAttributeWhere != null)
+		{
 			return;
+		}
 
 		// => Value
 		String value = fieldValue.getText().toUpperCase();
 		if (!(value.equals("") || value.equals("%")))
 		{
 			if (!value.endsWith("%"))
+			{
 				value += "%";
+			}
 			pstmt.setString(index++, value);
 			log.debug("Value: " + value);
 		}
@@ -905,7 +969,9 @@ public final class InfoProduct extends Info implements ActionListener,
 		if (!(name.equals("") || name.equals("%")))
 		{
 			if (!name.endsWith("%"))
+			{
 				name += "%";
+			}
 			pstmt.setString(index++, name);
 			log.debug("Name: " + name);
 		}
@@ -915,7 +981,9 @@ public final class InfoProduct extends Info implements ActionListener,
 		if (!(upc.equals("") || upc.equals("%")))
 		{
 			if (!upc.endsWith("%"))
+			{
 				upc += "%";
+			}
 			pstmt.setString(index++, upc);
 			log.debug("UPC: " + upc);
 		}
@@ -925,7 +993,9 @@ public final class InfoProduct extends Info implements ActionListener,
 		if (!(sku.equals("") || sku.equals("%")))
 		{
 			if (!sku.endsWith("%"))
+			{
 				sku += "%";
+			}
 			pstmt.setString(index++, sku);
 			log.debug("SKU: " + sku);
 		}
@@ -935,7 +1005,9 @@ public final class InfoProduct extends Info implements ActionListener,
 		if (!(vendor.equals("") || vendor.equals("%")))
 		{
 			if (!vendor.endsWith("%"))
+			{
 				vendor += "%";
+			}
 			pstmt.setString(index++, vendor);
 			log.debug("Vendor: " + vendor);
 		}
@@ -944,7 +1016,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**************************************************************************
 	 * Action Listner
-	 * 
+	 *
 	 * @param e
 	 *            event
 	 */
@@ -955,7 +1027,9 @@ public final class InfoProduct extends Info implements ActionListener,
 		if ((e.getSource() == pickWarehouse || e.getSource() == pickPriceList)
 				&& (fieldValue.getText().length() == 0 && fieldName.getText()
 						.length() == 0))
+		{
 			return;
+		}
 
 		// Product Attribute Search
 		if (e.getSource().equals(m_InfoPAttributeButton))
@@ -975,7 +1049,9 @@ public final class InfoProduct extends Info implements ActionListener,
 					.getSelectedItem();
 			if (productInteger == null || productInteger.intValue() == 0
 					|| warehouse == null)
+			{
 				return;
+			}
 			String title = warehouse.getName() + " - " + productName;
 			PAttributeInstance pai = new PAttributeInstance(getWindow(),
 					title,
@@ -986,7 +1062,9 @@ public final class InfoProduct extends Info implements ActionListener,
 			m_M_AttributeSetInstance_ID = pai.getM_AttributeSetInstance_ID();
 			m_M_Locator_ID = pai.getM_Locator_ID();
 			if (m_M_AttributeSetInstance_ID != -1)
+			{
 				dispose(true);
+			}
 			return;
 		}
 		//
@@ -1027,7 +1105,9 @@ public final class InfoProduct extends Info implements ActionListener,
 		InfoPAttribute ia = new InfoPAttribute(getWindow());
 		m_pAttributeWhere = ia.getWhereClause();
 		if (m_pAttributeWhere != null)
+		{
 			executeQuery();
+		}
 	} // cmdInfoAttribute
 
 	/**
@@ -1039,13 +1119,17 @@ public final class InfoProduct extends Info implements ActionListener,
 		log.info("");
 		Integer M_Product_ID = getSelectedRowKey();
 		if (M_Product_ID == null)
+		{
 			return;
+		}
 		KeyNamePair kn = (KeyNamePair)pickWarehouse.getSelectedItem();
 		int M_Warehouse_ID = kn.getKey();
 		int M_AttributeSetInstance_ID = m_M_AttributeSetInstance_ID;
-		if (m_M_AttributeSetInstance_ID < -1) // not selected
+		if (m_M_AttributeSetInstance_ID < -1)
+		 {
 			M_AttributeSetInstance_ID = 0;
 		//
+		}
 
 		final int C_BPartner_ID = 0;
 		final InvoiceHistoryContext ihCtx = InvoiceHistoryContext.builder()
@@ -1075,7 +1159,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**
 	 * Has History
-	 * 
+	 *
 	 * @return true (has history)
 	 */
 	@Override
@@ -1093,19 +1177,21 @@ public final class InfoProduct extends Info implements ActionListener,
 		log.info("");
 		Integer M_Product_ID = getSelectedRowKey();
 		if (M_Product_ID == null)
+		 {
 			return;
 		// AEnv.zoom(MProduct.Table_ID, M_Product_ID.intValue(), true); // SO
+		}
 
 		MQuery query = new MQuery("M_Product");
 		query.addRestriction("M_Product_ID", Operator.EQUAL, M_Product_ID);
 		query.setRecordCount(1);
-		int AD_WindowNo = getAD_Window_ID("M_Product", true); // SO
+		AdWindowId AD_WindowNo = getAD_Window_ID("M_Product", true); // SO
 		zoom(AD_WindowNo, query);
 	} // zoom
 
 	/**
 	 * Has Zoom
-	 * 
+	 *
 	 * @return (has zoom)
 	 */
 	@Override
@@ -1125,7 +1211,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**
 	 * Has Customize
-	 * 
+	 *
 	 * @return false (no customize)
 	 */
 	@Override
@@ -1171,13 +1257,15 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**
 	 * Get Product Layout
-	 * 
+	 *
 	 * @return array of Column_Info
 	 */
 	protected Info_Column[] getProductLayout()
 	{
 		if (s_productLayout != null)
+		{
 			return s_productLayout;
+		}
 		//
 		if (s_productLayout == null)
 		{
@@ -1265,7 +1353,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**
 	 * System has Unconfirmed records
-	 * 
+	 *
 	 * @return true if unconfirmed
 	 */
 	private boolean isUnconfirmed()
@@ -1274,7 +1362,9 @@ public final class InfoProduct extends Info implements ActionListener,
 				"SELECT COUNT(*) FROM M_InOutLineConfirm WHERE AD_Client_ID=?",
 				Env.getAD_Client_ID(Env.getCtx()));
 		if (no > 0)
+		{
 			return true;
+		}
 		no = DB
 				.getSQLValue(
 						null,
@@ -1285,7 +1375,7 @@ public final class InfoProduct extends Info implements ActionListener,
 
 	/**
 	 * Tab Changed
-	 * 
+	 *
 	 * @param e
 	 *            event
 	 */
@@ -1336,20 +1426,28 @@ public final class InfoProduct extends Info implements ActionListener,
 		String sql = "SELECT s.QtyOnHand, s.QtyReserved, s.QtyOrdered,"
 				+ " productAttribute(s.M_AttributeSetInstance_ID), s.M_AttributeSetInstance_ID,";
 		if (!showDetail)
+		{
 			sql = "SELECT SUM(s.QtyOnHand), SUM(s.QtyReserved), SUM(s.QtyOrdered),"
 					+ " productAttribute(s.M_AttributeSetInstance_ID), 0,";
+		}
 		sql += " w.Name, l.Value "
 				+ "FROM M_Storage s"
 				+ " INNER JOIN M_Locator l ON (s.M_Locator_ID=l.M_Locator_ID)"
 				+ " INNER JOIN M_Warehouse w ON (l.M_Warehouse_ID=w.M_Warehouse_ID) "
 				+ "WHERE M_Product_ID=?";
 		if (m_M_Warehouse_ID != 0)
+		{
 			sql += " AND l.M_Warehouse_ID=?";
+		}
 		if (m_M_AttributeSetInstance_ID > 0)
+		{
 			sql += " AND s.M_AttributeSetInstance_ID=?";
+		}
 		sql += " AND (s.QtyOnHand<>0 OR s.QtyReserved<>0 OR s.QtyOrdered<>0)";
 		if (!showDetail)
+		{
 			sql += " GROUP BY productAttribute(s.M_AttributeSetInstance_ID), w.Name, l.Value";
+		}
 		sql += " ORDER BY l.Value";
 
 		Vector<Vector<Object>> data = new Vector<>();
@@ -1361,9 +1459,13 @@ public final class InfoProduct extends Info implements ActionListener,
 			pstmt = DB.prepareStatement(sql, null);
 			pstmt.setInt(1, m_M_Product_ID);
 			if (m_M_Warehouse_ID != 0)
+			{
 				pstmt.setInt(2, m_M_Warehouse_ID);
+			}
 			if (m_M_AttributeSetInstance_ID > 0)
+			{
 				pstmt.setInt(3, m_M_AttributeSetInstance_ID);
+			}
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
@@ -1378,7 +1480,9 @@ public final class InfoProduct extends Info implements ActionListener,
 				line.add(rs.getString(7)); // Locator
 				String asi = rs.getString(4);
 				if (showDetail && (asi == null || asi.length() == 0))
+				{
 					asi = "{" + rs.getInt(5) + "}";
+				}
 				line.add(asi); // ASI
 				line.add(null); // DocumentNo
 				line.add(rs.getString(6)); // Warehouse
@@ -1408,18 +1512,26 @@ public final class InfoProduct extends Info implements ActionListener,
 				+ " INNER JOIN C_BPartner bp  ON (o.C_BPartner_ID=bp.C_BPartner_ID) "
 				+ "WHERE ol.QtyReserved<>0" + " AND ol.M_Product_ID=?";
 		if (m_M_Warehouse_ID != 0)
+		{
 			sql += " AND ol.M_Warehouse_ID=?";
+		}
 		if (m_M_AttributeSetInstance_ID > 0)
+		{
 			sql += " AND ol.M_AttributeSetInstance_ID=?";
+		}
 		sql += " ORDER BY o.DatePromised";
 		try
 		{
 			pstmt = DB.prepareStatement(sql, null);
 			pstmt.setInt(1, m_M_Product_ID);
 			if (m_M_Warehouse_ID != 0)
+			{
 				pstmt.setInt(2, m_M_Warehouse_ID);
+			}
 			if (m_M_AttributeSetInstance_ID > 0)
+			{
 				pstmt.setInt(3, m_M_AttributeSetInstance_ID);
+			}
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
@@ -1446,7 +1558,9 @@ public final class InfoProduct extends Info implements ActionListener,
 				line.add(null); // Locator
 				String asi = rs.getString(3);
 				if (showDetail && (asi == null || asi.length() == 0))
+				{
 					asi = "{" + rs.getInt(4) + "}";
+				}
 				line.add(asi); // ASI
 				line.add(rs.getString(7)); // DocumentNo
 				line.add(rs.getString(8)); // Warehouse
@@ -1491,7 +1605,9 @@ public final class InfoProduct extends Info implements ActionListener,
 		int M_Product_Category_ID = 0;
 		KeyNamePair pc = (KeyNamePair)pickProductCategory.getSelectedItem();
 		if (pc != null)
+		{
 			M_Product_Category_ID = pc.getKey();
+		}
 		return M_Product_Category_ID;
 	}
 } // InfoProduct

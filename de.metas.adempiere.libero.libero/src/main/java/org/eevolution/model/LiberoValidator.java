@@ -27,6 +27,7 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
@@ -35,6 +36,9 @@ import org.eevolution.mrp.jmx.JMXMRPStatus;
 
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
+import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.planning.pporder.PPOrderPojoConverter;
+import lombok.NonNull;
 
 /**
  * Libero Validator
@@ -49,11 +53,26 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	/** Context variable which says if libero manufacturing is enabled */
 	public static final String CTX_IsLiberoEnabled = "#IsLiberoEnabled";
 
-	@Override
-	public void onInit(final IModelValidationEngine engine, final I_AD_Client client)
-	{
-		super.onInit(engine, client);
+	private final PPOrderPojoConverter ppOrderConverter;
+	private final PostMaterialEventService materialEventService;
 
+	public LiberoValidator()
+	{
+		this(SpringContextHolder.instance.getBean(PPOrderPojoConverter.class),
+				SpringContextHolder.instance.getBean(PostMaterialEventService.class));
+	}
+
+	public LiberoValidator(
+			@NonNull final PPOrderPojoConverter ppOrderConverter,
+			@NonNull final PostMaterialEventService materialEventService)
+	{
+		this.ppOrderConverter = ppOrderConverter;
+		this.materialEventService = materialEventService;
+	}
+
+	@Override
+	protected void onAfterInit()
+	{
 		setupJMX();
 	}
 
@@ -67,8 +86,8 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(org.eevolution.model.validator.PP_Product_Planning.INSTANCE, client);
 
 		// PP_Order related
-		engine.addModelValidator(new org.eevolution.model.validator.PP_Order(), client);
-		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_PostMaterialEvent(), client); // gh #523
+		engine.addModelValidator(new org.eevolution.model.validator.PP_Order(ppOrderConverter, materialEventService), client);
+		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_PostMaterialEvent(ppOrderConverter, materialEventService), client); // gh #523
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOM(), client);
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOMLine(), client);
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_Node_Product(), client);
@@ -87,7 +106,7 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	}
 
 	@Override
-	protected void registerCallouts(IProgramaticCalloutProvider calloutsRegistry)
+	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
 	{
 		calloutsRegistry.registerAnnotatedCallout(org.eevolution.callout.DD_Order.instance);
 		calloutsRegistry.registerAnnotatedCallout(org.eevolution.callout.DD_OrderLine.instance);
@@ -98,7 +117,7 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	{
 		cachingService.addTableCacheConfigIfAbsent(I_S_Resource.class);
 		cachingService.addTableCacheConfigIfAbsent(I_S_ResourceType.class);
-		
+
 		CacheMgt.get().enableRemoteCacheInvalidationForTableName(I_PP_Order.Table_Name);
 	}
 

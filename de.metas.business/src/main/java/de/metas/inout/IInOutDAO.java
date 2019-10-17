@@ -27,6 +27,8 @@ import java.util.Collection;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_C_OrderLine;
@@ -40,6 +42,10 @@ import de.metas.util.ISingletonService;
 
 public interface IInOutDAO extends ISingletonService
 {
+	I_M_InOut getById(InOutId inoutId);
+
+	I_M_InOutLine getLineById(InOutLineId inoutLineId);
+
 	List<I_M_InOutLine> retrieveLines(I_M_InOut inOut);
 
 	List<I_M_InOutLine> retrieveAllLines(I_M_InOut inOut);
@@ -103,4 +109,10 @@ public interface IInOutDAO extends ISingletonService
 	LocalDate getLastInOutDate(BPartnerId bpartnerId, ProductId productId, SOTrx soTrx);
 
 	I_M_InOut retrieveInOut(List<I_M_InOutLine> receiptLines);
+
+	Stream<InOutId> streamInOutIdsByBPartnerId(BPartnerId bpartnerId);
+
+	Set<InOutAndLineId> retrieveLinesForInOutId(InOutId inOutId);
+
+	<T extends I_M_InOutLine> T getLineById(InOutLineId inoutLineId, Class<T> modelClass);
 }

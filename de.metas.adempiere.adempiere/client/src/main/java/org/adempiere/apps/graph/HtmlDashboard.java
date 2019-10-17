@@ -44,10 +44,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import org.slf4j.Logger;
-
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
 
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
@@ -58,6 +54,7 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.Document;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.images.Images;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AWindow;
@@ -68,11 +65,13 @@ import org.compiere.model.MProjectType;
 import org.compiere.model.MQuery;
 import org.compiere.model.MRequestType;
 import org.compiere.swing.CMenuItem;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
 
 /**
  * @author fcsku
@@ -87,7 +86,7 @@ public class HtmlDashboard extends JPanel implements MouseListener,
 	private static final long serialVersionUID = 8125801717324723271L;
 	private static Dimension paneldimensionMin = new Dimension(80, 80);
 	private	JEditorPane	html;
-	private enum PAGE_TYPE {PAGE_HOME, PAGE_PERFORMANCE, PAGE_LOGO};
+	private enum PAGE_TYPE {PAGE_HOME, PAGE_PERFORMANCE, PAGE_LOGO}
 	private static Logger log = LogManager.getLogger(HtmlDashboard.class);
 	MGoal[] m_goals = null;
 	JPopupMenu 					popupMenu = new JPopupMenu();
@@ -114,9 +113,13 @@ public class HtmlDashboard extends JPanel implements MouseListener,
 	    htmlUpdate(url);
 	    JScrollPane scrollPane = null;
 	    if (scrolling)
-	    	scrollPane = new JScrollPane();
-	    else
-	    	scrollPane = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		{
+			scrollPane = new JScrollPane();
+		}
+		else
+		{
+			scrollPane = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		}
 	    scrollPane.getViewport().add( html, BorderLayout.CENTER );
 	    this.add( scrollPane, BorderLayout.CENTER );
 		this.setMinimumSize(paneldimensionMin);
@@ -145,8 +148,10 @@ public class HtmlDashboard extends JPanel implements MouseListener,
 			ins = new InputStreamReader(url.openStream());
 			BufferedReader bufferedReader = new BufferedReader( ins );
 			String cssLine;
-			while ((cssLine = bufferedReader.readLine()) != null) 
+			while ((cssLine = bufferedReader.readLine()) != null)
+			{
 				result += cssLine + "\n";
+			}
 		} catch (IOException e1) {
 			log.error(e1.getLocalizedMessage(), e1);
 		}
@@ -165,7 +170,7 @@ public class HtmlDashboard extends JPanel implements MouseListener,
 				 result += // "<link rel=\"stylesheet\" type=\"text/css\" href=\"file:///c:/standard.css\"/>"
 						 "</head><body><div class=\"content\">\n";
 				queryZoom = null;
-				queryZoom = new ArrayList<MQuery>();
+				queryZoom = new ArrayList<>();
 				String appendToHome = null;
 				String sql =  " SELECT x.AD_CLIENT_ID, x.NAME, x.DESCRIPTION, x.AD_WINDOW_ID, x.PA_GOAL_ID, x.LINE, x.HTML, m.AD_MENU_ID"
 							+ " FROM PA_DASHBOARDCONTENT x"
@@ -184,7 +189,9 @@ public class HtmlDashboard extends JPanel implements MouseListener,
 						appendToHome = rs.getString("HTML");
 						if (appendToHome != null) {
 							if (rs.getString("DESCRIPTION") != null)
+							{
 								result += "<H2>" + rs.getString("DESCRIPTION") + "</H2>\n";
+							}
 							result += stripHtml(appendToHome, false) + "<br>\n";
 						}
 						
@@ -198,8 +205,10 @@ public class HtmlDashboard extends JPanel implements MouseListener,
 						result += "<br>\n";
 						//result += "table id: " + rs.getInt("AD_TABLE_ID");
 						if (rs.getInt("PA_GOAL_ID") > 0)
+						 {
 							result += goalsDetail(rs.getInt("PA_GOAL_ID"));
 							//result += goalsDetail(rs.getInt("AD_TABLE_ID"));
+						}
 					}
 				}
 				catch (SQLException e)
@@ -225,21 +234,28 @@ public class HtmlDashboard extends JPanel implements MouseListener,
 	
 	private String goalsDetail(int AD_Table_ID) { //TODO link to goals
 		String output = "";
-		if (m_goals==null) return output;
-		for (int i = 0; i < m_goals.length; i++) {
-		  MMeasureCalc mc = MMeasureCalc.get(Env.getCtx(), m_goals[i].getMeasure().getPA_MeasureCalc_ID());
-		  if (AD_Table_ID == m_goals[i].getPA_Goal_ID()){// mc.getAD_Table_ID()) {
-			output += "<table class=\"dataGrid\"><tr>\n<th colspan=\"3\" class=\"label\"><b>" + m_goals[i].getName() + "</b></th></tr>\n";
-			output += "<tr><td class=\"label\">Target</td><td colspan=\"2\" class=\"tdcontent\">" + m_goals[i].getMeasureTarget() + "</td></tr>\n";
-			output += "<tr><td class=\"label\">Actual</td><td colspan=\"2\" class=\"tdcontent\">" + m_goals[i].getMeasureActual() + "</td></tr>\n";
+		if (m_goals==null)
+		{
+			return output;
+		}
+		for (MGoal m_goal : m_goals)
+		{
+		  MMeasureCalc mc = MMeasureCalc.get(Env.getCtx(), m_goal.getMeasure().getPA_MeasureCalc_ID());
+		  if (AD_Table_ID == m_goal.getPA_Goal_ID()){// mc.getAD_Table_ID()) {
+			output += "<table class=\"dataGrid\"><tr>\n<th colspan=\"3\" class=\"label\"><b>" + m_goal.getName() + "</b></th></tr>\n";
+			output += "<tr><td class=\"label\">Target</td><td colspan=\"2\" class=\"tdcontent\">" + m_goal.getMeasureTarget() + "</td></tr>\n";
+			output += "<tr><td class=\"label\">Actual</td><td colspan=\"2\" class=\"tdcontent\">" + m_goal.getMeasureActual() + "</td></tr>\n";
 			//if (mc.getTableName()!=null) output += "table: " + mc.getAD_Table_ID() + "<br>\n";
-			Graph barPanel = new Graph(m_goals[i]);
+			Graph barPanel = new Graph(m_goal);
 			GraphColumn[] bList = barPanel.getGraphColumnList();
 			MQuery query = null;
-			output += "<tr><td rowspan=\"" + bList.length + "\" class=\"label\" valign=\"top\">" + m_goals[i].getXAxisText() + "</td>\n";
+			output += "<tr><td rowspan=\"" + bList.length + "\" class=\"label\" valign=\"top\">" + m_goal.getXAxisText() + "</td>\n";
 			for (int k=0; k<bList.length; k++) {
 				GraphColumn bgc = bList[k];
-				if (k>0) output += "<tr>";
+				if (k>0)
+				{
+					output += "<tr>";
+				}
 				if (bgc.getAchievement() != null)	//	Single Achievement
 				{
 					MAchievement a = bgc.getAchievement();
@@ -253,21 +269,21 @@ public class HtmlDashboard extends JPanel implements MouseListener,
 				else if (bgc.getMeasureCalc() != null)	//	Document
 				{
 					mc = bgc.getMeasureCalc();
-					query = mc.getQuery(m_goals[i].getRestrictions(false), 
+					query = mc.getQuery(m_goal.getRestrictions(false), 
 						bgc.getMeasureDisplay(), bgc.getDate(), 
 								Env.getUserRolePermissions());	// logged in role
 				}
 				else if (bgc.getProjectType() != null)	//	Document
 				{
 					MProjectType pt = bgc.getProjectType();
-					query = pt.getQuery(m_goals[i].getRestrictions(false), 
+					query = pt.getQuery(m_goal.getRestrictions(false), 
 						bgc.getMeasureDisplay(), bgc.getDate(), bgc.getID(), 
 								Env.getUserRolePermissions());	// logged in role
 				}
 				else if (bgc.getRequestType() != null)	//	Document
 				{
 					MRequestType rt = bgc.getRequestType();
-					query = rt.getQuery(m_goals[i].getRestrictions(false), 
+					query = rt.getQuery(m_goal.getRestrictions(false), 
 						bgc.getMeasureDisplay(), bgc.getDate(), bgc.getID(),
 								Env.getUserRolePermissions());	// logged in role
 				}
@@ -288,9 +304,9 @@ public class HtmlDashboard extends JPanel implements MouseListener,
 			}
 			output +=  "</tr>"
 				   + "<tr><td colspan=\"3\">" 
-				   + m_goals[i].getDescription()
+				   + m_goal.getDescription()
 				   + "<br>"
-				   + stripHtml(m_goals[i].getColorSchema().getDescription(), true)
+				   + stripHtml(m_goal.getColorSchema().getDescription(), true)
 				   + "</td></tr>" 
 				   + "</table>\n";
 			bList = null;
@@ -310,9 +326,11 @@ public class HtmlDashboard extends JPanel implements MouseListener,
 		.replace("</head>", "");
 		
 		if (all)
+		{
 			htmlString = htmlString
 			.replace(">", "&gt;")
 			.replace("<", "&lt;");
+		}
 		return htmlString;
 	}
 	private void htmlUpdate(String url) {
@@ -347,10 +365,12 @@ public class HtmlDashboard extends JPanel implements MouseListener,
 			button.doClick();
 			html.setCursor(Cursor.getPredefinedCursor( Cursor.DEFAULT_CURSOR ));
 			*/
-			int AD_Window_ID=Integer.parseInt(url.getRef());
+			AdWindowId AD_Window_ID=AdWindowId.ofRepoId(Integer.parseInt(url.getRef()));
 			AWindow frame = new AWindow();
-			if (!frame.initWindow(AD_Window_ID, null))//MQuery.getEqualQuery(TableName + "_ID", Record_ID)))
+			if (!frame.initWindow(AD_Window_ID, null))
+			{
 				return;
+			}
 			AEnv.addToWindowManager(frame);
 			if (Ini.isPropertyBool(Ini.P_OPEN_WINDOW_MAXIMIZED))
 			{
@@ -397,7 +417,9 @@ public class HtmlDashboard extends JPanel implements MouseListener,
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		if (SwingUtilities.isRightMouseButton(e))
+		{
 			popupMenu.show((Component)e.getSource(), e.getX(), e.getY());
+		}
 	}
 
 	/* (non-Javadoc)
@@ -436,17 +458,27 @@ public class HtmlDashboard extends JPanel implements MouseListener,
 		if (e.getSource() == mRefresh)
 		{
 			if (m_goals != null)
-				for (int i=0; i < m_goals.length; i++) 
-					m_goals[i].updateGoal(true);
+			{
+				for (MGoal m_goal : m_goals)
+				{
+					m_goal.updateGoal(true);
+				}
+			}
 			htmlUpdate(lastUrl);
 			Container parent = getParent();
 			if (parent != null)
+			{
 				parent.invalidate();
+			}
 			invalidate();
 			if (parent != null)
+			{
 				parent.repaint();
+			}
 			else
+			{
 				repaint();
+			}
 		}
 	}
 	

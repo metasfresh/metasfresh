@@ -10,12 +10,12 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,10 +27,12 @@ import java.math.BigDecimal;
 
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.BOMComponentType;
 
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /* package */final class PlainProductionMaterial extends AbstractProductionMaterial
 {
@@ -42,20 +44,15 @@ import de.metas.util.Check;
 	private BigDecimal qtyDeliveredAvg = BigDecimal.ZERO;
 	private final IHandlingUnitsInfo handlingUnitsInfo = null;
 
-	public PlainProductionMaterial(final ProductionMaterialType type, final I_M_Product product, final BigDecimal qty, final I_C_UOM uom)
+	public PlainProductionMaterial(
+			@NonNull final ProductionMaterialType type,
+			@NonNull final I_M_Product product,
+			@NonNull final BigDecimal qty,
+			@NonNull final I_C_UOM uom)
 	{
-		super();
-
-		Check.assumeNotNull(product, "product not null");
 		this.product = product;
-
-		Check.assumeNotNull(qty, "qty not null");
 		this.qty = qty;
-
-		Check.assumeNotNull(uom, "uom not null");
 		this.uom = uom;
-
-		Check.assumeNotNull(type, "type not null");
 		this.type = type;
 	}
 
@@ -126,7 +123,7 @@ import de.metas.util.Check;
 	}
 
 	@Override
-	public String getComponentType()
+	public BOMComponentType getComponentType()
 	{
 		return null;
 	}

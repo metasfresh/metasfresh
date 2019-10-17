@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
 
@@ -32,7 +16,7 @@ public interface I_AD_Window
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 4 - System 
+    /** AccessLevel = 4 - System
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(4);
 
@@ -48,7 +32,7 @@ public interface I_AD_Window
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client() throws RuntimeException;
+	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_AD_Window, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_AD_Window, org.compiere.model.I_AD_Client>(I_AD_Window.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
@@ -75,7 +59,7 @@ public interface I_AD_Window
 	 */
 	public int getAD_Color_ID();
 
-	public org.compiere.model.I_AD_Color getAD_Color() throws RuntimeException;
+	public org.compiere.model.I_AD_Color getAD_Color();
 
 	public void setAD_Color(org.compiere.model.I_AD_Color AD_Color);
 
@@ -83,6 +67,35 @@ public interface I_AD_Window
     public static final org.adempiere.model.ModelColumn<I_AD_Window, org.compiere.model.I_AD_Color> COLUMN_AD_Color_ID = new org.adempiere.model.ModelColumn<I_AD_Window, org.compiere.model.I_AD_Color>(I_AD_Window.class, "AD_Color_ID", org.compiere.model.I_AD_Color.class);
     /** Column name AD_Color_ID */
     public static final String COLUMNNAME_AD_Color_ID = "AD_Color_ID";
+
+	/**
+	 * Set System-Element.
+	 * Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Element_ID (int AD_Element_ID);
+
+	/**
+	 * Get System-Element.
+	 * Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Element_ID();
+
+	public org.compiere.model.I_AD_Element getAD_Element();
+
+	public void setAD_Element(org.compiere.model.I_AD_Element AD_Element);
+
+    /** Column definition for AD_Element_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Window, org.compiere.model.I_AD_Element> COLUMN_AD_Element_ID = new org.adempiere.model.ModelColumn<I_AD_Window, org.compiere.model.I_AD_Element>(I_AD_Window.class, "AD_Element_ID", org.compiere.model.I_AD_Element.class);
+    /** Column name AD_Element_ID */
+    public static final String COLUMNNAME_AD_Element_ID = "AD_Element_ID";
 
 	/**
 	 * Set Bild.
@@ -104,7 +117,7 @@ public interface I_AD_Window
 	 */
 	public int getAD_Image_ID();
 
-	public org.compiere.model.I_AD_Image getAD_Image() throws RuntimeException;
+	public org.compiere.model.I_AD_Image getAD_Image();
 
 	public void setAD_Image(org.compiere.model.I_AD_Image AD_Image);
 
@@ -133,7 +146,7 @@ public interface I_AD_Window
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org() throws RuntimeException;
+	public org.compiere.model.I_AD_Org getAD_Org();
 
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
@@ -274,6 +287,7 @@ public interface I_AD_Window
 
 	/**
 	 * Set Interner Name.
+	 * Generally used to give records a name that can be safely referenced from code.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -283,6 +297,7 @@ public interface I_AD_Window
 
 	/**
 	 * Get Interner Name.
+	 * Generally used to give records a name that can be safely referenced from code.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -369,6 +384,29 @@ public interface I_AD_Window
     public static final org.adempiere.model.ModelColumn<I_AD_Window, Object> COLUMN_IsDefault = new org.adempiere.model.ModelColumn<I_AD_Window, Object>(I_AD_Window.class, "IsDefault", null);
     /** Column name IsDefault */
     public static final String COLUMNNAME_IsDefault = "IsDefault";
+
+	/**
+	 * Set Enable remote cache invalidation.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsEnableRemoteCacheInvalidation (boolean IsEnableRemoteCacheInvalidation);
+
+	/**
+	 * Get Enable remote cache invalidation.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isEnableRemoteCacheInvalidation();
+
+    /** Column definition for IsEnableRemoteCacheInvalidation */
+    public static final org.adempiere.model.ModelColumn<I_AD_Window, Object> COLUMN_IsEnableRemoteCacheInvalidation = new org.adempiere.model.ModelColumn<I_AD_Window, Object>(I_AD_Window.class, "IsEnableRemoteCacheInvalidation", null);
+    /** Column name IsEnableRemoteCacheInvalidation */
+    public static final String COLUMNNAME_IsEnableRemoteCacheInvalidation = "IsEnableRemoteCacheInvalidation";
 
 	/**
 	 * Set Verkaufs-Transaktion.

@@ -94,7 +94,7 @@ public class MovementsAnyWarehouseTests
 	private I_M_HU createHU(I_M_Locator locator)
 	{
 		final I_M_HU hu = InterfaceWrapperHelper.newInstance(I_M_HU.class);
-		hu.setM_Locator(locator);
+		hu.setM_Locator_ID(locator != null ? locator.getM_Locator_ID() : -1);
 		InterfaceWrapperHelper.save(hu);
 
 		return hu;

@@ -45,42 +45,42 @@
 				<textField isBlankWhenNull="true">
 					<reportElement x="50" y="56" width="105" height="28" uuid="b6447f7c-4a8d-47c6-9ec1-38c69d3205c2"/>
 					<textElement>
-						<font isBold="true"/>
+						<font fontName="Arial" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{manufacturer}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
 					<reportElement x="155" y="56" width="92" height="28" uuid="ca866056-17c7-43db-9c6b-0f9b66423023"/>
 					<textElement>
-						<font isBold="true"/>
+						<font fontName="Arial" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{product_no}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
 					<reportElement x="342" y="56" width="105" height="28" uuid="47b6773e-88b1-469a-bb4c-f004990705ac"/>
 					<textElement>
-						<font isBold="true"/>
+						<font fontName="Arial" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{sched}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
 					<reportElement x="247" y="56" width="95" height="28" uuid="76871aba-21b6-495c-a340-ea25baf74882"/>
 					<textElement>
-						<font isBold="true"/>
+						<font fontName="Arial" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{date}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
 					<reportElement x="572" y="56" width="70" height="28" uuid="3cb8e538-ce6a-4728-9d1e-f0a2f4c36813"/>
 					<textElement textAlignment="Right">
-						<font isBold="true"/>
+						<font fontName="Arial" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
 					<reportElement x="447" y="56" width="125" height="28" uuid="6ecff1a9-3a9c-4fc6-8d76-c5c242063b6f"/>
 					<textElement>
-						<font isBold="true"/>
+						<font fontName="Arial" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{contract_details}]]></textFieldExpression>
 				</textField>
@@ -94,14 +94,14 @@
 				<textField isBlankWhenNull="true">
 					<reportElement x="642" y="56" width="75" height="28" uuid="6bb68995-5c6c-4c65-a210-82c07484fcff"/>
 					<textElement textAlignment="Right">
-						<font isBold="true"/>
+						<font fontName="Arial" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{to_invoice}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
 					<reportElement x="717" y="56" width="75" height="28" uuid="3fe83df0-8352-44e3-928d-ad80d7d9a6c5"/>
 					<textElement textAlignment="Right">
-						<font isBold="true"/>
+						<font fontName="Arial" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{invoiced}]]></textFieldExpression>
 				</textField>

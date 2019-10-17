@@ -5,6 +5,7 @@ import org.compiere.model.I_M_PriceList;
 import org.slf4j.Logger;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
@@ -40,7 +41,7 @@ public class SubscriptionPricingRule implements IPricingRule
 			return false;
 		}
 
-		if (pricingCtx.getC_Country_ID() <= 0)
+		if (pricingCtx.getCountryId() == null)
 		{
 			logger.debug("Not applying because pricingCtx has no C_Country_ID; pricingCtx={}", pricingCtx);
 			return false;
@@ -65,13 +66,13 @@ public class SubscriptionPricingRule implements IPricingRule
 
 	@Override
 	public void calculate(
-			@NonNull final IPricingContext pricingCtx, 
+			@NonNull final IPricingContext pricingCtx,
 			@NonNull final IPricingResult result)
 	{
 		final Object referencedObject = pricingCtx.getReferencedObject();
 
 		final I_C_Flatrate_Conditions conditions = ContractPricingUtil.getC_Flatrate_Conditions(referencedObject);
-		final I_M_PriceList subscriptionPriceList = retrievePriceListForConditionsAndCountry(pricingCtx.getC_Country_ID(), conditions);
+		final I_M_PriceList subscriptionPriceList = retrievePriceListForConditionsAndCountry(pricingCtx.getCountryId(), conditions);
 
 		final IEditablePricingContext subscriptionPricingCtx = copyPricingCtxButInsertPriceList(pricingCtx, subscriptionPriceList);
 
@@ -83,10 +84,12 @@ public class SubscriptionPricingRule implements IPricingRule
 	}
 
 	private static I_M_PriceList retrievePriceListForConditionsAndCountry(
-			final int countryId, 
+			final CountryId countryId,
 			@NonNull final I_C_Flatrate_Conditions conditions)
 	{
-		final I_M_PriceList subscriptionPriceList = Services.get(IQueryBL.class).createQueryBuilder(I_M_PriceList.class).addOnlyActiveRecordsFilter()
+		final I_M_PriceList subscriptionPriceList = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_PriceList.class)
+				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_PriceList.COLUMN_C_Country_ID, countryId, null)
 				.addEqualsFilter(I_M_PriceList.COLUMN_M_PricingSystem_ID, conditions.getM_PricingSystem_ID())
 				.addEqualsFilter(I_M_PriceList.COLUMN_IsSOPriceList, true)
@@ -101,14 +104,14 @@ public class SubscriptionPricingRule implements IPricingRule
 			@NonNull final I_M_PriceList subscriptionPriceList)
 	{
 		final IEditablePricingContext subscriptionPricingCtx = pricingCtx.copy();
-		
+
 		// don't set a ReferencedObject, so that this rule's 'applies()' method will return false
 		subscriptionPricingCtx.setReferencedObject(null);
 
 		// set the price list from subscription's M_Pricing_Systen
 		subscriptionPricingCtx.setPriceListId(PriceListId.ofRepoId(subscriptionPriceList.getM_PriceList_ID()));
 		subscriptionPricingCtx.setPriceListVersionId(null);
-		
+
 		return subscriptionPricingCtx;
 	}
 
@@ -135,14 +138,14 @@ public class SubscriptionPricingRule implements IPricingRule
 			@NonNull final IPricingResult result)
 	{
 		result.setCurrencyId(subscriptionPricingResult.getCurrencyId());
-		result.setPrice_UOM_ID(subscriptionPricingResult.getPrice_UOM_ID());
+		result.setPriceUomId(subscriptionPricingResult.getPriceUomId());
 		result.setCalculated(subscriptionPricingResult.isCalculated());
 		result.setDisallowDiscount(subscriptionPricingResult.isDisallowDiscount());
 
 		result.setUsesDiscountSchema(subscriptionPricingResult.isUsesDiscountSchema());
 		result.setPricingConditions(subscriptionPricingResult.getPricingConditions());
-		
-		result.setEnforcePriceLimit(subscriptionPricingResult.isEnforcePriceLimit());
+
+		result.setEnforcePriceLimit(subscriptionPricingResult.getEnforcePriceLimit());
 		result.setPricingSystemId(subscriptionPricingResult.getPricingSystemId());
 		result.setPriceListVersionId(subscriptionPricingResult.getPriceListVersionId());
 		result.setProductCategoryId(subscriptionPricingResult.getProductCategoryId());
@@ -151,15 +154,15 @@ public class SubscriptionPricingRule implements IPricingRule
 		result.setPriceList(subscriptionPricingResult.getPriceList());
 		result.setPriceStd(subscriptionPricingResult.getPriceStd());
 		result.setTaxIncluded(subscriptionPricingResult.isTaxIncluded());
-		result.setC_TaxCategory_ID(subscriptionPricingResult.getC_TaxCategory_ID());
-		
+		result.setTaxCategoryId(subscriptionPricingResult.getTaxCategoryId());
+
 		result.setPriceEditable(subscriptionPricingResult.isPriceEditable());
 		result.setDiscountEditable(subscriptionPricingResult.isDiscountEditable());
 	}
 
 	private static void copyDiscountIntoResultIfAllowedByPricingContext(
-			@NonNull final IPricingResult subscriptionPricingResult, 
-			@NonNull final IPricingResult result, 
+			@NonNull final IPricingResult subscriptionPricingResult,
+			@NonNull final IPricingResult result,
 			@NonNull final IPricingContext pricingCtx)
 	{
 		if (!pricingCtx.isDisallowDiscount())
@@ -167,5 +170,5 @@ public class SubscriptionPricingRule implements IPricingRule
 			result.setDiscount(subscriptionPricingResult.getDiscount());
 		}
 	}
-	
+
 }

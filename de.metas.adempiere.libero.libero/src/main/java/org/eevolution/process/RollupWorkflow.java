@@ -1,306 +1,431 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved.               *
- * Contributor(s): Victor Perez www.e-evolution.com                           *
- *                 Bogdan Ioan, www.arhipac.ro                                *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved. *
+ * Contributor(s): Victor Perez www.e-evolution.com *
+ * Bogdan Ioan, www.arhipac.ro *
  *****************************************************************************/
 
 package org.eevolution.process;
 
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.time.Duration;
 import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.adempiere.model.engines.CostDimension;
-import org.adempiere.model.engines.CostEngine;
-import org.adempiere.model.engines.CostEngineFactory;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+import org.compiere.Adempiere;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_CostElement;
-import org.compiere.model.MAcctSchema;
-import org.compiere.model.MCost;
-import org.compiere.model.MCostElement;
-import org.compiere.model.MProduct;
-import org.compiere.model.Query;
-import org.compiere.util.Env;
-import org.compiere.wf.MWFNode;
-import org.compiere.wf.MWorkflow;
-import org.eevolution.api.IPPWorkflowDAO;
-import org.eevolution.model.MPPProductPlanning;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_M_Product;
+import org.eevolution.model.I_PP_Product_Planning;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.costing.CostAmount;
+import de.metas.costing.CostElement;
+import de.metas.costing.CostElementId;
+import de.metas.costing.CostPrice;
+import de.metas.costing.CostSegment;
+import de.metas.costing.CostSegmentAndElement;
+import de.metas.costing.CostTypeId;
+import de.metas.costing.CostingLevel;
+import de.metas.costing.CostingMethod;
+import de.metas.costing.ICostElementRepository;
+import de.metas.costing.ICurrentCostsRepository;
+import de.metas.costing.IProductCostingBL;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
+import de.metas.material.planning.pporder.IPPRoutingRepository;
+import de.metas.material.planning.pporder.PPRouting;
+import de.metas.material.planning.pporder.PPRoutingActivity;
+import de.metas.material.planning.pporder.PPRoutingActivityId;
+import de.metas.material.planning.pporder.PPRoutingChangeRequest;
+import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+import lombok.NonNull;
 
 /**
- *	RollUp of Cost Manufacturing Workflow
- *	This process calculate the Labor, Overhead, Burden Cost
- *  @author Victor Perez, e-Evolution, S.C.
- *  @version $Id: RollupWorkflow.java,v 1.1 2004/06/22 05:24:03 vpj-cd Exp $
+ * RollUp of Cost Manufacturing Workflow
+ * This process calculate the Labor, Overhead, Burden Cost
  *
- *  @author Bogdan Ioan, www.arhipac.ro
- *  		<li>BF [ 2093001 ] Error in Cost Workflow & Process Details
+ * @author Victor Perez, e-Evolution, S.C.
+ * @version $Id: RollupWorkflow.java,v 1.1 2004/06/22 05:24:03 vpj-cd Exp $
+ *
+ * @author Bogdan Ioan, www.arhipac.ro
+ *         <li>BF [ 2093001 ] Error in Cost Workflow & Process Details
  */
 public class RollupWorkflow extends JavaProcess
 {
+	// services
+	private final ICostElementRepository costElementsRepo = Adempiere.getBean(ICostElementRepository.class);
+	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
+	private final IPPRoutingRepository routingsRepo = Services.get(IPPRoutingRepository.class);
+	private final ICurrentCostsRepository currentCostsRepo = Adempiere.getBean(ICurrentCostsRepository.class);
 
-	/* Organization     */
-	private int		 		p_AD_Org_ID = 0;
-	/* Account Schema   */
-	private int             p_C_AcctSchema_ID = 0;
-	/* Cost Type 		*/
-	private int             p_M_CostType_ID = 0;
-	/* Product 			*/
-	private int             p_M_Product_ID = 0;
-	/* Product Category */
-	private int 			p_M_Product_Category_ID = 0;
-	/* Costing Method 	*/
-	private String 			p_ConstingMethod = MCostElement.COSTINGMETHOD_StandardCosting;
+	// parameters
+	private OrgId p_AD_Org_ID = OrgId.ANY;
+	private CostTypeId p_M_CostType_ID;
+	private ProductId p_M_Product_ID;
+	private ProductCategoryId p_M_Product_Category_ID;
+	private CostingMethod p_ConstingMethod = CostingMethod.StandardCosting;
+	private AcctSchema acctSchema = null;
 
-	private MAcctSchema m_as = null;
-
-	private RoutingService m_routingService = null;
-
+	//
+	private RoutingService routingService = null;
+	private List<CostElement> costElements;
 
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParametersAsArray())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
-			String name = para.getParameterName();
+			final String name = para.getParameterName();
 
 			if (para.getParameter() == null)
+			{
 				;
+			}
 			else if (name.equals(I_M_Cost.COLUMNNAME_AD_Org_ID))
-				p_AD_Org_ID = para.getParameterAsInt();
-			else if (name.equals(MCost.COLUMNNAME_C_AcctSchema_ID))
 			{
-				p_C_AcctSchema_ID = para.getParameterAsInt();
-				m_as = MAcctSchema.get(getCtx(), p_C_AcctSchema_ID);
+				p_AD_Org_ID = OrgId.ofRepoIdOrAny(para.getParameterAsInt());
 			}
-			else if (name.equals(MCost.COLUMNNAME_M_CostType_ID))
-				p_M_CostType_ID = para.getParameterAsInt();
-			else if (name.equals(MCostElement.COLUMNNAME_CostingMethod))
-				p_ConstingMethod=(String)para.getParameter();
-			else if (name.equals(MProduct.COLUMNNAME_M_Product_ID))
-				p_M_Product_ID = para.getParameterAsInt();
-			else if (name.equals(MProduct.COLUMNNAME_M_Product_Category_ID))
-				p_M_Product_Category_ID = para.getParameterAsInt();
+			else if (name.equals(I_M_Cost.COLUMNNAME_C_AcctSchema_ID))
+			{
+				final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(para.getParameterAsInt());
+				acctSchema = acctSchemasRepo.getById(acctSchemaId);
+			}
+			else if (name.equals(I_M_Cost.COLUMNNAME_M_CostType_ID))
+			{
+				p_M_CostType_ID = CostTypeId.ofRepoIdOrNull(para.getParameterAsInt());
+			}
+			else if (name.equals(I_M_CostElement.COLUMNNAME_CostingMethod))
+			{
+				p_ConstingMethod = CostingMethod.ofCode(para.getParameterAsString());
+			}
+			else if (name.equals(I_M_Product.COLUMNNAME_M_Product_ID))
+			{
+				p_M_Product_ID = ProductId.ofRepoIdOrNull(para.getParameterAsInt());
+			}
+			else if (name.equals(I_M_Product.COLUMNNAME_M_Product_Category_ID))
+			{
+				p_M_Product_Category_ID = ProductCategoryId.ofRepoIdOrNull(para.getParameterAsInt());
+			}
 			else
+			{
 				log.error("prepare - Unknown Parameter: " + name);
+			}
 		}
-	}	//	prepare
+	}	// prepare
 
-	@SuppressWarnings("deprecation") // hide those to not polute our Warnings
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		m_routingService = RoutingServiceFactory.get().getRoutingService(getAD_Client_ID());
+		routingService = RoutingServiceFactory.get().getRoutingService();
+		costElements = costElementsRepo.getByCostingMethod(p_ConstingMethod);
 
-		for (MProduct product : getProducts())
+		for (final I_M_Product product : getProducts())
 		{
-			log.info("Product: "+product);
-			int AD_Workflow_ID = 0;
-			MPPProductPlanning pp = null;
-			if (AD_Workflow_ID <= 0)
-			{
-				AD_Workflow_ID = Services.get(IPPWorkflowDAO.class).retrieveWorkflowIdForProduct(product);
-			}
-			if(AD_Workflow_ID <= 0)
-			{
-				pp = MPPProductPlanning.find(getCtx(), p_AD_Org_ID, 0, 0, product.get_ID(), get_TrxName());
-
-				if (pp != null)
-				{
-				AD_Workflow_ID = pp.getAD_Workflow_ID();
-				}
-				else
-				{
-				createNotice(product, "@NotFound@ @PP_Product_Planning_ID@");
-				}
-			}
-
-			if(AD_Workflow_ID <= 0)
-			{
-				createNotice(product, "@NotFound@ @AD_Workflow_ID@");
-				continue;
-			}
-
-			MWorkflow workflow = new MWorkflow(getCtx(), AD_Workflow_ID, get_TrxName());
-			rollup(product, workflow);
-
-			// Update Product Data Planning
-			if (pp != null)
-			{
-				pp.setYield(workflow.getYield());
-				pp.saveEx();
-			}
+			rollup(product);
 		}
 		return "@OK@";
 	}
 
-
-	private Collection<MProduct> getProducts()
+	private void rollup(final I_M_Product product)
 	{
-		List<Object> params = new ArrayList<>();
-		StringBuffer whereClause = new StringBuffer("AD_Client_ID=?");
-		params.add(getAD_Client_ID());
+		log.info("Product: {}", product);
 
-		whereClause.append(" AND ").append(MProduct.COLUMNNAME_ProductType).append("=?");
-		params.add(MProduct.PRODUCTTYPE_Item);
-
-		whereClause.append(" AND ").append(MProduct.COLUMNNAME_IsBOM).append("=?");
-		params.add(true);
-
-		if (p_M_Product_ID > 0)
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+		PPRoutingId routingId = null;
+		I_PP_Product_Planning productPlanning = null;
+		if (routingId == null)
 		{
-			whereClause.append(" AND ").append(MProduct.COLUMNNAME_M_Product_ID).append("=?");
-			params.add(p_M_Product_ID);
+			routingId = routingsRepo.getRoutingIdByProductId(productId);
 		}
-		else if (p_M_Product_Category_ID > 0)
+		if (routingId == null)
 		{
-			whereClause.append(" AND ").append(MProduct.COLUMNNAME_M_Product_Category_ID).append("=?");
-			params.add(p_M_Product_Category_ID);
+			productPlanning = Services.get(IProductPlanningDAO.class).find(ProductPlanningQuery.builder()
+					.orgId(p_AD_Org_ID)
+					.productId(productId)
+					.build());
+			if (productPlanning != null)
+			{
+				routingId = PPRoutingId.ofRepoIdOrNull(productPlanning.getAD_Workflow_ID());
+			}
+			else
+			{
+				createNotice(product, "@NotFound@ @PP_Product_Planning_ID@");
+			}
+		}
+		if (routingId == null)
+		{
+			createNotice(product, "@NotFound@ @AD_Workflow_ID@");
+			return;
 		}
 
-		Collection<MProduct> products = new Query(getCtx(),MProduct.Table_Name, whereClause.toString(), get_TrxName())
-											.setOrderBy(MProduct.COLUMNNAME_LowLevel)
-											.setParameters(params)
-											.list(MProduct.class);
-		return products;
+		final PPRouting routing = routingsRepo.getById(routingId);
+		rollup(Context.of(product, productPlanning, routing));
 	}
 
-
-	public void rollup(MProduct product, MWorkflow workflow)
+	private List<I_M_Product> getProducts()
 	{
-		log.info("Workflow: "+workflow);
-		workflow.setCost(Env.ZERO);
-		double Yield = 1;
-		int QueuingTime = 0;
-		int SetupTime = 0;
-		int Duration = 0;
-		int WaitingTime = 0;
-		int MovingTime = 0;
-		int WorkingTime = 0;
+		final IQueryBuilder<I_M_Product> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Product.class)
+				.addEqualsFilter(I_M_Product.COLUMN_AD_Client_ID, getAD_Client_ID())
+				.addEqualsFilter(I_M_Product.COLUMN_ProductType, X_M_Product.PRODUCTTYPE_Item)
+				.addEqualsFilter(I_M_Product.COLUMN_IsBOM, true);
 
-		MWFNode[] nodes = workflow.getNodes(false, getAD_Client_ID());
-		for (MWFNode node : nodes)
+		if (p_M_Product_ID != null)
 		{
-			node.setCost(Env.ZERO);
-			if (node.getYield() != 0)
-			{
-				Yield = Yield * ((double)node.getYield() / 100);
-			}
-			// We use node.getDuration() instead of m_routingService.estimateWorkingTime(node) because
-			// this will be the minimum duration of this node. So even if the node have defined units/cycle
-			// we consider entire duration of the node.
-			long nodeDuration = node.getDuration();
-
-			QueuingTime += node.getQueuingTime();
-			SetupTime += node.getSetupTime();
-			Duration += nodeDuration;
-			WaitingTime += node.getWaitingTime();
-			MovingTime += node.getMovingTime();
-			WorkingTime += node.getWorkingTime();
+			queryBuilder.addEqualsFilter(I_M_Product.COLUMN_M_Product_ID, p_M_Product_ID);
 		}
-		workflow.setCost(Env.ZERO);
-		workflow.setYield((int)(Yield * 100));
-		workflow.setQueuingTime(QueuingTime);
-		workflow.setSetupTime(SetupTime);
-		workflow.setDuration(Duration);
-		workflow.setWaitingTime(WaitingTime);
-		workflow.setMovingTime(MovingTime);
-		workflow.setWorkingTime(WorkingTime);
-
-		for (I_M_CostElement element : MCostElement.getByCostingMethod(getCtx(), p_ConstingMethod))
+		else if (p_M_Product_Category_ID != null)
 		{
-			if (!CostEngine.isActivityControlElement(element))
-			{
-				continue;
-			}
-			final CostDimension d = new CostDimension(product, m_as, p_M_CostType_ID, p_AD_Org_ID, 0, element.getM_CostElement_ID());
-			final List<MCost> costs = d.toQuery(MCost.class, get_TrxName()).list();
-			for (MCost cost : costs)
-			{
-				final int precision = MAcctSchema.get(Env.getCtx(), cost.getC_AcctSchema_ID()).getCostingPrecision();
-				BigDecimal segmentCost = Env.ZERO;
-				for (MWFNode node : nodes)
-				{
-					final CostEngine costEngine = CostEngineFactory.getCostEngine(node.getAD_Client_ID());
-					final BigDecimal rate = costEngine.getResourceActualCostRate(null, node.getS_Resource_ID(), d, get_TrxName());
-					final BigDecimal baseValue = m_routingService.getResourceBaseValue(node.getS_Resource_ID(), node);
-					BigDecimal nodeCost = baseValue.multiply(rate);
-					if (nodeCost.scale() > precision)
-					{
-						nodeCost = nodeCost.setScale(precision, RoundingMode.HALF_UP);
-					}
-					segmentCost = segmentCost.add(nodeCost);
-					log.info("Element : "+element+", Node="+node
-							+", BaseValue="+baseValue+", rate="+rate
-							+", nodeCost="+nodeCost+" => Cost="+segmentCost);
-					// Update AD_WF_Node.Cost:
-					node.setCost(node.getCost().add(nodeCost));
-				}
-				//
-				cost.setCurrentCostPrice(segmentCost);
-				cost.saveEx();
-				// Update Workflow cost
-				workflow.setCost(workflow.getCost().add(segmentCost));
-			} // MCost
-		} // Cost Elements
+			queryBuilder.addEqualsFilter(I_M_Product.COLUMN_M_Product_ID, p_M_Product_Category_ID);
+		}
+
+		return queryBuilder
+				.orderBy(I_M_Product.COLUMNNAME_LowLevel)
+				.create()
+				.list();
+	}
+
+	public void rollup(final Context context)
+	{
+		log.info("{}", context);
+
+		final RoutingDurationsAndYield routingDurationsAndYield = computeRoutingDurationsAndYield(context.getRouting());
+
+		final CostSegment costSegment = createCostSegment(context.getProduct());
+
+		final List<RoutingActivitySegmentCost> costs = costElements.stream()
+				.filter(costElement -> !costElement.isActivityControlElement())
+				.map(costElement -> costSegment.withCostElementId(costElement.getId()))
+				.flatMap(costSegmentAndElement -> computeRoutingSegmentCostsAndStream(context.getRouting(), costSegmentAndElement))
+				.collect(ImmutableList.toImmutableList());
+
 		//
-		// Save Workflow & Nodes
-		for (MWFNode node : nodes)
+		// Save to database
+		updateCostRecords(costSegment, costs);
+		updateRoutingRecord(context.getRouting().getId(), routingDurationsAndYield, costs);
+		// Update Product Data Planning
+		final I_PP_Product_Planning productPlanning = context.getProductPlanning();
+		if (productPlanning != null)
 		{
-			node.saveEx();
+			productPlanning.setYield(routingDurationsAndYield.getYield().toInt());
+			saveRecord(productPlanning);
 		}
-		workflow.saveEx();
-		log.info("Product: "+product.getName()+" WFCost: " + workflow.getCost());
+	}
+
+	private void updateRoutingRecord(final PPRoutingId routingId, final RoutingDurationsAndYield routingDurationsAndYield, final List<RoutingActivitySegmentCost> costs)
+	{
+		final PPRoutingChangeRequest changeRequest = PPRoutingChangeRequest.newInstance(routingId);
+
+		changeRequest.setYield(routingDurationsAndYield.getYield());
+		changeRequest.setQueuingTime(routingDurationsAndYield.getQueuingTime());
+		changeRequest.setSetupTime(routingDurationsAndYield.getSetupTime());
+		changeRequest.setDurationPerOneUnit(routingDurationsAndYield.getDurationPerOneUnit());
+		changeRequest.setWaitingTime(routingDurationsAndYield.getWaitingTime());
+		changeRequest.setMovingTime(routingDurationsAndYield.getMovingTime());
+
+		costs.forEach(cost -> changeRequest.addActivityCost(cost.getRoutingActivityId(), cost.getCostAsBigDecimal()));
+	}
+
+	private void updateCostRecords(final CostSegment costSegment, final List<RoutingActivitySegmentCost> costs)
+	{
+
+		final Map<CostElementId, BigDecimal> costsByCostElementId = costs.stream().collect(RoutingActivitySegmentCost.groupByCostElementId());
+		costsByCostElementId.forEach(updateCostRecord(costSegment));
+	}
+
+	private BiConsumer<CostElementId, BigDecimal> updateCostRecord(final CostSegment costSegment)
+	{
+		return (costElementId, costValue) -> currentCostsRepo.updateCostRecord(
+				costSegment.withCostElementId(costElementId),
+				costRecord -> costRecord.setCurrentCostPrice(costValue));
+	}
+
+	private RoutingDurationsAndYield computeRoutingDurationsAndYield(final PPRouting routing)
+	{
+		final RoutingDurationsAndYield result = new RoutingDurationsAndYield();
+		routing.getActivities().forEach(result::addActivity);
+		return result;
+	}
+
+	private Stream<RoutingActivitySegmentCost> computeRoutingSegmentCostsAndStream(final PPRouting routing, final CostSegmentAndElement costSegmentAndElement)
+	{
+		final CurrencyPrecision precision = getCostingPrecision(costSegmentAndElement.getAcctSchemaId());
+
+		return routing.getActivities()
+				.stream()
+				.map(activity -> computeRoutingActivitySegmentCost(activity, costSegmentAndElement, precision));
+	}
+
+	private CurrencyPrecision getCostingPrecision(final AcctSchemaId acctSchemaId)
+	{
+		final AcctSchema acctSchema = acctSchemasRepo.getById(acctSchemaId);
+		return acctSchema.getCosting().getCostingPrecision();
+	}
+
+	private RoutingActivitySegmentCost computeRoutingActivitySegmentCost(
+			final PPRoutingActivity activity,
+			final CostSegmentAndElement costSegmentAndElement,
+			final CurrencyPrecision precision)
+	{
+		final ResourceId stdResourceId = activity.getResourceId();
+		final CostSegmentAndElement resourceCostSegmentAndElement = createCostSegment(costSegmentAndElement, stdResourceId);
+
+		final CostPrice rate = currentCostsRepo.getOrCreate(resourceCostSegmentAndElement)
+				.getCostPrice();
+
+		final Duration duration = routingService.getResourceBaseValue(activity);
+
+		final CostAmount cost = rate.multiply(duration, activity.getDurationUnit())
+				.roundToPrecisionIfNeeded(precision);
+
+		return RoutingActivitySegmentCost.of(cost, activity.getId(), costSegmentAndElement.getCostElementId());
+	}
+
+	private CostSegment createCostSegment(final I_M_Product product)
+	{
+		final CostTypeId costTypeId = p_M_CostType_ID != null ? p_M_CostType_ID : acctSchema.getCosting().getCostTypeId();
+		final CostingLevel costingLevel = productCostingBL.getCostingLevel(product, acctSchema);
+
+		return CostSegment.builder()
+				.costingLevel(costingLevel)
+				.acctSchemaId(acctSchema.getId())
+				.costTypeId(costTypeId)
+				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
+				.clientId(ClientId.ofRepoId(getAD_Client_ID()))
+				.orgId(p_AD_Org_ID)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.build();
+	}
+
+	private CostSegmentAndElement createCostSegment(final CostSegmentAndElement costSegmentAndElement, final ResourceId resourceId)
+	{
+		final I_M_Product product = resourceProductService.getProductByResourceId(resourceId);
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+
+		final AcctSchema acctSchema = acctSchemasRepo.getById(costSegmentAndElement.getAcctSchemaId());
+		final CostingLevel costingLevel = productCostingBL.getCostingLevel(product, acctSchema);
+
+		return costSegmentAndElement.withProductIdAndCostingLevel(productId, costingLevel);
 	}
 
 	/**
 	 * Create Cost Rollup Notice
+	 *
 	 * @param product
 	 * @param msg
 	 */
-	private void createNotice(MProduct product, String msg)
+	private void createNotice(final I_M_Product product, final String msg)
 	{
-		String productValue = product != null ? product.getValue() : "-";
-		addLog("WARNING: Product "+productValue+": "+msg);
+		final String productValue = product != null ? product.getValue() : "-";
+		addLog("WARNING: Product " + productValue + ": " + msg);
+	}
+
+	@lombok.Value(staticConstructor = "of")
+	private static class Context
+	{
+		@NonNull
+		I_M_Product product;
+
+		@NonNull
+		I_PP_Product_Planning productPlanning;
+
+		@NonNull
+		PPRouting routing;
+	}
+
+	@lombok.Getter
+	@lombok.ToString
+	private static class RoutingDurationsAndYield
+	{
+		private Percent yield = Percent.ONE_HUNDRED;
+		private Duration queuingTime = Duration.ZERO;
+		private Duration setupTime = Duration.ZERO;
+		private Duration durationPerOneUnit = Duration.ZERO;
+		private Duration waitingTime = Duration.ZERO;
+		private Duration movingTime = Duration.ZERO;
+
+		public void addActivity(final PPRoutingActivity activity)
+		{
+			if (!activity.getYield().isZero())
+			{
+				yield = yield.multiply(activity.getYield(), 0);
+			}
+
+			queuingTime = queuingTime.plus(activity.getQueuingTime());
+			setupTime = setupTime.plus(activity.getSetupTime());
+			waitingTime = waitingTime.plus(activity.getWaitingTime());
+			movingTime = movingTime.plus(activity.getMovingTime());
+
+			// We use node.getDuration() instead of m_routingService.estimateWorkingTime(node) because
+			// this will be the minimum duration of this node. So even if the node have defined units/cycle
+			// we consider entire duration of the node.
+			durationPerOneUnit = durationPerOneUnit.plus(activity.getDurationPerOneUnit());
+		}
+	}
+
+	@lombok.Value(staticConstructor = "of")
+	private static class RoutingActivitySegmentCost
+	{
+		public static Collector<RoutingActivitySegmentCost, ?, Map<CostElementId, BigDecimal>> groupByCostElementId()
+		{
+			return Collectors.groupingBy(RoutingActivitySegmentCost::getCostElementId, sumCostsAsBigDecimal());
+		}
+
+		private static Collector<RoutingActivitySegmentCost, ?, BigDecimal> sumCostsAsBigDecimal()
+		{
+			return Collectors.reducing(BigDecimal.ZERO, RoutingActivitySegmentCost::getCostAsBigDecimal, BigDecimal::add);
+		}
+
+		@NonNull
+		CostAmount cost;
+		@NonNull
+		PPRoutingActivityId routingActivityId;
+		@NonNull
+		CostElementId costElementId;
+
+		public BigDecimal getCostAsBigDecimal()
+		{
+			return cost.getValue();
+		}
 	}
 }

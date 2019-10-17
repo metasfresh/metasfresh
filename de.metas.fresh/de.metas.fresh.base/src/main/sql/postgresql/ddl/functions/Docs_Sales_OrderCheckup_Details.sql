@@ -5,6 +5,7 @@ RETURNS TABLE
 	(
 	line numeric,
 	attributes text,
+	prodValue character varying,
 	value character varying,
 	name character varying(255),
 	ean character varying,
@@ -32,6 +33,7 @@ $$
 SELECT
 	ol.line,
 	att.Attributes,
+	p.value AS prodValue,
 	COALESCE(bpp.ProductNo, p.value) AS Value,
 	p.Name AS Name,
 	COALESCE(bpp.UPC, p.UPC) AS EAN,

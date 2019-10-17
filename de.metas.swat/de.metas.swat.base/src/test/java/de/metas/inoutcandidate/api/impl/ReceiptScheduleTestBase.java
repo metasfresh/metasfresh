@@ -12,12 +12,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,7 +33,6 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_AD_Org;
@@ -54,15 +53,16 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.interfaces.I_C_DocType;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
-import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import mockit.Expectations;
@@ -115,7 +115,6 @@ public abstract class ReceiptScheduleTestBase
 
 	protected I_C_DocType receiptDocType;
 
-	protected I_C_UOM productUOM = null;
 	protected I_C_UOM priceUOM; // 07090
 
 	// #653
@@ -175,10 +174,10 @@ public abstract class ReceiptScheduleTestBase
 		new Expectations()
 		{{
 			productAcctDAO.retrieveActivityForAcct(
-					(ClientId)any, 
-					orgId, 
+					(ClientId)any,
+					orgId,
 					(ProductId)any);
-			
+
 			minTimes=0;
 			result = activityId;
 		}};
@@ -260,15 +259,15 @@ public abstract class ReceiptScheduleTestBase
 		receiptSchedule.setAD_Org_ID(0);
 		receiptSchedule.setAD_Table_ID(0);
 
-		receiptSchedule.setC_BPartner(bartner);
+		receiptSchedule.setC_BPartner_ID(bartner.getC_BPartner_ID());
 		receiptSchedule.setAD_User_ID(0);
 
 		receiptSchedule.setDateOrdered(date);
 
-		receiptSchedule.setM_Warehouse(warehouse);
+		receiptSchedule.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 
-		receiptSchedule.setM_Product(product);
-		receiptSchedule.setC_UOM(productUOM);
+		receiptSchedule.setM_Product_ID(product.getM_Product_ID());
+		//receiptSchedule.setC_UOM(productUOM);
 
 		receiptSchedule.setQtyOrdered(qtyBD);
 		receiptSchedule.setQtyToMove(qtyBD);
@@ -324,8 +323,8 @@ public abstract class ReceiptScheduleTestBase
 
 		//
 		// Product & UOM
-		orderLine.setM_Product(product);
-		orderLine.setC_UOM(productUOM);
+		orderLine.setM_Product_ID(product.getM_Product_ID());
+		// orderLine.setC_UOM_ID(productUOM != null ? productUOM.getC_UOM_ID() : -1);
 		// 07090: when setting a priceActual, we also need to specify a PriceUOM
 		InterfaceWrapperHelper.create(orderLine, de.metas.interfaces.I_C_OrderLine.class).setPrice_UOM_ID(priceUOM.getC_UOM_ID());
 
@@ -344,8 +343,8 @@ public abstract class ReceiptScheduleTestBase
 
 		//
 		// BPartner
-		orderLine.setC_BPartner(order.getC_BPartner());
-		orderLine.setC_BPartner_Location(order.getC_BPartner_Location());
+		orderLine.setC_BPartner_ID(order.getC_BPartner_ID());
+		orderLine.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());
 
 		// more if needed
 

@@ -1,0 +1,2 @@
+
+ALTER TABLE I_User DROP COLUMN Value;

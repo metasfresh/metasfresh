@@ -5,21 +5,24 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_UOM;
-import org.compiere.util.Env;
 
+import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -54,7 +57,6 @@ public final class BusinessTestHelper
 	 * Standard in ADempiere
 	 */
 	private static final int UOM_Precision_3 = 3;
-
 
 	private BusinessTestHelper()
 	{
@@ -114,27 +116,20 @@ public final class BusinessTestHelper
 		return uom;
 	}
 
-	public static I_C_UOM_Conversion createUOMConversion(
+	public static void createUOMConversion(
 			final I_M_Product product,
 			final I_C_UOM uomFrom,
 			final I_C_UOM uomTo,
-			final BigDecimal multiplyRate,
-			final BigDecimal divideRate)
+			final BigDecimal fromToMultiplier,
+			final BigDecimal toFromMultiplier)
 	{
-		final I_C_UOM_Conversion conversion = InterfaceWrapperHelper.create(Env.getCtx(), I_C_UOM_Conversion.class, ITrx.TRXNAME_None);
-
-		if (product != null)
-		{
-			conversion.setM_Product_ID(product.getM_Product_ID());
-		}
-		conversion.setC_UOM_ID(uomFrom.getC_UOM_ID());
-		conversion.setC_UOM_To_ID(uomTo.getC_UOM_ID());
-		conversion.setMultiplyRate(multiplyRate);
-		conversion.setDivideRate(divideRate);
-
-		save(conversion, ITrx.TRXNAME_None);
-
-		return conversion;
+		Services.get(IUOMConversionDAO.class).createUOMConversion(CreateUOMConversionRequest.builder()
+				.productId(product != null ? ProductId.ofRepoId(product.getM_Product_ID()) : null)
+				.fromUomId(UomId.ofRepoId(uomFrom.getC_UOM_ID()))
+				.toUomId(UomId.ofRepoId(uomTo.getC_UOM_ID()))
+				.fromToMultiplier(fromToMultiplier)
+				.toFromMultiplier(toFromMultiplier)
+				.build());
 	}
 
 	/**
@@ -239,7 +234,7 @@ public final class BusinessTestHelper
 	public static void createDefaultBusinessRecords()
 	{
 		final I_C_TaxCategory noTaxCategoryFound = newInstanceOutOfTrx(I_C_TaxCategory.class);
-		noTaxCategoryFound.setC_TaxCategory_ID(ITaxDAO.C_TAX_CATEGORY_ID_NO_CATEGORY_FOUND);
+		noTaxCategoryFound.setC_TaxCategory_ID(TaxCategoryId.NOT_FOUND.getRepoId());
 		save(noTaxCategoryFound);
 
 		final I_C_Tax noTaxFound = newInstanceOutOfTrx(I_C_Tax.class);

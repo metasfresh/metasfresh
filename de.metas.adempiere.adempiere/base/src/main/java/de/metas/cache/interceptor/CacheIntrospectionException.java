@@ -33,6 +33,7 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
 
 /**
@@ -123,7 +124,7 @@ public class CacheIntrospectionException extends AdempiereException
 	@Override
 	protected ITranslatableString buildMessage()
 	{
-		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder message = TranslatableStrings.builder();
 
 		message.append(super.buildMessage());
 

@@ -22,8 +22,8 @@ import java.util.Properties;
 
 import org.adempiere.util.LegacyAdapters;
 
-import de.metas.adempiere.service.ICountryDAO;
 import de.metas.i18n.Language;
+import de.metas.location.ICountryDAO;
 import de.metas.util.Services;
 
 /**

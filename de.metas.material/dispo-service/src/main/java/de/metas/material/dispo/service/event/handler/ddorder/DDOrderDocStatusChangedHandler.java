@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.Function;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -12,12 +11,11 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
+import de.metas.document.engine.IDocument;
 import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
 import de.metas.util.Check;
@@ -79,22 +77,18 @@ public class DDOrderDocStatusChangedHandler implements MaterialEventHandler<DDOr
 				ddOrderChangedDocStatusEvent.getDdOrderId());
 
 		final String newDocStatusFromEvent = ddOrderChangedDocStatusEvent.getNewDocStatus();
-		final CandidateStatus newCandidateStatus = EventUtil
-				.getCandidateStatus(newDocStatusFromEvent);
-
-		final Function<Candidate, BigDecimal> masterialQtyFunktion = //
-				EventUtil.deriveCandiadte2QtyProvider(newCandidateStatus);
 
 		final List<Candidate> updatedCandidatesToPersist = new ArrayList<>();
 
 		for (final Candidate candidateForDDOrderId : candidatesForDDOrderId)
 		{
-			final BigDecimal newQuantity = masterialQtyFunktion.apply(candidateForDDOrderId);
+			final BigDecimal newQuantity = computeNewQuantity(newDocStatusFromEvent, candidateForDDOrderId);
+
 			final DistributionDetail distributionDetail = //
 					DistributionDetail.cast(candidateForDDOrderId.getBusinessCaseDetail());
 
 			final Candidate updatedCandidateToPersist = candidateForDDOrderId.toBuilder()
-					.status(newCandidateStatus)
+					// .status(newCandidateStatus)
 					.materialDescriptor(candidateForDDOrderId.getMaterialDescriptor().withQuantity(newQuantity))
 					.businessCaseDetail(distributionDetail.toBuilder().ddOrderDocStatus(newDocStatusFromEvent).build())
 					.build();
@@ -102,5 +96,25 @@ public class DDOrderDocStatusChangedHandler implements MaterialEventHandler<DDOr
 			updatedCandidatesToPersist.add(updatedCandidateToPersist);
 		}
 		updatedCandidatesToPersist.forEach(candidate -> candidateChangeService.onCandidateNewOrChange(candidate));
+	}
+
+	private BigDecimal computeNewQuantity(
+			@NonNull final String newDocStatusFromEvent,
+			@NonNull final Candidate candidateForDDOrderId)
+	{
+		final BigDecimal newQuantity;
+		final boolean ddOrderIsClosed = IDocument.STATUS_Closed.equals(newDocStatusFromEvent);
+		if (ddOrderIsClosed)
+		{
+			// Take the "actualQty" instead of max(actual, planned)
+			newQuantity = candidateForDDOrderId.computeActualQty();
+		}
+		else
+		{
+			// take the max(actual, planned)
+			final BigDecimal plannedQty = candidateForDDOrderId.getBusinessCaseDetail().getQty();
+			newQuantity = candidateForDDOrderId.computeActualQty().max(plannedQty);
+		}
+		return newQuantity;
 	}
 }

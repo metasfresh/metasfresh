@@ -132,7 +132,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement x="20" y="89" width="250" height="14" uuid="d2b9bed0-a13c-4d65-a2bf-375af0e450f4"/>
 				<textElement textAlignment="Center">
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{tracking_no} + " " + ($F{parcelnumber} != null ? $F{parcelnumber}  : "")]]></textFieldExpression>
 			</textField>
@@ -151,21 +151,21 @@
 			<textField isBlankWhenNull="true">
 				<reportElement x="60" y="104" width="170" height="30" uuid="5f8eda77-1242-4578-bbc4-49b650a4bc7d"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="18" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{desiredstation}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="20" y="135" width="80" height="14" uuid="64f66b35-bac4-41ad-9341-23b2de00d735"/>
 				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{sender}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="100" y="135" width="100" height="14" uuid="041f741c-1a1d-435c-9cc3-89821f18b974"/>
 				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{client} + " " + 
 ($F{customercode} != null ? $F{customercode} : "")]]></textFieldExpression>
@@ -173,7 +173,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement x="200" y="135" width="70" height="14" uuid="8b8a9303-74fb-4020-8aea-b76c76494d0b"/>
 				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{collector} + " " + 
 ($F{collectorcode} != null ? $F{collectorcode} : "")]]></textFieldExpression>
@@ -199,7 +199,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement x="20" y="205" width="250" height="14" uuid="26e4dd01-c9ed-46d2-86b3-1a860af3a329"/>
 				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[($F{sender_country} !=null ? $F{sender_country} + " -"  : "") +
 ($F{sender_zipcode} != null ?$F{sender_zipcode} + " " : "") + 
@@ -208,7 +208,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement x="20" y="219" width="250" height="27" uuid="5500328f-4887-4bd0-ab2c-139f5f9c1788"/>
 				<textElement verticalAlignment="Middle">
-					<font size="16" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="16" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("dd.MM.yyyy").format($F{desireddeliverydate}) + 
 " "
@@ -218,7 +218,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement x="20" y="246" width="250" height="14" uuid="57599e1b-026d-40b4-8522-e109e9e81388"/>
 				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{receiver}]]></textFieldExpression>
 			</textField>
@@ -250,7 +250,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement x="20" y="330" width="250" height="14" uuid="b3a5674f-b91d-4233-a535-e0c43359a203"/>
 				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[($F{consignee_country} !=null ? $F{consignee_country} + " -"  : "") +
 ($F{consignee_zipcode} != null ? $F{consignee_zipcode} + " " : "") + 

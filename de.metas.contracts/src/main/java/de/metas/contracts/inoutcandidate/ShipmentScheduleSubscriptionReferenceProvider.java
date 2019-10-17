@@ -2,10 +2,15 @@ package de.metas.contracts.inoutcandidate;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+import java.time.ZonedDateTime;
+
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
-import org.springframework.stereotype.Service;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
 
 import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
@@ -38,7 +43,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@Service
+@Component
 public class ShipmentScheduleSubscriptionReferenceProvider implements ShipmentScheduleReferencedLineProvider
 {
 	/**
@@ -53,16 +58,19 @@ public class ShipmentScheduleSubscriptionReferenceProvider implements ShipmentSc
 	@Override
 	public ShipmentScheduleReferencedLine provideFor(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final I_C_SubscriptionProgress subscriptionLine = load(sched.getRecord_ID(), I_C_SubscriptionProgress.class);
+		final int subscriptionProgressId = sched.getRecord_ID();
+		final I_C_SubscriptionProgress subscriptionLine = load(subscriptionProgressId, I_C_SubscriptionProgress.class);
 		Check.errorIf(subscriptionLine == null,
 				"Unable to load the referenced C_SubscriptionProgress for M_ShipmentSchedule_ID={}; M_ShipmentSchedule.Record_ID={}",
-				sched.getM_ShipmentSchedule_ID(), sched.getRecord_ID());
+				sched.getM_ShipmentSchedule_ID(), subscriptionProgressId);
+
+		final ZonedDateTime eventDate = TimeUtil.asZonedDateTime(subscriptionLine.getEventDate());
 
 		return ShipmentScheduleReferencedLine.builder()
-				.groupId(subscriptionLine.getC_Flatrate_Term_ID())
+				.recordRef(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, subscriptionLine.getC_Flatrate_Term_ID()))
 				.shipperId(ShipperId.optionalOfRepoId(1))
-				.deliveryDate(subscriptionLine.getEventDate())
-				.preparationDate(subscriptionLine.getEventDate())
+				.deliveryDate(eventDate)
+				.preparationDate(eventDate)
 				.warehouseId(getWarehouseId(subscriptionLine))
 				.documentLineDescriptor(createDocumentLineDescriptor(subscriptionLine))
 				.build();
@@ -81,5 +89,5 @@ public class ShipmentScheduleSubscriptionReferenceProvider implements ShipmentSc
 				.subscriptionProgressId(subscriptionLine.getC_SubscriptionProgress_ID())
 				.subscriptionBillBPartnerId(subscriptionLine.getC_Flatrate_Term().getBill_BPartner_ID())
 				.build();
-	};
+	}
 }

@@ -52,8 +52,7 @@ import org.compiere.model.X_I_BankStatement;
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementDAO;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -71,8 +70,6 @@ public class C_Payment_CreateFrom_BankStatement extends JavaProcess implements I
 {
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 
-	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-
 	/**
 	 * Prepare - e.g., get Parameters.
 	 */
@@ -80,12 +77,12 @@ public class C_Payment_CreateFrom_BankStatement extends JavaProcess implements I
 	protected void prepare()
 	{
 		final ProcessInfoParameter[] para = getParametersAsArray();
-		for (int i = 0; i < para.length; i++)
+		for (ProcessInfoParameter element : para)
 		{
-			final String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
+			final String name = element.getParameterName();
+			if (element.getParameter() == null)
 			{
-				;
+				
 			}
 			else
 			{
@@ -147,8 +144,8 @@ public class C_Payment_CreateFrom_BankStatement extends JavaProcess implements I
 		if (I_C_BankStatement.Table_Name.equals(context.getTableName()))
 		{
 			final I_C_BankStatement bankStatement = context.getSelectedModel(I_C_BankStatement.class);
-			return ProcessPreconditionsResolution.acceptIf(docActionBL.isDocumentStatusOneOf(bankStatement,
-					IDocument.STATUS_Completed, IDocument.STATUS_Closed));
+			final DocStatus docStatus = DocStatus.ofCode(bankStatement.getDocStatus());
+			return ProcessPreconditionsResolution.acceptIf(docStatus.isCompletedOrClosed());
 		}
 		return ProcessPreconditionsResolution.reject();
 	}

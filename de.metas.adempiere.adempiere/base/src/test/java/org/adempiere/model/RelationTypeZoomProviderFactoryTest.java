@@ -34,12 +34,12 @@ import mockit.Mocked;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -81,7 +81,7 @@ public class RelationTypeZoomProviderFactoryTest
 		final I_AD_RelationType relationType = createRelationType(isTableRecordIdTarget, null, referenceTarget);
 
 		TableRefInfo build = LookupDAO.TableRefInfo.builder()
-				.setName(refTargetName)
+				.setIdentifier(refTargetName)
 				.setTableName(tableName)
 				.setKeyColumn(keyColumnName)
 				.setDisplayColumn(keyColumnName)
@@ -90,9 +90,9 @@ public class RelationTypeZoomProviderFactoryTest
 				.setTranslated(true)
 				.setWhereClause("")
 				.setOrderByClause("")
-				.setZoomSO_Window_ID(-1)
-				.setZoomPO_Window_ID(-1)
-				.setZoomAD_Window_ID_Override(-1)
+				.setZoomSO_Window_ID(null)
+				.setZoomPO_Window_ID(null)
+				.setZoomAD_Window_ID_Override(null)
 				.setAutoComplete(false)
 				.build();
 
@@ -102,8 +102,8 @@ public class RelationTypeZoomProviderFactoryTest
 
 		assertThat(zoomProvider.isTableRecordIdTarget()).isTrue();
 	}
-	
-	
+
+
 
 	@Test
 	public void findZoomProvider_Is_Not_TableRecordIdTarget_WithSource()
@@ -112,7 +112,7 @@ public class RelationTypeZoomProviderFactoryTest
 		final String refTargetName = "RefTargetName1";
 		final String validationType = X_AD_Reference.VALIDATIONTYPE_TableValidation;
 		final I_AD_Reference referenceTarget = createReferenceSourceOrTarget(refTargetName, validationType);
-		
+
 		final String refSourceName = "RefSourceName1";
 		final I_AD_Reference referenceSource = createReferenceSourceOrTarget(refSourceName, validationType);
 
@@ -130,7 +130,7 @@ public class RelationTypeZoomProviderFactoryTest
 		final I_AD_RelationType relationType = createRelationType(isTableRecordIdTarget, referenceSource,  referenceTarget);
 
 		TableRefInfo build = LookupDAO.TableRefInfo.builder()
-				.setName(refTargetName)
+				.setIdentifier(refTargetName)
 				.setTableName(tableName)
 				.setKeyColumn(keyColumnName)
 				.setDisplayColumn(keyColumnName)
@@ -139,9 +139,9 @@ public class RelationTypeZoomProviderFactoryTest
 				.setTranslated(true)
 				.setWhereClause("")
 				.setOrderByClause("")
-				.setZoomSO_Window_ID(-1)
-				.setZoomPO_Window_ID(-1)
-				.setZoomAD_Window_ID_Override(-1)
+				.setZoomSO_Window_ID(null)
+				.setZoomPO_Window_ID(null)
+				.setZoomAD_Window_ID_Override(null)
 				.setAutoComplete(false)
 				.build();
 

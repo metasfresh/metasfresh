@@ -1,6 +1,7 @@
 package de.metas.attachments.process;
 
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_AttachmentEntry;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
@@ -31,12 +32,13 @@ import de.metas.process.JavaProcess;
 
 public class AD_AttachmentEntry_Download extends JavaProcess
 {
-	private final transient AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+	private final transient AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 
 	@Override
 	protected String doIt()
 	{
-		final AttachmentEntryId entryId = AttachmentEntryId.ofRepoId(getRecord_ID());
+		final I_AD_AttachmentEntry record = getRecord(I_AD_AttachmentEntry.class);
+		final AttachmentEntryId entryId = AttachmentEntryId.ofRepoId(record.getAD_AttachmentEntry_ID());
 
 		final AttachmentEntry entry = attachmentEntryService.getById(entryId);
 		final byte[] data = attachmentEntryService.retrieveData(entry.getId());
@@ -45,5 +47,4 @@ public class AD_AttachmentEntry_Download extends JavaProcess
 
 		return MSG_OK;
 	}
-
 }

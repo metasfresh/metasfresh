@@ -25,8 +25,6 @@ package de.metas.handlingunits.storage.impl;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
 import org.slf4j.Logger;
 
@@ -39,8 +37,11 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Bucket;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public abstract class AbstractProductStorage implements IProductStorage
 {
@@ -107,7 +108,7 @@ public abstract class AbstractProductStorage implements IProductStorage
 	}
 
 	@Override
-	public final Quantity getQty(final I_C_UOM uom)
+	public final Quantity getQty(@NonNull final I_C_UOM uom)
 	{
 		final ProductId productId = getProductId();
 		final Quantity qty = getQty();

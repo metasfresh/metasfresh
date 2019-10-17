@@ -33,17 +33,18 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.materialtracking.qualityBasedInvoicing.IInvoicingItem;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedInvoicingBL;
 import de.metas.product.IProductPA;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -52,7 +53,7 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 {
 
 	// Constants
-	public static final String CURRENCY_ISO = "CHF";
+	private static final CurrencyCode CURRENCY_ISO = CurrencyCode.CHF;
 	public final static String M_PRODUCT_SCRAP_VALUE = "MT_Scrap_Erdbesatz";
 	public final static String C_UOM_SCRAP_X12DE355 = "KGM";
 	public final static String M_PRODUCT_WITHHOLDING_VALUE = "MT_Witholding_Akonto";
@@ -83,7 +84,7 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 	{
 		super(ctxAware);
 
-		month2qualityAdjustment = new HashMap<Integer, BigDecimal>();
+		month2qualityAdjustment = new HashMap<>();
 		month2qualityAdjustment.put(0, new BigDecimal("0.02")); // 0 => January
 		month2qualityAdjustment.put(1, new BigDecimal("0.02"));
 		month2qualityAdjustment.put(2, new BigDecimal("0.03"));
@@ -101,7 +102,7 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 		month2qualityAdjustment.put(10, new BigDecimal("-0.02"));
 		month2qualityAdjustment.put(11, new BigDecimal("0.00")); // 11 => December
 
-		feeProductPercentage2fee = new TreeMap<BigDecimal, BigDecimal>();
+		feeProductPercentage2fee = new TreeMap<>();
 		feeProductPercentage2fee.put(new BigDecimal("0"), new BigDecimal("0.00"));
 		feeProductPercentage2fee.put(new BigDecimal("15"), new BigDecimal("0.01"));
 		feeProductPercentage2fee.put(new BigDecimal("20"), new BigDecimal("0.02"));
@@ -162,7 +163,7 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 
 		final boolean throwExIfProductNotFound = true;
 
-		final ArrayList<IInvoicingItem> result = new ArrayList<IInvoicingItem>();
+		final ArrayList<IInvoicingItem> result = new ArrayList<>();
 
 		result.add(qualityBasedInvoicingBL.createPlainInvoicingItem(
 				productPA.retrieveProduct(ctxAware.getCtx(), M_PRODUCT_BASICLINE_FEE_VALUE, throwExIfProductNotFound, ctxAware.getTrxName()),
@@ -224,7 +225,7 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 	@Override
 	public BigDecimal getFeeForProducedMaterial(final I_M_Product m_Product, final BigDecimal percentage)
 	{
-		final List<BigDecimal> percentages = new ArrayList<BigDecimal>(feeProductPercentage2fee.keySet());
+		final List<BigDecimal> percentages = new ArrayList<>(feeProductPercentage2fee.keySet());
 
 		// iterating from first to 2nd-last
 		for (int i = 0; i < percentages.size() - 1; i++)
@@ -245,10 +246,9 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 	}
 
 	@Override
-	public I_C_Currency getCurrency()
+	public Currency getCurrency()
 	{
-		final IContextAware ctxAware = getContext();
-		return currencyDAO.retrieveCurrencyByISOCode(ctxAware.getCtx(), CURRENCY_ISO);
+		return currencyDAO.getByCurrencyCode(CURRENCY_ISO);
 	}
 
 	public static void setOverallNumberOfInvoicings(final int overallNumberOfInvoicings)

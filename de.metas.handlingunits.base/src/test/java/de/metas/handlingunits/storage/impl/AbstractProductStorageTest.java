@@ -10,12 +10,12 @@ package de.metas.handlingunits.storage.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,6 +26,7 @@ package de.metas.handlingunits.storage.impl;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -39,6 +40,8 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.util.Services;
 
 public abstract class AbstractProductStorageTest extends AbstractHUTest
 {
@@ -414,7 +417,11 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 
 	protected IAllocationRequest createAllocationRequest(final BigDecimal qty, final boolean forceQtyAllocation)
 	{
-		final Quantity quantity = new Quantity(qty, product.getC_UOM());
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
+		final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
+
+		final Quantity quantity = new Quantity(qty, uom);
 		final IMutableHUContext huContext = helper.getHUContext();
 		return AllocationUtils.createAllocationRequestBuilder()
 				.setHUContext(huContext)

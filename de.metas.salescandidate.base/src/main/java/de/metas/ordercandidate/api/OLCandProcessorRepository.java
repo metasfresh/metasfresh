@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Column;
 import org.springframework.stereotype.Repository;
 
@@ -14,10 +15,19 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.cache.CCache;
+import de.metas.document.DocTypeId;
+import de.metas.freighcost.FreightCostRule;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceRule;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
 import de.metas.ordercandidate.api.OLCandAggregationColumn.Granularity;
 import de.metas.ordercandidate.model.I_C_OLCandAggAndOrder;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.ordercandidate.model.X_C_OLCandAggAndOrder;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.shipping.ShipperId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -81,17 +91,17 @@ public class OLCandProcessorRepository
 		return OLCandProcessorDescriptor.builder()
 				.id(olCandProcessorId)
 				.defaults(OLCandOrderDefaults.builder()
-						.docTypeTargetId(olCandProcessorPO.getC_DocTypeTarget_ID())
-						.deliveryRule(olCandProcessorPO.getDeliveryRule())
-						.deliveryViaRule(olCandProcessorPO.getDeliveryViaRule())
-						.shipperId(olCandProcessorPO.getM_Shipper_ID())
-						.warehouseId(olCandProcessorPO.getM_Warehouse_ID())
-						.freightCostRule(olCandProcessorPO.getFreightCostRule())
-						.paymentRule(olCandProcessorPO.getPaymentRule())
-						.paymentTermId(olCandProcessorPO.getC_PaymentTerm_ID())
-						.invoiceRule(olCandProcessorPO.getInvoiceRule())
+						.docTypeTargetId(DocTypeId.ofRepoId(olCandProcessorPO.getC_DocTypeTarget_ID()))
+						.deliveryRule(DeliveryRule.ofCode(olCandProcessorPO.getDeliveryRule()))
+						.deliveryViaRule(DeliveryViaRule.ofCode(olCandProcessorPO.getDeliveryViaRule()))
+						.shipperId(ShipperId.ofRepoId(olCandProcessorPO.getM_Shipper_ID()))
+						.warehouseId(WarehouseId.ofRepoIdOrNull(olCandProcessorPO.getM_Warehouse_ID()))
+						.freightCostRule(FreightCostRule.ofCode(olCandProcessorPO.getFreightCostRule()))
+						.paymentRule(PaymentRule.ofCode(olCandProcessorPO.getPaymentRule()))
+						.paymentTermId(PaymentTermId.ofRepoId(olCandProcessorPO.getC_PaymentTerm_ID()))
+						.invoiceRule(InvoiceRule.ofCode(olCandProcessorPO.getInvoiceRule()))
 						.build())
-				.userInChangeId(olCandProcessorPO.getAD_User_InCharge_ID())
+				.userInChangeId(UserId.ofRepoId(olCandProcessorPO.getAD_User_InCharge_ID()))
 				.aggregationInfo(retrieveOLCandAggregation(olCandProcessorId))
 				.build();
 	}

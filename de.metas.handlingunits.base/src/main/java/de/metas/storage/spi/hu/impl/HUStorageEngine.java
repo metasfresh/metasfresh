@@ -65,7 +65,6 @@ public class HUStorageEngine implements IStorageEngine
 
 	private HUStorageEngine()
 	{
-		super();
 	}
 
 	@Override

@@ -2,15 +2,9 @@ package de.metas.order.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.MOrder;
-import org.compiere.model.MOrderLine;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -22,55 +16,6 @@ import de.metas.util.Services;
 public class OrderPA implements IOrderPA
 {
 	private static final Logger logger = LogManager.getLogger(OrderPA.class);
-
-	@Override
-	public MOrder retrieveOrder(final int orderId, final String trxName)
-	{
-
-		final MOrder order = new MOrder(Env.getCtx(), orderId, trxName);
-
-		if (order.get_ID() == 0)
-		{
-
-			logger.debug("There is no order with id '" + orderId + "'. Returning null.");
-			return null;
-		}
-		return order;
-
-	}
-
-	/**
-	 * Invokes {@link MOrder#getLines()}.
-	 *
-	 */
-	@Override
-	public <T extends I_C_OrderLine> List<T> retrieveOrderLines(final I_C_Order order, final Class<T> clazz)
-	{
-		final MOrderLine[] lines = ((MOrder)InterfaceWrapperHelper.getPO(order)).getLines(true, "");
-
-		final List<T> result = new ArrayList<>(lines.length);
-
-		for (final MOrderLine currentLine : lines)
-		{
-			result.add(InterfaceWrapperHelper.create(currentLine, clazz));
-		}
-
-		return result;
-	}
-
-	@Override
-	public void reserveStock(final I_C_Order order, final I_C_OrderLine... ols)
-	{
-
-		final MOrder mOrder = InterfaceWrapperHelper.getPO(order);
-		final MOrderLine[] mOls = new MOrderLine[ols.length];
-
-		for (int i = 0; i < ols.length; i++)
-		{
-			mOls[i] = InterfaceWrapperHelper.getPO(ols[i]);
-		}
-		mOrder.reserveStock(null, mOls); // docType=null (i.e. fetch it from order)
-	}
 
 	@Override
 	public I_C_Order copyOrder(

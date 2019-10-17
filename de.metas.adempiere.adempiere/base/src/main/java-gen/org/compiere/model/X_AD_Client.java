@@ -14,7 +14,7 @@ public class X_AD_Client extends org.compiere.model.PO implements I_AD_Client, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 681927464L;
+	private static final long serialVersionUID = -821316459L;
 
     /** Standard Constructor */
     public X_AD_Client (Properties ctx, int AD_Client_ID, String trxName)
@@ -29,11 +29,9 @@ public class X_AD_Client extends org.compiere.model.PO implements I_AD_Client, o
 			setIsServerEMail (false);
 			setIsSmtpAuthorization (false); // N
 			setIsStartTLS (false); // N
-			setIsUseASP (false); // N
 			setIsUseBetaFunctions (true); // Y
 			setMMPolicy (null); // F
 			setName (null);
-			setSMTPPort (0); // 25
 			setStoreArchiveOnFileSystem (false);
 			setStoreAttachmentsOnFileSystem (false);
 			setValue (null);
@@ -308,9 +306,9 @@ public class X_AD_Client extends org.compiere.model.PO implements I_AD_Client, o
 		return false;
 	}
 
-	/** Set SMTP-Anmeldung.
+	/** Set SMTP Anmeldung.
 		@param IsSmtpAuthorization 
-		Your mail server requires Authentication
+		Ihr EMail-Server verlangt eine Anmeldung
 	  */
 	@Override
 	public void setIsSmtpAuthorization (boolean IsSmtpAuthorization)
@@ -318,8 +316,8 @@ public class X_AD_Client extends org.compiere.model.PO implements I_AD_Client, o
 		set_Value (COLUMNNAME_IsSmtpAuthorization, Boolean.valueOf(IsSmtpAuthorization));
 	}
 
-	/** Get SMTP-Anmeldung.
-		@return Your mail server requires Authentication
+	/** Get SMTP Anmeldung.
+		@return Ihr EMail-Server verlangt eine Anmeldung
 	  */
 	@Override
 	public boolean isSmtpAuthorization () 
@@ -348,29 +346,6 @@ public class X_AD_Client extends org.compiere.model.PO implements I_AD_Client, o
 	public boolean isStartTLS () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsStartTLS);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set IsUseASP.
-		@param IsUseASP IsUseASP	  */
-	@Override
-	public void setIsUseASP (boolean IsUseASP)
-	{
-		set_Value (COLUMNNAME_IsUseASP, Boolean.valueOf(IsUseASP));
-	}
-
-	/** Get IsUseASP.
-		@return IsUseASP	  */
-	@Override
-	public boolean isUseASP () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsUseASP);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -455,9 +430,7 @@ public class X_AD_Client extends org.compiere.model.PO implements I_AD_Client, o
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -465,8 +438,7 @@ public class X_AD_Client extends org.compiere.model.PO implements I_AD_Client, o
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{

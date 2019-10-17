@@ -1,13 +1,19 @@
 package de.metas.handlingunits.material.interceptor;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
+import org.adempiere.mmovement.MovementLineId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Transaction;
+import org.eevolution.api.PPCostCollectorId;
 
+import de.metas.inout.InOutLineId;
+import de.metas.inventory.InventoryLineId;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.HUDescriptor;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -39,18 +45,21 @@ import lombok.Value;
  * We need it because we need to construct the events *after* commit, in order to also catch assigned HUs.
  */
 @Value
-public class TransactionDescriptor
+final class TransactionDescriptor
 {
 	EventDescriptor eventDescriptor;
 
-	int productId;
 	int transactionId;
-	int warehouseId;
-	int costCollectorId;
-	int inoutLineId;
-	int movementLineId;
-	int inventoryLineId;
-	Date movementDate;
+
+	ProductId productId;
+	WarehouseId warehouseId;
+
+	PPCostCollectorId costCollectorId;
+	InOutLineId inoutLineId;
+	MovementLineId movementLineId;
+	InventoryLineId inventoryLineId;
+
+	Instant transactionDate;
 	BigDecimal movementQty;
 	String movementType;
 
@@ -58,24 +67,26 @@ public class TransactionDescriptor
 
 	@Builder
 	private TransactionDescriptor(
-			EventDescriptor eventDescriptor,
-			int productId,
-			int transactionId,
-			int warehouseId,
-			Date movementDate,
-			BigDecimal movementQty,
-			int costCollectorId,
-			int inoutLineId,
-			int movementLineId,
-			int inventoryLineId,
-			String movementType,
-			@Singular List<HUDescriptor> huDescriptors)
+			final EventDescriptor eventDescriptor,
+			final int transactionId,
+			final ProductId productId,
+			final WarehouseId warehouseId,
+			final Instant transactionDate,
+			final BigDecimal movementQty,
+			//
+			final PPCostCollectorId costCollectorId,
+			final InOutLineId inoutLineId,
+			final MovementLineId movementLineId,
+			final InventoryLineId inventoryLineId,
+			//
+			final String movementType,
+			@Singular final List<HUDescriptor> huDescriptors)
 	{
 		this.eventDescriptor = eventDescriptor;
-		this.productId = productId;
 		this.transactionId = transactionId;
+		this.productId = productId;
 		this.warehouseId = warehouseId;
-		this.movementDate = movementDate;
+		this.transactionDate = transactionDate;
 		this.movementQty = movementQty;
 		this.costCollectorId = costCollectorId;
 		this.inoutLineId = inoutLineId;

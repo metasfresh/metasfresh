@@ -13,17 +13,15 @@ package de.metas.invoicecandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,17 +29,22 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
-import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_Tax;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.invoicecandidate.api.IInvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
-import de.metas.util.Check;
+import de.metas.invoicecandidate.api.InvoiceCandidateInOutLineToUpdate;
+import de.metas.money.Money;
+import de.metas.product.ProductPrice;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.util.lang.Percent;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Default (bean) implementation for {@link IInvoiceLineRW}.
@@ -56,16 +59,31 @@ import de.metas.util.Check;
  * @author tsa
  *
  */
+
+// The excludes are here because they were this way in the former code. I'm not really sure that we really "must" include e.g. "C_PaymentTerm_ID"..
+@EqualsAndHashCode(exclude = { "activityID", "tax", "lineNo", "invoiceLineAttributes", "iciolsToUpdate", "C_PaymentTerm_ID" })
+@ToString(doNotUseGetters = true)
 /* package */ class InvoiceLineImpl implements IInvoiceLineRW
 {
 	private int M_Product_ID;
 	private int C_Charge_ID;
 	private int C_OrderLine_ID;
-	private BigDecimal qtyToInvoice;
-	private BigDecimal priceActual;
-	private BigDecimal priceEntered;
-	private BigDecimal discount;
-	private BigDecimal netLineAmt;
+
+	@Getter @Setter
+	private StockQtyAndUOMQty qtysToInvoice;
+
+	@Getter @Setter
+	private ProductPrice priceActual;
+
+	@Getter @Setter
+	private ProductPrice priceEntered;
+
+	@Getter @Setter
+	private Percent discount;
+
+	@Getter @Setter
+	private Money netLineAmt;
+
 	private String description;
 	private Collection<Integer> iciolIds = new TreeSet<>();
 	private int activityID;
@@ -73,63 +91,8 @@ import de.metas.util.Check;
 	private boolean printed = true;
 	private int lineNo = 0;
 	private Set<IInvoiceLineAttribute> invoiceLineAttributes = Collections.emptySet();
-	private List<IInvoiceCandidateInOutLineToUpdate> iciolsToUpdate = new ArrayList<>();
+	private List<InvoiceCandidateInOutLineToUpdate> iciolsToUpdate = new ArrayList<>();
 	private int C_PaymentTerm_ID;
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
-	}
-
-	@Override
-	public int hashCode()
-	{
-		return new HashcodeBuilder()
-				.append(C_Charge_ID)
-				.append(C_OrderLine_ID)
-				.append(M_Product_ID)
-				.append(description)
-				.append(netLineAmt)
-				.append(priceActual)
-				.append(priceEntered)
-				.append(discount)
-				.append(qtyToInvoice)
-				.append(printed)
-				.append(iciolIds)
-				//.append(iciolsToUpdate)
-				.toHashcode();
-	}
-
-	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-
-		final InvoiceLineImpl other = EqualsBuilder.getOther(this, obj);
-		if (other == null)
-		{
-			return false;
-		}
-
-		return new EqualsBuilder()
-				.append(C_Charge_ID, other.C_Charge_ID)
-				.append(C_OrderLine_ID, other.C_OrderLine_ID)
-				.append(M_Product_ID, other.M_Product_ID)
-				.append(description, other.description)
-				.append(netLineAmt, other.netLineAmt)
-				.append(priceActual, other.priceActual)
-				.append(priceEntered, other.priceEntered)
-				.append(discount, other.discount)
-				.append(qtyToInvoice, other.qtyToInvoice)
-				.append(printed, other.printed)
-				.append(iciolIds, other.iciolIds)
-				//.append(iciolsToUpdate, other.iciolsToUpdate)
-				.isEqual();
-	}
 
 	@Override
 	public int getM_Product_ID()
@@ -149,23 +112,6 @@ import de.metas.util.Check;
 		return C_OrderLine_ID;
 	}
 
-	@Override
-	public BigDecimal getQtyToInvoice()
-	{
-		return qtyToInvoice;
-	}
-
-	@Override
-	public BigDecimal getPriceActual()
-	{
-		return priceActual;
-	}
-
-	@Override
-	public BigDecimal getNetLineAmt()
-	{
-		return netLineAmt;
-	}
 
 	@Override
 	public void setM_Product_ID(final int m_Product_ID)
@@ -186,47 +132,22 @@ import de.metas.util.Check;
 	}
 
 	@Override
-	public void setQtyToInvoice(final BigDecimal qtyToInvoice)
+	public final void addQtysToInvoice(@NonNull final StockQtyAndUOMQty qtysToInvoiceToAdd)
 	{
-		this.qtyToInvoice = qtyToInvoice;
-	}
-
-	@Override
-	public final void addQtyToInvoice(final BigDecimal qtyToInvoiceToAdd)
-	{
-		Check.assumeNotNull(qtyToInvoiceToAdd, "qtyToInvoiceToAdd not null");
-		if (qtyToInvoiceToAdd.signum() == 0)
+		final StockQtyAndUOMQty qtysToInvoiceOld = getQtysToInvoice();
+		final StockQtyAndUOMQty qtysToInvoiceNew;
+		if (qtysToInvoiceOld == null)
 		{
-			return; // nothing to add
-		}
-
-		final BigDecimal qtyToInvoiceOld = getQtyToInvoice();
-		final BigDecimal qtyToInvoiceNew;
-		if (qtyToInvoiceOld == null)
-		{
-			qtyToInvoiceNew = qtyToInvoiceToAdd;
+			qtysToInvoiceNew = qtysToInvoiceToAdd;
 		}
 		else
 		{
-			qtyToInvoiceNew = qtyToInvoiceOld.add(qtyToInvoiceToAdd);
+			qtysToInvoiceNew = qtysToInvoiceOld.add(qtysToInvoiceToAdd);
 		}
+		setQtysToInvoice(qtysToInvoiceNew);
 
-		setQtyToInvoice(qtyToInvoiceNew);
 	}
 
-	@Override
-	public void setPriceActual(final BigDecimal priceActual)
-	{
-		Check.assumeNotNull(priceActual, "priceActual not null");
-		this.priceActual = priceActual;
-	}
-
-	@Override
-	public void setNetLineAmt(final BigDecimal netLineAmt)
-	{
-		Check.assumeNotNull(netLineAmt, "netLineAmt not null");
-		this.netLineAmt = netLineAmt;
-	}
 
 	@Override
 	public String getDescription()
@@ -240,29 +161,7 @@ import de.metas.util.Check;
 		this.description = description;
 	}
 
-	@Override
-	public BigDecimal getPriceEntered()
-	{
-		return priceEntered;
-	}
 
-	@Override
-	public void setPriceEntered(final BigDecimal priceEntered)
-	{
-		this.priceEntered = priceEntered;
-	}
-
-	@Override
-	public BigDecimal getDiscount()
-	{
-		return discount;
-	}
-
-	@Override
-	public void setDiscount(final BigDecimal discount)
-	{
-		this.discount = discount;
-	}
 
 	@Override
 	public Collection<Integer> getC_InvoiceCandidate_InOutLine_IDs()
@@ -338,7 +237,7 @@ import de.metas.util.Check;
 	}
 
 	@Override
-	public List<IInvoiceCandidateInOutLineToUpdate> getInvoiceCandidateInOutLinesToUpdate()
+	public List<InvoiceCandidateInOutLineToUpdate> getInvoiceCandidateInOutLinesToUpdate()
 	{
 		return iciolsToUpdate;
 	}
@@ -354,4 +253,5 @@ import de.metas.util.Check;
 	{
 		C_PaymentTerm_ID = paymentTermId;
 	}
+
 }

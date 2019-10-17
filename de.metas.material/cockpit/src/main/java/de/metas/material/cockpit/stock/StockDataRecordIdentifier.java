@@ -1,7 +1,10 @@
 package de.metas.material.cockpit.stock;
 
-import de.metas.material.event.commons.MaterialDescriptor;
+import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.WarehouseId;
+
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,26 +34,23 @@ import lombok.Value;
 @Value
 public class StockDataRecordIdentifier
 {
-	public static StockDataRecordIdentifier createForMaterial(
-			@NonNull final MaterialDescriptor material)
-	{
-		final StockDataRecordIdentifier identifier = StockDataRecordIdentifier.builder()
-				.productDescriptor(material)
-				.warehouseId(material.getWarehouseId())
-				.build();
-		return identifier;
-	}
-
+	ClientId clientId;
+	OrgId orgId;
 	ProductDescriptor productDescriptor;
-	int warehouseId;
+	WarehouseId warehouseId;
 
 	@Builder
 	private StockDataRecordIdentifier(
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId,
 			@NonNull final ProductDescriptor productDescriptor,
-			int warehouseId)
+			@NonNull final WarehouseId warehouseId)
 	{
 		productDescriptor.getStorageAttributesKey().assertNotAllOrOther();
-		this.productDescriptor = productDescriptor;
+
+		this.clientId = clientId;
+		this.orgId = orgId;
 		this.warehouseId = warehouseId;
+		this.productDescriptor = productDescriptor;
 	}
 }

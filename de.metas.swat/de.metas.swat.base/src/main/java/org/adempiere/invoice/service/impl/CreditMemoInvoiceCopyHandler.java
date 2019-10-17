@@ -1,5 +1,7 @@
 package org.adempiere.invoice.service.impl;
 
+import static java.math.BigDecimal.ONE;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -42,9 +44,12 @@ import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.util.Env;
 
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -123,8 +128,9 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 		creditMemo.setIsTaxIncluded(true);
 
 		// get our currency precision and the smallest possible amount (in most currencies this is 0.01)
-		final int precision = invoice.getC_Currency().getStdPrecision();
-		final BigDecimal smallestAmtInCurrency = BigDecimal.ONE.setScale(precision, BigDecimal.ROUND_HALF_UP).divide(BigDecimal.TEN.pow(precision));
+		final CurrencyId currencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
+		final CurrencyPrecision precision = Services.get(ICurrencyDAO.class).getStdPrecision(currencyId);
+		final BigDecimal smallestAmtInCurrency = ONE.setScale(precision.toInt(), RoundingMode.HALF_UP).divide(BigDecimal.TEN.pow(precision.toInt()));
 
 		// Compute the factor we can use to get the credit memo amounts from their respective invoice amounts.
 		// Note that by rounding to "floor", the rounded value won't ever be greater than the "correct" value
@@ -153,7 +159,7 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 
 			// Note that once again, we round to "floor", so the rounded value won't be greater than the "correct" value
 			// Also note that if 'creditTaxGrossAmt' is less than the "correct" value, the difference is never bigger than than 'smallestAmtInCurrency'.
-			final BigDecimal creditTaxGrossAmt = taxGrossAmt.multiply(openfraction).setScale(precision, RoundingMode.FLOOR);
+			final BigDecimal creditTaxGrossAmt = taxGrossAmt.multiply(openfraction).setScale(precision.toInt(), RoundingMode.FLOOR);
 			creditMemoGrandTotal = creditMemoGrandTotal.add(creditTaxGrossAmt);
 
 			newTaxAmounts.put(invoiceTax, creditTaxGrossAmt);
@@ -218,7 +224,7 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 				final BigDecimal newLineGrossAmt;
 				if (invoiceTax.isTaxIncluded())
 				{
-					newLineGrossAmt = newLineNetAmt.setScale(precision, RoundingMode.FLOOR);
+					newLineGrossAmt = newLineNetAmt.setScale(precision.toInt(), RoundingMode.FLOOR);
 				}
 				else
 				{
@@ -226,7 +232,7 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 							.multiply(invoiceTax.getC_Tax().getRate()
 									.add(Env.ONEHUNDRED)
 									.divide(Env.ONEHUNDRED))
-							.setScale(precision, RoundingMode.FLOOR);
+							.setScale(precision.toInt(), RoundingMode.FLOOR);
 				}
 				line2newLineGrossAmt.put(creditMemoLine, newLineGrossAmt);
 				sumPerTax = sumPerTax.add(newLineGrossAmt);
@@ -254,8 +260,8 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 
 		for (final I_C_InvoiceLine creditMemoLine : lines)
 		{
-			creditMemoLine.setQtyEntered(BigDecimal.ONE);
-			creditMemoLine.setQtyInvoiced(BigDecimal.ONE);
+			creditMemoLine.setQtyEntered(ONE);
+			creditMemoLine.setQtyInvoiced(ONE);
 			creditMemoLine.setPriceEntered(line2newLineGrossAmt.get(creditMemoLine));
 			creditMemoLine.setPriceActual(line2newLineGrossAmt.get(creditMemoLine));
 

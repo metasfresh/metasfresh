@@ -72,7 +72,13 @@ public interface ITrxItemExecutorBuilder<IT, RT>
 		 *
 		 * @task https://github.com/metasfresh/metasfresh/issues/302
 		 */
-		ContinueChunkAndCommit
+		ContinueChunkAndCommit;
+
+		public boolean isCancel()
+		{
+			return this == CancelChunkAndCommit
+					|| this == CancelChunkAndRollBack;
+		}
 	}
 
 	/**

@@ -79,7 +79,7 @@ public class FilesystemArchiveStorage extends AbstractArchiveStorage
 	
 	private final void checkContext()
 	{
-		Check.assume(!Ini.isClient() || Services.get(IDeveloperModeBL.class).isEnabled(), "Server mode required");
+		Check.assume(!Ini.isSwingClient() || Services.get(IDeveloperModeBL.class).isEnabled(), "Server mode required");
 		
 		if (Check.isEmpty(archivePathRoot, true))
 		{

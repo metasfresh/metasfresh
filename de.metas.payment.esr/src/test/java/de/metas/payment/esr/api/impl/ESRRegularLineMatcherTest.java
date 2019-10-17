@@ -19,12 +19,12 @@ import java.io.ByteArrayInputStream;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -52,6 +52,7 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.payment.esr.ESRTestBase;
 import de.metas.payment.esr.ESRTestUtil;
+import de.metas.payment.esr.dataimporter.impl.v11.ESRTransactionLineMatcherUtil;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
@@ -469,6 +470,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		Services.get(IDocumentNoBuilderFactory.class);
 
 		final String esrImportLineText = "00201059931000000001050153641700120686900000040000012  190013011813011813012100015000400000000000000";
+		final String referenceNumberStr = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrImportLineText);
 
 		final I_ESR_Import esrImport = createImport();
 
@@ -485,7 +487,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		save(esrImport);
 
 		final I_C_ReferenceNo referenceNo = newInstance(I_C_ReferenceNo.class);
-		referenceNo.setReferenceNo("536417000120686");
+		referenceNo.setReferenceNo(referenceNumberStr);
 		referenceNo.setC_ReferenceNo_Type(refNoType);
 		referenceNo.setIsManual(false);
 		save(referenceNo);
@@ -523,8 +525,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		// Services.get(IESRImportBL.class).process(esrImport);
 		//
 		// assertNoErrors(Arrays.asList(esrImportLine));
-
-		Assert.assertTrue("Reference number not found.", referenceNo.equals(esrImportLine.getC_ReferenceNo()));
+		assertThat(esrImportLine.getC_ReferenceNo_ID()).as("Reference number not found.").isEqualTo(referenceNo.getC_ReferenceNo_ID());
 	}
 
 	@Test
@@ -571,7 +572,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 	public void test_regularLine_manual_refNo()
 	{
 		final String esrImportLineText = "00201059931000000001050153641700120686900000040000012  190013011813011813012100015000400000000000000";
-
+		final String referenceNumberStr = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrImportLineText);
 		final I_AD_Org org = getAD_Org();
 
 		final I_ESR_Import esrImport = createImport();
@@ -609,7 +610,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		save(invoice);
 
 		final I_C_ReferenceNo referenceNo = newInstance(I_C_ReferenceNo.class);
-		referenceNo.setReferenceNo("000000010501536417000120686");
+		referenceNo.setReferenceNo(referenceNumberStr);
 		referenceNo.setC_ReferenceNo_Type(refNoType);
 		referenceNo.setIsManual(true);
 		save(referenceNo);

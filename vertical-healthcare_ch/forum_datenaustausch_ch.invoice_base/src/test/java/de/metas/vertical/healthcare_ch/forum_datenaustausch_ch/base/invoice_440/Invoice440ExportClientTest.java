@@ -11,9 +11,9 @@ import de.metas.invoice_gateway.spi.model.BPartner;
 import de.metas.invoice_gateway.spi.model.BPartnerId;
 import de.metas.invoice_gateway.spi.model.EAN;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
-import de.metas.invoice_gateway.spi.model.InvoiceToExport;
 import de.metas.invoice_gateway.spi.model.MetasfreshVersion;
 import de.metas.invoice_gateway.spi.model.Money;
+import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 
 /*
  * #%L
@@ -75,5 +75,4 @@ public class Invoice440ExportClientTest
 		// invoke the method under test
 		// TODO
 	}
-
 }

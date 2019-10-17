@@ -57,7 +57,8 @@ public class JacksonJsonEventSerializerTest
 	@Test
 	public void test1()
 	{
-		testSerializeUnserialize(Event.builder()
+		final Event event = Event.builder()
+				.shallBeLogged()
 				.setSummary("Summary1")
 				.setDetailPlain("Detail1")
 				.setDetailADMessage("Detail_AD_Message", "P1", "P2", "P3")
@@ -76,7 +77,8 @@ public class JacksonJsonEventSerializerTest
 				.putProperty("Prop_Int", 13)
 				.putProperty("Prop_Str", "string1")
 				.putProperty("Prop_Ref", TableRecordReference.of(I_C_Invoice.Table_Name, 123456))
-				.build());
+				.build();
+		testSerializeUnserialize(event);
 	}
 
 	private final void testSerializeUnserialize(final Event event)

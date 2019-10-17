@@ -16,7 +16,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.invoice_gateway.spi.InvoiceExportClient;
 import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
-import de.metas.invoice_gateway.spi.model.InvoiceToExport;
+import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 

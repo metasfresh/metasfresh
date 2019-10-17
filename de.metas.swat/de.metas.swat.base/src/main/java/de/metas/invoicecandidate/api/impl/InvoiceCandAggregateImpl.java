@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,15 +39,17 @@ import org.apache.commons.lang3.builder.CompareToBuilder;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import de.metas.util.collections.IdentityHashSet;
+import lombok.NonNull;
 
 public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 {
 
 	private Map<Integer, I_C_Invoice_Candidate> candIDs2Cands = new HashMap<Integer, I_C_Invoice_Candidate>();
 
-	private static final Comparator<I_C_Invoice_Candidate> invoiceCandComparator = 
+	private static final Comparator<I_C_Invoice_Candidate> invoiceCandComparator =
 			new Comparator<I_C_Invoice_Candidate>()
 	{
 		@Override
@@ -62,7 +64,7 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 					.build();
 		}
 	};
-	
+
 	/**
 	 * Sorted set of all candidates that are added to this aggregation. They are ordered by <code>Line</code> and, if the line is identical, by <code>C_Invoice_Candidate_ID</code>.
 	 * If the line is 0, then they shall be ordered to the end.
@@ -75,7 +77,7 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 
 	private Map<Integer, List<IInvoiceLineRW>> candidateId2lines = new HashMap<Integer, List<IInvoiceLineRW>>();
 
-	private Map<Integer, Map<IInvoiceLineRW, BigDecimal>> candIdAndLine2AllocatedQty = new HashMap<Integer, Map<IInvoiceLineRW, BigDecimal>>();
+	private Map<Integer, Map<IInvoiceLineRW, StockQtyAndUOMQty>> candIdAndLine2AllocatedQty = new HashMap<>();
 
 	/**
 	 * Returns all candidates that were added, ordered by line (1, 2, ... 10, 20, ... , 0), i.e. null/not-set last.
@@ -124,10 +126,10 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 
 	/**
 	 * This method does the actual work for {@link #getLinesFor(I_C_Invoice_Candidate)}.
-	 * 
+	 *
 	 * Note that this method with the extra 'icId' parameter is here because I was not able to write unit tests with mocks of I_C_Invoice_Candidate that returned the correct C_Invoice_Candidate_ID
 	 * value. In the end I decided to give the C_Invoice_Candidate_ID value as another parameter.
-	 * 
+	 *
 	 * @param ic
 	 * @param icId the value that would be returned by <code>ic.C_Invoice_Candidate_ID()</code> if the method was called with a proper <code>I_C_Invoice_Candidate</code>.
 	 * @param mandatory if true an {@link IllegalArgumentException} is no {@link IInvoiceLineRW} were matched
@@ -156,7 +158,7 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 	@Override
 	public void addAssociation(final I_C_Invoice_Candidate ic, final IInvoiceLineRW il)
 	{
-		addAssociation(ic, ic.getC_Invoice_Candidate_ID(), il, il.getQtyToInvoice());
+		addAssociation(ic, ic.getC_Invoice_Candidate_ID(), il, il.getQtysToInvoice());
 	}
 
 	@Override
@@ -175,24 +177,22 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 
 	/**
 	 * This method does the actual work for {@link #addAssociation(I_C_Invoice_Candidate, IInvoiceLineRW)}.
-	 * 
+	 *
 	 * Note that this method with the extra 'icId' parameter is here because I was not able to write unit tests with mocks of I_C_Invoice_Candidate that returned the correct C_Invoice_Candidate_ID
 	 * value. In the end I decided to give the C_Invoice_Candidate_ID value as another parameter.
-	 * 
+	 *
 	 * @param ic
 	 * @param icId the value that would be returned by <code>ic.C_Invoice_Candidate_ID()</code> if the method was called with a proper <code>I_C_Invoice_Candidate</code>.
 	 * @param il
 	 * @see IInvoiceCandAggregate#addAssociation(I_C_Invoice_Candidate, IInvoiceLineRW)
 	 */
 	void addAssociation(
-			final I_C_Invoice_Candidate ic,
+			@NonNull final I_C_Invoice_Candidate ic,
 			final int icId,
-			final IInvoiceLineRW il,
-			final BigDecimal allocatedQty)
+			@NonNull final IInvoiceLineRW il,
+			final StockQtyAndUOMQty allocatedQty)
 	{
-		Check.assume(ic != null, "Param 'ic' is not null");
 		Check.assume(icId > 0, "Param 'ic' has C_Invoice_Candidate_ID>0");
-		Check.assume(il != null, "Param 'il' is not null");
 
 		Check.assume(!isAssociated(icId, il), ic + " with ID=" + icId + " is not yet associated with " + il);
 
@@ -221,32 +221,33 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 
 		allLines.add(il);
 
-		Map<IInvoiceLineRW, BigDecimal> il2Qty = candIdAndLine2AllocatedQty.get(icId);
+		Map<IInvoiceLineRW, StockQtyAndUOMQty> il2Qty = candIdAndLine2AllocatedQty.get(icId);
 		if (il2Qty == null)
 		{
 			// it's important to have an IdentityHashMap, because we don't guarantee that IInvoiceLineRW is immutable!
-			il2Qty = new IdentityHashMap<IInvoiceLineRW, BigDecimal>();
+			il2Qty = new IdentityHashMap<IInvoiceLineRW, StockQtyAndUOMQty>();
 			candIdAndLine2AllocatedQty.put(icId, il2Qty);
 		}
 		il2Qty.put(il, allocatedQty);
 	}
 
 	@Override
-	public final void addAllocatedQty(final I_C_Invoice_Candidate ic, final IInvoiceLineRW il, final BigDecimal qtyAllocatedToAdd)
+	public final void addAllocatedQty(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final IInvoiceLineRW il,
+			final StockQtyAndUOMQty qtyAllocatedToAdd)
 	{
-		Check.assumeNotNull(ic, "Param 'ic' is not null");
 		final int icId = ic.getC_Invoice_Candidate_ID();
 		Check.assume(icId > 0, "Param 'ic' has C_Invoice_Candidate_ID>0");
-		Check.assumeNotNull(il, "Param 'il' is not null");
 		Check.assumeNotNull(qtyAllocatedToAdd, "qtyAllocatedToAdd not null");
 
-		final Map<IInvoiceLineRW, BigDecimal> il2Qty = candIdAndLine2AllocatedQty.get(icId);
+		final Map<IInvoiceLineRW, StockQtyAndUOMQty> il2Qty = candIdAndLine2AllocatedQty.get(icId);
 		Check.assumeNotNull(il2Qty, "{} has no associations to invoice lines yet", ic);
 
-		final BigDecimal qtyAllocatedOld = il2Qty.get(il);
+		final StockQtyAndUOMQty qtyAllocatedOld = il2Qty.get(il);
 		Check.assumeNotNull(qtyAllocatedOld, "{} has no associations to {}", il, ic);
 
-		final BigDecimal qtyAllocatedNew = qtyAllocatedOld.add(qtyAllocatedToAdd);
+		final StockQtyAndUOMQty qtyAllocatedNew = qtyAllocatedOld.add(qtyAllocatedToAdd);
 		il2Qty.put(il, qtyAllocatedNew);
 	}
 
@@ -266,7 +267,7 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 	}
 
 	@Override
-	public BigDecimal getAllocatedQty(I_C_Invoice_Candidate ic, IInvoiceLineRW il)
+	public StockQtyAndUOMQty getAllocatedQty(I_C_Invoice_Candidate ic, IInvoiceLineRW il)
 	{
 		return getAllocatedQty(ic, ic.getC_Invoice_Candidate_ID(), il);
 	}
@@ -274,13 +275,8 @@ public class InvoiceCandAggregateImpl implements IInvoiceCandAggregate
 	/**
 	 * This method does the actual work for {@link #getAllocatedQty(I_C_Invoice_Candidate, IInvoiceLineRW)}. For an explanation of why the method is here, see
 	 * {@link #addAssociation(I_C_Invoice_Candidate, int, IInvoiceLineRW, BigDecimal)}.
-	 * 
-	 * @param ic
-	 * @param icId
-	 * @param il
-	 * @return
 	 */
-	BigDecimal getAllocatedQty(final I_C_Invoice_Candidate ic, final int icId, final IInvoiceLineRW il)
+	StockQtyAndUOMQty getAllocatedQty(final I_C_Invoice_Candidate ic, final int icId, final IInvoiceLineRW il)
 	{
 		Check.assume(isAssociated(icId, il), ic + " with ID=" + icId + " is associated with " + il);
 

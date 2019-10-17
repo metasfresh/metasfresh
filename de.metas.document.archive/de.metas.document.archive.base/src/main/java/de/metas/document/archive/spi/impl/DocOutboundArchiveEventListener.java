@@ -3,12 +3,12 @@ package de.metas.document.archive.spi.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import lombok.NonNull;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.archive.spi.IArchiveEventListener;
@@ -19,17 +19,16 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 import org.springframework.stereotype.Component;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.attachments.AttachmentConstants;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
+import de.metas.attachments.AttachmentTags;
 import de.metas.document.archive.DocOutboundUtils;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
@@ -38,9 +37,14 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.email.EMailAddress;
+import de.metas.email.mailboxes.UserEMailConfig;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 @Component
 public class DocOutboundArchiveEventListener implements IArchiveEventListener
@@ -71,11 +75,11 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	public void onEmailSent(
 			@NonNull final I_AD_Archive archive,
 			final String action,
-			final I_AD_User user,
-			final String from,
-			final String to,
-			final String cc,
-			final String bcc,
+			@Nullable final UserEMailConfig userMailConfig,
+			final EMailAddress from,
+			final EMailAddress to,
+			final EMailAddress cc,
+			final EMailAddress bcc,
 			final String status)
 	{
 		if (!isLoggableArchive(archive))
@@ -85,13 +89,15 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 		final I_C_Doc_Outbound_Log_Line docExchangeLine = createLogLine(archive);
 		docExchangeLine.setAction(action);
-		docExchangeLine.setEMail_From(from);
-		docExchangeLine.setEMail_To(to);
-		docExchangeLine.setEMail_Cc(cc);
-		docExchangeLine.setEMail_Bcc(bcc);
+		docExchangeLine.setEMail_From(EMailAddress.toStringOrNull(from));
+		docExchangeLine.setEMail_To(EMailAddress.toStringOrNull(to));
+		docExchangeLine.setEMail_Cc(EMailAddress.toStringOrNull(cc));
+		docExchangeLine.setEMail_Bcc(EMailAddress.toStringOrNull(bcc));
 		docExchangeLine.setStatus(status);
-		docExchangeLine.setAD_User(user);
-
+		if(userMailConfig != null)
+		{
+			docExchangeLine.setAD_User_ID(UserId.toRepoId(userMailConfig.getUserId()));
+		}
 		save(docExchangeLine);
 
 		final I_C_Doc_Outbound_Log log = docExchangeLine.getC_Doc_Outbound_Log();
@@ -208,7 +214,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 		docOutboundLogRecord.setDocumentNo(archiveRecord.getName());
 
-		final LocalDate documentDate = Util.coalesce(
+		final LocalDate documentDate = CoalesceUtil.coalesce(
 				docActionBL.getDocumentDate(ctx, adTableId, recordId),
 				TimeUtil.asLocalDate(docOutboundLogRecord.getCreated()));
 
@@ -228,10 +234,6 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry = Adempiere.getBean(DocOutboundLogMailRecipientRegistry.class);
 
 		final Optional<DocOutBoundRecipient> mailRecipient = docOutboundLogMailRecipientRegistry.invokeProvider(docOutboundLogRecord);
-		if (!mailRecipient.isPresent())
-		{
-			return;
-		}
 
 		mailRecipient.ifPresent(recipient -> updateRecordWithRecipient(docOutboundLogRecord, recipient));
 	}
@@ -261,7 +263,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		final AttachmentEntryQuery query = AttachmentEntryQuery
 				.builder()
 				.referencedRecord(from)
-				.tagSetToTrue(AttachmentConstants.TAGNAME_IS_DOCUMENT)
+				.tagSetToTrue(AttachmentTags.TAGNAME_IS_DOCUMENT)
 				.build();
 		final List<AttachmentEntry> attachmentsToShare = attachmentEntryService.getByQuery(query);
 

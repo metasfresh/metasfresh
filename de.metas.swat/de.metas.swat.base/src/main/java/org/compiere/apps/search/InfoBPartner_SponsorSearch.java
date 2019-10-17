@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.compiere.apps.search;
 
@@ -13,12 +13,12 @@ package org.compiere.apps.search;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,11 +33,11 @@ import java.text.SimpleDateFormat;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import de.metas.adempiere.gui.search.SponsorNoAutoCompleter;
 import de.metas.adempiere.gui.search.SponsorNoObject;
 import de.metas.i18n.Msg;
+import de.metas.util.Check;
 
 /**
  * @author metas GmbH, m.ostermann@metas.de
@@ -70,7 +70,7 @@ public class InfoBPartner_SponsorSearch
 
 		final DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
 
-		if (sno == null && !Util.isEmpty(searchText, true))
+		if (sno == null && !Check.isEmpty(searchText, true))
 			return "1=2";
 		if (sno == null)
 			return "1=1";

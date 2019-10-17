@@ -15,7 +15,7 @@ public class X_M_HU_Item_Storage extends org.compiere.model.PO implements I_M_HU
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1557154859L;
+	private static final long serialVersionUID = -1089216641L;
 
     /** Standard Constructor */
     public X_M_HU_Item_Storage (Properties ctx, int M_HU_Item_Storage_ID, String trxName)
@@ -45,18 +45,6 @@ public class X_M_HU_Item_Storage extends org.compiere.model.PO implements I_M_HU
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
-	}
-
 	/** Set Maßeinheit.
 		@param C_UOM_ID 
 		Maßeinheit
@@ -83,7 +71,7 @@ public class X_M_HU_Item_Storage extends org.compiere.model.PO implements I_M_HU
 	}
 
 	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
@@ -120,7 +108,7 @@ public class X_M_HU_Item_Storage extends org.compiere.model.PO implements I_M_HU
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_Item getM_HU_Item() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_Item getM_HU_Item()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_Item_ID, de.metas.handlingunits.model.I_M_HU_Item.class);
 	}
@@ -173,18 +161,6 @@ public class X_M_HU_Item_Storage extends org.compiere.model.PO implements I_M_HU
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.

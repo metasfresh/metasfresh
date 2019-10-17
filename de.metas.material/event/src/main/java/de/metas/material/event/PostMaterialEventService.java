@@ -1,5 +1,7 @@
 package de.metas.material.event;
 
+import java.util.Collection;
+
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.slf4j.Logger;
@@ -62,12 +64,16 @@ public class PostMaterialEventService
 
 	/**
 	 * Fires the given event using our (distributed) event framework. If {@link #subscribeToEventBus()} was not yet invoked, an exception is thrown.
-	 *
-	 * @param event
 	 */
 	public void postEventNow(final MaterialEvent event)
 	{
 		materialEventService.postEvent(event);
 		logger.info("Posted MaterialEvent={}", event);
 	}
+	
+	public void postEventsNow(@NonNull final Collection<? extends MaterialEvent> events)
+	{
+		events.forEach(this::postEventNow);
+	}
+
 }

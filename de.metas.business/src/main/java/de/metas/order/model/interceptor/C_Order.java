@@ -1,6 +1,5 @@
 package de.metas.order.model.interceptor;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.callout.annotations.Callout;
@@ -15,12 +14,12 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.IOrderLinePricingConditions;
-import de.metas.order.IOrderPA;
-import de.metas.util.Check;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Services;
 
 /*
@@ -53,7 +52,7 @@ public class C_Order
 
 	private C_Order()
 	{
-	};
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_M_PriceList_ID })
 	public void onPriceListChangeInterceptor(final I_C_Order order)
@@ -74,7 +73,7 @@ public class C_Order
 			return;
 		}
 
-		final I_M_PriceList pl = order.getM_PriceList();
+		final I_M_PriceList pl = Services.get(IPriceListDAO.class).getById(order.getM_PriceList_ID());
 
 		order.setM_PricingSystem_ID(pl.getM_PricingSystem_ID());
 		order.setC_Currency_ID(pl.getC_Currency_ID());
@@ -98,42 +97,42 @@ public class C_Order
 		Services.get(IOrderBL.class).updateAddresses(order);
 	}
 
-	// 04579 Cannot change order's warehouse (2013071510000103)
-	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
-	public void unreserveStock(final I_C_Order order) throws Exception
-	{
-		for (final I_C_OrderLine orderLine : Services.get(IOrderPA.class).retrieveOrderLines(order, I_C_OrderLine.class))
-		{
-			if (orderLine.getQtyReserved().signum() <= 0)
-			{
-				continue; // nothing to do
-			}
-
-			final BigDecimal qtyOrdered = orderLine.getQtyOrdered();
-			final BigDecimal qtyEntered = orderLine.getQtyEntered();
-			final BigDecimal lineNetAmt = orderLine.getLineNetAmt();
-
-			// just setting this one to zero would result in negative reservations in case of (partial) deliveries.
-			orderLine.setQtyOrdered(orderLine.getQtyDelivered());
-			orderLine.setQtyEntered(BigDecimal.ZERO);
-			orderLine.setLineNetAmt(BigDecimal.ZERO);
-
-			// task 08002
-			InterfaceWrapperHelper.setDynAttribute(orderLine, IOrderLineBL.DYNATTR_DoNotRecalculatePrices, Boolean.TRUE);
-
-			InterfaceWrapperHelper.save(orderLine);
-
-			Services.get(IOrderPA.class).reserveStock(orderLine.getC_Order(), orderLine);
-
-			orderLine.setQtyOrdered(qtyOrdered);
-			orderLine.setQtyEntered(qtyEntered);
-			orderLine.setLineNetAmt(lineNetAmt);
-			InterfaceWrapperHelper.save(orderLine);
-
-			// task 08002
-			InterfaceWrapperHelper.setDynAttribute(orderLine, IOrderLineBL.DYNATTR_DoNotRecalculatePrices, Boolean.FALSE);
-		}
-	}
+//	// 04579 Cannot change order's warehouse (2013071510000103)
+//	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
+//	public void unreserveStock(final I_C_Order order) throws Exception
+//	{
+//		for (final I_C_OrderLine orderLine : Services.get(IOrderPA.class).retrieveOrderLines(order, I_C_OrderLine.class))
+//		{
+//			if (orderLine.getQtyReserved().signum() <= 0)
+//			{
+//				continue; // nothing to do
+//			}
+//
+//			final BigDecimal qtyOrdered = orderLine.getQtyOrdered();
+//			final BigDecimal qtyEntered = orderLine.getQtyEntered();
+//			final BigDecimal lineNetAmt = orderLine.getLineNetAmt();
+//
+//			// just setting this one to zero would result in negative reservations in case of (partial) deliveries.
+//			orderLine.setQtyOrdered(orderLine.getQtyDelivered());
+//			orderLine.setQtyEntered(BigDecimal.ZERO);
+//			orderLine.setLineNetAmt(BigDecimal.ZERO);
+//
+//			// task 08002
+//			InterfaceWrapperHelper.setDynAttribute(orderLine, IOrderLineBL.DYNATTR_DoNotRecalculatePrices, Boolean.TRUE);
+//
+//			InterfaceWrapperHelper.save(orderLine);
+//
+//			Services.get(IOrderPA.class).reserveStock(orderLine.getC_Order(), orderLine);
+//
+//			orderLine.setQtyOrdered(qtyOrdered);
+//			orderLine.setQtyEntered(qtyEntered);
+//			orderLine.setLineNetAmt(lineNetAmt);
+//			InterfaceWrapperHelper.save(orderLine);
+//
+//			// task 08002
+//			InterfaceWrapperHelper.setDynAttribute(orderLine, IOrderLineBL.DYNATTR_DoNotRecalculatePrices, Boolean.FALSE);
+//		}
+//	}
 
 	/**
 	 * Updates <code>C_OrderLine.QtyReserved</code> of the given order's lines when the Doctype or DocStatus changes.
@@ -162,11 +161,11 @@ public class C_Order
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
 	public void setDeliveryViaRule(final I_C_Order order) throws Exception
 	{
-		final String deliveryViaRule = Services.get(IOrderBL.class).evaluateOrderDeliveryViaRule(order);
+		final DeliveryViaRule deliveryViaRule = Services.get(IOrderBL.class).evaluateOrderDeliveryViaRule(order);
 
-		if (!Check.isEmpty(deliveryViaRule, true))
+		if (deliveryViaRule != null)
 		{
-			order.setDeliveryViaRule(deliveryViaRule);
+			order.setDeliveryViaRule(deliveryViaRule.getCode());
 		}
 	}
 

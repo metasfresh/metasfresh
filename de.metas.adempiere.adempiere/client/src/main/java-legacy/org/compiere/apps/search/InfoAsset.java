@@ -21,6 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ALayout;
@@ -77,7 +78,9 @@ public class InfoAsset extends Info
 		setStatusDB(Integer.toString(no));
 		//	AutoQuery
 		if (value != null && value.length() > 0)
+		{
 			executeQuery();
+		}
 		p_loadedOK = true;
 		//	Focus
 	//	fieldValue.requestFocus();
@@ -162,7 +165,9 @@ public class InfoAsset extends Info
 		StringBuffer where = new StringBuffer();
 		where.append("a.IsActive='Y'");
 		if (whereClause != null && whereClause.length() > 0)
+		{
 			where.append(" AND ").append(whereClause);
+		}
 		//
 		prepareTable(s_assetLayout, s_assetFROM,
 			where.toString(),
@@ -170,9 +175,13 @@ public class InfoAsset extends Info
 
 		//  Set Value
 		if (value == null)
+		{
 			value = "%";
+		}
 		if (!value.endsWith("%"))
+		{
 			value += "%";
+		}
 		fieldValue.setText(value);
 	}	//	initInfo
 
@@ -191,19 +200,27 @@ public class InfoAsset extends Info
 		//	=> Value
 		String value = fieldValue.getText().toUpperCase();
 		if (!(value.equals("") || value.equals("%")))
+		{
 			sql.append(" AND UPPER(a.Value) LIKE ?");
+		}
 		//	=> Name
 		String name = fieldName.getText().toUpperCase();
 		if (!(name.equals("") || name.equals("%")))
+		{
 			sql.append (" AND UPPER(a.Name) LIKE ?");
+		}
 		//	C_BPartner_ID
 		Integer C_BPartner_ID = (Integer)fBPartner_ID.getValue();
 		if (C_BPartner_ID != null)
+		{
 			sql.append (" AND a.C_BPartner_ID=").append(C_BPartner_ID);
+		}
 		//	M_Product_ID
 		Integer M_Product_ID = (Integer)fProduct_ID.getValue();
 		if (M_Product_ID != null)
+		{
 			sql.append (" AND a.M_Product_ID=").append(M_Product_ID);
+		}
 		//
 		return sql.toString();
 	}	//	getSQLWhere
@@ -225,7 +242,9 @@ public class InfoAsset extends Info
 		if (!(value.equals("") || value.equals("%")))
 		{
 			if (!value.endsWith("%"))
+			{
 				value += "%";
+			}
 			pstmt.setString(index++, value);
 			log.debug("Value: " + value);
 		}
@@ -234,7 +253,9 @@ public class InfoAsset extends Info
 		if (!(name.equals("") || name.equals("%")))
 		{
 			if (!name.endsWith("%"))
+			{
 				name += "%";
+			}
 			pstmt.setString(index++, name);
 			log.debug("Name: " + name);
 		}
@@ -249,7 +270,9 @@ public class InfoAsset extends Info
 	{
 		int row = p_table.getSelectedRow();
 		if (row == -1)
+		{
 			return;
+		}
 
 		//  publish for Callout to read
 		Integer ID = getSelectedRowKey();
@@ -287,11 +310,13 @@ public class InfoAsset extends Info
 		log.info( "InfoAsset.zoom");
 		Integer A_Asset_ID = getSelectedRowKey();
 		if (A_Asset_ID == null)
+		{
 			return;
+		}
 		MQuery query = new MQuery("A_Asset");
 		query.addRestriction("A_Asset_ID", Operator.EQUAL, A_Asset_ID);
 		query.setRecordCount(1);
-		int AD_WindowNo = getAD_Window_ID("A_Asset", true);
+		AdWindowId AD_WindowNo = getAD_Window_ID("A_Asset", true);
 		zoom (AD_WindowNo, query);
 	}	//	zoom
 

@@ -46,12 +46,12 @@ import javax.swing.RepaintManager;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
-import org.adempiere.acct.api.IPostingService;
-import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
 import org.adempiere.model.RecordZoomWindowFinder;
+import org.adempiere.service.ClientId;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.db.CConnection;
 import org.compiere.grid.ed.Calculator;
@@ -69,10 +69,14 @@ import org.compiere.util.Ini;
 import org.compiere.util.SwingUtils;
 import org.slf4j.Logger;
 
+import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
+import de.metas.acct.api.IPostingService;
 import de.metas.adempiere.form.IClientUIInvoker.OnFail;
 import de.metas.cache.CCache;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -257,7 +261,7 @@ public final class AEnv
 		int y = (sSize.height - wSize.height) / 2;
 		if (position == SwingConstants.CENTER)
 		{
-			;
+			
 		}
 		else if (position == SwingConstants.NORTH_WEST)
 		{
@@ -595,7 +599,8 @@ public final class AEnv
 			return;
 		}
 
-		zoom(RecordZoomWindowFinder.newInstance(AD_Table_ID, Record_ID));
+		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(AD_Table_ID);
+		zoom(RecordZoomWindowFinder.newInstance(tableName, Record_ID));
 	}
 
 	/**
@@ -617,14 +622,14 @@ public final class AEnv
 		}
 
 		zoom(RecordZoomWindowFinder.newInstance(TableName, Record_ID)
-				.setSO_Window_ID(AD_Window_ID)
-				.setPO_Window_ID(PO_Window_ID));
+				.soWindowId(AdWindowId.ofRepoIdOrNull(AD_Window_ID))
+				.poWindowId(AdWindowId.ofRepoIdOrNull(PO_Window_ID)));
 	}
 
-	private static final void zoom(final RecordZoomWindowFinder zoomInfo)
+	private static void zoom(final RecordZoomWindowFinder zoomInfo)
 	{
-		final int windowIdToUse = zoomInfo.findAD_Window_ID();
-		if (windowIdToUse <= 0)
+		final AdWindowId windowIdToUse = zoomInfo.findAdWindowId().orElse(null);
+		if (windowIdToUse == null)
 		{
 			log.warn("No AD_Window_ID found to zoom for {}", zoomInfo);
 			return;
@@ -678,8 +683,7 @@ public final class AEnv
 			return;
 		}
 
-		zoom(RecordZoomWindowFinder.newInstance(query, adWindowId));
-
+		zoom(RecordZoomWindowFinder.newInstance(query, AdWindowId.ofRepoIdOrNull(adWindowId)));
 	}
 
 	/**
@@ -698,16 +702,16 @@ public final class AEnv
 
 	/**
 	 *
-	 * @param AD_Window_ID
+	 * @param adWindowId
 	 * @return the found window or <code>null</code>
 	 */
 	// task 05796
-	public static AWindow findInWindowManager(final int AD_Window_ID)
+	public static AWindow findInWindowManager(final AdWindowId adWindowId)
 	{
 		final AMenu mainWindow = AEnv.getAMenu();
 		if (mainWindow != null)
 		{
-			return mainWindow.getWindowManager().find(AD_Window_ID);
+			return mainWindow.getWindowManager().find(adWindowId);
 		}
 		return null;
 	}
@@ -746,14 +750,14 @@ public final class AEnv
 		{
 			s_workflow = Boolean.FALSE;
 			int AD_Table_ID = 645;	// AD_WF_Process
-			if (Env.getUserRolePermissions().isTableAccess(AD_Table_ID, true))
+			if (Env.getUserRolePermissions().isTableAccess(AD_Table_ID, Access.READ))
 			{
 				s_workflow = Boolean.TRUE;
 			}
 			else
 			{
 				AD_Table_ID = 644;	// AD_WF_Activity
-				if (Env.getUserRolePermissions().isTableAccess(AD_Table_ID, true))
+				if (Env.getUserRolePermissions().isTableAccess(AD_Table_ID, Access.READ))
 				{
 					s_workflow = Boolean.TRUE;
 				}
@@ -761,11 +765,12 @@ public final class AEnv
 			// Get Window
 			if (s_workflow.booleanValue())
 			{
-				s_workflow_Window_ID = DB.getSQLValue(null,
-						"SELECT AD_Window_ID FROM AD_Table WHERE AD_Table_ID=?", AD_Table_ID);
-				if (s_workflow_Window_ID == 0)
+				s_workflow_Window_ID = AdWindowId.ofRepoIdOrNull(DB.getSQLValue(
+						ITrx.TRXNAME_None,
+						"SELECT AD_Window_ID FROM AD_Table WHERE AD_Table_ID=?", AD_Table_ID));
+				if (s_workflow_Window_ID == null)
 				{
-					s_workflow_Window_ID = 297;	// fallback HARDCODED
+					s_workflow_Window_ID = AdWindowId.ofRepoId(297);	// fallback HARDCODED
 				}
 			}
 		}
@@ -780,7 +785,7 @@ public final class AEnv
 	 */
 	public static void startWorkflowProcess(final int AD_Table_ID, final int Record_ID)
 	{
-		if (s_workflow_Window_ID == 0)
+		if (s_workflow_Window_ID == null)
 		{
 			return;
 		}
@@ -808,7 +813,7 @@ public final class AEnv
 	/** Workflow Menu */
 	private static Boolean s_workflow = null;
 	/** Workflow Menu */
-	private static int s_workflow_Window_ID = 0;
+	private static AdWindowId s_workflow_Window_ID = null;
 
 	/** Server Re-tries */
 	private static int s_serverTries = 0;
@@ -871,7 +876,7 @@ public final class AEnv
 	}   // getServerVersion
 
 	/** Window Cache */
-	private static CCache<Integer, GridWindowVO> s_windows = new CCache<>("AD_Window", 10);
+	private static CCache<AdWindowId, GridWindowVO> s_windows = new CCache<>("AD_Window", 10);
 
 	/**
 	 * Get Window Model
@@ -881,14 +886,14 @@ public final class AEnv
 	 * @param AD_Menu_ID menu
 	 * @return Model Window Value Object; never returns <code>null</code>
 	 */
-	public static GridWindowVO getMWindowVO(final int WindowNo, final int AD_Window_ID, final int AD_Menu_ID)
+	public static GridWindowVO getMWindowVO(final int WindowNo, final AdWindowId adWindowId, final int AD_Menu_ID)
 	{
 		//
 		// Check cache (if any)
 		GridWindowVO mWindowVO = null;
-		if (AD_Window_ID != 0 && Ini.isCacheWindow())   	// try cache
+		if (adWindowId != null && Ini.isCacheWindow())   	// try cache
 		{
-			mWindowVO = s_windows.get(AD_Window_ID);
+			mWindowVO = s_windows.get(adWindowId);
 			if (mWindowVO != null)
 			{
 				mWindowVO = mWindowVO.clone(WindowNo);
@@ -902,13 +907,13 @@ public final class AEnv
 			mWindowVO = GridWindowVO.builder()
 					.ctx(Env.getCtx())
 					.windowNo(WindowNo)
-					.adWindowId(AD_Window_ID)
+					.adWindowId(adWindowId)
 					.adMenuId(AD_Menu_ID)
 					.loadAllLanguages(false)
 					.applyRolePermissions(true)
 					.build();
 			Check.assumeNotNull(mWindowVO, "mWindowVO not null"); // shall never happen because GridWindowVO.create throws exception if no window found
-			s_windows.put(AD_Window_ID, mWindowVO);
+			s_windows.put(adWindowId, mWindowVO);
 		}   	// from Client
 
 		// Check (remote) context
@@ -950,8 +955,7 @@ public final class AEnv
 	{
 		Services.get(IPostingService.class)
 				.newPostingRequest()
-				.setContext(Env.getCtx(), ITrx.TRXNAME_None)
-				.setAD_Client_ID(AD_Client_ID)
+				.setClientId(ClientId.ofRepoId(AD_Client_ID))
 				.setDocument(AD_Table_ID, Record_ID)
 				.setForce(force)
 				.setPostImmediate(PostImmediate.Yes)
@@ -1018,7 +1022,7 @@ public final class AEnv
 	 * @param parentType
 	 * @return parent component which implements given type or <code>null</code>
 	 */
-	public static final <T> T getParentComponent(@Nullable final Component comp, final Class<T> parentType)
+	public static <T> T getParentComponent(@Nullable final Component comp, final Class<T> parentType)
 	{
 		if (comp == null)
 		{
@@ -1046,7 +1050,7 @@ public final class AEnv
 	 * @param comp
 	 * @return {@link Dialog} or null
 	 */
-	public static final Dialog getDialog(final Component comp)
+	public static Dialog getDialog(final Component comp)
 	{
 		Component c = comp;
 		while (c != null)
@@ -1173,7 +1177,7 @@ public final class AEnv
 	 * @param form
 	 * @return formFrame which was created or null
 	 */
-	public static final FormFrame createForm(final I_AD_Form form)
+	public static FormFrame createForm(final I_AD_Form form)
 	{
 		final FormFrame formFrame = new FormFrame();
 		if (formFrame.openForm(form))

@@ -6,15 +6,19 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_MovementLine;
+import org.compiere.model.I_M_Product;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.api.IInOutMovementBL;
 import de.metas.inout.model.I_M_InOut;
@@ -25,24 +29,24 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.interfaces.I_M_Movement;
+import de.metas.product.IProductActivityProvider;
+import de.metas.product.IProductDAO;
 import de.metas.util.Services;
 
 public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 {
-	private org.adempiere.warehouse.model.I_M_Warehouse warehouseForIssues;
-	private I_M_Locator locatorForIssues;
 
 	@Override
 	public void setup()
 	{
-		warehouseForIssues = InterfaceWrapperHelper.create(ctx, org.adempiere.warehouse.model.I_M_Warehouse.class, ITrx.TRXNAME_None);
+		final I_M_Warehouse warehouseForIssues = InterfaceWrapperHelper.create(ctx, I_M_Warehouse.class, ITrx.TRXNAME_None);
 		warehouseForIssues.setIsIssueWarehouse(true);
 		warehouseForIssues.setName("Warehouse for Issues");
 		warehouseForIssues.setValue("Warehouse for Issues");
 		InterfaceWrapperHelper.save(warehouseForIssues);
+		createLocator(warehouseForIssues);
 
-		locatorForIssues = createLocator(warehouseForIssues);
-
+		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
 	}
 
 	/**
@@ -79,17 +83,18 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		//
 		// Check Schedule's Warehouses
 		Assert.assertEquals("Invalid M_ReceiptSchedule.M_Warehouse_ID",
-				order1.getM_Warehouse(),
-				schedule.getM_Warehouse());
+				order1.getM_Warehouse_ID(),
+				schedule.getM_Warehouse_ID());
 		Assert.assertEquals("Invalid M_ReceiptSchedule.C_BPartner",
-				order1_line1_product1_wh1.getC_BPartner(),
-				schedule.getC_BPartner());
+				order1_line1_product1_wh1.getC_BPartner_ID(),
+				schedule.getC_BPartner_ID());
 		Assert.assertEquals("Invalid M_ReceiptSchedule.M_Warehouse_Override_ID",
-				null, // shall not be set
-				schedule.getM_Warehouse_Override());
+				0, // shall not be set
+				schedule.getM_Warehouse_Override_ID());
+
 		Assert.assertEquals("Invalid M_ReceiptSchedule.M_Warehouse_Dest_ID",
-				order1_line1_product1_wh1.getM_Product().getM_Locator().getM_Warehouse(),
-				schedule.getM_Warehouse_Dest());
+				extractProductWarehouseId(order1_line1_product1_wh1),
+				WarehouseId.ofRepoIdOrNull(schedule.getM_Warehouse_Dest_ID()));
 		// Guard agaist testing error
 		Assert.assertFalse("M_ReceiptSchedule M_Warehouse_ID != M_Warehouse_Dest_ID: " + schedule,
 				schedule.getM_Warehouse_ID() == schedule.getM_Warehouse_Dest_ID());
@@ -109,8 +114,8 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 
 		// Check receipt's warehouse
 		Assert.assertEquals("Invalid M_InOut.M_Warehouse_ID",
-				order1.getM_Warehouse(),
-				receipt.getM_Warehouse());
+				order1.getM_Warehouse_ID(),
+				receipt.getM_Warehouse_ID());
 
 		//
 		// Generate Movement from receipt
@@ -129,14 +134,22 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 				receipt.getM_Warehouse(),
 				movementLine.getM_Locator().getM_Warehouse());
 		Assert.assertEquals("Invalid movement line Locator (to)",
-				schedule.getM_Warehouse_Dest(),
-				movementLine.getM_LocatorTo().getM_Warehouse());
+				schedule.getM_Warehouse_Dest_ID(),
+				movementLine.getM_LocatorTo().getM_Warehouse_ID());
 		// Check Movement Line product & qty
 		Assert.assertEquals("Invalid movement line product (compared with order line's product)",
-				order1_line1_product1_wh1.getM_Product(),
-				movementLine.getM_Product());
+				order1_line1_product1_wh1.getM_Product_ID(),
+				movementLine.getM_Product_ID());
 		Assert.assertThat("Invalid movement line Qty (compared with order line's qty)",
 				movementLine.getMovementQty(), // actual
 				Matchers.comparesEqualTo(order1_line1_product1_wh1.getQtyOrdered()));
+	}
+
+	private WarehouseId extractProductWarehouseId(final I_C_OrderLine orderLine)
+	{
+		final I_M_Product product = Services.get(IProductDAO.class).getById(orderLine.getM_Product_ID());
+
+		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+		return warehousesRepo.getWarehouseIdByLocatorRepoId(product.getM_Locator_ID());
 	}
 }

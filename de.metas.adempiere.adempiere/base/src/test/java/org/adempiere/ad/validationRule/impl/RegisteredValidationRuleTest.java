@@ -35,12 +35,12 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -111,7 +111,7 @@ public class RegisteredValidationRuleTest
 	/**
 	 * This test is mocking the general validation rule for the table M_Warehouse, which applies to all the columns that point to the table M_Warehouse.
 	 * This validation rule has an exception for the M_ReceiptSchedule.M_Warehouse_Dest_ID.
-	 * 
+	 *
 	 * In this test, the validation Rule is build built for M_ReceiptSchedule.M_Warehouse_Dest_ID, which fits the exception, so the validation rule should be not applied
 	 */
 	@Test
@@ -135,7 +135,7 @@ public class RegisteredValidationRuleTest
 		InterfaceWrapperHelper.save(rs_Warehouse_Dest_ID);
 
 		Services.get(IValidationRuleFactory.class).registerTableValidationRule(M_Warehouse.getTableName(), ValRuleTest.instance);
-		Services.get(IValidationRuleFactory.class).registerValidationRuleException(ValRuleTest.instance, M_ReceiptSchedule.getTableName(), rs_Warehouse_Dest_ID.getColumnName());
+		Services.get(IValidationRuleFactory.class).registerValidationRuleException(ValRuleTest.instance, M_ReceiptSchedule.getTableName(), rs_Warehouse_Dest_ID.getColumnName(), "test");
 
 		final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(M_Warehouse.getTableName(), 0, M_ReceiptSchedule.getTableName(), rs_Warehouse_Dest_ID.getColumnName());
 
@@ -145,14 +145,13 @@ public class RegisteredValidationRuleTest
 	}
 
 	/**
-	 * /**
+	 *
 	 * This test is mocking the general validation rule for the table M_Warehouse, which applies to all the columns that point to the table M_Warehouse.
 	 * This validation rule has an exception for the M_ReceiptSchedule.M_Warehouse_Dest_ID.
-	 * 
+	 *
 	 * In this test, the validation Rule is build built for M_ReceiptSchedule.M_Warehouse_Dest_ID, which fits the exception, so the validation rule should be not applied
 	 * The column M_ReceiptSchedule.M_Warehouse_Dest_ID has an SQL validation rule. This one will be applied so the final ValidationRule will be of type SQL
 	 */
-
 	@Test
 	public void registerValidationRuleException_WithExceptions_ExceptionTableAndColumn_ExistingValRuleInDatabase()
 	{
@@ -177,7 +176,7 @@ public class RegisteredValidationRuleTest
 		InterfaceWrapperHelper.save(rs_Warehouse_Dest_ID);
 
 		Services.get(IValidationRuleFactory.class).registerTableValidationRule(M_Warehouse.getTableName(), ValRuleTest.instance);
-		Services.get(IValidationRuleFactory.class).registerValidationRuleException(ValRuleTest.instance, M_ReceiptSchedule.getTableName(), rs_Warehouse_Dest_ID.getColumnName());
+		Services.get(IValidationRuleFactory.class).registerValidationRuleException(ValRuleTest.instance, M_ReceiptSchedule.getTableName(), rs_Warehouse_Dest_ID.getColumnName(), "test");
 
 		final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(M_Warehouse.getTableName(), databaseValRule.getAD_Val_Rule_ID(), M_ReceiptSchedule.getTableName(), rs_Warehouse_Dest_ID.getColumnName());
 
@@ -189,7 +188,7 @@ public class RegisteredValidationRuleTest
 	/**
 	 * This test is mocking the general validation rule for the table M_Warehouse, which applies to all the columns that point to the table M_Warehouse.
 	 * This validation rule has an exception for the M_ReceiptSchedule.M_Warehouse_Dest_ID.
-	 * 
+	 *
 	 * In this test, the validation Rule is build built for M_InOut.M_Warehouse_ID, which doesn't fit the exception, so the validation rule should be applied
 	 */
 	@Test
@@ -213,11 +212,11 @@ public class RegisteredValidationRuleTest
 		InterfaceWrapperHelper.save(rs_Warehouse_Dest_ID);
 
 		Services.get(IValidationRuleFactory.class).registerTableValidationRule(M_Warehouse.getTableName(), ValRuleTest.instance);
-		Services.get(IValidationRuleFactory.class).registerValidationRuleException(ValRuleTest.instance, M_ReceiptSchedule.getTableName(), rs_Warehouse_Dest_ID.getColumnName());
+		Services.get(IValidationRuleFactory.class).registerValidationRuleException(ValRuleTest.instance, M_ReceiptSchedule.getTableName(), rs_Warehouse_Dest_ID.getColumnName(), "test");
 
 		final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(M_Warehouse.getTableName(), 0, M_InOut.getTableName(), inout_M_Warehouse_ID.getColumnName());
 
-		final ValueNamePair tableAndColumnException = new ValueNamePair(M_ReceiptSchedule.getTableName(), rs_Warehouse_Dest_ID.getColumnName());
+		final ValueNamePair tableAndColumnException = ValueNamePair.of(M_ReceiptSchedule.getTableName(), rs_Warehouse_Dest_ID.getColumnName(), "test");
 
 		assertThat(validationRule).isInstanceOf(ValRuleTest.class);
 		assertThat(validationRule.getExceptionTableAndColumns()).containsOnly(tableAndColumnException);

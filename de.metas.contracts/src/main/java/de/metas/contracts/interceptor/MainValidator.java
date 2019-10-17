@@ -26,7 +26,6 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_OrderLine;
@@ -46,6 +45,7 @@ import de.metas.contracts.subscription.invoicecandidatehandler.ExcludeSubscripti
 import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.inout.api.IMaterialBalanceConfigBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
@@ -64,7 +64,7 @@ public class MainValidator extends AbstractModuleInterceptor
 	{
 		super.onInit(engine, client);
 
-		if (!Ini.isClient())
+		if (!Ini.isSwingClient())
 		{
 			ensureDataDestExists();
 		}

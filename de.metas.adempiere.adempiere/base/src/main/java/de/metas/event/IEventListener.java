@@ -29,6 +29,7 @@ package de.metas.event;
  * @author tsa
  *
  */
+@FunctionalInterface
 public interface IEventListener
 {
 	/**

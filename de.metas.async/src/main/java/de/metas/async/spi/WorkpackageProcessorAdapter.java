@@ -1,12 +1,11 @@
 package de.metas.async.spi;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.api.IParams;
-
-import com.google.common.base.Optional;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_Element;
@@ -14,7 +13,9 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
+import de.metas.lock.exceptions.LockFailedException;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 
 /**
@@ -75,12 +76,22 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 		final String elementsLockOwnerName = getParameters().getParameterAsString(PARAMETERNAME_ElementsLockOwner);
 		if (Check.isEmpty(elementsLockOwnerName, true))
 		{
-			return Optional.absent(); // no lock was created for this workpackage
+			return Optional.empty(); // no lock was created for this workpackage
 		}
 
 		final LockOwner elementsLockOwner = LockOwner.forOwnerName(elementsLockOwnerName);
-		return Optional.fromNullable(
-				Services.get(ILockManager.class).getExistingLockForOwner(elementsLockOwner));
+		try
+		{
+			final ILock existingLockForOwner = Services.get(ILockManager.class).getExistingLockForOwner(elementsLockOwner);
+			return Optional.of(existingLockForOwner);
+		}
+		catch (final LockFailedException e)
+		{
+			// this can happen, if e.g. there was a restart, or if the WP was flaged as error once
+			Loggables.addLog("Missing lock for ownerName={}; was probably cleaned up meanwhile", elementsLockOwnerName);
+			return Optional.empty();
+		}
+
 	}
 
 	/**
@@ -99,6 +110,7 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 
 	/**
 	 * retrieves all active POs, even the ones that are caught in other packages
+	 *
 	 * @param modelType
 	 * @return
 	 */
@@ -114,6 +126,7 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 
 	/**
 	 * retrieves all active PO's IDs, even the ones that are caught in other packages
+	 *
 	 * @return
 	 */
 	public final Set<Integer> retrieveAllItemIds()

@@ -70,7 +70,7 @@ de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Customs_Page_Header($P{RE
 			<staticText>
 				<reportElement key="textField-6" x="37" y="0" width="120" height="13" forecolor="#000000" uuid="ae312a34-0cb1-4eec-b253-ed05d342c0af"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Hausverzollung]]></text>
 			</staticText>

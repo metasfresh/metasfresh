@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import static java.math.BigDecimal.ZERO;
+
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -24,7 +26,6 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 
 /**
@@ -52,10 +53,10 @@ public class MAllocationLine extends X_C_AllocationLine
 		if (C_AllocationLine_ID == 0)
 		{
 		//	setC_AllocationHdr_ID (0);
-			setAmount (Env.ZERO);
-			setDiscountAmt (Env.ZERO);
-			setWriteOffAmt (Env.ZERO);
-			setOverUnderAmt(Env.ZERO);
+			setAmount (ZERO);
+			setDiscountAmt (ZERO);
+			setWriteOffAmt (ZERO);
+			setOverUnderAmt(ZERO);
 		}
 	}	//	MAllocationLine
 
@@ -96,9 +97,9 @@ public class MAllocationLine extends X_C_AllocationLine
 	{
 		this (parent);
 		setAmount (Amount);
-		setDiscountAmt (DiscountAmt == null ? Env.ZERO : DiscountAmt);
-		setWriteOffAmt (WriteOffAmt == null ? Env.ZERO : WriteOffAmt);
-		setOverUnderAmt (OverUnderAmt == null ? Env.ZERO : OverUnderAmt);
+		setDiscountAmt (DiscountAmt == null ? ZERO : DiscountAmt);
+		setWriteOffAmt (WriteOffAmt == null ? ZERO : WriteOffAmt);
+		setOverUnderAmt (OverUnderAmt == null ? ZERO : OverUnderAmt);
 	}	//	MAllocationLine
 
 	/**	Invoice info			*/
@@ -193,7 +194,7 @@ public class MAllocationLine extends X_C_AllocationLine
 		{
 			throw new AdempiereException("@ParentComplete@ @C_AllocationLine_ID@");
 		}
-		
+
 		// allow editing the BPartner/Invoice fields (see https://github.com/metasfresh/metasfresh/issues/4326)
 //		if (!newRecord
 //			&& (is_ValueChanged("C_BPartner_ID") || is_ValueChanged("C_Invoice_ID")))

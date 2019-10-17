@@ -92,7 +92,7 @@ public class ModelCacheService implements IModelCacheService
 			}
 			else
 			{
-				// return our diabled cache config
+				// return our disabled cache config
 				return cacheConfigDisabled;
 			}
 		}
@@ -222,6 +222,12 @@ public class ModelCacheService implements IModelCacheService
 		if (logger.isTraceEnabled())
 		{
 			logger.trace("Cache {} (inTrx={}) - tableName/recordId={}/{}", hit ? "HIT" : "MISS", inTransaction, tableName, recordId);
+		}
+
+		// Make sure the trls are loaded before copying it, else trls will be loaded each time
+		if(poCached != null)
+		{
+			poCached.get_ModelTranslationMap();
 		}
 
 		// each caller gets their own copy because in case they loaded the PO from database, they would also have gotten an instance of their own.

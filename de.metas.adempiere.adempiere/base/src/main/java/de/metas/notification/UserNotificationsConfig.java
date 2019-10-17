@@ -7,9 +7,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import org.adempiere.service.ClientId;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
+import de.metas.email.EMailAddress;
+import de.metas.organization.OrgId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -43,44 +48,42 @@ import lombok.Value;
 @Value
 public class UserNotificationsConfig
 {
-	private int userId;
+	private UserId userId;
 	private String userADLanguage; // might be null
-	private int adClientId;
-	private int adOrgId;
+	private ClientId clientId;
+	private OrgId orgId;
 
 	@Getter(AccessLevel.NONE)
 	private final ImmutableList<UserNotificationsGroup> userNotificationGroups; // needed for toBuilder()
 	private Map<NotificationGroupName, UserNotificationsGroup> userNotificationGroupsByInternalName;
 	private final UserNotificationsGroup defaults;
 
-	private String email;
-	private int userInChargeId;
+	private EMailAddress email;
+	private UserId userInChargeId;
 
 	@Builder(toBuilder = true)
 	private UserNotificationsConfig(
-			@NonNull final Integer userId,
+			@NonNull final UserId userId,
 			final String userADLanguage,
-			final int adClientId,
-			final int adOrgId,
+			final ClientId clientId,
+			final OrgId orgId,
 			@NonNull @Singular final Collection<UserNotificationsGroup> userNotificationGroups,
 			@NonNull final UserNotificationsGroup defaults,
-			final String email,
-			final int userInChargeId)
+			final EMailAddress email,
+			final UserId userInChargeId)
 	{
-		Check.assumeGreaterOrEqualToZero(userId, "adUserId");
-
 		this.userId = userId;
 		this.userADLanguage = Check.isEmpty(userADLanguage) ? null : userADLanguage;
 
-		this.adClientId = adClientId >= 0 ? adClientId : 0;
-		this.adOrgId = adOrgId >= 0 ? adOrgId : 0;
+		this.clientId = clientId != null ? clientId : ClientId.SYSTEM;
+		this.orgId = orgId != null ? orgId : OrgId.ANY;
 
 		this.userNotificationGroups = ImmutableList.copyOf(userNotificationGroups);
 		this.userNotificationGroupsByInternalName = Maps.uniqueIndex(userNotificationGroups, UserNotificationsGroup::getGroupInternalName);
 		this.defaults = defaults;
 
-		this.email = Check.isEmpty(email, true) ? null : email.trim();
-		this.userInChargeId = userInChargeId > 0 ? userInChargeId : -1;
+		this.email = email;
+		this.userInChargeId = userInChargeId;
 	}
 
 	public UserNotificationsGroup getGroupByName(@NonNull final NotificationGroupName groupName)
@@ -96,7 +99,7 @@ public class UserNotificationsConfig
 
 	public boolean isUserInChargeSet()
 	{
-		return userInChargeId > 0;
+		return userInChargeId != null;
 	}
 
 	public UserNotificationsConfig deriveWithNotificationTypes(final Set<NotificationType> notificationTypes)

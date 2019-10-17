@@ -7,6 +7,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
@@ -31,18 +34,18 @@ import de.metas.util.Check;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-/*package*/ final class GridFieldVOsLoader
+/* package */ final class GridFieldVOsLoader
 {
-	public static final GridFieldVOsLoader newInstance()
+	public static GridFieldVOsLoader newInstance()
 	{
 		return new GridFieldVOsLoader();
 	}
@@ -52,15 +55,15 @@ import de.metas.util.Check;
 	private Properties _ctx;
 	private int _windowNo;
 	private int _tabNo;
-	private int _adWindowId;
+	private AdWindowId _adWindowId;
 	private int _adTabId;
 	private int _templateTabId;
 	private boolean _tabReadOnly;
 	private boolean _loadAllLanguages = false;
+	private boolean _applyRolePermissions = true;
 
 	private GridFieldVOsLoader()
 	{
-		super();
 	}
 
 	@Override
@@ -81,11 +84,12 @@ import de.metas.util.Check;
 		final Properties ctx = getCtx();
 		final int windowNo = getWindowNo();
 		final int tabNo = getTabNo();
-		final int AD_Window_ID = getAD_Window_ID();
+		final AdWindowId AD_Window_ID = getAD_Window_ID();
 		final int adTabId = getAD_Tab_ID();
 		final int templateTabId = getTemplateTabIdEffective();
 		final boolean tabReadOnly = isTabReadOnly();
 		final boolean loadAllLanguages = isLoadAllLanguages();
+		final boolean applyRolePermissions = isApplyRolePermissions();
 
 		final List<Object> sqlParams = new ArrayList<>();
 		final String sql = GridFieldVO.getSQL(ctx, templateTabId, loadAllLanguages, sqlParams);
@@ -112,6 +116,7 @@ import de.metas.util.Check;
 							adTabId,
 							tabReadOnly,
 							loadAllLanguages,
+							applyRolePermissions,
 							rs);
 					if (field == null)
 					{
@@ -176,13 +181,13 @@ import de.metas.util.Check;
 		return _tabNo;
 	}
 
-	public GridFieldVOsLoader setAD_Window_ID(final int AD_Window_ID)
+	public GridFieldVOsLoader setAdWindowId(@Nullable final AdWindowId adWindowId)
 	{
-		_adWindowId = AD_Window_ID;
+		_adWindowId = adWindowId;
 		return this;
 	}
 
-	private int getAD_Window_ID()
+	private AdWindowId getAD_Window_ID()
 	{
 		return _adWindowId;
 	}
@@ -192,7 +197,7 @@ import de.metas.util.Check;
 		_adTabId = AD_Tab_ID;
 		return this;
 	}
-	
+
 	public GridFieldVOsLoader setTemplateTabId(int templateTabId)
 	{
 		this._templateTabId = templateTabId;
@@ -203,7 +208,7 @@ import de.metas.util.Check;
 	{
 		return _adTabId;
 	}
-	
+
 	private int getTemplateTabIdEffective()
 	{
 		return _templateTabId > 0 ? _templateTabId : getAD_Tab_ID();
@@ -229,5 +234,16 @@ import de.metas.util.Check;
 	private boolean isLoadAllLanguages()
 	{
 		return _loadAllLanguages;
+	}
+
+	public GridFieldVOsLoader setApplyRolePermissions(final boolean applyRolePermissions)
+	{
+		this._applyRolePermissions = applyRolePermissions;
+		return this;
+	}
+
+	private boolean isApplyRolePermissions()
+	{
+		return _applyRolePermissions;
 	}
 }

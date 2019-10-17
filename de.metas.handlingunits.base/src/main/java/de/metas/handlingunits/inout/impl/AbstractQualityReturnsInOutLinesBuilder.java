@@ -1,5 +1,7 @@
 package de.metas.handlingunits.inout.impl;
 
+import lombok.NonNull;
+
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -29,7 +31,6 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -127,8 +128,8 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 
 		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(ctxAware);
 
-		final I_C_UOM productUOM = productBL.getStockingUOM(productId);
-		final BigDecimal qtyToMoveTotal = productStorage.getQty(productUOM).getAsBigDecimal();
+		final I_C_UOM productUOM = productBL.getStockUOM(productId);
+		final BigDecimal qtyToMoveTotal = productStorage.getQty(productUOM).toBigDecimal();
 
 		final BigDecimal qualityDiscountPerc = huAttributesBL.getQualityDiscountPercent(productStorage.getM_HU());
 		final BigDecimal qtyToMoveInDispute = qtyToMoveTotal.multiply(qualityDiscountPerc);
@@ -180,7 +181,14 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 			final I_M_HU luHU = handlingUnitsBL.getLoadingUnitHU(hu);
 			final I_M_HU tuHU = handlingUnitsBL.getTransportUnitHU(hu);
 
-			huAssignmentBL.createTradingUnitDerivedAssignmentBuilder(InterfaceWrapperHelper.getCtx(hu), inOutLine, huTopLevel, luHU, tuHU, trxName)
+			huAssignmentBL
+					.createTradingUnitDerivedAssignmentBuilder(
+							InterfaceWrapperHelper.getCtx(hu),
+							inOutLine,
+							huTopLevel,
+							luHU,
+							tuHU,
+							trxName)
 					.build();
 
 			// mark hu as shipped ( if vendor return) or Active (if customer return)
@@ -232,9 +240,9 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 		newInOutLine.setAD_Org_ID(inout.getAD_Org_ID());
 		newInOutLine.setM_InOut_ID(inout.getM_InOut_ID());
 
-		newInOutLine.setM_Product(originInOutLine.getM_Product());
+		newInOutLine.setM_Product_ID(originInOutLine.getM_Product_ID());
 
-		newInOutLine.setC_UOM(originInOutLine.getC_UOM());
+		newInOutLine.setC_UOM_ID(originInOutLine.getC_UOM_ID());
 
 		newInOutLine.setReturn_Origin_InOutLine(originInOutLine);
 

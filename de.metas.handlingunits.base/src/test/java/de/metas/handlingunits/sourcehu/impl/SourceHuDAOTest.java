@@ -131,13 +131,13 @@ public class SourceHuDAOTest
 	{
 		final I_M_HU hu = newInstance(I_M_HU.class);
 		hu.setHUStatus(X_M_HU.HUSTATUS_Active);
-		hu.setM_Locator(locator);
+		hu.setM_Locator_ID(locator != null ? locator.getM_Locator_ID() : -1);
 		save(hu);
 		POJOWrapper.setInstanceName(hu, instanceName);
 
 		final I_M_HU_Storage hu_storage = newInstance(I_M_HU_Storage.class);
 		hu_storage.setM_HU(hu);
-		hu_storage.setM_Product(product);
+		hu_storage.setM_Product_ID(product.getM_Product_ID());
 		save(hu_storage);
 
 		return hu;

@@ -9,9 +9,11 @@ import org.compiere.util.ValueNamePair;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import lombok.NonNull;
+
 /**
  * Lookup Validation Rule Model
- * 
+ *
  * NOTE to developer: all implementations shall be <b>stateless</b>.
  *
  * @author tsa
@@ -36,7 +38,7 @@ public interface IValidationRule
 
 	/**
 	 * Returns a set of parameters on which this validation rule depends.
-	 * 
+	 *
 	 * Actually it's a concatenation of:
 	 * <ul>
 	 * <li>{@link #getPrefilterWhereClause()}'s parameters
@@ -44,7 +46,7 @@ public interface IValidationRule
 	 * </ul>
 	 *
 	 * It is assumed that the parameters set is static and not change over time.
-	 * 
+	 *
 	 * @return set of parameter names
 	 */
 	Set<String> getAllParameters();
@@ -64,17 +66,16 @@ public interface IValidationRule
 
 	/**
 	 * Specify for which table and column pair this validation rule shall not apply
-	 * 
-	 * @param tableName
-	 * @param columnName
+	 *
+	 * @param description may be null
 	 */
-	default void registerException(final String tableName, final String columnName)
+	default void registerException(@NonNull final String tableName, @NonNull final String columnName, final String description)
 	{
 		throw new UnsupportedOperationException("Class " + getClass().getName() + " does not support registering exceptions");
 	}
 
 	/**
-	 * 
+	 *
 	 * @return a list containing all the table+column pairs for which this validation rule shall not be applied
 	 */
 	default List<ValueNamePair> getExceptionTableAndColumns()

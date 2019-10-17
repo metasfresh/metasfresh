@@ -1,38 +1,20 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.eevolution.model;
 
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.util.Properties;
-import org.compiere.model.*;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Model for PP_Product_BOM
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_PP_Product_BOM extends PO implements I_PP_Product_BOM, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Product_BOM, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = 1794949249L;
 
     /** Standard Constructor */
     public X_PP_Product_BOM (Properties ctx, int PP_Product_BOM_ID, String trxName)
@@ -40,11 +22,11 @@ public class X_PP_Product_BOM extends PO implements I_PP_Product_BOM, I_Persiste
       super (ctx, PP_Product_BOM_ID, trxName);
       /** if (PP_Product_BOM_ID == 0)
         {
+			setC_UOM_ID (0);
 			setM_Product_ID (0);
 			setName (null);
 			setPP_Product_BOM_ID (0);
-			setValidFrom (new Timestamp( System.currentTimeMillis() ));
-// @#Date@
+			setValidFrom (new Timestamp( System.currentTimeMillis() )); // @#Date@
 			setValue (null);
         } */
     }
@@ -55,29 +37,19 @@ public class X_PP_Product_BOM extends PO implements I_PP_Product_BOM, I_Persiste
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 3 - Client - Org 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_PP_Product_BOM[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
-	/** BOMType AD_Reference_ID=347 */
+	/** 
+	 * BOMType AD_Reference_ID=347
+	 * Reference name: M_BOM Type
+	 */
 	public static final int BOMTYPE_AD_Reference_ID=347;
 	/** Current Active = A */
 	public static final String BOMTYPE_CurrentActive = "A";
@@ -89,33 +61,38 @@ public class X_PP_Product_BOM extends PO implements I_PP_Product_BOM, I_Persiste
 	public static final String BOMTYPE_PreviousSpare = "S";
 	/** Future = F */
 	public static final String BOMTYPE_Future = "F";
-	/** Maintenance = M */
-	public static final String BOMTYPE_Maintenance = "M";
+	/** Verwaltung = M */
+	public static final String BOMTYPE_Verwaltung = "M";
 	/** Repair = R */
 	public static final String BOMTYPE_Repair = "R";
 	/** Product Configure = C */
 	public static final String BOMTYPE_ProductConfigure = "C";
 	/** Make-To-Kit = K */
 	public static final String BOMTYPE_Make_To_Kit = "K";
-	/** Set BOM Type.
+	/** Set Stücklisten-Zugehörigkeit.
 		@param BOMType 
 		Type of BOM
 	  */
-	public void setBOMType (String BOMType)
+	@Override
+	public void setBOMType (java.lang.String BOMType)
 	{
 
 		set_Value (COLUMNNAME_BOMType, BOMType);
 	}
 
-	/** Get BOM Type.
+	/** Get Stücklisten-Zugehörigkeit.
 		@return Type of BOM
 	  */
-	public String getBOMType () 
+	@Override
+	public java.lang.String getBOMType () 
 	{
-		return (String)get_Value(COLUMNNAME_BOMType);
+		return (java.lang.String)get_Value(COLUMNNAME_BOMType);
 	}
 
-	/** BOMUse AD_Reference_ID=348 */
+	/** 
+	 * BOMUse AD_Reference_ID=348
+	 * Reference name: PP_Product_BOM_BOMUse
+	 */
 	public static final int BOMUSE_AD_Reference_ID=348;
 	/** Master = A */
 	public static final String BOMUSE_Master = "A";
@@ -131,7 +108,8 @@ public class X_PP_Product_BOM extends PO implements I_PP_Product_BOM, I_Persiste
 		@param BOMUse 
 		The use of the Bill of Material
 	  */
-	public void setBOMUse (String BOMUse)
+	@Override
+	public void setBOMUse (java.lang.String BOMUse)
 	{
 
 		set_Value (COLUMNNAME_BOMUse, BOMUse);
@@ -140,37 +118,29 @@ public class X_PP_Product_BOM extends PO implements I_PP_Product_BOM, I_Persiste
 	/** Get BOM Use.
 		@return The use of the Bill of Material
 	  */
-	public String getBOMUse () 
+	@Override
+	public java.lang.String getBOMUse () 
 	{
-		return (String)get_Value(COLUMNNAME_BOMUse);
+		return (java.lang.String)get_Value(COLUMNNAME_BOMUse);
 	}
 
-	/** Set Copy From.
-		@param CopyFrom 
-		Copy From Record
-	  */
-	public void setCopyFrom (String CopyFrom)
+	@Override
+	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
 	{
-		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
+		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
 	}
 
-	/** Get Copy From.
-		@return Copy From Record
-	  */
-	public String getCopyFrom () 
+	@Override
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
 	{
-		return (String)get_Value(COLUMNNAME_CopyFrom);
+		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
 	}
 
-	public I_C_UOM getC_UOM() throws RuntimeException
-    {
-		return (I_C_UOM)MTable.get(getCtx(), I_C_UOM.Table_Name)
-			.getPO(getC_UOM_ID(), get_TrxName());	}
-
-	/** Set UOM.
+	/** Set Maßeinheit.
 		@param C_UOM_ID 
 		Unit of Measure
 	  */
+	@Override
 	public void setC_UOM_ID (int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
@@ -179,9 +149,10 @@ public class X_PP_Product_BOM extends PO implements I_PP_Product_BOM, I_Persiste
 			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
 	}
 
-	/** Get UOM.
+	/** Get Maßeinheit.
 		@return Unit of Measure
 	  */
+	@Override
 	public int getC_UOM_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
@@ -190,66 +161,96 @@ public class X_PP_Product_BOM extends PO implements I_PP_Product_BOM, I_Persiste
 		return ii.intValue();
 	}
 
-	/** Set Description.
-		@param Description 
-		Optional short description of the record
+	/** Set Copy From.
+		@param CopyFrom 
+		Copy From Record
 	  */
-	public void setDescription (String Description)
+	@Override
+	public void setCopyFrom (java.lang.String CopyFrom)
+	{
+		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
+	}
+
+	/** Get Copy From.
+		@return Copy From Record
+	  */
+	@Override
+	public java.lang.String getCopyFrom () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CopyFrom);
+	}
+
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Description.
-		@return Optional short description of the record
-	  */
-	public String getDescription () 
+	/** Get Beschreibung.
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
 	{
-		return (String)get_Value(COLUMNNAME_Description);
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** Set Document No.
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
-	public void setDocumentNo (String DocumentNo)
+	@Override
+	public void setDocumentNo (java.lang.String DocumentNo)
 	{
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Document No.
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
-	public String getDocumentNo () 
+	@Override
+	public java.lang.String getDocumentNo () 
 	{
-		return (String)get_Value(COLUMNNAME_DocumentNo);
+		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
 
-	/** Set Comment/Help.
+	/** Set Kommentar/Hilfe.
 		@param Help 
 		Comment or Hint
 	  */
-	public void setHelp (String Help)
+	@Override
+	public void setHelp (java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}
 
-	/** Get Comment/Help.
+	/** Get Kommentar/Hilfe.
 		@return Comment or Hint
 	  */
-	public String getHelp () 
+	@Override
+	public java.lang.String getHelp () 
 	{
-		return (String)get_Value(COLUMNNAME_Help);
+		return (java.lang.String)get_Value(COLUMNNAME_Help);
 	}
 
-	public I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
-    {
-		return (I_M_AttributeSetInstance)MTable.get(getCtx(), I_M_AttributeSetInstance.Table_Name)
-			.getPO(getM_AttributeSetInstance_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
+	}
 
-	/** Set Attribute Set Instance.
+	@Override
+	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	{
+		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
+	}
+
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Product Attribute Set Instance
+		Merkmals Ausprägungen zum Produkt
 	  */
+	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
 	{
 		if (M_AttributeSetInstance_ID < 0) 
@@ -258,9 +259,10 @@ public class X_PP_Product_BOM extends PO implements I_PP_Product_BOM, I_Persiste
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Attribute Set Instance.
-		@return Product Attribute Set Instance
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
+	@Override
 	public int getM_AttributeSetInstance_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
@@ -269,15 +271,23 @@ public class X_PP_Product_BOM extends PO implements I_PP_Product_BOM, I_Persiste
 		return ii.intValue();
 	}
 
-	public I_M_ChangeNotice getM_ChangeNotice() throws RuntimeException
-    {
-		return (I_M_ChangeNotice)MTable.get(getCtx(), I_M_ChangeNotice.Table_Name)
-			.getPO(getM_ChangeNotice_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_ChangeNotice getM_ChangeNotice() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_ChangeNotice_ID, org.compiere.model.I_M_ChangeNotice.class);
+	}
 
-	/** Set Change Notice.
+	@Override
+	public void setM_ChangeNotice(org.compiere.model.I_M_ChangeNotice M_ChangeNotice)
+	{
+		set_ValueFromPO(COLUMNNAME_M_ChangeNotice_ID, org.compiere.model.I_M_ChangeNotice.class, M_ChangeNotice);
+	}
+
+	/** Set Änderungsmeldung.
 		@param M_ChangeNotice_ID 
 		Bill of Materials (Engineering) Change Notice (Version)
 	  */
+	@Override
 	public void setM_ChangeNotice_ID (int M_ChangeNotice_ID)
 	{
 		if (M_ChangeNotice_ID < 1) 
@@ -286,9 +296,10 @@ public class X_PP_Product_BOM extends PO implements I_PP_Product_BOM, I_Persiste
 			set_Value (COLUMNNAME_M_ChangeNotice_ID, Integer.valueOf(M_ChangeNotice_ID));
 	}
 
-	/** Get Change Notice.
+	/** Get Änderungsmeldung.
 		@return Bill of Materials (Engineering) Change Notice (Version)
 	  */
+	@Override
 	public int getM_ChangeNotice_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_ChangeNotice_ID);
@@ -297,15 +308,23 @@ public class X_PP_Product_BOM extends PO implements I_PP_Product_BOM, I_Persiste
 		return ii.intValue();
 	}
 
-	public I_M_Product getM_Product() throws RuntimeException
-    {
-		return (I_M_Product)MTable.get(getCtx(), I_M_Product.Table_Name)
-			.getPO(getM_Product_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+	}
 
-	/** Set Product.
+	@Override
+	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+	}
+
+	/** Set Produkt.
 		@param M_Product_ID 
-		Product, Service, Item
+		Produkt, Leistung, Artikel
 	  */
+	@Override
 	public void setM_Product_ID (int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
@@ -314,9 +333,10 @@ public class X_PP_Product_BOM extends PO implements I_PP_Product_BOM, I_Persiste
 			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
 	}
 
-	/** Get Product.
-		@return Product, Service, Item
+	/** Get Produkt.
+		@return Produkt, Leistung, Artikel
 	  */
+	@Override
 	public int getM_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
@@ -326,26 +346,26 @@ public class X_PP_Product_BOM extends PO implements I_PP_Product_BOM, I_Persiste
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
-	public void setName (String Name)
+		@param Name Name	  */
+	@Override
+	public void setName (java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
-	public String getName () 
+		@return Name	  */
+	@Override
+	public java.lang.String getName () 
 	{
-		return (String)get_Value(COLUMNNAME_Name);
+		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
 	/** Set BOM & Formula.
 		@param PP_Product_BOM_ID 
 		BOM & Formula
 	  */
+	@Override
 	public void setPP_Product_BOM_ID (int PP_Product_BOM_ID)
 	{
 		if (PP_Product_BOM_ID < 1) 
@@ -357,6 +377,7 @@ public class X_PP_Product_BOM extends PO implements I_PP_Product_BOM, I_Persiste
 	/** Get BOM & Formula.
 		@return BOM & Formula
 	  */
+	@Override
 	public int getPP_Product_BOM_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Product_BOM_ID);
@@ -365,15 +386,17 @@ public class X_PP_Product_BOM extends PO implements I_PP_Product_BOM, I_Persiste
 		return ii.intValue();
 	}
 
-	/** Set Process Now.
-		@param Processing Process Now	  */
+	/** Set Verarbeiten.
+		@param Processing Verarbeiten	  */
+	@Override
 	public void setProcessing (boolean Processing)
 	{
 		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
 	}
 
-	/** Get Process Now.
-		@return Process Now	  */
+	/** Get Verarbeiten.
+		@return Verarbeiten	  */
+	@Override
 	public boolean isProcessing () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processing);
@@ -388,74 +411,108 @@ public class X_PP_Product_BOM extends PO implements I_PP_Product_BOM, I_Persiste
 
 	/** Set Revision.
 		@param Revision Revision	  */
-	public void setRevision (String Revision)
+	@Override
+	public void setRevision (java.lang.String Revision)
 	{
 		set_Value (COLUMNNAME_Revision, Revision);
 	}
 
 	/** Get Revision.
 		@return Revision	  */
-	public String getRevision () 
+	@Override
+	public java.lang.String getRevision () 
 	{
-		return (String)get_Value(COLUMNNAME_Revision);
+		return (java.lang.String)get_Value(COLUMNNAME_Revision);
 	}
 
-	/** Set Valid from.
+	@Override
+	public org.compiere.model.I_AD_Sequence getSerialNo_Sequence() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_SerialNo_Sequence_ID, org.compiere.model.I_AD_Sequence.class);
+	}
+
+	@Override
+	public void setSerialNo_Sequence(org.compiere.model.I_AD_Sequence SerialNo_Sequence)
+	{
+		set_ValueFromPO(COLUMNNAME_SerialNo_Sequence_ID, org.compiere.model.I_AD_Sequence.class, SerialNo_Sequence);
+	}
+
+	/** Set Serial No. Sequence.
+		@param SerialNo_Sequence_ID Serial No. Sequence	  */
+	@Override
+	public void setSerialNo_Sequence_ID (int SerialNo_Sequence_ID)
+	{
+		if (SerialNo_Sequence_ID < 1) 
+			set_Value (COLUMNNAME_SerialNo_Sequence_ID, null);
+		else 
+			set_Value (COLUMNNAME_SerialNo_Sequence_ID, Integer.valueOf(SerialNo_Sequence_ID));
+	}
+
+	/** Get Serial No. Sequence.
+		@return Serial No. Sequence	  */
+	@Override
+	public int getSerialNo_Sequence_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SerialNo_Sequence_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Gültig ab.
 		@param ValidFrom 
 		Valid from including this date (first day)
 	  */
-	public void setValidFrom (Timestamp ValidFrom)
+	@Override
+	public void setValidFrom (java.sql.Timestamp ValidFrom)
 	{
 		set_Value (COLUMNNAME_ValidFrom, ValidFrom);
 	}
 
-	/** Get Valid from.
+	/** Get Gültig ab.
 		@return Valid from including this date (first day)
 	  */
-	public Timestamp getValidFrom () 
+	@Override
+	public java.sql.Timestamp getValidFrom () 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_ValidFrom);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_ValidFrom);
 	}
 
-	/** Set Valid to.
+	/** Set Gültig bis.
 		@param ValidTo 
 		Valid to including this date (last day)
 	  */
-	public void setValidTo (Timestamp ValidTo)
+	@Override
+	public void setValidTo (java.sql.Timestamp ValidTo)
 	{
 		set_Value (COLUMNNAME_ValidTo, ValidTo);
 	}
 
-	/** Get Valid to.
+	/** Get Gültig bis.
 		@return Valid to including this date (last day)
 	  */
-	public Timestamp getValidTo () 
+	@Override
+	public java.sql.Timestamp getValidTo () 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_ValidTo);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_ValidTo);
 	}
 
-	/** Set Search Key.
+	/** Set Suchschlüssel.
 		@param Value 
 		Search key for the record in the format required - must be unique
 	  */
-	public void setValue (String Value)
+	@Override
+	public void setValue (java.lang.String Value)
 	{
 		set_Value (COLUMNNAME_Value, Value);
 	}
 
-	/** Get Search Key.
+	/** Get Suchschlüssel.
 		@return Search key for the record in the format required - must be unique
 	  */
-	public String getValue () 
+	@Override
+	public java.lang.String getValue () 
 	{
-		return (String)get_Value(COLUMNNAME_Value);
+		return (java.lang.String)get_Value(COLUMNNAME_Value);
 	}
-
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), getValue());
-    }
 }

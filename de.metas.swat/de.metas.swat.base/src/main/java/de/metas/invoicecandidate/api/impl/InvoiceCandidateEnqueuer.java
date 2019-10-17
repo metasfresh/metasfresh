@@ -25,22 +25,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.Mutable;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TrxRunnableAdapter;
 
 import com.google.common.base.Joiner;
 
@@ -49,6 +43,8 @@ import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.impl.ConstantWorkpackagePrio;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.i18n.IMsgBL;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.InvoiceCandidateLockingUtil;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
@@ -58,12 +54,9 @@ import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
-import de.metas.lock.api.ILockManager;
-import de.metas.lock.api.LockOwner;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
-import de.metas.util.ILoggable;
-import de.metas.util.NullLoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -77,9 +70,7 @@ import lombok.NonNull;
  */
 /* package */class InvoiceCandidateEnqueuer implements IInvoiceCandidateEnqueuer
 {
-	@SuppressWarnings("unused")
 	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_QTY_TO_INVOICE = "InvoiceCandBL_Invoicing_Skipped_QtyToInvoice";
-	@SuppressWarnings("unused")
 	private static final String MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_APPROVAL = "InvoiceCandBL_Invoicing_Skipped_ApprovalForInvoicing";
 	private static final String MSG_IncompleteGroupsFound_1P = "InvoiceCandEnqueuer_IncompleteGroupsFound";
 
@@ -87,17 +78,14 @@ import lombok.NonNull;
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final transient ILockManager lockManager = Services.get(ILockManager.class);
 
 	// Parameters
 	private Properties _ctx = Env.getCtx();
-	private String _trxNameInitial = ITrx.TRXNAME_ThreadInherited;
-	private String _trxName = ITrx.TRXNAME_ThreadInherited;
-	private ILoggable _loggable = NullLoggable.instance;
+
 	private boolean _failIfNothingEnqueued;
 	private Boolean _failOnChanges = null;
+	private boolean _failOnInvoiceCandidateError = false; // "false" for backward compatibility
 	private BigDecimal _totalNetAmtToInvoiceChecksum;
 	private IInvoicingParams _invoicingParams;
 	private I_C_Async_Batch _asyncBatch = null;
@@ -106,50 +94,38 @@ import lombok.NonNull;
 	private boolean setWorkpackageADPInstanceCreatorId = true;
 
 	@Override
-	public IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(final Collection<Integer> invoiceCandidateIds)
+	public IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(final Set<InvoiceCandidateId> invoiceCandidateIds)
 	{
+		Check.assumeNotEmpty(invoiceCandidateIds, "invoiceCandidateIds is not empty");
+
 		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandidateIds, ITrx.TRXNAME_None);
 
 		setWorkpackageADPInstanceCreatorId = false;
+		_failOnInvoiceCandidateError = true;
+
 		return enqueueSelection(invoiceCandidatesSelectionId);
 	}
 
 	@Override
 	public IInvoiceCandidateEnqueueResult enqueueSelection(@NonNull final PInstanceId pinstanceId)
 	{
-		final Mutable<IInvoiceCandidateEnqueueResult> resultRef = new Mutable<>();
-		final String trxNameInitial = getTrxNameInitial();
-		trxManager.run(trxNameInitial, new TrxRunnableAdapter()
-		{
-			@Override
-			public void run(String localTrxName) throws Exception
-			{
-				setTrxName(localTrxName);
-
-				final ILock icLock = lockInvoiceCandidatesForSelection(pinstanceId);
-				try (final ILockAutoCloseable l = icLock.asAutocloseableOnTrxClose(localTrxName))
-				{
-					final IInvoiceCandidateEnqueueResult result = enqueueSelection0(icLock, pinstanceId);
-					resultRef.setValue(result);
-				}
-			}
-
-			@Override
-			public void doFinally()
-			{
-				setTrxName(null);
-			}
-		});
-
-		return resultRef.getValue();
+		return trxManager.callInThreadInheritedTrx(() -> lockAndEnqueueSelection(pinstanceId));
 	}
 
-	private final IInvoiceCandidateEnqueueResult enqueueSelection0(
+	private final IInvoiceCandidateEnqueueResult lockAndEnqueueSelection(@NonNull final PInstanceId pinstanceId)
+	{
+		final ILock icLock = InvoiceCandidateLockingUtil.lockInvoiceCandidatesForSelection(pinstanceId);
+		try (final ILockAutoCloseable l = icLock.asAutocloseableOnTrxClose(ITrx.TRXNAME_ThreadInherited))
+		{
+			return enqueueSelectionInTrx(icLock, pinstanceId);
+		}
+	}
+
+	private final IInvoiceCandidateEnqueueResult enqueueSelectionInTrx(
 			@NonNull final ILock icLock,
 			@NonNull final PInstanceId pinstanceId)
 	{
-		final Properties ctx = getCtx();
-		final String trxName = getTrxNameNotNull();
+		trxManager.assertThreadInheritedTrxExists();
 
 		final Iterable<I_C_Invoice_Candidate> invoiceCandidates = retrieveSelection(pinstanceId);
 
@@ -162,14 +138,14 @@ import lombok.NonNull;
 		// Prepare
 		prepareSelectionForEnqueueing(pinstanceId);
 		// NOTE: after running that method we expect some invoice candidates to be invalidated, but that's not a problem because:
-		// * the ones which are in our selection, we will update right now (see below)
+		// * the ones which are in our selection, we will updated right now (see below)
 		// * the other ones will be updated later, asynchronously
 
 		//
 		// Updating invalid candidates to make sure that they e.g. have the correct header aggregation key and thus the correct ordering
 		// also, we need to make sure that each ICs was updated at least once, so that it has a QtyToInvoice > 0 (task 08343)
 		invoiceCandBL.updateInvalid()
-				.setContext(getCtx(), getTrxNameNotNull())
+				.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.setLockedBy(icLock)
 				.setTaggedWithAnyTag()
 				.setOnlyC_Invoice_Candidates(invoiceCandidates)
@@ -182,7 +158,7 @@ import lombok.NonNull;
 		//
 		// Create workpackages.
 		// NOTE: loading them again after we made sure that they are fairly up to date.
-		final InvoiceCandidate2WorkpackageAggregator workpackageAggregator = new InvoiceCandidate2WorkpackageAggregator(ctx, trxName)
+		final InvoiceCandidate2WorkpackageAggregator workpackageAggregator = new InvoiceCandidate2WorkpackageAggregator(getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.setInvoiceCandidatesLock(icLock)
 				.setC_Async_Batch(_asyncBatch);
 
@@ -197,6 +173,13 @@ import lombok.NonNull;
 
 		for (final I_C_Invoice_Candidate ic : invoiceCandidates)
 		{
+			// Fail if the invoice candidate has issues
+			if (isFailOnInvoiceCandidateError() && ic.isError())
+			{
+				throw new AdempiereException(ic.getErrorMsg())
+						.setParameter("invoiceCandidate", ic);
+			}
+
 			// Check if invoice candidate is eligible for enqueueing
 			if (!isEligibleForEnqueueing(ic))
 			{
@@ -213,7 +196,6 @@ import lombok.NonNull;
 			final IWorkpackagePrioStrategy priorityToUse;
 			if (_priority == null)
 			{
-
 				if (!Check.isEmpty(ic.getPriority()))
 				{
 					priorityToUse = ConstantWorkpackagePrio.fromString(ic.getPriority());
@@ -250,7 +232,7 @@ import lombok.NonNull;
 		// If no workpackages were created, display error message that no selection was made (07666)
 		if (isFailIfNothingEnqueued() && invoiceCandidateSelectionCount <= 0)
 		{
-			throw new AdempiereException(msgBL.getMsg(ctx, MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P));
+			throw new AdempiereException("@" + MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P + "@");
 		}
 
 		//
@@ -265,54 +247,38 @@ import lombok.NonNull;
 		return result;
 	}
 
-	/** Lock all invoice candidates for selection and return an auto-closable lock. */
-	private final ILock lockInvoiceCandidatesForSelection(final PInstanceId pinstanceId)
-	{
-		final LockOwner lockOwner = LockOwner.newOwner("ICEnqueuer", pinstanceId.getRepoId());
-		return lockManager.lock()
-				.setOwner(lockOwner)
-				// allow these locks to be cleaned-up on server starts.
-				// NOTE: when we will add the ICs to workpackages we will move the ICs to another owner and we will also set AutoCleanup=false
-				.setAutoCleanup(true)
-				.setFailIfAlreadyLocked(true)
-				.setRecordsBySelection(I_C_Invoice_Candidate.class, pinstanceId)
-				.acquire();
-	}
-
 	/**
 	 * @return true if invoice candidate is eligible for enqueueing
 	 */
 	private boolean isEligibleForEnqueueing(final I_C_Invoice_Candidate ic)
 	{
-		final ILoggable loggable = getLoggable();
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 		//
 		// 07666: If selected, only use the invoices flagged as approved for invoicing
 		if (getInvoicingParams().isOnlyApprovedForInvoicing() && !ic.isApprovalForInvoicing())
 		{
-			// don't log; it's obvious for the user, and currently if won't happen anyways (die to the select's whereclause)
-			// final String msg = msgBL.getMsg(getCtx(), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_APPROVAL, new Object[] { ic.getC_Invoice_Candidate_ID() });
-			// loggable.addLog(msg);
+			final String msg = msgBL.getMsg(getCtx(), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_APPROVAL, new Object[] { ic.getC_Invoice_Candidate_ID() });
+			Loggables.addLog(msg);
 			return false;
 		}
 
 		//
 		// Check other reasons no to enqueue this ic: Processed, IsError, DateToInvoice.
 		// NOTE: having this line in the middle because we will display only one skip reason and SKIPPED_QTY_TO_INVOICE is usually less informative if the IC was already processed
-		if (invoiceCandBL.isSkipCandidateFromInvoicing(ic, getInvoicingParams().isIgnoreInvoiceSchedule(), loggable))
+		if (invoiceCandBL.isSkipCandidateFromInvoicing(ic, getInvoicingParams().isIgnoreInvoiceSchedule()))
 		{
 			// NOTE: we are not logging any reason because the method already logged the reason if any.
 			return false;
 		}
 
 		//
-		// task 04372: we will enqueue invoice candidates with QtyToInvoice = 0, *if* they also have QtyOrdered = 0
+		// task 04372: we will enqueue invoice candidates with QtyToInvoice = 0, *only if* they also have QtyOrdered = 0
 		// task 08343: logic moved here from the where clause in C_Invoice_Candidate_EnqueueSelection
-		if (ic.getQtyOrdered().signum() != 0 && invoiceCandBL.getQtyToInvoice(ic).signum() == 0)
+		if (ic.getQtyOrdered().signum() != 0 && ic.getQtyToInvoice().signum() == 0)
 		{
-			// don't log; it's obvious for the user and there might be a lot of skippings because of this
-			// final String msg = msgBL.getMsg(getCtx(), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_QTY_TO_INVOICE, new Object[] { ic.getC_Invoice_Candidate_ID() });
-			// loggable.addLog(msg);
+			final String msg = msgBL.getMsg(getCtx(), MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_QTY_TO_INVOICE, new Object[] { ic.getC_Invoice_Candidate_ID() });
+			Loggables.addLog(msg);
 			return false;
 		}
 
@@ -321,8 +287,6 @@ import lombok.NonNull;
 
 	private final void prepareSelectionForEnqueueing(final PInstanceId selectionId)
 	{
-		final Timestamp today = invoiceCandBL.getToday();
-
 		//
 		// Check incomplete compensation groups
 		final Set<String> incompleteOrderDocumentNo = invoiceCandDAO.retrieveOrderDocumentNosForIncompleteGroupsFromSelection(selectionId);
@@ -331,19 +295,6 @@ import lombok.NonNull;
 			final String incompleteOrderDocumentNoStr = Joiner.on(", ").join(incompleteOrderDocumentNo);
 			throw new AdempiereException(MSG_IncompleteGroupsFound_1P, new Object[] { incompleteOrderDocumentNoStr });
 		}
-
-		//
-		// Updating candidates previous to enqueueing, if the parameter has been set (task 03905)
-		// task 08628: always make sure that every IC has the *same* dateInvoiced. possible other dates that were previously set don't matter.
-		// this is critical because we assume that dateInvoiced is not part of the aggregation key, so different values would fail the invoicing
-		final Timestamp dateInvoiced = getInvoicingParams().getDateInvoiced() != null ? getInvoicingParams().getDateInvoiced() : invoiceCandBL.getToday();
-		invoiceCandDAO.updateDateInvoiced(dateInvoiced, selectionId);
-
-		//
-		// Updating candidates previous to enqueueing, if the parameter has been set (task 08437)
-		// task 08628: same as for dateInvoiced
-		final Timestamp dateAcct = getInvoicingParams().getDateAcct() != null ? getInvoicingParams().getDateAcct() : dateInvoiced;
-		invoiceCandDAO.updateDateAcct(dateAcct, selectionId);
 
 		//
 		// Update POReference (task 07978)
@@ -358,50 +309,23 @@ import lombok.NonNull;
 		{
 			invoiceCandDAO.updateMissingPaymentTermIds(selectionId);
 		}
-
-		//
-		// Make sure invoicing dates are correctly set
-		// * DateInvoiced - set it to today if null
-		// * DateAcct - set it to DateInvoiced if null
-		//
-		// NOTE: before we group the invoices by their header aggregation key,
-		// we need to make sure that all of them have the DateInvoiced and DateAcct set.
-		// If not, they will have different aggregation key in case one has a implicit DateInvoiced (i.e. today) and other IC has an explicit DateInvoiced.
-		invoiceCandDAO.updateColumnForSelection(
-				I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced,
-				today, // value
-				true, // updateOnlyIfNull
-				selectionId // selectionId
-		);
-		invoiceCandDAO.updateColumnForSelection(
-				I_C_Invoice_Candidate.COLUMNNAME_DateAcct,
-				ModelColumnNameValue.forColumnName(I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced), // value
-				true, // updateOnlyIfNull
-				selectionId // selectionId
-		);
 	}
 
 	private final Iterable<I_C_Invoice_Candidate> retrieveSelection(final PInstanceId pinstanceId)
 	{
 		// NOTE: we designed this method for the case of enqueuing 1mio invoice candidates.
 
-		return new Iterable<I_C_Invoice_Candidate>()
-		{
-			@Override
-			public Iterator<I_C_Invoice_Candidate> iterator()
-			{
-				final Properties ctx = getCtx();
-				final String trxName = getTrxNameNotNull();
-				return invoiceCandDAO.retrieveIcForSelection(ctx, pinstanceId, trxName);
-			}
+		return () -> {
+			final Properties ctx = getCtx();
+			trxManager.assertThreadInheritedTrxExists();
+			return invoiceCandDAO.retrieveIcForSelection(ctx, pinstanceId, ITrx.TRXNAME_ThreadInherited);
 		};
 	}
 
 	@Override
-	public IInvoiceCandidateEnqueuer setContext(final Properties ctx, final String trxName)
+	public IInvoiceCandidateEnqueuer setContext(@NonNull final Properties ctx)
 	{
 		this._ctx = ctx;
-		this._trxNameInitial = trxName;
 		return this;
 	}
 
@@ -410,43 +334,7 @@ import lombok.NonNull;
 	 */
 	private final Properties getCtx()
 	{
-		Check.assumeNotNull(_ctx, "_ctx not null");
 		return _ctx;
-	}
-
-	/**
-	 * @return initial transaction, i.e. the transaction used when this enqueuer was called
-	 */
-	private final String getTrxNameInitial()
-	{
-		return _trxNameInitial;
-	}
-
-	/**
-	 * @return transaction name; never returns an null transaction
-	 */
-	private final String getTrxNameNotNull()
-	{
-		trxManager.assertTrxNameNotNull(_trxName);
-		return _trxName;
-	}
-
-	private final void setTrxName(final String trxName)
-	{
-		this._trxName = trxName;
-	}
-
-	@Override
-	public IInvoiceCandidateEnqueuer setLoggable(final ILoggable loggable)
-	{
-		Check.assumeNotNull(loggable, "loggable not null");
-		this._loggable = loggable;
-		return this;
-	}
-
-	private final ILoggable getLoggable()
-	{
-		return _loggable;
 	}
 
 	@Override
@@ -459,6 +347,11 @@ import lombok.NonNull;
 	private final boolean isFailIfNothingEnqueued()
 	{
 		return _failIfNothingEnqueued;
+	}
+
+	private final boolean isFailOnInvoiceCandidateError()
+	{
+		return _failOnInvoiceCandidateError;
 	}
 
 	@Override
@@ -498,7 +391,6 @@ import lombok.NonNull;
 		if (isFailOnChanges())
 		{
 			return new InvoiceCandidatesChangesChecker()
-					.setLogger(getLoggable())
 					.setTotalNetAmtToInvoiceChecksum(_totalNetAmtToInvoiceChecksum);
 		}
 		else

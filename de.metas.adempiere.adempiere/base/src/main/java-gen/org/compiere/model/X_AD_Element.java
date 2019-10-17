@@ -14,7 +14,7 @@ public class X_AD_Element extends org.compiere.model.PO implements I_AD_Element,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1438104714L;
+	private static final long serialVersionUID = -234938844L;
 
     /** Standard Constructor */
     public X_AD_Element (Properties ctx, int AD_Element_ID, String trxName)
@@ -86,6 +86,25 @@ public class X_AD_Element extends org.compiere.model.PO implements I_AD_Element,
 	public java.lang.String getColumnName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ColumnName);
+	}
+
+	/** Set Speicherwarnung.
+		@param CommitWarning 
+		Warnung, die beim Speichern angezeigt wird
+	  */
+	@Override
+	public void setCommitWarning (java.lang.String CommitWarning)
+	{
+		set_Value (COLUMNNAME_CommitWarning, CommitWarning);
+	}
+
+	/** Get Speicherwarnung.
+		@return Warnung, die beim Speichern angezeigt wird
+	  */
+	@Override
+	public java.lang.String getCommitWarning () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CommitWarning);
 	}
 
 	/** Set Beschreibung.
@@ -260,6 +279,54 @@ public class X_AD_Element extends org.compiere.model.PO implements I_AD_Element,
 	public java.lang.String getPrintName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_PrintName);
+	}
+
+	/** Set Browse name.
+		@param WEBUI_NameBrowse Browse name	  */
+	@Override
+	public void setWEBUI_NameBrowse (java.lang.String WEBUI_NameBrowse)
+	{
+		set_Value (COLUMNNAME_WEBUI_NameBrowse, WEBUI_NameBrowse);
+	}
+
+	/** Get Browse name.
+		@return Browse name	  */
+	@Override
+	public java.lang.String getWEBUI_NameBrowse () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_WEBUI_NameBrowse);
+	}
+
+	/** Set New record name.
+		@param WEBUI_NameNew New record name	  */
+	@Override
+	public void setWEBUI_NameNew (java.lang.String WEBUI_NameNew)
+	{
+		set_Value (COLUMNNAME_WEBUI_NameNew, WEBUI_NameNew);
+	}
+
+	/** Get New record name.
+		@return New record name	  */
+	@Override
+	public java.lang.String getWEBUI_NameNew () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_WEBUI_NameNew);
+	}
+
+	/** Set New record name (breadcrumb).
+		@param WEBUI_NameNewBreadcrumb New record name (breadcrumb)	  */
+	@Override
+	public void setWEBUI_NameNewBreadcrumb (java.lang.String WEBUI_NameNewBreadcrumb)
+	{
+		set_Value (COLUMNNAME_WEBUI_NameNewBreadcrumb, WEBUI_NameNewBreadcrumb);
+	}
+
+	/** Get New record name (breadcrumb).
+		@return New record name (breadcrumb)	  */
+	@Override
+	public java.lang.String getWEBUI_NameNewBreadcrumb () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_WEBUI_NameNewBreadcrumb);
 	}
 
 	/** 

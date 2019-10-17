@@ -15,7 +15,7 @@ public class X_M_HU_Storage_Snapshot extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 134855987L;
+	private static final long serialVersionUID = 336436825L;
 
     /** Standard Constructor */
     public X_M_HU_Storage_Snapshot (Properties ctx, int M_HU_Storage_Snapshot_ID, String trxName)
@@ -47,18 +47,6 @@ public class X_M_HU_Storage_Snapshot extends org.compiere.model.PO implements I_
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
-	}
-
 	/** Set Maßeinheit.
 		@param C_UOM_ID 
 		Maßeinheit
@@ -85,7 +73,7 @@ public class X_M_HU_Storage_Snapshot extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU getM_HU() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU getM_HU()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
 	}
@@ -96,8 +84,8 @@ public class X_M_HU_Storage_Snapshot extends org.compiere.model.PO implements I_
 		set_ValueFromPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU);
 	}
 
-	/** Set Handling Units.
-		@param M_HU_ID Handling Units	  */
+	/** Set Handling Unit.
+		@param M_HU_ID Handling Unit	  */
 	@Override
 	public void setM_HU_ID (int M_HU_ID)
 	{
@@ -107,8 +95,8 @@ public class X_M_HU_Storage_Snapshot extends org.compiere.model.PO implements I_
 			set_ValueNoCheck (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
 	}
 
-	/** Get Handling Units.
-		@return Handling Units	  */
+	/** Get Handling Unit.
+		@return Handling Unit	  */
 	@Override
 	public int getM_HU_ID () 
 	{
@@ -119,7 +107,7 @@ public class X_M_HU_Storage_Snapshot extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_Storage getM_HU_Storage() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_Storage getM_HU_Storage()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_Storage_ID, de.metas.handlingunits.model.I_M_HU_Storage.class);
 	}
@@ -172,18 +160,6 @@ public class X_M_HU_Storage_Snapshot extends org.compiere.model.PO implements I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.

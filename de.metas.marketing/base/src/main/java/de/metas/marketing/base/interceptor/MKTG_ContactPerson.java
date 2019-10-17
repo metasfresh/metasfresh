@@ -40,7 +40,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@Component("de.metas.marketing.base.interceptor.MKTG_ContactPerson")
+@Component
 @Interceptor(I_MKTG_ContactPerson.class)
 public class MKTG_ContactPerson
 {

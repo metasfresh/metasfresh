@@ -10,12 +10,12 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,27 +35,23 @@ import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /* package */class CompositeQueryUpdater<T> implements ICompositeQueryUpdater<T>
 {
-	// private final Class<T> modelClass;
-
 	private final List<IQueryUpdater<T>> queryUpdaters = new ArrayList<>();
 
 	private String sql = null;
 	private List<Object> sqlParams = null;
 	private boolean sqlBuilt = false;
 
-	public CompositeQueryUpdater(final Class<T> modelClass)
+	public CompositeQueryUpdater()
 	{
-		super();
-		// this.modelClass = modelClass;
 	}
 
 	@Override
-	public ICompositeQueryUpdater<T> addQueryUpdater(final IQueryUpdater<T> updater)
+	public ICompositeQueryUpdater<T> addQueryUpdater(@NonNull final IQueryUpdater<T> updater)
 	{
-		Check.assumeNotNull(updater, "updater not null");
 		queryUpdaters.add(updater);
 
 		sqlBuilt = false;
@@ -76,7 +72,7 @@ import de.metas.util.Check;
 		final IQueryUpdater<T> updater = new SetColumnNameQueryUpdater<T>(columnName, fromColumnName);
 		return addQueryUpdater(updater);
 	}
-	
+
 	@Override
 	public ICompositeQueryUpdater<T> addAddValueToColumn(final String columnName, final BigDecimal valueToAdd)
 	{

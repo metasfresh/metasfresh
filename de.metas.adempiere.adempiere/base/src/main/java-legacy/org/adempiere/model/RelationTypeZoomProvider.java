@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.ILookupDAO;
@@ -39,7 +40,6 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
@@ -125,9 +125,9 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	}
 
 	@Override
-	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource zoomOrigin, final int targetAD_Window_ID, final boolean checkRecordsCount)
+	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource zoomOrigin, final AdWindowId targetAdWindowId, final boolean checkRecordsCount)
 	{
-		final int adWindowId;
+		final AdWindowId adWindowId;
 		final ITranslatableString display;
 
 		// #2340 Reference Target relation type: There is no source, only a target that contains the table and
@@ -162,7 +162,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			display = target.getRoleDisplayName(adWindowId);
 		}
 
-		if (targetAD_Window_ID > 0 && targetAD_Window_ID != adWindowId)
+		if (targetAdWindowId != null && !AdWindowId.equals(targetAdWindowId, adWindowId))
 		{
 			return ImmutableList.of();
 		}
@@ -174,7 +174,10 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			updateRecordsCountAndZoomValue(query);
 		}
 
-		return ImmutableList.of(ZoomInfo.of(getZoomInfoId(), adWindowId, query, display));
+		return ImmutableList.of(ZoomInfo.of(
+				getZoomInfoId(),
+				getInternalName(),
+				adWindowId, query, display));
 	}
 
 	public boolean isDirected()
@@ -226,7 +229,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		{
 			// this relation type is from one table to the same table
 			// use the window-id to distinguish
-			if (zoomSource.getAD_Window_ID() == getRefTableAD_Window_ID(source.getTableRefInfo(), zoomSource.isSOTrx()))
+			if (AdWindowId.equals(zoomSource.getAD_Window_ID(), getRefTableAD_Window_ID(source.getTableRefInfo(), zoomSource.isSOTrx())))
 			{
 				return ImmutablePair.of(source, target);
 			}
@@ -389,7 +392,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		final Duration countDuration = Duration.ofNanos(stopwatch.stop().elapsed(TimeUnit.NANOSECONDS));
 		query.setRecordCount(count, countDuration);
 
-		Loggables.get().addLog("RelationTypeZoomProvider {} took {}", this, countDuration);
+		Loggables.addLog("RelationTypeZoomProvider {} took {}", this, countDuration);
 	}
 
 	/**
@@ -404,7 +407,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	 */
 	public <T> List<T> retrieveDestinations(final Properties ctx, final PO zoomOriginPO, final Class<T> clazz, final String trxName)
 	{
-		final IZoomSource zoomOrigin = POZoomSource.of(zoomOriginPO, -1);
+		final IZoomSource zoomOrigin = POZoomSource.of(zoomOriginPO);
 
 		final MQuery query = mkZoomOriginQuery(zoomOrigin);
 
@@ -446,7 +449,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return tableRefInfo.getTableName();
 		}
 
-		public ITranslatableString getRoleDisplayName(final int fallbackAD_Window_ID)
+		public ITranslatableString getRoleDisplayName(final AdWindowId fallbackAD_Window_ID)
 		{
 			if (roleDisplayName != null)
 			{
@@ -510,10 +513,10 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	 * @return the <code>AD_Window_ID</code>
 	 * @throws PORelationException if no <code>AD_Window_ID</code> can be found.
 	 */
-	private int getRefTableAD_Window_ID(final ITableRefInfo tableRefInfo, final boolean isSOTrx)
+	private AdWindowId getRefTableAD_Window_ID(final ITableRefInfo tableRefInfo, final boolean isSOTrx)
 	{
-		int windowId = tableRefInfo.getZoomAD_Window_ID_Override();
-		if (windowId > 0)
+		AdWindowId windowId = tableRefInfo.getZoomAD_Window_ID_Override();
+		if (windowId != null)
 		{
 			return windowId;
 		}
@@ -526,9 +529,9 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		{
 			windowId = tableRefInfo.getZoomPO_Window_ID();
 		}
-		if (windowId <= 0)
+		if (windowId == null)
 		{
-			throw PORelationException.throwMissingWindowId(tableRefInfo.getName(), tableRefInfo.getTableName(), isSOTrx);
+			throw PORelationException.throwMissingWindowId(tableRefInfo.getIdentifier(), tableRefInfo.getTableName(), isSOTrx);
 		}
 
 		return windowId;
@@ -554,7 +557,6 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 		private Builder()
 		{
-			super();
 		}
 
 		public RelationTypeZoomProvider buildOrNull()
@@ -583,13 +585,12 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 		private int getAD_RelationType_ID()
 		{
-			Check.assume(adRelationTypeId > 0, "adRelationTypeId > 0");
-			return adRelationTypeId;
+			return Check.assumeGreaterThanZero(adRelationTypeId, "adRelationTypeId");
 		}
 
 		private String getZoomInfoId()
 		{
-			return "relationType-" + getAD_RelationType_ID();
+			return "AD_RelationType_ID-" + getAD_RelationType_ID();
 		}
 
 		public Builder setInternalName(final String internalName)

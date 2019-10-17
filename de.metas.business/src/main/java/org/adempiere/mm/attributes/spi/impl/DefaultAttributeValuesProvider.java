@@ -7,11 +7,13 @@ import java.util.Map;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
@@ -26,9 +28,10 @@ import de.metas.cache.CCache;
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
- * Implementation of {@link IAttributeValuesProvider} which is fetching the attributes from {@link I_M_AttributeValue}.
+ * Implementation of {@link IAttributeValuesProvider} which is fetching the attributes from {@link IAttributeDAO}.
  *
  * @author tsa
  *
@@ -38,16 +41,14 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 	private final I_M_Attribute attribute;
 	private transient Boolean _highVolume = null; // lazy
 
-	private static final String CACHE_PREFIX = I_M_AttributeValue.Table_Name;
+	private static final String CACHE_PREFIX = IAttributeDAO.CACHEKEY_ATTRIBUTE_VALUE;
 	private static final transient CCache<Integer, AttributeValuesMap> attributeId2values = CCache.newLRUCache(CACHE_PREFIX + "#AttributeValuesList#by#M_Attribute_ID", 100, 0);
 
 	private transient AttributeValuesMap _attributeValuesMap; // lazy
 	private final transient Map<String, NamePair> attributeValuesNP_HighVolumeCache = new HashMap<>();
 
-	public DefaultAttributeValuesProvider(final I_M_Attribute attribute)
+	public DefaultAttributeValuesProvider(@NonNull final I_M_Attribute attribute)
 	{
-		super();
-		Check.assumeNotNull(attribute, "Parameter attribute is not null");
 		this.attribute = attribute;
 	}
 
@@ -79,26 +80,28 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 
 	private final AttributeValuesMap getAttributeValuesMap()
 	{
-		if (_attributeValuesMap == null)
+		AttributeValuesMap attributeValuesMap = _attributeValuesMap;
+		if (attributeValuesMap == null)
 		{
-			_attributeValuesMap = attributeId2values.getOrLoad(attribute.getM_Attribute_ID(), () -> retrieveAttributeValuesList(attribute));
+			attributeValuesMap = _attributeValuesMap = attributeId2values.getOrLoad(attribute.getM_Attribute_ID(), () -> retrieveAttributeValuesList(attribute));
 		}
-		return _attributeValuesMap;
+		return attributeValuesMap;
 	}
 
 	private static final AttributeValuesMap retrieveAttributeValuesList(final I_M_Attribute attribute)
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		final List<I_M_AttributeValue> attributeValues = attributeDAO.retrieveAttributeValues(attribute);
+		final List<AttributeListValue> attributeValues = attributeDAO.retrieveAttributeValues(attribute);
 
 		return new AttributeValuesMap(attribute, attributeValues);
 	}
 
-	private static ValueNamePair createNamePair(final I_M_AttributeValue av)
+	private static ValueNamePair createNamePair(final AttributeListValue av)
 	{
 		final String value = av.getValue();
 		final String name = av.getName();
-		final ValueNamePair vnp = new ValueNamePair(value, name);
+		final String description = av.getDescription();
+		final ValueNamePair vnp = ValueNamePair.of(value, name, description);
 		return vnp;
 	}
 
@@ -120,7 +123,7 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 	{
 		return getAttributeValuesMap().getValues();
 	}
-	
+
 	private static final String normalizeValueKey(final Object valueKey)
 	{
 		return valueKey == null ? null : valueKey.toString();
@@ -130,7 +133,7 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 	public NamePair getAttributeValueOrNull(final Evaluatee evalCtx_NOTUSED, final Object valueKey)
 	{
 		final String valueKeyNormalized = normalizeValueKey(valueKey);
-		
+
 		//
 		{
 			final NamePair vnp = getAttributeValuesMap().getValueByKeyOrNull(valueKeyNormalized);
@@ -154,17 +157,16 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 	}
 
 	@Override
-	public int getM_AttributeValue_ID(final Object valueKey)
+	public AttributeValueId getAttributeValueIdOrNull(final Object valueKey)
 	{
 		final String valueKeyNormalized = normalizeValueKey(valueKey);
-		final Integer attributeValueId = getAttributeValuesMap().getM_AttributeValue_ID(valueKeyNormalized);
-		return attributeValueId != null ? attributeValueId : -1;
+		return getAttributeValuesMap().getAttributeValueId(valueKeyNormalized);
 	}
 
 	private final NamePair findValueDirectly(final String valueKey)
 	{
 		return attributeValuesNP_HighVolumeCache.computeIfAbsent(valueKey, key -> {
-			final I_M_AttributeValue av = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(attribute, valueKey);
+			final AttributeListValue av = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(attribute, valueKey);
 			return av == null ? null : createNamePair(av);
 		});
 	}
@@ -191,15 +193,15 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 		private final NamePair nullValue;
 		private final ImmutableMap<String, NamePair> valuesByKey;
 		private final ImmutableList<NamePair> valuesList;
-		private final ImmutableMap<String, Integer> attributeValueIdByKey;
+		private final ImmutableMap<String, AttributeValueId> attributeValueIdByKey;
 
-		private AttributeValuesMap(final I_M_Attribute attribute, final Collection<I_M_AttributeValue> attributeValues)
+		private AttributeValuesMap(final I_M_Attribute attribute, final Collection<AttributeListValue> attributeValues)
 		{
 			final ImmutableMap.Builder<String, NamePair> valuesByKey = ImmutableMap.builder();
-			final ImmutableMap.Builder<String, Integer> attributeValueIdByKey = ImmutableMap.builder();
+			final ImmutableMap.Builder<String, AttributeValueId> attributeValueIdByKey = ImmutableMap.builder();
 			NamePair nullValue = null;
 
-			for (final I_M_AttributeValue av : attributeValues)
+			for (final AttributeListValue av : attributeValues)
 			{
 				if (!av.isActive())
 				{
@@ -209,7 +211,7 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 				final ValueNamePair vnp = createNamePair(av);
 				valuesByKey.put(vnp.getValue(), vnp);
 
-				attributeValueIdByKey.put(vnp.getValue(), av.getM_AttributeValue_ID());
+				attributeValueIdByKey.put(vnp.getValue(), av.getId());
 
 				//
 				// Null placeholder value (if defined)
@@ -222,7 +224,7 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 			}
 
 			this.valuesByKey = valuesByKey.build();
-			valuesList = ImmutableList.copyOf(this.valuesByKey.values());
+			this.valuesList = ImmutableList.copyOf(this.valuesByKey.values());
 
 			this.attributeValueIdByKey = attributeValueIdByKey.build();
 
@@ -248,12 +250,12 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 			return valuesByKey.get(key);
 		}
 
-		public int getM_AttributeValue_ID(final String valueKey)
+		public AttributeValueId getAttributeValueId(final String valueKey)
 		{
-			final Integer attributeValueId = attributeValueIdByKey.get(valueKey);
+			final AttributeValueId attributeValueId = attributeValueIdByKey.get(valueKey);
 			if (attributeValueId == null)
 			{
-				throw new IllegalArgumentException("No M_AttributeValue_ID found for '" + valueKey + "'");
+				throw new AdempiereException("No M_AttributeValue_ID found for '" + valueKey + "'");
 			}
 			return attributeValueId;
 		}

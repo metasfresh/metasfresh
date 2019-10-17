@@ -78,7 +78,6 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.Util;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
@@ -87,6 +86,7 @@ import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
+import de.metas.impexp.excel.ExcelFormats;
 import de.metas.logging.LogManager;
 import de.metas.print.IPrintService;
 import de.metas.process.PInstanceId;
@@ -95,6 +95,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 /**
@@ -626,7 +627,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 						{
 							th th = new th();
 							tr.addElement(th);
-							th.addElement(Util.maskHTML(item.getPrintName(language)));
+							th.addElement(StringUtils.maskHTML(item.getPrintName(language)));
 						}
 						else
 						{
@@ -645,7 +646,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 									a href = new a("javascript:void(0)");
 									href.setID(pde.getColumnName() + "_" + row + "_a");
 									td.addElement(href);
-									href.addElement(Util.maskHTML(value));
+									href.addElement(StringUtils.maskHTML(value));
 									if (cssPrefix != null)
 										href.setClass(cssPrefix + "-href");
 
@@ -654,7 +655,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 								}
 								else
 								{
-									td.addElement(Util.maskHTML(value));
+									td.addElement(StringUtils.maskHTML(value));
 								}
 								if (cssPrefix != null)
 								{
@@ -1005,7 +1006,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 				return Document.getPDFAsArray(m_layout.getPageable(false));
 			} // 03744
 		}
-		catch (Exception e)
+		catch (final RuntimeException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
@@ -1108,11 +1109,15 @@ public class ReportEngine implements PrintServiceAttributeListener
 	 * @param outFile output file
 	 * @param language
 	 */
-	public void createXLS(File outFile, Language language)
+	public void createXLS(@NonNull final File outFile, final Language language)
 	{
-		final PrintDataExcelExporter exp = new PrintDataExcelExporter(getPrintData(), getPrintFormat());
-		exp.setLanguage(language);
-		exp.exportToFile(outFile);
+		PrintDataExcelExporter.builder()
+				.excelFormat(ExcelFormats.getFormatByFile(outFile))
+				.printData(getPrintData())
+				.printFormat(getPrintFormat())
+				.language(language)
+				.build()
+				.exportToFile(outFile);
 	}
 
 	/**************************************************************************
@@ -1304,7 +1309,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 			"C_DunningRunEntry_ID", "PP_Order_ID", "DD_Order_ID" };
 	private static final int[] DOC_TABLE_ID = new int[] {
 			I_C_Order.Table_ID,
-			I_M_InOut.Table_ID,
+			getTableId(I_M_InOut.class),
 			getTableId(I_C_Invoice.class),
 			getTableId(I_C_Project.class),
 			I_C_DunningRunEntry.Table_ID,

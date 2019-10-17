@@ -15,6 +15,7 @@ import org.compiere.util.Env;
 
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.util.Check;
@@ -60,7 +61,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		}
 
 		// get credit limit from BPartner
-		final I_C_BPartner partner = load(bpStats.getBpartnerId(), I_C_BPartner.class);
+		final I_C_BPartner partner = Services.get(IBPartnerDAO.class).getById(bpStats.getBpartnerId());
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
 		BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(partner.getC_BPartner_ID(), date);
 
@@ -91,7 +92,6 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 		return X_C_BPartner_Stats.SOCREDITSTATUS_CreditOK;
 	}
 
-
 	@Override
 	public boolean isCreditStopSales(@NonNull final BPartnerStats stat, @NonNull final BigDecimal grandTotal, @NonNull final Timestamp date)
 	{
@@ -114,7 +114,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 	public BigDecimal getCreditWatchRatio(final BPartnerStats stats)
 	{
 		// bp group will be taken from the stats' bpartner
-		final I_C_BPartner partner = load(stats.getBpartnerId(), I_C_BPartner.class);
+		final I_C_BPartner partner = Services.get(IBPartnerDAO.class).getById(stats.getBpartnerId());
 
 		final I_C_BP_Group bpGroup = partner.getC_BP_Group();
 		final BigDecimal creditWatchPercent = bpGroup.getCreditWatchPercent();
@@ -139,7 +139,7 @@ public class BPartnerStatsBL implements IBPartnerStatsBL
 			return;
 		}
 
-		final I_C_BPartner_Stats stats = load(bpartnerStats.getRecordId(), I_C_BPartner_Stats.class);
+		final I_C_BPartner_Stats stats = load(bpartnerStats.getRepoId(), I_C_BPartner_Stats.class);
 		stats.setSOCreditStatus(creditStatus);
 		save(stats);
 	}

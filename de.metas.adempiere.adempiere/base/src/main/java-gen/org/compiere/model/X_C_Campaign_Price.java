@@ -1,0 +1,368 @@
+/** Generated Model - DO NOT CHANGE */
+package org.compiere.model;
+
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.util.Properties;
+
+/** Generated Model for C_Campaign_Price
+ *  @author Adempiere (generated) 
+ */
+@SuppressWarnings("javadoc")
+public class X_C_Campaign_Price extends org.compiere.model.PO implements I_C_Campaign_Price, org.compiere.model.I_Persistent 
+{
+
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -462736728L;
+
+    /** Standard Constructor */
+    public X_C_Campaign_Price (Properties ctx, int C_Campaign_Price_ID, String trxName)
+    {
+      super (ctx, C_Campaign_Price_ID, trxName);
+      /** if (C_Campaign_Price_ID == 0)
+        {
+			setC_Campaign_Price_ID (0);
+			setC_Country_ID (0);
+			setC_Currency_ID (0);
+			setC_TaxCategory_ID (0);
+			setM_Product_ID (0);
+			setPriceStd (BigDecimal.ZERO);
+			setValidFrom (new Timestamp( System.currentTimeMillis() ));
+			setValidTo (new Timestamp( System.currentTimeMillis() ));
+        } */
+    }
+
+    /** Load Constructor */
+    public X_C_Campaign_Price (Properties ctx, ResultSet rs, String trxName)
+    {
+      super (ctx, rs, trxName);
+    }
+
+
+    /** Load Meta Data */
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
+    {
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
+      return poi;
+    }
+
+	@Override
+	public org.compiere.model.I_C_BP_Group getC_BP_Group() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class);
+	}
+
+	@Override
+	public void setC_BP_Group(org.compiere.model.I_C_BP_Group C_BP_Group)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class, C_BP_Group);
+	}
+
+	/** Set Geschäftspartnergruppe.
+		@param C_BP_Group_ID 
+		Geschäftspartnergruppe
+	  */
+	@Override
+	public void setC_BP_Group_ID (int C_BP_Group_ID)
+	{
+		if (C_BP_Group_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_Group_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_Group_ID, Integer.valueOf(C_BP_Group_ID));
+	}
+
+	/** Get Geschäftspartnergruppe.
+		@return Geschäftspartnergruppe
+	  */
+	@Override
+	public int getC_BP_Group_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Group_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
+	}
+
+	/** Set Geschäftspartner.
+		@param C_BPartner_ID 
+		Bezeichnet einen Geschäftspartner
+	  */
+	@Override
+	public void setC_BPartner_ID (int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+	}
+
+	/** Get Geschäftspartner.
+		@return Bezeichnet einen Geschäftspartner
+	  */
+	@Override
+	public int getC_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Campaign Price.
+		@param C_Campaign_Price_ID Campaign Price	  */
+	@Override
+	public void setC_Campaign_Price_ID (int C_Campaign_Price_ID)
+	{
+		if (C_Campaign_Price_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Campaign_Price_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Campaign_Price_ID, Integer.valueOf(C_Campaign_Price_ID));
+	}
+
+	/** Get Campaign Price.
+		@return Campaign Price	  */
+	@Override
+	public int getC_Campaign_Price_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Campaign_Price_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Country getC_Country() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Country_ID, org.compiere.model.I_C_Country.class);
+	}
+
+	@Override
+	public void setC_Country(org.compiere.model.I_C_Country C_Country)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Country_ID, org.compiere.model.I_C_Country.class, C_Country);
+	}
+
+	/** Set Land.
+		@param C_Country_ID 
+		Land
+	  */
+	@Override
+	public void setC_Country_ID (int C_Country_ID)
+	{
+		if (C_Country_ID < 1) 
+			set_Value (COLUMNNAME_C_Country_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Country_ID, Integer.valueOf(C_Country_ID));
+	}
+
+	/** Get Land.
+		@return Land
+	  */
+	@Override
+	public int getC_Country_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Country_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
+	}
+
+	@Override
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+	}
+
+	/** Set Währung.
+		@param C_Currency_ID 
+		Die Währung für diesen Eintrag
+	  */
+	@Override
+	public void setC_Currency_ID (int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+	}
+
+	/** Get Währung.
+		@return Die Währung für diesen Eintrag
+	  */
+	@Override
+	public int getC_Currency_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_TaxCategory getC_TaxCategory() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_TaxCategory_ID, org.compiere.model.I_C_TaxCategory.class);
+	}
+
+	@Override
+	public void setC_TaxCategory(org.compiere.model.I_C_TaxCategory C_TaxCategory)
+	{
+		set_ValueFromPO(COLUMNNAME_C_TaxCategory_ID, org.compiere.model.I_C_TaxCategory.class, C_TaxCategory);
+	}
+
+	/** Set Steuerkategorie.
+		@param C_TaxCategory_ID 
+		Steuerkategorie
+	  */
+	@Override
+	public void setC_TaxCategory_ID (int C_TaxCategory_ID)
+	{
+		if (C_TaxCategory_ID < 1) 
+			set_Value (COLUMNNAME_C_TaxCategory_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_TaxCategory_ID, Integer.valueOf(C_TaxCategory_ID));
+	}
+
+	/** Get Steuerkategorie.
+		@return Steuerkategorie
+	  */
+	@Override
+	public int getC_TaxCategory_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_TaxCategory_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
+	{
+		set_Value (COLUMNNAME_Description, Description);
+	}
+
+	/** Get Beschreibung.
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+	}
+
+	@Override
+	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+	}
+
+	/** Set Produkt.
+		@param M_Product_ID 
+		Produkt, Leistung, Artikel
+	  */
+	@Override
+	public void setM_Product_ID (int M_Product_ID)
+	{
+		if (M_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+	}
+
+	/** Get Produkt.
+		@return Produkt, Leistung, Artikel
+	  */
+	@Override
+	public int getM_Product_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Standardpreis.
+		@param PriceStd Standardpreis	  */
+	@Override
+	public void setPriceStd (java.math.BigDecimal PriceStd)
+	{
+		set_Value (COLUMNNAME_PriceStd, PriceStd);
+	}
+
+	/** Get Standardpreis.
+		@return Standardpreis	  */
+	@Override
+	public java.math.BigDecimal getPriceStd () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceStd);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Gültig ab.
+		@param ValidFrom 
+		Gültig ab inklusiv (erster Tag)
+	  */
+	@Override
+	public void setValidFrom (java.sql.Timestamp ValidFrom)
+	{
+		set_Value (COLUMNNAME_ValidFrom, ValidFrom);
+	}
+
+	/** Get Gültig ab.
+		@return Gültig ab inklusiv (erster Tag)
+	  */
+	@Override
+	public java.sql.Timestamp getValidFrom () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_ValidFrom);
+	}
+
+	/** Set Gültig bis.
+		@param ValidTo 
+		Gültig bis inklusiv (letzter Tag)
+	  */
+	@Override
+	public void setValidTo (java.sql.Timestamp ValidTo)
+	{
+		set_Value (COLUMNNAME_ValidTo, ValidTo);
+	}
+
+	/** Get Gültig bis.
+		@return Gültig bis inklusiv (letzter Tag)
+	  */
+	@Override
+	public java.sql.Timestamp getValidTo () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_ValidTo);
+	}
+}

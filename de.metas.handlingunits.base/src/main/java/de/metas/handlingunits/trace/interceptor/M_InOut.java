@@ -50,7 +50,7 @@ import lombok.NonNull;
 	}, afterCommit = true)
 	public void addTraceEvent(@NonNull final I_M_InOut inOut)
 	{
-		Services.get(ITrxManager.class).run(() -> addTraceEvent0(inOut));
+		Services.get(ITrxManager.class).runInNewTrx(() -> addTraceEvent0(inOut));
 	}
 
 	private void addTraceEvent0(@NonNull final I_M_InOut inOut)

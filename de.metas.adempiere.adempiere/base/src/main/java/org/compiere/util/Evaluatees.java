@@ -63,60 +63,60 @@ public final class Evaluatees
 		super();
 	}
 
-	public static final Evaluatee2 ofSingleton(final String variableName, final Object value)
+	public static Evaluatee2 ofSingleton(final String variableName, final Object value)
 	{
 		return new SingletonEvaluatee(variableName, value);
 	}
 
-	public static final Evaluatee ofSupplier(final String variableName, final Supplier<?> supplier)
+	public static Evaluatee ofSupplier(final String variableName, final Supplier<?> supplier)
 	{
 		return new SupplierEvaluatee(variableName, supplier);
 	}
 
-	public static final Evaluatee ofSupplier(final String variableName, final com.google.common.base.Supplier<?> supplier)
+	public static Evaluatee ofSupplier(final String variableName, final com.google.common.base.Supplier<?> supplier)
 	{
 		return new GuavaSupplierEvaluatee(variableName, supplier);
 	}
 
-	public static final Evaluatee2 ofMap(final Map<String, ? extends Object> map)
+	public static Evaluatee2 ofMap(final Map<String, ? extends Object> map)
 	{
 		return new MapEvaluatee(map);
 	}
 
-	public static final MapEvaluateeBuilder mapBuilder()
+	public static MapEvaluateeBuilder mapBuilder()
 	{
 		return new MapEvaluateeBuilder();
 	}
 
-	public static final Evaluatee ofCtx(final Properties ctx, final int windowNo, final boolean onlyWindow)
+	public static Evaluatee ofCtx(final Properties ctx, final int windowNo, final boolean onlyWindow)
 	{
 		return new EvaluateeCtx(ctx, windowNo, onlyWindow);
 	}
 
-	public static final Evaluatee ofCtx(final Properties ctx)
+	public static Evaluatee ofCtx(final Properties ctx)
 	{
 		final boolean onlyWindow = false;
 		return new EvaluateeCtx(ctx, Env.WINDOW_None, onlyWindow);
 	}
 
-	public static final Evaluatee ofTableRecordReference(final ITableRecordReference recordRef)
+	public static Evaluatee ofTableRecordReference(final ITableRecordReference recordRef)
 	{
 		Check.assumeNotNull(recordRef, "Parameter recordRef is not null");
 		final Object record = recordRef.getModel(PlainContextAware.newWithThreadInheritedTrx(Env.getCtx()));
 		return InterfaceWrapperHelper.getEvaluatee(record);
 	}
 
-	public static final Evaluatee2 ofRangeAwareParams(@NonNull final IRangeAwareParams params)
+	public static Evaluatee2 ofRangeAwareParams(@NonNull final IRangeAwareParams params)
 	{
 		return new RangeAwareParamsAsEvaluatee(params);
 	}
 
-	public static final Evaluatee2 compose(@NonNull final List<Evaluatee> evaluatees)
+	public static Evaluatee2 compose(@NonNull final List<Evaluatee> evaluatees)
 	{
 		return new CompositeEvaluatee(evaluatees);
 	}
 
-	public static final Evaluatee2 compose(@NonNull final Evaluatee... evaluatees)
+	public static Evaluatee2 compose(@NonNull final Evaluatee... evaluatees)
 	{
 		return new CompositeEvaluatee(Arrays.asList(evaluatees));
 	}
@@ -127,7 +127,7 @@ public final class Evaluatees
 	 * @param evaluatees
 	 * @return
 	 */
-	public static final Evaluatee2 composeNotNulls(@NonNull final Evaluatee... evaluatees)
+	public static Evaluatee2 composeNotNulls(@NonNull final Evaluatee... evaluatees)
 	{
 		final ImmutableList<Evaluatee> evaluateesFiltered = Stream.of(evaluatees).filter(Predicates.notNull()).collect(ImmutableList.toImmutableList());
 		Check.assumeNotEmpty(evaluateesFiltered, "At least one evaluatee shall be not null: {}", (Object)evaluatees);
@@ -139,7 +139,7 @@ public final class Evaluatees
 	 *
 	 * @return a special instance that has no variables.
 	 */
-	public static final Evaluatee2 empty()
+	public static Evaluatee2 empty()
 	{
 		return EMPTY;
 	}
@@ -185,9 +185,8 @@ public final class Evaluatees
 		private final Map<String, Object> map;
 
 		@SuppressWarnings("unchecked")
-		private MapEvaluatee(final Map<String, ? extends Object> map)
+		private MapEvaluatee(@NonNull final Map<String, ? extends Object> map)
 		{
-			super();
 			Check.assumeNotNull(map, "map not null");
 			this.map = (Map<String, Object>)map;
 		}
@@ -568,7 +567,7 @@ public final class Evaluatees
 	 * @param excludeVariableName
 	 * @return
 	 */
-	public static final Evaluatee excludingVariables(final Evaluatee evaluatee, final String excludeVariableName)
+	public static Evaluatee excludingVariables(final Evaluatee evaluatee, final String excludeVariableName)
 	{
 		return new ExcludingVariablesEvaluatee(evaluatee, excludeVariableName);
 	}
@@ -623,7 +622,7 @@ public final class Evaluatees
 			}
 			return parent.get_ValueIfExists(variableName, targetType);
 		}
-	};
+	}
 
 	@ToString
 	private static class RangeAwareParamsAsEvaluatee implements Evaluatee2
@@ -669,9 +668,10 @@ public final class Evaluatees
 		}
 
 		@Override
-		public Integer get_ValueAsInt(final String variableName, final Integer defaultValue_IGNORED)
+		public Integer get_ValueAsInt(final String variableName, final Integer defaultValue)
 		{
-			final int value = params.getParameterAsInt(variableName);
+			final int defaultValueInt = defaultValue != null ? defaultValue : 0;
+			final int value = params.getParameterAsInt(variableName, defaultValueInt);
 			return value;
 		}
 

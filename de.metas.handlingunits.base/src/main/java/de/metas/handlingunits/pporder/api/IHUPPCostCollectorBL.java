@@ -25,7 +25,7 @@ package de.metas.handlingunits.pporder.api;
 import java.util.Collection;
 import java.util.List;
 
-import org.eevolution.api.IReceiptCostCollectorCandidate;
+import org.eevolution.api.ReceiptCostCollectorCandidate;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
@@ -42,7 +42,7 @@ public interface IHUPPCostCollectorBL extends ISingletonService
 	 * @param hu
 	 * @return receipt cost collector; never returns null
 	 */
-	I_PP_Cost_Collector createReceipt(IReceiptCostCollectorCandidate candidate, I_M_HU hu);
+	I_PP_Cost_Collector createReceipt(ReceiptCostCollectorCandidate candidate, I_M_HU hu);
 
 	/**
 	 * Assign given HUs to specified cost collector.

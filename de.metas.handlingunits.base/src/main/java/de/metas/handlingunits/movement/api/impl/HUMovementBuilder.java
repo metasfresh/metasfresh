@@ -236,7 +236,7 @@ public class HUMovementBuilder
 		{
 			throw new HUException("HU's locator does not match movement's locator from."
 					+ "\n Movement Locator From: " + locatorFrom
-					+ "\n HU's Locator: " + hu.getM_Locator());
+					+ "\n HU's Locator: " + IHandlingUnitsBL.extractLocatorOrNull(hu));
 		}
 
 		_husToMove.add(hu);
@@ -398,8 +398,8 @@ public class HUMovementBuilder
 		final ProductId productId = productStorage.getProductId();
 		final I_M_MovementLine movementLine = getCreateMovementLine(productId);
 
-		final I_C_UOM productUOM = productBL.getStockingUOM(productId);
-		final BigDecimal qtyToMove = productStorage.getQty(productUOM).getAsBigDecimal();
+		final I_C_UOM productUOM = productBL.getStockUOM(productId);
+		final BigDecimal qtyToMove = productStorage.getQty(productUOM).toBigDecimal();
 
 		//
 		// Adjust movement line's qty to move

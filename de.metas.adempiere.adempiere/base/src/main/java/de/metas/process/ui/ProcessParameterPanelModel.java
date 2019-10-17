@@ -9,13 +9,11 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.ad.security.asp.IASPFiltersFactory;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldVO;
-import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.Lookup;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -29,7 +27,6 @@ import de.metas.process.ProcessDefaultParametersUpdater;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Check;
-import de.metas.util.Services;
 
 public class ProcessParameterPanelModel
 {
@@ -72,7 +69,7 @@ public class ProcessParameterPanelModel
 		ctx = Env.deriveCtx(parentCtx);
 		windowNo = pi.getWindowNo();
 		tabNo = pi.getTabNo();
-		processId = pi.getAD_Process_ID();
+		processId = pi.getAdProcessId().getRepoId();
 
 		defaultParametersUpdater = ProcessDefaultParametersUpdater.newInstance()
 				.addDefaultParametersProvider(pi)
@@ -113,12 +110,6 @@ public class ProcessParameterPanelModel
 
 	private void createFields()
 	{
-		// ASP
-		// NOTE: if you are going to change the "p." alias for AD_Process_Para, pls check the ASPFilters implementation.
-		final String ASPFilter = Services.get(IASPFiltersFactory.class)
-				.getASPFiltersForClient(Env.getAD_Client_ID(ctx))
-				.getSQLWhereClause(I_AD_Process_Para.class);
-
 		//
 		final String sql;
 		if (Env.isBaseLanguage(ctx, "AD_Process_Para"))
@@ -134,7 +125,7 @@ public class ProcessParameterPanelModel
 					+ " FROM AD_Process_Para p"
 					+ " WHERE p.AD_Process_ID=?"		// 1
 					+ " AND p.IsActive='Y' "
-					+ ASPFilter + " ORDER BY SeqNo";
+					+ " ORDER BY SeqNo";
 		}
 		else
 		{
@@ -151,7 +142,7 @@ public class ProcessParameterPanelModel
 					+ "WHERE p.AD_Process_ID=?"		// 1
 					+ " AND t.AD_Language='" + Env.getAD_Language(ctx) + "'"
 					+ " AND p.IsActive='Y' "
-					+ ASPFilter + " ORDER BY SeqNo";
+					+ " ORDER BY SeqNo";
 		}
 
 		// Create Fields

@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
 
@@ -24,11 +24,13 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.pricing.PriceListId;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.user.api.IUserDAO;
-import org.compiere.util.Env;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.compiere.util.TimeUtil;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
@@ -36,21 +38,25 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.Msg;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.requisition.RequisitionRepository;
+import de.metas.requisition.RequisitionService;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /**
- *	Requisition Model
+ * Requisition Model
  *
- *  @author Jorg Janke
+ * @author Jorg Janke
  *
- *  @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
- * 			<li> FR [ 2520591 ] Support multiples calendar for Org
- *			@see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
- *  @version $Id: MRequisition.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
- *  @author red1
- *  		<li>FR [ 2214883 ] Remove SQL code and Replace for Query
- *  @author Teo Sarca, www.arhipac.ro
- *  		<li>FR [ 2744682 ] Requisition: improve error reporting
+ * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
+ *         <li>FR [ 2520591 ] Support multiples calendar for Org
+ * @see [ http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962 ]
+ * @version $Id: MRequisition.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
+ * @author red1
+ *         <li>FR [ 2214883 ] Remove SQL code and Replace for Query
+ * @author Teo Sarca, www.arhipac.ro
+ *         <li>FR [ 2744682 ] Requisition: improve error reporting
  */
 public class MRequisition extends X_M_Requisition implements IDocument
 {
@@ -59,215 +65,164 @@ public class MRequisition extends X_M_Requisition implements IDocument
 	 */
 	private static final long serialVersionUID = 898606565778668659L;
 
-	/**
-	 * 	Standard Constructor
-	 *	@param ctx context
-	 *	@param M_Requisition_ID id
-	 */
-	public MRequisition (Properties ctx, int M_Requisition_ID, String trxName)
+	public MRequisition(final Properties ctx, final int M_Requisition_ID, final String trxName)
 	{
-		super (ctx, M_Requisition_ID, trxName);
-		if (M_Requisition_ID == 0)
+		super(ctx, M_Requisition_ID, trxName);
+		if (is_new())
 		{
-		//	setDocumentNo (null);
-		//	setAD_User_ID (0);
-		//	setM_PriceList_ID (0);
-		//	setM_Warehouse_ID(0);
+			// setDocumentNo (null);
+			// setAD_User_ID (0);
+			// setM_PriceList_ID (0);
+			// setM_Warehouse_ID(0);
 			setDateDoc(new Timestamp(System.currentTimeMillis()));
-			setDateRequired (new Timestamp(System.currentTimeMillis()));
-			setDocAction (IDocument.ACTION_Complete);	// CO
-			setDocStatus (IDocument.STATUS_Drafted);		// DR
-			setPriorityRule (PRIORITYRULE_Medium);	// 5
-			setTotalLines (Env.ZERO);
-			setIsApproved (false);
-			setPosted (false);
-			setProcessed (false);
+			setDateRequired(new Timestamp(System.currentTimeMillis()));
+			setDocAction(IDocument.ACTION_Complete);	// CO
+			setDocStatus(IDocument.STATUS_Drafted);		// DR
+			setPriorityRule(PRIORITYRULE_Medium);	// 5
+			setTotalLines(BigDecimal.ZERO);
+			setIsApproved(false);
+			setPosted(false);
+			setProcessed(false);
 		}
-	}	//	MRequisition
+	}
 
-	/**
-	 * 	Load Constructor
-	 *	@param ctx context
-	 *	@param rs result set
-	 */
-	public MRequisition (Properties ctx, ResultSet rs, String trxName)
+	public MRequisition(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	//	MRequisition
+	}
 
-	/** Lines						*/
-	private MRequisitionLine[]		m_lines = null;
-
-	/**
-	 * 	Get Lines
-	 *	@return array of lines
-	 */
-	public MRequisitionLine[] getLines()
+	public List<I_M_RequisitionLine> getLines()
 	{
-		if (m_lines != null) {
-			set_TrxName(m_lines, get_TrxName());
-			return m_lines;
-		}
+		return getRequisitionRepository()
+				.getLinesByRequisitionId(getM_Requisition_ID());
+	}
 
-		//red1 - FR: [ 2214883 ] Remove SQL code and Replace for Query
- 	 	String whereClause = MRequisitionLine.COLUMNNAME_M_Requisition_ID+"=?";
-	 	List <MRequisitionLine> list = new Query(getCtx(), MRequisitionLine.Table_Name, whereClause, get_TrxName())
-			.setParameters(new Object[]{get_ID()})
-			.setOrderBy(MRequisitionLine.COLUMNNAME_Line)
-			.list(MRequisitionLine.class);
-	 	//  red1 - end -
+	private RequisitionService getRequisitionService()
+	{
+		return Adempiere.getBean(RequisitionService.class);
+	}
 
-		m_lines = new MRequisitionLine[list.size ()];
-		list.toArray (m_lines);
-		return m_lines;
-	}	//	getLines
+	private RequisitionRepository getRequisitionRepository()
+	{
+		return Adempiere.getBean(RequisitionRepository.class);
+	}
 
-	/**
-	 * 	String Representation
-	 *	@return info
-	 */
 	@Override
-	public String toString ()
+	public String toString()
 	{
-		StringBuffer sb = new StringBuffer ("MRequisition[");
+		final StringBuilder sb = new StringBuilder("MRequisition[");
 		sb.append(get_ID()).append("-").append(getDocumentNo())
-			.append(",Status=").append(getDocStatus()).append(",Action=").append(getDocAction())
-			.append ("]");
-		return sb.toString ();
-	}	//	toString
+				.append(",Status=").append(getDocStatus()).append(",Action=").append(getDocAction())
+				.append("]");
+		return sb.toString();
+	}
 
-	/**
-	 * 	Get Document Info
-	 *	@return document info
-	 */
 	@Override
 	public String getDocumentInfo()
 	{
 		return Msg.getElement(getCtx(), "M_Requisition_ID") + " " + getDocumentNo();
-	}	//	getDocumentInfo
+	}	// getDocumentInfo
 
-	/**
-	 * 	Create PDF
-	 *	@return File or null
-	 */
 	@Override
-	public File createPDF ()
+	public File createPDF()
 	{
 		try
 		{
-			File temp = File.createTempFile(get_TableName()+get_ID()+"_", ".pdf");
-			return createPDF (temp);
+			final File temp = File.createTempFile(get_TableName() + get_ID() + "_", ".pdf");
+			return createPDF(temp);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
-			log.error("Could not create PDF - " + e.getMessage());
-		}
-		return null;
-	}	//	getPDF
-
-	/**
-	 * 	Create PDF file
-	 *	@param file output file
-	 *	@return file if success
-	 */
-	public File createPDF (File file)
-	{
-	//	ReportEngine re = ReportEngine.get (getCtx(), ReportEngine.INVOICE, getC_Invoice_ID());
-	//	if (re == null)
+			log.error("Could not create PDF", e);
 			return null;
-	//	return re.getPDF(file);
-	}	//	createPDF
+		}
+	}
+
+	public File createPDF(final File file)
+	{
+		return null;
+	}
 
 	@Override
-	protected boolean beforeDelete() {
-		for (MRequisitionLine line : getLines()) {
-			line.deleteEx(true);
-		}
+	protected boolean beforeDelete()
+	{
+		getRequisitionRepository().deleteLinesByRequisitionId(getM_Requisition_ID());
 		return true;
 	}
 
 	/**************************************************************************
-	 * 	Process document
-	 *	@param processAction document action
-	 *	@return true if performed
+	 * Process document
+	 *
+	 * @param processAction document action
+	 * @return true if performed
 	 */
 	@Override
-	public boolean processIt (String processAction)
+	public boolean processIt(final String processAction)
 	{
 		m_processMsg = null;
 		return Services.get(IDocumentBL.class).processIt(this, processAction); // task 09824
-	}	//	process
+	}	// process
 
-	/**	Process Message 			*/
-	private String			m_processMsg = null;
-	/**	Just Prepared Flag			*/
-	private boolean 		m_justPrepared = false;
+	/** Process Message */
+	private String m_processMsg = null;
+	/** Just Prepared Flag */
+	private boolean m_justPrepared = false;
 
-	/**
-	 * 	Unlock Document.
-	 * 	@return true if success
-	 */
 	@Override
 	public boolean unlockIt()
 	{
-		log.info("unlockIt - " + toString());
 		setProcessing(false);
 		return true;
-	}	//	unlockIt
+	}	// unlockIt
 
-	/**
-	 * 	Invalidate Document
-	 * 	@return true if success
-	 */
 	@Override
 	public boolean invalidateIt()
 	{
-		log.info("invalidateIt - " + toString());
 		return true;
-	}	//	invalidateIt
+	}
 
 	/**
-	 *	Prepare Document
-	 * 	@return new status (In Progress or Invalid)
+	 * @return new status (In Progress or Invalid)
 	 */
 	@Override
 	public String prepareIt()
 	{
-		log.info(toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
-			return IDocument.STATUS_Invalid;
-		MRequisitionLine[] lines = getLines();
-
-		//	Invalid
-		if (getAD_User_ID() == 0
-			|| getM_PriceList_ID() == 0
-			|| getM_Warehouse_ID() == 0)
 		{
 			return IDocument.STATUS_Invalid;
 		}
 
-		if(lines.length == 0)
+		// Invalid
+		if (getAD_User_ID() <= 0
+				|| getM_PriceList_ID() <= 0
+				|| getM_Warehouse_ID() <= 0)
+		{
+			return IDocument.STATUS_Invalid;
+		}
+
+		final List<I_M_RequisitionLine> lines = getLines();
+		if (lines.isEmpty())
 		{
 			throw new AdempiereException("@NoLines@");
 		}
 
-		//	Std Period open?
-		MPeriod.testPeriodOpen(getCtx(), getDateDoc(), MDocType.DOCBASETYPE_PurchaseRequisition, getAD_Org_ID());
+		// Std Period open?
+		MPeriod.testPeriodOpen(getCtx(), getDateDoc(), X_C_DocType.DOCBASETYPE_PurchaseRequisition, getAD_Org_ID());
 
-		//	Add up Amounts
-		int precision = Services.get(IPriceListBL.class).getPricePrecision(getM_PriceList_ID());
+		// Add up Amounts
+		final CurrencyPrecision netPrecision = Services.get(IPriceListBL.class).getAmountPrecision(PriceListId.ofRepoId(getM_PriceList_ID()));
 		BigDecimal totalLines = BigDecimal.ZERO;
-		for (MRequisitionLine line : lines)
+		for (final I_M_RequisitionLine line : lines)
 		{
 			BigDecimal lineNet = line.getQty().multiply(line.getPriceActual());
-			lineNet = lineNet.setScale(precision, BigDecimal.ROUND_HALF_UP);
+			lineNet = netPrecision.round(lineNet);
 			if (lineNet.compareTo(line.getLineNetAmt()) != 0)
 			{
 				line.setLineNetAmt(lineNet);
-				line.saveEx();
+				InterfaceWrapperHelper.saveRecord(line);
 			}
-			totalLines = totalLines.add (line.getLineNetAmt());
+			totalLines = totalLines.add(line.getLineNetAmt());
 		}
 		if (totalLines.compareTo(getTotalLines()) != 0)
 		{
@@ -277,62 +232,59 @@ public class MRequisition extends X_M_Requisition implements IDocument
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
+		{
 			return IDocument.STATUS_Invalid;
+		}
 
 		m_justPrepared = true;
 		return IDocument.STATUS_InProgress;
-	}	//	prepareIt
+	}	// prepareIt
 
-	/**
-	 * 	Approve Document
-	 * 	@return true if success
-	 */
 	@Override
-	public boolean  approveIt()
+	public boolean approveIt()
 	{
-		log.info("approveIt - " + toString());
 		setIsApproved(true);
 		return true;
-	}	//	approveIt
+	}	// approveIt
 
-	/**
-	 * 	Reject Approval
-	 * 	@return true if success
-	 */
 	@Override
 	public boolean rejectIt()
 	{
-		log.info("rejectIt - " + toString());
 		setIsApproved(false);
 		return true;
-	}	//	rejectIt
+	}	// rejectIt
 
 	/**
-	 * 	Complete Document
-	 * 	@return new status (Complete, In Progress, Invalid, Waiting ..)
+	 * @return new status (Complete, In Progress, Invalid, Waiting ..)
 	 */
 	@Override
 	public String completeIt()
 	{
-		//	Re-Check
+		// Re-Check
 		if (!m_justPrepared)
 		{
-			String status = prepareIt();
+			final String status = prepareIt();
 			if (!IDocument.STATUS_InProgress.equals(status))
+			{
 				return status;
+			}
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
+		{
 			return IDocument.STATUS_Invalid;
+		}
 
-		//	Implicit Approval
+		// Implicit Approval
 		if (!isApproved())
+		{
 			approveIt();
+		}
 		log.debug("Completed: {}", this);
 
-		//	User Validation
-		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
+		// User Validation
+		final String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
 		{
 			m_processMsg = valid;
@@ -346,15 +298,17 @@ public class MRequisition extends X_M_Requisition implements IDocument
 		setProcessed(true);
 		setDocAction(ACTION_Close);
 		return IDocument.STATUS_Completed;
-	}	//	completeIt
+	}	// completeIt
 
 	/**
-	 * 	Set the definite document number after completed
+	 * Set the definite document number after completed
 	 */
-	private void setDefiniteDocumentNo() {
-		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
-		if (dt.isOverwriteDateOnComplete()) {
-			setDateDoc(new Timestamp (System.currentTimeMillis()));
+	private void setDefiniteDocumentNo()
+	{
+		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
+		if (dt.isOverwriteDateOnComplete())
+		{
+			setDateDoc(SystemTime.asTimestamp());
 		}
 		if (dt.isOverwriteSeqOnComplete())
 		{
@@ -364,75 +318,76 @@ public class MRequisition extends X_M_Requisition implements IDocument
 					.setFailOnError(false)
 					.build();
 			if (value != null && value != IDocumentNoBuilder.NO_DOCUMENTNO)
+			{
 				setDocumentNo(value);
+			}
 		}
 	}
 
-	/**
-	 * 	Void Document.
-	 * 	Same as Close.
-	 * 	@return true if success
-	 */
 	@Override
 	public boolean voidIt()
 	{
-		log.info("voidIt - " + toString());
 		// Before Void
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_VOID);
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		if (!closeIt())
+		{
 			return false;
+		}
 
 		// After Void
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_VOID);
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_VOID);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		return true;
-	}	//	voidIt
+	}	// voidIt
 
-	/**
-	 * 	Close Document.
-	 * 	Cancel not delivered Qunatities
-	 * 	@return true if success
-	 */
 	@Override
 	public boolean closeIt()
 	{
-		log.info("closeIt - " + toString());
 		// Before Close
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_CLOSE);
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
-		//	Close Not delivered Qty
-		MRequisitionLine[] lines = getLines();
-		BigDecimal totalLines = Env.ZERO;
-		for (MRequisitionLine line : lines)
+		// Close Not delivered Qty
+		BigDecimal totalLines = BigDecimal.ZERO;
+		for (final I_M_RequisitionLine line : getLines())
 		{
 			BigDecimal finalQty = line.getQty();
 			if (line.getC_OrderLine_ID() == 0)
-				finalQty = Env.ZERO;
+			{
+				finalQty = BigDecimal.ZERO;
+			}
 			else
 			{
-				MOrderLine ol = new MOrderLine (getCtx(), line.getC_OrderLine_ID(), get_TrxName());
+				final MOrderLine ol = new MOrderLine(getCtx(), line.getC_OrderLine_ID(), get_TrxName());
 				finalQty = ol.getQtyOrdered();
 			}
-			//	final qty is not line qty
+			// final qty is not line qty
 			if (finalQty.compareTo(line.getQty()) != 0)
 			{
 				String description = line.getDescription();
 				if (description == null)
+				{
 					description = "";
+				}
 				description += " [" + line.getQty() + "]";
 				line.setDescription(description);
 				line.setQty(finalQty);
-				line.setLineNetAmt();
-				line.saveEx();
+				getRequisitionService().updateLineNetAmt(line);
+				InterfaceWrapperHelper.saveRecord(line);
 			}
-			totalLines = totalLines.add (line.getLineNetAmt());
+			totalLines = totalLines.add(line.getLineNetAmt());
 		}
 		if (totalLines.compareTo(getTotalLines()) != 0)
 		{
@@ -440,100 +395,69 @@ public class MRequisition extends X_M_Requisition implements IDocument
 			saveEx();
 		}
 		// After Close
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_CLOSE);
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_CLOSE);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		return true;
-	}	//	closeIt
+	}
 
-	/**
-	 * 	Reverse Correction
-	 * 	@return true if success
-	 */
 	@Override
 	public boolean reverseCorrectIt()
 	{
-		log.info("reverseCorrectIt - " + toString());
-		// Before reverseCorrect
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REVERSECORRECT);
-		if (m_processMsg != null)
-			return false;
+		throw new AdempiereException("@NotSupported@");
+	}
 
-		// After reverseCorrect
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REVERSECORRECT);
-		if (m_processMsg != null)
-			return false;
-
-		return false;
-	}	//	reverseCorrectionIt
-
-	/**
-	 * 	Reverse Accrual - none
-	 * 	@return true if success
-	 */
 	@Override
 	public boolean reverseAccrualIt()
 	{
-		log.info("reverseAccrualIt - " + toString());
-		// Before reverseAccrual
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
-		if (m_processMsg != null)
-			return false;
+		throw new AdempiereException("@NotSupported@");
+	}
 
-		// After reverseAccrual
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REVERSEACCRUAL);
-		if (m_processMsg != null)
-			return false;
-
-		return false;
-	}	//	reverseAccrualIt
-
-	/**
-	 * 	Re-activate
-	 * 	@return true if success
-	 */
 	@Override
 	public boolean reActivateIt()
 	{
-		log.info("reActivateIt - " + toString());
 		// Before reActivate
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
-	//	setProcessed(false);
-		if (! reverseCorrectIt())
+		// setProcessed(false);
+		if (!reverseCorrectIt())
+		{
 			return false;
+		}
 
 		// After reActivate
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
 		if (m_processMsg != null)
+		{
 			return false;
+		}
 
 		return true;
-	}	//	reActivateIt
+	}
 
-	/*************************************************************************
-	 * 	Get Summary
-	 *	@return Summary of Document
-	 */
 	@Override
 	public String getSummary()
 	{
-		StringBuffer sb = new StringBuffer();
+		final StringBuilder sb = new StringBuilder();
 		sb.append(getDocumentNo());
-		//	 - User
+		// - User
 		sb.append(" - ").append(getUserName());
-		//	: Total Lines = 123.00 (#1)
-		sb.append(": ").
-			append(Msg.translate(getCtx(),"TotalLines")).append("=").append(getTotalLines())
-			.append(" (#").append(getLines().length).append(")");
-		//	 - Description
+		// : Total Lines = 123.00
+		sb.append(": ").append(Msg.translate(getCtx(), "TotalLines")).append("=").append(getTotalLines());
+		// - Description
 		if (getDescription() != null && getDescription().length() > 0)
+		{
 			sb.append(" - ").append(getDescription());
+		}
 		return sb.toString();
-	}	//	getSummary
+	}	// getSummary
 
 	@Override
 	public LocalDate getDocumentDate()
@@ -541,30 +465,18 @@ public class MRequisition extends X_M_Requisition implements IDocument
 		return TimeUtil.asLocalDate(getDateDoc());
 	}
 
-	/**
-	 * 	Get Process Message
-	 *	@return clear text error message
-	 */
 	@Override
 	public String getProcessMsg()
 	{
 		return m_processMsg;
-	}	//	getProcessMsg
+	}
 
-	/**
-	 * 	Get Document Owner
-	 *	@return AD_User_ID
-	 */
 	@Override
 	public int getDoc_User_ID()
 	{
 		return getAD_User_ID();
 	}
 
-	/**
-	 * 	Get Document Currency
-	 *	@return C_Currency_ID
-	 */
 	@Override
 	public int getC_Currency_ID()
 	{
@@ -573,8 +485,9 @@ public class MRequisition extends X_M_Requisition implements IDocument
 	}
 
 	/**
-	 * 	Get Document Approval Amount
-	 *	@return amount
+	 * Get Document Approval Amount
+	 *
+	 * @return amount
 	 */
 	@Override
 	public BigDecimal getApprovalAmt()
@@ -582,25 +495,20 @@ public class MRequisition extends X_M_Requisition implements IDocument
 		return getTotalLines();
 	}
 
-	/**
-	 * 	Get User Name
-	 *	@return user name
-	 */
-	public String getUserName()
+	private String getUserName()
 	{
 		return Services.get(IUserDAO.class).retrieveUserOrNull(getCtx(), getAD_User_ID()).getName();
-	}	//	getUserName
+	}
 
 	/**
-	 * 	Document Status is Complete or Closed
-	 *	@return true if CO, CL or RE
+	 * @return true if CO, CL or RE
 	 */
 	public boolean isComplete()
 	{
-		String ds = getDocStatus();
+		final String ds = getDocStatus();
 		return DOCSTATUS_Completed.equals(ds)
-			|| DOCSTATUS_Closed.equals(ds)
-			|| DOCSTATUS_Reversed.equals(ds);
-	}	//	isComplete
+				|| DOCSTATUS_Closed.equals(ds)
+				|| DOCSTATUS_Reversed.equals(ds);
+	}
 
-}	//	MRequisition
+}

@@ -25,8 +25,6 @@ package de.metas.handlingunits.storage.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -38,6 +36,8 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -100,7 +100,7 @@ import lombok.NonNull;
 		{
 			return Quantity.QTY_INFINITE;
 		}
-		return capacityAvailable.getCapacityQty();
+		return capacityAvailable.toBigDecimal();
 	}
 
 	@Override
@@ -119,16 +119,16 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public final BigDecimal getQtyInStockingUOM()
+	public final Quantity getQtyInStockingUOM()
 	{
-		final I_C_UOM productUOM = Services.get(IProductBL.class).getStockingUOM(getProductId());
-		return getQty(productUOM).getAsBigDecimal();
+		final I_C_UOM productUOM = Services.get(IProductBL.class).getStockUOM(getProductId());
+		return getQty(productUOM);
 	}
 
 	@Override
 	public BigDecimal getQtyCapacity()
 	{
-		return capacityTotal.getCapacityQty();
+		return capacityTotal.toBigDecimal();
 	}
 
 	@Override

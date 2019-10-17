@@ -37,9 +37,9 @@ $$
 SELECT
 	ol.line,
 	COALESCE(pt.Name, p.name)		AS Name,
-	CASE WHEN Length( Attributes ) > 15
-		THEN Attributes || E'\n'
-		ELSE Attributes
+	CASE WHEN Length( att.Attributes ) > 15
+		THEN att.Attributes || E'\n'
+		ELSE att.Attributes
 	END AS Attributes,
 	ol.QtyEnteredTU			AS HUQty,
 	CASE WHEN piit.M_HU_PI_Version_ID = 101 OR ol.QtyEnteredTU IS NULL
@@ -62,7 +62,7 @@ SELECT
 	END::character varying AS rate,
 	isPrintTax,
 	ol.description,
-	p.documentnote,
+	ol.M_Product_DocumentNote as documentnote,
 	ol.productdescription,
 	-- in case there is no C_BPartner_Product, fallback to the default ones
 	COALESCE(NULLIF(bpp.ProductNo, ''), p.value) as bp_product_no,
@@ -86,9 +86,7 @@ FROM
 	LEFT OUTER JOIN M_Product p 			ON ol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
 	LEFT OUTER JOIN M_Product_Trl pt 		ON ol.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $2 AND pt.isActive = 'Y'
 	LEFT OUTER JOIN M_Product_Category pc 		ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
-	
-	LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID
-		AND p.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y'
+		
 	-- Unit of measurement and its translation
 	LEFT OUTER JOIN C_UOM uom			ON ol.Price_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
 	LEFT OUTER JOIN C_UOM_Trl uomt			ON ol.Price_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $2 AND uomt.isActive = 'Y' AND uomt.isActive = 'Y'
@@ -104,6 +102,9 @@ FROM
 		GROUP BY	att.M_AttributeSetInstance_ID, ol.C_OrderLine_ID
 	) att ON ol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID AND ol.C_OrderLine_ID = att.C_OrderLine_ID
 
+	LEFT OUTER JOIN 
+			de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(p.M_Product_ID, bp.C_BPartner_ID, att.M_AttributeSetInstance_ID) as bpp on 1=1
+			
 	-- compensation group
 	LEFT JOIN c_order_compensationgroup cg ON ol.c_order_compensationgroup_id = cg.c_order_compensationgroup_id 
 	

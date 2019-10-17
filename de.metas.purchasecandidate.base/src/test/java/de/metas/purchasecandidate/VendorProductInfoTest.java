@@ -46,7 +46,7 @@ public class VendorProductInfoTest
 		product = newInstance(I_M_Product.class);
 		product.setName("testProductName");
 		product.setValue("testProductValue");
-		product.setC_UOM(uom);
+		product.setC_UOM_ID(uom.getC_UOM_ID());
 		save(product);
 	}
 

@@ -8,9 +8,9 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Util;
 
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 
 /*
  * #%L
@@ -141,7 +141,7 @@ public class ScriptExecutor
 		if (key.startsWith(keyPrefix))
 		{
 			String retValue = WINDOW_CONTEXT_PREFIX + key.substring(keyPrefix.length());
-			retValue = Util.replace(retValue, "|", "_");
+			retValue = StringUtils.replace(retValue, "|", "_");
 			return retValue;
 		}
 		else
@@ -155,7 +155,7 @@ public class ScriptExecutor
 			{
 				retValue = key;
 			}
-			retValue = Util.replace(retValue, "#", "_");
+			retValue = StringUtils.replace(retValue, "#", "_");
 			return retValue;
 		}
 	}

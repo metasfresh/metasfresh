@@ -22,6 +22,8 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 
+import de.metas.acct.api.AcctSchemaElementType;
+
 /**
  * 	Natural Account
  *
@@ -246,11 +248,11 @@ public class MElementValue extends X_C_ElementValue
 		if (!newRecord && (is_ValueChanged(COLUMNNAME_Value) || is_ValueChanged(COLUMNNAME_Name)))
 		{
 			MAccount.updateValueDescription(getCtx(), "Account_ID=" + getC_ElementValue_ID(),get_TrxName());
-			if ("Y".equals(Env.getContext(getCtx(), Env.CTXNAME_AcctSchemaElementPrefix + X_C_AcctSchema_Element.ELEMENTTYPE_UserList1))) 
+			if ("Y".equals(Env.getContext(getCtx(), Env.CTXNAME_AcctSchemaElementPrefix + AcctSchemaElementType.UserList1.getCode()))) 
 			{
 				MAccount.updateValueDescription(getCtx(), "User1_ID=" + getC_ElementValue_ID(),get_TrxName());
 			}
-			if ("Y".equals(Env.getContext(getCtx(), Env.CTXNAME_AcctSchemaElementPrefix + X_C_AcctSchema_Element.ELEMENTTYPE_UserList2)))
+			if ("Y".equals(Env.getContext(getCtx(), Env.CTXNAME_AcctSchemaElementPrefix + AcctSchemaElementType.UserList2.getCode())))
 			{
 				MAccount.updateValueDescription(getCtx(), "User2_ID=" + getC_ElementValue_ID(),get_TrxName());
 			}

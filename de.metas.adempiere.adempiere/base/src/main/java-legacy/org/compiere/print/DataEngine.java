@@ -24,7 +24,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MLookupFactory;
@@ -42,6 +41,8 @@ import org.slf4j.Logger;
 import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 
 /**
@@ -50,7 +51,7 @@ import de.metas.util.Check;
  *
  * @author 	Jorg Janke
  * @version 	$Id: DataEngine.java,v 1.3 2006/07/30 00:53:02 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  * 				<li>BF [ 1761891 ] Included print format with report view attached issue
  * 				<li>BF [ 1807368 ] DataEngine does not close DB connection
@@ -60,7 +61,7 @@ import de.metas.util.Check;
  * @author Teo Sarca, teo.sarca@gmail.com
  * 				<li>BF [ 2876268 ] DataEngine: error on text long fields
  * 					https://sourceforge.net/tracker/?func=detail&aid=2876268&group_id=176962&atid=879332
- * @author victor.perez@e-evolution.com 
+ * @author victor.perez@e-evolution.com
  *				<li>FR [ 2011569 ] Implementing new Summary flag in Report View  http://sourceforge.net/tracker/index.php?func=detail&aid=2011569&group_id=176962&atid=879335
  * @author Paul Bowden (phib)
  * 				<li> BF 2908435 Virtual columns with lookup reference types can't be printed
@@ -76,7 +77,7 @@ public class DataEngine
 	{
 		this(language, null);
 	}	//	DataEngine
-	
+
 	/**
 	 *	Constructor
 	 *	@param language Language of the data (for translation)
@@ -106,7 +107,7 @@ public class DataEngine
 	private String			m_runningTotalString = null;
 	/** TrxName String					*/
 	private String			m_trxName = null;
-	/** Report Summary FR [ 2011569 ]**/ 
+	/** Report Summary FR [ 2011569 ]**/
 	private boolean 		m_summary = false;
 	/** Key Indicator in Report			*/
 	public static final String KEY = "*";
@@ -124,7 +125,7 @@ public class DataEngine
 	{
 		return getPrintData(ctx, format, query, false);
 	}
-	
+
 	/**************************************************************************
 	 * 	Load Data
 	 *
@@ -137,8 +138,8 @@ public class DataEngine
 	public PrintData getPrintData (Properties ctx, MPrintFormat format, MQuery query, boolean summary)
 	{
 
-		/** Report Summary FR [ 2011569 ]**/ 
-		m_summary = summary; 
+		/** Report Summary FR [ 2011569 ]**/
+		m_summary = summary;
 
 		if (format == null)
 			throw new IllegalStateException ("No print format");
@@ -154,7 +155,7 @@ public class DataEngine
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
 			try
-			{				
+			{
 				pstmt = DB.prepareStatement(sql, m_trxName);
 				pstmt.setInt(1, format.getAD_ReportView_ID());
 				rs = pstmt.executeQuery();
@@ -199,7 +200,7 @@ public class DataEngine
 		return pd;
 	}	//	getPrintData
 
-	
+
 	/**************************************************************************
 	 * 	Create Load SQL and update PrintData Info
 	 *
@@ -310,13 +311,13 @@ public class DataEngine
 					m_group.addFunction(ColumnName, PrintDataFunction.F_DEVIATION);
 				if ("Y".equals(rs.getString(20)))	//	isRunningTotal
 					//	RunningTotalLines only once - use max
-					m_runningTotalLines = Math.max(m_runningTotalLines, rs.getInt(21));	
+					m_runningTotalLines = Math.max(m_runningTotalLines, rs.getInt(21));
 
 				//	General Info
 				boolean IsPrinted = "Y".equals(rs.getString(15));
 				int SortNo = rs.getInt(16);
 				boolean isPageBreak = "Y".equals(rs.getString(17));
-				
+
 				String formatPattern = rs.getString(25);
 
 				//	Fully qualified Table.Column for ordering
@@ -338,7 +339,7 @@ public class DataEngine
 					;
 				}
 				//	-- Parent, TableDir (and unqualified Search) --
-				else if ( (IsParent && DisplayType.isLookup(AD_Reference_ID)) 
+				else if ( (IsParent && DisplayType.isLookup(AD_Reference_ID))
 						|| AD_Reference_ID == DisplayType.TableDir
 						|| (AD_Reference_ID == DisplayType.Search && AD_Reference_Value_ID == 0)
 					)
@@ -414,7 +415,7 @@ public class DataEngine
 				}
 
 				//	-- List or Button with ReferenceValue --
-				else if (AD_Reference_ID == DisplayType.List 
+				else if (AD_Reference_ID == DisplayType.List
 					|| (AD_Reference_ID == DisplayType.Button && AD_Reference_Value_ID != 0))
 				{
 					if (ColumnSQL.length() > 0)
@@ -479,9 +480,9 @@ public class DataEngine
 						lookupSQL = ColumnSQL;
 					}
 					//	TableName, DisplayColumn
-					String table = ""; 
-					String key = ""; 
-					String display = ""; 
+					String table = "";
+					String key = "";
+					String display = "";
 					String synonym = null;
 					//
 					if (AD_Reference_ID == DisplayType.Location)
@@ -568,7 +569,7 @@ public class DataEngine
 							groupByColumns.add(sb.toString());
 						orderName = ColumnName;		//	no prefix for synonym
 					}
-					pdc = new PrintDataColumn(AD_Column_ID, ColumnName, 
+					pdc = new PrintDataColumn(AD_Column_ID, ColumnName,
 						AD_Reference_ID, FieldLength, ColumnName, isPageBreak);
 				}
 
@@ -654,11 +655,11 @@ public class DataEngine
 			}
 			//	Access Restriction
 			final IUserRolePermissions role = Env.getUserRolePermissions(ctx);
-			if (role.getAD_Role_ID() == 0 && !Ini.isClient())
+			if (role.getRoleId().isSystem() && !Ini.isSwingClient())
 				;	//	System Access
 			else
-				finalSQL = new StringBuffer (role.addAccessSQL (finalSQL.toString (), 
-					tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO));
+				finalSQL = new StringBuffer (role.addAccessSQL (finalSQL.toString (),
+					tableName, IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ));
 		}
 
 		//	Add GROUP BY clause
@@ -689,7 +690,7 @@ public class DataEngine
 				finalSQL.append(by);
 			}
 		}	//	order by
-		
+
 
 		//	Print Data
 		PrintData pd = new PrintData (ctx, reportName);
@@ -767,7 +768,7 @@ public class DataEngine
 					// TODO: implement support for table references without display column
 					final AdempiereException ex = new AdempiereException("Table references without AD_Display column are not supported (AD_Reference_ID="+AD_Reference_Value_ID+")");
 					log.warn(ex.getLocalizedMessage(), ex);
-					
+
 					// NOTE: until it's fixed it's better to display the KeyColumn instead of letting it fail in other parts.
 					tr.DisplayColumn = tr.KeyColumn;
 				}
@@ -787,7 +788,7 @@ public class DataEngine
 		return tr;
 	}	//  getTableReference
 
-	
+
 	/**************************************************************************
 	 * 	Load Data into PrintData
 	 * 	@param pd print data with SQL and ColumnInfo set
@@ -825,7 +826,7 @@ public class DataEngine
 						PrintDataColumn group_pdc = pd.getColumnInfo()[i];
 						if (!m_group.isGroupColumn(group_pdc.getColumnName()))
 							continue;
-						
+
 						//	Group change
 						Object value = m_group.groupChange(group_pdc.getColumnName(), rs.getObject(group_pdc.getAlias()));
 						if (value != null)	//	Group change
@@ -853,9 +854,9 @@ public class DataEngine
 									else if (m_group.isFunctionColumn(pdc.getColumnName(), functions[f]))
 									{
 										pd.addNode(new PrintDataElement(pdc.getColumnName(),
-											m_group.getValue(group_pdc.getColumnName(), 
-												pdc.getColumnName(), functions[f]), 
-											PrintDataFunction.getFunctionDisplayType(functions[f], pdc.getDisplayType()), 
+											m_group.getValue(group_pdc.getColumnName(),
+												pdc.getColumnName(), functions[f]),
+											PrintDataFunction.getFunctionDisplayType(functions[f], pdc.getDisplayType()),
 												false, pdc.isPageBreak(), pdc.getFormatPattern()));
 									}
 								}	//	 for all columns
@@ -873,8 +874,8 @@ public class DataEngine
 				//	new row ---------------------------------------------------
 				printRunningTotal(pd, levelNo, rowNo++);
 
-				/** Report Summary FR [ 2011569 ]**/ 
-				if(!m_summary)					
+				/** Report Summary FR [ 2011569 ]**/
+				if(!m_summary)
 					pd.addRow(false, levelNo);
 				int counter = 1;
 				//	get columns
@@ -892,7 +893,7 @@ public class DataEngine
 							int id = rs.getInt(counter++);
 							if (!rs.wasNull())
 							{
-								KeyNamePair pp = new KeyNamePair(id, KEY);	//	Key
+								KeyNamePair pp = KeyNamePair.of(id, KEY, null/*help*/);	//	Key
 								pde = new PrintDataElement(pdc.getColumnName(), pp, pdc.getDisplayType(),
 										true, pdc.isPageBreak(), pdc.getFormatPattern());
 							}
@@ -903,7 +904,7 @@ public class DataEngine
 							String id = rs.getString(counter++);
 							if (!rs.wasNull())
 							{
-								ValueNamePair pp = new ValueNamePair(id, KEY);	//	Key
+								ValueNamePair pp = ValueNamePair.of(id, KEY);	//	Key
 								pde = new PrintDataElement(pdc.getColumnName(), pp, pdc.getDisplayType(),
 										true, pdc.isPageBreak(), pdc.getFormatPattern());
 							}
@@ -922,7 +923,7 @@ public class DataEngine
 								int id = rs.getInt(counter++);
 								if (display != null && !rs.wasNull())
 								{
-									KeyNamePair pp = new KeyNamePair(id, display);
+									KeyNamePair pp = KeyNamePair.of(id, display);
 									pde = new PrintDataElement(pdc.getColumnName(), pp, pdc.getDisplayType(), pdc.getFormatPattern());
 								}
 							}
@@ -931,7 +932,7 @@ public class DataEngine
 								String id = rs.getString(counter++);
 								if (display != null && !rs.wasNull())
 								{
-									ValueNamePair pp = new ValueNamePair(id, display);
+									ValueNamePair pp = ValueNamePair.of(id, display);
 									pde = new PrintDataElement(pdc.getColumnName(), pp, pdc.getDisplayType(), pdc.getFormatPattern());
 								}
 							}
@@ -1000,7 +1001,7 @@ public class DataEngine
 					}	//	Non-Key Column
 					if (pde != null)
 					{
-						/** Report Summary FR [ 2011569 ]**/ 
+						/** Report Summary FR [ 2011569 ]**/
 						if(!m_summary)
 							pd.addNode(pde);
 						m_group.addValue(pde.getColumnName(), pde.getFunctionValue());
@@ -1052,7 +1053,7 @@ public class DataEngine
 							else if (m_group.isFunctionColumn(pdc.getColumnName(), functions[f]))
 							{
 								pd.addNode(new PrintDataElement(pdc.getColumnName(),
-									m_group.getValue(group_pdc.getColumnName(), 
+									m_group.getValue(group_pdc.getColumnName(),
 										pdc.getColumnName(), functions[f]),
 									PrintDataFunction.getFunctionDisplayType(functions[f],
 											pdc.getDisplayType()),pdc.getFormatPattern()));
@@ -1093,7 +1094,7 @@ public class DataEngine
 						final boolean displayTypeCategoryChanged = DisplayType.isNumeric(displayType) != DisplayType.isNumeric(functionDisplayType)
 								&& DisplayType.isDate(displayType) != DisplayType.isDate(functionDisplayType);
 						final String formatPattern = displayTypeCategoryChanged ? null : pdc.getFormatPattern();
-						
+
 						pd.addNode(new PrintDataElement(pdc.getColumnName(),
 							m_group.getValue(PrintDataGroup.TOTAL, pdc.getColumnName(), functions[f]),
 							functionDisplayType, formatPattern));
@@ -1106,10 +1107,10 @@ public class DataEngine
 		if (pd.getRowCount() == 0)
 		{
 			if (LogManager.isLevelFiner())
-				log.warn("NO Rows - ms=" + (System.currentTimeMillis()-m_startTime) 
+				log.warn("NO Rows - ms=" + (System.currentTimeMillis()-m_startTime)
 					+ " - " + pd.getSQL());
 			else
-				log.warn("NO Rows - ms=" + (System.currentTimeMillis()-m_startTime)); 
+				log.warn("NO Rows - ms=" + (System.currentTimeMillis()-m_startTime));
 		}
 		else
 			log.info("Rows=" + pd.getRowCount()
@@ -1126,11 +1127,11 @@ public class DataEngine
 	{
 		if (m_runningTotalLines < 1)	//	-1 = none
 			return;
-		log.debug("(" + m_runningTotalLines + ") - Row=" + rowNo 
+		log.debug("(" + m_runningTotalLines + ") - Row=" + rowNo
 			+ ", mod=" + rowNo % m_runningTotalLines);
 		if (rowNo % m_runningTotalLines != 0)
 			return;
-			
+
 		log.debug("Row=" + rowNo);
 		PrintDataColumn pdc = null;
 		int start = 0;

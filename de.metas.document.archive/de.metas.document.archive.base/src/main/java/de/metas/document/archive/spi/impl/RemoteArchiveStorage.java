@@ -85,7 +85,7 @@ public class RemoteArchiveStorage extends AbstractArchiveStorage
 
 	private final void checkContext()
 	{
-		Check.assume(Ini.isClient(), "RemoveArchive requires client mode");
+		Check.assume(Ini.isSwingClient(), "RemoveArchive requires client mode");
 		Check.assumeNotNull(endpoint, "endpoint is configured");
 	}
 

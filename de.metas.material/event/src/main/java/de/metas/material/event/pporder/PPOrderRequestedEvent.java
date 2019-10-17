@@ -1,6 +1,6 @@
 package de.metas.material.event.pporder;
 
-import java.util.Date;
+import java.time.Instant;
 
 import org.eevolution.model.I_PP_Order;
 
@@ -50,14 +50,14 @@ public class PPOrderRequestedEvent implements MaterialEvent
 	public static final String TYPE = "PPOrderRequestedEvent";
 
 	EventDescriptor eventDescriptor;
-	Date dateOrdered;
+	Instant dateOrdered;
 	PPOrder ppOrder;
 
 	@JsonCreator
 	@Builder
 	private PPOrderRequestedEvent(
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
-			@JsonProperty("dateOrdered") @NonNull final Date dateOrdered,
+			@JsonProperty("dateOrdered") @NonNull final Instant dateOrdered,
 			@JsonProperty("ppOrder") @NonNull final PPOrder ppOrder)
 	{
 		this.eventDescriptor = eventDescriptor;
@@ -68,6 +68,6 @@ public class PPOrderRequestedEvent implements MaterialEvent
 	public void validate()
 	{
 		// we need the PPOrder's MaterialDispoGroupId to map the order that was created to its respective candidates
-		Check.errorIf(ppOrder.getMaterialDispoGroupId() <= 0, "The ppOrder of a PPOrderRequestedEvent needs to have a group id");
+		Check.errorIf(ppOrder.getMaterialDispoGroupId() == null, "The ppOrder of a PPOrderRequestedEvent needs to have a group id");
 	}
 }

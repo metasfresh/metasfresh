@@ -19,12 +19,8 @@ package org.compiere.process;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
-import org.compiere.model.MBPartner;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MRequest;
@@ -32,6 +28,11 @@ import org.compiere.model.MRequestType;
 import org.compiere.model.MRequestUpdate;
 import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.DB;
+
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 /**
  * 	Create Invoices for Requests
@@ -61,6 +62,7 @@ public class RequestInvoice extends JavaProcess
 	/**
 	 * 	Prepare
 	 */
+	@Override
 	protected void prepare ()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
@@ -89,6 +91,7 @@ public class RequestInvoice extends JavaProcess
 	 *	@return info
 	 *	@throws Exception
 	 */
+	@Override
 	protected String doIt () throws Exception
 	{
 		log.info("R_RequestType_ID=" + p_R_RequestType_ID + ", R_Group_ID=" + p_R_Group_ID
@@ -198,7 +201,7 @@ public class RequestInvoice extends JavaProcess
 		m_invoice = new MInvoice (getCtx(), 0, get_TrxName());
 		m_invoice.setIsSOTrx(true);
 		
-		MBPartner partner = new MBPartner (getCtx(), request.getC_BPartner_ID(), null);
+		I_C_BPartner partner = Services.get(IBPartnerDAO.class).getById(request.getC_BPartner_ID());
 		m_invoice.setBPartner(partner);
 		
 		m_invoice.save();

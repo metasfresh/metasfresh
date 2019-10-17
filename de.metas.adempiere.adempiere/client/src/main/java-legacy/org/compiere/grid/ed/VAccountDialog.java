@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.grid.ed;
 
@@ -32,7 +32,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.lang.ref.WeakReference;
-import java.util.List;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
@@ -42,12 +41,7 @@ import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.border.TitledBorder;
 
-import org.adempiere.acct.api.IAccountBL;
-import org.adempiere.acct.api.IAccountDimension;
-import org.adempiere.acct.api.IAccountDimensionValidator;
-import org.adempiere.acct.api.IAcctSchemaDAO;
-import org.adempiere.acct.api.impl.AccountDimension;
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.AEnv;
@@ -61,26 +55,32 @@ import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridWindow;
 import org.compiere.model.GridWindowVO;
-import org.compiere.model.I_C_AcctSchema;
-import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAccountLookup;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
-import org.compiere.model.X_C_AcctSchema_Element;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaElement;
+import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.acct.api.AcctSchemaElementsMap;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountBL;
+import de.metas.acct.api.IAccountDimensionValidator;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Dialog to enter Account Info
@@ -96,7 +96,7 @@ public final class VAccountDialog extends CDialog
 	 */
 	private static final long serialVersionUID = -1980622319541357651L;
 
-	private static final int ValidCombination_AD_Window_ID = 153;		// Maintain Account Combinations
+	private static final AdWindowId ValidCombination_AD_Window_ID = AdWindowId.ofRepoId(153);		// Maintain Account Combinations
 
 	/**
 	 * Mouse Listener
@@ -105,7 +105,7 @@ public final class VAccountDialog extends CDialog
 	{
 		VAccountDialog_mouseAdapter(VAccountDialog adaptee)
 		{
-			this.adapteeRef = new WeakReference<VAccountDialog>(adaptee);
+			this.adapteeRef = new WeakReference<>(adaptee);
 		}
 
 		private WeakReference<VAccountDialog> adapteeRef;
@@ -139,16 +139,12 @@ public final class VAccountDialog extends CDialog
 			final Frame frame,
 			final String title,
 			final MAccountLookup mAccount,
-			final int C_AcctSchema_ID)
+			@NonNull final AcctSchemaId acctSchemaId)
 	{
 		super(frame, title, true);
-		if (log.isInfoEnabled())
-		{
-			log.info("C_AcctSchema_ID=" + C_AcctSchema_ID + ", C_ValidCombination_ID=" + mAccount.getC_ValidCombination_ID());
-		}
 
 		m_mAccount = mAccount;
-		m_C_AcctSchema_ID = C_AcctSchema_ID;
+		this.acctSchemaId = acctSchemaId;
 		m_WindowNo = Env.createWindowNo(this);
 
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -165,7 +161,7 @@ public final class VAccountDialog extends CDialog
 		{
 			// make sure we have a decent size at least
 			setMinimumSize(new Dimension(720, 350));
-			
+
 			AEnv.showCenterWindow(frame, this);
 		}
 		else
@@ -175,7 +171,6 @@ public final class VAccountDialog extends CDialog
 	}	// VLocationDialog
 
 	// Services
-	private final transient IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	private final transient IAccountBL accountBL = Services.get(IAccountBL.class);
 	private final transient ISwingEditorFactory editorFactory = Services.get(ISwingEditorFactory.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -202,7 +197,7 @@ public final class VAccountDialog extends CDialog
 	/** Result + */
 	private int m_C_ValidCombination_ID;
 	/** Acct Schema */
-	private final int m_C_AcctSchema_ID;
+	private final AcctSchemaId acctSchemaId;
 	/** Client */
 	private int m_AD_Client_ID;
 	/** Where clause for combination search */
@@ -312,19 +307,23 @@ public final class VAccountDialog extends CDialog
 		final Properties ctx = Env.getCtx();
 		m_AD_Client_ID = Env.getContextAsInt(ctx, m_WindowNo, "AD_Client_ID");
 
-		final I_C_AcctSchema s_AcctSchema = getC_AcctSchema();
+		final AcctSchema acctSchema = getAcctSchema();
 		// Get AcctSchema Info
-		Env.setContext(ctx, m_WindowNo, "C_AcctSchema_ID", m_C_AcctSchema_ID);
+		Env.setContext(ctx, m_WindowNo, "C_AcctSchema_ID", acctSchemaId.getRepoId());
 
 		// Model
 		final GridWindowVO wVO = AEnv.getMWindowVO(m_WindowNo, ValidCombination_AD_Window_ID, 0); // AD_Menu_ID=0
 		if (wVO == null)
+		{
 			return false;
+		}
 		m_mWindow = new GridWindow(wVO);
 		m_mTab = m_mWindow.getTab(0);
 		// Make sure is the tab is loaded - teo_sarca [ 1659124 ]
 		if (!m_mTab.isLoadComplete())
+		{
 			m_mWindow.initTab(0);
+		}
 
 		// ParameterPanel restrictions
 		m_mTab.getField("Alias").setDisplayLength(15);
@@ -338,8 +337,10 @@ public final class VAccountDialog extends CDialog
 		for (int i = 0; i < m_mTab.getFieldCount(); i++)
 		{
 			GridField field = m_mTab.getField(i);
-			if (!field.isDisplayed(true))      // check context
+			if (!field.isDisplayed(true))
+			{
 				field.setDisplayed(false);
+			}
 		}
 
 		// GridController
@@ -359,7 +360,7 @@ public final class VAccountDialog extends CDialog
 		m_gbc.weighty = 0;
 
 		// Alias
-		if (s_AcctSchema.isHasAlias())
+		if (acctSchema.getValidCombinationOptions().isUseAccountAlias())
 		{
 			GridField alias = m_mTab.getField("Alias");
 			f_Alias = editorFactory.getEditor(m_mTab, alias, false);
@@ -377,25 +378,25 @@ public final class VAccountDialog extends CDialog
 		{
 			final GridField field = m_mTab.getField(I_C_ValidCombination.COLUMNNAME_C_AcctSchema_ID);
 			f_C_AcctSchema_ID = editorFactory.getEditor(m_mTab, field, false);
-			f_C_AcctSchema_ID.setValue(getC_AcctSchema_ID());
+			f_C_AcctSchema_ID.setValue(acctSchemaId.getRepoId());
 			// NOTE: we are not adding it to the panel
 		}
 
 		/**
 		 * Create Fields in Element Order
 		 */
-		for (final I_C_AcctSchema_Element ase : getAcctSchemaElements())
+		for (final AcctSchemaElement ase : getAcctSchemaElements())
 		{
-			final String type = ase.getElementType();
+			final AcctSchemaElementType type = ase.getElementType();
 			final boolean isMandatory = ase.isMandatory();
 			//
-			if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Organization))
+			if (type.equals(AcctSchemaElementType.Organization))
 			{
 				GridField field = m_mTab.getField("AD_Org_ID");
 				f_AD_Org_ID = editorFactory.getEditor(m_mTab, field, false);
 				addLine(field, f_AD_Org_ID, isMandatory);
 			}
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Account))
+			else if (type.equals(AcctSchemaElementType.Account))
 			{
 				GridField field = m_mTab.getField("Account_ID");
 				f_Account_ID = editorFactory.getEditor(m_mTab, field, false);
@@ -403,75 +404,75 @@ public final class VAccountDialog extends CDialog
 				addLine(field, f_Account_ID, isMandatory);
 				f_Account_ID.addVetoableChangeListener(this);
 			}
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_SubAccount))
+			else if (type.equals(AcctSchemaElementType.SubAccount))
 			{
 				GridField field = m_mTab.getField("C_SubAcct_ID");
 				f_SubAcct_ID = editorFactory.getEditor(m_mTab, field, false);
 				// ((VLookup)f_SubAcct_ID).setWidth(400);
 				addLine(field, f_SubAcct_ID, isMandatory);
 			}
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Product))
+			else if (type.equals(AcctSchemaElementType.Product))
 			{
 				GridField field = m_mTab.getField("M_Product_ID");
 				f_M_Product_ID = editorFactory.getEditor(m_mTab, field, false);
 				addLine(field, f_M_Product_ID, isMandatory);
 			}
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_BPartner))
+			else if (type.equals(AcctSchemaElementType.BPartner))
 			{
 				GridField field = m_mTab.getField("C_BPartner_ID");
 				f_C_BPartner_ID = editorFactory.getEditor(m_mTab, field, false);
 				addLine(field, f_C_BPartner_ID, isMandatory);
 			}
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Campaign))
+			else if (type.equals(AcctSchemaElementType.Campaign))
 			{
 				GridField field = m_mTab.getField("C_Campaign_ID");
 				f_C_Campaign_ID = editorFactory.getEditor(m_mTab, field, false);
 				addLine(field, f_C_Campaign_ID, isMandatory);
 			}
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_LocationFrom))
+			else if (type.equals(AcctSchemaElementType.LocationFrom))
 			{
 				GridField field = m_mTab.getField("C_LocFrom_ID");
 				f_C_LocFrom_ID = editorFactory.getEditor(m_mTab, field, false);
 				addLine(field, f_C_LocFrom_ID, isMandatory);
 			}
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_LocationTo))
+			else if (type.equals(AcctSchemaElementType.LocationTo))
 			{
 				GridField field = m_mTab.getField("C_LocTo_ID");
 				f_C_LocTo_ID = editorFactory.getEditor(m_mTab, field, false);
 				addLine(field, f_C_LocTo_ID, isMandatory);
 			}
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Project))
+			else if (type.equals(AcctSchemaElementType.Project))
 			{
 				GridField field = m_mTab.getField("C_Project_ID");
 				f_C_Project_ID = editorFactory.getEditor(m_mTab, field, false);
 				addLine(field, f_C_Project_ID, isMandatory);
 			}
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_SalesRegion))
+			else if (type.equals(AcctSchemaElementType.SalesRegion))
 			{
 				GridField field = m_mTab.getField("C_SalesRegion_ID");
 				f_C_SalesRegion_ID = editorFactory.getEditor(m_mTab, field, false);
 				addLine(field, f_C_SalesRegion_ID, isMandatory);
 			}
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_OrgTrx))
+			else if (type.equals(AcctSchemaElementType.OrgTrx))
 			{
 				GridField field = m_mTab.getField("AD_OrgTrx_ID");
 				f_AD_OrgTrx_ID = editorFactory.getEditor(m_mTab, field, false);
 				addLine(field, f_AD_OrgTrx_ID, isMandatory);
 			}
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_Activity))
+			else if (type.equals(AcctSchemaElementType.Activity))
 			{
 				GridField field = m_mTab.getField("C_Activity_ID");
 				f_C_Activity_ID = editorFactory.getEditor(m_mTab, field, false);
 				addLine(field, f_C_Activity_ID, isMandatory);
 			}
 			// User1
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_UserList1))
+			else if (type.equals(AcctSchemaElementType.UserList1))
 			{
 				GridField field = m_mTab.getField("User1_ID");
 				f_User1_ID = editorFactory.getEditor(m_mTab, field, false);
 				addLine(field, f_User1_ID, isMandatory);
 			}
-			else if (type.equals(X_C_AcctSchema_Element.ELEMENTTYPE_UserList2))
+			else if (type.equals(AcctSchemaElementType.UserList2))
 			{
 				GridField field = m_mTab.getField("User2_ID");
 				f_User2_ID = editorFactory.getEditor(m_mTab, field, false);
@@ -491,7 +492,7 @@ public final class VAccountDialog extends CDialog
 
 		// Finish
 		m_query = new MQuery();
-		m_query.addRestriction("C_AcctSchema_ID", Operator.EQUAL, m_C_AcctSchema_ID);
+		m_query.addRestriction("C_AcctSchema_ID", Operator.EQUAL, acctSchemaId.getRepoId());
 		m_query.addRestriction("IsFullyQualified", Operator.EQUAL, "Y");
 		if (m_mAccount.getC_ValidCombination_ID() <= 0)
 		{
@@ -500,7 +501,7 @@ public final class VAccountDialog extends CDialog
 		else
 		{
 			final MQuery query = new MQuery();
-			query.addRestriction("C_AcctSchema_ID", Operator.EQUAL, m_C_AcctSchema_ID);
+			query.addRestriction("C_AcctSchema_ID", Operator.EQUAL, acctSchemaId.getRepoId());
 			query.addRestriction("C_ValidCombination_ID", Operator.EQUAL, m_mAccount.getC_ValidCombination_ID());
 			m_mTab.setQuery(query);
 		}
@@ -508,7 +509,7 @@ public final class VAccountDialog extends CDialog
 		m_gridController.getTable().addMouseListener(new VAccountDialog_mouseAdapter(this));
 		m_gridController.addDataStatusListener(this);
 
-		statusBar.setStatusLine(s_AcctSchema.toString());
+		statusBar.setStatusLine(acctSchema.toString());
 		statusBar.setStatusDB("?");
 
 		// Initial value
@@ -545,7 +546,9 @@ public final class VAccountDialog extends CDialog
 			m_gbc.gridx = 0;
 		}
 		else
+		{
 			m_gbc.gridx = 2;
+		}
 		m_gbc.insets = m_labelInsets;
 		m_gbc.fill = GridBagConstraints.HORIZONTAL;
 		m_gbc.weightx = 0;
@@ -553,9 +556,13 @@ public final class VAccountDialog extends CDialog
 
 		// Field
 		if (m_newRow)
+		{
 			m_gbc.gridx = 1;
+		}
 		else
+		{
 			m_gbc.gridx = 3;
+		}
 		m_gbc.insets = m_fieldInsets;
 		m_gbc.fill = GridBagConstraints.HORIZONTAL;
 		m_gbc.weightx = 1;
@@ -572,10 +579,14 @@ public final class VAccountDialog extends CDialog
 		}
 
 		if (f_Alias != null)
+		{
 			f_Alias.setValue(account.getAlias());
+		}
 
 		if (f_Combination != null)
+		{
 			f_Combination.setValue(account.getCombination());
+		}
 		//
 		loadInfoOf(account.getAD_Org_ID(), f_AD_Org_ID);
 		loadInfoOf(account.getAccount_ID(), f_Account_ID);
@@ -594,7 +605,9 @@ public final class VAccountDialog extends CDialog
 		loadInfoOf(account.getUser2_ID(), f_User2_ID);
 		//
 		if (f_Description != null)
+		{
 			f_Description.setText(account.getDescription());
+		}
 	}
 
 	private void loadInfoOf(final int value, VEditor editor)
@@ -615,9 +628,13 @@ public final class VAccountDialog extends CDialog
 		}
 
 		if (isNull)
+		{
 			editor.setValue(null);
+		}
 		else
+		{
 			editor.setValue(value);
+		}
 	}	// loadInfoOf
 
 	/**
@@ -657,7 +674,9 @@ public final class VAccountDialog extends CDialog
 		{
 			int row = m_gridController.getTable().getSelectedRow();
 			if (row >= 0)
+			{
 				m_C_ValidCombination_ID = ((Integer)m_mTab.getValue(row, "C_ValidCombination_ID")).intValue();
+			}
 			log.info("(" + row + ") - " + m_C_ValidCombination_ID);
 		}
 	}	// saveSelection
@@ -770,7 +789,9 @@ public final class VAccountDialog extends CDialog
 		{
 			String value = f_Alias.getValue().toString().toUpperCase();
 			if (!value.endsWith("%"))
+			{
 				value += "%";
+			}
 			query.addRestriction("UPPER(Alias)", Operator.LIKE, value);
 		}
 		// Combination (mandatory)
@@ -778,51 +799,81 @@ public final class VAccountDialog extends CDialog
 		{
 			String value = f_Combination.getValue().toString().toUpperCase();
 			if (!value.endsWith("%"))
+			{
 				value += "%";
+			}
 			query.addRestriction("UPPER(Combination)", Operator.LIKE, value);
 		}
 		// Org (mandatory)
 		if (f_AD_Org_ID != null && f_AD_Org_ID.getValue() != null)
+		{
 			query.addRestriction("AD_Org_ID", Operator.EQUAL, f_AD_Org_ID.getValue());
+		}
 		// Account (mandatory)
 		if (f_Account_ID != null && f_Account_ID.getValue() != null)
+		{
 			query.addRestriction("Account_ID", Operator.EQUAL, f_Account_ID.getValue());
+		}
 		if (f_SubAcct_ID != null && f_SubAcct_ID.getValue() != null)
+		{
 			query.addRestriction("C_SubAcct_ID", Operator.EQUAL, f_SubAcct_ID.getValue());
+		}
 
 		// Product
 		if (f_M_Product_ID != null && f_M_Product_ID.getValue() != null)
+		{
 			query.addRestriction("M_Product_ID", Operator.EQUAL, f_M_Product_ID.getValue());
+		}
 		// BPartner
 		if (f_C_BPartner_ID != null && f_C_BPartner_ID.getValue() != null)
+		{
 			query.addRestriction("C_BPartner_ID", Operator.EQUAL, f_C_BPartner_ID.getValue());
+		}
 		// Campaign
 		if (f_C_Campaign_ID != null && f_C_Campaign_ID.getValue() != null)
+		{
 			query.addRestriction("C_Campaign_ID", Operator.EQUAL, f_C_Campaign_ID.getValue());
+		}
 		// Loc From
 		if (f_C_LocFrom_ID != null && f_C_LocFrom_ID.getValue() != null)
+		{
 			query.addRestriction("C_LocFrom_ID", Operator.EQUAL, f_C_LocFrom_ID.getValue());
+		}
 		// Loc To
 		if (f_C_LocTo_ID != null && f_C_LocTo_ID.getValue() != null)
+		{
 			query.addRestriction("C_LocTo_ID", Operator.EQUAL, f_C_LocTo_ID.getValue());
+		}
 		// Project
 		if (f_C_Project_ID != null && f_C_Project_ID.getValue() != null)
+		{
 			query.addRestriction("C_Project_ID", Operator.EQUAL, f_C_Project_ID.getValue());
+		}
 		// SRegion
 		if (f_C_SalesRegion_ID != null && f_C_SalesRegion_ID.getValue() != null)
+		{
 			query.addRestriction("C_SalesRegion_ID", Operator.EQUAL, f_C_SalesRegion_ID.getValue());
+		}
 		// Org Trx
 		if (f_AD_OrgTrx_ID != null && f_AD_OrgTrx_ID.getValue() != null)
+		{
 			query.addRestriction("AD_OrgTrx_ID", Operator.EQUAL, f_AD_OrgTrx_ID.getValue());
+		}
 		// Activity
 		if (f_C_Activity_ID != null && f_C_Activity_ID.getValue() != null)
+		{
 			query.addRestriction("C_Activity_ID", Operator.EQUAL, f_C_Activity_ID.getValue());
+		}
 		// User 1
 		if (f_User1_ID != null && f_User1_ID.getValue() != null)
+		{
 			query.addRestriction("User1_ID", Operator.EQUAL, f_User1_ID.getValue());
+		}
 		// User 2
 		if (f_User2_ID != null && f_User2_ID.getValue() != null)
+		{
 			query.addRestriction("User2_ID", Operator.EQUAL, f_User2_ID.getValue());
+		}
 		return query;
 	}
 
@@ -844,13 +895,11 @@ public final class VAccountDialog extends CDialog
 		action_Find(false);
 	}	// action_Save
 
-	private IAccountDimension createAccountDimensionFromFields()
+	private AccountDimension createAccountDimensionFromFields()
 	{
-		final I_C_AcctSchema acctSchema = getC_AcctSchema();
-
 		final AccountDimension.Builder accountDimension = AccountDimension.builder();
 		accountDimension.setAD_Client_ID(m_AD_Client_ID);
-		accountDimension.setC_AcctSchema_ID(acctSchema.getC_AcctSchema_ID());
+		accountDimension.setAcctSchemaId(acctSchemaId);
 
 		//
 		// Get fields values
@@ -937,11 +986,11 @@ public final class VAccountDialog extends CDialog
 	{
 		//
 		// Get Account Dimension from fields
-		final IAccountDimension accountDimension = createAccountDimensionFromFields();
+		final AccountDimension accountDimension = createAccountDimensionFromFields();
 
 		//
 		// Validate it
-		final I_C_AcctSchema acctSchema = getC_AcctSchema();
+		final AcctSchema acctSchema = getAcctSchema();
 		final IAccountDimensionValidator validator = accountBL.createAccountDimensionValidator(acctSchema);
 		validator.setAcctSchemaElements(getAcctSchemaElements());
 		validator.validate(accountDimension);
@@ -972,56 +1021,92 @@ public final class VAccountDialog extends CDialog
 	private void action_Ignore()
 	{
 		if (f_C_AcctSchema_ID != null)
-			f_C_AcctSchema_ID.setValue(getC_AcctSchema_ID());
+		{
+			f_C_AcctSchema_ID.setValue(acctSchemaId.getRepoId());
+		}
 		if (f_Alias != null)
+		{
 			f_Alias.setValue("");
+		}
 		if (f_Combination != null)
+		{
 			f_Combination.setValue("");
+		}
 		if (f_Description != null)
+		{
 			f_Description.setText("");
+		}
 		//
 		// Org
 		if (f_AD_Org_ID != null)
+		{
 			f_AD_Org_ID.setValue(null);
+		}
 		// Account (mandatory)
 		if (f_Account_ID != null)
+		{
 			f_Account_ID.setValue(null);
+		}
 		if (f_SubAcct_ID != null)
+		{
 			f_SubAcct_ID.setValue(null);
+		}
 
 		// Product
 		if (f_M_Product_ID != null)
+		{
 			f_M_Product_ID.setValue(null);
+		}
 		// BPartner
 		if (f_C_BPartner_ID != null)
+		{
 			f_C_BPartner_ID.setValue(null);
+		}
 		// Campaign
 		if (f_C_Campaign_ID != null)
+		{
 			f_C_Campaign_ID.setValue(null);
+		}
 		// Loc From
 		if (f_C_LocFrom_ID != null)
+		{
 			f_C_LocFrom_ID.setValue(null);
+		}
 		// Loc To
 		if (f_C_LocTo_ID != null)
+		{
 			f_C_LocTo_ID.setValue(null);
+		}
 		// Project
 		if (f_C_Project_ID != null)
+		{
 			f_C_Project_ID.setValue(null);
+		}
 		// SRegion
 		if (f_C_SalesRegion_ID != null)
+		{
 			f_C_SalesRegion_ID.setValue(null);
+		}
 		// Org Trx
 		if (f_AD_OrgTrx_ID != null)
+		{
 			f_AD_OrgTrx_ID.setValue(null);
+		}
 		// Activity
 		if (f_C_Activity_ID != null)
+		{
 			f_C_Activity_ID.setValue(null);
+		}
 		// User 1
 		if (f_User1_ID != null)
+		{
 			f_User1_ID.setValue(null);
+		}
 		// User 2
 		if (f_User2_ID != null)
+		{
 			f_User2_ID.setValue(null);
+		}
 	}	// action_Ignore
 
 	/**
@@ -1032,7 +1117,9 @@ public final class VAccountDialog extends CDialog
 	public Integer getValue()
 	{
 		if (!m_changed || m_C_ValidCombination_ID <= 0)
+		{
 			return null;
+		}
 		return m_C_ValidCombination_ID;
 	}
 
@@ -1058,27 +1145,22 @@ public final class VAccountDialog extends CDialog
 		return Env.getCtx();
 	}
 
-	private final int getC_AcctSchema_ID()
+	private AcctSchema getAcctSchema()
 	{
-		return m_C_AcctSchema_ID;
-	}
-
-	private final I_C_AcctSchema getC_AcctSchema()
-	{
-		if (_acctSchema == null || _acctSchema.getC_AcctSchema_ID() != m_C_AcctSchema_ID)
+		if (_acctSchema == null)
 		{
-			_acctSchema = new MAcctSchema(getCtx(), m_C_AcctSchema_ID, ITrx.TRXNAME_None);
+			_acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
 		}
-		Check.assumeNotNull(_acctSchema, "acctSchema not null");
 		return _acctSchema;
 	}
 
-	private I_C_AcctSchema _acctSchema;
+	private AcctSchema _acctSchema;
 
-	private List<I_C_AcctSchema_Element> getAcctSchemaElements()
+	private AcctSchemaElementsMap getAcctSchemaElements()
 	{
-		final I_C_AcctSchema as = getC_AcctSchema();
-		return acctSchemaDAO.retrieveSchemaElementsDisplayedInEditor(as);
+		return getAcctSchema()
+				.getSchemaElements()
+				.onlyDisplayedInEditor();
 	}
 
 }	// VAccountDialog

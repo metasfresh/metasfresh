@@ -19,8 +19,6 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.compiere.util.Env;
-
 /**
  * Role Model.
  * Includes AD_User runtime info for Personal Access
@@ -44,10 +42,7 @@ public final class MRole extends X_AD_Role
 	public MRole(final Properties ctx, final int AD_Role_ID, final String trxName)
 	{
 		super(ctx, AD_Role_ID, trxName);
-
-		// FIXME: we need to distinguish between SysAdm role and the intention of creating a NEW role.
-		// ID=0 == System Administrator
-		if (AD_Role_ID == Env.CTXVALUE_AD_Role_ID_System)
+		if (is_new())
 		{
 			// setName (null);
 			setIsCanExport(true);

@@ -3,13 +3,12 @@ package de.metas.invoice.export;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import lombok.NonNull;
-
 import java.math.BigDecimal;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Optional;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.compiere.Adempiere;
@@ -17,7 +16,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceTax;
-import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -31,6 +29,8 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.invoice.InvoiceUtil;
 import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import de.metas.invoice_gateway.spi.esr.ESRPaymentInfoProvider;
@@ -42,13 +42,18 @@ import de.metas.invoice_gateway.spi.model.InvoiceAttachment;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.invoice_gateway.spi.model.InvoiceLine;
 import de.metas.invoice_gateway.spi.model.InvoiceTax;
-import de.metas.invoice_gateway.spi.model.InvoiceToExport;
 import de.metas.invoice_gateway.spi.model.MetasfreshVersion;
 import de.metas.invoice_gateway.spi.model.Money;
 import de.metas.invoice_gateway.spi.model.ProductId;
+import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
+import de.metas.money.CurrencyId;
 import de.metas.util.Check;
+import de.metas.util.Check.ExceptionWithOwnHeaderMessage;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.SoftwareVersion;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -75,18 +80,34 @@ import de.metas.util.lang.SoftwareVersion;
 @Service
 public class InvoiceToExportFactory
 {
-	private final AttachmentEntryService attachmentEntryservice;
+	private final AttachmentEntryService attachmentEntryService;
 	private final ESRPaymentInfoProvider esrPaymentInfoProvider;
+	private final CurrencyRepository currenciesRepo;
 
 	public InvoiceToExportFactory(
 			@NonNull final AttachmentEntryService attachmentEntryservice,
-			@NonNull final Optional<ESRPaymentInfoProvider> esrPaymentInfoProvider)
+			@NonNull final Optional<ESRPaymentInfoProvider> esrPaymentInfoProvider,
+			@NonNull final CurrencyRepository currenciesRepo)
 	{
-		this.attachmentEntryservice = attachmentEntryservice;
+		this.attachmentEntryService = attachmentEntryservice;
 		this.esrPaymentInfoProvider = esrPaymentInfoProvider.orElse(null);
+		this.currenciesRepo = currenciesRepo;
 	}
 
-	public InvoiceToExport getById(@NonNull final InvoiceId id)
+	public Optional<InvoiceToExport> getCreateForId(@NonNull final InvoiceId id)
+	{
+		try
+		{
+			return Optional.of(getCreateForId0(id));
+		}
+		catch (final InvoiceNotExportableException e)
+		{
+			Loggables.addLog("InvoiceToExportFactory - unable to export InvoiceId={}: Message={}", id, e.getMessage());
+			return Optional.empty();
+		}
+	}
+
+	public InvoiceToExport getCreateForId0(@NonNull final InvoiceId id)
 	{
 		final I_C_Invoice invoiceRecord = load(id, I_C_Invoice.class);
 
@@ -95,11 +116,11 @@ public class InvoiceToExportFactory
 
 		final boolean reversal = invoiceBL.isReversal(invoiceRecord);
 
-		final String currentyStr = invoiceRecord.getC_Currency().getISO_Code();
-		final Money grandTotal = Money.of(invoiceRecord.getGrandTotal(), currentyStr);
+		final CurrencyCode currencyCode = extractCurrencyCode(invoiceRecord);
+		final Money grandTotal = Money.of(invoiceRecord.getGrandTotal(), currencyCode.toThreeLetterCode());
 
-		final BigDecimal allocatedAmt = Util.coalesce(allocationDAO.retrieveAllocatedAmt(invoiceRecord), ZERO);
-		final Money allocatedMoney = Money.of(allocatedAmt, currentyStr);
+		final BigDecimal allocatedAmt = CoalesceUtil.coalesce(allocationDAO.retrieveAllocatedAmt(invoiceRecord), ZERO);
+		final Money allocatedMoney = Money.of(allocatedAmt, currencyCode.toThreeLetterCode());
 
 		final InvoiceToExport invoiceWithoutEsrInfo = InvoiceToExport
 				.builder()
@@ -110,7 +131,7 @@ public class InvoiceToExportFactory
 				.documentNumber(invoiceRecord.getDocumentNo())
 				.invoiceAttachments(createInvoiceAttachments(invoiceRecord))
 				.invoiceDate(createInvoiceDate(invoiceRecord))
-				.invoiceLines(createInvoiceLines(invoiceRecord, currentyStr))
+				.invoiceLines(createInvoiceLines(invoiceRecord, currencyCode))
 				.invoiceTaxes(createInvoiceTax(invoiceRecord))
 				.invoiceTimestamp(invoiceRecord.getCreated().toInstant())
 				.isReversal(reversal)
@@ -120,6 +141,13 @@ public class InvoiceToExportFactory
 
 		return addCustomInvoicePayload(invoiceWithoutEsrInfo);
 	}
+	
+	private CurrencyCode extractCurrencyCode(final I_C_Invoice invoiceRecord)
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID());
+		return currenciesRepo.getCurrencyCodeById(currencyId);
+	}
+
 
 	private InvoiceToExport addCustomInvoicePayload(@NonNull final InvoiceToExport invoiceWithoutEsrInfo)
 	{
@@ -137,7 +165,7 @@ public class InvoiceToExportFactory
 
 	private ImmutableList<InvoiceLine> createInvoiceLines(
 			@NonNull final I_C_Invoice invoiceRecord,
-			@NonNull final String currentyStr)
+			@NonNull final CurrencyCode currentyCode)
 	{
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final ImmutableList.Builder<InvoiceLine> invoiceLines = ImmutableList.builder();
@@ -147,7 +175,7 @@ public class InvoiceToExportFactory
 		{
 			final InvoiceLine invoiceLine = InvoiceLine
 					.builder()
-					.lineAmount(Money.of(lineRecord.getLineNetAmt(), currentyStr))
+					.lineAmount(Money.of(lineRecord.getLineNetAmt(), currentyCode.toThreeLetterCode()))
 					.productId(ProductId.ofId(lineRecord.getM_Product_ID()))
 					.externalIds(InvoiceUtil.splitExternalIds(lineRecord.getExternalIds()))
 					.build();
@@ -188,21 +216,21 @@ public class InvoiceToExportFactory
 				.referencedRecord(invoiceRecord)
 				.tagSetToAnyValue(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER)
 				.build();
-		final List<AttachmentEntry> attachments = attachmentEntryservice.getByQuery(query);
+		final List<AttachmentEntry> attachments = attachmentEntryService.getByQuery(query);
 
 		final ImmutableList.Builder<InvoiceAttachment> invoiceAttachments = ImmutableList.builder();
 		for (final AttachmentEntry attachment : attachments)
 		{
-			final byte[] attachmentData = attachmentEntryservice.retrieveData(attachment.getId());
+			final byte[] attachmentData = attachmentEntryService.retrieveData(attachment.getId());
 
-			final boolean isSecondaryAttachment = attachment.getTagValueOrNull(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE) != null;
+			final boolean isSecondaryAttachment = attachment.getTags().getTagValueOrNull(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE) != null;
 
 			final InvoiceAttachment invoiceAttachment = InvoiceAttachment.builder()
 					.fileName(attachment.getFilename())
 					.mimeType(attachment.getMimeType())
 					.data(attachmentData)
-					.invoiceExportProviderId(attachment.getTagValue(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER))
-					.primaryAttrachment(!isSecondaryAttachment)
+					.invoiceExportProviderId(attachment.getTags().getTagValue(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER))
+					.primaryAttachment(!isSecondaryAttachment)
 					.build();
 			invoiceAttachments.add(invoiceAttachment);
 		}
@@ -223,17 +251,18 @@ public class InvoiceToExportFactory
 
 	private BPartner createRecipient(@NonNull final I_C_Invoice invoiceRecord)
 	{
-		final String gln = invoiceRecord.getC_BPartner_Location().getGLN();
+		final String gln = Check.assumeNotEmpty(
+				invoiceRecord.getC_BPartner_Location().getGLN(), InvoiceNotExportableException.class,
+				"The the given invoice's C_BPartner_Location of needs to have a GLN; invoiceBPartnerLocation={}; invoiceRecord={}",
+				invoiceRecord.getC_BPartner_Location(),
+				invoiceRecord);
 
 		final I_C_BPartner bPartnerRecord = invoiceRecord.getC_BPartner();
-		final String vatTaxId = bPartnerRecord.getVATaxID();
-
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(bPartnerRecord.getC_BPartner_ID());
 
 		final BPartner recipient = BPartner.builder()
 				.id(bPartnerId)
 				.ean(EAN.of(gln))
-				.vatNumber(vatTaxId)
 				.build();
 		return recipient;
 	}
@@ -243,6 +272,9 @@ public class InvoiceToExportFactory
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 		final I_C_BPartner orgBPartner = bpartnerOrgBL.retrieveLinkedBPartner(invoiceRecord.getAD_Org_ID());
 
+		Check.assumeNotNull(orgBPartner, InvoiceNotExportableException.class,
+				"The given invoice's org needs to have a linked bPartner; org={}; invoiceRecord={};", invoiceRecord.getAD_Org(), invoiceRecord);
+
 		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 		final BPartnerLocationQuery query = BPartnerLocationQuery
 				.builder()
@@ -250,16 +282,27 @@ public class InvoiceToExportFactory
 				.bpartnerId(de.metas.bpartner.BPartnerId.ofRepoId(orgBPartner.getC_BPartner_ID()))
 				.build();
 		final I_C_BPartner_Location remittoLocation = bPartnerDAO.retrieveBPartnerLocation(query);
-		Check.assumeNotNull(remittoLocation, "The given invoice's orgBPartner needs to have a remit-to location; orgBPartner={}; invoiceRecord={}", orgBPartner, invoiceRecord);
+		Check.assumeNotNull(remittoLocation, InvoiceNotExportableException.class,
+				"The given invoice's orgBPartner needs to have a remit-to location; orgBPartner={}; invoiceRecord={}", orgBPartner, invoiceRecord);
 
-		final String gln = Check.assumeNotEmpty(remittoLocation.getGLN(), "The remit-to location of the given invoice's orgBPartner needs to have a GLN; remittoLocation={}; invoiceRecord={}; orgBPartner={}", remittoLocation, invoiceRecord, orgBPartner);
-		final String vatTaxId = Check.assumeNotEmpty(orgBPartner.getVATaxID(), "The given invoice's orgBPartner needs to have a VATaxID; orgBPartner={}; invoiceRecord={}", orgBPartner, invoiceRecord);
+		final String gln = Check.assumeNotEmpty(remittoLocation.getGLN(), InvoiceNotExportableException.class,
+				"The remit-to location of the given invoice's orgBPartner needs to have a GLN; remittoLocation={}; invoiceRecord={}; orgBPartner={}", remittoLocation, invoiceRecord, orgBPartner);
 
 		final BPartner recipient = BPartner.builder()
 				.id(BPartnerId.ofRepoId(orgBPartner.getC_BPartner_ID()))
 				.ean(EAN.of(gln))
-				.vatNumber(vatTaxId)
 				.build();
 		return recipient;
+	}
+
+	public static final class InvoiceNotExportableException extends AdempiereException implements ExceptionWithOwnHeaderMessage
+	{
+		private static final long serialVersionUID = 5678496542883367180L;
+
+		public InvoiceNotExportableException(@NonNull final String msg)
+		{
+			super(msg);
+			this.markAsUserValidationError(); // propagate error to the user
+		}
 	}
 }

@@ -41,6 +41,8 @@ import de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl.InvoiceDetail
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLine;
 import de.metas.pricing.IPricingResult;
 import de.metas.util.Check;
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
  *
@@ -70,8 +72,9 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 	private BigDecimal percentage;
 	private boolean percentageSet = false;
 
-	private BigDecimal qty;
-	private boolean qtySet = false;
+	@Getter
+	private BigDecimal qtyEntered;
+	private boolean qtyEnteredSet = false;
 
 	private I_C_UOM uom;
 	private boolean uomSet = false;
@@ -104,8 +107,8 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 				+ ", productName=" + productName
 				+ ", percentageSet=" + percentageSet
 				+ ", percentage=" + percentage
-				+ ", qtySet=" + qtySet
-				+ ", qty=" + qty
+				+ ", qtyEnteredSet=" + qtyEnteredSet
+				+ ", qtyEntered=" + qtyEntered
 				+ ", uomSet=" + uomSet
 				+ ", uom=" + (uom == null ? null : uom.getUOMSymbol())
 				+ ", displayed=" + displayed
@@ -132,10 +135,8 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 	}
 
 	@OverridingMethodsMustInvokeSuper
-	public String assertExpected(final String message, final IQualityInvoiceLine line)
+	public String assertExpected(final String message, @NonNull final IQualityInvoiceLine line)
 	{
-		Assert.assertNotNull("line not null", line);
-
 		final String prefix = createPrefix(message, line);
 
 		if (printed != null)
@@ -154,13 +155,13 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 		{
 			assertEquals(prefix + "Percentage", this.percentage, line.getPercentage());
 		}
-		if (qtySet)
+		if (qtyEnteredSet)
 		{
-			assertEquals(prefix + "Qty", this.qty, line.getQty());
+			assertEquals(prefix + "QtyEntered", this.qtyEntered, line.getQty().toBigDecimal());
 		}
 		if (uomSet)
 		{
-			assertModelEquals(prefix + "UOM", this.uom, line.getC_UOM());
+			assertModelEquals(prefix + "UOM", this.uom, line.getQty().getUOM());
 		}
 		if (descriptionSet)
 		{
@@ -207,7 +208,7 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 		}
 		if (productSet)
 		{
-			assertModelEquals(prefix + "Product", this.product, ic.getM_Product());
+			assertModelEquals(prefix + "Product", this.product.getM_Product_ID(), ic.getM_Product_ID());
 		}
 		if (productNameSet)
 		{
@@ -219,13 +220,13 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 			// TODO: handle this case
 			// Assert.fail(prefix + "Percentage cannot be validated in invoice candidate because it does not exist");
 		}
-		if (qtySet)
+		if (qtyEnteredSet)
 		{
-			assertEquals(prefix + "QtyOrdered", this.qty, ic.getQtyOrdered());
+			assertEquals(prefix + "EnteredSet", this.qtyEntered, ic.getQtyEntered());
 		}
 		if (uomSet)
 		{
-			assertModelEquals(prefix + "UOM", this.uom, ic.getC_UOM());
+			assertModelEquals(prefix + "UOM", this.uom.getC_UOM_ID(), ic.getC_UOM_ID());
 		}
 		if (descriptionSet)
 		{
@@ -280,9 +281,9 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 		{
 			assertEquals(prefix + "Percentage", this.percentage, detail.getPercentage());
 		}
-		if (qtySet)
+		if (qtyEnteredSet)
 		{
-			assertEquals(prefix + "QtyOrdered", this.qty, detail.getQty());
+			assertEquals(prefix + "QtyEnteredSet", this.qtyEntered, detail.getQty());
 		}
 		if (uomSet)
 		{
@@ -383,15 +384,10 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 		return this;
 	}
 
-	public final BigDecimal getQty()
+	public final QualityInvoiceLineExpectation qtyEntered(BigDecimal qtyEntered)
 	{
-		return qty;
-	}
-
-	public final QualityInvoiceLineExpectation qty(BigDecimal qty)
-	{
-		this.qty = qty;
-		this.qtySet = true;
+		this.qtyEntered = qtyEntered;
+		this.qtyEnteredSet = true;
 		return this;
 	}
 
@@ -462,7 +458,7 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 	{
 		if (this.handlingUnitsInfoExpectation == null)
 		{
-			this.handlingUnitsInfoExpectation = new HandlingUnitsInfoExpectation<QualityInvoiceLineExpectation>(this);
+			this.handlingUnitsInfoExpectation = new HandlingUnitsInfoExpectation<>(this);
 		}
 		return this.handlingUnitsInfoExpectation;
 	}

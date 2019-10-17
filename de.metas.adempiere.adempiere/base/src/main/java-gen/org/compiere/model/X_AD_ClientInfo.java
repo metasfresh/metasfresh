@@ -337,17 +337,17 @@ public class X_AD_ClientInfo extends org.compiere.model.PO implements I_AD_Clien
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_AcctSchema getC_AcctSchema1() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_AcctSchema1_ID, org.compiere.model.I_C_AcctSchema.class);
-	}
-
-	@Override
-	public void setC_AcctSchema1(org.compiere.model.I_C_AcctSchema C_AcctSchema1)
-	{
-		set_ValueFromPO(COLUMNNAME_C_AcctSchema1_ID, org.compiere.model.I_C_AcctSchema.class, C_AcctSchema1);
-	}
+//	@Override
+//	public org.compiere.model.I_C_AcctSchema getC_AcctSchema1() throws RuntimeException
+//	{
+//		return get_ValueAsPO(COLUMNNAME_C_AcctSchema1_ID, org.compiere.model.I_C_AcctSchema.class);
+//	}
+//
+//	@Override
+//	public void setC_AcctSchema1(org.compiere.model.I_C_AcctSchema C_AcctSchema1)
+//	{
+//		set_ValueFromPO(COLUMNNAME_C_AcctSchema1_ID, org.compiere.model.I_C_AcctSchema.class, C_AcctSchema1);
+//	}
 
 	/** Set Primäres Buchführungsschema.
 		@param C_AcctSchema1_ID 

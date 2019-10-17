@@ -10,12 +10,12 @@ package de.metas.handlingunits.invoicecandidate.facet;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,9 +48,9 @@ import de.metas.util.Services;
 
 /**
  * Collects packing material product facets.
- * 
+ *
  * A facet will have following diplay name: PackingMaterialProductName: Sum of QtyToInvoice (in price UOM).
- * 
+ *
  * e.g. IFCO: 40
  *
  * @author al
@@ -62,7 +62,7 @@ public class C_Invoice_Candidate_HUPackingMaterials_FacetCollector extends Singl
 	// services
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private static final ModelDynAttributeAccessor<I_M_Product, BigDecimal> DYNATTR_QtyToInvoiceSum = new ModelDynAttributeAccessor<>("QtyToInvoiceSum", BigDecimal.class);
+	private static final ModelDynAttributeAccessor<I_M_Product, BigDecimal> DYNATTR_QtyToInvoiceInPriceUOM = new ModelDynAttributeAccessor<>("QtyToInvoiceSum", BigDecimal.class);
 
 	public C_Invoice_Candidate_HUPackingMaterials_FacetCollector()
 	{
@@ -78,7 +78,7 @@ public class C_Invoice_Candidate_HUPackingMaterials_FacetCollector extends Singl
 	{
 		// FRESH-560: Add default filter
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilderWithDefaultFilters = Services.get(IInvoiceCandDAO.class).applyDefaultFilter(icQueryBuilder);
-		
+
 		// Match only Products which are Packing Materials
 		final IQuery<I_M_HU_PackingMaterial> isPackingMaterialQueryFilter = queryBL.createQueryBuilder(I_M_HU_PackingMaterial.class, queryBuilderWithDefaultFilters.getCtx(), queryBuilderWithDefaultFilters.getTrxName())
 				.create();
@@ -89,7 +89,7 @@ public class C_Invoice_Candidate_HUPackingMaterials_FacetCollector extends Singl
 				.addInSubQueryFilter(I_C_Invoice_Candidate.COLUMN_M_Product_ID, I_M_HU_PackingMaterial.COLUMN_M_Product_ID, isPackingMaterialQueryFilter)
 				.aggregateOnColumn(I_C_Invoice_Candidate.COLUMN_M_Product_ID);
 		aggregateOnQtyToInvoiceInPriceUOM
-				.sum(DYNATTR_QtyToInvoiceSum, I_C_Invoice_Candidate.COLUMN_QtyToInvoiceInPriceUOM);
+				.sum(DYNATTR_QtyToInvoiceInPriceUOM, I_C_Invoice_Candidate.COLUMN_QtyToInvoiceInPriceUOM);
 
 		//
 		// Get aggregated products and create facets from them.
@@ -107,7 +107,7 @@ public class C_Invoice_Candidate_HUPackingMaterials_FacetCollector extends Singl
 	private final IFacet<I_C_Invoice_Candidate> createPackingMaterialFacet(final I_M_Product product)
 	{
 		final IFacetCategory facetCategory = getFacetCategory();
-		final BigDecimal qtyToInvoiceInPriceUOM = DYNATTR_QtyToInvoiceSum.getValue(product);
+		final BigDecimal qtyToInvoiceInPriceUOM = DYNATTR_QtyToInvoiceInPriceUOM.getValue(product);
 
 		final int productId = product.getM_Product_ID();
 		final String packingMaterialInfo = new StringBuilder()

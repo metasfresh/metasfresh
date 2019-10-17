@@ -1,7 +1,5 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config;
 
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
 
 import org.springframework.context.annotation.Profile;
@@ -13,7 +11,9 @@ import de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.model.I_HC_F
 import de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.model.X_HC_Forum_Datenaustausch_Config;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ConfigRepositoryUtil.ConfigQuery;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlVersion;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -42,7 +42,12 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlVersio
 public class ExportConfigRepository
 {
 	private static final ImmutableMap<String, XmlVersion> //
-	INTERNALNAME_TO_VERSION = ImmutableMap.of(X_HC_Forum_Datenaustausch_Config.EXPORTXMLVERSION_V440, XmlVersion.v440);
+	INTERNALNAME_TO_VERSION = ImmutableMap.of(X_HC_Forum_Datenaustausch_Config.EXPORTEDXMLVERSION_V440, XmlVersion.v440);
+
+	private static final ImmutableMap<String, XmlMode> //
+	INTERNALNAME_TO_MODE = ImmutableMap.of(
+			X_HC_Forum_Datenaustausch_Config.EXPORTEDXMLMODE_Production, XmlMode.PRODUCTION,
+			X_HC_Forum_Datenaustausch_Config.EXPORTEDXMLMODE_Test, XmlMode.TEST);
 
 	public ExportConfig getForQueryOrNull(@NonNull final ConfigQuery query)
 	{
@@ -58,7 +63,10 @@ public class ExportConfigRepository
 		}
 		return ExportConfig
 				.builder()
-				.exportXmlVersion(INTERNALNAME_TO_VERSION.get(queryRecord.getExportXmlVersion()))
+				.xmlVersion(INTERNALNAME_TO_VERSION.get(queryRecord.getExportedXmlVersion()))
+				.mode(INTERNALNAME_TO_MODE.get(queryRecord.getExportedXmlMode()))
+				.fromEAN(queryRecord.getFrom_EAN())
+				.viaEAN(queryRecord.getVia_EAN())
 				.build();
 	}
 }

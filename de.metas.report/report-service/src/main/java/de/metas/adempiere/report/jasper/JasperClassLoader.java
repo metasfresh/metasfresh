@@ -31,23 +31,23 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.commons.vfs2.FileContent;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.VFS;
-import org.compiere.model.Query;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.adempiere.report.jasper.model.I_AD_OrgInfo;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Jasper class loader: basically it will resolve {@link #PLACEHOLDER} from resource names and will fetch the resources from remote HTTP servers.
@@ -65,24 +65,18 @@ public final class JasperClassLoader extends ClassLoader
 	// Hooks
 	private final OrgLogoClassLoaderHook logoHook;
 
-	public JasperClassLoader(final int adOrgId, final ClassLoader parent)
+	public JasperClassLoader(@NonNull final OrgId adOrgId, @NonNull final ClassLoader parent)
 	{
 		super(parent);
-		Check.assumeNotNull(parent, "Param 'parent' is not null");
 
 		this.prefix = retrieveReportPrefix(adOrgId);
-		this.logoHook = OrgLogoClassLoaderHook.forAD_Org_ID(adOrgId);
+		this.logoHook = OrgLogoClassLoaderHook.ofOrgId(adOrgId);
 	}
 
-	private static final String retrieveReportPrefix(final int adOrgId)
+	private static String retrieveReportPrefix(@NonNull final OrgId adOrgId)
 	{
-		final String whereClause = I_AD_OrgInfo.COLUMNNAME_AD_Org_ID + "=?";
-		final I_AD_OrgInfo orgInfo = new Query(Env.getCtx(), I_AD_OrgInfo.Table_Name, whereClause, ITrx.TRXNAME_None)
-				.setParameters(adOrgId)
-				.firstOnly(I_AD_OrgInfo.class);
-		final String reportPrefix = orgInfo.getReportPrefix();
-
-		logger.info("ReportPrefix: " + reportPrefix + " (AD_Org_ID=" + adOrgId + ")");
+		final String reportPrefix = Services.get(IOrgDAO.class).getOrgInfoById(adOrgId).getReportsPathPrefix();
+		logger.info("Reports Path Prefix: {} (AD_Org_ID={})", reportPrefix, adOrgId);
 
 		return reportPrefix;
 	}
@@ -221,7 +215,7 @@ public final class JasperClassLoader extends ClassLoader
 	 * @param resourceName
 	 * @return resource's URL string
 	 */
-	private final String convertResourceNameToURLString(final String resourceName)
+	private String convertResourceNameToURLString(final String resourceName)
 	{
 		if (Check.isEmpty(prefix))
 		{

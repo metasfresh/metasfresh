@@ -2,6 +2,8 @@ package de.metas.notification;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -41,7 +43,7 @@ public class Recipient
 		return ALL_USERS;
 	}
 
-	public static Recipient user(final int userId)
+	public static Recipient user(@NonNull final UserId userId)
 	{
 		return _builder()
 				.type(RecipientType.User)
@@ -49,7 +51,7 @@ public class Recipient
 				.build();
 	}
 
-	public static Recipient userAndRole(final int userId, final int roleId)
+	public static Recipient userAndRole(@NonNull final UserId userId, @NonNull final RoleId roleId)
 	{
 		return _builder()
 				.type(RecipientType.User)
@@ -58,7 +60,7 @@ public class Recipient
 				.build();
 	}
 
-	public static Recipient role(final int roleId)
+	public static Recipient role(@NonNull final RoleId roleId)
 	{
 		return _builder()
 				.type(RecipientType.Role)
@@ -82,43 +84,43 @@ public class Recipient
 	private static final Recipient ALL_USERS = _builder().type(RecipientType.AllUsers).build();
 
 	private RecipientType type;
-	private int userId;
-	private int roleId;
+	private UserId userId;
+	private RoleId roleId;
 	private NotificationGroupName notificationGroupName;
 
 	@Builder(builderMethodName = "_builder")
 	private Recipient(
 			@NonNull final RecipientType type,
-			final int userId,
-			final int roleId,
+			final UserId userId,
+			final RoleId roleId,
 			final NotificationGroupName notificationGroupName)
 	{
 		this.type = type;
 		if (type == RecipientType.AllUsers)
 		{
-			this.userId = -1;
-			this.roleId = -1;
+			this.userId = null;
+			this.roleId = null;
 			this.notificationGroupName = null;
 		}
 		else if (type == RecipientType.User)
 		{
-			Check.assumeGreaterOrEqualToZero(userId, "userId");
+			Check.assumeNotNull(userId, "userId is not null");
 			this.userId = userId;
-			this.roleId = roleId >= 0 ? roleId : -1;
+			this.roleId = roleId;
 			this.notificationGroupName = null;
 		}
 		else if (type == RecipientType.Role)
 		{
-			Check.assumeGreaterOrEqualToZero(roleId, "roleId");
-			this.userId = -1;
+			Check.assumeNotNull(roleId, "roleId is not null");
+			this.userId = null;
 			this.roleId = roleId;
 			this.notificationGroupName = null;
 		}
 		else if (type == RecipientType.AllRolesContainingGroup)
 		{
 			Check.assumeNotNull(notificationGroupName, "Parameter notificationGroupName is not null");
-			this.userId = -1;
-			this.roleId = -1;
+			this.userId = null;
+			this.roleId = null;
 			this.notificationGroupName = notificationGroupName;
 		}
 		else
@@ -147,7 +149,7 @@ public class Recipient
 		return type == RecipientType.AllRolesContainingGroup;
 	}
 
-	public int getUserId()
+	public UserId getUserId()
 	{
 		if (type != RecipientType.User)
 		{
@@ -158,7 +160,7 @@ public class Recipient
 
 	public boolean isRoleIdSet()
 	{
-		return roleId >= 0;
+		return roleId != null;
 	}
 
 	public NotificationGroupName getNotificationGroupName()

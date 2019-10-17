@@ -53,6 +53,7 @@ import org.adempiere.process.rpl.api.impl.ReplicationAccessContext;
 import org.adempiere.server.rpl.api.impl.ImportHelper;
 import org.adempiere.server.rpl.exceptions.ExportProcessorException;
 import org.adempiere.server.rpl.exceptions.ReplicationException;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Client;
@@ -73,6 +74,7 @@ import org.compiere.model.X_AD_ReplicationTable;
 import org.compiere.model.X_EXP_FormatLine;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.w3c.dom.Document;
@@ -82,8 +84,10 @@ import org.w3c.dom.Text;
 import de.metas.adempiere.service.IAppDictionaryBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * @author Trifon N. Trifonov
@@ -129,10 +133,12 @@ public class ExportHelper
 		m_rplStrategy = rplStrategy;
 	}
 
-	public ExportHelper(final Properties ctx, final int AD_Client_ID)
+	public ExportHelper(final Properties ctx, @NonNull final ClientId AD_Client_ID)
 	{
-		m_AD_Client_ID = AD_Client_ID;
-		m_rplStrategy = Services.get(IClientDAO.class).retriveClient(ctx, AD_Client_ID).getAD_ReplicationStrategy();
+		m_AD_Client_ID = AD_Client_ID.getRepoId();
+		m_rplStrategy = Services.get(IClientDAO.class)
+				.getById(Env.getClientId(ctx))
+				.getAD_ReplicationStrategy();
 	}
 
 	/**
@@ -292,7 +298,7 @@ public class ExportHelper
 
 		final Collection<PO> records = new Query(exportFormat.getCtx(), table.getTableName(), whereClause.toString(), exportFormat.get_TrxName())
 				.setOnlyActiveRecords(true)
-				.setApplyAccessFilter(racCtx.isApplyAccessFilter())
+				.setRequiredAccess(racCtx.isApplyAccessFilter() ? Access.READ : null)
 				.setLimit(racCtx.getLimit())
 				.list(PO.class);
 
@@ -477,7 +483,7 @@ public class ExportHelper
 			}
 
 			final Query query = new Query(masterPO.getCtx(), tableEmbedded.getTableName(), whereClause.toString(), masterPO.get_TrxName());
-		
+
 			final boolean hasIsActiveColumn = Services.get(IADTableDAO.class).hasColumnName(tableEmbedded.getTableName(), "IsActive");
 			if (hasIsActiveColumn)
 			{
@@ -487,7 +493,7 @@ public class ExportHelper
 				query.setOnlyActiveRecords(true);
 			}
 			final List<PO> instances = query
-					.setApplyAccessFilter(racCtx.isApplyAccessFilter())
+					.setRequiredAccess(racCtx.isApplyAccessFilter() ? Access.READ : null)
 					.setParameters(linkId)
 					.setLimit(racCtx.getLimit())
 					.list(PO.class);
@@ -598,7 +604,7 @@ public class ExportHelper
 			}
 
 			final List<PO> instances = query
-					.setApplyAccessFilter(racCtx.isApplyAccessFilter())
+					.setRequiredAccess(racCtx.isApplyAccessFilter() ? Access.READ : null)
 					.setParameters(value)
 					.list(PO.class);
 
@@ -782,7 +788,7 @@ public class ExportHelper
 			valueString = str.isEmpty() ? null : str;
 		}
 
-		log.info("Encoded column '{}' from '{}' to '{}' (attributes: {})", new Object[] { column.getColumnName(), value, valueString, valueAttributes });
+		log.debug("Encoded column '{}' from '{}' to '{}' (attributes: {})", new Object[] { column.getColumnName(), value, valueString, valueAttributes });
 		return valueString;
 	}
 

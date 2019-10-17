@@ -7,6 +7,7 @@ import org.adempiere.exceptions.AdempiereException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.metas.JsonObjectMapperHolder;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 
 /*
@@ -33,7 +34,7 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 
 public class CacheInvalidateMultiRequestSerializer
 {
-	private final ObjectMapper jsonObjectMapper = new ObjectMapper();
+	private final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	public String toJson(final CacheInvalidateMultiRequest request)
 	{

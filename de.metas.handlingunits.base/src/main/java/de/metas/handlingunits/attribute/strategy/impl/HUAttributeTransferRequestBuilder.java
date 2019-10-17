@@ -105,7 +105,7 @@ public final class HUAttributeTransferRequestBuilder implements IHUAttributeTran
 	@Override
 	public IHUAttributeTransferRequestBuilder setQuantity(final Quantity quantity)
 	{
-		qty = quantity.getAsBigDecimal();
+		qty = quantity.toBigDecimal();
 		uom = quantity.getUOM();
 		return this;
 	}

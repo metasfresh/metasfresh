@@ -28,17 +28,19 @@ import java.util.Properties;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IOrgDAO;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_WF_Responsible;
 import org.compiere.model.X_AD_WF_Responsible;
 import org.compiere.util.Env;
+import org.compiere.wf.MWFResponsible;
 
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.workflow.api.IWorkflowBL;
 import de.metas.workflow.api.IWorkflowDAO;
-import de.metas.workflow.model.I_AD_OrgInfo;
 import de.metas.workflow.model.I_C_Doc_Responsible;
 import lombok.NonNull;
 
@@ -47,12 +49,15 @@ public class WorkflowBL implements IWorkflowBL
 	private static final int AD_WF_RESPONSIBLE_ID_Invoker = 101;
 
 	@Override
-	public I_AD_WF_Responsible getOrgWFResponsible(Properties ctx, int adOrgId)
+	public I_AD_WF_Responsible getOrgWFResponsible(Properties ctx, int adOrgRepoId)
 	{
-		final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.create(
-				Services.get(IOrgDAO.class).retrieveOrgInfo(ctx, adOrgId, ITrx.TRXNAME_None),
-				I_AD_OrgInfo.class);
-		I_AD_WF_Responsible wfResponsible = orgInfo.getAD_WF_Responsible();
+		final OrgId adOrgId = OrgId.ofRepoIdOrAny(adOrgRepoId);
+		
+		final OrgInfo orgInfo = Services.get(IOrgDAO.class).getOrgInfoById(adOrgId);
+		final int wfResponsibleId = orgInfo.getWorkflowResponsibleId();
+		I_AD_WF_Responsible wfResponsible = wfResponsibleId > 0
+				? MWFResponsible.get(Env.getCtx(), orgInfo.getWorkflowResponsibleId())
+				: null;
 		if (wfResponsible != null)
 		{
 			return wfResponsible;

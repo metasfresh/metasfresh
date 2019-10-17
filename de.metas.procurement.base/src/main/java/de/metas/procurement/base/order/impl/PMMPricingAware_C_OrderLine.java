@@ -11,6 +11,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -21,8 +22,11 @@ import de.metas.procurement.base.IPMMPricingAware;
 import de.metas.procurement.base.IPMMProductBL;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.model.I_PMM_Product;
+import de.metas.product.IProductDAO;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -36,12 +40,12 @@ import lombok.Setter;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -53,7 +57,7 @@ import lombok.Setter;
  * <p>
  * <b>IMPORTANT:</b> The setters do not alter the wrapped orderline itself, because we currently only use this implementation in an {@link IPricingRule} implementation.
  * But is should not be hard to add an option to also alter the wrapped olderLine in future, if needed.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -88,7 +92,7 @@ public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 	@Override
 	public I_C_BPartner getC_BPartner()
 	{
-		return orderLine.getC_BPartner();
+		return Services.get(IBPartnerDAO.class).getById(orderLine.getC_BPartner_ID());
 	}
 
 	@Override
@@ -105,9 +109,9 @@ public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 	@Override
 	public I_M_Product getM_Product()
 	{
-		return orderLine.getM_Product();
+		return Services.get(IProductDAO.class).getById(getProductId());
 	}
-	
+
 	@Override
 	public int getProductId()
 	{
@@ -117,7 +121,7 @@ public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 	@Override
 	public I_C_UOM getC_UOM()
 	{
-		return orderLine.getC_UOM();
+		return Services.get(IUOMDAO.class).getById(orderLine.getC_UOM_ID());
 	}
 
 	@Override
@@ -178,7 +182,9 @@ public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 	@Override
 	public Timestamp getDate()
 	{
-		return orderLine.getDatePromised();
+		return CoalesceUtil.coalesceSuppliers(
+				() -> orderLine.getDatePromised(),
+				() -> orderLine.getC_Order().getDatePromised());
 	}
 
 	@Override
@@ -211,7 +217,7 @@ public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 	}
 
 	/**
-	 * 
+	 *
 	 * @return the value that was set via {@link #setPrice(BigDecimal)}.
 	 */
 	public BigDecimal getPrice()

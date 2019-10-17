@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.BOMComponentType;
 
 import de.metas.materialtracking.IHandlingUnitsInfo;
 
@@ -74,7 +75,7 @@ public interface IProductionMaterial
 	 */
 	I_M_Product getMainComponentProduct();
 
-	String getComponentType();
+	BOMComponentType getComponentType();
 
 	boolean isByProduct();
 

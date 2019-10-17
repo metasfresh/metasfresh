@@ -42,6 +42,7 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_InOut;
+import org.compiere.util.TimeUtil;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -118,7 +119,7 @@ public class InOutBL implements IInOutBL
 
 		pricingCtx.setPricingSystemId(pricingSystemId);
 		pricingCtx.setPriceListId(PriceListId.ofRepoId(priceList.getM_PriceList_ID()));
-		pricingCtx.setPriceDate(inOut.getDateOrdered());
+		pricingCtx.setPriceDate(TimeUtil.asLocalDate(inOut.getDateOrdered()));
 		pricingCtx.setCurrencyId(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
 		// note: the qty was already passed to the pricingCtx upon creation, further up.
 
@@ -381,38 +382,33 @@ public class InOutBL implements IInOutBL
 
 	private static Comparator<I_M_InOutLine> getOrderLineComparator(final HashMap<Integer, Integer> inoutLineId2orderId)
 	{
-		return new Comparator<I_M_InOutLine>()
-		{
-			@Override
-			public int compare(final I_M_InOutLine line1, final I_M_InOutLine line2)
+		return (line1, line2) -> {
+			// InOut_ID
+			final int order_ID1 = inoutLineId2orderId.get(line1.getM_InOutLine_ID());
+			final int order_ID2 = inoutLineId2orderId.get(line2.getM_InOutLine_ID());
+
+			if (order_ID1 > order_ID2)
 			{
-				// InOut_ID
-				final int order_ID1 = inoutLineId2orderId.get(line1.getM_InOutLine_ID());
-				final int order_ID2 = inoutLineId2orderId.get(line2.getM_InOutLine_ID());
-
-				if (order_ID1 > order_ID2)
-				{
-					return 1;
-				}
-				if (order_ID1 < order_ID2)
-				{
-					return -1;
-				}
-
-				// LineNo
-				final int line1No = line1.getLine();
-				final int line2No = line2.getLine();
-
-				if (line1No > line2No)
-				{
-					return 1;
-				}
-				if (line1No < line2No)
-				{
-					return -1;
-				}
-				return 0;
+				return 1;
 			}
+			if (order_ID1 < order_ID2)
+			{
+				return -1;
+			}
+
+			// LineNo
+			final int line1No = line1.getLine();
+			final int line2No = line2.getLine();
+
+			if (line1No > line2No)
+			{
+				return 1;
+			}
+			if (line1No < line2No)
+			{
+				return -1;
+			}
+			return 0;
 		};
 	}
 

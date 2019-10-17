@@ -1,0 +1,2 @@
+UPDATE AD_Column SET ColumnSQL='(select coalesce(bpp.ProductNo, p.value) from m_inout i left join de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(M_InOutLine.M_Product_ID, i.C_BPartner_ID, M_InOutLine.M_AttributeSetInstance_ID) as bpp on 1=1 join M_Product p on p.m_product_id = M_InOutLine.M_Product_ID where i.m_inout_id = M_InOutLine.m_inout_id)',Updated=TO_TIMESTAMP('2018-12-06 12:51:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=552570
+;

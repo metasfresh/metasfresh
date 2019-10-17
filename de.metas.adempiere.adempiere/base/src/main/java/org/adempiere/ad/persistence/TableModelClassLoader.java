@@ -25,14 +25,24 @@ package org.adempiere.ad.persistence;
 import java.lang.reflect.Constructor;
 import java.sql.ResultSet;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Table;
+import org.compiere.model.MAccount;
+import org.compiere.model.MGLCategory;
+import org.compiere.model.MKCategory;
+import org.compiere.model.MProjectTypePhase;
+import org.compiere.model.MProjectTypeTask;
+import org.compiere.model.MRequestCategory;
 import org.compiere.model.MTable;
+import org.compiere.model.MTree_Base;
+import org.compiere.model.M_Element;
+import org.compiere.model.M_Registration;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -42,6 +52,8 @@ import com.google.common.cache.LoadingCache;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 /**
  * Class responsible for loading model classes by given Table Name.
@@ -62,6 +74,8 @@ public class TableModelClassLoader
 	 */
 	private IEntityTypesCache entityTypesCache = EntityTypesCache.instance;
 
+	private final ConcurrentMap<String, String> specialTableName2className = new ConcurrentHashMap<>();
+
 	/**
 	 * Cache: TableName to Model Class
 	 */
@@ -77,7 +91,6 @@ public class TableModelClassLoader
 
 	/** Packages for Model Classes */
 	private static final String[] s_packages = new String[] {
-
 			"org.compiere.model", "org.compiere.wf",
 			"org.compiere.report", // teo_sarca BF[3133032]
 			"org.compiere.print", "org.compiere.impexp",
@@ -86,25 +99,9 @@ public class TableModelClassLoader
 			"org.adempiere.model"
 	};
 
-	/** Special Classes */
-	private static final String[] s_special = new String[] {
-			"AD_Element", "org.compiere.model.M_Element",
-			"AD_Registration", "org.compiere.model.M_Registration",
-			"AD_Tree", "org.compiere.model.MTree_Base",
-			"R_Category", "org.compiere.model.MRequestCategory",
-			"GL_Category", "org.compiere.model.MGLCategory",
-			"K_Category", "org.compiere.model.MKCategory",
-			"C_ValidCombination", "org.compiere.model.MAccount",
-			"C_Phase", "org.compiere.model.MProjectTypePhase",
-			"C_Task", "org.compiere.model.MProjectTypeTask"
-			// AD_Attribute_Value, AD_TreeNode
-	};
-
 	@VisibleForTesting
 	TableModelClassLoader()
 	{
-		super();
-
 		this.tableName2class = CacheBuilder.newBuilder()
 				.build(new CacheLoader<String, Class<?>>()
 				{
@@ -136,12 +133,27 @@ public class TableModelClassLoader
 						return findResultSetConstructor(modelClass);
 					}
 				});
+
+		specialTableName2className.put("AD_Element", M_Element.class.getName());
+		specialTableName2className.put("AD_Registration", M_Registration.class.getName());
+		specialTableName2className.put("AD_Tree", MTree_Base.class.getName());
+		specialTableName2className.put("R_Category", MRequestCategory.class.getName());
+		specialTableName2className.put("GL_Category", MGLCategory.class.getName());
+		specialTableName2className.put("K_Category", MKCategory.class.getName());
+		specialTableName2className.put("C_ValidCombination", MAccount.class.getName());
+		specialTableName2className.put("C_Phase", MProjectTypePhase.class.getName());
+		specialTableName2className.put("C_Task", MProjectTypeTask.class.getName());
+	}
+
+	public void registerSpecialClassName(@NonNull final String tableName, @NonNull final String className)
+	{
+		specialTableName2className.put(tableName, className);
+		tableName2class.invalidate(tableName);
 	}
 
 	@VisibleForTesting
-	void setEntityTypesCache(final IEntityTypesCache entityTypesCache)
+	void setEntityTypesCache(@NonNull final IEntityTypesCache entityTypesCache)
 	{
-		Check.assumeNotNull(entityTypesCache, "entityTypesCache not null");
 		this.entityTypesCache = entityTypesCache;
 	}
 
@@ -192,16 +204,15 @@ public class TableModelClassLoader
 		}
 
 		// Special Naming
-		for (int i = 0; i < s_special.length; i++)
 		{
-			if (s_special[i++].equals(tableName))
+			final String specialClassName = specialTableName2className.get(tableName);
+			if (specialClassName != null)
 			{
-				final Class<?> clazz = loadModelClassForClassname(s_special[i]);
+				final Class<?> clazz = loadModelClassForClassname(specialClassName);
 				if (clazz != null)
 				{
 					return clazz;
 				}
-				break;
 			}
 		}
 
@@ -211,7 +222,7 @@ public class TableModelClassLoader
 		final String modelpackage = getModelPackageForTableName(tableName);
 		if (modelpackage != null)
 		{
-			Class<?> clazz = loadModelClassForClassname(modelpackage + ".M" + Util.replace(tableName, "_", ""));
+			Class<?> clazz = loadModelClassForClassname(modelpackage + ".M" + StringUtils.replace(tableName, "_", ""));
 			if (clazz != null)
 			{
 				return clazz;
@@ -237,7 +248,7 @@ public class TableModelClassLoader
 			 */
 		}
 		// Remove underlines
-		className = Util.replace(className, "_", "");
+		className = StringUtils.replace(className, "_", "");
 
 		// Search packages
 		for (int i = 0; i < s_packages.length; i++)

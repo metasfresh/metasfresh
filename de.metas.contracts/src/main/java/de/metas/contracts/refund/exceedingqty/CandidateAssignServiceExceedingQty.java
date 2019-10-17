@@ -3,11 +3,11 @@ package de.metas.contracts.refund.exceedingqty;
 import static de.metas.util.collections.CollectionUtils.singleElement;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
-import org.adempiere.util.lang.Mutable;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -21,12 +21,15 @@ import de.metas.contracts.refund.AssignmentToRefundCandidateRepository;
 import de.metas.contracts.refund.CandidateAssignmentService.UpdateAssignmentResult;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.contracts.refund.RefundContract;
 import de.metas.contracts.refund.RefundInvoiceCandidate;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidateService;
+import de.metas.money.MoneyService;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -53,10 +56,32 @@ import lombok.NonNull;
 
 public class CandidateAssignServiceExceedingQty
 {
-
+	@VisibleForTesting
+	@Getter
 	private final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
+
 	private final RefundInvoiceCandidateService refundInvoiceCandidateService;
+
+	@VisibleForTesting
+	@Getter
 	private final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository;
+
+	@VisibleForTesting
+	public static CandidateAssignServiceExceedingQty createInstanceForUnitTesting()
+	{
+		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = RefundInvoiceCandidateRepository.createInstanceForUnitTesting();
+
+		final RefundInvoiceCandidateService refundInvoiceCandidateService = new RefundInvoiceCandidateService(
+				refundInvoiceCandidateRepository,
+				new MoneyService(new CurrencyRepository()));
+
+		final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository = new AssignmentToRefundCandidateRepository(refundInvoiceCandidateRepository);
+
+		return new CandidateAssignServiceExceedingQty(
+				refundInvoiceCandidateRepository,
+				refundInvoiceCandidateService,
+				assignmentToRefundCandidateRepository);
+	}
 
 	public CandidateAssignServiceExceedingQty(
 			@NonNull final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository,
@@ -70,7 +95,7 @@ public class CandidateAssignServiceExceedingQty
 
 	public UpdateAssignmentResult updateAssignment(
 			@NonNull final AssignableInvoiceCandidate assignableCandidate,
-			@NonNull final List<RefundInvoiceCandidate> refundCandidatesToAssign,
+			@NonNull final List<RefundInvoiceCandidate> refundCandidatesToAssignTo,
 			@NonNull final RefundContract refundContract)
 	{
 		Check.errorUnless(RefundMode.APPLY_TO_EXCEEDING_QTY.equals(refundContract.extractRefundMode()),
@@ -85,18 +110,14 @@ public class CandidateAssignServiceExceedingQty
 
 		final List<AssignmentToRefundCandidate> assignments = new ArrayList<>();
 
-		for (final RefundInvoiceCandidate refundCandidateToAssign : refundCandidatesToAssign)
+		for (final RefundInvoiceCandidate refundCandidateToAssignTo : orderCandidatesByConfigMinQty(refundCandidatesToAssignTo))
 		{
+			final RefundConfig refundConfig = singleElement(refundCandidateToAssignTo.getRefundConfigs());
+
 			final AssignCandidatesRequestBuilder assignCandidatesRequest = AssignCandidatesRequest
 					.builder()
-					.assignableInvoiceCandidate(assignableCandidateWithoutRefundInvoiceCandidates);
-
-			final Mutable<RefundInvoiceCandidate> lastAssignedResultCandidate = new Mutable<>(refundCandidateToAssign);
-
-			final RefundConfig refundConfig = singleElement(refundCandidateToAssign.getRefundConfigs());
-
-			assignCandidatesRequest
-					.refundInvoiceCandidate(lastAssignedResultCandidate.getValue())
+					.assignableInvoiceCandidate(assignableCandidateWithoutRefundInvoiceCandidates)
+					.refundInvoiceCandidate(refundCandidateToAssignTo)
 					.refundConfig(refundConfig);
 
 			assignedCandidateWithRemainingQty = assignCandidates(
@@ -108,9 +129,6 @@ public class CandidateAssignServiceExceedingQty
 			// the assignableInvoiceCandidate of our assignCandidatesRequest had no assignments, so the result has exactly one assignment.
 			final AssignmentToRefundCandidate createdAssignment = singleElement(createdAssignments);
 			assignments.add(createdAssignment);
-
-			lastAssignedResultCandidate.setValue(createdAssignment.getRefundInvoiceCandidate());
-
 		}
 
 		final AssignableInvoiceCandidate resultCandidate = assignableCandidate
@@ -118,7 +136,15 @@ public class CandidateAssignServiceExceedingQty
 				.clearAssignmentsToRefundCandidates()
 				.assignmentsToRefundCandidates(assignments)
 				.build();
-		return UpdateAssignmentResult.updateDone(resultCandidate, ImmutableList.of());
+		return UpdateAssignmentResult.updateDone(resultCandidate, ImmutableList.of()/* additionalChangedCandidates */);
+	}
+
+	private ImmutableList<RefundInvoiceCandidate> orderCandidatesByConfigMinQty(@NonNull final List<RefundInvoiceCandidate> refundCandidatesToAssign)
+	{
+		return refundCandidatesToAssign
+				.stream()
+				.sorted(Comparator.comparing(c -> singleElement(c.getRefundConfigs()).getMinQty()))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	/**
@@ -142,7 +168,7 @@ public class CandidateAssignServiceExceedingQty
 		final boolean partialAssignRequired = assignableCandidate.getQuantity().compareTo(quantityToAssignEffective) > 0;
 		if (partialAssignRequired)
 		{
-			final SplitResult splitResult = assignableCandidate.splitQuantity(quantityToAssignEffective.getAsBigDecimal());
+			final SplitResult splitResult = assignableCandidate.splitQuantity(quantityToAssignEffective.toBigDecimal());
 			candidateToAssign = splitResult.getNewCandidate();
 		}
 		else
@@ -167,12 +193,7 @@ public class CandidateAssignServiceExceedingQty
 						refundConfig,
 						candidateToAssign);
 
-		final RefundInvoiceCandidate //
-		updatedRefundCandidate = assignmentToRefundCandidate.getRefundInvoiceCandidate();
-		refundInvoiceCandidateRepository.save(updatedRefundCandidate);
-
-		// final AssignCandidatesRequest //
-		// updatedPair = assignCandidatesRequest.withAssignmentToRefundCandidate(assignmentToRefundCandidate);
+		refundInvoiceCandidateRepository.save(assignmentToRefundCandidate.getRefundInvoiceCandidate());
 
 		assignmentToRefundCandidateRepository.save(assignmentToRefundCandidate);
 
@@ -181,8 +202,6 @@ public class CandidateAssignServiceExceedingQty
 						.toBuilder()
 						.assignmentToRefundCandidate(assignmentToRefundCandidate)
 						.build(),
-				// saveCandidateAssignment(assignCandidatesRequest, assignmentToRefundCandidate.getMoneyAssignedToRefundCandidate()),
 				remainingQty);
 	}
-
 }

@@ -15,12 +15,10 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.pricing.spi.impl.rules.ProductScalePrice;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
-import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.interceptor.MainValidator;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -29,6 +27,9 @@ import de.metas.contracts.pricing.ContractDiscount;
 import de.metas.contracts.pricing.SubscriptionPricingRule;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.pricing.attributebased.impl.AttributePricing;
 import de.metas.pricing.rules.Discount;
 import de.metas.pricing.rules.PriceListVersion;
@@ -150,9 +151,9 @@ public class FlatrateTermTestHelper
 		InterfaceWrapperHelper.save(adOrg);
 		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, adOrg.getAD_Org_ID());
 
-		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
-		orgInfo.setAD_Org(adOrg);
-		save(orgInfo);
+		Services.get(IOrgDAO.class).createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
+				.orgId(OrgId.ofRepoId(adOrg.getAD_Org_ID()))
+				.build());
 
 		addPricingRules();
 		createPricingRules();

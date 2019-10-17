@@ -96,7 +96,11 @@ public class FactTrxLines
 		// ..likewise for cr
 		if (!zeroLines.isEmpty())// if (zeroLines.size() == 1)
 		{
-			if (drLines.isEmpty())
+			if (drLines.isEmpty() && crLines.isEmpty())
+			{
+				// all the lines have zero-amounts; leave them in there; extractType() can handle it
+			}
+			else if (drLines.isEmpty() && !crLines.isEmpty())
 			{
 				final BigDecimal crLineSum = crLines.stream()
 						.map(FactLine::getAmtAcctCr)
@@ -106,7 +110,7 @@ public class FactTrxLines
 					drLines.add(zeroLines.remove(zeroLines.size() - 1));
 				}
 			}
-			else if (crLines.isEmpty())
+			else if (!drLines.isEmpty() && crLines.isEmpty())
 			{
 				final BigDecimal drLineSum = crLines.stream()
 						.map(FactLine::getAmtAcctDr)

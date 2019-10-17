@@ -4,14 +4,13 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Issue;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.logging.LogManager;
 import de.metas.procurement.base.IPMM_RfQ_BL;
 import de.metas.procurement.base.IPMM_RfQ_DAO;
@@ -24,6 +23,7 @@ import de.metas.rfq.model.I_C_RfQResponseLineQty;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -105,14 +105,14 @@ class PMMRfQResponseChangeEventTrxItemProcessor extends TrxItemProcessorAdapter<
 
 		final AdempiereException metasfreshException = AdempiereException.wrapIfNeeded(e);
 
-		final String errorMsg = Util.firstNotEmptyTrimmed(metasfreshException.getLocalizedMessage(), metasfreshException.getMessage());
+		final String errorMsg = CoalesceUtil.firstNotEmptyTrimmed(metasfreshException.getLocalizedMessage(), metasfreshException.getMessage());
 		event.setErrorMsg(errorMsg);
 
-		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(null, metasfreshException);
-		event.setAD_Issue(issue);
+		final AdIssueId issue = Services.get(IErrorManager.class).createIssue(metasfreshException);
+		event.setAD_Issue_ID(issue.getRepoId());
 		InterfaceWrapperHelper.save(event);
 
-		Loggables.get().addLog("Event marked as isError='Y' with message: {}; event={}", errorMsg, event);
+		Loggables.addLog("Event marked as isError='Y' with message: {}; event={}", errorMsg, event);
 	}
 
 	private void process_PriceChangeEvent(final I_PMM_RfQResponse_ChangeEvent event)

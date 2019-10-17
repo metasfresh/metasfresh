@@ -3,6 +3,7 @@ package de.metas.inoutcandidate.process;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -47,6 +48,7 @@ import org.adempiere.exceptions.DBForeignKeyConstraintException;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_UOM;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -93,7 +95,7 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 	{
 		final IParams params = getParameterAsIParams();
 
-		warehouseId = params.getParameterAsInt(PARA_M_WAREHOUSE_ID);
+		warehouseId = params.getParameterAsInt(PARA_M_WAREHOUSE_ID, -1);
 		dateFrom = params.getParameterAsTimestamp(PARA_DATE_FROM);
 		dateTo = params.getParameterAsTimestamp(PARA_DATE_TO);
 		isCreateMovement = params.getParameterAsBool(PARA_IS_CREATE_MOVEMENT);
@@ -262,7 +264,7 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 					.getQtyOrdered(receiptSchedule);
 
 			huGenerator
-					.setQtyToAllocateTarget(Quantity.of(qtyToAllocate, receiptSchedule.getC_UOM()))
+					.setQtyToAllocateTarget(Quantity.of(qtyToAllocate, loadOutOfTrx(receiptSchedule.getC_UOM_ID(), I_C_UOM.class)))
 					.generateWithinInheritedTransaction();
 		}
 		catch (final DBForeignKeyConstraintException e)
@@ -270,7 +272,7 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 			// task 09016: this case happens from time to time (aprox. 90 times in the first 6 months), if the M_ReceiptsScheulde is deleted due to an order reactivation
 			// don't rethrow the exception;
 			final String msg = "Detected a FK constraint vialoation; We assume that everything was rolled back, but we do not let the processing fail. Check the java comments for details";
-			Loggables.get().withLogger(logger, Level.WARN).addLog(msg);
+			Loggables.withLogger(logger, Level.WARN).addLog(msg);
 		}
 	}
 

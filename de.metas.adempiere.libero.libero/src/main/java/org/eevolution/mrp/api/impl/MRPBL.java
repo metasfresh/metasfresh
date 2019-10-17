@@ -28,8 +28,6 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -52,6 +50,8 @@ import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.IProductBL;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -204,21 +204,14 @@ public class MRPBL implements IMRPBL
 	public I_C_UOM getC_UOM(final I_PP_MRP mrp)
 	{
 		Check.assumeNotNull(mrp, "mrp not null");
-
-		final I_M_Product product = mrp.getM_Product();
-		Check.assume(product != null && product.getM_Product_ID() > 0, "MRP record shall have the Product set: {}", mrp);
-		final I_C_UOM productUOM = Services.get(IProductBL.class).getStockingUOM(product);
-		return productUOM;
+		return Services.get(IProductBL.class).getStockUOM(mrp.getM_Product_ID());
 	}
 
 	@Override
 	public I_C_UOM getC_UOM(final I_PP_MRP_Alternative mrpAlternative)
 	{
 		Check.assumeNotNull(mrpAlternative, "mrpAlternative not null");
-		final I_M_Product product = mrpAlternative.getM_Product();
-		Check.assume(product != null && product.getM_Product_ID() > 0, "MRP alternative record shall have the Product set: {}", mrpAlternative);
-		final I_C_UOM productUOM = Services.get(IProductBL.class).getStockingUOM(product);
-		return productUOM;
+		return Services.get(IProductBL.class).getStockUOM(mrpAlternative.getM_Product_ID());
 	}
 
 	@Override

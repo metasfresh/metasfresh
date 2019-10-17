@@ -87,7 +87,7 @@ public class MockedImportHelper implements IImportHelper
 
 		final Object xmlResponse;
 
-		final boolean clientModeOld = Ini.isClient();
+		final boolean clientModeOld = Ini.isSwingClient();
 		try
 		{
 			// Make sure we are running in Server mode

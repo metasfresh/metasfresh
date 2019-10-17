@@ -1,0 +1,496 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="530" leftMargin="40" rightMargin="25" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/productspecifications/report" uuid="d337e18a-4953-4f43-8409-fe9b871ee4b5">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="2.593742460100013"/>
+	<property name="ireport.x" value="343"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="erptest.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="RECORD_ID" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[0]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ad_language" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT distinct
+  bp.companyname,
+  bpl.address,
+  p.name             as ProductName,
+  additional_produktinfos as Additional_produktinfos,
+  p.value            as ProductValue,
+  UPC                     as UPC,
+  weight                  as NetWeight,
+  c.name                 as Country,
+  guaranteedaysmin        as ShelfLifeDays,
+  warehouse_temperature   as Warehouse_temperature,
+  p.description       as ProductDescription,
+p.customerlabelname,
+m_product_ID
+FROM m_product p
+left outer join ad_orginfo oi on p.ad_org_id = oi.ad_org_id
+left outer join C_BPartner_Location bpl on oi.orgbp_location_id = bpl.c_bpartner_location_id
+left outer join C_BPartner bp on bpl.C_BPartner_ID = bp.C_BPartner_ID
+left outer join c_location l on bpl.c_location_id = l.c_location_id
+ left outer join c_country c on l.c_country_id = c.c_country_id
+ WHERE m_product_ID = $P{RECORD_ID}
+;]]>
+	</queryString>
+	<field name="companyname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="companyname"/>
+	</field>
+	<field name="address" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="address"/>
+	</field>
+	<field name="productname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="productname"/>
+	</field>
+	<field name="additional_produktinfos" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="additional_produktinfos"/>
+	</field>
+	<field name="productvalue" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="productvalue"/>
+	</field>
+	<field name="upc" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="upc"/>
+	</field>
+	<field name="netweight" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="netweight"/>
+	</field>
+	<field name="country" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="country"/>
+	</field>
+	<field name="shelflifedays" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="shelflifedays"/>
+	</field>
+	<field name="warehouse_temperature" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="warehouse_temperature"/>
+	</field>
+	<field name="productdescription" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="productdescription"/>
+	</field>
+	<field name="customerlabelname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="customerlabelname"/>
+	</field>
+	<field name="m_product_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="m_product_id"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="281" splitType="Stretch">
+			<textField>
+				<reportElement x="142" y="99" width="161" height="23" uuid="91d461d7-d7b1-41ff-9f3a-ad10aa7e1961"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="16" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Specification}]]></textFieldExpression>
+			</textField>
+			<image scaleImage="RealSize" onErrorType="Blank">
+				<reportElement x="0" y="93" width="115" height="29" uuid="77f7f6b1-d76b-494f-a849-f53906e0a255"/>
+				<imageExpression><![CDATA["de/metas/reports/productspecifications/logo.png"]]></imageExpression>
+			</image>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="155" width="180" height="14" uuid="7070a48c-a531-4d2d-9d17-f025f0d25a8d"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_1}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="174" width="136" height="12" uuid="f1d63f3a-e0e1-41d2-8bcd-0d5f44c38bc0"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Supplier}+":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="221" width="136" height="12" uuid="d6c87868-fd21-4a91-9c68-c5d00347c108"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{QM-Responsible}+":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="233" width="136" height="12" uuid="c8c3b5d3-793d-429f-a33f-256aae050962"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Phone}+":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="245" width="136" height="12" uuid="b99d6fbe-1a6e-413f-bc53-03b568f92f58"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Mail}+":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="267" width="136" height="12" uuid="6b890820-dff4-4398-8790-e800ff891661"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Certification}+":"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement isPrintRepeatedValues="false" x="136" y="174" width="414" height="42" isPrintWhenDetailOverflows="true" uuid="fcb1f27f-298e-4633-8eaa-08634d9d644d"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{companyname}
++"\n"
++$F{address}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement isPrintRepeatedValues="false" x="136" y="221" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="1f1fc585-e809-4d8a-8d33-43617ca0d1cb"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Responsible}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement isPrintRepeatedValues="false" x="136" y="233" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="56dc4e85-202c-49a9-a528-83ccc9b40f82"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Tel_value}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement isPrintRepeatedValues="false" x="136" y="245" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="7e2a01c9-ba1b-4112-8b4e-de89c42d7aa3"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Mail_value}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement isPrintRepeatedValues="false" x="136" y="267" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="6150625d-3b20-40fd-a802-3f61a6f71a50"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Certs}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement isPrintRepeatedValues="false" x="0" y="1" width="190" height="59" isPrintWhenDetailOverflows="true" uuid="bc5660f4-e58f-4cb4-98d5-60817f3ba04b"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="8" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{companyname}
++"\n"
++$F{address}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement isPrintRepeatedValues="false" x="200" y="0" width="130" height="20" isPrintWhenDetailOverflows="true" uuid="cde0ab46-3ee6-4458-be5e-58051a8b5b29"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="8" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Warehouse}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<detail>
+		<band height="149" splitType="Stretch">
+			<textField isStretchWithOverflow="true">
+				<reportElement isPrintRepeatedValues="false" x="0" y="39" width="136" height="12" uuid="ae93a721-5e42-4219-bd07-2ad1eab73cfe"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ProductName}+":"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement isPrintRepeatedValues="false" x="136" y="99" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="7411173c-0f92-4f2a-bae5-db88ff93face"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{country}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement isPrintRepeatedValues="false" x="0" y="99" width="136" height="12" uuid="fd6c9a8d-3fc8-4d94-88d5-c1ffca87e01f"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Country}+":"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement isPrintRepeatedValues="false" x="136" y="63" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="b4894817-b2f3-4cd8-ad99-9977b828367b"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{additional_produktinfos}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement isPrintRepeatedValues="false" x="0" y="51" width="136" height="12" uuid="1aa2dcbe-2bdc-42a5-8045-1a3e75126294"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ProductDescription}+":"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.000" isBlankWhenNull="true">
+				<reportElement isPrintRepeatedValues="false" x="136" y="87" width="34" height="12" isPrintWhenDetailOverflows="true" uuid="f0348708-6ca4-4573-a37d-91f583522320"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{netweight}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement isPrintRepeatedValues="false" x="0" y="87" width="136" height="12" uuid="29f35d2e-188a-45b4-b53a-9a9bee62c17a"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{NetWeight}+":"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement isPrintRepeatedValues="false" x="0" y="75" width="136" height="12" uuid="68843a1b-6778-4d03-8410-e3e91134d235"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ProductValue}+":"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement isPrintRepeatedValues="false" x="136" y="51" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="8bbba5b1-f655-4f72-9ce1-743e1a824182"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{customerlabelname}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement isPrintRepeatedValues="false" x="0" y="63" width="136" height="12" uuid="acc4b218-b0fe-4c5e-9211-142ee6fb2525"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Additional_produktinfos}+":"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement isPrintRepeatedValues="false" x="136" y="39" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="b0d9120a-3cbf-478b-8fca-edda14659c14"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{productname}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="20" width="180" height="14" uuid="8659ecdb-d1bf-4c41-8b31-84e67783f747"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_2}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement isPrintRepeatedValues="false" x="136" y="75" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="57be0389-14a7-4c61-a85d-ea73f7fbb480"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{productvalue}]]></textFieldExpression>
+			</textField>
+			<subreport>
+				<reportElement x="0" y="120" width="549" height="28" uuid="faf383a7-d2f4-4257-bba1-ada086176be1"/>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[$F{m_product_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/reports/productspecifications/report_packagingmaterial.jasper"]]></subreportExpression>
+			</subreport>
+			<textField isStretchWithOverflow="true" pattern="#,##0.000" isBlankWhenNull="true">
+				<reportElement isPrintRepeatedValues="false" x="162" y="87" width="54" height="12" isPrintWhenDetailOverflows="true" uuid="33a810c7-1ce5-4059-b1ee-06d44e6d2767"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA["kg"]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="65" splitType="Prevent">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement isPrintRepeatedValues="false" x="136" y="39" width="414" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="61b2b209-0b53-4f90-b0ae-2b24553f9235"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{shelflifedays}+" "+$R{days}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement isPrintRepeatedValues="false" x="0" y="39" width="136" height="12" uuid="b41a5a19-7b9e-4bf0-8800-44dc6c2e93f4"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ShelfLifeDays}+":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="20" width="180" height="14" uuid="e9038c71-f753-4652-bbcc-bcba50d073d8"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_4}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement positionType="FixRelativeToBottom" isPrintRepeatedValues="false" x="136" y="51" width="414" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="68ad74ae-dacc-4fce-9e98-459b522a4c99"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{warehouse_temperature}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="FixRelativeToBottom" isPrintRepeatedValues="false" x="0" y="51" width="136" height="12" uuid="b8f96be5-6fd9-4439-a2e0-a6c94544a761"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Warehouse_temperature}+":"]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="50" splitType="Prevent">
+			<subreport>
+				<reportElement x="0" y="20" width="549" height="28" isPrintWhenDetailOverflows="true" uuid="28065a70-a08d-431d-b55f-16d218b9fc6c"/>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[($F{m_product_id}).intValue()]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/reports/productspecifications/report_component.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="49" splitType="Prevent">
+			<subreport>
+				<reportElement x="0" y="20" width="549" height="28" uuid="44f09295-75ac-4b48-a3a0-55a01de35e13"/>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[($F{m_product_id}).intValue()]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/reports/productspecifications/report_allergen.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="33" splitType="Prevent">
+			<subreport>
+				<reportElement x="0" y="3" width="549" height="28" uuid="96386cd9-0eb7-44e0-bf38-7c1a6268cd79"/>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[($F{m_product_id}).intValue()]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/reports/productspecifications/report_nutrition.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="50">
+			<subreport>
+				<reportElement x="0" y="20" width="549" height="28" uuid="a8ed439d-742b-42c1-9459-400ff1f7b060"/>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[($F{m_product_id}).intValue()]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/reports/productspecifications/report_microbiology.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="58" splitType="Prevent">
+			<textField isStretchWithOverflow="true">
+				<reportElement isPrintRepeatedValues="false" x="0" y="20" width="180" height="14" uuid="4deb80a3-a065-4a26-94fe-4f548a87383b"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_9}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement isPrintRepeatedValues="false" x="0" y="39" width="550" height="19" isPrintWhenDetailOverflows="true" uuid="bd7c46b6-6fd5-42b0-a79d-5e61b9cbd46e"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_9_text}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="155">
+			<textField isStretchWithOverflow="true">
+				<reportElement isPrintRepeatedValues="false" x="0" y="20" width="180" height="14" uuid="85734e8a-e3c0-45d5-b283-6aa55c3811a8"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_10}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement isPrintRepeatedValues="false" x="0" y="39" width="550" height="19" uuid="742ea5f9-f524-4dc1-96a3-382b014c9242"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_10_text}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="80" width="100" height="12" uuid="21f69536-8ce9-4a3a-9a06-e67b59966fd8"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Date}+":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="96" width="100" height="12" uuid="90242a8f-65d3-44d2-a38f-202f127d572a"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{DoneBy}+":"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="141" width="550" height="12" uuid="5f8c16e1-c353-4cb4-9025-73dad80e0d40"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Footer_txt}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="100" y="80" width="230" height="12" uuid="d91889c5-080b-4e36-ad33-46e3463779df"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("dd.MM.yyyy").format(new Date())]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement isPrintRepeatedValues="false" x="100" y="96" width="230" height="12" uuid="2cd4f0ff-d2c9-4e50-b1eb-0e718ac89559"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Responsible}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

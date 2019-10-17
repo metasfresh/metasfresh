@@ -2,11 +2,13 @@ package org.adempiere.ad.table.process;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.table.api.impl.CopyColumnsProducer;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Table;
 
 import de.metas.process.IADProcessBL;
 import de.metas.process.JavaProcess;
+import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
 
 /*
@@ -43,10 +45,12 @@ import de.metas.util.Services;
  */
 public class AD_Table_ConvertToDocument extends JavaProcess
 {
-	private static transient IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-	private static transient IADProcessBL processBL = Services.get(IADProcessBL.class);
+	private static final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	private static final IADProcessBL processBL = Services.get(IADProcessBL.class);
+	private static final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt()
 	{
 		final I_AD_Table documentTable = getRecord(I_AD_Table.class);
@@ -61,7 +65,7 @@ public class AD_Table_ConvertToDocument extends JavaProcess
 				.setSourceColumns(tableDAO.retrieveColumnsForTable(documentTemplateTable))
 				.create();
 
-		final I_AD_Process adProcess = processBL.createAndLinkDocumentSpecificProcess(documentTable);
+		final I_AD_Process adProcess = trxManager.callInNewTrx(() -> processBL.createAndLinkDocumentSpecificProcess(documentTable));
 		addLog("@Created@ @AD_Process_ID@: {}", adProcess);
 
 		return MSG_OK;

@@ -1,14 +1,20 @@
 package de.metas.material.interceptor;
 
-import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
+import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.compiere.model.I_AD_Client;
+import org.springframework.stereotype.Component;
+
+import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineFactory;
+import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.PostMaterialEventService;
+import lombok.NonNull;
 
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,14 +32,28 @@ import org.compiere.model.I_AD_Client;
  * #L%
  */
 
-public class Main extends AbstractModuleInterceptor
+@Component
+public class Main extends AbstractModelInterceptor
 {
-	@Override
-	protected void registerInterceptors(
-			final IModelValidationEngine engine,
-			final I_AD_Client client)
+	private final ModelProductDescriptorExtractor productDescriptorFactory;
+	private final PostMaterialEventService postMaterialEventService;
+	private final ShipmentScheduleReferencedLineFactory referencedLineFactory;
+
+	public Main(
+			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory,
+			@NonNull final PostMaterialEventService postMaterialEventService,
+			@NonNull final ShipmentScheduleReferencedLineFactory referencedLineFactory)
 	{
-		engine.addModelValidator(M_ShipmentSchedule.INSTANCE, client);
-		engine.addModelValidator(M_Forecast.INSTANCE, client);
+		this.productDescriptorFactory = productDescriptorFactory;
+		this.postMaterialEventService = postMaterialEventService;
+		this.referencedLineFactory = referencedLineFactory;
 	}
+
+	@Override
+	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
+	{
+		engine.addModelValidator(new M_Forecast(productDescriptorFactory, postMaterialEventService), client);
+		engine.addModelValidator(new M_ShipmentSchedule(postMaterialEventService, referencedLineFactory, productDescriptorFactory), client);
+	}
+
 }

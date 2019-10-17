@@ -32,10 +32,6 @@ public interface I_M_DiscountSchemaBreak
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_AD_Client>(I_M_DiscountSchemaBreak.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -43,7 +39,7 @@ public interface I_M_DiscountSchemaBreak
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -53,23 +49,17 @@ public interface I_M_DiscountSchemaBreak
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_AD_Org>(I_M_DiscountSchemaBreak.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Base_PricingSystem_ID.
+	 * Set Preissystem.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -78,7 +68,7 @@ public interface I_M_DiscountSchemaBreak
 	public void setBase_PricingSystem_ID (int Base_PricingSystem_ID);
 
 	/**
-	 * Get Base_PricingSystem_ID.
+	 * Get Preissystem.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -86,12 +76,6 @@ public interface I_M_DiscountSchemaBreak
 	 */
 	public int getBase_PricingSystem_ID();
 
-	public org.compiere.model.I_M_PricingSystem getBase_PricingSystem();
-
-	public void setBase_PricingSystem(org.compiere.model.I_M_PricingSystem Base_PricingSystem);
-
-    /** Column definition for Base_PricingSystem_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_M_PricingSystem> COLUMN_Base_PricingSystem_ID = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_M_PricingSystem>(I_M_DiscountSchemaBreak.class, "Base_PricingSystem_ID", org.compiere.model.I_M_PricingSystem.class);
     /** Column name Base_PricingSystem_ID */
     public static final String COLUMNNAME_Base_PricingSystem_ID = "Base_PricingSystem_ID";
 
@@ -121,8 +105,8 @@ public interface I_M_DiscountSchemaBreak
     public static final String COLUMNNAME_BreakDiscount = "BreakDiscount";
 
 	/**
-	 * Set Break Value.
-	 * Low Value of trade discount break level
+	 * Set Mengenstufe.
+	 * Mindestmenge ab der die Kondition gilt
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -131,8 +115,8 @@ public interface I_M_DiscountSchemaBreak
 	public void setBreakValue (java.math.BigDecimal BreakValue);
 
 	/**
-	 * Get Break Value.
-	 * Low Value of trade discount break level
+	 * Get Mengenstufe.
+	 * Mindestmenge ab der die Kondition gilt
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -165,12 +149,6 @@ public interface I_M_DiscountSchemaBreak
 	 */
 	public int getC_Currency_ID();
 
-	public org.compiere.model.I_C_Currency getC_Currency();
-
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
-
-    /** Column definition for C_Currency_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_C_Currency>(I_M_DiscountSchemaBreak.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
@@ -194,12 +172,6 @@ public interface I_M_DiscountSchemaBreak
 	 */
 	public int getC_PaymentTerm_ID();
 
-	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm();
-
-	public void setC_PaymentTerm(org.compiere.model.I_C_PaymentTerm C_PaymentTerm);
-
-    /** Column definition for C_PaymentTerm_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_C_PaymentTerm> COLUMN_C_PaymentTerm_ID = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_C_PaymentTerm>(I_M_DiscountSchemaBreak.class, "C_PaymentTerm_ID", org.compiere.model.I_C_PaymentTerm.class);
     /** Column name C_PaymentTerm_ID */
     public static final String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
 
@@ -228,8 +200,6 @@ public interface I_M_DiscountSchemaBreak
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_AD_User>(I_M_DiscountSchemaBreak.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -309,35 +279,6 @@ public interface I_M_DiscountSchemaBreak
     public static final String COLUMNNAME_IsValid = "IsValid";
 
 	/**
-	 * Set Hersteller.
-	 * Hersteller des Produktes
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setManufacturer_ID (int Manufacturer_ID);
-
-	/**
-	 * Get Hersteller.
-	 * Hersteller des Produktes
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getManufacturer_ID();
-
-	public org.compiere.model.I_C_BPartner getManufacturer();
-
-	public void setManufacturer(org.compiere.model.I_C_BPartner Manufacturer);
-
-    /** Column definition for Manufacturer_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_C_BPartner> COLUMN_Manufacturer_ID = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_C_BPartner>(I_M_DiscountSchemaBreak.class, "Manufacturer_ID", org.compiere.model.I_C_BPartner.class);
-    /** Column name Manufacturer_ID */
-    public static final String COLUMNNAME_Manufacturer_ID = "Manufacturer_ID";
-
-	/**
 	 * Set Merkmal.
 	 * Produkt-Merkmal
 	 *
@@ -357,12 +298,6 @@ public interface I_M_DiscountSchemaBreak
 	 */
 	public int getM_Attribute_ID();
 
-	public org.compiere.model.I_M_Attribute getM_Attribute();
-
-	public void setM_Attribute(org.compiere.model.I_M_Attribute M_Attribute);
-
-    /** Column definition for M_Attribute_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_M_Attribute> COLUMN_M_Attribute_ID = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_M_Attribute>(I_M_DiscountSchemaBreak.class, "M_Attribute_ID", org.compiere.model.I_M_Attribute.class);
     /** Column name M_Attribute_ID */
     public static final String COLUMNNAME_M_Attribute_ID = "M_Attribute_ID";
 
@@ -386,39 +321,8 @@ public interface I_M_DiscountSchemaBreak
 	 */
 	public int getM_AttributeValue_ID();
 
-	public org.compiere.model.I_M_AttributeValue getM_AttributeValue();
-
-	public void setM_AttributeValue(org.compiere.model.I_M_AttributeValue M_AttributeValue);
-
-    /** Column definition for M_AttributeValue_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_M_AttributeValue> COLUMN_M_AttributeValue_ID = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_M_AttributeValue>(I_M_DiscountSchemaBreak.class, "M_AttributeValue_ID", org.compiere.model.I_M_AttributeValue.class);
     /** Column name M_AttributeValue_ID */
     public static final String COLUMNNAME_M_AttributeValue_ID = "M_AttributeValue_ID";
-
-	/**
-	 * Set Discount Schema Break.
-	 * Trade Discount Break
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setM_DiscountSchemaBreak_ID (int M_DiscountSchemaBreak_ID);
-
-	/**
-	 * Get Discount Schema Break.
-	 * Trade Discount Break
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getM_DiscountSchemaBreak_ID();
-
-    /** Column definition for M_DiscountSchemaBreak_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object> COLUMN_M_DiscountSchemaBreak_ID = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object>(I_M_DiscountSchemaBreak.class, "M_DiscountSchemaBreak_ID", null);
-    /** Column name M_DiscountSchemaBreak_ID */
-    public static final String COLUMNNAME_M_DiscountSchemaBreak_ID = "M_DiscountSchemaBreak_ID";
 
 	/**
 	 * Set Rabatt Schema.
@@ -450,6 +354,31 @@ public interface I_M_DiscountSchemaBreak
     public static final String COLUMNNAME_M_DiscountSchema_ID = "M_DiscountSchema_ID";
 
 	/**
+	 * Set Discount Schema Break.
+	 * Trade Discount Break
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_DiscountSchemaBreak_ID (int M_DiscountSchemaBreak_ID);
+
+	/**
+	 * Get Discount Schema Break.
+	 * Trade Discount Break
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_DiscountSchemaBreak_ID();
+
+    /** Column definition for M_DiscountSchemaBreak_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object> COLUMN_M_DiscountSchemaBreak_ID = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object>(I_M_DiscountSchemaBreak.class, "M_DiscountSchemaBreak_ID", null);
+    /** Column name M_DiscountSchemaBreak_ID */
+    public static final String COLUMNNAME_M_DiscountSchemaBreak_ID = "M_DiscountSchemaBreak_ID";
+
+	/**
 	 * Set Produkt Kategorie.
 	 * Kategorie eines Produktes
 	 *
@@ -469,12 +398,6 @@ public interface I_M_DiscountSchemaBreak
 	 */
 	public int getM_Product_Category_ID();
 
-	public org.compiere.model.I_M_Product_Category getM_Product_Category();
-
-	public void setM_Product_Category(org.compiere.model.I_M_Product_Category M_Product_Category);
-
-    /** Column definition for M_Product_Category_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_M_Product_Category> COLUMN_M_Product_Category_ID = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_M_Product_Category>(I_M_DiscountSchemaBreak.class, "M_Product_Category_ID", org.compiere.model.I_M_Product_Category.class);
     /** Column name M_Product_Category_ID */
     public static final String COLUMNNAME_M_Product_Category_ID = "M_Product_Category_ID";
 
@@ -498,14 +421,31 @@ public interface I_M_DiscountSchemaBreak
 	 */
 	public int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
-
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_M_Product>(I_M_DiscountSchemaBreak.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Hersteller.
+	 * Hersteller des Produktes
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setManufacturer_ID (int Manufacturer_ID);
+
+	/**
+	 * Get Hersteller.
+	 * Hersteller des Produktes
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getManufacturer_ID();
+
+    /** Column name Manufacturer_ID */
+    public static final String COLUMNNAME_Manufacturer_ID = "Manufacturer_ID";
 
 	/**
 	 * Set Not valid reason.
@@ -554,7 +494,7 @@ public interface I_M_DiscountSchemaBreak
     public static final String COLUMNNAME_PaymentDiscount = "PaymentDiscount";
 
 	/**
-	 * Set PriceBase.
+	 * Set Preisgrundlage.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -563,7 +503,7 @@ public interface I_M_DiscountSchemaBreak
 	public void setPriceBase (java.lang.String PriceBase);
 
 	/**
-	 * Get PriceBase.
+	 * Get Preisgrundlage.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -577,29 +517,54 @@ public interface I_M_DiscountSchemaBreak
     public static final String COLUMNNAME_PriceBase = "PriceBase";
 
 	/**
-	 * Set Standardpreis.
-	 * Standardpreis
+	 * Set Festpreis.
+	 * Festpreis, ohne ggf. zusätzliche Rabatte
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPriceStd (java.math.BigDecimal PriceStd);
+	public void setPriceStdFixed (java.math.BigDecimal PriceStdFixed);
 
 	/**
-	 * Get Standardpreis.
-	 * Standardpreis
+	 * Get Festpreis.
+	 * Festpreis, ohne ggf. zusätzliche Rabatte
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getPriceStd();
+	public java.math.BigDecimal getPriceStdFixed();
 
-    /** Column definition for PriceStd */
-    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object> COLUMN_PriceStd = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object>(I_M_DiscountSchemaBreak.class, "PriceStd", null);
-    /** Column name PriceStd */
-    public static final String COLUMNNAME_PriceStd = "PriceStd";
+    /** Column definition for PriceStdFixed */
+    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object> COLUMN_PriceStdFixed = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object>(I_M_DiscountSchemaBreak.class, "PriceStdFixed", null);
+    /** Column name PriceStdFixed */
+    public static final String COLUMNNAME_PriceStdFixed = "PriceStdFixed";
+
+	/**
+	 * Set Preisaufschlag.
+	 * Aufschlag auf den Preis, der aus dem Preissystem resultieren würde
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPricingSystemSurchargeAmt (java.math.BigDecimal PricingSystemSurchargeAmt);
+
+	/**
+	 * Get Preisaufschlag.
+	 * Aufschlag auf den Preis, der aus dem Preissystem resultieren würde
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPricingSystemSurchargeAmt();
+
+    /** Column definition for PricingSystemSurchargeAmt */
+    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object> COLUMN_PricingSystemSurchargeAmt = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object>(I_M_DiscountSchemaBreak.class, "PricingSystemSurchargeAmt", null);
+    /** Column name PricingSystemSurchargeAmt */
+    public static final String COLUMNNAME_PricingSystemSurchargeAmt = "PricingSystemSurchargeAmt";
 
 	/**
 	 * Set QualityIssuePercentage.
@@ -652,31 +617,6 @@ public interface I_M_DiscountSchemaBreak
     public static final String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
-	 * Set Aufschlag auf Standardpreis.
-	 * Amount added to a price as a surcharge
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setStd_AddAmt (java.math.BigDecimal Std_AddAmt);
-
-	/**
-	 * Get Aufschlag auf Standardpreis.
-	 * Amount added to a price as a surcharge
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getStd_AddAmt();
-
-    /** Column definition for Std_AddAmt */
-    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object> COLUMN_Std_AddAmt = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, Object>(I_M_DiscountSchemaBreak.class, "Std_AddAmt", null);
-    /** Column name Std_AddAmt */
-    public static final String COLUMNNAME_Std_AddAmt = "Std_AddAmt";
-
-	/**
 	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
@@ -701,8 +641,6 @@ public interface I_M_DiscountSchemaBreak
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_DiscountSchemaBreak, org.compiere.model.I_AD_User>(I_M_DiscountSchemaBreak.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

@@ -94,7 +94,7 @@ public class TestJasperPrint
 		return jasperPrint;
 	}
 
-	private static void exportPDF(JasperPrint jasperPrint) throws Exception
+	protected static void exportPDF(JasperPrint jasperPrint) throws Exception
 	{
 		File file = new File("D:/test.pdf");
 		System.out.println("Exporting PDF to " + file);

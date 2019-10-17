@@ -15,16 +15,18 @@ import static de.metas.business.BusinessTestHelper.createWarehouse;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.math.BigDecimal;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -62,6 +64,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * This helper class declares master data and objects that are useful for testing.
@@ -278,16 +281,16 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		// No-HU PI
 		// Default attributes
 		{
-// this is already done in HUTestHelper.setupNoPIAttributes(); if we do it again, we violate the uniqueness assumption for M_HU_PI_Attributes
-//			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
-//					.setM_HU_PI(huDefNone));
+			// this is already done in HUTestHelper.setupNoPIAttributes(); if we do it again, we violate the uniqueness assumption for M_HU_PI_Attributes
+			// createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_CountryMadeIn)
+			// .setM_HU_PI(huDefNone));
 
 			//
 			// Add some more Text attributes to this PI (just to see how it works in UI)
 			for (int i = 1; i <= 10; i++)
 			{
 				final I_M_Attribute attr_Text = new AttributesTestHelper().createM_Attribute("Text" + i, X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
-				createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_Text)
+				createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_Text)
 						.setM_HU_PI(huDefNone));
 			}
 		}
@@ -301,12 +304,12 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 
 			createHU_PI_Item_PackingMaterial(huDefIFCO, pmIFCO);
 			pmIFCO.setAllowedPackingWeight(new BigDecimal("100"));
-			pmIFCO.setC_UOM_Weight(uomEach);
+			pmIFCO.setC_UOM_Weight_ID(uomEach.getC_UOM_ID());
 			InterfaceWrapperHelper.save(pmIFCO);
 
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_CountryMadeIn)
 					.setM_HU_PI(huDefIFCO));
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_FragileSticker)
 					.setM_HU_PI(huDefIFCO));
 			// this.createAttribute(huDefIFCO, attr_Weight,
 			// X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp,
@@ -316,14 +319,14 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		huDefIFCO2 = createHUDefinition(HUTestHelper.NAME_IFCO_Product + "_2", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 		{
 			final I_M_HU_PI_Item itemMA = this.createHU_PI_Item_Material(huDefIFCO2);
-			huDefIFCO2_pip_Tomato = assignProduct(itemMA, pTomatoProductId, BigDecimal.TEN,uomEach);
+			huDefIFCO2_pip_Tomato = assignProduct(itemMA, pTomatoProductId, BigDecimal.TEN, uomEach);
 			huDefIFCO2_pip_Salad = assignProduct(itemMA, pSaladProductId, BigDecimal.TEN, uomEach);
 
 			createHU_PI_Item_PackingMaterial(huDefIFCO2, pmIFCO);
 
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_CountryMadeIn)
 					.setM_HU_PI(huDefIFCO2));
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_FragileSticker)
 					.setM_HU_PI(huDefIFCO2));
 			// this.createAttribute(huDefIFCO2, attr_Weight,
 			// X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp,
@@ -336,12 +339,12 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 
 			createHU_PI_Item_PackingMaterial(huDefPalet, pmPalet);
 			pmPalet.setAllowedPackingWeight(new BigDecimal("400"));
-			pmPalet.setC_UOM_Weight(uomEach);
+			pmPalet.setC_UOM_Weight_ID(uomEach.getC_UOM_ID());
 			InterfaceWrapperHelper.save(pmPalet);
 
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_CountryMadeIn)
 					.setM_HU_PI(huDefPalet));
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_FragileSticker)
 					.setM_HU_PI(huDefPalet));
 			// this.createAttribute(huDefPalet, attr_Weight,
 			// X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp,
@@ -353,11 +356,11 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 			createHU_PI_Item_IncludedHU(huDefPalet2, huDefIFCO2, new BigDecimal("10"));
 			createHU_PI_Item_PackingMaterial(huDefPalet2, pmPalet);
 
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_CountryMadeIn)
 					.setM_HU_PI(huDefPalet2));
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_FragileSticker)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_FragileSticker)
 					.setM_HU_PI(huDefPalet2));
-			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_Volume)
+			createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attr_Volume)
 					.setM_HU_PI(huDefPalet2)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp)
 					.setAggregationStrategyClass(SumAggregationStrategy.class));
@@ -397,25 +400,26 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		return order;
 	}
 
-	public I_M_ReceiptSchedule createReceiptSchedule(final I_M_Warehouse warehouse,
-			final I_M_Warehouse warehouseDest,
-			final I_C_Order order,
-			final I_M_Product product,
+	public I_M_ReceiptSchedule createReceiptSchedule(
+			@Nullable final I_M_Warehouse warehouse,
+			@Nullable final I_M_Warehouse warehouseDest,
+			@NonNull final I_C_Order order,
+			@NonNull final I_M_Product product,
 			final int qtyInt,
 			final I_M_HU_PI_Item_Product pip)
 	{
 		final I_M_ReceiptSchedule rSched = InterfaceWrapperHelper.create(ctx, I_M_ReceiptSchedule.class, ITrx.TRXNAME_None);
 		rSched.setC_BPartner_ID(order.getC_BPartner_ID());
 		rSched.setC_Order(order);
-		rSched.setM_Warehouse(warehouse);
-		rSched.setM_Warehouse_Dest(warehouseDest);
+		rSched.setM_Warehouse_ID(warehouse == null ? 0 : warehouse.getM_Warehouse_ID());
+		rSched.setM_Warehouse_Dest_ID(warehouseDest == null ? 0 : warehouseDest.getM_Warehouse_ID());
 		rSched.setProcessed(false);
-		rSched.setC_UOM(uomEach);
+		rSched.setC_UOM_ID(uomEach.getC_UOM_ID());
 		rSched.setQtyOrdered(BigDecimal.valueOf(qtyInt));
 
 		//
 		// Product & ASI
-		rSched.setM_Product(product);
+		rSched.setM_Product_ID(product.getM_Product_ID());
 		rSched.setM_AttributeSetInstance(createASI());
 
 		rSched.setMovementDate(getTodayTimestamp());
@@ -435,7 +439,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		{
 			final I_M_AttributeInstance ai = InterfaceWrapperHelper.newInstance(I_M_AttributeInstance.class, asi);
 			ai.setM_AttributeSetInstance(asi);
-			ai.setM_Attribute(attr_CountryMadeIn);
+			ai.setM_Attribute_ID(attr_CountryMadeIn.getM_Attribute_ID());
 			ai.setValue("RO");
 			ai.setValueNumber(null);
 			InterfaceWrapperHelper.save(ai);

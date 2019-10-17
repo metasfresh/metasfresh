@@ -17,6 +17,7 @@ import com.lowagie.text.pdf.PdfCopy;
 import com.lowagie.text.pdf.PdfReader;
 
 import de.metas.adempiere.report.jasper.JasperConstants;
+import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.print.IPrintService;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
@@ -48,7 +49,8 @@ public class ExecuteReportStrategyUtil
 {
 	public byte[] executeJasperProcess(
 			final int jasperProcessId,
-			@NonNull final ProcessInfo processInfo)
+			@NonNull final ProcessInfo processInfo,
+			@NonNull final OutputType outputType)
 	{
 		final ProcessExecutor processExecutor = ProcessInfo.builder()
 				.setCtx(Env.getCtx())
@@ -56,7 +58,12 @@ public class ExecuteReportStrategyUtil
 				.setRecord(processInfo.getTable_ID(), processInfo.getRecord_ID())
 				.addParameter(JasperConstants.REPORT_PARAM_BARCODE_URL, ReportEngine.getBarcodeServlet(Env.getCtx()))
 				.addParameter(IPrintService.PARAM_PrintCopies, 1)
-				.setPrintPreview(true) // don't archive it! just give us the PDF data
+				.setArchiveReportData(false) // don't archive it! just give us the PDF data
+				.setPrintPreview(false) 
+				
+				// important; event though printPreview(false), we might want JasperPrint, because the result shall be shown in the jasper-viewer
+				.setJRDesiredOutputType(outputType)
+				
 				.buildAndPrepareExecution()
 				.onErrorThrowException(true)
 				.executeSync();
@@ -65,10 +72,14 @@ public class ExecuteReportStrategyUtil
 		return processPdfData;
 	}
 
-	public byte[] concatenate(
+	public byte[] concatenatePDF(
 			@NonNull final byte[] documentPdfData,
 			@NonNull final List<PdfDataProvider> additionalDataItemsToAttach)
 	{
+		if(additionalDataItemsToAttach.isEmpty())
+		{
+			return documentPdfData;
+		}
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 
 		print(out, documentPdfData, additionalDataItemsToAttach);

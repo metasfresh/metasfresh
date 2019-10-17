@@ -32,8 +32,6 @@ public interface I_M_HU_Reservation
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_M_HU_Reservation, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_HU_Reservation, org.compiere.model.I_AD_Client>(I_M_HU_Reservation.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -59,10 +57,6 @@ public interface I_M_HU_Reservation
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_M_HU_Reservation, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_HU_Reservation, org.compiere.model.I_AD_Org>(I_M_HU_Reservation.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
@@ -85,10 +79,6 @@ public interface I_M_HU_Reservation
 	 * <br>Virtual Column: false
 	 */
 	public int getC_BPartner_Customer_ID();
-
-	public org.compiere.model.I_C_BPartner getC_BPartner_Customer();
-
-	public void setC_BPartner_Customer(org.compiere.model.I_C_BPartner C_BPartner_Customer);
 
     /** Column definition for C_BPartner_Customer_ID */
     public static final org.adempiere.model.ModelColumn<I_M_HU_Reservation, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_Customer_ID = new org.adempiere.model.ModelColumn<I_M_HU_Reservation, org.compiere.model.I_C_BPartner>(I_M_HU_Reservation.class, "C_BPartner_Customer_ID", org.compiere.model.I_C_BPartner.class);
@@ -143,10 +133,6 @@ public interface I_M_HU_Reservation
 	 * <br>Virtual Column: false
 	 */
 	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
 
     /** Column definition for C_UOM_ID */
     public static final org.adempiere.model.ModelColumn<I_M_HU_Reservation, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_HU_Reservation, org.compiere.model.I_C_UOM>(I_M_HU_Reservation.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);

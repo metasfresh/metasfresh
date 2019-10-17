@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
@@ -20,6 +20,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.SelectionSize;
 import de.metas.util.Services;
 
 public class C_Doc_Outbound_Log_StoreAttachments
@@ -28,19 +29,20 @@ public class C_Doc_Outbound_Log_StoreAttachments
 {
 	private static final String MSG_EMPTY_SELECTION = "C_Doc_Outbound_Log_StoreAttachments.No_DocOutboundLog_Selection";
 
-	private final transient AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
-	private final transient StoreAttachmentService storeAttachmentService = Adempiere.getBean(StoreAttachmentService.class);
+	private final transient AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	private final transient StoreAttachmentService storeAttachmentService = SpringContextHolder.instance.getBean(StoreAttachmentService.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		if (context.isNoSelection())
+		final SelectionSize selectionSize = context.getSelectionSize();
+		if (selectionSize.isNoSelection())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("No records selected");
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		if (context.getSelectionSize() > 500)
+		if (selectionSize.isAllSelected() || selectionSize.getSize() > 500)
 		{
 			// Checking is too expensive; just assume that some selected records have an attachment that shall be stored
 			return ProcessPreconditionsResolution.accept();

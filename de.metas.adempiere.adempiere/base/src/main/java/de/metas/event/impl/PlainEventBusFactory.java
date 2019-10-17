@@ -1,6 +1,9 @@
 package de.metas.event.impl;
 
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
+
+import org.compiere.Adempiere;
 
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
@@ -11,7 +14,7 @@ import de.metas.event.Topic;
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -34,66 +37,92 @@ import de.metas.event.Topic;
  */
 public class PlainEventBusFactory implements IEventBusFactory
 {
-	private final HashMap<Topic, EventBus> topic2Eventbus = new HashMap<>();
-
-	@Override
-	public IEventBus getEventBus(Topic topic)
+	public static PlainEventBusFactory newInstance()
 	{
-		return topic2Eventbus.computeIfAbsent(topic, t -> new EventBus(t.getFullName(), null));
+		return new PlainEventBusFactory();
+	}
+
+	private final HashMap<Topic, EventBus> eventBuses = new HashMap<>();
+
+	public PlainEventBusFactory()
+	{
+		assertJUnitTestMode();
+	}
+
+	private static void assertJUnitTestMode()
+	{
+		if (!Adempiere.isUnitTestMode())
+		{
+			throw new IllegalStateException(PlainEventBusFactory.class.getName() + " shall be used only in JUnit test mode");
+		}
 	}
 
 	@Override
-	public IEventBus getEventBusIfExists(Topic topic)
+	public IEventBus getEventBus(final Topic topic)
 	{
+		assertJUnitTestMode();
+		return eventBuses.computeIfAbsent(topic, this::createEventBus);
+	}
+
+	private EventBus createEventBus(final Topic topic)
+	{
+		final ExecutorService executor = null;
+		return new EventBus(topic.getName(), executor);
+	}
+
+	@Override
+	public IEventBus getEventBusIfExists(final Topic topic)
+	{
+		assertJUnitTestMode();
 		return null;
 	}
 
-	/** Currently this method implementation does nothing */
 	@Override
 	public void initEventBussesWithGlobalListeners()
 	{
+		assertJUnitTestMode();
 		// as of now, no unit test needs an implementation.
 	}
 
-	/** Currently this method implementation does nothing */
 	@Override
 	public void destroyAllEventBusses()
 	{
+		assertJUnitTestMode();
 		// as of now, no unit test needs an implementation.
 	}
 
-	/** Currently this method implementation does nothing */
 	@Override
-	public void registerGlobalEventListener(Topic topic, IEventListener listener)
+	public void registerGlobalEventListener(final Topic topic, final IEventListener listener)
 	{
+		assertJUnitTestMode();
 		// as of now, no unit test needs an implementation.
 	}
 
-	/** Currently this method implementation does nothing */
 	@Override
-	public void addAvailableUserNotificationsTopic(Topic topic)
+	public void addAvailableUserNotificationsTopic(final Topic topic)
 	{
+		assertJUnitTestMode();
 		// as of now, no unit test needs an implementation.
 	}
 
-	/** Currently this method implementation does nothing */
 	@Override
-	public void registerUserNotificationsListener(IEventListener listener)
+	public void registerUserNotificationsListener(final IEventListener listener)
 	{
+		assertJUnitTestMode();
 		// as of now, no unit test needs an implementation.
 	}
 
-	/** Currently this method implementation does nothing */
 	@Override
-	public void registerWeakUserNotificationsListener(IEventListener listener)
+	public void registerWeakUserNotificationsListener(final IEventListener listener)
 	{
+		assertJUnitTestMode();
 		// as of now, no unit test needs an implementation.
 	}
 
-	/** @return always false */
 	@Override
 	public boolean checkRemoteEndpointStatus()
 	{
+		assertJUnitTestMode();
 		return false;
 	}
 }

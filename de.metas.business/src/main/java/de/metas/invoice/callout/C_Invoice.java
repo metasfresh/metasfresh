@@ -1,29 +1,6 @@
 package de.metas.invoice.callout;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.sql.Timestamp;
-import java.util.Properties;
+import java.time.LocalDate;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -35,20 +12,25 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
+import de.metas.payment.PaymentRule;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 @Callout(I_C_Invoice.class)
-@Component("de.metas.invoice.callout.C_Invoice")
+@Component
 public class C_Invoice
 {
 	public C_Invoice()
@@ -88,16 +70,14 @@ public class C_Invoice
 			return;
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
-		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
-
 		final I_C_BPartner_Location location = invoice.getC_BPartner_Location();
 		if (location == null)
 		{
 			return;
 		}
 
-		final PricingSystemId pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(ctx, partner.getC_BPartner_ID(), soTrx, trxName);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
+		final PricingSystemId pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(bpartnerId, soTrx);
 		if (pricingSystemId == null)
 		{
 			return;
@@ -105,16 +85,16 @@ public class C_Invoice
 
 		//
 		// Get current dateInvoiced or use current time if it's not set
-		Timestamp dateInvoiced = invoice.getDateInvoiced();
+		LocalDate dateInvoiced = TimeUtil.asLocalDate(invoice.getDateInvoiced());
 		if (dateInvoiced == null)
 		{
-			dateInvoiced = new Timestamp(System.currentTimeMillis());
+			dateInvoiced = SystemTime.asLocalDate();
 		}
 
 		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 		final I_M_PriceList priceListNew = priceListBL.getCurrentPricelistOrNull(
 				pricingSystemId,
-				location.getC_Location().getC_Country_ID(),
+				CountryId.ofRepoId(location.getC_Location().getC_Country_ID()),
 				dateInvoiced,
 				soTrx);
 		if (priceListNew == null)
@@ -154,8 +134,8 @@ public class C_Invoice
 		Env.setContext(field.getCtx(), field.getWindowNo(), I_C_DocType.COLUMNNAME_DocBaseType, docBaseType);
 
 		// Task FRESH-488: Set the payment rule to the one from the sys config independent of doctype-letters
-		final String paymentRuleToUse = Services.get(IInvoiceBL.class).getDefaultPaymentRule();
-		invoice.setPaymentRule(paymentRuleToUse);
+		final PaymentRule paymentRule = Services.get(IInvoiceBL.class).getDefaultPaymentRule();
+		invoice.setPaymentRule(paymentRule.getCode());
 
 		//
 		Services.get(IInvoiceBL.class).updateDescriptionFromDocTypeTargetId(invoice, null, null);

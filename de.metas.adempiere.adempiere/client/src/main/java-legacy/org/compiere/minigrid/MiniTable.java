@@ -30,9 +30,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.ListSelectionModel;
@@ -47,7 +44,6 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.ui.DefaultTableColorProvider;
 import org.adempiere.ad.ui.ITableColorProvider;
 import org.compiere.apps.search.Info_Column;
@@ -56,15 +52,19 @@ import org.compiere.grid.ed.VHeaderRenderer;
 import org.compiere.model.PO;
 import org.compiere.swing.CCheckBox;
 import org.compiere.swing.CTable;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
 
 import com.google.common.collect.Ordering;
+
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
 
 /**
  * Mini Table. Default Read Only Table for Boolean, String, Number, Timestamp values
@@ -415,7 +415,7 @@ public class MiniTable extends CTable implements IMiniTable
 			finalSQL = Env.getUserRolePermissions().addAccessSQL(
 					sql.toString(),
 					tableName, IUserRolePermissions.SQL_FULLYQUALIFIED,
-					IUserRolePermissions.SQL_RO);
+					Access.READ);
 		}
 		else
 		{

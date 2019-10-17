@@ -59,7 +59,7 @@ public class AbstractHUStorageDAOTests
 		InterfaceWrapperHelper.save(uom);
 
 		final I_M_HU_Storage storage = InterfaceWrapperHelper.newInstance(I_M_HU_Storage.class);
-		storage.setC_UOM(uom);
+		storage.setC_UOM_ID(uom.getC_UOM_ID());
 		InterfaceWrapperHelper.save(storage);
 
 		final I_C_UOM result = new HUStorageDAO().getC_UOMOrNull(ImmutableList.of(storage));
@@ -81,11 +81,11 @@ public class AbstractHUStorageDAOTests
 		InterfaceWrapperHelper.save(uom);
 
 		final I_M_HU_Storage storage = InterfaceWrapperHelper.newInstance(I_M_HU_Storage.class);
-		storage.setC_UOM(uom);
+		storage.setC_UOM_ID(uom.getC_UOM_ID());
 		InterfaceWrapperHelper.save(storage);
 
 		final I_M_HU_Storage storage2 = InterfaceWrapperHelper.newInstance(I_M_HU_Storage.class);
-		storage2.setC_UOM(uom);
+		storage2.setC_UOM_ID(uom.getC_UOM_ID());
 		InterfaceWrapperHelper.save(storage2);
 
 		final I_C_UOM result = new HUStorageDAO().getC_UOMOrNull(ImmutableList.of(storage, storage2));
@@ -106,14 +106,14 @@ public class AbstractHUStorageDAOTests
 		uom.setUOMType("type1");
 		InterfaceWrapperHelper.save(uom);
 		final I_M_HU_Storage storage = InterfaceWrapperHelper.newInstance(I_M_HU_Storage.class);
-		storage.setC_UOM(uom);
+		storage.setC_UOM_ID(uom.getC_UOM_ID());
 		InterfaceWrapperHelper.save(storage);
 
 		final I_C_UOM uom2 = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 		uom2.setUOMType("type1");
 		InterfaceWrapperHelper.save(uom2);
 		final I_M_HU_Storage storage2 = InterfaceWrapperHelper.newInstance(I_M_HU_Storage.class);
-		storage2.setC_UOM(uom2);
+		storage2.setC_UOM_ID(uom2.getC_UOM_ID());
 		InterfaceWrapperHelper.save(storage2);
 
 		final I_C_UOM result = new HUStorageDAO().getC_UOMOrNull(ImmutableList.of(storage, storage2));
@@ -134,14 +134,14 @@ public class AbstractHUStorageDAOTests
 		uom.setUOMType("type1");
 		InterfaceWrapperHelper.save(uom);
 		final I_M_HU_Storage storage = InterfaceWrapperHelper.newInstance(I_M_HU_Storage.class);
-		storage.setC_UOM(uom);
+		storage.setC_UOM_ID(uom.getC_UOM_ID());
 		InterfaceWrapperHelper.save(storage);
 
 		final I_C_UOM uom2 = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 		uom2.setUOMType("type2");
 		InterfaceWrapperHelper.save(uom2);
 		final I_M_HU_Storage storage2 = InterfaceWrapperHelper.newInstance(I_M_HU_Storage.class);
-		storage2.setC_UOM(uom2);
+		storage2.setC_UOM_ID(uom2.getC_UOM_ID());
 		InterfaceWrapperHelper.save(storage2);
 
 		final I_C_UOM result = new HUStorageDAO().getC_UOMOrNull(ImmutableList.of(storage, storage2));
@@ -160,14 +160,14 @@ public class AbstractHUStorageDAOTests
 		uom.setUOMType(null);
 		InterfaceWrapperHelper.save(uom);
 		final I_M_HU_Storage storage = InterfaceWrapperHelper.newInstance(I_M_HU_Storage.class);
-		storage.setC_UOM(uom);
+		storage.setC_UOM_ID(uom.getC_UOM_ID());
 		InterfaceWrapperHelper.save(storage);
 
 		final I_C_UOM uom2 = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 		uom2.setUOMType(null);
 		InterfaceWrapperHelper.save(uom2);
 		final I_M_HU_Storage storage2 = InterfaceWrapperHelper.newInstance(I_M_HU_Storage.class);
-		storage2.setC_UOM(uom2);
+		storage2.setC_UOM_ID(uom2.getC_UOM_ID());
 		InterfaceWrapperHelper.save(storage2);
 
 		final I_C_UOM result = new HUStorageDAO().getC_UOMOrNull(ImmutableList.of(storage, storage2));

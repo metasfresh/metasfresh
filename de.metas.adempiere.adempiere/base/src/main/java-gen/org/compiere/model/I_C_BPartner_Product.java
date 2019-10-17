@@ -32,8 +32,6 @@ public interface I_C_BPartner_Product
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, org.compiere.model.I_AD_Client>(I_C_BPartner_Product.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -43,7 +41,7 @@ public interface I_C_BPartner_Product
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -53,15 +51,11 @@ public interface I_C_BPartner_Product
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, org.compiere.model.I_AD_Org>(I_C_BPartner_Product.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
@@ -87,10 +81,6 @@ public interface I_C_BPartner_Product
 	 * <br>Virtual Column: false
 	 */
 	public int getC_BPartner_ID();
-
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
 
     /** Column definition for C_BPartner_ID */
     public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, org.compiere.model.I_C_BPartner>(I_C_BPartner_Product.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
@@ -137,10 +127,6 @@ public interface I_C_BPartner_Product
 	 * <br>Virtual Column: false
 	 */
 	public int getC_BPartner_Vendor_ID();
-
-	public org.compiere.model.I_C_BPartner getC_BPartner_Vendor();
-
-	public void setC_BPartner_Vendor(org.compiere.model.I_C_BPartner C_BPartner_Vendor);
 
     /** Column definition for C_BPartner_Vendor_ID */
     public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_Vendor_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, org.compiere.model.I_C_BPartner>(I_C_BPartner_Product.class, "C_BPartner_Vendor_ID", org.compiere.model.I_C_BPartner.class);
@@ -249,7 +235,30 @@ public interface I_C_BPartner_Product
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Exclusion From Sale Reason.
+	 * Set CU-EAN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setEAN_CU (java.lang.String EAN_CU);
+
+	/**
+	 * Get CU-EAN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getEAN_CU();
+
+    /** Column definition for EAN_CU */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_EAN_CU = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "EAN_CU", null);
+    /** Column name EAN_CU */
+    public static final String COLUMNNAME_EAN_CU = "EAN_CU";
+
+	/**
+	 * Set Sperre Verkauf Grund.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -258,7 +267,7 @@ public interface I_C_BPartner_Product
 	public void setExclusionFromSaleReason (java.lang.String ExclusionFromSaleReason);
 
 	/**
-	 * Get Exclusion From Sale Reason.
+	 * Get Sperre Verkauf Grund.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -272,18 +281,18 @@ public interface I_C_BPartner_Product
     public static final String COLUMNNAME_ExclusionFromSaleReason = "ExclusionFromSaleReason";
 
 	/**
-	 * Set Ingredients.
+	 * Set Zutaten.
 	 *
-	 * <br>Type: TextLong
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setIngredients (java.lang.String Ingredients);
 
 	/**
-	 * Get Ingredients.
+	 * Get Zutaten.
 	 *
-	 * <br>Type: TextLong
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -393,35 +402,6 @@ public interface I_C_BPartner_Product
     public static final String COLUMNNAME_IsExcludedFromSale = "IsExcludedFromSale";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Product_ID (int M_Product_ID);
-
-	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Product_ID();
-
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
-
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, org.compiere.model.I_M_Product>(I_C_BPartner_Product.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
-
-	/**
 	 * Set Hersteller.
 	 * Manufacturer of the Product
 	 *
@@ -445,6 +425,60 @@ public interface I_C_BPartner_Product
     public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_Manufacturer = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "Manufacturer", null);
     /** Column name Manufacturer */
     public static final String COLUMNNAME_Manufacturer = "Manufacturer";
+
+	/**
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
+
+	/**
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_AttributeSetInstance_ID();
+
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+
+	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
+
+    /** Column definition for M_AttributeSetInstance_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, org.compiere.model.I_M_AttributeSetInstance>(I_C_BPartner_Product.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+    /** Column name M_AttributeSetInstance_ID */
+    public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+
+	/**
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Product_ID();
+
+    /** Column definition for M_Product_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, org.compiere.model.I_M_Product>(I_C_BPartner_Product.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
+    /** Column name M_Product_ID */
+    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Mindestbestellmenge.
@@ -618,6 +652,33 @@ public interface I_C_BPartner_Product
     public static final String COLUMNNAME_QualityRating = "QualityRating";
 
 	/**
+	 * Set Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSeqNo (int SeqNo);
+
+	/**
+	 * Get Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getSeqNo();
+
+    /** Column definition for SeqNo */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_C_BPartner_Product, Object>(I_C_BPartner_Product.class, "SeqNo", null);
+    /** Column name SeqNo */
+    public static final String COLUMNNAME_SeqNo = "SeqNo";
+
+	/**
 	 * Set Mindesthaltbarkeit Tage.
 	 * Minimum Shelf Life in days based on Product Instance Guarantee Date
 	 *
@@ -769,8 +830,8 @@ public interface I_C_BPartner_Product
     public static final String COLUMNNAME_UsedForVendor = "UsedForVendor";
 
 	/**
-	 * Set Produkt-Kategorie Geschäftspartner.
-	 * Product Category of the Business Partner
+	 * Set Lieferanten Kategorie.
+	 * Lieferanten Kategorie
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -779,8 +840,8 @@ public interface I_C_BPartner_Product
 	public void setVendorCategory (java.lang.String VendorCategory);
 
 	/**
-	 * Get Produkt-Kategorie Geschäftspartner.
-	 * Product Category of the Business Partner
+	 * Get Lieferanten Kategorie.
+	 * Lieferanten Kategorie
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

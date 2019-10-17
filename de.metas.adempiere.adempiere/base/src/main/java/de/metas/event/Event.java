@@ -36,7 +36,6 @@ import java.util.function.Supplier;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Util;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -50,9 +49,11 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import de.metas.event.log.EventLogEntryCollector;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -68,7 +69,7 @@ import lombok.Value;
 @Value
 public final class Event
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -110,14 +111,29 @@ public final class Event
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final ImmutableSet<Integer> recipientUserIds;
 
+	private enum LoggingStatus
+	{
+		SHALL_NOT_BE_LOGGED,
+
+		/** With this status, the system shall store the event before it is posted to the event bus. See {@link Event#withStatusIsLogged()}. */
+		SHALL_BE_LOGGED,
+
+		/** Indicate that the event itself was logged; with this status, the event handlers will invoke {@link EventLogEntryCollector#createThreadLocalForEvent(Event)} so that event handling business logic can log event-related info. */
+		WAS_LOGGED;
+	}
+
+	@JsonProperty("loggingStatus")
+	@Getter(value = AccessLevel.NONE)
+	private final LoggingStatus loggingStatus;
+
 	@JsonIgnore
 	@Getter(AccessLevel.NONE)
 	private final transient Set<String> receivedByEventBusIds = Sets.newConcurrentHashSet();
 
 	private Event(final Builder builder)
 	{
-		uuid = Util.coalesceSuppliers(() -> builder.uuid, () -> UUID.randomUUID());
-		when = Util.coalesceSuppliers(() -> builder.when, () -> Instant.now());
+		uuid = CoalesceUtil.coalesceSuppliers(() -> builder.uuid, () -> UUID.randomUUID());
+		when = CoalesceUtil.coalesceSuppliers(() -> builder.when, () -> Instant.now());
 
 		summary = builder.summary;
 		detailPlain = builder.getDetailPlain();
@@ -125,6 +141,7 @@ public final class Event
 		senderId = builder.senderId;
 		recipientUserIds = ImmutableSet.copyOf(builder.recipientUserIds);
 		properties = deepCopy(builder.getProperties());
+		loggingStatus = builder.loggingStatus;
 	}
 
 	@JsonCreator
@@ -136,7 +153,8 @@ public final class Event
 			@JsonProperty("detailADMessage") final String detailADMessage,
 			@JsonProperty("senderId") final String senderId,
 			@JsonProperty("recipientUserIds") final Set<Integer> recipientUserIds,
-			@JsonProperty("properties") final Map<String, Object> properties)
+			@JsonProperty("properties") final Map<String, Object> properties,
+			@JsonProperty("loggingStatus") final LoggingStatus loggingStatus)
 	{
 		this.uuid = uuid;
 		this.when = when;
@@ -147,9 +165,10 @@ public final class Event
 		this.senderId = senderId;
 		this.recipientUserIds = recipientUserIds != null ? ImmutableSet.copyOf(recipientUserIds) : ImmutableSet.of();
 		this.properties = deepCopy(properties);
+		this.loggingStatus = loggingStatus;
 	}
 
-	private static final ImmutableMap<String, Object> deepCopy(final Map<String, Object> properties)
+	private static ImmutableMap<String, Object> deepCopy(final Map<String, Object> properties)
 	{
 		if (properties == null || properties.isEmpty())
 		{
@@ -167,7 +186,7 @@ public final class Event
 		return Objects.equals(EventBusConstants.getSenderId(), senderId);
 	}
 
-	public final boolean hasRecipient(final int userId)
+	public boolean hasRecipient(final int userId)
 	{
 		if (isAllRecipients())
 		{
@@ -193,7 +212,7 @@ public final class Event
 		}
 		return recipientUserIds.asList().get(0);
 	}
-	
+
 	public int getSuggestedWindowId()
 	{
 		return getPropertyAsInt(PROPERTY_SuggestedWindowId, 0);
@@ -264,16 +283,13 @@ public final class Event
 	}
 
 	/**
-	 *
-	 * @param eventBusId
 	 * @return
 	 *         <ul>
 	 *         <li>true if event was successfully marked
 	 *         <li>false if event was already received by given event bus ID
 	 *         </ul>
-	 *
 	 */
-	public final boolean markReceivedByEventBusId(final String eventBusId)
+	public boolean markReceivedByEventBusId(final String eventBusId)
 	{
 		return receivedByEventBusIds.add(eventBusId);
 	}
@@ -283,9 +299,26 @@ public final class Event
 	 * @param eventBusId
 	 * @return true if this event was received by a even bus with given ID.
 	 */
-	public final boolean wasReceivedByEventBusId(final String eventBusId)
+	public boolean wasReceivedByEventBusId(final String eventBusId)
 	{
 		return receivedByEventBusIds.contains(eventBusId);
+	}
+
+	public Event withStatusWasLogged()
+	{
+		final Builder builder = toBuilder();
+		builder.loggingStatus = LoggingStatus.WAS_LOGGED;
+		return builder.build();
+	}
+
+	public boolean isShallBeLogged()
+	{
+		return LoggingStatus.SHALL_BE_LOGGED.equals(loggingStatus);
+	}
+
+	public boolean isWasLogged()
+	{
+		return LoggingStatus.WAS_LOGGED.equals(loggingStatus);
 	}
 
 	public Builder toBuilder()
@@ -299,6 +332,7 @@ public final class Event
 		builder.summary = summary;
 		builder.uuid = uuid;
 		builder.when = when;
+		builder.loggingStatus = loggingStatus;
 
 		return builder;
 	}
@@ -316,6 +350,7 @@ public final class Event
 		private String senderId = EventBusConstants.getSenderId();
 		private final Set<Integer> recipientUserIds = new HashSet<>();
 		private final Map<String, Object> properties = Maps.newLinkedHashMap();
+		private LoggingStatus loggingStatus = LoggingStatus.SHALL_NOT_BE_LOGGED;
 
 		private Builder()
 		{
@@ -402,7 +437,7 @@ public final class Event
 			detailADMessage = adMessage;
 			return this;
 		}
-		
+
 		public Builder setDetailADMessage(final String adMessage, final Map<String, Object> params)
 		{
 			if (params != null && !params.isEmpty())
@@ -413,7 +448,6 @@ public final class Event
 			detailADMessage = adMessage;
 			return this;
 		}
-
 
 		private String getDetailADMessage()
 		{
@@ -457,7 +491,7 @@ public final class Event
 			return this;
 		}
 
-		private final Map<String, Object> getProperties()
+		private Map<String, Object> getProperties()
 		{
 			return properties;
 		}
@@ -529,7 +563,7 @@ public final class Event
 			return this;
 		}
 
-		public final Builder putPropertyFromObject(final String name, final Object value)
+		public Builder putPropertyFromObject(final String name, final Object value)
 		{
 			if (value == null)
 			{
@@ -593,5 +627,16 @@ public final class Event
 			return this;
 		}
 
+		public Builder wasLogged()
+		{
+			this.loggingStatus = LoggingStatus.WAS_LOGGED;
+			return this;
+		}
+
+		public Builder shallBeLogged()
+		{
+			this.loggingStatus = LoggingStatus.SHALL_BE_LOGGED;
+			return this;
+		}
 	}
 }

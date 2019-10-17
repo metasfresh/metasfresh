@@ -12,7 +12,8 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import org.adempiere.ad.service.IDeveloperModeBL;
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -33,7 +34,6 @@ import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
-import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Singular;
 
@@ -62,7 +62,7 @@ public final class Msg
 	/**
 	 * @return {@link Msg} singleton instance
 	 */
-	private static final Msg get()
+	private static Msg get()
 	{
 		return instance;
 	}	// get
@@ -84,7 +84,7 @@ public final class Msg
 	 * @param adLanguage Language Key
 	 * @return messages map or null of messages map could not be loaded.
 	 */
-	private CCache<String, Message> getMessagesForLanguage(final String adLanguage)
+	private CCache<String, Message> getMessagesForLanguage(@Nullable final String adLanguage)
 	{
 		final String adLanguageToUse = notNullOrBaseLanguage(adLanguage);
 
@@ -92,9 +92,9 @@ public final class Msg
 	}
 
 	/** @return given adLanguage if not null or base language */
-	private static final String notNullOrBaseLanguage(final String adLanguage)
+	private static String notNullOrBaseLanguage(@Nullable final String adLanguage)
 	{
-		return Check.isEmpty(adLanguage) ? Language.getBaseAD_Language() : adLanguage;
+		return Check.isEmpty(adLanguage, true) ? Language.getBaseAD_Language() : adLanguage;
 	}
 
 	/**
@@ -280,7 +280,7 @@ public final class Msg
 		return getMessage(adLanguage, adMessage).getMsgTextAndTip();
 	}
 
-	private final static Message getMessage(final String adLanguage, final String adMessage)
+	private static Message getMessage(final String adLanguage, final String adMessage)
 	{
 		if (adMessage == null || adMessage.length() == 0)
 		{
@@ -289,16 +289,6 @@ public final class Msg
 
 		final String adLanguageToUse = notNullOrBaseLanguage(adLanguage);
 		final Message message = get().lookup(adLanguageToUse, adMessage);
-
-		//
-		if (message == null && Services.get(IDeveloperModeBL.class).isEnabled())
-		{
-			if (Services.get(IDeveloperModeBL.class).createMessageOrElement(adLanguageToUse, adMessage, true, false))
-			{
-				get().reset(); // avoid creating same message more then once
-				return Message.ofMissingADMessage(adMessage);
-			}
-		}
 
 		if (message == null)
 		{
@@ -392,30 +382,62 @@ public final class Msg
 	 * Get clear text for AD_Message with parameters
 	 *
 	 * @param adLanguage Language
-	 * @param AD_Message Message key
+	 * @param adMessage Message key
 	 * @param args MessageFormat arguments
 	 * @return translated text
 	 * @see java.text.MessageFormat for formatting options
 	 */
-	public static String getMsg(final String adLanguage, final String AD_Message, final Object[] args)
+	public static String getMsg(final String adLanguage, final String adMessage, final Object[] args)
 	{
-		final String msg = getMsg(adLanguage, AD_Message);
+		final String adLanguageToUse = notNullOrBaseLanguage(adLanguage);
+		final Message message = getMessage(adLanguageToUse, adMessage);
+		return format(adLanguageToUse, message, args);
+	}	// getMsg
+	
+	private static String format(@NonNull final String adLanguage, @NonNull final Message message, @Nullable final Object[] args)
+	{
+		final String messageStr = message.getMsgTextAndTip();
 		if (args == null || args.length == 0)
 		{
-			return msg;
+			return messageStr;
 		}
 
-		String retStr = msg;
+		String retStr = messageStr;
 		try
 		{
-			retStr = MessageFormat.format(msg, args);	// format string
+			normalizeArgsBeforeFormat(args, adLanguage);
+			retStr = MessageFormat.format(messageStr, args);	// format string
 		}
 		catch (final Exception e)
 		{
-			s_log.error(msg, e);
+			s_log.error(messageStr, e);
 		}
 		return retStr;
-	}	// getMsg
+	}
+	
+	private static void normalizeArgsBeforeFormat(final Object[] args, final String adLanguage)
+	{
+		if(args == null || args.length == 0)
+		{
+			return;
+		}
+		
+		for (int i = 0; i < args.length; i++)
+		{
+			final Object arg = args[i];
+			final Object argNorm;
+			if(arg instanceof ITranslatableString)
+			{
+				argNorm = ((ITranslatableString)arg).translate(adLanguage);
+			}
+			else
+			{
+				argNorm = arg;
+			}
+			
+			args[i] = argNorm;
+		}
+	}
 
 	public static Map<String, String> getMsgMap(final String adLanguage, final String prefix, boolean removePrefix)
 	{
@@ -534,7 +556,7 @@ public final class Msg
 				}
 				else
 				{
-					s_log.warn("Unknow element field {} in {}", display, columnName, new Exception());
+					s_log.warn("Unknow element field {} in {}", display, columnName);
 				}
 				elementName = columnName.substring(0, idx);
 			}
@@ -577,7 +599,7 @@ public final class Msg
 				+ ", t.PO_Description as TRL_PO_Description"
 				//
 				+ " FROM AD_Element e"
-				+ " LEFT OUTER JOIN AD_Element_Trl t ON (t.AD_Element_ID=e.AD_Element_ID)"
+				+ " LEFT OUTER JOIN AD_Element_Trl_Effective_v t ON (t.AD_Element_ID=e.AD_Element_ID)"
 				+ " WHERE UPPER(e.ColumnName)=UPPER(?)";
 		final Object[] sqlParams = new Object[] { elementName };
 
@@ -696,15 +718,6 @@ public final class Msg
 			}
 		}
 		// metas: end
-
-		if (!text.startsWith("*") && Services.get(IDeveloperModeBL.class).isEnabled())
-		{
-			if (Services.get(IDeveloperModeBL.class).createMessageOrElement(adLanguageToUse, text, true, true))
-			{
-				get().reset(); // avoid creating same message more then once
-				return text;
-			}
-		}
 
 		// Nothing found
 		if (!text.startsWith("*"))
@@ -852,14 +865,14 @@ public final class Msg
 		public static final Message EMPTY = ofMissingADMessage("");
 
 		/** @return instance for given message text and tip */
-		public static final Message ofTextAndTip(final String adMessage, final String msgText, final String msgTip)
+		public static Message ofTextAndTip(final String adMessage, final String msgText, final String msgTip)
 		{
 			final boolean missing = false;
 			return new Message(adMessage, msgText, msgTip, missing);
 		}
 
 		/** @return instance of given missing adMessage */
-		public static final Message ofMissingADMessage(final String adMessage)
+		public static Message ofMissingADMessage(final String adMessage)
 		{
 			final String msgText = adMessage;
 			final String msgTip = null; // no tip
@@ -954,15 +967,15 @@ public final class Msg
 				@Singular final Map<String, String> poDescriptions)
 		{
 			this.elementName = elementName;
-			this.name = toTranslatableString(names, ITranslatableString.empty());
-			this.printName = toTranslatableString(printNames, ITranslatableString.empty());
-			this.description = toTranslatableString(descriptions, ITranslatableString.empty());
+			this.name = toTranslatableString(names, TranslatableStrings.empty());
+			this.printName = toTranslatableString(printNames, TranslatableStrings.empty());
+			this.description = toTranslatableString(descriptions, TranslatableStrings.empty());
 			this.poName = toTranslatableString(poNames, this.name);
 			this.poPrintName = toTranslatableString(poPrintNames, this.printName);
 			this.poDescription = toTranslatableString(poDescriptions, this.description);
 		}
 
-		private static final ITranslatableString toTranslatableString(final Map<String, String> map, final ITranslatableString fallback)
+		private static ITranslatableString toTranslatableString(final Map<String, String> map, final ITranslatableString fallback)
 		{
 			final String defaultValue = normalizeString(map.get(DEFAULT_LANG), fallback.getDefaultValue());
 
@@ -978,10 +991,10 @@ public final class Msg
 						return GuavaCollectors.entry(adLanguage, text);
 					})
 					.collect(GuavaCollectors.toImmutableMap());
-			return ImmutableTranslatableString.ofMap(trlMap, defaultValue);
+			return TranslatableStrings.ofMap(trlMap, defaultValue);
 		}
 
-		private static final String normalizeString(final String str, final String fallback)
+		private static String normalizeString(final String str, final String fallback)
 		{
 			if (!Check.isEmpty(str, true))
 			{

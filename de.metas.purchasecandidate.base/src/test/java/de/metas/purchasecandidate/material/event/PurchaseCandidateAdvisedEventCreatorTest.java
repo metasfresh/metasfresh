@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.user.UserRepository;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_Product;
@@ -28,6 +28,7 @@ import de.metas.material.planning.ProductPlanningBL;
 import de.metas.material.planning.impl.MRPContextFactory;
 import de.metas.pricing.conditions.BreakValueType;
 import de.metas.purchasecandidate.VendorProductInfoService;
+import de.metas.user.UserRepository;
 import de.metas.util.time.SystemTime;
 
 /*
@@ -114,9 +115,9 @@ public class PurchaseCandidateAdvisedEventCreatorTest
 
 		return MaterialDescriptor.builder()
 				.productDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(product.getM_Product_ID()))
-				.warehouseId(40)
+				.warehouseId(WarehouseId.ofRepoId(40))
 				.quantity(TEN)
-				.date(SystemTime.asDate())
+				.date(SystemTime.asInstant())
 				.build();
 	}
 }

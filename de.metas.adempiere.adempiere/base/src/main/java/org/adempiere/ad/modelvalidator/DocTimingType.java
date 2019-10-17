@@ -103,7 +103,7 @@ public enum DocTimingType
 		final DocTimingType value = timingInt2type.get(timing);
 		if (value == null)
 		{
-			throw new IllegalArgumentException("No enum constant found for timing=" + timing + " in " + values());
+			throw new IllegalArgumentException("No enum constant found for timing=" + timing + " in " + timingInt2type);
 		}
 		return value;
 	}

@@ -24,15 +24,15 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MBPartner;
-import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MDocType;
 import org.compiere.model.MPeriod;
 import org.compiere.model.ModelValidationEngine;
@@ -43,7 +43,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.adempiere.model.I_AD_User;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
@@ -124,7 +124,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	 *
 	 * @param bp business partner
 	 */
-	public void setBPartner(MBPartner bp)
+	public void setBPartner(I_C_BPartner bp)
 	{
 		if (bp == null)
 			return;
@@ -160,10 +160,11 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		}
 
 		// Set Locations
-		MBPartnerLocation[] locs = bp.getLocations(false);
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+		final List<I_C_BPartner_Location> locs = bpartnersRepo.retrieveBPartnerLocations(bp);
 		if (locs != null)
 		{
-			for (MBPartnerLocation loc : locs)
+			for (I_C_BPartner_Location loc : locs)
 			{
 				if (loc.isShipTo())
 				{
@@ -171,9 +172,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 				}
 			}
 			// set to first
-			if (getC_BPartner_Location_ID() == 0 && locs.length > 0)
+			if (getC_BPartner_Location_ID() <= 0 && !locs.isEmpty())
 			{
-				super.setC_BPartner_Location_ID(locs[0].getC_BPartner_Location_ID());
+				super.setC_BPartner_Location_ID(locs.get(0).getC_BPartner_Location_ID());
 			}
 		}
 		if (getC_BPartner_Location_ID() == 0)
@@ -182,7 +183,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 		}
 
 		// Set Contact
-		List<I_AD_User> contacts = bp.getContacts(false);
+		final List<I_AD_User> contacts = bpartnersRepo.retrieveContacts(bp);
 		if (contacts != null && contacts.size() == 1)
 		{
 			setAD_User_ID(contacts.get(0).getAD_User_ID());
@@ -362,9 +363,13 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 		// No Partner Info - set Template
 		if (getC_BPartner_ID() <= 0)
-			setBPartner(MBPartner.getTemplate(getCtx(), getAD_Client_ID()));
+		{
+			throw new FillMandatoryException(I_DD_Order.COLUMNNAME_C_BPartner_ID);
+		}
 		if (getC_BPartner_Location_ID() <= 0)
-			setBPartner(new MBPartner(getCtx(), getC_BPartner_ID(), ITrx.TRXNAME_None));
+		{
+			setBPartner(Services.get(IBPartnerDAO.class).getById(getC_BPartner_ID()));
+		}
 
 		// Default Sales Rep
 		if (getSalesRep_ID() <= 0)
@@ -533,7 +538,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	private void reserveStock(MDDOrderLine[] lines)
 	{
 		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-		
+
 		BigDecimal Volume = BigDecimal.ZERO;
 		BigDecimal Weight = BigDecimal.ZERO;
 
@@ -576,8 +581,8 @@ public class MDDOrder extends X_DD_Order implements IDocument
 						throw new AdempiereException();
 					}
 
-					if (!storageBL.add(getCtx(), 
-							toWarehouseId.getRepoId(), 
+					if (!storageBL.add(getCtx(),
+							toWarehouseId.getRepoId(),
 							toLocatorId,
 							line.getM_Product_ID(),
 							line.getM_AttributeSetInstanceTo_ID(), line.getM_AttributeSetInstance_ID(),

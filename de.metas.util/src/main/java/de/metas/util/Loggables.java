@@ -1,10 +1,14 @@
 package de.metas.util;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.logging.LogbackLoggable;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -34,16 +38,10 @@ import ch.qos.logback.classic.Level;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@UtilityClass
 public final class Loggables
 {
-	private Loggables()
-	{
-
-	}
-
 	/**
-	 *
-	 *
 	 * @return the loggable instance currently associated with this thread or the {@link NullLoggable}. Never returns <code>null</code>.
 	 */
 	public static ILoggable get()
@@ -53,17 +51,15 @@ public final class Loggables
 
 	/**
 	 * @return current thread's {@link ILoggable} instance or a loggable which is forwarding to given logger instance if there was no thread level {@link ILoggable}
-	 *
-	 * @see ILoggable#withLogger(Logger, Level).
 	 */
 	public static ILoggable getLoggableOrLogger(final Logger logger, final Level logLevel)
 	{
 		final ILoggable loggable = ThreadLocalLoggableHolder.instance.getLoggableOr(null);
-		if (loggable != null)
-		{
-			return loggable;
-		}
+		return loggable != null ? loggable : logback(logger, logLevel);
+	}
 
+	public static ILoggable logback(final Logger logger, final Level logLevel)
+	{
 		return new LogbackLoggable(logger, logLevel);
 	}
 
@@ -75,8 +71,31 @@ public final class Loggables
 	/**
 	 * @return The null loggable which can be used without NPE, but doesn't do anything
 	 */
-	public static ILoggable getNullLoggable()
+	public static ILoggable nop()
 	{
 		return NullLoggable.instance;
+	}
+
+	public static boolean isNull(@Nullable final ILoggable loggable)
+	{
+		return NullLoggable.isNull(loggable);
+	}
+
+	/**
+	 * Create a new {@link ILoggable} instance that delegates {@link #addLog(String, Object...)} invocations to this instance and in addition logs to the given logger.
+	 */
+	public static ILoggable withLogger(@NonNull final Logger logger, @NonNull final Level level)
+	{
+		return new LoggableWithLogger(get(), logger, level);
+	}
+
+	public static PlainStringLoggable newPlainStringLoggable()
+	{
+		return new PlainStringLoggable();
+	}
+
+	public static ILoggable addLog(final String msg, final Object... msgParameters)
+	{
+		return get().addLog(msg, msgParameters);
 	}
 }

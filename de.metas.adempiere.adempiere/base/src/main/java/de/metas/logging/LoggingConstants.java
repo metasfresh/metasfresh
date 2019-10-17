@@ -1,9 +1,5 @@
 package de.metas.logging;
 
-import java.io.File;
-
-import org.compiere.util.Ini;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -41,11 +37,6 @@ public final class LoggingConstants
 	 * The environment variable can be overridden by setting {@link #SYSTEM_PROP_LogDir},
 	 */
 	public static final String ENV_VAR_LogDir = "METASFRESH_LOG_DIRECTORY";
-
-	/**
-	 * Default log directory, if neither {@link #SYSTEM_PROP_LogDir} nor {@link #ENV_VAR_LogDir} are available.
-	 */
-	public static final String DEFAULT_LogDir = Ini.getMetasfreshHome() + File.separator + "log";
 
 	public static final String DEFAULT_LogFilePrefix = "metasfresh";
 

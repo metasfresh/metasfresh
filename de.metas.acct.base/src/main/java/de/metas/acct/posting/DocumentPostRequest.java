@@ -1,9 +1,13 @@
 package de.metas.acct.posting;
 
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+
+import de.metas.user.UserId;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -39,25 +43,29 @@ public class DocumentPostRequest
 {
 	@JsonProperty("record")
 	TableRecordReference record;
-	@JsonProperty("adClientId")
-	int adClientId;
+	@JsonProperty("clientId")
+	ClientId clientId;
 	@JsonProperty("force")
 	boolean force;
 	@JsonProperty("responseRequired")
 	boolean responseRequired;
+	@JsonProperty("onErrorNotifyUserId")
+	UserId onErrorNotifyUserId;
 
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private DocumentPostRequest(
 			@JsonProperty("record") @NonNull final TableRecordReference record,
-			@JsonProperty("adClientId") final int adClientId,
+			@JsonProperty("clientId") @NonNull final ClientId clientId,
 			@JsonProperty("force") final boolean force,
-			@JsonProperty("responseRequired") final boolean responseRequired)
+			@JsonProperty("responseRequired") final boolean responseRequired,
+			@JsonProperty("onErrorNotifyUserId") final UserId onErrorNotifyUserId)
 	{
 		this.record = record;
-		this.adClientId = adClientId;
+		this.clientId = clientId;
 		this.force = force;
 		this.responseRequired = responseRequired;
+		this.onErrorNotifyUserId = onErrorNotifyUserId;
 	}
 
 	public DocumentPostRequest withResponseRequired()

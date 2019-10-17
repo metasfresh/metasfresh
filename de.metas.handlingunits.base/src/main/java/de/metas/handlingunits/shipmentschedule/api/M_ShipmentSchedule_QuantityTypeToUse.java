@@ -34,13 +34,13 @@ import lombok.NonNull;
 public enum M_ShipmentSchedule_QuantityTypeToUse
 {
 	/** only use the shipment schedule's picked qty (which is based on the actually picked HUs). */
-	TYPE_P("P"),
+	TYPE_PICKED_QTY("P"),
 
 	/** only use the shipment schedule's qty to deliver. */
-	TYPE_D("D"),
+	TYPE_QTY_TO_DELIVER("D"),
 
 	/** use both picked and shipment schedule's qty to deliver. */
-	TYPE_PD("PD");
+	TYPE_BOTH("PD");
 
 	@Getter
 	private final String code;
@@ -66,16 +66,16 @@ public enum M_ShipmentSchedule_QuantityTypeToUse
 
 	public boolean isUseBoth()
 	{
-		return TYPE_PD.equals(forCode(code));
+		return TYPE_BOTH.equals(forCode(code));
 	}
 
 	public boolean isOnlyUsePicked()
 	{
-		return TYPE_P.equals(forCode(code));
+		return TYPE_PICKED_QTY.equals(forCode(code));
 	}
 
 	public boolean isOnlyUseToDeliver()
 	{
-		return TYPE_D.equals(forCode(code));
+		return TYPE_QTY_TO_DELIVER.equals(forCode(code));
 	}
 }

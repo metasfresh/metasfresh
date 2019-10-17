@@ -10,6 +10,7 @@ import org.compiere.model.I_M_ProductPrice;
 
 import de.metas.util.Services;
 import lombok.Builder;
+import lombok.NonNull;
 
 /**
  *
@@ -24,7 +25,7 @@ class MProductPriceCloningCommand
 
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
-	public void cloneProductPrice()
+	final public void cloneProductPrice()
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final String trxName = ITrx.TRXNAME_None;
@@ -41,7 +42,7 @@ class MProductPriceCloningCommand
 				.forEach(this::createProductPrice);
 	}
 
-	private void createProductPrice(final I_M_ProductPrice productPrice)
+	private void createProductPrice(@NonNull final I_M_ProductPrice productPrice)
 	{
 		final I_M_ProductPrice pp = InterfaceWrapperHelper.copy()
 				.setFrom(productPrice)
@@ -51,7 +52,7 @@ class MProductPriceCloningCommand
 		InterfaceWrapperHelper.save(pp);
 	}
 
-	private void cloneASI(final I_M_ProductPrice productPrice)
+	private void cloneASI(@NonNull final I_M_ProductPrice productPrice)
 	{
 		if (!productPrice.isAttributeDependant())
 		{

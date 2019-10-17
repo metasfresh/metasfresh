@@ -40,6 +40,8 @@ import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.util.Services;
 
@@ -54,9 +56,10 @@ public class PromotionRule {
 		//key = C_OrderLine, value = Qty to distribution
 		Map<Integer, BigDecimal> orderLineQty = new LinkedHashMap<>();
 		Map<Integer, MOrderLine> orderLineIndex = new HashMap<>();
-		MOrderLine[] lines = order.getLines();
+		List<MOrderLine> lines = order.getLines();
 		boolean hasDeleteLine = false;
-		for (MOrderLine ol : lines) {
+		for (MOrderLine ol : lines)
+		{
 			// metas: begin: delete if is a promotion line:
 			if (ol.getM_Promotion_ID() > 0)
 			{
@@ -81,18 +84,25 @@ public class PromotionRule {
 			}
 			*/
 		}
-		if (orderLineQty.isEmpty()) return;
+		if (orderLineQty.isEmpty())
+		{
+			return;
+		}
 
 		//refresh order
-		if (hasDeleteLine) {
-			order.getLines(true, null);
+		if (hasDeleteLine)
+		{
+			order.invalidateLines();
 			order.getTaxes(true);
 			order.setGrandTotal(DB.getSQLValueBD(order.get_TrxName(), "SELECT GrandTotal From C_Order WHERE C_Order_ID = ?", order.getC_Order_ID()));
 		}
 
 		Map<Integer, List<Integer>> promotions = PromotionRule.findM_Promotion_ID(order);
 
-		if (promotions == null || promotions.isEmpty()) return;
+		if (promotions == null || promotions.isEmpty())
+		{
+			return;
+		}
 
 		BigDecimal orderAmount = order.getGrandTotal();
 
@@ -149,7 +159,9 @@ public class PromotionRule {
 						if (pd.getDistributionSorting() != null) {
 							Comparator<Integer> cmp = olComparator;
 							if (pd.getDistributionSorting().equals(MPromotionDistribution.DISTRIBUTIONSORTING_Descending))
+							{
 								cmp = Collections.reverseOrder(cmp);
+							}
 							Collections.sort(orderLineIdList, cmp);
 						}
 						DistributionSet prevSet = distributions.get(pd.getM_PromotionDistribution_ID());
@@ -167,7 +179,9 @@ public class PromotionRule {
 					}
 				}
 				if (!hasDistributionSet)
+				{
 					break;
+				}
 
 				if (mandatoryLineSet != null) {
 					mandatoryLineNotFound = false;
@@ -207,7 +221,7 @@ public class PromotionRule {
 						} else if (pr.getRewardType().equals(MPromotionReward.REWARDTYPE_FlatDiscount)) {
 							discount = pr.getAmount();
 						} else if (pr.getRewardType().equals(MPromotionReward.REWARDTYPE_Percentage)) {
-							discount = pr.getAmount().divide(BigDecimal.valueOf(100.00)).multiply(totalPrice);
+							discount = pr.getAmount().divide(Env.ONEHUNDRED).multiply(totalPrice);
 						}
 						if (discount.signum() > 0) {
 							addDiscountLine(order, null, discount, BigDecimal.valueOf(1.00), pr.getC_Charge_ID(), pr.getM_Promotion());
@@ -215,12 +229,16 @@ public class PromotionRule {
 					} else {
 						int M_PromotionDistribution_ID = pr.getM_PromotionDistribution_ID();
 						if (!distributions.containsKey(M_PromotionDistribution_ID))
+						{
 							continue;
+						}
 						int targetDistributionID = M_PromotionDistribution_ID;
 						if (!pr.isSameDistribution()) {
 							targetDistributionID = pr.getM_TargetDistribution_ID();
 							if (!distributions.containsKey(targetDistributionID))
+							{
 								continue;
+							}
 						}
 						DistributionSet distributionSet = distributions.get(targetDistributionID);
 
@@ -228,7 +246,9 @@ public class PromotionRule {
 						if (pr.getDistributionSorting() != null ) {
 							Comparator<Integer> cmp = new OrderLineComparator(orderLineIndex);
 							if (pr.getDistributionSorting().equals(MPromotionReward.DISTRIBUTIONSORTING_Descending))
+							{
 								cmp = Collections.reverseOrder(cmp);
+							}
 							Set<Integer> keySet = distributionSet.orderLines.keySet();
 							List<Integer> keyList = new ArrayList<>();
 							keyList.addAll(keySet);
@@ -244,7 +264,9 @@ public class PromotionRule {
 						BigDecimal setBalance = distributionSet.setQty;
 						BigDecimal toApply = pr.getQty();
 						if (toApply == null || toApply.signum() == 0)
+						{
 							toApply = BigDecimal.valueOf(-1.0);
+						}
 
 						BigDecimal totalPrice  = BigDecimal.ZERO;
 						final List<OrderLinePromotionCandidate> orderLineCandidates = new ArrayList<>(); // metas
@@ -253,7 +275,9 @@ public class PromotionRule {
 							BigDecimal qty = olMap.getValue();
 							int C_OrderLine_ID = olMap.getKey();
 							if (qty == null || qty.signum() <= 0)
+							{
 								continue;
+							}
 							if (qty.compareTo(setBalance) >= 0) {
 								qty = setBalance;
 								setBalance = BigDecimal.ZERO;
@@ -294,9 +318,13 @@ public class PromotionRule {
 							}
 
 							if (toApply.signum() == 0)
+							{
 								break;
+							}
 							if (setBalance.signum() == 0)
+							{
 								break;
+							}
 						}
 						if (pr.getRewardType().equals(MPromotionReward.REWARDTYPE_AbsoluteAmount))  {
 							if (pr.getAmount().compareTo(totalPrice) < 0) {
@@ -326,7 +354,9 @@ public class PromotionRule {
 		nol.setC_Charge_ID(C_Charge_ID);
 		nol.setQty(qty);
 		if (discount.scale() > 2)
+		{
 			discount = discount.setScale(2, BigDecimal.ROUND_HALF_UP);
+		}
 		nol.setPriceActual(discount.negate());
 		if (ol != null && Integer.toString(ol.getLine()).endsWith("0")) {
 			for(int i = 0; i < 9; i++) {
@@ -340,14 +370,18 @@ public class PromotionRule {
 		}
 		String description = promotion.getName();
 		if (ol != null)
+		{
 			description += (", " + ol.getName());
+		}
 		nol.setDescription(description);
 		nol.set_ValueOfColumn("M_Promotion_ID", promotion.getM_Promotion_ID());
 		if (promotion.getC_Campaign_ID() > 0) {
 			nol.setC_Campaign_ID(promotion.getC_Campaign_ID());
 		}
 		if (!nol.save())
+		{
 			throw new AdempiereException("Failed to add discount line to order");
+		}
 	}
 
 	/**
@@ -403,7 +437,7 @@ public class PromotionRule {
 			int pindex = 1;
 			stmt = DB.prepareStatement(sql.toString(), order.get_TrxName());
 			stmt.setInt(pindex++, order.getC_BPartner_ID());
-			stmt.setInt(pindex++, order.getC_BPartner().getC_BP_Group_ID());
+			stmt.setInt(pindex++, Services.get(IBPartnerDAO.class).getBPGroupIdByBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID())).getRepoId());
 			stmt.setInt(pindex++, order.getM_PriceList_ID());
 			stmt.setInt(pindex++, order.getM_Warehouse_ID());
 			stmt.setTimestamp(pindex++, order.getDateOrdered());
@@ -461,7 +495,10 @@ public class PromotionRule {
 		} else {
 			for(int C_OrderLine_ID : orderLineIdList) {
 				BigDecimal availableQty = orderLineQty.get(C_OrderLine_ID);
-				if (availableQty.signum() <= 0) continue;
+				if (availableQty.signum() <= 0)
+				{
+					continue;
+				}
 				PreparedStatement stmt = null;
 				ResultSet rs = null;
 				try {
@@ -491,7 +528,10 @@ public class PromotionRule {
 		BigDecimal totalOrderLineQty = BigDecimal.ZERO;
 		for (int C_OrderLine_ID : eligibleOrderLineIDs) {
 			BigDecimal availableQty = orderLineQty.get(C_OrderLine_ID);
-			if (availableQty.signum() <= 0) continue;
+			if (availableQty.signum() <= 0)
+			{
+				continue;
+			}
 			totalOrderLineQty = totalOrderLineQty.add(availableQty);
 		}
 		int compare = totalOrderLineQty.compareTo(compareQty);
@@ -524,7 +564,10 @@ public class PromotionRule {
 					if (recycleQty.signum() > 0) {
 						for (int C_OrderLine_ID : eligibleOrderLineIDs) {
 							BigDecimal availableQty = orderLineQty.get(C_OrderLine_ID);
-							if (availableQty.signum() <= 0) continue;
+							if (availableQty.signum() <= 0)
+							{
+								continue;
+							}
 							if (availableQty.compareTo(recycleQty) < 0) {
 								recycleQty = recycleQty.subtract(availableQty);
 								orderLineQty.put(C_OrderLine_ID, BigDecimal.ZERO);
@@ -534,14 +577,22 @@ public class PromotionRule {
 								recycleQty = BigDecimal.ZERO;
 							}
 							if (recycleQty.signum() <= 0)
+							{
 								break;
+							}
 						}
 					}
-					if (setQty.signum() == 0) break;
+					if (setQty.signum() == 0)
+					{
+						break;
+					}
 				}
 				for (int C_OrderLine_ID : eligibleOrderLineIDs) {
 					BigDecimal availableQty = orderLineQty.get(C_OrderLine_ID);
-					if (availableQty.signum() <= 0) continue;
+					if (availableQty.signum() <= 0)
+					{
+						continue;
+					}
 					if (availableQty.compareTo(setQty) < 0) {
 						setQty = setQty.subtract(availableQty);
 						distributionSet.orderLines.put(C_OrderLine_ID, availableQty);
@@ -553,7 +604,9 @@ public class PromotionRule {
 						setQty = BigDecimal.ZERO;
 					}
 					if (setQty.signum() <= 0)
+					{
 						break;
+					}
 				}
 			}
 		}
@@ -574,7 +627,7 @@ public class PromotionRule {
 		List<MPromotionLine>plist = query.list(MPromotionLine.class);
 		//List<M_PromotionLine_ID>
 		List<Integer>applicable = new ArrayList<>();
-		MOrderLine[] lines = order.getLines();
+		List<MOrderLine> lines = order.getLines();
 		for (MPromotionLine pl : plist) {
 			boolean match = false;
 			if (pl.getM_PromotionGroup_ID() > 0) {
@@ -622,7 +675,9 @@ public class PromotionRule {
 				break;
 			}
 			if (match)
+			{
 				applicable.add(pl.getM_PromotionLine_ID());
+			}
 		}
 		return applicable;
 	}

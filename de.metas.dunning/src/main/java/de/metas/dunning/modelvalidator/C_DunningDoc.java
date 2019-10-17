@@ -1,5 +1,7 @@
 package de.metas.dunning.modelvalidator;
 
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+
 /*
  * #%L
  * de.metas.dunning
@@ -32,6 +34,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.dunning.Dunning_Constants;
 import de.metas.dunning.api.impl.DunningDocDocumentLocationAdapter;
+import de.metas.dunning.export.async.C_DunningDoc_CreateExportData;
 import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.util.Services;
 import de.metas.workflow.api.IWorkflowBL;
@@ -78,5 +81,11 @@ public class C_DunningDoc
 	{
 		final IDocumentLocationBL documentLocationBL = Services.get(IDocumentLocationBL.class);
 		documentLocationBL.setBPartnerAddress(new DunningDocDocumentLocationAdapter(dunningDoc));
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void scheduleDataExport(final I_C_DunningDoc dunningDoc)
+	{
+		C_DunningDoc_CreateExportData.scheduleOnTrxCommit(dunningDoc);
 	}
 }

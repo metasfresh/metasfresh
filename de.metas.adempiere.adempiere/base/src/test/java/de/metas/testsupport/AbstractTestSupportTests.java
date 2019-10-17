@@ -34,7 +34,7 @@ import org.compiere.model.I_C_Order;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import de.metas.document.engine.IDocument;
+import de.metas.document.engine.DocStatus;
 
 public class AbstractTestSupportTests
 {
@@ -56,8 +56,8 @@ public class AbstractTestSupportTests
 		assertThat(testee.order("1"), sameInstance(order1)); // fails as of now
 		
 		// this is to clarify the practical problem we have with the order being not the same
-		testee.order("1").setDocStatus(IDocument.STATUS_InProgress);
+		testee.order("1").setDocStatus(DocStatus.InProgress.getCode());
 		InterfaceWrapperHelper.save(testee.order("1"));
-		assertThat(testee.order("1").getDocStatus(), equalTo(IDocument.STATUS_InProgress));
+		assertThat(testee.order("1").getDocStatus(), equalTo(DocStatus.InProgress.getCode()));
 	}
 }

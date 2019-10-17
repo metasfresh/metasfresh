@@ -68,7 +68,7 @@ public final class NoDataFoundHandlers
 
 	private NoDataFoundHandlers()
 	{
-	};
+	}
 
 	public NoDataFoundHandlers addHandler(final INoDataFoundHandler handler)
 	{
@@ -81,11 +81,6 @@ public final class NoDataFoundHandlers
 	 * In any case, all handlers are invoked.
 	 * <p>
 	 * Hint: the caller of this method might want to throw a {@link NoDataFoundHandlerRetryRequestException} if this method returned {@code true} to it.
-	 *
-	 * @param tableName
-	 * @param ids
-	 * @param ctx
-	 * @return
 	 */
 	public boolean invokeHandlers(final String tableName, final Object[] ids, final IContextAware ctx)
 	{
@@ -105,13 +100,7 @@ public final class NoDataFoundHandlers
 	/**
 	 * Invoke the current handler, unless the current invocation is already happening within an earlier invocation.
 	 * So this method might actually <i>not</i> call the given handler in order to avoid a {@link StackOverflowError} .
-	 * 
-	 * @param handler
-	 * @param tableName
-	 * @param ids
-	 * @param ctx
-	 * @return
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/1076
 	 */
 	@VisibleForTesting
@@ -132,7 +121,7 @@ public final class NoDataFoundHandlers
 
 		if (!currentlyInvokedOnRecords.add(key))
 		{
-			logger.warn(
+			logger.debug(
 					"The current handler was already invoked with tableName={} and ids={} earlier in this same stack. Returning to avoid a stack overflowError; key={}; handler={}",
 					tableName, ids, key, handler);
 			return false;

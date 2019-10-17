@@ -30,6 +30,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Properties;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.GridTab;
@@ -143,7 +144,9 @@ public final class MiscUtils
 
 		PO po2 = InterfaceWrapperHelper.getPO(po);
 		if (po2 != null)
+		{
 			return (T)po2;
+		}
 
 		throw new IllegalArgumentException("Param 'po' must be a PO. Is: "
 				+ po.getClass().getName());
@@ -240,7 +243,7 @@ public final class MiscUtils
 
 	public static GridTab getGridTabForTableAndWindow(final Properties ctx, final int windowNo, final int AD_Window_ID, final int AD_Table_ID, final boolean startWithEmptyQuery)
 	{
-		final GridWindowVO wVO = GridWindowVO.create(ctx, windowNo, AD_Window_ID);
+		final GridWindowVO wVO = GridWindowVO.create(ctx, windowNo, AdWindowId.ofRepoId(AD_Window_ID));
 		if (wVO == null)
 		{
 			MWindow w = new MWindow(Env.getCtx(), AD_Window_ID, null);

@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.user.UserRepository;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
 import org.junit.Before;
@@ -26,7 +26,7 @@ import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
 import de.metas.document.archive.mailrecipient.impl.InvoiceDocOutboundLogMailRecipientProvider;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
-import de.metas.order.model.I_C_BPartner;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 
 /*

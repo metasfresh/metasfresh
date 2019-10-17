@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="JSON_POC_subreport" columnCount="2" printOrder="Horizontal" pageWidth="300" pageHeight="842" columnWidth="125" columnSpacing="10" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" uuid="d77f60d8-3ca8-42d0-9ca2-d19df969e682">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataSource.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<parameter name="datasource" class="net.sf.jasperreports.engine.data.JsonDataSource" isForPrompting="false" evaluationTime="Early"/>
+	<parameter name="SQL_VALUE" class="java.lang.String" isForPrompting="false"/>
+	<queryString language="JSON">
+		<![CDATA[result.tabs.subtabs.sections.lines.fields]]>
+	</queryString>
+	<field name="id" class="java.lang.String">
+		<property name="net.sf.jasperreports.json.field.expression" value="id"/>
+		<fieldDescription><![CDATA[id]]></fieldDescription>
+	</field>
+	<field name="caption" class="java.lang.String">
+		<property name="net.sf.jasperreports.json.field.expression" value="caption"/>
+		<fieldDescription><![CDATA[caption]]></fieldDescription>
+	</field>
+	<field name="description" class="java.lang.String">
+		<property name="net.sf.jasperreports.json.field.expression" value="description"/>
+		<fieldDescription><![CDATA[description]]></fieldDescription>
+	</field>
+	<field name="type" class="java.lang.String">
+		<property name="net.sf.jasperreports.json.field.expression" value="type"/>
+		<fieldDescription><![CDATA[type]]></fieldDescription>
+	</field>
+	<field name="mandatory" class="java.lang.String">
+		<property name="net.sf.jasperreports.json.field.expression" value="mandatory"/>
+		<fieldDescription><![CDATA[mandatory]]></fieldDescription>
+	</field>
+	<field name="value" class="java.lang.String">
+		<property name="net.sf.jasperreports.json.field.expression" value="value"/>
+		<fieldDescription><![CDATA[value]]></fieldDescription>
+	</field>
+	<detail>
+		<band height="16" splitType="Stretch">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="130" height="16" isPrintWhenDetailOverflows="true" uuid="df7a315c-f578-4f61-bac6-3f8b6460fee5"/>
+				<box topPadding="1" leftPadding="1" bottomPadding="1" rightPadding="1">
+					<pen lineWidth="0.5"/>
+				</box>
+				<textElement markup="styled">
+					<font fontName="Arial"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{value}.equals("Text from Left 1") ? $P{SQL_VALUE} : $F{value}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

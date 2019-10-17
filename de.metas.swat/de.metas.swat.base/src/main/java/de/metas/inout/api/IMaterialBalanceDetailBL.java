@@ -25,7 +25,6 @@ package de.metas.inout.api;
 
 import java.sql.Timestamp;
 
-import de.metas.inout.model.I_M_Material_Balance_Config;
 import de.metas.util.ISingletonService;
 
 public interface IMaterialBalanceDetailBL extends ISingletonService
@@ -45,7 +44,7 @@ public interface IMaterialBalanceDetailBL extends ISingletonService
 	 * @param config
 	 * @param resetDate
 	 */
-	void resetMaterialDetailsForConfigAndDate(I_M_Material_Balance_Config config, Timestamp resetDate);
+	void resetMaterialDetailsForConfigAndDate(MaterialBalanceConfig config, Timestamp resetDate);
 
 	/**
 	 * Reset all the Material Balance Details that are older than the given date

@@ -26,6 +26,7 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -94,14 +95,14 @@ public class HUPropertiesModel extends AbstractPropertiesPanelModel
 			@Override
 			public void loadFromModel()
 			{
-				final I_C_BPartner bpartner = hu.getC_BPartner();
+				final I_C_BPartner bpartner = IHandlingUnitsBL.extractBPartnerOrNull(hu);
 				if (bpartner == null || bpartner.getC_BPartner_ID() <= 0)
 				{
 					value = KeyNamePair.EMPTY;
 				}
 				else
 				{
-					value = new KeyNamePair(bpartner.getC_BPartner_ID(), bpartner.getName());
+					value = KeyNamePair.of(bpartner.getC_BPartner_ID(), bpartner.getName());
 				}
 			}
 
@@ -171,7 +172,7 @@ public class HUPropertiesModel extends AbstractPropertiesPanelModel
 			@Override
 			public void loadFromModel()
 			{
-				final I_C_BPartner_Location bpLocation = hu.getC_BPartner_Location();
+				final I_C_BPartner_Location bpLocation = IHandlingUnitsBL.extractBPartnerLocationOrNull(hu);
 				value = toKeyNamePair(bpLocation);
 			}
 
@@ -201,7 +202,7 @@ public class HUPropertiesModel extends AbstractPropertiesPanelModel
 					return KeyNamePair.EMPTY;
 				}
 
-				return new KeyNamePair(bpLocation.getC_BPartner_Location_ID(), bpLocation.getName());
+				return KeyNamePair.of(bpLocation.getC_BPartner_Location_ID(), bpLocation.getName());
 			}
 
 			@Override
@@ -361,7 +362,7 @@ public class HUPropertiesModel extends AbstractPropertiesPanelModel
 	{
 		for (final IHUProperty huProperty : properties)
 		{
-			if (Check.equals(huProperty.getPropertyName(), propertyName))
+			if (Objects.equals(huProperty.getPropertyName(), propertyName))
 			{
 				return huProperty;
 			}

@@ -689,7 +689,7 @@ public class MColumn extends X_AD_Column
 			final DatabaseMetaData md = conn.getMetaData();
 			final String catalog = DB.getDatabase().getCatalog();
 			final String schema = DB.getDatabase().getSchema();
-			final String tableNameNorm = normalizeTableName(tableName, md);
+			final String tableNameNorm = DB.normalizeDBIdentifier(tableName, md);
 
 			//
 			rs = md.getTables(catalog, schema, tableNameNorm, null);
@@ -733,7 +733,7 @@ public class MColumn extends X_AD_Column
 			final DatabaseMetaData md = conn.getMetaData();
 			final String catalog = DB.getDatabase().getCatalog();
 			final String schema = DB.getDatabase().getSchema();
-			final String tableNameNorm = normalizeTableName(tableName, md);
+			final String tableNameNorm = DB.normalizeDBIdentifier(tableName, md);
 
 			//
 			rs = md.getColumns(catalog, schema, tableNameNorm, null);
@@ -765,29 +765,6 @@ public class MColumn extends X_AD_Column
 		{
 			DB.close(rs);
 			DB.close(conn);
-		}
-	}
-
-	private static final String normalizeTableName(final String tableName, final DatabaseMetaData md)
-	{
-		try
-		{
-			if (md.storesUpperCaseIdentifiers())
-			{
-				return tableName.toUpperCase();
-			}
-			else if (md.storesLowerCaseIdentifiers())
-			{
-				return tableName.toLowerCase();
-			}
-			else
-			{
-				return tableName;
-			}
-		}
-		catch (final SQLException ex)
-		{
-			throw new DBException(ex);
 		}
 	}
 

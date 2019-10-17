@@ -13,12 +13,12 @@ package de.metas.fresh.picking;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,9 +30,11 @@ import java.util.Collection;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.IKeyLayout;
@@ -43,6 +45,8 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.model.I_C_POSKey;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.fresh.picking.form.PackingStates;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -58,6 +62,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.CapacityInterface;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 /**
  * Picking Slot Terminal Key
@@ -97,7 +102,7 @@ public class PickingSlotKey extends TerminalKey
 		final String pickingSlotName = buildPickingSlotName();
 		key.setName(pickingSlotName);
 
-		value = new KeyNamePair(pickingSlot.getM_PickingSlot_ID(), pickingSlotName);
+		value = KeyNamePair.of(pickingSlot.getM_PickingSlot_ID(), pickingSlotName);
 		status = new PickingSlotStatus();
 
 		//
@@ -106,7 +111,7 @@ public class PickingSlotKey extends TerminalKey
 			I_M_HU hu = this.pickingSlot.getM_HU();
 			if (hu != null)
 			{
-				this.piItemProduct = hu.getM_HU_PI_Item_Product();
+				this.piItemProduct = IHandlingUnitsBL.extractPIItemProductOrNull(hu);
 			}
 		}
 
@@ -318,9 +323,9 @@ public class PickingSlotKey extends TerminalKey
 
 	/**
 	 * Checks if this picking slot has an open Handling Unit and it's storage is NOT empty.
-	 * 
+	 *
 	 * If there is no open HUs on this picking slot, this method returns false.
-	 * 
+	 *
 	 * @return true if this picking slot has an open HU which is NOT empty.
 	 */
 	public boolean hasOpenNotEmptyHU()
@@ -349,10 +354,10 @@ public class PickingSlotKey extends TerminalKey
 
 	/**
 	 * Gets total capacity of the HU which is currently open this picking slot.
-	 * 
+	 *
 	 * @param product
 	 * @param uom
-	 * 
+	 *
 	 * @return
 	 *         <ul>
 	 *         <li>total capacity definition
@@ -396,32 +401,41 @@ public class PickingSlotKey extends TerminalKey
 				.append("<font size=\"5\">")
 				.append(pickingSlot.getPickingSlot())
 				.append("</font>")
-				.append("</div>");
+				.append("</div>" );
 
-		if (pickingSlot.getM_Warehouse_ID() > 0)
+		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(pickingSlot.getM_Warehouse_ID());
+		if (warehouseId != null)
 		{
-			final String warehouseName = truncatedString(pickingSlot.getM_Warehouse().getName(), maxLength);
+			final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+			final String warehouseName = warehousesRepo.getWarehouseName(warehouseId);
+			final String warehouseNameTrunc = truncatedString(warehouseName, maxLength);
 			pickingSlotName.append("<br>")
 					.append("<font size=\"3\">")
-					.append(Util.maskHTML(warehouseName))
+					.append(StringUtils.maskHTML(warehouseNameTrunc))
 					.append("</font>");
 		}
 
-		if (null != pickingSlot.getC_BPartner())
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(pickingSlot.getC_BPartner_ID());
+		if (bpartnerId != null)
 		{
-			final String bpName = truncatedString(pickingSlot.getC_BPartner().getName(), maxLength);
+			final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+			final String bpName = bpartnerBL.getBPartnerName(bpartnerId);
+			final String bpNameTrunc = truncatedString(bpName, maxLength);
 			pickingSlotName.append("<br>")
 					.append("<font size=\"3\">")
-					.append(Util.maskHTML(bpName))
+					.append(StringUtils.maskHTML(bpNameTrunc))
 					.append("</font>");
 		}
 
-		if (null != pickingSlot.getC_BPartner_Location())
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, pickingSlot.getC_BPartner_Location_ID());
+		if (bpartnerLocationId != null)
 		{
-			final String bplName = truncatedString(pickingSlot.getC_BPartner_Location().getName(), maxLength);
+			final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+			final I_C_BPartner_Location bpl = bpartnersRepo.getBPartnerLocationById(bpartnerLocationId);
+			final String bplNameTrunc = truncatedString(bpl.getName(), maxLength);
 			pickingSlotName.append("<br>")
 					.append("<font size=\"3\">")
-					.append(bplName)
+					.append(bplNameTrunc)
 					.append("</font>");
 		}
 
@@ -471,7 +485,7 @@ public class PickingSlotKey extends TerminalKey
 
 			final String piName = handlingUnitsBL.getEffectivePIVersion(hu).getM_HU_PI().getName();
 			sb.append("<font size=\"3\">")
-					.append(Util.maskHTML(piName))
+					.append(StringUtils.maskHTML(piName))
 					.append("</font>");
 
 			final String huValue = hu.getValue();

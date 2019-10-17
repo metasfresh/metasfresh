@@ -1,43 +1,25 @@
 package de.metas.tourplanning.api.impl;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.sql.Timestamp;
-import java.util.Date;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_Order;
-import org.compiere.util.Util;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IOrderDeliveryDayBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 {
@@ -46,10 +28,8 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 	private static final transient Logger logger = LogManager.getLogger(OrderDeliveryDayBL.class);
 
 	@Override
-	public boolean setPreparationDate(final I_C_Order order, final boolean fallbackToDatePromised)
+	public boolean setPreparationDate(@NonNull final I_C_Order order, final boolean fallbackToDatePromised)
 	{
-		Check.assumeNotNull(order, "order not null");
-
 		// Don't touch processed orders
 		if (order.isProcessed())
 		{
@@ -58,19 +38,20 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 
 		//
 		// Extract parameters from order
-		final int bpartnerLocationId = order.getC_BPartner_Location_ID();
-		if (bpartnerLocationId <= 0)
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
+		if (bpartnerLocationId == null)
 		{
 			return false;
 		}
 
-		final Timestamp datePromised = order.getDatePromised();
+		final ZoneId timeZone = Services.get(IOrderBL.class).getTimeZone(order);
+		final ZonedDateTime datePromised = TimeUtil.asZonedDateTime(order.getDatePromised(), timeZone);
 		if (datePromised == null)
 		{
 			return false;
 		}
 
-		final boolean isSOTrx = order.isSOTrx();
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 
 		boolean isUseFallback = fallbackToDatePromised;
 
@@ -81,25 +62,31 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 
 			isUseFallback = Services.get(ISysConfigBL.class)
 					.getBooleanValue(
-							SYSCONFIG_Fallback_PreparationDate
-							, true // default true
+							SYSCONFIG_Fallback_PreparationDate, true // default true
 					);
 		}
 		final IDeliveryDayBL deliveryDayBL = Services.get(IDeliveryDayBL.class);
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(order);
 
 		// the date+time when the order was created
-		final Timestamp dateOrdered = Util.coalesce(order.getCreated(), SystemTime.asTimestamp());
-		final Timestamp preparationDate = deliveryDayBL.calculatePreparationDateOrNull(context, isSOTrx, dateOrdered, datePromised, bpartnerLocationId);
+		final ZonedDateTime calculationTime = CoalesceUtil.coalesce(
+				TimeUtil.asZonedDateTime(order.getCreated()),
+				SystemTime.asZonedDateTime());
+		final ZonedDateTime preparationDate = deliveryDayBL.calculatePreparationDateOrNull(
+				context,
+				soTrx,
+				calculationTime,
+				datePromised,
+				bpartnerLocationId);
 
 		//
 		// Update order
-		final Date systemTime = SystemTime.asDate();
-		if (preparationDate != null && preparationDate.after(systemTime))
+		final ZonedDateTime systemTime = SystemTime.asZonedDateTime(timeZone);
+		if (preparationDate != null && preparationDate.isAfter(systemTime))
 		{
 			// task 08931: only set the date if it has not yet passed.
 			// if it has, leave the field empty and let the user pick a new preparation date
-			order.setPreparationDate(preparationDate);
+			order.setPreparationDate(TimeUtil.asTimestamp(preparationDate));
 			logger.debug("Setting PreparationDate={} for C_Order {} (fallbackToDatePromised={}, systemTime={})",
 					new Object[] { preparationDate, order, isUseFallback, systemTime });
 		}

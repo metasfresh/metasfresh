@@ -34,7 +34,7 @@ import lombok.NonNull;
  * #L%
  */
 @Interceptor(I_M_ShipmentSchedule_QtyPicked.class)
-@Component("de.metas.handlingunits.trace.interceptor.M_ShipmentSchedule_QtyPicked")
+@Component
 /* package */ class M_ShipmentSchedule_QtyPicked
 {
 

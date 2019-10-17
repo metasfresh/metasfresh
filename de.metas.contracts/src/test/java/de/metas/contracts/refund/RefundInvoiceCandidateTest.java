@@ -55,7 +55,7 @@ public class RefundInvoiceCandidateTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		refundTestTools = new RefundTestTools();
+		refundTestTools = RefundTestTools.newInstance();
 	}
 
 	/**
@@ -84,15 +84,16 @@ public class RefundInvoiceCandidateTest
 				.builder()
 				.assignedQuantity(Quantity.of(TWENTY, refundTestTools.getUomRecord()))
 				.refundConfigs(ImmutableList.of(refundConfig1))
-				.bpartnerId(BPartnerId.ofRepoId(10))
+				.bpartnerId(BPARTNER_ID)
+				.bpartnerLocationId(refundTestTools.billBPartnerLocationId)
 				.invoiceableFrom(NOW)
-				.money(Money.of(ONE, refundTestTools.getCurrency().getId()))
+				.money(Money.of(ONE, refundTestTools.getCurrencyId()))
 				.refundContract(refundContract)
 				.build();
 
 		// invoke the method under test
 		final Quantity result = refundInvoiceCandidate.computeAssignableQuantity(refundConfig1);
 
-		assertThat(result.getAsBigDecimal()).isEqualByComparingTo("9");
+		assertThat(result.toBigDecimal()).isEqualByComparingTo("9");
 	}
 }

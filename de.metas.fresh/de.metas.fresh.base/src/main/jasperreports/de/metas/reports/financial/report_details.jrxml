@@ -159,7 +159,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica-Bold" isPdfEmbedded="false"/>
+						<font size="10" fontName="Arial" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"  isPdfEmbedded="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 				</textField>
@@ -172,7 +172,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica-Bold" isPdfEmbedded="false"/>
+						<font size="10" fontName="Arial" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"  isPdfEmbedded="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 				</textField>
@@ -243,7 +243,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica-Bold" isPdfEmbedded="false"/>
+						<font size="8" fontName="Arial" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"  isPdfEmbedded="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{col_0}]]></textFieldExpression>
 				</textField>
@@ -256,7 +256,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica-Bold" isPdfEmbedded="false"/>
+						<font size="8" fontName="Arial" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"  isPdfEmbedded="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{col_2}]]></textFieldExpression>
 				</textField>
@@ -269,7 +269,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfFontName="Helvetica-Bold" isPdfEmbedded="false"/>
+						<font size="8" fontName="Arial" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false"  isPdfEmbedded="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{col_1}]]></textFieldExpression>
 				</textField>

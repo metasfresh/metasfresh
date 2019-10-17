@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.i18n.impl.PlainMsgBL;
 import de.metas.util.Services;
 
@@ -84,7 +84,7 @@ public class NotificationMessageFormatterTest
 		public ITranslatableString getTranslatableMsgText(final String adMessage, final Object... msgParameters)
 		{
 			final String msgText = adMessage;
-			return ImmutableTranslatableString.constant(MessageFormat.format(msgText, msgParameters));
+			return TranslatableStrings.constant(MessageFormat.format(msgText, msgParameters));
 		}
 	}
 }

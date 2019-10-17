@@ -50,6 +50,7 @@ import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
@@ -58,7 +59,8 @@ import lombok.NonNull;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		ContractLibraryConfiguration.class })
+		ContractLibraryConfiguration.class,
+		ContractOrderService.class})
 public class ContractChangeBLTest extends AbstractFlatrateTermTest
 {
 	final private IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);

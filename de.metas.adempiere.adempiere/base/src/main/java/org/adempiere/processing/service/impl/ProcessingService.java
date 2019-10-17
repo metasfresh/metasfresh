@@ -44,6 +44,7 @@ import org.compiere.util.DB;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
+import de.metas.error.AdIssueId;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.JavaProcess;
@@ -93,7 +94,9 @@ public class ProcessingService implements IProcessingService
 			cause = e.getCause();
 		}
 		if (LogManager.isLevelFine())
+		{
 			logger.warn(e.getLocalizedMessage(), e);
+		}
 
 		final LogRecord logRecord = new LogRecord(Level.SEVERE, e.getMessage());
 		logRecord.setThrown(cause);
@@ -104,7 +107,7 @@ public class ProcessingService implements IProcessingService
 		DB.saveConstraints(); 
 		try
 		{
-			Services.get(ITrxManager.class).run(new TrxRunnableAdapter()
+			Services.get(ITrxManager.class).runInNewTrx(new TrxRunnableAdapter()
 			{
 				@Override
 				public void run(final String trxName)
@@ -135,11 +138,12 @@ public class ProcessingService implements IProcessingService
 					issue.setStackTrace(stackTrace.toString());
 
 					issue.saveEx();
-					IssueReportableExceptions.markReportedIfPossible(cause, issue.getAD_Issue_ID());
+					final AdIssueId adIssueId = AdIssueId.ofRepoId(issue.getAD_Issue_ID());
+					
+					IssueReportableExceptions.markReportedIfPossible(cause, adIssueId);
 
 					poToProcess.setIsError(true);
-					poToProcess.setAD_Issue_ID(issue.get_ID());
-
+					poToProcess.setAD_Issue_ID(adIssueId.getRepoId());
 					InterfaceWrapperHelper.save(poToProcess);
 				}
 			});
@@ -251,7 +255,9 @@ public class ProcessingService implements IProcessingService
 	{
 		int idx = po.get_ColumnIndex("Processed");
 		if (idx < 0)
+		{
 			return defaultValue;
+		}
 		return po.get_ValueAsBoolean(idx);
 	}
 }

@@ -1,5 +1,17 @@
 package de.metas.invoicecandidate.expectations;
 
+import java.math.BigDecimal;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
+import org.adempiere.util.test.AbstractExpectation;
+import org.adempiere.util.test.ErrorMessage;
+import org.compiere.model.I_AD_Note;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -10,25 +22,19 @@ package de.metas.invoicecandidate.expectations;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import org.adempiere.util.test.AbstractExpectation;
-import org.adempiere.util.test.ErrorMessage;
-import org.compiere.model.*;
-
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-import java.math.BigDecimal;
 
 public class InvoiceCandidateExpectation<ParentExpectationType> extends AbstractExpectation<ParentExpectationType>
 {
@@ -125,15 +131,15 @@ public class InvoiceCandidateExpectation<ParentExpectationType> extends Abstract
 		}
 		if (docTypeInvoice != null)
 		{
-			assertModelEquals(messageToUse.expect("C_DocTypeInvoice"), docTypeInvoice, actual.getC_DocTypeInvoice());
+			assertModelEquals(messageToUse.expect("C_DocTypeInvoice_ID"), docTypeInvoice.getC_DocType_ID(), actual.getC_DocTypeInvoice_ID());
 		}
 		if (product != null)
 		{
-			assertModelEquals(messageToUse.expect("M_Product"), product, actual.getM_Product());
+			assertModelEquals(messageToUse.expect("M_Product_ID"), product.getM_Product_ID(), actual.getM_Product_ID());
 		}
 		if (uom != null)
 		{
-			assertModelEquals(messageToUse.expect("C_UOM"), uom, actual.getC_UOM());
+			assertModelEquals(messageToUse.expect("C_UOM_ID"), uom.getC_UOM_ID(), actual.getC_UOM_ID());
 		}
 		if (error != null)
 		{
@@ -145,7 +151,7 @@ public class InvoiceCandidateExpectation<ParentExpectationType> extends Abstract
 		}
 		if (errorNoteSet)
 		{
-			assertModelEquals(messageToUse.expect("AD_Note"), errorNote, actual.getAD_Note());
+			assertModelEquals(messageToUse.expect("AD_Note"), errorNote.getAD_Note_ID(), actual.getAD_Note_ID());
 		}
 
 		if (processed != null)
@@ -155,7 +161,7 @@ public class InvoiceCandidateExpectation<ParentExpectationType> extends Abstract
 
 		if (priceListVersionSet)
 		{
-			assertModelEquals(messageToUse.expect("M_PriceList_Version"), priceListVersion, actual.getM_PriceList_Version());
+			assertModelEquals(messageToUse.expect("M_PriceList_Version_ID"), priceListVersion.getM_PriceList_Version_ID(), actual.getM_PriceList_Version_ID());
 		}
 
 		if (priceActual != null)

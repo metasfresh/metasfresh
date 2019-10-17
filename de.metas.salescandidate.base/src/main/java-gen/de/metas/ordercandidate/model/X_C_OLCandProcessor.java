@@ -14,7 +14,7 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 580090053L;
+	private static final long serialVersionUID = -2108067950L;
 
     /** Standard Constructor */
     public X_C_OLCandProcessor (Properties ctx, int C_OLCandProcessor_ID, String trxName)
@@ -52,7 +52,7 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
     }
 
 	@Override
-	public org.compiere.model.I_AD_Scheduler getAD_Scheduler() throws RuntimeException
+	public org.compiere.model.I_AD_Scheduler getAD_Scheduler()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Scheduler_ID, org.compiere.model.I_AD_Scheduler.class);
 	}
@@ -88,18 +88,6 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_AD_User getAD_User_InCharge() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_InCharge_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User_InCharge(org.compiere.model.I_AD_User AD_User_InCharge)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_InCharge_ID, org.compiere.model.I_AD_User.class, AD_User_InCharge);
-	}
-
 	/** Set Betreuer.
 		@param AD_User_InCharge_ID 
 		Person, die bei einem fachlichen Problem vom System informiert wird.
@@ -123,18 +111,6 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_DocType getC_DocTypeTarget() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_DocTypeTarget_ID, org.compiere.model.I_C_DocType.class);
-	}
-
-	@Override
-	public void setC_DocTypeTarget(org.compiere.model.I_C_DocType C_DocTypeTarget)
-	{
-		set_ValueFromPO(COLUMNNAME_C_DocTypeTarget_ID, org.compiere.model.I_C_DocType.class, C_DocTypeTarget);
 	}
 
 	/** Set Zielbelegart.
@@ -201,7 +177,7 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	}
 
 	@Override
-	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm() throws RuntimeException
+	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class);
 	}
@@ -363,14 +339,14 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	 * Reference name: C_Order InvoiceRule
 	 */
 	public static final int INVOICERULE_AD_Reference_ID=150;
-	/** Nach Lieferung Auftrag = O */
-	public static final String INVOICERULE_NachLieferungAuftrag = "O";
-	/** Nach Lieferung = D */
-	public static final String INVOICERULE_NachLieferung = "D";
-	/** Kundenintervall (nach Lieferung) = S */
-	public static final String INVOICERULE_KundenintervallNachLieferung = "S";
-	/** Sofort = I */
-	public static final String INVOICERULE_Sofort = "I";
+	/** AfterOrderDelivered = O */
+	public static final String INVOICERULE_AfterOrderDelivered = "O";
+	/** AfterDelivery = D */
+	public static final String INVOICERULE_AfterDelivery = "D";
+	/** CustomerScheduleAfterDelivery = S */
+	public static final String INVOICERULE_CustomerScheduleAfterDelivery = "S";
+	/** Immediate = I */
+	public static final String INVOICERULE_Immediate = "I";
 	/** Set Rechnungsstellung.
 		@param InvoiceRule 
 		"Rechnungsstellung" definiert, wie oft und in welcher Form ein Geschäftspartner Rechnungen erhält.
@@ -392,7 +368,7 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	}
 
 	@Override
-	public org.compiere.model.I_M_AttributeSet getM_AttributeSet() throws RuntimeException
+	public org.compiere.model.I_M_AttributeSet getM_AttributeSet()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSet_ID, org.compiere.model.I_M_AttributeSet.class);
 	}
@@ -428,18 +404,6 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_PricingSystem getM_PricingSystem() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class);
-	}
-
-	@Override
-	public void setM_PricingSystem(org.compiere.model.I_M_PricingSystem M_PricingSystem)
-	{
-		set_ValueFromPO(COLUMNNAME_M_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class, M_PricingSystem);
-	}
-
 	/** Set Preissystem.
 		@param M_PricingSystem_ID 
 		Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
@@ -466,7 +430,7 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	}
 
 	@Override
-	public org.compiere.model.I_M_Shipper getM_Shipper() throws RuntimeException
+	public org.compiere.model.I_M_Shipper getM_Shipper()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class);
 	}
@@ -502,18 +466,6 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
-	}
-
-	@Override
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse);
-	}
-
 	/** Set Lager.
 		@param M_Warehouse_ID 
 		Lager oder Ort für Dienstleistung
@@ -540,9 +492,7 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -550,8 +500,7 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{
@@ -577,6 +526,8 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	public static final String PAYMENTRULE_DirectDebit = "D";
 	/** Mixed = M */
 	public static final String PAYMENTRULE_Mixed = "M";
+	/** PayPal = L */
+	public static final String PAYMENTRULE_PayPal = "L";
 	/** Set Zahlungsweise.
 		@param PaymentRule 
 		Wie die Rechnung bezahlt wird

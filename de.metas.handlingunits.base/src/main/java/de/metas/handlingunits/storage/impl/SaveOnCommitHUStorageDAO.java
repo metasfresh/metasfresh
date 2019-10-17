@@ -65,32 +65,27 @@ public class SaveOnCommitHUStorageDAO implements IHUStorageDAO
 		final ITrx trx = trxManager.getTrx(trxName);
 		Check.assumeNotNull(trx, "Transaction shall exist: {}", trxName);
 
-		return trx.getProperty(TRX_PROPERTY_SaveDecoupledHUStorageDAO, new Supplier<SaveDecoupledHUStorageDAO>()
-		{
-			@Override
-			public SaveDecoupledHUStorageDAO get()
-			{
-				final SaveDecoupledHUStorageDAO huStorageDAO = new SaveDecoupledHUStorageDAO(dbStorageDAO);
+		return trx.getProperty(TRX_PROPERTY_SaveDecoupledHUStorageDAO, (Supplier<SaveDecoupledHUStorageDAO>)() -> {
+			final SaveDecoupledHUStorageDAO huStorageDAO = new SaveDecoupledHUStorageDAO(dbStorageDAO);
 
-				// Listen this transaction for COMMIT events
-				// Before committing the transaction, this listener makes sure we are also saving all storages
-				trx.getTrxListenerManager()
-						.newEventListener(TrxEventTiming.BEFORE_COMMIT)
-						.invokeMethodJustOnce(false) // we need this to happen on every last single commit
-						.registerHandlingMethod(innerTrx -> {
-							// Get and remove the save-decoupled HU Storage DAO
-							final SaveDecoupledHUStorageDAO innerHuStorageDAO = innerTrx.setProperty(TRX_PROPERTY_SaveDecoupledHUStorageDAO, null);
-							if (innerHuStorageDAO == null)
-							{
-								return;
-							}
+			// Listen this transaction for COMMIT events
+			// Before committing the transaction, this listener makes sure we are also saving all storages
+			trx.getTrxListenerManager()
+					.newEventListener(TrxEventTiming.BEFORE_COMMIT)
+					.invokeMethodJustOnce(false) // we need this to happen on every last single commit
+					.registerHandlingMethod(innerTrx -> {
+						// Get and remove the save-decoupled HU Storage DAO
+						final SaveDecoupledHUStorageDAO innerHuStorageDAO = innerTrx.setProperty(TRX_PROPERTY_SaveDecoupledHUStorageDAO, null);
+						if (innerHuStorageDAO == null)
+						{
+							return;
+						}
 
-							// Save everything to database
-							innerHuStorageDAO.flush();
-						});
+						// Save everything to database
+						innerHuStorageDAO.flush();
+					});
 
-				return huStorageDAO;
-			}
+			return huStorageDAO;
 		});
 	}
 
@@ -162,13 +157,6 @@ public class SaveOnCommitHUStorageDAO implements IHUStorageDAO
 	{
 		final SaveDecoupledHUStorageDAO delegate = getDelegate(item);
 		delegate.save(item);
-	}
-
-	@Override
-	public I_C_UOM getC_UOM(final I_M_HU_Storage storage)
-	{
-		final SaveDecoupledHUStorageDAO delegate = getDelegate(storage);
-		return delegate.getC_UOM(storage);
 	}
 
 	@Override

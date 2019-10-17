@@ -63,7 +63,9 @@ public class MUser extends X_AD_User
 	{
 		String s = super.getValue();
 		if (s != null)
+		{
 			return s;
+		}
 		setValue(null);
 		return super.getValue();
 	}	// getValue
@@ -77,9 +79,13 @@ public class MUser extends X_AD_User
 	public void setValue(String Value)
 	{
 		if (Value == null || Value.length() == 0)
+		{
 			Value = getName();
+		}
 		if (Value == null || Value.length() == 0)
+		{
 			Value = "noname";
+		}
 		//
 		String result = cleanValue(Value);
 		if (result.length() > 8)
@@ -90,14 +96,20 @@ public class MUser extends X_AD_User
 			{
 				String temp = last;
 				if (first.length() > 0)
+				{
 					temp = first.substring(0, 1) + last;
+				}
 				result = cleanValue(temp);
 			}
 			else
+			{
 				result = cleanValue(first);
+			}
 		}
 		if (result.length() > 8)
+		{
 			result = result.substring(0, 8);
+		}
 		super.setValue(result);
 	}	// setValue
 
@@ -111,13 +123,15 @@ public class MUser extends X_AD_User
 	{
 		char[] chars = value.toCharArray();
 		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < chars.length; i++)
+		for (char c : chars)
 		{
-			char ch = chars[i];
+			char ch = c;
 			ch = Character.toLowerCase(ch);
 			if ((ch >= '0' && ch <= '9')		// digits
-					|| (ch >= 'a' && ch <= 'z'))	// characters
+					|| (ch >= 'a' && ch <= 'z'))
+			{
 				sb.append(ch);
+			}
 		}
 		return sb.toString();
 	}	// cleanValue
@@ -132,7 +146,9 @@ public class MUser extends X_AD_User
 	private String getName(String name, boolean getFirst)
 	{
 		if (name == null || name.length() == 0)
+		{
 			return "";
+		}
 		String first = null;
 		String last = null;
 		// Janke, Jorg R - Jorg R Janke
@@ -141,35 +157,51 @@ public class MUser extends X_AD_User
 		boolean lastFirst = name.indexOf(',') != -1;
 		StringTokenizer st = null;
 		if (lastFirst)
+		{
 			st = new StringTokenizer(name, ",");
+		}
 		else
+		{
 			st = new StringTokenizer(name, " ");
+		}
 		while (st.hasMoreTokens())
 		{
 			String s = st.nextToken().trim();
 			if (lastFirst)
 			{
 				if (last == null)
+				{
 					last = s;
+				}
 				else if (first == null)
+				{
 					first = s;
+				}
 			}
 			else
 			{
 				if (first == null)
+				{
 					first = s;
+				}
 				else
+				{
 					last = s;
+				}
 			}
 		}
 		if (getFirst)
 		{
 			if (first == null)
+			{
 				return "";
+			}
 			return first.trim();
 		}
 		if (last == null)
+		{
 			return "";
+		}
 		return last.trim();
 	}	// getName
 
@@ -184,7 +216,7 @@ public class MUser extends X_AD_User
 		StringBuilder sb = new StringBuilder("MUser[")
 				.append(get_ID())
 				.append(",Name=").append(getName())
-				.append(",EMailUserID=").append(getEMailUser())
+				.append(",EMail=").append(getEMail())
 				.append("]");
 		return sb.toString();
 	}	// toString
@@ -212,9 +244,13 @@ public class MUser extends X_AD_User
 	{
 		// New Address invalidates verification
 		if (!newRecord && is_ValueChanged("EMail"))
+		{
 			setEMailVerifyDate(null);
+		}
 		if (newRecord || super.getValue() == null || is_ValueChanged("Value"))
+		{
 			setValue(super.getValue());
+		}
 		return true;
 	}	// beforeSave
 }	// MUser

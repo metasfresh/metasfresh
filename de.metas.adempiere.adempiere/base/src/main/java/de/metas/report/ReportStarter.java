@@ -5,7 +5,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.print.JRReportViewerProvider;
 import org.compiere.util.Ini;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.io.Files;
@@ -26,6 +25,7 @@ import de.metas.util.Check;
 import de.metas.util.FileUtils;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -82,10 +82,11 @@ public abstract class ReportStarter extends JavaProcess
 
 		final ReportPrintingInfo reportPrintingInfo = extractReportPrintingInfo(pi);
 
-		if (reportPrintingInfo.isPrintPreview())
+		final boolean doNotInvokeMassPrintEngine = reportPrintingInfo.isPrintPreview() || !reportPrintingInfo.isArchiveReportData();
+		if (doNotInvokeMassPrintEngine)
 		{
-			// Create report and preview
-			startProcessPrintPreview(reportPrintingInfo);
+			// Create report and preview / not-archive
+			startProcessInvokeReportOnly(reportPrintingInfo);
 		}
 		else
 		{
@@ -119,7 +120,7 @@ public abstract class ReportStarter extends JavaProcess
 		swingJRReportViewerProvider = provider;
 	}
 
-	private void startProcessDirectPrint(final ReportPrintingInfo reportPrintingInfo)
+	private void startProcessDirectPrint(@NonNull final ReportPrintingInfo reportPrintingInfo)
 	{
 		final ProcessInfo pi = reportPrintingInfo.getProcessInfo();
 
@@ -129,14 +130,21 @@ public abstract class ReportStarter extends JavaProcess
 		printService.print(result, pi);
 	}
 
-	private void startProcessPrintPreview(@NonNull final ReportPrintingInfo reportPrintingInfo) throws Exception
+	private void startProcessInvokeReportOnly(@NonNull final ReportPrintingInfo reportPrintingInfo) throws Exception
 	{
 		final ProcessInfo processInfo = reportPrintingInfo.getProcessInfo();
 
-		//
-		// Get Jasper report viewer provider
-		final JRReportViewerProvider jrReportViewerProvider = getJRReportViewerProviderOrNull();
-		final OutputType desiredOutputType = jrReportViewerProvider == null ? null : jrReportViewerProvider.getDesiredOutputType();
+		final OutputType desiredOutputType;
+		if (reportPrintingInfo.isPrintPreview())
+		{
+			// Get the jasper report viewer provider and ask it what format it wants
+			final JRReportViewerProvider jrReportViewerProvider = getJRReportViewerProviderOrNull();
+			desiredOutputType = jrReportViewerProvider == null ? null : jrReportViewerProvider.getDesiredOutputType();
+		}
+		else
+		{
+			desiredOutputType = OutputType.PDF;
+		}
 
 		//
 		// Based on reporting system type, determine: output type
@@ -148,7 +156,11 @@ public abstract class ReportStarter extends JavaProcess
 			// Jasper reporting
 			case Jasper:
 			case Other:
-				outputType = Util.coalesce(desiredOutputType, processInfo.getJRDesiredOutputType(), OutputType.PDF);
+				outputType = CoalesceUtil.coalesce(
+						// needs to take precedence because we might be invoked for an outer "preview" process, but with isPrintPreview()=false
+						processInfo.getJRDesiredOutputType(),
+						desiredOutputType,
+						OutputType.PDF);
 				break;
 
 			//
@@ -163,7 +175,7 @@ public abstract class ReportStarter extends JavaProcess
 
 		//
 		// Generate report data
-		Loggables.get().addLog("ReportStarter.startProcess run report: reportingSystemType={}, title={}, outputType={}", reportingSystemType, processInfo.getTitle(), outputType);
+		Loggables.addLog("ReportStarter.startProcess run report: reportingSystemType={}, title={}, outputType={}", reportingSystemType, processInfo.getTitle(), outputType);
 		final ExecuteReportResult result = getExecuteReportStrategy().executeReport(getProcessInfo(), outputType);
 
 		//
@@ -175,7 +187,9 @@ public abstract class ReportStarter extends JavaProcess
 
 		//
 		// Print preview (if swing client)
-		if (Ini.isClient() && swingJRReportViewerProvider != null)
+		if (reportPrintingInfo.isPrintPreview()
+				&& Ini.isSwingClient()
+				&& swingJRReportViewerProvider != null)
 		{
 			swingJRReportViewerProvider.openViewer(result.getReportData(), outputType, processInfo);
 		}
@@ -183,7 +197,7 @@ public abstract class ReportStarter extends JavaProcess
 
 	private static final String extractReportFilename(final ProcessInfo pi, final OutputType outputType)
 	{
-		final String fileBasename = Util.firstValidValue(
+		final String fileBasename = CoalesceUtil.firstValidValue(
 				basename -> !Check.isEmpty(basename, true),
 				() -> extractReportBasename_IfDocument(pi),
 				() -> pi.getTitle(),
@@ -217,10 +231,12 @@ public abstract class ReportStarter extends JavaProcess
 
 	private ReportPrintingInfo extractReportPrintingInfo(@NonNull final ProcessInfo pi)
 	{
-		final ReportPrintingInfo.ReportPrintingInfoBuilder info = ReportPrintingInfo.builder();
-		info.processInfo(pi);
-		info.printPreview(pi.isPrintPreview());
-		info.forceSync(!pi.isAsync()); // gh #1160 if the process info says "sync", then sync it is
+		final ReportPrintingInfo.ReportPrintingInfoBuilder info = ReportPrintingInfo
+				.builder()
+				.processInfo(pi)
+				.printPreview(pi.isPrintPreview())
+				.archiveReportData(pi.isArchiveReportData())
+				.forceSync(!pi.isAsync()); // gh #1160 if the process info says "sync", then sync it is
 
 		//
 		// Determine the ReportingSystem type based on report template file extension
@@ -253,7 +269,7 @@ public abstract class ReportStarter extends JavaProcess
 	 */
 	private JRReportViewerProvider getJRReportViewerProviderOrNull()
 	{
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			return swingJRReportViewerProvider;
 		}
@@ -276,23 +292,27 @@ public abstract class ReportStarter extends JavaProcess
 		}
 	}
 
-	private static enum ReportingSystemType
+	private enum ReportingSystemType
 	{
 		Jasper,
 
 		Excel,
 
-		/** May be used no invocation to the jasper service is done */
+		/** May be used when no invocation to the jasper service is done */
 		Other
-	};
+	}
 
 	@Value
 	@Builder
 	private static final class ReportPrintingInfo
 	{
 		ProcessInfo processInfo;
+
 		ReportingSystemType reportingSystemType;
+
 		boolean printPreview;
+
+		boolean archiveReportData;
 
 		/**
 		 * Even if {@link #isPrintPreview()} is {@code false}, we do <b>not</b> print in a background thread, if this is false.

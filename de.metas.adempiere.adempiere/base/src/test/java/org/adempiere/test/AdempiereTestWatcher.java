@@ -17,16 +17,18 @@ import java.util.Map.Entry;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.slf4j.Logger;
@@ -37,19 +39,29 @@ import de.metas.util.Check;
 /**
  * Watches current test and dumps the database to console in case of failure.
  *
- * To include in your tests, you need to declare a public field like this:
- *
- * <pre>
- * &#64;Rule
- * public final {@link TestWatcher} testWatcher = new {@link AdempiereTestWatcher}()
- * </pre>
+ * To include in your tests:
+ * <ul>
+ * <li>JUnit5: annotate your class with <b><code>@ExtendWith(AdempiereTestWatcher.class)</code></b>
+ * <li>Legacy JUnit4: you need to declare a public field like this: <code>@Rule public final TestWatcher testWatcher = new AdempiereTestWatcher();</code>
+ * </ul>
  */
-public class AdempiereTestWatcher extends TestWatcher
+public class AdempiereTestWatcher extends TestWatcher implements AfterTestExecutionCallback
 {
 	private static final Logger logger = LogManager.getLogger(AdempiereTestWatcher.class);
 
 	/** Context variables to be printed to screen in case the test fails */
 	private final Map<String, Object> context = new LinkedHashMap<>();
+
+	@Override
+	public final void afterTestExecution(final ExtensionContext context)
+	{
+		if (context.getExecutionException().isPresent())
+		{
+			onTestFailed(context.getDisplayName(), context.getExecutionException().get());
+		}
+
+		onTestFinished(context.getDisplayName());
+	}
 
 	/**
 	 * Called after a test succeed.
@@ -57,9 +69,15 @@ public class AdempiereTestWatcher extends TestWatcher
 	 * Does nothing at this level.
 	 */
 	@Override
-	protected void succeeded(final Description description)
+	protected final void succeeded(final Description description)
 	{
 		// nothing
+	}
+
+	@Override
+	protected final void failed(final Throwable exception, final Description description)
+	{
+		onTestFailed(description.getDisplayName(), exception);
 	}
 
 	/**
@@ -68,10 +86,9 @@ public class AdempiereTestWatcher extends TestWatcher
 	 * <li>dump database content
 	 * </ul>
 	 */
-	@Override
-	protected void failed(final Throwable e, final Description description)
+	protected void onTestFailed(final String testName, final Throwable exception)
 	{
-		POJOLookupMap.get().dumpStatus("After test failed: " + description.getDisplayName());
+		POJOLookupMap.get().dumpStatus("After test failed: " + testName);
 
 		//
 		// Dump retained context values
@@ -83,24 +100,34 @@ public class AdempiereTestWatcher extends TestWatcher
 		}
 	}
 
+	@Override
+	protected final void finished(final Description description)
+	{
+		onTestFinished(description.getDisplayName());
+	}
+
 	/**
 	 * Called after a test finished (successful or not). It:
 	 * <ul>
 	 * <li>clears database content
 	 * </ul>
 	 */
-	@Override
-	protected void finished(final Description description)
+	private void onTestFinished(final String name)
 	{
-		POJOLookupMap.get().clear();
+		final POJOLookupMap pojoLookupMap = POJOLookupMap.get();
+		if (pojoLookupMap != null)
+		{
+			pojoLookupMap.clear();
+		}
+
 		context.clear();
 	}
 
 	/**
 	 * Put given variable to context.
-	 * 
+	 *
 	 * In case the test will fail, all context variables will be printed to console.
-	 * 
+	 *
 	 * @param name
 	 * @param value
 	 */
@@ -112,7 +139,7 @@ public class AdempiereTestWatcher extends TestWatcher
 
 	/**
 	 * Convenient variant for {@link #putContext(String, Object)} which considers value's class name as the context variable <code>name</code>.
-	 * 
+	 *
 	 * @param value value, not null.
 	 */
 	public void putContext(final Object value)

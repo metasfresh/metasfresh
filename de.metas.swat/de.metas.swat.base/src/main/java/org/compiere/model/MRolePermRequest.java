@@ -29,12 +29,14 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.DBForeignKeyConstraintException;
 import org.adempiere.service.IRolePermLoggingBL.NoSuchForeignKeyException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
 
 import de.metas.document.DocTypeId;
+import de.metas.security.RoleId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -79,42 +81,49 @@ public class MRolePermRequest extends X_AD_Role_PermRequest
 		Env.setContext(ctx, "P|" + SYSCONFIG_PermLogLevel, permLogLevel);
 	}
 
-	public static void logWindowAccess(final int AD_Role_ID, final int id, final Boolean access)
+	public static void logWindowAccess(final RoleId roleId, final int id, final Boolean access)
 	{
-		logAccess(AD_Role_ID, COLUMNNAME_AD_Window_ID, id, null, null, access, null);
+		logAccess(roleId, COLUMNNAME_AD_Window_ID, id, null, null, access, null);
 	}
 
-	public static void logWindowAccess(final int AD_Role_ID, final int id, final Boolean access, final String description)
+	public static void logWindowAccess(final RoleId roleId, final AdWindowId id, final Boolean access, final String description)
 	{
-		logAccess(AD_Role_ID, COLUMNNAME_AD_Window_ID, id, null, null, access, description);
+		logAccess(roleId, COLUMNNAME_AD_Window_ID, id.getRepoId(), null, null, access, description);
 	}
 
-	public static void logFormAccess(final int AD_Role_ID, final int id, final Boolean access)
+	public static void logFormAccess(final RoleId roleId, final int id, final Boolean access)
 	{
-		logAccess(AD_Role_ID, COLUMNNAME_AD_Form_ID, id, null, null, access, null);
+		logAccess(roleId, COLUMNNAME_AD_Form_ID, id, null, null, access, null);
 	}
 
-	public static void logProcessAccess(final int AD_Role_ID, final int id, final Boolean access)
+	public static void logProcessAccess(final RoleId roleId, final int id, final Boolean access)
 	{
-		logAccess(AD_Role_ID, COLUMNNAME_AD_Process_ID, id, null, null, access, null);
+		logAccess(roleId, COLUMNNAME_AD_Process_ID, id, null, null, access, null);
 	}
 
-	public static void logTaskAccess(final int AD_Role_ID, final int id, final Boolean access)
+	public static void logTaskAccess(final RoleId roleId, final int id, final Boolean access)
 	{
-		logAccess(AD_Role_ID, COLUMNNAME_AD_Task_ID, id, null, null, access, null);
+		logAccess(roleId, COLUMNNAME_AD_Task_ID, id, null, null, access, null);
 	}
 
-	public static void logWorkflowAccess(final int AD_Role_ID, final int id, final Boolean access)
+	public static void logWorkflowAccess(final RoleId roleId, final int id, final Boolean access)
 	{
-		logAccess(AD_Role_ID, COLUMNNAME_AD_Workflow_ID, id, null, null, access, null);
+		logAccess(roleId, COLUMNNAME_AD_Workflow_ID, id, null, null, access, null);
 	}
 
-	public static void logDocActionAccess(final int AD_Role_ID, final DocTypeId docTypeId, final String docAction, final Boolean access)
+	public static void logDocActionAccess(final RoleId roleId, final DocTypeId docTypeId, final String docAction, final Boolean access)
 	{
-		logAccess(AD_Role_ID, COLUMNNAME_C_DocType_ID, docTypeId.getRepoId(), COLUMNNAME_DocAction, docAction, access, null);
+		logAccess(roleId, COLUMNNAME_C_DocType_ID, docTypeId.getRepoId(), COLUMNNAME_DocAction, docAction, access, null);
 	}
 
-	private static void logAccess(final int AD_Role_ID, final String type, final Object value, final String type2, final Object value2, final Boolean access, final String description)
+	private static void logAccess(
+			@NonNull final RoleId roleId,
+			final String type,
+			final Object value,
+			final String type2,
+			final Object value2,
+			final Boolean access,
+			final String description)
 	{
 		final String permLogLevel = getPermLogLevel();
 
@@ -141,7 +150,7 @@ public class MRolePermRequest extends X_AD_Role_PermRequest
 
 		final ArrayList<Object> params = new ArrayList<>();
 		final StringBuilder whereClause = new StringBuilder(COLUMNNAME_AD_Role_ID + "=? AND " + type + "=?");
-		params.add(AD_Role_ID);
+		params.add(roleId);
 		params.add(value);
 		if (type2 != null)
 		{
@@ -155,7 +164,7 @@ public class MRolePermRequest extends X_AD_Role_PermRequest
 		if (req == null)
 		{
 			req = new MRolePermRequest(ctx, 0, trxName);
-			req.setAD_Role_ID(AD_Role_ID);
+			req.setAD_Role_ID(roleId.getRepoId());
 			req.set_ValueOfColumn(type, value);
 			if (type2 != null)
 			{

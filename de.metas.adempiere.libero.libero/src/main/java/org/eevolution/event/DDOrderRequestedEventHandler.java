@@ -6,6 +6,7 @@ import static de.metas.document.engine.IDocument.STATUS_Completed;
 import java.util.Collection;
 import java.util.Date;
 
+import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.mrp.spi.impl.ddorder.DDOrderProducer;
 import org.springframework.context.annotation.Profile;
@@ -78,17 +79,20 @@ public class DDOrderRequestedEventHandler implements MaterialEventHandler<DDOrde
 	I_DD_Order createDDOrder(@NonNull final DDOrderRequestedEvent ddOrderRequestedEvent)
 	{
 		final DDOrder ddOrder = ddOrderRequestedEvent.getDdOrder();
-		final Date dateOrdered = ddOrderRequestedEvent.getDateOrdered();
+		final Date dateOrdered = TimeUtil.asDate(ddOrderRequestedEvent.getDateOrdered());
 
 		final I_DD_Order ddOrderRecord = ddOrderProducer.createDDOrder(ddOrder, dateOrdered);
 
-		Loggables.get().addLog(
-				"Created ddOrder; DDOrder_ID={}; DocumentNo={}",
+		Loggables.addLog(
+				"Created ddOrder; DD_Order_ID={}; DocumentNo={}",
 				ddOrderRecord.getDD_Order_ID(), ddOrderRecord.getDocumentNo());
 
 		if (ddOrderRecord.getPP_Product_Planning().isDocComplete())
 		{
 			Services.get(IDocumentBL.class).processEx(ddOrderRecord, ACTION_Complete, STATUS_Completed);
+			Loggables.addLog(
+					"Completed ddOrder; DD_Order_ID={}; DocumentNo={}",
+					ddOrderRecord.getDD_Order_ID(), ddOrderRecord.getDocumentNo());
 		}
 		return ddOrderRecord;
 	}

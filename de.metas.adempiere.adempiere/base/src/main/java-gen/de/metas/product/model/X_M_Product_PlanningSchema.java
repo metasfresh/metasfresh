@@ -15,7 +15,7 @@ public class X_M_Product_PlanningSchema extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2058652581L;
+	private static final long serialVersionUID = -1472953232L;
 
     /** Standard Constructor */
     public X_M_Product_PlanningSchema (Properties ctx, int M_Product_PlanningSchema_ID, String trxName)
@@ -341,10 +341,8 @@ public class X_M_Product_PlanningSchema extends org.compiere.model.PO implements
 	public static final String ISPURCHASED_Yes = "Y";
 	/** No = N */
 	public static final String ISPURCHASED_No = "N";
-	/** Set Eingekauft.
-		@param IsPurchased 
-		Die Organisation kauft dieses Produkt ein
-	  */
+	/** Set Wird Eingekauft.
+		@param IsPurchased Wird Eingekauft	  */
 	@Override
 	public void setIsPurchased (java.lang.String IsPurchased)
 	{
@@ -352,9 +350,8 @@ public class X_M_Product_PlanningSchema extends org.compiere.model.PO implements
 		set_Value (COLUMNNAME_IsPurchased, IsPurchased);
 	}
 
-	/** Get Eingekauft.
-		@return Die Organisation kauft dieses Produkt ein
-	  */
+	/** Get Wird Eingekauft.
+		@return Wird Eingekauft	  */
 	@Override
 	public java.lang.String getIsPurchased () 
 	{
@@ -456,6 +453,8 @@ public class X_M_Product_PlanningSchema extends org.compiere.model.PO implements
 	public static final int M_PRODUCTPLANNINGSCHEMA_SELECTOR_AD_Reference_ID=540829;
 	/** Normal = N */
 	public static final String M_PRODUCTPLANNINGSCHEMA_SELECTOR_Normal = "N";
+	/** QuotationBOMProduct = Q */
+	public static final String M_PRODUCTPLANNINGSCHEMA_SELECTOR_QuotationBOMProduct = "Q";
 	/** Set M_ProductPlanningSchema_Selector.
 		@param M_ProductPlanningSchema_Selector M_ProductPlanningSchema_Selector	  */
 	@Override

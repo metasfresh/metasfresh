@@ -6,6 +6,7 @@ import org.adempiere.exceptions.DBException;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
@@ -33,6 +34,7 @@ import de.metas.util.Loggables;
  * #L%
  */
 
+@Component
 public class SignDatabaseBuildHouseKeepingTask implements IStartupHouseKeepingTask
 {
 
@@ -49,7 +51,7 @@ public class SignDatabaseBuildHouseKeepingTask implements IStartupHouseKeepingTa
 		final String lastBuildInfo = Adempiere.getImplementationVersion();
 		if (lastBuildInfo!= null && lastBuildInfo.endsWith(Adempiere.CLIENT_VERSION_LOCAL_BUILD))
 		{
-			Loggables.get().withLogger(logger, Level.WARN).addLog("Not signing the database build with our version={}, because it makes no sense", lastBuildInfo);
+			Loggables.withLogger(logger, Level.WARN).addLog("Not signing the database build with our version={}, because it makes no sense", lastBuildInfo);
 			return;
 		}
 
@@ -60,10 +62,10 @@ public class SignDatabaseBuildHouseKeepingTask implements IStartupHouseKeepingTa
 		}
 		catch (final Exception ex)
 		{
-			Loggables.get().withLogger(logger, Level.ERROR).addLog("Failed updating the LastBuildInfo", ex);
+			Loggables.withLogger(logger, Level.ERROR).addLog("Failed updating the LastBuildInfo", ex);
 		}
 
-		Loggables.get().withLogger(logger, Level.INFO).addLog("Signed the database build with version: {}", lastBuildInfo);
+		Loggables.withLogger(logger, Level.INFO).addLog("Signed the database build with version: {}", lastBuildInfo);
 	}
 
 }

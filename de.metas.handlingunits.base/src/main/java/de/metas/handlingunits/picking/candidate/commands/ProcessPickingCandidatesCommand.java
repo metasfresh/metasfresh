@@ -26,17 +26,24 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -70,7 +77,11 @@ public class ProcessPickingCandidatesCommand
 	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+	private final IInvoiceCandDAO invoiceCandidatesRepo = Services.get(IInvoiceCandDAO.class);
+	private final IInvoiceCandBL invoiceCandidatesService = Services.get(IInvoiceCandBL.class);
+
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final PickingCandidateRepository pickingCandidateRepository;
 
@@ -98,7 +109,7 @@ public class ProcessPickingCandidatesCommand
 	public ProcessPickingCandidatesResult perform()
 	{
 		final List<PickingCandidate> pickingCandidates = pickingCandidateRepository.getByIds(pickingCandidateIds);
-		pickingCandidates.forEach(PickingCandidate::assertDraft);
+		pickingCandidates.forEach(this::assertEligibleForProcessing);
 
 		trxManager.runInThreadInheritedTrx(() -> pickingCandidates.forEach(this::processInTrx));
 
@@ -107,44 +118,100 @@ public class ProcessPickingCandidatesCommand
 				.build();
 	}
 
-	private void processInTrx(final PickingCandidate pc)
+	private void assertEligibleForProcessing(final PickingCandidate pickingCandidate)
+	{
+		pickingCandidate.assertDraft();
+
+		if (pickingCandidate.isRejectedToPick())
+		{
+			return; // OK
+		}
+
+		if (pickingCandidate.getPackedToHuId() != null)
+		{
+			throw new AdempiereException("Picking candidate shall not be already packed: " + pickingCandidate);
+		}
+	}
+
+	private void processInTrx(@NonNull final PickingCandidate pickingCandidate)
 	{
 		shipmentSchedulesCache.clear(); // because we want to get the fresh QtyToDeliver each time!
 
 		final HuId packedToHuId;
-		if (pc.isRejectedToPick())
+		if (pickingCandidate.isRejectedToPick())
 		{
-			final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(pc.getShipmentScheduleId());
-			if (!shipmentSchedule.isClosed())
-			{
-				shipmentScheduleBL.closeShipmentSchedule(shipmentSchedule);
-			}
+			final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(pickingCandidate.getShipmentScheduleId());
+			closeShipmentScheduleAndInvoiceCandidates(shipmentSchedule);
 			packedToHuId = null;
 		}
 		else
 		{
-			final IAllocationSource pickFromSource = HUListAllocationSourceDestination.ofHUId(pc.getPickFromHuId());
-			final IHUProducerAllocationDestination packToDestination = getPackToDestination(pc);
+			final IAllocationSource pickFromSource = HUListAllocationSourceDestination
+					.ofHUId(pickingCandidate.getPickFromHuId())
+					.setDestroyEmptyHUs(true);
+			final IHUProducerAllocationDestination packToDestination = getPackToDestination(pickingCandidate);
 
-			HULoader.of(pickFromSource, packToDestination)
-					.load(createPackToAllocationRequest(pc));
+			final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing();
+
+			final IAllocationRequest request = createPackToAllocationRequest(pickingCandidate, huContext);
+			HULoader
+					.of(pickFromSource, packToDestination)
+					.load(request);
 
 			packedToHuId = packToDestination.getSingleCreatedHuId();
 			if (packedToHuId == null)
 			{
-				throw new AdempiereException("Nothing packed for " + pc);
+				throw new AdempiereException("Nothing packed for " + pickingCandidate);
 			}
 
-			huShipmentScheduleBL.addQtyPickedAndUpdateHU(pc.getShipmentScheduleId(), pc.getQtyPicked(), packedToHuId);
+			final ProductId productId = getProductId(pickingCandidate);
+
+			final I_M_HU huRecord = packToDestination.getSingleCreatedHU();
+
+			final StockQtyAndUOMQty qtyPicked = CatchWeightHelper.extractQtys(
+					huContext,
+					productId,
+					pickingCandidate.getQtyPicked(),
+					huRecord);
+
+			huShipmentScheduleBL.addQtyPickedAndUpdateHU(
+					pickingCandidate.getShipmentScheduleId(),
+					qtyPicked,
+					packedToHuId,
+					huContext);
 		}
 
-		pc.changeStatusToProcessed(packedToHuId);
-		pickingCandidateRepository.save(pc);
+		pickingCandidate.changeStatusToProcessed(packedToHuId);
+		pickingCandidateRepository.save(pickingCandidate);
 	}
 
-	private IAllocationRequest createPackToAllocationRequest(final PickingCandidate pc)
+
+
+	private void closeShipmentScheduleAndInvoiceCandidates(final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing();
+		if (shipmentSchedule.isClosed())
+		{
+			return;
+		}
+
+		shipmentScheduleBL.closeShipmentSchedule(shipmentSchedule);
+
+		//
+		// Close related invoices candidates too
+		final List<I_C_Invoice_Candidate> invoiceCandidates = getInvoiceCandidatesForShipmentSchedule(shipmentSchedule);
+		invoiceCandidatesService.closeInvoiceCandidates(invoiceCandidates);
+	}
+
+	private List<I_C_Invoice_Candidate> getInvoiceCandidatesForShipmentSchedule(final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(shipmentSchedule.getC_OrderLine_ID());
+		return invoiceCandidatesRepo.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
+	}
+
+	private IAllocationRequest createPackToAllocationRequest(
+			@NonNull final PickingCandidate pc,
+			@NonNull final IHUContext huContext)
+	{
 		return AllocationUtils.createAllocationRequestBuilder()
 				.setHUContext(huContext)
 				.setProduct(getProductId(pc))
@@ -173,7 +240,6 @@ public class ProcessPickingCandidatesCommand
 		final int packageNo = packToInstructionsId.isVirtual() ? PACKAGE_NO_SEQUENCE.getAndIncrement() : PACKAGE_NO_ZERO;
 
 		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(pickingCandidate.getShipmentScheduleId());
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final BPartnerLocationId bpartnerLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(shipmentSchedule);
 		final LocatorId locatorId = shipmentScheduleEffectiveBL.getDefaultLocatorId(shipmentSchedule);
 

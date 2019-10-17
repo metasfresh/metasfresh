@@ -1,5 +1,7 @@
 package org.adempiere.service.impl;
 
+import org.adempiere.ad.element.api.AdWindowId;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -27,50 +29,51 @@ import org.adempiere.service.IRolePermLoggingBL;
 import org.compiere.model.MRolePermRequest;
 
 import de.metas.document.DocTypeId;
+import de.metas.security.RoleId;
 
 public class RolePermLoggingBL implements IRolePermLoggingBL
 {
 
 	@Override
-	public void logWindowAccess(int AD_Role_ID, int id, Boolean access)
+	public void logWindowAccess(RoleId roleId, int id, Boolean access)
 	{
-		MRolePermRequest.logWindowAccess(AD_Role_ID, id, access);
+		MRolePermRequest.logWindowAccess(roleId, id, access);
 	}
 
 	@Override
-	public void logWindowAccess(int AD_Role_ID, int id, Boolean access, String description)
+	public void logWindowAccess(RoleId roleId, AdWindowId id, Boolean access, String description)
 	{
-		MRolePermRequest.logWindowAccess(AD_Role_ID, id, access, description);
+		MRolePermRequest.logWindowAccess(roleId, id, access, description);
 	}
 
 	@Override
-	public void logFormAccess(int AD_Role_ID, int id, Boolean access)
+	public void logFormAccess(RoleId roleId, int id, Boolean access)
 	{
-		MRolePermRequest.logFormAccess(AD_Role_ID, id, access);
+		MRolePermRequest.logFormAccess(roleId, id, access);
 	}
 
 	@Override
-	public void logProcessAccess(int AD_Role_ID, int id, Boolean access)
+	public void logProcessAccess(RoleId roleId, int id, Boolean access)
 	{
-		MRolePermRequest.logProcessAccess(AD_Role_ID, id, access);
+		MRolePermRequest.logProcessAccess(roleId, id, access);
 	}
 
 	@Override
-	public void logTaskAccess(int AD_Role_ID, int id, Boolean access)
+	public void logTaskAccess(RoleId roleId, int id, Boolean access)
 	{
-		MRolePermRequest.logTaskAccess(AD_Role_ID, id, access);
+		MRolePermRequest.logTaskAccess(roleId, id, access);
 	}
 
 	@Override
-	public void logWorkflowAccess(int AD_Role_ID, int id, Boolean access)
+	public void logWorkflowAccess(RoleId roleId, int id, Boolean access)
 	{
-		MRolePermRequest.logWorkflowAccess(AD_Role_ID, id, access);
+		MRolePermRequest.logWorkflowAccess(roleId, id, access);
 	}
 
 	@Override
-	public void logDocActionAccess(int AD_Role_ID, DocTypeId docTypeId, String docAction, Boolean access)
+	public void logDocActionAccess(RoleId roleId, DocTypeId docTypeId, String docAction, Boolean access)
 	{
-		MRolePermRequest.logDocActionAccess(AD_Role_ID, docTypeId, docAction, access);
+		MRolePermRequest.logDocActionAccess(roleId, docTypeId, docAction, access);
 	}
 
 }

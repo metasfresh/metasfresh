@@ -151,31 +151,30 @@ public class ProjectIssue extends JavaProcess
 			throw new IllegalArgumentException ("Receipt for other Project (" 
 				+ inOut.getC_Project_ID() + ")");
 
-		MInOutLine[] inOutLines = inOut.getLines();
 		int counter = 0;
-		for (int i = 0; i < inOutLines.length; i++)
+		for (final MInOutLine inOutLine : inOut.getLines())
 		{
 			//	Need to have a Product
-			if (inOutLines[i].getM_Product_ID() == 0)
+			if (inOutLine.getM_Product_ID() <= 0)
 				continue;
 			//	Need to have Quantity
-			if (inOutLines[i].getMovementQty() == null || inOutLines[i].getMovementQty().signum() == 0)
+			if (inOutLine.getMovementQty() == null || inOutLine.getMovementQty().signum() == 0)
 				continue;
 			//	not issued yet
-			if (projectIssueHasReceipt(inOutLines[i].getM_InOutLine_ID()))
+			if (projectIssueHasReceipt(inOutLine.getM_InOutLine_ID()))
 				continue;
 			//	Create Issue
 			MProjectIssue pi = new MProjectIssue (m_project);
-			pi.setMandatory (inOutLines[i].getM_Locator_ID(), inOutLines[i].getM_Product_ID(), inOutLines[i].getMovementQty());
+			pi.setMandatory (inOutLine.getM_Locator_ID(), inOutLine.getM_Product_ID(), inOutLine.getMovementQty());
 			if (m_MovementDate != null)		//	default today
 				pi.setMovementDate(m_MovementDate);
 			if (m_Description != null && m_Description.length() > 0)
 				pi.setDescription(m_Description);
-			else if (inOutLines[i].getDescription() != null)
-				pi.setDescription(inOutLines[i].getDescription());
+			else if (inOutLine.getDescription() != null)
+				pi.setDescription(inOutLine.getDescription());
 			else if (inOut.getDescription() != null)
 				pi.setDescription(inOut.getDescription());
-			pi.setM_InOutLine_ID(inOutLines[i].getM_InOutLine_ID());
+			pi.setM_InOutLine_ID(inOutLine.getM_InOutLine_ID());
 			pi.process();
 
 			//	Find/Create Project Line
@@ -185,7 +184,7 @@ public class ProjectIssue extends JavaProcess
 			{
 				//	The Order we generated is the same as the Order of the receipt
 				if (pls[ii].getC_OrderPO_ID() == inOut.getC_Order_ID()
-					&& pls[ii].getM_Product_ID() == inOutLines[i].getM_Product_ID()
+					&& pls[ii].getM_Product_ID() == inOutLine.getM_Product_ID()
 					&& pls[ii].getC_ProjectIssue_ID() == 0)		//	not issued
 				{
 					pl = pls[ii];

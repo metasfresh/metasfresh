@@ -22,6 +22,8 @@ import java.util.Properties;
 import org.compiere.model.PO;
 import org.compiere.model.X_PA_ReportSource;
 
+import de.metas.acct.api.AcctSchemaElementType;
+
 /**
  * Report Line Source Model
  *
@@ -70,76 +72,96 @@ public class MReportSource extends X_PA_ReportSource
 	 */
 	public String getWhereClause(final int PA_Hierarchy_ID)
 	{
-		final String et = getElementType();
-
-		// ID for Tree Leaf Value
-		int ID = 0;
-		//
-		if (X_PA_ReportSource.ELEMENTTYPE_Account.equals(et))
+		final AcctSchemaElementType acctSchemaElementType;
+		final int ID; // ID for Tree Leaf Value
+		
+		final String reportElementType = getElementType();
+		if (X_PA_ReportSource.ELEMENTTYPE_Account.equals(reportElementType))
 		{
+			acctSchemaElementType = AcctSchemaElementType.Account;
 			ID = getC_ElementValue_ID();
 		}
-		else if (X_PA_ReportSource.ELEMENTTYPE_Activity.equals(et))
+		else if (X_PA_ReportSource.ELEMENTTYPE_Activity.equals(reportElementType))
 		{
+			acctSchemaElementType = AcctSchemaElementType.Activity;
 			ID = getC_Activity_ID();
 		}
-		else if (X_PA_ReportSource.ELEMENTTYPE_BPartner.equals(et))
+		else if (X_PA_ReportSource.ELEMENTTYPE_BPartner.equals(reportElementType))
 		{
+			acctSchemaElementType = AcctSchemaElementType.BPartner;
 			ID = getC_BPartner_ID();
 		}
-		else if (X_PA_ReportSource.ELEMENTTYPE_Campaign.equals(et))
+		else if (X_PA_ReportSource.ELEMENTTYPE_Campaign.equals(reportElementType))
 		{
+			acctSchemaElementType = AcctSchemaElementType.Campaign;
 			ID = getC_Campaign_ID();
 		}
-		else if (X_PA_ReportSource.ELEMENTTYPE_LocationFrom.equals(et))
+		else if (X_PA_ReportSource.ELEMENTTYPE_LocationFrom.equals(reportElementType))
 		{
+			acctSchemaElementType = AcctSchemaElementType.LocationFrom;
 			ID = getC_Location_ID();
 		}
-		else if (X_PA_ReportSource.ELEMENTTYPE_LocationTo.equals(et))
+		else if (X_PA_ReportSource.ELEMENTTYPE_LocationTo.equals(reportElementType))
 		{
+			acctSchemaElementType = AcctSchemaElementType.LocationTo;
 			ID = getC_Location_ID();
 		}
-		else if (X_PA_ReportSource.ELEMENTTYPE_Organization.equals(et))
+		else if (X_PA_ReportSource.ELEMENTTYPE_Organization.equals(reportElementType))
 		{
+			acctSchemaElementType = AcctSchemaElementType.Organization;
 			ID = getOrg_ID();
 		}
-		else if (X_PA_ReportSource.ELEMENTTYPE_Product.equals(et))
+		else if (X_PA_ReportSource.ELEMENTTYPE_Product.equals(reportElementType))
 		{
+			acctSchemaElementType = AcctSchemaElementType.Product;
 			ID = getM_Product_ID();
 		}
-		else if (X_PA_ReportSource.ELEMENTTYPE_Project.equals(et))
+		else if (X_PA_ReportSource.ELEMENTTYPE_Project.equals(reportElementType))
 		{
+			acctSchemaElementType = AcctSchemaElementType.Project;
 			ID = getC_Project_ID();
 		}
-		else if (X_PA_ReportSource.ELEMENTTYPE_SalesRegion.equals(et))
+		else if (X_PA_ReportSource.ELEMENTTYPE_SalesRegion.equals(reportElementType))
 		{
+			acctSchemaElementType = AcctSchemaElementType.SalesRegion;
 			ID = getC_SalesRegion_ID();
 		}
-		else if (X_PA_ReportSource.ELEMENTTYPE_OrgTrx.equals(et))
+		else if (X_PA_ReportSource.ELEMENTTYPE_OrgTrx.equals(reportElementType))
 		{
+			acctSchemaElementType = AcctSchemaElementType.OrgTrx;
 			ID = getOrg_ID();	// (re)uses Org_ID
 		}
-		else if (X_PA_ReportSource.ELEMENTTYPE_UserList1.equals(et))
+		else if (X_PA_ReportSource.ELEMENTTYPE_UserList1.equals(reportElementType))
 		{
+			acctSchemaElementType = AcctSchemaElementType.UserList1;
 			ID = getC_ElementValue_ID();
 		}
-		else if (X_PA_ReportSource.ELEMENTTYPE_UserList2.equals(et))
+		else if (X_PA_ReportSource.ELEMENTTYPE_UserList2.equals(reportElementType))
 		{
+			acctSchemaElementType = AcctSchemaElementType.UserList2;
 			ID = getC_ElementValue_ID();
 		}
-		else if (X_PA_ReportSource.ELEMENTTYPE_UserElement1.equals(et))
+		else if (X_PA_ReportSource.ELEMENTTYPE_UserElement1.equals(reportElementType))
 		{
+			acctSchemaElementType = AcctSchemaElementType.UserElement1;
 			return "UserElement1_ID=" + getUserElement1_ID(); // Not Tree
 		}
-		else if (X_PA_ReportSource.ELEMENTTYPE_UserElement2.equals(et))
+		else if (X_PA_ReportSource.ELEMENTTYPE_UserElement2.equals(reportElementType))
 		{
+			acctSchemaElementType = AcctSchemaElementType.UserElement2;
 			return "UserElement2_ID=" + getUserElement2_ID(); // Not Tree
 		}
 		// Financial Report Source with Type Combination
-		else if (X_PA_ReportSource.ELEMENTTYPE_Combination.equals(et))
+		else if (X_PA_ReportSource.ELEMENTTYPE_Combination.equals(reportElementType))
 		{
 			return getWhereCombination(PA_Hierarchy_ID);
 		}
+		else
+		{
+			acctSchemaElementType = null;
+			ID = -1;
+		}
+		
 		if (ID <= 0)
 		{
 			// task 07492 this report source record is used only for grouping, not for filtering.
@@ -147,7 +169,7 @@ public class MReportSource extends X_PA_ReportSource
 		}
 
 		//
-		return MReportTree.getWhereClause(getCtx(), PA_Hierarchy_ID, et, ID);
+		return MReportTree.getWhereClause(getCtx(), PA_Hierarchy_ID, acctSchemaElementType, ID);
 	}	// getWhereClause
 
 	/**
@@ -161,7 +183,7 @@ public class MReportSource extends X_PA_ReportSource
 		final StringBuffer whcomb = new StringBuffer();
 		if (getC_ElementValue_ID() > 0)
 		{
-			final String whtree = MReportTree.getWhereClause(getCtx(), PA_Hierarchy_ID, X_PA_ReportSource.ELEMENTTYPE_Account, getC_ElementValue_ID());
+			final String whtree = MReportTree.getWhereClause(getCtx(), PA_Hierarchy_ID, AcctSchemaElementType.Account, getC_ElementValue_ID());
 			if (isIncludeNullsElementValue())
 			{
 				whcomb.append(" AND (Account_ID IS NULL OR ").append(whtree).append(")");
@@ -178,7 +200,7 @@ public class MReportSource extends X_PA_ReportSource
 
 		if (getC_Activity_ID() > 0)
 		{
-			final String whtree = MReportTree.getWhereClause(getCtx(), PA_Hierarchy_ID, X_PA_ReportSource.ELEMENTTYPE_Activity, getC_Activity_ID());
+			final String whtree = MReportTree.getWhereClause(getCtx(), PA_Hierarchy_ID, AcctSchemaElementType.Activity, getC_Activity_ID());
 			if (isIncludeNullsActivity())
 			{
 				whcomb.append(" AND (C_Activity_ID IS NULL OR ").append(whtree).append(")");
@@ -195,7 +217,7 @@ public class MReportSource extends X_PA_ReportSource
 
 		if (getC_BPartner_ID() > 0)
 		{
-			final String whtree = MReportTree.getWhereClause(getCtx(), PA_Hierarchy_ID, X_PA_ReportSource.ELEMENTTYPE_BPartner, getC_BPartner_ID());
+			final String whtree = MReportTree.getWhereClause(getCtx(), PA_Hierarchy_ID, AcctSchemaElementType.BPartner, getC_BPartner_ID());
 			if (isIncludeNullsBPartner())
 			{
 				whcomb.append(" AND (C_BPartner_ID IS NULL OR ").append(whtree).append(")");
@@ -212,7 +234,7 @@ public class MReportSource extends X_PA_ReportSource
 
 		if (getC_Campaign_ID() > 0)
 		{
-			final String whtree = MReportTree.getWhereClause(getCtx(), PA_Hierarchy_ID, X_PA_ReportSource.ELEMENTTYPE_Campaign, getC_Campaign_ID());
+			final String whtree = MReportTree.getWhereClause(getCtx(), PA_Hierarchy_ID, AcctSchemaElementType.Campaign, getC_Campaign_ID());
 			if (isIncludeNullsCampaign())
 			{
 				whcomb.append(" AND (C_Campaign_ID IS NULL OR ").append(whtree).append(")");
@@ -229,7 +251,7 @@ public class MReportSource extends X_PA_ReportSource
 
 		if (getC_Location_ID() > 0)
 		{
-			final String whtree = MReportTree.getWhereClause(getCtx(), PA_Hierarchy_ID, X_PA_ReportSource.ELEMENTTYPE_LocationFrom, getC_Location_ID());
+			final String whtree = MReportTree.getWhereClause(getCtx(), PA_Hierarchy_ID, AcctSchemaElementType.LocationFrom, getC_Location_ID());
 			if (isIncludeNullsLocation())
 			{
 				whcomb.append(" AND (C_LocFrom_ID IS NULL OR ").append(whtree).append(")");
@@ -246,7 +268,7 @@ public class MReportSource extends X_PA_ReportSource
 
 		if (getOrg_ID() > 0)
 		{
-			final String whtree = MReportTree.getWhereClause(getCtx(), PA_Hierarchy_ID, X_PA_ReportSource.ELEMENTTYPE_Organization, getOrg_ID());
+			final String whtree = MReportTree.getWhereClause(getCtx(), PA_Hierarchy_ID, AcctSchemaElementType.Organization, getOrg_ID());
 			if (isIncludeNullsOrg())
 			{
 				whcomb.append(" AND (AD_Org_ID IS NULL OR ").append(whtree).append(")");
@@ -263,7 +285,7 @@ public class MReportSource extends X_PA_ReportSource
 
 		if (getAD_OrgTrx_ID() > 0)
 		{
-			final String whtree = MReportTree.getWhereClause(getCtx(), PA_Hierarchy_ID, X_PA_ReportSource.ELEMENTTYPE_OrgTrx, getAD_OrgTrx_ID());
+			final String whtree = MReportTree.getWhereClause(getCtx(), PA_Hierarchy_ID, AcctSchemaElementType.OrgTrx, getAD_OrgTrx_ID());
 			if (isIncludeNullsOrgTrx())
 			{
 				whcomb.append(" AND (AD_OrgTrx_ID IS NULL OR ").append(whtree).append(")");
@@ -280,7 +302,7 @@ public class MReportSource extends X_PA_ReportSource
 
 		if (getM_Product_ID() > 0)
 		{
-			final String whtree = MReportTree.getWhereClause(getCtx(), PA_Hierarchy_ID, X_PA_ReportSource.ELEMENTTYPE_Product, getM_Product_ID());
+			final String whtree = MReportTree.getWhereClause(getCtx(), PA_Hierarchy_ID, AcctSchemaElementType.Product, getM_Product_ID());
 			if (isIncludeNullsProduct())
 			{
 				whcomb.append(" AND (M_Product_ID IS NULL OR ").append(whtree).append(")");
@@ -297,7 +319,7 @@ public class MReportSource extends X_PA_ReportSource
 
 		if (getC_Project_ID() > 0)
 		{
-			final String whtree = MReportTree.getWhereClause(getCtx(), PA_Hierarchy_ID, X_PA_ReportSource.ELEMENTTYPE_Project, getC_Project_ID());
+			final String whtree = MReportTree.getWhereClause(getCtx(), PA_Hierarchy_ID, AcctSchemaElementType.Project, getC_Project_ID());
 			if (isIncludeNullsProject())
 			{
 				whcomb.append(" AND (C_Project_ID IS NULL OR ").append(whtree).append(")");
@@ -314,7 +336,7 @@ public class MReportSource extends X_PA_ReportSource
 
 		if (getC_SalesRegion_ID() > 0)
 		{
-			final String whtree = MReportTree.getWhereClause(getCtx(), PA_Hierarchy_ID, X_PA_ReportSource.ELEMENTTYPE_SalesRegion, getC_SalesRegion_ID());
+			final String whtree = MReportTree.getWhereClause(getCtx(), PA_Hierarchy_ID, AcctSchemaElementType.SalesRegion, getC_SalesRegion_ID());
 			if (isIncludeNullsSalesRegion())
 			{
 				whcomb.append(" AND (C_SalesRegion_ID IS NULL OR ").append(whtree).append(")");

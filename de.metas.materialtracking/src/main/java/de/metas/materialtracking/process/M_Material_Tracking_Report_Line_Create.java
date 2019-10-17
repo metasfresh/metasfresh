@@ -15,8 +15,10 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_M_InOut;
+import org.eevolution.api.IPPOrderDAO;
 
 import de.metas.document.engine.IDocumentBL;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.IMaterialTrackingReportDAO;
@@ -61,6 +63,8 @@ public class M_Material_Tracking_Report_Line_Create
 		extends JavaProcess
 		implements IProcessPrecondition
 {
+	private final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
+	
 	@Override
 	protected String doIt() throws Exception
 	{
@@ -106,9 +110,10 @@ public class M_Material_Tracking_Report_Line_Create
 				else if (InterfaceWrapperHelper.getTableId(I_PP_Order.class) == ref.getAD_Table_ID())
 				{
 					// add the PP_Orders with their *issued* qties
-					final I_PP_Order ppOrder = InterfaceWrapperHelper.create(getCtx(), ref.getRecord_ID(), I_PP_Order.class, getTrxName());
+					final PPOrderId ppOrderId = PPOrderId.ofRepoId(ref.getRecord_ID());
+					final I_PP_Order ppOrder = ppOrdersRepo.getById(ppOrderId, I_PP_Order.class);
 
-					final Map<Integer, BigDecimal> iolAndQty = ppOrderMInOutLineRetrievalService.retrieveIolAndQty(ppOrder);
+					final Map<Integer, BigDecimal> iolAndQty = ppOrderMInOutLineRetrievalService.retrieveIolAndQty(ppOrderId);
 
 					for (final Entry<Integer, BigDecimal> entry : iolAndQty.entrySet())
 					{
@@ -164,7 +169,7 @@ public class M_Material_Tracking_Report_Line_Create
 				|| materialTracking.getM_Material_Tracking_ID() != materialTrackingAware.getM_Material_Tracking_ID())
 		{
 			// should not happen because that would mean an inconsistent M_Material_Tracking_Ref
-			Loggables.get().addLog(
+			Loggables.addLog(
 					"Skipping {} because it is referenced via M_Material_Tracking_Ref, but itself does not reference {}",
 					materialTrackingAware, materialTracking);
 			return false;

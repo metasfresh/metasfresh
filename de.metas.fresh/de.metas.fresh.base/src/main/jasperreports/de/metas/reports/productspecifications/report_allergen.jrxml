@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_allergen" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/productspecifications/report" uuid="d337e18a-4953-4f43-8409-fe9b871ee4b5">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="2.593742460100013"/>
+	<property name="ireport.x" value="343"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="erptest.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="RECORD_ID" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[0]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT distinct
+   v.allergen                as Allergen,
+m_product_ID
+FROM "de.metas.fresh".product_specifications_v v
+WHERE m_product_ID = $P{RECORD_ID}
+ORDER BY allergen;]]>
+	</queryString>
+	<field name="allergen" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="allergen"/>
+	</field>
+	<field name="m_product_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="m_product_id"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="35" splitType="Stretch">
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="5" width="180" height="14" uuid="c58e81c9-237f-4152-9114-98b1c96b0be3"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_6}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement isPrintRepeatedValues="false" x="0" y="22" width="594" height="12" uuid="b1b82d7a-c77a-4d17-ab39-66f4d36b51be"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Allergen_txt}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<detail>
+		<band height="14" splitType="Stretch">
+			<printWhenExpression><![CDATA[1==1]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement isPrintRepeatedValues="false" x="0" y="0" width="594" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="77ccef05-158f-4757-98af-8c5416f8cd42"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{allergen}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

@@ -90,7 +90,7 @@ group by p.datetrx,p.documentno,p.c_payment_id,p.payamt,d.name,gl.name,c.cursymb
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true"/>
+						<font size="8" fontName="Arial" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{endbestand}]]></textFieldExpression>
 				</textField>

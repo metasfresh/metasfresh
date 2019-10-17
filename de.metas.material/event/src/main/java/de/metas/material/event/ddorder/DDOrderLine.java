@@ -2,6 +2,8 @@ package de.metas.material.event.ddorder;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
@@ -33,6 +35,7 @@ import lombok.Value;
  * #L%
  */
 @Value
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class DDOrderLine
 {
 	int salesOrderLineId;
@@ -65,6 +68,8 @@ public class DDOrderLine
 			@JsonProperty("networkDistributionLineId") final int networkDistributionLineId,
 			@JsonProperty("ddOrderLineId") final int ddOrderLineId)
 	{
+		Preconditions.checkArgument(durationDays >= 0, "The Given parameter durationDays=%s needs to be > 0", "durationDays");
+		
 		this.salesOrderLineId = salesOrderLineId;
 
 		this.productDescriptor = productDescriptor;
@@ -72,7 +77,6 @@ public class DDOrderLine
 
 		this.qty = qty;
 
-		Preconditions.checkArgument(durationDays >= 0, "The Given parameter durationDays=%s needs to be > 0", "durationDays");
 		this.durationDays = durationDays;
 
 		this.networkDistributionLineId = networkDistributionLineId; // can be <= 0 if the DD_Order was created "manually"

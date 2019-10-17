@@ -1,7 +1,5 @@
 package de.metas.invoice.export.async;
 
-import lombok.NonNull;
-
 import java.util.List;
 
 import org.compiere.Adempiere;
@@ -20,6 +18,7 @@ import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class C_Invoice_CreateExportData implements IWorkpackageProcessor
 {
@@ -46,7 +45,7 @@ public class C_Invoice_CreateExportData implements IWorkpackageProcessor
 		final List<I_C_Invoice> invoiceRecords = queueDAO.retrieveItemsSkipMissing(workpackage, I_C_Invoice.class, localTrxName);
 		for (final I_C_Invoice invoiceRecord : invoiceRecords)
 		{
-			Loggables.get().withLogger(logger, Level.DEBUG).addLog("Going to export data for invoiceRecord={}", invoiceRecord);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Going to export data for invoiceRecord={}", invoiceRecord);
 
 			final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
 			invoiceExportService.exportInvoices(ImmutableList.of(invoiceId));

@@ -54,6 +54,7 @@ import org.compiere.model.I_M_Product;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHULockBL;
@@ -66,6 +67,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -110,11 +112,11 @@ import lombok.NonNull;
 	private final HUQueryBuilder_Locator locators;
 
 	private boolean onlyIfAssignedToBPartner = false;
-	private final Set<Integer> _onlyInBpartnerIds = new HashSet<>();
+	private final Set<BPartnerId> _onlyInBpartnerIds = new HashSet<>();
 	@ToStringBuilder(skip = true)
-	private final Set<Integer> _onlyInBpartnerIdsRO = Collections.unmodifiableSet(_onlyInBpartnerIds);
+	private final Set<BPartnerId> _onlyInBpartnerIdsRO = Collections.unmodifiableSet(_onlyInBpartnerIds);
 	private final Set<Integer> _onlyWithBPartnerLocationIds = new HashSet<>();
-	private final Set<Integer> _onlyWithProductIds = new HashSet<>();
+	private final Set<ProductId> _onlyWithProductIds = new HashSet<>();
 
 	private Boolean _emptyStorageOnly = null;
 	private boolean _allowEmptyStorage = false;
@@ -347,7 +349,7 @@ import lombok.NonNull;
 		}
 		//
 		// Filter by C_BPartner_ID
-		final Set<Integer> onlyWithBPartnerIds = getOnlyInBPartnerIds();
+		final Set<BPartnerId> onlyWithBPartnerIds = getOnlyInBPartnerIds();
 		if (!onlyWithBPartnerIds.isEmpty())
 		{
 			filters.addInArrayOrAllFilter(I_M_HU.COLUMN_C_BPartner_ID, onlyWithBPartnerIds);
@@ -361,7 +363,7 @@ import lombok.NonNull;
 
 		//
 		// Filter only those HUs which contains our products restriction
-		final Set<Integer> onlyWithProductIds = getOnlyWithProductIds();
+		final Set<ProductId> onlyWithProductIds = getOnlyWithProductIds();
 		if (!onlyWithProductIds.isEmpty())
 		{
 			final IQueryBuilder<I_M_HU_Storage> huStoragesQueryBuilder = queryBL.createQueryBuilder(I_M_HU_Storage.class, getContextProvider())
@@ -510,7 +512,7 @@ import lombok.NonNull;
 		if (_excludeHUsOnPickingSlot)
 		{
 			final IQueryFilter<I_M_HU> husOnPickingSlotFilter = huPickingSlotDAO.createHUOnPickingSlotQueryFilter(getContextProvider());
-			final IQueryFilter<I_M_HU> husNotOnPickingSlotFilter = new NotQueryFilter<>(husOnPickingSlotFilter);
+			final IQueryFilter<I_M_HU> husNotOnPickingSlotFilter = NotQueryFilter.of(husOnPickingSlotFilter);
 			filters.addFilter(husNotOnPickingSlotFilter);
 		}
 
@@ -713,7 +715,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public Set<Integer> getOnlyInBPartnerIds()
+	public Set<BPartnerId> getOnlyInBPartnerIds()
 	{
 		return _onlyInBpartnerIdsRO;
 	}
@@ -723,27 +725,20 @@ import lombok.NonNull;
 	{
 		if (productIds != null && !productIds.isEmpty())
 		{
-			_onlyWithProductIds.addAll(productIds);
+			_onlyWithProductIds.addAll(ProductId.ofRepoIds(productIds));
 		}
 		else
 		{
 			// Adding this element just to make sure we are filtering by warehouses
 			// NOTE: decided to do this instead of throwing an exception here because the provided IDs collection is empty
-			_onlyWithProductIds.add(-1);
+			_onlyWithProductIds.add(null);
 		}
 
 		return this;
 	}
 
 	@Override
-	public IHUQueryBuilder addOnlyWithProductId(final int productId)
-	{
-		_onlyWithProductIds.add(productId);
-
-		return this;
-	}
-
-	public Set<Integer> getOnlyWithProductIds()
+	public Set<ProductId> getOnlyWithProductIds()
 	{
 		return _onlyWithProductIds;
 	}
@@ -755,8 +750,15 @@ import lombok.NonNull;
 		{
 			return addOnlyWithProductIds(Collections.<Integer> emptyList());
 		}
-		final int productId = product.getM_Product_ID();
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		return addOnlyWithProductId(productId);
+	}
+
+	@Override
+	public IHUQueryBuilder addOnlyWithProductId(final ProductId productId)
+	{
+		_onlyWithProductIds.add(productId);
+		return this;
 	}
 
 	@Override
@@ -848,7 +850,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IHUQueryBuilder addOnlyInBPartnerId(final Integer bPartnerId)
+	public IHUQueryBuilder addOnlyInBPartnerId(final BPartnerId bPartnerId)
 	{
 		// NOTE: we are also accepting bPartnerId=null => for search HUs without a BPartner
 		_onlyInBpartnerIds.add(bPartnerId);
@@ -949,10 +951,8 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IHUQueryBuilder addFilter(final IQueryFilter<I_M_HU> filter)
+	public IHUQueryBuilder addFilter(@NonNull final IQueryFilter<I_M_HU> filter)
 	{
-		Check.assumeNotNull(filter, "filter not null");
-
 		if (otherFilters == null)
 		{
 			otherFilters = queryBL.createCompositeQueryFilter(I_M_HU.class);

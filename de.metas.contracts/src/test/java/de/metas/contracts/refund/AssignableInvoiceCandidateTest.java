@@ -10,7 +10,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.refund.AssignableInvoiceCandidate.SplitResult;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
@@ -48,16 +48,19 @@ public class AssignableInvoiceCandidateTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		refundTestTools = new RefundTestTools();
+		refundTestTools = RefundTestTools.newInstance();
 	}
 
 	@Test
 	public void splitQuantity()
 	{
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
 		final AssignableInvoiceCandidate candidate = AssignableInvoiceCandidate.builder()
-				.bpartnerId(BPartnerId.ofRepoId(20))
+				//.bpartnerId(BPartnerId.ofRepoId(20))
+				.bpartnerLocationId(billBPartnerAndLocationId)
 				.invoiceableFrom(LocalDate.now())
-				.money(Money.of(TEN, refundTestTools.getCurrency().getId()))
+				.money(Money.of(TEN, refundTestTools.getCurrencyId()))
 				.precision(2)
 				.productId(ProductId.ofRepoId(30))
 				.quantity(Quantity.of(THIRTY, refundTestTools.getUomRecord()))
@@ -67,13 +70,13 @@ public class AssignableInvoiceCandidateTest
 		final SplitResult result = candidate.splitQuantity(TEN);
 
 		assertThat(result.getRemainder()).isNotNull();
-		assertThat(result.getRemainder().getQuantity().getAsBigDecimal()).isEqualByComparingTo(TWENTY);
-		assertThat(result.getRemainder().getMoney().getValue()).isEqualByComparingTo("6.67"); // 2/3 of the original's quantity
-		assertThat(result.getRemainder().getRepoId()).isEqualTo(candidate.getRepoId());
+		assertThat(result.getRemainder().getQuantity().toBigDecimal()).isEqualByComparingTo(TWENTY);
+		assertThat(result.getRemainder().getMoney().toBigDecimal()).isEqualByComparingTo("6.67"); // 2/3 of the original's quantity
+		assertThat(result.getRemainder().getId()).isEqualTo(candidate.getId());
 
 		assertThat(result.getNewCandidate()).isNotNull();
-		assertThat(result.getNewCandidate().getQuantity().getAsBigDecimal()).isEqualByComparingTo(TEN);
-		assertThat(result.getNewCandidate().getMoney().getValue()).isEqualByComparingTo("3.33"); // 1/3 of the original's quantity
-		assertThat(result.getNewCandidate().getRepoId()).isEqualTo(candidate.getRepoId());
+		assertThat(result.getNewCandidate().getQuantity().toBigDecimal()).isEqualByComparingTo(TEN);
+		assertThat(result.getNewCandidate().getMoney().toBigDecimal()).isEqualByComparingTo("3.33"); // 1/3 of the original's quantity
+		assertThat(result.getNewCandidate().getId()).isEqualTo(candidate.getId());
 	}
 }

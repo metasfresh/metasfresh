@@ -586,6 +586,31 @@ public interface I_AD_Process
     public static final String COLUMNNAME_IsServerProcess = "IsServerProcess";
 
 	/**
+	 * Set Excel-Spaltenüberschriften übersetzen.
+	 * Wenn angehakt, dann wird metasfresh die jeweiligen Spaltenüberschriften durch Übersetzungen ersetzen, sofern welche in Meldung (AD_Message) oder Element (AD_Element) vorhanden sind.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsTranslateExcelHeaders (boolean IsTranslateExcelHeaders);
+
+	/**
+	 * Get Excel-Spaltenüberschriften übersetzen.
+	 * Wenn angehakt, dann wird metasfresh die jeweiligen Spaltenüberschriften durch Übersetzungen ersetzen, sofern welche in Meldung (AD_Message) oder Element (AD_Element) vorhanden sind.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isTranslateExcelHeaders();
+
+    /** Column definition for IsTranslateExcelHeaders */
+    public static final org.adempiere.model.ModelColumn<I_AD_Process, Object> COLUMN_IsTranslateExcelHeaders = new org.adempiere.model.ModelColumn<I_AD_Process, Object>(I_AD_Process.class, "IsTranslateExcelHeaders", null);
+    /** Column name IsTranslateExcelHeaders */
+    public static final String COLUMNNAME_IsTranslateExcelHeaders = "IsTranslateExcelHeaders";
+
+	/**
 	 * Set IsUseBPartnerLanguage.
 	 *
 	 * <br>Type: YesNo
@@ -657,6 +682,29 @@ public interface I_AD_Process
     public static final String COLUMNNAME_JasperReport_Tabular = "JasperReport_Tabular";
 
 	/**
+	 * Set JSON Path.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setJSONPath (java.lang.String JSONPath);
+
+	/**
+	 * Get JSON Path.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getJSONPath();
+
+    /** Column definition for JSONPath */
+    public static final org.adempiere.model.ModelColumn<I_AD_Process, Object> COLUMN_JSONPath = new org.adempiere.model.ModelColumn<I_AD_Process, Object>(I_AD_Process.class, "JSONPath", null);
+    /** Column name JSONPath */
+    public static final String COLUMNNAME_JSONPath = "JSONPath";
+
+	/**
 	 * Set Wait Timeout.
 	 * If only one instance is allowed to run at a time, how many seconds to wait for it. Zero or negative number means forever.
 	 *
@@ -683,7 +731,6 @@ public interface I_AD_Process
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -693,7 +740,6 @@ public interface I_AD_Process
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -784,7 +830,7 @@ public interface I_AD_Process
 	/**
 	 * Set SQLStatement.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: TextLong
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -793,7 +839,7 @@ public interface I_AD_Process
 	/**
 	 * Get SQLStatement.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: TextLong
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

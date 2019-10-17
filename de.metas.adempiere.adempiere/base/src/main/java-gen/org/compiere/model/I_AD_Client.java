@@ -374,8 +374,8 @@ public interface I_AD_Client
     public static final String COLUMNNAME_IsServerEMail = "IsServerEMail";
 
 	/**
-	 * Set SMTP-Anmeldung.
-	 * Your mail server requires Authentication
+	 * Set SMTP Anmeldung.
+	 * Ihr EMail-Server verlangt eine Anmeldung
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -384,8 +384,8 @@ public interface I_AD_Client
 	public void setIsSmtpAuthorization (boolean IsSmtpAuthorization);
 
 	/**
-	 * Get SMTP-Anmeldung.
-	 * Your mail server requires Authentication
+	 * Get SMTP Anmeldung.
+	 * Ihr EMail-Server verlangt eine Anmeldung
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -420,29 +420,6 @@ public interface I_AD_Client
     public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_IsStartTLS = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "IsStartTLS", null);
     /** Column name IsStartTLS */
     public static final String COLUMNNAME_IsStartTLS = "IsStartTLS";
-
-	/**
-	 * Set IsUseASP.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsUseASP (boolean IsUseASP);
-
-	/**
-	 * Get IsUseASP.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isUseASP();
-
-    /** Column definition for IsUseASP */
-    public static final org.adempiere.model.ModelColumn<I_AD_Client, Object> COLUMN_IsUseASP = new org.adempiere.model.ModelColumn<I_AD_Client, Object>(I_AD_Client.class, "IsUseASP", null);
-    /** Column name IsUseASP */
-    public static final String COLUMNNAME_IsUseASP = "IsUseASP";
 
 	/**
 	 * Set Beta-Funktionalität verwenden.
@@ -523,7 +500,6 @@ public interface I_AD_Client
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -533,7 +509,6 @@ public interface I_AD_Client
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -704,7 +679,7 @@ public interface I_AD_Client
 	 * Set SMTP Port.
 	 *
 	 * <br>Type: Integer
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setSMTPPort (int SMTPPort);
@@ -713,7 +688,7 @@ public interface I_AD_Client
 	 * Get SMTP Port.
 	 *
 	 * <br>Type: Integer
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getSMTPPort();

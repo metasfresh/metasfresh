@@ -1,15 +1,17 @@
 package org.adempiere.service;
 
-import org.compiere.util.Env;
+import java.util.Objects;
+import java.util.Optional;
+
+import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -47,11 +49,23 @@ public class ClientId implements RepoIdAware
 	@JsonCreator
 	public static ClientId ofRepoId(final int repoId)
 	{
-		if (repoId == SYSTEM.repoId)
+		final ClientId clientId = ofRepoIdOrNull(repoId);
+		if (clientId == null)
 		{
-			return SYSTEM;
+			throw new AdempiereException("Invalid AD_Client_ID: " + repoId);
 		}
-		return new ClientId(repoId);
+		return clientId;
+	}
+
+	public static ClientId ofRepoIdOrSystem(final int repoId)
+	{
+		final ClientId clientId = ofRepoIdOrNull(repoId);
+		return clientId != null ? clientId : SYSTEM;
+	}
+
+	public static Optional<ClientId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
 	public static ClientId ofRepoIdOrNull(final int repoId)
@@ -60,28 +74,51 @@ public class ClientId implements RepoIdAware
 		{
 			return SYSTEM;
 		}
+		else if (repoId == TRASH.repoId)
+		{
+			return TRASH;
+		}
+		else if (repoId == METASFRESH.repoId)
+		{
+			return METASFRESH;
+		}
 		else if (repoId <= 0)
 		{
 			return null;
 		}
 		else
 		{
-			return ofRepoId(repoId);
+			return new ClientId(repoId);
 		}
 	}
 
-	public static int toRepoId(final ClientId clientId)
-	{
-		return clientId != null ? clientId.getRepoId() : -1;
-	}
-
-	public static final ClientId SYSTEM = new ClientId();
+	public static final ClientId SYSTEM = new ClientId(0);
+	@VisibleForTesting
+	static final ClientId TRASH = new ClientId(99);
+	@VisibleForTesting
+	static final ClientId METASFRESH = new ClientId(1000000);
 
 	int repoId;
 
 	private ClientId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		// NOTE: validation happens in ofRepoIdOrNull method
+		this.repoId = repoId;
+	}
+
+	public boolean isSystem()
+	{
+		return repoId == SYSTEM.repoId;
+	}
+
+	public boolean isTrash()
+	{
+		return repoId == TRASH.repoId;
+	}
+
+	public boolean isRegular()
+	{
+		return !isSystem() && !isTrash();
 	}
 
 	@Override
@@ -91,13 +128,13 @@ public class ClientId implements RepoIdAware
 		return repoId;
 	}
 
-	private ClientId()
+	public static int toRepoId(final ClientId clientId)
 	{
-		this.repoId = Env.CTXVALUE_AD_Client_ID_System;
+		return clientId != null ? clientId.getRepoId() : -1;
 	}
 
-	public boolean isSystem()
+	public static boolean equals(final ClientId id1, final ClientId id2)
 	{
-		return repoId == Env.CTXVALUE_AD_Client_ID_System;
+		return Objects.equals(id1, id2);
 	}
 }

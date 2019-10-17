@@ -7,7 +7,6 @@ import java.util.regex.Pattern;
 import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.exceptions.IExceptionWrapper;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
 import org.postgresql.util.PSQLException;
@@ -17,6 +16,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.exceptions.IExceptionWrapper;
 
 /*
  * #%L

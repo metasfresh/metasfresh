@@ -5,6 +5,8 @@ package org.compiere.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -30,10 +32,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -46,6 +52,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /**
  * @author Teo Sarca
@@ -53,18 +60,23 @@ import de.metas.util.time.SystemTime;
  */
 public class TimeUtilTest
 {
+	private static Timestamp createTimestamp(final int year, int month, int day)
+	{
+		return TimeUtil.getDay(year, month, day);
+	}
+
 	@Test
 	public void testIsValid() throws Exception
 	{
-		final Timestamp date_2011_05_10 = TimeUtil.getDay(2011, 5, 10);
-		final Timestamp date_2011_05_20 = TimeUtil.getDay(2011, 5, 20);
+		final Timestamp date_2011_05_10 = createTimestamp(2011, 5, 10);
+		final Timestamp date_2011_05_20 = createTimestamp(2011, 5, 20);
 
 		// Standard test
-		assertIsValid(false, date_2011_05_10, date_2011_05_20, TimeUtil.getDay(2011, 5, 1));
-		assertIsValid(true, date_2011_05_10, date_2011_05_20, TimeUtil.getDay(2011, 5, 10));
-		assertIsValid(true, date_2011_05_10, date_2011_05_20, TimeUtil.getDay(2011, 5, 11));
-		assertIsValid(true, date_2011_05_10, date_2011_05_20, TimeUtil.getDay(2011, 5, 20));
-		assertIsValid(false, date_2011_05_10, date_2011_05_20, TimeUtil.getDay(2011, 5, 21));
+		assertIsValid(false, date_2011_05_10, date_2011_05_20, createTimestamp(2011, 5, 1));
+		assertIsValid(true, date_2011_05_10, date_2011_05_20, createTimestamp(2011, 5, 10));
+		assertIsValid(true, date_2011_05_10, date_2011_05_20, createTimestamp(2011, 5, 11));
+		assertIsValid(true, date_2011_05_10, date_2011_05_20, createTimestamp(2011, 5, 20));
+		assertIsValid(false, date_2011_05_10, date_2011_05_20, createTimestamp(2011, 5, 21));
 
 		// Test for interval beginning
 		assertIsValid(true, date_2011_05_10, date_2011_05_20, date_2011_05_10);
@@ -73,18 +85,18 @@ public class TimeUtilTest
 		assertIsValid(true, date_2011_05_10, date_2011_05_20, date_2011_05_20);
 
 		// Test for null interval beginning
-		assertIsValid(true, null, date_2011_05_20, TimeUtil.getDay(2011, 5, 1));
-		assertIsValid(true, null, date_2011_05_20, TimeUtil.getDay(2011, 5, 10));
-		assertIsValid(true, null, date_2011_05_20, TimeUtil.getDay(2011, 5, 11));
-		assertIsValid(true, null, date_2011_05_20, TimeUtil.getDay(2011, 5, 20));
-		assertIsValid(false, null, date_2011_05_20, TimeUtil.getDay(2011, 5, 21));
+		assertIsValid(true, null, date_2011_05_20, createTimestamp(2011, 5, 1));
+		assertIsValid(true, null, date_2011_05_20, createTimestamp(2011, 5, 10));
+		assertIsValid(true, null, date_2011_05_20, createTimestamp(2011, 5, 11));
+		assertIsValid(true, null, date_2011_05_20, createTimestamp(2011, 5, 20));
+		assertIsValid(false, null, date_2011_05_20, createTimestamp(2011, 5, 21));
 
 		// Test for null interval ending
-		assertIsValid(false, date_2011_05_10, null, TimeUtil.getDay(2011, 5, 1));
-		assertIsValid(true, date_2011_05_10, null, TimeUtil.getDay(2011, 5, 10));
-		assertIsValid(true, date_2011_05_10, null, TimeUtil.getDay(2011, 5, 11));
-		assertIsValid(true, date_2011_05_10, null, TimeUtil.getDay(2011, 5, 20));
-		assertIsValid(true, date_2011_05_10, null, TimeUtil.getDay(2011, 5, 21));
+		assertIsValid(false, date_2011_05_10, null, createTimestamp(2011, 5, 1));
+		assertIsValid(true, date_2011_05_10, null, createTimestamp(2011, 5, 10));
+		assertIsValid(true, date_2011_05_10, null, createTimestamp(2011, 5, 11));
+		assertIsValid(true, date_2011_05_10, null, createTimestamp(2011, 5, 20));
+		assertIsValid(true, date_2011_05_10, null, createTimestamp(2011, 5, 21));
 
 	}
 
@@ -302,10 +314,10 @@ public class TimeUtilTest
 	@Test
 	public void testDateMin()
 	{
-		final Timestamp date1 = TimeUtil.getDay(2014, 1, 1);
-		final Timestamp date1_copy = TimeUtil.getDay(2014, 1, 1);
-		final Timestamp date2 = TimeUtil.getDay(2014, 1, 2);
-		final Timestamp date3 = TimeUtil.getDay(2014, 1, 3);
+		final Timestamp date1 = createTimestamp(2014, 1, 1);
+		final Timestamp date1_copy = createTimestamp(2014, 1, 1);
+		final Timestamp date2 = createTimestamp(2014, 1, 2);
+		final Timestamp date3 = createTimestamp(2014, 1, 3);
 
 		// NULLs check
 		assertDateMin(null, null, null);
@@ -333,33 +345,34 @@ public class TimeUtilTest
 	}
 
 	@Test
-	public void testLocalDateTimeMin()
+	public void testZonedDateTimeMin()
 	{
-		final LocalDateTime date1 = LocalDate.of(2014, 1, 1).atStartOfDay();
-		final LocalDateTime date1_copy = LocalDate.of(2014, 1, 1).atStartOfDay();
-		final LocalDateTime date2 = LocalDate.of(2014, 1, 2).atStartOfDay();
-		final LocalDateTime date3 = LocalDate.of(2014, 1, 3).atStartOfDay();
+		final ZoneId zone = ZoneId.systemDefault();
+		final ZonedDateTime date1 = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
+		final ZonedDateTime date1_copy = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
+		final ZonedDateTime date2 = LocalDate.of(2014, 1, 2).atStartOfDay().atZone(zone);
+		final ZonedDateTime date3 = LocalDate.of(2014, 1, 3).atStartOfDay().atZone(zone);
 
 		// NULLs check
-		assertLocalDateTimeMin(null, null, null);
-		assertLocalDateTimeMin(date1, date1, null);
-		assertLocalDateTimeMin(date1, null, date1);
+		assertZonedDateTimeMin(null, null, null);
+		assertZonedDateTimeMin(date1, date1, null);
+		assertZonedDateTimeMin(date1, null, date1);
 
 		// Same (reference) value check
-		assertLocalDateTimeMin(date1, date1, date1);
+		assertZonedDateTimeMin(date1, date1, date1);
 
 		// Same (value) check
-		assertLocalDateTimeMin(date1, date1, date1_copy);
+		assertZonedDateTimeMin(date1, date1, date1_copy);
 
-		assertLocalDateTimeMin(date1, date1, date2);
-		assertLocalDateTimeMin(date1, date2, date1);
-		assertLocalDateTimeMin(date2, date2, date3);
-		assertLocalDateTimeMin(date2, date3, date2);
+		assertZonedDateTimeMin(date1, date1, date2);
+		assertZonedDateTimeMin(date1, date2, date1);
+		assertZonedDateTimeMin(date2, date2, date3);
+		assertZonedDateTimeMin(date2, date3, date2);
 	}
 
-	private void assertLocalDateTimeMin(final LocalDateTime dateExpected, final LocalDateTime date1, final LocalDateTime date2)
+	private void assertZonedDateTimeMin(final ZonedDateTime dateExpected, final ZonedDateTime date1, final ZonedDateTime date2)
 	{
-		final LocalDateTime dateMin = TimeUtil.min(date1, date2);
+		final ZonedDateTime dateMin = TimeUtil.min(date1, date2);
 
 		Assert.assertSame("Invalid minimum date: date1=" + date1 + ", date2=" + date2,
 				dateExpected, dateMin);
@@ -370,12 +383,12 @@ public class TimeUtilTest
 	{
 		// NOTE: this test was initially in org.compiere.util.TimeUtil.main(String[])
 
-		final Timestamp t1 = TimeUtil.getDay(01, 01, 01);
-		final Timestamp t2 = TimeUtil.getDay(02, 02, 02);
-		final Timestamp t3 = TimeUtil.getDay(03, 03, 03);
+		final Timestamp t1 = createTimestamp(01, 01, 01);
+		final Timestamp t2 = createTimestamp(02, 02, 02);
+		final Timestamp t3 = createTimestamp(03, 03, 03);
 
-		final Timestamp t4 = TimeUtil.getDay(01, 01, 01);
-		final Timestamp t5 = TimeUtil.getDay(02, 02, 02);
+		final Timestamp t4 = createTimestamp(01, 01, 01);
+		final Timestamp t5 = createTimestamp(02, 02, 02);
 
 		assertSameDay(true, t1, t4);
 		assertSameDay(true, t2, t5);
@@ -479,9 +492,117 @@ public class TimeUtilTest
 		// invoke the method under test
 		final LocalDate result = TimeUtil.asLocalDate(xmlGregorianCalendar);
 
-
 		assertThat(result.getYear()).isEqualTo(2018);
 		assertThat(result.getMonth()).isEqualTo(Month.OCTOBER);
 		assertThat(result.getDayOfMonth()).isEqualTo(4);
 	}
+
+	@Test
+	public void asDate()
+	{
+		final Date nowDate = new Date();
+		final Timestamp nowTimestamp = new Timestamp(nowDate.getTime());
+		assertThat(nowTimestamp).isNotEqualTo(nowDate); // guard, just to make sure that noone magically fixed timestamp
+
+		assertThat(TimeUtil.asDate(nowTimestamp)).isEqualTo(nowDate);
+	}
+
+	@Test
+	public void getDay()
+	{
+		test_getDay("2018-12-05T00:15:00+01:00", "+1", "2018-12-05");
+
+		test_getDay("2018-12-05T23:59:59+01:00", "+1", "2018-12-05");
+
+		test_getDay("2018-12-05T23:59:59+01:00", "+2", "2018-12-06");
+
+		test_getDay("2018-12-05T00:59:59+01:00", "-1", "2018-12-04");
+	}
+
+	private void test_getDay(
+			@NonNull final String zonedDateTime,
+			@NonNull final String targetTimeZone,
+			@NonNull final String expectedDateAtTimeZone)
+	{
+		final Instant input = ZonedDateTime.parse(zonedDateTime).toInstant();
+
+		final ZoneId targetZoneId = ZoneId.of(targetTimeZone);
+
+		final Instant expected = ZonedDateTime
+				.of(
+						LocalDateTime.parse(expectedDateAtTimeZone + "T00:00:00"),
+						targetZoneId)
+				.toInstant();
+
+		assertThat(TimeUtil.getDay(input, targetZoneId)).isEqualTo(expected);
+	}
+
+	@Test
+	public void testMaxDuration()
+	{
+		testMaxDuration(null, null, null);
+		testMaxDuration(Duration.ofMinutes(1), Duration.ofMinutes(1), null);
+		testMaxDuration(Duration.ofMinutes(1), null, Duration.ofMinutes(1));
+		testMaxDuration(Duration.ofMinutes(1), Duration.ofMinutes(1), Duration.ofMinutes(1));
+		testMaxDuration(Duration.ofMinutes(2), Duration.ofMinutes(1), Duration.ofMinutes(2));
+		testMaxDuration(Duration.ofMinutes(2), Duration.ofMinutes(2), Duration.ofMinutes(1));
+	}
+
+	private void testMaxDuration(final Duration expected, final Duration duration1, final Duration duration2)
+	{
+		final Duration actual = TimeUtil.max(duration1, duration2);
+		assertThat(actual).isEqualTo(expected);
+	}
+
+	@Test
+	public void test_isLastDayOfMonth()
+	{
+		assertLastDayOfMonth(false, LocalDate.of(2019, 1, 1));
+		assertLastDayOfMonth(false, LocalDate.of(2019, 1, 30));
+		assertLastDayOfMonth(true, LocalDate.of(2019, 1, 31));
+
+		assertLastDayOfMonth(false, LocalDate.of(2019, 2, 27));
+		assertLastDayOfMonth(true, LocalDate.of(2019, 2, 28));
+	}
+
+	private void assertLastDayOfMonth(final boolean expectation, final LocalDate date)
+	{
+		assertThat(TimeUtil.isLastDayOfMonth(date)).isEqualTo(expectation);
+	}
+
+	@Test
+	public void test_isDateOrTimeObject()
+	{
+		assertThat(TimeUtil.isDateOrTimeObject(new java.util.Date())).isTrue();
+		assertThat(TimeUtil.isDateOrTimeObject(new java.sql.Timestamp(System.currentTimeMillis()))).isTrue();
+		assertThat(TimeUtil.isDateOrTimeObject(Instant.now())).isTrue();
+		assertThat(TimeUtil.isDateOrTimeObject(ZonedDateTime.now())).isTrue();
+		assertThat(TimeUtil.isDateOrTimeObject(LocalDateTime.now())).isTrue();
+		assertThat(TimeUtil.isDateOrTimeObject(LocalDate.now())).isTrue();
+		assertThat(TimeUtil.isDateOrTimeObject(LocalTime.now())).isTrue();
+
+		assertThat(TimeUtil.isDateOrTimeObject(null)).isFalse();
+		assertThat(TimeUtil.isDateOrTimeObject("aaa")).isFalse();
+		assertThat(TimeUtil.isDateOrTimeObject("aaa")).isFalse();
+		assertThat(TimeUtil.isDateOrTimeObject(1)).isFalse();
+		assertThat(TimeUtil.isDateOrTimeObject(new BigDecimal("1234"))).isFalse();
+	}
+
+	@Test
+	public void test_isDateOrTimeClass()
+	{
+		assertThat(TimeUtil.isDateOrTimeClass(java.util.Date.class)).isTrue();
+		assertThat(TimeUtil.isDateOrTimeClass(java.sql.Timestamp.class)).isTrue();
+		assertThat(TimeUtil.isDateOrTimeClass(Instant.class)).isTrue();
+		assertThat(TimeUtil.isDateOrTimeClass(ZonedDateTime.class)).isTrue();
+		assertThat(TimeUtil.isDateOrTimeClass(LocalDateTime.class)).isTrue();
+		assertThat(TimeUtil.isDateOrTimeClass(LocalDate.class)).isTrue();
+		assertThat(TimeUtil.isDateOrTimeClass(LocalTime.class)).isTrue();
+		assertThat(TimeUtil.isDateOrTimeClass(XMLGregorianCalendar.class)).isTrue();
+
+		assertThat(TimeUtil.isDateOrTimeClass(String.class)).isFalse();
+		assertThat(TimeUtil.isDateOrTimeClass(Integer.class)).isFalse();
+		assertThat(TimeUtil.isDateOrTimeClass(BigDecimal.class)).isFalse();
+	}
+
 }

@@ -89,7 +89,7 @@ GROUP BY
 			<textField>
 				<reportElement x="462" y="0" width="34" height="13" uuid="d91364d3-daaa-464b-b02b-c3748b846c30"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{count}]]></textFieldExpression>
 			</textField>
@@ -98,14 +98,14 @@ GROUP BY
 					<printWhenExpression><![CDATA[$V{Line_COUNT}.intValue() == 1]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Gesamt Gebinde:]]></text>
 			</staticText>
 			<textField>
 				<reportElement x="383" y="0" width="79" height="13" uuid="a5d59d47-4f15-4c06-90e9-c25b86e6b821"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{hu_pi_name}]]></textFieldExpression>
 			</textField>

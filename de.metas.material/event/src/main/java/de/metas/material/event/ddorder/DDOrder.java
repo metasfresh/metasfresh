@@ -1,8 +1,6 @@
 package de.metas.material.event.ddorder;
 
-import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
-
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 import org.compiere.model.I_S_Resource;
@@ -10,6 +8,8 @@ import org.compiere.model.I_S_Resource;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -37,14 +37,13 @@ import lombok.Value;
  * #L%
  */
 @Value
-@Builder
 final public class DDOrder
 {
 
 	/**
 	 * {@code AD_Org_ID} of the <b>receiving</b> organization.
 	 */
-	int orgId;
+	OrgId orgId;
 
 	/**
 	 * The {@link I_S_Resource#getS_Resource_ID()} of the plant, as specified by the respective product planning record.
@@ -54,7 +53,7 @@ final public class DDOrder
 
 	int productPlanningId;
 
-	Date datePromised;
+	Instant datePromised;
 
 	int shipperId;
 
@@ -70,22 +69,23 @@ final public class DDOrder
 	 * when material-dispo posts {@link DDOrderRequestedEvent}, it contains a group-ID,
 	 * and the respective {@link DDOrderCreatedEvent} contains the same group-ID.
 	 */
-	int materialDispoGroupId;
+	MaterialDispoGroupId materialDispoGroupId;
 
 	@JsonCreator
-	public DDOrder(
-			@JsonProperty("orgId") final int orgId,
+	@Builder
+	private DDOrder(
+			@JsonProperty("orgId") @NonNull final OrgId orgId,
 			@JsonProperty("plantId") final int plantId,
 			@JsonProperty("productPlanningId") final int productPlanningId,
-			@JsonProperty("datePromised") @NonNull final Date datePromised,
+			@JsonProperty("datePromised") @NonNull final Instant datePromised,
 			@JsonProperty("shipperId") final int shipperId,
-			@JsonProperty("lines") final List<DDOrderLine> lines,
+			@JsonProperty("lines") @Singular final List<DDOrderLine> lines,
 			@JsonProperty("ddOrderId") final int ddOrderId,
 			@JsonProperty("docStatus") final String docStatus,
-			@JsonProperty("materialDispoGroupId") final int materialDispoGroupId)
+			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId)
 	{
-		this.orgId = checkIdGreaterThanZero("orgId", orgId);
-
+		this.orgId = orgId;
+		
 		// these two might be zero, if the DDOrder was created manually
 		this.plantId = plantId;
 		this.productPlanningId = productPlanningId;

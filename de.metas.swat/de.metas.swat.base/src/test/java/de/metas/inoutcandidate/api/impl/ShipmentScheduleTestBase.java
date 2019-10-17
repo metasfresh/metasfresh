@@ -7,17 +7,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.Builder.ObtainVia;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
-import lombok.experimental.UtilityClass;
-import lombok.experimental.Wither;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -45,8 +34,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.TimeUtil;
 
@@ -59,6 +51,14 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.order.DeliveryRule;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.Builder.ObtainVia;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
+import lombok.experimental.UtilityClass;
+import lombok.experimental.Wither;
 
 @UtilityClass
 public class ShipmentScheduleTestBase
@@ -86,13 +86,27 @@ public class ShipmentScheduleTestBase
 
 	public ImmutableList<OlAndSched> setup(@NonNull final TestSetupSpec spec)
 	{
+		final Map<String, I_C_UOM> name2uom = new HashMap<>();
+		for (final UomSpec uom : spec.getUoms())
+		{
+			final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
+			uomRecord.setName(uom.getName());
+			saveRecord(uomRecord);
+
+			name2uom.put(uomRecord.getName(), uomRecord);
+		}
+
 		final Map<String, I_M_Product> value2product = new HashMap<>();
 		for (final ProductSpec product : spec.getProducts())
 		{
+			final I_C_UOM uomRecord = assumeNotNull(name2uom.get(product.getUomValue()), "");
+
 			final I_M_Product productRecord = newInstance(I_M_Product.class);
 			productRecord.setValue(product.getValue());
 			productRecord.setIsStocked(product.isStocked());
 			productRecord.setProductType(product.getProductType());
+			productRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
+
 			saveRecord(productRecord);
 
 			value2product.put(productRecord.getValue(), productRecord);
@@ -116,8 +130,8 @@ public class ShipmentScheduleTestBase
 			final I_C_Order orderRecord = assumeNotNull(value2order.get(orderLine.getOrder()), "");
 
 			final I_C_OrderLine orderLineRecord = newInstance(I_C_OrderLine.class);
-			orderLineRecord.setC_Order(orderRecord);
-			orderLineRecord.setM_Product(productRecord);
+			orderLineRecord.setC_Order_ID(orderRecord.getC_Order_ID());
+			orderLineRecord.setM_Product_ID(productRecord.getM_Product_ID());
 			orderLineRecord.setQtyOrdered(orderLine.getQtyOrdered()); // <==
 			orderLineRecord.setDatePromised(TimeUtil.parseTimestamp("2018-10-20"));
 			saveRecord(orderLineRecord);
@@ -148,15 +162,16 @@ public class ShipmentScheduleTestBase
 			final I_C_OrderLine orderLineRecord = value2orderLine.get(shipmentSchedule.getOrderLine());
 
 			final I_M_ShipmentSchedule shipmentScheduleRecord = newInstance(I_M_ShipmentSchedule.class);
+			shipmentScheduleRecord.setM_Product_ID(productRecord.getM_Product_ID());
 			shipmentScheduleRecord.setIsClosed(false);
-			shipmentScheduleRecord.setC_BPartner(bPartnerRecord);
+			shipmentScheduleRecord.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
 			shipmentScheduleRecord.setQtyDelivered(BigDecimal.ONE);
 			shipmentScheduleRecord.setQtyOrdered_Override(new BigDecimal("23"));
 			shipmentScheduleRecord.setQtyOrdered_Calculated(new BigDecimal("24"));
 			shipmentScheduleRecord.setM_Warehouse_ID(WAREHOUSE_ID);
-			shipmentScheduleRecord.setC_Order(orderRecord);
-			shipmentScheduleRecord.setC_OrderLine(orderLineRecord);
-			shipmentScheduleRecord.setM_Product(productRecord);
+			shipmentScheduleRecord.setC_Order_ID(orderRecord.getC_Order_ID());
+			shipmentScheduleRecord.setC_OrderLine_ID(orderLineRecord.getC_OrderLine_ID());
+			shipmentScheduleRecord.setM_Product_ID(productRecord.getM_Product_ID());
 			shipmentScheduleRecord.setBPartnerAddress_Override("BPartnerAddress_Override"); // not flagged as mandatory in AD, but always set
 			shipmentScheduleRecord.setAD_Table_ID(getTableId(I_C_OrderLine.class));
 			shipmentScheduleRecord.setRecord_ID(orderLineRecord.getC_OrderLine_ID());
@@ -164,7 +179,7 @@ public class ShipmentScheduleTestBase
 			shipmentScheduleRecord.setDeliveryRule(shipmentSchedule.getDeliveryRule().getCode()); // <==
 
 			final OlAndSched olAndSched = OlAndSched.builder()
-					.deliverRequest(() -> orderLineRecord.getQtyOrdered())
+					.deliverRequest(orderLineRecord::getQtyOrdered)
 					.shipmentSchedule(shipmentScheduleRecord)
 					.build();
 			olAndScheds.add(olAndSched);
@@ -176,6 +191,7 @@ public class ShipmentScheduleTestBase
 	@Value
 	public static class TestSetupSpec
 	{
+		Map<String, UomSpec> names2uoms;
 
 		Map<String, ProductSpec> values2products;
 
@@ -189,12 +205,14 @@ public class ShipmentScheduleTestBase
 
 		@Builder(toBuilder = true)
 		private TestSetupSpec(
+				@Singular @ObtainVia(method = "getUoms") List<UomSpec> uoms,
 				@Singular @ObtainVia(method = "getProducts") List<ProductSpec> products,
 				@Singular List<StockSpec> stocks,
 				@Singular List<OrderSpec> orders,
 				@Singular List<OrderLineSpec> orderLines,
 				@Singular List<ShipmentScheduleSpec> shipmentSchedules)
 		{
+			this.names2uoms = Maps.uniqueIndex(uoms, UomSpec::getName);
 			this.values2products = Maps.uniqueIndex(products, ProductSpec::getValue);
 			this.stocks = stocks;
 			this.orders = orders;
@@ -214,6 +232,19 @@ public class ShipmentScheduleTestBase
 		{
 			return ImmutableList.copyOf(values2products.values());
 		}
+
+		private List<UomSpec> getUoms()
+		{
+			return ImmutableList.copyOf(names2uoms.values());
+		}
+	}
+
+	@Value
+	@Builder
+	@Wither
+	public static class UomSpec
+	{
+		String name;
 	}
 
 	@Value
@@ -225,6 +256,9 @@ public class ShipmentScheduleTestBase
 		String value;
 
 		boolean stocked;
+
+		@NonNull
+		String uomValue;
 
 		@Default
 		String productType= X_M_Product.PRODUCTTYPE_Item;

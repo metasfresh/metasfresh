@@ -5,7 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import java.util.Optional;
 import java.util.OptionalInt;
 
-import org.adempiere.service.OrgId;
 import org.compiere.util.TimeUtil;
 
 import de.metas.document.DocTypeId;
@@ -15,6 +14,7 @@ import de.metas.handlingunits.trace.HUTraceEvent;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.handlingunits.trace.HUTraceType;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 
@@ -60,7 +60,7 @@ public class HuTraceEventToDbRecordUtil
 				.inOutId(dbRecord.getM_InOut_ID())
 				.movementId(dbRecord.getM_Movement_ID())
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(dbRecord.getM_ShipmentSchedule_ID()))
-				.type(HUTraceType.valueOf(dbRecord.getHUTraceType())); // HUTraceType is also a mandatory column, so no NPE
+				.type(HUTraceType.ofCode(dbRecord.getHUTraceType())); // HUTraceType is also a mandatory column, so no NPE
 
 		if (dbRecord.getM_HU_Trace_ID() > 0)
 		{

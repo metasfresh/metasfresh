@@ -9,14 +9,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.adempiere.ad.dao.impl.QuerySelectionToDeleteHelper;
-import org.adempiere.ad.dao.model.I_T_Query_Selection;
-import org.adempiere.ad.housekeeping.IHouseKeepingBL;
+import org.adempiere.ad.housekeeping.HouseKeepingService;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -30,18 +29,17 @@ import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.metas.dao.selection.QuerySelectionToDeleteHelper;
+import de.metas.dao.selection.model.I_T_Query_Selection;
 import de.metas.elasticsearch.ESLoggingInit;
 import de.metas.logging.LogManager;
-import de.metas.server.housekeep.MissingTranslationHouseKeepingTask;
-import de.metas.server.housekeep.RoleAccessUpdateHouseKeepingTask;
-import de.metas.server.housekeep.SequenceCheckHouseKeepingTask;
-import de.metas.server.housekeep.SignDatabaseBuildHouseKeepingTask;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -98,7 +96,7 @@ public class ServerBoot implements InitializingBean
 	{
 		// Make sure slf4j is used (by default, log4j is used)
 		ESLoggingInit.init();
-		
+
 		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
 		{
 			// important because in Ini, there is a org.springframework.context.annotation.Condition that otherwise wouldn't e.g. let the jasper servlet start
@@ -119,20 +117,16 @@ public class ServerBoot implements InitializingBean
 					// if we did that, then to also have jasper within the backend, we would start it with -Dspring.profiles.active=metasfresh-jasper-server
 					// same goes for PrintService
 					.profiles(activeProfiles.toArray(new String[0]))
+					.beanNameGenerator(new MetasfreshBeanNameGenerator())
 					.run(args);
 		}
-
-		final IHouseKeepingBL houseKeepingRegistry = Services.get(IHouseKeepingBL.class);
-		houseKeepingRegistry.registerStartupHouseKeepingTask(new SignDatabaseBuildHouseKeepingTask());
-		houseKeepingRegistry.registerStartupHouseKeepingTask(new SequenceCheckHouseKeepingTask());
-		houseKeepingRegistry.registerStartupHouseKeepingTask(new RoleAccessUpdateHouseKeepingTask());
-		houseKeepingRegistry.registerStartupHouseKeepingTask(new MissingTranslationHouseKeepingTask());
 
 		// now init the model validation engine
 		ModelValidationEngine.get();
 
-		// by now the model validation engine has been initialized and therefore model validators had the chance to register their own housekeeping tasks.
-		Services.get(IHouseKeepingBL.class).runStartupHouseKeepingTasks();
+		//
+		final HouseKeepingService houseKeepingService = SpringContextHolder.instance.getBean(HouseKeepingService.class);
+		houseKeepingService.runStartupHouseKeepingTasks();
 	}
 
 	private static ArrayList<String> retrieveActiveProfilesFromSysConfig()
@@ -196,6 +190,13 @@ public class ServerBoot implements InitializingBean
 		}
 	}
 
+	@Bean
+	@Primary
+	public ObjectMapper jsonObjectMapper()
+	{
+		return JsonObjectMapperHolder.sharedJsonObjectMapper();
+	}
+
 	@Bean(Adempiere.BEAN_NAME)
 	public Adempiere adempiere()
 	{
@@ -224,13 +225,5 @@ public class ServerBoot implements InitializingBean
 			);
 			logger.info("Clearing query selection table each {} seconds", clearQuerySelectionsRateInSeconds);
 		}
-	}
-
-	@Bean
-	public ObjectMapper objectMapper()
-	{
-		final ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.findAndRegisterModules();
-		return objectMapper;
 	}
 }

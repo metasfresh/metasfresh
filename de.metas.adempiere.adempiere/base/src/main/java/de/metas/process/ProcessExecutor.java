@@ -8,8 +8,6 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -33,9 +31,13 @@ import com.google.common.base.Stopwatch;
 import de.metas.i18n.IMsgBL;
 // import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
 import de.metas.script.ScriptExecutor;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
 import de.metas.session.jaxrs.IServerService;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -49,35 +51,26 @@ import lombok.NonNull;
  */
 public final class ProcessExecutor
 {
-	public static final Builder builder(final ProcessInfo processInfo)
+	public static Builder builder(final ProcessInfo processInfo)
 	{
 		return new Builder(processInfo);
 	}
 
-	public static int getCurrentOrgId()
+	public static OrgId getCurrentOrgId()
 	{
-		final Integer orgId = s_currentOrg_ID.get();
-		if (orgId == null)
-		{
-			return 0;
-		}
-		return orgId;
+		final OrgId orgId = s_currentOrg_ID.get();
+		return orgId != null ? orgId : OrgId.ANY;
 	}
 
-	public static int getCurrentProcessId()
+	public static AdProcessId getCurrentProcessIdOrNull()
 	{
-		final Integer processId = s_currentProcess_ID.get();
-		if (processId == null)
-		{
-			return 0;
-		}
-		return processId;
+		return s_currentProcess_ID.get();
 	}
 
 	//
 	// Thread locals
-	private static final ThreadLocal<Integer> s_currentProcess_ID = new ThreadLocal<>(); // metas: c.ghita@metas.ro
-	private static final ThreadLocal<Integer> s_currentOrg_ID = new ThreadLocal<>(); // metas: c.ghita@metas.ro
+	private static final ThreadLocal<AdProcessId> s_currentProcess_ID = new ThreadLocal<>(); // metas: c.ghita@metas.ro
+	private static final ThreadLocal<OrgId> s_currentOrg_ID = new ThreadLocal<>(); // metas: c.ghita@metas.ro
 
 	// services
 	private static final transient Logger logger = LogManager.getLogger(ProcessExecutor.class);
@@ -97,14 +90,14 @@ public final class ProcessExecutor
 		pi = builder.getProcessInfo();
 
 		// gh #2092 verify that we have an AD_Role_ID; otherwise, the assertPermissions() call we are going to do will fail
-		Check.errorIf(pi.getAD_Role_ID() < 0, "Process info has AD_Role_ID={}; builder={}", pi.getAD_Role_ID(), builder);
+		Check.errorIf(pi.getRoleId() == null, "Process info has AD_Role_ID={}; builder={}", pi.getRoleId(), builder);
 
 		listener = builder.getListener();
 		switchContextWhenRunning = builder.switchContextWhenRunning;
 		onErrorThrowException = builder.onErrorThrowException;
 	}
 
-	private final String buildThreadName()
+	private String buildThreadName()
 	{
 		return pi.getTitle() + "-" + PInstanceId.toRepoIdOr(pi.getPinstanceId(), 0);
 	}
@@ -132,7 +125,7 @@ public final class ProcessExecutor
 		//
 		// Case: the process requires to be executed on server, but we are not running on server
 		// => execute the process remotely
-		if (pi.isServerProcess() && Ini.isClient())
+		if (pi.isServerProcess() && Ini.isSwingClient())
 		{
 			executeSync_Remote();
 		}
@@ -258,13 +251,13 @@ public final class ProcessExecutor
 
 		//
 		// now run the process executor
-		final Integer previousProcessId = s_currentProcess_ID.get();
-		final Integer previousOrgId = s_currentOrg_ID.get();
+		final AdProcessId previousProcessId = s_currentProcess_ID.get();
+		final OrgId previousOrgId = s_currentOrg_ID.get();
 		Stopwatch duration = null;
 		try (final IAutoCloseable contextRestorer = switchContextIfNeeded())
 		{
-			s_currentProcess_ID.set(pi.getAD_Process_ID());
-			s_currentOrg_ID.set(pi.getAD_Org_ID());
+			s_currentProcess_ID.set(pi.getAdProcessId());
+			s_currentOrg_ID.set(pi.getOrgId());
 
 			//
 			// Check permissions
@@ -294,7 +287,7 @@ public final class ProcessExecutor
 			{
 				duration.stop();
 				final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-				adProcessDAO.addProcessStatistics(pi.getCtx(), pi.getAD_Process_ID(), pi.getAD_Client_ID(), duration.elapsed(TimeUnit.MILLISECONDS)); // never throws exception
+				adProcessDAO.addProcessStatistics(pi.getAdProcessId(), pi.getClientId(), duration.elapsed(TimeUnit.MILLISECONDS)); // never throws exception
 			}
 
 			// Unlock
@@ -325,19 +318,18 @@ public final class ProcessExecutor
 		}
 	}
 
-	private final void assertPermissions()
+	private void assertPermissions()
 	{
-		final IUserRolePermissions permissions = Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(
-				pi.getAD_Role_ID() //
-				, pi.getAD_User_ID() //
-				, pi.getAD_Client_ID() //
-				, Env.getDate(pi.getCtx()) //
-		);
+		final IUserRolePermissions permissions = Services.get(IUserRolePermissionsDAO.class).getUserRolePermissions(
+				pi.getRoleId(),
+				pi.getUserId(),
+				pi.getClientId(),
+				Env.getLocalDate(pi.getCtx()));
 
-		if (permissions.getAD_Role_ID() > 0)
+		if (!permissions.getRoleId().isSystem())
 		{
-			final int adProcessId = pi.getAD_Process_ID();
-			final Boolean access = permissions.getProcessAccess(adProcessId);
+			final AdProcessId adProcessId = pi.getAdProcessId();
+			final Boolean access = permissions.getProcessAccess(adProcessId.getRepoId());
 			if (access == null || !access.booleanValue())
 			{
 				throw new AdempiereException("Cannot access Process " + adProcessId + " with role: " + permissions.getName());
@@ -461,7 +453,7 @@ public final class ProcessExecutor
 		}
 	}
 
-	private final void startScriptProcess(final String ruleValue)
+	private void startScriptProcess(final String ruleValue)
 	{
 		final Properties ctx = pi.getCtx();
 		final I_AD_Rule rule = Services.get(IADRuleDAO.class).retrieveByValue(ctx, ruleValue);
@@ -487,7 +479,7 @@ public final class ProcessExecutor
 				.putArgument("AD_Client_ID", pi.getAD_Client_ID())
 				.putArgument("AD_Org_ID", pi.getAD_Org_ID())
 				.putArgument("AD_User_ID", pi.getAD_User_ID())
-				.putArgument("AD_Role_ID", pi.getAD_Role_ID())
+				.putArgument("AD_Role_ID", RoleId.toRepoId(pi.getRoleId()))
 				.putArgument("AD_PInstance_ID", PInstanceId.toRepoId(pi.getPinstanceId()));
 
 		final List<ProcessInfoParameter> parameters = pi.getParameter();
@@ -547,7 +539,7 @@ public final class ProcessExecutor
 		result.setSummary(msgBL.parseTranslation(ctx, msg)); // Parse Variables
 	}
 
-	private final void startJavaProcess() throws Exception
+	private void startJavaProcess() throws Exception
 	{
 		final ProcessInfo pi = this.pi;
 
@@ -570,7 +562,7 @@ public final class ProcessExecutor
 	 *
 	 * @return true if success
 	 */
-	private final void startDBProcess()
+	private void startDBProcess()
 	{
 		final String dbProcedureName = pi.getDBProcedureName().get();
 		logger.debug("startDBProcess: {} ({})", dbProcedureName, pi);
@@ -747,5 +739,4 @@ public final class ProcessExecutor
 			return this;
 		}
 	}
-
 }	// ProcessCtl

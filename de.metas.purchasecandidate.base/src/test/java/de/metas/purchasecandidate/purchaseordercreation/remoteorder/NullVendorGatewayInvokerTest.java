@@ -8,7 +8,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.junit.Test;
@@ -23,6 +22,7 @@ import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.OrderAndLineId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -67,7 +67,7 @@ public class NullVendorGatewayInvokerTest
 				.groupReference(DemandGroupReference.EMPTY)
 				.orgId(OrgId.ofRepoId(10))
 				.warehouseId(WarehouseId.ofRepoId(60))
-				.purchaseDatePromised(SystemTime.asLocalDateTime())
+				.purchaseDatePromised(SystemTime.asZonedDateTime())
 				.vendorId(BPartnerId.ofRepoId(30))
 				.productId(ProductId.ofRepoId(20))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(21))

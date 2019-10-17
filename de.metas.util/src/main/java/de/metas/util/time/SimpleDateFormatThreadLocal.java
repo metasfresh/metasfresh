@@ -60,7 +60,6 @@ public final class SimpleDateFormatThreadLocal implements Serializable
 	 */
 	public SimpleDateFormatThreadLocal(final String pattern)
 	{
-		super();
 		Check.assumeNotEmpty(pattern, "pattern not empty");
 		this.pattern = pattern;
 		

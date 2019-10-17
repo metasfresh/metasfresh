@@ -23,15 +23,22 @@ package de.metas.dunning.api.impl;
  */
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.dunning.DunningDocDocumentHandlerProvider;
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.api.IDunningProducer;
@@ -42,6 +49,12 @@ import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = {
+		StartupListener.class,
+		ShutdownListener.class,
+		DunningDocDocumentHandlerProvider.class
+})
 public class DefaultDunningProducerTest extends DunningTestBase
 {
 	private I_C_DunningLevel dunningLevel1;
@@ -59,7 +72,7 @@ public class DefaultDunningProducerTest extends DunningTestBase
 	@Test
 	public void test_OneDocumentForEachCandidate()
 	{
-		final Date candidateDunningDate = TimeUtil.getDay(2013, 01, 01);
+		final LocalDate candidateDunningDate = LocalDate.of(2013, Month.JANUARY, 1);
 
 		// NOTE: if we are using null execution DunningDate, the DunningDate from candidate shall be used
 		// final Date executionDunningDate = TimeUtil.getDay(2013, 02, 01);
@@ -81,7 +94,7 @@ public class DefaultDunningProducerTest extends DunningTestBase
 		assertDunningDocValid(context, candidate2);
 	}
 
-	private I_C_Dunning_Candidate createCandidate(final Date dunningDate, final I_C_DunningLevel dunningLevel)
+	private I_C_Dunning_Candidate createCandidate(final LocalDate dunningDate, final I_C_DunningLevel dunningLevel)
 	{
 		final I_C_Dunning_Candidate candidate = db.newInstance(I_C_Dunning_Candidate.class);
 		candidate.setAD_Org_ID(1);
@@ -96,7 +109,7 @@ public class DefaultDunningProducerTest extends DunningTestBase
 		candidate.setOpenAmt(new BigDecimal("100"));
 		candidate.setDunningInterestAmt(BigDecimal.ZERO);
 		candidate.setFeeAmt(BigDecimal.ZERO);
-		candidate.setC_Currency(currencyEUR);
+		candidate.setC_Currency_ID(currencyEUR.getRepoId());
 		//
 		candidate.setIsActive(true);
 		candidate.setProcessed(false);
@@ -159,17 +172,12 @@ public class DefaultDunningProducerTest extends DunningTestBase
 
 	private I_C_DunningDoc retrieveDunningDocForCandidate(final I_C_Dunning_Candidate candidate)
 	{
-		final I_C_DunningDoc_Line_Source lineSrc = db.getFirstOnly(I_C_DunningDoc_Line_Source.class, new IQueryFilter<I_C_DunningDoc_Line_Source>()
-		{
-			@Override
-			public boolean accept(I_C_DunningDoc_Line_Source pojo)
+		final I_C_DunningDoc_Line_Source lineSrc = db.getFirstOnly(I_C_DunningDoc_Line_Source.class, pojo -> {
+			if (pojo.getC_Dunning_Candidate_ID() != candidate.getC_Dunning_Candidate_ID())
 			{
-				if (pojo.getC_Dunning_Candidate_ID() != candidate.getC_Dunning_Candidate_ID())
-				{
-					return false;
-				}
-				return true;
+				return false;
 			}
+			return true;
 		});
 		if (lineSrc == null)
 		{

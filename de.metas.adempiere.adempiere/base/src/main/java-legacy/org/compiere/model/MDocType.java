@@ -47,17 +47,6 @@ public class MDocType extends X_C_DocType
 	private static final long serialVersionUID = -1406832071359080959L;
 
 	/**
-	 * Return the first Doc Type for this BaseType
-	 * @param DocBaseType
-	 * @return
-	 */
-	static public int getDocType(String DocBaseType)
-	{
-		MDocType[] doc = MDocType.getOfDocBaseType(Env.getCtx(), DocBaseType);
-		return doc.length > 0 ? doc[0].get_ID() : 0;
-	}
-
-	/**
 	 * 	Get Client Document Type with DocBaseType
 	 *	@param ctx context
 	 *	@param DocBaseType base document type
@@ -202,43 +191,6 @@ public class MDocType extends X_C_DocType
 	}	//	toString
 
 	/**
-	 * Is this a Quotation (Binding)
-	 *
-	 * @return true if Quotation
-	 * @deprecated please use {@link IDocTypeBL#isQuotation(I_C_DocType)} instead.
-	 */
-	@Deprecated
-	public boolean isQuotation()
-	{
-		return Services.get(IDocTypeBL.class).isQuotation(this);
-	}	// isQuotation
-
-	/**
-	 * Is this a Proposal (Not binding)
-	 *
-	 * @return true if proposal
-	 * @deprecated please use {@link IDocTypeBL#isProposal(I_C_DocType)} instead.
-	 */
-	@Deprecated
-	public boolean isProposal()
-	{
-		return Services.get(IDocTypeBL.class).isProposal(this);
-	}	// isProposal
-
-	/**
-	 * Is this a Proposal or Quotation
-	 *
-	 * @return true if proposal or quotation
-	 * @deprecated please use {@link IDocTypeBL#isOffer(I_C_DocType)} instead.
-	 */
-	@Deprecated
-	public boolean isOffer()
-	{
-		return Services.get(IDocTypeBL.class).isOffer(this);
-	}	// isOffer
-
-
-	/**
 	 * 	Get Print Name
 	 * 	@param AD_Language language
 	 *	@return print Name if available translated
@@ -246,7 +198,9 @@ public class MDocType extends X_C_DocType
 	public String getPrintName (String AD_Language)
 	{
 		if (AD_Language == null || AD_Language.length() == 0)
+		{
 			return super.getPrintName();
+		}
 		return get_Translation (COLUMNNAME_PrintName, AD_Language);
 	}	//	getPrintName
 

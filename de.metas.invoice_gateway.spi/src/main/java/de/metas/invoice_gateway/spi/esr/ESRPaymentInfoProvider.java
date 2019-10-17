@@ -1,7 +1,7 @@
 package de.metas.invoice_gateway.spi.esr;
 
 import de.metas.invoice_gateway.spi.esr.model.ESRPaymentInfo;
-import de.metas.invoice_gateway.spi.model.InvoiceToExport;
+import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 
 /*
  * #%L

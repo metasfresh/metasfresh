@@ -3,8 +3,6 @@ package de.metas.email;
 import java.net.URI;
 import java.util.Random;
 
-import org.adempiere.service.ClientId;
-import org.adempiere.user.UserId;
 import org.compiere.Adempiere;
 import org.junit.Assert;
 import org.junit.Before;
@@ -12,6 +10,9 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+
+import de.metas.JsonObjectMapperHolder;
+import de.metas.email.mailboxes.Mailbox;
 
 /*
  * #%L
@@ -51,7 +52,7 @@ public class EMailJsonTest
 	{
 		Adempiere.enableUnitTestMode(); // needed to display Mailbox passwords
 
-		jsonObjectMapper = new ObjectMapper();
+		jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 		jsonObjectMapper.enable(SerializationFeature.INDENT_OUTPUT); // pretty
 
 		random = new Random(System.currentTimeMillis());
@@ -78,14 +79,12 @@ public class EMailJsonTest
 	{
 		final Mailbox mailbox = Mailbox.builder()
 				.smtpHost("smtpHost")
-				.email("from@email.com")
+				.email(EMailAddress.ofString("from@email.com"))
 				.smtpAuthorization(true)
 				.username("username")
 				.password("password111")
-				.sendFromServer(true)
-				.adClientId(ClientId.ofRepoId(1234))
-				.adUserId(UserId.ofRepoId(5678))
-				.columnUserTo("columnUserTo")
+				.sendEmailsFromServer(true)
+				.userToColumnName("userToColumnName")
 				.build();
 		testJsonToStringEquals(mailbox);
 	}
@@ -95,26 +94,24 @@ public class EMailJsonTest
 	{
 		final Mailbox mailbox = Mailbox.builder()
 				.smtpHost("smtpHost")
-				.email("from@email.com")
+				.email(EMailAddress.ofString("from@email.com"))
 				.smtpAuthorization(true)
 				.username("username")
 				.password("password111")
-				.sendFromServer(true)
-				.adClientId(ClientId.ofRepoId(1234))
-				.adUserId(UserId.ofRepoId(5678))
-				.columnUserTo("columnUserTo")
+				.sendEmailsFromServer(true)
+				.userToColumnName("userToColumnName")
 				.build();
-		final String to = "to@email.com";
+		final EMailAddress to = EMailAddress.ofString("to@email.com");
 		final String subject = "test email subject";
 		final String message = "dummy text message";
 		final boolean html = false;
 		final EMail email = new EMail(mailbox, to, subject, message, html);
-		email.addTo("to2@email.com");
-		email.addCc("cc1@email.com");
-		email.addCc("cc2@email.com");
-		email.addBcc("bcc1@email.com");
-		email.addBcc("bcc2@email.com");
-		email.setReplyTo("reply-to@email.com");
+		email.addTo(EMailAddress.ofString("to2@email.com"));
+		email.addCc(EMailAddress.ofString("cc1@email.com"));
+		email.addCc(EMailAddress.ofString("cc2@email.com"));
+		email.addBcc(EMailAddress.ofString("bcc1@email.com"));
+		email.addBcc(EMailAddress.ofString("bcc2@email.com"));
+		email.setReplyTo(EMailAddress.ofString("reply-to@email.com"));
 		email.addAttachment("dummy.pdf", generateBytes(20));
 		email.addAttachment(new URI("http://dummy.com/report.pdf"));
 

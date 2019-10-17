@@ -27,6 +27,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -43,7 +45,6 @@ import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -59,14 +60,13 @@ import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.Lookup;
-import org.compiere.model.MRefList;
 import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;
@@ -93,20 +93,29 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
-import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
@@ -172,7 +181,10 @@ public class FlatrateBL implements IFlatrateBL
 
 		if (X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased.equals(dataEntry.getType()))
 		{
-			final List<I_C_Flatrate_DataEntry> invoicingEntries = flatrateDB.retrieveDataEntries(dataEntry.getC_Flatrate_Term(), X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased, dataEntry.getC_UOM());
+			final List<I_C_Flatrate_DataEntry> invoicingEntries = flatrateDB.retrieveDataEntries(
+					dataEntry.getC_Flatrate_Term(),
+					X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased,
+					UomId.ofRepoIdOrNull(dataEntry.getC_UOM_ID()));
 
 			for (final I_C_Flatrate_DataEntry invoicingEntry : invoicingEntries)
 			{
@@ -180,14 +192,18 @@ public class FlatrateBL implements IFlatrateBL
 				if (!X_C_Flatrate_DataEntry.DOCSTATUS_Completed.equals(invoicingEntry.getDocStatus()))
 				{
 					final Properties ctx = InterfaceWrapperHelper.getCtx(dataEntry);
-					final String trxName = InterfaceWrapperHelper.getTrxName(dataEntry);
+
+					final ITranslatableString competed = Services.get(IADReferenceDAO.class)
+							.retrieveListNameTranslatableString(
+									X_C_Flatrate_DataEntry.DOCSTATUS_AD_Reference_ID,
+									X_C_Flatrate_DataEntry.DOCSTATUS_Completed);
 
 					return msgBL.getMsg(ctx,
 							FlatrateBL.MSG_FLATRATEBL_INVOICING_ENTRY_NOT_CO_3P,
 							new Object[] {
 									invoicingEntry.getC_Period().getName(),
 									invoicingEntry.getC_UOM().getName(),
-									MRefList.get(ctx, X_C_Flatrate_DataEntry.DOCSTATUS_AD_Reference_ID, X_C_Flatrate_DataEntry.DOCSTATUS_Completed, trxName) });
+									competed.translate(Env.getAD_Language()) });
 				}
 			}
 
@@ -425,10 +441,10 @@ public class FlatrateBL implements IFlatrateBL
 		newCand.setC_Activity_ID(ActivityId.toRepoId(activityId));
 		newCand.setIsTaxIncluded(term.isTaxIncluded());
 
-		final int taxCategoryId = term.getC_TaxCategory_ID();
+		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
 		final boolean isSOTrx = true;
 
-		final int shipToLocationId = Util.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
+		final int shipToLocationId = CoalesceUtil.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
 
 		final int taxId = Services.get(ITaxBL.class).getTax(
 				ctx,
@@ -498,15 +514,16 @@ public class FlatrateBL implements IFlatrateBL
 		if (X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee.equals(fc.getType_Conditions())
 				|| X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable.equals(fc.getType_Conditions()))
 		{
-			final I_M_Product product = InterfaceWrapperHelper.create(dataEntry.getM_Product_DataEntry(), I_M_Product.class);
-			productIdForIc = product.getM_Product_ID();
-			Check.assume(productIdForIc > 0,
+			final ProductId productId = ProductId.ofRepoIdOrNull(dataEntry.getM_Product_DataEntry_ID());
+			Check.assume(productId != null,
 					dataEntry + " has no M_Product_DataEntry, despite " + fc + "has Type_Conditions=" + fc.getType_Conditions());
+			
+			productIdForIc = productId.getRepoId();
 
 			priceActual = FlatrateTermPricing.builder()
 					.term(term)
-					.termRelatedProduct(product)
-					.priceDate(dataEntry.getC_Period().getStartDate())
+					.termRelatedProductId(productId)
+					.priceDate(getPeriodStartDate(dataEntry))
 					.qty(qtyToInvoice)
 					.build().computeOrThrowEx().getPriceStd();
 		}
@@ -556,10 +573,10 @@ public class FlatrateBL implements IFlatrateBL
 		newCand.setC_Activity_ID(ActivityId.toRepoId(activityId));
 		newCand.setIsTaxIncluded(term.isTaxIncluded());
 
-		final int taxCategoryId = term.getC_TaxCategory_ID();
+		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
 		final boolean isSOTrx = true;
 
-		final int shipToLocationId = Util.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
+		final int shipToLocationId = CoalesceUtil.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
 		final int taxId = Services.get(ITaxBL.class).getTax(
 				ctx,
 				term,
@@ -578,6 +595,11 @@ public class FlatrateBL implements IFlatrateBL
 		return newCand;
 	}
 
+	private static LocalDate getPeriodStartDate(final I_C_Flatrate_DataEntry dataEntry)
+	{
+		return TimeUtil.asLocalDate(dataEntry.getC_Period().getStartDate());
+	}
+
 	/**
 	 * Returns the price for one unit, given a flatrate term, qty (to consider discounts) and data entry.
 	 *
@@ -593,21 +615,21 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		final I_C_Flatrate_Conditions flatrateCond = flatrateTerm.getC_Flatrate_Conditions();
 
-		final I_M_Product flatrateProduct;
+		final ProductId flatrateProductId;
 		if (X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased.equals(dataEntry.getType()))
 		{
-			flatrateProduct = flatrateCond.getM_Product_Flatrate();
+			flatrateProductId = ProductId.ofRepoId(flatrateCond.getM_Product_Flatrate_ID());
 		}
 		else
 		{
 			Check.assume(X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased.equals(dataEntry.getType()), "");
-			flatrateProduct = flatrateCond.getM_Product_Correction();
+			flatrateProductId = ProductId.ofRepoId(flatrateCond.getM_Product_Correction_ID());
 		}
 
 		return FlatrateTermPricing.builder()
 				.term(flatrateTerm)
-				.termRelatedProduct(flatrateProduct)
-				.priceDate(dataEntry.getC_Period().getStartDate())
+				.termRelatedProductId(flatrateProductId)
+				.priceDate(getPeriodStartDate(dataEntry))
 				.qty(qty)
 				.build().computeOrThrowEx().getPriceStd();
 	}
@@ -617,33 +639,33 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		final I_C_Flatrate_Conditions fc = term.getC_Flatrate_Conditions();
 
-		final Timestamp date = SystemTime.asTimestamp();
+		final LocalDate date = SystemTime.asLocalDate();
 
-		final I_M_Product flatrateProduct = fc.getM_Product_Flatrate();
+		final ProductId flatrateProduct = ProductId.ofRepoId(fc.getM_Product_Flatrate_ID());
 		validatePricingForProduct(term, flatrateProduct, date);
 
 		if (fc.isClosingWithActualSum() && X_C_Flatrate_Conditions.TYPE_FLATRATE_Corridor_Percent.equals(fc.getType_Flatrate()))
 		{
 			Check.assume(fc.getM_Product_Actual_ID() > 0, fc + " has no product to invoice the flatRateCorrectionAmt");
-			final I_M_Product actualProduct = fc.getM_Product_Actual();
+			final ProductId actualProduct = ProductId.ofRepoId(fc.getM_Product_Actual_ID());
 			validatePricingForProduct(term, actualProduct, date);
 		}
 		if (fc.isClosingWithCorrectionSum())
 		{
 			Check.assume(fc.getM_Product_Correction_ID() > 0, fc + " has no product to invoice the corrected qty_reported");
-			final I_M_Product correctionProduct = fc.getM_Product_Correction();
+			final ProductId correctionProduct = ProductId.ofRepoId(fc.getM_Product_Correction_ID());
 			validatePricingForProduct(term, correctionProduct, date);
 		}
 	}
 
 	private void validatePricingForProduct(
 			@NonNull final I_C_Flatrate_Term term,
-			@NonNull final I_M_Product product,
-			@NonNull final Timestamp date)
+			@NonNull final ProductId productId,
+			@NonNull final LocalDate date)
 	{
 		FlatrateTermPricing.builder()
 				.term(term)
-				.termRelatedProduct(product)
+				.termRelatedProductId(productId)
 				.priceDate(date)
 				.qty(BigDecimal.ONE)
 				.build()
@@ -667,7 +689,11 @@ public class FlatrateBL implements IFlatrateBL
 
 		List<I_C_Flatrate_DataEntry> result = new ArrayList<>();
 
-		final List<I_C_Flatrate_DataEntry> invoicingEntries = flatrateDB.retrieveInvoicingEntries(flatrateTerm, startDate, endDate, uom);
+		final List<I_C_Flatrate_DataEntry> invoicingEntries = flatrateDB.retrieveInvoicingEntries(
+				flatrateTerm, 
+				startDate, 
+				endDate, 
+				uom != null ? UomId.ofRepoId(uom.getC_UOM_ID()) : null);
 
 		final List<I_C_Period> periodsOfTerm = Services.get(ICalendarDAO.class).retrievePeriods(
 				ctx, flatrateTerm.getC_Flatrate_Conditions().getC_Flatrate_Transition().getC_Calendar_Contract(), startDate, endDate, trxName);
@@ -749,6 +775,7 @@ public class FlatrateBL implements IFlatrateBL
 			final String trxName)
 	{
 		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 		final List<I_M_Product> products = flatrateDB.retrieveHoldingFeeProducts(flatrateTerm.getC_Flatrate_Conditions());
 
@@ -762,7 +789,8 @@ public class FlatrateBL implements IFlatrateBL
 		{
 			for (final I_M_Product product : products)
 			{
-				final I_C_UOM uom = product.getC_UOM();
+				final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
+
 				final I_C_Flatrate_DataEntry existingEntry = flatrateDB.retrieveDataEntryOrNull(flatrateTerm, period, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased, uom);
 				if (existingEntry != null)
 				{
@@ -789,7 +817,7 @@ public class FlatrateBL implements IFlatrateBL
 						counter,
 						flatrateTerm.getStartDate(),
 						flatrateTerm.getEndDate() });
-		Loggables.get().withLogger(logger, Level.INFO).addLog(msg);
+		Loggables.withLogger(logger, Level.INFO).addLog(msg);
 	}
 
 	private void createEntriesForFlatFee(
@@ -839,7 +867,7 @@ public class FlatrateBL implements IFlatrateBL
 						flatrateTerm.getStartDate(),
 						flatrateTerm.getEndDate(),
 						columnLookup.getDisplay(flatrateTerm.getUOMType()) });
-		Loggables.get().withLogger(logger, Level.INFO).addLog(msg);
+		Loggables.withLogger(logger, Level.INFO).addLog(msg);
 	}
 
 	@Override
@@ -1089,9 +1117,6 @@ public class FlatrateBL implements IFlatrateBL
 
 	/**
 	 * Update <code>masterenddate</code> only for contract of which we know the entire period
-	 *
-	 * @param contracts
-	 * @param initialContract
 	 */
 	private void updateMasterEndDateIfNeeded(final List<I_C_Flatrate_Term> contracts, final I_C_Flatrate_Term initialContract)
 	{
@@ -1194,7 +1219,13 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		final FlatrateUserNotificationsProducer flatrateGeneratedEventBus = FlatrateUserNotificationsProducer.newInstance();
 
-		flatrateGeneratedEventBus.notifyUser(currentTerm, currentTerm.getAD_User_InCharge_ID(), msgValue);
+		final UserId recipientUserId = currentTerm.getAD_User_InCharge_ID() > 0 ? UserId.ofRepoId(currentTerm.getAD_User_InCharge_ID()) : null;
+		if (recipientUserId == null)
+		{
+			return;
+		}
+
+		flatrateGeneratedEventBus.notifyUser(currentTerm, recipientUserId, msgValue);
 	}
 
 	private I_C_Flatrate_Term createNewTerm(final @NonNull ContractExtendingRequest context)
@@ -1280,7 +1311,7 @@ public class FlatrateBL implements IFlatrateBL
 		{
 			if (nextTermStartDate.before(contract.getStartDate()) || nextTermStartDate.after(dayAfterEndDate))
 			{
-				Loggables.get().addLog(
+				Loggables.addLog(
 						"Ignore nextTermStartDate={} because if is not between currentTerm's StartDate={} and DayAfterEndDate={}. Instead, use dayAfterEndDate",
 						nextTermStartDate, contract.getStartDate(), dayAfterEndDate);
 				return dayAfterEndDate;
@@ -1554,7 +1585,7 @@ public class FlatrateBL implements IFlatrateBL
 			final I_C_Flatrate_Conditions conditions,
 			final Timestamp startDate,
 			final I_AD_User userInCharge,
-			final org.compiere.model.I_M_Product product,
+			final ProductAndCategoryId productAndCategoryId,
 			final boolean completeIt)
 	{
 		final Properties ctx = context.getCtx();
@@ -1578,7 +1609,7 @@ public class FlatrateBL implements IFlatrateBL
 			dontCreateTerm = true;
 		}
 
-		if (product == null)
+		if (productAndCategoryId == null)
 		{
 			if (!flatrateDAO.retrieveTerms(bPartner, conditions).isEmpty())
 			{
@@ -1591,8 +1622,8 @@ public class FlatrateBL implements IFlatrateBL
 			if (!flatrateDAO.retrieveTerms(ctx,
 					bPartner.getC_BPartner_ID(),
 					null,
-					product.getM_Product_Category_ID(),
-					product.getM_Product_ID(),
+					productAndCategoryId.getProductCategoryId().getRepoId(),
+					productAndCategoryId.getProductId().getRepoId(),
 					-1,
 					trxName).isEmpty())
 			{
@@ -1620,7 +1651,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		if (userInCharge == null)
 		{
-			newTerm.setAD_User_InCharge(bPartner.getSalesRep());
+			newTerm.setAD_User_InCharge_ID(bPartner.getSalesRep_ID());
 		}
 		else
 		{
@@ -1659,7 +1690,7 @@ public class FlatrateBL implements IFlatrateBL
 			final boolean hasOverlappingTerms = hasOverlappingTerms(term);
 			if (hasOverlappingTerms)
 			{
-				Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(
+				Loggables.addLog(Services.get(IMsgBL.class).getMsg(
 						Env.getCtx(),
 						MSG_HasOverlapping_Term,
 						new Object[] { term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue() }));
@@ -1729,26 +1760,26 @@ public class FlatrateBL implements IFlatrateBL
 		// services
 		final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
-		final org.compiere.model.I_M_Product newProduct = newTerm.getM_Product();
-		final org.compiere.model.I_M_Product product = term.getM_Product();
-		if (newProduct != null && product != null)
+		final ProductId newProductId = ProductId.ofRepoIdOrNull(newTerm.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoIdOrNull(term.getM_Product_ID());
+		if (newProductId != null && productId != null)
 		{
-			return newProduct.getM_Product_ID() == product.getM_Product_ID();
+			return ProductId.equals(newProductId, productId);
 		}
-		else if (newProduct != null)
+		else if (newProductId != null)
 		{
-
+			final ProductCategoryId newProductCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(newProductId);
 			final List<I_C_Flatrate_Matching> flatrateMatchings = flatrateDAO.retrieveFlatrateMatchings(term.getC_Flatrate_Conditions());
 
 			for (final I_C_Flatrate_Matching matching : flatrateMatchings)
 			{
-				if (newProduct.getM_Product_ID() == matching.getM_Product_ID())
+				if (newProductId.getRepoId() == matching.getM_Product_ID())
 				{
 					// there is one matching for the same product as the one from the new term
 					return true;
 				}
 
-				if (matching.getM_Product() == null && (newProduct.getM_Product_Category_ID() == matching.getM_Product_Category_Matching_ID()))
+				if (matching.getM_Product() == null && (newProductCategoryId.getRepoId() == matching.getM_Product_Category_Matching_ID()))
 				{
 					// there is one matching with the same category as the given product
 					return true;
@@ -1757,19 +1788,20 @@ public class FlatrateBL implements IFlatrateBL
 		}
 
 		// there is no product in the first term but there is a product set in the second term
-		else if (product != null)
+		else if (productId != null)
 		{
+			final ProductCategoryId productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
 			final List<I_C_Flatrate_Matching> flatrateMatchings = flatrateDAO.retrieveFlatrateMatchings(newTerm.getC_Flatrate_Conditions());
 
 			for (final I_C_Flatrate_Matching matching : flatrateMatchings)
 			{
-				if (product.getM_Product_ID() == matching.getM_Product_ID())
+				if (productId.getRepoId() == matching.getM_Product_ID())
 				{
 					// there is one matching for the same product as the one from the second term
 					return true;
 				}
 
-				if (matching.getM_Product() == null && (product.getM_Product_Category_ID() == matching.getM_Product_Category_Matching_ID()))
+				if (matching.getM_Product() == null && (productCategoryId.getRepoId() == matching.getM_Product_Category_Matching_ID()))
 				{
 
 					// there is one matching with the same category as the given product

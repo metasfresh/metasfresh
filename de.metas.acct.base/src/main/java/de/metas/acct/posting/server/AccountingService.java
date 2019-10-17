@@ -1,14 +1,13 @@
 package de.metas.acct.posting.server;
 
-import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
-import org.adempiere.acct.api.IPostingService;
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import de.metas.Profiles;
+import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
+import de.metas.acct.doc.AcctDocRegistry;
+import de.metas.acct.api.IPostingService;
 import de.metas.acct.posting.DocumentPostRequest;
 import de.metas.acct.posting.DocumentPostRequestHandler;
 import de.metas.logging.LogManager;
@@ -42,6 +41,10 @@ public class AccountingService implements DocumentPostRequestHandler
 {
 	private static final Logger logger = LogManager.getLogger(AccountingService.class);
 
+	public AccountingService(final AcctDocRegistry acctDocFactory)
+	{
+	}
+
 	@Override
 	public void handleRequest(final DocumentPostRequest request)
 	{
@@ -49,11 +52,11 @@ public class AccountingService implements DocumentPostRequestHandler
 
 		final IPostingService postingService = Services.get(IPostingService.class);
 		postingService.newPostingRequest()
-				.setContext(Env.getCtx(), ITrx.TRXNAME_None)
-				.setAD_Client_ID(request.getAdClientId())
+				.setClientId(request.getClientId())
 				.setDocument(request.getRecord().getAD_Table_ID(), request.getRecord().getRecord_ID())
 				.setForce(request.isForce())
 				.setFailOnError(true)
+				.onErrorNotifyUser(request.getOnErrorNotifyUserId())
 				.setPostWithoutServer() // we are on server side now, so don't try to contact the server again
 				.setPostImmediate(PostImmediate.Yes) // make sure we are posting it immediate
 				//

@@ -26,17 +26,23 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_Payment;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
+import de.metas.bpartner.BPartnerId;
+import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
 
 public interface IPaymentDAO extends ISingletonService
 {
+	I_C_Payment getById(PaymentId paymentId);
+
 	/**
 	 * @param payment
 	 * @return payment's available to allocate amount
@@ -93,4 +99,11 @@ public interface IPaymentDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_C_Payment> retrievePostedWithoutFactAcct(Properties ctx, Timestamp startTime);
+
+	Stream<PaymentId> streamPaymentIdsByBPartnerId(BPartnerId bpartnerId);
+
+	/**
+	 * Updates the discount and the payment based on DateTrx and the payment term policy.
+	 */
+	void updateDiscountAndPayment(I_C_Payment payment, int c_Invoice_ID, I_C_DocType c_DocType);
 }

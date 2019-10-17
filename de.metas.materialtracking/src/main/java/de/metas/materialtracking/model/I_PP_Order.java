@@ -2,8 +2,8 @@ package de.metas.materialtracking.model;
 
 import java.math.BigDecimal;
 
-import org.eevolution.model.X_PP_Cost_Collector;
-import org.eevolution.model.X_PP_Order_BOMLine;
+import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.CostCollectorType;
 
 import de.metas.invoicecandidate.model.IIsInvoiceCandidateAware;
 
@@ -38,31 +38,31 @@ public interface I_PP_Order extends
 	public enum Type
 	{
 		/**
-		 * A raw material issue. Related to {@link X_PP_Cost_Collector#COSTCOLLECTORTYPE_ComponentIssue}
+		 * A raw material issue. Related to {@link CostCollectorType#ComponentIssue}
 		 */
-		RawMaterial(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, X_PP_Order_BOMLine.COMPONENTTYPE_Component, 1),
+		RawMaterial(CostCollectorType.ComponentIssue, BOMComponentType.Component, 1),
 
 		/**
-		 * Related to {@link X_PP_Cost_Collector#COSTCOLLECTORTYPE_MaterialReceipt}
+		 * Related to {@link CostCollectorType#MaterialReceipt}
 		 */
-		MainProduct(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MaterialReceipt, null, 1),
+		MainProduct(CostCollectorType.MaterialReceipt, null, 1),
 
 		/**
-		 * Related to {@link X_PP_Cost_Collector#COSTCOLLECTORTYPE_MixVariance} with a <b>negative</b> quantity
+		 * Related to {@link CostCollectorType#MixVariance} with a <b>negative</b> quantity
 		 */
-		CoProduct(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product,-1),
+		CoProduct(CostCollectorType.MixVariance, BOMComponentType.CoProduct,-1),
 
 		/**
-		 * Related to {@link X_PP_Cost_Collector#COSTCOLLECTORTYPE_MixVariance} with a <b>negative</b> quantity
+		 * Related to {@link CostCollectorType#MixVariance} with a <b>negative</b> quantity
 		 */
-		ByProduct(X_PP_Cost_Collector.COSTCOLLECTORTYPE_MixVariance, X_PP_Order_BOMLine.COMPONENTTYPE_By_Product, -1);
+		ByProduct(CostCollectorType.MixVariance, BOMComponentType.ByProduct, -1);
 
-		private final String costCollectorType;
-		private final String bomLineComponentType;
-		private final int factor;
+		private CostCollectorType costCollectorType;
+		private BOMComponentType bomLineComponentType;
+		private int factor;
 
-		Type(final String costCollectorType,
-				final String bomLineComponentType,
+		Type(final CostCollectorType costCollectorType,
+				final BOMComponentType bomLineComponentType,
 				final int factor)
 		{
 			this.costCollectorType = costCollectorType;
@@ -70,7 +70,7 @@ public interface I_PP_Order extends
 			this.factor = factor;
 		}
 
-		public String getCostCollectorType()
+		public CostCollectorType getCostCollectorType()
 		{
 			return costCollectorType;
 		}
@@ -80,7 +80,7 @@ public interface I_PP_Order extends
 			return new BigDecimal(factor);
 		}
 
-		public String getBomLineComponentType()
+		public BOMComponentType getBomLineComponentType()
 		{
 			return bomLineComponentType;
 		}

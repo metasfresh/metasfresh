@@ -60,7 +60,7 @@
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="12" isBold="true"/>
+					<font size="12" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{amount}]]></textFieldExpression>
 			</textField>
@@ -69,7 +69,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="12" isBold="true"/>
+					<font size="12" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($F{total}) + " " + $F{cursymbol}]]></textFieldExpression>
 			</textField>

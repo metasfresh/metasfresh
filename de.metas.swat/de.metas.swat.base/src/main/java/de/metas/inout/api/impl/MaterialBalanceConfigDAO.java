@@ -1,29 +1,6 @@
 package de.metas.inout.api.impl;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.concurrent.CopyOnWriteArrayList;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -34,17 +11,36 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 
+import de.metas.calendar.CalendarId;
 import de.metas.inout.api.IMaterialBalanceConfigBL;
 import de.metas.inout.api.IMaterialBalanceConfigDAO;
+import de.metas.inout.api.MaterialBalanceConfig;
 import de.metas.inout.model.I_M_Material_Balance_Config;
 import de.metas.inout.spi.IMaterialBalanceConfigMatcher;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 public class MaterialBalanceConfigDAO implements IMaterialBalanceConfigDAO
 {
 
 	@Override
-	public I_M_Material_Balance_Config retrieveFitBalanceConfig(final I_M_InOutLine line)
+	public MaterialBalanceConfig retrieveFitBalanceConfig(final I_M_InOutLine line)
+	{
+		final IQueryBuilder<I_M_Material_Balance_Config> queryBuilder = createQuery(line);
+
+		final I_M_Material_Balance_Config configRecord = queryBuilder
+				.create()
+				.first();
+
+		if (configRecord == null)
+		{
+			return null;
+		}
+
+		return toMaterialBalanceConfig(configRecord);
+	}
+
+	private IQueryBuilder<I_M_Material_Balance_Config> createQuery(final I_M_InOutLine line)
 	{
 		// Services
 		final IMaterialBalanceConfigBL materialConfigBL = Services.get(IMaterialBalanceConfigBL.class);
@@ -57,7 +53,7 @@ public class MaterialBalanceConfigDAO implements IMaterialBalanceConfigDAO
 		final IQueryBuilder<I_M_Material_Balance_Config> queryBuilder = queryBL.createQueryBuilder(I_M_Material_Balance_Config.class, line);
 
 		// product id
-		final I_M_Product product = line.getM_Product();
+		final I_M_Product product = loadOutOfTrx(line.getM_Product_ID(), I_M_Product.class);
 		queryBuilder.addInArrayOrAllFilter(I_M_Material_Balance_Config.COLUMNNAME_M_Product_ID, product.getM_Product_ID(), null);
 
 		// product category
@@ -90,11 +86,8 @@ public class MaterialBalanceConfigDAO implements IMaterialBalanceConfigDAO
 		// only for flat rate
 		// make sure that is the config is only for flatrate, the inoutline is also for flatrate
 
-		final CopyOnWriteArrayList<IMaterialBalanceConfigMatcher> matchers = materialConfigBL.retrieveMatchers();
-
 		boolean isUseForFlatrate = true;
-
-		for (final IMaterialBalanceConfigMatcher matcher : matchers)
+		for (final IMaterialBalanceConfigMatcher matcher : materialConfigBL.retrieveMatchers())
 		{
 			if (!matcher.matches(line))
 			{
@@ -123,9 +116,15 @@ public class MaterialBalanceConfigDAO implements IMaterialBalanceConfigDAO
 				.addColumn(I_M_Material_Balance_Config.COLUMNNAME_IsVendor, Direction.Descending, Nulls.Last)
 				.addColumn(I_M_Material_Balance_Config.COLUMNNAME_IsCustomer, Direction.Descending, Nulls.Last)
 				.addColumn(I_M_Material_Balance_Config.COLUMNNAME_IsForFlatrate, Direction.Descending, Nulls.Last);
-		
-		return queryBuilder
-				.create()
-				.first();
+		return queryBuilder;
+	}
+
+	private static MaterialBalanceConfig toMaterialBalanceConfig(final I_M_Material_Balance_Config record)
+	{
+		return MaterialBalanceConfig.builder()
+				.repoId(record.getM_Material_Balance_Config_ID())
+				.calendarId(CalendarId.ofRepoId(record.getC_Calendar_ID()))
+				.useForFlatrate(StringUtils.toBoolean(record.getIsForFlatrate(), null))
+				.build();
 	}
 }

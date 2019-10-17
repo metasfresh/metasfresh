@@ -82,14 +82,9 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 		}
 
 		final I_C_Dunning_Candidate[] candidate = new I_C_Dunning_Candidate[] { null };
-		Services.get(ITrxManager.class).run(context.getTrxName(), context.getTrxRunnerConfig(), new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName)
-			{
-				final IDunningContext localContext = Services.get(IDunningBL.class).createDunningContext(context, localTrxName);
-				candidate[0] = createDunningCandidate0(localContext, sourceDoc);
-			}
+		Services.get(ITrxManager.class).run(context.getTrxName(), context.getTrxRunnerConfig(), (TrxRunnable)localTrxName -> {
+			final IDunningContext localContext = Services.get(IDunningBL.class).createDunningContext(context, localTrxName);
+			candidate[0] = createDunningCandidate0(localContext, sourceDoc);
 		});
 
 		return candidate[0];
@@ -169,7 +164,6 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 		final IDunningUtil util = Services.get(IDunningUtil.class);
 		final BigDecimal totalAmtSrc = sourceDoc.getTotalAmt();
 		final BigDecimal totalAmt = util.currencyConvert(
-				context.getCtx(),
 				totalAmtSrc, // Amount(src)
 				sourceDoc.getC_Currency_ID(), candidate.getC_Currency_ID(), // Currency From -> To
 				candidate.getDunningDate(), // Conversion Date
@@ -179,7 +173,6 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 
 		final BigDecimal openAmtSrc = sourceDoc.getOpenAmt();
 		final BigDecimal openAmt = util.currencyConvert(
-				context.getCtx(),
 				openAmtSrc, // Amount(src)
 				sourceDoc.getC_Currency_ID(), candidate.getC_Currency_ID(), // Currency From -> To
 				candidate.getDunningDate(), // Conversion Date
@@ -189,7 +182,6 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 
 		final BigDecimal interestAmtSrc = dunningLevel.getInterestPercent().divide(Env.ONEHUNDRED).multiply(sourceDoc.getOpenAmt());
 		final BigDecimal interestAmt = util.currencyConvert(
-				context.getCtx(),
 				interestAmtSrc, // Amount(src)
 				sourceDoc.getC_Currency_ID(), candidate.getC_Currency_ID(), // Currency From -> To
 				candidate.getDunningDate(), // Conversion Date

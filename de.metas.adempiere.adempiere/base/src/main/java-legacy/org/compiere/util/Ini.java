@@ -21,7 +21,6 @@ import java.awt.Point;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.util.Collection;
@@ -57,12 +56,13 @@ import de.metas.util.Check;
  *         <li>FR [ 1658127 ] Select charset encoding on import
  *         <li>FR [ 2406123 ] Ini.saveProperties fails if target directory does not exist
  */
-public final class Ini implements Serializable
+public final class Ini
 {
 	/**
-	 *
+	 * Make sure this happens first, because otherwise, during startup, {@link #getMetasfreshHome()} might be called before this field is initialized
+	 * Especially, this supplier needs to be initialized has to be before {@link #DEFAULT_LANGUAGE}.
 	 */
-	private static final long serialVersionUID = 3666529972922769528L;
+	private static final ExtendedMemorizingSupplier<String> METASFRESH_HOME_Supplier = ExtendedMemorizingSupplier.of(() -> findMetasfreshHome());
 
 	/** Property file name */
 	public static final String METASFRESH_PROPERTY_FILE = "metasfresh.properties";
@@ -272,7 +272,7 @@ public final class Ini implements Serializable
 	 */
 	public static void saveProperties()
 	{
-		if (Ini.isClient() && DB.isConnected())
+		if (Ini.isSwingClient() && DB.isConnected())
 		{
 			// Call ModelValidators beforeSaveProperties
 			ModelValidationEngine.get().beforeSaveProperties();
@@ -425,7 +425,7 @@ public final class Ini implements Serializable
 		{
 			result = defaultValue;
 		}
-		else if (!isClient())
+		else if (!isSwingClient())
 		{
 			result = s_prop.getProperty(key, SecureInterface.CLEARVALUE_START + defaultValue + SecureInterface.CLEARVALUE_END);
 		}
@@ -487,7 +487,7 @@ public final class Ini implements Serializable
 	public static void setProperty(String key, String value)
 	{
 		// If it's a client property and we are in server mode, update the context instead of Ini file
-		if (!Ini.isClient() && PROPERTIES_CLIENT.contains(key))
+		if (!Ini.isSwingClient() && PROPERTIES_CLIENT.contains(key))
 		{
 			Env.getCtx().setProperty(key, value);
 			return;
@@ -500,7 +500,7 @@ public final class Ini implements Serializable
 		{
 			s_prop.setProperty(key, value);
 		}
-		else if (!isClient())
+		else if (!isSwingClient())
 		{
 			s_prop.setProperty(key, SecureInterface.CLEARVALUE_START + value + SecureInterface.CLEARVALUE_END);
 		}
@@ -555,7 +555,7 @@ public final class Ini implements Serializable
 		}
 
 		// If it's a client property and we are in server mode, get value from context instead of Ini file
-		if (!Ini.isClient() && PROPERTIES_CLIENT.contains(key))
+		if (!Ini.isSwingClient() && PROPERTIES_CLIENT.contains(key))
 		{
 			final String value = Env.getCtx().getProperty(key);
 			return value == null ? "" : value;
@@ -636,8 +636,6 @@ public final class Ini implements Serializable
 	@Deprecated
 	public static final String ADEMPIERE_HOME = "ADEMPIERE_HOME";
 
-	private static final ExtendedMemorizingSupplier<String> METASFRESH_HOME_Supplier = ExtendedMemorizingSupplier.of(() -> findMetasfreshHome());
-
 	/**
 	 * Internal run mode marker. Note that the inital setting is equivalent to the old initialization of <code>s_client = true</code>
 	 *
@@ -655,7 +653,7 @@ public final class Ini implements Serializable
 	 *
 	 * @return <code>true</code> if running in the swing client.
 	 */
-	public static boolean isClient()
+	public static boolean isSwingClient()
 	{
 		return getRunMode() == RunMode.SWING_CLIENT;
 	}   // isClient
@@ -734,7 +732,7 @@ public final class Ini implements Serializable
 	}
 
 	/**
-	 * Finds {@link #METASFRESH_HOME}.
+	 * Finds {@link #METASFRESH_HOME}. No logging inside this method, because it's run before the logging is actually up an running.
 	 *
 	 * @return Metasfresh home directory; never returns <code>null</code>
 	 */
@@ -746,7 +744,7 @@ public final class Ini implements Serializable
 			if (!Check.isEmpty(env, true))
 			{
 				final String metasfreshHome = env.trim();
-				log.info("Found METASFRESH_HOME: {} (from system properties variable {})", metasfreshHome, METASFRESH_HOME);
+				// log.info("Found METASFRESH_HOME: {} (from system properties variable {})", metasfreshHome, METASFRESH_HOME);
 				return metasfreshHome;
 			}
 		}
@@ -757,7 +755,7 @@ public final class Ini implements Serializable
 			if (!Check.isEmpty(env, true))
 			{
 				final String metasfreshHome = env.trim();
-				log.info("Found METASFRESH_HOME: {} (from environment variable {})", metasfreshHome, METASFRESH_HOME);
+				// log.info("Found METASFRESH_HOME: {} (from environment variable {})", metasfreshHome, METASFRESH_HOME);
 				return metasfreshHome;
 			}
 		}
@@ -768,8 +766,8 @@ public final class Ini implements Serializable
 			if (!Check.isEmpty(env, true))
 			{
 				final String metasfreshHome = env.trim();
-				log.info("Found METASFRESH_HOME: {} (from system property variable {})", metasfreshHome, ADEMPIERE_HOME);
-				log.warn("Property variable {} is deprecated. Please use {} instead.", ADEMPIERE_HOME, METASFRESH_HOME);
+				// log.info("Found METASFRESH_HOME: {} (from system property variable {})", metasfreshHome, ADEMPIERE_HOME);
+				// log.warn("Property variable {} is deprecated. Please use {} instead.", ADEMPIERE_HOME, METASFRESH_HOME);
 				return metasfreshHome;
 			}
 		}
@@ -780,25 +778,25 @@ public final class Ini implements Serializable
 			if (!Check.isEmpty(env, true))
 			{
 				final String metasfreshHome = env.trim();
-				log.info("Found METASFRESH_HOME: {} (from environment variable {})", metasfreshHome, ADEMPIERE_HOME);
-				log.warn("System environment variable {} is deprecated. Please use {} instead.", ADEMPIERE_HOME, METASFRESH_HOME);
+				// log.info("Found METASFRESH_HOME: {} (from environment variable {})", metasfreshHome, ADEMPIERE_HOME);
+				// log.warn("System environment variable {} is deprecated. Please use {} instead.", ADEMPIERE_HOME, METASFRESH_HOME);
 				return metasfreshHome;
 			}
 		}
 
 		// If running in client mode, use "USERHOME/.metasfresh" folder.
-		if (isClient())
+		final String userHomeDir = System.getProperty("user.home");
+		if (!Check.isEmpty(userHomeDir) && new File(userHomeDir).exists())
 		{
-			final String userHomeDir = System.getProperty("user.home");
 			final String metasfreshHome = userHomeDir + File.separator + ".metasfresh";
-			log.info("Found METASFRESH_HOME: {} (fallback, based on user.home)", metasfreshHome);
+			// log.info("Found METASFRESH_HOME: {} (fallback, based on user.home)", metasfreshHome);
 			return metasfreshHome;
 		}
 
 		// Fallback
 		{
 			final String metasfreshHome = File.separator + "metasfresh";
-			log.info("Found METASFRESH_HOME: {} (fallback)", metasfreshHome);
+			// log.info("Found METASFRESH_HOME: {} (fallback)", metasfreshHome);
 			return metasfreshHome;
 		}
 	}
@@ -970,12 +968,12 @@ public final class Ini implements Serializable
 		return s_propertyFileName;
 	}
 
-//	public static class IsNotSwingClient implements Condition
-//	{
-//		@Override
-//		public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata)
-//		{
-//			return Ini.getRunMode() != RunMode.SWING_CLIENT;
-//		}
-//	}
+	// public static class IsNotSwingClient implements Condition
+	// {
+	// @Override
+	// public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata)
+	// {
+	// return Ini.getRunMode() != RunMode.SWING_CLIENT;
+	// }
+	// }
 }	// Ini

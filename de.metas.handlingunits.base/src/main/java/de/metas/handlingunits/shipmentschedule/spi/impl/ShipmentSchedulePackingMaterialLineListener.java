@@ -10,23 +10,23 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 
 /**
@@ -49,6 +49,8 @@ public class ShipmentSchedulePackingMaterialLineListener implements ModelWithout
 		final I_C_OrderLine ol = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
 		if (ol.isPackagingMaterial())
 		{
+			Loggables.addLog("ShipmentSchedulePackingMaterialLineListener - orderLine.isPackagingMaterial=true; return {}; orderLine={}",
+					OnMissingCandidate.I_VETO, ol);
 			return OnMissingCandidate.I_VETO; // don't create the shipment schedule
 		}
 		return OnMissingCandidate.I_DONT_CARE; // let the others decide

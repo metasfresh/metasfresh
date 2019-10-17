@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import org.adempiere.ad.migration.executor.IMigrationExecutor;
 import org.adempiere.ad.migration.executor.IMigrationExecutorContext;
@@ -44,8 +45,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
 import org.compiere.util.Trx;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -126,7 +127,7 @@ class MigrationExecutor implements IMigrationExecutor
 		}
 		else
 		{
-			migrationSteps = new ArrayList<I_AD_MigrationStep>(steps);
+			migrationSteps = new ArrayList<>(steps);
 		}
 	}
 
@@ -184,7 +185,7 @@ class MigrationExecutor implements IMigrationExecutor
 		}
 
 		this.action = action;
-		this.executionErrors = new ArrayList<Exception>();
+		this.executionErrors = new ArrayList<>();
 		final List<I_AD_MigrationStep> steps = getMigrationSteps();
 
 		log("Executing " + action + " on " + steps.size() + " steps", null, false);
@@ -227,7 +228,7 @@ class MigrationExecutor implements IMigrationExecutor
 
 		try
 		{
-			this.executionErrors = new ArrayList<Exception>();
+			this.executionErrors = new ArrayList<>();
 			for (final I_AD_MigrationStep step : steps)
 			{
 				if (!step.isActive())
@@ -238,7 +239,7 @@ class MigrationExecutor implements IMigrationExecutor
 
 				//
 				// Make sure our step is in the right transaction
-				if (!Util.equals(trxName, InterfaceWrapperHelper.getTrxName(step)))
+				if (!Objects.equals(trxName, InterfaceWrapperHelper.getTrxName(step)))
 				{
 					InterfaceWrapperHelper.refresh(step, trxName);
 				}
@@ -362,7 +363,7 @@ class MigrationExecutor implements IMigrationExecutor
 		}
 		else
 		{
-			return new ArrayList<Exception>(executionErrors);
+			return new ArrayList<>(executionErrors);
 		}
 	}
 

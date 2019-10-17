@@ -14,7 +14,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1855769943L;
+	private static final long serialVersionUID = -1004078185L;
 
     /** Standard Constructor */
     public X_C_BPartner_Location (Properties ctx, int C_BPartner_Location_ID, String trxName)
@@ -31,6 +31,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 			setIsRemitTo (false); // N
 			setIsShipTo (true); // Y
 			setName (null); // .
+			setVisitorsAddress (false); // N
         } */
     }
 
@@ -204,6 +205,44 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
+	/** Set eMail.
+		@param EMail 
+		EMail-Adresse
+	  */
+	@Override
+	public void setEMail (java.lang.String EMail)
+	{
+		set_Value (COLUMNNAME_EMail, EMail);
+	}
+
+	/** Get eMail.
+		@return EMail-Adresse
+	  */
+	@Override
+	public java.lang.String getEMail () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EMail);
+	}
+
+	/** Set Alternative eMail.
+		@param EMail2 
+		EMail-Adresse
+	  */
+	@Override
+	public void setEMail2 (java.lang.String EMail2)
+	{
+		set_Value (COLUMNNAME_EMail2, EMail2);
+	}
+
+	/** Get Alternative eMail.
+		@return EMail-Adresse
+	  */
+	@Override
+	public java.lang.String getEMail2 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EMail2);
+	}
+
 	/** Set External ID.
 		@param ExternalId External ID	  */
 	@Override
@@ -237,6 +276,25 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public java.lang.String getFax () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Fax);
+	}
+
+	/** Set Alternative Fax.
+		@param Fax2 
+		Faxnummer
+	  */
+	@Override
+	public void setFax2 (java.lang.String Fax2)
+	{
+		set_Value (COLUMNNAME_Fax2, Fax2);
+	}
+
+	/** Get Alternative Fax.
+		@return Faxnummer
+	  */
+	@Override
+	public java.lang.String getFax2 () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Fax2);
 	}
 
 	/** Set GLN.
@@ -546,9 +604,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -556,8 +612,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{
@@ -600,5 +655,28 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public java.lang.String getPhone2 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Phone2);
+	}
+
+	/** Set Visitors Address.
+		@param VisitorsAddress Visitors Address	  */
+	@Override
+	public void setVisitorsAddress (boolean VisitorsAddress)
+	{
+		set_Value (COLUMNNAME_VisitorsAddress, Boolean.valueOf(VisitorsAddress));
+	}
+
+	/** Get Visitors Address.
+		@return Visitors Address	  */
+	@Override
+	public boolean isVisitorsAddress () 
+	{
+		Object oo = get_Value(COLUMNNAME_VisitorsAddress);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 }

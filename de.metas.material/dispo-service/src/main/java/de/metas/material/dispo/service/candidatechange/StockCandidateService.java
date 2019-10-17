@@ -4,22 +4,30 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 
+import org.compiere.util.TimeUtil;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
+import de.metas.material.dispo.commons.repository.DateAndSeqNo;
+import de.metas.material.dispo.commons.repository.DateAndSeqNo.Operator;
+import de.metas.material.dispo.commons.repository.atp.BPartnerClassifier;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.CustomerIdOperator;
-import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.MaterialDescriptorQueryBuilder;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.util.Check;
 import lombok.NonNull;
 
@@ -46,17 +54,18 @@ import lombok.NonNull;
  */
 
 @Service
+@Profile(Profiles.PROFILE_MaterialDispo)
 public class StockCandidateService
 {
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 
 	public StockCandidateService(
-			@NonNull final CandidateRepositoryRetrieval candidateRepository,
-			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands)
+			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
+			@NonNull final CandidateRepositoryWriteService candidateRepositoryWriteService)
 	{
-		this.candidateRepositoryRetrieval = candidateRepository;
-		this.candidateRepositoryWriteService = candidateRepositoryCommands;
+		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
+		this.candidateRepositoryWriteService = candidateRepositoryWriteService;
 	}
 
 	/**
@@ -74,81 +83,83 @@ public class StockCandidateService
 	 *         <li>groupId of the next younger-candidate (or null if there is none)
 	 *         </ul>
 	 */
-	public Candidate createStockCandidate(@NonNull final Candidate candidate)
+	public SaveResult createStockCandidate(@NonNull final Candidate candidate)
 	{
-		final Candidate previousStockOrNull;
-		{
-			final CandidatesQuery previousStockQuery = createStockQueryBuilderWithDateOperator(
-					candidate,
-					DateOperator.BEFORE_OR_AT);
-			previousStockOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(previousStockQuery);
-		}
+		final CandidatesQuery previousStockQuery = createStockQueryUntilDate(candidate);
+		final Candidate previousStockOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(previousStockQuery);
 
 		final BigDecimal newQty;
+		final BigDecimal previousQty;
 		if (previousStockOrNull == null)
 		{
 			newQty = candidate.getQuantity();
-		}
-		else if (previousStockOrNull.getDate().before(candidate.getDate())
-				|| candidate.getId().isNull() // our candidate is new
-				|| previousStockOrNull.getSeqNo() < candidate.getSeqNo())
-		{
-			// since we do have an *earlier* stock candidate, we base our new candidate's qty on the former candidate
-			final BigDecimal previousQuantity = previousStockOrNull.getQuantity();
-			newQty = previousQuantity.add(candidate.getQuantity());
+			previousQty = null;
 		}
 		else
 		{
-			// previousStockOrNull has the same date as the given "candidate", but a bigger SeqNo.
-			// Therefore we consider it "after"
-			newQty = candidate.getQuantity();
+			previousQty = previousStockOrNull.getQuantity();
+			newQty = previousQty.add(candidate.getQuantity());
 		}
 
 		final MaterialDescriptor materialDescriptor = candidate
 				.getMaterialDescriptor()
 				.withQuantity(newQty);
 
-		final Integer groupId = previousStockOrNull != null
+		final MaterialDispoGroupId groupId = previousStockOrNull != null
 				? previousStockOrNull.getGroupId()
-				: 0;
+				: null;
 
-		return Candidate.builder()
+		final Candidate stockCandidate = Candidate.builder()
 				.type(CandidateType.STOCK)
-				.orgId(candidate.getOrgId())
-				.clientId(candidate.getClientId())
+				.clientAndOrgId(candidate.getClientAndOrgId())
 				.materialDescriptor(materialDescriptor)
 				.parentId(candidate.getParentId())
 				.seqNo(candidate.getSeqNo())
 				.groupId(groupId)
 				.build();
+
+		return SaveResult.builder()
+				.candidate(stockCandidate)
+				.previousQty(previousQty)
+				.build();
 	}
 
 	/**
-	 * Updates the qty of the given candidate.
+	 * Updates the qty of the given candidate which is identified only by its id.
 	 * Differs from {@link #addOrUpdateOverwriteStoredSeqNo(Candidate)} in that
-	 * only the ID of the given {@code candidateToUpdate} is used, and if there is no existing persisted record, then an exception is thrown.
+	 * if there is no existing persisted record, none is created but an exception is thrown.
 	 * Also it just updates the underlying persisted record of the given {@code candidateToUpdate} and nothing else.
 	 *
 	 *
 	 * @param candidateToUpdate the candidate to update. Needs to have {@link Candidate#getId()} > 0.
 	 *
 	 * @return a copy of the given {@code candidateToUpdate} with the quantity being a delta, similar to the return value of {@link #addOrUpdate(Candidate, boolean)}.
+	 *         TODO update lying javadocs
 	 */
-	public Candidate updateQty(@NonNull final Candidate candidateToUpdate)
+	public SaveResult updateQtyAndDate(@NonNull final Candidate candidateToUpdate)
 	{
 		Check.errorIf(candidateToUpdate.getId().isNull(),
 				"Parameter 'candidateToUpdate' needs to have a not-null Id; candidateToUpdate=%s",
 				candidateToUpdate);
 
 		final I_MD_Candidate candidateRecord = load(candidateToUpdate.getId().getRepoId(), I_MD_Candidate.class);
-		final BigDecimal oldQty = candidateRecord.getQty();
+		final BigDecimal previousQty = candidateRecord.getQty();
+		final Instant previousDate = TimeUtil.asInstant(candidateRecord.getDateProjected());
+		final int previousSeqNo = candidateRecord.getSeqNo();
 
 		candidateRecord.setQty(candidateToUpdate.getQuantity());
+		candidateRecord.setDateProjected(TimeUtil.asTimestamp(candidateToUpdate.getDate()));
 		save(candidateRecord);
 
-		final BigDecimal qtyDelta = candidateToUpdate.getQuantity().subtract(oldQty);
-
-		return candidateToUpdate.withQuantity(qtyDelta);
+		return SaveResult.builder()
+				.candidate(candidateToUpdate)
+				.previousTime(DateAndSeqNo
+						.builder()
+						.date(previousDate)
+						.seqNo(previousSeqNo)
+						.build())
+				.previousQty(previousQty)
+				.build();
 	}
 
 	/**
@@ -161,38 +172,74 @@ public class StockCandidateService
 	 * @param delta the quantity (positive or negative) to add to every stock record that we matched
 	 */
 	public void applyDeltaToMatchingLaterStockCandidates(
-			@NonNull final Candidate stockWithDelta)
+			@NonNull final SaveResult stockWithDelta)
 	{
-		final CandidatesQuery query = createStockQueryBuilderWithDateOperator(
-				stockWithDelta,
-				DateOperator.AT_OR_AFTER);
+		final CandidatesQuery query = createStockQueryBetweenDates(stockWithDelta);
 
-		final List<Candidate> candidatesToUpdate = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
-		for (final Candidate candidate : candidatesToUpdate)
+		final BigDecimal deltaUntilRangeEnd;
+		final BigDecimal deltaAfterRangeEnd;
+		if (stockWithDelta.isDateMoved())
 		{
-			final boolean sameDateButLowerSeqNo = //
-					candidate.getDate().equals(stockWithDelta.getDate())
-							&& candidate.getSeqNo() <= stockWithDelta.getSeqNo();
-			if (sameDateButLowerSeqNo)
+			if (stockWithDelta.isDateMovedForwards())
 			{
-				continue;
+				deltaUntilRangeEnd = stockWithDelta.getCandidate().getQuantity().negate();
+				deltaAfterRangeEnd = stockWithDelta.getQtyDelta();
 			}
+			else
+			{
+				deltaUntilRangeEnd = stockWithDelta.getCandidate().getQuantity();
+				deltaAfterRangeEnd = stockWithDelta.getQtyDelta();
+			}
+		}
+		else
+		{
+			deltaUntilRangeEnd = stockWithDelta.getQtyDelta();
+			deltaAfterRangeEnd = null;
+		}
 
-			final BigDecimal delta = stockWithDelta.getQuantity();
-			final BigDecimal newQty = candidate.getQuantity().add(delta);
+		final List<Candidate> candidatesToUpdateWithinRange = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query);
+		for (final Candidate candidate : candidatesToUpdateWithinRange)
+		{
+			final BigDecimal newQty = candidate.getQuantity().add(deltaUntilRangeEnd);
 
 			candidateRepositoryWriteService.updateCandidateById(candidate
 					.withQuantity(newQty)
-					.withGroupId(stockWithDelta.getGroupId()));
+					.withGroupId(stockWithDelta.getCandidate().getGroupId()));
+		}
+		if (deltaAfterRangeEnd == null || deltaAfterRangeEnd.signum() == 0)
+		{
+			return; // we are done
+		}
+
+		final MaterialDescriptorQuery materialDescriptorQuery = query.getMaterialDescriptorQuery();
+		final MaterialDescriptorQuery materialDescriptToQueryAfterRange = materialDescriptorQuery.toBuilder()
+				.timeRangeStart(materialDescriptorQuery.getTimeRangeEnd())
+				.timeRangeEnd(null)
+				.build();
+		final CandidatesQuery queryAfterRange = query.withMaterialDescriptorQuery(materialDescriptToQueryAfterRange);
+		final List<Candidate> candidatesToUpdateAfterRange = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(queryAfterRange);
+		for (final Candidate candidate : candidatesToUpdateAfterRange)
+		{
+			final BigDecimal newQty = candidate.getQuantity().add(deltaAfterRangeEnd);
+
+			candidateRepositoryWriteService.updateCandidateById(candidate
+					.withQuantity(newQty)
+					.withGroupId(stockWithDelta.getCandidate().getGroupId()));
 		}
 	}
 
-	private CandidatesQuery createStockQueryBuilderWithDateOperator(
-			@NonNull final Candidate candidate,
-			@NonNull final DateOperator dateOperator)
+	private CandidatesQuery createStockQueryUntilDate(
+			@NonNull final Candidate candidate)
 	{
 		final MaterialDescriptorQuery //
-		materialDescriptorQuery = createMaterialDescriptorQuery(candidate.getMaterialDescriptor(), dateOperator);
+		materialDescriptorQuery = createMaterialDescriptorQueryBuilder(candidate.getMaterialDescriptor())
+				.timeRangeEnd(DateAndSeqNo
+						.builder()
+						.date(candidate.getDate())
+						.seqNo(candidate.getSeqNo())
+						.operator(Operator.EXCLUSIVE)
+						.build())
+				.build();
 
 		return CandidatesQuery.builder()
 				.materialDescriptorQuery(materialDescriptorQuery)
@@ -202,32 +249,65 @@ public class StockCandidateService
 				.build();
 	}
 
-	private MaterialDescriptorQuery createMaterialDescriptorQuery(
-			@NonNull final MaterialDescriptor materialDescriptor,
-			@NonNull final DateOperator dateoperator)
+	private CandidatesQuery createStockQueryBetweenDates(
+			@NonNull final SaveResult saveResult)
+	{
+		final DateAndSeqNo rangeStart = DateAndSeqNo
+				.ofCandidate(saveResult.getCandidate())
+				.min(saveResult.getPreviousTime())
+				.withOperator(Operator.EXCLUSIVE);
+
+		final DateAndSeqNo rangeEnd;
+		if (!saveResult.isDateMoved())
+		{
+			rangeEnd = null; // if the stock is not moving on the time axis, we look at all records, from rangeStart onwards
+		}
+		else
+		{
+			rangeEnd = DateAndSeqNo
+					.ofCandidate(saveResult.getCandidate())
+					.max(saveResult.getPreviousTime())
+
+					// if we moved a record forward in time (i.e. increased its date), then this is the time where the record sits now;
+					// we don't want to apply the delta to it, because it already has the value it shall have
+					.withOperator(Operator.EXCLUSIVE);
+		}
+
+		final MaterialDescriptorQuery //
+		materialDescriptorQuery = createMaterialDescriptorQueryBuilder(saveResult.getCandidate().getMaterialDescriptor())
+				.timeRangeStart(rangeStart)
+				.timeRangeEnd(rangeEnd)
+				.build();
+
+		return CandidatesQuery.builder()
+				.materialDescriptorQuery(materialDescriptorQuery)
+				.type(CandidateType.STOCK)
+				.matchExactStorageAttributesKey(true)
+				.parentId(CandidateId.UNSPECIFIED)
+				.build();
+	}
+
+	private MaterialDescriptorQueryBuilder createMaterialDescriptorQueryBuilder(
+			@NonNull final MaterialDescriptor materialDescriptor)
 	{
 		final MaterialDescriptorQueryBuilder builder = MaterialDescriptorQuery
 				.builder()
 				.customerIdOperator(CustomerIdOperator.GIVEN_ID_OR_NULL); // want the latest, only excluding records that have a *different* customerId
 
-		if (materialDescriptor.getCustomerId() > 0)
+		if (materialDescriptor.getCustomerId() != null)
 		{
 			// do include the bpartner in the query, because e.g. an increase for a given bpartner does a raised ATP just for that partner, and not for everyone
-			builder.customerId(materialDescriptor.getCustomerId());
+			builder.customer(BPartnerClassifier.specific(materialDescriptor.getCustomerId()));
 		}
 		else
 		{
 			// ..on the other hand, if materialDescriptor has *no* bpartner, then the respective change in qty is related to everybody
-			builder.customerId(null);
+			builder.customer(BPartnerClassifier.any());
 		}
 
-		final MaterialDescriptorQuery materialDescriptorQuery = builder
-				.date(materialDescriptor.getDate())
-				.dateOperator(dateoperator)
+		return builder
 				.productId(materialDescriptor.getProductId())
 				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
-				.warehouseId(materialDescriptor.getWarehouseId())
-				.build();
-		return materialDescriptorQuery;
+				.warehouseId(materialDescriptor.getWarehouseId());
 	}
 }

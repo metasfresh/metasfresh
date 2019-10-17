@@ -1,13 +1,11 @@
 package de.metas.payment.esr.api.impl;
 
-import lombok.NonNull;
-
-import org.compiere.util.Util;
-
 import de.metas.payment.esr.api.IBPBankAccountBL;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_C_Bank;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 public class BPBankAccountBL implements IBPBankAccountBL
 {
@@ -44,7 +42,7 @@ public class BPBankAccountBL implements IBPBankAccountBL
 
 		final StringBuilder sb = new StringBuilder();
 		sb.append(renderenNoComponents[0]);
-		sb.append(Util.lpadZero(renderenNoComponents[1], 6, "middle section of " + renderedNo));
+		sb.append(StringUtils.lpadZero(renderenNoComponents[1], 6, "middle section of " + renderedNo));
 		sb.append(renderenNoComponents[2]);
 
 		return sb.toString();

@@ -38,16 +38,17 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 public class WorkPackageBL implements IWorkPackageBL
 {
 	@Override
-	public ILoggable createLoggable(final I_C_Queue_WorkPackage workPackage)
+	public ILoggable createLoggable(@NonNull final I_C_Queue_WorkPackage workPackage)
 	{
 		return new ILoggable()
 		{
 			@Override
-			public void addLog(final String msg, final Object... msgParamters)
+			public ILoggable addLog(final String msg, final Object... msgParamters)
 			{
 				// NOTE: always create the logs out of transaction because we want them to be persisted even if the workpackage processing fails
 				final Properties ctx = InterfaceWrapperHelper.getCtx(workPackage);
@@ -56,15 +57,15 @@ public class WorkPackageBL implements IWorkPackageBL
 				logRecord.setC_Queue_WorkPackage(workPackage);
 				logRecord.setMsgText(StringUtils.formatMessage(msg, msgParamters));
 				InterfaceWrapperHelper.save(logRecord);
+				
+				return this;
 			}
 		};
 	}
 
 	@Override
-	public I_AD_User getUserInChargeOrNull(final I_C_Queue_WorkPackage workPackage)
+	public I_AD_User getUserInChargeOrNull(@NonNull final I_C_Queue_WorkPackage workPackage)
 	{
-		Check.assumeNotNull(workPackage, "Param 'workPackage' is not null");
-
 		if (workPackage.getAD_User_InCharge_ID() > 0 && workPackage.getAD_User_InCharge() != null)
 		{
 			return workPackage.getAD_User_InCharge();

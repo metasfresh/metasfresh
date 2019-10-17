@@ -1,5 +1,7 @@
 package org.eevolution.mrp.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -32,14 +34,10 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.EqualsQueryFilter;
-import org.adempiere.ad.dao.impl.NotEqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
-import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
@@ -48,7 +46,6 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.api.IPPOrderDAO;
-import org.eevolution.api.IResourceDAO;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alloc;
 import org.eevolution.model.I_PP_MRP_Alternative;
@@ -62,8 +59,11 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IMRPSegment;
+import de.metas.material.planning.IResourceDAO;
+import de.metas.organization.IOrgDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class MRPDAO implements IMRPDAO
 {
@@ -188,26 +188,10 @@ public class MRPDAO implements IMRPDAO
 	public boolean hasProductRecords(final I_M_Product product)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_MRP.class, product)
-				.filter(new EqualsQueryFilter<I_PP_MRP>(I_PP_MRP.COLUMNNAME_M_Product_ID, product.getM_Product_ID()))
-				.filter(new NotEqualsQueryFilter<I_PP_MRP>(I_PP_MRP.COLUMNNAME_Qty, BigDecimal.ZERO))
+				.addEqualsFilter(I_PP_MRP.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+				.addNotEqualsFilter(I_PP_MRP.COLUMNNAME_Qty, BigDecimal.ZERO)
 				.create()
 				.match();
-	}
-
-	@Override
-	public int getMaxLowLevel(final IContextAware context)
-	{
-		final IQueryBuilder<I_M_Product> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class, context)
-				.addOnlyContextClient()
-				.addNotEqualsFilter(I_M_Product.COLUMNNAME_LowLevel, null); // LowLevel is not null
-
-		final BigDecimal lowLevelMaxBD = queryBuilder.create()
-				.aggregate(I_M_Product.COLUMNNAME_LowLevel, Aggregate.MAX, BigDecimal.class);
-
-		final int lowLevelMax = lowLevelMaxBD == null ? -1 : lowLevelMaxBD.intValueExact();
-
-		// TODO: Question: not sure why we return LowLevelMax+1, but we keep old logic for now
-		return lowLevelMax + 1;
 	}
 
 	/**
@@ -228,7 +212,7 @@ public class MRPDAO implements IMRPDAO
 		final BigDecimal qtyOnHand = DB.getSQLValueBDEx(trxName, sql, new Object[] { M_Warehouse_ID, adClientId, M_Product_ID });
 		if (qtyOnHand == null)
 		{
-			return Env.ZERO;
+			return BigDecimal.ZERO;
 		}
 		return qtyOnHand;
 	}
@@ -398,7 +382,7 @@ public class MRPDAO implements IMRPDAO
 			I_AD_Org adOrg = null;
 			if (adOrgId != null && adOrgId > 0)
 			{
-				adOrg = orgDAO.retrieveOrg(ctx, adOrgId);
+				adOrg = orgDAO.getById(adOrgId);
 			}
 
 			final Integer warehouseId = (Integer)mrpSegmentValues.get(I_PP_MRP.COLUMNNAME_M_Warehouse_ID);
@@ -459,4 +443,15 @@ public class MRPDAO implements IMRPDAO
 				.addEqualsFilter(I_PP_MRP_Alloc.COLUMN_PP_MRP_Demand_ID, mrpDemand.getPP_MRP_ID());
 	}
 
+	@Override
+	public void save(@NonNull final I_PP_MRP mrpRecord)
+	{
+		saveRecord(mrpRecord);
+	}
+	
+	@Override
+	public void save(@NonNull final I_PP_MRP_Alloc mrpAllocRecord)
+	{
+		saveRecord(mrpAllocRecord);
+	}
 }

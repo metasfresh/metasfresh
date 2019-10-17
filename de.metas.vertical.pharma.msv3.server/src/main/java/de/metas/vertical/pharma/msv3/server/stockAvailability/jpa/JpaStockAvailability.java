@@ -1,7 +1,5 @@
 package de.metas.vertical.pharma.msv3.server.stockAvailability.jpa;
 
-import java.util.UUID;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Index;
@@ -24,12 +22,12 @@ import lombok.ToString;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,19 +36,26 @@ import lombok.ToString;
 
 @Entity
 @Table(name = "msv3_stock_availability", //
-		uniqueConstraints = @UniqueConstraint(name = "stock_availability_uq", columnNames = { "pzn" }), //
-		indexes = @Index(name = "stock_availability_sync_token", columnList = "sync_token") //
-)
+		uniqueConstraints = @UniqueConstraint(name = "stock_availability_mf_pzn_uq", columnNames = { "mf_pzn" }), //
+		indexes = {
+				@Index(name = "stock_availability_sync_token", columnList = "mf_sync_token", unique = false),
+				@Index(name = "mf_event_version", columnList = "mf_event_version", unique = false) // used when deleting all records with a lower event version
+		})
 @Getter
 @Setter
 @ToString
 public class JpaStockAvailability extends AbstractEntity
 {
 	/** Pharma-Zentral-Nummer */
-	private long pzn;
-	private int qty;
+	@Column(name = "mf_pzn")
+	private long mfPzn;
 
-	@Column(name = "sync_token")
+	private int mfQty;
+
+	@Column(name = "mf_sync_token", nullable = false)
 	@NotNull
-	private String syncToken = UUID.randomUUID().toString();
+	private String mfSyncToken;
+
+	@Column(name = "mf_event_version")
+	private int mfEventVersion;
 }

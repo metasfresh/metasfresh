@@ -13,11 +13,11 @@ package de.metas.migration.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -34,6 +34,11 @@ import de.metas.migration.sql.SQLDatabaseDriverFactory;
 
 public class SQLDatabase implements IDatabase
 {
+	public static SQLDatabase cast(final IDatabase database)
+	{
+		return (SQLDatabase)database;
+	}
+
 	private final String dbType;
 	private final String dbHostname;
 	private final String dbPort;
@@ -47,7 +52,6 @@ public class SQLDatabase implements IDatabase
 
 	public SQLDatabase(final String dbType, final String dbHostname, final String dbPort, final String dbName, final String dbUser, final String dbPassword)
 	{
-		super();
 		this.dbType = dbType;
 		this.dbHostname = dbHostname;
 		this.dbPort = dbPort;

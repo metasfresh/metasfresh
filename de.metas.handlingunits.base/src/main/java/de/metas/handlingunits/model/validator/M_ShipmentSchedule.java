@@ -23,7 +23,6 @@ package de.metas.handlingunits.model.validator;
  */
 
 import java.math.BigDecimal;
-import java.util.Collections;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -39,7 +38,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -177,12 +176,10 @@ public class M_ShipmentSchedule
 	})
 	public void invalidate(final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		// 08746: make sure that at any rate, the schedule itself is invalidated, even if it has delivery rule "force"
-		Services.get(IShipmentSchedulePA.class).invalidate(
-				Collections.singletonList(
-						InterfaceWrapperHelper.create(shipmentSchedule, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class)),
-				InterfaceWrapperHelper.getTrxName(shipmentSchedule));
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
 
-		Services.get(IShipmentScheduleInvalidateBL.class).invalidateSegmentForShipmentSchedule(shipmentSchedule);
+		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
+		invalidSchedulesService.invalidateShipmentSchedule(shipmentScheduleId); // 08746: make sure that at any rate, the schedule itself is invalidated, even if it has delivery rule "force"
+		invalidSchedulesService.invalidateSegmentForShipmentSchedule(shipmentSchedule);
 	}
 }

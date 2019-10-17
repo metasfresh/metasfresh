@@ -31,7 +31,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import org.adempiere.ad.persistence.EntityTypesCache;
-import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -43,6 +42,8 @@ import com.google.common.base.Throwables;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+
+import de.metas.security.TableAccessLevel;
 
 /**
  * Repository of {@link TableInfo}s, {@link ListInfo}s, {@link TableReferenceInfo}s.

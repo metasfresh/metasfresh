@@ -18,7 +18,7 @@ package org.compiere.process;
 
 import java.math.BigDecimal;
 
-import org.compiere.model.MBPartner;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MDistributionList;
 import org.compiere.model.MDistributionListLine;
 import org.compiere.model.MOrder;
@@ -26,6 +26,7 @@ import org.compiere.model.MOrderLine;
 import org.compiere.model.MProduct;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.order.IOrderBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -66,7 +67,7 @@ public class DistributionCreate extends JavaProcess
 	/** Product					*/
 	private MProduct		m_product = null;
 	/** Total Quantity			*/
-	private BigDecimal		m_totalQty = Env.ZERO;
+	private BigDecimal		m_totalQty = BigDecimal.ZERO;
 	
 	/**
 	 *  Prepare - e.g., get Parameters.
@@ -134,9 +135,7 @@ public class DistributionCreate extends JavaProcess
 		//	Create Single Order
 		if (!p_IsTest && p_IsCreateSingleOrder) 
 		{
-			MBPartner bp = new MBPartner (getCtx(), p_Bill_BPartner_ID, get_TrxName());
-			if (bp.get_ID() == 0)
-				throw new IllegalArgumentException("Single Business Partner not found - C_BPartner_ID=" + p_Bill_BPartner_ID);
+			I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(p_Bill_BPartner_ID);
 			//
 			m_singleOrder = new MOrder (getCtx(), 0, get_TrxName());
 			m_singleOrder.setIsSOTrx(true);
@@ -173,9 +172,8 @@ public class DistributionCreate extends JavaProcess
 	 */
 	private boolean createOrder (MDistributionListLine dll)
 	{
-		MBPartner bp = new MBPartner (getCtx(), dll.getC_BPartner_ID(), get_TrxName());
-		if (bp.get_ID() == 0)
-			throw new IllegalArgumentException("Business Partner not found - C_BPartner_ID=" + dll.getC_BPartner_ID());
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+		final I_C_BPartner bp = bpartnersRepo.getById(dll.getC_BPartner_ID());
 
 		//	Create Order
 		MOrder order = m_singleOrder;

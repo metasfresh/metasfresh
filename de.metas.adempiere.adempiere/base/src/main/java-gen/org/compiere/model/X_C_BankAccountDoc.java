@@ -19,6 +19,7 @@ package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+
 import org.compiere.util.KeyNamePair;
 
 /** Generated Model for C_BankAccountDoc
@@ -55,19 +56,22 @@ public class X_C_BankAccountDoc extends PO implements I_C_BankAccountDoc, I_Pers
     /** AccessLevel
       * @return 3 - Client - Org 
       */
-    protected int get_AccessLevel()
+    @Override
+	protected int get_AccessLevel()
     {
       return accessLevel.intValue();
     }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+	protected POInfo initPO (Properties ctx)
     {
       POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
       return poi;
     }
 
-    public String toString()
+    @Override
+	public String toString()
     {
       StringBuffer sb = new StringBuffer ("X_C_BankAccountDoc[")
         .append(get_ID()).append("]");
@@ -78,25 +82,34 @@ public class X_C_BankAccountDoc extends PO implements I_C_BankAccountDoc, I_Pers
 		@param C_BankAccountDoc_ID 
 		Checks, Transfers, etc.
 	  */
+	@Override
 	public void setC_BankAccountDoc_ID (int C_BankAccountDoc_ID)
 	{
-		if (C_BankAccountDoc_ID < 1) 
+		if (C_BankAccountDoc_ID < 1)
+		{
 			set_ValueNoCheck (COLUMNNAME_C_BankAccountDoc_ID, null);
-		else 
+		}
+		else
+		{
 			set_ValueNoCheck (COLUMNNAME_C_BankAccountDoc_ID, Integer.valueOf(C_BankAccountDoc_ID));
+		}
 	}
 
 	/** Get Bank Account Document.
 		@return Checks, Transfers, etc.
 	  */
+	@Override
 	public int getC_BankAccountDoc_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BankAccountDoc_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
+	@Override
 	public I_C_BankAccount getC_BankAccount() throws RuntimeException
     {
 		return (I_C_BankAccount)MTable.get(getCtx(), I_C_BankAccount.Table_Name)
@@ -106,25 +119,34 @@ public class X_C_BankAccountDoc extends PO implements I_C_BankAccountDoc, I_Pers
 		@param C_BankAccount_ID 
 		Account at the Bank
 	  */
+	@Override
 	public void setC_BankAccount_ID (int C_BankAccount_ID)
 	{
-		if (C_BankAccount_ID < 1) 
+		if (C_BankAccount_ID < 1)
+		{
 			set_ValueNoCheck (COLUMNNAME_C_BankAccount_ID, null);
-		else 
+		}
+		else
+		{
 			set_ValueNoCheck (COLUMNNAME_C_BankAccount_ID, Integer.valueOf(C_BankAccount_ID));
+		}
 	}
 
 	/** Get Bank Account.
 		@return Account at the Bank
 	  */
+	@Override
 	public int getC_BankAccount_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BankAccount_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
+	@Override
 	public I_AD_PrintFormat getCheck_PrintFormat() throws RuntimeException
     {
 		return (I_AD_PrintFormat)MTable.get(getCtx(), I_AD_PrintFormat.Table_Name)
@@ -134,22 +156,30 @@ public class X_C_BankAccountDoc extends PO implements I_C_BankAccountDoc, I_Pers
 		@param Check_PrintFormat_ID 
 		Print Format for printing Checks
 	  */
+	@Override
 	public void setCheck_PrintFormat_ID (int Check_PrintFormat_ID)
 	{
-		if (Check_PrintFormat_ID < 1) 
+		if (Check_PrintFormat_ID < 1)
+		{
 			set_Value (COLUMNNAME_Check_PrintFormat_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_Check_PrintFormat_ID, Integer.valueOf(Check_PrintFormat_ID));
+		}
 	}
 
 	/** Get Check Print Format.
 		@return Print Format for printing Checks
 	  */
+	@Override
 	public int getCheck_PrintFormat_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Check_PrintFormat_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -157,6 +187,7 @@ public class X_C_BankAccountDoc extends PO implements I_C_BankAccountDoc, I_Pers
 		@param CurrentNext 
 		The next number to be used
 	  */
+	@Override
 	public void setCurrentNext (int CurrentNext)
 	{
 		set_Value (COLUMNNAME_CurrentNext, Integer.valueOf(CurrentNext));
@@ -165,11 +196,14 @@ public class X_C_BankAccountDoc extends PO implements I_C_BankAccountDoc, I_Pers
 	/** Get Current Next.
 		@return The next number to be used
 	  */
+	@Override
 	public int getCurrentNext () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CurrentNext);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -177,6 +211,7 @@ public class X_C_BankAccountDoc extends PO implements I_C_BankAccountDoc, I_Pers
 		@param Description 
 		Optional short description of the record
 	  */
+	@Override
 	public void setDescription (String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
@@ -185,6 +220,7 @@ public class X_C_BankAccountDoc extends PO implements I_C_BankAccountDoc, I_Pers
 	/** Get Description.
 		@return Optional short description of the record
 	  */
+	@Override
 	public String getDescription () 
 	{
 		return (String)get_Value(COLUMNNAME_Description);
@@ -194,6 +230,7 @@ public class X_C_BankAccountDoc extends PO implements I_C_BankAccountDoc, I_Pers
 		@param Name 
 		Alphanumeric identifier of the entity
 	  */
+	@Override
 	public void setName (String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
@@ -202,6 +239,7 @@ public class X_C_BankAccountDoc extends PO implements I_C_BankAccountDoc, I_Pers
 	/** Get Name.
 		@return Alphanumeric identifier of the entity
 	  */
+	@Override
 	public String getName () 
 	{
 		return (String)get_Value(COLUMNNAME_Name);
@@ -215,26 +253,27 @@ public class X_C_BankAccountDoc extends PO implements I_C_BankAccountDoc, I_Pers
         return new KeyNamePair(get_ID(), getName());
     }
 
-	/** PaymentRule AD_Reference_ID=195 */
-	public static final int PAYMENTRULE_AD_Reference_ID=195;
-	/** Cash = B */
-	public static final String PAYMENTRULE_Cash = "B";
-	/** Credit Card = K */
-	public static final String PAYMENTRULE_CreditCard = "K";
-	/** Direct Deposit = T */
-	public static final String PAYMENTRULE_DirectDeposit = "T";
-	/** Check = S */
-	public static final String PAYMENTRULE_Check = "S";
-	/** On Credit = P */
-	public static final String PAYMENTRULE_OnCredit = "P";
-	/** Direct Debit = D */
-	public static final String PAYMENTRULE_DirectDebit = "D";
-	/** Mixed = M */
-	public static final String PAYMENTRULE_Mixed = "M";
+//	/** PaymentRule AD_Reference_ID=195 */
+//	public static final int PAYMENTRULE_AD_Reference_ID=195;
+//	/** Cash = B */
+//	public static final String PAYMENTRULE_Cash = "B";
+//	/** Credit Card = K */
+//	public static final String PAYMENTRULE_CreditCard = "K";
+//	/** Direct Deposit = T */
+//	public static final String PAYMENTRULE_DirectDeposit = "T";
+//	/** Check = S */
+//	public static final String PAYMENTRULE_Check = "S";
+//	/** On Credit = P */
+//	public static final String PAYMENTRULE_OnCredit = "P";
+//	/** Direct Debit = D */
+//	public static final String PAYMENTRULE_DirectDebit = "D";
+//	/** Mixed = M */
+//	public static final String PAYMENTRULE_Mixed = "M";
 	/** Set Payment Rule.
 		@param PaymentRule 
 		How you pay the invoice
 	  */
+	@Override
 	public void setPaymentRule (String PaymentRule)
 	{
 
@@ -244,6 +283,7 @@ public class X_C_BankAccountDoc extends PO implements I_C_BankAccountDoc, I_Pers
 	/** Get Payment Rule.
 		@return How you pay the invoice
 	  */
+	@Override
 	public String getPaymentRule () 
 	{
 		return (String)get_Value(COLUMNNAME_PaymentRule);

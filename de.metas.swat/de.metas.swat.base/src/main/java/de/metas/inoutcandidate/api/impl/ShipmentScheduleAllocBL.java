@@ -26,92 +26,45 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
 
-import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 {
-	private enum Mode
-	{
-		/** Just take the given {@code qtyPicked} (converted to sched's UOM ) and set it as the new {@code schedQtyPicked}'s {@code QtyPicked value}. */
-		JUST_SET_QTY,
-
-		/** Retrieve the sched's qty that is picked, but not yet shipped, and subtract that quantity from the given {@code qtyPicked}. */
-		SUBTRACT_FROM_ALREADY_PICKED_QTY
-	}
 
 	@Override
-	public void setQtyPicked(final I_M_ShipmentSchedule sched, final BigDecimal qtyPicked)
-	{
-		final I_C_UOM uom = Services.get(IShipmentScheduleBL.class).getUomOfProduct(sched);
-		setQtyPicked(sched, Quantity.of(qtyPicked, uom), Mode.SUBTRACT_FROM_ALREADY_PICKED_QTY);
-	}
-
-	@Override
-	public I_M_ShipmentSchedule_QtyPicked addQtyPicked(
-			final I_M_ShipmentSchedule sched,
-			final Quantity qtyPickedDiff)
-	{
-		return setQtyPicked(sched, qtyPickedDiff, Mode.JUST_SET_QTY);
-	}
-
-	/**
-	 * Adds or sets QtyPicked
-	 *
-	 * @param justAdd if true, then if will create a {@link I_M_ShipmentSchedule_QtyPicked} only for difference between given <code>qtyPicked</code> and current qty picked.
-	 *
-	 * @return {@link I_M_ShipmentSchedule_QtyPicked} created record
-	 */
-	private I_M_ShipmentSchedule_QtyPicked setQtyPicked(
+	public I_M_ShipmentSchedule_QtyPicked createNewQtyPickedRecord(
 			@NonNull final I_M_ShipmentSchedule sched,
-			@NonNull final Quantity qtyPicked,
-			@NonNull final Mode mode)
+			@NonNull final StockQtyAndUOMQty stockQtyAndCatchQty)
 	{
-		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-
-		final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
-		final I_C_UOM schedUOM = shipmentScheduleBL.getUomOfProduct(sched);
-
-		// Convert QtyPicked to shipment schedule's UOM
-		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
-		final Quantity qtyPickedConv = uomConversionBL.convertQuantityTo(qtyPicked, conversionCtx, schedUOM);
-
-		final Quantity qtyPickedToAdd;
-		switch (mode)
-		{
-			case JUST_SET_QTY:
-				qtyPickedToAdd = qtyPickedConv;
-				break;
-			case SUBTRACT_FROM_ALREADY_PICKED_QTY:
-				final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
-				final BigDecimal qtyPickedOld = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineQty(sched);
-				qtyPickedToAdd = qtyPickedConv.subtract(qtyPickedOld);
-				break;
-			default:
-				throw new AdempiereException("Unexpected mode=" + mode + "; qtyPicked=" + qtyPicked + "; sched=" + sched);
-		}
-
 		final I_M_ShipmentSchedule_QtyPicked schedQtyPicked = newInstance(I_M_ShipmentSchedule_QtyPicked.class, sched);
+
 		schedQtyPicked.setAD_Org_ID(sched.getAD_Org_ID());
 		schedQtyPicked.setM_ShipmentSchedule(sched);
 		schedQtyPicked.setIsActive(true);
-		schedQtyPicked.setQtyPicked(qtyPickedToAdd.getAsBigDecimal());
+		schedQtyPicked.setQtyPicked(stockQtyAndCatchQty.getStockQty().toBigDecimal());
+
+		final Optional<Quantity> uomQty = stockQtyAndCatchQty.getUOMQtyOpt();
+		if (uomQty.isPresent())
+		{
+			schedQtyPicked.setCatch_UOM_ID(uomQty.get().getUomId().getRepoId());
+			schedQtyPicked.setQtyDeliveredCatch(uomQty.get().toBigDecimal());
+		}
+
 		saveRecord(schedQtyPicked);
 
 		return schedQtyPicked;
@@ -130,6 +83,19 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 
 		final org.compiere.model.I_M_InOut io = line.getM_InOut();
 
-		return Services.get(IDocumentBL.class).isDocumentCompletedOrClosed(io);
+		return DocStatus.ofCode(io.getDocStatus()).isCompletedOrClosed();
 	}
+
+	@Override
+	public Quantity retrieveQtyPickedAndUnconfirmed(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final IProductBL productBL = Services.get(IProductBL.class);
+		final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+
+		final BigDecimal qtyPicked = shipmentScheduleAllocDAO.retrieveQtyPickedAndUnconfirmed(shipmentSchedule);
+		final I_C_UOM stockUOMRecord = productBL.getStockUOM(ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()));
+
+		return Quantity.of(qtyPicked, stockUOMRecord);
+	}
+
 }

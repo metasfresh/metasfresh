@@ -6,12 +6,12 @@ import java.util.Collection;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -30,6 +30,7 @@ import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -108,15 +109,15 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
 		final I_S_Resource plant = productPlanningDAO.findPlant(
-				eventDescr.getOrgId(),
+				eventDescr.getOrgId().getRepoId(),
 				warehouse,
 				materialDescr.getProductId(),
 				materialDescr.getAttributeSetInstanceId());
 
 		final ProductPlanningQuery productPlanningQuery = ProductPlanningQuery.builder()
 				.orgId(eventDescr.getOrgId())
-				.warehouseId(WarehouseId.ofRepoId(materialDescr.getWarehouseId()))
-				.plantId(plant.getS_Resource_ID())
+				.warehouseId(materialDescr.getWarehouseId())
+				.plantId(ResourceId.ofRepoId(plant.getS_Resource_ID()))
 				.productId(ProductId.ofRepoId(materialDescr.getProductId()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(materialDescr.getAttributeSetInstanceId()))
 				.build();
@@ -124,7 +125,7 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(productPlanningQuery);
 		if (productPlanning == null)
 		{
-			Loggables.get().addLog("No PP_Product_Planning record found; query={}", productPlanningQuery);
+			Loggables.addLog("No PP_Product_Planning record found; query={}", productPlanningQuery);
 			return null;
 		}
 
@@ -135,7 +136,7 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 		mrpContext.setM_Product(product);
 		mrpContext.setM_AttributeSetInstance_ID(materialDescr.getAttributeSetInstanceId());
 		mrpContext.setM_Warehouse(warehouse);
-		mrpContext.setDate(materialDescr.getDate());
+		mrpContext.setDate(TimeUtil.asDate(materialDescr.getDate()));
 		mrpContext.setCtx(Env.getCtx());
 		mrpContext.setTrxName(ITrx.TRXNAME_ThreadInherited);
 

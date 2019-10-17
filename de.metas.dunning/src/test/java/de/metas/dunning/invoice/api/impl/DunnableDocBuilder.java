@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
 
 import de.metas.dunning.api.IDunnableDoc;
@@ -149,12 +148,6 @@ public class DunnableDocBuilder
 	public DunnableDocBuilder setC_Currency_ID(int c_Currency_ID)
 	{
 		C_Currency_ID = c_Currency_ID;
-		return this;
-	}
-
-	public DunnableDocBuilder setC_Currency(I_C_Currency currency)
-	{
-		C_Currency_ID = currency.getC_Currency_ID();
 		return this;
 	}
 

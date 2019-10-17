@@ -1,5 +1,7 @@
 package de.metas.ordercandidate.modelvalidator;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -29,37 +31,44 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.api.IBPRelationDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.interfaces.I_C_BP_Relation;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
-import de.metas.ordercandidate.api.IOLCandValidatorBL;
+import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
-import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
-// Note: this model validator used to have the class name 'OLCand'
-
-@Validator(I_C_OLCand.class)
+@Interceptor(I_C_OLCand.class)
 @Callout(I_C_OLCand.class)
+@Component
 public class C_OLCand
 {
+	private final OLCandValidatorService olCandValidatorService;
+
+	public C_OLCand(@NonNull final OLCandValidatorService olCandValidatorService)
+	{
+		this.olCandValidatorService = olCandValidatorService;
+	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_OLCand.COLUMNNAME_IsError)
 	public void onIsErrorUnset(final I_C_OLCand olCand)
@@ -91,7 +100,7 @@ public class C_OLCand
 	}
 
 	/**
-	 * Calls {@link IOLCandValidatorBL#validate(I_C_OLCand)}.<br>
+	 * Calls {@link OLCandValidatorService#validate(I_C_OLCand)}.<br>
 	 *
 	 * Before that it resets the pricing system if there is a new C_BPartner or C_BPartner_Override.<br>
 	 * The {@link de.metas.ordercandidate.spi.IOLCandValidator} framework is then supposed to call {@link de.metas.ordercandidate.api.IOLCandBL} to come up with the then-correct pricing system.
@@ -102,8 +111,7 @@ public class C_OLCand
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW })
 	public void validateC_OLCand(final I_C_OLCand olCand)
 	{
-		final IOLCandValidatorBL olCandValdiatorBL = Services.get(IOLCandValidatorBL.class);
-		if (olCandValdiatorBL.isValidationProcessInProgress())
+		if (olCandValidatorService.isValidationProcessInProgress())
 		{
 			return; // we are already within the validation process. no need to call the logic from here.
 		}
@@ -114,9 +122,9 @@ public class C_OLCand
 						I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID)))
 		{
 			// task 09686
-			olCand.setM_PricingSystem(null);
+			olCand.setM_PricingSystem_ID(0);
 		}
-		olCandValdiatorBL.validate(olCand);
+		olCandValidatorService.validate(olCand);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
@@ -176,54 +184,54 @@ public class C_OLCand
 	@CalloutMethod(columnNames = { I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID })
 	public void onCBPartnerOverride(final I_C_OLCand olCand)
 	{
-		final I_C_BPartner bpartnerOverride = olCand.getC_BPartner_Override();
-		if (bpartnerOverride == null)
+		final BPartnerId bpartnerOverrideId = BPartnerId.ofRepoIdOrNull(olCand.getC_BPartner_Override_ID());
+		if (bpartnerOverrideId == null)
 		{
 			// in case the bpartner Override was deleted, also delete the bpartner Location Override
-			olCand.setC_BP_Location_Override(null);
+			olCand.setC_BP_Location_Override_ID(0);
 			return;
 		}
 		final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
 		final String trxName = InterfaceWrapperHelper.getTrxName(olCand);
 
-		final I_C_BPartner_Location shipToLocation = Services.get(IBPartnerDAO.class).retrieveShipToLocation(ctx, bpartnerOverride.getC_BPartner_ID(), trxName);
+		final I_C_BPartner_Location shipToLocation = Services.get(IBPartnerDAO.class).retrieveShipToLocation(ctx, bpartnerOverrideId.getRepoId(), trxName);
 
 		if (shipToLocation == null)
 		{
 			// no location was found
-			olCand.setC_BP_Location_Override(null);
+			olCand.setC_BP_Location_Override_ID(0);
 			return;
 		}
 
-		olCand.setC_BP_Location_Override(shipToLocation);
+		olCand.setC_BP_Location_Override_ID(shipToLocation.getC_BPartner_Location_ID());
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_OLCand.COLUMNNAME_DropShip_BPartner_Override_ID)
 	@CalloutMethod(columnNames = { I_C_OLCand.COLUMNNAME_DropShip_BPartner_Override_ID })
 	public void onDropShipPartnerOverride(final I_C_OLCand olCand)
 	{
-		final I_C_BPartner dropShipPartnerOverride = olCand.getDropShip_BPartner_Override();
-		if (dropShipPartnerOverride == null)
+		final BPartnerId dropShipPartnerOverrideId = BPartnerId.ofRepoIdOrNull(olCand.getDropShip_BPartner_Override_ID());
+		if (dropShipPartnerOverrideId == null)
 		{
 			// in case the drop-ship bpartner Override was deleted, also delete the drop-ship Location Override
-			olCand.setDropShip_Location_Override(null);
+			olCand.setDropShip_Location_Override_ID(0);
 
 			return;
 		}
 		final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
 		final String trxName = InterfaceWrapperHelper.getTrxName(olCand);
 
-		final I_C_BPartner_Location dropShipLocation = Services.get(IBPartnerDAO.class).retrieveShipToLocation(ctx, dropShipPartnerOverride.getC_BPartner_ID(), trxName);
+		final I_C_BPartner_Location dropShipLocation = Services.get(IBPartnerDAO.class).retrieveShipToLocation(ctx, dropShipPartnerOverrideId.getRepoId(), trxName);
 
 		if (dropShipLocation == null)
 		{
 			// no location was found
-			olCand.setDropShip_Location_Override(null);
+			olCand.setDropShip_Location_Override_ID(0);
 
 			return;
 		}
 
-		olCand.setDropShip_Location_Override(dropShipLocation);
+		olCand.setDropShip_Location_Override_ID(dropShipLocation.getC_BPartner_Location_ID());
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_OLCand.COLUMNNAME_HandOver_Partner_Override_ID)
@@ -251,11 +259,11 @@ public class C_OLCand
 
 	private void updateHandoverLocationOverride(@NonNull final I_C_OLCand olCand)
 	{
-		final I_C_BPartner handOverPartnerOverride = olCand.getHandOver_Partner_Override();
-		if (handOverPartnerOverride == null)
+		final BPartnerId handOverPartnerOverrideId = BPartnerId.ofRepoIdOrNull(olCand.getHandOver_Partner_Override_ID());
+		if (handOverPartnerOverrideId == null)
 		{
 			// in case the handover bpartner Override was deleted, also delete the handover Location Override
-			olCand.setHandOver_Location_Override(null);
+			olCand.setHandOver_Location_Override_ID(0);
 
 			return;
 		}
@@ -264,13 +272,15 @@ public class C_OLCand
 
 		final I_C_BPartner partner = olCandEffectiveValuesBL.getC_BPartner_Effective(olCand);
 
-		final I_C_BP_Relation handoverRelation = Services.get(IBPRelationDAO.class).retrieveHandoverBPRelation(partner, handOverPartnerOverride);
+		final I_C_BP_Relation handoverRelation = Services.get(IBPRelationDAO.class).retrieveHandoverBPRelation(
+				partner,
+				loadOutOfTrx(handOverPartnerOverrideId.getRepoId(), I_C_BPartner.class));
 
 		if (handoverRelation == null)
 		{
 			// this shall never happen, since both Handover_BPartner and Handover_BPartner_Override must come from such a bpp relation.
 			// but I will leave this condition here as extra safety
-			olCand.setHandOver_Location_Override(null);
+			olCand.setHandOver_Location_Override_ID(0);
 		}
 		else
 		{
@@ -278,11 +288,11 @@ public class C_OLCand
 			if (handOverLocation == null)
 			{
 				// this should also not happen because C_BPartnerRelation_Location is mandatory
-				olCand.setHandOver_Location_Override(null);
+				olCand.setHandOver_Location_Override_ID(0);
 
 				return;
 			}
-			olCand.setHandOver_Location_Override(handOverLocation);
+			olCand.setHandOver_Location_Override_ID(handOverLocation.getC_BPartner_Location_ID());
 		}
 	}
 

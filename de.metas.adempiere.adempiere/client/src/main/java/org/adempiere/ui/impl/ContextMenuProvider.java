@@ -30,10 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -45,15 +41,17 @@ import org.compiere.grid.VTable;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.model.GridField;
 import org.compiere.model.I_AD_Field_ContextMenu;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ContextMenuProvider implements IContextMenuProvider
 {
@@ -63,7 +61,7 @@ public class ContextMenuProvider implements IContextMenuProvider
 	private final CCache<Integer, Map<ArrayKey, List<Class<? extends IContextMenuAction>>>> actionClassesForClient = new CCache<>(I_AD_Field_ContextMenu.Table_Name + "#Classes", 2);
 
 	/** ContextMenuKey to {@link IContextMenuAction} list */
-	private final Map<ArrayKey, List<Class<? extends IContextMenuAction>>> actionClassesManual = new HashMap<ArrayKey, List<Class<? extends IContextMenuAction>>>();
+	private final Map<ArrayKey, List<Class<? extends IContextMenuAction>>> actionClassesManual = new HashMap<>();
 
 	private static final int DISPLAYTYPE_None = -100;
 	private static final ArrayKey ACTIONCLASSKEY_Global = new ArrayKey(DISPLAYTYPE_None, null, null);
@@ -116,7 +114,7 @@ public class ContextMenuProvider implements IContextMenuProvider
 		List<Class<? extends IContextMenuAction>> list = actionClassesManual.get(key);
 		if (list == null)
 		{
-			list = new ArrayList<Class<? extends IContextMenuAction>>();
+			list = new ArrayList<>();
 			actionClassesManual.put(key, list);
 		}
 		if (!list.contains(actionClass))
@@ -165,15 +163,7 @@ public class ContextMenuProvider implements IContextMenuProvider
 	{
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		final Map<ArrayKey, List<Class<? extends IContextMenuAction>>> actionClasses = actionClassesForClient.get(adClientId
-				, new Callable<Map<ArrayKey, List<Class<? extends IContextMenuAction>>>>()
-		{
-
-			@Override
-			public Map<ArrayKey, List<Class<? extends IContextMenuAction>>> call() throws Exception
-			{
-				return retrieveActionsClassesForClient(ctx, adClientId);
-			}
-		});
+				, (Callable<Map<ArrayKey, List<Class<? extends IContextMenuAction>>>>)() -> retrieveActionsClassesForClient(ctx, adClientId));
 		
 		if (actionClasses == null)
 		{
@@ -203,7 +193,7 @@ public class ContextMenuProvider implements IContextMenuProvider
 				List<Class<? extends IContextMenuAction>> list = loadActionClasses.get(key);
 				if (list == null)
 				{
-					list = new ArrayList<Class<? extends IContextMenuAction>>();
+					list = new ArrayList<>();
 					loadActionClasses.put(key, list);
 				}
 				if (!list.contains(clazz))
@@ -263,7 +253,7 @@ public class ContextMenuProvider implements IContextMenuProvider
 			return Collections.emptyList();
 		}
 
-		final List<IContextMenuAction> result = new ArrayList<IContextMenuAction>();
+		final List<IContextMenuAction> result = new ArrayList<>();
 		for (final Class<? extends IContextMenuAction> actionClass : actionClasses)
 		{
 			final IContextMenuAction action = getInstance(menuCtx, actionClass);

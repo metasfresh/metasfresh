@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -25,9 +24,11 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.IModelTranslation;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.procurement.base.IPMMBPartnerDAO;
 import de.metas.procurement.base.IPMMContractsDAO;
 import de.metas.procurement.base.IPMMMessageDAO;
@@ -361,15 +362,7 @@ public class SyncObjectsFactory
 		final String product_uuid = SyncUUIDs.toUUIDString(pmmProduct);
 		try
 		{
-			final SyncProduct syncProduct = syncProductsCache.get(product_uuid, new Callable<SyncProduct>()
-			{
-
-				@Override
-				public SyncProduct call() throws Exception
-				{
-					return createSyncProductNoCache(pmmProduct);
-				}
-			});
+			final SyncProduct syncProduct = syncProductsCache.get(product_uuid, () -> createSyncProductNoCache(pmmProduct));
 			return syncProduct.copy();
 		}
 		catch (final ExecutionException ex)
@@ -552,10 +545,24 @@ public class SyncObjectsFactory
 		syncRfQ.setQtyRequested(rfqResponseLine.getQtyRequiered());
 		syncRfQ.setQtyCUInfo(rfqResponseLine.getC_UOM().getUOMSymbol());
 
-		syncRfQ.setCurrencyCode(rfqResponseLine.getC_Currency().getISO_Code());
+		syncRfQ.setCurrencyCode(extractCurrencyCode(rfqResponseLine));
 
 		return syncRfQ;
 	}
+	
+	private String extractCurrencyCode(final I_C_RfQResponseLine record)
+	{
+		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
+		
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID());
+		if(currencyId == null)
+		{
+			return null;
+		}
+		
+		return currenciesRepo.getCurrencyCodeById(currencyId).toThreeLetterCode();
+	}
+
 
 	public SyncRfQCloseEvent createSyncRfQCloseEvent(final I_C_RfQResponseLine rfqResponseLine, final boolean winnerKnown)
 	{

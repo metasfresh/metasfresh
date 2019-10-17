@@ -27,7 +27,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.MSysConfig;
@@ -60,7 +60,7 @@ public class SysConfigDAO extends AbstractSysConfigDAO
 	@Override
 	public String retrieveSysConfigValue(final String Name, final String defaultValue, final int AD_Client_ID, final int AD_Org_ID)
 	{
-		final ApplicationContext springApplicationContext = Adempiere.getSpringApplicationContext();
+		final ApplicationContext springApplicationContext = SpringContextHolder.instance.getApplicationContext();
 		if (springApplicationContext != null)
 		{
 			final String springContextValue = springApplicationContext.getEnvironment().getProperty(Name);

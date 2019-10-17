@@ -25,10 +25,11 @@ package de.metas.handlingunits.pporder.api.impl;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.impl.AbstractDocumentLUTUConfigurationHandler;
@@ -38,6 +39,7 @@ import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -62,7 +64,10 @@ import lombok.NonNull;
 		PPOrderUtil.assertReceipt(ppOrderBOMLine);
 
 		final org.eevolution.model.I_PP_Order ppOrder = ppOrderBOMLine.getPP_Order();
-		final I_C_BPartner bpartner = ppOrder.getC_BPartner();
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(ppOrder.getC_BPartner_ID());
+		final I_C_BPartner bpartner = bpartnerId != null
+				? Services.get(IBPartnerDAO.class).getById(bpartnerId)
+				: null;
 		final I_M_HU_PI_Item_Product tuPIItemProduct = getM_HU_PI_Item_Product(ppOrderBOMLine);
 		final ProductId cuProductId = ProductId.ofRepoId(ppOrderBOMLine.getM_Product_ID());
 		final I_C_UOM cuUOM = Services.get(IUOMDAO.class).getById(ppOrderBOMLine.getC_UOM_ID());
@@ -88,10 +93,13 @@ import lombok.NonNull;
 
 		//
 		// First, try getting the M_HU_Item_Product the ppOrder's M_HU_LUTU_Configuration
-		if (ppOrderBOMLine.getM_HU_LUTU_Configuration_ID() > 0 && ppOrderBOMLine.getM_HU_LUTU_Configuration().getM_HU_PI_Item_Product_ID() > 0)
 		{
-			final I_M_HU_PI_Item_Product pip = ppOrderBOMLine.getM_HU_LUTU_Configuration().getM_HU_PI_Item_Product();
-			return pip;
+			final I_M_HU_LUTU_Configuration lutuConfiguration = ppOrderBOMLine.getM_HU_LUTU_Configuration();
+			final I_M_HU_PI_Item_Product pip = lutuConfiguration != null ? ILUTUConfigurationFactory.extractHUPIItemProductOrNull(lutuConfiguration) : null;
+			if (pip != null)
+			{
+				return pip;
+			}
 		}
 
 		//

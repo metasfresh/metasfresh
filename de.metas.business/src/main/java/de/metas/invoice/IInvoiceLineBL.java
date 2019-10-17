@@ -30,6 +30,7 @@ import org.compiere.model.MInvoiceLine;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.pricing.IEditablePricingContext;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
 
 /**
@@ -75,7 +76,7 @@ public interface IInvoiceLineBL extends ISingletonService
 	 * @return C_TaxCategory_ID
 	 * @see de.metas.util.Check#assume(boolean, String, Object...)
 	 */
-	int getC_TaxCategory_ID(org.compiere.model.I_C_InvoiceLine invoiceLine);
+	TaxCategoryId getTaxCategoryId(org.compiere.model.I_C_InvoiceLine invoiceLine);
 
 	IEditablePricingContext createPricingContext(I_C_InvoiceLine invoiceLine);
 

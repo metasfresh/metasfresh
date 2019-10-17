@@ -70,6 +70,6 @@ public class PMMQtyReportEventsProcessor
 				.setProcessor(itemProcessor)
 				.process(events);
 
-		Loggables.get().addLog(itemProcessor.getProcessSummary());
+		Loggables.addLog(itemProcessor.getProcessSummary());
 	}
 }

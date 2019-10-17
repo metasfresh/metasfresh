@@ -1,7 +1,10 @@
 package de.metas.material.dispo.service.event;
 
+import org.adempiere.warehouse.WarehouseId;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
@@ -43,6 +46,7 @@ import lombok.Value;
  *
  */
 @Service
+@Profile(Profiles.PROFILE_MaterialDispo)
 public class SupplyProposalEvaluator
 {
 	/**
@@ -87,11 +91,10 @@ public class SupplyProposalEvaluator
 			return true;
 		}
 
-		Loggables.get().addLog(
+		Loggables.addLog(
 				"The given proposal would repeat a step that is already planned; rejecting it; proposal={}; existing candidates: source={}; destination={}",
 				proposal, existingDemandCandidate, existingsupplyCandidate);
 		return false;
-
 	}
 
 	/**
@@ -109,12 +112,12 @@ public class SupplyProposalEvaluator
 		DemandDetail demandDetail;
 
 		@NonNull
-		Integer supplyWarehouseId;
+		WarehouseId supplyWarehouseId;
 
 		/**
 		 * The source warehouse; this instance proposes to take something for this warehouse i.e. create a new demand in this warehouse.
 		 */
 		@NonNull
-		Integer demandWarehouseId;
+		WarehouseId demandWarehouseId;
 	}
 }

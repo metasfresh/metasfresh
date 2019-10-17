@@ -26,7 +26,6 @@ package de.metas.acct.model.validator;
 import java.sql.Timestamp;
 import java.util.List;
 
-import org.adempiere.acct.api.IGLJournalDAO;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -36,6 +35,7 @@ import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalBatch;
 import org.compiere.model.ModelValidator;
 
+import de.metas.acct.gljournal.IGLJournalDAO;
 import de.metas.util.Services;
 
 @Interceptor(I_GL_JournalBatch.class)

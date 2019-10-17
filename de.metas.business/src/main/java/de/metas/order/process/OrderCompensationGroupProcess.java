@@ -3,7 +3,7 @@ package de.metas.order.process;
 import java.util.List;
 import java.util.Set;
 
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -46,7 +46,7 @@ public abstract class OrderCompensationGroupProcess extends JavaProcess implemen
 
 	public OrderCompensationGroupProcess()
 	{
-		Adempiere.autowire(this);
+		SpringContextHolder.instance.autowire(this);
 	}
 
 	protected static ProcessPreconditionsResolution acceptIfEligibleOrder(final IProcessPreconditionsContext context)

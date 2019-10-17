@@ -1,10 +1,12 @@
 package de.metas.contracts.refund;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.compiere.util.TimeUtil.asTimestamp;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -14,26 +16,30 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.IQuery;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.contracts.refund.RefundContract.NextInvoiceDate;
+import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.Money;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -62,8 +68,30 @@ import lombok.Value;
 @Repository
 public class RefundInvoiceCandidateRepository
 {
+	@VisibleForTesting
+	@Getter
 	private final RefundContractRepository refundContractRepository;
+
+	@Getter
 	private final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory;
+
+	@VisibleForTesting
+	public static RefundInvoiceCandidateRepository createInstanceForUnitTesting()
+	{
+		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
+
+		final AssignmentAggregateService assignmentAggregateService = new AssignmentAggregateService(refundConfigRepository);
+
+		final RefundContractRepository refundContractRepository = new RefundContractRepository(refundConfigRepository);
+
+		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(
+				refundContractRepository,
+				assignmentAggregateService);
+
+		return new RefundInvoiceCandidateRepository(
+				refundContractRepository,
+				refundInvoiceCandidateFactory);
+	}
 
 	public RefundInvoiceCandidateRepository(
 			@NonNull final RefundContractRepository refundContractRepository,
@@ -146,14 +174,31 @@ public class RefundInvoiceCandidateRepository
 	private IQuery<I_C_Invoice_Candidate> createRefundInvoiceCandidateQuery(
 			@NonNull final RefundInvoiceCandidateQuery query)
 	{
+
+		// if these conditions are not me, we know that there won't be matching refund invoice candidates; but that doesn't make it an error.
+		//
 		final RefundContract refundContract = query.getRefundContract();
+		final LocalDate invoicableFrom = query.getInvoicableFrom();
+
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = Services
+				.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Invoice_Candidate.class);
+
+		if (invoicableFrom.isBefore(refundContract.getStartDate()) || invoicableFrom.isAfter(refundContract.getEndDate()))
+		{
+			// there can't be any matching refund records because invoicableFrom lies outside the contract's date range.
+			return queryBuilder
+					.filter(ConstantQueryFilter.of(false))
+					.create();
+		}
+
+		final NextInvoiceDate nextInvoiceDate = refundContract.computeNextInvoiceDate(invoicableFrom);
 
 		final IQueryFilter<I_C_Invoice_Candidate> dateToInvoiceEffectiveFilter = createDateToInvoiceEffectiveFilter(
-				TimeUtil.asTimestamp(query.getInvoicableFrom()),
-				TimeUtil.asTimestamp(refundContract.getEndDate()));
+				asTimestamp(invoicableFrom),
+				asTimestamp(nextInvoiceDate.getDateToInvoice()));
 
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Invoice_Candidate.class)
+		return queryBuilder
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(
 						I_C_Invoice_Candidate.COLUMN_AD_Table_ID,
@@ -206,11 +251,15 @@ public class RefundInvoiceCandidateRepository
 		}
 
 		record.setBill_BPartner_ID(refundCandidate.getBpartnerId().getRepoId());
-		record.setDateToInvoice(TimeUtil.asTimestamp(refundCandidate.getInvoiceableFrom()));
+		record.setBill_Location_ID(refundCandidate.getBpartnerLocationId().getRepoId());
+		record.setDateToInvoice(asTimestamp(refundCandidate.getInvoiceableFrom()));
 
+		record.setM_Product_ID(RefundConfigs.extractProductId(refundCandidate.getRefundConfigs()).getRepoId());
+
+		// note that Quantity = 1 is set elsewhere, in the invoice candidate handler
 		final Money money = refundCandidate.getMoney();
-		record.setPriceActual(money.getValue());
-		record.setPriceEntered(money.getValue());
+		record.setPriceActual(money.toBigDecimal());
+		record.setPriceEntered(money.toBigDecimal());
 		record.setC_Currency_ID(money.getCurrencyId().getRepoId());
 
 		final RefundContract refundContract = refundCandidate.getRefundContract();
@@ -237,20 +286,10 @@ public class RefundInvoiceCandidateRepository
 		@Builder
 		private RefundInvoiceCandidateQuery(
 				@NonNull final RefundContract refundContract,
-				@Nullable final LocalDate invoicableFrom)
+				@NonNull final LocalDate invoicableFrom)
 		{
-			Check.errorIf(
-					invoicableFrom != null && invoicableFrom.isBefore(refundContract.getStartDate()),
-					"The given invoicableFrom needs to be after the given refundContract's startDate; invoicableFrom={}; refundContract={}",
-					invoicableFrom, refundContract);
-			Check.errorIf(
-					invoicableFrom != null && invoicableFrom.isAfter(refundContract.getEndDate()),
-					"The given invoicableFrom needs to be before the given refundContract's endDate; invoicableFrom={}; refundContract={}",
-					invoicableFrom, refundContract);
-
 			this.refundContract = refundContract;
-			this.invoicableFrom = Util.coalesce(invoicableFrom, refundContract.getStartDate());
+			this.invoicableFrom = CoalesceUtil.coalesce(invoicableFrom, refundContract.getStartDate());
 		}
 	}
-
 }

@@ -1,31 +1,40 @@
 package de.metas.material.dispo.service.event.handler.pporder;
 
+import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static de.metas.material.event.EventTestHelper.createProductDescriptorWithOffSet;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
+import static java.math.BigDecimal.valueOf;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 
-import org.junit.Test;
+import org.adempiere.warehouse.WarehouseId;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
+import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.product.ResourceId;
 import de.metas.util.time.SystemTime;
-import mockit.Expectations;
-import mockit.Mocked;
-import mockit.Verifications;
 
 /*
  * #%L
@@ -51,49 +60,50 @@ import mockit.Verifications;
 
 public class PPOrderChangedHandlerTest
 {
-
-	@Mocked
 	private CandidateChangeService candidateChangeService;
-
-	@Mocked
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+
+	@BeforeEach
+	public void init()
+	{
+		candidateChangeService = Mockito.mock(CandidateChangeService.class);
+		candidateRepositoryRetrieval = Mockito.mock(CandidateRepositoryRetrieval.class);
+	}
 
 	@Test
 	public void handleEvent()
 	{
-		final MaterialDescriptor materialDescriptor = EventTestHelper.createMaterialDescriptor();
-
 		// setup a candidate to be updated
-		final Candidate candidatetoUpdate = Candidate.builder()
-				.status(CandidateStatus.doc_closed)
+		final Candidate candidateToUpdate = Candidate.builder()
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 1))
+				// .status(CandidateStatus.doc_closed)
 				.type(CandidateType.DEMAND)
-				.materialDescriptor(materialDescriptor)
+				.materialDescriptor(createMaterialDescriptor())
 				.businessCaseDetail(ProductionDetail.builder()
-						.plannedQty(BigDecimal.TEN)
+						.qty(TEN)
 						.advised(Flag.FALSE)
 						.pickDirectlyIfFeasible(Flag.FALSE)
 						.build())
 				.build();
 
-		// @formatter:off
-		new Expectations()
-		{{
-			candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo((CandidatesQuery)any);
-			result = ImmutableList.of(candidatetoUpdate);
-		}};	// @formatter:on
+		final PPOrder ppOrder = createPPOrder();
+		final int ppOrderId = ppOrder.getPpOrderId();
+
+		when(candidateRepositoryRetrieval.retrieveCandidatesForPPOrderId(ppOrderId))
+				.thenReturn(ImmutableList.of(candidateToUpdate));
 
 		final PPOrderChangedEvent ppOrderChangedEvent = PPOrderChangedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
-				.oldDocStatus("CO")
-				.newDocStatus("CO")
-				.oldDatePromised(SystemTime.asTimestamp())
-				.newDatePromised(SystemTime.asTimestamp())
+				.oldDocStatus(DocStatus.Completed)
+				.newDocStatus(DocStatus.Completed)
+				.oldDatePromised(SystemTime.asInstant())
+				.newDatePromised(SystemTime.asInstant())
 				.newQtyDelivered(ONE)
 				.newQtyRequired(TEN)
 				.oldQtyDelivered(ONE)
 				.oldQtyRequired(TEN)
-				.productDescriptor(materialDescriptor)
-				.ppOrderId(30)
+				// .productDescriptor(materialDescriptor)
+				.ppOrderAfterChanges(ppOrder)
 				.build();
 
 		final PPOrderChangedHandler ppOrderDocStatusChangedHandler = new PPOrderChangedHandler(
@@ -106,20 +116,40 @@ public class PPOrderChangedHandlerTest
 
 		//
 		// verify the updated candidate created by the handler
-		// @formatter:off
-		new Verifications()
-		{{
-			Candidate updatedCandidate;
-			candidateChangeService.onCandidateNewOrChange(updatedCandidate = withCapture());
+		final ArgumentCaptor<Candidate> updatedCandidateCaptor = ArgumentCaptor.forClass(Candidate.class);
+		verify(candidateChangeService)
+				.onCandidateNewOrChange(updatedCandidateCaptor.capture());
+		final Candidate updatedCandidate = updatedCandidateCaptor.getValue();
 
-			assertThat(updatedCandidate.getQuantity())
-				.isEqualByComparingTo(BigDecimal.TEN);
-			assertThat(updatedCandidate.getStatus()).isEqualTo(CandidateStatus.doc_completed);
+		assertThat(updatedCandidate.getQuantity()).isEqualByComparingTo(BigDecimal.TEN);
 
-			final ProductionDetail productionDetail = ProductionDetail.castOrNull(updatedCandidate.getBusinessCaseDetail());
-			assertThat(productionDetail).isNotNull();
-			assertThat(productionDetail.getPpOrderDocStatus()).isEqualTo("CO");
-		}};	// @formatter:on
+		final ProductionDetail productionDetail = ProductionDetail.castOrNull(updatedCandidate.getBusinessCaseDetail());
+		assertThat(productionDetail).isNotNull();
+		assertThat(productionDetail.getPpOrderDocStatus()).isEqualTo(DocStatus.Completed);
+	}
+
+	private PPOrder createPPOrder()
+	{
+		return PPOrder.builder()
+				.ppOrderId(123)
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(100, 100))
+				.datePromised(NOW)
+				.dateStartSchedule(NOW)
+				.plantId(ResourceId.ofRepoId(110))
+				.productDescriptor(createProductDescriptor())
+				.productPlanningId(130)
+				.qtyRequired(TEN)
+				.qtyDelivered(ONE)
+				.warehouseId(WarehouseId.ofRepoId(150))
+				.line(PPOrderLine.builder()
+						.productDescriptor(createProductDescriptorWithOffSet(20))
+						.issueOrReceiveDate(NOW)
+						.description("desc2")
+						.productBomLineId(380)
+						.qtyRequired(valueOf(320))
+						.receipt(false)
+						.build())
+				.build();
 	}
 
 }

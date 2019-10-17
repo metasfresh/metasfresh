@@ -10,7 +10,6 @@ import javax.annotation.Nullable;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Product_Planning;
@@ -25,6 +24,7 @@ import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.api.ReceiptLineFindForwardToLocatorTool;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -82,18 +82,18 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
-		final int productId = inOutLine.getM_Product_ID();
-		final int orgId = inOutLine.getAD_Org_ID();
-		final int asiId = inOutLine.getM_AttributeSetInstance_ID();
+		final ProductId productId = ProductId.ofRepoId(inOutLine.getM_Product_ID());
+		final OrgId orgId = OrgId.ofRepoId(inOutLine.getAD_Org_ID());
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(inOutLine.getM_AttributeSetInstance_ID());
 
 		final ProductPlanningQuery query = ProductPlanningQuery.builder()
 				.orgId(orgId)
-				.productId(ProductId.ofRepoId(productId))
-				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(asiId))
+				.productId(productId)
+				.attributeSetInstanceId(asiId)
 				// no warehouse, no plant
 				.build();
 		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(query);
-		Check.errorIf(productPlanning == null, "No Product Planning found for product Id {}", productId);
+		Check.errorIf(productPlanning == null, "No Product Planning found for {}", query);
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)
@@ -128,8 +128,6 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 			@NonNull final I_M_InOutLine inOutLine,
 			@Nullable final LocatorId locatorToId)
 	{
-		final I_M_Locator locator = inOutLine.getM_Locator();
-
 		final I_M_InOut inout = inOutLine.getM_InOut();
 
 		final I_DD_OrderLine ddOrderLine = newInstance(I_DD_OrderLine.class);
@@ -137,10 +135,10 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 		ddOrderLine.setLine(10);
 		ddOrderLine.setM_Product_ID(inOutLine.getM_Product_ID());
 		ddOrderLine.setQtyEntered(inOutLine.getQtyEntered());
-		ddOrderLine.setC_UOM(inOutLine.getC_UOM());
+		ddOrderLine.setC_UOM_ID(inOutLine.getC_UOM_ID());
 		ddOrderLine.setQtyEnteredTU(inOutLine.getQtyEnteredTU());
 		ddOrderLine.setM_HU_PI_Item_Product(inOutLine.getM_HU_PI_Item_Product());
-		ddOrderLine.setM_Locator(locator);
+		ddOrderLine.setM_Locator_ID(inOutLine.getM_Locator_ID());
 		ddOrderLine.setM_LocatorTo_ID(locatorToId.getRepoId());
 		ddOrderLine.setIsInvoiced(false);
 		ddOrderLine.setDateOrdered(inout.getDateOrdered());

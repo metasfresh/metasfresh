@@ -7,11 +7,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.service.OrgId;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.organization.OrgId;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQuery;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQueryItem;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponse;

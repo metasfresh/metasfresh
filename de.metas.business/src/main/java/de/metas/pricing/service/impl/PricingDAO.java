@@ -23,33 +23,73 @@ package de.metas.pricing.service.impl;
  */
 
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.pricing.model.I_C_PricingRule;
-import org.adempiere.util.proxy.Cached;
+import org.adempiere.util.reflect.ClassReference;
+import org.slf4j.Logger;
 
-import de.metas.cache.annotation.CacheCtx;
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
 import de.metas.pricing.service.IPricingDAO;
+import de.metas.pricing.service.PricingRuleDescriptor;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 
 public class PricingDAO implements IPricingDAO
 {
+	private static final Logger logger = LogManager.getLogger(PricingDAO.class);
+
+	private final CCache<Integer, ImmutableList<PricingRuleDescriptor>> //
+	pricingRuleDescriptorsCache = CCache.<Integer, ImmutableList<PricingRuleDescriptor>> builder()
+			.cacheName("pricingRuleDescriptorsCache")
+			.additionalTableNameToResetFor(I_C_PricingRule.Table_Name)
+			.initialCapacity(1)
+			.build();
+
 	@Override
-	@Cached(cacheName = I_C_PricingRule.Table_Name + "#All")
-	public List<I_C_PricingRule> retrievePricingRules(@CacheCtx final Properties ctx)
+	public List<PricingRuleDescriptor> getPricingRules()
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_PricingRule.class, ctx, ITrx.TRXNAME_None)
+		return pricingRuleDescriptorsCache.getOrLoad(0, this::retrievePricingRules);
+	}
+
+	private ImmutableList<PricingRuleDescriptor> retrievePricingRules()
+	{
+		return Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_C_PricingRule.class)
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClientOrSystem()
 				//
-				.orderBy()
-				.addColumn(I_C_PricingRule.COLUMNNAME_SeqNo)
-				.addColumn(I_C_PricingRule.COLUMNNAME_C_PricingRule_ID)
-				.endOrderBy()
+				.orderBy(I_C_PricingRule.COLUMNNAME_SeqNo)
+				.orderBy(I_C_PricingRule.COLUMNNAME_C_PricingRule_ID)
 				//
 				.create()
-				.listImmutable(I_C_PricingRule.class);
+				.stream()
+				.map(this::toPricingRuleDescriptorNoFail)
+				.filter(Predicates.notNull())
+				.collect(GuavaCollectors.distinctBy(PricingRuleDescriptor::getPricingRuleClass))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private PricingRuleDescriptor toPricingRuleDescriptorNoFail(final I_C_PricingRule record)
+	{
+		try
+		{
+			return toPricingRuleDescriptor(record);
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Skipping invalid pricing rule definition: {}", record, ex);
+			return null;
+		}
+	}
+
+	private PricingRuleDescriptor toPricingRuleDescriptor(final I_C_PricingRule record)
+	{
+		return PricingRuleDescriptor.builder()
+				.name(record.getName())
+				.pricingRuleClass(ClassReference.ofClassname(record.getClassname()))
+				.build();
 	}
 }

@@ -32,6 +32,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
 
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -156,16 +157,19 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 		final I_M_PriceList_Version plv = orderLineBL.getPriceListVersion(orderLine);
 
+		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
+		final HUPIItemProductId packingMaterialId = HUPIItemProductId.ofRepoIdOrNull(orderLine.getM_HU_PI_Item_Product_ID());
+
 		//
 		// Check if we have a product price specific to current PI Item Product
-		if(orderLine.getM_HU_PI_Item_Product_ID() > 0)
+		if(packingMaterialId != null)
 		{
-			final boolean strictDefault = false;
 			final I_M_ProductPrice huProductPrice = ProductPrices.newQuery(plv)
-					.setM_Product_ID(orderLine.getM_Product_ID())
+					.setProductId(productId)
 					.onlyAttributePricing()
-					.matching(HUPricing.createHUPIItemProductMatcher(orderLine.getM_HU_PI_Item_Product_ID()))
-					.retrieveDefault(strictDefault, I_M_ProductPrice.class);
+					.onlyValidPrices(true)
+					.matching(HUPricing.createHUPIItemProductMatcher(packingMaterialId))
+					.retrieveDefault(I_M_ProductPrice.class);
 			if(huProductPrice != null)
 			{
 				return huProductPrice;
@@ -173,10 +177,9 @@ public class OrderLinePricingHUDocumentHandler implements IHUDocumentHandler
 		}
 
 		// We want *the* Default I_M_ProductPrice_Attribute (no fallbacks etc), because we use this to generate the ASI.
-		final boolean strictDefault = true;
 		return ProductPrices.newQuery(plv)
-				.setM_Product_ID(orderLine.getM_Product_ID())
+				.setProductId(productId)
 				.onlyAttributePricing()
-				.retrieveDefault(strictDefault, I_M_ProductPrice.class);
+				.retrieveStrictDefault(I_M_ProductPrice.class);
 	}
 }

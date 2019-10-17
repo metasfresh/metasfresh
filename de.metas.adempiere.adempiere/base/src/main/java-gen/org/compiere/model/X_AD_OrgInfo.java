@@ -14,7 +14,7 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2092727521L;
+	private static final long serialVersionUID = 1747105117L;
 
     /** Standard Constructor */
     public X_AD_OrgInfo (Properties ctx, int AD_OrgInfo_ID, String trxName)
@@ -22,9 +22,9 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
       super (ctx, AD_OrgInfo_ID, trxName);
       /** if (AD_OrgInfo_ID == 0)
         {
-			setDUNS (null);
-			setReceiptFooterMsg (null); // 1
-			setTaxID (null);
+			setAD_OrgInfo_ID (0);
+			setReportPrefix (null); // file:////opt/metasfresh/reports
+			setStoreCreditCardData (null); // LAST4
         } */
     }
 
@@ -43,8 +43,30 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
       return poi;
     }
 
+	/** Set AD_OrgInfo_ID.
+		@param AD_OrgInfo_ID AD_OrgInfo_ID	  */
 	@Override
-	public org.compiere.model.I_AD_OrgType getAD_OrgType() throws RuntimeException
+	public void setAD_OrgInfo_ID (int AD_OrgInfo_ID)
+	{
+		if (AD_OrgInfo_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_AD_OrgInfo_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_AD_OrgInfo_ID, Integer.valueOf(AD_OrgInfo_ID));
+	}
+
+	/** Get AD_OrgInfo_ID.
+		@return AD_OrgInfo_ID	  */
+	@Override
+	public int getAD_OrgInfo_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_OrgInfo_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_OrgType getAD_OrgType()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_OrgType_ID, org.compiere.model.I_AD_OrgType.class);
 	}
@@ -81,7 +103,44 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	}
 
 	@Override
-	public org.compiere.model.I_C_Calendar getC_Calendar() throws RuntimeException
+	public org.compiere.model.I_AD_WF_Responsible getAD_WF_Responsible()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_WF_Responsible_ID, org.compiere.model.I_AD_WF_Responsible.class);
+	}
+
+	@Override
+	public void setAD_WF_Responsible(org.compiere.model.I_AD_WF_Responsible AD_WF_Responsible)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_WF_Responsible_ID, org.compiere.model.I_AD_WF_Responsible.class, AD_WF_Responsible);
+	}
+
+	/** Set Workflow - Verantwortlicher.
+		@param AD_WF_Responsible_ID 
+		Verantwortlicher für die Ausführung des Workflow
+	  */
+	@Override
+	public void setAD_WF_Responsible_ID (int AD_WF_Responsible_ID)
+	{
+		if (AD_WF_Responsible_ID < 1) 
+			set_Value (COLUMNNAME_AD_WF_Responsible_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_WF_Responsible_ID, Integer.valueOf(AD_WF_Responsible_ID));
+	}
+
+	/** Get Workflow - Verantwortlicher.
+		@return Verantwortlicher für die Ausführung des Workflow
+	  */
+	@Override
+	public int getAD_WF_Responsible_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_WF_Responsible_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Calendar getC_Calendar()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Calendar_ID, org.compiere.model.I_C_Calendar.class);
 	}
@@ -118,7 +177,7 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	}
 
 	@Override
-	public org.compiere.model.I_C_Location getC_Location() throws RuntimeException
+	public org.compiere.model.I_C_Location getC_Location()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Location_ID, org.compiere.model.I_C_Location.class);
 	}
@@ -154,18 +213,6 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Warehouse getDropShip_Warehouse() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_DropShip_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
-	}
-
-	@Override
-	public void setDropShip_Warehouse(org.compiere.model.I_M_Warehouse DropShip_Warehouse)
-	{
-		set_ValueFromPO(COLUMNNAME_DropShip_Warehouse_ID, org.compiere.model.I_M_Warehouse.class, DropShip_Warehouse);
-	}
-
 	/** Set Drop Ship Warehouse.
 		@param DropShip_Warehouse_ID 
 		The (logical) warehouse to use for recording drop ship receipts and shipments.
@@ -191,27 +238,8 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 		return ii.intValue();
 	}
 
-	/** Set D-U-N-S.
-		@param DUNS 
-		Dun & Bradstreet Number
-	  */
 	@Override
-	public void setDUNS (java.lang.String DUNS)
-	{
-		set_Value (COLUMNNAME_DUNS, DUNS);
-	}
-
-	/** Get D-U-N-S.
-		@return Dun & Bradstreet Number
-	  */
-	@Override
-	public java.lang.String getDUNS () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_DUNS);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_Image getLogo() throws RuntimeException
+	public org.compiere.model.I_AD_Image getLogo()
 	{
 		return get_ValueAsPO(COLUMNNAME_Logo_ID, org.compiere.model.I_AD_Image.class);
 	}
@@ -244,16 +272,29 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 		return ii.intValue();
 	}
 
+	/** Set Preissystem.
+		@param M_PricingSystem_ID 
+		Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
+	  */
 	@Override
-	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
+	public void setM_PricingSystem_ID (int M_PricingSystem_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
+		if (M_PricingSystem_ID < 1) 
+			set_Value (COLUMNNAME_M_PricingSystem_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_PricingSystem_ID, Integer.valueOf(M_PricingSystem_ID));
 	}
 
+	/** Get Preissystem.
+		@return Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
+	  */
 	@Override
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse)
+	public int getM_PricingSystem_ID () 
 	{
-		set_ValueFromPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_PricingSystem_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Lager.
@@ -281,18 +322,6 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Warehouse getM_WarehousePO() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_WarehousePO_ID, org.compiere.model.I_M_Warehouse.class);
-	}
-
-	@Override
-	public void setM_WarehousePO(org.compiere.model.I_M_Warehouse M_WarehousePO)
-	{
-		set_ValueFromPO(COLUMNNAME_M_WarehousePO_ID, org.compiere.model.I_M_Warehouse.class, M_WarehousePO);
-	}
-
 	/** Set Liefer-Lager.
 		@param M_WarehousePO_ID 
 		Lager, an das der Lieferant eine Bestellung liefern soll.
@@ -318,16 +347,51 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 		return ii.intValue();
 	}
 
+	/** Set Org BPartner.
+		@param Org_BPartner_ID Org BPartner	  */
 	@Override
-	public org.compiere.model.I_AD_Org getParent_Org() throws RuntimeException
+	public void setOrg_BPartner_ID (int Org_BPartner_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_Parent_Org_ID, org.compiere.model.I_AD_Org.class);
+		if (Org_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_Org_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_Org_BPartner_ID, Integer.valueOf(Org_BPartner_ID));
 	}
 
+	/** Get Org BPartner.
+		@return Org BPartner	  */
 	@Override
-	public void setParent_Org(org.compiere.model.I_AD_Org Parent_Org)
+	public int getOrg_BPartner_ID () 
 	{
-		set_ValueFromPO(COLUMNNAME_Parent_Org_ID, org.compiere.model.I_AD_Org.class, Parent_Org);
+		Integer ii = (Integer)get_Value(COLUMNNAME_Org_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set OrgBP_Location_ID.
+		@param OrgBP_Location_ID 
+		Default BP Location linked to the org.
+	  */
+	@Override
+	public void setOrgBP_Location_ID (int OrgBP_Location_ID)
+	{
+		if (OrgBP_Location_ID < 1) 
+			set_Value (COLUMNNAME_OrgBP_Location_ID, null);
+		else 
+			set_Value (COLUMNNAME_OrgBP_Location_ID, Integer.valueOf(OrgBP_Location_ID));
+	}
+
+	/** Get OrgBP_Location_ID.
+		@return Default BP Location linked to the org.
+	  */
+	@Override
+	public int getOrgBP_Location_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_OrgBP_Location_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Übergeordnete Organisation.
@@ -393,16 +457,32 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 		return (java.lang.String)get_Value(COLUMNNAME_ReportPrefix);
 	}
 
+	/** 
+	 * StoreCreditCardData AD_Reference_ID=540197
+	 * Reference name: StoreCreditCardData
+	 */
+	public static final int STORECREDITCARDDATA_AD_Reference_ID=540197;
+	/** Speichern = STORE */
+	public static final String STORECREDITCARDDATA_Speichern = "STORE";
+	/** Nicht Speichern = DONT */
+	public static final String STORECREDITCARDDATA_NichtSpeichern = "DONT";
+	/** letzte 4 Stellen = LAST4 */
+	public static final String STORECREDITCARDDATA_Letzte4Stellen = "LAST4";
+	/** Set Speichung Kreditkartendaten.
+		@param StoreCreditCardData Speichung Kreditkartendaten	  */
 	@Override
-	public org.compiere.model.I_AD_User getSupervisor() throws RuntimeException
+	public void setStoreCreditCardData (java.lang.String StoreCreditCardData)
 	{
-		return get_ValueAsPO(COLUMNNAME_Supervisor_ID, org.compiere.model.I_AD_User.class);
+
+		set_Value (COLUMNNAME_StoreCreditCardData, StoreCreditCardData);
 	}
 
+	/** Get Speichung Kreditkartendaten.
+		@return Speichung Kreditkartendaten	  */
 	@Override
-	public void setSupervisor(org.compiere.model.I_AD_User Supervisor)
+	public java.lang.String getStoreCreditCardData () 
 	{
-		set_ValueFromPO(COLUMNNAME_Supervisor_ID, org.compiere.model.I_AD_User.class, Supervisor);
+		return (java.lang.String)get_Value(COLUMNNAME_StoreCreditCardData);
 	}
 
 	/** Set Vorgesetzter.
@@ -430,27 +510,24 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 		return ii.intValue();
 	}
 
-	/** Set Steuer-ID.
-		@param TaxID 
-		Tax Identification
-	  */
+	/** Set Time Zone.
+		@param TimeZone Time Zone	  */
 	@Override
-	public void setTaxID (java.lang.String TaxID)
+	public void setTimeZone (java.lang.String TimeZone)
 	{
-		set_Value (COLUMNNAME_TaxID, TaxID);
+		set_Value (COLUMNNAME_TimeZone, TimeZone);
 	}
 
-	/** Get Steuer-ID.
-		@return Tax Identification
-	  */
+	/** Get Time Zone.
+		@return Time Zone	  */
 	@Override
-	public java.lang.String getTaxID () 
+	public java.lang.String getTimeZone () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_TaxID);
+		return (java.lang.String)get_Value(COLUMNNAME_TimeZone);
 	}
 
 	@Override
-	public org.compiere.model.I_C_Bank getTransferBank() throws RuntimeException
+	public org.compiere.model.I_C_Bank getTransferBank()
 	{
 		return get_ValueAsPO(COLUMNNAME_TransferBank_ID, org.compiere.model.I_C_Bank.class);
 	}
@@ -487,7 +564,7 @@ public class X_AD_OrgInfo extends org.compiere.model.PO implements I_AD_OrgInfo,
 	}
 
 	@Override
-	public org.compiere.model.I_C_CashBook getTransferCashBook() throws RuntimeException
+	public org.compiere.model.I_C_CashBook getTransferCashBook()
 	{
 		return get_ValueAsPO(COLUMNNAME_TransferCashBook_ID, org.compiere.model.I_C_CashBook.class);
 	}

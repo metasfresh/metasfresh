@@ -144,7 +144,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="11" isBold="true"/>
+					<font size="11" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
 			</textField>
@@ -183,7 +183,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{dateacct}]]></textFieldExpression>
 			</textField>
@@ -193,7 +193,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{param_start_date} + " - " + $F{param_end_date}]]></textFieldExpression>
 			</textField>
@@ -211,7 +211,7 @@
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{activity}]]></textFieldExpression>
 			</textField>
@@ -221,7 +221,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{C_Activity_ID} != null ?
     $F{param_activity_value} + " - " + $F{param_activity_name}:
@@ -250,7 +250,7 @@
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement>
-					<font size="10" isBold="true"/>
+					<font size="10" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
@@ -259,7 +259,7 @@
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement>
-					<font size="10" isBold="true"/>
+					<font size="10" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
@@ -268,7 +268,7 @@
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement>
-					<font size="10" isBold="true"/>
+					<font size="10" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
@@ -439,7 +439,7 @@
 				</reportElement>
 				<box rightPadding="3"/>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{dateacct}]]></textFieldExpression>
 			</textField>
@@ -449,7 +449,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{amtacctcr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
@@ -459,7 +459,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{description}.equals("Anfangssaldo") ? $R{initial_balance} : 
 (
@@ -473,7 +473,7 @@
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bp_name}]]></textFieldExpression>
 			</textField>
@@ -482,7 +482,7 @@
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{amtacctdr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
@@ -491,7 +491,7 @@
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{fact_acct_id}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
@@ -500,7 +500,7 @@
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{a_value}]]></textFieldExpression>
 			</textField>
@@ -510,7 +510,7 @@
 				</reportElement>
 				<box rightPadding="3"/>
 				<textElement textAlignment="Left">
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{param_acct_value}]]></textFieldExpression>
 			</textField>
@@ -520,7 +520,7 @@
 				</reportElement>
 				<box rightPadding="3"/>
 				<textElement textAlignment="Left">
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{param_acct_name}]]></textFieldExpression>
 			</textField>
@@ -534,7 +534,7 @@
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{description}.equals("Anfangssaldo") ? $R{initial_balance} : 
 (
@@ -548,7 +548,7 @@
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{eurosaldo}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>

@@ -1,5 +1,6 @@
 package de.metas.handlingunits.shipmentschedule.spi.impl;
 
+import static de.metas.util.Check.assumeNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -33,6 +34,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -41,8 +43,6 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet.Builder;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -90,6 +90,10 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -98,9 +102,6 @@ import lombok.NonNull;
 
 /**
  * Aggregates given {@link IShipmentScheduleWithHU}s (see {@link #add(IShipmentScheduleWithHU)}) and creates the shipment line (see {@link #createShipmentLine()}).
- *
- * @author tsa
- *
  */
 /* package */class ShipmentLineBuilder
 {
@@ -126,10 +127,14 @@ import lombok.NonNull;
 
 	private Object attributesAggregationKey = null;
 	private OrderAndLineId orderLineId = null;
-	
+
 	private Quantity qtyEntered = null;
+
 	// note that we maintain both QtyEntered and MovementQty to avoid rounding/conversion issues
 	private Quantity movementQty = null;
+
+	// note that catchQty does not necessarily have a fixed UOM conversion rate with qtyEntered and movementQty
+	private Quantity catchQty = null;
 
 	/* Used to collect the candidates' QtyTU for the case that we need to create the shipment line without actually picked HUs. */
 	private HashMap<HUPIItemProductId, BigDecimal> piipId2TuQtyFromShipmentSchedule = new HashMap<>();
@@ -142,7 +147,7 @@ import lombok.NonNull;
 	private Set<HuId> alreadyAssignedTUIds = null; // to be configured by called
 
 	@Getter
-	private M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse = M_ShipmentSchedule_QuantityTypeToUse.TYPE_D; // #4507 keep this al fallback. This is how it was before the qtyTypeToUse introduction.
+	private M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse = M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER; // #4507 keep this al fallback. This is how it was before the qtyTypeToUse introduction.
 
 	//
 	// Manual packing materials related:
@@ -255,11 +260,17 @@ import lombok.NonNull;
 		productId = candidate.getProductId();
 		attributeValues.addAll(candidate.getAttributeValues());
 		attributesAggregationKey = candidate.getAttributesAggregationKey();
-		
+
 		qtyEntered = Quantity.zero(candidate.getUOM());
-		
-		final I_C_UOM stockingUOM = productBL.getStockingUOM(productId);
+
+		final I_C_UOM stockingUOM = productBL.getStockUOM(productId);
 		movementQty = Quantity.zero(stockingUOM);
+
+		final Optional<UomId> catchUOMId = productBL.getCatchUOMId(productId);
+		if (catchUOMId.isPresent())
+		{
+			catchQty = Quantitys.createZero(catchUOMId.get());
+		}
 
 		//
 		// Order Line Link (retrieved from current Shipment)
@@ -276,14 +287,23 @@ import lombok.NonNull;
 		final Quantity qtyToAdd = candidate.getQtyPicked();
 		if (qtyToAdd.signum() <= 0)
 		{
-			Loggables.get().addLog("IShipmentScheduleWithHU {} has QtyPicked={}", candidate, qtyToAdd);
+			Loggables.addLog("IShipmentScheduleWithHU {} has QtyPicked={}", candidate, qtyToAdd);
 		}
-		movementQty = movementQty.add(qtyToAdd); // NOTE: we assume qtyToAdd is in stocking UOM
+		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
+		final UomId stockUomId = productBL.getStockUOMId(productId);
+
+		final Quantity qtyToAddInStockUom = uomConversionBL.convertQuantityTo(qtyToAdd, conversionCtx, stockUomId);
+		movementQty = movementQty.add(qtyToAddInStockUom); // NOTE: we assume qtyToAdd is in stocking UOM
+
+		if (candidate.getCatchQty().isPresent())
+		{
+			// catchQty might be null in a unit test, if you forgot to set up a catch-UOM for the productId's product
+			assumeNotNull(catchQty, "Param candidate has a catch qty, but this instance has no catchQty; candidate={}; this={}", candidate, this);
+			catchQty = Quantitys.add(UOMConversionContext.of(productId), catchQty, candidate.getCatchQty().get());
+		}
 
 		// Convert qtyToAdd (from candidate) to shipment line's UOM
-		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
 		final Quantity qtyToAddConverted = uomConversionBL.convertQuantityTo(qtyToAdd, conversionCtx, qtyEntered.getUOM());
-
 		qtyEntered = qtyEntered.add(qtyToAddConverted);
 
 		// Enqueue candidate's LU/TU to list of HUs to be assigned
@@ -429,14 +449,26 @@ import lombok.NonNull;
 
 		//
 		// Qty Entered and UOM
-		shipmentLine.setC_UOM(qtyEntered.getUOM());
-		shipmentLine.setQtyEntered(qtyEntered.getAsBigDecimal());
+		shipmentLine.setC_UOM_ID(qtyEntered.getUomId().getRepoId());
+		shipmentLine.setQtyEntered(qtyEntered.toBigDecimal());
 
 		// Set MovementQty
 		{
 			// Don't do conversions. The movementQty which we summed up already contains exactly what we need (in the stocking-UOM!)
-			shipmentLine.setQtyCU_Calculated(movementQty.getAsBigDecimal());
-			shipmentLine.setMovementQty(movementQty.getAsBigDecimal());
+			shipmentLine.setQtyCU_Calculated(movementQty.toBigDecimal());
+			shipmentLine.setMovementQty(movementQty.toBigDecimal());
+		}
+
+		if (catchQty != null)
+		{
+			if (catchQty.signum() != 0)
+			{
+				shipmentLine.setQtyDeliveredCatch(catchQty.toBigDecimal());
+			}
+
+			// Set the catch UOM also if the shipmentline has no catch qty.
+			// Also we can end up with C_InvoiceCandidate_InoutLine records that refer to the same invoice candidate but have different UOMs
+			shipmentLine.setCatch_UOM_ID(catchQty.getUomId().getRepoId());
 		}
 
 		// Update packing materials info, if there is "one" info
@@ -463,17 +495,16 @@ import lombok.NonNull;
 				{
 					// there are no real HUs, *and* we don't have any infos from the shipment schedule;
 					// therefore, we make an educated guess, based on the packing instruction
-					final I_C_UOM productUOM = productBL.getStockingUOM(productId);
+					final I_C_UOM productUOM = productBL.getStockUOM(productId);
 					final Capacity capacity = Services.get(IHUCapacityBL.class).getCapacity(piipForShipmentLine, productId, productUOM);
-					final Integer qtyTUFromCapacity = capacity.calculateQtyTU(movementQty.getAsBigDecimal(), productUOM);
+					final Integer qtyTUFromCapacity = capacity.calculateQtyTU(movementQty.toBigDecimal(), productUOM);
 					shipmentLine.setQtyTU_Override(BigDecimal.valueOf(qtyTUFromCapacity));
 				}
 			}
 		}
 		else
 		{
-			Loggables.get()
-					.withLogger(logger, Level.INFO)
+			Loggables.withLogger(logger, Level.INFO)
 					.addLog("Not setting the shipment line's M_HU_PI_Item_Product, because the added ShipmentScheduleWithHUs have different ones; huPIItemProducts={}",
 							packingMaterial_huPIItemProducts);
 		}
@@ -543,7 +574,7 @@ import lombok.NonNull;
 			final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
 			final IHUStorage huStorageFrom = storageFactory.getStorage(hu);
 
-			final I_C_UOM productUOM = productBL.getStockingUOM(productId);
+			final I_C_UOM productUOM = productBL.getStockUOM(productId);
 			final IHUAttributeTransferRequestBuilder requestBuilder = new HUAttributeTransferRequestBuilder(huContext)
 					.setProductId(productId)
 					.setQty(shipmentLine.getMovementQty())

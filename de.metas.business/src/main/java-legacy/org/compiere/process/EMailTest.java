@@ -63,7 +63,7 @@ public class EMailTest extends JavaProcess
 		}
 		
 		//	Test Client DocumentDir
-		if (!Ini.isClient())
+		if (!Ini.isSwingClient())
 		{
 			String documentDir = client.getDocumentDir();
 			if (documentDir == null || documentDir.length() == 0)

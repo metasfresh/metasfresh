@@ -13,15 +13,14 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.equalTo;
@@ -33,19 +32,27 @@ import static org.junit.Assert.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import de.metas.StartupListener;
+import de.metas.currency.CurrencyRepository;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.invoicecandidate.api.IInvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
+import de.metas.invoicecandidate.api.InvoiceCandidateInOutLineToUpdate;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.MoneyService;
 
 /**
  * More that what was delivered shall be invoiced. See {@link #config_GetQtyToInvoice_Override()}.
  *
  * @see AbstractDoubleReceiptQtyOverride
- * @author ts
- *
  */
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, /* ShutdownListener.class,*/ MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
 public class TestDoubleReceiptInvoiceMoreThanReceived extends AbstractDoubleReceiptQtyOverride
 {
 
@@ -70,14 +77,14 @@ public class TestDoubleReceiptInvoiceMoreThanReceived extends AbstractDoubleRece
 
 		final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol111);
 		assertNotNull("Missing IInvoiceLineRW for iol111=" + iol111, il1);
-		assertThat(il1.getQtyToInvoice(), comparesEqualTo(config_GetQtyToInvoice_Override()));
+		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(config_GetQtyToInvoice_Override()));
 		assertThat(il1.getC_InvoiceCandidate_InOutLine_IDs().size(), equalTo(2));
 
-		final IInvoiceCandidateInOutLineToUpdate icIolToUpdate111 = retrieveIcIolToUpdateIfExists(il1,iol111);
-		assertThat(icIolToUpdate111.getQtyInvoiced(), is(FIFTY));
+		final InvoiceCandidateInOutLineToUpdate icIolToUpdate111 = retrieveIcIolToUpdateIfExists(il1, iol111);
+		assertThat(icIolToUpdate111.getQtyInvoiced().getStockQty().toBigDecimal(), is(FIFTY));
 
-		final IInvoiceCandidateInOutLineToUpdate icIolToUpdate121 =retrieveIcIolToUpdateIfExists(il1, iol121);
-		assertThat(icIolToUpdate121.getQtyInvoiced(), is(FIFTY.add(TWENTY)));
+		final InvoiceCandidateInOutLineToUpdate icIolToUpdate121 = retrieveIcIolToUpdateIfExists(il1, iol121);
+		assertThat(icIolToUpdate121.getQtyInvoiced().getStockQty().toBigDecimal(), is(FIFTY.add(TWENTY)));
 	}
 
 	/**

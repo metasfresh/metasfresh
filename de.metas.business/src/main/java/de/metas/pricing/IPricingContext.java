@@ -23,7 +23,7 @@ package de.metas.pricing;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -33,9 +33,12 @@ import org.compiere.model.I_M_PriceList_Version;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
+import de.metas.util.OptionalBoolean;
 
 public interface IPricingContext extends IContextAware
 {
@@ -59,9 +62,9 @@ public interface IPricingContext extends IContextAware
 	 *
 	 * @return pricing evaluation date; never returns null.
 	 */
-	Timestamp getPriceDate();
+	LocalDate getPriceDate();
 
-	int getC_UOM_ID();
+	UomId getUomId();
 
 	CurrencyId getCurrencyId();
 
@@ -110,9 +113,9 @@ public interface IPricingContext extends IContextAware
 	 * @return returns the context value or <code>null</code> if unspecified. In this case the pricing engine shall check if the references object&model has a <code>IsManualPrice</code> field to go
 	 *         with.
 	 */
-	Boolean isManualPrice();
+	OptionalBoolean getManualPriceEnabled();
 
-	int getC_Country_ID();
+	CountryId getCountryId();
 
 	boolean isFailIfNotCalculated();
 

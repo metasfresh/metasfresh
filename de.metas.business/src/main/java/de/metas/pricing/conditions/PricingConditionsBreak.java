@@ -1,15 +1,17 @@
 package de.metas.pricing.conditions;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
 
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -43,7 +45,7 @@ public class PricingConditionsBreak
 	PricingConditionsBreakMatchCriteria matchCriteria;
 	int seqNo;
 
-	PriceOverride priceOverride;
+	PriceSpecification priceSpecification;
 
 	//
 	// Discount%
@@ -62,7 +64,10 @@ public class PricingConditionsBreak
 	// Quality
 	BigDecimal qualityDiscountPercentage;
 
-	LocalDateTime dateCreated;
+	Instant dateCreated;
+
+	UserId createdById;
+
 	boolean hasChanges;
 
 	@Builder(toBuilder = true)
@@ -70,20 +75,21 @@ public class PricingConditionsBreak
 			final PricingConditionsBreakId id,
 			@NonNull final PricingConditionsBreakMatchCriteria matchCriteria,
 			final int seqNo,
-			@NonNull final PriceOverride priceOverride,
+			@NonNull final PriceSpecification priceSpecification,
 			final boolean bpartnerFlatDiscount,
 			final Percent discount,
 			@Nullable final PaymentTermId paymentTermIdOrNull,
 			@Nullable final Percent paymentDiscountOverrideOrNull,
 			@Nullable final PaymentTermId derivedPaymentTermIdOrNull,
 			final BigDecimal qualityDiscountPercentage,
-			final LocalDateTime dateCreated,
+			final Instant dateCreated,
+			final UserId createdById,
 			final boolean hasChanges)
 	{
 		this.id = id;
 		this.matchCriteria = matchCriteria;
 		this.seqNo = seqNo;
-		this.priceOverride = priceOverride;
+		this.priceSpecification = priceSpecification;
 		this.bpartnerFlatDiscount = bpartnerFlatDiscount;
 		this.discount = discount != null ? discount : Percent.ZERO;
 		this.qualityDiscountPercentage = qualityDiscountPercentage;
@@ -93,6 +99,8 @@ public class PricingConditionsBreak
 		this.derivedPaymentTermIdOrNull = derivedPaymentTermIdOrNull;
 
 		this.dateCreated = dateCreated;
+		this.createdById = createdById;
+
 		this.hasChanges = hasChanges;
 	}
 
@@ -114,11 +122,11 @@ public class PricingConditionsBreak
 			return true;
 		}
 
-		return Objects.equals(priceOverride, reference.priceOverride)
-				&& Objects.equals(discount, reference.discount)
-				&& Objects.equals(bpartnerFlatDiscount, reference.bpartnerFlatDiscount)
+		return Objects.equals(priceSpecification, reference.priceSpecification)
+				&& Objects.equals(coalesce(discount, Percent.ZERO), coalesce(reference.discount, Percent.ZERO))
+				&& Objects.equals(coalesce(bpartnerFlatDiscount, Percent.ZERO), coalesce(reference.bpartnerFlatDiscount, Percent.ZERO))
 				&& Objects.equals(paymentTermIdOrNull, reference.paymentTermIdOrNull)
-				&& Objects.equals(paymentDiscountOverrideOrNull, reference.paymentDiscountOverrideOrNull)
+				&& Objects.equals(coalesce(paymentDiscountOverrideOrNull, Percent.ZERO), coalesce(reference.paymentDiscountOverrideOrNull, Percent.ZERO))
 				&& Objects.equals(derivedPaymentTermIdOrNull, reference.derivedPaymentTermIdOrNull);
 	}
 
@@ -137,7 +145,7 @@ public class PricingConditionsBreak
 		return toBuilder().id(null).build();
 	}
 
-	public PricingConditionsBreak toTemporaryPricingConditionsBreakIfPriceRelevantFieldsChanged(final PricingConditionsBreak reference)
+	public PricingConditionsBreak toTemporaryPricingConditionsBreakIfPriceRelevantFieldsChanged(@NonNull final PricingConditionsBreak reference)
 	{
 		if (isTemporaryPricingConditionsBreak())
 		{

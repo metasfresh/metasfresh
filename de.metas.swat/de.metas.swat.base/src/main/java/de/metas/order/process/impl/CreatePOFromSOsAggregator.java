@@ -6,8 +6,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.warehouse.WarehouseId;
@@ -20,6 +18,8 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 import de.metas.order.IOrderBL;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.MapReduceAggregator;
@@ -100,7 +100,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		final String msg = msgBL.getMsg(context.getCtx(),
 				MSG_PURCHASE_ORDER_CREATED,
 				new Object[] { purchaseOrder.getDocumentNo() });
-		Loggables.get().addLog(msg);
+		Loggables.addLog(msg);
 
 		return purchaseOrder;
 	}
@@ -127,7 +127,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		}
 		catch (Throwable t)
 		{
-			Loggables.get().addLog("@Error@: " + t);
+			Loggables.addLog("@Error@: " + t);
 			throw AdempiereException.wrapIfNeeded(t);
 		}
 	}
@@ -242,7 +242,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 			}
 			else
 			{
-				Loggables.get().addLog("@Missing@ @AD_OrgInfo@ @DropShip_Warehouse_ID@");
+				Loggables.addLog("@Missing@ @AD_OrgInfo@ @DropShip_Warehouse_ID@");
 			}
 		}
 		// References

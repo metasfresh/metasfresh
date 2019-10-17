@@ -29,9 +29,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.user.UserRepository;
 import org.adempiere.util.test.ErrorMessage;
 import org.adempiere.warehouse.LocatorId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
@@ -39,12 +39,13 @@ import org.compiere.model.I_M_Warehouse;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
 
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.MailboxRepository;
+import de.metas.email.templates.MailTemplateRepository;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -52,6 +53,7 @@ import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
 import de.metas.product.ProductId;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 
 public abstract class AbstractHUTest
@@ -150,14 +152,14 @@ public abstract class AbstractHUTest
 	 * Watches current test and dumps the database to console in case of failure
 	 */
 	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher()
+	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher()
 	{
 		@Override
-		protected void failed(final Throwable e, final Description description)
+		protected void onTestFailed(final String testName, final Throwable exception)
 		{
-			super.failed(e, description);
+			super.onTestFailed(testName, exception);
 			afterTestFailed();
-		}
+		};
 	};
 
 	@Before
@@ -166,6 +168,7 @@ public abstract class AbstractHUTest
 		setupMasterData();
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		SpringContextHolder.registerJUnitBean(new MailService(new MailboxRepository(), new MailTemplateRepository()));
 
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 

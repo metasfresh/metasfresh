@@ -1,6 +1,6 @@
 package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,13 +13,14 @@ import java.util.TreeMap;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
@@ -28,6 +29,7 @@ import com.google.common.collect.ListMultimap;
 
 import de.metas.document.engine.IDocument;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.IMaterialTrackingAware;
 import de.metas.materialtracking.model.I_M_InOutLine;
@@ -35,11 +37,15 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionOrder;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -54,11 +60,11 @@ import de.metas.util.Services;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -70,7 +76,7 @@ import de.metas.util.Services;
  */
 /* package */final class MaterialTrackingDocumentsPricingInfo
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -79,27 +85,23 @@ import de.metas.util.Services;
 	private final ImmutableMap<Integer, IVendorReceipt<I_M_InOutLine>> plvId2vendorReceipt;
 	private final ImmutableMap<Integer, I_M_PriceList_Version> plvs;
 
-	private MaterialTrackingDocumentsPricingInfo(final Builder builder)
+	private MaterialTrackingDocumentsPricingInfo(@NonNull final Builder builder)
 	{
-		super();
-
 		plvId2qiOrders = ImmutableListMultimap.copyOf(builder.plvId2qiOrders);
 		plvId2vendorReceipt = ImmutableMap.copyOf(builder.plvId2vendorReceipt);
 		plvs = ImmutableMap.copyOf(builder.plvs);
 	}
 
-	public final Collection<I_M_PriceList_Version> getPriceListVersions()
+	public Collection<I_M_PriceList_Version> getPriceListVersions()
 	{
 		return plvs.values();
 	}
 
 	/**
-	 * @param plv
 	 * @return those {@link IQualityInspectionOrder}s that are not yet invoiced.
 	 */
-	public final List<IQualityInspectionOrder> getQualityInspectionOrdersForPLV(final I_M_PriceList_Version plv)
+	public List<IQualityInspectionOrder> getQualityInspectionOrdersForPLV(@NonNull final I_M_PriceList_Version plv)
 	{
-		Check.assumeNotNull(plv, "Param plv not null");
 		return plvId2qiOrders.get(plv.getM_PriceList_Version_ID());
 	}
 
@@ -215,7 +217,7 @@ import de.metas.util.Services;
 			return new MaterialTrackingDocumentsPricingInfo(this);
 		}
 
-		private ImmutablePair<I_M_PriceList_Version, List<I_M_InOutLine>> providePriceListVersionOrNullForPPOrder(final I_PP_Order ppOrder)
+		private ImmutablePair<I_M_PriceList_Version, List<I_M_InOutLine>> providePriceListVersionOrNullForPPOrder(@NonNull final I_PP_Order ppOrder)
 		{
 			I_M_PriceList_Version plv = null;
 
@@ -224,6 +226,12 @@ import de.metas.util.Services;
 			final List<I_M_InOutLine> issuedInOutLinesForPPOrder = materialTrackingPPOrderBL.retrieveIssuedInOutLines(ppOrder);
 			for (final I_M_InOutLine inOutLine : issuedInOutLinesForPPOrder)
 			{
+				if (inOutLine.getM_Material_Tracking_ID() != _materialTracking.getM_Material_Tracking_ID())
+				{
+					// someone issued stuff from an unrelated inoutLine to our ppOrder => ignore that iol
+					continue;
+				}
+
 				final I_M_PriceList_Version inOutLinePLV = retrivePLV(inOutLine);
 				Check.errorIf(inOutLinePLV == null, "Unable to retrieve a plv for inOutLine {} and pricingSystem {}.", inOutLine, getM_PricingSystem());
 
@@ -236,7 +244,7 @@ import de.metas.util.Services;
 					// note that this shall actually be prevented by the system in the first place
 					Check.errorIf(
 							true,
-							"For an earlier inOutLine the priceListVersion {} was retreived, but for inOutLine {}, the priceListVersion {} was retrieved;\npricingSystem: {};\nppOrder",
+							"For an earlier inOutLine the PLV {} was retrieved, but for inOutLine {}, the PVL {} was retrieved;\npricingSystem: {};\nppOrder: {}",
 							plv, inOutLine, inOutLinePLV, getM_PricingSystem(), ppOrder);
 				}
 			}
@@ -247,25 +255,26 @@ import de.metas.util.Services;
 		private I_M_PriceList_Version retrivePLV(final I_M_InOutLine inOutLine)
 		{
 			final I_M_PricingSystem pricingSystem = getM_PricingSystem();
-			final int countryId = inOutLine.getM_InOut().getC_BPartner_Location().getC_Location().getC_Country_ID();
+			final CountryId countryId = CountryId.ofRepoId(inOutLine.getM_InOut().getC_BPartner_Location().getC_Location().getC_Country_ID());
 			final Iterator<I_M_PriceList> priceLists = priceListDAO.retrievePriceLists(
 					PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()),
 					countryId,
-					SOTrx.PURCHASE);
+					SOTrx.PURCHASE)
+					.iterator();
 
 			if (!priceLists.hasNext())
 			{
-				Loggables.get().addLog("Unable to retrieve a priceList for pricingSystem {0} and country {1}.", pricingSystem, countryId);
+				Loggables.addLog("Unable to retrieve a priceList for pricingSystem {0} and country {1}.", pricingSystem, countryId);
 				return null;
 			}
 
-			final Timestamp movementDate = inOutLine.getM_InOut().getMovementDate();
+			final LocalDate movementDate = TimeUtil.asLocalDate(inOutLine.getM_InOut().getMovementDate());
 			final I_M_PriceList priceList = priceLists.next();
 			final Boolean processedPLVFiltering = true; // task 09533: in material-tracking we work only with PLVs that are cleared
 			final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(priceList, movementDate, processedPLVFiltering);
 			if (plv == null)
 			{
-				Loggables.get().addLog("Unable to retrieve a processed priceListVersion for priceList {0} and movementDate {1}.", priceList, movementDate);
+				Loggables.addLog("Unable to retrieve a processed priceListVersion for priceList {0} and movementDate {1}.", priceList, movementDate);
 			}
 			return plv;
 		}
@@ -276,7 +285,7 @@ import de.metas.util.Services;
 		 * @param plv
 		 * @return
 		 */
-		private final IVendorReceipt<I_M_InOutLine> createVendorReceipt(final I_M_PriceList_Version plv)
+		private IVendorReceipt<I_M_InOutLine> createVendorReceipt(final I_M_PriceList_Version plv)
 		{
 			//
 			// now get *all* the receipt lines that took place while the PLV was valid
@@ -285,7 +294,7 @@ import de.metas.util.Services;
 					.addInArrayOrAllFilter(I_M_InOut.COLUMN_DocStatus, IDocument.STATUS_Completed, IDocument.STATUS_Closed)
 					.addCompareFilter(I_M_InOut.COLUMN_MovementDate, Operator.GREATER_OR_EQUAL, plv.getValidFrom());
 
-			final I_M_PriceList_Version nextPLV = priceListDAO.retrieveNextVersionOrNull(plv);
+			final I_M_PriceList_Version nextPLV = priceListDAO.retrieveNextVersionOrNull(plv, true /* onlyProcessed */ );
 			if (nextPLV != null)
 			{
 				inOutFilter.addCompareFilter(I_M_InOut.COLUMN_MovementDate, Operator.LESS, nextPLV.getValidFrom());
@@ -303,7 +312,10 @@ import de.metas.util.Services;
 					.create()
 					.iterate(I_M_InOutLine.class);
 
-			final InOutLineAsVendorReceipt vendorReceipt = new InOutLineAsVendorReceipt(_materialTracking.getM_Product());
+			final ProductId productId = ProductId.ofRepoId(_materialTracking.getM_Product_ID());
+			final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+			
+			final InOutLineAsVendorReceipt vendorReceipt = new InOutLineAsVendorReceipt(product);
 			vendorReceipt.setPlv(plv);
 
 			while (inOutLines.hasNext())
@@ -324,14 +336,20 @@ import de.metas.util.Services;
 			return this;
 		}
 
-		public Builder setM_PricingSystemOf(final I_M_PriceList_Version plv)
+		public Builder setM_PricingSystemOf(@NonNull final I_M_PriceList_Version plv)
 		{
-			Check.assumeNotNull(plv, "plv not null");
-			final I_M_PricingSystem pricingSystem = InterfaceWrapperHelper.create(plv.getM_PriceList(), I_M_PriceList.class).getM_PricingSystem();
+			final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+
+			final PriceListId priceListId = PriceListId.ofRepoId(plv.getM_PriceList_ID());
+			I_M_PriceList priceList = priceListsRepo.getById(priceListId);
+
+			final PricingSystemId pricingSystemId = PricingSystemId.ofRepoIdOrNull(priceList.getM_PricingSystem_ID());
+			final I_M_PricingSystem pricingSystem = priceListsRepo.getPricingSystemById(pricingSystemId);
+
 			return setM_PricingSystem(pricingSystem);
 		}
 
-		private final I_M_PricingSystem getM_PricingSystem()
+		private I_M_PricingSystem getM_PricingSystem()
 		{
 			Check.assumeNotNull(_pricingSystem, "_pricingSystem not null");
 			return _pricingSystem;
@@ -343,7 +361,7 @@ import de.metas.util.Services;
 			return this;
 		}
 
-		private final int getM_Material_Tracking_ID()
+		private int getM_Material_Tracking_ID()
 		{
 			Check.assumeNotNull(_materialTracking, "_materialTracking not null");
 			return _materialTracking.getM_Material_Tracking_ID();

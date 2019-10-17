@@ -85,7 +85,7 @@ public class M_ReceiptSchedule_ReOpen extends JavaProcess implements IProcessPre
 	private void reopenInTrx(final I_M_ReceiptSchedule receiptSchedule)
 	{
 		Services.get(ITrxManager.class)
-				.run(new TrxRunnable()
+				.runInNewTrx(new TrxRunnable()
 				{
 					@Override
 					public void run(String localTrxName) throws Exception

@@ -68,7 +68,7 @@ public class PickingCandidate
 	@Default
 	private PickingCandidateApprovalStatus approvalStatus = PickingCandidateApprovalStatus.TO_BE_APPROVED;
 
-	@NonNull
+	@Nullable
 	private final HuId pickFromHuId;
 
 	@NonNull
@@ -140,10 +140,16 @@ public class PickingCandidate
 	{
 		return PickingCandidateStatus.Processed.equals(getStatus());
 	}
-	
+
 	public boolean isRejectedToPick()
 	{
-		return PickingCandidatePickStatus.WILL_NOT_BE_PICKED.equals(pickStatus);
+		return PickingCandidatePickStatus.WILL_NOT_BE_PICKED.equals(getPickStatus());
+	}
+
+	public boolean isPacked()
+	{
+		return PickingCandidatePickStatus.PACKED.equals(getPickStatus())
+				&& getPackedToHuId() != null;
 	}
 
 	private void assertNotApproved()
@@ -155,20 +161,17 @@ public class PickingCandidate
 		}
 	}
 
-	private void assertApprovable()
-	{
-		if (!pickStatus.isPacked())
-		{
-			throw new AdempiereException("Picking candidate is not approvable because it's not packed: " + this);
-		}
-	}
-
 	public void changeStatusToDraft()
 	{
 		setStatus(PickingCandidateStatus.Draft);
 	}
 
-	public void changeStatusToProcessed(@NonNull final HuId packedToHuId)
+	public void changeStatusToProcessed()
+	{
+		changeStatusToProcessed(getPickFromHuId());
+	}
+
+	public void changeStatusToProcessed(@Nullable final HuId packedToHuId)
 	{
 		setPackedToHuId(packedToHuId);
 		setStatus(PickingCandidateStatus.Processed);
@@ -196,11 +199,10 @@ public class PickingCandidate
 		qtyPicked = qtyRejected;
 		pickStatus = PickingCandidatePickStatus.WILL_NOT_BE_PICKED;
 	}
-	
+
 	public void packTo(final HuPackingInstructionsId packToInstructionsId)
 	{
 		assertDraft();
-		assertNotApproved();
 
 		if (!pickStatus.isPickedOrPacked())
 		{
@@ -211,11 +213,14 @@ public class PickingCandidate
 		pickStatus = computePickOrPackStatus(this.packToInstructionsId);
 	}
 
-
 	public void reviewPicking(final BigDecimal qtyReview)
 	{
 		assertDraft();
-		assertApprovable();
+
+		if (!pickStatus.isPickedOrPacked() && !pickStatus.isPickRejected())
+		{
+			throw new AdempiereException("Picking candidate is not approvable because it's not picked or packed: " + this);
+		}
 
 		this.qtyReview = qtyReview;
 		approvalStatus = computeApprovalStatus(qtyPicked, this.qtyReview, pickStatus);
@@ -236,7 +241,7 @@ public class PickingCandidate
 		}
 		else
 		{
-			qtyReviewToMatch = qtyPicked.getAsBigDecimal();
+			qtyReviewToMatch = qtyPicked.toBigDecimal();
 		}
 
 		//
@@ -249,7 +254,6 @@ public class PickingCandidate
 			return PickingCandidateApprovalStatus.REJECTED;
 		}
 	}
-
 
 	private static PickingCandidatePickStatus computePickOrPackStatus(final HuPackingInstructionsId packToInstructionsId)
 	{

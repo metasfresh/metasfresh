@@ -17,15 +17,10 @@
 package org.compiere.model;
 
 import java.math.BigDecimal;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -210,64 +205,4 @@ public class MTax extends X_C_Tax
 	{
 		return delete_Accounting("C_Tax_Acct"); 
 	}	//	beforeDelete
-
-
-	//CHANGED: metas: getRevenueAccount added
-	/**
-	 * Get the tax dependent revenue account.
-	 * @param C_Tax_ID
-	 * @param as Accounting Schema
-	 * @return MAccount
-	 */
-	public static MAccount getRevenueAccount(int C_Tax_ID, MAcctSchema as) {
-		String sql = "SELECT T_Revenue_Acct FROM C_Tax_Acct WHERE C_Tax_ID=? AND C_AcctSchema_ID=?";
-		int Account_ID = 0;
-		try {
-			PreparedStatement pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, C_Tax_ID);
-			pstmt.setInt (2, as.getC_AcctSchema_ID());
-			ResultSet rs = pstmt.executeQuery();
-			if (rs.next())
-				Account_ID = rs.getInt(1);
-			rs.close();
-			pstmt.close();
-		} catch (SQLException e) {
-			s_log.error(sql, e);
-			return null;
-		}
-		// No account
-		if (Account_ID == 0) {
-			s_log.error("NO account for C_Tax_ID=" + C_Tax_ID);
-			return null;
-		}
-
-		// Return Account
-		MAccount acct = MAccount.get(Env.getCtx(), Account_ID);
-		return acct;
-	}
-
-
-	public static MAccount getDiscountAccount(final int C_Tax_ID, final boolean isDiscountExpense, final MAcctSchema as)
-	{
-		String sql = "SELECT T_PayDiscount_Exp_Acct FROM C_Tax_Acct WHERE C_Tax_ID=? AND C_AcctSchema_ID=?";
-		if(!isDiscountExpense)
-		{
-			sql = "SELECT T_PayDiscount_Rev_Acct FROM C_Tax_Acct WHERE C_Tax_ID=? AND C_AcctSchema_ID=?";
-		}
-		
-		
-		final int Account_ID = DB.getSQLValueEx(ITrx.TRXNAME_None, sql, C_Tax_ID, as.getC_AcctSchema_ID());
-		// No account
-		if (Account_ID <= 0)
-		{
-			s_log.error("NO account for C_Tax_ID=" + C_Tax_ID);
-			return null;
-		}
-
-		// Return Account
-		final MAccount acct = MAccount.get(Env.getCtx(), Account_ID);
-		return acct;
-	}
-
-
 }	//	MTax

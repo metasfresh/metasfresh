@@ -51,21 +51,21 @@
 			<textField>
 				<reportElement key="textField-20" positionType="FixRelativeToBottom" x="411" y="9" width="40" height="13" forecolor="#000000" uuid="e142ec9a-a917-41ab-acaa-50af6e9409f0"/>
 				<textElement verticalAlignment="Top" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-16" positionType="FixRelativeToBottom" isPrintRepeatedValues="false" x="35" y="11" width="110" height="13" forecolor="#000000" uuid="392bf1a3-7fea-4d08-a5fe-3ed5f108631b"/>
 				<textElement verticalAlignment="Top" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{container}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-19" positionType="FixRelativeToBottom" isPrintRepeatedValues="false" x="370" y="9" width="40" height="13" forecolor="#000000" uuid="02b44d7f-303d-4bee-96fb-a5c1fd2744d1"/>
 				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
@@ -97,14 +97,14 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font fontName="SansSerif" size="10"/>
+					<font fontName="Arial" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{container}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" positionType="FixRelativeToBottom" x="411" y="0" width="40" height="13" forecolor="#000000" uuid="0491364b-5318-4c65-a2f8-66a83b8149b8"/>
 				<textElement verticalAlignment="Top" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Stk"]]></textFieldExpression>
 			</textField>

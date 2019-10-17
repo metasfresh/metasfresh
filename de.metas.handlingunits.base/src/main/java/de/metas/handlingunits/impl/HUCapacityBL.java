@@ -25,11 +25,11 @@ package de.metas.handlingunits.impl;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUCapacityBL;
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -38,6 +38,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -99,8 +100,9 @@ public class HUCapacityBL implements IHUCapacityBL
 		}
 
 		final BigDecimal qty = itemDefProduct.getQty();
+		final I_C_UOM qtyUOM = IHUPIItemProductBL.extractUOMOrNull(itemDefProduct);
 		final BigDecimal qtyConv = Services.get(IUOMConversionBL.class)
-				.convertQty(productToUseId, qty, itemDefProduct.getC_UOM(), uom);
+				.convertQty(productToUseId, qty, qtyUOM, uom);
 
 		final boolean allowNegativeCapacity = false;
 

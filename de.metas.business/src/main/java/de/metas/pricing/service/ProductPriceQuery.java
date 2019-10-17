@@ -14,14 +14,12 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import de.metas.logging.LogManager;
@@ -29,6 +27,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -63,7 +62,6 @@ public class ProductPriceQuery
 {
 	private static final Logger logger = LogManager.getLogger(ProductPriceQuery.class);
 
-	private Object _contextProvider;
 	private PriceListVersionId _priceListVersionId;
 	private ProductId _productId;
 
@@ -73,6 +71,8 @@ public class ProductPriceQuery
 	private Boolean _scalePrice;
 
 	private Map<String, IProductPriceQueryMatcher> _additionalMatchers = null;
+
+	private boolean _onlyValidPrices = true;
 
 	/* package */ ProductPriceQuery()
 	{
@@ -87,12 +87,18 @@ public class ProductPriceQuery
 				.add("productId", _productId)
 				//
 				.add("attributePricing", _attributePricing)
+				.add("onlyValidPrices", _onlyValidPrices)
 				.add("asiToMatch", _attributePricing_asiToMatch)
 				//
 				.add("scalePrice", _scalePrice)
 				//
 				.add("additionalMatchers", _additionalMatchers == null || _additionalMatchers.isEmpty() ? null : _additionalMatchers)
 				.toString();
+	}
+
+	public List<I_M_ProductPrice> list()
+	{
+		return toQuery().list();
 	}
 
 	/** @return first matching product price or null */
@@ -116,24 +122,31 @@ public class ProductPriceQuery
 	}
 
 	/** @return true if there is at least one product price that matches */
-	public boolean matches()
+	boolean matches()
 	{
 		return toQuery().match();
 	}
 
-	public I_M_ProductPrice retrieveDefault(final boolean strictDefault)
+	public <T extends I_M_ProductPrice> T retrieveStrictDefault(@NonNull final Class<T> type)
 	{
-		return retrieveDefault(strictDefault, I_M_ProductPrice.class);
+		boolean strictDefault = true;
+		return retrieveDefault(strictDefault, type);
+	}
+
+	public <T extends I_M_ProductPrice> T retrieveDefault(@NonNull final Class<T> type)
+	{
+		boolean strictDefault = false;
+		return retrieveDefault(strictDefault, type);
 	}
 
 	/**
-	 * 
+	 *
 	 * @param strictDefault if {@code true}, the method throws an exception if there is more than one match.
 	 *            If {@code false, it silently returns the first match which has the lowest sequence number.
 	 * 			@param type
 	 * @return
 	 */
-	public <T extends I_M_ProductPrice> T retrieveDefault(final boolean strictDefault, final Class<T> type)
+	private <T extends I_M_ProductPrice> T retrieveDefault(final boolean strictDefault, @NonNull final Class<T> type)
 	{
 		final IQueryBuilder<I_M_ProductPrice> queryBuilder = toQueryBuilder();
 		if (strictDefault)
@@ -173,18 +186,26 @@ public class ProductPriceQuery
 		return strictDefaultSecondTry;
 	}
 
-	public IQuery<I_M_ProductPrice> toQuery()
+	private IQuery<I_M_ProductPrice> toQuery()
 	{
 		return toQueryBuilder().create();
 	}
 
-	public IQueryBuilder<I_M_ProductPrice> toQueryBuilder()
+	private IQueryBuilder<I_M_ProductPrice> toQueryBuilder()
 	{
 		final IQueryBuilder<I_M_ProductPrice> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ProductPrice.class, getContextProvider())
+				.createQueryBuilder(I_M_ProductPrice.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, getPriceListVersionId())
 				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, getProductId());
+
+		// Ignore invalid prices
+		final boolean isOnlyValidPrices = isOnlyValidPrices();
+
+		if (isOnlyValidPrices)
+		{
+			queryBuilder.addNotEqualsFilter(I_M_ProductPrice.COLUMN_IsInvalidPrice, true);
+		}
 
 		//
 		// Attribute pricing records
@@ -229,33 +250,9 @@ public class ProductPriceQuery
 		return queryBuilder;
 	}
 
-	public ProductPriceQuery setContextProvider(final Object contextProvider)
-	{
-		_contextProvider = contextProvider;
-		return this;
-	}
-
-	private Object getContextProvider()
-	{
-		Check.assumeNotNull(_contextProvider, "Parameter contextProvider is not null for {}", this);
-		return _contextProvider;
-	}
-
-	public ProductPriceQuery setM_PriceList_Version_ID(final int priceListVersionId)
-	{
-		setPriceListVersionId(PriceListVersionId.ofRepoIdOrNull(priceListVersionId));
-		return this;
-	}
-
-	public ProductPriceQuery setPriceListVersionId(final PriceListVersionId priceListVersionId)
+	ProductPriceQuery setPriceListVersionId(final PriceListVersionId priceListVersionId)
 	{
 		this._priceListVersionId = priceListVersionId;
-		return this;
-	}
-
-	public ProductPriceQuery setM_PriceList_Version_ID(@NonNull final I_M_PriceList_Version priceListVersion)
-	{
-		setM_PriceList_Version_ID(priceListVersion.getM_PriceList_Version_ID());
 		return this;
 	}
 
@@ -265,21 +262,9 @@ public class ProductPriceQuery
 		return _priceListVersionId;
 	}
 
-	public ProductPriceQuery setM_Product_ID(final int productId)
-	{
-		setProductId(ProductId.ofRepoIdOrNull(productId));
-		return this;
-	}
-
 	public ProductPriceQuery setProductId(final ProductId productId)
 	{
 		_productId = productId;
-		return this;
-	}
-
-	public ProductPriceQuery setM_Product_ID(final I_M_Product product)
-	{
-		setM_Product_ID(product == null ? -1 : product.getM_Product_ID());
 		return this;
 	}
 
@@ -295,6 +280,17 @@ public class ProductPriceQuery
 		_attributePricing = Boolean.FALSE;
 		_attributePricing_asiToMatch = null;
 		return this;
+	}
+
+	public ProductPriceQuery onlyValidPrices(final boolean onlyValidPrices)
+	{
+		_onlyValidPrices = onlyValidPrices;
+		return this;
+	}
+
+	public boolean isOnlyValidPrices()
+	{
+		return _onlyValidPrices;
 	}
 
 	/** Matches any product price which is marked as "attributed pricing" */
@@ -395,7 +391,7 @@ public class ProductPriceQuery
 		return _additionalMatchers.values();
 	}
 
-	public static interface IProductPriceQueryMatcher
+	public interface IProductPriceQueryMatcher
 	{
 		String getName();
 
@@ -404,7 +400,7 @@ public class ProductPriceQuery
 
 	public static final class ProductPriceQueryMatcher implements IProductPriceQueryMatcher
 	{
-		public static final ProductPriceQueryMatcher of(final String name, final IQueryFilter<I_M_ProductPrice> filter)
+		public static ProductPriceQueryMatcher of(final String name, final IQueryFilter<I_M_ProductPrice> filter)
 		{
 			return new ProductPriceQueryMatcher(name, filter);
 		}
@@ -445,7 +441,7 @@ public class ProductPriceQuery
 
 	private static final class ASIProductPriceAttributesFilter implements IQueryFilter<I_M_ProductPrice>
 	{
-		public static final ASIProductPriceAttributesFilter of(final I_M_AttributeSetInstance asi)
+		public static ASIProductPriceAttributesFilter of(final I_M_AttributeSetInstance asi)
 		{
 			return new ASIProductPriceAttributesFilter(asi);
 		}
@@ -453,11 +449,10 @@ public class ProductPriceQuery
 		private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 		private final I_M_AttributeSetInstance _asi;
-		private transient Map<Integer, I_M_AttributeInstance> _asiAttributes;
+		private transient ImmutableMap<Integer, I_M_AttributeInstance> _asiAttributes;
 
-		private ASIProductPriceAttributesFilter(final I_M_AttributeSetInstance asi)
+		private ASIProductPriceAttributesFilter(@NonNull final I_M_AttributeSetInstance asi)
 		{
-			Check.assumeNotNull(asi, "Parameter asi is not null");
 			_asi = asi;
 		}
 
@@ -512,7 +507,7 @@ public class ProductPriceQuery
 
 		private static boolean isAttributeInstanceMatching(final I_M_AttributeInstance expected, final I_M_AttributeInstance actual)
 		{
-			final int expectedAttributeValueId = Util.firstGreaterThanZero(expected.getM_AttributeValue_ID(), 0);
+			final int expectedAttributeValueId = CoalesceUtil.firstGreaterThanZero(expected.getM_AttributeValue_ID(), 0);
 
 			final int actualAttributeValueId;
 			if (actual == null)
@@ -521,7 +516,7 @@ public class ProductPriceQuery
 			}
 			else
 			{
-				actualAttributeValueId = Util.firstGreaterThanZero(actual.getM_AttributeValue_ID(), 0);
+				actualAttributeValueId = CoalesceUtil.firstGreaterThanZero(actual.getM_AttributeValue_ID(), 0);
 			}
 
 			if (expectedAttributeValueId != actualAttributeValueId)
@@ -542,7 +537,7 @@ public class ProductPriceQuery
 			return _asiAttributes;
 		}
 
-		private final List<I_M_AttributeInstance> extractProductPriceAttributes(final I_M_ProductPrice productPrice)
+		private List<I_M_AttributeInstance> extractProductPriceAttributes(final I_M_ProductPrice productPrice)
 		{
 			final I_M_AttributeSetInstance productPriceASI = productPrice.getM_AttributeSetInstance();
 			if (productPriceASI == null || productPriceASI.getM_AttributeSetInstance_ID() <= 0)
@@ -554,4 +549,5 @@ public class ProductPriceQuery
 			return productPriceAttributes;
 		}
 	}
+
 }

@@ -10,12 +10,12 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,7 +35,6 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_UOM;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Util;
 
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.handlingunits.IHUIteratorListener;
@@ -57,8 +56,10 @@ import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 /* package */class HUKeyNameBuilder extends AbstractHUKeyNameBuilder<HUKey>
 {
@@ -231,7 +232,7 @@ import de.metas.util.Services;
 	{
 		final HUKey huKey = getKey();
 
-		BigDecimal qty = productStorage.getQty().getAsBigDecimal();
+		BigDecimal qty = productStorage.getQty().toBigDecimal();
 		if (qty.signum() == 0)
 		{
 			return null;
@@ -314,7 +315,7 @@ import de.metas.util.Services;
 		//
 		// Mask HTML of the product name
 		final StringBuilder maskedHTMLCULineBuilder = new StringBuilder()
-				.append(Util.maskHTML(productNameTrunc));
+				.append(StringUtils.maskHTML(productNameTrunc));
 
 		if (!productName.equals(productNameTrunc))
 		{
@@ -379,7 +380,7 @@ import de.metas.util.Services;
 				return null; // Invalid weight
 			}
 
-			uom = pm == null ? null : pm.getC_UOM_Weight();
+			uom = pm == null ? null : Services.get(IUOMDAO.class).getById(pm.getC_UOM_Weight_ID());
 			if (uom == null)
 			{
 				return null; // No PM UOM
@@ -403,7 +404,7 @@ import de.metas.util.Services;
 			pmStr.insert(0, "(").append(")"); // Surround with parentheses if it's the PM weight
 		}
 
-		return Util.maskHTML(pmStr.toString());
+		return StringUtils.maskHTML(pmStr.toString());
 	}
 
 	/**
@@ -425,7 +426,7 @@ import de.metas.util.Services;
 	/**
 	 * Extension of {@link HUDisplayNameBuilder} which basically does exactly the same job,
 	 * but instead of using the {@link I_M_HU} tree structure, it is using {@link IHUKey} tree structure.
-	 * 
+	 *
 	 * @author tsa
 	 */
 	private static class HUKeyDisplayNameBuilder extends HUDisplayNameBuilder

@@ -29,7 +29,6 @@ import de.metas.event.IEventListener;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.event.jmx.JMXEventBusManager;
-import de.metas.event.log.EventBus2EventLogHandler;
 import de.metas.event.remote.IEventBusRemoteEndpoint;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -138,9 +137,6 @@ public class EventBusFactory implements IEventBusFactory
 		// Create the event bus
 		final EventBus eventBus = new EventBus(topic.getName(), createExecutorOrNull(topic.getName()));
 
-		// whether the event is really stored is determined for each individual event
-		eventBus.subscribe(EventBus2EventLogHandler.INSTANCE);
-
 		// Bind the EventBus to remote endpoint (only if the system is enabled).
 		// If is not enabled we will use only local event buses,
 		// because if we would return null or fail here a lot of BLs could fail.
@@ -196,6 +192,7 @@ public class EventBusFactory implements IEventBusFactory
 			// listener already exists => do nothing
 			return;
 		}
+		logger.info("Registered global listener to {}: {}", topic, listener);
 
 		//
 		// Also register the listener to EventBus

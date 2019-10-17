@@ -16,10 +16,10 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import org.adempiere.acct.api.GLDistributionNotValidException;
-import org.adempiere.acct.api.IGLDistributionBL;
 import org.compiere.model.I_GL_Distribution;
 
+import de.metas.acct.gldistribution.GLDistributionNotValidException;
+import de.metas.acct.gldistribution.IGLDistributionBL;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
 

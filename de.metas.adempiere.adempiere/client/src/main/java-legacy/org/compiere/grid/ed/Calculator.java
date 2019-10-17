@@ -38,9 +38,6 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -51,18 +48,22 @@ import javax.swing.SwingConstants;
 
 import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.service.ClientId;
 import org.compiere.apps.ADialog;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
 
 import de.metas.currency.ICurrencyBL;
 import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
 
 /**
  *  Calculator with currency conversion
@@ -103,15 +104,21 @@ public final class Calculator extends CDialog
 		//
 		m_DisplayType = displayType;
 		if (!DisplayType.isNumeric(m_DisplayType))
+		{
 			m_DisplayType = DisplayType.Number;
+		}
 		//
 		m_format = format;
 		if (m_format == null)
+		{
 			m_format = DisplayType.getNumberFormat(m_DisplayType);
+		}
 		//
 		m_number = number;
 		if (m_number == null)
+		{
 			m_number = new BigDecimal(0.0);
+		}
 		//
 		try
 		{
@@ -335,11 +342,11 @@ public final class Calculator extends CDialog
 
 		//	For all buttons
 		Component[] comp = keyPanel.getComponents();
-		for (int i = 0; i < comp.length; i++)
+		for (Component element : comp)
 		{
-			if (comp[i] instanceof JButton)
+			if (element instanceof JButton)
 			{
-				JButton b = (JButton)comp[i];
+				JButton b = (JButton)element;
 				b.setMargin(in);
 				b.addActionListener(this);
 				b.addKeyListener(this);
@@ -371,20 +378,26 @@ public final class Calculator extends CDialog
 		{
 			String cmd = e.getActionCommand();
 			if (cmd != null && cmd.length() > 0)
+			{
 				handleInput(cmd.charAt(0));
+			}
 		}
 		//	Convert Amount
 		else if (e.getSource() == curTo)
 		{
 			KeyNamePair p = (KeyNamePair)curFrom.getSelectedItem();
-			int curFromID = p.getKey();
+			final CurrencyId curFromID = CurrencyId.ofRepoId(p.getKey());
 			p = (KeyNamePair)curTo.getSelectedItem();
-			int curToID = p.getKey();
+			final CurrencyId curToID = CurrencyId.ofRepoId(p.getKey());
 			//	convert
-			int AD_Client_ID = Env.getAD_Client_ID(Env.getCtx());
-			int AD_Org_ID = Env.getAD_Org_ID(Env.getCtx());
-			m_number = Services.get(ICurrencyBL.class).convert(Env.getCtx(),
-				evaluate(), curFromID, curToID, AD_Client_ID, AD_Org_ID);
+			ClientId AD_Client_ID = Env.getClientId();
+			OrgId AD_Org_ID = Env.getOrgId();
+			m_number = Services.get(ICurrencyBL.class).convert(
+					evaluate(), 
+					curFromID, 
+					curToID, 
+					AD_Client_ID, 
+					AD_Org_ID);
 			m_display = m_format.format(m_number);
 			display.setText(m_display);
 			curFrom.setSelectedItem(p);
@@ -422,19 +435,27 @@ public final class Calculator extends CDialog
 				{
 					char last = m_display.charAt(m_display.length()-1);
 					if (OPERANDS.indexOf(last) == -1)
+					{
 						m_display += c;
+					}
 					else
+					{
 						m_display = m_display.substring(0, m_display.length()-1) + c;
+					}
 				}
 				m_display = m_format.format(evaluate());
 				if (c != '%')
+				{
 					m_display += c;
+				}
 				break;
 
 			//	Clear last char
 			case 'C':
 				if (m_display.length() > 0)
+				{
 					m_display = m_display.substring(0, m_display.length()-1);
+				}
 				break;
 
 			//	Clear all
@@ -452,8 +473,10 @@ public final class Calculator extends CDialog
 			case '=':
 				m_display = m_format.format(evaluate());
 				m_abort = false;
-				if (isDisposeOnEqual()) //teo_sarca, bug [ 1628773 ] 
+				if (isDisposeOnEqual())
+				{
 					dispose();
+				}
 				break;
 
 			//	Error		===============================
@@ -463,12 +486,18 @@ public final class Calculator extends CDialog
 		}	//	switch
 
 		if (m_display.equals(""))
+		{
 			m_display = "0";
+		}
 
 		//	Eliminate leading zeroes
 		if (m_display.length() > 1 && m_display.startsWith("0"))
+		{
 			if (m_display.charAt(1) != ',' && m_display.charAt(1) != '.')
+			{
 				m_display = m_display.substring(1);
+			}
+		}
 
 		//	Display it
 		display.setText(m_display);
@@ -496,7 +525,9 @@ public final class Calculator extends CDialog
 		if (token.equals("-"))
 		{
 			if (st.hasMoreTokens())
+			{
 				token += st.nextToken();
+			}
 			else
 			{
 				m_number = new BigDecimal(0.0);
@@ -523,7 +554,9 @@ public final class Calculator extends CDialog
 
 		//	only one number
 		if (!st.hasMoreTokens())
+		{
 			return m_number;
+		}
 
 		//	now we should get an operand
 		token = st.nextToken();
@@ -537,7 +570,9 @@ public final class Calculator extends CDialog
 
 		//	no second number
 		if (!st.hasMoreTokens())
+		{
 			return m_number;
+		}
 
 		token = st.nextToken();
 		Number secondNumber;
@@ -569,8 +604,10 @@ public final class Calculator extends CDialog
 
 		//	Percent operation
 		if (op2 == '%')
+		{
 			secondNo = firstNo.multiply(secondNo)
 				.divide(new BigDecimal(100.0), m_format.getMaximumFractionDigits(), BigDecimal.ROUND_HALF_UP);
+		}
 
 		switch (op)
 		{
@@ -600,11 +637,15 @@ public final class Calculator extends CDialog
 	private void toggleCurrency()
 	{
 		if (currencyPanel.isVisible())
+		{
 			currencyPanel.setVisible(false);
+		}
 		else
 		{
 			if (!m_currencyOK)
+			{
 				loadCurrency();
+			}
 			currencyPanel.setVisible(true);
 		}
 		pack();
@@ -618,7 +659,9 @@ public final class Calculator extends CDialog
 		//	Get Default
 		int C_Currency_ID = Env.getContextAsInt(Env.getCtx(), m_WindowNo, "C_Currency_ID");
 		if (C_Currency_ID == 0)
+		{
 			C_Currency_ID = Env.getContextAsInt(Env.getCtx(), "$C_Currency_ID");
+		}
 
 		String sql = "SELECT C_Currency_ID, ISO_Code FROM C_Currency "
 			+ "WHERE IsActive='Y' ORDER BY 2";
@@ -636,7 +679,9 @@ public final class Calculator extends CDialog
 				curTo.addItem(p);
 				//	Default
 				if (id == C_Currency_ID)
+				{
 					defaultValue = p;
+				}
 			}
 			rs.close();
 			stmt.close();
@@ -665,7 +710,9 @@ public final class Calculator extends CDialog
 	public BigDecimal getNumber()
 	{
 		if (m_abort)
+		{
 			return null;
+		}
 
 		return m_number;
 	}   //	getNumber
@@ -697,12 +744,17 @@ public final class Calculator extends CDialog
 		e.consume();		//	does not work on JTextField
 
 		if (code == KeyEvent.VK_DELETE)
+		{
 			input = 'A';
+		}
 		else if (code == KeyEvent.VK_BACK_SPACE)
+		{
 			input = 'C';
+		}
 		else if (code == KeyEvent.VK_ENTER)
+		{
 			input = '=';
-		//	abort
+		}
 		else if (code == KeyEvent.VK_CANCEL || code == KeyEvent.VK_ESCAPE)
 		{
 			m_abort = true;

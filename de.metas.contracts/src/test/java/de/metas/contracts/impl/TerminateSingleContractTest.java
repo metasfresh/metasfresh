@@ -75,6 +75,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.spi.impl.OrderAndInOutInvoiceCandidateListener;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.process.PInstanceId;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
@@ -87,6 +88,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 	final private IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
 	final private IContractsDAO contractsDAO = Services.get(IContractsDAO.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	final private static Timestamp startDate = TimeUtil.parseTimestamp("2017-09-10");
 	final private static FixedTimeSource today = new FixedTimeSource(2017, 11, 10);
@@ -248,7 +250,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		defaultLineAgg.setName("Default");
 		defaultLineAgg.setClassname(DefaultAggregator.class.getName());
 		defaultLineAgg.setIsActive(true);
-		defaultLineAgg.setC_BPartner(null);
+		defaultLineAgg.setC_BPartner_ID(0);
 		defaultLineAgg.setM_ProductGroup(null);
 		save(defaultLineAgg);
 
@@ -280,7 +282,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		assertThat(candsForTerm).hasSize(1);
 		final I_C_Invoice_Candidate invoiceCandidate = candsForTerm.get(0);
 		assertThat(invoiceCandidate.getQtyInvoiced()).isEqualByComparingTo(BigDecimal.ZERO);
-		assertThat(invoiceCandidate.getProcessed_Override()).isEqualToIgnoringCase("Y");
+		assertThat(invoiceCandBL.extractProcessedOverride(invoiceCandidate)).isEqualTo(OptionalBoolean.TRUE);
 	}
 
 	private void assertSubscriptionProgress(@NonNull final I_C_Flatrate_Term flatrateTerm, final int expected)

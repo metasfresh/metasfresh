@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_MatchPO
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_M_MatchPO extends org.compiere.model.PO implements I_M_MatchPO, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1956962842L;
+	private static final long serialVersionUID = 376982527L;
 
     /** Standard Constructor */
     public X_M_MatchPO (Properties ctx, int M_MatchPO_ID, String trxName)
@@ -46,10 +29,10 @@ public class X_M_MatchPO extends org.compiere.model.PO implements I_M_MatchPO, o
 			setM_InOutLine_ID (0);
 			setM_MatchPO_ID (0);
 			setM_Product_ID (0);
-			setPosted (false);
+			setPosted (false); // N
 			setProcessed (false);
 			setProcessing (false);
-			setQty (Env.ZERO);
+			setQty (BigDecimal.ZERO);
         } */
     }
 
@@ -88,9 +71,9 @@ public class X_M_MatchPO extends org.compiere.model.PO implements I_M_MatchPO, o
 	public void setC_InvoiceLine_ID (int C_InvoiceLine_ID)
 	{
 		if (C_InvoiceLine_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_InvoiceLine_ID, null);
+			set_Value (COLUMNNAME_C_InvoiceLine_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_InvoiceLine_ID, Integer.valueOf(C_InvoiceLine_ID));
+			set_Value (COLUMNNAME_C_InvoiceLine_ID, Integer.valueOf(C_InvoiceLine_ID));
 	}
 
 	/** Get Rechnungsposition.
@@ -196,7 +179,7 @@ public class X_M_MatchPO extends org.compiere.model.PO implements I_M_MatchPO, o
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** Set Beleg Nr..
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
@@ -206,7 +189,7 @@ public class X_M_MatchPO extends org.compiere.model.PO implements I_M_MatchPO, o
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Beleg Nr..
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
 	@Override
@@ -253,9 +236,9 @@ public class X_M_MatchPO extends org.compiere.model.PO implements I_M_MatchPO, o
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Ausprägung Merkmals-Satz.
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Product Attribute Set Instance
+		Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
@@ -266,8 +249,8 @@ public class X_M_MatchPO extends org.compiere.model.PO implements I_M_MatchPO, o
 			set_ValueNoCheck (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Ausprägung Merkmals-Satz.
-		@return Product Attribute Set Instance
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public int getM_AttributeSetInstance_ID () 
@@ -298,9 +281,9 @@ public class X_M_MatchPO extends org.compiere.model.PO implements I_M_MatchPO, o
 	public void setM_InOutLine_ID (int M_InOutLine_ID)
 	{
 		if (M_InOutLine_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_InOutLine_ID, null);
+			set_Value (COLUMNNAME_M_InOutLine_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_InOutLine_ID, Integer.valueOf(M_InOutLine_ID));
+			set_Value (COLUMNNAME_M_InOutLine_ID, Integer.valueOf(M_InOutLine_ID));
 	}
 
 	/** Get Versand-/Wareneingangsposition.
@@ -421,7 +404,7 @@ public class X_M_MatchPO extends org.compiere.model.PO implements I_M_MatchPO, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceMatchDifference);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -492,7 +475,7 @@ public class X_M_MatchPO extends org.compiere.model.PO implements I_M_MatchPO, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

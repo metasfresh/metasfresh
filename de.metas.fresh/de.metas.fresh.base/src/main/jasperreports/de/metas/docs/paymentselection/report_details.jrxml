@@ -54,21 +54,21 @@ $P{IsAllowESRPayments}
 				<staticText>
 					<reportElement uuid="d8807b04-b3cd-4a19-9c2d-62705212d504" key="textField-3" x="62" y="6" width="120" height="12"/>
 					<textElement markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<text><![CDATA[Total Zahlung]]></text>
 				</staticText>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement uuid="d500a2d5-1221-44b7-a60f-194de06df2c6" key="textField-3" x="495" y="6" width="60" height="12"/>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{PaySum}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
 					<reportElement uuid="b8b5796d-a135-4bdf-a6cd-007ab143a2f6" key="textField-3" x="337" y="6" width="40" height="12"/>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
 				</textField>
@@ -83,63 +83,63 @@ $P{IsAllowESRPayments}
 			<staticText>
 				<reportElement uuid="2bb17277-322a-4bb1-9dae-725831708b54" key="textField-3" x="37" y="0" width="25" height="12"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Pos.]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="d3d13d95-6bf7-4023-b544-e21085021713" key="textField-3" x="62" y="0" width="110" height="12"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Beschreibung]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="8e340f30-ca23-4a07-bd53-76ffe3d68ba9" key="textField-3" x="172" y="0" width="55" height="12"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Rg. Datum]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="9bc865e0-8e30-447e-aff0-29d2950d93af" key="textField-3" x="227" y="0" width="55" height="12"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[I. Belegnr.]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="73622893-e4c8-40bb-a9fd-a96156ba8b95" key="textField-3" x="282" y="0" width="55" height="12"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[U. Belegnr.]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="d6ff8754-d358-4403-930f-a5431edb8474" key="textField-3" x="337" y="0" width="40" height="12"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Währ.]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="e9ab42f6-24e6-411e-982c-4a20cdcce84d" key="textField-3" x="377" y="0" width="60" height="12"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Rechnung]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="9ec5746e-25ce-4f11-ba05-7f0f0af48ec9" key="textField-3" x="436" y="0" width="60" height="12"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Skonto]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="d8807b04-b3cd-4a19-9c2d-62705212d504" key="textField-3" x="495" y="0" width="60" height="12"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Zahlung]]></text>
 			</staticText>

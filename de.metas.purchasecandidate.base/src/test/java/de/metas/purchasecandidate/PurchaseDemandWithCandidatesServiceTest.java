@@ -7,16 +7,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.user.UserRepository;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_UOM;
@@ -39,14 +36,20 @@ import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRepository;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.money.CurrencyId;
-import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.grossprofit.OrderLineWithGrossProfitPriceRepository;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.payment.grossprofit.PaymentProfitPriceActualComponentProvider;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.pricing.conditions.BreakValueType;
@@ -59,6 +62,8 @@ import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemRepository;
 import de.metas.quantity.Quantity;
+import de.metas.user.UserRepository;
+import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
 /*
@@ -119,14 +124,15 @@ public class PurchaseDemandWithCandidatesServiceTest
 		uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
 
-		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
-		currencyRecord.setStdPrecision(2);
-		saveRecord(currencyRecord);
-		currencyId = CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
+		currencyId = PlainCurrencyDAO.prepareCurrency()
+				.currencyCode(CurrencyCode.EUR)
+				.precision(CurrencyPrecision.TWO)
+				.build()
+				.getId();
 
 		final I_C_OrderLine salesOrderLineRecord = newInstance(I_C_OrderLine.class);
 		salesOrderLineRecord.setC_OrderLine_ID(10);
-		salesOrderLineRecord.setC_Currency(currencyRecord);
+		salesOrderLineRecord.setC_Currency_ID(currencyId.getRepoId());
 		salesOrderLineRecord.setProfitPriceActual(TWENTY);
 		saveRecord(salesOrderLineRecord);
 
@@ -137,8 +143,8 @@ public class PurchaseDemandWithCandidatesServiceTest
 		final I_M_Product productRecord = newInstance(I_M_Product.class);
 		productRecord.setValue("product.Value");
 		productRecord.setName("product.Name");
-		productRecord.setC_UOM(uomRecord);
-		productRecord.setM_Product_Category(productCategory);
+		productRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
+		productRecord.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
 		saveRecord(productRecord);
 
 		final I_M_DiscountSchema discountSchemaRecord = newInstance(I_M_DiscountSchema.class);
@@ -151,12 +157,12 @@ public class PurchaseDemandWithCandidatesServiceTest
 
 		discountSchemaBreakRecord = newInstance(I_M_DiscountSchemaBreak.class);
 		discountSchemaBreakRecord.setM_DiscountSchema(discountSchemaRecord);
-		discountSchemaBreakRecord.setC_PaymentTerm(paymentTermRecord);
+		discountSchemaBreakRecord.setC_PaymentTerm_ID(paymentTermRecord.getC_PaymentTerm_ID());
 		discountSchemaBreakRecord.setPaymentDiscount(TEN);
 		discountSchemaBreakRecord.setPriceBase(X_M_DiscountSchemaBreak.PRICEBASE_Fixed);
-		discountSchemaBreakRecord.setPriceStd(TEN);
+		discountSchemaBreakRecord.setPriceStdFixed(TEN);
 		discountSchemaBreakRecord.setIsValid(true); // invalid records will be ignored
-		discountSchemaBreakRecord.setC_Currency(currencyRecord);
+		discountSchemaBreakRecord.setC_Currency_ID(currencyId.getRepoId());
 		saveRecord(discountSchemaBreakRecord);
 
 		final I_C_BPartner vendorRecord = newInstance(I_C_BPartner.class);
@@ -164,6 +170,9 @@ public class PurchaseDemandWithCandidatesServiceTest
 		saveRecord(vendorRecord);
 
 		orgId = OrgId.ofRepoId(1000000);
+		Services.get(IOrgDAO.class).createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
+				.orgId(orgId)
+				.build());
 
 		purchaseCandidateRecord = newInstance(I_C_PurchaseCandidate.class);
 		purchaseCandidateRecord.setAD_Org_ID(orgId.getRepoId());
@@ -178,7 +187,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 
 		final I_C_OrderLine purchaseOrderLineRecord = salesOrderLineRecord;
 		purchaseOrderLineRecord.setQtyOrdered(PO_QTY_ORDERED_ONE);
-		purchaseOrderLineRecord.setM_Product(productRecord);
+		purchaseOrderLineRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		purchaseOrderLineRecord.setC_Order_ID(40);
 		saveRecord(purchaseOrderLineRecord);
 
@@ -222,7 +231,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 				.qtyToDeliver(Quantity.of(SO_QTY_ORDERED_TEN, uomRecord))
 				.currencyIdOrNull(currencyId)
-				.salesPreparationDate(LocalDateTime.now())
+				.salesPreparationDate(ZonedDateTime.now())
 				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(salesOrderLineRecord.getC_Order_ID(), salesOrderLineRecord.getC_OrderLine_ID()))
 				.existingPurchaseCandidateId(PurchaseCandidateId.ofRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID()))
 				.build();
@@ -259,8 +268,8 @@ public class PurchaseDemandWithCandidatesServiceTest
 		final PurchaseCandidatesGroup candidatesGroup = candidatesGroups.get(0);
 		assertThat(candidatesGroup.getOrgId()).isEqualTo(orgId);
 		assertThat(candidatesGroup.getPurchaseCandidateIds()).containsOnly(PurchaseCandidateId.ofRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID()));
-		assertThat(candidatesGroup.getPurchasedQty().getAsBigDecimal()).isEqualByComparingTo(PO_QTY_ORDERED_ONE);
-		assertThat(candidatesGroup.getQtyToPurchase().getAsBigDecimal()).isEqualByComparingTo(QTY_TO_PURCHASE_NINE);
+		assertThat(candidatesGroup.getPurchasedQty().toBigDecimal()).isEqualByComparingTo(PO_QTY_ORDERED_ONE);
+		assertThat(candidatesGroup.getQtyToPurchase().toBigDecimal()).isEqualByComparingTo(QTY_TO_PURCHASE_NINE);
 		assertThat(candidatesGroup.getPurchasedQty().getUOM()).isEqualTo(uomRecord);
 		assertThat(candidatesGroup.isReadonly()).isEqualTo(processed);
 	}
@@ -281,8 +290,8 @@ public class PurchaseDemandWithCandidatesServiceTest
 
 		assertThat(candidatesGroup.getOrgId()).isEqualTo(orgId);
 		assertThat(candidatesGroup.getPurchaseCandidateIds()).isEmpty();
-		assertThat(candidatesGroup.getPurchasedQty().getAsBigDecimal()).isEqualByComparingTo(ZERO);
-		assertThat(candidatesGroup.getQtyToPurchase().getAsBigDecimal()).isEqualByComparingTo(ZERO);
+		assertThat(candidatesGroup.getPurchasedQty().toBigDecimal()).isEqualByComparingTo(ZERO);
+		assertThat(candidatesGroup.getQtyToPurchase().toBigDecimal()).isEqualByComparingTo(ZERO);
 		assertThat(candidatesGroup.getPurchasedQty().getUOM()).isEqualTo(uomRecord);
 		assertThat(candidatesGroup.isReadonly()).isEqualTo(false);
 
@@ -332,8 +341,8 @@ public class PurchaseDemandWithCandidatesServiceTest
 				.allSatisfy(candidatesGroup -> {
 					assertThat(candidatesGroup.getOrgId()).isEqualTo(orgId);
 					assertThat(candidatesGroup.getPurchaseCandidateIds()).containsOnly(PurchaseCandidateId.ofRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID()));
-					assertThat(candidatesGroup.getPurchasedQty().getAsBigDecimal()).isEqualByComparingTo(PO_QTY_ORDERED_ONE);
-					assertThat(candidatesGroup.getQtyToPurchase().getAsBigDecimal()).isEqualByComparingTo(QTY_TO_PURCHASE_NINE); // the 9 is loaded from out candidate record.
+					assertThat(candidatesGroup.getPurchasedQty().toBigDecimal()).isEqualByComparingTo(PO_QTY_ORDERED_ONE);
+					assertThat(candidatesGroup.getQtyToPurchase().toBigDecimal()).isEqualByComparingTo(QTY_TO_PURCHASE_NINE); // the 9 is loaded from out candidate record.
 					assertThat(candidatesGroup.getPurchasedQty().getUOM()).isEqualTo(uomRecord);
 					assertThat(candidatesGroup.isReadonly()).isEqualTo(true);
 				});
@@ -344,8 +353,8 @@ public class PurchaseDemandWithCandidatesServiceTest
 				.allSatisfy(candidatesGroup -> {
 					assertThat(candidatesGroup.getOrgId()).isEqualTo(orgId);
 					assertThat(candidatesGroup.getPurchaseCandidateIds()).isEmpty();
-					assertThat(candidatesGroup.getPurchasedQty().getAsBigDecimal()).isEqualByComparingTo(ZERO);
-					assertThat(candidatesGroup.getQtyToPurchase().getAsBigDecimal()).isEqualByComparingTo(ZERO);
+					assertThat(candidatesGroup.getPurchasedQty().toBigDecimal()).isEqualByComparingTo(ZERO);
+					assertThat(candidatesGroup.getQtyToPurchase().toBigDecimal()).isEqualByComparingTo(ZERO);
 					assertThat(candidatesGroup.getPurchasedQty().getUOM()).isEqualTo(uomRecord);
 					assertThat(candidatesGroup.isReadonly()).isEqualTo(false);
 				});
@@ -372,8 +381,8 @@ public class PurchaseDemandWithCandidatesServiceTest
 
 		final PurchaseCandidatesGroup candidatesGroup = purchaseCandidatesGroups.get(0);
 		assertThat(candidatesGroup.isReadonly()).isFalse();
-		assertThat(candidatesGroup.getPurchasedQty().getAsBigDecimal()).isEqualByComparingTo(PO_QTY_ORDERED_ONE);
-		assertThat(candidatesGroup.getQtyToPurchase().getAsBigDecimal()).isEqualByComparingTo(QTY_TO_PURCHASE_NINE);
+		assertThat(candidatesGroup.getPurchasedQty().toBigDecimal()).isEqualByComparingTo(PO_QTY_ORDERED_ONE);
+		assertThat(candidatesGroup.getQtyToPurchase().toBigDecimal()).isEqualByComparingTo(QTY_TO_PURCHASE_NINE);
 	}
 
 }

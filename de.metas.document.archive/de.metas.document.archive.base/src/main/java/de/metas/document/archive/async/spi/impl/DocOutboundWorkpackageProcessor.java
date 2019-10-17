@@ -13,11 +13,11 @@ package de.metas.document.archive.async.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -75,10 +75,10 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		final I_AD_Archive archive = createModelArchiver(record).archive();
 		if (archive == null)
 		{
-			Loggables.get().addLog("Created *no* AD_Archive for record={}", record);
+			Loggables.addLog("Created *no* AD_Archive for record={}", record);
 			return;
 		}
-		Loggables.get().addLog("Created AD_Archive_ID={} for record={}", archive.getAD_Archive_ID(), record);
+		Loggables.addLog("Created AD_Archive_ID={} for record={}", archive.getAD_Archive_ID(), record);
 
 		final String action = X_C_Doc_Outbound_Log_Line.ACTION_PdfExport; // this action is ported here. i'm not 100% sure it makes sense
 		archiveEventManager.firePdfUpdate(archive, null, action); // user=null

@@ -14,7 +14,7 @@ public class X_DD_OrderLine_HU_Candidate extends org.compiere.model.PO implement
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 704082245L;
+	private static final long serialVersionUID = -897281505L;
 
     /** Standard Constructor */
     public X_DD_OrderLine_HU_Candidate (Properties ctx, int DD_OrderLine_HU_Candidate_ID, String trxName)
@@ -66,7 +66,7 @@ public class X_DD_OrderLine_HU_Candidate extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public org.eevolution.model.I_DD_OrderLine getDD_OrderLine() throws RuntimeException
+	public org.eevolution.model.I_DD_OrderLine getDD_OrderLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_DD_OrderLine_ID, org.eevolution.model.I_DD_OrderLine.class);
 	}
@@ -100,7 +100,7 @@ public class X_DD_OrderLine_HU_Candidate extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU getM_HU() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU getM_HU()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
 	}
@@ -111,8 +111,8 @@ public class X_DD_OrderLine_HU_Candidate extends org.compiere.model.PO implement
 		set_ValueFromPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU);
 	}
 
-	/** Set Handling Units.
-		@param M_HU_ID Handling Units	  */
+	/** Set Handling Unit.
+		@param M_HU_ID Handling Unit	  */
 	@Override
 	public void setM_HU_ID (int M_HU_ID)
 	{
@@ -122,8 +122,8 @@ public class X_DD_OrderLine_HU_Candidate extends org.compiere.model.PO implement
 			set_ValueNoCheck (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
 	}
 
-	/** Get Handling Units.
-		@return Handling Units	  */
+	/** Get Handling Unit.
+		@return Handling Unit	  */
 	@Override
 	public int getM_HU_ID () 
 	{

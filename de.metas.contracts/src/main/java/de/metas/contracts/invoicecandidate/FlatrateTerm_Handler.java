@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
@@ -17,7 +18,11 @@ import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -44,6 +49,12 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 						ConditionTypeSpecificInvoiceCandidateHandler::getConditionsType);
 	}
 
+	@Override
+	public boolean isCreateMissingCandidatesAutomatically(final Object flatrateTermObject)
+	{
+		return isMissingInvoiceCandidate(flatrateTermObject);
+	}
+
 	/**
 	 * One invocation returns a maximum of <code>limit</code> {@link I_C_Flatrate_Term}s that are completed subscriptions and don't have an invoice candidate referencing them.
 	 */
@@ -65,6 +76,23 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 			}
 		}
 		return result;
+	}
+
+	@Override
+	public boolean isMissingInvoiceCandidate(final Object flatrateTermObject)
+	{
+		final I_C_Flatrate_Term flatrateTerm = (I_C_Flatrate_Term)flatrateTermObject;
+
+		final Collection<ConditionTypeSpecificInvoiceCandidateHandler> specificHandlers = conditionTypeSpecificInvoiceCandidateHandlers.values();
+
+		for (final ConditionTypeSpecificInvoiceCandidateHandler specificHandler : specificHandlers)
+		{
+			if (specificHandler.isMissingInvoiceCandidate(flatrateTerm))
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -140,7 +168,18 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		final ConditionTypeSpecificInvoiceCandidateHandler handler = getSpecificHandler(term);
 
 		ic.setDateOrdered(handler.calculateDateOrdered(ic));
-		ic.setQtyOrdered(handler.calculateQtyOrdered(ic));
+
+		final Quantity calculateQtyOrdered = handler.calculateQtyEntered(ic);
+
+		ic.setQtyEntered(calculateQtyOrdered.toBigDecimal());
+		ic.setC_UOM_ID(calculateQtyOrdered.getUomId().getRepoId());
+
+		final ProductId productId = ProductId.ofRepoId(term.getM_Product_ID());
+
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
+		final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(calculateQtyOrdered, productId);
+		ic.setQtyOrdered(qtyInProductUOM.toBigDecimal());
 	}
 
 	/**
@@ -168,25 +207,20 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public void setC_UOM_ID(final I_C_Invoice_Candidate ic)
-	{
-		HandlerTools.setC_UOM_ID(ic);
-	}
-
-	@Override
 	public void setBPartnerData(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		HandlerTools.setBPartnerData(ic);
 	}
 
 	@Override
-	public void setInvoiceSchedule(@NonNull final I_C_Invoice_Candidate ic)
+	public void setInvoiceScheduleAndDateToInvoice(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(ic);
 		final ConditionTypeSpecificInvoiceCandidateHandler handler = getSpecificHandler(term);
 
-		handler
-				.getSetInvoiceScheduleImplementation(super::setInvoiceSchedule)
+		final Consumer<I_C_Invoice_Candidate> defaultImplementation = super::setInvoiceScheduleAndDateToInvoice;
+
+		handler.getInvoiceScheduleSetterFunction(defaultImplementation)
 				.accept(ic);
 	}
 
@@ -197,4 +231,5 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 				"The given term's condition-type={} has a not-null ConditionTypeSpecificInvoiceCandidateHandler; term={}",
 				term.getType_Conditions(), term);
 	}
+
 }

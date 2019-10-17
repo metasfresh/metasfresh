@@ -24,19 +24,22 @@ package org.adempiere.process.rpl.requesthandler.spi.impl;
 
 
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.process.rpl.requesthandler.api.IReplRequestHandlerBL;
 import org.adempiere.process.rpl.requesthandler.api.IReplRequestHandlerCtx;
 import org.adempiere.process.rpl.requesthandler.api.IReplRequestHandlerResult;
 import org.adempiere.process.rpl.requesthandler.spi.ReplRequestHandlerAdapter;
 import org.adempiere.server.rpl.exceptions.ReplicationException;
+import org.adempiere.service.ClientId;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.security.IUserRolePermissions;
+import de.metas.util.Services;
 
 /**
  * This handler responds by simply sending the given PO with the given format, if permitted. It can be used in this scenario:
@@ -83,8 +86,11 @@ public class LoadPORequestHandler extends ReplRequestHandlerAdapter
 		final IReplRequestHandlerResult result = Services.get(IReplRequestHandlerBL.class).createInitialRequestHandlerResult();
 
 		final IUserRolePermissions role = Env.getUserRolePermissions(ctxToUse);
-		final boolean allowResponse = role.canUpdate(po.getAD_Client_ID(), po.getAD_Org_ID(),
-				po.get_Table_ID(), po.get_ID(),
+		final boolean allowResponse = role.canUpdate(
+				ClientId.ofRepoId(po.getAD_Client_ID()),
+				OrgId.ofRepoId(po.getAD_Org_ID()),
+				po.get_Table_ID(),
+				po.get_ID(),
 				false // createError
 				);
 		

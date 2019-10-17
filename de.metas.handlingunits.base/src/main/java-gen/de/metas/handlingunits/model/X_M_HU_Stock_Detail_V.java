@@ -15,7 +15,7 @@ public class X_M_HU_Stock_Detail_V extends org.compiere.model.PO implements I_M_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 970156238L;
+	private static final long serialVersionUID = -637130292L;
 
     /** Standard Constructor */
     public X_M_HU_Stock_Detail_V (Properties ctx, int M_HU_Stock_Detail_V_ID, String trxName)
@@ -60,18 +60,6 @@ public class X_M_HU_Stock_Detail_V extends org.compiere.model.PO implements I_M_
 		return (java.lang.String)get_Value(COLUMNNAME_AttributeValue);
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
 		Bezeichnet einen Geschäftspartner
@@ -95,18 +83,6 @@ public class X_M_HU_Stock_Detail_V extends org.compiere.model.PO implements I_M_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
 	}
 
 	/** Set Maßeinheit.
@@ -168,18 +144,6 @@ public class X_M_HU_Stock_Detail_V extends org.compiere.model.PO implements I_M_
 		return (java.lang.String)get_Value(COLUMNNAME_HUStatus);
 	}
 
-	@Override
-	public org.compiere.model.I_M_Attribute getM_Attribute() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class);
-	}
-
-	@Override
-	public void setM_Attribute(org.compiere.model.I_M_Attribute M_Attribute)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class, M_Attribute);
-	}
-
 	/** Set Merkmal.
 		@param M_Attribute_ID 
 		Produkt-Merkmal
@@ -206,7 +170,7 @@ public class X_M_HU_Stock_Detail_V extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_Attribute getM_HU_Attribute() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_Attribute getM_HU_Attribute()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_Attribute_ID, de.metas.handlingunits.model.I_M_HU_Attribute.class);
 	}
@@ -240,7 +204,7 @@ public class X_M_HU_Stock_Detail_V extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU getM_HU() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU getM_HU()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
 	}
@@ -251,8 +215,8 @@ public class X_M_HU_Stock_Detail_V extends org.compiere.model.PO implements I_M_
 		set_ValueFromPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU);
 	}
 
-	/** Set Handling Units.
-		@param M_HU_ID Handling Units	  */
+	/** Set Handling Unit.
+		@param M_HU_ID Handling Unit	  */
 	@Override
 	public void setM_HU_ID (int M_HU_ID)
 	{
@@ -262,8 +226,8 @@ public class X_M_HU_Stock_Detail_V extends org.compiere.model.PO implements I_M_
 			set_ValueNoCheck (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
 	}
 
-	/** Get Handling Units.
-		@return Handling Units	  */
+	/** Get Handling Unit.
+		@return Handling Unit	  */
 	@Override
 	public int getM_HU_ID () 
 	{
@@ -274,7 +238,7 @@ public class X_M_HU_Stock_Detail_V extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_Storage getM_HU_Storage() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_Storage getM_HU_Storage()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_Storage_ID, de.metas.handlingunits.model.I_M_HU_Storage.class);
 	}
@@ -307,18 +271,6 @@ public class X_M_HU_Stock_Detail_V extends org.compiere.model.PO implements I_M_
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Locator getM_Locator() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class);
-	}
-
-	@Override
-	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class, M_Locator);
-	}
-
 	/** Set Lagerort.
 		@param M_Locator_ID 
 		Lagerort im Lager
@@ -342,18 +294,6 @@ public class X_M_HU_Stock_Detail_V extends org.compiere.model.PO implements I_M_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.

@@ -43,10 +43,11 @@ import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.i18n.Msg;
+import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.process.JavaProcess;
 
 public class C_Flatrate_Term_Prepare_Closing extends JavaProcess
 {
@@ -70,7 +71,7 @@ public class C_Flatrate_Term_Prepare_Closing extends JavaProcess
 
 		final Timestamp dateFrom;
 		final List<I_C_Flatrate_DataEntry> existingCorrEntries =
-				flatrateDB.retrieveDataEntries(flatrateTerm, X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased, flatrateTerm.getC_UOM());
+				flatrateDB.retrieveDataEntries(flatrateTerm, X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased, UomId.ofRepoIdOrNull(flatrateTerm.getC_UOM_ID()));
 		if (existingCorrEntries.isEmpty())
 		{
 			dateFrom = flatrateTerm.getStartDate();
@@ -82,7 +83,7 @@ public class C_Flatrate_Term_Prepare_Closing extends JavaProcess
 					existingCorrEntries.get(existingCorrEntries.size() - 1).getC_Period().getEndDate();
 			dateFrom = TimeUtil.addDays(endDate, 1);
 		}
-		final Map<Integer, I_C_Flatrate_DataEntry> uomId2NewCorrectionEntries = new HashMap<Integer, I_C_Flatrate_DataEntry>();
+		final Map<Integer, I_C_Flatrate_DataEntry> uomId2NewCorrectionEntries = new HashMap<>();
 
 		Check.assume(flatrateTerm.isClosingWithCorrectionSum(), flatrateTerm + " has IsClosingWithCorrectionSum='Y");
 
@@ -172,7 +173,7 @@ public class C_Flatrate_Term_Prepare_Closing extends JavaProcess
 	{
 		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
-		final List<String> errors = new ArrayList<String>();
+		final List<String> errors = new ArrayList<>();
 		final List<I_C_Flatrate_DataEntry> invoicingEntries =
 				flatrateBL.retrieveAndCheckInvoicingEntries(flatrateTerm, startDate, endDate, uom, errors);
 		if (invoicingEntries == null)
@@ -218,8 +219,9 @@ public class C_Flatrate_Term_Prepare_Closing extends JavaProcess
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)
+			{
 				;
-
+			}
 			else if (name.equals(I_C_Period.COLUMNNAME_C_Period_ID))
 			{
 				final int periodId = para.getParameterAsInt();

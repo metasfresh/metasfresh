@@ -1,5 +1,7 @@
 package org.eevolution.api;
 
+import java.time.LocalDateTime;
+
 /*
  * #%L
  * de.metas.adempiere.libero.libero
@@ -13,28 +15,37 @@ package org.eevolution.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
-import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
 
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_PP_Order;
 
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.order.OrderLineId;
+import de.metas.product.ResourceId;
 import de.metas.util.ISingletonService;
 
 public interface IPPOrderDAO extends ISingletonService
 {
+	I_PP_Order getById(PPOrderId ppOrderId);
+
+	<T extends I_PP_Order> T getById(PPOrderId ppOrderId, Class<T> type);
+
+	List<I_PP_Order> getByIds(Set<PPOrderId> orderIds);
+
 	/**
 	 * Retrieve all manufacturing orders which are linked to given order line AND they have the product from order line.
 	 * 
@@ -44,32 +55,22 @@ public interface IPPOrderDAO extends ISingletonService
 	List<I_PP_Order> retrieveAllForOrderLine(I_C_OrderLine line);
 
 	/**
-	 * Retrieve Make-to-Order generated manufacturing order which is linked to given order line AND have the product from order line.
-	 * 
-	 * @param line
-	 * @return make to order MO or null
-	 */
-	I_PP_Order retrieveMakeToOrderForOrderLine(I_C_OrderLine line);
-
-	/**
-	 * Retrieve Make-to-Order generated manufacturing orders which are linked to inout's sales order line.
-	 * 
-	 * @param inout
-	 * @return
-	 */
-	List<I_PP_Order> retrieveMakeToOrderForInOut(I_M_InOut inout);
-
-	/**
 	 * Gets released manufacturing orders based on {@link I_M_Warehouse}s.
 	 * 
 	 * @param warehouseId
 	 * @return manufacturing orders
 	 */
-	List<I_PP_Order> retrieveReleasedManufacturingOrdersForWarehouse(Properties ctx, int warehouseId);
-	
+	List<I_PP_Order> retrieveReleasedManufacturingOrdersForWarehouse(WarehouseId warehouseId);
+
 	/**
 	 * @param orderLineId
 	 * @return PP_Order_ID or -1 if not found.
 	 */
-	int retrievePPOrderIdByOrderLineId(final int orderLineId);
+	PPOrderId retrievePPOrderIdByOrderLineId(final OrderLineId orderLineId);
+
+	void changeOrderScheduling(PPOrderId orderId, LocalDateTime scheduledStartDate, LocalDateTime scheduledFinishDate);
+
+	Stream<I_PP_Order> streamOpenPPOrderIdsOrderedByDatePromised(ResourceId plantId);
+
+	void save(I_PP_Order order);
 }

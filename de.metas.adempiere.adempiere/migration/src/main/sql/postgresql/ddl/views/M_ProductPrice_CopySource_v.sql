@@ -28,6 +28,7 @@ select
 	, pp.IsDiscountEditable
 	, pp.IsHUPrice -- FIXME: this shall be part of de.metas.handlingunits.base module
 	, pp.M_HU_PI_Item_Product_ID -- FIXME: this shall be part of de.metas.handlingunits.base module
+	, pp.InvoicableQtyBasedOn
 	--
 	, pp.AD_Client_ID
 	, pp.AD_Org_ID
@@ -73,6 +74,7 @@ from (
 		, source_pp.IsDiscountEditable
 		, source_pp.IsHUPrice -- FIXME: this shall be part of de.metas.handlingunits.base module
 		, source_pp.M_HU_PI_Item_Product_ID -- FIXME: this shall be part of de.metas.handlingunits.base module
+		, source_pp.InvoicableQtyBasedOn
 	--
 	from M_PriceList_Version target_plv
 	inner join M_PriceList target_pl on (target_pl.M_PriceList_ID=target_plv.M_PriceList_ID)

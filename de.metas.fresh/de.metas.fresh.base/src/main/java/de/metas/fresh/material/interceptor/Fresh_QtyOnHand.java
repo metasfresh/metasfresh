@@ -26,18 +26,19 @@ import java.util.ArrayList;
 
 import java.util.List;
 
-import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
 
 import de.metas.fresh.freshQtyOnHand.api.IFreshQtyOnHandDAO;
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
-import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
@@ -97,12 +98,12 @@ public class Fresh_QtyOnHand
 			@NonNull final I_Fresh_QtyOnHand_Line line,
 			@NonNull final ProductDescriptor productDescriptor)
 	{
-		final I_Fresh_QtyOnHand qtyOnHand = line.getFresh_QtyOnHand();
+		final I_Fresh_QtyOnHand qtyOnHandRecord = line.getFresh_QtyOnHand();
 
 		final AbstractStockEstimateEvent
 		event = StockEstimateCreatedEvent.builder()
-				.date(qtyOnHand.getDateDoc())
-				.eventDescriptor(EventDescriptor.createNew(line))
+				.date(TimeUtil.asInstant(qtyOnHandRecord.getDateDoc()))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(line.getAD_Client_ID(), line.getAD_Org_ID()))
 				.plantId(line.getPP_Plant_ID())
 				.productDescriptor(productDescriptor)
 				.quantity(line.getQtyCount())
@@ -114,11 +115,11 @@ public class Fresh_QtyOnHand
 			@NonNull final I_Fresh_QtyOnHand_Line line,
 			@NonNull final ProductDescriptor productDescriptor)
 	{
-		final I_Fresh_QtyOnHand qtyOnHand = line.getFresh_QtyOnHand();
+		final I_Fresh_QtyOnHand qtyOnHandRecord = line.getFresh_QtyOnHand();
 
 		final AbstractStockEstimateEvent event = StockEstimateDeletedEvent.builder()
-				.date(qtyOnHand.getDateDoc())
-				.eventDescriptor(EventDescriptor.createNew(line))
+				.date(TimeUtil.asInstant(qtyOnHandRecord.getDateDoc()))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(line.getAD_Client_ID(), line.getAD_Org_ID()))
 				.plantId(line.getPP_Plant_ID())
 				.productDescriptor(productDescriptor)
 				.quantity(line.getQtyCount())

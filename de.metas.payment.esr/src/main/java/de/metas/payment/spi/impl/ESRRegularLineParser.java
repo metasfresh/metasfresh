@@ -34,6 +34,8 @@ import de.metas.banking.payment.IPaymentStringDataProvider;
 import de.metas.banking.payment.impl.PaymentString;
 import de.metas.payment.api.impl.ESRPaymentStringDataProvider;
 import de.metas.payment.esr.ESRConstants;
+import de.metas.payment.esr.api.InvoiceReferenceNo;
+import de.metas.payment.esr.api.InvoiceReferenceNos;
 import de.metas.util.Check;
 
 public final class ESRRegularLineParser extends AbstractESRPaymentStringParser
@@ -67,30 +69,24 @@ public final class ESRRegularLineParser extends AbstractESRPaymentStringParser
 					"The file contains a line with unsupported transaction type '" + trxType + "'");
 		}
 
-		final String esrReferenceNoComplete = paymentText.substring(12, 39);
-		final String innerPaymentString = esrReferenceNoComplete.substring(0, 7);
-
 		final String paymentDateStr = paymentText.substring(59, 65);
 		final Timestamp paymentDate = extractTimestampFromString(ctx, paymentDateStr, ERR_WRONG_PAYMENT_DATE, collectedErrors);
 
 		final String accountDateStr = paymentText.substring(65, 71);
 		final Timestamp accountDate = extractTimestampFromString(ctx, accountDateStr, ERR_WRONG_ACCOUNT_DATE, collectedErrors);
 
-		final String orgValue = esrReferenceNoComplete.substring(7, 10);
-		final String bpValue = removeLeftZeros(esrReferenceNoComplete.substring(10, 18));
-		final String documentNo = removeLeftZeros(esrReferenceNoComplete.substring(18, 26));
+		final String esrReferenceNoComplete = paymentText.substring(12, 39);
+		final InvoiceReferenceNo invoiceReferenceNo = InvoiceReferenceNos.parse(esrReferenceNoComplete);
 
 		final IPaymentString paymentString = new PaymentString(collectedErrors,
 				paymentText, // FRESH-318
 				postAccountNo,
-				innerPaymentString,
+				invoiceReferenceNo.getBankAccount(),
 				amount,
 				esrReferenceNoComplete,
 				paymentDate,
 				accountDate,
-				orgValue,
-				bpValue,
-				documentNo);
+				invoiceReferenceNo.getOrg());
 
 		final IPaymentStringDataProvider dataProvider = new ESRPaymentStringDataProvider(paymentString);
 		paymentString.setDataProvider(dataProvider);

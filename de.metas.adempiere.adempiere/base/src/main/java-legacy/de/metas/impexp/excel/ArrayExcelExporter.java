@@ -16,31 +16,47 @@ package de.metas.impexp.excel;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
+import org.compiere.util.Env;
+
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 
 /**
  * Export excel from ArrayList of data
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  *
  */
+
 public class ArrayExcelExporter extends AbstractExcelExporter
 {
-	private Properties m_ctx = null;
-	private List<List<Object>> m_data = null;
+	private final Properties m_ctx;
+	private final List<List<Object>> m_data;
+	private final List<String> m_columnHeaders;
+	private final boolean translateHeaders;
 
 	@Builder
 	private ArrayExcelExporter(
-			@NonNull final Properties ctx,
-			@NonNull final List<List<Object>> data)
+			@Nullable final ExcelFormat excelFormat,
+			@Nullable final ExcelExportConstants constants,
+			@Nullable final Properties ctx,
+			@NonNull final List<List<Object>> data,
+			@Nullable final List<String> columnHeaders,
+			@Nullable final Boolean translateHeaders)
 	{
-		m_ctx = ctx;
+		super(excelFormat, constants);
+
+		m_ctx = ctx != null ? ctx : Env.getCtx();
 		m_data = data;
+		m_columnHeaders = columnHeaders;
+		this.translateHeaders = CoalesceUtil.coalesce(translateHeaders, true);
 	}
 
 	@Override
-	public Properties getCtx()
+	protected Properties getCtx()
 	{
 		return m_ctx;
 	}
@@ -62,11 +78,26 @@ public class ArrayExcelExporter extends AbstractExcelExporter
 	@Override
 	public String getHeaderName(final int col)
 	{
-		final Object headerNameObj = m_data.get(0).get(col);
-		final String headerName = headerNameObj != null ? headerNameObj.toString() : null;
+		String headerName;
+		if (m_columnHeaders == null || m_columnHeaders.isEmpty())
+		{
+			final Object headerNameObj = m_data.get(0).get(col);
+			headerName = headerNameObj != null ? headerNameObj.toString() : null;
+		}
+		else
+		{
+			headerName = m_columnHeaders.get(col);
+		}
 
-		final String adLanguage = getLanguage().getAD_Language();
-		return msgBL.translatable(headerName).translate(adLanguage);
+		if (translateHeaders)
+		{
+			final String adLanguage = getLanguage().getAD_Language();
+			return msgBL.translatable(headerName).translate(adLanguage);
+		}
+		else
+		{
+			return headerName;
+		}
 	}
 
 	@Override

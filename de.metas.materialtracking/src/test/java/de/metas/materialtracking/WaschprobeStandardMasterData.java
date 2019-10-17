@@ -1,5 +1,8 @@
 package de.metas.materialtracking;
 
+import static org.compiere.util.TimeUtil.asTimestamp;
+import static org.compiere.util.TimeUtil.getDay;
+
 /*
  * #%L
  * de.metas.materialtracking
@@ -13,23 +16,22 @@ package de.metas.materialtracking;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
@@ -38,10 +40,10 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
+import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.CostCollectorType;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
-import org.eevolution.model.X_PP_Cost_Collector;
 import org.junit.Assert;
 
 import de.metas.inout.model.I_M_InOut;
@@ -53,6 +55,7 @@ import de.metas.materialtracking.model.I_PP_Order_BOMLine;
 import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterial;
 import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialComparator;
 import de.metas.pricing.rules.MockedPricingRule;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -88,7 +91,7 @@ public class WaschprobeStandardMasterData
 
 	public WaschprobeStandardMasterData()
 	{
-		this(new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None));
+		this(PlainContextAware.createUsingOutOfTransaction());
 	}
 
 	public WaschprobeStandardMasterData(final IContextAware context)
@@ -108,7 +111,7 @@ public class WaschprobeStandardMasterData
 
 	private void createMasterData()
 	{
-		this.materialReceiptDate = TimeUtil.getDay(2015, 12, 06);
+		this.materialReceiptDate = asTimestamp(getDay(2015, 12, 06));
 
 		//
 		// Create data from HardCodedQualityBasedConfig
@@ -196,28 +199,28 @@ public class WaschprobeStandardMasterData
 	public I_PP_Order createPP_Order(final I_M_Product product,
 			final BigDecimal qtyDelivered,
 			final I_C_UOM uom,
-			final Timestamp productionDate)
+			final Date productionDate)
 	{
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class, context);
-		ppOrder.setDateDelivered(productionDate);
-		ppOrder.setM_Product(product);
-		ppOrder.setC_UOM(uom);
+		ppOrder.setDateDelivered(asTimestamp(productionDate));
+		ppOrder.setM_Product_ID(product.getM_Product_ID());
+		ppOrder.setC_UOM_ID(uom.getC_UOM_ID());
 		ppOrder.setQtyDelivered(qtyDelivered);
 		ppOrder.setQM_QtyDeliveredPercOfRaw(BigDecimal.ZERO); // to be set by BL
 		ppOrder.setQM_QtyDeliveredAvg(BigDecimal.ZERO); // to be set by BL
-		InterfaceWrapperHelper.save(ppOrder);
+		Services.get(IPPOrderDAO.class).save(ppOrder);
 		return ppOrder;
 	}
 
 	public I_PP_Order_BOMLine createPP_Order_BOMLine(final org.eevolution.model.I_PP_Order ppOrder,
-			final String componentType,
+			final BOMComponentType componentType,
 			final I_M_Product product,
 			final BigDecimal qtyDelivered,
 			final I_C_UOM uom)
 	{
 		final I_PP_Order_BOMLine ppOrderBOMLine = InterfaceWrapperHelper.newInstance(I_PP_Order_BOMLine.class, context);
 		ppOrderBOMLine.setPP_Order(ppOrder);
-		ppOrderBOMLine.setComponentType(componentType);
+		ppOrderBOMLine.setComponentType(componentType.getCode());
 		ppOrderBOMLine.setM_Product(product);
 		ppOrderBOMLine.setC_UOM(uom);
 
@@ -268,6 +271,7 @@ public class WaschprobeStandardMasterData
 	{
 		final I_M_Material_Tracking materialTracking = InterfaceWrapperHelper.newInstance(I_M_Material_Tracking.class, context);
 		materialTracking.setQtyReceived(qtyReceived);
+		materialTracking.setM_Product_ID(pCarrot_Unwashed.getM_Product_ID());
 		InterfaceWrapperHelper.save(materialTracking);
 		return materialTracking;
 	}
@@ -290,7 +294,7 @@ public class WaschprobeStandardMasterData
 
 		final I_M_InOutLine iol = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class, context);
 		iol.setM_InOut(io);
-		iol.setM_Product(product);
+		iol.setM_Product_ID(product.getM_Product_ID());
 		InterfaceWrapperHelper.save(iol);
 
 		return iol;
@@ -302,7 +306,7 @@ public class WaschprobeStandardMasterData
 	{
 		final I_PP_Cost_Collector cc = InterfaceWrapperHelper.newInstance(I_PP_Cost_Collector.class, context);
 		cc.setPP_Order(ppOrder);
-		cc.setCostCollectorType(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue);
+		cc.setCostCollectorType(CostCollectorType.ComponentIssue.getCode());
 		cc.setMovementQty(issuedQty);
 
 		InterfaceWrapperHelper.save(cc);

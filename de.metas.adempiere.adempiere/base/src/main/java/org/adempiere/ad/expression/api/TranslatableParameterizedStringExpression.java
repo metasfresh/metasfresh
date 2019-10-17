@@ -70,7 +70,7 @@ public final class TranslatableParameterizedStringExpression implements IStringE
 		return of(adLanguageParam, translatableString.getStringBaseLanguage(), translatableString.getStringTrlPattern());
 	}
 
-	public static final IStringExpression of(final CtxName adLanguageParam, final String expressionBaseLang, final String expressionTrl)
+	public static final IStringExpression of(final CtxName adLanguageParam, @NonNull final String expressionBaseLang, final String expressionTrl)
 	{
 		if (Objects.equals(expressionBaseLang, expressionTrl))
 		{

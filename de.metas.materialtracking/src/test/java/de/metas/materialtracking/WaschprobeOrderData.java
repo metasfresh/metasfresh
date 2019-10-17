@@ -13,22 +13,23 @@ package de.metas.materialtracking;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Date;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Cost_Collector;
-import org.eevolution.model.X_PP_Order_BOMLine;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 
@@ -57,7 +58,7 @@ public class WaschprobeOrderData
 {
 	// Data
 
-	public final Timestamp productionDate;
+	public final Date productionDate;
 
 	private WaschprobeStandardMasterData data;
 	public I_M_Material_Tracking materialTracking;
@@ -80,8 +81,9 @@ public class WaschprobeOrderData
 	/** UOM used for Order and Order BOM Lines */
 	public final I_C_UOM uom;
 
-	public WaschprobeOrderData(final WaschprobeStandardMasterData masterData,
-			final Timestamp productionDate)
+	public WaschprobeOrderData(
+			final WaschprobeStandardMasterData masterData,
+			final Date productionDate)
 	{
 		this.data = masterData;
 		this.uom = data.uom;
@@ -101,7 +103,7 @@ public class WaschprobeOrderData
 		//
 		// Main component: raw material
 		this.ppOrderBOMLine_Carrot_Unwashed = data.createPP_Order_BOMLine(ppOrder,
-				X_PP_Order_BOMLine.COMPONENTTYPE_Component,
+				BOMComponentType.Component,
 				data.pCarrot_Unwashed,
 				BigDecimal.ZERO, // delivered
 				uom);
@@ -111,7 +113,7 @@ public class WaschprobeOrderData
 		//
 		// Raw material variant
 		this.ppOrderBOMLine_Carrot_Unwashed_Alternative01 = data.createPP_Order_BOMLine(ppOrder,
-				X_PP_Order_BOMLine.COMPONENTTYPE_Variant,
+				BOMComponentType.Variant,
 				data.pCarrot_Unwashed_Alternative01,
 				BigDecimal.ZERO, // delivered
 				uom);
@@ -121,7 +123,7 @@ public class WaschprobeOrderData
 		//
 		// Co-Products
 		this.ppOrderBOMLine_Carrot_Big = data.createPP_Order_BOMLine(ppOrder,
-				X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product,
+				BOMComponentType.CoProduct,
 				data.pCarrot_Big,
 				BigDecimal.ZERO, // delivered
 				uom);
@@ -129,7 +131,7 @@ public class WaschprobeOrderData
 		//
 		// By-Products
 		this.ppOrderBOMLine_Carrot_AnimalFood = data.createPP_Order_BOMLine(ppOrder,
-				X_PP_Order_BOMLine.COMPONENTTYPE_By_Product,
+				BOMComponentType.ByProduct,
 				data.pCarrot_AnimalFood,
 				BigDecimal.ZERO, // delivered
 				uom);
@@ -248,8 +250,7 @@ public class WaschprobeOrderData
 	{
 		Assert.assertThat("Invalid QM_QtyDeliveredPercOfRaw for " + qiItemName,
 				qiItem.getQM_QtyDeliveredPercOfRaw(),
-				Matchers.comparesEqualTo(expectedQM_QtyDeliveredPercOfRaw)
-				);
+				Matchers.comparesEqualTo(expectedQM_QtyDeliveredPercOfRaw));
 	}
 
 	// -------------------------------------------------------------------------------------------------------------------------
@@ -280,8 +281,7 @@ public class WaschprobeOrderData
 	{
 		Assert.assertThat("Invalid QM_QtyDeliveredAvg for " + qiItemName,
 				qiItem.getQM_QtyDeliveredAvg(),
-				Matchers.comparesEqualTo(expectedQM_QtyDeliveredAvg)
-				);
+				Matchers.comparesEqualTo(expectedQM_QtyDeliveredAvg));
 	}
 
 	// -------------------------------------------------------------------------------------------------------------------------

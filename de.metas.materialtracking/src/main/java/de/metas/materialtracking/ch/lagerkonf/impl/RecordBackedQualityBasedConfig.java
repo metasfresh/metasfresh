@@ -36,15 +36,15 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import de.metas.currency.Currency;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.materialtracking.ch.lagerkonf.IQualityInspLagerKonfDAO;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_AdditionalFee;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_Month_Adj;
@@ -53,6 +53,8 @@ import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_Ve
 import de.metas.materialtracking.ch.lagerkonf.model.X_M_QualityInsp_LagerKonf_Month_Adj;
 import de.metas.materialtracking.qualityBasedInvoicing.IInvoicingItem;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedInvoicingBL;
+import de.metas.money.CurrencyId;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -68,14 +70,15 @@ import de.metas.util.Services;
 		super(InterfaceWrapperHelper.getContextAware(qualityInspLagerKonfVersion));
 		final IContextAware ctxAware = getContext();
 
-		currency = qualityInspLagerKonfVersion.getC_Currency();
+		final CurrencyId currencyId = CurrencyId.ofRepoId(qualityInspLagerKonfVersion.getC_Currency_ID());
+		currency = Services.get(ICurrencyDAO.class).getById(currencyId);
 
 		scrapUOM = qualityInspLagerKonfVersion.getC_UOM_Scrap();
 		scrapProduct = qualityInspLagerKonfVersion.getM_Product_Scrap();
 		scrapPercentageTreshold = qualityInspLagerKonfVersion.getPercentage_Scrap_Treshhold();
 		scrapFee = qualityInspLagerKonfVersion.getScrap_Fee_Amt_Per_UOM();
 
-		month2qualityAdjustment = new HashMap<Integer, BigDecimal>(12);
+		month2qualityAdjustment = new HashMap<>(12);
 
 		final List<I_M_QualityInsp_LagerKonf_Month_Adj> adjustments = Services.get(IQualityInspLagerKonfDAO.class).retriveMonthAdjustments(qualityInspLagerKonfVersion);
 		BigDecimal maximumFee = null;
@@ -138,14 +141,14 @@ import de.metas.util.Services;
 		productWithProcessingFee = qualityInspLagerKonfVersion.getM_Product_ProcessingFee();
 		regularPPOrderProduct = qualityInspLagerKonfVersion.getM_Product_RegularPPOrder();
 
-		feeProductPercentage2fee = new TreeMap<BigDecimal, BigDecimal>();
+		feeProductPercentage2fee = new TreeMap<>();
 		final List<I_M_QualityInsp_LagerKonf_ProcessingFee> processingFees = Services.get(IQualityInspLagerKonfDAO.class).retriveProcessingFees(qualityInspLagerKonfVersion);
 		for (final I_M_QualityInsp_LagerKonf_ProcessingFee processingFee : processingFees)
 		{
 			feeProductPercentage2fee.put(processingFee.getPercentFrom(), processingFee.getProcessing_Fee_Amt_Per_UOM());
 		}
 
-		additionaFeeProducts = new ArrayList<IInvoicingItem>();
+		additionaFeeProducts = new ArrayList<>();
 		final List<I_M_QualityInsp_LagerKonf_AdditionalFee> aditionalFees = Services.get(IQualityInspLagerKonfDAO.class).retriveAdditionalFees(qualityInspLagerKonfVersion);
 		for (final I_M_QualityInsp_LagerKonf_AdditionalFee additionalFee : aditionalFees)
 		{
@@ -190,7 +193,7 @@ import de.metas.util.Services;
 
 	private final int numberOfInspections;
 
-	private final I_C_Currency currency;
+	private final Currency currency;
 
 	private final Timestamp validToDate;
 
@@ -306,7 +309,7 @@ import de.metas.util.Services;
 	@Override
 	public BigDecimal getFeeForProducedMaterial(final I_M_Product m_Product, final BigDecimal percentage)
 	{
-		final List<BigDecimal> percentages = new ArrayList<BigDecimal>(feeProductPercentage2fee.keySet());
+		final List<BigDecimal> percentages = new ArrayList<>(feeProductPercentage2fee.keySet());
 
 		// iterating from first to 2nd-last
 		for (int i = 0; i < percentages.size() - 1; i++)
@@ -339,7 +342,7 @@ import de.metas.util.Services;
 	}
 
 	@Override
-	public I_C_Currency getCurrency()
+	public Currency getCurrency()
 	{
 		return currency;
 	}

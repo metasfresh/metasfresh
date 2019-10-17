@@ -15,7 +15,7 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -600634647L;
+	private static final long serialVersionUID = 1357304617L;
 
     /** Standard Constructor */
     public X_PP_Order (Properties ctx, int PP_Order_ID, String trxName)
@@ -24,57 +24,37 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
       /** if (PP_Order_ID == 0)
         {
 			setAD_Workflow_ID (0);
-			setC_DocTypeTarget_ID (0);
-// 0
+			setC_DocTypeTarget_ID (0); // 0
 			setC_UOM_ID (0);
-			setDateOrdered (new Timestamp( System.currentTimeMillis() ));
-// @#Date@
+			setDateOrdered (new Timestamp( System.currentTimeMillis() )); // @#Date@
 			setDatePromised (new Timestamp( System.currentTimeMillis() ));
-			setDateStartSchedule (new Timestamp( System.currentTimeMillis() ));
-// @#Date@
-			setDocAction (null);
-// CO
-			setDocStatus (null);
-// DR
+			setDateStartSchedule (new Timestamp( System.currentTimeMillis() )); // @#Date@
+			setDocAction (null); // CO
+			setDocStatus (null); // DR
 			setDocumentNo (null);
-			setIsApproved (false);
-// N
-			setIsPrinted (false);
-// N
-			setIsSelected (false);
-// N
-			setIsSOTrx (false);
-// N
+			setIsApproved (false); // N
+			setIsPrinted (false); // N
+			setIsSelected (false); // N
+			setIsSOTrx (false); // N
 			setLine (0);
 			setM_Locator_ID (0);
 			setM_Product_ID (0);
 			setM_Warehouse_ID (0);
-			setMRP_AllowCleanup (false);
-// N
-			setMRP_Generated (false);
-// N
-			setMRP_ToDelete (false);
-// N
-			setPlanningStatus (null);
-// P
+			setMRP_AllowCleanup (false); // N
+			setMRP_Generated (false); // N
+			setMRP_ToDelete (false); // N
+			setPlanningStatus (null); // P
 			setPP_Order_ID (0);
 			setPP_Product_BOM_ID (0);
 			setPriorityRule (null);
-			setProcessed (false);
-// N
-			setQtyBeforeClose (BigDecimal.ZERO);
-// 0
-			setQtyDelivered (BigDecimal.ZERO);
-// 0
-			setQtyOrdered (BigDecimal.ZERO);
-// 1
-			setQtyReject (BigDecimal.ZERO);
-// 0
-			setQtyScrap (BigDecimal.ZERO);
-// 0
+			setProcessed (false); // N
+			setQtyBeforeClose (BigDecimal.ZERO); // 0
+			setQtyDelivered (BigDecimal.ZERO); // 0
+			setQtyOrdered (BigDecimal.ZERO); // 1
+			setQtyReject (BigDecimal.ZERO); // 0
+			setQtyScrap (BigDecimal.ZERO); // 0
 			setS_Resource_ID (0);
-			setYield (BigDecimal.ZERO);
-// 100
+			setYield (BigDecimal.ZERO); // 100
         } */
     }
 
@@ -92,18 +72,6 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_AD_Org getAD_OrgTrx() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_OrgTrx_ID, org.compiere.model.I_AD_Org.class);
-	}
-
-	@Override
-	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_OrgTrx_ID, org.compiere.model.I_AD_Org.class, AD_OrgTrx);
-	}
 
 	/** Set Buchende Organisation.
 		@param AD_OrgTrx_ID 
@@ -131,7 +99,7 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Workflow getAD_Workflow() throws RuntimeException
+	public org.compiere.model.I_AD_Workflow getAD_Workflow()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Workflow_ID, org.compiere.model.I_AD_Workflow.class);
 	}
@@ -167,7 +135,7 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		return ii.intValue();
 	}
 
-	/** Set Quantity Assay.
+	/** Set Mengen Probe.
 		@param Assay 
 		Indicated the Quantity Assay to use into Quality Order
 	  */
@@ -177,7 +145,7 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		set_Value (COLUMNNAME_Assay, Assay);
 	}
 
-	/** Get Quantity Assay.
+	/** Get Mengen Probe.
 		@return Indicated the Quantity Assay to use into Quality Order
 	  */
 	@Override
@@ -190,7 +158,7 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
-	public org.compiere.model.I_C_Activity getC_Activity() throws RuntimeException
+	public org.compiere.model.I_C_Activity getC_Activity()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class);
 	}
@@ -226,18 +194,6 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
 		Bezeichnet einen Geschäftspartner
@@ -264,7 +220,7 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
-	public org.compiere.model.I_C_Campaign getC_Campaign() throws RuntimeException
+	public org.compiere.model.I_C_Campaign getC_Campaign()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class);
 	}
@@ -300,18 +256,6 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class);
-	}
-
-	@Override
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType)
-	{
-		set_ValueFromPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class, C_DocType);
-	}
-
 	/** Set Belegart.
 		@param C_DocType_ID 
 		Document type or rules
@@ -335,18 +279,6 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_DocType getC_DocTypeTarget() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_DocTypeTarget_ID, org.compiere.model.I_C_DocType.class);
-	}
-
-	@Override
-	public void setC_DocTypeTarget(org.compiere.model.I_C_DocType C_DocTypeTarget)
-	{
-		set_ValueFromPO(COLUMNNAME_C_DocTypeTarget_ID, org.compiere.model.I_C_DocType.class, C_DocTypeTarget);
 	}
 
 	/** Set Zielbelegart.
@@ -375,7 +307,7 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
-	public org.compiere.model.I_C_Order getC_Order() throws RuntimeException
+	public org.compiere.model.I_C_Order getC_Order()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
 	}
@@ -408,7 +340,7 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
-	public org.compiere.model.I_C_OrderLine getC_OrderLine() throws RuntimeException
+	public org.compiere.model.I_C_OrderLine getC_OrderLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class);
 	}
@@ -445,7 +377,7 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
-	public org.compiere.model.I_C_OrderLine getC_OrderLine_MTO() throws RuntimeException
+	public org.compiere.model.I_C_OrderLine getC_OrderLine_MTO()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_OrderLine_MTO_ID, org.compiere.model.I_C_OrderLine.class);
 	}
@@ -481,18 +413,6 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Project getC_Project() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class);
-	}
-
-	@Override
-	public void setC_Project(org.compiere.model.I_C_Project C_Project)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class, C_Project);
-	}
-
 	/** Set Projekt.
 		@param C_Project_ID 
 		Financial Project
@@ -501,9 +421,9 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public void setC_Project_ID (int C_Project_ID)
 	{
 		if (C_Project_ID < 1) 
-			set_Value (COLUMNNAME_C_Project_ID, null);
+			set_ValueNoCheck (COLUMNNAME_C_Project_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Project_ID, Integer.valueOf(C_Project_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Project_ID, Integer.valueOf(C_Project_ID));
 	}
 
 	/** Get Projekt.
@@ -516,18 +436,6 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
 	}
 
 	/** Set Maßeinheit.
@@ -763,6 +671,8 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public static final String DOCACTION_Unlock = "XL";
 	/** WaitComplete = WC */
 	public static final String DOCACTION_WaitComplete = "WC";
+	/** UnClose = UC */
+	public static final String DOCACTION_UnClose = "UC";
 	/** Set Belegverarbeitung.
 		@param DocAction 
 		The targeted status of the document
@@ -832,7 +742,7 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Beleg Nr..
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
@@ -842,7 +752,7 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Beleg Nr..
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
 	@Override
@@ -1058,7 +968,7 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
@@ -1094,18 +1004,6 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Locator getM_Locator() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class);
-	}
-
-	@Override
-	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class, M_Locator);
-	}
-
 	/** Set Lagerort.
 		@param M_Locator_ID 
 		Lagerort im Lager
@@ -1131,18 +1029,6 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
-	}
-
 	/** Set Produkt.
 		@param M_Product_ID 
 		Produkt, Leistung, Artikel
@@ -1166,18 +1052,6 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
-	}
-
-	@Override
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse);
 	}
 
 	/** Set Lager.
@@ -1299,18 +1173,6 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		return (java.lang.String)get_Value(COLUMNNAME_OrderType);
 	}
 
-	@Override
-	public org.compiere.model.I_AD_User getPlanner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_Planner_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setPlanner(org.compiere.model.I_AD_User Planner)
-	{
-		set_ValueFromPO(COLUMNNAME_Planner_ID, org.compiere.model.I_AD_User.class, Planner);
-	}
-
 	/** Set Planner.
 		@param Planner_ID Planner	  */
 	@Override
@@ -1410,7 +1272,7 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Product_BOM getPP_Product_BOM() throws RuntimeException
+	public org.eevolution.model.I_PP_Product_BOM getPP_Product_BOM()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Product_BOM_ID, org.eevolution.model.I_PP_Product_BOM.class);
 	}
@@ -1447,7 +1309,7 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Product_Planning getPP_Product_Planning() throws RuntimeException
+	public org.eevolution.model.I_PP_Product_Planning getPP_Product_Planning()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Product_Planning_ID, org.eevolution.model.I_PP_Product_Planning.class);
 	}
@@ -1681,9 +1543,9 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		return bd;
 	}
 
-	/** Set Bestellte Menge.
+	/** Set Bestellt/ Beauftragt.
 		@param QtyOrdered 
-		Ordered Quantity
+		Bestellt/ Beauftragt
 	  */
 	@Override
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered)
@@ -1691,8 +1553,8 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		set_ValueNoCheck (COLUMNNAME_QtyOrdered, QtyOrdered);
 	}
 
-	/** Get Bestellte Menge.
-		@return Ordered Quantity
+	/** Get Bestellt/ Beauftragt.
+		@return Bestellt/ Beauftragt
 	  */
 	@Override
 	public java.math.BigDecimal getQtyOrdered () 
@@ -1722,9 +1584,9 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		return bd;
 	}
 
-	/** Set Reservierte Menge.
+	/** Set Offen.
 		@param QtyReserved 
-		Reserved Quantity
+		Offene Menge
 	  */
 	@Override
 	public void setQtyReserved (java.math.BigDecimal QtyReserved)
@@ -1732,8 +1594,8 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		set_Value (COLUMNNAME_QtyReserved, QtyReserved);
 	}
 
-	/** Get Reservierte Menge.
-		@return Reserved Quantity
+	/** Get Offen.
+		@return Offene Menge
 	  */
 	@Override
 	public java.math.BigDecimal getQtyReserved () 
@@ -1767,7 +1629,7 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
-	public org.compiere.model.I_S_Resource getS_Resource() throws RuntimeException
+	public org.compiere.model.I_S_Resource getS_Resource()
 	{
 		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
 	}
@@ -1842,7 +1704,7 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
-	public org.compiere.model.I_C_ElementValue getUser1() throws RuntimeException
+	public org.compiere.model.I_C_ElementValue getUser1()
 	{
 		return get_ValueAsPO(COLUMNNAME_User1_ID, org.compiere.model.I_C_ElementValue.class);
 	}
@@ -1879,7 +1741,7 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
-	public org.compiere.model.I_C_ElementValue getUser2() throws RuntimeException
+	public org.compiere.model.I_C_ElementValue getUser2()
 	{
 		return get_ValueAsPO(COLUMNNAME_User2_ID, org.compiere.model.I_C_ElementValue.class);
 	}

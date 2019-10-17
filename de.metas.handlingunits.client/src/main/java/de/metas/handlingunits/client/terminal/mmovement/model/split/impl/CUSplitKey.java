@@ -10,12 +10,12 @@ package de.metas.handlingunits.client.terminal.mmovement.model.split.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,7 +30,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DisplayType;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Util;
 
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
@@ -38,6 +37,7 @@ import de.metas.handlingunits.client.terminal.helper.HUTerminalHelper;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 /**
@@ -58,9 +58,9 @@ public class CUSplitKey extends TerminalKey
 	private final String productName;
 	private String name;
 
-	public CUSplitKey(final ITerminalContext terminalContext, 
-			@NonNull final ProductId productId, 
-			@NonNull final BigDecimal qty, 
+	public CUSplitKey(final ITerminalContext terminalContext,
+			@NonNull final ProductId productId,
+			@NonNull final BigDecimal qty,
 			@NonNull final I_C_UOM uom)
 	{
 		super(terminalContext);
@@ -69,7 +69,7 @@ public class CUSplitKey extends TerminalKey
 		this.qty = qty;
 		this.uom = uom;
 		id = getClass().getName() + "-" + productId.getRepoId();
-		
+
 		productName = Services.get(IProductBL.class).getProductName(productId);
 		value = KeyNamePair.of(productId, productName);
 
@@ -87,9 +87,9 @@ public class CUSplitKey extends TerminalKey
 				+ " " + uom.getUOMSymbol();
 
 		name = "<center>"
-				+ Util.maskHTML(productName)
+				+ StringUtils.maskHTML(productName)
 				+ "<br>"
-				+ "- " + Util.maskHTML(qtyStr) + " -"
+				+ "- " + StringUtils.maskHTML(qtyStr) + " -"
 				+ "</center>";
 
 		listeners.firePropertyChange(PROPERTY_Name, nameOld, name);

@@ -1,0 +1,29 @@
+-- 2019-01-03T09:33:57.454
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2019-01-03 09:33:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=546009
+;
+
+-- 2019-01-03T09:34:10.176
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2019-01-03 09:34:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=545623
+;
+
+-- 2019-01-03T09:34:18.843
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2019-01-03 09:34:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=545618
+;
+
+-- 2019-01-03T09:34:25.373
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2019-01-03 09:34:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=545857
+;
+
+-- 2019-01-03T09:34:33.841
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2019-01-03 09:34:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=545621
+;
+
+-- 2019-01-03T09:34:54.066
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=30, IsUpdateable='N',Updated=TO_TIMESTAMP('2019-01-03 09:34:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=545804
+;

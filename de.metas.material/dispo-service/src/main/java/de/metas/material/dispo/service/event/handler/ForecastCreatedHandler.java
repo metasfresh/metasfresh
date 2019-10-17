@@ -3,18 +3,17 @@ package de.metas.material.dispo.service.event.handler;
 import java.util.Collection;
 
 import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
-import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
@@ -43,7 +42,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@Service
+@Component
 @Profile(Profiles.PROFILE_MaterialDispo)
 public class ForecastCreatedHandler implements MaterialEventHandler<ForecastCreatedEvent>
 {
@@ -66,7 +65,7 @@ public class ForecastCreatedHandler implements MaterialEventHandler<ForecastCrea
 		final Forecast forecast = event.getForecast();
 
 		final CandidateBuilder candidateBuilder = Candidate.builderForEventDescr(event.getEventDescriptor())
-				.status(EventUtil.getCandidateStatus(forecast.getDocStatus()))
+				//.status(EventUtil.getCandidateStatus(forecast.getDocStatus()))
 				.type(CandidateType.STOCK_UP)
 				.businessCase(CandidateBusinessCase.FORECAST);
 

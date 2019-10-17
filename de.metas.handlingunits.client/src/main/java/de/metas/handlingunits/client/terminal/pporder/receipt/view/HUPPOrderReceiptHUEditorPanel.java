@@ -50,7 +50,7 @@ public final class HUPPOrderReceiptHUEditorPanel extends HUEditorPanel
 
 		final HUPPOrderReceiptCUKey orderReceiptCUKey = (HUPPOrderReceiptCUKey)cuKey;
 
-		Services.get(ITrxManager.class).run(() -> {
+		Services.get(ITrxManager.class).runInNewTrx(() -> {
 			for (final HUKey huKey : selectedHUKeys)
 			{
 				// load the HU here because in case something will fail, our HUKey's HU won't be affected

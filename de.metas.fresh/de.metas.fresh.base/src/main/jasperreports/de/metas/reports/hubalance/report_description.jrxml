@@ -63,7 +63,7 @@ WHERE
 			<textField>
 				<reportElement key="textField-6" x="37" y="114" width="133" height="13" forecolor="#000000" uuid="7cf154c3-4c1c-4d44-ab9c-fb3c56ba6c35"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{hubalance}]]></textFieldExpression>
 			</textField>

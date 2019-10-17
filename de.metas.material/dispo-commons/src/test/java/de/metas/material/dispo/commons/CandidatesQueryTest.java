@@ -7,17 +7,14 @@ import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.sql.Timestamp;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.MaterialDescriptorQueryTest;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
-import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
-import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.DateOperator;
-import de.metas.util.time.SystemTime;
+import de.metas.organization.ClientAndOrgId;
 
 /*
  * #%L
@@ -52,33 +49,23 @@ public class CandidatesQueryTest
 		assertThat(result.getId()).isEqualTo(CandidateId.UNSPECIFIED);
 	}
 
+	/**
+	 * Note that the material descriptor query is also unit-tested in {@link MaterialDescriptorQueryTest}
+	 */
 	@Test
 	public void fromCandidate()
 	{
-		final Timestamp date = new Timestamp(NOW.getTime());
-
-		final Candidate cand = Candidate.builder().type(CandidateType.STOCK)
-				.materialDescriptor(createMaterialDescriptor().withDate(date))
+		final Candidate cand = Candidate.builder()
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 1))
+				.type(CandidateType.STOCK)
+				.materialDescriptor(createMaterialDescriptor().withDate(NOW))
 				.build();
 		final CandidatesQuery query = CandidatesQuery.fromCandidate(cand, false);
-
-		assertThat(query.getMaterialDescriptorQuery().getDate()).isEqualTo(date);
-		assertThat(query.getMaterialDescriptorQuery().getDateOperator()).isEqualTo(DateOperator.AT);
 		assertThat(query.getMaterialDescriptorQuery().getProductId()).isEqualTo(PRODUCT_ID);
 		assertThat(query.getMaterialDescriptorQuery().getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY);
 		assertThat(query.getMaterialDescriptorQuery().getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 
 		assertThat(query.getType()).isEqualTo(CandidateType.STOCK);
 		assertThat(query.getParentId()).isEqualTo(CandidateId.UNSPECIFIED);
-	}
-
-	@Test
-	public void build_when_dateAndNoDateOperator_then_useOperatorAT()
-	{
-		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder().date(SystemTime.asTimestamp()).build();
-		final CandidatesQuery result = CandidatesQuery.builder()
-				.materialDescriptorQuery(materialDescriptorQuery)
-				.build();
-		assertThat(result.getMaterialDescriptorQuery().getDateOperator()).isSameAs(DateOperator.AT);
 	}
 }

@@ -62,14 +62,13 @@ public class InvoiceCandidateHandlerDAO implements IInvoiceCandidateHandlerDAO
 
 		return queryBuilder
 				.create()
-				.setApplyAccessFilter(true) // only the records on which current role has access to
 				.list(I_C_ILCandHandler.class);
 	}
 
 	@Override
 	public List<I_C_ILCandHandler> retrieveForTable(final Properties ctx, final String tableName)
 	{
-		final List<I_C_ILCandHandler> result = new ArrayList<I_C_ILCandHandler>();
+		final List<I_C_ILCandHandler> result = new ArrayList<>();
 		for (final I_C_ILCandHandler handlerDef : retrieveAll(ctx))
 		{
 			if (tableName.equals(handlerDef.getTableName()))
@@ -117,7 +116,7 @@ public class InvoiceCandidateHandlerDAO implements IInvoiceCandidateHandlerDAO
 	{
 		final String classname = clazz.getName();
 
-		final List<I_C_ILCandHandler> result = new ArrayList<I_C_ILCandHandler>();
+		final List<I_C_ILCandHandler> result = new ArrayList<>();
 		for (final I_C_ILCandHandler handlerDef : retrieveAll(ctx))
 		{
 			if (classname.equals(handlerDef.getClassname()))

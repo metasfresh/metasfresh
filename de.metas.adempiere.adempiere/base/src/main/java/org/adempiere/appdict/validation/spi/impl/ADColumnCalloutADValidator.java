@@ -24,6 +24,7 @@ package org.adempiere.appdict.validation.spi.impl;
 
 
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 import org.adempiere.appdict.validation.api.IADValidatorViolation;
 import org.adempiere.appdict.validation.spi.AbstractADValidator;
@@ -34,7 +35,6 @@ import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_ColumnCallout;
 import org.compiere.model.I_AD_Table;
-import org.compiere.util.Util;
 
 import de.metas.util.Check;
 
@@ -60,8 +60,8 @@ public class ADColumnCalloutADValidator extends AbstractADValidator<I_AD_ColumnC
 		// Expected params, variant 2: Properties ctx, int windowNo, GridTab gridTab, GridField gridField, Object value, Object valueOld
 		final Class<?>[] expectedParams2 = new Class<?>[] { java.util.Properties.class, int.class, GridTab.class, GridField.class, Object.class, Object.class };
 
-		if (!Util.equals(expectedParams1, method.getParameterTypes())
-				&& !Util.equals(expectedParams2, method.getParameterTypes()))
+		if (!Objects.equals(expectedParams1, method.getParameterTypes())
+				&& !Objects.equals(expectedParams2, method.getParameterTypes()))
 		{
 			throw new AdempiereException("Invalid parameters for callout method " + method);
 		}

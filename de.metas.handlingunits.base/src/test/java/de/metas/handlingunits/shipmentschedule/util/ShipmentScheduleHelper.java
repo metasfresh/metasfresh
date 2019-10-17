@@ -1,6 +1,7 @@
 package de.metas.handlingunits.shipmentschedule.util;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getModelTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -36,6 +37,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 
 import de.metas.bpartner.BPartnerId;
@@ -55,6 +57,9 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.DeliveryRule;
+import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 
 /**
@@ -95,7 +100,7 @@ public class ShipmentScheduleHelper
 			final BigDecimal scheduleQtyPickedExpected)
 	{
 		new HUTransactionExpectation<>()
-				.product(schedule.getM_Product())
+				.product(loadOutOfTrx(schedule.getM_Product_ID(), I_M_Product.class))
 				.qty(trxQtyExpected)
 				.uom(shipmentScheduleBL.getUomOfProduct(schedule))
 				.referencedModel(schedule)
@@ -128,14 +133,14 @@ public class ShipmentScheduleHelper
 
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class, helper.getContextProvider());
 		orderLine.setC_Order_ID(order.getC_Order_ID());
-		orderLine.setC_UOM(uom);
+		orderLine.setC_UOM_ID(uom.getC_UOM_ID());
 		saveRecord(orderLine);
 
 		//
 		// Create shipment schedule
 		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class, helper.getContextProvider());
 		shipmentSchedule.setM_Warehouse_ID(defaultWarehouseId.getRepoId());
-		shipmentSchedule.setM_Product(product);
+		shipmentSchedule.setM_Product_ID(product.getM_Product_ID());
 		shipmentSchedule.setC_BPartner_ID(defaultCustomerId.getRepoId());
 		shipmentSchedule.setC_BPartner_Location_ID(defaultCustomerLocationId.getRepoId());
 
@@ -153,7 +158,7 @@ public class ShipmentScheduleHelper
 		saveRecord(shipmentSchedule);
 
 		//
-		// Set inital QtyPicked and validate
+		// Set initial QtyPicked and validate
 		final ShipmentScheduleQtyPickedExpectations shipmentScheduleExpectations = new ShipmentScheduleQtyPickedExpectations()
 				.shipmentSchedule(shipmentSchedule)
 				.qtyPicked("0")
@@ -161,7 +166,12 @@ public class ShipmentScheduleHelper
 
 		if (qtyPickedInitial != null && qtyPickedInitial.signum() != 0)
 		{
-			shipmentScheduleAllocBL.setQtyPicked(shipmentSchedule, qtyPickedInitial);
+			shipmentScheduleAllocBL.createNewQtyPickedRecord(
+					shipmentSchedule,
+					StockQtyAndUOMQtys.createConvert(
+							qtyPickedInitial,
+							ProductId.ofRepoId(product.getM_Product_ID()),
+							UomId.ofRepoId(uom.getC_UOM_ID())));
 
 			shipmentScheduleExpectations
 					.qtyPicked(qtyPickedInitial)

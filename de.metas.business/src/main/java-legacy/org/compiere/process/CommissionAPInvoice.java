@@ -17,15 +17,17 @@
 package org.compiere.process;
 
 
+import java.math.BigDecimal;
+
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.compiere.model.MBPartner;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MCommission;
 import org.compiere.model.MCommissionRun;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
@@ -68,16 +70,14 @@ public class CommissionAPInvoice extends JavaProcess
 		MCommissionRun comRun = new MCommissionRun (getCtx(), getRecord_ID(), get_TrxName());
 		if (comRun.get_ID() == 0)
 			throw new IllegalArgumentException("CommissionAPInvoice - No Commission Run");
-		if (Env.ZERO.compareTo(comRun.getGrandTotal()) == 0)
+		if (BigDecimal.ZERO.compareTo(comRun.getGrandTotal()) == 0)
 			throw new IllegalArgumentException("@GrandTotal@ = 0");
 		MCommission com = new MCommission (getCtx(), comRun.getC_Commission_ID(), get_TrxName());
 		if (com.get_ID() == 0)
 			throw new IllegalArgumentException("CommissionAPInvoice - No Commission");
 		if (com.getC_Charge_ID() == 0)
 			throw new IllegalArgumentException("CommissionAPInvoice - No Charge on Commission");
-		MBPartner bp = new MBPartner (getCtx(), com.getC_BPartner_ID(), get_TrxName());
-		if (bp.get_ID() == 0)
-			throw new IllegalArgumentException("CommissionAPInvoice - No BPartner");
+		I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(com.getC_BPartner_ID());
 			
 		//	Create Invoice
 		MInvoice invoice = new MInvoice (getCtx(), 0, null);

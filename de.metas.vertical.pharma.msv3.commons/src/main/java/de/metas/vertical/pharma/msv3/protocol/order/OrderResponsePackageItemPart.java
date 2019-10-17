@@ -1,6 +1,6 @@
 package de.metas.vertical.pharma.msv3.protocol.order;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -123,7 +123,7 @@ public class OrderResponsePackageItemPart
 	Type type;
 
 	@JsonProperty("deliveryDate")
-	LocalDateTime deliveryDate;
+	ZonedDateTime deliveryDate;
 
 	@JsonProperty("defectReason")
 	OrderDefectReason defectReason;
@@ -143,7 +143,7 @@ public class OrderResponsePackageItemPart
 			@JsonProperty("id") final OrderResponsePackageItemPartId id,
 			@JsonProperty("qty") @NonNull final Quantity qty,
 			@JsonProperty("type") final Type type,
-			@JsonProperty("deliveryDate") final LocalDateTime deliveryDate,
+			@JsonProperty("deliveryDate") final ZonedDateTime deliveryDate,
 			@JsonProperty("defectReason") final OrderDefectReason defectReason,
 			@JsonProperty("tour") final String tour,
 			@JsonProperty("tourId") final String tourId,

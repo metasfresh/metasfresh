@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.api.impl;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static java.math.BigDecimal.ZERO;
 
 /*
@@ -36,9 +37,9 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
+import de.metas.inout.InOutLineId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -177,7 +178,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 				.create()
 				.aggregate(I_M_InOutLine.COLUMNNAME_MovementQty, Aggregate.SUM, BigDecimal.class);
 
-		return Util.coalesce(qty, ZERO);
+		return coalesce(qty, ZERO);
 	}
 
 	@Override
@@ -193,7 +194,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 				.create()
 				.aggregate(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_QtyPicked, Aggregate.SUM, BigDecimal.class);
 
-		return Util.coalesce(qty, ZERO);
+		return coalesce(qty, ZERO);
 	}
 
 	@Override
@@ -229,6 +230,19 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 
 		return queryBuilder.create()
 				.list(modelClass);
+	}
+
+	@Override
+	public <T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrieveByInOutLineId(
+			@NonNull final InOutLineId inoutLineId,
+			@NonNull final Class<T> modelClass)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, modelClass)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID, inoutLineId)
+				.create()
+				.listImmutable(modelClass);
 	}
 
 	@Override

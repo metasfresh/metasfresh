@@ -3,11 +3,12 @@ package de.metas.notification;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.model.RecordZoomWindowFinder;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.ecs.StringElement;
 import org.apache.ecs.xhtml.a;
@@ -22,7 +23,6 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.WebuiURLs;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -49,12 +49,12 @@ import lombok.NonNull;
 
 final class NotificationMessageFormatter
 {
-	public static final NotificationMessageFormatter newInstance()
+	public static NotificationMessageFormatter newInstance()
 	{
 		return new NotificationMessageFormatter();
 	}
 
-	public static final String createUrlWithTitle(@NonNull final String url, @NonNull final String title)
+	public static String createUrlWithTitle(@NonNull final String url, @NonNull final String title)
 	{
 		return url + URL_TITLE_SEPARATOR + title;
 	}
@@ -72,8 +72,8 @@ final class NotificationMessageFormatter
 	// Params
 	private boolean html;
 	private String adLanguage;
-	private final Map<ITableRecordReference, String> recordDisplayTexts = new HashMap<>();
-	private final Map<ITableRecordReference, Integer> recordWindowId = new HashMap<>();
+	private final Map<TableRecordReference, String> recordDisplayTexts = new HashMap<>();
+	private final Map<TableRecordReference, Optional<AdWindowId>> recordWindowId = new HashMap<>();
 	private String bottomURL;
 
 	//
@@ -96,7 +96,7 @@ final class NotificationMessageFormatter
 		return this;
 	}
 
-	private final String getLanguage()
+	private String getLanguage()
 	{
 		if (_adLanguageEffective == null)
 		{
@@ -105,21 +105,20 @@ final class NotificationMessageFormatter
 		return _adLanguageEffective;
 	}
 
-	private final String findLanguage()
+	private String findLanguage()
 	{
 		return adLanguage != null ? adLanguage : Env.getAD_Language();
 	}
 
-	public NotificationMessageFormatter recordDisplayText(@NonNull final ITableRecordReference record, @NonNull final String displayText)
+	public NotificationMessageFormatter recordDisplayText(@NonNull final TableRecordReference record, @NonNull final String displayText)
 	{
 		recordDisplayTexts.put(record, displayText);
 		return this;
 	}
 
-	public NotificationMessageFormatter recordWindowId(@NonNull final ITableRecordReference record, final int adWindowId)
+	public NotificationMessageFormatter recordWindowId(@NonNull final TableRecordReference record, @NonNull final AdWindowId adWindowId)
 	{
-		Check.assumeGreaterThanZero(adWindowId, "adWindowId");
-		recordWindowId.put(record, adWindowId);
+		recordWindowId.put(record, Optional.of(adWindowId));
 		return this;
 	}
 
@@ -165,7 +164,7 @@ final class NotificationMessageFormatter
 			return null;
 		}
 
-		final ITableRecordReference record = toTableRecordReferenceOrNull(param);
+		final TableRecordReference record = toTableRecordReferenceOrNull(param);
 		if (record != null)
 		{
 			if (html)
@@ -202,15 +201,15 @@ final class NotificationMessageFormatter
 		return param;
 	}
 
-	private static ITableRecordReference toTableRecordReferenceOrNull(final Object obj)
+	private static TableRecordReference toTableRecordReferenceOrNull(final Object obj)
 	{
 		if (obj == null)
 		{
 			return null;
 		}
-		else if (obj instanceof ITableRecordReference)
+		else if (obj instanceof TableRecordReference)
 		{
-			return (ITableRecordReference)obj;
+			return (TableRecordReference)obj;
 		}
 		// Extract the TableRecordReference from Map.
 		// Usually that's the case when the parameters were deserialized and the the TableRecordRefererence was deserialized as Map.
@@ -225,12 +224,12 @@ final class NotificationMessageFormatter
 		}
 	}
 
-	private String getRecordDisplayText(@NonNull final ITableRecordReference record)
+	private String getRecordDisplayText(@NonNull final TableRecordReference record)
 	{
 		return recordDisplayTexts.computeIfAbsent(record, this::computeRecordDisplayText);
 	}
 
-	private String computeRecordDisplayText(final ITableRecordReference record)
+	private String computeRecordDisplayText(final TableRecordReference record)
 	{
 		try
 		{
@@ -251,7 +250,7 @@ final class NotificationMessageFormatter
 		return "#" + record.getRecord_ID();
 	}
 
-	private a getRecordHtmlLink(final ITableRecordReference record)
+	private a getRecordHtmlLink(final TableRecordReference record)
 	{
 		if (record == null)
 		{
@@ -273,20 +272,20 @@ final class NotificationMessageFormatter
 		return new a(url, targetRecordDisplayText);
 	}
 
-	private String getRecordUrl(@NonNull final ITableRecordReference record)
+	private String getRecordUrl(@NonNull final TableRecordReference record)
 	{
-		final int targetWindowId = getRecordWindowId(record);
-		if (targetWindowId <= 0)
+		final AdWindowId targetWindowId = getRecordWindowId(record).orElse(null);
+		if (targetWindowId == null)
 		{
 			return null;
 		}
 
-		return webuiURLs.getDocumentUrl(String.valueOf(targetWindowId), String.valueOf(record.getRecord_ID()));
+		return webuiURLs.getDocumentUrl(targetWindowId, record.getRecord_ID());
 	}
 
-	private int getRecordWindowId(@NonNull final ITableRecordReference record)
+	private Optional<AdWindowId> getRecordWindowId(@NonNull final TableRecordReference record)
 	{
-		return recordWindowId.computeIfAbsent(record, RecordZoomWindowFinder::findAD_Window_ID);
+		return recordWindowId.computeIfAbsent(record, RecordZoomWindowFinder::findAdWindowId);
 	}
 
 	private static a toLinkOrNull(final String text)

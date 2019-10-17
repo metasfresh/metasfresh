@@ -40,7 +40,6 @@ import javax.swing.text.JTextComponent;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.IValidationContext;
@@ -62,6 +61,8 @@ import org.slf4j.Logger;
 
 import de.metas.autocomplete.model.I_AD_Table;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -192,7 +193,7 @@ import de.metas.util.Services;
 					sqlWhere.append(" OR ");
 				}
 				sqlWhere.append("UPPER(");
-				if (searchColumn.equals(searchColumnsSQL))
+				if (searchColumnsSQL.contains(searchColumn))
 				{
 					sqlWhere.append(DBConstants.FUNC_unaccent_string(tableName + "." + searchColumn));
 				}
@@ -232,17 +233,17 @@ import de.metas.util.Services;
 	protected Object fetchUserObject(final ResultSet rs) throws SQLException
 	{
 		final String name = rs.getString(MLookupFactory.COLUMNINDEX_DisplayName);
-
+		// TODO see if this code is also used by the webui
 		final NamePair item;
 		if (lookupInfo.isNumericKey())
 		{
 			final int key = rs.getInt(MLookupFactory.COLUMNINDEX_Key);
-			item = new KeyNamePair(key, name);
+			item = KeyNamePair.of(key, name);
 		}
 		else
 		{
 			final String value = rs.getString(MLookupFactory.COLUMNINDEX_Value);
-			item = new ValueNamePair(value, name);
+			item = ValueNamePair.of(value, name);
 		}
 
 		// Validate the result
@@ -341,7 +342,7 @@ import de.metas.util.Services;
 		}
 		else
 		{
-			sqlFinal = Env.getUserRolePermissions().addAccessSQL(sqlBuilder.toString(), lookupInfo.getTableName(), IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+			sqlFinal = Env.getUserRolePermissions().addAccessSQL(sqlBuilder.toString(), lookupInfo.getTableName(), IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ);
 		}
 
 		//

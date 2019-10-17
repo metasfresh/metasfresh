@@ -2,6 +2,10 @@ package de.metas.pricing.limit;
 
 import java.math.BigDecimal;
 
+import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -29,10 +33,14 @@ import lombok.Value;
  */
 
 @Value
-@Builder(builderMethodName = "_builder")
 public class PriceLimitRuleResult
 {
 	public static PriceLimitRuleResult notApplicable(@NonNull final String reason)
+	{
+		return notApplicable(TranslatableStrings.anyLanguage(reason));
+	}
+
+	public static PriceLimitRuleResult notApplicable(@NonNull final ITranslatableString reason)
 	{
 		return PriceLimitRuleResult._builder()
 				.applicable(false)
@@ -42,6 +50,11 @@ public class PriceLimitRuleResult
 
 	public static PriceLimitRuleResult priceLimit(@NonNull final BigDecimal priceLimit, final String priceLimitExplanation)
 	{
+		return priceLimit(priceLimit, TranslatableStrings.anyLanguage(priceLimitExplanation));
+	}
+
+	public static PriceLimitRuleResult priceLimit(@NonNull final BigDecimal priceLimit, @NonNull final ITranslatableString priceLimitExplanation)
+	{
 		return PriceLimitRuleResult._builder()
 				.applicable(true)
 				.priceLimit(priceLimit)
@@ -50,24 +63,62 @@ public class PriceLimitRuleResult
 	}
 
 	private boolean applicable;
-	private String notApplicableReason;
+	private ITranslatableString notApplicableReason;
 
 	private BigDecimal priceLimit;
-	private String priceLimitExplanation;
+	/** Explanation about how the price limit was calculated, from where it comes etc */
+	private ITranslatableString priceLimitExplanation;
 
-	public boolean isBelowPriceLimit(final BigDecimal priceActual)
+	@Builder(builderMethodName = "_builder")
+	private PriceLimitRuleResult(
+			final boolean applicable,
+			final ITranslatableString notApplicableReason,
+			final BigDecimal priceLimit,
+			final ITranslatableString priceLimitExplanation)
+	{
+		if (applicable)
+		{
+			Check.assumeNotNull(priceLimit, "Parameter priceLimit is not null");
+			Check.assumeNotNull(priceLimitExplanation, "Parameter priceLimitExplanation is not null");
+
+			this.applicable = true;
+			this.priceLimit = priceLimit;
+			this.priceLimitExplanation = priceLimitExplanation;
+
+			this.notApplicableReason = null;
+		}
+		else
+		{
+			Check.assumeNotNull(notApplicableReason, "Parameter notApplicableReason is not null");
+
+			this.applicable = false;
+			this.notApplicableReason = notApplicableReason;
+
+			this.priceLimit = null;
+			this.priceLimitExplanation = null;
+		}
+	}
+
+	public BooleanWithReason checkApplicableAndBelowPriceLimit(@NonNull final BigDecimal priceActual)
 	{
 		if (!applicable)
 		{
-			return false;
+			return BooleanWithReason.falseBecause(notApplicableReason);
 		}
 
-		if(priceLimit.signum() == 0)
+		if (priceLimit.signum() == 0)
 		{
-			return false;
+			return BooleanWithReason.falseBecause("limit price is ZERO");
 		}
 
-		return priceActual.compareTo(priceLimit) < 0;
+		final boolean belowPriceLimit = priceActual.compareTo(priceLimit) < 0;
+		if (belowPriceLimit)
+		{
+			return BooleanWithReason.trueBecause(priceLimitExplanation);
+		}
+		else
+		{
+			return BooleanWithReason.falseBecause("Price " + priceActual + " is above " + priceLimit + "(limit price)");
+		}
 	}
-
 }

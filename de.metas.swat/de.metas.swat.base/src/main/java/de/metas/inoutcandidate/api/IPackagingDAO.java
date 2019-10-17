@@ -1,10 +1,11 @@
 package de.metas.inoutcandidate.api;
 
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
+import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 
 /**
@@ -20,9 +21,9 @@ public interface IPackagingDAO extends ISingletonService
 	Stream<Packageable> stream(PackageableQuery query);
 
 	/**
-	 * @return The current QtyPickedPlanned (qty that was picked but not yet processed) for the given schedule if found, null otherwise
+	 * @return The current QtyPickedPlanned (qty that was picked but not yet processed) for the given schedule if found
 	 */
-	BigDecimal retrieveQtyPickedPlannedOrNull(ShipmentScheduleId shipmentScheduleId);
+	Optional<Quantity> retrieveQtyPickedPlanned(ShipmentScheduleId shipmentScheduleId);
 
 	Packageable getByShipmentScheduleId(ShipmentScheduleId shipmentScheduleId);
 

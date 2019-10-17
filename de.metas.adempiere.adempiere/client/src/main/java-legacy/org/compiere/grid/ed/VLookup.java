@@ -52,7 +52,6 @@ import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
@@ -94,6 +93,8 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -784,12 +785,12 @@ public class VLookup extends JComponent
 				if (m_value instanceof Integer)
 				{
 					final int id = (Integer)m_value;
-					pp = new KeyNamePair(id, m_lastDisplay);
+					pp = KeyNamePair.of(id, m_lastDisplay);
 				}
 				else
 				{
 					final String valueStr = m_value == null ? "" : m_value.toString();
-					pp = new ValueNamePair(valueStr, m_lastDisplay);
+					pp = ValueNamePair.of(valueStr, m_lastDisplay);
 				}
 
 				m_combo.addItem(pp);
@@ -1566,7 +1567,9 @@ public class VLookup extends JComponent
 			log.trace(m_columnName + " (predefined) " + sql.toString());
 			// metas: cg: start: task: 02491
 			String finalSql = Env.getUserRolePermissions().addAccessSQL(sql.toString(),
-					m_tableName, IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
+					m_tableName,
+					IUserRolePermissions.SQL_NOTQUALIFIED,
+					Access.READ);
 			finalSql = finalSql + orderBySql;
 			return finalSql;
 			// metas: cg: end: task: 02491
@@ -1653,7 +1656,7 @@ public class VLookup extends JComponent
 			sql.append(" AND (").append(sqlWhereClauseLookup).append(")");
 		}
 
-		String finalSql = Env.getUserRolePermissions().addAccessSQL(sql.toString(), refTableName, IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
+		String finalSql = Env.getUserRolePermissions().addAccessSQL(sql.toString(), refTableName, IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);
 		finalSql = finalSql + " ORDER BY " + sqlFullMatch + " DESC";
 		return finalSql;
 	}
@@ -1738,7 +1741,7 @@ public class VLookup extends JComponent
 		// ***
 		log.trace(columnName + " (TableDir) " + sqlWhereClause.toString());
 
-		String sqlDirectFinal = Env.getUserRolePermissions().addAccessSQL(sqlDirect.toString(), tableName, IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
+		String sqlDirectFinal = Env.getUserRolePermissions().addAccessSQL(sqlDirect.toString(), tableName, IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);
 		sqlDirectFinal = sqlDirectFinal + " ORDER BY " + sqlFullMatch + " DESC";
 		return sqlDirectFinal;
 	}

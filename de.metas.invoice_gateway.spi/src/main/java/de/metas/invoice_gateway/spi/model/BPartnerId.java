@@ -1,11 +1,11 @@
 package de.metas.invoice_gateway.spi.model;
 
-
-
-import lombok.Value;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
 
 /*
  * #%L
@@ -31,9 +31,15 @@ import de.metas.util.lang.RepoIdAware;
 @Value
 public class BPartnerId implements RepoIdAware
 {
+	@JsonCreator
 	public static BPartnerId ofRepoId(final int repoId)
 	{
 		return new BPartnerId(repoId);
+	}
+
+	public static BPartnerId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
 	int repoId;
@@ -41,5 +47,12 @@ public class BPartnerId implements RepoIdAware
 	private BPartnerId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

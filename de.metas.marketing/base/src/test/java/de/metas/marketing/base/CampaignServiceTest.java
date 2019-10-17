@@ -15,15 +15,13 @@ import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.user.User;
-import org.adempiere.user.UserRepository;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_C_Location;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.BPartnerLocationRepository;
+import de.metas.bpartner.service.BPartnerLocationInfoRepository;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.marketing.base.bpartner.DefaultAddressType;
 import de.metas.marketing.base.model.CampaignId;
@@ -35,6 +33,8 @@ import de.metas.marketing.base.model.I_MKTG_Consent;
 import de.metas.marketing.base.model.I_MKTG_ContactPerson;
 import de.metas.marketing.base.model.I_MKTG_Platform;
 import de.metas.marketing.base.model.PlatformRepository;
+import de.metas.user.User;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.time.FixedTimeSource;
 import de.metas.util.time.SystemTime;
@@ -73,7 +73,7 @@ public class CampaignServiceTest
 
 		userRepository = new UserRepository();
 		campaignService = new CampaignService(
-				new ContactPersonRepository(new BPartnerLocationRepository()),
+				new ContactPersonRepository(new BPartnerLocationInfoRepository()),
 				new CampaignRepository(),
 				new PlatformRepository());
 	}

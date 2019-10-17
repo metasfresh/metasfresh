@@ -1,8 +1,7 @@
 package de.metas.product;
 
-import org.adempiere.uom.UomId;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

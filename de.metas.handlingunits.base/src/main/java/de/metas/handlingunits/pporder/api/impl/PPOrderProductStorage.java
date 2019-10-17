@@ -26,7 +26,6 @@ package de.metas.handlingunits.pporder.api.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.model.I_PP_Order;
@@ -34,6 +33,7 @@ import org.eevolution.model.I_PP_Order;
 import de.metas.handlingunits.storage.impl.AbstractProductStorage;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 
 /**
@@ -84,7 +84,7 @@ public class PPOrderProductStorage extends AbstractProductStorage
 	{
 		checkStaled();
 
-		final BigDecimal qtyToReceive = Services.get(IPPOrderBL.class).getQtyOpen(ppOrder);
+		final BigDecimal qtyToReceive = Services.get(IPPOrderBL.class).getQtyOpen(ppOrder).toBigDecimal();
 
 		return qtyToReceive;
 	}

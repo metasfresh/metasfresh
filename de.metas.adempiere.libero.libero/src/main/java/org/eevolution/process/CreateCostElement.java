@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved.               *
- * Contributor(s): Victor Perez www.e-evolution.com                           *
- *                 Teo Sarca, www.arhipac.ro                                  *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved. *
+ * Contributor(s): Victor Perez www.e-evolution.com *
+ * Teo Sarca, www.arhipac.ro *
  *****************************************************************************/
 
 package org.eevolution.process;
@@ -30,35 +30,45 @@ package org.eevolution.process;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.engines.CostDimension;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_CostElement;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.MCost;
-import org.compiere.model.X_C_AcctSchema;
 
-import de.metas.process.ProcessInfoParameter;
-import de.metas.util.Services;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.costing.CostElementId;
+import de.metas.costing.CostSegment;
+import de.metas.costing.CostTypeId;
+import de.metas.costing.CostingLevel;
+import de.metas.costing.ICurrentCostsRepository;
+import de.metas.costing.IProductCostingBL;
+import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 /**
  * Create Cost Element
@@ -70,6 +80,9 @@ import de.metas.process.JavaProcess;
  */
 public class CreateCostElement extends JavaProcess
 {
+	private final ICurrentCostsRepository currentCostsRepo = Adempiere.getBean(ICurrentCostsRepository.class);
+	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
+	
 	private Integer p_AD_Org_ID = null;
 	private int p_C_AcctSchema_ID = 0;
 	private int p_M_CostType_ID = 0;
@@ -129,39 +142,39 @@ public class CreateCostElement extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		final I_C_AcctSchema as = InterfaceWrapperHelper.create(getCtx(), p_C_AcctSchema_ID, I_C_AcctSchema.class, ITrx.TRXNAME_None);
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(p_C_AcctSchema_ID);
+		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
+		final ClientId clientId = ClientId.ofRepoId(getAD_Client_ID());
+		final CostTypeId costTypeId = CostTypeId.ofRepoId(p_M_CostType_ID);
 
-		int count_costs = 0, count_all = 0;
-		for (final int org_id : getOrgs(as))
+		int count_all = 0;
+		for (final OrgId orgId : getOrgIds(as))
 		{
 			for (final I_M_Product product : getProducts())
 			{
-				final int product_id = product.getM_Product_ID();
-				
+				final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+				final CostingLevel costingLevel = productCostingBL.getCostingLevel(product, as);
+
+				final CostSegment costSegment = CostSegment.builder()
+						.costingLevel(costingLevel)
+						.acctSchemaId(acctSchemaId)
+						.costTypeId(costTypeId)
+						.productId(productId)
+						.clientId(clientId)
+						.orgId(orgId)
+						.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+						.build();
+
 				for (final I_M_CostElement element : getElements())
 				{
-					CostDimension d = new CostDimension(getAD_Client_ID(), org_id,
-							product_id,
-							0, // ASI=0
-							p_M_CostType_ID,
-							as.getC_AcctSchema_ID(),
-							element.getM_CostElement_ID()
-							);
-					I_M_Cost cost = d.toQuery(I_M_Cost.class, get_TrxName()).firstOnly(I_M_Cost.class);
-					if (cost == null)
-					{
-						cost = new MCost(product, d.getM_AttributeSetInstance_ID(), as,
-								d.getAD_Org_ID(), d.getM_CostElement_ID());
-						cost.setM_CostType_ID(d.getM_CostType_ID());
-						InterfaceWrapperHelper.save(cost, get_TrxName());
-						count_costs++;
-					}
+					final CostElementId costElementId = CostElementId.ofRepoId(element.getM_CostElement_ID());
+					currentCostsRepo.createIfMissing(costSegment.withCostElementId(costElementId));
 					count_all++;
 				}
 			}
 		}
 
-		return "@Created@ #" + count_costs + " / " + count_all;
+		return "@Created@/@Updated@ #" + count_all;
 	}
 
 	/**
@@ -170,15 +183,15 @@ public class CreateCostElement extends JavaProcess
 	 * @param as Account Schema
 	 * @return array of IDs
 	 */
-	private List<Integer> getOrgs(final I_C_AcctSchema as)
+	private Set<OrgId> getOrgIds(final AcctSchema as)
 	{
 		// Set the Costing Level
-		final String CostingLevel = as.getCostingLevel();
-		if (X_C_AcctSchema.COSTINGLEVEL_Client.equals(CostingLevel))
+		final CostingLevel costingLevel = as.getCosting().getCostingLevel();
+		if (CostingLevel.Client.equals(costingLevel))
 		{
 			p_AD_Org_ID = 0;
 			p_M_AttributeSetInstance_ID = 0;
-			return Collections.singletonList(0);
+			return ImmutableSet.of(OrgId.ANY);
 		}
 
 		final IQueryBuilder<I_AD_Org> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Org.class, this)
@@ -192,7 +205,7 @@ public class CreateCostElement extends JavaProcess
 
 		return queryBuilder
 				.create()
-				.listIds();
+				.listIds(OrgId::ofRepoId);
 	}
 
 	private Collection<I_M_CostElement> getElements()
@@ -252,7 +265,7 @@ public class CreateCostElement extends JavaProcess
 		m_products = queryBuilder
 				.create()
 				.list();
-		
+
 		return m_products;
 	}
 

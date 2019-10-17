@@ -30,8 +30,6 @@ import java.util.Properties;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
@@ -39,6 +37,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
@@ -69,6 +68,11 @@ import de.metas.async.spi.NullWorkpackagePrio;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.exceptions.UnlockFailedException;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -125,7 +129,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		this.ctx = ctx;
 		this.packageProcessorIds = Collections.unmodifiableList(new ArrayList<>(packageProcessorIds));
 		this.priorityFrom = priorityFrom;
-		skipRetryTimeoutMillis = Async_Constants.DEFAULT_RETRY_TIMEOUT_MILLIS;
+		this.skipRetryTimeoutMillis = Async_Constants.DEFAULT_RETRY_TIMEOUT_MILLIS;
 
 		if (forEnqueing)
 		{
@@ -280,40 +284,44 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	{
 		//
 		// AD_Client_ID/AD_Org_ID
-		final int adClientId = workPackage.getAD_Client_ID();
-		final int adOrgId = workPackage.getAD_Org_ID();
-		Env.setContext(workPackageCtx, Env.CTXNAME_AD_Client_ID, adClientId);
-		Env.setContext(workPackageCtx, Env.CTXNAME_AD_Org_ID, adOrgId);
+		final ClientId clientId = ClientId.ofRepoId(workPackage.getAD_Client_ID());
+		final OrgId orgId = OrgId.ofRepoId(workPackage.getAD_Org_ID());
+		Env.setContext(workPackageCtx, Env.CTXNAME_AD_Client_ID, clientId.getRepoId());
+		Env.setContext(workPackageCtx, Env.CTXNAME_AD_Org_ID, orgId.getRepoId());
 
 		//
 		// User
-		final int adUserId;
+		final UserId userId;
 		if (!InterfaceWrapperHelper.isNull(workPackage, I_C_Queue_WorkPackage.COLUMNNAME_AD_User_ID))
 		{
-			adUserId = workPackage.getAD_User_ID();
+			userId = UserId.ofRepoId(workPackage.getAD_User_ID());
 		}
 		else
 		{
-			adUserId = workPackage.getCreatedBy();
+			userId = UserId.ofRepoId(workPackage.getCreatedBy());
 		}
-		Env.setContext(workPackageCtx, Env.CTXNAME_AD_User_ID, adUserId);
-		Env.setContext(workPackageCtx, Env.CTXNAME_SalesRep_ID, adUserId);
+		Env.setContext(workPackageCtx, Env.CTXNAME_AD_User_ID, userId.getRepoId());
+		Env.setContext(workPackageCtx, Env.CTXNAME_SalesRep_ID, userId.getRepoId());
 
 		//
 		// Role
-		final int adRoleId;
+		final RoleId roleId;
 		if (!InterfaceWrapperHelper.isNull(workPackage, I_C_Queue_WorkPackage.COLUMNNAME_AD_Role_ID))
 		{
-			adRoleId = workPackage.getAD_Role_ID();
+			roleId = RoleId.ofRepoId(workPackage.getAD_Role_ID());
 		}
 		else
 		{
 			final IUserRolePermissions role = Services.get(IUserRolePermissionsDAO.class)
-					.retrieveFirstUserRolesPermissionsForUserWithOrgAccess(workPackageCtx, adUserId, adOrgId)
+					.retrieveFirstUserRolesPermissionsForUserWithOrgAccess(
+							clientId,
+							orgId,
+							userId,
+							Env.getLocalDate(workPackageCtx))
 					.orNull();
-			adRoleId = role == null ? Env.CTXVALUE_AD_Role_ID_NONE : role.getAD_Role_ID();
+			roleId = role == null ? null : role.getRoleId();
 		}
-		Env.setContext(workPackageCtx, Env.CTXNAME_AD_Role_ID, adRoleId);
+		Env.setContext(workPackageCtx, Env.CTXNAME_AD_Role_ID, RoleId.toRepoId(roleId, Env.CTXVALUE_AD_Role_ID_NONE));
 
 		// FRESH-314: also store #AD_PInstance_ID, we might want to access this information (currently in AD_ChangeLog)
 		Env.setContext(workPackageCtx, Env.CTXNAME_AD_PInstance_ID, workPackage.getC_Queue_Block().getAD_PInstance_Creator_ID());

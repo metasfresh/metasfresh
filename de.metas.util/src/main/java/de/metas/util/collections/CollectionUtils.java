@@ -5,10 +5,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -125,7 +128,7 @@ public final class CollectionUtils
 		return set;
 	}
 
-	public static final <T> Set<T> asSet(@SuppressWarnings("unchecked") final T... arr)
+	public static <T> Set<T> asSet(@SuppressWarnings("unchecked") final T... arr)
 	{
 		if (arr == null || arr.length == 0)
 		{
@@ -149,12 +152,10 @@ public final class CollectionUtils
 	 * @param collection
 	 * @param filter filter used to match the element
 	 * @return matching element; returns null ONLY if the element is null
+	 * @see de.metas.util.reducers.Reducers#singleValue()
 	 */
-	public static <T> T singleElement(final Collection<T> collection, final java.util.function.Predicate<T> filter)
+	public static <T> T singleElement(@NonNull final Collection<T> collection, @NonNull final java.util.function.Predicate<T> filter)
 	{
-		Check.assumeNotEmpty(collection, "collection not empty");
-		Check.assumeNotNull(filter, "filter not null");
-
 		final List<T> result = new ArrayList<>();
 
 		final Iterator<T> it = collection.iterator();
@@ -178,10 +179,11 @@ public final class CollectionUtils
 	 *
 	 * @param collection
 	 * @return element; returns null ONLY if the element is null
+	 * @see de.metas.util.reducers.Reducers#singleValue()
 	 */
 	public static <T> T singleElement(@NonNull final Collection<T> collection)
 	{
-		Check.errorUnless(collection.size() == 1, "The given collection needs to have exactly one 1 item, but has {} items; collection={}", collection);
+		Check.errorUnless(collection.size() == 1, "The given collection needs to have exactly one 1 item, but has {} items; collection={}", collection.size(), collection);
 		return collection.iterator().next();
 	}
 
@@ -192,8 +194,9 @@ public final class CollectionUtils
 	 *
 	 * @param collection
 	 * @return element
+	 * @see de.metas.util.reducers.Reducers#singleValue()
 	 */
-	public final static <T> T singleElementOrNull(final Collection<T> collection)
+	public static <T> T singleElementOrNull(final Collection<T> collection)
 	{
 		final T defaultValue = null;
 		return singleElementOrDefault(collection, defaultValue);
@@ -207,8 +210,9 @@ public final class CollectionUtils
 	 * @param collection
 	 * @param defaultValue value to be returned in case there are more then one elements or no element
 	 * @return element
+	 * @see de.metas.util.reducers.Reducers#singleValue()
 	 */
-	public final static <T> T singleElementOrDefault(final Collection<T> collection, final T defaultValue)
+	public static <T> T singleElementOrDefault(final Collection<T> collection, final T defaultValue)
 	{
 		if (collection == null)
 		{
@@ -227,7 +231,10 @@ public final class CollectionUtils
 		return element;
 	}
 
-	public final static <T, R> R extractSingleElement(
+	/**
+	 * @see de.metas.util.reducers.Reducers#singleValue()
+	 */
+	public static <T, R> R extractSingleElement(
 			@NonNull final Collection<T> collection,
 			@NonNull final Function<T, R> extractFuntion)
 	{
@@ -235,7 +242,10 @@ public final class CollectionUtils
 		return singleElement(extractedElements);
 	}
 
-	public final static <T, R> R extractSingleElementOrDefault(
+	/**
+	 * @see de.metas.util.reducers.Reducers#singleValue()
+	 */
+	public static <T, R> R extractSingleElementOrDefault(
 			@NonNull final Collection<T> collection,
 			@NonNull final Function<T, R> extractFuntion,
 			@Nullable final R defaultValue)
@@ -299,7 +309,7 @@ public final class CollectionUtils
 	 * @param set
 	 * @return firt element
 	 */
-	public static final <T> T removeFirst(final Set<T> set)
+	public static <T> T removeFirst(final Set<T> set)
 	{
 		final Iterator<T> it = set.iterator();
 		final T element = it.next();
@@ -346,4 +356,21 @@ public final class CollectionUtils
 		//
 		return values;
 	}
+
+	public static <K, V> LinkedHashMap<K, V> uniqueLinkedHashMap(
+			@NonNull final Stream<V> stream,
+			@NonNull final Function<? super V, ? extends K> keyFunction)
+	{
+		// thx to https://reversecoding.net/java-8-list-to-map/
+		final LinkedHashMap<K, V> inventoryLineRecords = stream
+				.collect(Collectors.toMap(
+						keyFunction,
+						Function.identity(),
+						(u, v) -> {
+							throw new IllegalStateException(String.format("Duplicate key %s", u));
+						},
+						LinkedHashMap::new));
+		return inventoryLineRecords;
+	}
+
 }

@@ -102,7 +102,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{printname}]]></textFieldExpression>
 			</textField>
@@ -130,7 +130,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
 			</textField>

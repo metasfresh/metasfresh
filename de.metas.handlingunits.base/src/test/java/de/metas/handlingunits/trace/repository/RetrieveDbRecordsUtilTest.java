@@ -9,7 +9,6 @@ import java.util.OptionalInt;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.util.TimeUtil;
@@ -22,8 +21,10 @@ import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEvent;
 import de.metas.handlingunits.trace.HUTraceEventQuery;
 import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
+import de.metas.organization.OrgId;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.handlingunits.trace.HUTraceRepositoryTests;
+import de.metas.handlingunits.trace.HUTraceType;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 
@@ -64,6 +65,15 @@ public class RetrieveDbRecordsUtilTest
 	{
 		AdempiereTestHelper.get().init();
 		huTraceRepository = new HUTraceRepository();
+	}
+
+	@Test
+	public void configureQueryBuilder_HUTraceType()
+	{
+		final HUTraceEventQuery query = HUTraceEventQuery.builder().type(HUTraceType.MATERIAL_RECEIPT).build();
+
+		final IQueryBuilder<I_M_HU_Trace> queryBuilder = RetrieveDbRecordsUtil.createQueryBuilderOrNull(query);
+		assertThat(queryBuilder).isNotNull();
 	}
 
 	@Test

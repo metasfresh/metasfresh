@@ -81,7 +81,7 @@ import lombok.NonNull;
 	 * @param pointcut
 	 * @return
 	 */
-	static String createHowtoDisableMessage(@NonNull final IPointcut pointcut)
+	static String createHowtoDisableMessage(@NonNull final Pointcut pointcut)
 	{
 		final String pointcutId = pointcut.getPointcutId();
 		return String.format("Model interceptor method %s threw an exception.\nYou can disable this method with SysConfig %s='N' (with AD_Client_ID and AD_Org_ID=0!)",
@@ -105,7 +105,7 @@ import lombok.NonNull;
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public boolean isDisabled(@NonNull final IPointcut pointcut)
+	public boolean isDisabled(@NonNull final Pointcut pointcut)
 	{
 		final String pointcutId = pointcut.getPointcutId();
 		return disabledPointcutIdsSupplier.get().contains(pointcutId);

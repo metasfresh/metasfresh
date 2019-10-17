@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -15,10 +16,11 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Currency;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.base.MoreObjects;
 
@@ -26,7 +28,13 @@ import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.IBankStatementLineOrRef;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
@@ -110,7 +118,7 @@ public class BankStatementLineOrRefHelper
 		}
 
 		lineOrRef.setC_BPartner_ID(invoiceInfo.getBpartnerId());
-		lineOrRef.setC_Currency_ID(invoiceInfo.getCurrencyId());
+		lineOrRef.setC_Currency_ID(CurrencyId.toRepoId(invoiceInfo.getCurrencyId()));
 		lineOrRef.setC_Invoice_ID(invoiceInfo.getInvoiceId());
 	}
 
@@ -148,7 +156,7 @@ public class BankStatementLineOrRefHelper
 	@Value
 	private static class InvoiceInfoVO
 	{
-		private final int currencyId;
+		private final CurrencyId currencyId;
 		private final int bpartnerId;
 		private final int invoiceId;
 		private final BigDecimal openAmt;
@@ -176,7 +184,7 @@ public class BankStatementLineOrRefHelper
 				return InvoiceInfoVO.builder()
 						.invoiceId(invoiceId)
 						.bpartnerId(rs.getInt(1))
-						.currencyId(rs.getInt(2))
+						.currencyId(CurrencyId.ofRepoId(rs.getInt(2)))
 						.openAmt(MoreObjects.firstNonNull(rs.getBigDecimal(3), BigDecimal.ZERO))
 						.discountAmt(MoreObjects.firstNonNull(rs.getBigDecimal(4), BigDecimal.ZERO))
 						.build();
@@ -301,16 +309,19 @@ public class BankStatementLineOrRefHelper
 
 	private static void computeInvoiceOpenAmtIfNeeded(@NonNull final IBankStatementLineOrRef lineOrRef, final InvoiceInfoVO invoiceInfo, @NonNull final Amounts paymentAmounts)
 	{
-		final int currencyId = lineOrRef.getC_Currency_ID();
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(lineOrRef.getC_Currency_ID());
 
-		if (invoiceInfo != null && currencyId > 0
-				&& invoiceInfo.getCurrencyId() > 0
-				&& currencyId != invoiceInfo.getCurrencyId())
+		if (invoiceInfo != null
+				&& currencyId != null
+				&& invoiceInfo.getCurrencyId() != null
+				&& !CurrencyId.equals(currencyId, invoiceInfo.getCurrencyId()))
 		{
-			final I_C_Currency currency = InterfaceWrapperHelper.loadOutOfTrx(currencyId, I_C_Currency.class);
+			final Currency currency = Services.get(ICurrencyDAO.class).getById(currencyId);
+			final CurrencyPrecision precision = currency.getPrecision();
+			
 			final BigDecimal currencyRate = computeCurrencyRate(lineOrRef, invoiceInfo);
 			BigDecimal invoiceOpenAmt = paymentAmounts.getInvoiceOpenAmt();
-			invoiceOpenAmt = invoiceOpenAmt.multiply(currencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
+			invoiceOpenAmt = precision.round(invoiceOpenAmt.multiply(currencyRate));
 			paymentAmounts.setInvoiceOpenAmt(invoiceOpenAmt);
 		}
 	}
@@ -324,13 +335,15 @@ public class BankStatementLineOrRefHelper
 		BigDecimal overUnderAmt = paymentAmounts.getOverUnderAmt();
 
 		final BigDecimal currencyRate = computeCurrencyRate(lineOrRef, invoiceInfo);
-		final I_C_Currency currency = InterfaceWrapperHelper.loadOutOfTrx(lineOrRef.getC_Currency_ID(), I_C_Currency.class);
+		final CurrencyId currencyId = CurrencyId.ofRepoId(lineOrRef.getC_Currency_ID());
+		final Currency currency = Services.get(ICurrencyDAO.class).getById(currencyId);
+		final CurrencyPrecision precision = currency.getPrecision();
 
-		invoiceOpenAmt = invoiceOpenAmt.multiply(currencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
-		payAmt = payAmt.multiply(currencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
-		discountAmt = discountAmt.multiply(currencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
-		writeOffAmt = writeOffAmt.multiply(currencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
-		overUnderAmt = overUnderAmt.multiply(currencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
+		invoiceOpenAmt = precision.round(invoiceOpenAmt.multiply(currencyRate));
+		payAmt = precision.round(payAmt.multiply(currencyRate));
+		discountAmt = precision.round(discountAmt.multiply(currencyRate));
+		writeOffAmt = precision.round(writeOffAmt.multiply(currencyRate));
+		overUnderAmt = precision.round(overUnderAmt.multiply(currencyRate));
 
 		paymentAmounts.setPayAmt(payAmt);
 		paymentAmounts.setDiscountAmt(discountAmt);
@@ -397,17 +410,22 @@ public class BankStatementLineOrRefHelper
 
 	private static BigDecimal computeCurrencyRate(final IBankStatementLineOrRef lineOrRef, final InvoiceInfoVO invoiceInfo)
 	{
-		final int currencyId = lineOrRef.getC_Currency_ID();
-		final Timestamp convDate = getTrxDate(lineOrRef);
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(lineOrRef.getC_Currency_ID());
+		final LocalDate convDate = TimeUtil.asLocalDate(getTrxDate(lineOrRef));
 
 		BigDecimal currencyRate = BigDecimal.ONE;
-		if (invoiceInfo != null && currencyId > 0
-				&& invoiceInfo.getCurrencyId() > 0
-				&& currencyId != invoiceInfo.getCurrencyId())
+		if (invoiceInfo != null
+				&& currencyId != null
+				&& invoiceInfo.getCurrencyId() != null
+				&& !CurrencyId.equals(currencyId, invoiceInfo.getCurrencyId()))
 		{
-			currencyRate = currencyConversionBL.getRate(invoiceInfo.currencyId,
-					currencyId, convDate, 0,
-					lineOrRef.getAD_Client_ID(), lineOrRef.getAD_Org_ID());
+			currencyRate = currencyConversionBL.getRate(
+					invoiceInfo.getCurrencyId(),
+					currencyId,
+					convDate,
+					(CurrencyConversionTypeId)null, // conversionTypeId
+					ClientId.ofRepoId(lineOrRef.getAD_Client_ID()),
+					OrgId.ofRepoId(lineOrRef.getAD_Org_ID()));
 			if (currencyRate == null || currencyRate.signum() == 0)
 			{
 				throw new AdempiereException("@NoCurrencyConversion@");

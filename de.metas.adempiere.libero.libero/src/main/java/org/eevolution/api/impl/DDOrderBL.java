@@ -360,7 +360,7 @@ public class DDOrderBL implements IDDOrderBL
 
 				// Set MRP_AlowCleanup to false and save it
 				ddOrderToProcess.setMRP_AllowCleanup(false);
-				InterfaceWrapperHelper.save(ddOrderToProcess);
+				Services.get(IDDOrderDAO.class).save(ddOrderToProcess);
 			}
 		});
 

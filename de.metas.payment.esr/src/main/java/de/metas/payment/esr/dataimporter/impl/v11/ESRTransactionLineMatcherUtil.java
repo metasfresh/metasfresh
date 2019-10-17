@@ -15,7 +15,6 @@ import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -91,8 +90,7 @@ public class ESRTransactionLineMatcherUtil
 	{
 		if (v11LineStr.length() != 100)
 		{
-			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_REGULAR_LINE_LENGTH, new Object[]
-				{ v11LineStr.length() }));
+			Loggables.addLog(Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_REGULAR_LINE_LENGTH, new Object[] { v11LineStr.length() }));
 			return false;
 		}
 		return true;
@@ -132,7 +130,7 @@ public class ESRTransactionLineMatcherUtil
 			}
 			catch (NumberFormatException e)
 			{
-				Loggables.get().addLog(
+				Loggables.addLog(
 						Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_NUMBER_FORMAT_AMOUNT,
 								new Object[]
 								{ amountString }));
@@ -192,7 +190,7 @@ public class ESRTransactionLineMatcherUtil
 		}
 		catch (ParseException e)
 		{
-			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_PAYMENT_DATE, new Object[]
+			Loggables.addLog(Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_PAYMENT_DATE, new Object[]
 				{ paymentDateStr }));
 			return null;
 		}
@@ -207,8 +205,7 @@ public class ESRTransactionLineMatcherUtil
 		}
 		catch (ParseException e)
 		{
-			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_ACCOUNT_DATE, new Object[]
-				{ accountDateStr }));
+			Loggables.addLog(Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_ACCOUNT_DATE, new Object[] { accountDateStr }));
 			return null;
 		}
 	}

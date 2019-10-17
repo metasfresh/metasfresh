@@ -29,10 +29,10 @@ import java.util.Properties;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -90,7 +90,7 @@ public class C_Invoice_Candidate
 			final Timestamp today = invoiceCandBL.getToday();
 
 			ic.setC_ILCandHandler(handler);
-			ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_EFFECTIVE_Sofort);
+			ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_EFFECTIVE_Immediate);
 			// ic.setQtyToInvoice(BigDecimal.ONE); setting this qty is don my the update process
 			ic.setQtyDelivered(BigDecimal.ONE);
 			ic.setQtyOrdered(BigDecimal.ONE);
@@ -137,11 +137,13 @@ public class C_Invoice_Candidate
 	private void setPricingSystem(final Properties ctx, final I_C_Invoice_Candidate ic)
 	{
 		final IBPartnerDAO bPartnerPA = Services.get(IBPartnerDAO.class);
-		final PricingSystemId pricingSysId = bPartnerPA.retrievePricingSystemId(ctx, ic.getBill_BPartner_ID(), SOTrx.ofBoolean(ic.isSOTrx()), ITrx.TRXNAME_None);
-		ic.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingSysId));
+		final PricingSystemId pricingSysId = bPartnerPA.retrievePricingSystemId(
+				BPartnerId.ofRepoId(ic.getBill_BPartner_ID()),
+				SOTrx.ofBoolean(ic.isSOTrx()));
+		ic.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSysId));
 	}
 
-	@CalloutMethod(columnNames = { I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override })
+	@CalloutMethod(columnNames = I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override )
 	public void onQualityDiscountPercentOverride(final I_C_Invoice_Candidate ic, final ICalloutField field)
 	{
 		ic.setIsInDispute(false);
@@ -150,7 +152,7 @@ public class C_Invoice_Candidate
 	@CalloutMethod(columnNames = I_C_Invoice_Candidate.COLUMNNAME_GroupCompensationPercentage)
 	public void onGroupCompensationPercentageChanged(final I_C_Invoice_Candidate ic)
 	{
-		final InvoiceCandidateGroupRepository groupsRepo = Adempiere.getBean(InvoiceCandidateGroupRepository.class);
+		final InvoiceCandidateGroupRepository groupsRepo = SpringContextHolder.instance.getBean(InvoiceCandidateGroupRepository.class);
 
 		final Group group = groupsRepo.createPartialGroupFromCompensationLine(ic);
 		group.updateAllCompensationLines();

@@ -10,18 +10,17 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -36,6 +35,9 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_HeaderAggregation;
 import de.metas.invoicecandidate.model.I_M_ProductGroup;
 import de.metas.invoicecandidate.model.I_M_ProductGroup_Product;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -44,32 +46,33 @@ public class AggregationDAO implements IAggregationDAO
 	@Override
 	public I_C_Invoice_Candidate_Agg retrieveAggregate(final I_C_Invoice_Candidate ic)
 	{
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 		final String trxName = InterfaceWrapperHelper.getTrxName(ic);
 
-		final String wc =
-				"true "
-						+ " AND ("
-						+ "  COALESCE(" + I_C_Invoice_Candidate_Agg.COLUMNNAME_AD_Org_ID + ",0)=0 OR "
-						+ I_C_Invoice_Candidate_Agg.COLUMNNAME_AD_Org_ID + "=?"
-						+ ") AND ("
-						+ "  COALESCE(" + I_C_Invoice_Candidate_Agg.COLUMNNAME_C_BPartner_ID + ",0)=0 OR "
-						+ I_C_Invoice_Candidate_Agg.COLUMNNAME_C_BPartner_ID + "=?"
-						+ ") AND ("
-						+ "  COALESCE(" + I_C_Invoice_Candidate_Agg.COLUMNNAME_M_ProductGroup_ID + ",0)=0 OR "
-						+ I_C_Invoice_Candidate_Agg.COLUMNNAME_M_ProductGroup_ID + " IN ("
-						+ "   select pg." + I_M_ProductGroup.COLUMNNAME_M_ProductGroup_ID
-						+ "   from " + I_M_ProductGroup.Table_Name + " pg "
-						+ "      join " + I_M_ProductGroup_Product.Table_Name + " pp on"
-						+ "        pp." + I_M_ProductGroup_Product.COLUMNNAME_M_ProductGroup_ID + "=pg." + I_M_ProductGroup.COLUMNNAME_M_ProductGroup_ID
-						+ "   where "
-						+ "      pg." + I_M_ProductGroup.COLUMNNAME_IsActive + "='Y' AND "
-						+ "      pp." + I_M_ProductGroup_Product.COLUMNNAME_IsActive + "='Y' AND "
-						+ "      pp." + I_M_ProductGroup_Product.COLUMNNAME_M_Product_ID + "=? OR ("
-						+ "         COALESCE(" + I_M_ProductGroup_Product.COLUMNNAME_M_Product_ID + ",0)=0 AND "
-						+ "         " + I_M_ProductGroup_Product.COLUMNNAME_M_Product_Category_ID + "=?"
-						+ "      )"
-						+ "))";
+		final String wc = "true "
+				+ " AND ("
+				+ "  COALESCE(" + I_C_Invoice_Candidate_Agg.COLUMNNAME_AD_Org_ID + ",0)=0 OR "
+				+ I_C_Invoice_Candidate_Agg.COLUMNNAME_AD_Org_ID + "=?"
+				+ ") AND ("
+				+ "  COALESCE(" + I_C_Invoice_Candidate_Agg.COLUMNNAME_C_BPartner_ID + ",0)=0 OR "
+				+ I_C_Invoice_Candidate_Agg.COLUMNNAME_C_BPartner_ID + "=?"
+				+ ") AND ("
+				+ "  COALESCE(" + I_C_Invoice_Candidate_Agg.COLUMNNAME_M_ProductGroup_ID + ",0)=0 OR "
+				+ I_C_Invoice_Candidate_Agg.COLUMNNAME_M_ProductGroup_ID + " IN ("
+				+ "   select pg." + I_M_ProductGroup.COLUMNNAME_M_ProductGroup_ID
+				+ "   from " + I_M_ProductGroup.Table_Name + " pg "
+				+ "      join " + I_M_ProductGroup_Product.Table_Name + " pp on"
+				+ "        pp." + I_M_ProductGroup_Product.COLUMNNAME_M_ProductGroup_ID + "=pg." + I_M_ProductGroup.COLUMNNAME_M_ProductGroup_ID
+				+ "   where "
+				+ "      pg." + I_M_ProductGroup.COLUMNNAME_IsActive + "='Y' AND "
+				+ "      pp." + I_M_ProductGroup_Product.COLUMNNAME_IsActive + "='Y' AND "
+				+ "      pp." + I_M_ProductGroup_Product.COLUMNNAME_M_Product_ID + "=? OR ("
+				+ "         COALESCE(" + I_M_ProductGroup_Product.COLUMNNAME_M_Product_ID + ",0)=0 AND "
+				+ "         " + I_M_ProductGroup_Product.COLUMNNAME_M_Product_Category_ID + "=?"
+				+ "      )"
+				+ "))";
 
 		final String orderBy =
 				// I_C_Invoice_Candidate_Agg.COLUMNNAME_C_BPartner_ID + " DESC";
@@ -77,7 +80,7 @@ public class AggregationDAO implements IAggregationDAO
 						+ I_C_Invoice_Candidate_Agg.COLUMNNAME_AD_Org_ID + " DESC, "
 						+ I_C_Invoice_Candidate_Agg.COLUMNNAME_C_Invoice_Candidate_Agg_ID;
 
-		final I_M_Product product = InterfaceWrapperHelper.create(ic.getM_Product(), I_M_Product.class);
+		final I_M_Product product = productDAO.getById(ProductId.ofRepoId(ic.getM_Product_ID()), I_M_Product.class);
 
 		return new Query(ctx, I_C_Invoice_Candidate_Agg.Table_Name, wc, trxName)
 				.setParameters(
@@ -86,7 +89,7 @@ public class AggregationDAO implements IAggregationDAO
 						product == null ? 0 : product.getM_Product_ID(),
 						product == null ? 0 : product.getM_Product_Category_ID())
 				.setOnlyActiveRecords(true)
-				.setApplyAccessFilter(true)
+				.setRequiredAccess(Access.READ)
 				.setOrderBy(orderBy)
 				.first(I_C_Invoice_Candidate_Agg.class);
 	}

@@ -32,7 +32,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@Component("de.metas.project.interceptor.C_Project")
+@Component
 @Callout(I_C_Project.class)
 public class C_Project
 {

@@ -1,16 +1,20 @@
 package de.metas.material.dispo.commons.candidate;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
-import org.compiere.util.Util;
+import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -41,7 +45,6 @@ import lombok.experimental.Wither;
  */
 
 @Value
-@Builder(toBuilder = true)
 @EqualsAndHashCode(doNotUseGetters = true)
 @Wither
 public class Candidate
@@ -49,13 +52,16 @@ public class Candidate
 	public static CandidateBuilder builderForEventDescr(@NonNull final EventDescriptor eventDescr)
 	{
 		return Candidate.builder()
-				.clientId(eventDescr.getClientId())
-				.orgId(eventDescr.getOrgId());
+				.clientAndOrgId(eventDescr.getClientAndOrgId());
 	}
 
-	int clientId;
+	public static CandidateBuilder builderForClientAndOrgId(@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		return Candidate.builder()
+				.clientAndOrgId(clientAndOrgId);
+	}
 
-	int orgId;
+	ClientAndOrgId clientAndOrgId;
 
 	@NonNull
 	CandidateType type;
@@ -64,8 +70,6 @@ public class Candidate
 	 * Should be {@code null} for stock candidates.
 	 */
 	CandidateBusinessCase businessCase;
-
-	CandidateStatus status;
 
 	CandidateId id;
 
@@ -77,7 +81,7 @@ public class Candidate
 	/**
 	 * A supply candidate and its corresponding demand candidate are associated by a common group id.
 	 */
-	int groupId;
+	MaterialDispoGroupId groupId;
 
 	int seqNo;
 
@@ -88,8 +92,97 @@ public class Candidate
 
 	DemandDetail additionalDemandDetail;
 
-	@Singular
 	List<TransactionDetail> transactionDetails;
+
+	@Builder(toBuilder = true)
+	private Candidate(
+			@NonNull final ClientAndOrgId clientAndOrgId,
+			@NonNull final CandidateType type,
+			final CandidateBusinessCase businessCase,
+			final CandidateId id,
+			final CandidateId parentId,
+			final MaterialDispoGroupId groupId,
+			final int seqNo,
+			@NonNull final MaterialDescriptor materialDescriptor,
+			final BusinessCaseDetail businessCaseDetail,
+			final DemandDetail additionalDemandDetail,
+			@Singular final List<TransactionDetail> transactionDetails)
+	{
+		this.clientAndOrgId = clientAndOrgId;
+		this.type = type;
+		this.businessCase = businessCase;
+
+		this.id = CoalesceUtil.coalesce(id, CandidateId.NULL);
+		Check.errorIf(this.id.isUnspecified(), "The given id may be null or CandidateId.NULL, but not unspecified");
+
+		this.parentId = CoalesceUtil.coalesce(parentId, CandidateId.NULL);
+		Check.errorIf(this.parentId.isUnspecified(), "The given parentId may be null or CandidateId.NULL, but not unspecified");
+
+		this.groupId = groupId;
+		this.seqNo = seqNo;
+
+		this.materialDescriptor = materialDescriptor;
+
+		this.businessCaseDetail = businessCaseDetail;
+		this.additionalDemandDetail = additionalDemandDetail;
+
+		this.transactionDetails = transactionDetails;
+	}
+
+	/** we don't call this from the constructor, because some tests don't need a "valid" candidate to get particular aspects. */
+	public Candidate validate()
+	{
+		switch (type)
+		{
+			case DEMAND:
+			case STOCK_UP:
+			case SUPPLY:
+				Check.errorIf(
+						businessCaseDetail == null,
+						"If type={}, then the given businessCaseDetail may not be null; this={}",
+						type, this);
+				break;
+			case INVENTORY_UP:
+			case INVENTORY_DOWN:
+				break;
+			case UNRELATED_INCREASE:
+			case UNRELATED_DECREASE:
+				Check.errorIf(
+						transactionDetails == null || transactionDetails.isEmpty(),
+						"If type={}, then the given transactionDetails may not be null or empty; this={}",
+						type, this);
+				break;
+			case ATTRIBUTES_CHANGED_FROM:
+			case ATTRIBUTES_CHANGED_TO:
+				break;
+			default:
+				Check.errorIf(true, "Unexpected candidateType={}; this={}", type, this);
+		}
+
+		for (final TransactionDetail transactionDetail : transactionDetails)
+		{
+			Check.errorIf(
+					!transactionDetail.isComplete(),
+					"Every element from the given parameter transactionDetails needs to have iscomplete==true; transactionDetail={}; this={}",
+					transactionDetail, this);
+		}
+
+		Check.errorIf((businessCase != null) != (businessCaseDetail != null),
+				"The given paramters businessCase and businessCaseDetail need to be both null or both not-null; businessCase={}; businessCaseDetail={}; this={}",
+				businessCase, businessCaseDetail, this);
+
+		Check.errorIf(
+				businessCase != null && !businessCase.getDetailClass().isAssignableFrom(businessCaseDetail.getClass()),
+				"The given paramters businessCase and businessCaseDetail don't match; businessCase={}; businessCaseDetail={}; this={}",
+				businessCase, businessCaseDetail, this);
+
+		return this;
+	}
+
+	public OrgId getOrgId()
+	{
+		return getClientAndOrgId().getOrgId();
+	}
 
 	/**
 	 * @param addedQuantity may also be negative, in case of subtraction
@@ -114,34 +207,33 @@ public class Candidate
 		return withMaterialDescriptor(materialDescriptor.withQuantity(quantity));
 	}
 
-	public Candidate withDate(@NonNull final Date date)
+	public Candidate withDate(@NonNull final Instant date)
 	{
 		return withMaterialDescriptor(materialDescriptor.withDate(date));
 	}
 
-	public Candidate withWarehouseId(final int warehouseId)
+	public Candidate withWarehouseId(final WarehouseId warehouseId)
 	{
 		return withMaterialDescriptor(materialDescriptor.withWarehouseId(warehouseId));
 	}
 
-	public int getEffectiveGroupId()
+	public MaterialDispoGroupId getEffectiveGroupId()
 	{
 		if (type == CandidateType.STOCK)
 		{
-			return 0;
+			return null;
 		}
-		if (groupId > 0)
+		else if (groupId != null)
 		{
 			return groupId;
 		}
-		if (id == null)
+		else
 		{
-			return 0;
+			return MaterialDispoGroupId.ofIdOrNull(id);
 		}
-		return id.getRepoId();
 	}
 
-	public Date getDate()
+	public Instant getDate()
 	{
 		return materialDescriptor.getDate();
 	}
@@ -151,7 +243,7 @@ public class Candidate
 		return materialDescriptor.getProductId();
 	}
 
-	public int getWarehouseId()
+	public WarehouseId getWarehouseId()
 	{
 		return materialDescriptor.getWarehouseId();
 	}
@@ -166,93 +258,15 @@ public class Candidate
 
 	public DemandDetail getDemandDetail()
 	{
-		return Util.coalesce(DemandDetail.castOrNull(businessCaseDetail), additionalDemandDetail);
+		return CoalesceUtil.coalesce(DemandDetail.castOrNull(businessCaseDetail), additionalDemandDetail);
 	}
 
-	public BigDecimal getPlannedQty()
+	public BigDecimal getDetailQty()
 	{
 		if (businessCaseDetail == null)
 		{
 			return BigDecimal.ZERO;
 		}
-		return businessCaseDetail.getPlannedQty();
-	}
-
-	private Candidate(final int clientId, final int orgId,
-			@NonNull final CandidateType type,
-			final CandidateBusinessCase businessCase,
-			final CandidateStatus status,
-			final CandidateId id,
-			final CandidateId parentId,
-			final int groupId,
-			final int seqNo,
-			@NonNull final MaterialDescriptor materialDescriptor,
-			final BusinessCaseDetail businessCaseDetail,
-			final DemandDetail additionalDemandDetail,
-			final List<TransactionDetail> transactionDetails)
-	{
-		this.clientId = clientId;
-		this.orgId = orgId;
-		this.type = type;
-		this.businessCase = businessCase;
-		this.status = status;
-
-		this.id = Util.coalesce(id, CandidateId.NULL);
-		Check.errorIf(this.id.isUnspecified(), "The given id may be null or CandidateId.NULL, but not unspecified");
-
-		this.parentId = Util.coalesce(parentId, CandidateId.NULL);
-		Check.errorIf(this.parentId.isUnspecified(), "The given parentId may be null or CandidateId.NULL, but not unspecified");
-
-		this.groupId = groupId;
-		this.seqNo = seqNo;
-
-		this.materialDescriptor = materialDescriptor;
-
-		this.businessCaseDetail = businessCaseDetail;
-		this.additionalDemandDetail = additionalDemandDetail;
-
-		this.transactionDetails = transactionDetails;
-	}
-
-	/** we don't call this from the constructor, because some tests don't need a "valid" candidate to get particular aspects. */
-	public void validate()
-	{
-		switch (type)
-		{
-			case DEMAND:
-			case STOCK_UP:
-			case SUPPLY:
-				Check.errorIf(
-						businessCaseDetail == null,
-						"If type={}, then the given businessCaseDetail may not be null; this={}",
-						type, this);
-				break;
-			case UNRELATED_INCREASE:
-			case UNRELATED_DECREASE:
-				Check.errorIf(
-						transactionDetails == null || transactionDetails.isEmpty(),
-						"If type={}, then the given transactionDetails may not be null or empty; this={}",
-						type, this);
-				break;
-			default:
-				Check.errorIf(true, "Unexpected candidateType={}; this={}", type, this);
-		}
-
-		for (final TransactionDetail transactionDetail : transactionDetails)
-		{
-			Check.errorIf(
-					!transactionDetail.isComplete(),
-					"Every element from the given parameter transactionDetails needs to have iscomplete==true; transactionDetail={}; this={}",
-					transactionDetail, this);
-		}
-
-		Check.errorIf((businessCase != null) != (businessCaseDetail != null),
-				"The given paramters businessCase and businessCaseDetail need to be both null or both not-null; businessCase={}; businessCaseDetail={}; this={}",
-				businessCase, businessCaseDetail, this);
-
-		Check.errorIf(
-				businessCase != null && !businessCase.getDetailClass().isAssignableFrom(businessCaseDetail.getClass()),
-				"The given paramters businessCase and businessCaseDetail don't match; businessCase={}; businessCaseDetail={}; this={}",
-				businessCase, businessCaseDetail, this);
+		return businessCaseDetail.getQty();
 	}
 }

@@ -3,6 +3,7 @@ package de.metas.vertical.pharma.msv3.protocol.util;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -65,6 +66,18 @@ public final class JAXBDateUtils
 		return datatypeFactoryHolder.get().newXMLGregorianCalendar(c);
 	}
 
+	public static XMLGregorianCalendar toXMLGregorianCalendar(final ZonedDateTime date)
+	{
+		if (date == null)
+		{
+			return null;
+		}
+
+		final GregorianCalendar c = new GregorianCalendar();
+		c.setTimeInMillis(date.toInstant().toEpochMilli());
+		return datatypeFactoryHolder.get().newXMLGregorianCalendar(c);
+	}
+
 	public static LocalDateTime toLocalDateTime(final XMLGregorianCalendar xml)
 	{
 		if (xml == null)
@@ -73,6 +86,16 @@ public final class JAXBDateUtils
 		}
 
 		return xml.toGregorianCalendar().toZonedDateTime().toLocalDateTime();
+	}
+
+	public static ZonedDateTime toZonedDateTime(final XMLGregorianCalendar xml)
+	{
+		if (xml == null)
+		{
+			return null;
+		}
+
+		return xml.toGregorianCalendar().toZonedDateTime();
 	}
 
 	public static java.util.Date toDate(final XMLGregorianCalendar xml)

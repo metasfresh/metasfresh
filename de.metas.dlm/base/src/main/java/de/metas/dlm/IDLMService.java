@@ -151,7 +151,7 @@ public interface IDLMService extends ISingletonService {
 	 * @param runInOwnTrx
 	 *            if <code>true</code>, then this method will create a dedicated
 	 *            transaction using
-	 *            {@link ITrxManager#run(org.compiere.util.TrxRunnable)} to
+	 *            {@link ITrxManager#runInNewTrx(org.compiere.util.TrxRunnable)} to
 	 *            perform the actual storing in.
 	 * @return a news instance that represents the just-stored partition
 	 */

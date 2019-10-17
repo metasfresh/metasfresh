@@ -27,8 +27,8 @@ package de.metas.handlingunits.client.terminal.pporder.api;
 
 
 import java.util.List;
-import java.util.Properties;
 
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -46,9 +46,9 @@ public interface IHUIssueFiltering extends ISingletonService
 	 * @param warehouse
 	 * @return
 	 */
-	List<I_PP_Order> getManufacturingOrders(Properties ctx, int warehouseId);
+	List<I_PP_Order> getManufacturingOrders(WarehouseId warehouseId);
 
-	IHUQueryBuilder getHUsForIssueQuery(I_PP_Order ppOrder, List<I_PP_Order_BOMLine> orderBOMLines, int warehouseId);
+	IHUQueryBuilder getHUsForIssueQuery(I_PP_Order ppOrder, List<I_PP_Order_BOMLine> orderBOMLines, WarehouseId warehouseId);
 
 	List<I_PP_Order_BOMLine> getOrderBOMLines(I_PP_Order order);
 

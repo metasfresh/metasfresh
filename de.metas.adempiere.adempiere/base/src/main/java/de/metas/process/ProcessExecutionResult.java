@@ -1,11 +1,6 @@
 package de.metas.process;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
-
-import javax.annotation.concurrent.Immutable;
-
+import java.beans.Visibility;
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -15,6 +10,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.logging.Logger;
+
+import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -23,10 +21,8 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
 import org.compiere.util.Util;
-import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -42,6 +38,9 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.time.SystemTime;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 
 /*
  * #%L
@@ -76,7 +75,7 @@ public class ProcessExecutionResult
 	/**
 	 * Display process logs to user policy
 	 */
-	public static enum ShowProcessLogs
+	public enum ShowProcessLogs
 	{
 		/** Always display them */
 		Always,
@@ -84,7 +83,7 @@ public class ProcessExecutionResult
 		OnError,
 		/** Never display them */
 		Never
-	};
+	}
 
 	private static final transient Logger logger = LogManager.getLogger(ProcessExecutionResult.class);
 
@@ -151,40 +150,37 @@ public class ProcessExecutionResult
 		this.logs = new ArrayList<>();
 	}
 
+	// note: my local ProcessExecutionResultTest failed without this constructor
 	@JsonCreator
 	public ProcessExecutionResult(
-			@JsonProperty("pinstanceId") final PInstanceId pinstanceId,
-			@JsonProperty("summary") final String summary,
-			@JsonProperty("error") final boolean error,
-			@JsonProperty("errorWasReportedToUser") final boolean errorWasReportedToUser,
-			@JsonProperty("timeout") final boolean timeout,
-			@JsonProperty("logs") final List<ProcessInfoLog> logs,
-			@JsonProperty("showProcessLogsPolicy") final ShowProcessLogs showProcessLogsPolicy,
-			@JsonProperty("printFormat") final MPrintFormat printFormat,
-			@JsonProperty("reportData") final byte[] reportData,
-			@JsonProperty("reportFilename") final String reportFilename,
-			@JsonProperty("reportContentType") final String reportContentType,
-			@JsonProperty("throwable") final Throwable throwable,
+			@JsonProperty("pinstanceId") final PInstanceId pinstanceId, 
+			@JsonProperty("summary") final String summary, 
+			@JsonProperty("error") final boolean error, 
+			//@JsonProperty("errorWasReportedToUser") final boolean errorWasReportedToUser, // transient
+			@JsonProperty("timeout") final boolean timeout, 
+			//@JsonProperty("logs") final List<ProcessInfoLog> logs, // transient
+			@JsonProperty("showProcessLogsPolicy") final ShowProcessLogs showProcessLogsPolicy, 
+			//@JsonProperty("printFormat") final MPrintFormat printFormat, // transient
+			@JsonProperty("reportData") final byte[] reportData, 
+			@JsonProperty("reportFilename") final String reportFilename, 
+			@JsonProperty("reportContentType") final String reportContentType, 
+			//@JsonProperty("throwable") final Throwable throwable, // transient
 			@JsonProperty("refreshAllAfterExecution") final boolean refreshAllAfterExecution,
-			@JsonProperty("recordToRefreshAfterExecution") final TableRecordReference recordToRefreshAfterExecution,
-			@JsonProperty("recordToSelectAfterExecution") final TableRecordReference recordToSelectAfterExecution,
+			@JsonProperty("recordToRefreshAfterExecution") final TableRecordReference recordToRefreshAfterExecution, 
+			@JsonProperty("recordToSelectAfterExecution") final TableRecordReference recordToSelectAfterExecution, 
 			@JsonProperty("recordsToOpen") final RecordsToOpen recordsToOpen,
-			@JsonProperty("webuiViewToOpen") final WebuiViewToOpen webuiViewToOpen,
-			@JsonProperty("displayQRCode") final DisplayQRCode displayQRCode,
+			@JsonProperty("webuiViewToOpen") final WebuiViewToOpen webuiViewToOpen, 
+			@JsonProperty("displayQRCode") final DisplayQRCode displayQRCode, 
 			@JsonProperty("webuiViewId") final String webuiViewId)
 	{
 		this.pinstanceId = pinstanceId;
 		this.summary = summary;
 		this.error = error;
-		this.errorWasReportedToUser = errorWasReportedToUser;
 		this.timeout = timeout;
-		this.logs = logs;
 		this.showProcessLogsPolicy = showProcessLogsPolicy;
-		this.printFormat = printFormat;
 		this.reportData = reportData;
 		this.reportFilename = reportFilename;
 		this.reportContentType = reportContentType;
-		this.throwable = throwable;
 		this.refreshAllAfterExecution = refreshAllAfterExecution;
 		this.recordToRefreshAfterExecution = recordToRefreshAfterExecution;
 		this.recordToSelectAfterExecution = recordToSelectAfterExecution;
@@ -193,7 +189,7 @@ public class ProcessExecutionResult
 		this.displayQRCode = displayQRCode;
 		this.webuiViewId = webuiViewId;
 	}
-
+	
 	@Override
 	public String toString()
 	{
@@ -762,7 +758,6 @@ public class ProcessExecutionResult
 	//
 	//
 	//
-	//
 
 	@Immutable
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
@@ -776,7 +771,7 @@ public class ProcessExecutionResult
 		@JsonInclude(JsonInclude.Include.NON_NULL)
 		private final String adWindowIdStr;
 
-		public static enum OpenTarget
+		public enum OpenTarget
 		{
 			SingleDocument, SingleDocumentModal, GridView,
 		}
@@ -863,9 +858,9 @@ public class ProcessExecutionResult
 	//
 	//
 
-	public static enum ViewOpenTarget
+	public enum ViewOpenTarget
 	{
-		IncludedView, ModalOverlay
+		IncludedView, ModalOverlay, NewBrowserTab
 	}
 
 	@Immutable

@@ -1,5 +1,7 @@
 package de.metas.materialtracking.ch.lagerkonf.invoicing.impl;
 
+import static java.math.BigDecimal.ONE;
+
 /*
  * #%L
  * de.metas.materialtracking
@@ -40,6 +42,7 @@ import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.IHandlingUnitsInfoWritableQty;
@@ -66,10 +69,14 @@ import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.service.IPricingBL;
-import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
+import lombok.NonNull;
 
 /**
  * Takes an {@link IQualityInspectionOrder} and creates {@link IQualityInvoiceLineGroup}s.
@@ -166,7 +173,6 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		final IQualityInvoiceLine invoiceableLine = invoiceLineGroup.getInvoiceableLine();
 		Check.assumeNotNull(invoiceableLine, "invoiceLineGroup shall have invoiceable line set: {}", invoiceLineGroup);
 		Check.assumeNotNull(invoiceableLine.getM_Product(), "invoiceable line's product not null: {}", invoiceLineGroup);
-		Check.assumeNotNull(invoiceableLine.getC_UOM(), "invoiceable line's uom not null: {}", invoiceLineGroup);
 		Check.assumeNotNull(invoiceableLine.getQty(), "invoiceable line's quantity not null: {}", invoiceLineGroup);
 
 		//
@@ -377,15 +383,17 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 		final IQualityInspectionOrder qualityInspectionOrder = _materialTrackingDocuments.getQualityInspectionOrderOrNull();
 		// if qualityInspectionOrder was null, we shouldn't be here
-		Check.assumeNotNull(qualityInspectionOrder, "the IQualityInspectionOrder of IMAterialTrackingDocuments {} are not null", _materialTrackingDocuments);
+		Check.assumeNotNull(qualityInspectionOrder, "The IQualityInspectionOrder of IMAterialTrackingDocuments may not be null; materialTrackingDocuments={}", _materialTrackingDocuments);
 
 		final IQualityInspectionLinesCollection qualityInspectionLines = getQualityInspectionLinesCollection();
-		final IQualityInspectionLine producedWithoutByProducts = qualityInspectionLines.getByType(QualityInspectionLineType.ProducedTotalWithoutByProducts);
 		final IQualityInspectionLine overallRaw = qualityInspectionLines.getByType(QualityInspectionLineType.Raw);
-		final IHandlingUnitsInfo overallRawHUInfo = overallRaw.getHandlingUnitsInfoProjected();
-		final BigDecimal overallQtyTU = new BigDecimal(overallRawHUInfo.getQtyTU());
-		final BigDecimal overallAvgProducedQtyPerTU = producedWithoutByProducts.getQtyProjected().divide(overallQtyTU, RoundingMode.HALF_UP);
 		final I_C_UOM overallRawUOM = overallRaw.getC_UOM();
+		final IHandlingUnitsInfo overallRawHUInfo = overallRaw.getHandlingUnitsInfoProjected();
+		final BigDecimal overallRawQtyTU = new BigDecimal(overallRawHUInfo.getQtyTU());
+
+		final IQualityInspectionLine marketableGoods = qualityInspectionLines.getByType(QualityInspectionLineType.ProducedTotalWithoutByProducts);
+		final BigDecimal marketableGoodsAvgProducedQtyPerTU = marketableGoods.getQtyProjected().divide(overallRawQtyTU, RoundingMode.HALF_UP);
+		final I_C_UOM marketableGoodsUOM = marketableGoods.getC_UOM();
 
 		final Timestamp dateOfProduction = TimeUtil.getDay(materialTrackingPPOrderBL.getDateOfProduction(qualityInspectionOrder.getPP_Order()));
 
@@ -395,8 +403,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 		detailBefore.setProductName("Anzahl kg pro Paloxe im Durchschnitt");
 		detailBefore.setDisplayed(true);
-		detailBefore.setC_UOM(overallRawUOM);
-		detailBefore.setQty(overallAvgProducedQtyPerTU);
+		detailBefore.setQty(Quantity.of(marketableGoodsAvgProducedQtyPerTU, overallRawUOM));
 		detailBefore.setM_Product(config.getRegularPPOrderProduct());
 
 		invoiceLineGroup.addDetailBefore(detailBefore);
@@ -408,10 +415,10 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 		// initial HUInfo
 		final IHandlingUnitsInfoWritableQty huInfo = handlingUnitsInfoFactory.createHUInfoWritableQty(overallRawHUInfo);
-		huInfo.setQtyTU(overallQtyTU.intValue());
+		huInfo.setQtyTU(overallRawQtyTU.intValue());
 		invoiceableLine.setHandlingUnitsInfo(huInfo);
 
-		invoiceableLine.setQty(overallRaw.getQtyProjected());
+		invoiceableLine.setQty(Quantity.of(marketableGoods.getQtyProjected(), overallRawUOM));
 
 		//
 		// static stuff like product, uom
@@ -424,8 +431,6 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		// Note that we only use the product, but the raw product's uom and qty.
 		invoiceableLine.setM_Product(config.getRegularPPOrderProduct());
 
-		invoiceableLine.setC_UOM(overallRawUOM);
-
 		// Pricing
 		final IPricingContext pricingCtx = createPricingContext(invoiceableLine);
 		BigDecimal priceActual = config.getQualityAdjustmentForDateOrNull(dateOfProduction);
@@ -436,11 +441,15 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 			priceActual = BigDecimal.ZERO;
 		}
 
-		final IPricingResult pricingResult = createPricingResult(pricingCtx, priceActual, invoiceableLine.getC_UOM());
+		final IPricingResult pricingResult = createPricingResult(pricingCtx, priceActual, invoiceableLine.getQty().getUOM());
 		invoiceableLine.setPrice(pricingResult);
 
 		// the detail that shall override the invoiceable line's displayed infos
-		final QualityInvoiceLine invoicableDetailLineOverride = createDetailForSingleRegularOrder(overallRawUOM, huInfo, invoiceableLine.getQty(), labelToUse);
+		final QualityInvoiceLine invoicableDetailLineOverride = createDetailForSingleRegularOrder(
+				marketableGoodsUOM,
+				huInfo,
+				invoiceableLine.getQty().toBigDecimal(),
+				labelToUse);
 		invoicableDetailLineOverride.setDisplayed(displayRegularOrderData);
 
 		invoiceLineGroup.setInvoiceableLineOverride(invoicableDetailLineOverride);
@@ -453,7 +462,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		for (final IQualityInspectionOrder productionOrder : allProductionOrders)
 		{
 			final QualityInvoiceLine ppOrderDetailLine = createQualityInvoiceLineDetail_RegularOrder(productionOrder,
-					overallAvgProducedQtyPerTU,
+					marketableGoodsAvgProducedQtyPerTU,
 					invoiceLineGroup
 							.getInvoiceableLine()
 							.getProductName());
@@ -481,12 +490,14 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 				_materialTrackingDocuments, getPricingContext().getM_PriceList_Version());
 
 		final IQualityInspectionLinesCollection qualityInspectionLines = getQualityInspectionLinesCollection();
-		final IQualityInspectionLine producedWithoutByProducts = qualityInspectionLines.getByType(QualityInspectionLineType.ProducedTotalWithoutByProducts);
+		final IQualityInspectionLine marketableGoods = qualityInspectionLines.getByType(QualityInspectionLineType.ProducedTotalWithoutByProducts);
+
 		final IQualityInspectionLine overallRaw = qualityInspectionLines.getByType(QualityInspectionLineType.Raw);
-		final IHandlingUnitsInfo overallRawHUInfo = overallRaw.getHandlingUnitsInfoProjected();
-		final BigDecimal overallQtyTU = new BigDecimal(overallRawHUInfo.getQtyTU());
-		final BigDecimal overallAvgProducedQtyPerTU = producedWithoutByProducts.getQtyProjected().divide(overallQtyTU, RoundingMode.HALF_UP);
-		final I_C_UOM overallRawUOM = overallRaw.getC_UOM();
+		final IHandlingUnitsInfo moverallRawHUInfo = overallRaw.getHandlingUnitsInfoProjected();
+		final BigDecimal overallRawQtyTU = new BigDecimal(moverallRawHUInfo.getQtyTU());
+
+		final BigDecimal marketableGoodsAvgProducedQtyPerTU = marketableGoods.getQtyProjected().divide(overallRawQtyTU, RoundingMode.HALF_UP);
+		final I_C_UOM marketableGoodsUOM = marketableGoods.getC_UOM();
 
 		boolean atLeastOnePPOrderWithQualityAdjustment = false;
 
@@ -511,12 +522,12 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 			invoiceableLine.setDisplayed(displayRegularOrderData);
 
 			// initial HUInfo
-			final IHandlingUnitsInfoWritableQty huInfo = handlingUnitsInfoFactory.createHUInfoWritableQty(overallRawHUInfo);
+			final IHandlingUnitsInfoWritableQty huInfo = handlingUnitsInfoFactory.createHUInfoWritableQty(moverallRawHUInfo);
 			huInfo.setQtyTU(0);
 			invoiceableLine.setHandlingUnitsInfo(huInfo);
 
 			// initial Qty
-			invoiceableLine.setQty(BigDecimal.ZERO); // make sure it's not null, we want to iterate and add to it later
+			invoiceableLine.setQty(Quantity.zero(marketableGoodsUOM)); // make sure it's not null, we want to iterate and add to it later
 
 			//
 			// static stuff like product, uom
@@ -529,8 +540,6 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 			// Note that we only use the product, but the raw product's uom and qty.
 			invoiceableLine.setM_Product(config.getRegularPPOrderProduct());
 
-			invoiceableLine.setC_UOM(overallRawUOM);
-
 			// Pricing
 			final IPricingContext pricingCtx = createPricingContext(invoiceableLine);
 			BigDecimal priceActual = config.getQualityAdjustmentForDateOrNull(dateOfProduction);
@@ -541,11 +550,18 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 				priceActual = BigDecimal.ZERO;
 			}
 
-			final IPricingResult pricingResult = createPricingResult(pricingCtx, priceActual, invoiceableLine.getC_UOM());
+			final IPricingResult pricingResult = createPricingResult(
+					pricingCtx,
+					priceActual,
+					invoiceableLine.getQty().getUOM());
 			invoiceableLine.setPrice(pricingResult);
 
 			// the detail that shall override the invoiceable line's displayed infos
-			final QualityInvoiceLine invoicableDetailLineOverride = createDetailForSingleRegularOrder(overallRawUOM, huInfo, invoiceableLine.getQty(), labelToUse);
+			final QualityInvoiceLine invoicableDetailLineOverride = createDetailForSingleRegularOrder(
+					marketableGoodsUOM,
+					huInfo,
+					invoiceableLine.getQty().toBigDecimal(),
+					labelToUse);
 			invoicableDetailLineOverride.setDisplayed(displayRegularOrderData);
 
 			qualityInvoiceLineGroup.setInvoiceableLineOverride(invoicableDetailLineOverride);
@@ -585,13 +601,12 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 				detailBefore.setProductName("Anzahl kg pro Paloxe im Durchschnitt");
 				detailBefore.setDisplayed(true);
-				detailBefore.setC_UOM(uom);
-				detailBefore.setQty(overallAvgProducedQtyPerTU);
+				detailBefore.setQty(Quantity.of(marketableGoodsAvgProducedQtyPerTU, uom));
 				detailBefore.setM_Product(config.getRegularPPOrderProduct());
 			}
 
 			final QualityInvoiceLine ppOrderDetailLine = createQualityInvoiceLineDetail_RegularOrder(productionOrder,
-					overallAvgProducedQtyPerTU,
+					marketableGoodsAvgProducedQtyPerTU,
 					invoiceLineGroup
 							.getInvoiceableLine()
 							.getProductName());
@@ -641,7 +656,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 		//
 		// if there is *not* a PP_Order for each received HU *and* if where have a quality adjustment, then we need to explicitly deal with the rest
-		final int missingQtyTU = overallRawHUInfo.getQtyTU() - qtyTUSum;
+		final int missingQtyTU = moverallRawHUInfo.getQtyTU() - qtyTUSum;
 		final Timestamp dateForMissingQtyTUs = TimeUtil.addDays(
 				_materialTrackingDocuments.getM_Material_Tracking().getValidTo(),
 				1);
@@ -653,14 +668,14 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 			final String labelPrefix = "Auslagerung nach ";
 			final String labelToUse = createRegularOrderLabelToUse(labelPrefix, dateForMissingQtyTUs);
 
-			final IHandlingUnitsInfoWritableQty huInfo = handlingUnitsInfoFactory.createHUInfoWritableQty(overallRawHUInfo);
+			final IHandlingUnitsInfoWritableQty huInfo = handlingUnitsInfoFactory.createHUInfoWritableQty(moverallRawHUInfo);
 			huInfo.setQtyTU(missingQtyTU);
 
 			// the "label" line which shall be displayed (in the jasper printout) instead of the action invoice lines product, uom etc
 			{
-				final QualityInvoiceLine detailLineOverride = createDetailForSingleRegularOrder(overallRaw.getC_UOM(),
+				final QualityInvoiceLine detailLineOverride = createDetailForSingleRegularOrder(marketableGoodsUOM,
 						huInfo,
-						new BigDecimal(missingQtyTU).multiply(overallAvgProducedQtyPerTU),
+						new BigDecimal(missingQtyTU).multiply(marketableGoodsAvgProducedQtyPerTU),
 						labelToUse);
 				detailLineOverride.setDisplayed(true);
 				invoiceLineGroup.setInvoiceableLineOverride(detailLineOverride);
@@ -668,9 +683,9 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 			// the line which shall later become the C_InvoiceLine
 			{
-				final QualityInvoiceLine detailLineInvcoiceable = createDetailForSingleRegularOrder(overallRaw.getC_UOM(),
+				final QualityInvoiceLine detailLineInvcoiceable = createDetailForSingleRegularOrder(marketableGoodsUOM,
 						huInfo,
-						new BigDecimal(missingQtyTU).multiply(overallAvgProducedQtyPerTU),
+						new BigDecimal(missingQtyTU).multiply(marketableGoodsAvgProducedQtyPerTU),
 						labelToUse);
 				detailLineInvcoiceable.setDisplayed(true);
 
@@ -678,7 +693,9 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 				final IPricingContext pricingCtx = createPricingContext(detailLineInvcoiceable);
 				final BigDecimal priceActual = config.getQualityAdjustmentForDateOrNull(dateForMissingQtyTUs);
 
-				final IPricingResult pricingResult = createPricingResult(pricingCtx, priceActual, detailLineInvcoiceable.getC_UOM());
+				final IPricingResult pricingResult = createPricingResult(pricingCtx,
+						priceActual,
+						detailLineInvcoiceable.getQty().getUOM());
 				detailLineInvcoiceable.setPrice(pricingResult);
 
 				invoiceLineGroup.setInvoiceableLine(detailLineInvcoiceable);
@@ -698,11 +715,14 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 			detailAfter.setDisplayed(atLeastOnePPOrderWithQualityAdjustment);
 			detailAfter.setProductName("Total Qualitätslagerausgleich"); // TRL
 			detailAfter.setM_Product(invoiceableLine.getM_Product());
-			detailAfter.setQty(BigDecimal.ONE);
+			detailAfter.setQty(Quantity.of(ONE, invoiceableLine.getQty().getUOM()));
 
 			// Pricing
 			final IPricingContext pricingCtx = createPricingContext(detailAfter);
-			final IPricingResult pricingResult = createPricingResult(pricingCtx, netAmtSum, lastInvoiceLineGroup.getInvoiceableLine().getC_UOM());
+			final IPricingResult pricingResult = createPricingResult(
+					pricingCtx,
+					netAmtSum,
+					invoiceableLine.getQty().getUOM());
 			detailAfter.setPrice(pricingResult);
 		}
 	}
@@ -748,8 +768,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 			invoiceableLine.setDisplayed(true);
 			invoiceableLine.setM_Product(feeItem.getM_Product());
-			invoiceableLine.setQty(producedTotalWithoutByProductsLine.getQtyProjected());
-			invoiceableLine.setC_UOM(producedTotalWithoutByProductsLine.getC_UOM());
+			invoiceableLine.setQty(Quantity.of(producedTotalWithoutByProductsLine.getQtyProjected(), producedTotalWithoutByProductsLine.getC_UOM()));
 
 			// Pricing
 			final IEditablePricingContext pricingCtx = createPricingContext(invoiceableLine);
@@ -758,7 +777,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 			pricingResult.setPriceStd(pricingResult.getPriceStd().negate());
 			pricingResult.setPriceLimit(pricingResult.getPriceLimit().negate());
 			// NOTE: we need to set the Price UOM to same UOM as Qty to avoid conversion errors like (cannot convert from Kg to Stuck)
-			pricingResult.setPrice_UOM_ID(producedTotalWithoutByProductsLine.getC_UOM().getC_UOM_ID());
+			pricingResult.setPriceUomId(UomId.ofRepoId(producedTotalWithoutByProductsLine.getC_UOM().getC_UOM_ID()));
 			invoiceableLine.setPrice(pricingResult);
 		}
 
@@ -812,8 +831,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 			detail.setM_Product(scrapLine.getM_Product());
 			detail.setProductName(labelToUse);
 			detail.setPercentage(percentageToCharge);
-			detail.setQty(qtyProjectedToCharge);
-			detail.setC_UOM(scrapLine.getC_UOM());
+			detail.setQty(Quantity.of(qtyProjectedToCharge, scrapLine.getC_UOM()));
 		}
 		// Invoiceable Line
 		{
@@ -825,8 +843,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 			invoiceableLine.setM_Product(scrapLine.getM_Product());
 			invoiceableLine.setProductName(labelToUse);
 			invoiceableLine.setPercentage(percentageToCharge);
-			invoiceableLine.setQty(qtyProjectedToCharge);
-			invoiceableLine.setC_UOM(scrapLine.getC_UOM());
+			invoiceableLine.setQty(Quantity.of(qtyProjectedToCharge, scrapLine.getC_UOM()));
 
 			// Pricing
 			final IPricingContext pricingCtx = createPricingContext(invoiceableLine);
@@ -876,7 +893,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 				detail.setDisplayed(true);
 				invoiceLineGroup.addDetailBefore(detail);
 
-				detail.setQty(producedMaterial.getQtyProjected().negate());
+				detail.setQty(Quantity.of(producedMaterial.getQtyProjected().negate(), detail.getQty().getUOM()));
 			}
 			//
 			// Processing fee for By-Products
@@ -902,7 +919,10 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 				final BigDecimal feeAmt = config.getFeeForProducedMaterial(product, feeProductPercent);
 
 				final IPricingContext pricingContext = createPricingContext(invoiceableLine);
-				final IPricingResult pricingResult = createPricingResult(pricingContext, feeAmt.negate(), invoiceableLine.getC_UOM());
+				final IPricingResult pricingResult = createPricingResult(pricingContext,
+						feeAmt.negate(),
+						invoiceableLine.getQty().getUOM());
+
 				invoiceableLine.setPrice(pricingResult);
 				invoiceableLine.setDisplayed(true);
 			}
@@ -968,8 +988,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 			detail.setDisplayed(false);
 			detail.setProductName("Withholding base"); // TRL
-			detail.setQty(BigDecimal.ONE);
-			detail.setC_UOM(withholdingPriceUOM);
+			detail.setQty(Quantity.of(ONE, withholdingPriceUOM));
 			detail.setM_Product(withholdingProduct);
 
 			// Pricing
@@ -987,8 +1006,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 			overridingDetail.setDisplayed(true);
 			overridingDetail.setProductName(labelToUse);
 			overridingDetail.setM_Product(withholdingProduct);
-			overridingDetail.setQty(BigDecimal.ONE);
-			overridingDetail.setC_UOM(withholdingPriceUOM);
+			overridingDetail.setQty(Quantity.of(ONE, withholdingPriceUOM));
 		}
 		{
 			final QualityInvoiceLine invoiceableLine = new QualityInvoiceLine();
@@ -996,8 +1014,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 			invoiceableLine.setDisplayed(true);
 			invoiceableLine.setM_Product(withholdingProduct);
-			invoiceableLine.setQty(BigDecimal.ONE);
-			invoiceableLine.setC_UOM(withholdingPriceUOM);
+			invoiceableLine.setQty(Quantity.of(ONE, withholdingPriceUOM));
 
 			// Pricing
 			final IPricingContext pricingCtx = createPricingContext(invoiceableLine);
@@ -1013,6 +1030,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 	 * Creates and returns a single QualityInvoiceLine that references the given <code>productionOrder</code>.
 	 * <p>
 	 * Note: we also return a line if there is no QualityAdjustment to be invoiced, in order to keep track of every single regular PP_Order.
+	 * TODO cleanup javadoc
 	 *
 	 * @param productionOrder
 	 * @param overallAvgProducedQtyPerTU
@@ -1026,7 +1044,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 			final String labelToUse)
 	{
 		//
-		// Extract parameters from regular manufacturing norder
+		// Extract parameters from regular manufacturing order
 		final IQualityInspectionLinesCollection qualityInspectionLines = getQualityInspectionLinesCollection();
 
 		final IProductionMaterial currentRawProductionMaterial = productionOrder.getRawProductionMaterial();
@@ -1107,9 +1125,10 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 	// return detail;
 	// }
 
-	private QualityInvoiceLine createDetailForSingleRegularOrder(final I_C_UOM uom,
+	private QualityInvoiceLine createDetailForSingleRegularOrder(
+			@NonNull final I_C_UOM uom,
 			final IHandlingUnitsInfo huInfo,
-			final BigDecimal qty,
+			@NonNull final BigDecimal qty,
 			final String labelToUse)
 	{
 		final ILagerKonfQualityBasedConfig config = getQualityBasedConfig();
@@ -1118,8 +1137,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 		detail.setDisplayed(false); // we only want this detail for reference and QA
 		detail.setM_Product(config.getRegularPPOrderProduct());
-		detail.setC_UOM(uom);
-		detail.setQty(qty);
+		detail.setQty(Quantity.of(qty, uom));
 		detail.setHandlingUnitsInfo(huInfo);
 		detail.setProductName(labelToUse);
 		return detail;
@@ -1130,45 +1148,32 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		final IPricingContext pricingContextInitial = getPricingContext();
 		final IEditablePricingContext pricingContext = pricingContextInitial.copy();
 
-		final ProductId productId = line.getProductId();
-		pricingContext.setProductId(productId);
-		pricingContext.setQty(line.getQty());
+		pricingContext.setProductId(line.getProductId());
+		pricingContext.setQty(line.getQty().toBigDecimal());
+		pricingContext.setUomId(line.getQty().getUomId());
 
-		final I_C_UOM uom = line.getC_UOM();
-		if (uom == null)
-		{
-			pricingContext.setConvertPriceToContextUOM(false);
-			pricingContext.setC_UOM_ID(-1);
-		}
-		else
-		{
-			pricingContext.setC_UOM_ID(uom.getC_UOM_ID());
-		}
 		return pricingContext;
 	}
 
 	private IPricingResult createPricingResult(
 			final IPricingContext pricingCtx,
-			final BigDecimal price,
-			final I_C_UOM priceUOM)
+			@NonNull final BigDecimal price,
+			@NonNull final I_C_UOM priceUOM)
 	{
-		Check.assumeNotNull(price, "Param 'price' not null");
-		Check.assumeNotNull(priceUOM, "Param 'priceUOM' not null");
-
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingCtx);
 
-		Check.errorIf(!pricingResult.isCalculated() || pricingResult.getC_TaxCategory_ID() <= 0,
+		Check.errorIf(!pricingResult.isCalculated() || pricingResult.getTaxCategoryId() == null,
 				"pricingResult {} which was created from pricingCtx {} has calculated=false and/or least contains no C_TaxCategory_ID; the referenced model is {}",
 				pricingResult, pricingCtx, pricingCtx.getReferencedObject());
 
-		final int pricePrecision = pricingResult.getPrecision();
-		final BigDecimal priceToSet = price.setScale(pricePrecision, RoundingMode.HALF_UP);
+		final CurrencyPrecision pricePrecision = pricingResult.getPrecision();
+		final BigDecimal priceToSet = pricePrecision.round(price);
 
-		pricingResult.setC_TaxCategory_ID(pricingResult.getC_TaxCategory_ID());
+		pricingResult.setTaxCategoryId(pricingResult.getTaxCategoryId());
 		pricingResult.setPriceStd(priceToSet);
 		pricingResult.setPriceLimit(priceToSet);
 		pricingResult.setPriceList(priceToSet);
-		pricingResult.setPrice_UOM_ID(priceUOM.getC_UOM_ID());
+		pricingResult.setPriceUomId(UomId.ofRepoId(priceUOM.getC_UOM_ID()));
 		pricingResult.setDiscount(Percent.ZERO);
 		pricingResult.setCalculated(true);
 
@@ -1188,20 +1193,26 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		return totalNetAmt;
 	}
 
-	private BigDecimal getNetAmount(final IQualityInvoiceLine line)
+	private BigDecimal getNetAmount(@NonNull final IQualityInvoiceLine line)
 	{
-		Check.assumeNotNull(line, "line not null");
-
 		final IPricingResult pricingResult = line.getPrice();
+
 		Check.assumeNotNull(pricingResult, "pricingResult not null");
 		Check.assume(pricingResult.isCalculated(), "Price is calculated for {}", line);
 
 		final BigDecimal price = pricingResult.getPriceStd();
-		final int pricePrecision = pricingResult.getPrecision();
+		final UomId priceUomId = pricingResult.getPriceUomId();
 
-		final BigDecimal qty = line.getQty();
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-		final BigDecimal netAmt = price.multiply(qty).setScale(pricePrecision, RoundingMode.HALF_UP);
+		final Quantity qtyInPricingUom = uomConversionBL.convertQuantityTo(
+				line.getQty(),
+				UOMConversionContext.of(line.getProductId()),
+				priceUomId);
+
+		final CurrencyPrecision pricePrecision = pricingResult.getPrecision();
+
+		final BigDecimal netAmt = pricePrecision.round(price.multiply(qtyInPricingUom.toBigDecimal()));
 		return netAmt;
 	}
 
@@ -1219,8 +1230,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		invoiceLine.setM_Product(qiLine.getM_Product());
 		invoiceLine.setProductName(qiLine.getName());
 		invoiceLine.setPercentage(qiLine.getPercentage());
-		invoiceLine.setQty(qiLine.getQtyProjected());
-		invoiceLine.setC_UOM(qiLine.getC_UOM());
+		invoiceLine.setQty(Quantity.of(qiLine.getQtyProjected(), qiLine.getC_UOM()));
 		invoiceLine.setHandlingUnitsInfo(qiLine.getHandlingUnitsInfoProjected());
 		return invoiceLine;
 	}

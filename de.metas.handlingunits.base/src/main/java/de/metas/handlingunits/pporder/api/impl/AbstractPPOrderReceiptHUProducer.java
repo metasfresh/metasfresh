@@ -32,8 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -71,6 +69,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.pporder.api.impl.AbstractPPOrderReceiptHUProducer.CreateReceiptCandidateRequest;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -91,7 +90,7 @@ import lombok.NonNull;
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	// Parameters
-	private final int _ppOrderId;
+	private final PPOrderId ppOrderId;
 	private transient I_M_HU_LUTU_Configuration _lutuConfiguration;
 	private Date _movementDate;
 	@Deprecated
@@ -112,15 +111,14 @@ import lombok.NonNull;
 
 	protected abstract void setAssignedHUs(final Collection<I_M_HU> hus);
 
-	public AbstractPPOrderReceiptHUProducer(final int ppOrderId)
+	public AbstractPPOrderReceiptHUProducer(@NonNull final PPOrderId ppOrderId)
 	{
-		Preconditions.checkArgument(ppOrderId > 0, "ppOrderId not valid");
-		this._ppOrderId = ppOrderId;
+		this.ppOrderId = ppOrderId;
 	}
 
 	@Override
 	@Deprecated
-	public void setSkipCreateCandidates()
+	public final void setSkipCreateCandidates()
 	{
 		this._skipCreateCandidates = true;
 	}
@@ -131,15 +129,15 @@ import lombok.NonNull;
 		return _skipCreateCandidates;
 	}
 
-	private int getPP_Order_ID()
+	private PPOrderId getPpOrderId()
 	{
-		return _ppOrderId;
+		return ppOrderId;
 	}
 
 	@Override
 	public final List<I_M_HU> createReceiptCandidatesAndPlanningHUs()
 	{
-		return trxManager.call(() -> {
+		return trxManager.callInNewTrx(() -> {
 
 			final I_M_HU_LUTU_Configuration lutuConfig = getCreateLUTUConfiguration();
 			final Quantity qtyCUsTotal = lutuConfigurationFactory.calculateQtyCUsTotal(lutuConfig);
@@ -152,14 +150,14 @@ import lombok.NonNull;
 				throw new AdempiereException("Quantity to receive was not determined");
 			}
 
-			return createHUsInTrx(qtyCUsTotal.getAsBigDecimal(), qtyCUsTotal.getUOM());
+			return createHUsInTrx(qtyCUsTotal.toBigDecimal(), qtyCUsTotal.getUOM());
 		});
 	}
 
 	@Override
 	public final List<I_M_HU> createReceiptCandidatesAndPlanningHUs(final BigDecimal qtyToReceive, final I_C_UOM uom)
 	{
-		return trxManager.call(() -> createHUsInTrx(qtyToReceive, uom));
+		return trxManager.callInNewTrx(() -> createHUsInTrx(qtyToReceive, uom));
 	}
 
 	private final List<I_M_HU> createHUsInTrx(final BigDecimal qtyToReceive, final I_C_UOM uom)
@@ -218,7 +216,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public void createReceiptCandidatesFromPlanningHU(final I_M_HU planningHU)
+	public final void createReceiptCandidatesFromPlanningHU(final I_M_HU planningHU)
 	{
 		Preconditions.checkNotNull(planningHU);
 		if (!X_M_HU.HUSTATUS_Planning.equals(planningHU.getHUStatus()))
@@ -232,7 +230,7 @@ import lombok.NonNull;
 			//
 			// Delete previously created candidates
 			// Assume there are no processed one, and even if it would be it would fail on DAO level
-			huPPOrderQtyDAO.streamOrderQtys(getPP_Order_ID())
+			huPPOrderQtyDAO.streamOrderQtys(getPpOrderId())
 					.filter(candidate -> candidate.getM_HU_ID() == planningHU.getM_HU_ID())
 					.forEach(huPPOrderQtyDAO::delete);
 
@@ -273,7 +271,7 @@ import lombok.NonNull;
 	{
 		//
 		// Modify the HU Attributes based on the attributes already existing from issuing (task 08177)
-		ppOrderProductAttributeBL.updateHUAttributes(hus, getPP_Order_ID());
+		ppOrderProductAttributeBL.updateHUAttributes(hus, getPpOrderId());
 
 		//
 		// Assign HUs to PP_Order/PP_Order_BOMLine
@@ -296,8 +294,8 @@ import lombok.NonNull;
 		candidate.setM_Locator_ID(request.getLocatorId());
 		candidate.setM_HU_ID(request.getTopLevelHUId());
 		candidate.setM_Product_ID(ProductId.toRepoId(request.getProductId()));
-		candidate.setQty(request.getQty().getAsBigDecimal());
-		candidate.setC_UOM(request.getQty().getUOM());
+		candidate.setQty(request.getQty().toBigDecimal());
+		candidate.setC_UOM_ID(request.getQty().getUOMId());
 		candidate.setMovementDate(TimeUtil.asTimestamp(movementDate));
 		candidate.setProcessed(false);
 		huPPOrderQtyDAO.save(candidate);
@@ -306,14 +304,13 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public List<I_PP_Order_Qty> getCreatedCandidates()
+	public final List<I_PP_Order_Qty> getCreatedCandidates()
 	{
 		return ImmutableList.copyOf(createdCandidates);
 	}
 
 	@Override
-	@OverridingMethodsMustInvokeSuper
-	public IPPOrderReceiptHUProducer setMovementDate(final Date movementDate)
+	public final IPPOrderReceiptHUProducer setMovementDate(final Date movementDate)
 	{
 		Check.assumeNotNull(movementDate, "Parameter movementDate is not null");
 		_movementDate = movementDate;

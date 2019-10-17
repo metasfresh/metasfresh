@@ -3,7 +3,6 @@ package de.metas.report.engine;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.util.Env;
 
@@ -12,12 +11,16 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.adempiere.report.jasper.OutputType;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.process.ProcessType;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -49,7 +52,7 @@ public final class ReportContext
 	}
 
 	private final Properties ctx;
-	private final int AD_Process_ID;
+	private final AdProcessId AD_Process_ID;
 	private final PInstanceId pinstanceId;
 	private final String AD_Language;
 	private OutputType outputType;
@@ -59,13 +62,15 @@ public final class ReportContext
 	private final String reportTemplatePath;
 	private final String sqlStatement;
 	private final boolean applySecuritySettings;
+	private final ProcessType type;
+	private final String JSONPath;
 
-	private ReportContext(final Builder builder)
+	private ReportContext(@NonNull final Builder builder)
 	{
 		ctx = builder.ctx;
 
 		AD_Process_ID = builder.AD_Process_ID;
-		Check.assume(AD_Process_ID > 0, "AD_Process_ID > 0");
+		Check.assume(AD_Process_ID != null, "AD_Process_ID > 0");
 
 		pinstanceId = builder.pinstanceId;
 		AD_Language = builder.AD_Language;
@@ -77,6 +82,8 @@ public final class ReportContext
 		reportTemplatePath = builder.reportTemplatePath;
 		sqlStatement = builder.sqlStatement;
 		applySecuritySettings = builder.applySecuritySettings;
+		JSONPath = builder.JSONPath;
+		type = builder.type;
 	}
 
 	@Override
@@ -94,6 +101,8 @@ public final class ReportContext
 				.add("reportTemplatePath", reportTemplatePath)
 				.add("sqlStatement", sqlStatement)
 				.add("applySecuritySettings", applySecuritySettings)
+				.add("JSONPath", JSONPath)
+				.add("type", type)
 				.toString();
 	}
 
@@ -112,7 +121,7 @@ public final class ReportContext
 		return sqlStatement;
 	}
 
-	public int getAD_Process_ID()
+	public AdProcessId getAD_Process_ID()
 	{
 		return AD_Process_ID;
 	}
@@ -171,10 +180,20 @@ public final class ReportContext
 		return processInfoParameters;
 	}
 
+	public ProcessType getType()
+	{
+		return type;
+	}
+
+	public String getJSONPath()
+	{
+		return JSONPath;
+	}
+
 	public static final class Builder
 	{
 		private Properties ctx;
-		private int AD_Process_ID;
+		private AdProcessId AD_Process_ID;
 		private PInstanceId pinstanceId;
 		private String AD_Language;
 		private OutputType outputType;
@@ -183,6 +202,8 @@ public final class ReportContext
 		private String reportTemplatePath;
 		private String sqlStatement;
 		private boolean applySecuritySettings;
+		private ProcessType type;
+		private String JSONPath;
 
 		private Builder()
 		{
@@ -200,7 +221,7 @@ public final class ReportContext
 			return this;
 		}
 
-		public Builder setAD_Process_ID(final int AD_Process_ID)
+		public Builder setAD_Process_ID(final AdProcessId AD_Process_ID)
 		{
 			this.AD_Process_ID = AD_Process_ID;
 			return this;
@@ -223,6 +244,19 @@ public final class ReportContext
 			this.outputType = outputType;
 			return this;
 		}
+
+		public Builder setType(@NonNull final ProcessType type)
+		{
+			this.type = type;
+			return this;
+		}
+
+		public Builder setJSONPath(final String JSONPath)
+		{
+			this.JSONPath = JSONPath;
+			return this;
+		}
+
 
 		public Builder setRecord(final int AD_Table_ID, final int Record_ID)
 		{
@@ -248,6 +282,8 @@ public final class ReportContext
 			this.applySecuritySettings = applySecuritySettings;
 			return this;
 		}
+
+
 
 		private final List<ProcessInfoParameter> getProcessInfoParameters()
 		{

@@ -40,12 +40,12 @@ import org.compiere.model.Query;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.compiere.util.TrxRunnable;
-import org.compiere.util.Util;
 
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
@@ -64,32 +64,28 @@ public class C_Invoice_Fix_DocumentLocations
 		final ITrxRunConfig trxRunConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.NESTED, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
 		Services.get(ITrxManager.class).run(
 				trxName,
-				trxRunConfig, new TrxRunnable()
-				{
-					@Override
-					public void run(String trxName) throws Exception
+				trxRunConfig,
+				(TrxRunnable)trxName1 -> {
+					List<I_C_Invoice> invoicesToFix = retrieveInvoices(ctx, trxName1);
+
+					int counter = 0;
+					final int commitSize = 100;
+
+					while (!invoicesToFix.isEmpty())
 					{
-						List<I_C_Invoice> invoicesToFix = retrieveInvoices(ctx, trxName);
-
-						int counter = 0;
-						final int commitSize = 100;
-
-						while (!invoicesToFix.isEmpty())
+						for (final I_C_Invoice invoiceToFix : invoicesToFix)
 						{
-							for (final I_C_Invoice invoiceToFix : invoicesToFix)
+							Services.get(IDocumentLocationBL.class).setBPartnerAddress(invoiceToFix);
+							InterfaceWrapperHelper.save(invoiceToFix);
+
+							counter++;
+							if (counter % commitSize == 0)
 							{
-								Services.get(IDocumentLocationBL.class).setBPartnerAddress(invoiceToFix);
-								InterfaceWrapperHelper.save(invoiceToFix);
-
-								counter++;
-								if (counter % commitSize == 0)
-								{
-									Util.assume(Trx.get(trxName, false).commit(), "Commit of Trx '" + trxName + " returns true");
-								}
-
+								Check.assume(Trx.get(trxName1, false).commit(), "Commit of Trx '" + trxName1 + " returns true");
 							}
-							invoicesToFix = retrieveInvoices(ctx, trxName);
+
 						}
+						invoicesToFix = retrieveInvoices(ctx, trxName1);
 					}
 				});
 

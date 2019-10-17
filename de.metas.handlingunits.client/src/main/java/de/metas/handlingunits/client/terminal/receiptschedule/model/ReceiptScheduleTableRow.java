@@ -1,5 +1,7 @@
 package de.metas.handlingunits.client.terminal.receiptschedule.model;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.handlingunits.client
@@ -10,12 +12,12 @@ package de.metas.handlingunits.client.terminal.receiptschedule.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,19 +37,23 @@ import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Util;
 
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 public class ReceiptScheduleTableRow implements IReceiptScheduleTableRow
 {
@@ -110,7 +116,11 @@ public class ReceiptScheduleTableRow implements IReceiptScheduleTableRow
 	@Override
 	public I_C_BPartner getC_BPartner()
 	{
-		return rs.getC_Order().getC_BPartner();
+		final IOrderBL orderBL = Services.get(IOrderBL.class);
+
+		final OrderId orderId = OrderId.ofRepoId(rs.getC_Order_ID());
+		final I_C_Order order = orderBL.getById(orderId);
+		return orderBL.getBPartner(order);
 	}
 
 	public int getC_BPartner_ID()
@@ -135,12 +145,12 @@ public class ReceiptScheduleTableRow implements IReceiptScheduleTableRow
 			productNameAndASI.append("<html>");
 
 			final String productName = getM_Product().getName();
-			productNameAndASI.append(Util.maskHTML(productName));
+			productNameAndASI.append(StringUtils.maskHTML(productName));
 
 			final String asiDescription = getASIDescription();
 			if (!Check.isEmpty(asiDescription, true))
 			{
-				productNameAndASI.append("<br><i>").append(Util.maskHTML(asiDescription)).append("</i>");
+				productNameAndASI.append("<br><i>").append(StringUtils.maskHTML(asiDescription)).append("</i>");
 			}
 
 			productNameAndASI.append("</html>");
@@ -186,7 +196,7 @@ public class ReceiptScheduleTableRow implements IReceiptScheduleTableRow
 	@Override
 	public String getUOMSymbol()
 	{
-		return rs.getC_UOM().getUOMSymbol();
+		return loadOutOfTrx(rs.getC_UOM_ID(), I_C_UOM.class).getUOMSymbol();
 	}
 
 	@Override
@@ -263,12 +273,13 @@ public class ReceiptScheduleTableRow implements IReceiptScheduleTableRow
 	@Override
 	public KeyNamePair getM_Warehouse_Dest()
 	{
-		final I_M_Warehouse warehouseDest = rs.getM_Warehouse_Dest();
-		if (warehouseDest == null)
+
+		if (rs.getM_Warehouse_Dest_ID()<=0)
 		{
 			return null;
 		}
 
+		final I_M_Warehouse warehouseDest = loadOutOfTrx(rs.getM_Warehouse_Dest_ID(),I_M_Warehouse.class);
 		final KeyNamePair warehouseDestKNP = new KeyNamePair(warehouseDest.getM_Warehouse_ID(), warehouseDest.getName());
 		return warehouseDestKNP;
 	}
@@ -278,9 +289,14 @@ public class ReceiptScheduleTableRow implements IReceiptScheduleTableRow
 		return rs.getM_Product_ID();
 	}
 
+	public ProductId getProductId()
+	{
+		return ProductId.ofRepoId(getM_Product_ID());
+	}
+
 	public I_M_Product getM_Product()
 	{
-		return rs.getM_Product();
+		return loadOutOfTrx(rs.getM_Product_ID(), I_M_Product.class);
 	}
 
 	@Override
@@ -294,7 +310,7 @@ public class ReceiptScheduleTableRow implements IReceiptScheduleTableRow
 	{
 		if (warehouseDestKNP == null || warehouseDestKNP.getKey() <= 0)
 		{
-			rs.setM_Warehouse_Dest(null);
+			rs.setM_Warehouse_Dest_ID(0);
 		}
 		else
 		{

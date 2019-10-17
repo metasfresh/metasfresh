@@ -45,7 +45,7 @@ public class PackingService implements IPackingService
 			PackingItemParts parts)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		trxManager.run((TrxRunnable)localTrxName -> {
+		trxManager.runInNewTrx((TrxRunnable)localTrxName -> {
 
 			final IContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, localTrxName);
 			final IMutableHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(contextProvider);

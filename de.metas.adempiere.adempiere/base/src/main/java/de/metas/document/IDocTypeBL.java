@@ -7,24 +7,39 @@ import de.metas.util.ISingletonService;
 public interface IDocTypeBL extends ISingletonService
 {
 	/**
-	 * 	Is this a Quotation (Binding)
-	 *	@return true if Quotation
+	 * @return true if it's a sales quotation (Binding)
 	 */
-	boolean isQuotation(I_C_DocType dt);
+	boolean isSalesQuotation(DocTypeId docTypeId);
 
 	/**
-	 * 	Is this a Proposal (Not binding)
-	 *	@return true if proposal
+	 * @return true if it's a sales quotation (Binding)
 	 */
-	boolean isProposal(I_C_DocType dt);
+	boolean isSalesQuotation(I_C_DocType dt);
 
 	/**
-	 * 	Is this a Proposal or Quotation
-	 *	@return true if proposal or quotation
+	 * @return true if it's a sales proposal (Not binding)
 	 */
-	boolean isOffer(I_C_DocType dt);
+	boolean isSalesProposal(DocTypeId docTypeId);
+
+	/**
+	 * @return true if it's a sales proposal (Not binding)
+	 */
+	boolean isSalesProposal(I_C_DocType dt);
+
+	/**
+	 * @return true if it's a sales proposal or quotation
+	 */
+	boolean isSalesProposalOrQuotation(DocTypeId docTypeId);
+
+	/**
+	 * @return true if it's a sales proposal or quotation
+	 */
+	boolean isSalesProposalOrQuotation(I_C_DocType dt);
 
 	boolean isSOTrx(String docBaseType);
 
+	boolean isPrepay(DocTypeId docTypeId);
+
 	boolean isPrepay(I_C_DocType dt);
+
 }

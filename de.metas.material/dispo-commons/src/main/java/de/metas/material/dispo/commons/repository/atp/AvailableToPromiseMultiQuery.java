@@ -2,13 +2,12 @@ package de.metas.material.dispo.commons.repository.atp;
 
 import java.util.Set;
 
-import org.compiere.util.Util;
-
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.util.Check;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -51,12 +50,11 @@ public class AvailableToPromiseMultiQuery
 				.addToPredefinedBuckets(false)
 				.query(bPartnerQuery);
 
-		if (bPartnerQuery.getBpartnerId() != AvailableToPromiseQuery.BPARTNER_ID_ANY
-				&& bPartnerQuery.getBpartnerId() != AvailableToPromiseQuery.BPARTNER_ID_NONE)
+		if (bPartnerQuery.getBpartner().isSpecificBPartner())
 		{
 			final AvailableToPromiseQuery noPartnerQuery = bPartnerQuery
 					.toBuilder()
-					.bpartnerId(AvailableToPromiseQuery.BPARTNER_ID_NONE)
+					.bpartner(BPartnerClassifier.none())
 					.build();
 			multiQueryBuilder.query(noPartnerQuery);
 		}
@@ -83,7 +81,7 @@ public class AvailableToPromiseMultiQuery
 	{
 		Check.assumeNotEmpty(queries, "queries is not empty");
 		this.queries = queries;
-		this.addToPredefinedBuckets = Util.coalesce(addToPredefinedBuckets, DEFAULT_addToPredefinedBuckets);
+		this.addToPredefinedBuckets = CoalesceUtil.coalesce(addToPredefinedBuckets, DEFAULT_addToPredefinedBuckets);
 	}
 
 	/**

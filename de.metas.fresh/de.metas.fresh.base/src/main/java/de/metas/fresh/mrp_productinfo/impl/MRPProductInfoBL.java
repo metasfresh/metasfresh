@@ -22,7 +22,6 @@ import org.compiere.model.I_AD_InfoWindow;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 
 import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
@@ -30,6 +29,7 @@ import de.metas.fresh.model.I_X_MRP_ProductInfo_V;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoBL;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelector;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelectorFactory;
+import de.metas.product.ProductId;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
@@ -140,7 +140,7 @@ public class MRPProductInfoBL implements IMRPProductInfoBL
 			finally
 			{
 				// note: just make sure we log what we got. Assume that any error/exception logging is done by the framework
-				Loggables.get().addLog(logMsg.toString());
+				Loggables.addLog(logMsg.toString());
 			}
 		}
 	}
@@ -228,11 +228,10 @@ public class MRPProductInfoBL implements IMRPProductInfoBL
 		final IStorageEngineService storageEngineProvider = Services.get(IStorageEngineService.class);
 		final IStorageEngine storageEngine = storageEngineProvider.getStorageEngine();
 
-		final I_M_Product product = InterfaceWrapperHelper.create(ctx, selector.getM_Product_ID(), I_M_Product.class, ITrx.TRXNAME_None);
 		final IStorageQuery storageQuery = storageEngine
 				.newStorageQuery()
 				.setExcludeAfterPickingLocator(false) // for the overall qty on hand, we do want *all* the storages, also those that are already picked.
-				.addProduct(product);
+				.addProductId(ProductId.ofRepoId(selector.getM_Product_ID()));
 
 		if (selector.getM_AttributeSetInstance_ID() > 0)
 		{

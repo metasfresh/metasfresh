@@ -6,9 +6,10 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import de.metas.migration.IScript;
+import de.metas.migration.ScriptType;
 import de.metas.migration.util.FileUtils;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 
 /*
@@ -24,11 +25,11 @@ import lombok.Setter;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -40,64 +41,27 @@ import lombok.Setter;
  */
 public class CreateDBFromTemplateScript implements IScript
 {
-	private String newOwner;
-	private String newDBName;
-	private String templateDBName;
+	private final String newOwner;
+	private final String newDBName;
+	private final String templateDBName;
 
 	@Getter
 	@Setter
 	private long lastDurationMillis = -1;
 
-	private CreateDBFromTemplateScript(@NonNull final Builder builder)
+	@Builder
+	private CreateDBFromTemplateScript(
+			final String newOwner,
+			final String newDBName,
+			final String templateDBName)
 	{
-		this.newOwner = builder.newOwner;
-		this.newDBName = builder.newDBName;
-		this.templateDBName = builder.templateDBName;
-	}
-
-	public static Builder builder()
-	{
-		return new Builder();
-	}
-
-	public static class Builder
-	{
-		private String newOwner;
-		private String newDBName;
-		private String templateDBName;
-
-		public Builder newOwner(String newOwner)
-		{
-			this.newOwner = newOwner;
-			return this;
-		}
-
-		public Builder newDBName(String newDBName)
-		{
-			this.newDBName = newDBName;
-			return this;
-		}
-
-		public Builder templateDBName(String templateDBName)
-		{
-			this.templateDBName = templateDBName;
-			return this;
-		}
-
-		public CreateDBFromTemplateScript build()
-		{
-			return new CreateDBFromTemplateScript(this);
-		}
+		this.newOwner = newOwner;
+		this.newDBName = newDBName;
+		this.templateDBName = templateDBName;
 	}
 
 	@Override
 	public String getProjectName()
-	{
-		return "000";
-	}
-
-	@Override
-	public String getModuleName()
 	{
 		return "000";
 	}
@@ -110,9 +74,9 @@ public class CreateDBFromTemplateScript implements IScript
 	}
 
 	@Override
-	public String getType()
+	public ScriptType getType()
 	{
-		return "sql";
+		return ScriptType.SQL;
 	}
 
 	@Override

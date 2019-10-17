@@ -36,7 +36,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.apps.form.FormFrame;
@@ -64,6 +63,9 @@ import de.metas.adempiere.form.terminal.ITerminalScrollPane;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.client.terminal.ddorder.form.DDOrderHUSelectForm;
@@ -89,7 +91,8 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.i18n.IMsgBL;
-import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.organization.OrgId;
+import de.metas.product.IProductDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -306,17 +309,20 @@ public class HUIssuePanel implements IHUSelectPanel
 		//
 		// BPP data
 		{
-			final I_C_BPartner partner = ppOrder.getC_BPartner();
+			final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(ppOrder.getC_BPartner_ID());
+			final I_C_BPartner bpartner = bpartnerId != null
+					? Services.get(IBPartnerDAO.class).getById(bpartnerId)
+					: null;
 
 			String productNo = null;
 			String productEAN = null; // i.e. CU EAN
-			if (partner != null)
+			if (bpartner != null)
 			{
-				final I_M_Product product = ppOrder.getM_Product();
+				final I_M_Product product = Services.get(IProductDAO.class).getById(ppOrder.getM_Product_ID());
 
 				final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
 
-				final I_C_BPartner_Product bpp = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partner, product, orgId);
+				final I_C_BPartner_Product bpp = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(bpartner, product, orgId);
 				if (bpp != null)
 				{
 					productNo = bpp.getProductNo();
@@ -397,12 +403,12 @@ public class HUIssuePanel implements IHUSelectPanel
 			if (packingMaterialIterator.hasNext())
 			{
 				final I_M_HU_PackingMaterial firstPackingMaterial = packingMaterialIterator.next();
-				final I_M_Product firstPMProduct = firstPackingMaterial.getM_Product();
+				final I_M_Product firstPMProduct = IHUPackingMaterialDAO.extractProductOrNull(firstPackingMaterial);
 				details.append(firstPMProduct.getName());
 				while (packingMaterialIterator.hasNext())
 				{
 					final I_M_HU_PackingMaterial packingMaterial = packingMaterialIterator.next();
-					final I_M_Product product = packingMaterial.getM_Product();
+					final I_M_Product product = IHUPackingMaterialDAO.extractProductOrNull(packingMaterial);
 					details.append(", ").append(product.getName());
 				}
 			}

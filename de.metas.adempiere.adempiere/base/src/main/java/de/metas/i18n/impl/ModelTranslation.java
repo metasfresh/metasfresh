@@ -2,10 +2,11 @@ package de.metas.i18n.impl;
 
 import java.util.Map;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.IModelTranslation;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 /*
  * #%L
@@ -20,16 +21,18 @@ import de.metas.i18n.IModelTranslation;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class ModelTranslation implements IModelTranslation
+@ToString
+@EqualsAndHashCode
+public final class ModelTranslation implements IModelTranslation
 {
 	public static IModelTranslation of(final String adLanguage, final Map<String, String> trlMap)
 	{
@@ -41,7 +44,6 @@ public class ModelTranslation implements IModelTranslation
 
 	public ModelTranslation(final String adLanguage, final Map<String, String> trlMap)
 	{
-		super();
 		this.adLanguage = adLanguage;
 		if (trlMap == null)
 		{
@@ -51,15 +53,6 @@ public class ModelTranslation implements IModelTranslation
 		{
 			this.trlMap = ImmutableMap.copyOf(trlMap);
 		}
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add("AD_Language", adLanguage)
-				.add("trlMap", trlMap)
-				.toString();
 	}
 
 	@Override

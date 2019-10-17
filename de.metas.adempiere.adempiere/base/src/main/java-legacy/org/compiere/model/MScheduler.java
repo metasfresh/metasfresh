@@ -20,14 +20,19 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
 
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.security.IRoleDAO;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import it.sauronsoftware.cron4j.SchedulingPattern;
 
@@ -194,7 +199,7 @@ public class MScheduler extends X_AD_Scheduler
 		if (!reload && m_recipients != null)
 			return m_recipients;
 		//
-		String whereClause = MSchedulerRecipient.COLUMNNAME_AD_Scheduler_ID+"=?";
+		String whereClause = I_AD_SchedulerRecipient.COLUMNNAME_AD_Scheduler_ID+"=?";
 		final List<MSchedulerRecipient> list = new Query(getCtx(), MSchedulerRecipient.Table_Name, whereClause, get_TrxName())
 		.setParameters(new Object[]{getAD_Scheduler_ID()})
 		.setOnlyActiveRecords(true)
@@ -208,9 +213,9 @@ public class MScheduler extends X_AD_Scheduler
 	 * 	Get Recipient AD_User_IDs
 	 *	@return array of user IDs
 	 */
-	public Integer[] getRecipientAD_User_IDs()
+	public Set<UserId> getRecipientAD_User_IDs()
 	{
-		TreeSet<Integer> list = new TreeSet<>();
+		TreeSet<UserId> list = new TreeSet<>();
 		MSchedulerRecipient[] recipients = getRecipients(false);
 		for (int i = 0; i < recipients.length; i++)
 		{
@@ -219,23 +224,25 @@ public class MScheduler extends X_AD_Scheduler
 				continue;
 			if (recipient.getAD_User_ID() > 0)
 			{
-				list.add(recipient.getAD_User_ID());
+				list.add(UserId.ofRepoId(recipient.getAD_User_ID()));
 			}
-			if (recipient.getAD_Role_ID() > 0)
+			
+			final RoleId roleId = RoleId.ofRepoIdOrNull(recipient.getAD_Role_ID());
+			if (roleId != null)
 			{
-				final List<Integer> allRoleUserIds = Services.get(IRoleDAO.class).retrieveUserIdsForRoleId(recipient.getAD_Role_ID());
+				final Set<UserId> allRoleUserIds = Services.get(IRoleDAO.class).retrieveUserIdsForRoleId(roleId);
 				list.addAll(allRoleUserIds);
 			}
 		}
 		//	Add Updater
 		if (list.size() == 0
-				&& getUpdatedBy() > 0 // avoid sending mails/notfications to the "System" user
+				&& getUpdatedBy() > 0 // avoid sending mails/notifications to the "System" user
 				)
 		{
-			list.add(getUpdatedBy());
+			list.add(UserId.ofRepoId(getUpdatedBy()));
 		}
 		//
-		return list.toArray(new Integer[list.size()]);
+		return ImmutableSet.copyOf(list);
 	}	//	getRecipientAD_User_IDs
 
 	/**

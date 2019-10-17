@@ -31,6 +31,7 @@ import org.compiere.model.I_M_MovementLine;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
+import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.util.ISingletonService;
@@ -98,4 +99,11 @@ public interface IDDOrderDAO extends ISingletonService
 
 	IQueryBuilder<I_DD_OrderLine> retrieveForwardDDOrderLinesQuery(I_PP_Order ppOrder);
 
+	void save(I_DD_Order ddOrder);
+
+	void save(I_DD_OrderLine ddOrderline);
+
+	void save(I_DD_OrderLine_Alternative ddOrderLineAlternative);
+
+	void save(I_DD_OrderLine_Or_Alternative ddOrderLineOrAlternative);
 }

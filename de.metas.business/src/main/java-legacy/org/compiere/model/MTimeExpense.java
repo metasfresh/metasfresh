@@ -32,7 +32,6 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;

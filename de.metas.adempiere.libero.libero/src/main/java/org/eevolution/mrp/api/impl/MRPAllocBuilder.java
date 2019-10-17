@@ -37,6 +37,7 @@ import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alloc;
 import org.eevolution.mrp.api.IMRPAllocBuilder;
 import org.eevolution.mrp.api.IMRPBL;
+import org.eevolution.mrp.api.IMRPDAO;
 
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -46,6 +47,7 @@ import de.metas.util.Services;
 	// services
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IMRPBL mrpBL = Services.get(IMRPBL.class);
+	private final transient IMRPDAO mrpDAO = Services.get(IMRPDAO.class);
 	
 
 	private I_PP_MRP mrpSupply;
@@ -110,7 +112,7 @@ import de.metas.util.Services;
 			alloc.setPP_MRP_Demand(mrpDemand);
 			alloc.setPP_MRP_Supply(mrpSupply);
 			alloc.setQtyAllocated(qtyAllocated);
-			InterfaceWrapperHelper.save(alloc);
+			mrpDAO.save(alloc);
 		}
 	}
 }

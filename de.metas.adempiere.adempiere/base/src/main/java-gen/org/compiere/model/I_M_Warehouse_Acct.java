@@ -18,6 +18,7 @@ package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+
 import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for M_Warehouse_Acct
@@ -75,7 +76,7 @@ public interface I_M_Warehouse_Acct
 	  */
 	public int getC_AcctSchema_ID();
 
-	public I_C_AcctSchema getC_AcctSchema() throws RuntimeException;
+//	public I_C_AcctSchema getC_AcctSchema() throws RuntimeException;
 
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";

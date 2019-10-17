@@ -35,11 +35,14 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 
@@ -167,11 +170,8 @@ public abstract class ShipmentScheduleHandler
 	/**
 	 * Create a new deliver request for the given <code>sched</code>.<br>
 	 * This method shall be called by {@link IShipmentScheduleHandlerBL#createDeliverRequest(I_M_ShipmentSchedule)}, not directly by a user.
-	 *
-	 * @param sched
-	 * @return
 	 */
-	public abstract IDeliverRequest createDeliverRequest(I_M_ShipmentSchedule sched);
+	public abstract IDeliverRequest createDeliverRequest(I_M_ShipmentSchedule sched, final I_C_OrderLine salesOrderLine);
 
 	/**
 	 * Invoked by the framework while an instance is initialized.
@@ -224,9 +224,20 @@ public abstract class ShipmentScheduleHandler
 			return false;
 		}
 
-		final boolean referencedRecordAsiHasValue = attributeInstance.getM_AttributeValue_ID() > 0
-						&& !attributeInstance.getM_AttributeValue().isNullFieldValue();
-		return referencedRecordAsiHasValue;
+		return hasNonNullAttributeListValue(attributeInstance);
+	}
+	
+	private boolean hasNonNullAttributeListValue(final I_M_AttributeInstance attributeInstance)
+	{
+		final AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(attributeInstance.getM_AttributeValue_ID());
+		if(attributeValueId == null)
+		{
+			return false;
+		}
+
+		final AttributeId attributeId = AttributeId.ofRepoId(attributeInstance.getM_Attribute_ID());
+		final AttributeListValue attributeValue = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(attributeId, attributeValueId);
+		return attributeValue != null && !attributeValue.isNullFieldValue();
 	}
 
 	@VisibleForTesting

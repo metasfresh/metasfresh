@@ -5,25 +5,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.acct.api.GLDistributionBuilder;
-import org.adempiere.acct.api.GLDistributionResult;
-import org.adempiere.acct.api.GLDistributionResultLine;
-import org.adempiere.acct.api.GLDistributionResultLine.Sign;
-import org.adempiere.acct.api.IAccountDimension;
 import org.adempiere.acct.api.IFactAcctBL;
-import org.adempiere.acct.api.IGLDistributionDAO;
-import org.adempiere.acct.api.impl.AccountDimension;
-import org.adempiere.acct.api.impl.AcctSegmentType;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.MAccount;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.acct.api.AccountDimension;
+import de.metas.acct.api.impl.AcctSegmentType;
+import de.metas.acct.gldistribution.GLDistributionBuilder;
+import de.metas.acct.gldistribution.GLDistributionResult;
+import de.metas.acct.gldistribution.GLDistributionResultLine;
+import de.metas.acct.gldistribution.IGLDistributionDAO;
+import de.metas.acct.gldistribution.GLDistributionResultLine.Sign;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -89,7 +88,7 @@ import lombok.NonNull;
 		// For all fact lines
 		for (final FactLine line : lines)
 		{
-			final IAccountDimension lineDimension = factAcctBL.createAccountDimension(line);
+			final AccountDimension lineDimension = factAcctBL.createAccountDimension(line);
 			final I_GL_Distribution distribution = findGL_Distribution(line, lineDimension);
 			if (distribution == null)
 			{
@@ -106,7 +105,7 @@ import lombok.NonNull;
 					.setAccountDimension(lineDimension)
 					.setAmountSign(amountToDistribute.getLeft())
 					.setAmountToDistribute(amountToDistribute.getRight())
-					.setC_Currency_ID(line.getC_Currency_ID())
+					.setCurrencyId(line.getCurrencyId())
 					.setQtyToDistribute(line.getQty())
 					.distribute();
 			final List<FactLine> lines_Distributed = createFactLines(line, distributionResult);
@@ -160,11 +159,11 @@ import lombok.NonNull;
 	 * @param baseLine
 	 * @return {@link I_GL_Distribution} or null
 	 */
-	private I_GL_Distribution findGL_Distribution(final FactLine baseLine, final IAccountDimension baseLineDimension)
+	private I_GL_Distribution findGL_Distribution(final FactLine baseLine, final AccountDimension baseLineDimension)
 	{
 		final Properties ctx = baseLine.getCtx();
 		final String postingType = baseLine.getPostingType();
-		final Doc doc = baseLine.getDoc();
+		final Doc<?> doc = baseLine.getDoc();
 		final int docTypeId = doc.getC_DocType_ID();
 
 		final List<I_GL_Distribution> distributions = glDistributionDAO.retrieve(ctx, baseLineDimension, postingType, docTypeId);
@@ -215,14 +214,13 @@ import lombok.NonNull;
 			return null;
 		}
 
-		final Doc doc = baseLine.getDoc();
-		final DocLine docLine = baseLine.getDocLine();
-		final Properties ctx = doc.getCtx();
+		final Doc<?> doc = baseLine.getDoc();
+		final DocLine<?> docLine = baseLine.getDocLine();
 
-		final IAccountDimension accountDimension = glDistributionLine.getAccountDimension();
-		final MAccount account = MAccount.get(ctx, accountDimension);
+		final AccountDimension accountDimension = glDistributionLine.getAccountDimension();
+		final MAccount account = MAccount.get(Env.getCtx(), accountDimension);
 
-		final FactLine factLine = new FactLine(ctx, baseLine.getAD_Table_ID(), baseLine.getRecord_ID(), baseLine.getLine_ID(), ITrx.TRXNAME_ThreadInherited);
+		final FactLine factLine = new FactLine(baseLine.getAD_Table_ID(), baseLine.getRecord_ID(), baseLine.getLine_ID());
 
 		//
 		// Set Info & Account
@@ -262,21 +260,21 @@ import lombok.NonNull;
 		switch (glDistributionLine.getAmountSign())
 		{
 			case CREDIT:
-				factLine.setAmtSource(glDistributionLine.getC_Currency_ID(), null, amount);
+				factLine.setAmtSource(glDistributionLine.getCurrencyId(), null, amount);
 				break;
 
 			case DEBIT:
-				factLine.setAmtSource(glDistributionLine.getC_Currency_ID(), amount, null);
+				factLine.setAmtSource(glDistributionLine.getCurrencyId(), amount, null);
 				break;
 
 			case DETECT:
 				if (amount.signum() < 0)
 				{
-					factLine.setAmtSource(glDistributionLine.getC_Currency_ID(), null, amount.negate());
+					factLine.setAmtSource(glDistributionLine.getCurrencyId(), null, amount.negate());
 				}
 				else
 				{
-					factLine.setAmtSource(glDistributionLine.getC_Currency_ID(), amount, null);
+					factLine.setAmtSource(glDistributionLine.getCurrencyId(), amount, null);
 				}
 				break;
 		}

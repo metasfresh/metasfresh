@@ -68,7 +68,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 			</textField>
@@ -78,7 +78,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 			</textField>
@@ -88,7 +88,7 @@
 					<printWhenExpression><![CDATA[new Boolean($F{isdiscountprinted}.equals("Y"))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Discount}]]></textFieldExpression>
 			</textField>
@@ -97,7 +97,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{showAttributes} !=0 ? $R{Attributes} : ""]]></textFieldExpression>
 			</textField>
@@ -107,7 +107,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
@@ -117,7 +117,7 @@
 					<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{HUQuantity}]]></textFieldExpression>
 			</textField>
@@ -127,7 +127,7 @@
 					<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
 			</textField>
@@ -136,14 +136,14 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Price}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="392" y="0" width="39" height="12" forecolor="#000000" uuid="7848d061-514d-4fa8-8169-d58ea739c387"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
@@ -153,7 +153,7 @@
 					<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Tax}]]></textFieldExpression>
 			</textField>
@@ -163,7 +163,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Position}]]></textFieldExpression>
 			</textField>
@@ -545,7 +545,7 @@
 					<printWhenExpression><![CDATA[new Boolean($V{LINESUM_SUM}.intValue() > 0 )]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="none">
-					<font size="9" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true" isItalic="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{TotalAmount}]]></textFieldExpression>
 			</textField>
@@ -560,7 +560,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="9" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true" isItalic="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{LINESUM_SUM}]]></textFieldExpression>
 			</textField>

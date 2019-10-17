@@ -3,33 +3,59 @@ package de.metas.handlingunits;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
 
 import com.google.common.base.Predicates;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.util.ISingletonService;
+import de.metas.util.Services;
 import lombok.Builder.Default;
 import lombok.NonNull;
 
 public interface IHandlingUnitsBL extends ISingletonService
 {
+	I_M_HU getById(HuId huId);
+
+	List<I_M_HU> getByIds(Collection<HuId> huIds);
+
+	List<I_M_HU> getVHUs(HuId huId);
+
+	Set<HuId> getVHUIds(HuId huId);
+
+	Set<HuId> getVHUIds(Set<HuId> huIds);
+
+	List<I_M_HU> getVHUs(I_M_HU hu);
+
 	/**
 	 * @return default storage factory
 	 */
@@ -393,4 +419,95 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	I_M_HU_PackingMaterial getHUPackingMaterial(I_M_HU_Item huItem);
 
+	static I_C_BPartner extractBPartnerOrNull(final I_M_HU hu)
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID());
+		return bpartnerId != null
+				? Services.get(IBPartnerDAO.class).getById(bpartnerId)
+				: null;
+	}
+
+	static I_C_BPartner_Location extractBPartnerLocationOrNull(final I_M_HU hu)
+	{
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(hu.getC_BPartner_ID(), hu.getC_BPartner_Location_ID());
+		return bpartnerLocationId != null
+				? Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpartnerLocationId)
+				: null;
+	}
+
+	static LocatorId extractLocatorId(final I_M_HU hu)
+	{
+		final int locatorRepoId = hu.getM_Locator_ID();
+		if (locatorRepoId <= 0)
+		{
+			throw new HUException("Warehouse Locator shall be set for: " + hu);
+		}
+		return Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(locatorRepoId);
+	}
+
+	static I_M_Locator extractLocator(final I_M_HU hu)
+	{
+		I_M_Locator locator = extractLocatorOrNull(hu);
+		if (locator == null)
+		{
+			throw new HUException("Warehouse Locator shall be set for: " + hu);
+		}
+		return locator;
+	}
+
+	static I_M_Locator extractLocatorOrNull(final I_M_HU hu)
+	{
+		final int locatorRepoId = hu.getM_Locator_ID();
+		return locatorRepoId > 0
+				? InterfaceWrapperHelper.create(Services.get(IWarehouseDAO.class).getLocatorByRepoId(locatorRepoId), I_M_Locator.class)
+				: null;
+	}
+
+	static WarehouseId extractWarehouseId(final I_M_HU hu)
+	{
+		final WarehouseId warehouseId = extractWarehouseIdOrNull(hu);
+		if (warehouseId == null)
+		{
+			throw new HUException("Warehouse Locator shall be set for: " + hu);
+		}
+
+		return warehouseId;
+	}
+
+	static I_M_Warehouse extractWarehouse(final I_M_HU hu)
+	{
+		final I_M_Warehouse warehouse = extractWarehouseOrNull(hu);
+		if (warehouse == null)
+		{
+			throw new HUException("Warehouse Locator shall be set for: " + hu);
+		}
+		return warehouse;
+	}
+
+	static WarehouseId extractWarehouseIdOrNull(final I_M_HU hu)
+	{
+		final int locatorRepoId = hu.getM_Locator_ID();
+		if (locatorRepoId <= 0)
+		{
+			return null;
+		}
+
+		return Services.get(IWarehouseDAO.class).getWarehouseIdByLocatorRepoId(locatorRepoId);
+	}
+
+	static I_M_Warehouse extractWarehouseOrNull(final I_M_HU hu)
+	{
+		final WarehouseId warehouseId = extractWarehouseIdOrNull(hu);
+		return warehouseId != null
+				? InterfaceWrapperHelper.create(Services.get(IWarehouseDAO.class).getById(warehouseId), I_M_Warehouse.class)
+				: null;
+	}
+
+	static I_M_HU_PI_Item_Product extractPIItemProductOrNull(final I_M_HU hu)
+	{
+		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(hu.getM_HU_PI_Item_Product_ID());
+		return piItemProductId != null
+				? Services.get(IHUPIItemProductDAO.class).getById(piItemProductId)
+				: null;
+	}
 }

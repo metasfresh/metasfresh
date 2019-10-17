@@ -31,7 +31,7 @@ import java.sql.SQLException;
 import javax.swing.JComponent;
 import javax.swing.LookAndFeel;
 
-import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
@@ -60,6 +60,8 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 
 /**
@@ -128,9 +130,13 @@ public class VLocator extends JComponent
 
 		// ReadWrite
 		if (isReadOnly || !isUpdateable)
+		{
 			setReadWrite(false);
+		}
 		else
+		{
 			setReadWrite(true);
+		}
 		setMandatory(mandatory);
 
 		setDefault_Locator_ID(); // set default locator, teo_sarca [ 1661546 ]
@@ -221,7 +227,9 @@ public class VLocator extends JComponent
 	public void setBackground(Color color)
 	{
 		if (!color.equals(m_text.getBackground()))
+		{
 			m_text.setBackground(color);
+		}
 	}	// setBackground
 
 	/**
@@ -233,13 +241,21 @@ public class VLocator extends JComponent
 	public void setBackground(boolean error)
 	{
 		if (error)
+		{
 			setBackground(AdempierePLAF.getFieldBackground_Error());
+		}
 		else if (!isReadWrite())
+		{
 			setBackground(AdempierePLAF.getFieldBackground_Inactive());
+		}
 		else if (isMandatory())
+		{
 			setBackground(AdempierePLAF.getFieldBackground_Mandatory());
+		}
 		else
+		{
 			setBackground(AdempierePLAF.getFieldBackground_Normal());
+		}
 	}   // setBackground
 
 	/**
@@ -291,7 +307,9 @@ public class VLocator extends JComponent
 			m_mLocator.setOnly_Warehouse_ID(WarehouseId.toRepoId(getOnly_Warehouse_ID()));
 			m_mLocator.setOnly_Product_ID(getOnly_Product_ID());
 			if (!m_mLocator.isValid(value))
+			{
 				value = null;
+			}
 		}
 		//
 		m_value = value;
@@ -316,12 +334,16 @@ public class VLocator extends JComponent
 	public void propertyChange(PropertyChangeEvent evt)
 	{
 		if (evt.getPropertyName().equals(org.compiere.model.GridField.PROPERTY))
+		{
 			setValue(evt.getNewValue());
+		}
 
 		// metas: request focus (2009_0027_G131)
 		if (evt.getPropertyName().equals(org.compiere.model.GridField.REQUEST_FOCUS))
+		 {
 			requestFocus();
 		// metas end
+		}
 
 	}   // propertyChange
 
@@ -334,7 +356,9 @@ public class VLocator extends JComponent
 	public Object getValue()
 	{
 		if (getM_Locator_ID() == 0)
+		{
 			return null;
+		}
 		return m_value;
 	}	// getValue
 
@@ -347,7 +371,9 @@ public class VLocator extends JComponent
 	{
 		if (m_value != null
 				&& m_value instanceof Integer)
+		{
 			return ((Integer)m_value).intValue();
+		}
 		return 0;
 	}	// getM_Locator_ID
 
@@ -386,12 +412,16 @@ public class VLocator extends JComponent
 		// Text Entry ok
 		if (e.getSource() == m_text
 				&& actionText(only_Warehouse_ID, only_Product_ID))
+		{
 			return;
+		}
 
 		// Button - Start Dialog
 		int M_Locator_ID = 0;
 		if (m_value instanceof Integer)
+		{
 			M_Locator_ID = ((Integer)m_value).intValue();
+		}
 		//
 		m_mLocator.setOnly_Warehouse_ID(WarehouseId.toRepoId(only_Warehouse_ID));
 		m_mLocator.setOnly_Product_ID(getOnly_Product_ID());
@@ -405,7 +435,9 @@ public class VLocator extends JComponent
 
 		// redisplay
 		if (!ld.isChanged())
+		{
 			return;
+		}
 		setValue(ld.getValue(), true);
 	}	// actionPerformed
 
@@ -424,7 +456,9 @@ public class VLocator extends JComponent
 		if (text == null || text.length() == 0)
 		{
 			if (isMandatory())
+			{
 				return false;
+			}
 			else
 			{
 				setValue(null, true);
@@ -432,9 +466,13 @@ public class VLocator extends JComponent
 			}
 		}
 		if (text.endsWith("%"))
+		{
 			text = text.toUpperCase();
+		}
 		else
+		{
 			text = text.toUpperCase() + "%";
+		}
 
 		// Look up - see MLocatorLookup.run
 		StringBuffer sql = new StringBuffer("SELECT M_Locator_ID FROM M_Locator ")
@@ -454,7 +492,7 @@ public class VLocator extends JComponent
 					.append("WHERE s.M_Locator_ID=M_Locator.M_Locator_ID AND s.M_Product_ID=?))");
 		}
 
-		String finalSql = Env.getUserRolePermissions().addAccessSQL(sql.toString(), "M_Locator", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
+		String finalSql = Env.getUserRolePermissions().addAccessSQL(sql.toString(), "M_Locator", IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);
 		//
 		int M_Locator_ID = 0;
 		PreparedStatement pstmt = null;
@@ -464,7 +502,9 @@ public class VLocator extends JComponent
 			pstmt = DB.prepareStatement(finalSql, ITrx.TRXNAME_None);
 			int index = 1;
 			if (only_Warehouse_ID != null)
+			{
 				pstmt.setInt(index++, only_Warehouse_ID.getRepoId());
+			}
 			if (only_Product_ID != 0)
 			{
 				pstmt.setInt(index++, only_Product_ID);
@@ -475,7 +515,9 @@ public class VLocator extends JComponent
 			{
 				M_Locator_ID = rs.getInt(1);
 				if (rs.next())
+				 {
 					M_Locator_ID = 0;	// more than one
+				}
 			}
 		}
 		catch (SQLException ex)
@@ -488,7 +530,9 @@ public class VLocator extends JComponent
 		}
 
 		if (M_Locator_ID <= 0)
+		{
 			return false;
+		}
 
 		setValue(M_Locator_ID, true);
 		return true;
@@ -517,9 +561,11 @@ public class VLocator extends JComponent
 	@Override
 	public void actionZoom()
 	{
-		int AD_Window_ID = MTable.get(Env.getCtx(), MLocator.Table_Name).getAD_Window_ID();
-		if (AD_Window_ID <= 0)
-			AD_Window_ID = 139;	// hardcoded window Warehouse & Locators
+		AdWindowId adWindowId = AdWindowId.ofRepoId(MTable.get(Env.getCtx(), MLocator.Table_Name).getAD_Window_ID());
+		if (adWindowId == null)
+		 {
+			adWindowId = AdWindowId.ofRepoId(139);	// hardcoded window Warehouse & Locators
+		}
 		log.info("");
 		//
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -529,8 +575,10 @@ public class VLocator extends JComponent
 		zoomQuery.addRestriction(MLocator.COLUMNNAME_M_Locator_ID, Operator.EQUAL, getValue());
 		zoomQuery.setRecordCount(1);	// guess
 
-		if (!frame.initWindow(AD_Window_ID, zoomQuery))
+		if (!frame.initWindow(adWindowId, zoomQuery))
+		{
 			return;
+		}
 		AEnv.addToWindowManager(frame);
 		AEnv.showCenterScreen(frame);
 		frame = null;
@@ -589,14 +637,18 @@ public class VLocator extends JComponent
 	private int getOnly_Product_ID()
 	{
 		if (!Env.isSOTrx(Env.getCtx(), m_WindowNo))
+		 {
 			return 0;	// No product restrictions for PO
+		}
 		//
 		String only_Product = Env.getContext(Env.getCtx(), m_WindowNo, "M_Product_ID", true);
 		int only_Product_ID = 0;
 		try
 		{
 			if (only_Product != null && only_Product.length() > 0)
+			{
 				only_Product_ID = Integer.parseInt(only_Product);
+			}
 		}
 		catch (Exception ex)
 		{

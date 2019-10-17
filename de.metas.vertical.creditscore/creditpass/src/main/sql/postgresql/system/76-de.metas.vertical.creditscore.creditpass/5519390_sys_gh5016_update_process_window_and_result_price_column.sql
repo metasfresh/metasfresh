@@ -1,0 +1,9 @@
+-- 2019-04-15T13:28:39.011
+-- URL zum Konzept
+UPDATE AD_Table_Process SET AD_Window_ID=143,Updated=TO_TIMESTAMP('2019-04-15 13:28:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_Process_ID=540693
+;
+
+-- 2019-04-15T14:11:45.577
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=37,Updated=TO_TIMESTAMP('2019-04-15 14:11:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=567303
+;

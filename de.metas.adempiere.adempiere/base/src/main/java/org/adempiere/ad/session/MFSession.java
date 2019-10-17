@@ -1,6 +1,7 @@
 package org.adempiere.ad.session;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,12 +9,14 @@ import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_AD_Session;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -22,8 +25,12 @@ import com.google.common.collect.ImmutableList;
 import de.metas.hostkey.api.IHostKeyBL;
 import de.metas.hostkey.spi.impl.SessionRemoteHostStorage;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -143,14 +150,19 @@ public class MFSession
 		InterfaceWrapperHelper.save(sessionPO);
 	}
 
-	public void setLoginInfo(final int AD_Client_ID, final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID, final Timestamp loginDate)
+	public void setLoginInfo(
+			@NonNull final ClientId AD_Client_ID, 
+			@NonNull final OrgId AD_Org_ID, 
+			@NonNull final RoleId AD_Role_ID, 
+			@NonNull final UserId AD_User_ID, 
+			@NonNull final LocalDate loginDate)
 	{
 		final PO po = LegacyAdapters.convertToPO(sessionPO);
-		po.set_ValueNoCheck(I_AD_Session.COLUMNNAME_AD_Client_ID, AD_Client_ID); // Force AD_Client_ID update
-		sessionPO.setAD_Org_ID(AD_Org_ID);
-		sessionPO.setAD_Role_ID(AD_Role_ID);
-		po.set_ValueNoCheck(I_AD_Session.COLUMNNAME_CreatedBy, AD_User_ID); // FIXME: introduce AD_User_ID
-		sessionPO.setLoginDate(loginDate);
+		po.set_ValueNoCheck(I_AD_Session.COLUMNNAME_AD_Client_ID, AD_Client_ID.getRepoId()); // Force AD_Client_ID update
+		sessionPO.setAD_Org_ID(AD_Org_ID.getRepoId());
+		sessionPO.setAD_Role_ID(AD_Role_ID.getRepoId());
+		po.set_ValueNoCheck(I_AD_Session.COLUMNNAME_CreatedBy, AD_User_ID.getRepoId()); // FIXME: introduce AD_User_ID
+		sessionPO.setLoginDate(TimeUtil.asTimestamp(loginDate));
 		InterfaceWrapperHelper.save(sessionPO);
 	}
 

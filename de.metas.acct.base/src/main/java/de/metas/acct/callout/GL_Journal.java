@@ -2,15 +2,23 @@ package de.metas.acct.callout;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.compiere.model.I_C_AcctSchema;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_GL_Journal;
+import org.compiere.util.TimeUtil;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -66,29 +74,44 @@ public class GL_Journal
 		glJournal.setDateAcct(dateDoc);
 	}
 
-	@CalloutMethod(columnNames = { I_GL_Journal.COLUMNNAME_DateAcct, I_GL_Journal.COLUMNNAME_C_Currency_ID, I_GL_Journal.COLUMNNAME_C_ConversionType_ID })
+	@CalloutMethod(columnNames = {
+			I_GL_Journal.COLUMNNAME_DateAcct,
+			I_GL_Journal.COLUMNNAME_C_Currency_ID,
+			I_GL_Journal.COLUMNNAME_C_ConversionType_ID })
 	public void updateCurrencyRate(final I_GL_Journal glJournal)
 	{
 		//
 		// Extract data from source Journal
-		final int currencyId = glJournal.getC_Currency_ID();
-		final int conversionTypeId = glJournal.getC_ConversionType_ID();
-		Timestamp dateAcct = glJournal.getDateAcct();
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(glJournal.getC_Currency_ID());
+		if (currencyId == null)
+		{
+			// not set yet
+			return;
+		}
+
+		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(glJournal.getC_ConversionType_ID());
+		LocalDate dateAcct = TimeUtil.asLocalDate(glJournal.getDateAcct());
 		if (dateAcct == null)
 		{
-			dateAcct = SystemTime.asDayTimestamp();
+			dateAcct = SystemTime.asLocalDate();
 		}
-		final int adClientId = glJournal.getAD_Client_ID();
-		final int adOrgId = glJournal.getAD_Org_ID();
-		final I_C_AcctSchema acctSchema = glJournal.getC_AcctSchema();
+		final ClientId adClientId = ClientId.ofRepoId(glJournal.getAD_Client_ID());
+		final OrgId adOrgId = OrgId.ofRepoId(glJournal.getAD_Org_ID());
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(glJournal.getC_AcctSchema_ID());
+		final AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
 
 		//
 		// Calculate currency rate
 		BigDecimal currencyRate;
 		if (acctSchema != null)
 		{
-			currencyRate = Services.get(ICurrencyBL.class).getRate(currencyId, acctSchema.getC_Currency_ID(),
-					dateAcct, conversionTypeId, adClientId, adOrgId);
+			currencyRate = Services.get(ICurrencyBL.class).getRate(
+					currencyId,
+					acctSchema.getCurrencyId(),
+					dateAcct,
+					conversionTypeId,
+					adClientId,
+					adOrgId);
 		}
 		else
 		{

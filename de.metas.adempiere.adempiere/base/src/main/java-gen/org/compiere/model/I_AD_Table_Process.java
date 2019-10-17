@@ -98,6 +98,35 @@ public interface I_AD_Table_Process
     public static final String COLUMNNAME_AD_Process_ID = "AD_Process_ID";
 
 	/**
+	 * Set Register.
+	 * Register auf einem Fenster
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Tab_ID (int AD_Tab_ID);
+
+	/**
+	 * Get Register.
+	 * Register auf einem Fenster
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Tab_ID();
+
+	public org.compiere.model.I_AD_Tab getAD_Tab();
+
+	public void setAD_Tab(org.compiere.model.I_AD_Tab AD_Tab);
+
+    /** Column definition for AD_Tab_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Table_Process, org.compiere.model.I_AD_Tab> COLUMN_AD_Tab_ID = new org.adempiere.model.ModelColumn<I_AD_Table_Process, org.compiere.model.I_AD_Tab>(I_AD_Table_Process.class, "AD_Tab_ID", org.compiere.model.I_AD_Tab.class);
+    /** Column name AD_Tab_ID */
+    public static final String COLUMNNAME_AD_Tab_ID = "AD_Tab_ID";
+
+	/**
 	 * Set DB-Tabelle.
 	 * Database Table information
 	 *
@@ -125,6 +154,29 @@ public interface I_AD_Table_Process
     public static final org.adempiere.model.ModelColumn<I_AD_Table_Process, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_AD_Table_Process, org.compiere.model.I_AD_Table>(I_AD_Table_Process.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
     /** Column name AD_Table_ID */
     public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
+
+	/**
+	 * Set Table Process.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Table_Process_ID (int AD_Table_Process_ID);
+
+	/**
+	 * Get Table Process.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Table_Process_ID();
+
+    /** Column definition for AD_Table_Process_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Table_Process, Object> COLUMN_AD_Table_Process_ID = new org.adempiere.model.ModelColumn<I_AD_Table_Process, Object>(I_AD_Table_Process.class, "AD_Table_Process_ID", null);
+    /** Column name AD_Table_Process_ID */
+    public static final String COLUMNNAME_AD_Table_Process_ID = "AD_Table_Process_ID";
 
 	/**
 	 * Set Fenster.
@@ -268,13 +320,105 @@ public interface I_AD_Table_Process
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
+	 * Set Is Single Document Action.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setWEBUI_DocumentAction (boolean WEBUI_DocumentAction);
+
+	/**
+	 * Get Is Single Document Action.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isWEBUI_DocumentAction();
+
+    /** Column definition for WEBUI_DocumentAction */
+    public static final org.adempiere.model.ModelColumn<I_AD_Table_Process, Object> COLUMN_WEBUI_DocumentAction = new org.adempiere.model.ModelColumn<I_AD_Table_Process, Object>(I_AD_Table_Process.class, "WEBUI_DocumentAction", null);
+    /** Column name WEBUI_DocumentAction */
+    public static final String COLUMNNAME_WEBUI_DocumentAction = "WEBUI_DocumentAction";
+
+	/**
+	 * Set Is Included Tab Top Action.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setWEBUI_IncludedTabTopAction (boolean WEBUI_IncludedTabTopAction);
+
+	/**
+	 * Get Is Included Tab Top Action.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isWEBUI_IncludedTabTopAction();
+
+    /** Column definition for WEBUI_IncludedTabTopAction */
+    public static final org.adempiere.model.ModelColumn<I_AD_Table_Process, Object> COLUMN_WEBUI_IncludedTabTopAction = new org.adempiere.model.ModelColumn<I_AD_Table_Process, Object>(I_AD_Table_Process.class, "WEBUI_IncludedTabTopAction", null);
+    /** Column name WEBUI_IncludedTabTopAction */
+    public static final String COLUMNNAME_WEBUI_IncludedTabTopAction = "WEBUI_IncludedTabTopAction";
+
+	/**
+	 * Set Shortcut.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setWEBUI_Shortcut (java.lang.String WEBUI_Shortcut);
+
+	/**
+	 * Get Shortcut.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getWEBUI_Shortcut();
+
+    /** Column definition for WEBUI_Shortcut */
+    public static final org.adempiere.model.ModelColumn<I_AD_Table_Process, Object> COLUMN_WEBUI_Shortcut = new org.adempiere.model.ModelColumn<I_AD_Table_Process, Object>(I_AD_Table_Process.class, "WEBUI_Shortcut", null);
+    /** Column name WEBUI_Shortcut */
+    public static final String COLUMNNAME_WEBUI_Shortcut = "WEBUI_Shortcut";
+
+	/**
+	 * Set Is View Action.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setWEBUI_ViewAction (boolean WEBUI_ViewAction);
+
+	/**
+	 * Get Is View Action.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isWEBUI_ViewAction();
+
+    /** Column definition for WEBUI_ViewAction */
+    public static final org.adempiere.model.ModelColumn<I_AD_Table_Process, Object> COLUMN_WEBUI_ViewAction = new org.adempiere.model.ModelColumn<I_AD_Table_Process, Object>(I_AD_Table_Process.class, "WEBUI_ViewAction", null);
+    /** Column name WEBUI_ViewAction */
+    public static final String COLUMNNAME_WEBUI_ViewAction = "WEBUI_ViewAction";
+
+	/**
 	 * Set Quick action.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setWEBUI_QuickAction (boolean WEBUI_QuickAction);
+	public void setWEBUI_ViewQuickAction (boolean WEBUI_ViewQuickAction);
 
 	/**
 	 * Get Quick action.
@@ -283,12 +427,12 @@ public interface I_AD_Table_Process
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isWEBUI_QuickAction();
+	public boolean isWEBUI_ViewQuickAction();
 
-    /** Column definition for WEBUI_QuickAction */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table_Process, Object> COLUMN_WEBUI_QuickAction = new org.adempiere.model.ModelColumn<I_AD_Table_Process, Object>(I_AD_Table_Process.class, "WEBUI_QuickAction", null);
-    /** Column name WEBUI_QuickAction */
-    public static final String COLUMNNAME_WEBUI_QuickAction = "WEBUI_QuickAction";
+    /** Column definition for WEBUI_ViewQuickAction */
+    public static final org.adempiere.model.ModelColumn<I_AD_Table_Process, Object> COLUMN_WEBUI_ViewQuickAction = new org.adempiere.model.ModelColumn<I_AD_Table_Process, Object>(I_AD_Table_Process.class, "WEBUI_ViewQuickAction", null);
+    /** Column name WEBUI_ViewQuickAction */
+    public static final String COLUMNNAME_WEBUI_ViewQuickAction = "WEBUI_ViewQuickAction";
 
 	/**
 	 * Set Default quick action.
@@ -297,7 +441,7 @@ public interface I_AD_Table_Process
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setWEBUI_QuickAction_Default (boolean WEBUI_QuickAction_Default);
+	public void setWEBUI_ViewQuickAction_Default (boolean WEBUI_ViewQuickAction_Default);
 
 	/**
 	 * Get Default quick action.
@@ -306,10 +450,10 @@ public interface I_AD_Table_Process
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isWEBUI_QuickAction_Default();
+	public boolean isWEBUI_ViewQuickAction_Default();
 
-    /** Column definition for WEBUI_QuickAction_Default */
-    public static final org.adempiere.model.ModelColumn<I_AD_Table_Process, Object> COLUMN_WEBUI_QuickAction_Default = new org.adempiere.model.ModelColumn<I_AD_Table_Process, Object>(I_AD_Table_Process.class, "WEBUI_QuickAction_Default", null);
-    /** Column name WEBUI_QuickAction_Default */
-    public static final String COLUMNNAME_WEBUI_QuickAction_Default = "WEBUI_QuickAction_Default";
+    /** Column definition for WEBUI_ViewQuickAction_Default */
+    public static final org.adempiere.model.ModelColumn<I_AD_Table_Process, Object> COLUMN_WEBUI_ViewQuickAction_Default = new org.adempiere.model.ModelColumn<I_AD_Table_Process, Object>(I_AD_Table_Process.class, "WEBUI_ViewQuickAction_Default", null);
+    /** Column name WEBUI_ViewQuickAction_Default */
+    public static final String COLUMNNAME_WEBUI_ViewQuickAction_Default = "WEBUI_ViewQuickAction_Default";
 }

@@ -16,15 +16,14 @@ package de.metas.invoicecandidate.process;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Properties;
@@ -35,6 +34,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.IParams;
+import org.compiere.util.DB;
 import org.compiere.util.Ini;
 
 import de.metas.adempiere.form.IClientUI;
@@ -45,14 +45,19 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.impl.InvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
-public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProcess
+public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProcess implements IProcessPrecondition
 {
 	private static final String MSG_InvoiceCandidate_PerformEnqueuing = "C_InvoiceCandidate_PerformEnqueuing";
 	//
@@ -65,6 +70,17 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	private BigDecimal totalNetAmtToInvoiceChecksum;
 
 	private int selectionCount = 0;
+
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
+	{
+		if(context.isNoSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+		return ProcessPreconditionsResolution.accept();
+	}
 
 	@Override
 	@RunOutOfTrx
@@ -107,7 +123,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 			return;
 		}
 		final boolean performEnqueuing;
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			performEnqueuing = Services.get(IClientUI.class).ask()
 					.setParentWindowNo(getProcessInfo().getWindowNo())
@@ -133,8 +149,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 		final PInstanceId pinstanceId = getPinstanceId();
 
 		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
-				.setContext(getCtx(), get_TrxName())
-				.setLoggable(this)
+				.setContext(getCtx())
 				.setInvoicingParams(invoicingParams)
 				.setFailIfNothingEnqueued(true) // If no workpackages were created, display error message that no selection was made (07666)
 				.setTotalNetAmtToInvoiceChecksum(totalNetAmtToInvoiceChecksum)
@@ -156,9 +171,12 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 		// Create selection and return how many items were added
 		final PInstanceId adPInstanceId = getPinstanceId();
 		Check.assumeNotNull(adPInstanceId, "adPInstanceId is not null");
+
+		DB.deleteT_Selection(adPInstanceId, ITrx.TRXNAME_ThreadInherited);
+
 		final int selectionCount = queryBuilder
 				.create()
-				.setApplyAccessFilterRW(false) // 04471: enqueue only those records on which user has access to
+				.setRequiredAccess(Access.READ) // 04471: enqueue only those records on which user has access to
 				.createSelection(adPInstanceId);
 
 		return selectionCount;
@@ -177,7 +195,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	{
 		// Get the user selection filter (i.e. what user filtered in his window)
 		final IQueryFilter<I_C_Invoice_Candidate> userSelectionFilter;
-		if(Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			// In case of Swing, preserve the old functionality, i.e. if no where clause then select all
 			userSelectionFilter = getProcessInfo().getQueryFilter();
@@ -185,7 +203,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 		else
 		{
 			userSelectionFilter = getProcessInfo().getQueryFilterOrElse(null);
-			if(userSelectionFilter == null)
+			if (userSelectionFilter == null)
 			{
 				throw new AdempiereException("@NoSelection@");
 			}

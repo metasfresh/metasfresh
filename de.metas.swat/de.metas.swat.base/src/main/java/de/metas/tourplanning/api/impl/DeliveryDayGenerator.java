@@ -48,7 +48,7 @@ import de.metas.tourplanning.model.I_M_TourVersion;
 import de.metas.tourplanning.model.I_M_TourVersionLine;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
-import de.metas.util.NullLoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 
 public class DeliveryDayGenerator implements IDeliveryDayGenerator
@@ -85,7 +85,7 @@ public class DeliveryDayGenerator implements IDeliveryDayGenerator
 		}
 		else
 		{
-			this.loggable = NullLoggable.instance;
+			this.loggable = Loggables.nop();
 		}
 
 		this.dateTimeFormat = DisplayType.getDateFormat(DisplayType.DateTime);
@@ -247,15 +247,9 @@ public class DeliveryDayGenerator implements IDeliveryDayGenerator
 				.addColumn(I_M_DeliveryDay.COLUMN_DeliveryDate);
 
 		queryBuilder.create()
-				.update(new IQueryUpdater<I_M_DeliveryDay>()
-				{
-
-					@Override
-					public boolean update(final I_M_DeliveryDay deliveryDay)
-					{
-						deliveryDayBL.inactivate(deliveryDay, trxName);
-						return MODEL_UPDATED;
-					}
+				.update(deliveryDay -> {
+					deliveryDayBL.inactivate(deliveryDay, trxName);
+					return IQueryUpdater.MODEL_UPDATED;
 				});
 	}
 

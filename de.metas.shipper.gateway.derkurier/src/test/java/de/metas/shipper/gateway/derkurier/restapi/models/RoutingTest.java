@@ -11,7 +11,8 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import de.metas.JsonObjectMapperHolder;
 
 /*
  * #%L
@@ -42,8 +43,7 @@ public class RoutingTest
 	@Test
 	public void test_deserialize() throws JsonParseException, JsonMappingException, IOException
 	{
-		final ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.registerModule(new JavaTimeModule());
+		final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
 		final Routing routing = objectMapper.readValue(ROUTING_RESPONSE_JSON.getInputStream(), Routing.class);

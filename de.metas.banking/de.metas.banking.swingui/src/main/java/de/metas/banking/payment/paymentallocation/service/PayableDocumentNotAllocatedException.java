@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 
 /**
  * Exception thrown by {@link PaymentAllocationBuilder} when some payable documents could not be allocated.
@@ -51,7 +52,7 @@ public class PayableDocumentNotAllocatedException extends PaymentAllocationExcep
 	@Override
 	protected ITranslatableString buildMessage()
 	{
-		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder message = TranslatableStrings.builder();
 
 		if (payables != null && !payables.isEmpty())
 		{

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_component" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/productspecifications/report" uuid="d337e18a-4953-4f43-8409-fe9b871ee4b5">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="2.593742460100013"/>
+	<property name="ireport.x" value="343"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="erptest.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="RECORD_ID" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[0]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT distinct
+  v.componentName           as BOMProduct,
+  v.componentIngredients    as Ingredients,
+  v.qtybatch                as QtyBatch,
+  ispackagingmaterial,
+m_product_ID
+FROM "de.metas.fresh".product_specifications_v v
+WHERE m_product_ID = $P{RECORD_ID} AND componenttype='CO'
+ORDER BY QtyBatch DESC;]]>
+	</queryString>
+	<field name="bomproduct" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bomproduct"/>
+	</field>
+	<field name="ingredients" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="ingredients"/>
+	</field>
+	<field name="qtybatch" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="qtybatch"/>
+	</field>
+	<field name="ispackagingmaterial" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="ispackagingmaterial"/>
+	</field>
+	<field name="m_product_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="m_product_id"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="39" splitType="Stretch">
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="5" width="180" height="14" uuid="c58e81c9-237f-4152-9114-98b1c96b0be3"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_5}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="27" width="136" height="12" uuid="0d3a612e-a2bb-4b80-907d-b300c7871422"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" isItalic="true"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Ingredients}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="136" y="27" width="136" height="12" uuid="41be0133-0624-4e4f-a20c-c284632f2b54"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" isItalic="true"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Composition}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="430" y="27" width="121" height="12" uuid="a696f27b-f834-40ee-a8b7-f692409002a6"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" isItalic="true"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{QtyBatch}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<detail>
+		<band height="14">
+			<printWhenExpression><![CDATA[$F{ispackagingmaterial}.equals("N")]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="0" y="1" width="136" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="81066c2f-dfac-4ca0-8b4e-29585ecb945f"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{bomproduct}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="136" y="1" width="289" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="a04e7107-b34d-4864-9b06-622fd4a19277"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{ingredients}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="430" y="1" width="121" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="8f2b5d7e-bbfc-4ab3-9ad5-9d7335c9041d"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" isItalic="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qtybatch}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

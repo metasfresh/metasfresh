@@ -176,7 +176,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font fontName="SansSerif" size="10" isBold="false"/>
+						<font fontName="Arial" size="10" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
 				</textField>
@@ -189,7 +189,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font fontName="SansSerif" size="10" isBold="false"/>
+						<font fontName="Arial" size="10" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{ean}]]></textFieldExpression>
 				</textField>
@@ -202,7 +202,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font fontName="SansSerif" size="10" isBold="false"/>
+						<font fontName="Arial" size="10" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
 				</textField>
@@ -215,7 +215,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font fontName="SansSerif" size="10" isBold="false"/>
+						<font fontName="Arial" size="10" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{container}]]></textFieldExpression>
 				</textField>
@@ -230,7 +230,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font fontName="SansSerif" size="10"/>
+						<font fontName="Arial" size="10"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{pricelist}]]></textFieldExpression>
 				</textField>
@@ -243,7 +243,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font fontName="SansSerif" size="10"/>
+						<font fontName="Arial" size="10"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{TUQtySum}]]></textFieldExpression>
 				</textField>
@@ -256,7 +256,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font fontName="SansSerif" size="10"/>
+						<font fontName="Arial" size="10"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{QtySum}]]></textFieldExpression>
 				</textField>
@@ -269,7 +269,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font fontName="SansSerif" size="10" isBold="false"/>
+						<font fontName="Arial" size="10" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 				</textField>
@@ -282,7 +282,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font fontName="SansSerif" size="10"/>
+						<font fontName="Arial" size="10"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{capacity}]]></textFieldExpression>
 				</textField>
@@ -295,7 +295,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font fontName="SansSerif" size="10"/>
+						<font fontName="Arial" size="10"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{priceactual}]]></textFieldExpression>
 				</textField>
@@ -308,7 +308,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font fontName="SansSerif" size="10" isBold="false"/>
+						<font fontName="Arial" size="10" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{displaytext}]]></textFieldExpression>
 				</textField>
@@ -321,7 +321,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font fontName="SansSerif" size="10" isBold="false"/>
+						<font fontName="Arial" size="10" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{AggLine}]]></textFieldExpression>
 				</textField>
@@ -333,77 +333,77 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 			<staticText>
 				<reportElement key="textField-16" positionType="FixRelativeToBottom" x="37" y="11" width="55" height="13" forecolor="#000000" uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00"/>
 				<textElement verticalAlignment="Top" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Pos.]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="textField-13" positionType="FixRelativeToBottom" x="90" y="11" width="127" height="13" forecolor="#000000" uuid="c098d47c-8e7e-49b6-b9b6-4151f0bdafee"/>
 				<textElement verticalAlignment="Top" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Artikel]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="textField-19" positionType="FixRelativeToBottom" x="383" y="11" width="82" height="13" forecolor="#000000" uuid="41d29ca1-2c98-4395-a16a-bc3ce80d0e38"/>
 				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Bestellmenge]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="textField-17" positionType="FixRelativeToBottom" x="217" y="11" width="124" height="13" forecolor="#000000" uuid="d9624032-eb35-46e9-bcf0-26296aa97877"/>
 				<textElement verticalAlignment="Top" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[EAN Nr.]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="textField-20" positionType="FixRelativeToBottom" x="470" y="11" width="70" height="13" forecolor="#000000" uuid="8810b708-ecb1-4a33-91a8-9971754ada0b"/>
 				<textElement verticalAlignment="Top" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Einheit BE]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="textField-16" positionType="FixRelativeToBottom" x="37" y="23" width="55" height="13" forecolor="#000000" uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00"/>
 				<textElement verticalAlignment="Top" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Herkunft]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="textField-13" positionType="FixRelativeToBottom" x="90" y="23" width="127" height="13" forecolor="#000000" uuid="c098d47c-8e7e-49b6-b9b6-4151f0bdafee"/>
 				<textElement verticalAlignment="Top" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Bezeichnung]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="textField-31" positionType="FixRelativeToBottom" mode="Transparent" x="217" y="23" width="123" height="13" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF" uuid="d35bf7fe-33c5-454d-9a1e-1b5eca9d1564"/>
 				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
-					<font fontName="SansSerif" size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Ausz. VP/VE]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="textField-31" positionType="FixRelativeToBottom" mode="Transparent" x="340" y="23" width="50" height="13" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF" uuid="f0424bea-807a-4819-b1eb-2112bfd18eef"/>
 				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
-					<font fontName="SansSerif" size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[EP/VE]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="textField-31" positionType="FixRelativeToBottom" mode="Transparent" x="340" y="11" width="50" height="13" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF" uuid="6ff26657-6119-4cb7-8018-e5d609e54b16"/>
 				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
-					<font fontName="SansSerif" size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[VE/BE]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="textField-20" positionType="FixRelativeToBottom" x="470" y="23" width="70" height="13" forecolor="#000000" uuid="8810b708-ecb1-4a33-91a8-9971754ada0b"/>
 				<textElement verticalAlignment="Top" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Einheit VE]]></text>
 			</staticText>
@@ -422,7 +422,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="SansSerif" size="10" isBold="false"/>
+					<font fontName="Arial" size="10" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{ean}]]></textFieldExpression>
 			</textField>
@@ -435,7 +435,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="SansSerif" size="10" isBold="false"/>
+					<font fontName="Arial" size="10" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{line}]]></textFieldExpression>
 			</textField>
@@ -450,7 +450,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="10"/>
+					<font fontName="Arial" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{pricelist}]]></textFieldExpression>
 			</textField>
@@ -463,7 +463,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="10"/>
+					<font fontName="Arial" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qtyenteredtu}]]></textFieldExpression>
 			</textField>
@@ -476,7 +476,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="SansSerif" size="10" isBold="false"/>
+					<font fontName="Arial" size="10" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{displaytext}]]></textFieldExpression>
 			</textField>
@@ -489,7 +489,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="SansSerif" size="10" isBold="false"/>
+					<font fontName="Arial" size="10" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
 			</textField>
@@ -502,7 +502,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="SansSerif" size="10" isBold="false"/>
+					<font fontName="Arial" size="10" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
@@ -515,7 +515,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="10"/>
+					<font fontName="Arial" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{priceactual}]]></textFieldExpression>
 			</textField>
@@ -528,7 +528,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="10"/>
+					<font fontName="Arial" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{capacity}]]></textFieldExpression>
 			</textField>
@@ -541,7 +541,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="SansSerif" size="10" isBold="false"/>
+					<font fontName="Arial" size="10" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{container}]]></textFieldExpression>
 			</textField>
@@ -554,7 +554,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="10"/>
+					<font fontName="Arial" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qtyentered}]]></textFieldExpression>
 			</textField>
@@ -567,7 +567,7 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="SansSerif" size="10" isBold="false"/>
+					<font fontName="Arial" size="10" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
 			</textField>

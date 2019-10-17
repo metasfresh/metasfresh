@@ -97,20 +97,16 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 
 	/**
 	 * Retrieve the {@link IInvoiceCandidateHandler} of the given <code>ic</code> and calls its {@link IInvoiceCandidateHandler#setDeliveredData(I_C_Invoice_Candidate) setDeliveredData()} method.
-	 *
-	 * @param ic
 	 */
 	void setDeliveredData(I_C_Invoice_Candidate ic);
 
 	PriceAndTax calculatePriceAndTax(I_C_Invoice_Candidate ic);
 
-	void setC_UOM_ID(I_C_Invoice_Candidate ic);
-
 	void invalidateCandidatesFor(Object model);
 
 	void setBPartnerData(I_C_Invoice_Candidate ic);
 
-	void setInvoiceSchedule(I_C_Invoice_Candidate ic);
+	void setInvoiceScheduleAndDateToInvoice(I_C_Invoice_Candidate ic);
 
 	void setLineNetAmt(I_C_Invoice_Candidate ic);
 }

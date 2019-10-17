@@ -36,14 +36,18 @@ import com.google.common.collect.ImmutableList;
  */
 public final class PlainStringLoggable implements ILoggable
 {
-
 	private final List<String> messages = new ArrayList<>();
 
+	PlainStringLoggable()
+	{
+	}
+
 	@Override
-	public void addLog(String msg, Object... msgParameters)
+	public ILoggable addLog(String msg, Object... msgParameters)
 	{
 		final String formattedMessage = StringUtils.formatMessage(msg, msgParameters);
 		messages.add(formattedMessage);
+		return this;
 	}
 
 	public boolean isEmpty()

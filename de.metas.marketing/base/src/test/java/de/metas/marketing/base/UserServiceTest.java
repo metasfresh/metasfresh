@@ -4,7 +4,7 @@ import static de.metas.i18n.Language.AD_Language_en_AU;
 import static de.metas.i18n.Language.AD_Language_en_GB;
 import static de.metas.i18n.Language.AD_Language_en_US;
 import static de.metas.i18n.Language.asLanguage;
-import static de.metas.i18n.Language.asLanguageString;
+import static de.metas.i18n.Language.asLanguageStringOrNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,20 +18,20 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.user.UserRepository;
+import org.compiere.model.I_AD_User;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.bpartner.service.BPartnerLocationRepository;
+import de.metas.bpartner.service.BPartnerLocationInfoRepository;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.i18n.Language;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRepository;
-import de.metas.marketing.base.model.I_AD_User;
 import de.metas.marketing.base.model.I_MKTG_ContactPerson;
 import de.metas.marketing.base.model.I_MKTG_Platform;
 import de.metas.marketing.base.model.PlatformId;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -74,7 +74,7 @@ public class UserServiceTest
 		final UserRepository userRepository = new UserRepository();
 
 		userService = new UserService(userRepository);
-		contactPersonRepository = new ContactPersonRepository(new BPartnerLocationRepository());
+		contactPersonRepository = new ContactPersonRepository(new BPartnerLocationInfoRepository());
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(userRepository));
 	}
@@ -214,7 +214,7 @@ public class UserServiceTest
 
 		userRecord.setName(name);
 		userRecord.setEMail(mail);
-		userRecord.setAD_Language(asLanguageString(language));
+		userRecord.setAD_Language(asLanguageStringOrNull(language));
 
 		save(userRecord);
 		return userRecord;
@@ -230,7 +230,7 @@ public class UserServiceTest
 
 		contactPersonRecord.setAD_User_ID(userId);
 		contactPersonRecord.setEMail(emailAddress);
-		contactPersonRecord.setAD_Language(asLanguageString(language));
+		contactPersonRecord.setAD_Language(asLanguageStringOrNull(language));
 		contactPersonRecord.setMKTG_Platform_ID(platformId.getRepoId());
 
 		save(contactPersonRecord);

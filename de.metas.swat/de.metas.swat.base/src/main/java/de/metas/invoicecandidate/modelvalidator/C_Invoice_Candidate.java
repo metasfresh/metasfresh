@@ -55,53 +55,114 @@ import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.api.impl.InvoiceCandBL;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupCompensationChangesHandler;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
-import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 @Interceptor(I_C_Invoice_Candidate.class)
-@Component("de.metas.invoicecandidate.modelvalidator.C_Invoice_Candidate")
+@Component
 public class C_Invoice_Candidate
 {
 	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(C_Invoice_Candidate.class);
 
 	private final AttachmentEntryService attachmentEntryService;
 
-	private InvoiceCandidateGroupCompensationChangesHandler groupChangesHandler;
+	private final InvoiceCandidateGroupCompensationChangesHandler groupChangesHandler;
+
+	private final InvoiceCandidateRecordService invoiceCandidateRecordService;
 
 	public C_Invoice_Candidate(
+			@NonNull final InvoiceCandidateRecordService invoiceCandidateRecordService,
 			@NonNull final InvoiceCandidateGroupRepository groupsRepo,
 			@NonNull final AttachmentEntryService attachmentEntryService)
 	{
+		this.invoiceCandidateRecordService = invoiceCandidateRecordService;
 		this.groupChangesHandler = InvoiceCandidateGroupCompensationChangesHandler.builder()
 				.groupsRepo(groupsRepo)
 				.build();
 		this.attachmentEntryService = attachmentEntryService;
-	};
+	}
+
+	@ModelChange( //
+			timings = ModelValidator.TYPE_BEFORE_CHANGE, //
+			ifColumnsChanged = {
+					I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override,
+					I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override,
+					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override })
+	public void updateInvoiceCandidateDirectly(final I_C_Invoice_Candidate icRecord)
+	{
+		final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
+		invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
+	}
 
 	/**
-	 * Set QtyToInvoiceInPriceUOM, just to make sure it is up2date.
+	 * For the given <code>ic</code>, this method invalidates the invoice candidate<br>
+	 * and all other candidates that reference the same record via <code>(AD_Table_ID, Record_ID)</code>, <b>unless</b>
+	 * {@link InterfaceWrapperHelper#hasChanges(Object)} returns <code>false</code>. In that case, the method does nothing.
+	 * <p>
+	 * Note: we invalidate more than just the given candidate, because at least for the case of "split"-candidates we need to do so, in order to update the new and the old candidate. See
+	 * {@link InvoiceCandBL#splitCandidate(I_C_Invoice_Candidate)}.
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
-			I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID,
-			I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice,
-			I_C_Invoice_Candidate.COLUMNNAME_Price_UOM_ID })
-	public void updateQtyToInvoiceInPriceUOM(final I_C_Invoice_Candidate ic)
+	@ModelChange( //
+			timings = ModelValidator.TYPE_AFTER_CHANGE, //
+			ignoreColumnsChanged = {
+					// the following columns already trigger an "immediate update (see method updateInvoiceCandidateDirectly()); no need to invalidate the record
+					I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override,
+					I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override,
+					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override,
+
+					// the following columns are "endresults" of invoice candidate updates and never need to trigger an invalidation
+					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceBeforeDiscount,
+					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice,
+					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM_Calc,
+					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM,
+					I_C_Invoice_Candidate.COLUMNNAME_QtyWithIssues,
+					I_C_Invoice_Candidate.COLUMNNAME_QtyWithIssues_Effective,
+					I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent,
+					I_C_Invoice_Candidate.COLUMNNAME_QtyDelivered,
+					I_C_Invoice_Candidate.COLUMNNAME_QtyDeliveredInUOM,
+					I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate })
+	public void invalidateCandidatesAfterChange(final I_C_Invoice_Candidate ic)
+	{
+		invalidateCandidates0(ic);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
+	public void invalidateCandidatesAfterNew(final I_C_Invoice_Candidate ic)
+	{
+		invalidateCandidates0(ic);
+	}
+
+	private void invalidateCandidates0(final I_C_Invoice_Candidate ic)
 	{
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
-		// task 08507: ic.getQtyToInvoice() is already the "effective". Qty even if QtyToInvoice_Override is set, the system will decide what to invoice (e.g. based on RnvoiceRule and QtDdelivered)
-		// and update QtyToInvoice accordingly, possibly to a value that is different from QtyToInvoice_Override.
-		// final BigDecimal qtyToInvoice = invoiceCandBL.getQtyToInvoice(ic);
-		final BigDecimal qtyToInvoiceInPriceUOM = invoiceCandBL.convertToPriceUOM(ic.getQtyToInvoice(), ic);
+		if (invoiceCandBL.isUpdateProcessInProgress())
+		{
+			logger.debug("Change was performed by scheduler process. No need to invalidate: {}", ic);
+			return;
+		}
 
-		ic.setQtyToInvoiceInPriceUOM(qtyToInvoiceInPriceUOM);
+		//
+		// Invalidate invoice candidate(s)
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+		// Case: the IC is not linked to any particular record => invalidate just this one
+		if (ic.getAD_Table_ID() <= 0 || ic.getRecord_ID() <= 0)
+		{
+			invoiceCandDAO.invalidateCand(ic);
+		}
+		// Case: the IC is linked to a record => invalidate all ICs (including this one) which links to that record
+		else
+		{
+			invoiceCandDAO.invalidateCandsWithSameReference(ic);
+		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE,
@@ -202,8 +263,10 @@ public class C_Invoice_Candidate
 	 * @param candidate
 	 * @task 08457
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = {
-			I_C_Invoice_Candidate.COLUMNNAME_PriceActual, I_C_Invoice_Candidate.COLUMNNAME_PriceActual_Override, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override, I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Override_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID })
+	@ModelChange(//
+			timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, //
+			ifColumnsChanged = {
+					I_C_Invoice_Candidate.COLUMNNAME_PriceActual, I_C_Invoice_Candidate.COLUMNNAME_PriceActual_Override, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override, I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Override_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID })
 	public void updatePriceActual_Net_Effective(final I_C_Invoice_Candidate candidate)
 	{
 		Services.get(IInvoiceCandBL.class).setPriceActualNet(candidate);
@@ -218,51 +281,14 @@ public class C_Invoice_Candidate
 		}
 	}
 
-	/**
-	 * For the given <code>ic</code>, this method invalidates the invoice candidate<br>
-	 * and all other candidates that reference the same record via <code>(AD_Table_ID, Record_ID)</code>, <b>unless</b>
-	 * {@link InterfaceWrapperHelper#hasChanges(Object)} returns <code>false</code>. In that case, the method does nothing.
-	 * <p>
-	 * Note: we invalidate more than just the given candidate, because at least for the case of "split"-candidates we need to do so, in order to update the new and the old candidate. See
-	 * {@link InvoiceCandBL#splitCandidate(I_C_Invoice_Candidate)}.
-	 *
-	 * @param ic
-	 */
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW })
-	public void invalidateCandidates(final I_C_Invoice_Candidate ic)
-	{
-		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-
-		if (invoiceCandBL.isUpdateProcessInProgress())
-		{
-			logger.debug("Change was performed by scheduler process. No need to invalidate: {}", ic);
-			return;
-		}
-
-		//
-		// Invalidate invoice candidate(s)
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-		// Case: the IC is not linked to any particular record => invalidate just this one
-		if (ic.getAD_Table_ID() <= 0 || ic.getRecord_ID() <= 0)
-		{
-			invoiceCandDAO.invalidateCand(ic);
-		}
-		// Case: the IC is linked to a record => invalidate all ICs (including this one) which links to that record
-		else
-		{
-			invoiceCandDAO.invalidateCandsWithSameReference(ic);
-		}
-	}
-
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteC_Invoice_Line_Allocs(final I_C_Invoice_Candidate ic)
 	{
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-
-		for (final I_C_Invoice_Line_Alloc ila : invoiceCandDAO.retrieveIlaForIc(ic))
-		{
-			InterfaceWrapperHelper.delete(ila);
-		}
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Invoice_Line_Alloc.class)
+				.addEqualsFilter(I_C_Invoice_Line_Alloc.COLUMNNAME_C_Invoice_Candidate_ID, ic.getC_Invoice_Candidate_ID())
+				.create()
+				.delete();
 	}
 
 	/**
@@ -351,10 +377,10 @@ public class C_Invoice_Candidate
 	 * </ul>
 	 * Note that if <code>QtyToInvoice_Override</code> is change to null, then QtyToInvoice_OverrideFulfilled is reset to <code>null</code>, otherwise to zero. This hopefully makes things more
 	 * transparent to the user.
-	 *
-	 * @param ic
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override })
+	@ModelChange( //
+			timings = ModelValidator.TYPE_BEFORE_CHANGE, //
+			ifColumnsChanged = I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override)
 	public void resetQtyToInvoiceFulFilled(final I_C_Invoice_Candidate ic)
 	{
 		if (InterfaceWrapperHelper.isNull(ic, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override))
@@ -379,7 +405,7 @@ public class C_Invoice_Candidate
 
 		final boolean isBackgroundProcessInProcess = invoiceCandBL.isUpdateProcessInProgress();
 		if (ic.isProcessed()
-				|| X_C_Invoice_Candidate.PROCESSED_OVERRIDE_Yes.equals(ic.getProcessed_Override())
+				|| invoiceCandBL.extractProcessedOverride(ic).isTrue()
 				|| isBackgroundProcessInProcess)
 		{
 			return; // nothing to do
@@ -410,10 +436,12 @@ public class C_Invoice_Candidate
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
-			I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice,
-			I_C_Invoice_Candidate.COLUMNNAME_GroupCompensationPercentage
-	})
+	@ModelChange( //
+			timings = ModelValidator.TYPE_AFTER_CHANGE, //
+			ifColumnsChanged = {
+					I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice,
+					I_C_Invoice_Candidate.COLUMNNAME_GroupCompensationPercentage
+			})
 	public void handleCompensantionGroupRelatedChanges(final I_C_Invoice_Candidate invoiceCandidate)
 	{
 		groupChangesHandler.onInvoiceCandidateChanged(invoiceCandidate);

@@ -13,23 +13,26 @@ package org.adempiere.ad.dao.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Comparator;
 
 import javax.annotation.concurrent.Immutable;
 
+import lombok.ToString;
+
 @Immutable
-/* package */ class SqlQueryOrderBy extends AbstractQueryOrderBy
+@ToString
+/* package */ final class SqlQueryOrderBy extends AbstractQueryOrderBy
 {
+	private static final String KEYWORD_ORDER_BY = "ORDER BY";
 	private final String orderBy;
 
 	public SqlQueryOrderBy(final String orderBy)
@@ -40,11 +43,22 @@ import javax.annotation.concurrent.Immutable;
 
 	private static final String normalize(final String orderBy)
 	{
-		String orderByFinal = orderBy != null ? orderBy.trim() : null;
-		if (orderByFinal != null && orderByFinal.toUpperCase().startsWith("ORDER BY"))
+		if(orderBy == null)
 		{
-			orderByFinal = orderBy.substring(8);
+			return null;
 		}
+		
+		String orderByFinal = orderBy.trim();
+		if(orderByFinal.isEmpty())
+		{
+			return null;
+		}
+		
+		if (orderByFinal.toUpperCase().startsWith(KEYWORD_ORDER_BY))
+		{
+			orderByFinal = orderByFinal.substring(KEYWORD_ORDER_BY.length()).trim();
+		}
+		
 		return orderByFinal;
 	}
 
@@ -58,11 +72,5 @@ import javax.annotation.concurrent.Immutable;
 	public Comparator<Object> getComparator()
 	{
 		throw new UnsupportedOperationException("SqlQueryOrderBy does not support Comparator");
-	}
-
-	@Override
-	public String toString()
-	{
-		return "SqlQueryOrderBy[" + orderBy + "]";
 	}
 }

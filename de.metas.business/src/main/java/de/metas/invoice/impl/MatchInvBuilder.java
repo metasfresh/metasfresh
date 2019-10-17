@@ -1,29 +1,5 @@
 package de.metas.invoice.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 
@@ -41,12 +17,16 @@ import de.metas.inout.IInOutBL;
 import de.metas.invoice.IMatchInvBuilder;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.invoice.MatchInvException;
+import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
  * Helper class used to create a quantity matching between {@link I_C_InvoiceLine} and {@link I_M_InOutLine} (i.e. {@link I_M_MatchInv}).
- * 
+ *
  * @author tsa
  */
 /* package */class MatchInvBuilder implements IMatchInvBuilder
@@ -62,7 +42,7 @@ import de.metas.util.Services;
 	private I_C_InvoiceLine _invoiceLine;
 	private I_M_InOutLine _inoutLine;
 	private Date _dateTrx;
-	private BigDecimal _qtyToMatchExact;
+	private StockQtyAndUOMQty _qtyToMatchExact;
 	private boolean _considerQtysAlreadyMatched = true;
 	private boolean _allowQtysOfOppositeSigns = false;
 	private boolean _skipIfMatchingsAlreadyExist = false;
@@ -80,7 +60,7 @@ import de.metas.util.Services;
 			return noMatchInvNeeded();
 		}
 
-		final BigDecimal qtyToMatch = calculateQtyToMatch();
+		final StockQtyAndUOMQty qtyToMatch = calculateQtyToMatch();
 		if (qtyToMatch.signum() == 0)
 		{
 			return noMatchInvNeeded();
@@ -106,7 +86,7 @@ import de.metas.util.Services;
 		{
 			throw new MatchInvException("@Invalid@ @M_Product_ID@"
 					+ "\n @C_InvoiceLine_ID@: " + invoiceLine + ", @M_Product_ID@=" + invoiceLine.getM_Product()
-					+ "\n @M_InOutLine_ID@: " + inoutLine + ", @M_Product_ID@=" + inoutLine.getM_Product());
+					+ "\n @M_InOutLine_ID@: " + inoutLine + ", @M_Product_ID@=" + inoutLine.getM_Product_ID());
 		}
 
 		// Create the new M_MatchInv record
@@ -118,7 +98,9 @@ import de.metas.util.Services;
 		matchInv.setDocumentNo(inout.getDocumentNo());
 
 		// Quantity
-		matchInv.setQty(qtyToMatch);
+		matchInv.setQty(qtyToMatch.getStockQty().toBigDecimal());
+		matchInv.setQtyInUOM(qtyToMatch.getUOMQtyNotNull().toBigDecimal());
+		matchInv.setC_UOM_ID(qtyToMatch.getUOMQtyNotNull().getUomId().getRepoId());
 
 		// Product & ASI
 		matchInv.setM_Product_ID(inoutLine.getM_Product_ID());
@@ -160,7 +142,7 @@ import de.metas.util.Services;
 
 	/**
 	 * Convenient method to returned from {@link #build()} when NO {@link I_M_MatchInv} record is needed
-	 * 
+	 *
 	 * @return false
 	 */
 	private final boolean noMatchInvNeeded()
@@ -216,14 +198,14 @@ import de.metas.util.Services;
 	}
 
 	@Override
-	public IMatchInvBuilder setQtyToMatchExact(final BigDecimal qtyToMatchExact)
+	public IMatchInvBuilder setQtyToMatchExact(final StockQtyAndUOMQty qtyToMatchExact)
 	{
 		assertNotBuilt();
 		this._qtyToMatchExact = qtyToMatchExact;
 		return this;
 	}
 
-	private final BigDecimal getQtyToMatchExact()
+	private final StockQtyAndUOMQty getQtyToMatchExact()
 	{
 		return _qtyToMatchExact;
 	}
@@ -254,12 +236,12 @@ import de.metas.util.Services;
 		return _allowQtysOfOppositeSigns;
 	}
 
-	private BigDecimal calculateQtyToMatch()
+	private StockQtyAndUOMQty calculateQtyToMatch()
 	{
 		//
 		// Consider the QtyToMatch which was precisely specified.
 		// In this case we are not doing further checkings.
-		final BigDecimal qtyToMatchExact = getQtyToMatchExact();
+		final StockQtyAndUOMQty qtyToMatchExact = getQtyToMatchExact();
 		if (qtyToMatchExact != null)
 		{
 			return qtyToMatchExact;
@@ -277,29 +259,30 @@ import de.metas.util.Services;
 			// which makes no sense.
 
 			// throw new MatchInvException("Cannot mix regular documents with credit memos / material returns.");
-			return BigDecimal.ZERO;
+			return StockQtyAndUOMQtys.createZero(ProductId.ofRepoId(_invoiceLine.getM_Product_ID()), UomId.ofRepoId(_invoiceLine.getC_UOM_ID()));
 		}
 
 		//
 		// Get the quantity invoiced not matched and quantity moved and calculate how much we can match.
-		final BigDecimal qtyInvoicedNotMatched = getQtyInvoicedNotMatched();
+		final StockQtyAndUOMQty qtyInvoicedNotMatched = getQtyInvoicedNotMatched();
 		final int qtyInvoicedNotMatchedSignum = qtyInvoicedNotMatched.signum();
 		//
-		BigDecimal qtyMovedNotMatched = getQtyMovedNotMatched();
+		StockQtyAndUOMQty qtyMovedNotMatched = getQtyMovedNotMatchedInStockUOM();
 		final int qtyMovedNotMatchedSignum = qtyMovedNotMatched.signum();
+
 		//
-		final BigDecimal qtyMatched;
+		final StockQtyAndUOMQty qtyMatched;
 		if (qtyInvoicedNotMatchedSignum > 0)
 		{
 			if (qtyMovedNotMatchedSignum > 0 || isAllowQtysOfOppositeSigns())
 			{
-				qtyMatched = qtyInvoicedNotMatched.min(qtyMovedNotMatched);
+				qtyMatched = StockQtyAndUOMQtys.minUomQty(qtyInvoicedNotMatched, qtyMovedNotMatched);
 			}
 			else
 			// qtyMovedNotMatchedSignum < 0
 			{
 				// NOTE: we are not matching quantities of opposite signs
-				qtyMatched = BigDecimal.ZERO;
+				qtyMatched = StockQtyAndUOMQtys.createZero(ProductId.ofRepoId(_invoiceLine.getM_Product_ID()), UomId.ofRepoId(_invoiceLine.getC_UOM_ID()));
 			}
 		}
 		else
@@ -307,23 +290,29 @@ import de.metas.util.Services;
 		{
 			if (qtyMovedNotMatchedSignum < 0 || isAllowQtysOfOppositeSigns())
 			{
-				qtyMatched = qtyInvoicedNotMatched.max(qtyMovedNotMatched);
+				qtyMatched = StockQtyAndUOMQtys.maxUomQty(qtyInvoicedNotMatched, qtyMovedNotMatched);
 			}
 			else
 			// qtyMovedNotMatchedSignum > 0
 			{
 				// NOTE: we are not matching quantities of opposite signs
-				qtyMatched = BigDecimal.ZERO;
+				qtyMatched = StockQtyAndUOMQtys.createZero(ProductId.ofRepoId(_invoiceLine.getM_Product_ID()), UomId.ofRepoId(_invoiceLine.getC_UOM_ID()));
 			}
 		}
 
 		return qtyMatched;
 	}
 
-	private BigDecimal getQtyInvoicedNotMatched()
+	private StockQtyAndUOMQty getQtyInvoicedNotMatched()
 	{
 		final I_C_InvoiceLine invoiceLine = getC_InvoiceLine();
-		BigDecimal qtyInvoiced = invoiceLine.getQtyInvoiced();
+
+		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
+		final UomId uomId = UomId.ofRepoId(invoiceLine.getC_UOM_ID());
+
+		StockQtyAndUOMQty qtyInvoiced = StockQtyAndUOMQtys.create(
+				invoiceLine.getQtyInvoiced(), productId,
+				invoiceLine.getQtyEntered(), uomId);
 
 		// Negate the qtyInvoiced if this is an CreditMemo
 		if (isCreditMemoInvoice())
@@ -331,24 +320,30 @@ import de.metas.util.Services;
 			qtyInvoiced = qtyInvoiced.negate();
 		}
 
-		final BigDecimal qtyMatched;
+		final StockQtyAndUOMQty qtyMatched;
 		if (isConsiderQtysAlreadyMatched())
 		{
 			qtyMatched = matchInvDAO.retrieveQtyMatched(invoiceLine);
 		}
 		else
 		{
-			qtyMatched = BigDecimal.ZERO;
+			qtyMatched = StockQtyAndUOMQtys.createZero(productId, uomId);
 		}
 
-		final BigDecimal qtyNotMatched = qtyInvoiced.subtract(qtyMatched);
+		final StockQtyAndUOMQty qtyNotMatched = StockQtyAndUOMQtys.subtract(qtyInvoiced, qtyMatched);
 		return qtyNotMatched;
 	}
 
-	private BigDecimal getQtyMovedNotMatched()
+	private StockQtyAndUOMQty getQtyMovedNotMatchedInStockUOM()
 	{
 		final I_M_InOutLine inoutLine = getM_InOutLine();
-		BigDecimal qtyReceived = inoutLine.getMovementQty();
+
+		final ProductId productId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
+		final UomId uomId = UomId.ofRepoId(inoutLine.getC_UOM_ID());
+
+		StockQtyAndUOMQty qtyReceived = StockQtyAndUOMQtys.create(
+				inoutLine.getMovementQty(), productId,
+				inoutLine.getQtyEntered(), uomId);
 
 		// Negate the qtyReceived if this is an material return,
 		// because we want to have the qtyReceived as an absolute value.
@@ -357,17 +352,19 @@ import de.metas.util.Services;
 			qtyReceived = qtyReceived.negate();
 		}
 
-		final BigDecimal qtyMatched;
+		final StockQtyAndUOMQty qtyMatched;
 		if (isConsiderQtysAlreadyMatched())
 		{
-			qtyMatched = matchInvDAO.retrieveQtyInvoiced(inoutLine);
+			qtyMatched = matchInvDAO.retrieveQtysInvoiced(
+					inoutLine,
+					qtyReceived.toZero()/* initialQtys */);
 		}
 		else
 		{
-			qtyMatched = BigDecimal.ZERO;
+			qtyMatched = StockQtyAndUOMQtys.createZero(productId, uomId);
 		}
 
-		final BigDecimal qtyNotMatched = qtyReceived.subtract(qtyMatched);
+		final StockQtyAndUOMQty qtyNotMatched = StockQtyAndUOMQtys.subtract(qtyReceived, qtyMatched);
 		return qtyNotMatched;
 	}
 

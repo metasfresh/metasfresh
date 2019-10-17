@@ -40,6 +40,7 @@ import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
 
 import de.metas.util.Check;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 /**
@@ -51,6 +52,7 @@ import lombok.NonNull;
  *
  * @param <T> model class type
  */
+@EqualsAndHashCode(of = { "filters", "and", "_defaultAccept" })
 /* package */class CompositeQueryFilter<T> implements ICompositeQueryFilter<T>, ISqlQueryFilter
 {
 	/* package */static final String DEFAULT_SQL_TRUE = "1=1";
@@ -543,7 +545,7 @@ import lombok.NonNull;
 	@Override
 	public ICompositeQueryFilter<T> addNotEqualsFilter(final String columnName, final Object value)
 	{
-		final NotEqualsQueryFilter<T> filter = new NotEqualsQueryFilter<>(columnName, value);
+		final NotEqualsQueryFilter<T> filter = NotEqualsQueryFilter.of(columnName, value);
 		return addFilter(filter);
 	}
 

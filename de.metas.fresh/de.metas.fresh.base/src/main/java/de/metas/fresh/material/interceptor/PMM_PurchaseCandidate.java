@@ -2,16 +2,17 @@ package de.metas.fresh.material.interceptor;
 
 import java.math.BigDecimal;
 
-import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
 
-import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.procurement.AbstractPurchaseOfferEvent;
@@ -38,7 +39,7 @@ public class PMM_PurchaseCandidate
 	 * Note: it's important to do this after tje purchaseCandidate was saved,
 	 * but before it was deleted, because we need its <code>PMM_PurchaseCandidate_ID</code>.
 	 *
-	 * @param purchaseCandidate
+	 * @param purchaseCandidateRecord
 	 */
 	@ModelChange(timings = {
 			ModelValidator.TYPE_AFTER_NEW,
@@ -49,23 +50,23 @@ public class PMM_PurchaseCandidate
 			I_PMM_PurchaseCandidate.COLUMNNAME_IsActive
 	})
 	public void enqueuePurchaseCandidates(
-			@NonNull final I_PMM_PurchaseCandidate purchaseCandidate,
+			@NonNull final I_PMM_PurchaseCandidate purchaseCandidateRecord,
 			@NonNull final ModelChangeType type)
 	{
 		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
-		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(purchaseCandidate);
+		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(purchaseCandidateRecord);
 
 		final AbstractPurchaseOfferEvent event;
 
-		final boolean deleted = type.isDelete() || ModelChangeUtil.isJustDeactivated(purchaseCandidate);
-		final boolean created = type.isNew() || ModelChangeUtil.isJustActivated(purchaseCandidate);
-		final BigDecimal qtyPromised = purchaseCandidate.getQtyPromised();
+		final boolean deleted = type.isDelete() || ModelChangeUtil.isJustDeactivated(purchaseCandidateRecord);
+		final boolean created = type.isNew() || ModelChangeUtil.isJustActivated(purchaseCandidateRecord);
+		final BigDecimal qtyPromised = purchaseCandidateRecord.getQtyPromised();
 		if (deleted)
 		{
 			event = PurchaseOfferDeletedEvent.builder()
-					.date(purchaseCandidate.getDatePromised())
-					.eventDescriptor(EventDescriptor.createNew(purchaseCandidate))
-					.procurementCandidateId(purchaseCandidate.getPMM_PurchaseCandidate_ID())
+					.date(TimeUtil.asInstant(purchaseCandidateRecord.getDatePromised()))
+					.eventDescriptor(EventDescriptor.ofClientAndOrg(purchaseCandidateRecord.getAD_Client_ID(), purchaseCandidateRecord.getAD_Org_ID()))
+					.procurementCandidateId(purchaseCandidateRecord.getPMM_PurchaseCandidate_ID())
 					.productDescriptor(productDescriptor)
 					.qty(qtyPromised)
 					.build();
@@ -73,22 +74,22 @@ public class PMM_PurchaseCandidate
 		else if (created)
 		{
 			event = PurchaseOfferCreatedEvent.builder()
-					.date(purchaseCandidate.getDatePromised())
-					.eventDescriptor(EventDescriptor.createNew(purchaseCandidate))
-					.procurementCandidateId(purchaseCandidate.getPMM_PurchaseCandidate_ID())
+					.date(TimeUtil.asInstant(purchaseCandidateRecord.getDatePromised()))
+					.eventDescriptor(EventDescriptor.ofClientAndOrg(purchaseCandidateRecord.getAD_Client_ID(), purchaseCandidateRecord.getAD_Org_ID()))
+					.procurementCandidateId(purchaseCandidateRecord.getPMM_PurchaseCandidate_ID())
 					.productDescriptor(productDescriptor)
 					.qty(qtyPromised)
 					.build();
 		}
 		else
 		{
-			final I_PMM_PurchaseCandidate oldPurchaseCandidate = InterfaceWrapperHelper.createOld(purchaseCandidate, I_PMM_PurchaseCandidate.class);
+			final I_PMM_PurchaseCandidate oldPurchaseCandidate = InterfaceWrapperHelper.createOld(purchaseCandidateRecord, I_PMM_PurchaseCandidate.class);
 			final BigDecimal oldQtyPromised = oldPurchaseCandidate.getQtyPromised();
 
 			event = PurchaseOfferUpdatedEvent.builder()
-					.date(purchaseCandidate.getDatePromised())
-					.eventDescriptor(EventDescriptor.createNew(purchaseCandidate))
-					.procurementCandidateId(purchaseCandidate.getPMM_PurchaseCandidate_ID())
+					.date(TimeUtil.asInstant(purchaseCandidateRecord.getDatePromised()))
+					.eventDescriptor(EventDescriptor.ofClientAndOrg(purchaseCandidateRecord.getAD_Client_ID(), purchaseCandidateRecord.getAD_Org_ID()))
+					.procurementCandidateId(purchaseCandidateRecord.getPMM_PurchaseCandidate_ID())
 					.productDescriptor(productDescriptor)
 					.qty(qtyPromised)
 					.qtyDelta(qtyPromised.subtract(oldQtyPromised))

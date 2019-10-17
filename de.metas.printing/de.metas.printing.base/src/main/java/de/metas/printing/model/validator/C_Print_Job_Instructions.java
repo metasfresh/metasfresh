@@ -56,6 +56,7 @@ import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -114,7 +115,7 @@ public class C_Print_Job_Instructions
 		// do the notification after commit, because e.g. if we send a mail, and even if that fails, we don't want this method to fail.
 		final INotificationBL notificationBL = Services.get(INotificationBL.class);
 		notificationBL.sendAfterCommit(UserNotificationRequest.builder()
-				.recipientUserId(jobInstructions.getAD_User_ToPrint_ID())
+				.recipientUserId(UserId.ofRepoId(jobInstructions.getAD_User_ToPrint_ID()))
 				.subjectADMessage(MSG_CLIENT_REPORTS_PRINT_ERROR)
 				.contentPlain(jobInstructions.getErrorMsg())
 				.targetAction(TargetRecordAction.of(I_C_Print_Job_Instructions.Table_Name, jobInstructions.getC_Print_Job_Instructions_ID()))
@@ -183,7 +184,7 @@ public class C_Print_Job_Instructions
 		}
 
 		final int printJobInstructionsId = jobInstructions.getC_Print_Job_Instructions_ID();
-		final int userToPrintId = jobInstructions.getAD_User_ToPrint_ID();
+		final UserId userToPrintId = UserId.ofRepoId(jobInstructions.getAD_User_ToPrint_ID());
 		final String status = jobInstructions.getStatus();
 		final Properties ctx = InterfaceWrapperHelper.getCtx(jobInstructions);
 		final String trxName = InterfaceWrapperHelper.getTrxName(jobInstructions);

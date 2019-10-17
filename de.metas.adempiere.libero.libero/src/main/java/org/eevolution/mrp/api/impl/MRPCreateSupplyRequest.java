@@ -1,8 +1,8 @@
 package org.eevolution.mrp.api.impl;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -22,7 +22,7 @@ public /* package */final class MRPCreateSupplyRequest implements IMRPCreateSupp
 {
 	private final IMaterialPlanningContext mrpContext;
 	private final Quantity qtyToSupply;
-	private final Date demandDate;
+	private final Instant demandDate;
 	/**
 	 * Single MRP Record that needs to be allocated.
 	 *
@@ -36,7 +36,7 @@ public /* package */final class MRPCreateSupplyRequest implements IMRPCreateSupp
 	public MRPCreateSupplyRequest(
 			@NonNull final IMaterialPlanningContext mrpContext,
 			@NonNull final Quantity qtyToSupply,
-			@NonNull final Date demandDate,
+			@NonNull final Instant demandDate,
 			@NonNull final List<IMRPRecordAndQty> mrpDemandsToAllocate)
 	{
 		this.mrpContext = mrpContext;
@@ -119,7 +119,7 @@ public /* package */final class MRPCreateSupplyRequest implements IMRPCreateSupp
 	}
 
 	@Override
-	public Date getDemandDate()
+	public Instant getDemandDate()
 	{
 		return demandDate;
 	}

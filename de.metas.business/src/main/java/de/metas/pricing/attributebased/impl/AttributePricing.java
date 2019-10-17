@@ -1,10 +1,14 @@
 package de.metas.pricing.attributebased.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -13,6 +17,8 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.slf4j.Logger;
 
+import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingContext;
@@ -28,18 +34,23 @@ import de.metas.pricing.service.ProductPrices;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class AttributePricing implements IPricingRule
 {
 	private static final Logger logger = LogManager.getLogger(AttributePricing.class);
+	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
+	private final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
 
 	private static final CopyOnWriteArrayList<IProductPriceQueryMatcher> _defaultMatchers = new CopyOnWriteArrayList<>();
 
 	/**
 	 * Allows to add a matcher that will be applied when this rule looks for a matching product price.
-	 * 
+	 *
 	 * @param matcher
 	 */
 	public static final void registerDefaultMatcher(final IProductPriceQueryMatcher matcher)
@@ -103,7 +114,7 @@ public class AttributePricing implements IPricingRule
 
 	/**
 	 * Updates the {@link IPricingResult} using the given <code>productPrice</code>.
-	 * 
+	 *
 	 * @param pricingCtx
 	 * @param result
 	 * @param productPrice
@@ -112,14 +123,12 @@ public class AttributePricing implements IPricingRule
 	protected void setResultForProductPriceAttribute(
 			final IPricingContext pricingCtx,
 			final IPricingResult result,
-			final I_M_ProductPrice productPrice)
+			@NonNull final I_M_ProductPrice productPrice)
 	{
-		Check.assumeNotNull(productPrice, "Parameter productPrice is not null");
-
 		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
-		final ProductCategoryId productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
-		final I_M_PriceList_Version pricelistVersion = productPrice.getM_PriceList_Version();
-		final I_M_PriceList priceList = InterfaceWrapperHelper.create(pricelistVersion.getM_PriceList(), I_M_PriceList.class);
+		final ProductCategoryId productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
+		final I_M_PriceList_Version pricelistVersion = loadOutOfTrx(productPrice.getM_PriceList_Version_ID(), I_M_PriceList_Version.class);
+		final I_M_PriceList priceList = pricelistVersion.getM_PriceList();
 
 		result.setPriceStd(productPrice.getPriceStd());
 		result.setPriceList(productPrice.getPriceList());
@@ -128,27 +137,35 @@ public class AttributePricing implements IPricingRule
 		result.setProductCategoryId(productCategoryId);
 		result.setPriceEditable(productPrice.isPriceEditable());
 		result.setDiscountEditable(productPrice.isDiscountEditable());
-		result.setEnforcePriceLimit(priceList.isEnforcePriceLimit());
+		result.setEnforcePriceLimit(extractEnforcePriceLimit(priceList));
 		result.setTaxIncluded(false);
 		result.setPricingSystemId(PricingSystemId.ofRepoId(priceList.getM_PricingSystem_ID()));
 		result.setPriceListVersionId(PriceListVersionId.ofRepoId(productPrice.getM_PriceList_Version_ID()));
-		result.setC_TaxCategory_ID(productPrice.getC_TaxCategory_ID());
+		result.setTaxCategoryId(TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID()));
 		result.setCalculated(true);
 		// 06942 : use product price uom all the time
-		result.setPrice_UOM_ID(productPrice.getC_UOM_ID());
+		result.setPriceUomId(UomId.ofRepoId(productPrice.getC_UOM_ID()));
 
 		// 08803: store the information about the price relevant attributes
-		final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
 		result.addPricingAttributes(attributePricingBL.extractPricingAttributes(productPrice));
+	}
+
+	private BooleanWithReason extractEnforcePriceLimit(final I_M_PriceList priceList)
+	{
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+		return priceList.isEnforcePriceLimit()
+				? BooleanWithReason.trueBecause(msgBL.translatable("M_PriceList_ID"))
+				: BooleanWithReason.falseBecause(msgBL.translatable("M_PriceList_ID"));
 	}
 
 	/**
 	 * Gets the {@link I_M_ProductPrice} to be used for setting the prices.
-	 * 
+	 *
 	 * It checks if the referenced object from the given {@code pricingCtx} references a {@link I_M_ProductPrice} and explicitly demands a particular product price attribute.
 	 * If that's the case, if returns that product price (if valid!).
 	 * If that's not the case it tries to search for the best matching one, if any.
-	 * 
+	 *
 	 * @param pricingCtx
 	 */
 	private final Optional<? extends I_M_ProductPrice> getProductPrice(final IPricingContext pricingCtx)
@@ -184,8 +201,6 @@ public class AttributePricing implements IPricingRule
 		final IAttributeSetInstanceAware attributeSetInstanceAware = pricingCtx.getAttributeSetInstanceAware().orElse(null);
 		if (attributeSetInstanceAware != null)
 		{
-			final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
-
 			final Optional<IProductPriceAware> explicitProductPriceAware = attributePricingBL.getDynAttrProductPriceAttributeAware(attributeSetInstanceAware);
 			return explicitProductPriceAware;
 		}
@@ -248,18 +263,21 @@ public class AttributePricing implements IPricingRule
 			return Optional.empty();
 		}
 
-		final I_M_PriceList_Version plv = pricingCtx.getM_PriceList_Version();
-		if (plv == null)
+		final I_M_PriceList_Version ctxPriceListVersion = pricingCtx.getM_PriceList_Version();
+		if (ctxPriceListVersion == null)
 		{
 			logger.debug("No M_PriceList_Version found: {}", pricingCtx);
 			return Optional.empty();
 		}
 
-		final I_M_ProductPrice productPrice = ProductPrices.newQuery(plv)
-				.setProductId(pricingCtx.getProductId())
-				.matching(_defaultMatchers)
-				.matchingAttributes(attributeSetInstance)
-				.firstMatching();
+		final I_M_ProductPrice productPrice = ProductPrices.iterateAllPriceListVersionsAndFindProductPrice(
+				ctxPriceListVersion,
+				priceListVersion -> ProductPrices.newQuery(priceListVersion)
+						.setProductId(pricingCtx.getProductId())
+						.onlyValidPrices(true)
+						.matching(_defaultMatchers)
+						.matchingAttributes(attributeSetInstance)
+						.firstMatching());
 
 		if (productPrice == null)
 		{
@@ -272,7 +290,7 @@ public class AttributePricing implements IPricingRule
 
 	/**
 	 * Extracts an ASI from the given {@code pricingCtx}.
-	 * 
+	 *
 	 * @param pricingCtx
 	 * @return
 	 *         <ul>
@@ -293,13 +311,12 @@ public class AttributePricing implements IPricingRule
 		//
 		// Get M_AttributeSetInstance_ID and return it.
 		// NOTE: to respect the method contract, ALWAYS return ZERO if it's not set, no matter if the getter returned -1.
-		final int attributeSetInstanceId = asiAware.getM_AttributeSetInstance_ID();
-		if (attributeSetInstanceId <= 0)
+		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(asiAware.getM_AttributeSetInstance_ID());
+		if (attributeSetInstanceId.isNone())
 		{
 			return null;
 		}
 
-		final I_M_AttributeSetInstance attributeSetInstance = InterfaceWrapperHelper.create(pricingCtx.getCtx(), attributeSetInstanceId, I_M_AttributeSetInstance.class, pricingCtx.getTrxName());
-		return attributeSetInstance;
+		return Services.get(IAttributeDAO.class).getAttributeSetInstanceById(attributeSetInstanceId);
 	}
 }

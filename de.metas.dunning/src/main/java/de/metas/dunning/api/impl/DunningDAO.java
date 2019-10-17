@@ -27,16 +27,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.proxy.Cached;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 
-import de.metas.cache.annotation.CacheCtx;
 import de.metas.dunning.api.IDunningCandidateQuery;
 import de.metas.dunning.api.IDunningCandidateQuery.ApplyAccessFilter;
 import de.metas.dunning.api.IDunningContext;
@@ -45,6 +43,7 @@ import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 
 public class DunningDAO extends AbstractDunningDAO
@@ -64,15 +63,15 @@ public class DunningDAO extends AbstractDunningDAO
 		InterfaceWrapperHelper.save(model);
 	}
 
-	@Cached(cacheName = I_C_Dunning.Table_Name + "_For_Client")
 	@Override
-	public List<I_C_Dunning> retrieveDunnings(@CacheCtx Properties ctx)
+	public List<I_C_Dunning> retrieveDunnings()
 	{
-		final String trxName = ITrx.TRXNAME_None;
-		return new Query(ctx, I_C_Dunning.Table_Name, null, trxName)
-				.setClient_ID()
-				.setOnlyActiveRecords(true)
-				.list(I_C_Dunning.class);
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilderOutOfTrx(I_C_Dunning.class)
+				.addOnlyActiveRecordsFilter()
+				// no need to filter by AD_Client, because C_Dunning doesn't support AD_Cient_ID=0 records
+				.create()
+				.list();
 	}
 
 	@Override
@@ -166,11 +165,11 @@ public class DunningDAO extends AbstractDunningDAO
 		// 04766: allowing to have no application of access filters at all
 		if (ApplyAccessFilter.ACCESS_FILTER_RW.equals(query.getApplyAccessFilter()))
 		{
-			sqlQuery.setApplyAccessFilterRW(true);
+			sqlQuery.setRequiredAccess(Access.WRITE);
 		}
 		else if (ApplyAccessFilter.ACCESS_FILTER_RO.equals(query.getApplyAccessFilter()))
 		{
-			sqlQuery.setApplyAccessFilter(true);
+			sqlQuery.setRequiredAccess(Access.READ);
 		}
 		// 04766: end
 
@@ -219,7 +218,7 @@ public class DunningDAO extends AbstractDunningDAO
 		return new Query(dunningContext.getCtx(), I_C_DunningDoc_Line_Source.Table_Name, whereClause.toString(), dunningContext.getTrxName())
 				.setParameters(params)
 				.setOrderBy(I_C_DunningDoc_Line_Source.COLUMNNAME_C_DunningDoc_Line_Source_ID)
-				.setApplyAccessFilterRW(true) // in order to write off, we need to update the C_DunningDoc_Line_Source
+				.setRequiredAccess(Access.WRITE) // in order to write off, we need to update the C_DunningDoc_Line_Source
 				.setOption(Query.OPTION_IteratorBufferSize, 1000) // reducing the number of selects by increasing the buffer/page size
 				.iterate(I_C_DunningDoc_Line_Source.class);
 	}

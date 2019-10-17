@@ -1,5 +1,7 @@
 package de.metas.cache;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,17 +15,17 @@ package de.metas.cache;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -225,5 +227,21 @@ public class CCacheTest
 		// Test putAll shall override existing value
 		cache.putAll(Collections.singletonMap("key1", "value1_newValue"));
 		Assert.assertEquals("Value shall exist", "value1_newValue", cache.get("key1"));
+	}
+
+	@Test
+	public void test_removalListener()
+	{
+		final HashMap<String, String> removedItems = new HashMap<>();
+
+		final CCache<String, String> cache = CCache.<String, String> builder()
+				.removalListener(removedItems::put)
+				.build();
+
+		cache.put("k1", "v1");
+
+		assertThat(removedItems).isEmpty();
+		cache.remove("k1");
+		assertThat(removedItems).containsEntry("k1", "v1");
 	}
 }

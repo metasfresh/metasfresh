@@ -29,7 +29,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.text.annotation.ToStringBuilder;
@@ -38,6 +37,7 @@ import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPBL;
 import org.eevolution.mrp.api.IMRPContextRunnable;
+import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.api.IMRPDemandToSupplyAllocation;
 import org.eevolution.mrp.api.IMRPSuppliesPool;
 
@@ -192,7 +192,7 @@ public class QtyOnHandMRPSuppliesPool implements IMRPSuppliesPool
 				mrpQtyOnHand.setC_OrderLineSO_ID(mrpDemandRecord.getC_OrderLineSO_ID());
 				//
 				// Save it
-				InterfaceWrapperHelper.save(mrpQtyOnHand);
+				Services.get(IMRPDAO.class).save(mrpQtyOnHand);
 				mrpQtyOnHandToReturn.setValue(mrpQtyOnHand);
 
 				// create MRP demand - MRP supply allocation

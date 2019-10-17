@@ -13,11 +13,11 @@ package de.metas.banking.payment.paymentallocation.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -30,10 +30,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
-import org.compiere.util.Env;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -41,6 +39,8 @@ import com.google.common.base.Suppliers;
 import de.metas.banking.payment.paymentallocation.service.IPayableDocument;
 import de.metas.banking.payment.paymentallocation.service.IPayableDocument.PayableDocumentType;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument;
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -54,7 +54,7 @@ import de.metas.util.Services;
 public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoiceRow
 {
 
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -73,7 +73,7 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 	private final Date dateAcct;
 	private final int C_BPartner_ID;
 	private final String BPartnerName;
-	private final String currencyISOCode;
+	private final CurrencyCode currencyISOCode;
 	private final BigDecimal grandTotal;
 	private final BigDecimal grandTotalConv;
 	private final BigDecimal openAmtConv;
@@ -185,7 +185,13 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 	}
 
 	@Override
-	public String getCurrencyISOCode()
+	public String getCurrencyISOCodeAsString()
+	{
+		return currencyISOCode != null ? currencyISOCode.toThreeLetterCode() : null;
+	}
+	
+	@Override
+	public CurrencyCode getCurrencyISOCode()
 	{
 		return currencyISOCode;
 	}
@@ -332,7 +338,7 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 	}
 
 	/** @return sum of all write-off amounts */
-	private final BigDecimal getWriteOffsSum()
+	private BigDecimal getWriteOffsSum()
 	{
 		BigDecimal writeOffSum = BigDecimal.ZERO;
 		for (final InvoiceWriteOffAmountType type : InvoiceWriteOffAmountType.values())
@@ -448,7 +454,7 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 		setAppliedAmt_As_OpenAmt_Minus_WriteOffAmts();
 	}
 
-	private final void setAppliedAmt_As_OpenAmt_Minus_WriteOffAmts()
+	private void setAppliedAmt_As_OpenAmt_Minus_WriteOffAmts()
 	{
 		final BigDecimal openAmt = getOpenAmtConv();
 		final BigDecimal writeOffSum = getWriteOffsSum();
@@ -515,11 +521,12 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 			throw new AdempiereException("No document reference: " + invoiceRow);
 		}
 
-		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrencyByISOCode(Env.getCtx(), invoiceRow.getCurrencyISOCode());
+		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
+		final Currency currency = currenciesRepo.getByCurrencyCode(invoiceRow.getCurrencyISOCode());
 
 		return PayableDocument.builder()
 				.setC_BPartner_ID(invoiceRow.getC_BPartner_ID())
-				.setC_Currency_ID(currency.getC_Currency_ID())
+				.setC_Currency_ID(currency.getId().getRepoId())
 				.setIsSOTrx(invoiceRow.isCustomerDocument())
 				.setReference(type, reference)
 				.setCreditMemo(creditMemo)
@@ -547,7 +554,7 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 		private Date dateAcct;
 		private Integer C_BPartner_ID;
 		private String BPartnerName;
-		private String currencyISOCode;
+		private CurrencyCode currencyISOCode;
 		private BigDecimal grandTotal;
 		private BigDecimal grandTotalConv;
 		private BigDecimal openAmtConv;
@@ -616,7 +623,7 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 			return this;
 		}
 
-		public Builder setCurrencyISOCode(final String currencyISOCode)
+		public Builder setCurrencyISOCode(final CurrencyCode currencyISOCode)
 		{
 			this.currencyISOCode = currencyISOCode;
 			return this;

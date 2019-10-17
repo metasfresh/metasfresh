@@ -6,16 +6,21 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IParams;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.process.C_Flatrate_Term_Create;
+import de.metas.invoice_gateway.spi.model.BPartnerId;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.ch.lagerkonf.interfaces.I_C_Flatrate_Conditions;
 import de.metas.materialtracking.ch.lagerkonf.interfaces.I_M_Material_Tracking;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.IProductDAO;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 
 /*
@@ -44,6 +49,7 @@ public class C_Flatrate_Term_Create_For_MaterialTracking
 		extends C_Flatrate_Term_Create
 		implements IProcessPrecondition
 {
+	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 
 	private int p_flatrateconditionsID;
 
@@ -80,17 +86,22 @@ public class C_Flatrate_Term_Create_For_MaterialTracking
 	{
 		final IParams para = getParameterAsIParams();
 
-		p_flatrateconditionsID = para.getParameterAsInt(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID);
+		p_flatrateconditionsID = para.getParameterAsInt(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, -1);
 		final int materialTrackingID = getRecord_ID();
 		final I_M_Material_Tracking materialTracking = InterfaceWrapperHelper.create(getCtx(), materialTrackingID, I_M_Material_Tracking.class, getTrxName());
 
 		final I_C_Flatrate_Conditions conditions = InterfaceWrapperHelper.create(getCtx(), p_flatrateconditionsID, I_C_Flatrate_Conditions.class, getTrxName());
 
 		setConditions(conditions);
-		addProduct(materialTracking.getM_Product());
+		addProduct(productsRepo.getById(materialTracking.getM_Product_ID()));
 		setStartDate(materialTracking.getValidFrom());
 		setEndDate(materialTracking.getValidTo());
-		setUserInCharge(materialTracking.getSalesRep());
+
+		final UserId salesRepId = UserId.ofRepoIdOrNull(materialTracking.getSalesRep_ID());
+		final I_AD_User salesRep = salesRepId != null
+				? Services.get(IUserDAO.class).getById(salesRepId)
+				: null;
+		setUserInCharge(salesRep);
 	}
 
 	@Override
@@ -100,9 +111,9 @@ public class C_Flatrate_Term_Create_For_MaterialTracking
 		final I_M_Material_Tracking materialTracking = getProcessInfo().getRecord(I_M_Material_Tracking.class);
 
 		// made this iterator to fit he superclass method
-		final I_C_BPartner partner = materialTracking.getC_BPartner();
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(materialTracking.getC_BPartner_ID());
 		final Iterator<I_C_BPartner> it = queryBL.createQueryBuilder(I_C_BPartner.class, materialTracking)
-				.addEqualsFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, partner.getC_BPartner_ID())
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.create()
 				.iterate(I_C_BPartner.class);
 		return () -> it;

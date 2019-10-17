@@ -26,11 +26,11 @@ package org.adempiere.ad.persistence.modelgen;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.util.lang.ObjectUtils;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.security.TableAccessLevel;
 import de.metas.util.Check;
 
 /**

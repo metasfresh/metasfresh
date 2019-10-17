@@ -2,22 +2,24 @@ package de.metas.procurement.base.impl;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.procurement.base.IPMMProductBL;
 import de.metas.procurement.base.IPMMProductDAO;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -56,8 +58,7 @@ public class PMMProductBL implements IPMMProductBL
 			pmmProduct.setC_BPartner_ID(huPiItemProd.getC_BPartner_ID());
 			pmmProduct.setPackDescription(huPiItemProd.getDescription());
 
-			final I_M_Product product = huPiItemProd.getM_Product();
-			pmmProduct.setM_Product(product);
+			pmmProduct.setM_Product_ID(huPiItemProd.getM_Product_ID());
 		}
 		else
 		{
@@ -110,9 +111,9 @@ public class PMMProductBL implements IPMMProductBL
 	}
 
 	@Override
-	public void updateByBPartner(final I_C_BPartner bpartner)
+	public void updateByBPartner(@NonNull final BPartnerId bpartnerId)
 	{
-		final List<I_PMM_Product> pmmProducts = Services.get(IPMMProductDAO.class).retrieveByBPartner(bpartner);
+		final List<I_PMM_Product> pmmProducts = Services.get(IPMMProductDAO.class).retrieveByBPartner(bpartnerId);
 
 		for (final I_PMM_Product pmmProduct : pmmProducts)
 		{
@@ -169,19 +170,19 @@ public class PMMProductBL implements IPMMProductBL
 	 * If both the lists contain an instance but with different values the result will be -1.
 	 * In case the first list is empty, the result will be 0.
 	 * The results > 0 will be the number of instances from the second list that are set and have matchings in the first list.
-	 * 
+	 *
 	 * @param pmmAttributeInstances
 	 * @param instances
 	 * @return
 	 */
 	private int countInstanceMatchings(final List<I_M_AttributeInstance> pmmAttributeInstances, final List<I_M_AttributeInstance> instances)
 	{
-		// Some AIs don't have a string value, but other sorts of values. 
+		// Some AIs don't have a string value, but other sorts of values.
 		// Don't count them for this BL, because they would lead to false negatives.
 		final List<I_M_AttributeInstance> pmmAttributeInstancesToUse = pmmAttributeInstances.stream()
 				.filter(i -> !Check.isEmpty(i.getValue()))
 				.collect(Collectors.toList());
-		
+
 		if (pmmAttributeInstancesToUse.isEmpty())
 		{
 			// there are no attributes in the pmm product. This pmm Product matches for any ASI
@@ -223,7 +224,7 @@ public class PMMProductBL implements IPMMProductBL
 					break;
 				}
 
-				if (!Check.equals(pmmStringValue,instanceStringValue))
+				if (!Objects.equals(pmmStringValue,instanceStringValue))
 				{
 					// not valid
 					isValid = false;

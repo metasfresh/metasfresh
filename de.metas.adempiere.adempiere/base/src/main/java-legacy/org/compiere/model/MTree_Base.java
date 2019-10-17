@@ -25,23 +25,25 @@ import java.util.Properties;
 
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.model.tree.IPOTreeSupportFactory;
 import org.adempiere.model.tree.ITreeListener;
 import org.adempiere.model.tree.TreeListenerSupport;
 import org.adempiere.model.tree.spi.IPOTreeSupport;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
 import de.metas.cache.CCache;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.TrxRunnable;
+import lombok.NonNull;
 
 /**
  * Base Tree Model. (see also MTree in project base)
@@ -254,7 +256,7 @@ public class MTree_Base extends X_AD_Tree
 	public static MTree_Base get(Properties ctx, int AD_Tree_ID, String trxName)
 	{
 		Integer key = new Integer(AD_Tree_ID);
-		MTree_Base retValue = (MTree_Base)s_cache.get(key);
+		MTree_Base retValue = s_cache.get(key);
 		if (retValue != null)
 			return retValue;
 		retValue = new MTree_Base(ctx, AD_Tree_ID, trxName);
@@ -262,6 +264,11 @@ public class MTree_Base extends X_AD_Tree
 			s_cache.put(key, retValue);
 		return retValue;
 	}	// get
+
+	public static MTree_Base getById(@NonNull final AdTreeId adTreeId)
+	{
+		return get(Env.getCtx(), adTreeId.getRepoId(), ITrx.TRXNAME_None);
+	}
 
 	/** Cache */
 	private static CCache<Integer, MTree_Base> s_cache = new CCache<Integer, MTree_Base>("AD_Tree", 10);
@@ -405,6 +412,7 @@ public class MTree_Base extends X_AD_Tree
 	 * @param newRecord new
 	 * @return true
 	 */
+	@Override
 	protected boolean beforeSave(boolean newRecord)
 	{
 		if (!isActive() || !isAllNodes())
@@ -440,6 +448,7 @@ public class MTree_Base extends X_AD_Tree
 	 * @param success success
 	 * @return success
 	 */
+	@Override
 	protected boolean afterSave(boolean newRecord, boolean success)
 	{
 		if (newRecord)	// Base Node
@@ -459,7 +468,7 @@ public class MTree_Base extends X_AD_Tree
 	 */
 	public void updateNodeChildren(final MTreeNode parent, final List<MTreeNode> children)
 	{
-		Services.get(ITrxManager.class).run(new TrxRunnable()
+		Services.get(ITrxManager.class).runInNewTrx(new TrxRunnable()
 		{
 			@Override
 			public void run(String trxName)

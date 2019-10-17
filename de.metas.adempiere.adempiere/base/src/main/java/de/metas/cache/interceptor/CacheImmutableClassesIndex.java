@@ -26,6 +26,12 @@ package de.metas.cache.interceptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -36,7 +42,6 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.NonNull;
 
 /**
@@ -69,6 +74,14 @@ public final class CacheImmutableClassesIndex
 			.add(Class.class)
 			.add(Method.class)
 			.add(Annotation.class)
+			//
+			// Java Date/Time
+			.add(LocalDate.class)
+			.add(LocalDateTime.class)
+			.add(LocalTime.class)
+			.add(ZonedDateTime.class)
+			.add(Duration.class)
+			.add(Instant.class)
 			//
 			// Some Adempiere types:
 			.add(NamePair.class)

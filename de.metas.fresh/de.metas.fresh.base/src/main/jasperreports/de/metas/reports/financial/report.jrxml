@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-10-13T17:56:09 -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="34" bottomMargin="20" resourceBundle="de/metas/reports/financial/report" uuid="11df06f6-e9a4-49ba-8a97-bd1f787e3c39">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -126,7 +125,7 @@ LIMIT
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center">
-					<font fontName="SansSerif" size="36" isBold="true" isItalic="true" pdfFontName="Helvetica-BoldOblique"/>
+					<font fontName="Arial" size="36" isBold="true" isItalic="true" pdfFontName="Helvetica-BoldOblique"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{report.financial.watermark}]]></textFieldExpression>
 			</textField>

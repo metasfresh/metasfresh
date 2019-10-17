@@ -28,6 +28,7 @@ import static org.compiere.model.I_C_Order.Table_Name;
 
 import java.util.Properties;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.ADialog;
@@ -37,16 +38,15 @@ import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTab.DataNewCopyMode;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.MQuery;
 
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
-
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.MQuery;
 
 public class BPartnerCockpit extends CalloutEngine
 {
@@ -110,7 +110,7 @@ public class BPartnerCockpit extends CalloutEngine
 			final int contactId, final int billContactId)
 	{
 
-		final int SALES_ORDER_WINDOW_ID = 143;
+		final AdWindowId SALES_ORDER_WINDOW_ID = AdWindowId.ofRepoId(143);
 
 		final AWindow soFrame = new AWindow();
 

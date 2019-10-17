@@ -6,8 +6,10 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.Index;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -30,12 +32,12 @@ import lombok.ToString;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -43,16 +45,22 @@ import lombok.ToString;
  */
 
 @Entity
-@Table(name = "msv3_order_header", uniqueConstraints = @UniqueConstraint(name = "order_header_uq", columnNames = { "documentNo", "bpartnerId" }))
+@Table(name = "msv3_order", //
+		uniqueConstraints = @UniqueConstraint(name = "order_uq", columnNames = { "documentNo", "mf_bpartner_id" }),
+		indexes = @Index(name = "order_bpartner_id", columnList = "mf_bpartner_id", unique = false))
 @Getter
 @Setter
 @ToString
 public class JpaOrder extends AbstractEntity
 {
+	@Column(name = "mf_bpartner_id")
 	@NotNull
-	private Integer bpartnerId;
+	private Integer mfBpartnerId;
+
+	@Column(name = "mf_bpartnerlocation_id")
 	@NotNull
-	private Integer bpartnerLocationId;
+	private Integer mfBpartnerLocationId;
+
 	@NotNull
 	private String documentNo;
 	@NotNull
@@ -68,10 +76,12 @@ public class JpaOrder extends AbstractEntity
 	//
 	private boolean syncSent;
 	private Instant syncSentTS;
-	private boolean syncAck;
+
+	private boolean mfSyncAck;
 	private Instant syncAckTS;
-	private boolean syncError;
-	private String syncErrorMsg;
+
+	private boolean mfSyncError;
+	private String mfSyncErrorMsg;
 	private Instant syncErrorTS;
 
 	public void addOrderPackages(@NonNull final List<JpaOrderPackage> orderPackages)
@@ -95,14 +105,14 @@ public class JpaOrder extends AbstractEntity
 
 	public void markSyncAck()
 	{
-		syncAck = true;
+		mfSyncAck = true;
 		syncAckTS = Instant.now();
 	}
 
 	public void markSyncError(final String errorMsg)
 	{
-		syncError = true;
-		syncErrorMsg = errorMsg;
+		mfSyncError = true;
+		mfSyncErrorMsg = errorMsg;
 		syncErrorTS = Instant.now();
 	}
 }

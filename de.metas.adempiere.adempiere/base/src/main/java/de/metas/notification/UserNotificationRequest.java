@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.core.io.Resource;
@@ -16,6 +18,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.event.EventBusConstants;
 import de.metas.event.Topic;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -187,7 +190,7 @@ public class UserNotificationRequest
 
 	public static class UserNotificationRequestBuilder
 	{
-		public UserNotificationRequestBuilder recipientUserId(final int userId)
+		public UserNotificationRequestBuilder recipientUserId(@NonNull final UserId userId)
 		{
 			return recipient(Recipient.user(userId));
 		}
@@ -198,7 +201,7 @@ public class UserNotificationRequest
 		}
 	}
 
-	public static interface TargetAction
+	public interface TargetAction
 	{
 	}
 
@@ -213,7 +216,12 @@ public class UserNotificationRequest
 
 		public static TargetRecordAction ofRecordAndWindow(@NonNull final TableRecordReference record, final int adWindowId)
 		{
-			return builder().record(record).adWindowId(adWindowId).build();
+			return builder().record(record).adWindowId(AdWindowId.optionalOfRepoId(adWindowId)).build();
+		}
+
+		public static TargetRecordAction ofRecordAndWindow(@NonNull final TableRecordReference record, @NonNull final AdWindowId adWindowId)
+		{
+			return builder().record(record).adWindowId(Optional.of(adWindowId)).build();
 		}
 
 		public static TargetRecordAction of(@NonNull final String tableName, final int recordId)
@@ -226,9 +234,13 @@ public class UserNotificationRequest
 			return (TargetRecordAction)targetAction;
 		}
 
-		int adWindowId;
+		@NonNull
+		@Builder.Default
+		Optional<AdWindowId> adWindowId = Optional.empty();
+
 		@NonNull
 		TableRecordReference record;
+
 		String recordDisplayText;
 	}
 

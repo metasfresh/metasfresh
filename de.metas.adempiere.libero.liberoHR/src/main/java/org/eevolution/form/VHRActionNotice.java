@@ -37,7 +37,6 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.ConfirmPanel;
@@ -66,6 +65,8 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 
 /**
  *  @author Oscar Gomez
@@ -539,7 +540,7 @@ public class VHRActionNotice extends CPanel implements FormPanel,VetoableChangeL
 	{
 		String sql = Env.getUserRolePermissions().addAccessSQL(
 				"SELECT hrp.HR_Process_ID,hrp.DocumentNo ||'-'|| hrp.Name,hrp.DocumentNo,hrp.Name FROM HR_Process hrp",
-				"hrp",IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO) + " AND hrp.IsActive = 'Y' ";
+				"hrp",IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ) + " AND hrp.IsActive = 'Y' ";
 		sql += " ORDER BY hrp.DocumentNo, hrp.Name";
 
 		return DB.getKeyNamePairs(sql, true);
@@ -561,7 +562,7 @@ public class VHRActionNotice extends CPanel implements FormPanel,VetoableChangeL
 		fieldEmployee.addItem(pp);		
 		String sql = Env.getUserRolePermissions().addAccessSQL(
 				"SELECT DISTINCT bp.C_BPartner_ID,bp.Name FROM HR_Employee hrpe INNER JOIN C_BPartner bp ON(bp.C_BPartner_ID=hrpe.C_BPartner_ID)",
-				"hrpe",IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO) + " AND hrpe.IsActive = 'Y' ";
+				"hrpe",IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ) + " AND hrpe.IsActive = 'Y' ";
 		if ( process.getHR_Payroll_ID() != 0){
 			sql += " AND (hrpe.HR_Payroll_ID =" +process.getHR_Payroll_ID()+ " OR hrpe.HR_Payroll_ID is NULL)" ;
 			/*if ( process.getHR_Department_ID() != 0 );

@@ -6,8 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -103,7 +103,7 @@ public class MigrationScriptFileLogger
 			final String prm_COMMENT = Services.get(ISysConfigBL.class).getValue("DICTIONARY_ID_COMMENTS");
 
 			// log time and date
-			collector.append("-- ").append(LocalDateTime.now()).append("\n");
+			collector.append("-- ").append(Instant.now()).append("\n");
 			// log sysconfig comment
 			collector.append("-- ").append(prm_COMMENT).append("\n");
 			// log statement

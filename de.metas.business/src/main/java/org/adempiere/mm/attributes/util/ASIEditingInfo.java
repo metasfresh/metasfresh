@@ -1,5 +1,6 @@
 package org.adempiere.mm.attributes.util;
 
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
@@ -7,38 +8,28 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeExcludeBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetExclude;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.MAttribute;
-import org.compiere.model.MAttributeSet;
-import org.compiere.model.MAttributeSetInstance;
 import org.compiere.model.X_M_Attribute;
-import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
 import de.metas.lang.SOTrx;
 import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -73,10 +64,11 @@ import lombok.NonNull;
  */
 public final class ASIEditingInfo
 {
-	public static final ASIEditingInfo of(
+	public static ASIEditingInfo of(
 			final ProductId productId,
 			final AttributeSetInstanceId attributeSetInstanceId,
-			final String callerTableName, final int callerColumnId,
+			final String callerTableName,
+			final int callerColumnId,
 			final SOTrx soTrx)
 	{
 		return builder()
@@ -88,25 +80,17 @@ public final class ASIEditingInfo
 				.build();
 	}
 
-	public static final ASIEditingInfo readonlyASI(final AttributeSetInstanceId attributeSetInstanceId)
-	{
-		return builder()
-				.type(WindowType.StrictASIAttributes)
-				.soTrx(SOTrx.SALES)
-				.attributeSetInstanceId(attributeSetInstanceId)
-				.build();
-	}
-
-	public static final ASIEditingInfo processParameterASI(final AttributeSetInstanceId attributeSetInstanceId)
-	{
-		return builder()
-				.type(WindowType.ProcessParameter)
-				.soTrx(SOTrx.SALES)
-				.attributeSetInstanceId(attributeSetInstanceId)
-				.build();
-	}
+	// services
+	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+	private final IAttributeExcludeBL attributeExcludeBL = Services.get(IAttributeExcludeBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	// Parameters
+	public enum WindowType
+	{
+		Regular, ProductWindow, ProcessParameter, Pricing, StrictASIAttributes
+	}
+
 	private final WindowType _type;
 	private final ProductId _productId;
 	private final AttributeSetInstanceId _attributeSetInstanceId;
@@ -116,8 +100,8 @@ public final class ASIEditingInfo
 
 	// Deducted values
 	private final I_M_AttributeSet _attributeSet;
-	private ImmutableList<MAttribute> _availableAttributes;
-	private MAttributeSetInstance _attributeSetInstance;
+	private ImmutableList<I_M_Attribute> _availableAttributes;
+	private I_M_AttributeSetInstance _attributeSetInstance;
 	private final boolean _allowSelectExistingASI;
 	private final boolean isLotEnabled;
 	private final boolean isSerNoEnabled;
@@ -141,15 +125,14 @@ public final class ASIEditingInfo
 		_soTrx = soTrx;
 
 		// Deducted values, we assume params are set
-		_attributeSet = retrieveM_AttributeSet();
+		_attributeSet = retrieveAttributeSetOrNull();
 		if (attributeSetInstanceId == null || attributeSetInstanceId.isNone())
 		{
 			_attributeSetInstance = null;
 		}
 		else
 		{
-			final I_M_AttributeSetInstance asi = InterfaceWrapperHelper.loadOutOfTrx(attributeSetInstanceId, I_M_AttributeSetInstance.class);
-			_attributeSetInstance = LegacyAdapters.convertToPO(asi);
+			_attributeSetInstance = attributesRepo.getAttributeSetInstanceById(attributeSetInstanceId);
 		}
 
 		//
@@ -199,19 +182,9 @@ public final class ASIEditingInfo
 		return _type;
 	}
 
-	private ProductId getProductId()
+	public ProductId getProductId()
 	{
 		return _productId;
-	}
-
-	private I_M_Product getM_Product()
-	{
-		final ProductId productId = getProductId();
-		if (productId == null)
-		{
-			return null;
-		}
-		return Services.get(IProductDAO.class).getById(productId);
 	}
 
 	public AttributeSetInstanceId getAttributeSetInstanceId()
@@ -219,7 +192,7 @@ public final class ASIEditingInfo
 		return _attributeSetInstanceId;
 	}
 
-	public MAttributeSetInstance getM_AttributeSetInstance()
+	public I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return _attributeSetInstance;
 	}
@@ -234,9 +207,14 @@ public final class ASIEditingInfo
 		return _calledColumnId;
 	}
 
+	public SOTrx getSOTrx()
+	{
+		return _soTrx;
+	}
+
 	public boolean isSOTrx()
 	{
-		return _soTrx.toBoolean();
+		return getSOTrx().toBoolean();
 	}
 
 	@Nullable
@@ -263,16 +241,16 @@ public final class ASIEditingInfo
 		return attributeSet == null ? "" : attributeSet.getDescription();
 	}
 
-	private I_M_AttributeSet retrieveM_AttributeSet()
+	private I_M_AttributeSet retrieveAttributeSetOrNull()
 	{
-		final WindowType type = getWindowType();
+		final WindowType windowType = getWindowType();
 
 		final I_M_AttributeSet attributeSet;
-		switch (type)
+		switch (windowType)
 		{
 			case Regular:
 			{
-				attributeSet = getProductAttributeSet();
+				attributeSet = retrieveProductAttributeSetOrNull();
 				// Product has no Instance Attributes
 				if (attributeSet != null && !attributeSet.isInstanceAttribute())
 				{
@@ -282,19 +260,19 @@ public final class ASIEditingInfo
 			}
 			case ProductWindow:
 			{
-				attributeSet = getProductAttributeSet();
+				attributeSet = retrieveProductAttributeSetOrNull();
 				break;
 			}
 			case ProcessParameter:
 			{
-				final I_M_AttributeSet productAttributeSet = getProductAttributeSet();
+				final I_M_AttributeSet productAttributeSet = retrieveProductAttributeSetOrNull();
 				if (productAttributeSet != null)
 				{
 					attributeSet = productAttributeSet;
 					break;
 				}
 
-				final MAttributeSetInstance asi = getM_AttributeSetInstance();
+				final I_M_AttributeSetInstance asi = getM_AttributeSetInstance();
 				attributeSet = getAttributeSet(asi);
 				break;
 			}
@@ -305,7 +283,7 @@ public final class ASIEditingInfo
 			}
 			case StrictASIAttributes:
 			{
-				final MAttributeSetInstance asi = getM_AttributeSetInstance();
+				final I_M_AttributeSetInstance asi = getM_AttributeSetInstance();
 				attributeSet = getAttributeSet(asi);
 				break;
 			}
@@ -326,20 +304,19 @@ public final class ASIEditingInfo
 			return null;
 		}
 
-		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-
 		final AttributeSetId attributeSetId = AttributeSetId.ofRepoIdOrNone(asi.getM_AttributeSet_ID());
 		return attributesRepo.getAttributeSetById(attributeSetId);
 	}
 
-	private I_M_AttributeSet getProductAttributeSet()
+	private I_M_AttributeSet retrieveProductAttributeSetOrNull()
 	{
-		final I_M_Product product = getM_Product();
-		if (product == null)
+		final ProductId productId = getProductId();
+		if (productId == null)
 		{
 			return null;
 		}
-		return Services.get(IProductBL.class).getM_AttributeSet(product);
+
+		return productBL.getAttributeSetOrNull(productId);
 	}
 
 	public boolean isLotEnabled()
@@ -359,16 +336,14 @@ public final class ASIEditingInfo
 
 	public boolean isExcludedAttributeSet()
 	{
-		final I_M_AttributeSet attributeSet = getM_AttributeSet();
-		final boolean attributeSetExists = attributeSet != null && attributeSet.getM_AttributeSet_ID() > 0;
+		final AttributeSetId attributeSetId = getAttributeSetId();
 
 		//
 		// Exclude if it was configured to be excluded
-		if (attributeSetExists)
+		if (!attributeSetId.isNone())
 		{
-			final IAttributeExcludeBL excludeBL = Services.get(IAttributeExcludeBL.class);
-			final I_M_AttributeSetExclude asExclude = excludeBL.getAttributeSetExclude(attributeSet, getCallerColumnId(), isSOTrx());
-			final boolean exclude = asExclude != null && excludeBL.isFullExclude(asExclude);
+			final I_M_AttributeSetExclude asExclude = attributeExcludeBL.getAttributeSetExclude(attributeSetId, getCallerColumnId(), getSOTrx());
+			final boolean exclude = asExclude != null && attributeExcludeBL.isFullExclude(asExclude);
 			if (exclude)
 			{
 				return true; // exclude
@@ -377,7 +352,7 @@ public final class ASIEditingInfo
 
 		//
 		// If no attributeSet, find out a default per each window type
-		if (!attributeSetExists)
+		if (attributeSetId.isNone())
 		{
 			// Product window requires a valid attributeSet.
 			final WindowType type = getWindowType();
@@ -400,7 +375,7 @@ public final class ASIEditingInfo
 		return false; // don't exclude
 	}
 
-	public List<MAttribute> getAvailableAttributes()
+	public List<I_M_Attribute> getAvailableAttributes()
 	{
 		if (_availableAttributes == null)
 		{
@@ -418,66 +393,52 @@ public final class ASIEditingInfo
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private ImmutableList<MAttribute> retrieveAvailableAttributes()
+	private ImmutableList<I_M_Attribute> retrieveAvailableAttributes()
 	{
 		final WindowType type = getWindowType();
-		final MAttributeSet attributeSet = LegacyAdapters.convertToPO(getM_AttributeSet());
+		final AttributeSetInstanceId attributeSetInstanceId = getAttributeSetInstanceId();
+		final AttributeSetId attributeSetId = getAttributeSetId();
+		final SOTrx soTrx = getSOTrx();
 		final int callerColumnId = getCallerColumnId();
-		final boolean isSOTrx = isSOTrx();
 
-		final Stream<MAttribute> attributes;
+		final Stream<I_M_Attribute> attributes;
 		switch (type)
 		{
 			case Regular:
 			{
-				attributes = retrieveAvailableAttributeSetAndInstanceAttributes(attributeSet, getAttributeSetInstanceId())
+				attributes = retrieveAvailableAttributeSetAndInstanceAttributes(attributeSetId, attributeSetInstanceId)
 						.stream();
 				break;
 			}
 			case ProductWindow:
 			{
-				Check.assumeNotNull(attributeSet, "Parameter attributeSet is not null");
-				attributes = Stream.of(attributeSet.getMAttributes(false)); // non-instance attributes
+				attributes = attributesRepo
+						.getAttributesByAttributeSetId(attributeSetId)
+						.stream()
+						.filter(attribute -> !attribute.isInstanceAttribute()); // non-instance attributes
 				break;
 			}
 			case ProcessParameter:
 			{
 				// All attributes
-				attributes = Services.get(IQueryBL.class)
-						.createQueryBuilder(MAttribute.class, Env.getCtx(), ITrx.TRXNAME_None)
-						.addOnlyActiveRecordsFilter()
-						.addOnlyContextClient()
-						//
-						.orderBy()
-						.addColumn(I_M_Attribute.COLUMNNAME_Name)
-						.addColumn(I_M_Attribute.COLUMNNAME_M_Attribute_ID)
-						.endOrderBy()
-						//
-						.create()
-						.stream(MAttribute.class);
+				attributes = attributesRepo.getAllAttributes()
+						.stream()
+						.sorted(Comparator.comparing(I_M_Attribute::getName)
+								.thenComparing(I_M_Attribute::getM_Attribute_ID));
 				break;
 			}
 			case Pricing:
 			{
-				attributes = Services.get(IQueryBL.class)
-						.createQueryBuilder(MAttribute.class, Env.getCtx(), ITrx.TRXNAME_None)
-						.addOnlyActiveRecordsFilter()
-						.addOnlyContextClient()
-						.addEqualsFilter(I_M_Attribute.COLUMNNAME_IsPricingRelevant, true)
-						.addEqualsFilter(I_M_Attribute.COLUMNNAME_AttributeValueType, X_M_Attribute.ATTRIBUTEVALUETYPE_List) // atm only list attributes are supported, see IPricingAttribute
-						//
-						.orderBy()
-						.addColumn(I_M_Attribute.COLUMNNAME_Name)
-						.addColumn(I_M_Attribute.COLUMNNAME_M_Attribute_ID)
-						.endOrderBy()
-						//
-						.create()
-						.stream(MAttribute.class);
+				attributes = attributesRepo.getAllAttributes()
+						.stream()
+						.sorted(Comparator.comparing(I_M_Attribute::getName)
+								.thenComparing(I_M_Attribute::getM_Attribute_ID))
+						.filter(attribute -> isPricingRelevantAttribute(attribute));
 				break;
 			}
 			case StrictASIAttributes:
 			{
-				attributes = retrieveAvailableAttributeSetAndInstanceAttributes(attributeSet, getAttributeSetInstanceId())
+				attributes = retrieveAvailableAttributeSetAndInstanceAttributes(attributeSetId, attributeSetInstanceId)
 						.stream();
 				break;
 			}
@@ -487,11 +448,15 @@ public final class ASIEditingInfo
 			}
 		}
 
-		final IAttributeExcludeBL attributeExcludeBL = Services.get(IAttributeExcludeBL.class);
-
 		return attributes
-				.filter(attribute -> attributeSet == null || !attributeExcludeBL.isExcludedAttribute(attribute, attributeSet, callerColumnId, isSOTrx))
-				.collect(GuavaCollectors.toImmutableList());
+				.filter(attribute -> attributeSetId.isNone() || !attributeExcludeBL.isExcludedAttribute(attribute, attributeSetId, callerColumnId, soTrx))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private boolean isPricingRelevantAttribute(final I_M_Attribute attribute)
+	{
+		return attribute.isPricingRelevant()
+				&& X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attribute.getAttributeValueType());
 	}
 
 	/**
@@ -500,48 +465,38 @@ public final class ASIEditingInfo
 	 * @param attributeSetInstanceId
 	 * @return list of available attributeSet's instance attributes, merged with the attributes which are currently present in our ASI (even if they are not present in attribute set)
 	 */
-	private static final List<MAttribute> retrieveAvailableAttributeSetAndInstanceAttributes(
-			@Nullable final MAttributeSet attributeSet,
-			final AttributeSetInstanceId attributeSetInstanceId)
+	private List<I_M_Attribute> retrieveAvailableAttributeSetAndInstanceAttributes(
+			@Nullable final AttributeSetId attributeSetId,
+			@Nullable final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		final LinkedHashMap<Integer, MAttribute> attributes = new LinkedHashMap<>(); // preserve the order
+		final LinkedHashMap<Integer, I_M_Attribute> attributes = new LinkedHashMap<>(); // preserve the order
 
 		//
 		// Retrieve attribute set's instance attributes,
 		// and index them by M_Attribute_ID
-		if (attributeSet != null)
+		if (attributeSetId != null && !attributeSetId.isNone())
 		{
-			Stream.of(attributeSet.getMAttributes(true))
+			attributesRepo
+					.getAttributesByAttributeSetId(attributeSetId)
+					.stream()
+					.filter(I_M_Attribute::isInstanceAttribute)
 					.forEach(attribute -> attributes.put(attribute.getM_Attribute_ID(), attribute));
 		}
 
 		//
 		// If we have an ASI then fetch the attributes from ASI which are missing in attributeSet
 		// and add them to our "attributes" index.
-		if(AttributeSetInstanceId.isRegular(attributeSetInstanceId))
+		if (AttributeSetInstanceId.isRegular(attributeSetInstanceId))
 		{
-			Services.get(IQueryBL.class)
-					.createQueryBuilderOutOfTrx(I_M_AttributeInstance.class)
-					.addEqualsFilter(I_M_AttributeInstance.COLUMN_M_AttributeSetInstance_ID, attributeSetInstanceId)
-					//
-					.andCollect(I_M_AttributeInstance.COLUMN_M_Attribute_ID)
-					.addNotInArrayFilter(I_M_Attribute.COLUMN_M_Attribute_ID, attributes.keySet()) // skip already loaded attributes
-					.orderBy()
-					.addColumn(I_M_Attribute.COLUMN_Name)
-					.addColumn(I_M_Attribute.COLUMN_M_Attribute_ID)
-					.endOrderBy()
-					//
-					.create()
-					.stream(MAttribute.class)
+			final Set<Integer> alreadyLoadedAttributeIds = attributes.keySet();
+			final Set<AttributeId> asiAttributeIds = attributesRepo.getAttributeIdsByAttributeSetInstanceId(attributeSetInstanceId);
+			final Set<AttributeId> attributeIdsToLoad = Sets.difference(asiAttributeIds, alreadyLoadedAttributeIds);
+
+			attributesRepo.getAttributesByIds(attributeIdsToLoad)
 					.forEach(attribute -> attributes.put(attribute.getM_Attribute_ID(), attribute));
 		}
 
 		//
 		return ImmutableList.copyOf(attributes.values());
-	}
-
-	public static enum WindowType
-	{
-		Regular, ProductWindow, ProcessParameter, Pricing, StrictASIAttributes
 	}
 }

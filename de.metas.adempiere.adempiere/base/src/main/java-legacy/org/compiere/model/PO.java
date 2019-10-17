@@ -28,6 +28,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,9 +50,9 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.model.X_AD_MigrationStep;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.persistence.po.INoDataFoundHandler;
 import org.adempiere.ad.persistence.po.NoDataFoundHandlers;
-import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.session.ChangeLogRecord;
@@ -98,12 +99,13 @@ import de.metas.document.sequence.impl.IPreliminaryDocumentNoBuilder;
 import de.metas.i18n.IModelTranslation;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
-import de.metas.i18n.po.POModelTranslationMap;
 import de.metas.i18n.po.POTrlInfo;
 import de.metas.i18n.po.POTrlRepository;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.PInstanceId;
+import de.metas.security.TableAccessLevel;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -228,7 +230,9 @@ public abstract class PO
 	{
 
 		if (ctx == null)
+		{
 			throw new IllegalArgumentException("No Context");
+		}
 		p_ctx = ctx;
 		m_trxName = trxName;
 
@@ -240,7 +244,9 @@ public abstract class PO
 
 		p_info = initPO(ctx);
 		if (p_info == null || p_info.getTableName() == null)
+		{
 			throw new IllegalArgumentException("Invalid PO Info - " + p_info);
+		}
 		m_KeyColumns = p_info.getKeyColumnNamesAsArray();
 		//
 		final int size = p_info.getColumnCount();
@@ -249,9 +255,13 @@ public abstract class PO
 		m_valueLoaded = new boolean[size]; // metas
 
 		if (rs != null)
+		{
 			load(rs);		// will not have virtual columns
+		}
 		else
+		{
 			load(ID, trxName);
+		}
 	}   // PO
 
 	/**
@@ -267,7 +277,9 @@ public abstract class PO
 		this(ctx, 0, null, null);	// create new
 		//
 		if (source != null)
+		{
 			copyValues(source, this);
+		}
 		setAD_Client_ID(AD_Client_ID);
 		setAD_Org_ID(AD_Org_ID);
 	}	// PO
@@ -334,8 +346,6 @@ public abstract class PO
 	/** Zero Integer */
 	protected static final Integer I_ZERO = new Integer(0);
 	private static final Integer I_ZERO_NATIVESEQUENCE = new Integer(0);
-	/** Accounting Columns */
-	private List<String> s_acctColumns = null;
 
 	/** Trifon - Indicates that this record is created by replication functionality. */
 	private boolean m_isReplication = false;
@@ -398,10 +408,14 @@ public abstract class PO
 		// metas: begin
 		int idx = get_ColumnIndex("Value");
 		if (idx >= 0)
+		{
 			sb.append(", Value=").append(get_Value(idx));
+		}
 		idx = get_ColumnIndex("Name");
 		if (idx >= 0)
+		{
 			sb.append(", Name=").append(get_Value(idx));
+		}
 
 		// display the trxName (easy for debugging)
 		sb.append(", trxName=").append(get_TrxName());
@@ -421,11 +435,17 @@ public abstract class PO
 	public boolean equals(final Object cmp)
 	{
 		if (this == cmp)
+		{
 			return true;
+		}
 		if (cmp == null)
+		{
 			return false;
+		}
 		if (!(cmp instanceof PO))
+		{
 			return false;
+		}
 		if (cmp.getClass().equals(this.getClass()))
 		{
 			// if both ID's are zero they can't be compared by ID
@@ -454,23 +474,37 @@ public abstract class PO
 	public int compare(final Object o1, final Object o2)
 	{
 		if (o1 == null)
+		{
 			return -1;
+		}
 		else if (o2 == null)
+		{
 			return 1;
+		}
 		if (!(o1 instanceof PO))
+		{
 			throw new ClassCastException("Not PO -1- " + o1);
+		}
 		if (!(o2 instanceof PO))
+		{
 			throw new ClassCastException("Not PO -2- " + o2);
+		}
 		// same class
 		if (o1.getClass().equals(o2.getClass()))
 		{
 			int index = get_ColumnIndex("DocumentNo");
 			if (index == -1)
+			{
 				index = get_ColumnIndex("Value");
+			}
 			if (index == -1)
+			{
 				index = get_ColumnIndex("Name");
+			}
 			if (index == -1)
+			{
 				index = get_ColumnIndex("Description");
+			}
 			if (index != -1)
 			{
 				final PO po1 = (PO)o1;
@@ -478,9 +512,13 @@ public abstract class PO
 				final PO po2 = (PO)o2;
 				final Object comp2 = po2.get_Value(index);
 				if (comp1 == null)
+				{
 					return -1;
+				}
 				else if (comp2 == null)
+				{
 					return 1;
+				}
 				return comp1.toString().compareTo(comp2.toString());
 			}
 		}
@@ -533,7 +571,9 @@ public abstract class PO
 
 		final Object oo = m_IDs[0];
 		if (oo != null && oo instanceof Integer)
+		{
 			return ((Integer)oo).intValue();
+		}
 		return 0;
 	}   // getID
 
@@ -596,7 +636,9 @@ public abstract class PO
 		if (m_newValues[index] != null)
 		{
 			if (m_newValues[index].equals(Null.NULL))
+			{
 				return null;
+			}
 			return m_newValues[index];
 		}
 
@@ -619,9 +661,13 @@ public abstract class PO
 	{
 		final Object value = get_Value(index);
 		if (value == null)
+		{
 			return 0;
+		}
 		if (value instanceof Integer)
+		{
 			return ((Integer)value).intValue();
+		}
 		try
 		{
 			return Integer.parseInt(value.toString());
@@ -774,9 +820,13 @@ public abstract class PO
 	{
 		final Object value = get_ValueOld(index);
 		if (value == null)
+		{
 			return 0;
+		}
 		if (value instanceof Integer)
+		{
 			return ((Integer)value).intValue();
+		}
 		try
 		{
 			return Integer.parseInt(value.toString());
@@ -819,7 +869,9 @@ public abstract class PO
 		// metas: end
 
 		if (m_newValues[index] == null)
+		{
 			return false;
+		}
 
 		// metas: normalize null values before comparing them (04219)
 		Object newValue = m_newValues[index];
@@ -882,11 +934,15 @@ public abstract class PO
 		final Object nValue = m_newValues[index];
 		// No new Value or NULL
 		if (nValue == null || nValue == Null.NULL)
+		{
 			return null;
+		}
 		//
 		final Object oValue = m_oldValues[index];
 		if (oValue == null || oValue == Null.NULL)
+		{
 			return nValue;
+		}
 		if (nValue instanceof BigDecimal)
 		{
 			final BigDecimal obd = (BigDecimal)oValue;
@@ -934,7 +990,9 @@ public abstract class PO
 	{
 		if (value instanceof String && ColumnName.equals("WhereClause")
 				&& value.toString().toUpperCase().indexOf("=NULL") != -1)
+		{
 			log.warn("Invalid Null Value - " + ColumnName + "=" + value);
+		}
 
 		final int index = get_ColumnIndex(ColumnName);
 		if (index < 0)
@@ -968,7 +1026,7 @@ public abstract class PO
 	{
 		if (index < 0 || index >= get_ColumnCount())
 		{
-			log.warn("Index invalid - " + index);
+			log.warn("Index invalid - {}", index);
 			return false;
 		}
 		final String ColumnName = p_info.getColumnName(index);
@@ -976,8 +1034,16 @@ public abstract class PO
 		if (p_info.isVirtualColumn(index))
 		{
 			final AdempiereException ex = new AdempiereException("Setting a Virtual Column is not allowed: " + ColumnName);
-			log.warn(ex.getLocalizedMessage(), ex);
+			log.warn("", ex);
 			return false;
+		}
+		if(m_currentChangeType != null && m_currentChangeType.isAfter())
+		{
+			AdempiereException.logWarningIfDeveloperMode(log, () -> new AdempiereException("Changing " + this + " on AFTER NEW/CHANGE shall be avoided because those changes won't be persisted in database.")
+					.appendParametersToMessage()
+					.setParameter("columnName", ColumnName)
+					.setParameter("value", value));
+			// NOTE: don't return, allow setting the value because maybe some legacy code depends on it. At least we informed the developer.
 		}
 
 		final Object valueToUse = POUtils.stripZerosAndLogIssueIfBigDecimalScaleTooBig(value, this);
@@ -992,7 +1058,7 @@ public abstract class PO
 			final Object oldValue = get_ValueOld(index);
 			if (Objects.equals(oldValue, valueToUse))
 			{
-				// Value did not changed.
+				// Value was not changed
 
 				// Don't return here, but allow actually setting the value
 				// because it could be that someone changed the "m_newValues" by using set_ValueNoCheck()
@@ -1133,7 +1199,9 @@ public abstract class PO
 				{
 					final StringBuilder validValues = new StringBuilder();
 					for (final ValueNamePair vp : MRefList.getList(getCtx(), p_info.getColumn(index).AD_Reference_Value_ID, false))
+					{
 						validValues.append(" - ").append(vp.getValue());
+					}
 					throw new IllegalArgumentException(ColumnName + " Invalid value - "
 							+ valueToUse + " - Reference_ID=" + p_info.getColumn(index).AD_Reference_Value_ID + validValues.toString());
 				}
@@ -1315,20 +1383,30 @@ public abstract class PO
 			return set_Value(columnName, value);
 		}
 		if (m_custom == null)
+		{
 			m_custom = new HashMap<>();
+		}
 		String valueString = "NULL";
 		if (value == null)
-			;
+		{
+
+		}
 		else if (value instanceof Number)
+		{
 			valueString = value.toString();
+		}
 		else if (value instanceof Boolean)
 		{
 			valueString = DB.TO_BOOLEAN((Boolean)value);
 		}
 		else if (value instanceof Timestamp)
+		{
 			valueString = DB.TO_DATE((Timestamp)value, false);
-		else // if (value instanceof String)
+		}
+		else
+		{
 			valueString = DB.TO_STRING(value.toString());
+		}
 		// Save it
 		log.debug("Set custom column: {}={}", columnName, valueString);
 		m_custom.put(columnName, valueString);
@@ -1443,14 +1521,20 @@ public abstract class PO
 	{
 		final Object value = currentValue ? get_Value(columnName) : get_ValueOld(columnName);
 		if (value == null)
+		{
 			return "./.";
+		}
 		final String retValue = value.toString();
 		final int index = get_ColumnIndex(columnName);
 		if (index < 0)
+		{
 			return retValue;
+		}
 		final int dt = get_ColumnDisplayType(index);
 		if (DisplayType.isText(dt) || DisplayType.YesNo == dt)
+		{
 			return retValue;
+		}
 		// Lookup
 		final Lookup lookup = get_ColumnLookup(index);
 		if (lookup != null)
@@ -1546,7 +1630,7 @@ public abstract class PO
 						|| fromColumnName.equals("Processed") // metas: tsa: us215
 				)
 				{
-					;	// ignore / skip this column
+						// ignore / skip this column
 				}
 				else
 				{
@@ -1570,9 +1654,10 @@ public abstract class PO
 			{
 				final String colName = from.p_info.getColumnName(i); // metas
 				if (from.p_info.isVirtualColumn(i)
-						|| from.p_info.isKey(i)) 		// KeyColumn
+						|| from.p_info.isKey(i))
+				{
 					continue;
-				// metas: begin: us215
+				}
 				else if (honorIsCalculated && from.p_info.isCalculated(i))
 				{
 					final CopyRecordSupport cps = (CopyRecordSupport)to.getDynAttribute(DYNATTR_CopyRecordSupport);
@@ -1722,7 +1807,7 @@ public abstract class PO
 						return load0(trxName, true); // this is the retry, so isRetry=true this time
 					}
 				}
-				log.error("NO Data found for " + get_WhereClause(true) + ", trxName=" + m_trxName, new Exception());
+				log.error("NO Data found for " + get_WhereClause(true) + ", trxName=" + m_trxName, new Exception("trace"));
 				m_IDs = new Object[] { I_ZERO };
 				success = false;
 				// throw new DBException("NO Data found for " + get_WhereClause(true));
@@ -1752,7 +1837,9 @@ public abstract class PO
 		{
 			String msg = "";
 			if (m_trxName != null)
+			{
 				msg = "[" + m_trxName + "] - ";
+			}
 			msg += get_WhereClause(true)
 					// + ", Index=" + index
 					// + ", Column=" + get_ColumnName(index)
@@ -1792,9 +1879,13 @@ public abstract class PO
 		for (index = 0; index < size; index++)
 		{
 			if (p_info.isLazyLoading(index))
+			{
 				continue;
+			}
 			if (!loadColumn(index, rs))
+			{
 				success = false;
+			}
 		}
 		m_createNew = false;
 		setKeyInfo();
@@ -1811,21 +1902,33 @@ public abstract class PO
 		try
 		{
 			if (clazz == Integer.class)
+			{
 				m_oldValues[index] = decrypt(index, rs.getInt(columnName));
+			}
 			else if (clazz == BigDecimal.class)
+			{
 				m_oldValues[index] = decrypt(index, rs.getBigDecimal(columnName));
+			}
 			else if (clazz == Boolean.class)
 			{
 				m_oldValues[index] = StringUtils.toBoolean(decrypt(index, rs.getString(columnName)));
 			}
 			else if (clazz == Timestamp.class)
+			{
 				m_oldValues[index] = decrypt(index, rs.getTimestamp(columnName));
+			}
 			else if (DisplayType.isLOB(dt))
+			{
 				m_oldValues[index] = get_LOB(rs.getObject(columnName));
+			}
 			else if (clazz == String.class)
+			{
 				m_oldValues[index] = decrypt(index, rs.getString(columnName));
+			}
 			else
+			{
 				m_oldValues[index] = loadSpecial(rs, index);
+			}
 
 			//
 			// If the column's value was NULL, set null to our old values array.
@@ -1839,7 +1942,9 @@ public abstract class PO
 			m_valueLoaded[index] = true; // mark the column as loaded
 			//
 			if (log.isTraceEnabled())
+			{
 				log.trace(String.valueOf(index) + ": " + p_info.getColumnName(index) + "(" + p_info.getColumnClass(index) + ") = " + m_oldValues[index]);
+			}
 		}
 		catch (final SQLException e)
 		{
@@ -1912,30 +2017,45 @@ public abstract class PO
 			final String columnName = p_info.getColumnName(index);
 			final String value = hmIn.get(columnName);
 			if (value == null)
+			{
 				continue;
+			}
 			final Class<?> clazz = p_info.getColumnClass(index);
 			final int dt = p_info.getColumnDisplayType(index);
 			try
 			{
 				if (clazz == Integer.class)
+				{
 					m_oldValues[index] = Integer.parseInt(value);
+				}
 				else if (clazz == BigDecimal.class)
+				{
 					m_oldValues[index] = new BigDecimal(value);
+				}
 				else if (clazz == Boolean.class)
 				{
 					m_oldValues[index] = StringUtils.toBoolean(value);
 				}
 				else if (clazz == Timestamp.class)
+				{
 					m_oldValues[index] = Timestamp.valueOf(value);
+				}
 				else if (DisplayType.isLOB(dt))
+				{
 					m_oldValues[index] = null;	// get_LOB (rs.getObject(columnName));
+				}
 				else if (clazz == String.class)
+				{
 					m_oldValues[index] = value;
-				else
+				}
+				else {
 					m_oldValues[index] = null;	// loadSpecial(rs, index);
+				}
 				//
 				if (log.isTraceEnabled())
+				{
 					log.trace(String.valueOf(index) + ": " + p_info.getColumnName(index) + "(" + p_info.getColumnClass(index) + ") = " + m_oldValues[index]);
+				}
 			}
 			catch (final Exception e)
 			{
@@ -2035,34 +2155,51 @@ public abstract class PO
 			// Don't insert NULL values (allows Database defaults)
 			if (value == null
 					|| p_info.isVirtualColumn(i))
+			{
 				continue;
+			}
 			// Display Type
 			final int dt = p_info.getColumnDisplayType(i);
 			// Based on class of definition, not class of value
 			final Class<?> c = p_info.getColumnClass(i);
 			String stringValue = null;
 			if (c == Object.class)
-				;	// saveNewSpecial (value, i));
+			{
+					// saveNewSpecial (value, i));
+			}
 			else if (value == null || value.equals(Null.NULL))
-				;
+			{
+
+			}
 			else if (value instanceof Integer || value instanceof BigDecimal)
+			{
 				stringValue = value.toString();
+			}
 			else if (c == Boolean.class)
 			{
 				final boolean bValue = StringUtils.toBoolean(value);
 				stringValue = Env.toString(bValue);
 			}
 			else if (value instanceof Timestamp)
+			{
 				stringValue = value.toString();
+			}
 			else if (c == String.class)
+			{
 				stringValue = (String)value;
+			}
 			else if (DisplayType.isLOB(dt))
-				;
-			else
-				;	// saveNewSpecial (value, i));
+			{
+
+			}
+			else {
+					// saveNewSpecial (value, i));
+			}
 			//
 			if (stringValue != null)
+			{
 				hmOut.put(p_info.getColumnName(i), stringValue);
+			}
 		}
 		// Custom Columns
 		if (m_custom != null)
@@ -2074,7 +2211,9 @@ public abstract class PO
 				// int index = p_info.getColumnIndex(column);
 				final String value = m_custom.get(column);
 				if (value != null)
+				{
 					hmOut.put(column, value);
+				}
 			}
 			m_custom = null;
 		}
@@ -2141,35 +2280,58 @@ public abstract class PO
 	 */
 	protected final void setStandardDefaults()
 	{
-		// TODO: metas: 01537 - should we check here if object is stalled?
-
 		final Properties ctx = getCtx();
+		final UserId loggedUserId = Env.getLoggedUserIdIfExists(ctx).orElse(UserId.SYSTEM);
+		final Timestamp now = new Timestamp(System.currentTimeMillis());
+		final int adClientId = Env.getAD_Client_ID(ctx);
+		final int adOrgId = Env.getAD_Org_ID(ctx);
 
-		final int size = get_ColumnCount();
-		for (int i = 0; i < size; i++)
+		final int columnsCount = get_ColumnCount();
+		for (int i = 0; i < columnsCount; i++)
 		{
 			if (p_info.isVirtualColumn(i))
+			{
 				continue;
+			}
+
 			final String colName = p_info.getColumnName(i);
 			// Set Standard Values
-			if (colName.endsWith("tedBy"))
-				m_newValues[i] = Env.getAD_User_ID(ctx);
+			if (colName.equals("CreatedBy") || colName.equals("UpdatedBy"))
+			{
+				m_newValues[i] = loggedUserId.getRepoId();
+			}
 			else if (colName.equals("Created") || colName.equals("Updated"))
-				m_newValues[i] = new Timestamp(System.currentTimeMillis());
-			else if (colName.equals(p_info.getTableName() + "_ID"))     // KeyColumn
+			{
+				m_newValues[i] = now;
+			}
+			else if (colName.equals(p_info.getTableName() + "_ID"))
+			{
 				m_newValues[i] = I_ZERO;
+			}
 			else if (colName.equals("IsActive"))
+			{
 				m_newValues[i] = Boolean.TRUE;
+			}
 			else if (colName.equals("AD_Client_ID"))
-				m_newValues[i] = Env.getAD_Client_ID(ctx);
+			{
+				m_newValues[i] = adClientId;
+			}
 			else if (colName.equals("AD_Org_ID"))
-				m_newValues[i] = Env.getAD_Org_ID(ctx);
+			{
+				m_newValues[i] = adOrgId;
+			}
 			else if (colName.equals("Processed"))
+			{
 				m_newValues[i] = Boolean.FALSE;
+			}
 			else if (colName.equals("Processing"))
+			{
 				m_newValues[i] = Boolean.FALSE;
+			}
 			else if (colName.equals("Posted"))
+			{
 				m_newValues[i] = Boolean.FALSE;
+			}
 		}
 	}   // setDefaults
 
@@ -2224,7 +2386,9 @@ public abstract class PO
 			if (p_info.isColumnMandatory(i))
 			{
 				if (p_info.isVirtualColumn(i))
+				{
 					continue;
+				}
 				if (get_Value(i) == null || get_Value(i).equals(Null.NULL))
 				{
 					// log.info(p_info.getColumnName(i));
@@ -2255,7 +2419,9 @@ public abstract class PO
 	{
 		final Integer ii = (Integer)get_Value("AD_Client_ID");
 		if (ii == null)
+		{
 			return 0;
+		}
 		return ii.intValue();
 	}	// getAD_Client_ID
 
@@ -2280,7 +2446,9 @@ public abstract class PO
 	{
 		final Integer ii = (Integer)get_Value("AD_Org_ID");
 		if (ii == null)
+		{
 			return 0;
+		}
 		return ii.intValue();
 	}	// getAD_Org_ID
 
@@ -2294,9 +2462,13 @@ public abstract class PO
 	protected void setClientOrg(final int AD_Client_ID, final int AD_Org_ID)
 	{
 		if (AD_Client_ID != getAD_Client_ID())
+		{
 			setAD_Client_ID(AD_Client_ID);
+		}
 		if (AD_Org_ID != getAD_Org_ID())
+		{
 			setAD_Org_ID(AD_Org_ID);
+		}
 	}	// setClientOrg
 
 	/**
@@ -2335,7 +2507,9 @@ public abstract class PO
 	{
 		final Boolean bb = (Boolean)get_Value("IsActive");
 		if (bb != null)
+		{
 			return bb.booleanValue();
+		}
 		return false;
 	}	// isActive
 
@@ -2368,7 +2542,9 @@ public abstract class PO
 	{
 		final Integer ii = (Integer)get_Value("CreatedBy");
 		if (ii == null)
+		{
 			return 0;
+		}
 		return ii.intValue();
 	}	// getCreateddBy
 
@@ -2381,19 +2557,11 @@ public abstract class PO
 	{
 		final Integer ii = (Integer)get_Value("UpdatedBy");
 		if (ii == null)
+		{
 			return 0;
+		}
 		return ii.intValue();
 	}	// getUpdatedBy
-
-	/**
-	 * Set UpdatedBy
-	 *
-	 * @param AD_User_ID user
-	 */
-	final protected void setUpdatedBy(final int AD_User_ID)
-	{
-		set_ValueNoCheck("UpdatedBy", AD_User_ID);
-	}	// setAD_User_ID
 
 	/**
 	 * Get Translation of column (if needed).
@@ -2422,7 +2590,9 @@ public abstract class PO
 				// Case: is possible that the translation in one language to be empty
 				// and we don't want to fallback to original value (where is possible to not be empty)
 				if (retValue == null)
+				{
 					retValue = "";
+				}
 			}
 		}
 
@@ -2539,7 +2709,7 @@ public abstract class PO
 		final int recordId = get_ID();
 		final int adTableId = p_info.getAD_Table_ID();
 		final int adOrgId = getAD_Org_ID();
-		final int adUserId = Env.getAD_User_ID(getCtx());
+		final UserId loggedUserId = Env.getLoggedUserIdIfExists(getCtx()).orElse(UserId.SYSTEM);
 
 		//
 		// Iterate all columns
@@ -2628,7 +2798,7 @@ public abstract class PO
 					.setOldValue(valueOld)
 					.setNewValue(valueNew)
 					.setEventType(changeLogType)
-					.setAD_User_ID(adUserId)
+					.setAD_User_ID(loggedUserId.getRepoId())
 					.build();
 
 			if (changeLogRecords == null)
@@ -2799,7 +2969,7 @@ public abstract class PO
 		// metas: tsa: 02380
 		if (m_trxName == null)
 		{
-			fireModelChange(ModelValidator.TYPE_BEFORE_SAVE_TRX);
+			fireModelChange(ModelChangeType.BEFORE_SAVE_TRX);
 		}
 
 		return true; // save is needed
@@ -2819,7 +2989,7 @@ public abstract class PO
 		}
 
 		// Call ModelValidators TYPE_NEW/TYPE_CHANGE
-		fireModelChange(newRecord ? ModelValidator.TYPE_BEFORE_NEW : ModelValidator.TYPE_BEFORE_CHANGE);
+		fireModelChange(newRecord ? ModelChangeType.BEFORE_NEW : ModelChangeType.BEFORE_CHANGE);
 
 		// Save
 		if (newRecord)
@@ -2853,9 +3023,13 @@ public abstract class PO
 		if (success)
 		{
 			if (newRecord)
+			{
 				insertTranslations();
+			}
 			else
+			{
 				updateTranslations();
+			}
 		}
 
 		if (!isAssignedID)
@@ -2867,9 +3041,13 @@ public abstract class PO
 				if (success)
 				{
 					if (newRecord)
+					{
 						MTree.insertTreeNode(this);
+					}
 					else
+					{
 						MTree.updateTreeNode(this);
+					}
 				}
 
 				//
@@ -2899,8 +3077,8 @@ public abstract class PO
 		if (success)
 		{
 			final boolean replication = isReplication();
-			fireModelChange(newRecord ? (replication ? ModelValidator.TYPE_AFTER_NEW_REPLICATION : ModelValidator.TYPE_AFTER_NEW)
-					: (replication ? ModelValidator.TYPE_AFTER_CHANGE_REPLICATION : ModelValidator.TYPE_AFTER_CHANGE));
+			fireModelChange(newRecord ? (replication ? ModelChangeType.AFTER_NEW_REPLICATION : ModelChangeType.AFTER_NEW)
+					: (replication ? ModelChangeType.AFTER_CHANGE_REPLICATION : ModelChangeType.AFTER_CHANGE));
 		}
 
 		final int columnsCount = p_info.getColumnCount();
@@ -2919,9 +3097,13 @@ public abstract class PO
 				if (m_newValues[i] != null)
 				{
 					if (m_newValues[i] == Null.NULL)
+					{
 						m_oldValues[i] = null;
+					}
 					else
+					{
 						m_oldValues[i] = m_newValues[i];
+					}
 				}
 			}
 			m_newValues = new Object[columnsCount];
@@ -2966,7 +3148,7 @@ public abstract class PO
 		// Deferred processing of this po (metas-ts 1076)
 		if (success)
 		{
-			fireModelChange(ModelValidator.TYPE_SUBSEQUENT);
+			fireModelChange(ModelChangeType.SUBSEQUENT);
 		}
 
 		// Return "success"
@@ -3040,10 +3222,14 @@ public abstract class PO
 		{
 			// Test if the column has changed - teo_sarca [ 1704828 ]
 			if (is_ValueChanged(i))
+			{
 				return true;
+			}
 		}
 		if (m_custom != null && m_custom.size() > 0)
+		 {
 			return true; // there are custom columns modified
+		}
 		return false;
 	}	// is_Change
 
@@ -3055,16 +3241,8 @@ public abstract class PO
 	 */
 	protected boolean beforeSave(final boolean newRecord)
 	{
-		/**
-		 * Prevents saving
-		 * log.error("Error", Msg.parseTranslation(getCtx(), "@C_Currency_ID@ = @C_Currency_ID@"));
-		 * log.error("FillMandatory", Msg.getElement(getCtx(), "PriceEntered"));
-		 * /** Issues message
-		 * log.saveWarning(AD_Message, message);
-		 * log.saveInfo (AD_Message, message);
-		 **/
 		return true;
-	}	// beforeSave
+	}
 
 	/**
 	 * Called after Save for Post-Save Operation
@@ -3100,7 +3278,9 @@ public abstract class PO
 			Object value = m_newValues[i];
 			if (value == null
 					|| p_info.isVirtualColumn(i))
+			{
 				continue;
+			}
 			// we have a change
 			final Class<?> c = p_info.getColumnClass(i);
 			final int dt = p_info.getColumnDisplayType(i);
@@ -3109,14 +3289,18 @@ public abstract class PO
 			// updated/by
 			if (columnName.equals("UpdatedBy"))
 			{
-				if (updatedBy) 	// explicit
+				if (updatedBy)
+				{
 					continue;
+				}
 				updatedBy = true;
 			}
 			else if (columnName.equals("Updated"))
 			{
 				if (updated)
+				{
 					continue;
+				}
 				updated = true;
 			}
 			if (DisplayType.isLOB(dt))
@@ -3125,9 +3309,9 @@ public abstract class PO
 				// If no changes set UpdatedBy explicitly to ensure commit of lob
 				if (!changes && !updatedBy)
 				{
-					final int AD_User_ID = Env.getAD_User_ID(getCtx());
-					set_ValueNoCheck("UpdatedBy", AD_User_ID);
-					sql.append("UpdatedBy=").append(AD_User_ID);
+					final UserId loggedUserId = Env.getLoggedUserIdIfExists(getCtx()).orElse(UserId.SYSTEM);
+					set_ValueNoCheck("UpdatedBy", loggedUserId.getRepoId());
+					sql.append("UpdatedBy=").append(loggedUserId.getRepoId());
 					changes = true;
 					updatedBy = true;
 				}
@@ -3173,7 +3357,9 @@ public abstract class PO
 			}
 
 			if (changes)
+			{
 				sql.append(", ");
+			}
 			changes = true;
 			sql.append(columnName).append("=");
 
@@ -3183,7 +3369,9 @@ public abstract class PO
 				sql.append("NULL");
 			}
 			else if (value instanceof Integer || value instanceof BigDecimal)
+			{
 				sql.append(encrypt(i, value));
+			}
 			else if (c == Boolean.class)
 			{
 				final boolean bValue = StringUtils.toBoolean(value);
@@ -3215,7 +3403,9 @@ public abstract class PO
 			while (it.hasNext())
 			{
 				if (changes)
+				{
 					sql.append(", ");
+				}
 				changes = true;
 				//
 				final String column = it.next();
@@ -3230,7 +3420,9 @@ public abstract class PO
 		if (changes)
 		{
 			if (log.isDebugEnabled())
+			{
 				log.debug("[" + m_trxName + "] - " + p_info.getTableName() + "." + where);
+			}
 
 			if (!updated) 	// Updated not explicitly set
 			{
@@ -3240,9 +3432,9 @@ public abstract class PO
 			}
 			if (!updatedBy) 	// UpdatedBy not explicitly set
 			{
-				final int AD_User_ID = Env.getAD_User_ID(getCtx());
-				set_ValueNoCheck("UpdatedBy", AD_User_ID);
-				sql.append(",UpdatedBy=").append(AD_User_ID);
+				final UserId loggedUserId = Env.getLoggedUserIdIfExists(getCtx()).orElse(UserId.SYSTEM);
+				set_ValueNoCheck("UpdatedBy", loggedUserId.getRepoId());
+				sql.append(",UpdatedBy=").append(loggedUserId.getRepoId());
 			}
 			sql.append(" WHERE ").append(where);
 			/**
@@ -3254,9 +3446,13 @@ public abstract class PO
 			log.trace("Save update: SQL={}", sql);
 			final int no;
 			if (isUseTimeoutForUpdate())
+			{
 				no = DB.executeUpdateEx(sql.toString(), m_trxName, QUERY_TIME_OUT);
+			}
 			else
+			{
 				no = DB.executeUpdateEx(sql.toString(), m_trxName);
+			}
 			boolean ok = no == 1;
 
 			//
@@ -3403,8 +3599,10 @@ public abstract class PO
 			{
 				String value = (String)get_Value(index);
 				if (value != null && IPreliminaryDocumentNoBuilder.hasPreliminaryMarkers(value))
+				{
 					value = null;
-				if (value == null || value.isEmpty())
+				}
+				if (Check.isEmpty(value, true))
 				{
 					value = null; // metas: tsa: seq is not automatically fetched on tables with no docType if value is ""
 					int docTypeIndex = p_info.getColumnIndex("C_DocTypeTarget_ID");
@@ -3592,7 +3790,9 @@ public abstract class PO
 			{
 				String msg = "";
 				if (m_trxName != null)
+				{
 					msg = "[" + m_trxName + "] - ";
+				}
 				msg += p_info.toString(i)
 						+ " - Value=" + value
 						+ "(" + (value == null ? "null" : value.getClass().getName()) + ")";
@@ -3617,7 +3817,9 @@ public abstract class PO
 					sqlValues.append(",");
 				}
 				else
+				{
 					doComma = true;
+				}
 				sqlInsert.append(column);
 				// jz for ad_issue, some value may include ' in a string???
 				sqlValues.append(encrypt(index, value));
@@ -3687,13 +3889,21 @@ public abstract class PO
 		{
 			String msg = "Not inserted - ";
 			if (LogManager.isLevelFiner())
+			{
 				msg += sqlInsert.toString();
+			}
 			else
+			{
 				msg += get_TableName();
+			}
 			if (m_trxName == null)
+			{
 				log.warn(msg);
+			}
 			else
+			{
 				log.warn("[" + m_trxName + "]" + msg);
+			}
 		}
 
 		return saveFinish(true, ok);
@@ -3734,12 +3944,18 @@ public abstract class PO
 		for (int i = 0; i < m_IDs.length; i++)
 		{
 			if (i != 0)
+			{
 				sb.append(" AND ");
+			}
 			sb.append(m_KeyColumns[i]).append("=");
 			if (m_KeyColumns[i].endsWith("_ID"))
+			{
 				sb.append(m_IDs[i]);
+			}
 			else
+			{
 				sb.append("'").append(m_IDs[i]).append("'");
+			}
 		}
 		return sb.toString();
 	}	// getWhereClause
@@ -3763,7 +3979,9 @@ public abstract class PO
 				+ " (" + colClass + ") - Value=" + colValue);
 
 		if (value == null)
+		{
 			return "NULL";
+		}
 		return value.toString();
 	}   // saveNewSpecial
 
@@ -3778,9 +3996,13 @@ public abstract class PO
 	private Object encrypt(final int index, final Object xx)
 	{
 		if (xx == null)
+		{
 			return null;
+		}
 		if (index != -1 && p_info.isEncrypted(index))
+		{
 			return SecureEngine.encrypt(xx);
+		}
 		return xx;
 	}	// encrypt
 
@@ -3794,9 +4016,13 @@ public abstract class PO
 	private Object decrypt(final int index, final Object yy)
 	{
 		if (yy == null)
+		{
 			return null;
+		}
 		if (index != -1 && p_info.isEncrypted(index))
+		{
 			return SecureEngine.decrypt(yy);
+		}
 		return yy;
 	}	// decrypt
 
@@ -3938,7 +4164,7 @@ public abstract class PO
 
 		// Call ModelValidators TYPE_DELETE
 		{
-			fireModelChange(isReplication() ? ModelValidator.TYPE_BEFORE_DELETE_REPLICATION : ModelValidator.TYPE_BEFORE_DELETE);
+			fireModelChange(isReplication() ? ModelChangeType.BEFORE_DELETE_REPLICATION : ModelChangeType.BEFORE_DELETE);
 		}
 
 		// Delete translations, if any
@@ -3988,12 +4214,14 @@ public abstract class PO
 
 		final boolean success = afterDelete(true);
 		if (success)
+		{
 			MTree.deleteTreeNode(this);
+		}
 
 		// Call ModelValidators TYPE_AFTER_DELETE - teo_sarca [ 1675490 ]
 		if (success)
 		{
-			fireModelChange(ModelValidator.TYPE_AFTER_DELETE); // metas: use fireModelChange method - 01512
+			fireModelChange(ModelChangeType.AFTER_DELETE); // metas: use fireModelChange method - 01512
 		}
 
 		//
@@ -4175,40 +4403,11 @@ public abstract class PO
 			final String acctBaseTable,
 			final String whereClause)
 	{
-		if (s_acctColumns == null	// cannot cache C_BP_*_Acct as there are 3
-				|| acctTable.startsWith("C_BP_"))
+		final POAccountingInfo acctInfo = POAccountingInfoRepository.instance.getPOAccountingInfo(acctTable).orElse(null);
+		if(acctInfo == null)
 		{
-			s_acctColumns = new ArrayList<>();
-			final String sql = "SELECT c.ColumnName "
-					+ "FROM AD_Column c INNER JOIN AD_Table t ON (c.AD_Table_ID=t.AD_Table_ID) "
-					+ "WHERE t.TableName=? AND c.IsActive='Y' AND c.AD_Reference_ID=25 ORDER BY c.ColumnName";
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
-			try
-			{
-				pstmt = DB.prepareStatement(sql, null);
-				pstmt.setString(1, acctTable);
-				rs = pstmt.executeQuery();
-				while (rs.next())
-				{
-					s_acctColumns.add(rs.getString(1));
-				}
-			}
-			catch (final Exception e)
-			{
-				log.error(acctTable, e);
-			}
-			finally
-			{
-				DB.close(rs, pstmt);
-				rs = null;
-				pstmt = null;
-			}
-			if (s_acctColumns.size() == 0)
-			{
-				log.error("No Columns for " + acctTable);
-				return false;
-			}
+			log.warn("No accounting info found for {}. Skipping", acctTable);
+			return false;
 		}
 
 		// Create SQL Statement - INSERT
@@ -4216,9 +4415,9 @@ public abstract class PO
 				.append(acctTable)
 				.append(" (").append(get_TableName())
 				.append("_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy ");
-		for (int i = 0; i < s_acctColumns.size(); i++)
+		for (final String acctColumnName : acctInfo.getAcctColumnNames())
 		{
-			sb.append(",").append(s_acctColumns.get(i));
+			sb.append(",").append(acctColumnName);
 		}
 		// .. SELECT
 		sb.append(") SELECT ")
@@ -4227,10 +4426,9 @@ public abstract class PO
 				.append(getUpdatedBy())
 				.append(",now(),")
 				.append(getUpdatedBy());
-
-		for (int i = 0; i < s_acctColumns.size(); i++)
+		for (final String acctColumnName : acctInfo.getAcctColumnNames())
 		{
-			sb.append(",p.").append(s_acctColumns.get(i));
+			sb.append(",p.").append(acctColumnName);
 		}
 		// .. FROM
 		sb.append(" FROM ").append(acctBaseTable)
@@ -4240,26 +4438,11 @@ public abstract class PO
 		{
 			sb.append(" AND ").append(whereClause);
 		}
-		sb.append(" AND NOT EXISTS (SELECT * FROM ").append(acctTable)
+		sb.append(" AND NOT EXISTS (SELECT 1 FROM ").append(acctTable)
 				.append(" e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.")
 				.append(get_TableName()).append("_ID=").append(get_ID()).append(")");
 		//
-		final int no = DB.executeUpdate(sb.toString(), get_TrxName());
-		if (no > 0)
-		{
-			log.debug("Inserted {} accounting records for {}", no, this);
-		}
-		else
-		{
-			final AdempiereException ex = new AdempiereException("No accouting records were inserted."
-					+ "\n Acct Table: " + acctTable
-					+ "\n Base Table: " + acctBaseTable
-					+ "\n SQL: " + sb
-					+ "\n PO: " + this
-					+ "\n TrxName: " + get_TrxName()
-					+ "\n Ctx: " + getCtx());
-			log.warn(ex.getLocalizedMessage(), ex);
-		}
+		final int no = DB.executeUpdateEx(sb.toString(), get_TrxName());
 		return no > 0;
 	}	// insert_Accounting
 
@@ -4317,13 +4500,20 @@ public abstract class PO
 					+ get_WhereClause(true);
 			boolean success = false;
 			if (isUseTimeoutForUpdate())
+			{
 				success = DB.executeUpdateEx(sql, null, QUERY_TIME_OUT) == 1;	// outside trx
-			else
+			}
+			else {
 				success = DB.executeUpdate(sql, null) == 1;	// outside trx
+			}
 			if (success)
+			{
 				log.debug("success");
+			}
 			else
+			{
 				log.warn("failed");
+			}
 			return success;
 		}
 		return false;
@@ -4356,13 +4546,21 @@ public abstract class PO
 					+ " SET Processing='N' WHERE " + get_WhereClause(true);
 			boolean success = false;
 			if (isUseTimeoutForUpdate())
+			{
 				success = DB.executeUpdateEx(sql, trxName, QUERY_TIME_OUT) == 1;
+			}
 			else
+			{
 				success = DB.executeUpdate(sql, trxName) == 1;
+			}
 			if (success)
+			{
 				log.debug("Locked {} (trxName={})", this, trxName);
+			}
 			else
+			{
 				log.warn("Failed locking {} (trxName={})", this, trxName);
+			}
 			return success;
 		}
 		return true;
@@ -4400,7 +4598,9 @@ public abstract class PO
 		{
 			log.trace(get_WhereClause(true));
 			for (int i = 0; i < get_ColumnCount(); i++)
+			{
 				dump(i);
+			}
 		}
 	}   // dump
 
@@ -4446,7 +4646,9 @@ public abstract class PO
 		final StringBuilder sql = new StringBuilder("SELECT ");
 		sql.append(TableName).append("_ID FROM ").append(TableName);
 		if (WhereClause != null && WhereClause.length() > 0)
+		{
 			sql.append(" WHERE ").append(WhereClause);
+		}
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -4454,7 +4656,9 @@ public abstract class PO
 			pstmt = DB.prepareStatement(sql.toString(), trxName);
 			rs = pstmt.executeQuery();
 			while (rs.next())
+			{
 				list.add(rs.getInt(1));
+			}
 		}
 		catch (final SQLException e)
 		{
@@ -4470,27 +4674,11 @@ public abstract class PO
 		// Convert to array
 		final int[] retValue = new int[list.size()];
 		for (int i = 0; i < retValue.length; i++)
+		{
 			retValue[i] = list.get(i).intValue();
+		}
 		return retValue;
 	}	// getAllIDs
-
-	/**
-	 * Get Find parameter.
-	 * Convert to upper case and add % at the end
-	 *
-	 * @param query in string
-	 * @return out string
-	 */
-	protected static String getFindParameter(String query)
-	{
-		if (query == null)
-			return null;
-		if (query.length() == 0 || query.equals("%"))
-			return null;
-		if (!query.endsWith("%"))
-			query += "%";
-		return query.toUpperCase();
-	}	// getFindParameter
 
 	/**************************************************************************
 	 * Load LOB
@@ -4502,7 +4690,9 @@ public abstract class PO
 	{
 		log.debug("Getting LOB for Value={}", value);
 		if (value == null)
+		{
 			return null;
+		}
 		//
 		Object retValue = null;
 
@@ -4512,7 +4702,9 @@ public abstract class PO
 			// [ 1643996 ] Chat not working in postgres port
 			if (value instanceof String ||
 					value instanceof byte[])
+			{
 				retValue = value;
+			}
 			else if (value instanceof Clob) 		// returns String
 			{
 				final Clob clob = (Clob)value;
@@ -4525,12 +4717,16 @@ public abstract class PO
 				length = blob.length();
 				int index = 1;	// correct
 				if (blob.getClass().getName().equals("oracle.jdbc.rowset.OracleSerialBlob"))
+				 {
 					index = 0;	// Oracle Bug Invalid Arguments
+				}
 				// at oracle.jdbc.rowset.OracleSerialBlob.getBytes(OracleSerialBlob.java:130)
 				retValue = blob.getBytes(index, (int)length);
 			}
 			else
+			{
 				log.error("Unknown: " + value);
+			}
 		}
 		catch (final Exception e)
 		{
@@ -4563,7 +4759,9 @@ public abstract class PO
 		final PO_LOB lob = new PO_LOB(p_info.getTableName(), get_ColumnName(index),
 				get_WhereClause(true), displayType, value);
 		if (m_lobInfo == null)
+		{
 			m_lobInfo = new ArrayList<>();
+		}
 		m_lobInfo.add(lob);
 	}	// lobAdd
 
@@ -4603,9 +4801,13 @@ public abstract class PO
 	public final StringBuilder get_xmlString(StringBuilder xml)
 	{
 		if (xml == null)
+		{
 			xml = new StringBuilder();
+		}
 		else
+		{
 			xml.append(Env.NL);
+		}
 		//
 		try
 		{
@@ -4622,12 +4824,18 @@ public abstract class PO
 			{	// // <?xml version="1.0" encoding="UTF-8"?>
 				final int tagIndex = newXML.indexOf("?>");
 				if (tagIndex != -1)
+				{
 					xml.append(newXML.substring(tagIndex + 2));
+				}
 				else
+				{
 					xml.append(newXML);
+				}
 			}
 			else
+			{
 				xml.append(newXML);
+			}
 		}
 		catch (final Exception e)
 		{
@@ -4656,7 +4864,9 @@ public abstract class PO
 			final DocumentBuilder builder = factory.newDocumentBuilder();
 			document = builder.newDocument();
 			if (!noComment)
+			{
 				document.appendChild(document.createComment(Adempiere.getSummaryAscii()));
+			}
 		}
 		catch (final Exception e)
 		{
@@ -4673,7 +4883,9 @@ public abstract class PO
 		for (int i = 0; i < size; i++)
 		{
 			if (p_info.isVirtualColumn(i))
+			{
 				continue;
+			}
 
 			final Element col = document.createElement(p_info.getColumnName(i));
 			//
@@ -4683,24 +4895,38 @@ public abstract class PO
 			// Based on class of definition, not class of value
 			final Class<?> c = p_info.getColumnClass(i);
 			if (value == null || value.equals(Null.NULL))
-				;
+			{
+
+			}
 			else if (c == Object.class)
+			{
 				col.appendChild(document.createCDATASection(value.toString()));
+			}
 			else if (value instanceof Integer || value instanceof BigDecimal)
+			{
 				col.appendChild(document.createTextNode(value.toString()));
+			}
 			else if (c == Boolean.class)
 			{
 				final boolean bValue = StringUtils.toBoolean(value);
 				col.appendChild(document.createTextNode(Env.toString(bValue)));
 			}
 			else if (value instanceof Timestamp)
+			{
 				col.appendChild(document.createTextNode(value.toString()));
+			}
 			else if (c == String.class)
+			{
 				col.appendChild(document.createCDATASection((String)value));
+			}
 			else if (DisplayType.isLOB(dt))
+			{
 				col.appendChild(document.createCDATASection(value.toString()));
+			}
 			else
+			{
 				col.appendChild(document.createCDATASection(value.toString()));
+			}
 			//
 			root.appendChild(col);
 		}
@@ -4716,7 +4942,9 @@ public abstract class PO
 				//
 				final Element col = document.createElement(columnName);
 				if (value != null)
+				{
 					col.appendChild(document.createTextNode(value));
+				}
 				root.appendChild(col);
 			}
 			m_custom = null;
@@ -4741,8 +4969,19 @@ public abstract class PO
 	public static void set_TrxName(final PO[] lines, final String trxName)
 	{
 		for (final PO line : lines)
+		{
 			line.set_TrxName(trxName);
+		}
 	}
+
+	protected static void set_TrxName(final Collection<? extends PO> lines, final String trxName)
+	{
+		for (final PO line : lines)
+		{
+			line.set_TrxName(trxName);
+		}
+	}
+
 
 	/**
 	 * Get Integer Value
@@ -4797,7 +5036,9 @@ public abstract class PO
 	public final Object setDynAttribute(final String name, final Object value)
 	{
 		if (m_dynAttrs == null)
+		{
 			m_dynAttrs = new HashMap<>();
+		}
 		return m_dynAttrs.put(name, value);
 	}
 
@@ -4810,7 +5051,9 @@ public abstract class PO
 	public final Object getDynAttribute(final String name)
 	{
 		if (m_dynAttrs == null)
+		{
 			return null;
+		}
 		return m_dynAttrs.get(name);
 	}
 
@@ -4828,13 +5071,13 @@ public abstract class PO
 	 * @return error or null
 	 * @task 01512
 	 */
-	private final void fireModelChange(final int type)
+	private final void fireModelChange(final ModelChangeType type)
 	{
-		if (type == -1)
+		if (type == null)
 		{
 			throw new IllegalArgumentException("Invalid type " + type + " (" + this + ")");
 		}
-		if (m_currentChangeType != -1)
+		if (m_currentChangeType != null)
 		{
 			throw new AdempiereException("Object is already involved in a model change event"
 					+ "(" + this
@@ -4844,22 +5087,22 @@ public abstract class PO
 		try
 		{
 			m_currentChangeType = type;
-			ModelValidationEngine.get().fireModelChange(this, type);
+			ModelValidationEngine.get().fireModelChange(this, type.getChangeType());
 		}
 		finally
 		{
 			// Make sure replication flag is reset
-			if (type == ModelValidator.TYPE_AFTER_NEW_REPLICATION
-					|| type == ModelValidator.TYPE_AFTER_CHANGE_REPLICATION
-					|| type == ModelValidator.TYPE_BEFORE_DELETE_REPLICATION)
+			if (type == ModelChangeType.AFTER_NEW_REPLICATION
+					|| type == ModelChangeType.AFTER_CHANGE_REPLICATION
+					|| type == ModelChangeType.BEFORE_DELETE_REPLICATION)
 			{
 				setReplication(false);
 			}
-			m_currentChangeType = -1;
+			m_currentChangeType = null;
 		}
 	}
 
-	private int m_currentChangeType = -1;
+	private ModelChangeType m_currentChangeType = null;
 
 	/**
 	 * DynAttr which holds the <code>CopyRecordSupport</code> class which handles this PO
@@ -4892,7 +5135,9 @@ public abstract class PO
 	{
 		final Object value = get_ValueOld(index);
 		if (value == null)
+		{
 			return "";
+		}
 		return value.toString();
 	}
 
@@ -4904,30 +5149,39 @@ public abstract class PO
 	 */
 	private IModelTranslation get_ModelTranslation(final String AD_Language)
 	{
-		final IModelTranslationMap modelTranslationMap = get_ModelTranslationMap();
-		if (modelTranslationMap instanceof POModelTranslationMap)
-		{
-			return ((POModelTranslationMap)modelTranslationMap).getTranslation(get_ID(), AD_Language);
-		}
-		else
-		{
-			return modelTranslationMap.getTranslation(AD_Language);
-		}
+		return get_ModelTranslationMap()
+				.getTranslation(AD_Language);
 	}
 
 	public IModelTranslationMap get_ModelTranslationMap()
 	{
+		if(is_new())
+		{
+			return NullModelTranslationMap.instance;
+		}
+
 		final int id = get_ID();
 		if (id <= 0)
 		{
 			return NullModelTranslationMap.instance;
 		}
 
-		if (m_translations == null)
+		IModelTranslationMap translations = m_translations;
+		if(translations == NullModelTranslationMap.instance)
 		{
-			m_translations = POTrlRepository.instance.retrieveAll(p_info.getTrlInfo(), id);
+			return translations;
 		}
-		return m_translations;
+
+		if(translations != null && translations.getRecordId() != id)
+		{
+			translations = null;
+		}
+		if (translations == null)
+		{
+			final POInfo poInfo = getPOInfo();
+			translations = m_translations = POTrlRepository.instance.retrieveAll(poInfo.getTrlInfo(), id);
+		}
+		return translations;
 	}
 
 	private IModelTranslationMap m_translations = null;
@@ -5193,10 +5447,9 @@ public abstract class PO
 		poCopy.m_lobInfo = null; // don't copy the LOB Info for now
 		poCopy.m_poCacheLocals = null; // don't copy the cache locals for now
 		poCopy.m_stale = this.m_stale;
-		// m_translations : Map<String, Map<String, String>> // TODO: copy the translations
+		poCopy.m_translations = m_translations;
 		poCopy.m_valueLoaded = this.m_valueLoaded == null ? null : Arrays.copyOf(this.m_valueLoaded, this.m_valueLoaded.length);
 		poCopy.markedChangedColumns = this.markedChangedColumns == null ? null : new HashSet<>(this.markedChangedColumns);
-		poCopy.s_acctColumns = this.s_acctColumns == null ? null : new ArrayList<>(this.s_acctColumns);
 
 		//
 		// Manual User Action (i.e. if user loaded this PO from a window)
@@ -5225,7 +5478,6 @@ public abstract class PO
 
 		public POReturningAfterInsertLoader()
 		{
-			super();
 			this.columnNames = new ArrayList<>();
 			this.sqlReturning = new StringBuilder();
 		}

@@ -38,35 +38,35 @@
 			<textField isStretchWithOverflow="true">
 				<reportElement key="textField-13" x="340" y="0" width="64" height="12" forecolor="#000000" uuid="60b4107a-7639-4cdf-923a-7af7cc025cd5"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement key="textField-17" x="415" y="0" width="44" height="12" forecolor="#000000" uuid="cc66405f-c1b0-4307-ba43-7fc0b0b92d27"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{uom}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement key="textField-16" x="36" y="0" width="134" height="12" forecolor="#000000" uuid="50bc7226-6afd-4ce3-b115-2b74cdd846f9"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{product}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement key="textField-13" x="173" y="0" width="130" height="12" forecolor="#000000" uuid="7c66cab1-6ef2-4c56-a84b-1a0e01ccb82c"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement key="textField-17" x="464" y="0" width="80" height="12" forecolor="#000000" uuid="9f5a4671-59b1-4cd6-80b7-650b741dbcbc"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{currency}]]></textFieldExpression>
 			</textField>

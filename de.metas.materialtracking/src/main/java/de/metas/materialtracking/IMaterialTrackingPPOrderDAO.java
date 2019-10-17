@@ -1,5 +1,6 @@
 package de.metas.materialtracking;
 
+import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.util.ISingletonService;
 
@@ -38,6 +39,5 @@ public interface IMaterialTrackingPPOrderDAO extends ISingletonService
 
 	int deleteRelatedUnprocessedICs(I_PP_Order ppOrder);
 
-	boolean isInvoiced(I_PP_Order ppOrder);
-
+	boolean isPPOrderInvoicedForMaterialTracking(I_PP_Order ppOrder, I_M_Material_Tracking materialTrackingRecord);
 }

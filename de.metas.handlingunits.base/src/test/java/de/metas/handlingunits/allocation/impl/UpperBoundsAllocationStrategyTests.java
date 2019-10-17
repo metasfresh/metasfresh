@@ -11,7 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.handlingunits.HUTestHelper;
-import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -20,7 +20,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.quantity.Capacity;
-import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
 /*
@@ -65,12 +64,10 @@ public class UpperBoundsAllocationStrategyTests
 		vhu = InterfaceWrapperHelper.newInstance(I_M_HU.class);
 		InterfaceWrapperHelper.save(vhu);
 
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
 		// create the hu-item that shall hold the tomatoes
 		final I_M_HU_Item vhuItem = InterfaceWrapperHelper.newInstance(I_M_HU_Item.class);
 		vhuItem.setM_HU(vhu);
-		vhuItem.setM_HU_PI_Item_ID(handlingUnitsDAO.getVirtual_HU_PI_Item_ID());
+		vhuItem.setM_HU_PI_Item_ID(HuPackingInstructionsItemId.VIRTUAL.getRepoId());
 		vhuItem.setItemType(X_M_HU_Item.ITEMTYPE_Material);
 		InterfaceWrapperHelper.save(vhuItem);
 	}
@@ -95,7 +92,7 @@ public class UpperBoundsAllocationStrategyTests
 
 		final IHUTransactionCandidate huTransaction = result.getTransactions().get(0);
 		assertThat(huTransaction.getProductId(), is(helper.pTomatoProductId));
-		assertThat(huTransaction.getQuantity().getAsBigDecimal(), is(requestQty));
+		assertThat(huTransaction.getQuantity().toBigDecimal(), is(requestQty));
 		assertThat(huTransaction.getQuantity().getUOM(), is(helper.uomKg));
 		assertThat(huTransaction.getM_HU(), is(vhu));
 	}
@@ -123,7 +120,7 @@ public class UpperBoundsAllocationStrategyTests
 
 		final IHUTransactionCandidate huTransaction = result.getTransactions().get(0);
 		assertThat(huTransaction.getProductId(), is(helper.pTomatoProductId));
-		assertThat(huTransaction.getQuantity().getAsBigDecimal(), is(sixThousand));
+		assertThat(huTransaction.getQuantity().toBigDecimal(), is(sixThousand));
 		assertThat(huTransaction.getQuantity().getUOM(), is(helper.uomKg));
 		assertThat(huTransaction.getM_HU(), is(vhu));
 	}

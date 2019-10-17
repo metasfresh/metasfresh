@@ -10,12 +10,12 @@ package de.metas.materialtracking.test.expectations;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,9 +36,9 @@ import de.metas.pricing.IPricingResult;
 
 /**
  * Helper class used to write Java code that creates {@link QualityInvoiceLineGroupExpectations} for given {@link IQualityInvoiceLineGroup}s.
- * 
+ *
  * See {@link #writeJava(List)}.
- * 
+ *
  * @author tsa
  *
  */
@@ -60,13 +60,13 @@ public class QualityInvoiceLineGroupExpectationsJavaWriter
 
 	/**
 	 * Creates {@link QualityInvoiceLineGroupExpectations}.
-	 * 
+	 *
 	 * @param groups
 	 */
 	public void writeJava(final List<IQualityInvoiceLineGroup> groups)
 	{
 		out.appendLine("//@formatter:off");
-		
+
 		final String classname = QualityInvoiceLineGroupExpectations.class.getSimpleName();
 		out.appendLine("return new " + classname + "()");
 
@@ -97,7 +97,7 @@ public class QualityInvoiceLineGroupExpectationsJavaWriter
 
 	/**
 	 * Creates {@link QualityInvoiceLineGroupExpectation}
-	 * 
+	 *
 	 * @param groupName
 	 * @param group
 	 */
@@ -150,7 +150,7 @@ public class QualityInvoiceLineGroupExpectationsJavaWriter
 
 	/**
 	 * Creates {@link QualityInvoiceLineExpectation}
-	 * 
+	 *
 	 * @param expectationName
 	 * @param invoiceableLine
 	 */
@@ -164,8 +164,8 @@ public class QualityInvoiceLineGroupExpectationsJavaWriter
 		appendMethodCall("product", invoiceableLine.getM_Product());
 		appendMethodCall("productName", invoiceableLine.getProductName());
 		appendMethodCall("percentage", invoiceableLine.getPercentage());
-		appendMethodCall("qty", invoiceableLine.getQty());
-		appendMethodCall("uom", invoiceableLine.getC_UOM());
+		appendMethodCall("qty", invoiceableLine.getQty().toBigDecimal());
+		appendMethodCall("uom", invoiceableLine.getQty().getUOM());
 		appendMethodCall("displayed", invoiceableLine.isDisplayed());
 		appendMethodCall("description", invoiceableLine.getDescription());
 

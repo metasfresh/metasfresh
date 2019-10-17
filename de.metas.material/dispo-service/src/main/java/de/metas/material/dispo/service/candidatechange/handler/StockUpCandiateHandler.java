@@ -3,15 +3,18 @@ package de.metas.material.dispo.service.candidatechange.handler;
 import java.math.BigDecimal;
 import java.util.Collection;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.event.PostMaterialEventService;
@@ -47,6 +50,7 @@ import lombok.NonNull;
  *
  */
 @Service
+@Profile(Profiles.PROFILE_MaterialDispo)
 public class StockUpCandiateHandler implements CandidateHandler
 {
 	@NonNull
@@ -54,18 +58,18 @@ public class StockUpCandiateHandler implements CandidateHandler
 
 	private final PostMaterialEventService materialEventService;
 
-	private final CandidateRepositoryWriteService candidateRepositoryCommands;
+	private final CandidateRepositoryWriteService candidateRepositoryWriteService;
 
-	private final AvailableToPromiseRepository stockRepository;
+	private final AvailableToPromiseRepository availableToPromiseRepository;
 
 	public StockUpCandiateHandler(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
-			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
+			@NonNull final CandidateRepositoryWriteService candidateRepositoryWriteService,
 			@NonNull final PostMaterialEventService materialEventService,
-			@NonNull final AvailableToPromiseRepository stockRepository)
+			@NonNull final AvailableToPromiseRepository availableToPromiseRepository)
 	{
-		this.stockRepository = stockRepository;
-		this.candidateRepositoryCommands = candidateRepositoryCommands;
+		this.availableToPromiseRepository = availableToPromiseRepository;
+		this.candidateRepositoryWriteService = candidateRepositoryWriteService;
 		this.candidateRepository = candidateRepository;
 		this.materialEventService = materialEventService;
 	}
@@ -79,23 +83,22 @@ public class StockUpCandiateHandler implements CandidateHandler
 	@Override
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
 	{
-		Preconditions.checkArgument(candidate.getType() == CandidateType.STOCK_UP,
-				"Given parameter 'candidate' has type=%s; demandCandidate=%s",
-				candidate.getType(), candidate);
+		assertCorrectCandidateType(candidate);
 
-		final Candidate candidateWithQtyDeltaAndId = candidateRepositoryCommands.addOrUpdateOverwriteStoredSeqNo(
-				candidate);
+		final SaveResult candidateSaveResult = candidateRepositoryWriteService
+				.addOrUpdateOverwriteStoredSeqNo(candidate);
+		final Candidate candidateWithQtyDeltaAndId = candidateSaveResult.toCandidateWithQtyDelta();
 
-		if (candidateWithQtyDeltaAndId.getQuantity().signum() == 0)
+		if (!candidateSaveResult.isQtyChanged() && !candidateSaveResult.isDateChanged())
 		{
 			return candidateWithQtyDeltaAndId; // this candidate didn't change anything
 		}
 
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.forDescriptorAndAllPossibleBPartnerIds(candidate.getMaterialDescriptor());
-		final BigDecimal projectedQty = stockRepository.retrieveAvailableStockQtySum(query);
+		final BigDecimal projectedQty = availableToPromiseRepository.retrieveAvailableStockQtySum(query);
 
-		final BigDecimal requiredAdditionalQty = candidateWithQtyDeltaAndId
-				.getQuantity()
+		final BigDecimal requiredAdditionalQty = candidateSaveResult
+				.getQtyDelta()
 				.subtract(projectedQty);
 
 		if (requiredAdditionalQty.signum() > 0)
@@ -106,5 +109,20 @@ public class StockUpCandiateHandler implements CandidateHandler
 		}
 
 		return candidateWithQtyDeltaAndId;
+	}
+
+	@Override
+	public void onCandidateDelete(@NonNull final Candidate candidate)
+	{
+		assertCorrectCandidateType(candidate);
+
+		candidateRepositoryWriteService.deleteCandidatebyId(candidate.getId());
+	}
+
+	private void assertCorrectCandidateType(@NonNull final Candidate candidate)
+	{
+		Preconditions.checkArgument(candidate.getType() == CandidateType.STOCK_UP,
+				"Given parameter 'candidate' has type=%s; demandCandidate=%s",
+				candidate.getType(), candidate);
 	}
 }

@@ -7,14 +7,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_Issue;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -125,8 +125,8 @@ public class PurchaseItemRepository
 
 		if (purchaseErrorItem.getThrowable() != null)
 		{
-			final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(purchaseErrorItem.getThrowable());
-			record.setAD_Issue(issue);
+			final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(purchaseErrorItem.getThrowable());
+			record.setAD_Issue_ID(issueId.getRepoId());
 		}
 
 		record.setAD_Table_ID(purchaseErrorItem.getTransactionReference().getAD_Table_ID());
@@ -183,7 +183,7 @@ public class PurchaseItemRepository
 			final PurchaseOrderItem purchaseOrderItem = PurchaseOrderItem.builder()
 					.purchaseCandidate(purchaseCandidate)
 					.purchaseItemId(PurchaseItemId.ofRepoId(record.getC_PurchaseCandidate_Alloc_ID()))
-					.datePromised(TimeUtil.asLocalDateTime(record.getDatePromised()))
+					.datePromised(TimeUtil.asZonedDateTime(record.getDatePromised()))
 					.purchasedQty(purchasedQty)
 					.remotePurchaseOrderId(record.getRemotePurchaseOrderId())
 					.transactionReference(transactionReference)
@@ -196,7 +196,7 @@ public class PurchaseItemRepository
 		{
 			purchaseCandidate.createErrorItem()
 					.purchaseItemId(PurchaseItemId.ofRepoId(record.getC_PurchaseCandidate_Alloc_ID()))
-					.adIssueId(record.getAD_Issue_ID())
+					.adIssueId(AdIssueId.ofRepoIdOrNull(record.getAD_Issue_ID()))
 					.transactionReference(transactionReference)
 					.buildAndAdd();
 		}

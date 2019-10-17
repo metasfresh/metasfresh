@@ -28,11 +28,14 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.uom.api.IUOMDAO;
+import org.adempiere.invoice.service.IInvoiceBL;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.currency.CurrencyPrecision;
+import de.metas.order.IOrderLineBL;
 import de.metas.tax.api.ITaxBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 
 /**
@@ -85,7 +88,7 @@ public class MRMALine extends X_M_RMALine
 	/** Parent */
 	private MRMA m_parent = null;
 
-	private int precision = 0;
+	private CurrencyPrecision taxPrecision = CurrencyPrecision.ZERO;
 	private int taxId = -1;
 	private BigDecimal unitAmount = Env.ZERO;
 	private BigDecimal originalQty = Env.ZERO;
@@ -117,7 +120,7 @@ public class MRMALine extends X_M_RMALine
 			if (getInvoiceLineId() != 0)
 			{
 				MInvoiceLine invoiceLine = new MInvoiceLine(getCtx(), getInvoiceLineId(), get_TrxName());
-				precision = invoiceLine.getPrecision();
+				taxPrecision = Services.get(IInvoiceBL.class).getTaxPrecision(invoiceLine);
 				unitAmount = invoiceLine.getPriceEntered();
 				originalQty = invoiceLine.getQtyInvoiced();
 				taxId = invoiceLine.getC_Tax_ID();
@@ -125,7 +128,7 @@ public class MRMALine extends X_M_RMALine
 			else if (m_ioLine.getC_OrderLine_ID() > 0)
 			{
 				MOrderLine orderLine = new MOrderLine(getCtx(), m_ioLine.getC_OrderLine_ID(), get_TrxName());
-				precision = orderLine.getPrecision();
+				taxPrecision = Services.get(IOrderLineBL.class).getTaxPrecision(orderLine);
 				unitAmount = orderLine.getPriceEntered();
 				originalQty = orderLine.getQtyDelivered();
 				taxId = orderLine.getC_Tax_ID();
@@ -237,7 +240,7 @@ public class MRMALine extends X_M_RMALine
 				if (!taxIncluded)
 				{
 					final ITaxBL taxBL = Services.get(ITaxBL.class);
-					taxAmt = taxBL.calculateTax(tax, getQty().multiply(unitAmount), taxIncluded, precision);
+					taxAmt = taxBL.calculateTax(tax, getQty().multiply(unitAmount), taxIncluded, taxPrecision.toInt());
 				}
 			}
 		}

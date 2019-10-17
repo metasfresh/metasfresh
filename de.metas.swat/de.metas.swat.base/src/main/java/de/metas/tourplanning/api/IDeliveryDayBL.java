@@ -1,32 +1,12 @@
 package de.metas.tourplanning.api;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 import org.adempiere.util.lang.IContextAware;
 
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.lang.SOTrx;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_DeliveryDay_Alloc;
 import de.metas.tourplanning.model.I_M_TourVersionLine;
@@ -88,13 +68,19 @@ public interface IDeliveryDayBL extends ISingletonService
 	 * Calculate the Preparation time based on a ContextAware object, a date promised, sotrx and a location ID
 	 * 
 	 * @param context - object from where the context is taken
-	 * @param isSOTrx
-	 * @param dateOrdered
+	 * @param soTrx
+	 * @param calculationTime the date+time when the calculation is made.
+	 *            It will usually be when the date+time when the order was created, or the system time
 	 * @param datePromised
 	 * @param bpartnerLocationId
 	 * @return
 	 */
-	Timestamp calculatePreparationDateOrNull(IContextAware context, boolean isSOTrx, Timestamp dateOrdered, Timestamp datePromised, int bpartnerLocationId);
+	ZonedDateTime calculatePreparationDateOrNull(
+			IContextAware context,
+			SOTrx soTrx,
+			ZonedDateTime calculationTime,
+			ZonedDateTime datePromised,
+			BPartnerLocationId bpartnerLocationId);
 
 	/**
 	 * Sets DeliveryDateTimeMax = DeliveryDate + BufferHours.

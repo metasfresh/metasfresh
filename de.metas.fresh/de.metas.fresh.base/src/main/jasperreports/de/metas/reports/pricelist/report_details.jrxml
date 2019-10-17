@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-06-06T12:00:56 -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/pricelist/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -71,7 +70,7 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font fontName="SansSerif" size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{productcategory}]]></textFieldExpression>
 				</textField>
@@ -86,42 +85,42 @@
 			<textField>
 				<reportElement key="textField-16" x="37" y="0" width="45" height="12" forecolor="#000000" uuid="4ef95306-20b2-4f43-ba5f-5961c590703f"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Number}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-13" x="259" y="0" width="73" height="12" forecolor="#000000" uuid="9a577c3e-9c95-4400-8830-18891deb0757"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Attributes}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-17" x="333" y="0" width="107" height="12" forecolor="#000000" uuid="70fa6b18-edb1-4cc9-9e5c-30b428399a6d"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="476" y="0" width="47" height="23" forecolor="#000000" uuid="04629a37-8ce2-463c-8fe2-cc78e8be14b0"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[( $P{Alt_PriceList_Version_ID} != null ? $R{Price_New} + " "+ $F{currency} : $R{Price})]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="440" y="0" width="36" height="12" forecolor="#000000" uuid="0945443b-def7-4253-a6e1-6a6d932f115c"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-16" x="81" y="0" width="178" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{P_Name}]]></textFieldExpression>
 			</textField>
@@ -130,7 +129,7 @@
 					<printWhenExpression><![CDATA[new Boolean( $P{Alt_PriceList_Version_ID} != null )]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[( $P{Alt_PriceList_Version_ID} != null ? $R{Price_Old}  + " "+ $F{currency2}  : "")]]></textFieldExpression>
 			</textField>
@@ -256,7 +255,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{pricestd}]]></textFieldExpression>
 			</textField>

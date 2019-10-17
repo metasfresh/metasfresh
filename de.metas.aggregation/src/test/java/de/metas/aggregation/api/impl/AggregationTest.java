@@ -1,43 +1,17 @@
 package de.metas.aggregation.api.impl;
 
-/*
- * #%L
- * de.metas.aggregation
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.Arrays;
-import java.util.List;
-
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.compiere.util.DisplayType;
 import org.junit.Assert;
 import org.junit.Test;
 
-import de.metas.aggregation.api.IAggregation;
-import de.metas.aggregation.api.IAggregationAttribute;
-import de.metas.aggregation.api.IAggregationItem;
-import de.metas.aggregation.api.IAggregationItem.Type;
+import de.metas.aggregation.api.Aggregation;
+import de.metas.aggregation.api.AggregationItem;
+import de.metas.aggregation.api.AggregationItem.Type;
+import de.metas.aggregation.api.AggregationItemId;
 
 /**
- * Tests {@link IAggregation}
+ * Tests {@link Aggregation}
  *
  * @author tsa
  *
@@ -49,13 +23,25 @@ public class AggregationTest
 	{
 		//
 		// Create an aggregation to test
-		final int aggregationId = 1;
 		int aggregationItemId = 1;
-		final List<IAggregationItem> aggregationItems = Arrays.<IAggregationItem> asList(
-				new AggregationItem(aggregationItemId++, Type.ModelColumn, "Column1", DisplayType.String, IAggregationAttribute.NULL, ConstantLogicExpression.TRUE)
-				, new AggregationItem(aggregationItemId++, Type.ModelColumn, "Column2", DisplayType.String, IAggregationAttribute.NULL, ConstantLogicExpression.TRUE)
-				);
-		final Aggregation aggregation = new Aggregation("MyTable", aggregationItems, aggregationId);
+		final Aggregation aggregation = Aggregation.builder()
+				.id(null)
+				.tableName("MyTable")
+				.item(AggregationItem.builder()
+						.id(AggregationItemId.ofRepoId(aggregationItemId++))
+						.type(Type.ModelColumn)
+						.columnName("Column1")
+						.displayType(DisplayType.String)
+						.includeLogic(ConstantLogicExpression.TRUE)
+						.build())
+				.item(AggregationItem.builder()
+						.id(AggregationItemId.ofRepoId(aggregationItemId++))
+						.type(Type.ModelColumn)
+						.columnName("Column2")
+						.displayType(DisplayType.String)
+						.includeLogic(ConstantLogicExpression.TRUE)
+						.build())
+				.build();
 
 		//
 		// Test:

@@ -27,14 +27,18 @@ import java.math.BigDecimal;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.service.ClientId;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.base.MoreObjects;
 
 import de.metas.banking.model.I_C_BankStatementLine;
-import de.metas.currency.ConversionType;
+import de.metas.currency.ConversionTypeMethod;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyConversionContext;
-import de.metas.currency.ICurrencyRate;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -167,18 +171,18 @@ public class C_BankStatementLine
 		final org.compiere.model.I_C_BankStatementLine bslFrom = bsl.getLink_BankStatementLine();
 
 		final BigDecimal trxAmtFrom = bslFrom.getTrxAmt();
-		final int trxAmtFromCurrencyId = bslFrom.getC_Currency_ID();
+		final CurrencyId trxAmtFromCurrencyId = CurrencyId.ofRepoId(bslFrom.getC_Currency_ID());
 
-		final int trxAmtCurrencyId = bsl.getC_Currency_ID();
+		final CurrencyId trxAmtCurrencyId = CurrencyId.ofRepoId(bsl.getC_Currency_ID());
 
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-		final ICurrencyConversionContext currencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
-				bsl.getValutaDate(),
-				ConversionType.Spot,
-				bsl.getAD_Client_ID(),
-				bsl.getAD_Org_ID());
+		final CurrencyConversionContext currencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
+				TimeUtil.asLocalDate(bsl.getValutaDate()),
+				ConversionTypeMethod.Spot,
+				ClientId.ofRepoId(bsl.getAD_Client_ID()),
+				OrgId.ofRepoId(bsl.getAD_Org_ID()));
 
-		final ICurrencyRate currencyRate = currencyConversionBL.getCurrencyRate(currencyConversionCtx, trxAmtFromCurrencyId, trxAmtCurrencyId);
+		final CurrencyRate currencyRate = currencyConversionBL.getCurrencyRate(currencyConversionCtx, trxAmtFromCurrencyId, trxAmtCurrencyId);
 		final BigDecimal trxAmt = currencyRate
 				.convertAmount(trxAmtFrom)
 				.negate();

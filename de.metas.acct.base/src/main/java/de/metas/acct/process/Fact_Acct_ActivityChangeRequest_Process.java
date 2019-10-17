@@ -3,7 +3,6 @@ package de.metas.acct.process;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -18,6 +17,7 @@ import org.compiere.model.I_M_InOutLine;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.model.I_Fact_Acct_ActivityChangeRequest;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.process.JavaProcess;

@@ -236,6 +236,56 @@ public interface I_C_BPartner_Location
     public static final String COLUMNNAME_C_SalesRegion_ID = "C_SalesRegion_ID";
 
 	/**
+	 * Set eMail.
+	 * EMail-Adresse
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setEMail (java.lang.String EMail);
+
+	/**
+	 * Get eMail.
+	 * EMail-Adresse
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getEMail();
+
+    /** Column definition for EMail */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object> COLUMN_EMail = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object>(I_C_BPartner_Location.class, "EMail", null);
+    /** Column name EMail */
+    public static final String COLUMNNAME_EMail = "EMail";
+
+	/**
+	 * Set Alternative eMail.
+	 * EMail-Adresse
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setEMail2 (java.lang.String EMail2);
+
+	/**
+	 * Get Alternative eMail.
+	 * EMail-Adresse
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getEMail2();
+
+    /** Column definition for EMail2 */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object> COLUMN_EMail2 = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object>(I_C_BPartner_Location.class, "EMail2", null);
+    /** Column name EMail2 */
+    public static final String COLUMNNAME_EMail2 = "EMail2";
+
+	/**
 	 * Set External ID.
 	 *
 	 * <br>Type: String
@@ -282,6 +332,31 @@ public interface I_C_BPartner_Location
     public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object> COLUMN_Fax = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object>(I_C_BPartner_Location.class, "Fax", null);
     /** Column name Fax */
     public static final String COLUMNNAME_Fax = "Fax";
+
+	/**
+	 * Set Alternative Fax.
+	 * Faxnummer
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setFax2 (java.lang.String Fax2);
+
+	/**
+	 * Get Alternative Fax.
+	 * Faxnummer
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getFax2();
+
+    /** Column definition for Fax2 */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object> COLUMN_Fax2 = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object>(I_C_BPartner_Location.class, "Fax2", null);
+    /** Column name Fax2 */
+    public static final String COLUMNNAME_Fax2 = "Fax2";
 
 	/**
 	 * Set GLN.
@@ -623,7 +698,6 @@ public interface I_C_BPartner_Location
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -633,7 +707,6 @@ public interface I_C_BPartner_Location
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -725,4 +798,27 @@ public interface I_C_BPartner_Location
     public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, org.compiere.model.I_AD_User>(I_C_BPartner_Location.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Visitors Address.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setVisitorsAddress (boolean VisitorsAddress);
+
+	/**
+	 * Get Visitors Address.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isVisitorsAddress();
+
+    /** Column definition for VisitorsAddress */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object> COLUMN_VisitorsAddress = new org.adempiere.model.ModelColumn<I_C_BPartner_Location, Object>(I_C_BPartner_Location.class, "VisitorsAddress", null);
+    /** Column name VisitorsAddress */
+    public static final String COLUMNNAME_VisitorsAddress = "VisitorsAddress";
 }

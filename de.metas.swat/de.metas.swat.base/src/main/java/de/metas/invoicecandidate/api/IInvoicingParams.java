@@ -23,33 +23,33 @@ package de.metas.invoicecandidate.api;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 
 /**
  * Invoicing Enqueueing & generating parameters.
  *
- * @author tsa
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface IInvoicingParams
 {
-	/** @return  {@code true} if only those invoice candidates which were approved for invoicing shall be enqueued. */
-	public abstract boolean isOnlyApprovedForInvoicing();
+	/** @return {@code true} if only those invoice candidates which were approved for invoicing shall be enqueued. */
+	boolean isOnlyApprovedForInvoicing();
 
-	/** @return  {@code true} if the invoice generator shall do the best effort to consolidate the invoice candidates in a few number of invoices (ideally 1.) */
-	public abstract boolean isConsolidateApprovedICs();
+	/** @return {@code true} if the invoice generator shall do the best effort to consolidate the invoice candidates in a few number of invoices (ideally 1.) */
+	boolean isConsolidateApprovedICs();
 
-	/** @return  {@code true} if the enqueuer shall ignore the scheduled DateToInvoice- */
-	public abstract boolean isIgnoreInvoiceSchedule();
+	/** @return {@code true} if the enqueuer shall ignore the scheduled DateToInvoice- */
+	boolean isIgnoreInvoiceSchedule();
 
 	/** @return date invoiced to be set to all invoice candidates, right before enqueueing them. */
-	public abstract Timestamp getDateInvoiced();
+	LocalDate getDateInvoiced();
 
 	/** @return DateAcct to be set to all invoice candidates, right before enqueueing them. */
-	public abstract Timestamp getDateAcct();
+	LocalDate getDateAcct();
 
 	/** @return POReference to be set to all invoice candidates, right before enqueueing them. */
-	public abstract String getPOReference();
+	String getPOReference();
 
 	/** @return {@code true} if invoice candidates with {@code C_Payment_Term_ID=null} shall get the payment term ID or some other ICs, right before enqueueing them. */
 	boolean isSupplementMissingPaymentTermIds();
@@ -73,4 +73,13 @@ public interface IInvoicingParams
 	 * <b>note that we don't want to store the actual invoices in the result if there is a chance to encounter memory problems-</b>
 	 */
 	boolean isStoreInvoicesInResult();
+
+	/**
+	 * When this parameter is set on true, the invoices that are to be created will get the current users and locations of their business partners,
+	 * regardless of the Bill_Location and Bill_User values set in the enqueued invoice candidates.
+	 * The invoice candidates themselves will not be changed.
+	 * Nevertheless, the Bill_Location_Override and Bill_User_Override will be respected if they are set in the
+	 * invoice candidates.
+	 */
+	boolean isUpdateLocationAndContactForInvoice();
 }

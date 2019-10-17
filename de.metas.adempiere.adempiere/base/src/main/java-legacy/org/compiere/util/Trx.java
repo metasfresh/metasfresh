@@ -52,15 +52,6 @@ import de.metas.util.Services;
 public class Trx extends AbstractTrx implements VetoableChangeListener
 {
 	/**
-	 * trxName=null marker
-	 *
-	 * @deprecated Please use {@link ITrx#TRXNAME_None} instead
-	 */
-	// metas
-	@Deprecated
-	public static final String TRXNAME_None = ITrx.TRXNAME_None;
-
-	/**
 	 * Get Transaction
 	 *
 	 * @param trxName trx name
@@ -383,21 +374,6 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 		return true;
 	}	// close
 
-	/**
-	 *
-	 * @param name
-	 * @return Savepoint
-	 * @throws SQLException
-	 * @Deprecated Please use {@link #createTrxSavepoint(String)}
-	 */
-	@Deprecated
-	public Savepoint setSavepoint(String name) throws SQLException
-	{
-		final ITrxSavepoint savepoint = createTrxSavepoint(name);
-		final Savepoint jdbcSavepoint = (Savepoint)savepoint.getNativeSavepoint();
-		return jdbcSavepoint;
-	}
-
 	@Override
 	protected ITrxSavepoint createTrxSavepointNative(final String name) throws Exception
 	{
@@ -416,9 +392,13 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 		{
 			final Savepoint jdbcSavepoint;
 			if (name != null)
+			{
 				jdbcSavepoint = m_connection.setSavepoint(name);
+			}
 			else
+			{
 				jdbcSavepoint = m_connection.setSavepoint();
+			}
 
 			final JdbcTrxSavepoint savepoint = new JdbcTrxSavepoint(this, jdbcSavepoint);
 			return savepoint;
@@ -461,51 +441,4 @@ public class Trx extends AbstractTrx implements VetoableChangeListener
 	{
 		log.debug(evt.toString());
 	}	// vetoableChange
-
-	/**
-	 * @return Trx[]
-	 * @deprecated Please use {@link ITrxManager#getActiveTransactions()}
-	 */
-	@Deprecated
-	public static ITrx[] getActiveTransactions()
-	{
-		return Services.get(ITrxManager.class).getActiveTransactions();
-	}
-
-	/**
-	 * Delegates to {@link ITrxManager#run(TrxRunnable)}.
-	 *
-	 * @deprecated Please use {@link ITrxManager#run(TrxRunnable)}
-	 */
-	// metas: backward compatibility
-	@Deprecated
-	public static void run(TrxRunnable r)
-	{
-		Services.get(ITrxManager.class).run(r);
-	}
-
-	/**
-	 * Delegates to {@link ITrxManager#run(String, TrxRunnable)}.
-	 *
-	 * @deprecated Please use {@link ITrxManager#run(String, TrxRunnable)}
-	 */
-	// metas: backward compatibility
-	@Deprecated
-	public static void run(String trxName, TrxRunnable r)
-	{
-		Services.get(ITrxManager.class).run(trxName, r);
-	}
-
-	/**
-	 * Delegates to {@link ITrxManager#run(String, boolean, TrxRunnable)}.
-	 *
-	 * @deprecated Please use {@link ITrxManager#run(String, boolean, TrxRunnable)}
-	 */
-	// metas: added manageTrx parameter
-	// metas: backward compatibility
-	@Deprecated
-	public static void run(String trxName, boolean manageTrx, TrxRunnable r)
-	{
-		Services.get(ITrxManager.class).run(trxName, manageTrx, r);
-	}
 }	// Trx

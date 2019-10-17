@@ -1,0 +1,5 @@
+-- 2019-08-24T07:58:11.871Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET OrderByClause='',Updated=TO_TIMESTAMP('2019-08-24 10:58:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=500221
+;
+

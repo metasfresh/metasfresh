@@ -60,8 +60,6 @@ import de.metas.util.time.SystemTime;
  */
 public class AsyncBatchBL implements IAsyncBatchBL
 {
-	/* package */final static int PROCESSEDTIME_OFFSET_Millis = Services.get(ISysConfigBL.class).getIntValue("de.metas.async.api.impl.AsyncBatchBL_ProcessedOffsetMillis", 1);
-
 	// services
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 
@@ -291,8 +289,9 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		
 		
 		// Case: when did not pass enough time between fist enqueue time and now
+		final int processedTimeOffsetMillis = getProcessedTimeOffsetMillis();
 		final Timestamp now = SystemTime.asTimestamp();
-		final Timestamp minTimeAfterFirstEnqueued = TimeUtil.addMillis(now, PROCESSEDTIME_OFFSET_Millis);
+		final Timestamp minTimeAfterFirstEnqueued = TimeUtil.addMillis(now, processedTimeOffsetMillis);
 		if (firstEnqueued.compareTo(minTimeAfterFirstEnqueued) > 0)
 		{
 			return false;
@@ -307,7 +306,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 		// Case: when did not pass enough time between last processed time and now - offset
 		// take a bigger time for checking processed because thread could be locked by other thread and we could have some bigger delay
-		final Timestamp minTimeAfterLastProcessed = TimeUtil.addMillis(now,  PROCESSEDTIME_OFFSET_Millis);
+		final Timestamp minTimeAfterLastProcessed = TimeUtil.addMillis(now,  processedTimeOffsetMillis);
 		if (lastProcessed.compareTo(minTimeAfterLastProcessed) > 0)
 		{
 			return false;
@@ -317,6 +316,12 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		// If we reach this point, our batch can be considered processed
 		return true;
 	}
+	
+	private int getProcessedTimeOffsetMillis()
+	{
+		return Services.get(ISysConfigBL.class).getIntValue("de.metas.async.api.impl.AsyncBatchBL_ProcessedOffsetMillis", 1);
+	}
+
 
 	@Override
 	public boolean keepAliveTimeExpired(final I_C_Async_Batch asyncBatch)

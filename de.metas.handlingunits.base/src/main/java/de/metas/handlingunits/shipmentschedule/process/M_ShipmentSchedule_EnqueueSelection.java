@@ -66,9 +66,9 @@ public class M_ShipmentSchedule_EnqueueSelection
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		if (context.getSelectionSize() <= 0)
+		if (context.isNoSelection())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("No items are selected");
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
 		final boolean foundAtLeastOneUnprocessedSchedule = context.getSelectedModels(I_M_ShipmentSchedule.class).stream()
@@ -85,7 +85,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 	{
 		final IQueryFilter<I_M_ShipmentSchedule> queryFilters = createShipmentSchedulesQueryFilters();
 
-		Check.assumeNotNull(queryFilters, "Shipment Schedule queryFiletrs shall not be null");
+		Check.assumeNotNull(queryFilters, "Shipment Schedule queryFilters shall not be null");
 
 		final ShipmentScheduleWorkPackageParameters workPackageParameters = ShipmentScheduleWorkPackageParameters.builder()
 				.adPInstanceId(getPinstanceId())
@@ -112,7 +112,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 
 		//
 		// Filter only selected shipment schedules
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			final IQueryFilter<I_M_ShipmentSchedule> selectionFilter = getProcessInfo().getQueryFilter();
 			filters.addFilter(selectionFilter);

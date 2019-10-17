@@ -10,12 +10,12 @@ package de.metas.handlingunits.client.terminal.pporder.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,18 +31,24 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_S_Resource;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
-import org.eevolution.api.IPPOrderWorkflowDAO;
+import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.adempiere.form.terminal.TerminalKey;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 /**
  * @author cg
@@ -65,7 +71,7 @@ public class ManufacturingOrderKey extends TerminalKey
 		documentNo = order.getDocumentNo();
 		this.order = order;
 		final int orderId = order.getPP_Order_ID();
-		value = new KeyNamePair(orderId, documentNo);
+		value = KeyNamePair.of(orderId, documentNo);
 	}
 
 	@Override
@@ -98,29 +104,37 @@ public class ManufacturingOrderKey extends TerminalKey
 			final String documentNo = order.getDocumentNo();
 			sb.append(documentNo);
 		}
-		
+
 		//
 		// Document Type
 		{
-			I_C_DocType docType = order.getC_DocType();
-			if (docType == null || docType.getC_DocType_ID() <= 0)
+			final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID());
+			I_C_DocType docType = docTypeId != null
+					? Services.get(IDocTypeDAO.class).getById(docTypeId)
+					: null;
+			if (docType == null)
 			{
-				docType = order.getC_DocTypeTarget();
+				final DocTypeId docTypeTargetId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
+				docType = docTypeTargetId != null
+						? Services.get(IDocTypeDAO.class).getById(docTypeTargetId)
+						: null;
 			}
+			
 			if(docType != null)
 			{
 				final I_C_DocType docTypeTrl = InterfaceWrapperHelper.translate(docType, I_C_DocType.class);
 				sb.append(" - ");
-				sb.append(Util.maskHTML(docTypeTrl.getName()));
+				sb.append(StringUtils.maskHTML(docTypeTrl.getName()));
 			}
 		}
 
 		//
 		// Product Name
 		{
-			final String productName = order.getM_Product().getName();
+			final ProductId productId = ProductId.ofRepoId(order.getM_Product_ID());
+			final String productName = Services.get(IProductBL.class).getProductName(productId);
 			sb.append("<br>");
-			sb.append(Util.maskHTML(productName));
+			sb.append(StringUtils.maskHTML(productName));
 		}
 
 		//
@@ -143,7 +157,7 @@ public class ManufacturingOrderKey extends TerminalKey
 			final String bpartnerName = partner.getName();
 
 			sb.append("<br>");
-			sb.append(Util.maskHTML(bpartnerName));
+			sb.append(StringUtils.maskHTML(bpartnerName));
 		}
 
 		// Promised Date
@@ -162,7 +176,7 @@ public class ManufacturingOrderKey extends TerminalKey
 			final String preparationDateStr = TimeUtil.formatDate(preparationDate, "dd.MM.yyyy HH:mm");
 
 			sb.append("<br>");
-			sb.append(Util.maskHTML(preparationDateStr));
+			sb.append(StringUtils.maskHTML(preparationDateStr));
 		}
 
 		//
@@ -173,18 +187,17 @@ public class ManufacturingOrderKey extends TerminalKey
 			final String productionDateStr = TimeUtil.formatDate(productionDate, "dd.MM.yyyy HH:mm");
 
 			sb.append("<br>");
-			sb.append(Util.maskHTML(productionDateStr));
+			sb.append(StringUtils.maskHTML(productionDateStr));
 		}
 
 		//
 		// Workcenter/Workstation resource
-		final I_S_Resource resource = Services.get(IPPOrderWorkflowDAO.class).retrieveResourceForFirstNode(order);
-		if (resource != null)
+		final PPOrderId orderId = PPOrderId.ofRepoId(order.getPP_Order_ID());
+		final String resourceName = Services.get(IPPOrderRoutingRepository.class).retrieveResourceNameForFirstNode(orderId);
+		if (!Check.isEmpty(resourceName, true))
 		{
-			final String resourceName = resource.getName();
-
 			sb.append("<br>");
-			sb.append(Util.maskHTML(resourceName));
+			sb.append(StringUtils.maskHTML(resourceName));
 		}
 
 		//
@@ -195,7 +208,10 @@ public class ManufacturingOrderKey extends TerminalKey
 
 	private final I_C_BPartner getC_BPartner()
 	{
-		return order.getC_BPartner();
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+		return bpartnerId != null
+				? Services.get(IBPartnerDAO.class).getById(bpartnerId)
+				: null;
 	}
 
 	@Override

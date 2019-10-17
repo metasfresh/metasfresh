@@ -10,12 +10,12 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,23 +30,22 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.IQueryOrderByBuilder;
 import org.adempiere.model.ModelColumn;
 
+import lombok.NonNull;
+
 class QueryBuilderOrderByClause<ModelType> implements IQueryBuilderOrderByClause<ModelType>
 {
 	private final IQueryBuilder<ModelType> parent;
 	private final IQueryOrderByBuilder<ModelType> orderByBuilder;
 
-	public QueryBuilderOrderByClause(final IQueryBuilder<ModelType> parent)
+	public QueryBuilderOrderByClause(@NonNull final IQueryBuilder<ModelType> parent)
 	{
-		super();
-
-		this.parent = parent; // NOTE: we assume it's not null
+		this.parent = parent;
 		this.orderByBuilder = new QueryOrderByBuilder<>();
 	}
 
 	/** Copy constructor */
-	private QueryBuilderOrderByClause(final QueryBuilderOrderByClause<ModelType> orderByClause)
+	private QueryBuilderOrderByClause(@NonNull final QueryBuilderOrderByClause<ModelType> orderByClause)
 	{
-		super();
 		this.parent = orderByClause.parent;
 		this.orderByBuilder = orderByClause.orderByBuilder.copy();
 	}
@@ -103,7 +102,7 @@ class QueryBuilderOrderByClause<ModelType> implements IQueryBuilderOrderByClause
 		orderByBuilder.addColumnDescending(columnName);
 		return this;
 	}
-	
+
 	@Override
 	public IQueryBuilderOrderByClause<ModelType> addColumn(String columnName, Direction direction, Nulls nulls)
 	{

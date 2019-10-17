@@ -35,6 +35,7 @@ import de.metas.ordercandidate.api.IOLCandUpdateBL;
 import de.metas.ordercandidate.api.OLCandUpdateResult;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.process.JavaProcess;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 
 public class OLCandSetOverrideValues extends JavaProcess
@@ -67,7 +68,7 @@ public class OLCandSetOverrideValues extends JavaProcess
 				.addColumn(I_C_OLCand.COLUMNNAME_C_OLCand_ID);
 
 		return queryBuilder.create()
-				.setApplyAccessFilterRW(false) // 04471: enqueue only those records on which user has access to
+				.setRequiredAccess(Access.READ) // 04471: enqueue only those records on which user has access to
 				.iterate(I_C_OLCand.class);
 	}
 }

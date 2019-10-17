@@ -1,15 +1,13 @@
 package de.metas.purchasecandidate;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-
-import de.metas.bpartner.BPartnerId;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.bpartner.BPartnerId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -43,16 +41,15 @@ public class PurchaseCandidateReminder
 	@JsonProperty("vendorBPartnerId")
 	BPartnerId vendorBPartnerId;
 	@JsonProperty("notificationTime")
-	LocalDateTime notificationTime;
+	ZonedDateTime notificationTime;
 
 	@Builder
 	@JsonCreator
 	private PurchaseCandidateReminder(
 			@JsonProperty("vendorBPartnerId") @NonNull final BPartnerId vendorBPartnerId,
-			@JsonProperty("notificationTime") @NonNull final LocalDateTime notificationTime)
+			@JsonProperty("notificationTime") @NonNull final ZonedDateTime notificationTime)
 	{
 		this.vendorBPartnerId = vendorBPartnerId;
 		this.notificationTime = notificationTime;
 	}
-
 }

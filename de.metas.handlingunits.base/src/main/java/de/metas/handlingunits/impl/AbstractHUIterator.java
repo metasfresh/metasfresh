@@ -56,6 +56,7 @@ import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public abstract class AbstractHUIterator implements IHUIterator
 {
@@ -106,13 +107,11 @@ public abstract class AbstractHUIterator implements IHUIterator
 
 	public AbstractHUIterator()
 	{
-		super();
 	}
 
 	@Override
-	public final IHUIterator setListener(final IHUIteratorListener listener)
+	public final IHUIterator setListener(@NonNull final IHUIteratorListener listener)
 	{
-		Check.assumeNotNull(listener, "listener not null");
 		this.listener = listener;
 		return this;
 	}

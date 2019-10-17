@@ -10,12 +10,12 @@ package org.adempiere.util.comparator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,14 +25,14 @@ package org.adempiere.util.comparator;
 
 import java.util.Comparator;
 
-import de.metas.util.Check;
 import de.metas.util.TypedAccessor;
+import lombok.NonNull;
 
 /**
  * Wraps a given comparator by transforming the values from outer type to inner type
- * 
+ *
  * @author tsa
- * 
+ *
  * @param <OT> outer type
  * @param <IT> inner type
  */
@@ -42,15 +42,14 @@ public class AccessorComparator<OT, IT> implements Comparator<OT>
 	private final TypedAccessor<IT> accessor;
 
 	/**
-	 * 
+	 *
 	 * @param cmp comparator to be used for comparing inner type values
 	 * @param accessor accessor which will get the inner type from a given outer type object
 	 */
-	public AccessorComparator(final Comparator<IT> cmp, final TypedAccessor<IT> accessor)
+	public AccessorComparator(
+			@NonNull final Comparator<IT> cmp,
+			@NonNull final TypedAccessor<IT> accessor)
 	{
-		Check.assumeNotNull(cmp, "cmp not null");
-		Check.assumeNotNull(accessor, "accessor not null");
-
 		this.cmp = cmp;
 		this.accessor = accessor;
 	}

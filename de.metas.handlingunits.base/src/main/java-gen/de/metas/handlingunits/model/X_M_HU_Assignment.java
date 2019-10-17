@@ -15,7 +15,7 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1493902743L;
+	private static final long serialVersionUID = -948179725L;
 
     /** Standard Constructor */
     public X_M_HU_Assignment (Properties ctx, int M_HU_Assignment_ID, String trxName)
@@ -47,7 +47,7 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
     }
 
 	@Override
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
+	public org.compiere.model.I_AD_Table getAD_Table()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
 	}
@@ -132,7 +132,7 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU getM_HU() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU getM_HU()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
 	}
@@ -143,8 +143,8 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
 		set_ValueFromPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU);
 	}
 
-	/** Set Handling Units.
-		@param M_HU_ID Handling Units	  */
+	/** Set Handling Unit.
+		@param M_HU_ID Handling Unit	  */
 	@Override
 	public void setM_HU_ID (int M_HU_ID)
 	{
@@ -154,8 +154,8 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
 			set_Value (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
 	}
 
-	/** Get Handling Units.
-		@return Handling Units	  */
+	/** Get Handling Unit.
+		@return Handling Unit	  */
 	@Override
 	public int getM_HU_ID () 
 	{
@@ -166,7 +166,7 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU getM_LU_HU() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU getM_LU_HU()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_LU_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
 	}
@@ -203,7 +203,7 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU getM_TU_HU() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU getM_TU_HU()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_TU_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
 	}
@@ -302,7 +302,7 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU getVHU() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU getVHU()
 	{
 		return get_ValueAsPO(COLUMNNAME_VHU_ID, de.metas.handlingunits.model.I_M_HU.class);
 	}

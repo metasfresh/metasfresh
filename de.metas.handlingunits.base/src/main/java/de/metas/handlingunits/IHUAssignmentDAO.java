@@ -26,6 +26,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -33,12 +35,11 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.util.ISingletonService;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -69,18 +70,13 @@ public interface IHUAssignmentDAO extends ISingletonService
 
 	/**
 	 * Retrieve <b>top-level</b> handling unit assignments for given document
-	 *
-	 * @param model
-	 * @return assignments
 	 */
-	List<I_M_HU_Assignment> retrieveHUAssignmentsForModel(Object model);
+	List<I_M_HU_Assignment> retrieveTopLevelHUAssignmentsForModel(Object model);
 
-	default List<HuAssignment> retrieveHUAssignmentPojosForModel(Object model)
-	{
-		return retrieveHUAssignmentsForModel(model).stream()
-				.map(HuAssignment::ofDataRecord)
-				.collect(ImmutableList.toImmutableList());
-	}
+	/**
+	 * For all active HU-Assignments that the given {@code model} has, retrieve pojos that contain the different respective lowest level (e.g. VHU) HUs.
+	 */
+	List<HuAssignment> retrieveLowLevelHUAssignmentsForModel(Object model);
 
 	/**
 	 * This in an "encapsulated" representation of a {@link I_M_HU_Assignment} data record.
@@ -88,13 +84,16 @@ public interface IHUAssignmentDAO extends ISingletonService
 	 * Please prefer using this one over the mere data record, and extend is as needed (also, feel free to extract the class onto another file).
 	 */
 	@Value
+	@EqualsAndHashCode(exclude = "lowestLevelHU")
 	public static class HuAssignment
 	{
 		public static HuAssignment ofDataRecordAllowMissingHU(
 				@NonNull final I_M_HU_Assignment huAssignmentRecord)
 		{
+			final I_M_HU lowestLevelHuOrNull = extractLowestLevelHuOrNull(huAssignmentRecord);
+
 			return new HuAssignment(
-					extractLowestLevelHuOrNull(huAssignmentRecord),
+					lowestLevelHuOrNull,
 					TableRecordReference.ofReferencedOrNull(huAssignmentRecord));
 		}
 
@@ -140,12 +139,25 @@ public interface IHUAssignmentDAO extends ISingletonService
 			return hu;
 		}
 
+		HuId lowestLevelHUId;
+
+		ITableRecordReference referencedRecord;
+
 		/**
-		 * The lowest level of an HU assigment record is interesting, because it does not contains different products
+		 * The lowest level of an HU assignment record is interesting, because it does not contains different products
 		 */
 		I_M_HU lowestLevelHU;
 
-		ITableRecordReference referencedRecord;
+		private HuAssignment(
+				@Nullable final I_M_HU lowestLevelHU,
+				@NonNull final ITableRecordReference referencedRecord)
+		{
+			this.lowestLevelHU = lowestLevelHU;
+			this.lowestLevelHUId = lowestLevelHU != null ? HuId.ofRepoId(lowestLevelHU.getM_HU_ID()) : null;
+
+			this.referencedRecord = referencedRecord;
+		}
+
 	}
 
 	IQueryBuilder<I_M_HU_Assignment> retrieveHUAssignmentsForModelQuery(Object model);

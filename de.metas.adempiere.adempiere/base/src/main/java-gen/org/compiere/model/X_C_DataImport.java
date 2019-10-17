@@ -14,7 +14,7 @@ public class X_C_DataImport extends org.compiere.model.PO implements I_C_DataImp
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -997830061L;
+	private static final long serialVersionUID = -1678943636L;
 
     /** Standard Constructor */
     public X_C_DataImport (Properties ctx, int C_DataImport_ID, String trxName)
@@ -43,7 +43,7 @@ public class X_C_DataImport extends org.compiere.model.PO implements I_C_DataImp
     }
 
 	@Override
-	public org.compiere.model.I_AD_ImpFormat getAD_ImpFormat() throws RuntimeException
+	public org.compiere.model.I_AD_ImpFormat getAD_ImpFormat()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_ImpFormat_ID, org.compiere.model.I_AD_ImpFormat.class);
 	}
@@ -76,8 +76,8 @@ public class X_C_DataImport extends org.compiere.model.PO implements I_C_DataImp
 		return ii.intValue();
 	}
 
-	/** Set Data import.
-		@param C_DataImport_ID Data import	  */
+	/** Set Daten Import.
+		@param C_DataImport_ID Daten Import	  */
 	@Override
 	public void setC_DataImport_ID (int C_DataImport_ID)
 	{
@@ -87,8 +87,8 @@ public class X_C_DataImport extends org.compiere.model.PO implements I_C_DataImp
 			set_ValueNoCheck (COLUMNNAME_C_DataImport_ID, Integer.valueOf(C_DataImport_ID));
 	}
 
-	/** Get Data import.
-		@return Data import	  */
+	/** Get Daten Import.
+		@return Daten Import	  */
 	@Override
 	public int getC_DataImport_ID () 
 	{
@@ -96,5 +96,24 @@ public class X_C_DataImport extends org.compiere.model.PO implements I_C_DataImp
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Interner Name.
+		@param InternalName 
+		Generally used to give records a name that can be safely referenced from code.
+	  */
+	@Override
+	public void setInternalName (java.lang.String InternalName)
+	{
+		set_Value (COLUMNNAME_InternalName, InternalName);
+	}
+
+	/** Get Interner Name.
+		@return Generally used to give records a name that can be safely referenced from code.
+	  */
+	@Override
+	public java.lang.String getInternalName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_InternalName);
 	}
 }

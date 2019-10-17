@@ -30,8 +30,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.comparator.NullComparator;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
@@ -45,6 +43,8 @@ import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -67,7 +67,7 @@ public final class HUPackingMaterialDocumentLineCandidate
 	 * @param emptiesCount how many empties we have (e.g. 5 IFCOs)
 	 * @return packing material line
 	 */
-	public static final HUPackingMaterialDocumentLineCandidate of(final I_M_Locator locator, final I_M_Product emptiesProduct, final int emptiesCount)
+	public static HUPackingMaterialDocumentLineCandidate of(final I_M_Locator locator, final I_M_Product emptiesProduct, final int emptiesCount)
 	{
 		final I_M_Material_Tracking materialTracking = null; // N/A, not needed
 		final HUPackingMaterialDocumentLineCandidate candidate = new HUPackingMaterialDocumentLineCandidate(emptiesProduct, materialTracking, locator);
@@ -90,7 +90,7 @@ public final class HUPackingMaterialDocumentLineCandidate
 				return productIdsComparator.compare(getM_Product_ID(o1), getM_Product_ID(o2));
 			}
 
-			private final int getM_Product_ID(final HUPackingMaterialDocumentLineCandidate candidate)
+			private int getM_Product_ID(final HUPackingMaterialDocumentLineCandidate candidate)
 			{
 				return candidate == null ? -1 : candidate.getProductId().getRepoId();
 			}
@@ -181,7 +181,7 @@ public final class HUPackingMaterialDocumentLineCandidate
 	 */
 	public BigDecimal getQtyInStockingUOM()
 	{
-		final I_C_UOM uomTo = Services.get(IProductBL.class).getStockingUOM(product);
+		final I_C_UOM uomTo = Services.get(IProductBL.class).getStockUOM(product);
 		return getQty(uomTo);
 	}
 
@@ -204,7 +204,7 @@ public final class HUPackingMaterialDocumentLineCandidate
 		return uom;
 	}
 
-	private final int getC_UOM_ID()
+	private int getC_UOM_ID()
 	{
 		final int uomId = uom == null ? -1 : uom.getC_UOM_ID();
 		return uomId > 0 ? uomId : -1;
@@ -215,7 +215,7 @@ public final class HUPackingMaterialDocumentLineCandidate
 		return locator;
 	}
 
-	private final int getM_Locator_ID()
+	private int getM_Locator_ID()
 	{
 		final int locatorId = locator == null ? -1 : locator.getM_Locator_ID();
 		return locatorId > 0 ? locatorId : -1;
@@ -226,7 +226,7 @@ public final class HUPackingMaterialDocumentLineCandidate
 		return materialTracking;
 	}
 
-	private final int getM_MaterialTracking_ID()
+	private int getM_MaterialTracking_ID()
 	{
 		final int materialTrackingId = materialTracking == null ? -1 : materialTracking.getM_Material_Tracking_ID();
 		return materialTrackingId > 0 ? materialTrackingId : -1;

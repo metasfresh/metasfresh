@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.IHUCapacityBL;
@@ -52,6 +51,8 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -127,7 +128,7 @@ public class HUItemStorage implements IHUItemStorage
 			storage.setM_HU_Item_ID(item.getM_HU_Item_ID());
 			storage.setM_Product_ID(productId.getRepoId());
 			storage.setQty(BigDecimal.ZERO);
-			storage.setC_UOM(uom);
+			storage.setC_UOM_ID(uom.getC_UOM_ID());
 
 			// don't save it; it will be saved after qty update
 			// dao.saveStorageLine(storage);
@@ -156,7 +157,7 @@ public class HUItemStorage implements IHUItemStorage
 
 		final I_M_HU_Item_Storage storageLine = getCreateStorageLine(productId, uom);
 
-		final I_C_UOM uomStorage = storageLine.getC_UOM();
+		final I_C_UOM uomStorage = extractUOM(storageLine);
 		final BigDecimal qtyConv = uomConversionBL.convertQty(productId, qty, uom, uomStorage);
 		//
 		// Update storage line
@@ -188,7 +189,7 @@ public class HUItemStorage implements IHUItemStorage
 		final I_M_HU_Item_Storage storageLine = getCreateStorageLine(productId, uom);
 
 		final BigDecimal qty = storageLine.getQty();
-		final BigDecimal qtyConv = uomConversionBL.convertQty(productId, qty, storageLine.getC_UOM(), uom);
+		final BigDecimal qtyConv = uomConversionBL.convertQty(productId, qty, extractUOM(storageLine), uom);
 
 		return qtyConv;
 	}
@@ -322,7 +323,7 @@ public class HUItemStorage implements IHUItemStorage
 			return request;
 		}
 
-		final BigDecimal capacityAvailable = availableCapacityDefinition.getCapacityQty();
+		final BigDecimal capacityAvailable = availableCapacityDefinition.toBigDecimal();
 		if (capacityAvailable.signum() == 0)
 		{
 			return AllocationUtils.createZeroQtyRequest(request);
@@ -513,12 +514,17 @@ public class HUItemStorage implements IHUItemStorage
 		for (final I_M_HU_Item_Storage storage : storages)
 		{
 			final ProductId productId = ProductId.ofRepoId(storage.getM_Product_ID());
-			final I_C_UOM uom = storage.getC_UOM();
+			final I_C_UOM uom = extractUOM(storage);
 			final HUItemProductStorage productStorage = new HUItemProductStorage(this, productId, uom, date);
 			result.add(productStorage);
 		}
 
 		return result;
+	}
+
+	private I_C_UOM extractUOM(final I_M_HU_Item_Storage storage)
+	{
+		return Services.get(IUOMDAO.class).getById(storage.getC_UOM_ID());
 	}
 
 	@Override

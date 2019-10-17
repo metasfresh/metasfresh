@@ -4,7 +4,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList_Version;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUDocumentHandler;
+import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.order.IOrderBL;
@@ -25,15 +27,19 @@ public class OrderPricingHUDocumentHandler implements IHUDocumentHandler
 		final I_C_Order order = InterfaceWrapperHelper.create(orderObj, I_C_Order.class);
 		final I_M_PriceList_Version plv = Services.get(IOrderBL.class).getPriceListVersion(order);
 
-		final boolean strictDefault = false;
 		final I_M_ProductPrice productPrice = ProductPrices.newQuery(plv)
-				.setM_Product_ID(productId.getRepoId())
+				.setProductId(productId)
 				.onlyAttributePricing()
-				.retrieveDefault(strictDefault, I_M_ProductPrice.class);
-		
-		if(productPrice != null)
+				.onlyValidPrices(true)
+				.retrieveDefault(I_M_ProductPrice.class);
+
+		if (productPrice != null)
 		{
-			return productPrice.getM_HU_PI_Item_Product();
+			final HUPIItemProductId packingMaterialId = HUPIItemProductId.ofRepoIdOrNull(productPrice.getM_HU_PI_Item_Product_ID());
+			if (packingMaterialId != null)
+			{
+				return Services.get(IHUPIItemProductDAO.class).getById(packingMaterialId);
+			}
 		}
 
 		return null;

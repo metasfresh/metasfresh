@@ -12,6 +12,8 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
@@ -20,6 +22,7 @@ import org.compiere.model.X_M_Transaction;
 import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -97,7 +100,7 @@ class MultiVendorHUReturnsInOutProducer
 		for (final I_M_HU hu : getHUsToReturn())
 		{
 			final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
-			final int warehouseId = hu.getM_Locator().getM_Warehouse_ID();
+			final WarehouseId warehouseId2 = IHandlingUnitsBL.extractWarehouseId(hu);
 
 			//
 			// Find out the HU assignments to original vendor material receipt
@@ -136,14 +139,14 @@ class MultiVendorHUReturnsInOutProducer
 					continue;
 				}
 
-				final int bpartnerId = inout.getC_BPartner_ID();
+				final BPartnerId bpartnerId = BPartnerId.ofRepoId(inout.getC_BPartner_ID());
 
 				final I_C_Order order = inout.getC_Order();
 				// Add the HU to the right producer
 				// NOTE: There will be one return inout for each partner and warehouse
 				// The return inout lines will be created based on the origin inoutlines (from receipts)
-				final ArrayKey vendorReturnProducerKey = ArrayKey.of(warehouseId, bpartnerId, order.getC_Order_ID());
-				vendorReturnProducers.computeIfAbsent(vendorReturnProducerKey, k -> createVendorReturnInOutProducer(bpartnerId, warehouseId, order))
+				final ArrayKey vendorReturnProducerKey = ArrayKey.of(warehouseId2, bpartnerId, order.getC_Order_ID());
+				vendorReturnProducers.computeIfAbsent(vendorReturnProducerKey, k -> createVendorReturnInOutProducer(bpartnerId, warehouseId2, order))
 						.addHUToReturn(hu, originalReceiptInOutLineId);
 			}
 		}
@@ -177,17 +180,17 @@ class MultiVendorHUReturnsInOutProducer
 	/**
 	 * Create vendor return producer, set the details and use it to create the vendor return inout.
 	 *
-	 * @param partnerId
+	 * @param bpartnerId
 	 * @param hus
 	 * @return
 	 */
-	private VendorReturnsInOutProducer createVendorReturnInOutProducer(final int partnerId, final int warehouseId, final I_C_Order originOrder)
+	private VendorReturnsInOutProducer createVendorReturnInOutProducer(final BPartnerId bpartnerId, final WarehouseId warehouseId, final I_C_Order originOrder)
 	{
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 		final Properties ctx = Env.getCtx();
-		final I_C_BPartner partner = InterfaceWrapperHelper.loadOutOfTrx(partnerId, I_C_BPartner.class);
-		final I_C_BPartner_Location shipFromLocation = bpartnerDAO.retrieveShipToLocation(ctx, partnerId, ITrx.TRXNAME_None);
-		final I_M_Warehouse warehouse = InterfaceWrapperHelper.loadOutOfTrx(warehouseId, I_M_Warehouse.class);
+		final I_C_BPartner partner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
+		final I_C_BPartner_Location shipFromLocation = bpartnerDAO.retrieveShipToLocation(ctx, bpartnerId.getRepoId(), ITrx.TRXNAME_None);
+		final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(warehouseId);
 
 		final VendorReturnsInOutProducer producer = VendorReturnsInOutProducer.newInstance();
 		producer.setC_BPartner(partner);

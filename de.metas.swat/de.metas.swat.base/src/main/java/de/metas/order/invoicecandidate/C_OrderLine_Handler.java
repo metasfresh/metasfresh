@@ -35,19 +35,20 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
@@ -62,12 +63,21 @@ import de.metas.order.compensationGroup.GroupCompensationAmtType;
 import de.metas.order.compensationGroup.GroupCompensationLine;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
+import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.InvoicableQtyBasedOn;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
-import de.metas.product.acct.api.IProductAcctDAO;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
+import lombok.NonNull;
 
 /**
  * Converts {@link I_C_OrderLine} to {@link I_C_Invoice_Candidate}.
@@ -91,7 +101,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	public boolean isCreateMissingCandidatesAutomatically(Object model)
 	{
 		return false;
-	};
+	}
 
 	/**
 	 * @see C_Order_Handler#expandRequest(InvoiceCandidateGenerateRequest)
@@ -126,6 +136,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 	private I_C_Invoice_Candidate createCandidateForOrderLine(final I_C_OrderLine orderLine)
 	{
+		final IProductBL productBL = Services.get(IProductBL.class);
+
 		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
 		final String trxName = InterfaceWrapperHelper.getTrxName(orderLine);
 
@@ -140,11 +152,19 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setRecord_ID(orderLine.getC_OrderLine_ID());
 
 		ic.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
-		ic.setM_Product_ID(orderLine.getM_Product_ID());
+
+		final int productRecordId = orderLine.getM_Product_ID();
+		ic.setM_Product_ID(productRecordId);
+
+		boolean isFreightCostProduct = productBL.isFreightCostProduct(ProductId.ofRepoId(productRecordId));
+
+		ic.setIsFreightCost(isFreightCostProduct);
 		ic.setIsPackagingMaterial(orderLine.isPackagingMaterial());
 		ic.setC_Charge_ID(orderLine.getC_Charge_ID());
-		ic.setQtyOrdered(orderLine.getQtyOrdered());
-		ic.setDateOrdered(orderLine.getDateOrdered());
+
+		setOrderedData(ic, orderLine);
+
+		ic.setInvoicableQtyBasedOn(orderLine.getInvoicableQtyBasedOn());
 		ic.setPriceActual(orderLine.getPriceActual());
 		ic.setPrice_UOM_ID(orderLine.getPrice_UOM_ID()); // 07090 when we set PiceActual, we shall also set PriceUOM.
 		ic.setPriceEntered(orderLine.getPriceEntered()); // cg : task 04917
@@ -169,7 +189,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			// because we want to invoice those right away (08408)
 			if (isNotReceivebleService(ic))
 			{
-				ic.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_OVERRIDE_Sofort); // immediate
+				ic.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_OVERRIDE_Immediate); // immediate
 			}
 		}
 
@@ -200,12 +220,12 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final int taxId = Services.get(ITaxBL.class).getTax(
 				ctx,
 				ic,
-				orderLine.getC_TaxCategory_ID(),
+				TaxCategoryId.ofRepoIdOrNull(orderLine.getC_TaxCategory_ID()),
 				orderLine.getM_Product_ID(),
 				order.getDatePromised(), // shipDate
 				OrgId.ofRepoId(order.getAD_Org_ID()),
 				WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
-				Util.firstGreaterThanZero(order.getDropShip_Location_ID(), order.getC_BPartner_Location_ID()), // ship location id
+				CoalesceUtil.firstGreaterThanZero(order.getDropShip_Location_ID(), order.getC_BPartner_Location_ID()), // ship location id
 				order.isSOTrx());
 		ic.setC_Tax_ID(taxId);
 
@@ -268,6 +288,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 	/**
 	 * <ul>
+	 * <li>QtyEntered := C_OrderLine.QtyEntered
+	 * <li>C_UOM_ID := C_OrderLine.C_UOM_ID
 	 * <li>QtyOrdered := C_OrderLine.QtyOrdered
 	 * <li>DateOrdered := C_OrderLine.DateOrdered
 	 * <li>C_Order_ID: C_OrderLine.C_Order_ID
@@ -277,28 +299,51 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	 * @see IInvoiceCandidateHandler#setOrderedData(I_C_Invoice_Candidate)
 	 */
 	@Override
-	public void setOrderedData(final I_C_Invoice_Candidate ic)
+	public void setOrderedData(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
+
+		setOrderedData(ic, orderLine);
+	}
+
+	private void setOrderedData(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		// prefer priceUOM, if given
+		if (orderLine.getPrice_UOM_ID() > 0)
+		{
+			ic.setQtyEntered(orderLine.getQtyEnteredInPriceUOM());
+			ic.setC_UOM_ID(orderLine.getPrice_UOM_ID());
+		}
+		else
+		{
+			ic.setQtyEntered(orderLine.getQtyEntered());
+			ic.setC_UOM_ID(orderLine.getC_UOM_ID());
+		}
 
 		// we use C_OrderLine.QtyOrdered which is fine, but which is also in the product's stocking UOM
 		ic.setQtyOrdered(orderLine.getQtyOrdered());
 		ic.setDateOrdered(orderLine.getDateOrdered());
+
+		ic.setPresetDateInvoiced(orderLine.getPresetDateInvoiced());
+
 		ic.setC_Order_ID(orderLine.getC_Order_ID());
 
-		setC_PaymentTerm(ic);
+		setC_PaymentTerm(ic, orderLine);
 	}
 
-	private void setC_PaymentTerm(final I_C_Invoice_Candidate ic)
+	private void setC_PaymentTerm(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		if (!ic.isSOTrx())
 		{
 			return;
 		}
 
-		final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
-		final int paymentTermId = Services.get(IOrderLineBL.class).getC_PaymentTerm_ID(orderLine);
-		ic.setC_PaymentTerm_ID(paymentTermId);
+		final PaymentTermId paymentTermId = Services.get(IOrderLineBL.class).getPaymentTermId(orderLine);
+		ic.setC_PaymentTerm_ID(paymentTermId.getRepoId());
 	}
 
 	/**
@@ -312,24 +357,38 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	 *
 	 */
 	@Override
-	public void setDeliveredData(final I_C_Invoice_Candidate ic)
+	public void setDeliveredData(final I_C_Invoice_Candidate icRecord)
 	{
-		final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
 
-		ic.setQtyDelivered(orderLine.getQtyDelivered());
+		StockQtyAndUOMQty qtysDelivered = invoiceCandidateRecordService
+				.ofRecord(icRecord)
+				.computeQtysDelivered();
 
+		if (qtysDelivered.getStockQty().isZero())
+		{
+			final org.compiere.model.I_C_OrderLine orderLine = icRecord.getC_OrderLine();
+			if (orderLine.getQtyDelivered().signum() > 0)
+			{
+				// fallback to C_OrderLine.QtyDelivered...maybe there are cases with no-item-products, where we have QtyDelivered, but no shipments
+				qtysDelivered = StockQtyAndUOMQtys.create(
+						orderLine.getQtyDelivered(), ProductId.ofRepoId(orderLine.getM_Product_ID()),
+						orderLine.getQtyEntered(), UomId.ofRepoId(orderLine.getC_UOM_ID()));
+			}
+		}
+		icRecord.setQtyDelivered(qtysDelivered.getStockQty().toBigDecimal());
+		icRecord.setQtyDeliveredInUOM(qtysDelivered.getUOMQtyNotNull().toBigDecimal());
 		//
 		// Find out the first shipment/receipt
-		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-		final List<I_C_InvoiceCandidate_InOutLine> icIols = invoiceCandDAO.retrieveICIOLAssociationsExclRE(ic);
+		final List<I_C_InvoiceCandidate_InOutLine> icIols = invoiceCandDAO.retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(icRecord));
 		I_M_InOut firstInOut = null;
 		for (final I_C_InvoiceCandidate_InOutLine icIol : icIols)
 		{
 			final I_M_InOut inOut = icIol.getM_InOutLine().getM_InOut();
 
 			// Consider only completed shipments/receipts
-			if (!docActionBL.isDocumentCompletedOrClosed(inOut))
+			if (!DocStatus.ofCode(inOut.getDocStatus()).isCompletedOrClosed())
 			{
 				continue;
 			}
@@ -345,7 +404,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			}
 		}
 
-		setDeliveredDataFromFirstInOut(ic, firstInOut);
+		setDeliveredDataFromFirstInOut(icRecord, firstInOut);
 	}
 
 	@Override
@@ -355,16 +414,17 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		// ts: we *must* use the order line's data
 		final PriceAndTaxBuilder priceAndTax = PriceAndTax.builder()
+				.invoicableQtyBasedOn(InvoicableQtyBasedOn.fromRecordString(orderLine.getInvoicableQtyBasedOn()))
 				.priceEntered(orderLine.getPriceEntered())
 				.priceActual(orderLine.getPriceActual())
-				.priceUOMId(orderLine.getPrice_UOM_ID())
+				.priceUOMId(UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID()))
 				.taxIncluded(orderLine.getC_Order().isTaxIncluded());
 
 		//
 		// Percent Group Compensation Line
 		if (ic.isGroupCompensationLine() && GroupCompensationAmtType.Percent.getAdRefListValue().equals(ic.getGroupCompensationAmtType()))
 		{
-			final InvoiceCandidateGroupRepository groupsRepo = Adempiere.getBean(InvoiceCandidateGroupRepository.class);
+			final InvoiceCandidateGroupRepository groupsRepo = SpringContextHolder.instance.getBean(InvoiceCandidateGroupRepository.class);
 
 			final GroupId groupId = groupsRepo.extractGroupId(ic);
 			final Group group = groupsRepo.retrieveGroup(groupId);
@@ -394,13 +454,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setBill_Location_ID(order.getBill_Location_ID());
 		ic.setBill_User_ID(order.getBill_User_ID());
 
-	}
-
-	@Override
-	public void setC_UOM_ID(final I_C_Invoice_Candidate ic)
-	{
-		final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
-		ic.setC_UOM_ID(orderLine.getC_UOM_ID());
 	}
 
 	private void setGroupCompensationData(final I_C_Invoice_Candidate ic, final I_C_OrderLine fromOrderLine)

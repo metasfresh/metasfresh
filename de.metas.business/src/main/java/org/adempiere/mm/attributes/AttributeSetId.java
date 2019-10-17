@@ -3,9 +3,11 @@ package org.adempiere.mm.attributes;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -35,6 +37,7 @@ public class AttributeSetId implements RepoIdAware
 {
 	int repoId;
 
+	@JsonCreator
 	public static AttributeSetId ofRepoId(final int repoId)
 	{
 		final AttributeSetId id = ofRepoIdOrNull(repoId);
@@ -82,6 +85,13 @@ public class AttributeSetId implements RepoIdAware
 	private AttributeSetId()
 	{
 		this.repoId = AttributeConstants.M_AttributeSet_ID_None;
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 
 	public boolean isNone()

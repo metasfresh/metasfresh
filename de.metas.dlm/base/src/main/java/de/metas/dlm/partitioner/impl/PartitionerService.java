@@ -181,11 +181,11 @@ public class PartitionerService implements IPartitionerService
 
 		if (request.getRecordToAttach() == null && request.getPartitionToComplete() == null)
 		{
-			Loggables.get().addLog("The request does not explicitly tell us where to start; request={}", request);
+			Loggables.addLog("The request does not explicitly tell us where to start; request={}", request);
 			final Iterator<WorkQueue> incompletePartitionQueue = retrieveIncompletePartitionOrNull(ctxAware);
 			if (incompletePartitionQueue != null)
 			{
-				Loggables.get().addLog("Working with an inclomplete partition");
+				Loggables.addLog("Working with an inclomplete partition");
 				final Partition partition = attachToPartitionAndCheck(
 						request,
 						mkIterateResult(
@@ -196,7 +196,7 @@ public class PartitionerService implements IPartitionerService
 			}
 			else
 			{
-				Loggables.get().addLog("Iterating the config's lines and starting with on one record for each line");
+				Loggables.addLog("Iterating the config's lines and starting with on one record for each line");
 				// iterate the lines and look for the first record out o
 				for (final PartitionerConfigLine line : lines)
 				{
@@ -205,7 +205,7 @@ public class PartitionerService implements IPartitionerService
 					{
 						continue;  // looks like we partitioned *every* record of the given table
 					}
-					Loggables.get().withLogger(logger, Level.INFO).addLog("line={}: starting with record={}", line, record);
+					Loggables.withLogger(logger, Level.INFO).addLog("line={}: starting with record={}", line, record);
 
 					final Partition partition = attachToPartitionAndCheck(request,
 							mkIterateResult(
@@ -216,7 +216,7 @@ public class PartitionerService implements IPartitionerService
 
 					if (partition.isAborted())
 					{
-						Loggables.get().withLogger(logger, Level.WARN).addLog("Aborting while working on config line={}", line);
+						Loggables.withLogger(logger, Level.WARN).addLog("Aborting while working on config line={}", line);
 						break; // abort
 					}
 				}
@@ -282,7 +282,7 @@ public class PartitionerService implements IPartitionerService
 			// update each records' DLM_Level to 2 (2="test").
 			final IMigratorService migratorService = Services.get(IMigratorService.class);
 
-			Loggables.get().withLogger(logger, Level.INFO).addLog("Calling testMigratePartition with partition={}", partition);
+			Loggables.withLogger(logger, Level.INFO).addLog("Calling testMigratePartition with partition={}", partition);
 			migratorService.testMigratePartition(partition);
 		}
 		catch (final DLMReferenceException e)
@@ -293,7 +293,7 @@ public class PartitionerService implements IPartitionerService
 			// throw an exception (LATER),
 			// skip the record (LATER)
 			// or add another PartitionerConfigLine, get the additional line's records and retry.
-			Loggables.get().withLogger(logger, Level.INFO).addLog("Caught {}; going to retry with an augmented config that also includes referencingTable={}", e.toString(), descriptor.getOriginTableName());
+			Loggables.withLogger(logger, Level.INFO).addLog("Caught {}; going to retry with an augmented config that also includes referencingTable={}", e.toString(), descriptor.getOriginTableName());
 
 			final PartitionConfig newConfig = augmentPartitionerConfig(config, Collections.singletonList(descriptor));
 			storeOutOfTrx(newConfig); // store the new config so that even if we fail later on, the info is preserved
@@ -325,7 +325,7 @@ public class PartitionerService implements IPartitionerService
 
 		final String msg = "Returning a newly identified partition={}.";
 		logger.info(msg, partition);
-		Loggables.get().addLog(msg, partition);
+		Loggables.addLog(msg, partition);
 
 		return partition;
 	}
@@ -398,14 +398,7 @@ public class PartitionerService implements IPartitionerService
 
 	private void storeOutOfTrx(final PartitionConfig newConfig)
 	{
-		Services.get(ITrxManager.class).run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				Services.get(IDLMService.class).storePartitionConfig(newConfig);
-			}
-		});
+		Services.get(ITrxManager.class).runInNewTrx((TrxRunnable)localTrxName -> Services.get(IDLMService.class).storePartitionConfig(newConfig));
 	}
 
 	private void checkIfTableIsDLM(final String tableName, final OnNotDLMTable onNotDLMTable)
@@ -440,21 +433,16 @@ public class PartitionerService implements IPartitionerService
 		//
 		// then the the table, and if necessary, DLM it.
 		//
-		trxManager.run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
+		trxManager.runInNewTrx((TrxRunnable)localTrxName -> {
+			final IDLMService dlmService = Services.get(IDLMService.class);
+
+			if (!referencingTable.isDLM())
 			{
-				final IDLMService dlmService = Services.get(IDLMService.class);
+				final String msg = "ReferencingTable={} is not yet DLM'ed; doing it now";
+				logger.info(msg, tableName);
+				Loggables.addLog(msg, tableName);
 
-				if (!referencingTable.isDLM())
-				{
-					final String msg = "ReferencingTable={} is not yet DLM'ed; doing it now";
-					logger.info(msg, tableName);
-					Loggables.get().addLog(msg, tableName);
-
-					dlmService.addTableToDLM(referencingTable);
-				}
+				dlmService.addTableToDLM(referencingTable);
 			}
 		});
 	}
@@ -493,7 +481,7 @@ public class PartitionerService implements IPartitionerService
 					.endRef()
 					.endLine();
 
-			Loggables.get().withLogger(logger, Level.INFO)
+			Loggables.withLogger(logger, Level.INFO)
 					.addLog("Added descriptor={} to the config with name={}", descriptor, config.getName());
 		});
 

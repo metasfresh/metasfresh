@@ -1,37 +1,41 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.acct;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-import org.adempiere.acct.api.IGLJournalLineBL;
-import org.adempiere.acct.api.IGLJournalLineDAO;
-import org.adempiere.acct.api.ITaxAccountable;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
-import org.compiere.model.MAcctSchema;
-import org.compiere.model.PO;
 import org.compiere.model.X_GL_JournalLine;
-import org.compiere.util.Env;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.acct.gljournal.IGLJournalLineBL;
+import de.metas.acct.gljournal.IGLJournalLineDAO;
+import de.metas.acct.tax.ITaxAccountable;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 
 /**
@@ -45,45 +49,29 @@ import de.metas.util.Services;
  * @author Jorg Janke
  * @version $Id: Doc_GLJournal.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
  */
-public class Doc_GLJournal extends Doc
+public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 {
 	// Services
 	private final transient IGLJournalLineDAO glJournalLineDAO = Services.get(IGLJournalLineDAO.class);
 	private final transient IGLJournalLineBL glJournalLineBL = Services.get(IGLJournalLineBL.class);
 
-	/**
-	 * Constructor
-	 *
-	 * @param ass accounting schemata
-	 * @param rs record
-	 * @param trxName trx
-	 */
-	public Doc_GLJournal(final IDocBuilder docBuilder)
+	public Doc_GLJournal(final AcctDocContext ctx)
 	{
-		super(docBuilder);
-	}	// Doc_GL_Journal
+		super(ctx);
+	}
 
-	/** Posting Type */
-	private String m_PostingType = null;
-	private int m_C_AcctSchema_ID = 0;
+	private PostingType postingType = null;
+	private AcctSchemaId acctSchemaId;
 
-	/**
-	 * Load Specific Document Details
-	 *
-	 * @return error message or null
-	 */
 	@Override
-	protected String loadDocumentDetails()
+	protected void loadDocumentDetails()
 	{
 		final I_GL_Journal journal = getModel(I_GL_Journal.class);
-		m_PostingType = journal.getPostingType();
-		m_C_AcctSchema_ID = journal.getC_AcctSchema_ID();
+		postingType = PostingType.ofCode(journal.getPostingType());
+		acctSchemaId = AcctSchemaId.ofRepoId(journal.getC_AcctSchema_ID());
 
-		// Contained Objects
-		p_lines = loadLines(journal);
-		log.debug("Lines=" + p_lines.length);
-		return null;
-	}   // loadDocumentDetails
+		setDocLines(loadLines(journal));
+	}
 
 	/**
 	 * Load Invoice Line
@@ -91,14 +79,14 @@ public class Doc_GLJournal extends Doc
 	 * @param journal journal
 	 * @return DocLine Array
 	 */
-	private DocLine[] loadLines(final I_GL_Journal journal)
+	private List<DocLine_GLJournal> loadLines(final I_GL_Journal journal)
 	{
-		final List<DocLine> docLinesAll = new ArrayList<>();
+		final List<DocLine_GLJournal> docLinesAll = new ArrayList<>();
 		final List<I_GL_JournalLine> glJournalLines = glJournalLineDAO.retrieveLines(journal);
 		for (final I_GL_JournalLine glJournalLine : glJournalLines)
 		{
 			final String type = glJournalLine.getType();
-			final List<DocLine> docLines;
+			final List<DocLine_GLJournal> docLines;
 			if (X_GL_JournalLine.TYPE_Normal.equals(type))
 			{
 				docLines = createDocLines_Normal(glJournalLine);
@@ -115,8 +103,7 @@ public class Doc_GLJournal extends Doc
 			docLinesAll.addAll(docLines);
 		}
 
-		// Return Array
-		return docLinesAll.toArray(new DocLine[docLinesAll.size()]);
+		return docLinesAll;
 	}	// loadLines
 
 	/**
@@ -130,13 +117,13 @@ public class Doc_GLJournal extends Doc
 	 * @param glJournalLine
 	 * @return
 	 */
-	private final List<DocLine> createDocLines_Normal(final I_GL_JournalLine glJournalLine)
+	private final List<DocLine_GLJournal> createDocLines_Normal(final I_GL_JournalLine glJournalLine)
 	{
-		final List<DocLine> docLines = new ArrayList<>();
+		final List<DocLine_GLJournal> docLines = new ArrayList<>();
 
 		if (glJournalLine.isAllowAccountDR())
 		{
-			final DocLine docLineDR = createDocLine(glJournalLine);
+			final DocLine_GLJournal docLineDR = createDocLine(glJournalLine);
 			docLineDR.setAmount(glJournalLine.getAmtSourceDr(), BigDecimal.ZERO);
 			docLineDR.setC_ConversionType_ID(glJournalLine.getC_ConversionType_ID());
 			docLineDR.setConvertedAmt(glJournalLine.getAmtAcctDr(), BigDecimal.ZERO);
@@ -146,7 +133,7 @@ public class Doc_GLJournal extends Doc
 		}
 		if (glJournalLine.isAllowAccountCR())
 		{
-			final DocLine docLineCR = createDocLine(glJournalLine);
+			final DocLine_GLJournal docLineCR = createDocLine(glJournalLine);
 			docLineCR.setAmount(BigDecimal.ZERO, glJournalLine.getAmtSourceCr());
 			docLineCR.setC_ConversionType_ID(glJournalLine.getC_ConversionType_ID());
 			docLineCR.setConvertedAmt(BigDecimal.ZERO, glJournalLine.getAmtAcctCr());
@@ -158,7 +145,7 @@ public class Doc_GLJournal extends Doc
 		return docLines;
 	}
 
-	private final List<DocLine> createDocLines_Tax(final I_GL_JournalLine glJournalLine)
+	private final List<DocLine_GLJournal> createDocLines_Tax(final I_GL_JournalLine glJournalLine)
 	{
 		if (glJournalLine.isDR_AutoTaxAccount())
 		{
@@ -194,15 +181,15 @@ public class Doc_GLJournal extends Doc
 	 * @param glJournalLine
 	 * @return
 	 */
-	private final List<DocLine> createDocLines_Tax(final I_GL_JournalLine glJournalLine, final boolean isTaxOnDebit)
+	private final List<DocLine_GLJournal> createDocLines_Tax(final I_GL_JournalLine glJournalLine, final boolean isTaxOnDebit)
 	{
 		final ITaxAccountable autoTaxRecord = glJournalLineBL.asTaxAccountable(glJournalLine, isTaxOnDebit);
 
-		final List<DocLine> docLines = new ArrayList<>();
+		final List<DocLine_GLJournal> docLines = new ArrayList<>();
 
 		// Tax Total Amount (CR/DR)
 		{
-			final DocLine docLine_TaxTotalAmt = createDocLine(glJournalLine);
+			final DocLine_GLJournal docLine_TaxTotalAmt = createDocLine(glJournalLine);
 			docLine_TaxTotalAmt.setAmountDrOrCr(autoTaxRecord.getTaxTotalAmt(), !isTaxOnDebit);
 			docLine_TaxTotalAmt.setAccount(autoTaxRecord.getTaxTotal_Acct());
 			docLines.add(docLine_TaxTotalAmt);
@@ -210,7 +197,7 @@ public class Doc_GLJournal extends Doc
 
 		// Tax Base Amount (DR/CR)
 		{
-			final DocLine docLine_TaxBaseAmt = createDocLine(glJournalLine);
+			final DocLine_GLJournal docLine_TaxBaseAmt = createDocLine(glJournalLine);
 			docLine_TaxBaseAmt.setAmountDrOrCr(autoTaxRecord.getTaxBaseAmt(), isTaxOnDebit);
 			docLine_TaxBaseAmt.setAccount(autoTaxRecord.getTaxBase_Acct());
 			docLines.add(docLine_TaxBaseAmt);
@@ -218,7 +205,7 @@ public class Doc_GLJournal extends Doc
 
 		// Tax Amount (DR/CR)
 		{
-			final DocLine docLine_TaxAmt = createDocLine(glJournalLine);
+			final DocLine_GLJournal docLine_TaxAmt = createDocLine(glJournalLine);
 			docLine_TaxAmt.setAmountDrOrCr(autoTaxRecord.getTaxAmt(), isTaxOnDebit);
 			docLine_TaxAmt.setAccount(autoTaxRecord.getTax_Acct());
 			docLine_TaxAmt.setC_Tax_ID(autoTaxRecord.getC_Tax_ID());
@@ -228,14 +215,32 @@ public class Doc_GLJournal extends Doc
 		return docLines;
 	}
 
-	private final DocLine createDocLine(final I_GL_JournalLine glJournalLine)
+	private final DocLine_GLJournal createDocLine(final I_GL_JournalLine glJournalLine)
 	{
-		final PO glJournalLinePO = InterfaceWrapperHelper.getPO(glJournalLine);
-		final DocLine docLine = new DocLine(glJournalLinePO, this);
+		final DocLine_GLJournal docLine = new DocLine_GLJournal(glJournalLine, this);
 		docLine.setC_ConversionType_ID(glJournalLine.getC_ConversionType_ID());
 		docLine.setC_Tax_ID(0); // avoid setting C_Tax_ID by default
-		docLine.setC_AcctSchema_ID(m_C_AcctSchema_ID);
+		docLine.setAcctSchemaId(acctSchemaId);
+
+		final Quantity qty = extractQty(glJournalLine);
+		if (qty != null)
+		{
+			docLine.setQty(qty);
+		}
+		
 		return docLine;
+	}
+
+	private static Quantity extractQty(final I_GL_JournalLine glJournalLine)
+	{
+		final int uomId = glJournalLine.getC_UOM_ID();
+		if (uomId <= 0)
+		{
+			return null;
+		}
+
+		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(uomId);
+		return Quantity.of(glJournalLine.getQty(), uom);
 	}
 
 	/**************************************************************************
@@ -246,9 +251,9 @@ public class Doc_GLJournal extends Doc
 	@Override
 	public BigDecimal getBalance()
 	{
-		BigDecimal balance = Env.ZERO;
+		BigDecimal balance = BigDecimal.ZERO;
 
-		for (final DocLine docLine : p_lines)
+		for (final DocLine_GLJournal docLine : getDocLines())
 		{
 			final BigDecimal docLineBalance = docLine.getAmtSource();
 			balance = balance.add(docLineBalance);
@@ -268,41 +273,41 @@ public class Doc_GLJournal extends Doc
 	 * @return Fact
 	 */
 	@Override
-	public List<Fact> createFacts(final MAcctSchema as)
+	public List<Fact> createFacts(final AcctSchema as)
 	{
-		final List<Fact> facts = new ArrayList<Fact>();
+		final List<Fact> facts = new ArrayList<>();
 
 		// Other Acct Schema
-		if (as.getC_AcctSchema_ID() != m_C_AcctSchema_ID)
+		if (!AcctSchemaId.equals(as.getId(), acctSchemaId))
 		{
 			return facts;
 		}
 
 		// create Fact Header
-		final Fact fact = new Fact(this, as, m_PostingType);
+		final Fact fact = new Fact(this, as, postingType);
 
 		// GLJ
 		if (getDocumentType().equals(DOCTYPE_GLJournal))
 		{
 			// account DR CR
-			for (final DocLine docLine : p_lines)
+			for (final DocLine_GLJournal line : getDocLines())
 			{
-				if (docLine.getC_AcctSchema_ID() > 0 && docLine.getC_AcctSchema_ID() != as.getC_AcctSchema_ID())
+				if (line.getAcctSchemaId() != null && !Objects.equals(line.getAcctSchemaId(), as.getId()))
 				{
 					continue;
 				}
 
-				fact.createLine(docLine,
-						docLine.getAccount(),
-						docLine.getC_Currency_ID(),
-						docLine.getAmtSourceDr(),
-						docLine.getAmtSourceCr());
+				fact.createLine(line,
+						line.getAccount(),
+						line.getCurrencyId(),
+						line.getAmtSourceDr(),
+						line.getAmtSourceCr());
 			}	// for all lines
 		}
 		else
 		{
 			throw newPostingException()
-					.setC_AcctSchema(as)
+					.setAcctSchema(as)
 					.setDetailMessage("DocumentType unknown: " + getDocumentType());
 		}
 		//

@@ -28,11 +28,8 @@ import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.session.MFSession;
-import org.adempiere.impexp.IImportProcessFactory;
-import org.adempiere.impexp.spi.impl.AsyncImportProcessBuilder;
-import org.adempiere.impexp.spi.impl.AsyncImportWorkpackageProcessor;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Ini;
 
@@ -48,6 +45,9 @@ import de.metas.async.model.I_C_Queue_WorkPackage_Param;
 import de.metas.async.processor.IQueueProcessorExecutorService;
 import de.metas.async.spi.impl.DefaultAsyncBatchListener;
 import de.metas.event.Topic;
+import de.metas.impexp.async.AsyncImportProcessBuilderFactory;
+import de.metas.impexp.async.AsyncImportWorkpackageProcessor;
+import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -79,7 +79,7 @@ public class Main extends AbstractModuleInterceptor
 		// if we have two metasfresh wars/ears (one backend, one webUI), JMX names will collide
 		// if we start it on clients without having a central monitoring-gathering point we never know what's going on
 		// => it can all be solved, but as of now isn't
-		if (Adempiere.isSpringProfileActive(Profiles.PROFILE_App))
+		if (SpringContextHolder.instance.isSpringProfileActive(Profiles.PROFILE_App))
 		{
 			final int initDelayMillis = getInitDelayMillis();
 			Services.get(IQueueProcessorExecutorService.class).init(initDelayMillis);
@@ -91,7 +91,7 @@ public class Main extends AbstractModuleInterceptor
 		migrationLogger.addTableToIgnoreList(I_C_Queue_WorkPackage_Param.Table_Name);
 
 		// Data import (async support)
-		Services.get(IImportProcessFactory.class).setAsyncImportProcessBuilderSupplier(AsyncImportProcessBuilder.instanceSupplier);
+		Services.get(IImportProcessFactory.class).setAsyncImportProcessBuilderFactory(AsyncImportProcessBuilderFactory.instance);
 		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNoticeListener(new DefaultAsyncBatchListener(), AsyncBatchDAO.ASYNC_BATCH_TYPE_DEFAULT); // task 08917
 	}
 
@@ -127,7 +127,7 @@ public class Main extends AbstractModuleInterceptor
 	@Override
 	public void onUserLogin(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
 	{
-		if (!Ini.isClient())
+		if (!Ini.isSwingClient())
 		{
 			return;
 		}
@@ -143,7 +143,7 @@ public class Main extends AbstractModuleInterceptor
 	@Override
 	public void beforeLogout(final MFSession session)
 	{
-		if (!Ini.isClient())
+		if (!Ini.isSwingClient())
 		{
 			return;
 		}

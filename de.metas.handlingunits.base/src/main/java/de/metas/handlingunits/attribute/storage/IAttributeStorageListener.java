@@ -39,6 +39,8 @@ public interface IAttributeStorageListener
 	{
 	}
 
+	/** @deprecated this method is not used anymore */
+	@Deprecated
 	default void onAttributeValueDeleted(IAttributeValueContext attributeValueContext, IAttributeStorage storage, IAttributeValue attributeValue)
 	{
 	}

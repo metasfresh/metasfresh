@@ -33,6 +33,7 @@ import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -157,7 +158,7 @@ public class PDFPrintingAsyncBatchListener implements IAsyncBatchListener
 
 			notificationBL.send(UserNotificationRequest.builder()
 					.topic(Printing_Constants.USER_NOTIFICATIONS_TOPIC)
-					.recipientUserId(notifiableWP.getCreatedBy())
+					.recipientUserId(UserId.ofRepoId(notifiableWP.getCreatedBy()))
 					.contentADMessage(MSG_Event_PDFGenerated)
 					.contentADMessageParam(notifiableWP.getBatchEnqueuedCount())
 					.contentADMessageParam(countExpected)

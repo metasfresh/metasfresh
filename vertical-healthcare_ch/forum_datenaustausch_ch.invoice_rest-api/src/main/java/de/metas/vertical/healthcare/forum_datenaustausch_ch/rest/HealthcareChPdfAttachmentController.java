@@ -1,15 +1,14 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 
-import static de.metas.attachments.AttachmentConstants.TAGNAME_CONCATENATE_PDF_TO_INVOICE_PDF;
+import static de.metas.attachments.AttachmentTags.TAGNAME_CONCATENATE_PDF_TO_INVOICE_PDF;
 import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE;
 import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER;
-
-import lombok.NonNull;
 
 import java.io.IOException;
 
 import org.springframework.context.annotation.Conditional;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,12 +19,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ordercandidate.rest.JsonAttachment;
-import de.metas.ordercandidate.rest.OrderCandidatesRestEndpoint;
+import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
+import de.metas.rest_api.ordercandidates.response.JsonAttachment;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -68,9 +68,9 @@ public class HealthcareChPdfAttachmentController
 			+ TAGNAME_CONCATENATE_PDF_TO_INVOICE_PDF + "=true, so the PDF will eventually be appended to the invoice's PDF\n"
 			+ ATTATCHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE + "=externalReference, so the base64-encoded PDF will eventually included in the invoice's forum-datenaustausch.ch-XML")
 	// TODO only allow PDF
-	public JsonAttachment attachPdfFile(
+	public ResponseEntity<JsonAttachment> attachPdfFile(
 
-			@ApiParam(value = "Reference string that was returned by the invoice-rest-controller", allowEmptyValue = false) //
+			@ApiParam(required = true, value = "Reference string that was returned by the invoice-rest-controller") //
 			@PathVariable("externalReference") final String externalReference,
 
 			@RequestParam("file") @NonNull final MultipartFile file)

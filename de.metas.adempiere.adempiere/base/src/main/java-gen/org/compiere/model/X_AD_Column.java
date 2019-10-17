@@ -15,7 +15,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 368112425L;
+	private static final long serialVersionUID = 163043362L;
 
     /** Standard Constructor */
     public X_AD_Column (Properties ctx, int AD_Column_ID, String trxName)
@@ -31,6 +31,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 			setDDL_NoForeignKey (false); // N
 			setEntityType (null); // U
 			setIsAlwaysUpdateable (false); // N
+			setIsAutoApplyValidationRule (false); // N
 			setIsAutocomplete (false); // N
 			setIsCalculated (false); // N
 			setIsEncrypted (null); // N
@@ -47,7 +48,6 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 			setIsTranslated (false);
 			setIsUpdateable (true); // Y
 			setIsUseDocSequence (false); // N
-			setName (null);
 			setVersion (BigDecimal.ZERO);
         } */
     }
@@ -576,6 +576,32 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	public boolean isAlwaysUpdateable () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsAlwaysUpdateable);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Validierungsregel automatisch anwenden.
+		@param IsAutoApplyValidationRule 
+		If a validation rule (AD_Val_Rule_ID) is set and a new record is created where the column is empty, then apply the validation rule and insert the first result into the new record.
+	  */
+	@Override
+	public void setIsAutoApplyValidationRule (boolean IsAutoApplyValidationRule)
+	{
+		set_Value (COLUMNNAME_IsAutoApplyValidationRule, Boolean.valueOf(IsAutoApplyValidationRule));
+	}
+
+	/** Get Validierungsregel automatisch anwenden.
+		@return If a validation rule (AD_Val_Rule_ID) is set and a new record is created where the column is empty, then apply the validation rule and insert the first result into the new record.
+	  */
+	@Override
+	public boolean isAutoApplyValidationRule () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsAutoApplyValidationRule);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

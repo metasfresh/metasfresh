@@ -19,17 +19,27 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import org.adempiere.ad.element.api.AdElementId;
+import org.adempiere.ad.element.api.ElementChangedEvent;
+import org.adempiere.ad.element.api.ElementChangedEvent.ChangedField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.i18n.ILanguageDAO;
+import de.metas.translation.api.IElementTranslationBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * System Element Model
- * 
+ *
  * @author Jorg Janke
  * @version $Id: M_Element.java,v 1.3 2006/07/30 00:58:37 jjanke Exp $
  *          FR: [ 2214883 ] Remove SQL code and Replace for Query - red1, teo_sarca
@@ -37,13 +47,13 @@ import de.metas.cache.annotation.CacheCtx;
 public class M_Element extends X_AD_Element
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -7426812810619889250L;
 
 	/**
 	 * Get case sensitive Column Name
-	 * 
+	 *
 	 * @param columnName case insensitive column name
 	 * @return case sensitive column name
 	 */
@@ -54,7 +64,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * Get case sensitive Column Name
-	 * 
+	 *
 	 * @param columnName case insensitive column name
 	 * @param trxName optional transaction name
 	 * @return case sensitive column name
@@ -72,7 +82,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * Get Element
-	 * 
+	 *
 	 * @param ctx context
 	 * @param columnName case insensitive column name
 	 * @return case sensitive column name
@@ -85,7 +95,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * Get Element
-	 * 
+	 *
 	 * @param ctx context
 	 * @param columnName case insensitive column name
 	 * @param trxName optional transaction name
@@ -106,7 +116,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * Get Element
-	 * 
+	 *
 	 * @param ctx context
 	 * @param columnName case insensitive column name
 	 * @param trxName trx
@@ -126,7 +136,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * Get Element
-	 * 
+	 *
 	 * @param ctx context
 	 * @param columnName case insentitive column name
 	 * @return case sensitive column name
@@ -138,7 +148,7 @@ public class M_Element extends X_AD_Element
 
 	/**************************************************************************
 	 * Standard Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param AD_Element_ID element
 	 * @param trxName transaction
@@ -157,7 +167,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * Load Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param rs result set
 	 * @param trxName transaction
@@ -169,7 +179,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * Minimum Constructor
-	 * 
+	 *
 	 * @param ctx context
 	 * @param columnName column
 	 * @param EntityType entity type
@@ -188,16 +198,17 @@ public class M_Element extends X_AD_Element
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.compiere.model.PO#beforeSave(boolean)
 	 */
 	@Override
 	protected boolean beforeSave(boolean newRecord)
 	{
 		// Column AD_Element.ColumnName should be unique - teo_sarca [ 1613107 ]
-		if (newRecord || is_ValueChanged(COLUMNNAME_ColumnName))
-		{
+		final boolean columnNameChange = newRecord || is_ValueChanged(COLUMNNAME_ColumnName);
 
+		if (columnNameChange && !Check.isEmpty(getColumnName(), true))
+		{
 			final String originalColumnName = getColumnName();
 
 			if (originalColumnName == null)
@@ -226,7 +237,7 @@ public class M_Element extends X_AD_Element
 
 	/**
 	 * After Save
-	 * 
+	 *
 	 * @param newRecord new
 	 * @param success success
 	 * @return success
@@ -234,107 +245,53 @@ public class M_Element extends X_AD_Element
 	@Override
 	protected boolean afterSave(boolean newRecord, boolean success)
 	{
-		// Update Columns, Fields, Parameters, Print Info
-		if (!newRecord)
+		if (newRecord)
 		{
-			StringBuffer sql = new StringBuffer();
-			int no = 0;
-
-			if ((is_ValueChanged(M_Element.COLUMNNAME_Name)
-					|| is_ValueChanged(M_Element.COLUMNNAME_Description)
-					|| is_ValueChanged(M_Element.COLUMNNAME_Help)
-					|| is_ValueChanged(M_Element.COLUMNNAME_ColumnName))
-					&& getColumnName() != null)
-			{
-				// Column
-				sql = new StringBuffer("UPDATE AD_Column SET ColumnName=")
-						.append(DB.TO_STRING(getColumnName()))
-						.append(", Name=").append(DB.TO_STRING(getName()))
-						.append(", Description=").append(DB.TO_STRING(getDescription()))
-						.append(", Help=").append(DB.TO_STRING(getHelp()))
-						.append(" WHERE AD_Element_ID=").append(get_ID());
-				no = DB.executeUpdate(sql.toString(), get_TrxName());
-				log.debug("afterSave - Columns updated #" + no);
-
-				// Parameter
-				sql = new StringBuffer("UPDATE AD_Process_Para SET ColumnName=")
-						.append(DB.TO_STRING(getColumnName()))
-						.append(", Name=").append(DB.TO_STRING(getName()))
-						.append(", Description=").append(DB.TO_STRING(getDescription()))
-						.append(", Help=").append(DB.TO_STRING(getHelp()))
-						.append(", AD_Element_ID=").append(get_ID())
-						.append(" WHERE UPPER(ColumnName)=")
-						.append(DB.TO_STRING(getColumnName().toUpperCase()))
-						.append(" AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL");
-				no = DB.executeUpdate(sql.toString(), get_TrxName());
-
-				sql = new StringBuffer("UPDATE AD_Process_Para SET ColumnName=")
-						.append(DB.TO_STRING(getColumnName()))
-						.append(", Name=").append(DB.TO_STRING(getName()))
-						.append(", Description=").append(DB.TO_STRING(getDescription()))
-						.append(", Help=").append(DB.TO_STRING(getHelp()))
-						.append(" WHERE AD_Element_ID=").append(get_ID())
-						.append(" AND IsCentrallyMaintained='Y'");
-				no += DB.executeUpdate(sql.toString(), get_TrxName());
-				log.debug("Parameters updated #" + no);
-			}
-
-			if (is_ValueChanged(M_Element.COLUMNNAME_Name)
-					|| is_ValueChanged(M_Element.COLUMNNAME_Description)
-					|| is_ValueChanged(M_Element.COLUMNNAME_Help))
-			{
-				// Field
-				sql = new StringBuffer("UPDATE AD_Field SET Name=")
-						.append(DB.TO_STRING(getName()))
-						.append(", Description=").append(DB.TO_STRING(getDescription()))
-						.append(", Help=").append(DB.TO_STRING(getHelp()))
-						.append(" WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=")
-						.append(get_ID())
-						.append(")")
-						.append(" AND ")
-						.append(I_AD_Field.COLUMNNAME_AD_Name_ID).append(" IS NULL ")
-						.append( ")")
-						.append(" OR ")
-						.append("(")
-						.append(I_AD_Field.COLUMNNAME_AD_Name_ID).append(" = ").append(get_ID())
-						.append(")");
-				no = DB.executeUpdate(sql.toString(), get_TrxName());
-				log.debug("Fields updated #" + no);
-
-				// Info Column - update Name, Description, Help - doesn't have IsCentrallyMaintained currently
-				// no = DB.executeUpdate(sql.toString(), get_TrxName());
-				// log.debug("InfoColumn updated #" + no);
-			}
-
-			if (is_ValueChanged(M_Element.COLUMNNAME_PrintName)
-					|| is_ValueChanged(M_Element.COLUMNNAME_Name))
-			{
-				// Print Info
-				sql = new StringBuffer("UPDATE AD_PrintFormatItem pi SET PrintName=")
-						.append(DB.TO_STRING(getPrintName()))
-						.append(", Name=").append(DB.TO_STRING(getName()))
-						.append(" WHERE IsCentrallyMaintained='Y'")
-						.append(" AND EXISTS (SELECT * FROM AD_Column c ")
-						.append("WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=")
-						.append(get_ID()).append(")");
-				no = DB.executeUpdate(sql.toString(), get_TrxName());
-				log.debug("PrintFormatItem updated #" + no);
-			}
-
+			// the new element is not yet used so no updates are needed
+			return success;
 		}
+
+		final String baseLanguage = Services.get(ILanguageDAO.class).retrieveBaseLanguage();
+
+		final ImmutableSet<ChangedField> columnsChanged = ElementChangedEvent.ChangedField.streamAll()
+				.filter(columnName -> isValueChanged(columnName))
+				.collect(ImmutableSet.toImmutableSet());
+
+		Services.get(IElementTranslationBL.class).updateDependentADEntries(ElementChangedEvent.builder()
+				.adElementId(AdElementId.ofRepoId(getAD_Element_ID()))
+				.adLanguage(baseLanguage)
+				.updatedColumns(columnsChanged)
+				.columnName(getColumnName())
+				.name(getName())
+				.printName(getPrintName())
+				.description(getDescription())
+				.help(getHelp())
+				.commitWarning(getCommitWarning())
+				.poDescription(getPO_Description())
+				.poHelp(getPO_Help())
+				.poName(getPO_Name())
+				.poPrintName(getPO_PrintName())
+				.webuiNameBrowse(getWEBUI_NameBrowse())
+				.webuiNameNew(getWEBUI_NameNew())
+				.webuiNameNewBreadcrumb(getWEBUI_NameNewBreadcrumb())
+				.build());
+
 		return success;
 	}	// afterSave
+	
+	private boolean isValueChanged(@NonNull final ChangedField field)
+	{
+		return is_ValueChanged(field.getColumnName());
+	}
 
-	/**
-	 * String Representation
-	 * 
-	 * @return info
-	 */
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("M_Element[");
-		sb.append(get_ID()).append("-").append(getColumnName()).append("]");
+		final StringBuilder sb = new StringBuilder("M_Element[")
+				.append(get_ID())
+				.append("-")
+				.append(getColumnName())
+				.append("]");
 		return sb.toString();
 	}	// toString
 

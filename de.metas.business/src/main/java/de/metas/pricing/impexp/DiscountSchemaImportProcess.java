@@ -7,8 +7,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.AbstractImportProcess;
-import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_C_BPartner;
@@ -19,6 +17,9 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_DiscountSchema;
 import org.compiere.model.X_M_DiscountSchema;
 
+import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.ImportRecordsSelection;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -26,7 +27,7 @@ import lombok.NonNull;
  * Import {@link I_I_DiscountSchema} to {@link I_M_DiscountSchema}.
  *
  */
-public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_DiscountSchema>
+public class DiscountSchemaImportProcess extends SimpleImportProcessTemplate<I_I_DiscountSchema>
 {
 	@Override
 	public Class<I_I_DiscountSchema> getImportModelClass()
@@ -49,7 +50,8 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-		MDiscountSchemaImportTableSqlUpdater.updateDiscountSchemaImportTable(getWhereClause());
+		final ImportRecordsSelection selection = getImportRecordsSelection();
+		MDiscountSchemaImportTableSqlUpdater.updateDiscountSchemaImportTable(selection);
 	}
 
 	@Override
@@ -65,7 +67,9 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state, @NonNull final I_I_DiscountSchema importRecord) throws Exception
+	protected ImportRecordResult importRecord(@NonNull final IMutable<Object> state,
+			@NonNull final I_I_DiscountSchema importRecord,
+			final boolean isInsertOnly) throws Exception
 	{
 		//
 		// Get previous values
@@ -84,6 +88,12 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 
 		final boolean firstImportRecordOrNewDiscountSchema = previousImportRecord == null
 				|| !Objects.equals(importRecord.getC_BPartner_ID(), previousBPartnerId);
+
+		if (!firstImportRecordOrNewDiscountSchema && isInsertOnly)
+		{
+			// #4994 do not update existing records
+			return ImportRecordResult.Nothing;
+		}
 
 		if (firstImportRecordOrNewDiscountSchema)
 		{
@@ -192,7 +202,12 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 		schemaBreak.setSeqNo(10);
 		schemaBreak.setBreakDiscount(importRecord.getBreakDiscount());
 		schemaBreak.setBreakValue(importRecord.getBreakValue());
+
 		//
+		if (importRecord.getDiscount() != null && importRecord.getDiscount().signum() > 0)
+		{
+			schemaBreak.setPaymentDiscount(importRecord.getDiscount());
+		}
 		schemaBreak.setM_Product_ID(importRecord.getM_Product_ID());
 		schemaBreak.setC_PaymentTerm_ID(importRecord.getC_PaymentTerm_ID());
 		//
@@ -203,8 +218,9 @@ public class DiscountSchemaImportProcess extends AbstractImportProcess<I_I_Disco
 	{
 		schemaBreak.setPriceBase(importRecord.getPriceBase());
 		schemaBreak.setBase_PricingSystem_ID(importRecord.getBase_PricingSystem_ID());
-		schemaBreak.setPriceStd(importRecord.getPriceStd());
-		schemaBreak.setStd_AddAmt(importRecord.getStd_AddAmt());
+		schemaBreak.setPriceStdFixed(importRecord.getPriceStdFixed());
+		schemaBreak.setPricingSystemSurchargeAmt(importRecord.getPricingSystemSurchargeAmt());
+		schemaBreak.setC_Currency_ID(importRecord.getC_Currency_ID());
 	}
 
 	@Override

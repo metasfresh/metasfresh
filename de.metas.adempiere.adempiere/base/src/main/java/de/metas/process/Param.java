@@ -57,4 +57,6 @@ public @interface Param
 
 	/** if <code>true</code>, then it will be assumed that the parameter is question is a range and that the annotated field shall contain the range's <code>_To</code> value. */
 	boolean parameterTo() default false;
+
+	ParamBarcodeScannerType barcodeScannerType() default ParamBarcodeScannerType.NotDefined;
 }

@@ -1,7 +1,5 @@
 package de.metas.contracts.interceptor;
 
-import lombok.NonNull;
-
 import java.sql.Timestamp;
 
 /*
@@ -43,7 +41,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Calendar;
@@ -81,9 +78,9 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.ordercandidate.modelvalidator.C_OLCand;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 @Interceptor(I_C_Flatrate_Term.class)
@@ -106,7 +103,7 @@ public class C_Flatrate_Term
 	@Init
 	public void initialize(final IModelValidationEngine engine)
 	{
-		if (Ini.isClient() == false) // 03429: we only need to check this on server startup
+		if (Ini.isSwingClient() == false) // 03429: we only need to check this on server startup
 		{
 			ensureDocTypesExist(I_C_DocType.DocSubType_Abonnement);
 			ensureDocTypesExist(I_C_DocType.DocSubType_Depotgebuehr);
@@ -251,7 +248,7 @@ public class C_Flatrate_Term
 
 		if (!errors.isEmpty())
 		{
-			throw new AdempiereException(concatStrings(errors));
+			throw new AdempiereException(concatStrings(errors)).markAsUserValidationError();
 		}
 	}
 

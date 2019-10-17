@@ -28,6 +28,7 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import de.metas.currency.ICurrencyBL;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.util.ISingletonService;
 
 /**
@@ -53,7 +54,7 @@ public interface IDunningUtil extends ISingletonService
 	 * @param AD_Org_ID
 	 * @return
 	 */
-	BigDecimal currencyConvert(Properties ctx, BigDecimal Amt, int CurFrom_ID, int CurTo_ID, Timestamp ConvDate, int C_ConversionType_ID, int AD_Client_ID, int AD_Org_ID);
+	BigDecimal currencyConvert(BigDecimal Amt, int CurFrom_ID, int CurTo_ID, Timestamp ConvDate, CurrencyConversionTypeId conversionTypeId, int AD_Client_ID, int AD_Org_ID);
 
 	/**
 	 * Returns a placeholder value for C_ConversionType_ID.
@@ -62,6 +63,6 @@ public interface IDunningUtil extends ISingletonService
 	 * 
 	 * @return C_ConversionType_ID placeholder
 	 */
-	int getDefaultCurrencyConvertionTypeId();
+	CurrencyConversionTypeId getDefaultCurrencyConvertionTypeId();
 
 }

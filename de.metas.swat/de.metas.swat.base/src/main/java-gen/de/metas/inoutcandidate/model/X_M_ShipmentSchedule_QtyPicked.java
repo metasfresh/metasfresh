@@ -15,7 +15,7 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1448422297L;
+	private static final long serialVersionUID = 96106947L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule_QtyPicked (Properties ctx, int M_ShipmentSchedule_QtyPicked_ID, String trxName)
@@ -44,6 +44,31 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
       return poi;
     }
 
+	/** Set Catch Einheit.
+		@param Catch_UOM_ID 
+		Aus dem Produktstamm übenommene Catch Weight Einheit.
+	  */
+	@Override
+	public void setCatch_UOM_ID (int Catch_UOM_ID)
+	{
+		if (Catch_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Catch_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Catch_UOM_ID, Integer.valueOf(Catch_UOM_ID));
+	}
+
+	/** Get Catch Einheit.
+		@return Aus dem Produktstamm übenommene Catch Weight Einheit.
+	  */
+	@Override
+	public int getCatch_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Catch_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Beschreibung.
 		@param Description Beschreibung	  */
 	@Override
@@ -61,7 +86,7 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public org.compiere.model.I_M_InOutLine getM_InOutLine() throws RuntimeException
+	public org.compiere.model.I_M_InOutLine getM_InOutLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class);
 	}
@@ -98,7 +123,7 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public de.metas.inoutcandidate.model.I_M_ShipmentSchedule getM_ShipmentSchedule() throws RuntimeException
+	public de.metas.inoutcandidate.model.I_M_ShipmentSchedule getM_ShipmentSchedule()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_ShipmentSchedule_ID, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
 	}
@@ -179,16 +204,38 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
 		return false;
 	}
 
-	/** Set Qty Picked.
-		@param QtyPicked Qty Picked	  */
+	/** Set Geliefert Catch.
+		@param QtyDeliveredCatch 
+		Tatsächlich gelieferte Menge
+	  */
+	@Override
+	public void setQtyDeliveredCatch (java.math.BigDecimal QtyDeliveredCatch)
+	{
+		set_Value (COLUMNNAME_QtyDeliveredCatch, QtyDeliveredCatch);
+	}
+
+	/** Get Geliefert Catch.
+		@return Tatsächlich gelieferte Menge
+	  */
+	@Override
+	public java.math.BigDecimal getQtyDeliveredCatch () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDeliveredCatch);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Menge (Lagereinheit).
+		@param QtyPicked Menge (Lagereinheit)	  */
 	@Override
 	public void setQtyPicked (java.math.BigDecimal QtyPicked)
 	{
 		set_Value (COLUMNNAME_QtyPicked, QtyPicked);
 	}
 
-	/** Get Qty Picked.
-		@return Qty Picked	  */
+	/** Get Menge (Lagereinheit).
+		@return Menge (Lagereinheit)	  */
 	@Override
 	public java.math.BigDecimal getQtyPicked () 
 	{

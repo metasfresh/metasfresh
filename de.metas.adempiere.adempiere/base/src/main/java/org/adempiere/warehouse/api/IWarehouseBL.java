@@ -1,6 +1,8 @@
 package org.adempiere.warehouse.api;
 
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
+import de.metas.organization.OrgId;
+
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Locator;
@@ -32,4 +34,6 @@ public interface IWarehouseBL extends ISingletonService
 	LocatorId getDefaultLocatorId(WarehouseId warehouse);
 
 	CountryId getCountryId(WarehouseId warehouseId);
+
+	OrgId getWarehouseOrgId(WarehouseId warehouseId);
 }

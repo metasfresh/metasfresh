@@ -23,26 +23,29 @@ package de.metas.inoutcandidate.api.impl;
  */
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.order.OrderLineId;
 import de.metas.storage.IStorageBL;
 import de.metas.storage.IStorageListeners;
 import de.metas.storage.IStorageSegment;
@@ -53,47 +56,56 @@ import lombok.NonNull;
 public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidateBL
 {
 	@Override
+	public boolean isInvalid(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
+		return invalidSchedulesRepo.isInvalid(shipmentScheduleId);
+	}
+
+	@Override
+	public void invalidateShipmentSchedule(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		invalidateShipmentSchedules(ImmutableSet.of(shipmentScheduleId));
+	}
+
+	@Override
+	public void invalidateShipmentSchedules(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
+		invalidSchedulesRepo.invalidateShipmentSchedules(shipmentScheduleIds);
+	}
+
+	@Override
 	public void invalidateJustForLines(final I_M_InOut shipment)
 	{
-		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
-		final Map<Integer, I_M_ShipmentSchedule> id2sched = new HashMap<>();
+		final Set<ShipmentScheduleId> shipmentScheduleIds = inOutDAO.retrieveLines(shipment)
+				.stream()
+				.flatMap(this::streamShipmentScheduleIdsForInOutLine)
+				.collect(ImmutableSet.toImmutableSet());
 
-		for (final I_M_InOutLine inoutLine : inOutDAO.retrieveLines(shipment))
-		{
-			addSchedsForInOutLine(id2sched, inoutLine);
-		}
-		shipmentSchedulePA.invalidate(id2sched.values(), InterfaceWrapperHelper.getTrxName(shipment));
+		invalidateShipmentSchedules(shipmentScheduleIds);
 	}
 
 	@Override
 	public void invalidateJustForLine(final I_M_InOutLine shipmentLine)
 	{
-		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+		final Set<ShipmentScheduleId> shipmentScheduleIds = streamShipmentScheduleIdsForInOutLine(shipmentLine)
+				.collect(ImmutableSet.toImmutableSet());
 
-		final Map<Integer, I_M_ShipmentSchedule> id2sched = new HashMap<>();
-
-		addSchedsForInOutLine(id2sched, shipmentLine);
-		shipmentSchedulePA.invalidate(id2sched.values(), InterfaceWrapperHelper.getTrxName(shipmentLine));
+		invalidateShipmentSchedules(shipmentScheduleIds);
 	}
 
-	private void addSchedsForInOutLine(
-			@NonNull final Map<Integer, I_M_ShipmentSchedule> id2sched,
-			@NonNull final I_M_InOutLine inoutLine)
+	private Stream<ShipmentScheduleId> streamShipmentScheduleIdsForInOutLine(@NonNull final I_M_InOutLine inoutLine)
 	{
 		final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 
-		final List<I_M_ShipmentSchedule_QtyPicked> allocs = shipmentScheduleAllocDAO.retrieveAllForInOutLine(inoutLine, I_M_ShipmentSchedule_QtyPicked.class);
-		for (final I_M_ShipmentSchedule_QtyPicked alloc : allocs)
-		{
-			// check if the ID is already there, to spare us from loading the sched
-			if (id2sched.containsKey(alloc.getM_ShipmentSchedule_ID()))
-			{
-				continue;
-			}
-			id2sched.put(alloc.getM_ShipmentSchedule_ID(), alloc.getM_ShipmentSchedule());
-		}
+		return shipmentScheduleAllocDAO.retrieveAllForInOutLine(inoutLine, I_M_ShipmentSchedule_QtyPicked.class)
+				.stream()
+				.map(alloc -> ShipmentScheduleId.ofRepoIdOrNull(alloc.getM_ShipmentSchedule_ID()))
+				.filter(Predicates.notNull()) // shall not happen
+		;
 	}
 
 	@Override
@@ -202,13 +214,14 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	public void invalidateJustForOrderLine(@NonNull final I_C_OrderLine orderLine)
 	{
 		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-		final I_M_ShipmentSchedule sched = shipmentSchedulePA.retrieveForOrderLine(orderLine);
-		if (sched == null)
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
+		final ShipmentScheduleId shipmentScheduleId = shipmentSchedulePA.getShipmentScheduleIdByOrderLineId(orderLineId);
+		if (shipmentScheduleId == null)
 		{
 			return;
 		}
 
-		shipmentSchedulePA.invalidate(ImmutableList.of(sched), InterfaceWrapperHelper.getTrxName(orderLine));
+		invalidateShipmentSchedule(shipmentScheduleId);
 	}
 
 }

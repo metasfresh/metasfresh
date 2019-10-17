@@ -129,10 +129,10 @@ public class ExecuteSQLWorkpackageProcessor extends WorkpackageProcessorAdapter
 		}
 
 		final String afterFinishSql = parseSql(afterFinishSqlRaw, workPackage);
-		Loggables.get().addLog("SQL to execute: {0}", afterFinishSql);
+		Loggables.addLog("SQL to execute: {0}", afterFinishSql);
 
 		final int updateCount = executeSql(afterFinishSql);
-		Loggables.get().addLog("Updated {0} records", updateCount);
+		Loggables.addLog("Updated {0} records", updateCount);
 	}
 
 	@VisibleForTesting

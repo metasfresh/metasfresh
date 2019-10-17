@@ -2,18 +2,24 @@ package org.adempiere.mm.attributes.api;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.Month;
+import java.time.ZoneId;
+
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
-import org.junit.Before;
-import org.junit.Test;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.util.Services;
 
@@ -43,7 +49,7 @@ public class ImmutableAttributeSetTest
 {
 	private AttributesTestHelper attributesTestHelper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -56,10 +62,10 @@ public class ImmutableAttributeSetTest
 	{
 
 		final I_M_Attribute attrStringWithValue = attributesTestHelper.createM_Attribute("AttrStringWithValue", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
-		final I_M_AttributeValue attributeStringValue = attributesTestHelper.createM_AttributeValue(attrStringWithValue, "testValue1");
+		final AttributeListValue attributeStringValue = attributesTestHelper.createM_AttributeValue(attrStringWithValue, "testValue1");
 
 		final I_M_Attribute attributeStringNull = attributesTestHelper.createM_Attribute("AttrStringNullValue", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
-		final I_M_AttributeValue attributeStringNullValue = attributesTestHelper.createM_AttributeValue(attributeStringNull, null);
+		final AttributeListValue attributeStringNullValue = attributesTestHelper.createM_AttributeValue(attributeStringNull, null);
 
 		final I_M_AttributeSetInstance asi = newInstance(I_M_AttributeSetInstance.class);
 		save(asi);
@@ -71,12 +77,181 @@ public class ImmutableAttributeSetTest
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 		final ImmutableAttributeSet attributeSet = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
 
-		assertTrue(attributeSet.getAttributes().contains(attrStringWithValue));
-		assertTrue(attributeSet.getAttributes().contains(attributeStringNull));
+		assertThat(attributeSet.getAttributes()).contains(attrStringWithValue);
+		assertThat(attributeSet.getAttributes()).contains(attributeStringNull);
 
-		assertTrue(attributeSet.getValue(attrStringWithValue).equals(attributeStringValue.getValue()));
-		assertNull(attributeSet.getValue(attributeStringNull));
+		assertThat(attributeSet.getValue(attrStringWithValue)).isEqualTo(attributeStringValue.getValue());
+		assertThat(attributeSet.getValue(attributeStringNull)).isNull();
 
 	}
 
+	@Test
+	public void equalsTrue()
+	{
+		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+
+		final I_M_Attribute attrStringWithValue1 = attributesTestHelper.createM_Attribute("AttrStringWithValue", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		final AttributeListValue attributeStringValue1 = attributesTestHelper.createM_AttributeValue(attrStringWithValue1, "testValue1");
+
+		final I_M_AttributeSetInstance asi1 = newInstance(I_M_AttributeSetInstance.class);
+		save(asi1);
+
+		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attributeStringValue1);
+
+		final AttributeListValue attributeStringValue2 = attributesTestHelper.createM_AttributeValue(attrStringWithValue1, "testValue1");
+
+		final I_M_AttributeSetInstance asi2 = newInstance(I_M_AttributeSetInstance.class);
+		save(asi2);
+
+		attributeSetInstanceBL.getCreateAttributeInstance(asi2, attributeStringValue2);
+
+		final AttributeSetInstanceId asi1Id = AttributeSetInstanceId.ofRepoId(asi1.getM_AttributeSetInstance_ID());
+
+		final ImmutableAttributeSet attributeSet1 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi1Id);
+
+		final AttributeSetInstanceId asi2Id = AttributeSetInstanceId.ofRepoId(asi2.getM_AttributeSetInstance_ID());
+
+		final ImmutableAttributeSet attributeSet2 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi2Id);
+
+		assertThat(attributeSet1).isEqualTo(attributeSet2);
+	}
+
+	@Test
+	public void equalsFalse_DifferentValue()
+	{
+		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+
+		final I_M_Attribute attrStringWithValue1 = attributesTestHelper.createM_Attribute("AttrStringWithValue", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		final AttributeListValue attributeStringValue1 = attributesTestHelper.createM_AttributeValue(attrStringWithValue1, "testValue1");
+
+		final I_M_AttributeSetInstance asi1 = newInstance(I_M_AttributeSetInstance.class);
+		save(asi1);
+
+		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attributeStringValue1);
+
+		final AttributeListValue attributeStringValue2 = attributesTestHelper.createM_AttributeValue(attrStringWithValue1, "testValue2");
+
+		final I_M_AttributeSetInstance asi2 = newInstance(I_M_AttributeSetInstance.class);
+		save(asi2);
+
+		attributeSetInstanceBL.getCreateAttributeInstance(asi2, attributeStringValue2);
+
+		final AttributeSetInstanceId asi1Id = AttributeSetInstanceId.ofRepoId(asi1.getM_AttributeSetInstance_ID());
+
+		final ImmutableAttributeSet attributeSet1 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi1Id);
+
+		final AttributeSetInstanceId asi2Id = AttributeSetInstanceId.ofRepoId(asi2.getM_AttributeSetInstance_ID());
+
+		final ImmutableAttributeSet attributeSet2 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi2Id);
+
+		assertThat(attributeSet1).isNotEqualTo(attributeSet2);
+	}
+
+	@Test
+	public void equalsFalse_DifferentAttribute()
+	{
+		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+
+		final I_M_Attribute attrStringWithValue1 = attributesTestHelper.createM_Attribute("AttrStringWithValue", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		final AttributeListValue attributeStringValue1 = attributesTestHelper.createM_AttributeValue(attrStringWithValue1, "testValue1");
+
+		final I_M_AttributeSetInstance asi1 = newInstance(I_M_AttributeSetInstance.class);
+		save(asi1);
+
+		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attributeStringValue1);
+
+		final I_M_Attribute attrStringWithValue2 = attributesTestHelper.createM_Attribute("AttrStringWithValue2", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		final AttributeListValue attributeStringValue2 = attributesTestHelper.createM_AttributeValue(attrStringWithValue2, "testValue1");
+
+		final I_M_AttributeSetInstance asi2 = newInstance(I_M_AttributeSetInstance.class);
+		save(asi2);
+
+		attributeSetInstanceBL.getCreateAttributeInstance(asi2, attributeStringValue2);
+
+		final AttributeSetInstanceId asi1Id = AttributeSetInstanceId.ofRepoId(asi1.getM_AttributeSetInstance_ID());
+
+		final ImmutableAttributeSet attributeSet1 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi1Id);
+
+		final AttributeSetInstanceId asi2Id = AttributeSetInstanceId.ofRepoId(asi2.getM_AttributeSetInstance_ID());
+
+		final ImmutableAttributeSet attributeSet2 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi2Id);
+
+		assertThat(attributeSet1).isNotEqualTo(attributeSet2);
+	}
+
+	@Test
+	public void equalsFalse_DifferentObject()
+	{
+		final ImmutableAttributeSet attributeSet = ImmutableAttributeSet.EMPTY;
+		final Object otherObject = new Object();
+		assertThat(attributeSet).isNotEqualTo(otherObject);
+	}
+
+	@Test
+	public void equalsTrue_DifferentOrder()
+	{
+		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+
+		final I_M_Attribute attrStringWithValue1 = attributesTestHelper.createM_Attribute("AttrStringWithValue", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		final AttributeListValue attributeStringValue1 = attributesTestHelper.createM_AttributeValue(attrStringWithValue1, "testValue1");
+
+		final I_M_Attribute attrStringWithValue2 = attributesTestHelper.createM_Attribute("AttrStringWithValue2", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		final AttributeListValue attributeStringValue2 = attributesTestHelper.createM_AttributeValue(attrStringWithValue2, "testValue2");
+
+		final I_M_AttributeSetInstance asi1 = newInstance(I_M_AttributeSetInstance.class);
+		save(asi1);
+
+		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attributeStringValue1);
+		attributeSetInstanceBL.getCreateAttributeInstance(asi1, attributeStringValue2);
+
+		final I_M_AttributeSetInstance asi2 = newInstance(I_M_AttributeSetInstance.class);
+		save(asi2);
+
+		attributeSetInstanceBL.getCreateAttributeInstance(asi2, attributeStringValue2);
+		attributeSetInstanceBL.getCreateAttributeInstance(asi2, attributeStringValue1);
+
+		final AttributeSetInstanceId asi1Id = AttributeSetInstanceId.ofRepoId(asi1.getM_AttributeSetInstance_ID());
+
+		final ImmutableAttributeSet attributeSet1 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi1Id);
+
+		final AttributeSetInstanceId asi2Id = AttributeSetInstanceId.ofRepoId(asi2.getM_AttributeSetInstance_ID());
+
+		final ImmutableAttributeSet attributeSet2 = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asi2Id);
+
+		assertThat(attributeSet1).isEqualTo(attributeSet2);
+	}
+
+	@Test
+	public void testValueAsDate()
+	{
+		final I_M_Attribute attribute = attributesTestHelper.createM_Attribute("date", X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
+
+		assertValueAsLocalDate(attribute, null, null);
+		assertValueAsLocalDate(attribute, "", null);
+		assertValueAsLocalDate(attribute, "    ", null);
+
+		final LocalDate localDate = LocalDate.of(2019, Month.FEBRUARY, 3);
+		assertValueAsLocalDate(attribute, localDate, localDate);
+		assertValueAsLocalDate(attribute, localDate.toString(), localDate);
+		assertValueAsLocalDate(attribute, localDate.atTime(LocalTime.of(13, 14)), localDate);
+		assertValueAsLocalDate(attribute, localDate.atTime(LocalTime.of(13, 14)).atZone(ZoneId.systemDefault()), localDate);
+		// assertValueAsLocalDate(attribute, localDate.atTime(LocalTime.of(13, 14)).atZone(ZoneId.systemDefault()).toString(), localDate); // not supported; not sure if is needed
+		assertValueAsLocalDate(attribute, localDate.atTime(LocalTime.of(13, 14)).atZone(ZoneId.systemDefault()).format(Env.DATE_FORMAT), localDate);
+
+		assertValueAsLocalDate(attribute, TimeUtil.asDate(localDate), localDate);
+		assertValueAsLocalDate(attribute, TimeUtil.asDate(localDate).getTime(), localDate);
+
+		assertValueAsLocalDate(attribute, TimeUtil.asTimestamp(localDate), localDate);
+		assertValueAsLocalDate(attribute, TimeUtil.asTimestamp(localDate).toString(), localDate); // JDBC format
+	}
+
+	private void assertValueAsLocalDate(final I_M_Attribute attribute, Object inputValue, LocalDate expectedValue)
+	{
+		final String attributeKey = attribute.getValue();
+		final ImmutableAttributeSet attributeSet = ImmutableAttributeSet.builder()
+				.attributeValue(attribute, inputValue)
+				.build();
+
+		assertThat(attributeSet.getValueAsLocalDate(attributeKey)).isEqualTo(expectedValue);
+	}
 }

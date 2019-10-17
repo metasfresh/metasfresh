@@ -29,6 +29,7 @@ import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
 
 import de.metas.document.engine.IDocument;
+import de.metas.payment.TenderType;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 
@@ -79,42 +80,59 @@ public class InvoiceWriteOff extends JavaProcess
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
-		for (int i = 0; i < para.length; i++)
+		for (ProcessInfoParameter element : para)
 		{
-			String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
+			String name = element.getParameterName();
+			if (element.getParameter() == null)
+			{
 				;
+			}
 			else if (name.equals("C_BPartner_ID"))
-				p_C_BPartner_ID = para[i].getParameterAsInt();
+			{
+				p_C_BPartner_ID = element.getParameterAsInt();
+			}
 			else if (name.equals("C_BP_Group_ID"))
-				p_C_BP_Group_ID = para[i].getParameterAsInt();
+			{
+				p_C_BP_Group_ID = element.getParameterAsInt();
+			}
 			else if (name.equals("C_Invoice_ID"))
-				p_C_Invoice_ID = para[i].getParameterAsInt();
-			//
+			{
+				p_C_Invoice_ID = element.getParameterAsInt();
+			}
 			else if (name.equals("MaxInvWriteOffAmt"))
-				p_MaxInvWriteOffAmt = (BigDecimal)para[i].getParameter();
+			{
+				p_MaxInvWriteOffAmt = (BigDecimal)element.getParameter();
+			}
 			else if (name.equals("APAR"))
-				p_APAR = (String)para[i].getParameter();
-			//
+			{
+				p_APAR = (String)element.getParameter();
+			}
 			else if (name.equals("DateInvoiced"))
 			{
-				p_DateInvoiced_From = (Timestamp)para[i].getParameter();
-				p_DateInvoiced_To = (Timestamp)para[i].getParameter_To();
+				p_DateInvoiced_From = (Timestamp)element.getParameter();
+				p_DateInvoiced_To = (Timestamp)element.getParameter_To();
 			}
 			else if (name.equals("DateAcct"))
-				p_DateAcct = (Timestamp)para[i].getParameter();
-			//
+			{
+				p_DateAcct = (Timestamp)element.getParameter();
+			}
 			else if (name.equals("CreatePayment"))
-				p_CreatePayment = "Y".equals(para[i].getParameter());
+			{
+				p_CreatePayment = "Y".equals(element.getParameter());
+			}
 			else if (name.equals("C_BP_BankAccount_ID"))
 			{
-				p_C_BP_BankAccount_ID = para[i].getParameterAsInt();
+				p_C_BP_BankAccount_ID = element.getParameterAsInt();
 			}
 			//
 			else if (name.equals("IsSimulation"))
-				p_IsSimulation = "Y".equals(para[i].getParameter());
+			{
+				p_IsSimulation = "Y".equals(element.getParameter());
+			}
 			else
+			{
 				log.error("Unknown Parameter: " + name);
+			}
 		}
 	}	// prepare
 
@@ -136,41 +154,61 @@ public class InvoiceWriteOff extends JavaProcess
 				+ ", C_BP_BankAccount_ID=" + p_C_BP_BankAccount_ID);
 		//
 		if (p_C_BPartner_ID == 0 && p_C_Invoice_ID == 0 && p_C_BP_Group_ID == 0)
+		{
 			throw new AdempiereUserError("@FillMandatory@ @C_Invoice_ID@ / @C_BPartner_ID@ / ");
+		}
 		//
 		if (p_CreatePayment && p_C_BP_BankAccount_ID == 0)
+		{
 			throw new AdempiereUserError("@FillMandatory@  @C_BP_BankAccount_ID@");
+		}
 		//
 		StringBuffer sql = new StringBuffer(
 				"SELECT C_Invoice_ID,DocumentNo,DateInvoiced,"
 						+ " C_Currency_ID,GrandTotal, invoiceOpen(C_Invoice_ID, 0) AS OpenAmt "
 						+ "FROM C_Invoice WHERE ");
 		if (p_C_Invoice_ID != 0)
+		{
 			sql.append("C_Invoice_ID=").append(p_C_Invoice_ID);
+		}
 		else
 		{
 			if (p_C_BPartner_ID != 0)
+			{
 				sql.append("C_BPartner_ID=").append(p_C_BPartner_ID);
+			}
 			else
+			{
 				sql.append("EXISTS (SELECT * FROM C_BPartner bp WHERE C_Invoice.C_BPartner_ID=bp.C_BPartner_ID AND bp.C_BP_Group_ID=")
 						.append(p_C_BP_Group_ID).append(")");
+			}
 			//
 			if (ONLY_AR.equals(p_APAR))
+			{
 				sql.append(" AND IsSOTrx='Y'");
+			}
 			else if (ONLY_AP.equals(p_APAR))
+			{
 				sql.append(" AND IsSOTrx='N'");
+			}
 			//
 			if (p_DateInvoiced_From != null && p_DateInvoiced_To != null)
+			{
 				sql.append(" AND TRUNC(DateInvoiced) BETWEEN ")
 						.append(DB.TO_DATE(p_DateInvoiced_From, true))
 						.append(" AND ")
 						.append(DB.TO_DATE(p_DateInvoiced_To, true));
+			}
 			else if (p_DateInvoiced_From != null)
+			{
 				sql.append(" AND TRUNC(DateInvoiced) >= ")
 						.append(DB.TO_DATE(p_DateInvoiced_From, true));
+			}
 			else if (p_DateInvoiced_To != null)
+			{
 				sql.append(" AND TRUNC(DateInvoiced) <= ")
 						.append(DB.TO_DATE(p_DateInvoiced_To, true));
+			}
 		}
 		sql.append(" AND IsPaid='N' ORDER BY C_Currency_ID, C_BPartner_ID, DateInvoiced");
 		log.trace(sql.toString());
@@ -185,7 +223,9 @@ public class InvoiceWriteOff extends JavaProcess
 			{
 				if (writeOff(rs.getInt(1), rs.getString(2), rs.getTimestamp(3),
 						rs.getInt(4), rs.getBigDecimal(6)))
+				{
 					counter++;
+				}
 			}
 			rs.close();
 			pstmt.close();
@@ -198,7 +238,9 @@ public class InvoiceWriteOff extends JavaProcess
 		try
 		{
 			if (pstmt != null)
+			{
 				pstmt.close();
+			}
 			pstmt = null;
 		}
 		catch (Exception e)
@@ -226,9 +268,13 @@ public class InvoiceWriteOff extends JavaProcess
 	{
 		// Nothing to do
 		if (OpenAmt == null || OpenAmt.signum() == 0)
+		{
 			return false;
+		}
 		if (OpenAmt.abs().compareTo(p_MaxInvWriteOffAmt) >= 0)
+		{
 			return false;
+		}
 		//
 		if (p_IsSimulation)
 		{
@@ -239,7 +285,9 @@ public class InvoiceWriteOff extends JavaProcess
 		// Invoice
 		MInvoice invoice = new MInvoice(getCtx(), C_Invoice_ID, get_TrxName());
 		if (!invoice.isSOTrx())
+		{
 			OpenAmt = OpenAmt.negate();
+		}
 
 		// Allocation
 		if (m_alloc == null || C_Currency_ID != m_alloc.getC_Currency_ID())
@@ -268,7 +316,7 @@ public class InvoiceWriteOff extends JavaProcess
 			m_payment = new MPayment(getCtx(), 0, get_TrxName());
 			m_payment.setAD_Org_ID(invoice.getAD_Org_ID());
 			m_payment.setC_BP_BankAccount_ID(p_C_BP_BankAccount_ID);
-			m_payment.setTenderType(MPayment.TENDERTYPE_Check);
+			m_payment.setTenderType(TenderType.Check.getCode());
 			m_payment.setDateTrx(p_DateAcct);
 			m_payment.setDateAcct(p_DateAcct);
 			m_payment.setDescription(getProcessInfo().getTitle() + " #" + getPinstanceId().getRepoId());
@@ -292,8 +340,10 @@ public class InvoiceWriteOff extends JavaProcess
 			aLine.setC_Payment_ID(m_payment.getC_Payment_ID());
 		}
 		else
+		{
 			aLine = new MAllocationLine(m_alloc, BigDecimal.ZERO,
 					BigDecimal.ZERO, OpenAmt, BigDecimal.ZERO);
+		}
 		aLine.setC_Invoice_ID(C_Invoice_ID);
 		if (aLine.save())
 		{
@@ -313,7 +363,9 @@ public class InvoiceWriteOff extends JavaProcess
 	private boolean processAllocation()
 	{
 		if (m_alloc == null)
+		{
 			return true;
+		}
 		processPayment();
 		// Process It
 		if (m_alloc.processIt(IDocument.ACTION_Complete) && m_alloc.save())
@@ -334,7 +386,9 @@ public class InvoiceWriteOff extends JavaProcess
 	private boolean processPayment()
 	{
 		if (m_payment == null)
+		{
 			return true;
+		}
 		// Process It
 		if (m_payment.processIt(IDocument.ACTION_Complete) && m_payment.save())
 		{

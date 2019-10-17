@@ -32,8 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
-import java.util.function.Predicate;
 
 import javax.swing.event.EventListenerList;
 
@@ -46,12 +44,12 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionException;
 import org.adempiere.ad.persistence.po.NoDataFoundHandlerRetryRequestException;
 import org.adempiere.ad.persistence.po.NoDataFoundHandlers;
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.table.ComposedRecordId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -68,7 +66,6 @@ import org.adempiere.ui.sideactions.model.ISideActionsGroupsListModel;
 import org.adempiere.ui.sideactions.model.SideActionsGroupModel;
 import org.adempiere.ui.sideactions.model.SideActionsGroupsListModel;
 import org.adempiere.ui.spi.IGridTabSummaryInfoProvider;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.model.StateChangeEvent.StateChangeEventType;
@@ -88,7 +85,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 
@@ -96,7 +92,9 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.process.AdProcessId;
 import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.SelectionSize;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -237,8 +235,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	private final AttachmentsMap attachmentsMap;
 	/** Chats */
 	private HashMap<Integer, Integer> m_Chats = null;
-	/** Locks */
-	private final ExtendedMemorizingSupplier<Set<Integer>> lockedRecordIdsSupplier = ExtendedMemorizingSupplier.of(() -> retrieveLockedRecordIds());
 
 	/** Current Row */
 	private int m_currentRow = -1;
@@ -501,7 +497,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 				final int sortNo = field.getSortNo();
 				if (sortNo == 0)
 				{
-					;
+
 				}
 				else if (Math.abs(sortNo) == 1)
 				{
@@ -552,32 +548,66 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 
 			// FIXME: metas: i think this is not needed because the AD_Field_v is returning also the missing fields
 			// Add Standard Fields
+			final boolean tabReadOnly = false;
+			final boolean applyRolePermissions = m_vo.isApplyRolePermissions();
 			if (m_mTable.getField("Created") == null)
 			{
-				final GridField created = new GridField(GridFieldVO.createStdField(ctx,
-						m_vo.getWindowNo(), m_vo.getTabNo(),
-						m_vo.getAD_Window_ID(), m_vo.getAD_Tab_ID(), false, true, true));
+				final GridField created = new GridField(GridFieldVO.createStdField(
+						ctx,
+						m_vo.getWindowNo(),
+						m_vo.getTabNo(),
+						m_vo.getAdWindowId(),
+						m_vo.getAD_Tab_ID(),
+						tabReadOnly,
+						applyRolePermissions,
+						true, // isCreated
+						true // isTimestamp
+				));
 				m_mTable.addField(created);
 			}
 			if (m_mTable.getField("CreatedBy") == null)
 			{
-				final GridField createdBy = new GridField(GridFieldVO.createStdField(ctx,
-						m_vo.getWindowNo(), m_vo.getTabNo(),
-						m_vo.getAD_Window_ID(), m_vo.getAD_Tab_ID(), false, true, false));
+				final GridField createdBy = new GridField(GridFieldVO.createStdField(
+						ctx,
+						m_vo.getWindowNo(),
+						m_vo.getTabNo(),
+						m_vo.getAdWindowId(),
+						m_vo.getAD_Tab_ID(),
+						tabReadOnly,
+						applyRolePermissions,
+						true, // isCreated
+						false // isTimestamp
+				));
 				m_mTable.addField(createdBy);
 			}
 			if (m_mTable.getField("Updated") == null)
 			{
-				final GridField updated = new GridField(GridFieldVO.createStdField(ctx,
-						m_vo.getWindowNo(), m_vo.getTabNo(),
-						m_vo.getAD_Window_ID(), m_vo.getAD_Tab_ID(), false, false, true));
+				final GridField updated = new GridField(GridFieldVO.createStdField(
+						ctx,
+						m_vo.getWindowNo(),
+						m_vo.getTabNo(),
+						m_vo.getAdWindowId(),
+						m_vo.getAD_Tab_ID(),
+						tabReadOnly,
+						applyRolePermissions,
+						false, // isCreated
+						true // isTimestamp
+				));
 				m_mTable.addField(updated);
 			}
 			if (m_mTable.getField("UpdatedBy") == null)
 			{
-				final GridField updatedBy = new GridField(GridFieldVO.createStdField(ctx,
-						m_vo.getWindowNo(), m_vo.getTabNo(),
-						m_vo.getAD_Window_ID(), m_vo.getAD_Tab_ID(), false, false, false));
+				final GridField updatedBy = new GridField(GridFieldVO.createStdField(
+						ctx,
+						m_vo.getWindowNo(),
+						m_vo.getTabNo(),
+						m_vo.getAdWindowId(),
+						m_vo.getAD_Tab_ID(),
+						tabReadOnly,
+						applyRolePermissions,
+						false, // isCreated
+						false // isTimestamp
+				));
 				m_mTable.addField(updatedBy);
 			}
 		}
@@ -1345,7 +1375,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 		catch (final Exception e)
 		{
-			log.error("{} - row={}", this, m_currentRow, e);
+			log.error("dataSave: {} - row={}", this, m_currentRow, e);
 		}
 		return false;
 	}   // dataSave
@@ -1688,7 +1718,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		Env.setContext(ctx, m_vo.getWindowNo(), m_vo.getTabNo(), CTX_KeyColumnName, keyColumnName);
 
 		attachmentsMap.setKeyColumnName(keyColumnName);
-		lockedRecordIdsSupplier.forget();
 	}
 
 	/**
@@ -1875,7 +1904,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 */
 	public boolean isPrinted()
 	{
-		return m_vo.getPrint_Process_ID() > 0;
+		return m_vo.getPrintProcessId() != null;
 	}	// isPrinted
 
 	/**
@@ -1898,15 +1927,10 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		return m_vo.getTabNo();
 	}	// getTabNo
 
-	/**
-	 * Get Process ID
-	 *
-	 * @return Process ID
-	 */
-	public int getAD_Process_ID()
+	public AdProcessId getPrintProcessId()
 	{
-		return m_vo.getPrint_Process_ID();
-	}	// getAD_Process_ID
+		return m_vo.getPrintProcessId();
+	}
 
 	/**
 	 * Is High Volume?
@@ -2213,9 +2237,9 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 *
 	 * @return Window ID
 	 */
-	public int getAD_Window_ID()
+	public AdWindowId getAdWindowId()
 	{
-		return m_vo.getAD_Window_ID();
+		return m_vo.getAdWindowId();
 	}	// getAD_Window_ID
 
 	/**
@@ -2560,61 +2584,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 	}	// getCM_ChatID
 
-	/** Retrieve locked recordIds for current user */
-	private Set<Integer> retrieveLockedRecordIds()
-	{
-		if (!canHaveAttachment())
-		{
-			return ImmutableSet.of();
-		}
-
-		final int adUserId = Env.getAD_User_ID(Env.getCtx());
-		return Services.get(IUserRolePermissionsDAO.class).retrievePrivateAccessRecordIds(adUserId, getAD_Table_ID());
-	}
-
-	private Set<Integer> getLockedRecordIds()
-	{
-		return lockedRecordIdsSupplier.get();
-	}
-
-	/**
-	 * @return true if the record is locked
-	 */
-	public boolean isLocked()
-	{
-		if (!Env.getUserRolePermissions(getCtx()).hasPermission(IUserRolePermissions.PERMISSION_PersonalLock))
-		{
-			return false;
-		}
-
-		return getLockedRecordIds().contains(getRecord_ID());
-	}	// isLocked
-
-	/**
-	 * Lock Record
-	 *
-	 * @param ctx context
-	 * @param recordId id
-	 * @param lock true if lock, otherwise unlock
-	 */
-	public void lock(final int recordId, final boolean lock)
-	{
-		final int adUserId = Env.getAD_User_ID(Env.getCtx());
-		final int adTableId = getAD_Table_ID();
-
-		final IUserRolePermissionsDAO permissionsDAO = Services.get(IUserRolePermissionsDAO.class);
-		if(lock)
-		{
-			permissionsDAO.createPrivateAccess(adUserId, adTableId, recordId);
-		}
-		else
-		{
-			permissionsDAO.deletePrivateAccess(adUserId, adTableId, recordId);
-		}
-
-		lockedRecordIdsSupplier.forget();
-	}
-
 	/**************************************************************************
 	 * Data Status Listener from MTable.
 	 * - get raw info and add current row information
@@ -2683,9 +2652,9 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 		e.setInserting(m_mTable.isInserting());
 		// Distribute/fire it
-		for (int i = 0; i < listeners.length; i++)
+		for (DataStatusListener listener : listeners)
 		{
-			listeners[i].dataStatusChanged(e);
+			listener.dataStatusChanged(e);
 			// log.debug("fini - " + e.toString());
 		}
 	}	// fireDataStatusChanged
@@ -2694,11 +2663,11 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	{
 		event.setCreated((Integer)getValue("CreatedBy"), (Timestamp)getValue("Created"));
 		event.setUpdated((Integer)getValue("UpdatedBy"), (Timestamp)getValue("Updated"));
-		
-		
+
+
 		final int adTableId = getAD_Table_ID();
 		final String singleKeyColumnName = getKeyColumnName();
-		
+
 		// We have a key column
 		if(!Check.isEmpty(singleKeyColumnName, true))
 		{
@@ -2721,7 +2690,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 				final Object keyValue = getValue(keyColumnName);
 				valuesByColumnName.put(keyColumnName, keyValue);
 			}
-			
+
 			event.setRecord(adTableId, ComposedRecordId.composedKey(valuesByColumnName));
 		}
 	}
@@ -3174,8 +3143,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			return "";
 		}
-
-		log.debug(field.getColumnName() + "=" + value + " - Row=" + m_currentRow);
 
 		//
 		// Convert the given value to internal value
@@ -3639,9 +3606,9 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 
 		final StateChangeEvent event = new StateChangeEvent(this, eventType);
-		for (int i = 0; i < listeners.length; i++)
+		for (StateChangeListener listener : listeners)
 		{
-			listeners[i].stateChange(event);
+			listener.stateChange(event);
 		}
 	}
 
@@ -4035,7 +4002,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	}
 
 	/** Copy mode when {@link GridTab#dataNew(boolean)} is invoked */
-	public static enum DataNewCopyMode
+	public enum DataNewCopyMode
 	{
 		NoCopy, Copy, CopyWithDetails;
 
@@ -4048,7 +4015,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			return copyMode == CopyWithDetails;
 		}
-	};
+	}
 
 	/**
 	 * Field set by {@link #dataNew(boolean, boolean)} while we are in copy record mode
@@ -4116,33 +4083,28 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		final String keyPrefix = Env.createContextName(windowNo, tabNo, "");
 		final String keyPrefixToExclude = Env.createContextName(windowNo, tabNo, CTX_Prefix);
 
-		Env.removeContextMatching(ctx, new Predicate<Object>()
-		{
-			@Override
-			public boolean test(final Object key)
+		Env.removeContextMatching(ctx, key -> {
+			if (key == null)
 			{
-				if (key == null)
-				{
-					// shall not happen
-					return false;
-				}
-
-				final String name = key.toString();
-
-				// Skip special tab context variables
-				if (name.startsWith(keyPrefixToExclude))
-				{
-					return false;
-				}
-
-				// Skip those names which are not about our tab
-				if (!name.startsWith(keyPrefix))
-				{
-					return false;
-				}
-
-				return true; // remove it
+				// shall not happen
+				return false;
 			}
+
+			final String name = key.toString();
+
+			// Skip special tab context variables
+			if (name.startsWith(keyPrefixToExclude))
+			{
+				return false;
+			}
+
+			// Skip those names which are not about our tab
+			if (!name.startsWith(keyPrefix))
+			{
+				return false;
+			}
+
+			return true; // remove it
 		});
 	}
 
@@ -4283,13 +4245,13 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		 *
 		 * @return AD_Attachment_ID or 0, if not found
 		 */
-		public final synchronized int getAD_Attachment_ID(final int recordId)
+		public synchronized int getAD_Attachment_ID(final int recordId)
 		{
 			final boolean forceLoadIfNotExists = false;
 			return getAD_Attachment_ID(recordId, forceLoadIfNotExists);
 		}
 
-		private final synchronized int getAD_Attachment_ID(final int recordId, final boolean forceLoadIfNotExists)
+		private synchronized int getAD_Attachment_ID(final int recordId, final boolean forceLoadIfNotExists)
 		{
 			if (recordId < 0)
 			{
@@ -4319,13 +4281,13 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			return 0;
 		}
 
-		public final boolean hasAttachment(final int recordId)
+		public boolean hasAttachment(final int recordId)
 		{
 			final int attachmentId = getAD_Attachment_ID(recordId);
 			return attachmentId > 0;
 		}
 
-		private final Map<Integer, Integer> getMap()
+		private Map<Integer, Integer> getMap()
 		{
 			if (!canHaveAttachment())
 			{
@@ -4409,9 +4371,15 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 
 		@Override
-		public int getAD_Window_ID()
+		public AdWindowId getAdWindowId()
 		{
-			return gridTab.getAD_Window_ID();
+			return gridTab.getAdWindowId();
+		}
+
+		@Override
+		public AdTabId getAdTabId()
+		{
+			return AdTabId.ofRepoId(gridTab.getAD_Tab_ID());
 		}
 
 		@Override
@@ -4441,10 +4409,10 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 
 		@Override
-		public int getSelectionSize()
+		public SelectionSize getSelectionSize()
 		{
 			// backward compatibility
-			return 1;
+			return SelectionSize.ofSize(1);
 		}
 
 	}

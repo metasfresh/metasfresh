@@ -41,6 +41,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.banking.misc.ImportBankstatementCtrl;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
+import de.metas.security.permissions.Access;
 import de.schaeffer.compiere.mt940.Bankstatement;
 import de.schaeffer.compiere.mt940.Parser;
 
@@ -90,14 +91,14 @@ public class MT940ImportProcess extends JavaProcess {
 		final Bankstatement statement = Parser.parseMT940String(buf);
 		log.debug("file parsed");
 
-		final String whereClauseInvoice = Env.getUserRolePermissions().getOrgWhere(false)
+		final String whereClauseInvoice = Env.getUserRolePermissions().getOrgWhere(I_C_Order.Table_Name, Access.READ)
 				+ " AND ( paymentrule not in ('B','K','') AND ispaid = 'N' )";
 
 		final List<MInvoice> invoiceList = new Query(getCtx(),
 				I_C_Invoice.Table_Name, whereClauseInvoice, get_TrxName())
 				.setOnlyActiveRecords(true).setClient_ID().list(MInvoice.class);
 
-		final String whereClauseOrder = Env.getUserRolePermissions().getOrgWhere(false)
+		final String whereClauseOrder = Env.getUserRolePermissions().getOrgWhere(I_C_Order.Table_Name, Access.READ)
 				+ " AND ( paymentrule not in ('B','K','') AND DocStatus='WP' )";
 
 		final List<MOrder> orderList = new Query(getCtx(),

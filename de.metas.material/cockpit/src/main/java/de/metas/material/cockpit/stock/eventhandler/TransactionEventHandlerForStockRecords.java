@@ -10,10 +10,12 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
+import de.metas.material.cockpit.stock.StockChangeSourceInfo;
 import de.metas.material.cockpit.stock.StockDataRecordIdentifier;
 import de.metas.material.cockpit.stock.StockDataUpdateRequest;
 import de.metas.material.cockpit.stock.StockDataUpdateRequestHandler;
 import de.metas.material.event.MaterialEventHandler;
+import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
@@ -63,7 +65,7 @@ public class TransactionEventHandlerForStockRecords
 	@Override
 	public void handleEvent(@NonNull final AbstractTransactionEvent event)
 	{
-		final StockDataUpdateRequest dataUpdateRequest =  createDataUpdateRequestForEvent(event);
+		final StockDataUpdateRequest dataUpdateRequest = createDataUpdateRequestForEvent(event);
 		dataUpdateRequestHandler.handleDataUpdateRequest(dataUpdateRequest);
 	}
 
@@ -72,14 +74,21 @@ public class TransactionEventHandlerForStockRecords
 	{
 		final MaterialDescriptor materialDescriptor = event.getMaterialDescriptor();
 
+		final EventDescriptor eventDescriptor = event.getEventDescriptor();
+
 		final StockDataRecordIdentifier identifier = StockDataRecordIdentifier.builder()
 				.productDescriptor(materialDescriptor)
 				.warehouseId(materialDescriptor.getWarehouseId())
+				.clientId(eventDescriptor.getClientId())
+				.orgId(eventDescriptor.getOrgId())
 				.build();
+
+		final StockChangeSourceInfo stockChangeSourceInfo = StockChangeSourceInfo.ofTransactionId(event.getTransactionId());
 
 		final StockDataUpdateRequest request = StockDataUpdateRequest.builder()
 				.identifier(identifier)
 				.onHandQtyChange(event.getQuantityDelta())
+				.sourceInfo(stockChangeSourceInfo)
 				.build();
 		return request;
 	}

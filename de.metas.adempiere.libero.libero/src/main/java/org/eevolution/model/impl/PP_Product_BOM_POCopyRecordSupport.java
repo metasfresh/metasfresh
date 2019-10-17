@@ -2,8 +2,8 @@ package org.eevolution.model.impl;
 
 import java.util.List;
 
-import org.adempiere.model.GeneralCopyRecordSupport;
 import org.adempiere.model.CopyRecordSupportTableInfo;
+import org.adempiere.model.GeneralCopyRecordSupport;
 import org.compiere.model.PO;
 import org.eevolution.model.I_PP_Product_BOMLine;
 

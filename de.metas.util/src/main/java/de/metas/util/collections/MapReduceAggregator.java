@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.apache.commons.collections4.map.LRUMap;
 
@@ -310,7 +312,7 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 	 *
 	 * @param exceptGroup optional group to except from closing
 	 */
-	private final void closeAllGroupsExcept(final GroupType exceptGroup)
+	private final void closeAllGroupsExcept(@Nullable final GroupType exceptGroup)
 	{
 		final Iterator<GroupType> groups = _itemHashKey2group.values().iterator();
 		while (groups.hasNext())

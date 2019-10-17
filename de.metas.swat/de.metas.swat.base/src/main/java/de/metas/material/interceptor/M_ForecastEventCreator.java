@@ -3,13 +3,14 @@ package de.metas.material.interceptor;
 import java.util.List;
 
 import org.adempiere.ad.modelvalidator.DocTimingType;
-import org.compiere.Adempiere;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
-import org.compiere.util.Util;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.base.Preconditions;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -18,8 +19,8 @@ import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.Forecast.ForecastBuilder;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import de.metas.material.event.forecast.ForecastLine;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -43,9 +44,15 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
-@UtilityClass
 public class M_ForecastEventCreator
 {
+	private final ModelProductDescriptorExtractor productDescriptorFactory;
+
+	public M_ForecastEventCreator(@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
+	{
+		this.productDescriptorFactory = productDescriptorFactory;
+	}
+
 	public ForecastCreatedEvent createEventWithLinesAndTiming(
 			@NonNull final List<I_M_ForecastLine> forecastLineRecords,
 			@NonNull final DocTimingType timing)
@@ -66,7 +73,7 @@ public class M_ForecastEventCreator
 		final ForecastCreatedEvent forecastCreatedEvent = ForecastCreatedEvent
 				.builder()
 				.forecast(forecastBuilder.build())
-				.eventDescriptor(EventDescriptor.createNew(forecastRecord))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(forecastRecord.getAD_Client_ID(), forecastRecord.getAD_Org_ID()))
 				.build();
 
 		return forecastCreatedEvent;
@@ -76,16 +83,15 @@ public class M_ForecastEventCreator
 			@NonNull final I_M_ForecastLine forecastLine,
 			@NonNull final I_M_Forecast forecast)
 	{
-		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(forecastLine);
 
-		final int customerId = Util.firstGreaterThanZero(forecastLine.getC_BPartner_ID(), forecast.getC_BPartner_ID());
+		final BPartnerId customerId = BPartnerId.ofRepoIdOrNull(CoalesceUtil.firstGreaterThanZero(forecastLine.getC_BPartner_ID(), forecast.getC_BPartner_ID()));
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-				.date(forecastLine.getDatePromised())
+				.date(TimeUtil.asInstant(forecastLine.getDatePromised()))
 				.productDescriptor(productDescriptor)
 				.customerId(customerId)
-				.warehouseId(forecastLine.getM_Warehouse_ID())
+				.warehouseId(WarehouseId.ofRepoId(forecastLine.getM_Warehouse_ID()))
 				.quantity(forecastLine.getQty())
 				.build();
 

@@ -3,8 +3,7 @@ package de.metas.vertical.pharma.vendor.gateway.msv3.purchaseOrder;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import org.adempiere.service.OrgId;
-
+import de.metas.organization.OrgId;
 import de.metas.vertical.pharma.msv3.protocol.order.MSV3PurchaseCandidateId;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequest;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderCreateRequestPackage;

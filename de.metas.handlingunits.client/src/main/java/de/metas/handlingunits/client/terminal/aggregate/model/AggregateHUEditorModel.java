@@ -26,7 +26,6 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -95,33 +94,28 @@ public class AggregateHUEditorModel extends HUEditorModel
 		final List<I_M_ShipperTransportation> shipperTransportations = shipperTransportationDAO.retrieveOpenShipperTransportations(terminalContext.getCtx(), I_M_ShipperTransportation.class);
 
 		// request by mark: can someone please do a sorting of the dropdown shown in verdichtung pos for speditionsauftrag. please sort by tour, date, shipper.
-		Collections.sort(shipperTransportations, new Comparator<I_M_ShipperTransportation>()
-		{
-			@Override
-			public int compare(final I_M_ShipperTransportation o1, final I_M_ShipperTransportation o2)
+		Collections.sort(shipperTransportations, (o1, o2) -> {
+			if (o1.getM_Tour_ID() != o2.getM_Tour_ID())
 			{
-				if (o1.getM_Tour_ID() != o2.getM_Tour_ID())
-				{
-					final String tour1 = o1.getM_Tour_ID() > 0 ? o1.getM_Tour().getName().toUpperCase() : null;
-					final String tour2 = o2.getM_Tour_ID() > 0 ? o2.getM_Tour().getName().toUpperCase() : null;
-					return new NullSafeComparator<String>().compare(tour1, tour2);
-				}
-
-				final int dateCompareResult = new NullSafeComparator<Timestamp>().compare(o1.getDateDoc(), o2.getDateDoc());
-				if (dateCompareResult != 0)
-				{
-					return dateCompareResult;
-				}
-
-				if (o1.getM_Shipper_ID() != o2.getM_Shipper_ID())
-				{
-					final String shipper1 = o1.getM_Shipper_ID() > 0 ? o1.getM_Shipper().getName().toUpperCase() : null;
-					final String shipper2 = o2.getM_Tour_ID() > 0 ? o2.getM_Shipper().getName().toUpperCase() : null;
-					return new NullSafeComparator<String>().compare(shipper1, shipper2);
-				}
-
-				return new NullSafeComparator<String>().compare(o1.getDocumentNo(), o2.getDocumentNo());
+				final String tour1 = o1.getM_Tour_ID() > 0 ? o1.getM_Tour().getName().toUpperCase() : null;
+				final String tour2 = o2.getM_Tour_ID() > 0 ? o2.getM_Tour().getName().toUpperCase() : null;
+				return new NullSafeComparator<String>().compare(tour1, tour2);
 			}
+
+			final int dateCompareResult = new NullSafeComparator<Timestamp>().compare(o1.getDateDoc(), o2.getDateDoc());
+			if (dateCompareResult != 0)
+			{
+				return dateCompareResult;
+			}
+
+			if (o1.getM_Shipper_ID() != o2.getM_Shipper_ID())
+			{
+				final String shipper1 = o1.getM_Shipper_ID() > 0 ? o1.getM_Shipper().getName().toUpperCase() : null;
+				final String shipper2 = o2.getM_Tour_ID() > 0 ? o2.getM_Shipper().getName().toUpperCase() : null;
+				return new NullSafeComparator<String>().compare(shipper1, shipper2);
+			}
+
+			return new NullSafeComparator<String>().compare(o1.getDocumentNo(), o2.getDocumentNo());
 		});
 
 		if (shipperTransportations.isEmpty())
@@ -244,7 +238,7 @@ public class AggregateHUEditorModel extends HUEditorModel
 
 		//
 		// From HUs, create M_Packages and then assign them to selected Shipper Transportation
-		trxManager.run(() -> huShipperTransportationBL.addHUsToShipperTransportation(shipperTransportationId, hus));
+		trxManager.runInNewTrx(() -> huShipperTransportationBL.addHUsToShipperTransportation(shipperTransportationId, hus));
 
 		//
 		// Iterate HU Keys and fire status changed (those HUs got locked)

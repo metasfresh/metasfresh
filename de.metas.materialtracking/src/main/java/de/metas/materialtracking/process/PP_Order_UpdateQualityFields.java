@@ -22,26 +22,30 @@ package de.metas.materialtracking.process;
  * #L%
  */
 
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.materialtracking.IMaterialTrackingDAO;
+import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.qualityBasedInvoicing.IMaterialTrackingDocuments;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedInvoicingDAO;
 import de.metas.materialtracking.qualityBasedInvoicing.impl.PPOrderQualityCalculator;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
+import de.metas.process.ProcessPreconditionsResolution;
+import lombok.NonNull;
 
 /**
  * Updates all Quality Inspection orders which are linked to the material tracking on which given quality inspection order it is.
  *
- * @author tsa
- *
  */
-public class PP_Order_UpdateQualityFields extends JavaProcess
+public class PP_Order_UpdateQualityFields
+		extends JavaProcess
+		implements IProcessPrecondition
 {
 	// Services
 	private final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
@@ -49,6 +53,29 @@ public class PP_Order_UpdateQualityFields extends JavaProcess
 
 	// Parameters
 	private int p_PP_Order_ID;
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
+	{
+		if (context.isNoSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+		if (context.isMoreThanOneSelected())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+
+		final IMaterialTrackingPPOrderBL materialTrackingPPOrderBL = Services.get(IMaterialTrackingPPOrderBL.class);
+
+		boolean qualityInspection = materialTrackingPPOrderBL.isQualityInspection(context.getSingleSelectedRecordId());
+		if(!qualityInspection)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Selected PP_Order is not a quality inspection");
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
 
 	@Override
 	protected void prepare()
@@ -81,7 +108,8 @@ public class PP_Order_UpdateQualityFields extends JavaProcess
 
 		final I_PP_Order ppOrder = getRecord(I_PP_Order.class);
 
-		final I_M_Material_Tracking materialTracking = materialTrackingDAO.retrieveMaterialTrackingForModel(ppOrder);
+		// note that a quality inspection has at most one material-tracking
+		final I_M_Material_Tracking materialTracking = materialTrackingDAO.retrieveSingleMaterialTrackingForModel(ppOrder);
 		if (materialTracking == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_Material_Tracking_ID@"

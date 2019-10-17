@@ -6,7 +6,6 @@ import java.util.Properties;
 import org.adempiere.ad.callout.api.IADColumnCalloutDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.UpperCaseQueryFilterModifier;
-import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery.Aggregate;
@@ -18,6 +17,7 @@ import org.compiere.util.Env;
 import com.google.common.collect.ListMultimap;
 
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.security.permissions.UIDisplayedEntityTypes;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -53,7 +53,7 @@ public class ADColumnCalloutDAO implements IADColumnCalloutDAO
 				// If EntityType is not displayed, skip this callout
 				.filter(cc -> {
 					final String entityType = cc.getEntityType();
-					return Check.isEmpty(entityType, true) || UIDisplayedEntityTypes.isEntityTypeDisplayedInUIOrTrueIfNull(entityType);
+					return Check.isEmpty(entityType, true)|| UIDisplayedEntityTypes.isEntityTypeDisplayedInUIOrTrueIfNull(ctx, entityType);
 				})
 				// collect to: AD_Column_ID -> List of AD_ColumnCallouts
 				.collect(GuavaCollectors.toImmutableListMultimap(cc -> extractColumnName(cc)));

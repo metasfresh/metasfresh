@@ -15,7 +15,10 @@ import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_InvoiceSchedule;
+import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_InvoiceSchedule;
@@ -23,7 +26,6 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_C_Currency;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -31,8 +33,11 @@ import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.CurrencyId;
 import de.metas.util.time.SystemTime;
 
 /*
@@ -73,27 +78,40 @@ public class AssignmentToRefundCandidateRepositoryTest
 
 		final Timestamp dateToInvoiceOfAssignableCand = SystemTime.asTimestamp();
 
-		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
-		currencyRecord.setStdPrecision(2);
-		save(currencyRecord);
+		final CurrencyId currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BPartner bPartnerRecord = newInstance(I_C_BPartner.class);
 		save(bPartnerRecord);
+
+		final I_C_Country country_DE = newInstance(I_C_Country.class);
+		country_DE.setAD_Language("de");
+		save(country_DE);
+
+		final I_C_Location loc = newInstance(I_C_Location.class);
+		loc.setC_Country_ID(country_DE.getC_Country_ID());
+		save(loc);
+
+		final I_C_BPartner_Location bpLoc = newInstance(I_C_BPartner_Location.class);
+		bpLoc.setC_Location_ID(loc.getC_Location_ID());
+		bpLoc.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
+
+		save(bpLoc);
 
 		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
 
 		final I_M_Product productRecord = newInstance(I_M_Product.class);
-		productRecord.setC_UOM(uomRecord);
+		productRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		save(productRecord);
 
 		assignableIcRecord = newInstance(I_C_Invoice_Candidate.class);
-		assignableIcRecord.setBill_BPartner(bPartnerRecord);
-		assignableIcRecord.setM_Product(productRecord);
+		assignableIcRecord.setBill_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
+		assignableIcRecord.setBill_Location_ID(bpLoc.getC_BPartner_Location_ID());
+		assignableIcRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		assignableIcRecord.setDateToInvoice(dateToInvoiceOfAssignableCand);
 		assignableIcRecord.setNetAmtInvoiced(ONE);
 		assignableIcRecord.setNetAmtToInvoice(NINE);
-		assignableIcRecord.setC_Currency(currencyRecord);
+		assignableIcRecord.setC_Currency_ID(currencyId.getRepoId());
 		save(assignableIcRecord);
 
 		final I_C_Flatrate_Conditions conditionsRecord = newInstance(I_C_Flatrate_Conditions.class);
@@ -102,6 +120,7 @@ public class AssignmentToRefundCandidateRepositoryTest
 
 		final I_C_InvoiceSchedule invoiceSchedule = newInstance(I_C_InvoiceSchedule.class);
 		invoiceSchedule.setInvoiceFrequency(X_C_InvoiceSchedule.INVOICEFREQUENCY_Daily);
+		invoiceSchedule.setInvoiceDistance(1);
 		saveRecord(invoiceSchedule);
 
 		final I_C_Flatrate_RefundConfig refundConfigRecord = newInstance(I_C_Flatrate_RefundConfig.class);
@@ -118,19 +137,20 @@ public class AssignmentToRefundCandidateRepositoryTest
 		refundContractRecord.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Refund);
 		refundContractRecord.setBill_BPartner(bPartnerRecord);
 		refundContractRecord.setC_Flatrate_Conditions(conditionsRecord);
-		refundContractRecord.setM_Product(productRecord);
-		refundContractRecord.setC_Currency(currencyRecord);
+		refundContractRecord.setM_Product_ID(productRecord.getM_Product_ID());
+		refundContractRecord.setC_Currency_ID(currencyId.getRepoId());
 		refundContractRecord.setStartDate(TimeUtil.asTimestamp(RefundTestTools.CONTRACT_START_DATE));
 		refundContractRecord.setEndDate(TimeUtil.asTimestamp(RefundTestTools.CONTRACT_END_DATE));
 		save(refundContractRecord);
 
 		final I_C_Invoice_Candidate refundContractIcRecord = newInstance(I_C_Invoice_Candidate.class);
-		refundContractIcRecord.setBill_BPartner(bPartnerRecord);
-		refundContractIcRecord.setM_Product(productRecord);
+		refundContractIcRecord.setBill_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
+		refundContractIcRecord.setBill_Location_ID(bpLoc.getC_BPartner_Location_ID());
+		refundContractIcRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		refundContractIcRecord.setDateToInvoice(dateToInvoiceOfAssignableCand);
 		refundContractIcRecord.setAD_Table_ID(getTableId(I_C_Flatrate_Term.class));
 		refundContractIcRecord.setRecord_ID(refundContractRecord.getC_Flatrate_Term_ID());
-		refundContractIcRecord.setC_Currency(currencyRecord);
+		refundContractIcRecord.setC_Currency_ID(currencyId.getRepoId());
 		refundContractIcRecord.setPriceActual(TEN);
 		save(refundContractIcRecord);
 
@@ -160,17 +180,17 @@ public class AssignmentToRefundCandidateRepositoryTest
 	@Test
 	public void ofRecord_AssignableInvoiceCandidate_no_assignment_record()
 	{
-		final AssignableInvoiceCandidateFactory assignableInvoiceCandidateFactory = new AssignableInvoiceCandidateFactory();
+		final AssignableInvoiceCandidateFactory assignableInvoiceCandidateFactory = AssignableInvoiceCandidateFactory.newForUnitTesting();
 		final AssignableInvoiceCandidate assignableIc = assignableInvoiceCandidateFactory.ofRecord(assignableIcRecord);
 
 		// guards
-		final List<AssignmentToRefundCandidate> resultBeforeDeletion = assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableIc);
+		final List<AssignmentToRefundCandidate> resultBeforeDeletion = assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(assignableIc.getId());
 		assertThat(resultBeforeDeletion).isNotEmpty();
 
 		delete(assignmentRecord);
 
 		// invoke the method under test
-		final List<AssignmentToRefundCandidate> resultAfterDeletion = assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableIc);
+		final List<AssignmentToRefundCandidate> resultAfterDeletion = assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(assignableIc.getId());
 		assertThat(resultAfterDeletion).isEmpty();
 	}
 }

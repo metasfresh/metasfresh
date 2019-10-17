@@ -1,16 +1,15 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+
+import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.model.I_HC_Forum_Datenaustausch_Config;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.UtilityClass;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-
-import de.metas.invoice_gateway.spi.model.BPartnerId;
-import de.metas.util.Services;
-import de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.model.I_HC_Forum_Datenaustausch_Config;
 
 /*
  * #%L
@@ -45,12 +44,11 @@ public class ConfigRepositoryUtil
 				.addOnlyActiveRecordsFilter();
 		if (query.getBpartnerId() != null)
 		{
-			queryBuilder.addInArrayFilter(I_HC_Forum_Datenaustausch_Config.COLUMN_C_BPartner_ID, query.getBpartnerId(), null);
+			queryBuilder.addInArrayFilter(I_HC_Forum_Datenaustausch_Config.COLUMN_Bill_BPartner_ID, query.getBpartnerId(), null);
 		}
 
 		final I_HC_Forum_Datenaustausch_Config configRecord = queryBuilder
-				.orderBy().addColumnDescending(I_HC_Forum_Datenaustausch_Config.COLUMNNAME_C_BPartner_ID)
-				.endOrderBy()
+				.orderByDescending(I_HC_Forum_Datenaustausch_Config.COLUMN_Bill_BPartner_ID)
 				.create()
 				.first(I_HC_Forum_Datenaustausch_Config.class);
 		return configRecord;
@@ -61,6 +59,6 @@ public class ConfigRepositoryUtil
 	@Builder
 	public static class ConfigQuery
 	{
-		BPartnerId bpartnerId;
+		RepoIdAware bpartnerId;
 	}
 }

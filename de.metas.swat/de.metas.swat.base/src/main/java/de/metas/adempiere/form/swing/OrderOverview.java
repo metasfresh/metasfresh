@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_RV_C_OrderLine_Overview;
 import org.compiere.apps.form.FormFrame;
@@ -92,9 +93,13 @@ public class OrderOverview implements FormPanel
 		public int compare(GridTab o1, GridTab o2)
 		{
 			if (o1 == null)
+			{
 				return +1;
+			}
 			if (o2 == null)
+			{
 				return -1;
+			}
 			return o1.getTabNo() - o2.getTabNo();
 		}
 	}
@@ -152,13 +157,13 @@ public class OrderOverview implements FormPanel
 
 	private static List<GridTab> getGridTabs(Properties ctx, int windowNo, int AD_Window_ID)
 	{
-		final GridWindowVO wVO = GridWindowVO.create(ctx, windowNo, AD_Window_ID);
+		final GridWindowVO wVO = GridWindowVO.create(ctx, windowNo, AdWindowId.ofRepoId(AD_Window_ID));
 		if (wVO == null)
 		{
 			MWindow w = new MWindow(Env.getCtx(), AD_Window_ID, null);
 			throw new AdempiereException("No access to window - " + w.getName() + " (AD_Window_ID=" + AD_Window_ID + ")");
 		}
-		List<GridTab> list = new ArrayList<GridTab>();
+		List<GridTab> list = new ArrayList<>();
 		GridWindow m_mWindow = new GridWindow(wVO);
 		for (int tabIndex = 0; tabIndex < m_mWindow.getTabCount(); tabIndex++)
 		{
@@ -179,9 +184,11 @@ public class OrderOverview implements FormPanel
 	{
 		List<GridTab> list = tabChildrenMap.get(tab.getAD_Tab_ID());
 		if (list != null)
+		{
 			return list;
+		}
 
-		list = new ArrayList<GridTab>();
+		list = new ArrayList<>();
 		tabChildrenMap.put(tab.getAD_Tab_ID(), list);
 		for (GridTab t : tabs)
 		{
@@ -194,7 +201,7 @@ public class OrderOverview implements FormPanel
 	}
 
 	/** AD_Tab_ID(parent) -> list of GridTab (children) */
-	private Map<Integer, List<GridTab>> tabChildrenMap = new HashMap<Integer, List<GridTab>>();
+	private Map<Integer, List<GridTab>> tabChildrenMap = new HashMap<>();
 
 	private GridController createGridController(GridTab tab, int width, int height)
 	{
@@ -205,7 +212,9 @@ public class OrderOverview implements FormPanel
 				null, // APanel
 				null); // GridWindow
 		if (width > 0 && height > 0)
+		{
 			gc.setPreferredSize(new Dimension(width, height));
+		}
 		// tab.addPropertyChangeListener(this);
 		m_mapVTables.put(tab.getAD_Tab_ID(), gc.getTable());
 		return gc;
@@ -220,13 +229,15 @@ public class OrderOverview implements FormPanel
 	}
 
 	/** Map AD_Tab_ID -> VTable */
-	private Map<Integer, VTable> m_mapVTables = new HashMap<Integer, VTable>();
+	private Map<Integer, VTable> m_mapVTables = new HashMap<>();
 
 	@Override
 	public void dispose()
 	{
 		if (frame != null)
+		{
 			frame.dispose();
+		}
 		frame = null;
 	}
 }

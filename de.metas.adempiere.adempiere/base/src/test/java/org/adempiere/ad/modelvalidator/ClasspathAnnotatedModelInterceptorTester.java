@@ -1,29 +1,5 @@
 package org.adempiere.ad.modelvalidator;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -46,7 +22,7 @@ import de.metas.util.Check;
 
 /**
  * Checks all {@link Interceptor} or {@link Validator} annotated classes if they are correctly defined.
- * 
+ *
  * @author tsa
  *
  */
@@ -63,15 +39,13 @@ public class ClasspathAnnotatedModelInterceptorTester
 
 	public ClasspathAnnotatedModelInterceptorTester()
 	{
-		super();
 	}
 
 	public void test()
 	{
 		final Reflections reflections = new Reflections(new ConfigurationBuilder()
 				.addUrls(ClasspathHelper.forClassLoader())
-				.setScanners(new TypeAnnotationsScanner(), new SubTypesScanner())
-				);
+				.setScanners(new TypeAnnotationsScanner(), new SubTypesScanner()));
 
 		final Set<Class<?>> classes_withValidator = reflections.getTypesAnnotatedWith(Validator.class);
 		System.out.println("Found " + classes_withValidator.size() + " classes annotated with " + Validator.class);
@@ -84,6 +58,12 @@ public class ClasspathAnnotatedModelInterceptorTester
 				.addAll(classes_withInterceptor)
 				.build();
 		System.out.println("=> " + classes.size() + " classes to test");
+
+		if(classes.isEmpty())
+		{
+			throw new AdempiereException("No classes found. Might be because for some reason Reflections does not work correctly with maven surefire plugin."
+					+ "\n See https://github.com/metasfresh/metasfresh/issues/4773.");
+		}
 
 		for (final Class<?> clazz : classes)
 		{
@@ -121,62 +101,14 @@ public class ClasspathAnnotatedModelInterceptorTester
 			return;
 		}
 
-		// System.out.println("Testing: " + clazz);
 		try
 		{
-			final Object annotatedObject = createAnnotatedObjectInstance(clazz);
-
-			// shall fail if something is not OK:
-			new AnnotatedModelInterceptor(annotatedObject);
+			new AnnotatedModelInterceptorDescriptorBuilder(clazz)
+					.build();
 		}
 		catch (Exception ex)
 		{
 			logException(ex);
-		}
-		finally
-		{
-			//
-		}
-
-	}
-
-	private Object createAnnotatedObjectInstance(Class<?> clazz)
-	{
-		try
-		{
-			//
-			// Check for instance provider if any
-			Supplier<?> instanceProvider = instanceProviders.get(clazz);
-			if (instanceProvider != null)
-			{
-				final Object instance = instanceProvider.get();
-				Check.assumeNotNull(instance, "instance not null");
-				return instance;
-			}
-
-			//
-			// Check for "instance" static field,
-			// because we have some model validators which are singletons
-			try
-			{
-				return clazz.getField("instance").get(null);
-			}
-			catch (NoSuchFieldException e)
-			{
-				// ignore it
-			}
-
-			// Instantiate it using the default constructor
-			final Constructor<?> ctor = clazz.getDeclaredConstructor();
-			if (!ctor.isAccessible())
-			{
-				ctor.setAccessible(true);
-			}
-			return ctor.newInstance();
-		}
-		catch (Exception e)
-		{
-			throw new AdempiereException("Failed to create instance for " + clazz, e);
 		}
 	}
 

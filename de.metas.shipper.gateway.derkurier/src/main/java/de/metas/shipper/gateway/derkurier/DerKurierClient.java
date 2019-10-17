@@ -227,7 +227,7 @@ public class DerKurierClient implements ShipperGatewayClient
 					.onErrorThrowException(true)
 					.executeSync();
 
-			Loggables.get().addLog("Created package label for {}", deliveryOrderTableRecordReference);
+			Loggables.addLog("Created package label for {}", deliveryOrderTableRecordReference);
 		}
 	}
 

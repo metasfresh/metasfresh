@@ -1,7 +1,7 @@
 package org.adempiere.exceptions;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 
 /**
  * Exception thrown on database foreign key violation.
@@ -40,7 +40,7 @@ public class DBForeignKeyConstraintException extends DBException
 		// Detail: Key (c_bpartner_id)=(2000037) is still referenced from table "pp_mrp".
 		//
 
-		return TranslatableStringBuilder.newInstance()
+		return TranslatableStrings.builder()
 				.appendADMessage(AD_Message)
 				.append("\n")
 				.append("\n").appendADElement("Cause").append(": ").append(extractMessage(getCause()))

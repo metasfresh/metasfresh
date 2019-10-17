@@ -32,6 +32,7 @@ import org.compiere.model.I_C_Payment;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
+import de.metas.organization.OrgId;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.util.ISingletonService;
@@ -76,11 +77,8 @@ public interface IESRImportDAO extends ISingletonService
 
 	/**
 	 * Search the C_ReferenceNo table for the ref no given as parameter, with ref no type of the invoice.
-	 *
-	 * @param esrReferenceNumber
-	 * @return
 	 */
-	I_C_ReferenceNo_Doc retrieveESRInvoiceReferenceNumberDocument(Properties ctx, String esrReferenceNumber);
+	I_C_ReferenceNo_Doc retrieveESRInvoiceReferenceNumberDocument(OrgId orgId, String esrReferenceNumber);
 
 	/**
 	 * Retrieve the existing esr imports of the organization given as parameter (through ID)
@@ -106,20 +104,20 @@ public interface IESRImportDAO extends ISingletonService
 	List<I_ESR_ImportLine> retrieveAllLinesForBankStatementLineRef(I_C_BankStatementLine_Ref lineRef);
 
 	I_ESR_Import retrieveESRImportForPayment(final I_C_Payment payment);
-	
+
 
 	/**
 	 * count lines
-	 * 
+	 *
 	 * @param esrImport
 	 * @param processed
 	 * @return
 	 */
 	int countLines(I_ESR_Import esrImport, Boolean processed);
-	
+
 	/***
 	 * gets the esr line for the specified esr import header and esrlinetext
-	 * 
+	 *
 	 * @param import1
 	 * @param esrImportLineText
 	 * @return

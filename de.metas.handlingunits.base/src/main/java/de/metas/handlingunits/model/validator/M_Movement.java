@@ -229,7 +229,7 @@ public class M_Movement
 		final int locatorToId = locatorTo.getM_Locator_ID();
 		Check.assume(huLocatorIdOld > 0
 				&& (huLocatorIdOld == locatorFromId || huLocatorIdOld == locatorToId),
-				"HU Locator was supposed to be {} or {}, but was {}", locatorFrom, locatorTo, hu.getM_Locator());
+				"HU Locator was supposed to be {} or {}, but was {}", locatorFrom, locatorTo, hu.getM_Locator_ID());
 
 		// If already moved, then do nothing.
 		if (huLocatorIdOld == locatorToId)

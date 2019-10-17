@@ -9,6 +9,8 @@ import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.Profiles;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
@@ -50,7 +52,8 @@ public class MainDataRequestHandler
 		}
 	}
 
-	private static I_MD_Cockpit retrieveOrCreateDataRecord(@NonNull final MainDataRecordIdentifier identifier)
+	@VisibleForTesting
+	static I_MD_Cockpit retrieveOrCreateDataRecord(@NonNull final MainDataRecordIdentifier identifier)
 	{
 		final IQuery<I_MD_Cockpit> query = identifier.createQueryBuilder().create();
 

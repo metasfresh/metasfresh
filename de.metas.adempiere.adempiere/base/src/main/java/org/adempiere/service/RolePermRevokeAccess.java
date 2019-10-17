@@ -1,8 +1,9 @@
 package org.adempiere.service;
 
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
+import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Form;
@@ -17,12 +18,26 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.security.IRoleDAO;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.Role;
+import de.metas.security.RoleId;
+import de.metas.security.requests.RemoveDocActionAccessRequest;
+import de.metas.security.requests.RemoveFormAccessRequest;
+import de.metas.security.requests.RemoveProcessAccessRequest;
+import de.metas.security.requests.RemoveTaskAccessRequest;
+import de.metas.security.requests.RemoveWindowAccessRequest;
+import de.metas.security.requests.RemoveWorkflowAccessRequest;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -56,46 +71,92 @@ public class RolePermRevokeAccess
 	public void revokeAccess(@NonNull final I_AD_Role_PermRequest request)
 	{
 		final IUserRolePermissionsDAO permissionsDAO = Services.get(IUserRolePermissionsDAO.class);
+
+		final RoleId roleId = RoleId.ofRepoId(request.getAD_Role_ID());
+		final Role role = Services.get(IRoleDAO.class).getById(roleId);
+
 		if (request.getAD_Window_ID() > 0)
 		{
-			final I_AD_Window window = request.getAD_Window();
-			permissionsDAO.deleteWindowAccess(request.getAD_Role(), window.getAD_Window_ID());
-			logRevoked(I_AD_Window.COLUMNNAME_AD_Window_ID, window.getName());
+			final AdWindowId windowId = AdWindowId.ofRepoId(request.getAD_Window_ID());
+			permissionsDAO.deleteWindowAccess(RemoveWindowAccessRequest.builder()
+					.roleId(role.getId())
+					.clientId(role.getClientId())
+					.orgId(role.getOrgId())
+					.adWindowId(windowId)
+					.build());
+			logRevoked(I_AD_Window.COLUMNNAME_AD_Window_ID, Services.get(IADWindowDAO.class).retrieveWindowName(windowId));
 		}
 		else if (request.getAD_Process_ID() > 0)
 		{
-			final I_AD_Process process = request.getAD_Process();
-			permissionsDAO.deleteProcessAccess(request.getAD_Role(), process.getAD_Process_ID());
-			logRevoked(I_AD_Process.COLUMNNAME_AD_Process_ID, process.getName());
+			final AdProcessId processId = AdProcessId.ofRepoId(request.getAD_Process_ID());
+			permissionsDAO.deleteProcessAccess(RemoveProcessAccessRequest.builder()
+					.roleId(role.getId())
+					.clientId(role.getClientId())
+					.orgId(role.getOrgId())
+					.adProcessId(processId)
+					.build());
+			logRevoked(I_AD_Process.COLUMNNAME_AD_Process_ID, Services.get(IADProcessDAO.class).getProcessNameById(processId));
 		}
 		else if (request.getAD_Form_ID() > 0)
 		{
-			final I_AD_Form form = request.getAD_Form();
-			permissionsDAO.deleteFormAccess(request.getAD_Role(), form.getAD_Form_ID());
+			final int adFormId = request.getAD_Form_ID();
+
+			permissionsDAO.deleteFormAccess(RemoveFormAccessRequest.builder()
+					.roleId(role.getId())
+					.clientId(role.getClientId())
+					.orgId(role.getOrgId())
+					.adFormId(adFormId)
+					.build());
+
+			final I_AD_Form form = InterfaceWrapperHelper.loadOutOfTrx(adFormId, I_AD_Form.class);
 			logRevoked(I_AD_Form.COLUMNNAME_AD_Form_ID, form.getName());
 		}
 		else if (request.getAD_Task_ID() > 0)
 		{
-			final I_AD_Task task = request.getAD_Task();
-			permissionsDAO.deleteTaskAccess(request.getAD_Role(), task.getAD_Task_ID());
+			final int adTaskId = request.getAD_Task_ID();
+
+			permissionsDAO.deleteTaskAccess(RemoveTaskAccessRequest.builder()
+					.roleId(role.getId())
+					.clientId(role.getClientId())
+					.orgId(role.getOrgId())
+					.adTaskId(adTaskId)
+					.build());
+
+			final I_AD_Task task = InterfaceWrapperHelper.loadOutOfTrx(adTaskId, I_AD_Task.class);
 			logRevoked(I_AD_Task.COLUMNNAME_AD_Task_ID, task.getName());
 		}
 		else if (request.getAD_Workflow_ID() > 0)
 		{
-			final I_AD_Workflow wf = request.getAD_Workflow();
-			permissionsDAO.deleteWorkflowAccess(request.getAD_Role(), wf.getAD_Workflow_ID());
+			final int adWorkflowId = request.getAD_Workflow_ID();
+
+			permissionsDAO.deleteWorkflowAccess(RemoveWorkflowAccessRequest.builder()
+					.roleId(role.getId())
+					.clientId(role.getClientId())
+					.orgId(role.getOrgId())
+					.adWorkflowId(adWorkflowId)
+					.build());
+
+			final I_AD_Workflow wf = InterfaceWrapperHelper.loadOutOfTrx(adWorkflowId, I_AD_Workflow.class);
 			logRevoked(I_AD_Workflow.COLUMNNAME_AD_Workflow_ID, wf.getName());
 		}
 		else if (request.getDocAction() != null)
 		{
-			final I_C_DocType docType = InterfaceWrapperHelper.loadOutOfTrx(request.getC_DocType_ID(), I_C_DocType.class);
-
+			final DocTypeId docTypeId = DocTypeId.ofRepoId(request.getC_DocType_ID());
 			final String docAction = request.getDocAction();
+
 			final ADRefListItem docActionItem = Services.get(IADReferenceDAO.class).retrieveListItemOrNull(X_C_Invoice.DOCACTION_AD_Reference_ID, docAction);
 			Check.assumeNotNull(docActionItem, "docActionItem is missing for {}", docAction);
 			final int docActionRefListId = docActionItem.getRefListId();
 
-			permissionsDAO.deleteDocumentActionAccess(request.getAD_Role(), docType.getC_DocType_ID(), docActionRefListId);
+			permissionsDAO.deleteDocumentActionAccess(RemoveDocActionAccessRequest.builder()
+					.roleId(role.getId())
+					.clientId(role.getClientId())
+					.orgId(role.getOrgId())
+					.docTypeId(docTypeId)
+					.docActionRefListId(docActionRefListId)
+					.build());
+
+			final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
 			logRevoked(I_C_DocType.COLUMNNAME_C_DocType_ID, docType.getName());
 		}
 		else
@@ -104,6 +165,11 @@ public class RolePermRevokeAccess
 		}
 		//
 		request.setIsPermissionGranted(false);
+	}
+
+	private void logRevoked(final String type, final ITranslatableString name)
+	{
+		logRevoked(type, name.translate(Env.getAD_Language()));
 	}
 
 	private void logRevoked(final String type, final String name)

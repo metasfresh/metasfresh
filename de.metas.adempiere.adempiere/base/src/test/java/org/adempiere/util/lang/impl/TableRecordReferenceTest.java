@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.metas.JsonObjectMapperHolder;
 import de.metas.adempiere.model.I_C_Invoice;
 
 /*
@@ -50,7 +51,7 @@ public class TableRecordReferenceTest
 		
 		final TableRecordReference invoiceRef = TableRecordReference.of(invoice);
 		
-		final ObjectMapper jsonMapper = new ObjectMapper();
+		final ObjectMapper jsonMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 		final String json = jsonMapper.writeValueAsString(invoiceRef);
 		
 		final TableRecordReference invoiceRefFromJson = jsonMapper.readValue(json, TableRecordReference.class);

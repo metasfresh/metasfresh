@@ -1,17 +1,16 @@
 package de.metas.material.dispo.service.event.handler.ddorder;
 
-import java.util.Date;
-import java.util.Set;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.TimeUtil;
+import org.adempiere.warehouse.WarehouseId;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
-import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
@@ -20,13 +19,13 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
-import de.metas.material.dispo.service.event.EventUtil;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor.MaterialDescriptorBuilder;
 import de.metas.material.event.ddorder.AbstractDDOrderEvent;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import lombok.NonNull;
 
 /*
@@ -71,15 +70,14 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 	/**
 	 * @return the groupId of the candidates that were created or updated.
 	 */
-	protected final Set<Integer> handleAbstractDDOrderEvent(@NonNull final AbstractDDOrderEvent ddOrderEvent)
+	protected final ImmutableSet<MaterialDispoGroupId> handleAbstractDDOrderEvent(@NonNull final AbstractDDOrderEvent ddOrderEvent)
 	{
-		final ImmutableSet.Builder<Integer> groupIds = ImmutableSet.builder();
+		final ImmutableSet.Builder<MaterialDispoGroupId> groupIds = ImmutableSet.builder();
 
 		for (final DDOrderLine ddOrderLine : ddOrderEvent.getDdOrder().getLines())
 		{
-			final int groupId = createAndProcessCandidatePair(ddOrderEvent, ddOrderLine);
-
-			if (groupId > 0)
+			final MaterialDispoGroupId groupId = createAndProcessCandidatePair(ddOrderEvent, ddOrderLine);
+			if (groupId != null)
 			{
 				groupIds.add(groupId);
 			}
@@ -87,12 +85,12 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 		return groupIds.build();
 	}
 
-	private int createAndProcessCandidatePair(
+	private MaterialDispoGroupId createAndProcessCandidatePair(
 			final AbstractDDOrderEvent ddOrderEvent,
 			final DDOrderLine ddOrderLine)
 	{
 		final DDOrder ddOrder = ddOrderEvent.getDdOrder();
-		final CandidateStatus candidateStatus = computeCandidateStatus(ddOrder);
+		//final CandidateStatus candidateStatus = computeCandidateStatus(ddOrder);
 
 		//
 		// create the supply candidate
@@ -106,7 +104,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 		final Candidate supplyCandidate = createSupplyCandidateBuilder(ddOrderEvent, ddOrderLine)
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
-				.status(candidateStatus)
+				//.status(candidateStatus)
 				.materialDescriptor(supplyMaterialDescriptor)
 				.businessCaseDetail(distributionDetail)
 				.additionalDemandDetail(demanddetail)
@@ -115,7 +113,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 		final Candidate supplyCandidateWithId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
 		if (supplyCandidateWithId.getQuantity().signum() == 0)
 		{
-			return -1; // nothing was added as supply in the destination warehouse, so there is no demand to register either
+			return null; // nothing was added as supply in the destination warehouse, so there is no demand to register either
 		}
 
 		//
@@ -125,7 +123,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 		// *but* it might also be the case that the demandCandidate attaches to an existing stock and in that case would need to get another SeqNo
 		final int expectedSeqNoForDemandCandidate = supplyCandidateWithId.getSeqNo() + 1;
 
-		final Integer groupId = supplyCandidateWithId.getGroupId();
+		final MaterialDispoGroupId groupId = supplyCandidateWithId.getGroupId();
 
 		final MaterialDescriptor demandMaterialDescriptor = createDemandMaterialDescriptor(ddOrderEvent, ddOrderLine);
 
@@ -134,7 +132,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.groupId(groupId)
 				.parentId(supplyCandidateWithId.getId())
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
-				.status(candidateStatus)
+				//.status(candidateStatus)
 				.materialDescriptor(demandMaterialDescriptor)
 				.businessCaseDetail(distributionDetail)
 				.additionalDemandDetail(demanddetail)
@@ -227,21 +225,21 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 	protected abstract Flag extractIsAdviseEvent(
 			@NonNull final AbstractDDOrderEvent ddOrderEvent);
 
-	private CandidateStatus computeCandidateStatus(@NonNull final DDOrder ddOrder)
-	{
-		final CandidateStatus candidateStatus;
-		if (ddOrder.getDdOrderId() <= 0)
-		{
-			candidateStatus = CandidateStatus.doc_planned;
-		}
-		else
-		{
-			candidateStatus = EventUtil.getCandidateStatus(ddOrder.getDocStatus());
-		}
-		return candidateStatus;
-	}
+//	private CandidateStatus computeCandidateStatus(@NonNull final DDOrder ddOrder)
+//	{
+//		final CandidateStatus candidateStatus;
+//		if (ddOrder.getDdOrderId() <= 0)
+//		{
+//			candidateStatus = CandidateStatus.doc_planned;
+//		}
+//		else
+//		{
+//			candidateStatus = EventUtil.getCandidateStatus(ddOrder.getDocStatus());
+//		}
+//		return candidateStatus;
+//	}
 
-	protected final int computeWarehouseId(
+	protected final WarehouseId computeWarehouseId(
 			@NonNull final AbstractDDOrderEvent ddOrderEvent,
 			@NonNull final CandidateType candidateType)
 	{
@@ -261,7 +259,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.setParameter("abstractDDOrderEvent", ddOrderEvent);
 	}
 
-	protected final Date computeDate(
+	protected final Instant computeDate(
 			@NonNull final AbstractDDOrderEvent ddOrderEvent,
 			@NonNull final DDOrderLine ddOrderLine,
 			@NonNull final CandidateType candidateType)
@@ -269,9 +267,9 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 		switch (candidateType)
 		{
 			case DEMAND:
-				return TimeUtil.addDaysExact(
-						ddOrderEvent.getDdOrder().getDatePromised(),
-						-ddOrderLine.getDurationDays());
+				final Instant datePromised = ddOrderEvent.getDdOrder().getDatePromised();
+				final int durationDays = ddOrderLine.getDurationDays();
+				return datePromised.minus(durationDays, ChronoUnit.DAYS);
 
 			case SUPPLY:
 				return ddOrderEvent.getDdOrder().getDatePromised();
@@ -293,7 +291,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.ddOrderId(ddOrder.getDdOrderId())
 				.ddOrderLineId(ddOrderLine.getDdOrderLineId())
 				.networkDistributionLineId(ddOrderLine.getNetworkDistributionLineId())
-				.plannedQty(ddOrderLine.getQty())
+				.qty(ddOrderLine.getQty())
 				.plantId(ddOrder.getPlantId())
 				.productPlanningId(ddOrder.getProductPlanningId())
 				.shipperId(ddOrder.getShipperId())

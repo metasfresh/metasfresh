@@ -1,31 +1,5 @@
 package de.metas.banking.payment.impl;
 
-/*
- * #%L
- * de.metas.banking.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import static org.compiere.model.X_C_Invoice.PAYMENTRULE_DirectDebit;
-import static org.compiere.model.X_C_Invoice.PAYMENTRULE_DirectDeposit;
-import static org.compiere.model.X_C_Invoice.PAYMENTRULE_OnCredit;
-
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -52,7 +26,6 @@ import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.POInfo;
-import org.compiere.model.X_C_Invoice;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
@@ -62,11 +35,13 @@ import org.slf4j.Logger;
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.logging.LogManager;
+import de.metas.payment.PaymentRule;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -131,52 +106,28 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 
 	private final Set<Integer> paySelectionLineIdsToUpdate = new HashSet<>();
 	/** Provides a map of C_Invoice_ID to {@link I_C_PaySelectionLine} which were enqueued to be updated */
-	private final Supplier<Map<Integer, I_C_PaySelectionLine>> _invoiceId2paySelectionLineToUpdateSupplier = Suppliers.memoize(new Supplier<Map<Integer, I_C_PaySelectionLine>>()
-	{
-		@Override
-		public Map<Integer, I_C_PaySelectionLine> get()
+	private final Supplier<Map<Integer, I_C_PaySelectionLine>> _invoiceId2paySelectionLineToUpdateSupplier = Suppliers.memoize(() -> {
+		if (paySelectionLineIdsToUpdate.isEmpty())
 		{
-			if (paySelectionLineIdsToUpdate.isEmpty())
-			{
-				return new HashMap<>();
-			}
-
-			final List<I_C_PaySelectionLine> paySelectionLines = Services.get(IQueryBL.class)
-					.createQueryBuilder(I_C_PaySelectionLine.class, getCtx(), getTrxName())
-					.addEqualsFilter(org.compiere.model.I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, getC_PaySelection_ID())
-					.addInArrayOrAllFilter(org.compiere.model.I_C_PaySelectionLine.COLUMNNAME_C_PaySelectionLine_ID, paySelectionLineIdsToUpdate)
-					.create()
-					.list();
-
-			final Map<Integer, I_C_PaySelectionLine> invoiceId2paySelectionLine = new HashMap<>(paySelectionLines.size());
-			for (final I_C_PaySelectionLine paySelectionLine : paySelectionLines)
-			{
-				final int invoiceId = paySelectionLine.getC_Invoice_ID();
-				final I_C_PaySelectionLine paySelectionLineOld = invoiceId2paySelectionLine.put(invoiceId, paySelectionLine);
-				Check.assumeNull(paySelectionLineOld, "Only one pay selection line shall exist for an invoice but we found: {}, {}", paySelectionLine, paySelectionLineOld); // shall not happen
-			}
-
-			return invoiceId2paySelectionLine;
+			return new HashMap<>();
 		}
-	});
 
-	/** Payment Rules (from C_Invoice.PaymentRule's available values list) */
-	private final Supplier<Set<String>> _paymentRulesSupplier = Suppliers.memoize(new Supplier<Set<String>>()
-	{
-		@Override
-		public Set<String> get()
+		final List<I_C_PaySelectionLine> paySelectionLines = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_PaySelectionLine.class, getCtx(), getTrxName())
+				.addEqualsFilter(org.compiere.model.I_C_PaySelectionLine.COLUMNNAME_C_PaySelection_ID, getC_PaySelection_ID())
+				.addInArrayOrAllFilter(org.compiere.model.I_C_PaySelectionLine.COLUMNNAME_C_PaySelectionLine_ID, paySelectionLineIdsToUpdate)
+				.create()
+				.list();
+
+		final Map<Integer, I_C_PaySelectionLine> invoiceId2paySelectionLine = new HashMap<>(paySelectionLines.size());
+		for (final I_C_PaySelectionLine paySelectionLine : paySelectionLines)
 		{
-			final POInfo invoicePOInfo = POInfo.getPOInfo(I_C_Invoice.Table_Name);
-			final int paymentRuleReferenceId = invoicePOInfo.getColumnReferenceValueId(I_C_Invoice.COLUMNNAME_PaymentRule);
-
-			final Set<String> paymentRules = Services.get(IADReferenceDAO.class).retrieveListValues(paymentRuleReferenceId);
-			if (paymentRules == null || paymentRules.isEmpty())
-			{
-				throw new AdempiereException("No active payment rules were found");
-			}
-
-			return paymentRules;
+			final int invoiceId = paySelectionLine.getC_Invoice_ID();
+			final I_C_PaySelectionLine paySelectionLineOld = invoiceId2paySelectionLine.put(invoiceId, paySelectionLine);
+			Check.assumeNull(paySelectionLineOld, "Only one pay selection line shall exist for an invoice but we found: {}, {}", paySelectionLine, paySelectionLineOld); // shall not happen
 		}
+
+		return invoiceId2paySelectionLine;
 	});
 
 	//
@@ -462,19 +413,19 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		// }
 
 		// Vendor invoice and recurrent payment with direct deposit
-		final String whereVendorRE = " i.IsSOTrx='N' AND i.PaymentRule IN ('" + PAYMENTRULE_DirectDeposit + "','" + PAYMENTRULE_OnCredit + "') ";
+		final String whereVendorRE = " i.IsSOTrx='N' AND i.PaymentRule IN ('" + PaymentRule.DirectDeposit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
 
 		// customer invoice with direct debit
-		final String whereCustomerDD = " i.IsSOTrx='Y' AND dt.DocBaseType!='ARC' AND i.PaymentRule IN ('" + PAYMENTRULE_DirectDebit + "','" + PAYMENTRULE_OnCredit + "') ";
+		final String whereCustomerDD = " i.IsSOTrx='Y' AND dt.DocBaseType!='ARC' AND i.PaymentRule IN ('" + PaymentRule.DirectDebit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
 
 		// Customer credit memo with direct deposit
-		final String whereCustomerRE = " i.IsSOTrx='Y' AND dt.DocBaseType='ARC' AND i.PaymentRule IN ('" + PAYMENTRULE_DirectDeposit + "','" + PAYMENTRULE_OnCredit + "') ";
+		final String whereCustomerRE = " i.IsSOTrx='Y' AND dt.DocBaseType='ARC' AND i.PaymentRule IN ('" + PaymentRule.DirectDeposit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
 
 		final String matchRequirement = getMatchRequirement();
 		if (INV_SAL.equals(matchRequirement))
 		{
 			// salary/commission. Note: this is a subset of 'whereVendorRE'
-			sql += " AND dt.Docbasetype = '" + Constants.DOCBASETYPE_AEInvoice + "' AND i.PaymentRule IN ('" + PAYMENTRULE_DirectDeposit + "','" + PAYMENTRULE_OnCredit + "') ";
+			sql += " AND dt.Docbasetype = '" + Constants.DOCBASETYPE_AEInvoice + "' AND i.PaymentRule IN ('" + PaymentRule.DirectDeposit.getCode() + "','" + PaymentRule.OnCredit.getCode() + "') ";
 		}
 		else if (INV_OUT.equals(matchRequirement))
 		{
@@ -517,14 +468,14 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		final int bpBankAccountId = rs.getInt("C_BP_BankAccount_ID");
 		candidateBuilder.setC_BP_BankAccount_ID(bpBankAccountId);
 
-		String paymentRule = rs.getString("PaymentRule");
+		PaymentRule paymentRule = PaymentRule.ofNullableCode(rs.getString("PaymentRule"));
 		// check active payment rules
-		final Set<String> paymentRules = getInvoicePaymentRules();
-		if (!paymentRules.contains(paymentRule))
+		final Set<PaymentRule> paymentRules = getInvoicePaymentRules();
+		if (paymentRule == null || !paymentRules.contains(paymentRule))
 		{
-			paymentRule = X_C_Invoice.PAYMENTRULE_DirectDeposit;
+			paymentRule = PaymentRule.DirectDeposit;
 		}
-		candidateBuilder.setPaymentRule(paymentRule);
+		candidateBuilder.setPaymentRule(paymentRule.getCode());
 
 		final PaySelectionLineCandidate candidate = candidateBuilder.build();
 		return candidate;
@@ -654,9 +605,28 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		}
 	}
 
-	private Set<String> getInvoicePaymentRules()
+	private ImmutableSet<PaymentRule> getInvoicePaymentRules()
 	{
 		return _paymentRulesSupplier.get();
+	}
+
+	/** Payment Rules (from C_Invoice.PaymentRule's available values list) */
+	private final Supplier<ImmutableSet<PaymentRule>> _paymentRulesSupplier = Suppliers.memoize(this::retrieveInvoicePaymentRules);
+
+	private ImmutableSet<PaymentRule> retrieveInvoicePaymentRules()
+	{
+		final POInfo invoicePOInfo = POInfo.getPOInfo(I_C_Invoice.Table_Name);
+		final int paymentRuleReferenceId = invoicePOInfo.getColumnReferenceValueId(I_C_Invoice.COLUMNNAME_PaymentRule);
+
+		final Set<String> paymentRules = Services.get(IADReferenceDAO.class).retrieveListValues(paymentRuleReferenceId);
+		if (paymentRules == null || paymentRules.isEmpty())
+		{
+			throw new AdempiereException("No active payment rules were found");
+		}
+
+		return paymentRules.stream()
+				.map(PaymentRule::ofCode)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override

@@ -10,8 +10,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.Mutable;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable2;
@@ -28,6 +27,7 @@ import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -53,7 +53,7 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 			return false;
 		}
 
-		final InvoiceDueDateProviderService invoiceDueDateProviderService = Adempiere.getBean(InvoiceDueDateProviderService.class);
+		final InvoiceDueDateProviderService invoiceDueDateProviderService = SpringContextHolder.instance.getBean(InvoiceDueDateProviderService.class);
 
 		final LocalDate dueDate = invoiceDueDateProviderService.provideDueDateFor(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
 		final LocalDate dunningGraceDate = dueDate.plusDays(dunning.getGraceDays());
@@ -63,19 +63,20 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 	}
 
 	@Override
-	public I_C_Dunning getDunningForInvoiceOrNull(final I_C_Invoice invoice)
+	public I_C_Dunning getDunningForInvoiceOrNull(@NonNull final I_C_Invoice invoiceRecord)
 	{
 		final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 
-		I_C_Dunning dunning = dunningDAO.retrieveDunningForBPartner(invoice.getC_BPartner());
+		final I_C_Dunning dunning = dunningDAO.retrieveDunningForBPartner(invoiceRecord.getC_BPartner());
 		if (dunning != null)
 		{
 			return dunning;
 		}
 
-		dunning = dunningDAO.retrieveDunningByOrg(ctx, invoice.getAD_Org_ID());
-		return dunning;
+		final OrgId orgId = OrgId.ofRepoId(invoiceRecord.getAD_Org_ID());
+		Check.assume(orgId.isRegular(), "Param 'invoiceRecord' needs have AD_Org_ID > 0; invoiceRecord={}", invoiceRecord); // outside of unit tests this is always the case
+
+		return dunningDAO.retrieveDunningByOrg(orgId);
 	}
 
 	@Override
@@ -98,7 +99,7 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 		{
 			final I_C_DunningDoc_Line_Source source = sources.next();
 
-			trxManager.run(new TrxRunnable2()
+			trxManager.runInNewTrx(new TrxRunnable2()
 			{
 				@Override
 				public void run(final String localTrxName)
@@ -122,7 +123,7 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 					logger.error(errmsg, e);
 
 					// notify monitor too about this issue
-					Loggables.get().addLog(errmsg);
+					Loggables.addLog(errmsg);
 
 					return true; // rollback
 				}

@@ -15,7 +15,7 @@ public class X_M_Cost extends org.compiere.model.PO implements I_M_Cost, org.com
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -899018241L;
+	private static final long serialVersionUID = -698731871L;
 
     /** Standard Constructor */
     public X_M_Cost (Properties ctx, int M_Cost_ID, String trxName)
@@ -24,6 +24,8 @@ public class X_M_Cost extends org.compiere.model.PO implements I_M_Cost, org.com
       /** if (M_Cost_ID == 0)
         {
 			setC_AcctSchema_ID (0);
+			setC_Currency_ID (0);
+			setC_UOM_ID (0);
 			setCurrentCostPrice (BigDecimal.ZERO);
 			setCurrentCostPriceLL (BigDecimal.ZERO);
 			setCurrentQty (BigDecimal.ZERO);
@@ -83,6 +85,80 @@ public class X_M_Cost extends org.compiere.model.PO implements I_M_Cost, org.com
 	public int getC_AcctSchema_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_AcctSchema_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
+	}
+
+	@Override
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+	}
+
+	/** Set Währung.
+		@param C_Currency_ID 
+		Die Währung für diesen Eintrag
+	  */
+	@Override
+	public void setC_Currency_ID (int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+	}
+
+	/** Get Währung.
+		@return Die Währung für diesen Eintrag
+	  */
+	@Override
+	public int getC_Currency_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
+	}
+
+	@Override
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
+	{
+		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
+	}
+
+	/** Set Maßeinheit.
+		@param C_UOM_ID 
+		Maßeinheit
+	  */
+	@Override
+	public void setC_UOM_ID (int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+	}
+
+	/** Get Maßeinheit.
+		@return Maßeinheit
+	  */
+	@Override
+	public int getC_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

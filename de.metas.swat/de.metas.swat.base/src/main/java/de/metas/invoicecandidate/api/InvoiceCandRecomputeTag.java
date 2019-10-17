@@ -1,11 +1,12 @@
 package de.metas.invoicecandidate.api;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.process.PInstanceId;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -40,41 +41,41 @@ public final class InvoiceCandRecomputeTag
 {
 	public static final InvoiceCandRecomputeTag NULL = new InvoiceCandRecomputeTag(null);
 
-	public static final InvoiceCandRecomputeTag ofPInstanceId(@NonNull final PInstanceId pinstanceId)
+	public static final InvoiceCandRecomputeTag ofPInstanceId(@Nullable final PInstanceId pinstanceId)
 	{
 		return new InvoiceCandRecomputeTag(pinstanceId);
 	}
 
 	/**
 	 * Creates an {@link InvoiceCandRecomputeTag} from a string created with {@link InvoiceCandRecomputeTag#asString()}.
-	 * 
-	 * @param recomputeTagStr
-	 * @return
 	 */
-	public static final InvoiceCandRecomputeTag fromString(final String recomputeTagStr)
+	public static final InvoiceCandRecomputeTag fromString(@Nullable final String recomputeTagStr)
 	{
 		// NOTE: keep in sync with toString()
+		if (recomputeTagStr == null)
+		{
+			return NULL;
+		}
 		try
 		{
 			final PInstanceId pinstanceId = PInstanceId.ofRepoId(Integer.parseInt(recomputeTagStr));
 			return ofPInstanceId(pinstanceId);
 		}
-		catch (NumberFormatException e)
+		catch (final NumberFormatException e)
 		{
-			throw new AdempiereException("Failed parsing the tag for string: " + recomputeTagStr, e);
+			throw new AdempiereException("Failed parsing the tag for recomputeTagStr='" + recomputeTagStr + "'", e);
 		}
 	}
 
-	public static final boolean isNull(final InvoiceCandRecomputeTag recomputeTag)
+	public static final boolean isNull(@Nullable final InvoiceCandRecomputeTag recomputeTag)
 	{
 		return recomputeTag == null || recomputeTag == NULL;
 	}
 
 	/**
-	 * @param recomputeTag
 	 * @return AD_PInstance_ID or null if the tag {@link #isNull(InvoiceCandRecomputeTag)}.
 	 */
-	public static final PInstanceId getPinstanceIdOrNull(final InvoiceCandRecomputeTag recomputeTag)
+	public static final PInstanceId getPinstanceIdOrNull(@Nullable final InvoiceCandRecomputeTag recomputeTag)
 	{
 		if (isNull(recomputeTag))
 		{
@@ -86,7 +87,7 @@ public final class InvoiceCandRecomputeTag
 	@Getter
 	private final PInstanceId pinstanceId;
 
-	private InvoiceCandRecomputeTag(final PInstanceId pinstanceId)
+	private InvoiceCandRecomputeTag(@Nullable final PInstanceId pinstanceId)
 	{
 		this.pinstanceId = pinstanceId;
 	}
@@ -103,6 +104,10 @@ public final class InvoiceCandRecomputeTag
 	 */
 	public final String asString()
 	{
+		if (pinstanceId == null)
+		{
+			return "NULL";
+		}
 		// NOTE: keep in sync with fromString()
 		return String.valueOf(pinstanceId.getRepoId());
 	}

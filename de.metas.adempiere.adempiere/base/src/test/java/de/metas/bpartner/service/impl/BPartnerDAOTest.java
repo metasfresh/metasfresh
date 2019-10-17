@@ -2,11 +2,13 @@ package de.metas.bpartner.service.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Map;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.assertj.core.api.AbstractComparableAssert;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.junit.Before;
@@ -14,6 +16,8 @@ import org.junit.Test;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerType;
+import de.metas.bpartner.service.BPartnerQuery;
+import de.metas.organization.OrgId;
 
 /*
  * #%L
@@ -39,10 +43,14 @@ import de.metas.bpartner.BPartnerType;
 
 public class BPartnerDAOTest
 {
+	private BPartnerDAO bpartnerDAO;
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		bpartnerDAO = new BPartnerDAO();
 	}
 
 	@Test
@@ -61,12 +69,43 @@ public class BPartnerDAOTest
 		save(bPartnerRecord2);
 
 		// invoke the method under test
-		final Map<BPartnerId, Integer> result = new BPartnerDAO()
+		final Map<BPartnerId, Integer> result = bpartnerDAO
 				.retrieveAllDiscountSchemaIdsIndexedByBPartnerId(BPartnerType.VENDOR);
 
 		assertThat(result)
 				.hasSize(2)
 				.containsEntry(BPartnerId.ofRepoId(bPartnerRecord1.getC_BPartner_ID()), 23)
 				.containsEntry(BPartnerId.ofRepoId(bPartnerRecord2.getC_BPartner_ID()), 24);
+	}
+
+	@Test
+	public void retrieveBPartnerIdByName()
+	{
+		final BPartnerId bpartnerId1 = createBPartnerWithName("BPartner 1");
+		final BPartnerId bpartnerId2 = createBPartnerWithName("BPartner 2");
+
+		assertRetrieveBPartnerIdByName("BPartner 1").isEqualTo(bpartnerId1);
+		assertRetrieveBPartnerIdByName("BPartner 2").isEqualTo(bpartnerId2);
+		assertRetrieveBPartnerIdByName("BPartner").isNull();
+	}
+
+	private AbstractComparableAssert<?, BPartnerId> assertRetrieveBPartnerIdByName(final String queryBPName)
+	{
+		final BPartnerId bpartnerId = bpartnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
+				.bpartnerName(queryBPName)
+				.onlyOrgId(OrgId.ANY)
+				.failIfNotExists(false)
+				.build())
+				.orElse(null);
+		return assertThat(bpartnerId);
+	}
+
+	private BPartnerId createBPartnerWithName(final String name)
+	{
+		final I_C_BPartner record = newInstance(I_C_BPartner.class);
+		record.setName(name);
+		saveRecord(record);
+
+		return BPartnerId.ofRepoId(record.getC_BPartner_ID());
 	}
 }

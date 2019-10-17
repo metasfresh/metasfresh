@@ -13,17 +13,16 @@ package de.metas.migration.executor.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -32,31 +31,34 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.migration.IDatabase;
 import de.metas.migration.IScript;
+import de.metas.migration.ScriptType;
 import de.metas.migration.exception.ScriptException;
 import de.metas.migration.executor.IScriptExecutor;
 import de.metas.migration.executor.IScriptExecutorFactory;
+import lombok.NonNull;
+import lombok.Value;
 
 public class DefaultScriptExecutorFactory implements IScriptExecutorFactory
 {
 	private static final transient Logger logger = LoggerFactory.getLogger(DefaultScriptExecutorFactory.class.getName());
 
-	private final Map<String, Class<? extends IScriptExecutor>> scriptExecutorClasses = new HashMap<String, Class<? extends IScriptExecutor>>();
-	private final Set<String> supportedScriptTypes = new HashSet<String>();
-	private final Set<String> supportedScriptTypesRO = Collections.unmodifiableSet(supportedScriptTypes);
+	private final Map<ScriptExecutorKey, Class<? extends IScriptExecutor>> scriptExecutorClasses = new HashMap<>();
+	private final Set<ScriptType> supportedScriptTypes = new HashSet<>();
 
 	private boolean dryRunMode = false;
 
 	public DefaultScriptExecutorFactory()
 	{
-		super();
 		initDefaults();
 	}
 
 	protected void initDefaults()
 	{
-		registerScriptExecutorClass("postgresql", "sql", PostgresqlNativeExecutor.class);
+		registerScriptExecutorClass("postgresql", ScriptType.SQL, PostgresqlNativeExecutor.class);
 	}
 
 	@Override
@@ -67,14 +69,17 @@ public class DefaultScriptExecutorFactory implements IScriptExecutorFactory
 	}
 
 	@Override
-	public void registerScriptExecutorClass(final String dbType, final String scriptType, final Class<? extends IScriptExecutor> executorClass)
+	public void registerScriptExecutorClass(
+			final String dbType,
+			final ScriptType scriptType,
+			@NonNull final Class<? extends IScriptExecutor> executorClass)
 	{
 		if (executorClass == null)
 		{
 			throw new IllegalArgumentException("executorClass is null");
 		}
 
-		final String key = createKey(dbType, scriptType);
+		final ScriptExecutorKey key = ScriptExecutorKey.of(dbType, scriptType);
 
 		final Class<? extends IScriptExecutor> executorClassOld = scriptExecutorClasses.remove(key);
 		if (executorClassOld != null)
@@ -84,34 +89,20 @@ public class DefaultScriptExecutorFactory implements IScriptExecutorFactory
 
 		scriptExecutorClasses.put(key, executorClass);
 
-		if (!TYPE_ANY.equals(scriptType))
+		if (scriptType != null)
 		{
 			supportedScriptTypes.add(scriptType);
 			logger.info("Registered executor " + executorClass + " for dbType=" + dbType + ", scriptType=" + scriptType);
 		}
 	}
 
-	private String createKey(final String dbType, final String scriptType)
-	{
-		if (dbType == null)
-		{
-			throw new IllegalArgumentException("dbType is null");
-		}
-		if (scriptType == null)
-		{
-			throw new IllegalArgumentException("scriptType is null");
-		}
-
-		return dbType + "#" + scriptType;
-	}
-
-	private Class<? extends IScriptExecutor> getScriptExecutorClass(final String dbType, final String scriptType)
+	private Class<? extends IScriptExecutor> getScriptExecutorClass(final String dbType, final ScriptType scriptType)
 	{
 		for (final String currDbType : Arrays.asList(dbType, TYPE_ANY))
 		{
-			for (final String currScriptType : Arrays.asList(scriptType, TYPE_ANY))
+			for (final ScriptType currScriptType : Arrays.asList(scriptType, null))
 			{
-				final String key = createKey(currDbType, currScriptType);
+				final ScriptExecutorKey key = ScriptExecutorKey.of(currDbType, currScriptType);
 				final Class<? extends IScriptExecutor> scriptExecutorClass = scriptExecutorClasses.get(key);
 				if (scriptExecutorClass != null)
 				{
@@ -124,18 +115,29 @@ public class DefaultScriptExecutorFactory implements IScriptExecutorFactory
 	}
 
 	@Override
-	public Set<String> getSupportedScriptTypes()
+	public Set<ScriptType> getSupportedScriptTypes()
 	{
-		return supportedScriptTypesRO;
+		return ImmutableSet.copyOf(supportedScriptTypes);
 	}
 
 	@Override
 	public IScriptExecutor createScriptExecutor(final IDatabase targetDatabase, final IScript script)
 	{
-		final Class<? extends IScriptExecutor> scriptExecutorClass = getScriptExecutorClass(targetDatabase.getDbType(), script.getType());
+		return createScriptExecutor(targetDatabase, script.getType());
+	}
+
+	@Override
+	public IScriptExecutor createScriptExecutor(final IDatabase targetDatabase)
+	{
+		return createScriptExecutor(targetDatabase, ScriptType.SQL);
+	}
+
+	public IScriptExecutor createScriptExecutor(final IDatabase targetDatabase, final ScriptType scriptType)
+	{
+		final Class<? extends IScriptExecutor> scriptExecutorClass = getScriptExecutorClass(targetDatabase.getDbType(), scriptType);
 		if (scriptExecutorClass == null)
 		{
-			throw new ScriptException("No script executors found for " + script)
+			throw new ScriptException("No script executors found for " + scriptType)
 					.addParameter("Database", targetDatabase);
 		}
 
@@ -176,5 +178,12 @@ public class DefaultScriptExecutorFactory implements IScriptExecutorFactory
 	public boolean isDryRunMode()
 	{
 		return dryRunMode;
+	}
+
+	@Value(staticConstructor = "of")
+	private static class ScriptExecutorKey
+	{
+		final String dbType;
+		final ScriptType scriptType;
 	}
 }

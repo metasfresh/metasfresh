@@ -5,6 +5,8 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
+
 import org.compiere.util.CtxName;
 import org.compiere.util.Env;
 
@@ -52,13 +54,19 @@ public abstract class TranslatableParameterizedString
 	 * @param stringTrlPatternstring to be used for any other language; it might contain the <code>adLanguageParamName</code> parameter
 	 * @return
 	 */
-	public static final TranslatableParameterizedString of(final CtxName adLanguageParamName, final String stringBaseLang, final String stringTrlPattern)
+	public static final TranslatableParameterizedString of(
+			@Nullable final CtxName adLanguageParamName,
+			final String stringBaseLang,
+			@Nullable final String stringTrlPattern)
 	{
 		final String adLanguageParamNameStr = adLanguageParamName == null ? null : adLanguageParamName.toStringWithMarkers();
 		return of(adLanguageParamNameStr, stringBaseLang, stringTrlPattern);
 	}
 
-	public static final TranslatableParameterizedString of(final String adLanguageParamNameStr, final String stringBaseLang, final String stringTrlPattern)
+	public static final TranslatableParameterizedString of(
+			@Nullable final String adLanguageParamNameStr,
+			final String stringBaseLang,
+			@Nullable final String stringTrlPattern)
 	{
 		if (adLanguageParamNameStr == null)
 		{
@@ -78,7 +86,10 @@ public abstract class TranslatableParameterizedString
 		return new RegularTranslatableParameterizedString(adLanguageParamNameStr, stringBaseLang, stringTrlPattern);
 	}
 
-	private static final TranslatableParameterizedString constant(final String adLanguageParamName, final String stringBaseLang, final String stringTrl)
+	private static final TranslatableParameterizedString constant(
+			@Nullable final String adLanguageParamName,
+			@Nullable final String stringBaseLang,
+			final String stringTrl)
 	{
 		if (Objects.equals(stringBaseLang, stringTrl))
 		{
@@ -125,7 +136,7 @@ public abstract class TranslatableParameterizedString
 
 	/**
 	 * Transforms this object to a new instance by applying the mapping function to it's internal strings.
-	 * 
+	 *
 	 * @param mappingFunction a function which converts the old string to a new string
 	 * @return a new instance or the same one in case the transformation didn't change the strings
 	 */
@@ -261,7 +272,6 @@ public abstract class TranslatableParameterizedString
 
 		private ConstantTranslatableParameterizedString(final String adLanguageParamName, final String stringBaseLang, final String stringTrl)
 		{
-			super();
 			this.adLanguageParamName = adLanguageParamName;
 			this.stringBaseLang = stringBaseLang;
 			this.stringTrl = stringTrl;

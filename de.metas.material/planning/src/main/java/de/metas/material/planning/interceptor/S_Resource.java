@@ -2,12 +2,12 @@ package de.metas.material.planning.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.ModelValidator;
 
-import de.metas.material.planning.IResourceProductService;
+import de.metas.material.planning.IResourceDAO;
+import de.metas.product.IProductDAO;
+import de.metas.product.ResourceId;
 import de.metas.util.Services;
 
 /*
@@ -49,50 +49,20 @@ public class S_Resource
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void createResourceProduct(final I_S_Resource resource)
 	{
-		createOrUpdateProduct(resource);
+		Services.get(IResourceDAO.class).onResourceChanged(resource);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE)
 	public void updateResourceProduct(final I_S_Resource resource)
 	{
-		createOrUpdateProduct(resource);
+		Services.get(IResourceDAO.class).onResourceChanged(resource);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteResourceProduct(final I_S_Resource resource)
 	{
-		final I_M_Product product = retrieveProductOrNull(resource);
-		if (product != null)
-		{
-			InterfaceWrapperHelper.delete(product);
-		}
+		final ResourceId resourceId = ResourceId.ofRepoId(resource.getS_Resource_ID());
+		Services.get(IProductDAO.class).deleteProductByResourceId(resourceId);
 	}
 
-	private void createOrUpdateProduct(final I_S_Resource resource)
-	{
-		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
-
-		final I_M_Product exitingProduct = retrieveProductOrNull(resource);
-		final I_M_Product productToUpdate;
-		if (exitingProduct == null)
-		{
-			productToUpdate = InterfaceWrapperHelper.newInstance(I_M_Product.class, resource);
-			resourceProductService.setResourceTypeToProduct(resource.getS_ResourceType(), productToUpdate);
-		}
-		else
-		{
-			productToUpdate = exitingProduct;
-		}
-
-		resourceProductService.setResourceToProduct(resource, productToUpdate);
-
-		InterfaceWrapperHelper.save(productToUpdate);
-	}
-
-	private I_M_Product retrieveProductOrNull(final I_S_Resource resource)
-	{
-		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
-		final I_M_Product product = resourceProductService.retrieveProductForResource(resource);
-		return product;
-	}
 }

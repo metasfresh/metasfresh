@@ -39,15 +39,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.IAttributesBL;
@@ -65,10 +68,10 @@ import org.compiere.apps.AWindow;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.search.PAttributeInstance;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Lot;
 import org.compiere.model.I_M_LotCtl;
 import org.compiere.model.I_M_SerNoCtl;
@@ -94,6 +97,8 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.form.IClientUI;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
@@ -102,9 +107,11 @@ import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import lombok.Value;
 
 /**
  * Product Attribute Set Product/Instance Dialog Editor.
@@ -133,8 +140,8 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	private final int m_WindowNo;
 	private final IVPAttributeContext attributeContext;
 	private final MAttributeSet _attributeSet;
-	private final MAttributeSetInstance _asiTemplate;
-	private final List<MAttribute> _availableAttributes;
+	private final I_M_AttributeSetInstance _asiTemplate;
+	private final List<I_M_Attribute> _availableAttributes;
 	private final boolean _allowSelectExistingASI;
 
 	private I_M_AttributeSetInstance asiEdited = null;
@@ -147,7 +154,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	/** List of Editors */
 	private Map<Integer, CEditor> attributeId2editor = new HashMap<>();
 	/** Editing attributes */
-	private List<MAttribute> editorAttributes = new ArrayList<>();
+	private List<I_M_Attribute> editorAttributes = new ArrayList<>();
 	/** Length of Instance value (40) */
 	private static final int INSTANCE_VALUE_LENGTH = 40;
 
@@ -247,19 +254,21 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		return asiTemplate == null || asiTemplate.getM_AttributeSetInstance_ID() <= 0;
 	}
 
-	private MAttributeSetInstance getASITemplate()
+	private I_M_AttributeSetInstance getASITemplate()
 	{
 		return _asiTemplate;
 	}
 
-	private MAttributeInstance getAITemplate(final MAttribute attribute)
+	private MAttributeInstance getAITemplate(final I_M_Attribute attribute)
 	{
-		final MAttributeSetInstance asiTemplate = getASITemplate();
+		final I_M_AttributeSetInstance asiTemplate = getASITemplate();
 		if (asiTemplate == null)
 		{
 			return null;
 		}
-		return attribute.getMAttributeInstance(asiTemplate.getM_AttributeSetInstance_ID());
+
+		final MAttribute attributePO = LegacyAdapters.convertToPO(attribute);
+		return attributePO.getMAttributeInstance(asiTemplate.getM_AttributeSetInstance_ID());
 	}
 
 	private ProductId getProductId()
@@ -299,7 +308,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 
 		//
 		// Create attributes UI editors
-		for (final MAttribute attribute : getAvailableAttributes())
+		for (final I_M_Attribute attribute : getAvailableAttributes())
 		{
 			addAttributeLine(attribute);
 		}
@@ -346,8 +355,8 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 			// New Lot Button
 			if (attributeSet.getM_LotCtl_ID() > 0)
 			{
-				if (Env.getUserRolePermissions().isTableAccess(I_M_Lot.Table_ID, false)
-						&& Env.getUserRolePermissions().isTableAccess(I_M_LotCtl.Table_ID, false)
+				if (Env.getUserRolePermissions().isTableAccess(I_M_Lot.Table_ID, Access.WRITE)
+						&& Env.getUserRolePermissions().isTableAccess(I_M_LotCtl.Table_ID, Access.WRITE)
 						&& !attributeSet.isExcludeLot(getCallerColumnId(), attributeContext.isSOTrx()))
 				{
 					centerPanel.add(bLot, null);
@@ -361,7 +370,9 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 				public void mouseClicked(MouseEvent e)
 				{
 					if (SwingUtilities.isRightMouseButton(e))
+					{
 						popupMenu.show((Component)e.getSource(), e.getX(), e.getY());
+					}
 				}
 			});
 			mZoom = new CMenuItem(msgBL.getMsg(ctx, "Zoom"), Images.getImageIcon2("Zoom16"));
@@ -383,7 +394,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 			// New SerNo Button
 			if (attributeSet.getM_SerNoCtl_ID() > 0)
 			{
-				if (Env.getUserRolePermissions().isTableAccess(I_M_SerNoCtl.Table_ID, false)
+				if (Env.getUserRolePermissions().isTableAccess(I_M_SerNoCtl.Table_ID, Access.WRITE)
 						&& !attributeSet.isExcludeSerNo(getCallerColumnId(), attributeContext.isSOTrx()))
 				{
 					centerPanel.add(bSerNo, null);
@@ -456,7 +467,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		}
 	}	// initAttribute
 
-	private List<MAttribute> getAvailableAttributes()
+	private List<I_M_Attribute> getAvailableAttributes()
 	{
 		return _availableAttributes;
 	}
@@ -468,7 +479,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	 * @param product product level attribute
 	 * @param readOnly value is read only
 	 */
-	private void addAttributeLine(final MAttribute attribute)
+	private void addAttributeLine(final I_M_Attribute attribute)
 	{
 		final boolean readOnly = false;
 
@@ -487,14 +498,16 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 			InterfaceWrapperHelper.setDynAttribute(attribute, Env.DYNATTR_WindowNo, attributeContext.getWindowNo());
 			InterfaceWrapperHelper.setDynAttribute(attribute, Env.DYNATTR_TabNo, attributeContext.getTabNo()); // tabNo
 
-			final I_M_AttributeValue[] values = attribute.getMAttributeValues(getSOTrx());	// optional = null
-			final CComboBox<I_M_AttributeValue> editor = new CComboBox<>(values);
+			final MAttribute attributePO = LegacyAdapters.convertToPO(attribute);
+			final List<UIAttributeListValue> values = UIAttributeListValue.toList(attributePO.getMAttributeValues(getSOTrx()));	// optional = null
+			final CComboBox<UIAttributeListValue> editor = new CComboBox<>(values);
 			boolean found = false;
 			if (instance != null && instance.getM_AttributeValue_ID() > 0)
 			{
-				for (int i = 0; i < values.length; i++)
+				for (int i = 0; i < values.size(); i++)
 				{
-					if (values[i] != null && values[i].getM_AttributeValue_ID() == instance.getM_AttributeValue_ID())
+					final UIAttributeListValue value = values.get(i);
+					if (value != null && value.getRepoId() == instance.getM_AttributeValue_ID())
 					{
 						editor.setSelectedIndex(i);
 						found = true;
@@ -502,20 +515,28 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 					}
 				}
 				if (found)
-					log.debug("Attribute=" + attribute.getName() + " #" + values.length + " - found: " + instance);
+				{
+					log.debug("Attribute=" + attribute.getName() + " #" + values.size() + " - found: " + instance);
+				}
 				else
-					log.warn("Attribute=" + attribute.getName() + " #" + values.length + " - NOT found: " + instance);
+				{
+					log.warn("Attribute=" + attribute.getName() + " #" + values.size() + " - NOT found: " + instance);
+				}
 			}	// setComboBox
 			else
 			{
-				log.debug("Attribute=" + attribute.getName() + " #" + values.length + " no instance");
+				log.debug("Attribute=" + attribute.getName() + " #" + values.size() + " no instance");
 			}
 			label.setLabelFor(editor);
 			centerPanel.add(editor, null);
 			if (readOnly)
+			{
 				editor.setEnabled(false);
+			}
 			else
+			{
 				attributeId2editor.put(attributeId, editor);
+			}
 		}
 		else if (MAttribute.ATTRIBUTEVALUETYPE_Number.equals(attribute.getAttributeValueType()))
 		{
@@ -546,9 +567,13 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 			label.setLabelFor(editor);
 			centerPanel.add(editor, null);
 			if (readOnly)
+			{
 				editor.setEnabled(false);
+			}
 			else
+			{
 				attributeId2editor.put(attributeId, editor);
+			}
 		}
 		else if (MAttribute.ATTRIBUTEVALUETYPE_Date.equals(attribute.getAttributeValueType()))
 		{
@@ -561,13 +586,19 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 					attribute.getName() // title
 			);
 			if (instance != null)
+			{
 				editor.setValue(instance.getValueDate());
+			}
 			label.setLabelFor(editor);
 			centerPanel.add(editor, null);
 			if (readOnly)
+			{
 				editor.setEnabled(false);
+			}
 			else
+			{
 				attributeId2editor.put(attributeId, editor);
+			}
 		}
 		else
 		// Text Field
@@ -583,13 +614,19 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 					null // ObscureType
 			);
 			if (instance != null)
+			{
 				editor.setText(instance.getValue());
+			}
 			label.setLabelFor(editor);
 			centerPanel.add(editor, null);
 			if (readOnly)
+			{
 				editor.setEnabled(false);
+			}
 			else
+			{
 				attributeId2editor.put(attributeId, editor);
+			}
 		}
 
 		//
@@ -833,14 +870,16 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		int M_Lot_ID = 0;
 		KeyNamePair pp = fieldLot.getSelectedItem();
 		if (pp != null)
+		{
 			M_Lot_ID = pp.getKey();
+		}
 		MQuery zoomQuery = new MQuery("M_Lot");
 		zoomQuery.addRestriction("M_Lot_ID", Operator.EQUAL, M_Lot_ID);
 		log.info(zoomQuery.toString());
 		//
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		//
-		int AD_Window_ID = 257;		// Lot
+		AdWindowId AD_Window_ID = AdWindowId.ofRepoId(257);		// Lot
 		AWindow frame = new AWindow();
 		if (frame.initWindow(AD_Window_ID, zoomQuery))
 		{
@@ -866,7 +905,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 	private I_M_AttributeSetInstance saveSelection()
 	{
 		final IMutable<I_M_AttributeSetInstance> asiRef = new Mutable<>();
-		trxManager.run(new TrxRunnableAdapter()
+		trxManager.runInNewTrx(new TrxRunnableAdapter()
 		{
 			@Override
 			public void run(String localTrxName) throws Exception
@@ -884,7 +923,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		log.info("");
 
 		final MAttributeSet attributeSet = getM_AttributeSet();
-		final MAttributeSetInstance asiTemplate2 = getASITemplate();
+		final I_M_AttributeSetInstance asiTemplate2 = getASITemplate();
 
 		// Create a new ASI which is copying the existing one
 
@@ -974,20 +1013,21 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 
 		//
 		// Save Instance Attributes
-		for (final MAttribute attribute : editorAttributes)
+		for (final I_M_Attribute attribute : editorAttributes)
 		{
+			final MAttribute attributePO = LegacyAdapters.convertToPO(attribute);
 			final CEditor editor = attributeId2editor.get(attribute.getM_Attribute_ID());
 
 			if (MAttribute.ATTRIBUTEVALUETYPE_List.equals(attribute.getAttributeValueType()))
 			{
 				@SuppressWarnings("unchecked")
-				final CComboBox<I_M_AttributeValue> editorCombo = (CComboBox<I_M_AttributeValue>)editor;
-				final I_M_AttributeValue attributeValue = editorCombo.getSelectedItem();
-				if (attribute.isMandatory() && attributeValue == null)
+				final CComboBox<UIAttributeListValue> editorCombo = (CComboBox<UIAttributeListValue>)editor;
+				final UIAttributeListValue uiAttributeValue = editorCombo.getSelectedItem();
+				if (attribute.isMandatory() && uiAttributeValue == null)
 				{
 					mandatory.add(attribute.getName());
 				}
-				attribute.setMAttributeInstance(attributeSetInstanceId, attributeValue);
+				attributePO.setMAttributeInstance(attributeSetInstanceId, uiAttributeValue.getAttributeListValue());
 			}
 			else if (MAttribute.ATTRIBUTEVALUETYPE_Number.equals(attribute.getAttributeValueType()))
 			{
@@ -997,7 +1037,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 				{
 					mandatory.add(attribute.getName());
 				}
-				attribute.setMAttributeInstance(attributeSetInstanceId, value);
+				attributePO.setMAttributeInstance(attributeSetInstanceId, value);
 			}
 			else if (MAttribute.ATTRIBUTEVALUETYPE_Date.equals(attribute.getAttributeValueType()))
 			{
@@ -1007,7 +1047,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 				{
 					mandatory.add(attribute.getName());
 				}
-				attribute.setMAttributeInstance(attributeSetInstanceId, value);
+				attributePO.setMAttributeInstance(attributeSetInstanceId, value);
 			}
 			else
 			{
@@ -1017,7 +1057,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 				{
 					mandatory.add(attribute.getName());
 				}
-				attribute.setMAttributeInstance(attributeSetInstanceId, value);
+				attributePO.setMAttributeInstance(attributeSetInstanceId, value);
 			}
 			changed = true;
 		}	// for all attributes
@@ -1081,4 +1121,33 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		return asiEdited != null;
 	}
 
+	@Value
+	private static class UIAttributeListValue
+	{
+		public static List<UIAttributeListValue> toList(final AttributeListValue[] array)
+		{
+			return Stream.of(array).map(UIAttributeListValue::new).collect(ImmutableList.toImmutableList());
+		}
+
+		AttributeListValue attributeListValue;
+		String displayName;
+
+		private UIAttributeListValue(final AttributeListValue attributeListValue)
+		{
+			this.attributeListValue = attributeListValue;
+			displayName = attributeListValue != null ? attributeListValue.getName() : "";
+		}
+
+		@Override
+		public String toString()
+		{
+			return displayName;
+		}
+		
+		public int getRepoId()
+		{
+			return getAttributeListValue().getId().getRepoId();
+		}
+
+	}
 } // VPAttributeDialog

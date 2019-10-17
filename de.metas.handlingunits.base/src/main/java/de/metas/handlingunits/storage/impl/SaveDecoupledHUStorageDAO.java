@@ -30,7 +30,6 @@ import java.util.Map;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
 import org.compiere.util.Util;
 
 import de.metas.handlingunits.model.I_M_HU;
@@ -258,12 +257,6 @@ public class SaveDecoupledHUStorageDAO extends AbstractHUStorageDAO
 	public void save(final I_M_HU_Item item)
 	{
 		// nothing
-	}
-
-	@Override
-	public I_C_UOM getC_UOM(final I_M_HU_Storage storage)
-	{
-		return db.getC_UOM(storage);
 	}
 
 	@Override

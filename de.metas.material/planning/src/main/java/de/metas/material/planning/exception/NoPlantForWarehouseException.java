@@ -13,66 +13,40 @@
  *****************************************************************************/
 package de.metas.material.planning.exception;
 
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.Env;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 /**
  * Thrown when no Plant was found for given Warehouse
  *
  * @author Teo Sarca
  */
+@SuppressWarnings("serial")
 public class NoPlantForWarehouseException extends MrpException
 {
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1573931274773612201L;
-
-	public NoPlantForWarehouseException(final int adOrgId, final int warehouseId, final int productId)
+	public NoPlantForWarehouseException(final OrgId adOrgId, final WarehouseId warehouseId, final ProductId productId)
 	{
 		super(buildMsg(adOrgId, warehouseId, productId));
 	}
 
-	private static String buildMsg(final int adOrgId, final int warehouseId, final int productId)
+	private static String buildMsg(final OrgId adOrgId, final WarehouseId warehouseId, final ProductId productId)
 	{
-		// TODO: vpj-cd create the msg for error
 		final StringBuilder sb = new StringBuilder("@NoPlantForWarehouseException@");
 
-		if (warehouseId > 0)
+		if (warehouseId != null)
 		{
-			final I_M_Warehouse warehouse = InterfaceWrapperHelper.create(Env.getCtx(), warehouseId, I_M_Warehouse.class, ITrx.TRXNAME_None);
-			final String warehouseName = warehouse == null ? String.valueOf(warehouseId) : warehouse.getName();
+			final String warehouseName = Services.get(IWarehouseDAO.class).getWarehouseName(warehouseId);
 			sb.append("\n @M_Warehouse_ID@ : " + warehouseName);
 		}
-		if (adOrgId > 0)
+		if (adOrgId != null)
 		{
 			sb.append("\n @AD_Org_ID@: " + adOrgId);
 		}
-		if (productId > 0)
+		if (productId != null)
 		{
 			sb.append("\n @M_Product_ID@: " + productId);
 		}

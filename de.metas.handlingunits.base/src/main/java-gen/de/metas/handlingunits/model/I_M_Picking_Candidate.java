@@ -32,8 +32,6 @@ public interface I_M_Picking_Candidate
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, org.compiere.model.I_AD_Client>(I_M_Picking_Candidate.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -59,17 +57,13 @@ public interface I_M_Picking_Candidate
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, org.compiere.model.I_AD_Org>(I_M_Picking_Candidate.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Approval Status.
+	 * Set Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -78,7 +72,7 @@ public interface I_M_Picking_Candidate
 	public void setApprovalStatus (java.lang.String ApprovalStatus);
 
 	/**
-	 * Get Approval Status.
+	 * Get Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -110,10 +104,6 @@ public interface I_M_Picking_Candidate
 	 * <br>Virtual Column: false
 	 */
 	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
 
     /** Column definition for C_UOM_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, org.compiere.model.I_C_UOM>(I_M_Picking_Candidate.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
@@ -176,7 +166,7 @@ public interface I_M_Picking_Candidate
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Handling Units.
+	 * Set Handling Unit.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -185,7 +175,7 @@ public interface I_M_Picking_Candidate
 	public void setM_HU_ID (int M_HU_ID);
 
 	/**
-	 * Get Handling Units.
+	 * Get Handling Unit.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -326,7 +316,7 @@ public interface I_M_Picking_Candidate
     public static final String COLUMNNAME_PickFrom_HU_ID = "PickFrom_HU_ID";
 
 	/**
-	 * Set Pick Status.
+	 * Set Komm. Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -335,7 +325,7 @@ public interface I_M_Picking_Candidate
 	public void setPickStatus (java.lang.String PickStatus);
 
 	/**
-	 * Get Pick Status.
+	 * Get Komm. Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true

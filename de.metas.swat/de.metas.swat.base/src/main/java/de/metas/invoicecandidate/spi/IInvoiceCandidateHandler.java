@@ -33,14 +33,19 @@ import org.adempiere.model.InterfaceWrapperHelper;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-
 import lombok.NonNull;
 
 /**
@@ -122,6 +127,8 @@ public interface IInvoiceCandidateHandler
 	 * @param limit advises how many models shall be retrieved. Note that this is an advise which could be respected or not by current implementations.
 	 */
 	Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(int limit);
+
+	boolean isMissingInvoiceCandidate(Object model);
 
 	/**
 	 * Called by API to expand an initial invoice candidate generate request.
@@ -211,6 +218,8 @@ public interface IInvoiceCandidateHandler
 	 * <li>C_Order_ID
 	 * <li>DateOrderd
 	 * <li>QtyOrdered
+	 * <li>QtyEntered
+	 * <li>C_UOM_ID
 	 * </ul>
 	 * of the given invoice candidate.
 	 * <p>
@@ -253,17 +262,14 @@ public interface IInvoiceCandidateHandler
 	 */
 	void setBPartnerData(I_C_Invoice_Candidate ic);
 
-	default void setInvoiceSchedule(@NonNull final I_C_Invoice_Candidate ic)
+	default void setInvoiceScheduleAndDateToInvoice(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		ic.setC_InvoiceSchedule_ID(ic.getBill_BPartner().getC_InvoiceSchedule_ID());
-	}
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
-	/**
-	 * Method sets inherited C_UOM_ID opon IC creation
-	 *
-	 * @param ic
-	 */
-	void setC_UOM_ID(I_C_Invoice_Candidate ic);
+		ic.setC_InvoiceSchedule_ID(bpartnerDAO.getById(ic.getBill_BPartner_ID()).getC_InvoiceSchedule_ID());
+
+		Services.get(IInvoiceCandBL.class).set_DateToInvoice_DefaultImpl(ic);
+	}
 
 	/**
 	 * Price and tax info calculation result.
@@ -282,13 +288,16 @@ public interface IInvoiceCandidateHandler
 
 		BigDecimal priceEntered;
 		BigDecimal priceActual;
-		int priceUOMId;
+		UomId priceUOMId;
 
 		Percent discount;
 
-		int taxCategoryId;
+		TaxCategoryId taxCategoryId;
 		Boolean taxIncluded;
 
 		BigDecimal compensationGroupBaseAmt;
+
+		InvoicableQtyBasedOn invoicableQtyBasedOn;
 	}
+
 }

@@ -4,8 +4,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IGLJournalDAO;
-
+import de.metas.acct.gljournal.IGLJournalDAO;
 import de.metas.acct.spi.IDocumentRepostingSupplier;
 import de.metas.util.Services;
 

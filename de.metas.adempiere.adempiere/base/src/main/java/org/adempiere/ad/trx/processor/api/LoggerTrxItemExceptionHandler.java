@@ -70,6 +70,13 @@ public class LoggerTrxItemExceptionHandler implements ITrxItemExceptionHandler
 	}
 
 	@Override
+	public void afterCompleteChunkError(final Throwable e)
+	{
+		// nothing to do.
+		// error was already logged by onCompleteChunkError
+	}
+
+	@Override
 	public void onCancelChunkError(final Throwable e)
 	{
 		logger.warn("Error while cancelling current chunk. Ignored.", e);

@@ -25,29 +25,39 @@ package de.metas.invoicecandidate.spi.impl.aggregator.standard;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_InventoryLine;
 
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
-import de.metas.invoicecandidate.api.impl.InvoiceCandidateInOutLineToUpdate;
+import de.metas.invoicecandidate.api.InvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.exceptions.InvalidQtyForPartialAmtToInvoiceException;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.money.MoneyService;
+import de.metas.product.ProductPrice;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Aggregates {@link InvoiceCandidateWithInOutLine}s and creates one {@link IInvoiceCandAggregate}.
@@ -55,26 +65,30 @@ import de.metas.util.Services;
  * @author tsa
  *
  */
+@ToString
 /* package */class InvoiceCandidateWithInOutLineAggregator
 {
 	// Services
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
 
+	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final transient MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
+
 	// Parameters
 	@ToStringBuilder(skip = true)
-	private IdentityHashMap<I_C_Invoice_Candidate, BigDecimal> _ic2QtyInvoiceable;
+	private HashMap<InvoiceCandidateId, StockQtyAndUOMQty> _ic2QtyInvoiceable;
 
 	// State variables
 	private boolean _initialized = false;
 	private I_C_Invoice_Candidate _firstCand;
 	private int _productId = -1;
 	private int _chargeId = -1;
-	private BigDecimal _priceActual = null;
-	private BigDecimal _priceEntered = null;
-	private BigDecimal _discount = null;
-	private BigDecimal _qtyToInvoice = BigDecimal.ZERO;
-	private BigDecimal _netLineAmt = BigDecimal.ZERO;
+	private ProductPrice _priceActual = null;
+	private ProductPrice _priceEntered = null;
+	private Percent _discount = null;
+	private StockQtyAndUOMQty _qtysToInvoice = null;
+	private Money _netLineAmt = null;
 	private int _orderLineId = -1; // -1 means "didn't yet try to set", -2 means "cannot set"
 	private boolean _printed = false;
 	private int _invoiceLineNo = 0;
@@ -84,22 +98,10 @@ import de.metas.util.Services;
 	private boolean _hasAtLeastOneValidICS = false;
 	private final Collection<Integer> _iciolIds = new HashSet<>();
 	private final List<InvoiceCandidateWithInOutLine> _invoiceCandidateWithInOutLines = new ArrayList<>();
-	private final List<IInvoiceCandidateInOutLineToUpdate> _iciolsToUpdate = new ArrayList<>();
+	private final List<InvoiceCandidateInOutLineToUpdate> _iciolsToUpdate = new ArrayList<>();
 
-	public InvoiceCandidateWithInOutLineAggregator()
+	public void setInvoiceableQtys(@NonNull final HashMap<InvoiceCandidateId, StockQtyAndUOMQty> ic2QtyInvoiceable)
 	{
-		super();
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
-	}
-
-	public void setInvoiceableQtys(final IdentityHashMap<I_C_Invoice_Candidate, BigDecimal> ic2QtyInvoiceable)
-	{
-		Check.assumeNotNull(ic2QtyInvoiceable, "ic2QtyInvoiceable not null");
 		this._ic2QtyInvoiceable = ic2QtyInvoiceable;
 	}
 
@@ -144,7 +146,7 @@ import de.metas.util.Services;
 		invoiceLine.setPriceActual(getPriceActual());
 		invoiceLine.setPriceEntered(getPriceEntered());
 		invoiceLine.setDiscount(getDiscount());
-		invoiceLine.setQtyToInvoice(getQtyToInvoice());
+		invoiceLine.setQtysToInvoice(getQtysToInvoice());
 		invoiceLine.setNetLineAmt(getLineNetAmt());
 		invoiceLine.setDescription(getDescription());
 
@@ -162,29 +164,42 @@ import de.metas.util.Services;
 		return invoiceLine;
 	}
 
-	public void addInvoiceCandidateWithInOutLines(final List<InvoiceCandidateWithInOutLine> icsCollection)
+	public void addInvoiceCandidateWithInOutLines(@NonNull final List<InvoiceCandidateWithInOutLine> icsCollection)
 	{
-		icsCollection.forEach(ics -> addInvoiceCandidateWithInOutLine(ics));
+		for (final InvoiceCandidateWithInOutLine ics : icsCollection)
+		{
+			addInvoiceCandidateWithInOutLine(ics);
+		}
 	}
 
-	private void addInvoiceCandidateWithInOutLine(final InvoiceCandidateWithInOutLine ics)
+	private void addInvoiceCandidateWithInOutLine(@NonNull final InvoiceCandidateWithInOutLine ics)
 	{
-		Check.assumeNotNull(ics, "ics not null");
 		initializeIfNeeded(ics);
 
 		final boolean shipped = ics.isShipped();
-		final BigDecimal qtyAlreadyShippedPerCurrentICS = ics.getQtyAlreadyShipped();
-		final BigDecimal qtyAlreadyInvoicedPerCurrentICS = ics.getQtyAlreadyInvoiced();
+		final StockQtyAndUOMQty qtyAlreadyShippedPerCurrentICS = ics.getQtysAlreadyShipped();
+		final StockQtyAndUOMQty qtyAlreadyInvoicedPerCurrentICS = ics.getQtysAlreadyInvoiced();
 
 		// task 08606: if we need to allocate the full remaining qty we can't take care to stay within the limits of the current iol's shipped quantity
 		final boolean stayWithinShippedQty = !ics.isAllocateRemainingQty();
 
+		// Get quantity left to be invoiced
+		final StockQtyAndUOMQty qtyLeftToInvoice = getQtyInvoiceable(ics.getInvoicecandidateId());
+
 		//
-		// we introduce a multiplier that can be 1 or -1. We will apply the factor in comparisons. If we deal with negative shipped quantities (RMA), then this way we still use the same
-		// comparisons
-		// we do for positive quantities
+		// we introduce a multiplier that can be 1 or -1. We will apply the factor in comparisons.
+		// If we deal with negative shipped quantities (RMA), then this way we still use the same comparisons as we do for positive quantities
+		final boolean positiveQty;
+		if (shipped)
+		{
+			positiveQty = qtyAlreadyShippedPerCurrentICS.signum() >= 0; // NOTE: we also consider ZERO as positive
+		}
+		else
+		{
+			positiveQty = qtyLeftToInvoice.signum() >= 0;
+		}
+
 		final BigDecimal factor;
-		final boolean positiveQty = qtyAlreadyShippedPerCurrentICS.signum() >= 0; // NOTE: we also consider ZERO as positive
 		if (positiveQty)
 		{
 			factor = BigDecimal.ONE;
@@ -193,24 +208,6 @@ import de.metas.util.Services;
 		{
 			factor = BigDecimal.ONE.negate();
 		}
-
-		final I_C_Invoice_Candidate cand = ics.getC_Invoice_Candidate();
-
-		//
-		// old comment from task 06630: We do not wish to create a line for candidates which don't have the QtyToInvoice set; skip them silently (they should be handled elsewhere)
-		// task 07372: yes we do; if there is 0 Qty of scrap, we want to document that on the invoice.
-		// also note that lines with QtyOrdered == QtyInvoices == 0 are not set to processed anymore, unless they have an invoice
-		//@formatter:off
-		// keeping this commented-out code for now because there might be a forgotten but valid reason behind it
-		//				if (candQtyToInvoiceInitial.signum() == 0)
-		//				{
-		//					continue;
-		//				}
-		//@formatter:on
-
-		//
-		// Get quantity left to be invoiced
-		final BigDecimal qtyLeftToInvoice = getQtyInvoiceable(cand);
 
 		// #1604
 		// if we deal with a material disposal, this qtyLeftToInvoice is acceptable
@@ -224,11 +221,16 @@ import de.metas.util.Services;
 
 		//
 		// Calculate how much we can MAXIMUM invoice for current invoice candidate line
-		final BigDecimal maxQtyToInvoicePerLine;
+		final StockQtyAndUOMQty maxQtyToInvoicePerLine;
 		// If qty was shipped (i.e. EXISTS IC-IOL)
 		if (shipped && stayWithinShippedQty)
 		{
-			final boolean alreadyInvoicedFullShippedQty = qtyAlreadyShippedPerCurrentICS.multiply(factor).compareTo(qtyAlreadyInvoicedPerCurrentICS.multiply(factor)) <= 0;
+			final boolean alreadyInvoicedFullShippedQty = qtyAlreadyShippedPerCurrentICS
+					.getUOMQtyNotNull()
+					.multiply(factor)
+					.compareTo(qtyAlreadyInvoicedPerCurrentICS
+							.getUOMQtyNotNull()
+							.multiply(factor)) <= 0;
 			if (alreadyInvoicedFullShippedQty)
 			{
 				// If we already invoiced the full shipped qty, then skip this ICS
@@ -237,16 +239,16 @@ import de.metas.util.Services;
 			else
 			{
 				// For partially invoiced shipment/receipt line
-				final BigDecimal qtyShippedButNotInvoiced = qtyAlreadyShippedPerCurrentICS.subtract(qtyAlreadyInvoicedPerCurrentICS);
+				final StockQtyAndUOMQty qtyShippedButNotInvoiced = qtyAlreadyShippedPerCurrentICS.subtract(qtyAlreadyInvoicedPerCurrentICS);
 				if (positiveQty)
 				{
 					// e.g. qtyShippedButNotInvoiced = 50 and qtyLeft = 40 => maxQtyToInvoicePerLine = 40
-					maxQtyToInvoicePerLine = qtyShippedButNotInvoiced.min(qtyLeftToInvoice);
+					maxQtyToInvoicePerLine = StockQtyAndUOMQtys.minUomQty(qtyShippedButNotInvoiced, qtyLeftToInvoice);
 				}
 				else
 				{
 					// e.g. qtyShippedButNotInvoiced = -50 and qtyLeft = -40 => maxQtyToInvoicePerLine = -40
-					maxQtyToInvoicePerLine = qtyShippedButNotInvoiced.max(qtyLeftToInvoice);
+					maxQtyToInvoicePerLine = StockQtyAndUOMQtys.maxUomQty(qtyShippedButNotInvoiced, qtyLeftToInvoice);
 				}
 			}
 		}
@@ -259,18 +261,18 @@ import de.metas.util.Services;
 		//
 		// Calculate how much we can invoice for current invoice candidate line,
 		// without checking the upper limit (see maxQtyToInvoicePerLine).
-		final BigDecimal candQtyToInvoiceUnchecked;
+		final StockQtyAndUOMQty candQtyToInvoiceUnchecked;
 		if (shipped && stayWithinShippedQty)
 		{
 			//
 			// We don't want to invoice more than shipped
 			if (positiveQty)
 			{
-				candQtyToInvoiceUnchecked = qtyLeftToInvoice.min(qtyAlreadyShippedPerCurrentICS);
+				candQtyToInvoiceUnchecked = StockQtyAndUOMQtys.minUomQty(qtyLeftToInvoice, qtyAlreadyShippedPerCurrentICS);
 			}
 			else
 			{
-				candQtyToInvoiceUnchecked = qtyLeftToInvoice.max(qtyAlreadyShippedPerCurrentICS);
+				candQtyToInvoiceUnchecked = StockQtyAndUOMQtys.maxUomQty(qtyLeftToInvoice, qtyAlreadyShippedPerCurrentICS);
 			}
 		}
 		else
@@ -283,8 +285,8 @@ import de.metas.util.Services;
 		//
 		// Calculate how much we can invoice for this invoice candidate (final result)
 		// i.e. if the "candQtyToInvoiceUnchecked" does not fit within the calculated limits, use max value
-		final BigDecimal candQtyToInvoiceFinal;
-		final boolean doesNofitWithinLimits = maxQtyToInvoicePerLine.compareTo(candQtyToInvoiceUnchecked) < 0;
+		final StockQtyAndUOMQty candQtyToInvoiceFinal;
+		final boolean doesNofitWithinLimits = maxQtyToInvoicePerLine.getUOMQtyNotNull().compareTo(candQtyToInvoiceUnchecked.getUOMQtyNotNull()) < 0;
 		if (doesNofitWithinLimits && stayWithinShippedQty)
 		{
 			candQtyToInvoiceFinal = maxQtyToInvoicePerLine;
@@ -310,28 +312,39 @@ import de.metas.util.Services;
 		_hasAtLeastOneValidICS = true;
 	}
 
-	private void setAdditionalStuff(final InvoiceCandidateWithInOutLine ics, final BigDecimal candQtyToInvoiceFinal, final boolean forcedAdditionalQty)
+	private void setAdditionalStuff(
+			final InvoiceCandidateWithInOutLine ics,
+			@NonNull final StockQtyAndUOMQty candQtyToInvoiceFinal,
+			final boolean forcedAdditionalQty)
 	{
 		final I_C_Invoice_Candidate cand = ics.getC_Invoice_Candidate();
 
 		//
 		// Calculate PriceActual and NetAmount depending on whether is Amount based invoicing or Qty based invoicing
-		final BigDecimal candPriceActual;
-		final BigDecimal candNetAmtToInvoice;
+		final ProductPrice candPriceActual;
+		final Money candNetAmtToInvoice;
 		if (isAmountBasedInvoicing(cand))
 		{
-			final BigDecimal candNetAmtToInvoiceOrig = cand.getNetAmtToInvoice();
-			final BigDecimal candNetAmtToInvoiceCalc = invoiceCandBL.calculateNetAmt(cand);
+			final Money candNetAmtToInvoiceOrig = Money.of(cand.getNetAmtToInvoice(), CurrencyId.ofRepoId(cand.getC_Currency_ID()));
+			final Money candNetAmtToInvoiceCalc = invoiceCandBL.calculateNetAmt(cand);
 
 			candNetAmtToInvoice = candNetAmtToInvoiceOrig;
 
-			if (candNetAmtToInvoiceOrig.compareTo(candNetAmtToInvoiceCalc) != 0)
+			if (!candNetAmtToInvoiceOrig.isEqualByComparingTo(candNetAmtToInvoiceCalc))
 			{
-				if (BigDecimal.ONE.compareTo(candQtyToInvoiceFinal) != 0)
+				if (!candQtyToInvoiceFinal.getUOMQtyNotNull().isOne())
 				{
-					throw new InvalidQtyForPartialAmtToInvoiceException(candQtyToInvoiceFinal, cand, candNetAmtToInvoiceOrig, candNetAmtToInvoiceCalc);
+					throw new InvalidQtyForPartialAmtToInvoiceException(
+							candQtyToInvoiceFinal.getUOMQtyNotNull(),
+							cand,
+							candNetAmtToInvoiceOrig,
+							candNetAmtToInvoiceCalc);
 				}
-				candPriceActual = candNetAmtToInvoiceOrig;
+				candPriceActual = ProductPrice.builder()
+						.money(candNetAmtToInvoiceOrig)
+						.productId(ics.getProductId())
+						.uomId(candQtyToInvoiceFinal.getUOMQtyNotNull().getUomId())
+						.build();
 			}
 			else
 			{
@@ -340,22 +353,21 @@ import de.metas.util.Services;
 		}
 		else
 		{
-			final int currencyPrecision = invoiceCandBL.getPrecisionFromCurrency(cand);
-			// 07202: Make sure we adapt the quantity we use to the product and price UOM of the candidate.
-			final BigDecimal candQtyToInvoiceFinalInPriceUOM = invoiceCandBL.convertToPriceUOM(candQtyToInvoiceFinal, cand);
 			candPriceActual = invoiceCandBL.getPriceActual(cand);
-			candNetAmtToInvoice = invoiceCandBL.calculateNetAmt(candQtyToInvoiceFinalInPriceUOM, candPriceActual, currencyPrecision);
+			candNetAmtToInvoice = moneyService.multiply(candQtyToInvoiceFinal.getUOMQtyNotNull(), candPriceActual);
+
 		}
+
 		setPriceActual(candPriceActual);
 
 		//
 		// Set/validate overall "PriceEntered"
-		final BigDecimal candPriceEntered = invoiceCandBL.getPriceEntered(cand);
+		final ProductPrice candPriceEntered = invoiceCandBL.getPriceEntered(cand);
 		setPriceEntered(candPriceEntered);
 
 		//
 		// Set/validate overall Discount
-		final BigDecimal candDiscount = invoiceCandBL.getDiscount(cand);
+		final Percent candDiscount = invoiceCandBL.getDiscount(cand);
 		setDiscount(candDiscount);
 
 		//
@@ -371,6 +383,7 @@ import de.metas.util.Services;
 		//
 		// Add QtyToInvoice and LineNetAmount from this candidate
 		addQtyToInvoice(candQtyToInvoiceFinal, ics, forcedAdditionalQty);
+
 		addLineNetAmount(candNetAmtToInvoice);
 	}
 
@@ -406,6 +419,9 @@ import de.metas.util.Services;
 		_printed = _firstCand.isPrinted();
 		_invoiceLineNo = _firstCand.getLine();
 
+		_qtysToInvoice = StockQtyAndUOMQtys.createZero(ics.getProductId(), ics.getIcUomId());
+		_netLineAmt = Money.zero(ics.getCurrencyId());
+
 		// Flag it as initialized
 		_initialized = true;
 	}
@@ -416,64 +432,61 @@ import de.metas.util.Services;
 		return _firstCand;
 	}
 
-	private final void setPriceActual(final BigDecimal candPriceActual)
+	private void setPriceActual(@NonNull final ProductPrice candPriceActual)
 	{
-		Check.assumeNotNull(candPriceActual, "candPriceActual not null");
 		if (_priceActual == null)
 		{
 			_priceActual = candPriceActual;
 		}
 		else
 		{
-			Check.assume(_priceActual.compareTo(candPriceActual) == 0,
+			Check.assume(_priceActual.isEqualByComparingTo(candPriceActual),
 					"All invoice candidates from this aggregation shall have the same PriceActual={} but got PriceActual={}",
 					_priceActual, candPriceActual);
 		}
 	}
 
-	private final BigDecimal getPriceActual()
+	private final ProductPrice getPriceActual()
 	{
 		Check.assumeNotNull(_priceActual, "_priceActual not null");
 		return _priceActual;
 	}
 
-	private final void setPriceEntered(final BigDecimal candPriceEntered)
+	private final void setPriceEntered(@NonNull final ProductPrice candPriceEntered)
 	{
-		Check.assumeNotNull(candPriceEntered, "candPriceEntered not null");
 		if (_priceEntered == null)
 		{
 			_priceEntered = candPriceEntered;
 		}
 		else
 		{
-			Check.assume(_priceEntered.compareTo(candPriceEntered) == 0,
+			Check.assume(_priceEntered.isEqualByComparingTo(candPriceEntered),
 					"All invoice candidates from this aggregation shall have the same PriceEntered={}",
 					_priceEntered);
 		}
 	}
 
-	private final BigDecimal getPriceEntered()
+	private final ProductPrice getPriceEntered()
 	{
 		Check.assumeNotNull(_priceEntered, "_priceEntered not null");
 		return _priceEntered;
 	}
 
-	private final void setDiscount(final BigDecimal candDiscount)
+	private final void setDiscount(@NonNull final Percent candDiscount)
 	{
-		Check.assumeNotNull(candDiscount, "candDiscount not null");
 		if (_discount == null)
 		{
 			_discount = candDiscount;
 		}
 		else
 		{
-			Check.assume(_discount.compareTo(candDiscount) == 0,
+			Check.assume(_discount.toBigDecimal().compareTo(candDiscount.toBigDecimal()) == 0,
 					"All invoice candidates from this aggregation shall have the same Discount={}",
 					_discount);
 		}
 	}
 
-	private final BigDecimal getDiscount()
+	private final Percent getDiscount()
 	{
 		Check.assumeNotNull(_discount, "_discount not null");
 		return _discount;
@@ -541,13 +554,13 @@ import de.metas.util.Services;
 		invoiceLineAttributesAggregator.addAll(invoiceLineAttributes);
 	}
 
-	private final BigDecimal getQtyToInvoice()
+	private StockQtyAndUOMQty getQtysToInvoice()
 	{
-		return _qtyToInvoice;
+		return _qtysToInvoice;
 	}
 
 	/** @return line net amount to invoice */
-	private final BigDecimal getLineNetAmt()
+	private final Money getLineNetAmt()
 	{
 		return _netLineAmt;
 	}
@@ -577,51 +590,55 @@ import de.metas.util.Services;
 		return invoiceCandBL.getTaxEffective(firstCand);
 	}
 
-	public List<IInvoiceCandidateInOutLineToUpdate> getInvoiceCandidateInOutLinesToUpdate()
+	public List<InvoiceCandidateInOutLineToUpdate> getInvoiceCandidateInOutLinesToUpdate()
 	{
 		return _iciolsToUpdate;
 	}
 
-	private final void addQtyToInvoice(final BigDecimal candQtyToInvoice, final InvoiceCandidateWithInOutLine fromICS, final boolean forcedAdditionalQty)
+	private void addQtyToInvoice(
+			@NonNull final StockQtyAndUOMQty candQtyToInvoice,
+			@NonNull final InvoiceCandidateWithInOutLine fromICS,
+			final boolean forcedAdditionalQty)
 	{
 		// Increase the IC-IOL's QtyInvoiced
 		final I_C_InvoiceCandidate_InOutLine iciol = fromICS.getC_InvoiceCandidate_InOutLine();
 		if (iciol != null && !forcedAdditionalQty)
 		{
-			final BigDecimal qtyAlreadyInvoiced = fromICS.getQtyAlreadyInvoiced();
-			final BigDecimal qtyAlreadyInvoicedNew = qtyAlreadyInvoiced.add(candQtyToInvoice);
-			// task 07988: *don't* store/persist anything in here..just add, so it will be persisted later when the actual invoice was created
-			final IInvoiceCandidateInOutLineToUpdate invoiceCandidateInOutLineToUpdate = new InvoiceCandidateInOutLineToUpdate(iciol, qtyAlreadyInvoicedNew);
+			final StockQtyAndUOMQty qtyAlreadyInvoiced = fromICS.getQtysAlreadyInvoiced();
+			final StockQtyAndUOMQty qtyAlreadyInvoicedNew = StockQtyAndUOMQtys.add(qtyAlreadyInvoiced, candQtyToInvoice);
+			// // task 07988: *don't* store/persist anything in here..just add, so it will be persisted later when the actual invoice was created
+			final InvoiceCandidateInOutLineToUpdate invoiceCandidateInOutLineToUpdate = new InvoiceCandidateInOutLineToUpdate(iciol, qtyAlreadyInvoicedNew);
 			_iciolsToUpdate.add(invoiceCandidateInOutLineToUpdate);
 		}
 
 		//
 		// Increase QtyToInvoice
-		_qtyToInvoice = _qtyToInvoice.add(candQtyToInvoice);
+		_qtysToInvoice = StockQtyAndUOMQtys.add(_qtysToInvoice, candQtyToInvoice);
 
 		//
 		// Update IC-QtyInvoiceable map (i.e. decrease invoiceable quantity)
 		{
-			final I_C_Invoice_Candidate cand = fromICS.getC_Invoice_Candidate();
-			subtractQtyInvoiceable(cand, candQtyToInvoice);
+			subtractQtyInvoiceable(fromICS.getInvoicecandidateId(), candQtyToInvoice);
 		}
 	}
 
-	private final void subtractQtyInvoiceable(final I_C_Invoice_Candidate ic, final BigDecimal qtyInvoiced)
+	private void subtractQtyInvoiceable(
+			@NonNull final InvoiceCandidateId invoiceCandidateId,
+			@NonNull final StockQtyAndUOMQty qtyInvoiced)
 	{
-		final BigDecimal qtyInvoiceable = _ic2QtyInvoiceable.get(ic);
-		final BigDecimal qtyInvoiceableNew = qtyInvoiceable.subtract(qtyInvoiced);
-		_ic2QtyInvoiceable.put(ic, qtyInvoiceableNew);
+		final StockQtyAndUOMQty qtyInvoiceable = _ic2QtyInvoiceable.get(invoiceCandidateId);
+		final StockQtyAndUOMQty qtyInvoiceableNew = StockQtyAndUOMQtys.subtract(qtyInvoiceable, qtyInvoiced);
+
+		_ic2QtyInvoiceable.put(invoiceCandidateId, qtyInvoiceableNew);
 	}
 
-	private BigDecimal getQtyInvoiceable(final I_C_Invoice_Candidate ic)
+	private StockQtyAndUOMQty getQtyInvoiceable(@NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
-		final BigDecimal qtyInvoiceable = _ic2QtyInvoiceable.get(ic);
-		Check.assumeNotNull(qtyInvoiceable, "qtyInvoiceable not null for {}", ic);
-		return qtyInvoiceable;
+		final StockQtyAndUOMQty qtyInvoiceable = _ic2QtyInvoiceable.get(invoiceCandidateId);
+		return Check.assumeNotNull(qtyInvoiceable, "qtyInvoiceable not null for invoiceCandidateId={}", invoiceCandidateId);
 	}
 
-	private void addLineNetAmount(final BigDecimal candLineNetAmt)
+	private void addLineNetAmount(final Money candLineNetAmt)
 	{
 		_netLineAmt = _netLineAmt.add(candLineNetAmt);
 	}
@@ -637,9 +654,6 @@ import de.metas.util.Services;
 	 * TODO: find a better way to track this. Consider having a field in C_Invoice_Candidate.
 	 *
 	 * To track where it's used, search also for {@link InvalidQtyForPartialAmtToInvoiceException}.
-	 *
-	 * @param cand
-	 * @return
 	 */
 	private boolean isAmountBasedInvoicing(final I_C_Invoice_Candidate cand)
 	{

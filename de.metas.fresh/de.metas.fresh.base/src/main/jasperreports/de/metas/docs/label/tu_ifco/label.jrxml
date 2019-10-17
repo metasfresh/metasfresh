@@ -124,7 +124,7 @@ ORDER BY lotnummer
 			<textField>
 				<reportElement x="94" y="4" width="24" height="339" uuid="76de718c-0e2b-4109-9800-380fc8990bfc"/>
 				<textElement rotation="Right">
-					<font size="16" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="16" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>

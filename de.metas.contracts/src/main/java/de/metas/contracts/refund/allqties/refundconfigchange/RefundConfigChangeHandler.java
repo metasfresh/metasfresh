@@ -45,9 +45,7 @@ public abstract class RefundConfigChangeHandler
 
 	}
 
-	/** Compute and store the difference (percent or otherwise) between the previous config and the given one. */
-
-	public void currentRefundConfig(@NonNull final RefundConfig refundConfig)
+	public void changeCurrentRefundConfig(@NonNull final RefundConfig refundConfig)
 	{
 		assertCorrectRefundBase(refundConfig);
 

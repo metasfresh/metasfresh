@@ -14,7 +14,7 @@ public class X_M_Shipment_Constraint extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 893760221L;
+	private static final long serialVersionUID = -1650651757L;
 
     /** Standard Constructor */
     public X_M_Shipment_Constraint (Properties ctx, int M_Shipment_Constraint_ID, String trxName)
@@ -42,21 +42,9 @@ public class X_M_Shipment_Constraint extends org.compiere.model.PO implements I_
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_C_BPartner getBill_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_Bill_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setBill_BPartner(org.compiere.model.I_C_BPartner Bill_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_Bill_BPartner_ID, org.compiere.model.I_C_BPartner.class, Bill_BPartner);
-	}
-
 	/** Set Rechnungspartner.
 		@param Bill_BPartner_ID 
-		Geschäftspartners für die Rechnungsstellung
+		Geschäftspartner für die Rechnungsstellung
 	  */
 	@Override
 	public void setBill_BPartner_ID (int Bill_BPartner_ID)
@@ -68,7 +56,7 @@ public class X_M_Shipment_Constraint extends org.compiere.model.PO implements I_
 	}
 
 	/** Get Rechnungspartner.
-		@return Geschäftspartners für die Rechnungsstellung
+		@return Geschäftspartner für die Rechnungsstellung
 	  */
 	@Override
 	public int getBill_BPartner_ID () 
@@ -80,7 +68,7 @@ public class X_M_Shipment_Constraint extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public org.compiere.model.I_C_Invoice getC_Invoice() throws RuntimeException
+	public org.compiere.model.I_C_Invoice getC_Invoice()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
 	}
@@ -202,18 +190,6 @@ public class X_M_Shipment_Constraint extends org.compiere.model.PO implements I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_AD_Table getSourceDoc_Table() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_SourceDoc_Table_ID, org.compiere.model.I_AD_Table.class);
-	}
-
-	@Override
-	public void setSourceDoc_Table(org.compiere.model.I_AD_Table SourceDoc_Table)
-	{
-		set_ValueFromPO(COLUMNNAME_SourceDoc_Table_ID, org.compiere.model.I_AD_Table.class, SourceDoc_Table);
 	}
 
 	/** Set Source document (table).

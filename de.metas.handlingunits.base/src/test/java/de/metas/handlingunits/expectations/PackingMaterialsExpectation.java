@@ -13,15 +13,14 @@ package de.metas.handlingunits.expectations;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -30,7 +29,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Predicate;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mmovement.api.IMovementDAO;
@@ -40,7 +38,9 @@ import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_Product;
 
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -143,15 +143,7 @@ public class PackingMaterialsExpectation<ParentExpectationType> extends Abstract
 	private PackingMaterialExpectation<PackingMaterialsExpectation<ParentExpectationType>> findPackingMaterialExpectationForProduct(final I_M_Product product)
 	{
 		Check.assumeNotNull(product, "product not null");
-		return CollectionUtils.singleElement(this.packingMaterialExepectations, new Predicate<PackingMaterialExpectation<PackingMaterialsExpectation<ParentExpectationType>>>()
-		{
-
-			@Override
-			public boolean test(final PackingMaterialExpectation<PackingMaterialsExpectation<ParentExpectationType>> e)
-			{
-				return product.getM_Product_ID() == e.getM_Product_ID();
-			}
-		});
+		return CollectionUtils.singleElement(this.packingMaterialExepectations, e -> product.getM_Product_ID() == e.getM_Product_ID());
 	}
 
 	public PackingMaterialExpectation<PackingMaterialsExpectation<ParentExpectationType>> newPackingMaterialExpectation()
@@ -172,6 +164,8 @@ public class PackingMaterialsExpectation<ParentExpectationType> extends Abstract
 
 	public PackingMaterialsExpectation<ParentExpectationType> addProductAndQty(final I_M_HU_PI_Item piItemPackingMaterial, final BigDecimal qty)
 	{
-		return addProductAndQty(piItemPackingMaterial.getM_HU_PackingMaterial().getM_Product(), qty);
+		final I_M_HU_PackingMaterial pm = piItemPackingMaterial.getM_HU_PackingMaterial();
+		final I_M_Product product = IHUPackingMaterialDAO.extractProductOrNull(pm);
+		return addProductAndQty(product, qty);
 	}
 }

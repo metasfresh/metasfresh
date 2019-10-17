@@ -1,19 +1,17 @@
 package de.metas.order.voidorderandrelateddocs;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.compiere.model.X_C_Invoice;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.util.RelatedRecordsProvider;
-import de.metas.util.Services;
 import de.metas.util.RelatedRecordsProvider.SourceRecordsKey;
-
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -81,16 +79,16 @@ public interface VoidOrderAndRelatedDocsHandler
 		}
 	}
 
-	public static ITranslatableString createInvalidDocStatusErrorMessage(
+	static ITranslatableString createInvalidDocStatusErrorMessage(
 			@NonNull final OrderId orderId,
 			@NonNull final String documentTrlValue,
 			@NonNull final String documentNo,
-			@NonNull final String docStatus)
+			@NonNull final DocStatus docStatus)
 	{
-		final I_C_Order orderRecord = load(orderId, I_C_Order.class);
+		final I_C_Order orderRecord = Services.get(IOrderDAO.class).getById(orderId, I_C_Order.class);
 
 		final IADReferenceDAO referenceDAO = Services.get(IADReferenceDAO.class);
-		final String docStatusTrl = referenceDAO.retrieveListNameTrl(X_C_Invoice.DOCSTATUS_AD_Reference_ID, docStatus);
+		final String docStatusTrl = referenceDAO.retrieveListNameTrl(DocStatus.AD_REFERENCE_ID, docStatus.getCode());
 
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 

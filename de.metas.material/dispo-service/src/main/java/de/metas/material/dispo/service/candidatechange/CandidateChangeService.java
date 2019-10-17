@@ -4,12 +4,15 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 
+import de.metas.Profiles;
+import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
@@ -37,24 +40,39 @@ import lombok.NonNull;
  * #L%
  */
 @Service
+@Profile(Profiles.PROFILE_MaterialDispo)
 public class CandidateChangeService
 {
+	private static final Logger logger = LogManager.getLogger(CandidateChangeService.class);
 
 	private final Map<CandidateType, CandidateHandler> type2handler;
 
-	public CandidateChangeService(
-			@NonNull final Collection<CandidateHandler> candidateChangeHandlers)
+	public CandidateChangeService(@NonNull final Collection<CandidateHandler> handlers)
 	{
-		type2handler = createMapOfHandlers(candidateChangeHandlers);
+		type2handler = createMapOfHandlers(handlers);
+		logger.info("Handlers: {}", type2handler);
 	}
 
 	/**
 	 * Persists the given candidate and decides if further events shall be fired.
-	 *
-	 * @param candidate
-	 * @return
 	 */
 	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
+	{
+		candidate.validate();
+
+		final CandidateHandler candidateChangeHandler = getHandlerFor(candidate);
+		return candidateChangeHandler.onCandidateNewOrChange(candidate);
+	}
+
+	public void onCandidateDelete(@NonNull final Candidate candidate)
+	{
+		candidate.validate();
+
+		final CandidateHandler candidateChangeHandler = getHandlerFor(candidate);
+		candidateChangeHandler.onCandidateDelete(candidate);
+	}
+
+	private CandidateHandler getHandlerFor(final Candidate candidate)
 	{
 		final CandidateHandler candidateChangeHandler = type2handler.get(candidate.getType());
 		if (candidateChangeHandler == null)
@@ -64,18 +82,21 @@ public class CandidateChangeService
 					.setParameter("type", candidate.getType())
 					.setParameter("candidate", candidate);
 		}
-
-		candidate.validate();
-		return candidateChangeHandler.onCandidateNewOrChange(candidate);
+		return candidateChangeHandler;
 	}
 
 	@VisibleForTesting
-	static Map<CandidateType, CandidateHandler> createMapOfHandlers(
-			@NonNull final Collection<CandidateHandler> candidateChangeHandlers)
+	static Map<CandidateType, CandidateHandler> createMapOfHandlers(@NonNull final Collection<CandidateHandler> handlers)
 	{
-		final Builder<CandidateType, CandidateHandler> builder = ImmutableMap.builder();
-		for (final CandidateHandler handler : candidateChangeHandlers)
+		final ImmutableMap.Builder<CandidateType, CandidateHandler> builder = ImmutableMap.builder();
+		for (final CandidateHandler handler : handlers)
 		{
+			if (handler.getHandeledTypes().isEmpty())
+			{
+				logger.warn("Skip handler because no handled types provided: {}", handler);
+				continue;
+			}
+
 			for (final CandidateType type : handler.getHandeledTypes())
 			{
 				builder.put(type, handler); // builder already prohibits duplicate keys
@@ -83,5 +104,4 @@ public class CandidateChangeService
 		}
 		return builder.build();
 	}
-
 }

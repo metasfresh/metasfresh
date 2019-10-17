@@ -1,9 +1,13 @@
 package de.metas.edi.api.impl;
 
+import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.impl.OLCandHUPackingAware;
 import de.metas.edi.api.IEDIInputDataSourceBL;
 import de.metas.edi.api.IEDIOLCandBL;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_C_OLCand;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.util.Services;
 
 public class EDIOLCandBL implements IEDIOLCandBL
@@ -24,13 +28,19 @@ public class EDIOLCandBL implements IEDIOLCandBL
 		// were we just don't have the capacity, so we use the ORDERS file's value, but that's the only case where we do that
 
 		final OLCandHUPackingAware olCandHUPackingAware = new OLCandHUPackingAware(olCand);
-		if (olCandHUPackingAware.getM_HU_PI_Item_Product_ID() > 0
-				&& olCandHUPackingAware.getM_HU_PI_Item_Product().isInfiniteCapacity())
-		{
-			return true;
-		}
+		
+		final I_M_HU_PI_Item_Product piItemProduct = extractHUPIItemProductOrNull(olCandHUPackingAware);
+		return piItemProduct != null && piItemProduct.isInfiniteCapacity();
+	}
+	
+	private I_M_HU_PI_Item_Product extractHUPIItemProductOrNull(final IHUPackingAware huPackingAware)
+	{
+		final IHUPIItemProductBL piPIItemProductBL = Services.get(IHUPIItemProductBL.class);
 
-		return false;
+		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(huPackingAware.getM_HU_PI_Item_Product_ID());
+		return piItemProductId != null
+				? piPIItemProductBL.getById(piItemProductId)
+				: null;
 	}
 
 	@Override

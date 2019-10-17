@@ -29,6 +29,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
@@ -41,7 +42,6 @@ import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
-import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -99,7 +99,6 @@ public class HUShippingFacade
 	private final boolean createShipperDeliveryOrders;
 	private LocalDate _shipperDeliveryOrderPickupDate = null; // lazy, will be fetched from Shipper Transportation
 	private final ImmutableList<I_M_HU> hus;
-	private final ILoggable loggable;
 	private final boolean failIfNoShipmentCandidatesFound;
 
 	//
@@ -115,7 +114,6 @@ public class HUShippingFacade
 			final boolean completeShipments,
 			@Nullable final BillAssociatedInvoiceCandidates invoiceMode,
 			final boolean createShipperDeliveryOrders,
-			@Nullable final ILoggable loggable,
 			final boolean failIfNoShipmentCandidatesFound)
 	{
 		Check.assumeNotEmpty(hus, "hus is not empty");
@@ -125,7 +123,6 @@ public class HUShippingFacade
 		this.completeShipments = completeShipments;
 		this.invoiceMode = invoiceMode;
 		this.createShipperDeliveryOrders = createShipperDeliveryOrders;
-		this.loggable = loggable != null ? loggable : Loggables.getNullLoggable();
 		this.failIfNoShipmentCandidatesFound = failIfNoShipmentCandidatesFound;
 	}
 
@@ -166,7 +163,7 @@ public class HUShippingFacade
 		{
 			final List<I_M_Package> result = huShipperTransportationBL.addHUsToShipperTransportation(addToShipperTransportationId, hus);
 			mpackagesCreated.addAll(result);
-			loggable.addLog("HUs added to M_ShipperTransportation_ID={}", addToShipperTransportationId);
+			Loggables.addLog("HUs added to M_ShipperTransportation_ID={}", addToShipperTransportationId);
 		}
 	}
 
@@ -191,7 +188,7 @@ public class HUShippingFacade
 				// Think about HUs which are linked to multiple shipments: you will not see then in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
 				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
 				.createShipments(candidates);
-		loggable.addLog("Generated {}", shipmentsGenerateResult);
+		Loggables.addLog("Generated {}", shipmentsGenerateResult);
 
 	}
 
@@ -210,7 +207,13 @@ public class HUShippingFacade
 			return;
 		}
 
-		final List<Integer> invoiceCandidateIds = invoiceCandDAO.retrieveInvoiceCandidatesQueryForInOuts(shipments).listIds();
+		final Set<InvoiceCandidateId> invoiceCandidateIds = invoiceCandDAO.retrieveInvoiceCandidatesQueryForInOuts(shipments)
+				.listIds(InvoiceCandidateId::ofRepoId);
+		if (invoiceCandidateIds.isEmpty())
+		{
+			throw new AdempiereException("@NotFound@ @C_Invoice_Candidate_ID@")
+					.setParameter("shipments", shipments);
+		}
 
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 
@@ -218,12 +221,11 @@ public class HUShippingFacade
 		invoicingParams.setIgnoreInvoiceSchedule(!adhereToInvoiceSchedule);
 
 		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
-				.setLoggable(loggable)
 				.setFailOnChanges(false)
 				.setInvoicingParams(invoicingParams)
 				//
 				.enqueueInvoiceCandidateIds(invoiceCandidateIds);
-		loggable.addLog("Invoice candidates enqueued: {}", enqueueResult);
+		Loggables.addLog("Invoice candidates enqueued: {}", enqueueResult);
 	}
 
 	private void generateShipperDeliveryOrdersIfNeeded()

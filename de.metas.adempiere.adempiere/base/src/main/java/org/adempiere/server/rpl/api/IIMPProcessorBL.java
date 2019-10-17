@@ -10,12 +10,12 @@ package org.adempiere.server.rpl.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import org.adempiere.server.rpl.IImportProcessor;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.AdempiereProcessor;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_EXP_FormatLine;
@@ -36,14 +37,25 @@ import org.compiere.model.I_IMP_ProcessorParameter;
 
 import de.metas.util.ILoggable;
 import de.metas.util.ISingletonService;
+import de.metas.util.Loggables;
 
 public interface IIMPProcessorBL extends ISingletonService
 {
 	I_IMP_ProcessorLog createLog(I_IMP_Processor impProcessor, String summary, String text, String reference, Throwable error);
 
 	/**
+	 * Set up a thread-local loggable that can be used within import and export business logic.
+	 * <p>
+	 * Hints:
+	 * <li>Use {@link Loggables#get()} to retrieve this loggable.
+	 * <li>All {@link ILoggable#addLog(String, Object...)} invocations
+	 * will call {@link #createLog(I_IMP_Processor, String, String, String, Throwable)} with the given {@code impProcessor} and {@code reference}.
+	 */
+	IAutoCloseable setupTemporaryLoggable(I_IMP_Processor impProcessor, String reference);
+
+	/**
 	 * Gets XML message as String
-	 * 
+	 *
 	 * @param pLog
 	 * @return xml message or null
 	 */
@@ -53,15 +65,13 @@ public interface IIMPProcessorBL extends ISingletonService
 
 	/**
 	 * Mark error log as resolved (e.g. to be called after it was resubmitted successfully).
-	 * 
+	 *
 	 * @param plog
 	 */
 	void markResolved(I_IMP_ProcessorLog plog);
 
 	/**
-	 * Resubmit (to be reimported) given logs.
-	 * 
-	 * @param logs
+	 * Invoke the import processor and attempt to (re-)import the given logs.
 	 */
 	void resubmit(Iterator<I_IMP_ProcessorLog> logs, boolean failfast, ILoggable loggable);
 
@@ -69,7 +79,7 @@ public interface IIMPProcessorBL extends ISingletonService
 
 	/**
 	 * Create/Update Parameter
-	 * 
+	 *
 	 * @param impProcessor
 	 * @param key parameter key
 	 * @param name parameter name (human readable)
@@ -92,7 +102,7 @@ public interface IIMPProcessorBL extends ISingletonService
 
 	/**
 	 * Returns the reference of the given column or (if an overriding reference is set there) from the given line.
-	 * 
+	 *
 	 * @param column
 	 * @param formatLine
 	 * @return AD_Reference of column and formatLine
@@ -102,7 +112,7 @@ public interface IIMPProcessorBL extends ISingletonService
 	/**
 	 * Returns the table and column that the given embedded or referencing format line points to. Throws an exception if the given line's type is neither <code>ReferencedEXPFormat</code> nor
 	 * <code>EmbeddedEXPFormat</code>.
-	 * 
+	 *
 	 * @param formatLine
 	 * @return
 	 */
@@ -110,8 +120,8 @@ public interface IIMPProcessorBL extends ISingletonService
 
 	/**
 	 * Simple interface to return the result of {@link IIMPProcessorBL#getTargetTableAndColumn(I_EXP_FormatLine)}
-	 * 
-	 * 
+	 *
+	 *
 	 */
 	interface ITableAndColumn
 	{

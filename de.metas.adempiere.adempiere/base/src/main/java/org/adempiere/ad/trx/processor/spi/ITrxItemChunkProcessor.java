@@ -43,7 +43,7 @@ public interface ITrxItemChunkProcessor<IT, RT> extends ITrxItemProcessor<IT, RT
 	/**
 	 * Start a new chunk
 	 * 
-	 * @param trx
+	 * @param item
 	 */
 	void newChunk(IT item);
 

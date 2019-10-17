@@ -62,7 +62,7 @@ public class PPOrderDocumentLUTUConfigurationHandlerTest
 		final HUTestHelper huTestHelper = new HUTestHelper();
 
 		productId = huTestHelper.pTomatoProductId;
-		productUOM = huTestHelper.pTomato.getC_UOM();
+		productUOM = huTestHelper.uomEach;
 
 		// 10 CUs fit into one TU
 		final I_M_HU_PI piTU = huTestHelper.createHUDefinition("TU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
@@ -98,8 +98,8 @@ public class PPOrderDocumentLUTUConfigurationHandlerTest
 
 		final I_PP_Order ppOrder = newInstance(I_PP_Order.class);
 		ppOrder.setM_Product_ID(productId.getRepoId());
-		ppOrder.setC_OrderLine(orderLine);
-		ppOrder.setC_UOM(productUOM);
+		ppOrder.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
+		ppOrder.setC_UOM_ID(productUOM.getC_UOM_ID());
 		ppOrder.setQtyOrdered(TEN);
 		save(ppOrder);
 		return ppOrder;

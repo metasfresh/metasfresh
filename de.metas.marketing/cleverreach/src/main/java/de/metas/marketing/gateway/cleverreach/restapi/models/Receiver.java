@@ -2,13 +2,12 @@ package de.metas.marketing.gateway.cleverreach.restapi.models;
 
 import java.util.Map;
 
-import org.compiere.util.Util;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRemoteUpdate;
 import de.metas.marketing.base.model.EmailAddress;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -45,7 +44,7 @@ public class Receiver
 	 */
 	public static Receiver of(@NonNull final ContactPerson contactPerson)
 	{
-		final String idString = Util.firstNotEmptyTrimmed(contactPerson.getRemoteId(), "0");
+		final String idString = CoalesceUtil.firstNotEmptyTrimmed(contactPerson.getRemoteId(), "0");
 		return Receiver.builder()
 				.id(Integer.parseInt(idString))
 				.email(contactPerson.getEmailAddessStringOrNull())

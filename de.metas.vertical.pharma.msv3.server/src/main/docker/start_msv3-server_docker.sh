@@ -20,9 +20,14 @@ debug_suspend=${DEBUG_SUSPEND:-n}
 debug_print_bash_cmds=${DEBUG_PRINT_BASH_CMDS:-n}
 debug_jpa_show_sql=${DEBUG_JPA_SHOW_SQL:-false}
 admin_url=${METASFRESH_ADMIN_URL:-NONE}
-java_max_heap=${JAVA_MAX_HEAP:-128M}
 server_port=${SERVER_PORT:-8080}
-request_all_data_on_startup=${SERVER_REQUEST_ALL_DATA_ON_STARTUP:-true}
+
+java_max_heap=${JAVA_MAX_HEAP:-512M}
+
+# Do not re-request all config and availability data on startup, because it will also truncate the stock availability data 
+request_all_data_on_startup=${SERVER_REQUEST_ALL_DATA_ON_STARTUP:-false}
+request_config_data_on_startup=${SERVER_REQUEST_CONFIG_DATA_ON_STARTUP:-true}
+
 
 echo_variable_values()
 {
@@ -34,16 +39,17 @@ echo_variable_values()
  echo "DEBUG_PORT=${debug_port}"
  echo "DEBUG_SUSPEND=${debug_suspend}"
  echo "DEBUG_PRINT_BASH_CMDS=${debug_print_bash_cmds}"
- echo "METASFRESH_ADMIN_URL=${admin_url}"
  echo "JAVA_MAX_HEAP=${java_max_heap}"
+ echo "METASFRESH_ADMIN_URL=${admin_url}"
  echo "SERVER_PORT=${server_port}"
  echo "SERVER_REQUEST_ALL_DATA_ON_STARTUP=${request_all_data_on_startup}"
- 
+ echo "SERVER_REQUEST_CONFIG_DATA_ON_STARTUP=${request_config_data_on_startup}"
+ echo ""
  echo "RABBITMQ_HOST=${rabbitmq_host}"
  echo "RABBITMQ_PORT=${rabbitmq_port}"
  echo "RABBITMQ_USER=${rabbitmq_user}"
  echo "RABBITMQ_PASSWORD=*******"
-
+ echo ""
  echo "DB_HOST=${db_host}"
  echo "DB_PORT=${db_port}"
  echo "DB_NAME=${db_name}"
@@ -80,11 +86,17 @@ run_metasfresh()
 	metasfresh_admin_params=""
  fi
 
+# thx to 
+# https://blog.csanchez.org/2017/05/31/running-a-jvm-in-a-container-without-getting-killed/
+# MaxRAMFraction=1 doesn't leave any memory for anything else and might cause the OS to kill the java process
+# local MEMORY_PARAMS="-XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1"
+MEMORY_PARAMS="-Xmx${java_max_heap}"
+
  cd /opt/metasfresh-msv3-server/\
  && java\
- -XX:+HeapDumpOnOutOfMemoryError\
+ -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/opt/metasfresh-msv3-server/heapdump \
  ${metasfresh_admin_params}\
- -Xmx${java_max_heap}\
+ ${MEMORY_PARAMS} \
  -Dsun.misc.URLClassPath.disableJarChecking=true\
  -Djava.security.egd=file:/dev/./urandom\
  -Dserver.port=${server_port}\
@@ -95,16 +107,18 @@ run_metasfresh()
  -Dspring.datasource.url=jdbc:postgresql://${db_host}/${db_name}\
  -Dspring.datasource.username=${db_user}\
  -Dspring.datasource.password=${db_password}\
- -Dspring.jpa.hibernate.ddl-auto=create-drop\
  -Dspring.jpa.show-sql=${debug_jpa_show_sql}\
  -Dmsv3server.startup.requestAllData=${request_all_data_on_startup} \
+ -Dmsv3server.startup.requestConfigData=${request_config_data_on_startup} \
  -agentlib:jdwp=transport=dt_socket,server=y,suspend=${debug_suspend},address=${debug_port}\
- -jar de.metas.vertical.pharma.msv3.server.jar
+ org.springframework.boot.loader.JarLauncher
 }
 
 echo "*********************************"
 echo " Starting metasfresh-msv3-server ";
 echo "*********************************"
+
+echo_variable_values
 
 # start printing all bash commands from here onwards, if activated
 if [ "$debug_print_bash_cmds" != "n" ];

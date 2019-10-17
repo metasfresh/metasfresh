@@ -990,7 +990,7 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true"  pdfFontName="Helvetica-Bold" />
+					<font size="8" fontName="Arial" isBold="true"   />
 				</textElement>
 				<textFieldExpression><![CDATA[$V{totalsum_VST}]]></textFieldExpression>
 			</textField>
@@ -1005,7 +1005,7 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true"  pdfFontName="Helvetica-Bold" />
+					<font size="8" fontName="Arial" isBold="true"   />
 				</textElement>
 				<textFieldExpression><![CDATA[$V{totalsum_UST}]]></textFieldExpression>
 			</textField>
@@ -1020,7 +1020,7 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true"  pdfFontName="Helvetica-Bold" />
+					<font size="8" fontName="Arial" isBold="true"   />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 			</textField>
@@ -1035,7 +1035,7 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true"  pdfFontName="Helvetica-Bold" />
+					<font size="8" fontName="Arial" isBold="true"   />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 			</textField>
@@ -1050,7 +1050,7 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true"  pdfFontName="Helvetica-Bold" />
+					<font size="8" fontName="Arial" isBold="true"   />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{totalsum}]]></textFieldExpression>
 			</textField>
@@ -1068,7 +1068,7 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold" />
+					<font size="8" fontName="Arial" isBold="true" isItalic="false"  />
 				</textElement>
 				<textFieldExpression><![CDATA[$V{totalsum_UST_Basis}]]></textFieldExpression>
 			</textField>
@@ -1083,7 +1083,7 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold" />
+					<font size="8" fontName="Arial" isBold="true" isItalic="false"  />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 			</textField>
@@ -1098,7 +1098,7 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold" />
+					<font size="8" fontName="Arial" isBold="true" isItalic="false"  />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{symbol}]]></textFieldExpression>
 			</textField>
@@ -1113,7 +1113,7 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold" />
+					<font size="8" fontName="Arial" isBold="true" isItalic="false"  />
 				</textElement>
 				<textFieldExpression><![CDATA[$V{totalsum_VST_Basis}]]></textFieldExpression>
 			</textField>

@@ -25,6 +25,8 @@ package org.adempiere.server.rpl.api.impl;
 import java.util.Iterator;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -36,6 +38,7 @@ import org.adempiere.server.rpl.api.IIMPProcessorDAO;
 import org.adempiere.server.rpl.api.IImportHelper;
 import org.adempiere.server.rpl.exceptions.ReplicationException;
 import org.adempiere.server.rpl.interfaces.I_IMP_Processor;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.model.AdempiereProcessor;
 import org.compiere.model.I_AD_Column;
@@ -57,6 +60,7 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -72,8 +76,30 @@ public class IMPProcessorBL implements IIMPProcessorBL
 	private static final String MSG_AD_Reference_Override_ID_Not_Handled = "AD_Reference_Override_ID_NotHandled";
 
 	@Override
-	public I_IMP_ProcessorLog createLog(final org.compiere.model.I_IMP_Processor impProcessor,
-			final String summary, final String text, final String reference, final Throwable error)
+	public IAutoCloseable setupTemporaryLoggable(
+			@NonNull final org.compiere.model.I_IMP_Processor impProcessor,
+			@NonNull final String reference)
+	{
+		final ILoggable loggable = new ILoggable()
+		{
+			@Override
+			public ILoggable addLog(String msg, Object... msgParameters)
+			{
+				final String summary = StringUtils.formatMessage(msg, msgParameters);
+				createLog(impProcessor, summary, null/* text */, reference, null/* error */);
+				return this;
+			}
+		};
+		return Loggables.temporarySetLoggable(loggable);
+	}
+
+	@Override
+	public I_IMP_ProcessorLog createLog(
+			@NonNull final org.compiere.model.I_IMP_Processor impProcessor,
+			@Nullable final String summary,
+			@Nullable final String text,
+			@Nullable final String reference,
+			@Nullable final Throwable error)
 	{
 		if (error != null)
 		{

@@ -11,8 +11,11 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.inout.util.DeliveryGroupCandidate;
+import org.adempiere.inout.util.DeliveryGroupCandidateGroupId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,8 +28,8 @@ import de.metas.shipping.ShipperId;
 
 public class ShipmentScheduleBLTest
 {
-	private static final int SHIPPER_ID = 20;
-	private static final int WAREHOUSE_ID = 35;
+	private static final ShipperId SHIPPER_ID = ShipperId.ofRepoId(20);
+	private static final WarehouseId WAREHOUSE_ID = WarehouseId.ofRepoId(35);
 
 	private ShipmentScheduleBL shipmentScheduleBL;
 
@@ -54,12 +57,13 @@ public class ShipmentScheduleBLTest
 	{
 		final I_M_ShipmentSchedule sched = newInstance(I_M_ShipmentSchedule.class);
 		sched.setBPartnerAddress_Override("bPartnerAddress");
-		sched.setM_Warehouse_Override_ID(WAREHOUSE_ID);
-		save(sched);
+		sched.setM_Warehouse_Override_ID(WAREHOUSE_ID.getRepoId());
+		// save(sched); // not needed
 
+		final TableRecordReference orderRef = TableRecordReference.of(I_C_Order.Table_Name, 10);
 		final ShipmentScheduleReferencedLine scheduleSourceDoc = ShipmentScheduleReferencedLine.builder()
-				.groupId(10)
-				.shipperId(ShipperId.optionalOfRepoId(SHIPPER_ID))
+				.recordRef(orderRef)
+				.shipperId(ShipperId.optionalOfRepoId(SHIPPER_ID.getRepoId()))
 				.warehouseId(WarehouseId.ofRepoId(30)) // different from the sched's effective WH
 				.documentLineDescriptor(OrderLineDescriptor.builder().build()) // documentLineDescriptor is not relevant for this test
 				.build();
@@ -67,9 +71,9 @@ public class ShipmentScheduleBLTest
 		// invoke method under test
 		final DeliveryGroupCandidate result = shipmentScheduleBL.createGroup(scheduleSourceDoc, sched);
 
-		assertThat(result.getGroupId()).isEqualTo(10);
-		assertThat(result.getShipperId().get().getRepoId()).isEqualTo(SHIPPER_ID);
-		assertThat(result.getWarehouseId().getRepoId()).isEqualTo(WAREHOUSE_ID);
+		assertThat(result.getGroupId()).isEqualTo(DeliveryGroupCandidateGroupId.of(orderRef));
+		assertThat(result.getShipperId().get()).isEqualTo(SHIPPER_ID);
+		assertThat(result.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 		assertThat(result.getBPartnerAddress()).isEqualTo("bPartnerAddress");
 	}
 

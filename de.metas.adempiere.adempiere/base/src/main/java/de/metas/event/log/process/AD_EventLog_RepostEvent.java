@@ -1,12 +1,13 @@
 package de.metas.event.log.process;
 
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.event.log.EventLogId;
 import de.metas.event.log.EventLogService;
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.process.JavaProcess;
@@ -51,8 +52,10 @@ public class AD_EventLog_RepostEvent extends JavaProcess
 			addLog("The given event log record has a REMOTE topic, but we only got a LOCAL event bus!");
 		}
 
-		final EventLogService eventLogService = Adempiere.getBean(EventLogService.class);
-		final Event event = eventLogService.loadEventForReposting(eventLogRecord);
+		final EventLogId eventLogId = EventLogId.ofRepoId(eventLogRecord.getAD_EventLog_ID());
+
+		final EventLogService eventLogService = SpringContextHolder.instance.getBean(EventLogService.class);
+		final Event event = eventLogService.loadEventForReposting(eventLogId);
 
 		eventBus.postEvent(event);
 

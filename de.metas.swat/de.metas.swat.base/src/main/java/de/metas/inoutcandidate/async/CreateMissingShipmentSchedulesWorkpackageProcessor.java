@@ -24,10 +24,14 @@ package de.metas.inoutcandidate.async;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -35,7 +39,8 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
@@ -87,16 +92,18 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 	private final transient IShipmentScheduleHandlerBL inOutCandHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
 
 	@Override
-	public Result processWorkPackage(I_C_Queue_WorkPackage workpackage, String localTrxName)
+	public Result processWorkPackage(I_C_Queue_WorkPackage workpackage, String localTrxName_NOTUSED)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
 
-		final List<I_M_ShipmentSchedule> shipmentSchedules = inOutCandHandlerBL.createMissingCandidates(ctx, localTrxName);
+		final List<I_M_ShipmentSchedule> shipmentSchedules = inOutCandHandlerBL.createMissingCandidates(ctx, ITrx.TRXNAME_ThreadInherited);
+		final Set<ShipmentScheduleId> shipmentScheduleIds = shipmentSchedules.stream().map(s -> ShipmentScheduleId.ofRepoId(s.getM_ShipmentSchedule_ID())).collect(ImmutableSet.toImmutableSet());
 
 		// After shipment schedules where created, invalidate them because we want to make sure they are up2date.
-		Services.get(IShipmentSchedulePA.class).invalidate(shipmentSchedules, localTrxName);
+		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
+		invalidSchedulesService.invalidateShipmentSchedules(shipmentScheduleIds);
 
-		Loggables.get().addLog("Created " + shipmentSchedules.size() + " candidates");
+		Loggables.addLog("Created " + shipmentSchedules.size() + " candidates");
 		return Result.SUCCESS;
 	}
 

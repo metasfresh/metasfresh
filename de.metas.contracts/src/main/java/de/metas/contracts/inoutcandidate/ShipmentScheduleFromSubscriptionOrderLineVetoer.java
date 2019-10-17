@@ -13,15 +13,14 @@ package de.metas.contracts.inoutcandidate;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -32,9 +31,14 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.order.model.I_C_OrderLine;
-import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
-import de.metas.util.Services;
 import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
+import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * This implementation vetoes the creation of shipment schedule records for {@link I_C_OrderLine}s if those order lines
@@ -56,30 +60,49 @@ public class ShipmentScheduleFromSubscriptionOrderLineVetoer implements ModelWit
 	 *            <code>"C_OrderLine"</code>.
 	 */
 	@Override
-	public OnMissingCandidate foundModelWithoutInOutCandidate(Object model)
+	public OnMissingCandidate foundModelWithoutInOutCandidate(@NonNull final Object model)
 	{
 		final I_C_OrderLine ol = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
 
-		return isSubscription(ol) || hasAtLeastOneFlatrateContract(ol) ? OnMissingCandidate.I_VETO : OnMissingCandidate.I_DONT_CARE;
+		final boolean subscription = isSubscription(ol);
+		final boolean hasAtLeastOneFlatrateContract = hasAtLeastOneFlatrateContract(ol);
+		final boolean veto = subscription || hasAtLeastOneFlatrateContract;
+
+		if (veto)
+		{
+			Loggables.addLog("ShipmentScheduleFromSubscriptionOrderLineVetoer - isSubscription={}; hasAtLeastOneFlatrateContract={}; return {}; orderLine={}",
+					subscription, hasAtLeastOneFlatrateContract, OnMissingCandidate.I_VETO, ol);
+			return OnMissingCandidate.I_VETO;
+		}
+		return OnMissingCandidate.I_DONT_CARE;
 	}
 
-	public boolean hasAtLeastOneFlatrateContract(final I_C_OrderLine ol)
+	public boolean hasAtLeastOneFlatrateContract(@NonNull final I_C_OrderLine ol)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ol);
 		final String trxName = InterfaceWrapperHelper.getTrxName(ol);
 
 		final I_C_Order o = InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class);
+		
+		final ProductId productId = ProductId.ofRepoId(ol.getM_Product_ID());
+		final ProductCategoryId productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
 
 		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
-		final List<I_C_Flatrate_Term> termsForOl =
-				flatrateDB.retrieveTerms(ctx, o.getBill_BPartner_ID(), o.getDateOrdered(), ol.getM_Product().getM_Product_Category_ID(), ol.getM_Product_ID(), ol.getC_Charge_ID(), trxName);
+		final List<I_C_Flatrate_Term> termsForOl = flatrateDB.retrieveTerms(
+				ctx, 
+				o.getBill_BPartner_ID(), 
+				o.getDateOrdered(), 
+				productCategoryId.getRepoId(), 
+				productId.getRepoId(), 
+				ol.getC_Charge_ID(), 
+				trxName);
 
 		// if there are terms for 'ol', then we ask the handler not to create a shipment schedule for 'ol'
 		final boolean atLeastOneFlatrateContract = !termsForOl.isEmpty();
 		return atLeastOneFlatrateContract;
 	}
 
-	private boolean isSubscription(final I_C_OrderLine ol)
+	private boolean isSubscription(@NonNull final I_C_OrderLine ol)
 	{
 		return ol.getC_Flatrate_Conditions_ID() > 0;
 	}

@@ -1,5 +1,7 @@
 package de.metas.ordercandidate.modelvalidator;
 
+import java.util.Optional;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -30,6 +32,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Test;
@@ -40,9 +43,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
-import org.compiere.model.I_C_BPartner_Product;
 import de.metas.ordercandidate.AbstractOLCandTestSupport;
 import de.metas.ordercandidate.api.OLCandRegistry;
+import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.util.Services;
 
@@ -75,8 +78,14 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 	@Override
 	protected void initModelValidators()
 	{
+		final OLCandRegistry olCandRegistry = new OLCandRegistry(
+				Optional.empty(),
+				Optional.empty(),
+				Optional.empty());
+		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandRegistry);
+
 		// Initialize C_OLCand MV Only!
-		final C_OLCand orderCandidateMV = new C_OLCand();
+		final C_OLCand orderCandidateMV = new C_OLCand(olCandValidatorService);
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(orderCandidateMV, null);
 	}
 
@@ -123,8 +132,8 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 		final IContextAware context = PlainContextAware.newOutOfTrx(ctx);
 
 		final I_C_OLCand olCand = olCand(context, I_C_OLCand.class, false); // save=false
-		olCand.setC_BPartner(bpartner1);
-		olCand.setM_Product(product1);
+		olCand.setC_BPartner_ID(bpartner1.getC_BPartner_ID());
+		olCand.setM_Product_ID(product1.getM_Product_ID());
 
 		final String customProductDescription = "customDescription";
 		olCand.setProductDescription(customProductDescription);
@@ -140,8 +149,8 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 		final IContextAware context = PlainContextAware.newOutOfTrx(ctx);
 
 		final I_C_OLCand olCand = olCand(context, I_C_OLCand.class, false); // save=false
-		olCand.setC_BPartner(bpartner1);
-		olCand.setM_Product(product1);
+		olCand.setC_BPartner_ID(bpartner1.getC_BPartner_ID());
+		olCand.setM_Product_ID(product1.getM_Product_ID());
 
 		InterfaceWrapperHelper.save(olCand);
 
@@ -155,8 +164,8 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 		final IContextAware context = PlainContextAware.newOutOfTrx(ctx);
 
 		final I_C_OLCand olCand = olCand(context, I_C_OLCand.class, false); // save=false
-		olCand.setC_BPartner(bpartner2);
-		olCand.setM_Product(product2);
+		olCand.setC_BPartner_ID(bpartner2.getC_BPartner_ID());
+		olCand.setM_Product_ID(product2.getM_Product_ID());
 
 		InterfaceWrapperHelper.save(olCand);
 
@@ -170,8 +179,8 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 		final IContextAware context = PlainContextAware.newOutOfTrx(ctx);
 
 		final I_C_OLCand olCand = olCand(context, I_C_OLCand.class, false); // save=false
-		olCand.setC_BPartner(bpartner3);
-		olCand.setM_Product(product3);
+		olCand.setC_BPartner_ID(bpartner3.getC_BPartner_ID());
+		olCand.setM_Product_ID(product3.getM_Product_ID());
 
 		InterfaceWrapperHelper.save(olCand);
 

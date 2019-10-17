@@ -96,7 +96,7 @@ public class AssignmentAggregateService
 		return result;
 	}
 
-	public Map<RefundConfig, BigDecimal> retrieveAssignedQuantity(
+	public Map<RefundConfig, BigDecimal> retrieveAssignedQuantities(
 			@NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
 		if (Adempiere.isUnitTestMode())
@@ -134,7 +134,6 @@ public class AssignmentAggregateService
 		final List<I_C_Invoice_Candidate_Assignment> assignmentRecords = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate_Assignment.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Invoice_Candidate_Assignment.COLUMN_IsAssignedQuantityIncludedInSum, true)
 				.addEqualsFilter(I_C_Invoice_Candidate_Assignment.COLUMN_C_Invoice_Candidate_Term_ID, invoiceCandidateId)
 				.create()
 				.list();
@@ -145,7 +144,10 @@ public class AssignmentAggregateService
 			final RefundConfigId refundConfigId = RefundConfigId.ofRepoId(assignmentRecord.getC_Flatrate_RefundConfig_ID());
 			final RefundConfig refundConfig = refundConfigRepository.getById(refundConfigId);
 
-			result.merge(refundConfig, assignmentRecord.getAssignedQuantity(), (oldVal, newVal) -> oldVal.add(newVal));
+			final BigDecimal assignedQuantity = assignmentRecord.isAssignedQuantityIncludedInSum()
+					? assignmentRecord.getAssignedQuantity()
+					: ZERO;
+			result.merge(refundConfig, assignedQuantity, (oldVal, newVal) -> oldVal.add(newVal));
 		}
 
 		return result;

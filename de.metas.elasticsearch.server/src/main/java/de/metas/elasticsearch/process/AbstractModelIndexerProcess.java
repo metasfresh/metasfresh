@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 import com.google.common.base.Stopwatch;
 
@@ -66,7 +66,7 @@ public abstract class AbstractModelIndexerProcess extends JavaProcess
 
 	public AbstractModelIndexerProcess()
 	{
-		Adempiere.autowire(this);
+		SpringContextHolder.instance.autowire(this);
 	}
 
 	@Override

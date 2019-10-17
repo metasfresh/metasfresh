@@ -16,7 +16,7 @@
  *****************************************************************************/
 package org.compiere.dbPort;
 
-import org.compiere.util.Util;
+import de.metas.util.StringUtils;
 
 /**
  *  Join Clause.
@@ -62,7 +62,7 @@ class Join
 		if (m_left)     //  f.AD_Column_ID = c.AD_Column_ID(+)  => f / c
 		{
 			m_mainAlias = joinClause.substring
-				(0, Util.findIndexOf(joinClause, '.','=')).trim();          //  f
+				(0, StringUtils.findIndexOf(joinClause, '.','=')).trim();          //  f
 			int end = joinClause.indexOf('.', indexEqual);
 			if (end == -1)  //  no alias
 				end = joinClause.indexOf('(', indexEqual);
@@ -75,9 +75,9 @@ class Join
 				end = joinClause.length();
 			m_mainAlias  = joinClause.substring(indexEqual+1, end).trim();  //  c
 			m_joinAlias = joinClause.substring
-				(0, Util.findIndexOf(joinClause, '.','(')).trim();          //  f
+				(0, StringUtils.findIndexOf(joinClause, '.','(')).trim();          //  f
 		}
-		m_condition = Util.replace(joinClause, "(+)", "").trim();
+		m_condition = StringUtils.replace(joinClause, "(+)", "").trim();
 	}   //  evaluate
 
 	/**

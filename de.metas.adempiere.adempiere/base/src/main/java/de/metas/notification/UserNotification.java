@@ -1,5 +1,6 @@
 package de.metas.notification;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,7 +19,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -58,7 +58,7 @@ public class UserNotification
 	@JsonProperty("id")
 	private final int id;
 	@JsonProperty("timestamp")
-	private final long timestamp;
+	private final Instant timestamp;
 	@JsonProperty("important")
 	private final boolean important;
 	@JsonProperty("recipientUserId")
@@ -93,7 +93,7 @@ public class UserNotification
 	@JsonCreator
 	private UserNotification(
 			@JsonProperty("id") final int id,
-			@JsonProperty("timestamp") final long timestamp,
+			@JsonProperty("timestamp") @NonNull final Instant timestamp,
 			@JsonProperty("important") final boolean important,
 			@JsonProperty("read") final boolean read,
 			@JsonProperty("recipientUserId") @NonNull final Integer recipientUserId,
@@ -109,7 +109,6 @@ public class UserNotification
 			@JsonProperty("targetViewId") final String targetViewId)
 	{
 		Check.assumeGreaterThanZero(id, "id");
-		Check.assumeGreaterThanZero(timestamp, "timestamp");
 
 		this.id = id;
 		this.timestamp = timestamp;

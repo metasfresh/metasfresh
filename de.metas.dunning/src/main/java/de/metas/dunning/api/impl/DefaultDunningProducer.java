@@ -223,7 +223,6 @@ public class DefaultDunningProducer implements IDunningProducer
 
 		final BigDecimal candidateAmtSrc = getAmount(candidate);
 		final BigDecimal candidateAmt = util.currencyConvert(
-				getDunningContext().getCtx(),
 				candidateAmtSrc,
 				candidate.getC_Currency_ID(), // curFrom_ID
 				dunningDocLine.getC_Currency_ID(), // curTo_ID

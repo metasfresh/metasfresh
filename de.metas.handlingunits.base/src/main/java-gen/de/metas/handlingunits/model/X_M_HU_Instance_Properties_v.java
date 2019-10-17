@@ -15,7 +15,7 @@ public class X_M_HU_Instance_Properties_v extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1584325484L;
+	private static final long serialVersionUID = -73642544L;
 
     /** Standard Constructor */
     public X_M_HU_Instance_Properties_v (Properties ctx, int M_HU_Instance_Properties_v_ID, String trxName)
@@ -101,18 +101,6 @@ public class X_M_HU_Instance_Properties_v extends org.compiere.model.PO implemen
 		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
 
-	@Override
-	public org.compiere.model.I_M_Attribute getM_Attribute() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class);
-	}
-
-	@Override
-	public void setM_Attribute(org.compiere.model.I_M_Attribute M_Attribute)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class, M_Attribute);
-	}
-
 	/** Set Merkmal.
 		@param M_Attribute_ID 
 		Produkt-Merkmal
@@ -138,8 +126,8 @@ public class X_M_HU_Instance_Properties_v extends org.compiere.model.PO implemen
 		return ii.intValue();
 	}
 
-	/** Set Handling Units.
-		@param M_HU_ID Handling Units	  */
+	/** Set Handling Unit.
+		@param M_HU_ID Handling Unit	  */
 	@Override
 	public void setM_HU_ID (int M_HU_ID)
 	{
@@ -149,8 +137,8 @@ public class X_M_HU_Instance_Properties_v extends org.compiere.model.PO implemen
 			set_ValueNoCheck (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
 	}
 
-	/** Get Handling Units.
-		@return Handling Units	  */
+	/** Get Handling Unit.
+		@return Handling Unit	  */
 	@Override
 	public int getM_HU_ID () 
 	{

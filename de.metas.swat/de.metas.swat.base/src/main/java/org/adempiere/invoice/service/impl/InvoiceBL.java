@@ -1,98 +1,23 @@
 package org.adempiere.invoice.service.impl;
 
-import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.MInOut;
-import org.compiere.model.MInOutLine;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocLineCopyHandler;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
-import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
 public final class InvoiceBL extends AbstractInvoiceBL
 {
-	@Override
-	public MInvoice createAndCompleteForInOut(final I_M_InOut inOut,
-			final Timestamp dateInvoiced,
-			final String trxName)
-	{
-		if (inOut == null)
-		{
-			throw new IllegalArgumentException("Param 'inOut' may not be null");
-		}
-
-		final MInOut inOutPO = InterfaceWrapperHelper.getPO(inOut);
-		// setting the trxName to be used inside the MInvoice constructor
-		inOutPO.set_TrxName(trxName);
-
-		final MInvoice invoice = new MInvoice(inOutPO, dateInvoiced);
-		invoice.setIsSOTrx(inOut.isSOTrx());
-		invoice.setM_PriceList_ID(IPriceListDAO.M_PriceList_ID_None); // US1184
-
-		invoice.saveEx(trxName);
-
-		for (final MInOutLine inOutLine : inOutPO.getLines())
-		{
-			final MInvoiceLine invoiceLine = new MInvoiceLine(invoice);
-			invoiceLine.setShipLine(inOutLine);
-			invoiceLine.setQty(inOutLine.getMovementQty());
-			// metas: cg: task 04868 start
-			if (inOutLine.getC_OrderLine_ID() > 0)
-			{
-				final I_C_InvoiceLine il = InterfaceWrapperHelper.create(invoiceLine, I_C_InvoiceLine.class);
-				il.setDiscount(inOutLine.getC_OrderLine().getDiscount());
-
-				final Properties iolCtx = InterfaceWrapperHelper.getCtx(inOutLine);
-				final String iolTrxName = InterfaceWrapperHelper.getTrxName(inOutLine);
-
-				final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(iolCtx, inOutLine.getC_OrderLine_ID(), I_C_OrderLine.class, iolTrxName);
-
-				// 07442
-				// make sure we don't change this if it was already set in the candidate
-				final I_C_Tax tax = il.getC_Tax();
-				if (tax != null)
-				{
-					il.setC_TaxCategory(tax.getC_TaxCategory());
-				}
-				else
-				{
-					il.setC_TaxCategory(orderLine.getC_TaxCategory());
-				}
-				InterfaceWrapperHelper.save(il);
-			}
-			else
-			{
-				invoiceLine.saveEx();
-			}
-			// metas: cg: task 04868 end
-
-			inOutLine.setIsInvoiced(true);
-			inOutLine.saveEx();
-		}
-
-		// metas: Neunumerierung der Rechnungszeilen vor Fertigstellung
-		this.renumberLines(InterfaceWrapperHelper.create(invoice, de.metas.adempiere.model.I_C_Invoice.class), 10);
-
-		Services.get(IDocumentBL.class).processEx(invoice, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
-
-		return invoice;
-	}
-
 	private static final IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> defaultDocLineCopyHandler = new DefaultDocLineCopyHandler<>(
 			org.compiere.model.I_C_InvoiceLine.class);
 
@@ -124,7 +49,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 		final MInvoiceLine[] fromLines = fromInvoicePO.getLines(false);
 		int count = 0;
 
-		for (int i = 0; i < fromLines.length; i++)
+		for (final MInvoiceLine fromLine : fromLines)
 		{
 			final I_C_InvoiceLine toLine;
 			if (counter)
@@ -135,8 +60,6 @@ public final class InvoiceBL extends AbstractInvoiceBL
 			{
 				toLine = InterfaceWrapperHelper.newInstance(I_C_InvoiceLine.class, fromInvoice);
 			}
-
-			final MInvoiceLine fromLine = fromLines[i];
 
 			// copy original values using the specified handler algorithm
 			if (additionalDocLineHandler != null)

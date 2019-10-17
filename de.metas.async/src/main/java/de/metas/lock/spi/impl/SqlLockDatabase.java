@@ -15,7 +15,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -85,7 +85,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 		}
 	}
 
-	private final void appendTableRecordWhereClause(final ITableRecordReference record, final StringBuilder sql, final List<Object> sqlParams)
+	private final void appendTableRecordWhereClause(final TableRecordReference record, final StringBuilder sql, final List<Object> sqlParams)
 	{
 		final int adTableId = record.getAD_Table_ID();
 		final int recordId = record.getRecord_ID();
@@ -246,7 +246,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 	}
 
 	@Override
-	protected boolean lockRecord(final ILockCommand lockCommand, final ITableRecordReference record)
+	protected boolean lockRecord(final ILockCommand lockCommand, final TableRecordReference record)
 	{
 		Check.assumeNotNull(record, "record not null");
 
@@ -308,7 +308,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 	}
 
 	@Override
-	protected boolean changeLockRecord(final ILockCommand lockCommand, final ITableRecordReference record)
+	protected boolean changeLockRecord(final ILockCommand lockCommand, final TableRecordReference record)
 	{
 		final List<Object> sqlParams = new ArrayList<>();
 		final StringBuilder sql = new StringBuilder("UPDATE " + I_T_Lock.Table_Name)
@@ -388,7 +388,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 	}
 
 	@Override
-	protected boolean unlockRecord(final IUnlockCommand unlockCommand, final ITableRecordReference record)
+	protected boolean unlockRecord(final IUnlockCommand unlockCommand, final TableRecordReference record)
 	{
 		final StringBuilder sql = new StringBuilder(SQL_DeleteLock);
 		final List<Object> sqlParams = new ArrayList<>();
@@ -525,9 +525,8 @@ public class SqlLockDatabase extends AbstractLockDatabase
 	}
 
 	@Override
-	public final ILock retrieveLockForOwner(final LockOwner lockOwner)
+	public final ILock retrieveLockForOwner(@NonNull final LockOwner lockOwner)
 	{
-		Check.assumeNotNull(lockOwner, "Lock owner shall not be null");
 		Check.assumeNotNull(lockOwner.isRealOwner(), "Lock owner shall be real owner but it was {}", lockOwner);
 
 		final String sql = "SELECT "
@@ -554,7 +553,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 				final int countLocked = rs.getInt("CountLocked");
 				final ILock lock = newLock(lockOwner, autoCleanup, countLocked);
 
-				Check.assume(!rs.next(), "More then one lock found for owner");
+				Check.assume(!rs.next(), "More than one lock found for owner");
 
 				return lock;
 			}

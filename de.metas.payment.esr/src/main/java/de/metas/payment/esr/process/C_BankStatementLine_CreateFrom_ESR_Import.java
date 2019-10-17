@@ -13,15 +13,14 @@ package de.metas.payment.esr.process;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -37,15 +36,13 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Ordering;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.service.IBankStatementBL;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
@@ -66,7 +63,6 @@ import de.metas.util.Services;
 public class C_BankStatementLine_CreateFrom_ESR_Import extends JavaProcess implements IProcessPrecondition
 {
 	// services
-	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient IESRImportDAO esrImportDAO = Services.get(IESRImportDAO.class);
 	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final transient IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
@@ -94,10 +90,13 @@ public class C_BankStatementLine_CreateFrom_ESR_Import extends JavaProcess imple
 		if (I_C_BankStatement.Table_Name.equals(context.getTableName()))
 		{
 			final I_C_BankStatement bankStatement = context.getSelectedModel(I_C_BankStatement.class);
-			return ProcessPreconditionsResolution.acceptIf(docActionBL.isDocumentStatusOneOf(bankStatement,
-					IDocument.STATUS_Drafted, IDocument.STATUS_InProgress));
+			final DocStatus docStatus = DocStatus.ofCode(bankStatement.getDocStatus());
+			return ProcessPreconditionsResolution.acceptIf(docStatus.isDraftedOrInProgress());
 		}
-		return ProcessPreconditionsResolution.reject();
+		else
+		{
+			return ProcessPreconditionsResolution.reject();
+		}
 	}
 
 	@Override
@@ -177,16 +176,7 @@ public class C_BankStatementLine_CreateFrom_ESR_Import extends JavaProcess imple
 		// Retrieve ESR_ImportLines, ordered by AccountingDate.
 		final List<I_ESR_ImportLine> esrImportLines = Ordering.natural()
 				.nullsLast()
-				.onResultOf(new Function<I_ESR_ImportLine, Timestamp>()
-				{
-
-					@Override
-					public Timestamp apply(I_ESR_ImportLine input)
-					{
-						return input.getAccountingDate();
-					}
-
-				})
+				.<I_ESR_ImportLine>onResultOf(input -> input.getAccountingDate())
 				.nullsFirst()
 				.sortedCopy(esrImportDAO.retrieveLines(esrImport));
 

@@ -24,12 +24,12 @@ import lombok.ToString;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,9 +38,8 @@ import lombok.ToString;
 
 @Entity
 @Table(name = "msv3_product_exclude", //
-		uniqueConstraints = @UniqueConstraint(name = "msv3_product_exclude_uq", columnNames = { "pzn", "bpartner_id" }), //
-		indexes = @Index(name = "msv3_product_exclude_sync_token", columnList = "sync_token") //
-)
+		uniqueConstraints = @UniqueConstraint(name = "msv3_product_exclude_uq", columnNames = { "pzn", "mf_bpartner_id" }), //
+		indexes = @Index(name = "msv3_product_exclude_sync_token", columnList = "sync_token", unique = false))
 @Getter
 @Setter
 @ToString
@@ -49,8 +48,8 @@ public class JpaProductExclude extends AbstractEntity
 	/** Pharma-Zentral-Nummer */
 	private long pzn;
 
-	@Column(name = "bpartner_id")
-	private int bpartnerId;
+	@Column(name = "mf_bpartner_id")
+	private int mfBpartnerId;
 
 	@Column(name = "sync_token")
 	@NotNull

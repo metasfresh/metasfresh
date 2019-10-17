@@ -19,8 +19,7 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.user.api.IUserDAO;
-
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 
 /**

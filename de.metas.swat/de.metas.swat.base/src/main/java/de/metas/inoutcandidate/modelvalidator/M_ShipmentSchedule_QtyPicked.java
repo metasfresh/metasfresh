@@ -1,15 +1,11 @@
 package de.metas.inoutcandidate.modelvalidator;
 
-import java.util.List;
-
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.util.Services;
@@ -37,9 +33,9 @@ public class M_ShipmentSchedule_QtyPicked
 	public void invalidateShipmentSchedule(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked)
 	{
-		final List<I_M_ShipmentSchedule> singletonList = ImmutableList.of(shipmentScheduleQtyPicked.getM_ShipmentSchedule());
-		final String trxName = InterfaceWrapperHelper.getTrxName(shipmentScheduleQtyPicked);
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentScheduleQtyPicked.getM_ShipmentSchedule_ID());
 
-		Services.get(IShipmentSchedulePA.class).invalidate(singletonList, trxName);
+		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
+		invalidSchedulesService.invalidateShipmentSchedule(shipmentScheduleId);
 	}
 }

@@ -24,12 +24,12 @@ package de.metas.invoicecandidate.api;
 
 import java.util.List;
 
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_InOutLine;
 
-import de.metas.aggregation.api.IAggregationKey;
+import de.metas.aggregation.api.AggregationKey;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.spi.IAggregator;
@@ -85,9 +85,9 @@ public interface IAggregationBL extends ISingletonService
 	 * @param ic
 	 * @return header aggregation key
 	 */
-	IAggregationKey mkHeaderAggregationKey(I_C_Invoice_Candidate ic);
+	AggregationKey mkHeaderAggregationKey(I_C_Invoice_Candidate ic);
 
-	IAggregationKey mkLineAggregationKey(I_C_Invoice_Candidate ic);
+	AggregationKey mkLineAggregationKey(I_C_Invoice_Candidate ic);
 
 	/**
 	 * Gets the {@link IProcessor} used to update aggregation related informations of an {@link I_C_Invoice_Candidate}.

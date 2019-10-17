@@ -10,12 +10,12 @@ package de.metas.adempiere.report.jasper.server;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -51,7 +51,7 @@ public class LocalJasperServer implements IJasperServer
 	private static final Logger logger = LogManager.getLogger(LocalJasperServer.class);
 
 	@Override
-	public byte[] report(int processId, int pinstanceRepoId, final String adLanguage, final OutputType outputType) throws Exception
+	public byte[] report(int processId, int pinstanceRepoId, final String adLanguage, final OutputType outputType)
 	{
 		//
 		// Load process info
@@ -63,14 +63,14 @@ public class LocalJasperServer implements IJasperServer
 				.setReportLanguage(adLanguage)
 				.setJRDesiredOutputType(outputType)
 				.build();
-		
+
 		//
 		// If there is no AD_PInstance already, we need to create it now
 		if(processInfo.getPinstanceId() == null)
 		{
 			Services.get(IADPInstanceDAO.class).saveProcessInfoOnly(processInfo);
 		}
-		
+
 		// Override the context using the values from record (if any)
 		// NOTE: setting the AD_Org_ID from document (if any) is very important for retrieving things like organization logo which is displayed in reports.
 		updateContextFromRecord(processInfo);
@@ -79,7 +79,7 @@ public class LocalJasperServer implements IJasperServer
 		// Create report context based on processInfo
 		final ReportContext reportContext = ReportContext.builder()
 				.setCtx(processInfo.getCtx())
-				.setAD_Process_ID(processInfo.getAD_Process_ID())
+				.setAD_Process_ID(processInfo.getAdProcessId())
 				.setPInstanceId(processInfo.getPinstanceId())
 				.setRecord(processInfo.getTable_ID(), processInfo.getRecord_ID())
 				.setAD_Language(processInfo.getReportAD_Language())
@@ -87,6 +87,8 @@ public class LocalJasperServer implements IJasperServer
 				.setReportTemplatePath(processInfo.getReportTemplate().orElse(null))
 				.setSQLStatement(processInfo.getSQLStatement().orElse(null))
 				.setApplySecuritySettings(processInfo.isReportApplySecuritySettings())
+				.setType(processInfo.getType())
+				.setJSONPath(processInfo.getJsonPath().orElse(null))
 				.build();
 
 		//
@@ -98,7 +100,7 @@ public class LocalJasperServer implements IJasperServer
 			engine.report(reportContext, out);
 			return out.toByteArray();
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
@@ -111,7 +113,7 @@ public class LocalJasperServer implements IJasperServer
 		final String reportTemplatePath = reportContext.getReportTemplatePath();
 		Check.assumeNotEmpty(reportTemplatePath, "reportTemplatePath not empty for {}", reportContext);
 		final String reportFileExtension = Files.getFileExtension(reportTemplatePath);
-		
+
 		if (JasperEngine.REPORT_FILE_EXTENSIONS.contains(reportFileExtension))
 		{
 			return new JasperEngine();
@@ -129,7 +131,7 @@ public class LocalJasperServer implements IJasperServer
 
 	/**
 	 * Populate given context (AD_Client_ID, AD_Org_ID) from given record.
-	 * 
+	 *
 	 * @param ctx
 	 * @param adTableId record's AD_Table_ID
 	 * @param recordId record's ID

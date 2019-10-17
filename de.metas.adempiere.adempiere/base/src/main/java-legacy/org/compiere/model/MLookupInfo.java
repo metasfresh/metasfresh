@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
 
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
@@ -37,8 +37,12 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.RoleId;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Info Class for Lookup SQL (ValueObject)
@@ -53,7 +57,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 	/**************************************************************************
 	 * Constructor.
 	 * (called from MLookupFactory)
-	 * 
+	 *
 	 * @param sqlQuery SQL query
 	 * @param tableName table name
 	 * @param keyColumn key column
@@ -62,20 +66,16 @@ public final class MLookupInfo implements Serializable, Cloneable
 	 * @param zoomQuery zoom query
 	 */
 	/* package */ MLookupInfo(
-			final String sqlQuery_BaseLang, final String sqlQuery_Trl //
-			, final String tableName, final String keyColumn //
-			, final int zoomSO_Window_ID, final int zoomPO_Window_ID, final int zoomAD_Window_ID_Override, final MQuery zoomQuery //
-	)
+			@NonNull final String sqlQuery_BaseLang,
+			@NonNull final String sqlQuery_Trl,
+			@NonNull final String tableName,
+			@NonNull final String keyColumn,
+			final AdWindowId zoomSO_Window_ID, 
+			final AdWindowId zoomPO_Window_ID, 
+			final AdWindowId zoomAD_Window_ID_Override, 
+			final MQuery zoomQuery)
 	{
-		super();
-		Check.assumeNotNull(sqlQuery_BaseLang, "Parameter sqlQuery_BaseLang is not null");
-		Check.assumeNotNull(sqlQuery_Trl, "Parameter sqlQuery_Trl is not null");
 		this.sqlQuery = TranslatableParameterizedString.of(CTXNAME_AD_Language, sqlQuery_BaseLang, sqlQuery_Trl);
-
-		if (keyColumn == null)
-			throw new IllegalArgumentException("KeyColumn is null");
-		if (tableName == null)
-			throw new IllegalArgumentException("TableName is null");
 		TableName = tableName;
 		KeyColumn = keyColumn;
 		this.zoomSO_Window_ID = zoomSO_Window_ID;
@@ -88,29 +88,31 @@ public final class MLookupInfo implements Serializable, Cloneable
 
 	/* package */static final CtxName CTXNAME_AD_Language = CtxNames.parse(Env.CTXNAME_AD_Language);
 
-	/** SQL Query */
 	private final TranslatableParameterizedString sqlQuery;
-	/** Table Name */
+
 	private final String TableName;
-	/** Key Column */
+
 	private final String KeyColumn;
-	/** Display Column SQL */
+
 	private TranslatableParameterizedString displayColumnSQL = TranslatableParameterizedString.EMPTY;
 	private List<ILookupDisplayColumn> displayColumns = Collections.emptyList();
+
+	private TranslatableParameterizedString descriptionColumnSQL = TranslatableParameterizedString.EMPTY;
+
 	private TranslatableParameterizedString selectSqlPart = TranslatableParameterizedString.EMPTY;
 	private TranslatableParameterizedString fromSqlPart = TranslatableParameterizedString.EMPTY;
 	private String whereClauseSqlPart = null;
+
 	/** SQL WHERE part (without WHERE keyword); this SQL includes context variables references */
 	private String whereClauseDynamicSqlPart = null;
 	private String orderBySqlPart = null;
+
 	/** True if this lookup does not need security validation (e.g. AD_Ref_Lists does not need security validation) */
 	private boolean securityDisabled = false;
-	/** Zoom Window */
-	private final int zoomSO_Window_ID;
-	private final int zoomAD_Window_ID_Override;
-	/** Zoom Window */
-	private final int zoomPO_Window_ID;
-	/** Zoom Query */
+
+	private final AdWindowId zoomSO_Window_ID;
+	private final AdWindowId zoomPO_Window_ID;
+	private final AdWindowId zoomAD_Window_ID_Override;
 	private final MQuery zoomQuery;
 
 	/** Direct Access Query (i.e. SELECT Key, Value, Name ... FROM TableName WHERE KeyColumn=?) */
@@ -127,20 +129,18 @@ public final class MLookupInfo implements Serializable, Cloneable
 
 	/** AD_Reference_ID */
 	private int DisplayType;
-	/** Real AD_Reference_ID */
-	private int AD_Reference_Value_ID;
 	/** CreadedBy?updatedBy */
 	private boolean IsCreadedUpdatedBy = false;
 	@Deprecated
 	public String InfoFactoryClass = null;
 	private boolean autoComplete = false;
 	private boolean queryHasEntityType = false;
-	
+
 	private boolean translated = false;
 
 	/**
 	 * String representation
-	 * 
+	 *
 	 * @return info
 	 */
 	@Override
@@ -172,25 +172,25 @@ public final class MLookupInfo implements Serializable, Cloneable
 		}
 		return null;
 	}	// clone
-	
-	public int getZoomSO_Window_ID()
+
+	public AdWindowId getZoomSO_Window_ID()
 	{
 		return zoomSO_Window_ID;
 	}
-	
-	public int getZoomPO_Window_ID()
+
+	public AdWindowId getZoomPO_Window_ID()
 	{
 		return zoomPO_Window_ID;
 	}
-	
-	public int getZoomAD_Window_ID_Override()
+
+	public AdWindowId getZoomAD_Window_ID_Override()
 	{
 		return zoomAD_Window_ID_Override;
 	}
 
 	/**
 	 * WARNING: this method is supported to be used EXCLUSIVELLY in Swing UI
-	 * 
+	 *
 	 * @return the whole SQL query, including SELECT, FROM, WHERE, ORDER BY
 	 */
 	public String getSqlQuery()
@@ -198,7 +198,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 		return getSqlQueryEffective().translate();
 	}
 
-	private final TranslatableParameterizedString getSqlQueryEffective()
+	private TranslatableParameterizedString getSqlQueryEffective()
 	{
 		if (isSecurityDisabled())
 		{
@@ -207,15 +207,15 @@ public final class MLookupInfo implements Serializable, Cloneable
 
 		// FIXME: we shall get rid of any context data as userRolePermissions from our built queries
 		final IUserRolePermissions userRolePermissions = Env.getUserRolePermissions();
-		return _adRoleId2sqlQuery.computeIfAbsent(userRolePermissions.getAD_Role_ID(),
-				(AD_Role_ID) -> sqlQuery.transform((sql) -> userRolePermissions.addAccessSQL(sql, TableName, IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO)));
+		return _adRoleId2sqlQuery.computeIfAbsent(userRolePermissions.getRoleId(),
+				(AD_Role_ID) -> sqlQuery.transform((sql) -> userRolePermissions.addAccessSQL(sql, TableName, IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ)));
 	}
 
-	private final Map<Integer, TranslatableParameterizedString> _adRoleId2sqlQuery = new ConcurrentHashMap<>();
+	private final Map<RoleId, TranslatableParameterizedString> _adRoleId2sqlQuery = new ConcurrentHashMap<>();
 
 	/**
 	 * WARNING: this method is supported to be used EXCLUSIVELLY in Swing UI
-	 * 
+	 *
 	 * @return Direct Access Query (i.e. SELECT Key, Value, Name ... FROM TableName WHERE KeyColumn=?)
 	 */
 	public String getSqlQueryDirect()
@@ -302,6 +302,25 @@ public final class MLookupInfo implements Serializable, Cloneable
 	public List<ILookupDisplayColumn> getDisplayColumns()
 	{
 		return displayColumns;
+	}
+
+	public TranslatableParameterizedString getDescriptionColumnSQL()
+	{
+		return descriptionColumnSQL;
+	}
+
+	/* package */ void setDescriptionColumnSQL(
+			final String descriptionColumnSQL_BaseLang,
+			final String descriptionColumnSQL_Trl)
+	{
+		this.descriptionColumnSQL = TranslatableParameterizedString.of(CTXNAME_AD_Language,
+				descriptionColumnSQL_BaseLang,
+				descriptionColumnSQL_Trl);
+	}
+
+	public String getActiveColumnSQL()
+	{
+		return getTableName() + ".IsActive";
 	}
 
 	/**
@@ -398,7 +417,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if this lookup does not need security validation (e.g. AD_Ref_Lists does not need security validation)
 	 */
 	public boolean isSecurityDisabled()
@@ -452,7 +471,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 		return isNumericKey(KeyColumn);
 	}
 
-	public static final boolean isNumericKey(final String keyColumn)
+	public static boolean isNumericKey(final String keyColumn)
 	{
 		if (keyColumn == null)
 		{
@@ -480,16 +499,6 @@ public final class MLookupInfo implements Serializable, Cloneable
 	/* package */void setDisplayType(final int displayType)
 	{
 		this.DisplayType = displayType;
-	}
-
-	public int getAD_Reference_Value_ID()
-	{
-		return AD_Reference_Value_ID;
-	}
-
-	void setAD_Reference_Value_ID(int aD_Reference_Value_ID)
-	{
-		AD_Reference_Value_ID = aD_Reference_Value_ID;
 	}
 
 	public boolean isKey()
@@ -537,7 +546,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 		this.queryHasEntityType = queryHasEntityType;
 	}
 
-	public final boolean isQueryHasEntityType()
+	public boolean isQueryHasEntityType()
 	{
 		return queryHasEntityType;
 	}
@@ -546,12 +555,12 @@ public final class MLookupInfo implements Serializable, Cloneable
 	{
 		return zoomQuery;
 	}
-	
+
 	void setTranslated(final boolean translated)
 	{
 		this.translated = translated;
 	}
-	
+
 	public boolean isTranslated()
 	{
 		return translated;

@@ -115,7 +115,7 @@ public class HandlingUnitsBL_MoveHU_Test extends AbstractHUTest
 					uomKg);
 			vhu = CollectionUtils.singleElement(vhus);
 
-			vhu.setM_Locator(locator1);
+			vhu.setM_Locator_ID(locator1.getM_Locator_ID());
 			InterfaceWrapperHelper.save(vhu);
 		}
 
@@ -136,18 +136,13 @@ public class HandlingUnitsBL_MoveHU_Test extends AbstractHUTest
 		// Change VHU's locator
 		// NOTE: we are enforced to change the HU in a transaction
 		final Date dateTrx = TimeUtil.getDay(1993, 10, 10);
-		Services.get(ITrxManager.class).run(new TrxRunnable()
-		{
-			@Override
-			public void run(String localTrxName) throws Exception
-			{
-				InterfaceWrapperHelper.setTrxName(vhu, localTrxName);
+		Services.get(ITrxManager.class).runInNewTrx((TrxRunnable)localTrxName -> {
+			InterfaceWrapperHelper.setTrxName(vhu, localTrxName);
 
-				try (final ITemporaryDateTrx dateTrxTmp = IHUContext.DateTrxProvider.temporarySet(dateTrx))
-				{
-					vhu.setM_Locator(locator2);
-					InterfaceWrapperHelper.save(vhu);
-				}
+			try (final ITemporaryDateTrx dateTrxTmp = IHUContext.DateTrxProvider.temporarySet(dateTrx))
+			{
+				vhu.setM_Locator_ID(locator2.getM_Locator_ID());
+				InterfaceWrapperHelper.save(vhu);
 			}
 		});
 

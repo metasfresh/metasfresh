@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,22 +33,13 @@ import org.adempiere.util.text.TokenizedStringBuilder;
 import de.metas.invoicecandidate.api.IInvoiceCandidatesChangesChecker;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Check;
-import de.metas.util.ILoggable;
-import de.metas.util.NullLoggable;
+import de.metas.util.Loggables;
+import lombok.NonNull;
 
 public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChangesChecker
 {
-	private ILoggable logger = NullLoggable.instance;
 	private Map<Integer, InvoiceCandidateInfo> _infosBeforeChanges = null;
 	private BigDecimal totalNetAmtToInvoiceChecksum = null;
-
-	@Override
-	public InvoiceCandidatesChangesChecker setLogger(final ILoggable logger)
-	{
-		Check.assumeNotNull(logger, "logger not null");
-		this.logger = logger;
-		return this;
-	}
 
 	@Override
 	public InvoiceCandidatesChangesChecker setTotalNetAmtToInvoiceChecksum(BigDecimal totalNetAmtToInvoiceChecksum)
@@ -104,7 +95,7 @@ public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChange
 
 	/**
 	 * Checks if there are changes between initial version or current version of an invoice candidate.
-	 * 
+	 *
 	 * @param infoAfterChange
 	 * @param infoBeforeChange
 	 * @return true if changes found
@@ -116,7 +107,7 @@ public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChange
 		// (shall not happen)
 		if (infoBeforeChange == null)
 		{
-			logger.addLog("Missing(old): " + infoAfterChange);
+			Loggables.addLog("Missing(old): " + infoAfterChange);
 			return true;
 		}
 
@@ -125,34 +116,27 @@ public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChange
 		// (shall not happen)
 		if (infoAfterChange == null)
 		{
-			logger.addLog("Missing(new): " + infoBeforeChange);
+			Loggables.addLog("Missing(new): " + infoBeforeChange);
 			return true;
 		}
 
 		//
 		// Case: we have the old version and the new version
 		// => check if they are equal
-		if (!infoBeforeChange.checkEquals(infoAfterChange, logger))
-		{
-			return true;
-		}
-
-		return false; // no changes
+		final boolean hasChanges = !infoBeforeChange.checkEquals(infoAfterChange);
+		return hasChanges;
 	}
 
 	/**
 	 * Extract relevant informations from candidates.
-	 * 
+	 *
 	 * Only those informations that were extracted are relevant for checking if an invoice candidate has changed
-	 * 
+	 *
 	 * @return map of C_Invoice_Candidate_ID to "invoice candidate relevant infos POJO"
 	 */
-	private final Map<Integer, InvoiceCandidateInfo> createCheckInfo(final Iterable<I_C_Invoice_Candidate> candidates)
+	private final Map<Integer, InvoiceCandidateInfo> createCheckInfo(@NonNull final Iterable<I_C_Invoice_Candidate> candidates)
 	{
-		Check.assumeNotNull(candidates, "candidates not null");
-
 		final ICNetAmtToInvoiceChecker totalNetAmtToInvoiceChecker = new ICNetAmtToInvoiceChecker()
-				.setLoggable(logger)
 				.setNetAmtToInvoiceExpected(totalNetAmtToInvoiceChecksum);
 
 		final Map<Integer, InvoiceCandidateInfo> invoiceCandidateId2info = new HashMap<>();
@@ -203,12 +187,12 @@ public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChange
 
 		/**
 		 * Compares this invoice candidate info (old version) object with given info (new version) and logs if there are any differences.
-		 * 
+		 *
 		 * @param infoAfterChange
 		 * @param logger
 		 * @return <code>true</code> if the objects are equal.
 		 */
-		public boolean checkEquals(final InvoiceCandidateInfo infoAfterChange, final ILoggable logger)
+		public boolean checkEquals(final InvoiceCandidateInfo infoAfterChange)
 		{
 			final InvoiceCandidateInfo infoBeforeChange = this;
 
@@ -229,7 +213,7 @@ public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChange
 
 			if (hasChanges)
 			{
-				logger.addLog(infoAfterChange.getC_Invoice_Candidate_ID() + ": " + changesInfo);
+				Loggables.addLog(infoAfterChange.getC_Invoice_Candidate_ID() + ": " + changesInfo);
 			}
 
 			return !hasChanges;

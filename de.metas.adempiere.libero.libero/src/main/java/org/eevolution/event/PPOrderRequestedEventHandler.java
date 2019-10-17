@@ -1,10 +1,7 @@
 package org.eevolution.event;
 
-import static de.metas.document.engine.IDocument.ACTION_Complete;
-import static de.metas.document.engine.IDocument.STATUS_Completed;
-
+import java.time.Instant;
 import java.util.Collection;
-import java.util.Date;
 
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.mrp.spi.impl.pporder.PPOrderProducer;
@@ -15,11 +12,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
-import de.metas.document.engine.IDocumentBL;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
-import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -74,25 +69,15 @@ public class PPOrderRequestedEventHandler implements MaterialEventHandler<PPOrde
 	}
 
 	/**
-	 * Creates a production order. Note that is does not fire an event, because production orders can be created and changed for many resons,<br>
+	 * Creates a production order. Note that it does not fire an event, because production orders can be created and changed for many reasons,<br>
 	 * and therefore we leave the event-firing to a model interceptor.
-	 *
-	 * @param ppOrder
-	 * @param dateOrdered
-	 * @return
 	 */
 	@VisibleForTesting
 	I_PP_Order createProductionOrder(@NonNull final PPOrderRequestedEvent ppOrderRequestedEvent)
 	{
 		final PPOrder ppOrder = ppOrderRequestedEvent.getPpOrder();
-		final Date dateOrdered = ppOrderRequestedEvent.getDateOrdered();
+		final Instant dateOrdered = ppOrderRequestedEvent.getDateOrdered();
 
-		final I_PP_Order ppOrderRecord = ppOrderProducer.createPPOrder(ppOrder, dateOrdered);
-
-		if (ppOrderRecord.getPP_Product_Planning().isDocComplete())
-		{
-			Services.get(IDocumentBL.class).processEx(ppOrderRecord, ACTION_Complete, STATUS_Completed);
-		}
-		return ppOrderRecord;
+		return ppOrderProducer.createPPOrder(ppOrder, dateOrdered);
 	}
 }

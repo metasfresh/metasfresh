@@ -26,6 +26,9 @@ import org.adempiere.archive.api.IArchiveEventManager;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
 
+import de.metas.email.EMailAddress;
+import de.metas.email.mailboxes.UserEMailConfig;
+
 /**
  * Implementors can be registered to {@link IArchiveEventManager#registerArchiveEventListener(IArchiveEventListener)} and can then be fired using that manager.
  *
@@ -39,7 +42,7 @@ public interface IArchiveEventListener
 		// nothing
 	}
 
-	default void onEmailSent(I_AD_Archive archive, String action, I_AD_User user, String from, String to, String cc, String bcc, String status)
+	default void onEmailSent(I_AD_Archive archive, String action, UserEMailConfig user, EMailAddress from, EMailAddress to, EMailAddress cc, EMailAddress bcc, String status)
 	{
 		// nothing
 	}

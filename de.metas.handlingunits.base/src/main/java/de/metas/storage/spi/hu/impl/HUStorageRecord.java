@@ -10,12 +10,12 @@ package de.metas.storage.spi.hu.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,8 +26,6 @@ package de.metas.storage.spi.hu.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
@@ -42,12 +40,16 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageRecord;
+import de.metas.storage.spi.hu.IHUStorageBL;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public final class HUStorageRecord implements IStorageRecord
 {
-	public static final HUStorageRecord cast(final IStorageRecord storageRecord)
+	public static HUStorageRecord cast(final IStorageRecord storageRecord)
 	{
 		return (HUStorageRecord)storageRecord;
 	}
@@ -62,9 +64,10 @@ public final class HUStorageRecord implements IStorageRecord
 	private final Quantity qtyOnHand;
 	private String _summary;
 
-	/* package */HUStorageRecord(final HUStorageRecord_HUPart huPart, final I_M_HU_Storage huStorage)
+	/* package */HUStorageRecord(
+			@NonNull final HUStorageRecord_HUPart huPart,
+			@NonNull final I_M_HU_Storage huStorage)
 	{
-		super();
 		Check.assumeNotNull(huPart, "huPart not null");
 		Check.assumeNotNull(huStorage, "huStorage not null");
 
@@ -75,9 +78,9 @@ public final class HUStorageRecord implements IStorageRecord
 
 		//
 		// Get QtyOnHand from HU Storage
-		final Quantity qtyOnHandSrc = new Quantity(huStorage.getQty(), huStorage.getC_UOM());
+		final Quantity qtyOnHandSrc = new Quantity(huStorage.getQty(), IHUStorageBL.extractUOM(huStorage));
 		// ... and convert it to product's storage UOM
-		final I_C_UOM productUOM = productBL.getStockingUOM(productId);
+		final I_C_UOM productUOM = productBL.getStockUOM(productId);
 		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(productId);
 		qtyOnHand = uomConversionBL.convertQuantityTo(qtyOnHandSrc, uomConversionCtx, productUOM);
 	}
@@ -111,7 +114,7 @@ public final class HUStorageRecord implements IStorageRecord
 		summary.append("\n@M_TU_HU_ID@: ").append(handlingUnitsBL.getDisplayName(tuHU));
 		summary.append("\n@VHU_ID@: ").append(handlingUnitsBL.getDisplayName(vhu));
 
-		final I_C_BPartner bpartner = vhu.getC_BPartner();
+		final I_C_BPartner bpartner = IHandlingUnitsBL.extractBPartnerOrNull(vhu);
 		if (bpartner != null && bpartner.getC_BPartner_ID() > 0)
 		{
 			summary.append("\n@C_BPartner_ID@: ").append(bpartner.getValue()).append("_").append(bpartner.getName());
@@ -171,7 +174,7 @@ public final class HUStorageRecord implements IStorageRecord
 	@Override
 	public BigDecimal getQtyOnHand()
 	{
-		return qtyOnHand.getAsBigDecimal();
+		return qtyOnHand.toBigDecimal();
 	}
 
 	public I_M_HU getVHU()

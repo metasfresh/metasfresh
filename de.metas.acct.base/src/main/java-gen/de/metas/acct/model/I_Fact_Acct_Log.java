@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.acct.model;
 
 
@@ -40,7 +24,6 @@ public interface I_Fact_Acct_Log
 
 	/**
 	 * Set Aktion.
-	 * Zeigt die durchzuführende Aktion an
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -50,7 +33,6 @@ public interface I_Fact_Acct_Log
 
 	/**
 	 * Get Aktion.
-	 * Zeigt die durchzuführende Aktion an
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -72,8 +54,6 @@ public interface I_Fact_Acct_Log
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Client_ID();
-
-	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_Fact_Acct_Log, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct_Log, org.compiere.model.I_AD_Client>(I_Fact_Acct_Log.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
@@ -99,10 +79,6 @@ public interface I_Fact_Acct_Log
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_Fact_Acct_Log, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct_Log, org.compiere.model.I_AD_Org>(I_Fact_Acct_Log.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);

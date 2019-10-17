@@ -49,15 +49,10 @@ public class C_Order_CreatePOFromSOsBL implements IC_Order_CreatePOFromSOsBL
 	@Override
 	public IC_Order_CreatePOFromSOsListener getCompositeListener()
 	{
-		return new IC_Order_CreatePOFromSOsListener()
-		{
-			@Override
-			public void afterPurchaseOrderLineCreatedBeforeSave(I_C_OrderLine purchaseOrderLine, I_C_OrderLine salesOrderLine)
+		return (purchaseOrderLine, salesOrderLine) -> {
+			for (IC_Order_CreatePOFromSOsListener actualListener : listeners)
 			{
-				for (IC_Order_CreatePOFromSOsListener actualListener : listeners)
-				{
-					actualListener.afterPurchaseOrderLineCreatedBeforeSave(purchaseOrderLine, salesOrderLine);
-				}
+				actualListener.afterPurchaseOrderLineCreatedBeforeSave(purchaseOrderLine, salesOrderLine);
 			}
 		};
 	}
@@ -73,7 +68,7 @@ public class C_Order_CreatePOFromSOsBL implements IC_Order_CreatePOFromSOsBL
 		if (!SYSCONFIG_PURCHASE_QTY_SOURCE_DEFAULT.equalsIgnoreCase(purchaseQtySource)
 				&& !I_C_OrderLine.COLUMNNAME_QtyReserved.equalsIgnoreCase(purchaseQtySource))
 		{
-			Loggables.get().addLog(
+			Loggables.addLog(
 					"AD_SysConfig " + SYSCONFIG_PURCHASE_QTY_SOURCE + " has an unsspported value: " + purchaseQtySource + "; Instead we use the default value: " + SYSCONFIG_PURCHASE_QTY_SOURCE_DEFAULT);
 
 			return SYSCONFIG_PURCHASE_QTY_SOURCE_DEFAULT;

@@ -15,6 +15,7 @@
  * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
+
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -25,7 +26,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -38,7 +38,9 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.IInventoryDAO;
+import de.metas.inventory.InventoryId;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -59,10 +61,9 @@ import de.metas.util.time.SystemTime;
  */
 public class MInventory extends X_M_Inventory implements IDocument
 {
-	private static final long serialVersionUID = -8161913729477113301L;
+	private static final long serialVersionUID = 910998472569265447L;
 
-	/** Just Prepared Flag */
-	private boolean m_justPrepared = false;
+	private boolean m_justPrepared;
 
 	public MInventory(final Properties ctx, final int M_Inventory_ID, final String trxName)
 	{
@@ -100,12 +101,14 @@ public class MInventory extends X_M_Inventory implements IDocument
 
 	public List<I_M_InventoryLine> getLines()
 	{
-		return Services.get(IInventoryDAO.class).retrieveLinesForInventoryId(getM_Inventory_ID());
+		final InventoryId inventoryId = InventoryId.ofRepoId(getM_Inventory_ID());
+		return Services.get(IInventoryDAO.class).retrieveLinesForInventoryId(inventoryId);
 	}
 
 	private boolean hasLines()
 	{
-		return Services.get(IInventoryDAO.class).hasLines(getM_Inventory_ID());
+		final InventoryId inventoryId = InventoryId.ofRepoId(getM_Inventory_ID());
+		return Services.get(IInventoryDAO.class).hasLines(inventoryId);
 	}
 
 	/**
@@ -188,7 +191,8 @@ public class MInventory extends X_M_Inventory implements IDocument
 		super.setProcessed(processed);
 		if (!is_new())
 		{
-			Services.get(IInventoryDAO.class).setInventoryLinesProcessed(getM_Inventory_ID(), processed);
+			final InventoryId inventoryId = InventoryId.ofRepoId(getM_Inventory_ID());
+			Services.get(IInventoryDAO.class).setInventoryLinesProcessed(inventoryId, processed);
 		}
 	}
 
@@ -296,7 +300,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 		}
 
 		final IProductBL productBL = Services.get(IProductBL.class);
-		if (!productBL.isStocked(line.getM_Product_ID()))
+		if (!productBL.isStocked(ProductId.ofRepoIdOrNull(line.getM_Product_ID())))
 		{
 			return;
 		}
@@ -312,20 +316,11 @@ public class MInventory extends X_M_Inventory implements IDocument
 				line.getM_Locator_ID(),
 				line.getM_Product_ID(),
 				line.getM_AttributeSetInstance_ID(),
-				qtyDiff.getAsBigDecimal(),
+				qtyDiff.toBigDecimal(),
 				getMovementDate(),
 				get_TrxName());
 		mtrx.setM_InventoryLine_ID(line.getM_InventoryLine_ID());
 		InterfaceWrapperHelper.save(mtrx);
-
-		if (qtyDiff.signum() != 0)
-		{
-			final String err = createCostDetail(line, line.getM_AttributeSetInstance_ID(), qtyDiff.getAsBigDecimal());
-			if (err != null && !err.isEmpty())
-			{
-				throw new AdempiereException(err);
-			}
-		}
 	}
 
 	/**
@@ -558,69 +553,11 @@ public class MInventory extends X_M_Inventory implements IDocument
 		return 0;
 	}
 
-	private boolean isReversal()
+	public boolean isComplete()
 	{
-		final int reversalId = getReversal_ID();
-		return reversalId > 0 && reversalId > getM_Inventory_ID();
-	}
-
-	/**
-	 * Create Cost Detail
-	 *
-	 * @param line
-	 * @param Qty
-	 * @return an EMPTY String on success otherwise an ERROR message
-	 */
-	private String createCostDetail(final I_M_InventoryLine line, final int M_AttributeSetInstance_ID, final BigDecimal qty)
-	{
-		// Get Account Schemas to create MCostDetail
-		final MAcctSchema[] acctschemas = MAcctSchema.getClientAcctSchema(getCtx(), getAD_Client_ID());
-		for (final MAcctSchema as : acctschemas)
-		{
-			if (as.isSkipOrg(getAD_Org_ID()) || as.isSkipOrg(line.getAD_Org_ID()))
-			{
-				continue;
-			}
-
-			BigDecimal costs = BigDecimal.ZERO;
-			if (isReversal())
-			{
-				String sql = "SELECT amt * -1 FROM M_CostDetail WHERE M_InventoryLine_ID=?"; // negate costs
-				final MProduct product = new MProduct(getCtx(), line.getM_Product_ID(), ITrx.TRXNAME_ThreadInherited);
-				final String CostingLevel = product.getCostingLevel(as);
-				if (X_C_AcctSchema.COSTINGLEVEL_Organization.equals(CostingLevel))
-				{
-					sql = sql + " AND AD_Org_ID=" + getAD_Org_ID();
-				}
-				else if (X_C_AcctSchema.COSTINGLEVEL_BatchLot.equals(CostingLevel) && M_AttributeSetInstance_ID != 0)
-				{
-					sql = sql + " AND M_AttributeSetInstance_ID=" + M_AttributeSetInstance_ID;
-				}
-				costs = DB.getSQLValueBD(ITrx.TRXNAME_ThreadInherited, sql, line.getReversalLine_ID());
-			}
-			else
-			{
-				final ProductCost pc = new ProductCost(getCtx(),
-						line.getM_Product_ID(), M_AttributeSetInstance_ID, ITrx.TRXNAME_ThreadInherited);
-				pc.setQty(qty);
-				costs = pc.getProductCosts(as, line.getAD_Org_ID(), as.getCostingMethod(), 0, false);
-			}
-
-			//
-			// Validate the cost price
-			if (ProductCost.isNoCosts(costs))
-			{
-				return "No Costs for " + line.getM_Product().getName();
-			}
-
-			// Set Total Amount and Total Quantity from Inventory
-			MCostDetail.createInventory(as, line.getAD_Org_ID(),
-					line.getM_Product_ID(), M_AttributeSetInstance_ID,
-					line.getM_InventoryLine_ID(), 0,	// no cost element
-					costs, qty,
-					line.getDescription(), ITrx.TRXNAME_ThreadInherited);
-		}
-
-		return "";
+		String ds = getDocStatus();
+		return DOCSTATUS_Completed.equals(ds)
+				|| DOCSTATUS_Closed.equals(ds)
+				|| DOCSTATUS_Reversed.equals(ds);
 	}
 }

@@ -66,7 +66,7 @@ public class MWFNode extends X_AD_WF_Node
 	public static MWFNode get (Properties ctx, int AD_WF_Node_ID)
 	{
 		Integer key = new Integer (AD_WF_Node_ID);
-		MWFNode retValue = (MWFNode) s_cache.get (key);
+		MWFNode retValue = s_cache.get (key);
 		if (retValue != null)
 			return retValue;
 		retValue = new MWFNode (ctx, AD_WF_Node_ID, null);
@@ -419,21 +419,6 @@ public class MWFNode extends X_AD_WF_Node
 		return false;
 	}	//	isUserManual
 	
-	
-	/**
-	 * 	Get Duration in ms
-	 *	@return duration in ms
-	 */
-	public long getDurationMS ()
-	{
-		long duration = super.getDuration ();
-		if (duration == 0)
-			return 0;
-		if (m_durationBaseMS == -1)
-			m_durationBaseMS = getAD_Workflow().getDurationBaseSec() * 1000;
-		return duration * m_durationBaseMS;
-	}	//	getDurationMS
-	
 	/**
 	 * 	Get Duration Limit in ms
 	 *	@return duration limit in ms
@@ -501,6 +486,7 @@ public class MWFNode extends X_AD_WF_Node
 	 * @return workflow
 	 * @deprecated please use {@link #getAD_Window()}
 	 */
+	@Deprecated
 	@Override
 	public MWorkflow getWorkflow()
 	{

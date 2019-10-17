@@ -56,7 +56,7 @@ public class MigratorService implements IMigratorService
 		final int initialDLMLevelBkp = partition.getCurrentDLMLevel();
 		if (initialDLMLevelBkp >= DLM_Level_TEST)
 		{
-			Loggables.get().withLogger(logger, Level.WARN).addLog(
+			Loggables.withLogger(logger, Level.WARN).addLog(
 					"testMigratePartition can't test partition because its DLM level is already {}; partition={}",
 					initialDLMLevelBkp, partition);
 			return; // do nothing

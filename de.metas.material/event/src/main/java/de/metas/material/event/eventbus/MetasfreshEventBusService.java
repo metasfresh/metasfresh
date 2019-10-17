@@ -70,8 +70,6 @@ public final class MetasfreshEventBusService
 	 * Can be called to create a local-only event service which will not try to set up or connect to a message broker. Useful for testing.
 	 * <p>
 	 * This constructor is supposed to be invoked by {@link MaterialEventConfiguration}.
-	 *
-	 * @param eventType
 	 */
 	private MetasfreshEventBusService(
 			@NonNull final Type eventType,

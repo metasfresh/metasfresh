@@ -35,8 +35,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.border.TitledBorder;
 
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
 import org.compiere.apps.ADialog;
@@ -53,12 +52,11 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
-import de.metas.logging.LogManager;
-import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.UserPreferenceLevelConstraint;
 
 /**
  *  Maintain Value Preferences.
@@ -112,7 +110,7 @@ public class ValuePreference extends CDialog
 
 		//  Get from mField
 		//  AD_Window_ID, DisplayAttribute, Attribute, DisplayType, AD_Referenece_ID
-		int AD_Window_ID = mField.getAD_Window_ID();
+		AdWindowId adWindowId = mField.getAdWindowId();
 		String Attribute = mField.getColumnName();
 		String DisplayAttribute = mField.getHeader();
 		int displayType = mField.getDisplayType();
@@ -128,7 +126,7 @@ public class ValuePreference extends CDialog
 
 		//  Create Editor
 		ValuePreference vp = new ValuePreference (frame, WindowNo,
-			AD_Client_ID, AD_Org_ID, AD_User_ID, AD_Window_ID,
+			AD_Client_ID, AD_Org_ID, AD_User_ID, adWindowId,
 			Attribute, DisplayAttribute, Value, DisplayValue,
 			displayType, AD_Reference_ID);
 		return vp;
@@ -189,13 +187,14 @@ public class ValuePreference extends CDialog
 	 *  @param AD_Reference_ID reference
 	 */
 	public ValuePreference (Frame frame, int WindowNo,
-		int AD_Client_ID, int AD_Org_ID, int AD_User_ID, int AD_Window_ID,
+		int AD_Client_ID, int AD_Org_ID, int AD_User_ID,
+		AdWindowId adWindowId,
 		String Attribute, String DisplayAttribute, String Value, String DisplayValue,
 		int displayType, int AD_Reference_ID)
 	{
 		super(frame, Msg.getMsg(Env.getCtx(), NAME) + " " + DisplayAttribute, true);
 		log.info("WindowNo=" + WindowNo
-			+ ", Client_ID=" + AD_Client_ID + ", Org_ID=" + AD_Org_ID + ", User_ID=" + AD_User_ID + ", Window_ID=" + AD_Window_ID
+			+ ", Client_ID=" + AD_Client_ID + ", Org_ID=" + AD_Org_ID + ", User_ID=" + AD_User_ID + ", Window_ID=" + adWindowId
 			+ ",  Attribute=" + Attribute + "/" + DisplayAttribute + ",  Value=" + Value + "/" + DisplayValue
 			+ ",  DisplayType=" + displayType + ", Reference_ID=" + AD_Reference_ID);
 		m_ctx = Env.getCtx();
@@ -203,7 +202,7 @@ public class ValuePreference extends CDialog
 		m_AD_Client_ID = AD_Client_ID;
 		m_AD_Org_ID = AD_Org_ID;
 		m_AD_User_ID = AD_User_ID;
-		m_AD_Window_ID = AD_Window_ID;
+		m_adWindowId = adWindowId;
 		m_Attribute = Attribute;
 		m_DisplayAttribute = DisplayAttribute;
 		m_Value = Value;
@@ -228,7 +227,7 @@ public class ValuePreference extends CDialog
 	private int             m_AD_Client_ID;
 	private int             m_AD_Org_ID;
 	private int             m_AD_User_ID;
-	private int             m_AD_Window_ID;
+	private AdWindowId      m_adWindowId;
 	private String          m_Attribute;
 	private String          m_DisplayAttribute;
 	private String          m_Value;
@@ -390,13 +389,19 @@ public class ValuePreference extends CDialog
 		{
 			int no = delete();
 			if (no == 0)
+			{
 				ADialog.warn(m_WindowNo, this, "ValuePreferenceNotFound");
+			}
 			else
+			{
 				ADialog.info(m_WindowNo, this, "ValuePreferenceDeleted", String.valueOf(no));
+			}
 			dispose();
 		}
 		else
+		{
 			setExplanation();
+		}
 	}   //  actionPerformed
 
 	/**
@@ -407,26 +412,40 @@ public class ValuePreference extends CDialog
 		/** @todo translation */
 		StringBuffer expl = new StringBuffer("For ");
 		if (cbClient.isSelected() && cbOrg.isSelected())
+		{
 			expl.append("this Client and Organization");
+		}
 		else if (cbClient.isSelected() && !cbOrg.isSelected())
+		{
 			expl.append("all Organizations of this Client");
+		}
 		else if (!cbClient.isSelected() && cbOrg.isSelected())
 		{
 			cbOrg.setSelected(false);
 			expl.append("entire System");
 		}
 		else
+		{
 			expl.append("entire System");
+		}
 		//
 		if (cbUser.isSelected())
+		{
 			expl.append(", this User");
+		}
 		else
+		{
 			expl.append(", all Users");
+		}
 		//
 		if (cbWindow.isSelected())
+		{
 			expl.append(" and this Window");
+		}
 		else
+		{
 			expl.append(" and all Windows");
+		}
 		//
 		if (Env.getLanguage(Env.getCtx()).isBaseLanguage())
 		{
@@ -447,19 +466,29 @@ public class ValuePreference extends CDialog
 		sql.append("AD_Client_ID=").append(cbClient.isSelected() ? m_AD_Client_ID : 0);
 		sql.append(" AND AD_Org_ID=").append(cbOrg.isSelected() ? m_AD_Org_ID : 0);
 		if (cbUser.isSelected())
+		{
 			sql.append(" AND AD_User_ID=").append(m_AD_User_ID);
+		}
 		else
+		{
 			sql.append(" AND AD_User_ID IS NULL");
+		}
 		if (cbWindow.isSelected())
-			sql.append(" AND AD_Window_ID=").append(m_AD_Window_ID);
+		{
+			sql.append(" AND AD_Window_ID=").append(m_adWindowId.getRepoId());
+		}
 		else
+		{
 			sql.append(" AND AD_Window_ID IS NULL");
+		}
 		sql.append(" AND Attribute='").append(m_Attribute).append("'");
 		//
 		log.debug( sql.toString());
 		int no = DB.executeUpdate(sql.toString(), null);
 		if (no > 0)
+		{
 			Env.setContext(m_ctx, getContextKey(), (String)null);
+		}
 		return no;
 	}   //  delete
 
@@ -470,9 +499,13 @@ public class ValuePreference extends CDialog
 	private String getContextKey()
 	{
 		if (cbWindow.isSelected())
-			return "P" + m_AD_Window_ID + "|" + m_Attribute;
+		{
+			return "P" + m_adWindowId.getRepoId() + "|" + m_Attribute;
+		}
 		else
+		{
 			return "P|" + m_Attribute;
+		}
 	}   //  getContextKey
 
 	/**
@@ -489,9 +522,13 @@ public class ValuePreference extends CDialog
 		if (m_Value == null || m_Value.length() == 0)
 		{
 			if (DisplayType.isLookup(m_DisplayType))
+			{
 				m_Value = "-1";	//	 -1 may cause problems (BPartner - M_DiscountSchema
+			}
 			else if (DisplayType.isDate(m_DisplayType))
+			{
 				m_Value = " ";
+			}
 			else
 			{
 				ADialog.warn(m_WindowNo, this, "ValuePreferenceNotInserted");
@@ -510,13 +547,21 @@ public class ValuePreference extends CDialog
 		sql.append(AD_Preference_ID).append(",").append(Client_ID).append(",").append(Org_ID)
 			.append(", 'Y',now(),").append(m_AD_User_ID).append(",now(),").append(m_AD_User_ID).append(", ");
 		if (cbWindow.isSelected())
-			sql.append(m_AD_Window_ID).append(",");
+		{
+			sql.append(m_adWindowId.getRepoId()).append(",");
+		}
 		else
+		{
 			sql.append("NULL,") ;
+		}
 		if (cbUser.isSelected())
+		{
 			sql.append(m_AD_User_ID).append(",");
+		}
 		else
+		{
 			sql.append("NULL,");
+		}
 		//
 		sql.append(DB.TO_STRING(m_Attribute)).append(",").append(DB.TO_STRING(m_Value)).append(")");
 		//
@@ -528,7 +573,9 @@ public class ValuePreference extends CDialog
 			ADialog.info(m_WindowNo, this, "ValuePreferenceInserted");
 		}
 		else
+		{
 			ADialog.warn(m_WindowNo, this, "ValuePreferenceNotInserted");
+		}
 
 	}   //  insert
 

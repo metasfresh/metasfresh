@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.acct.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for Fact_Acct_EndingBalance
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_Fact_Acct_EndingBalance extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1932561643L;
+	private static final long serialVersionUID = -1293990010L;
 
     /** Standard Constructor */
     public X_Fact_Acct_EndingBalance (Properties ctx, int Fact_Acct_EndingBalance_ID, String trxName)
@@ -41,8 +24,8 @@ public class X_Fact_Acct_EndingBalance extends org.compiere.model.PO implements 
       /** if (Fact_Acct_EndingBalance_ID == 0)
         {
 			setAccount_ID (0);
-			setAmtAcctCr_DTD (Env.ZERO);
-			setAmtAcctDr_DTD (Env.ZERO);
+			setAmtAcctCr_DTD (BigDecimal.ZERO);
+			setAmtAcctDr_DTD (BigDecimal.ZERO);
 			setC_AcctSchema_ID (0);
 			setDateAcct (new Timestamp( System.currentTimeMillis() ));
 			setFact_Acct_ID (0);
@@ -66,7 +49,7 @@ public class X_Fact_Acct_EndingBalance extends org.compiere.model.PO implements 
     }
 
 	@Override
-	public org.compiere.model.I_C_ElementValue getAccount() throws RuntimeException
+	public org.compiere.model.I_C_ElementValue getAccount()
 	{
 		return get_ValueAsPO(COLUMNNAME_Account_ID, org.compiere.model.I_C_ElementValue.class);
 	}
@@ -120,7 +103,7 @@ public class X_Fact_Acct_EndingBalance extends org.compiere.model.PO implements 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctCr_DTD);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -142,12 +125,12 @@ public class X_Fact_Acct_EndingBalance extends org.compiere.model.PO implements 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctDr_DTD);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
 	@Override
-	public org.compiere.model.I_C_AcctSchema getC_AcctSchema() throws RuntimeException
+	public org.compiere.model.I_C_AcctSchema getC_AcctSchema()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
 	}
@@ -239,6 +222,8 @@ public class X_Fact_Acct_EndingBalance extends org.compiere.model.PO implements 
 	public static final String POSTINGTYPE_Statistical = "S";
 	/** Reservation = R */
 	public static final String POSTINGTYPE_Reservation = "R";
+	/** Actual Year End = Y */
+	public static final String POSTINGTYPE_ActualYearEnd = "Y";
 	/** Set Buchungsart.
 		@param PostingType 
 		Die Art des gebuchten Betrages dieser Transaktion

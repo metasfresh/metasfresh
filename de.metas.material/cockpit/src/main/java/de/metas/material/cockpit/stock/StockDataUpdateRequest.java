@@ -1,11 +1,11 @@
 package de.metas.material.cockpit.stock;
 
-import java.math.BigDecimal;
-
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -38,4 +38,7 @@ public class StockDataUpdateRequest
 
 	@Default
 	BigDecimal onHandQtyChange = BigDecimal.ZERO;
+
+	@NonNull
+	StockChangeSourceInfo sourceInfo;
 }

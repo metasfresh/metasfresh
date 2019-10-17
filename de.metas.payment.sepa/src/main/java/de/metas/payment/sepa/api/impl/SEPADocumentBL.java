@@ -13,15 +13,14 @@ package de.metas.payment.sepa.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -36,14 +35,16 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.X_C_BPartner;
 import org.compiere.util.Util;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.i18n.IMsgBL;
+import de.metas.payment.PaymentRule;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.sepa.api.ISEPABankAccountBL;
 import de.metas.payment.sepa.api.ISEPADocument;
@@ -88,7 +89,7 @@ public class SEPADocumentBL implements ISEPADocumentBL
 				continue;
 			}
 
-			if (!ignorePaymentRule && doc.getC_BPartner_ID() > 0 && !Services.get(ISEPADocumentBL.class).isSEPAEligible(ctx, doc.getC_BPartner_ID(), trxName))
+			if (!ignorePaymentRule && doc.getC_BPartner_ID() > 0 && !isSEPAEligible(doc.getC_BPartner_ID()))
 			{
 				// We ignore documents from BPartners that aren't eligible for SEPA direct debit.
 				continue;
@@ -162,7 +163,8 @@ public class SEPADocumentBL implements ISEPADocumentBL
 
 		final String swiftCode = Services.get(ISEPABankAccountBL.class).getSwiftCode(sepaBankAccount);
 
-		header.setIBAN(sepaBankAccount.getIBAN());
+		final String IBAN = sepaBankAccount.getIBAN();
+		header.setIBAN(StringUtils.deleteWhitespace(IBAN));
 		header.setSwiftCode(swiftCode);
 		header.setAD_Org_ID(adOrgId);
 		header.setDescription(null); // TODO: Add description.
@@ -183,19 +185,18 @@ public class SEPADocumentBL implements ISEPADocumentBL
 
 		// ts: unrelated: don'T add another day, because it turn our that it makes the creditors get their money one day after they expected it
 		final Timestamp paymentDate = line.getSEPA_Export().getPaymentDate();
-		if(paymentDate == null)
+		if (paymentDate == null)
 		{
 			return SystemTime.asTimestamp();
 		}
 		return paymentDate;
 	}
 
-	@Override
-	public boolean isSEPAEligible(final Properties ctx, final int bPartnerId, final String trxName)
+	private boolean isSEPAEligible(final int bpartnerId)
 	{
-		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(ctx, bPartnerId, I_C_BPartner.class, trxName);
-
-		return X_C_BPartner.PAYMENTRULE_DirectDebit.equals(Services.get(IPaymentBL.class).getPaymentRuleForBPartner(bPartner));
+		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
+		final PaymentRule paymentRule = Services.get(IPaymentBL.class).getPaymentRuleForBPartner(bpartner);
+		return paymentRule.isDirectDebit();
 	}
 
 	@Override

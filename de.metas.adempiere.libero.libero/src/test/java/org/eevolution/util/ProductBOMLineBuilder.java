@@ -10,12 +10,12 @@ package org.eevolution.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,19 +29,22 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Product_BOMLine;
 
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class ProductBOMLineBuilder
 {
 	private ProductBOMBuilder _parent;
 	//
-	private String componentType = X_PP_Product_BOMLine.COMPONENTTYPE_Component;
+	private BOMComponentType _componentType = BOMComponentType.Component;
 	private I_M_Product _product;
 	private I_C_UOM _uom;
 	private boolean _isQtyPercentage;
@@ -83,7 +86,7 @@ public class ProductBOMLineBuilder
 		bomLine.setC_UOM(getC_UOM());
 
 		bomLine.setIsCritical(false);
-		bomLine.setComponentType(componentType);
+		bomLine.setComponentType(_componentType != null ? _componentType.getCode() : null);
 		bomLine.setIssueMethod(_issueMethod);
 
 		bomLine.setIsQtyPercentage(_isQtyPercentage);
@@ -117,6 +120,8 @@ public class ProductBOMLineBuilder
 
 	private I_C_UOM getC_UOM()
 	{
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
 		if (this._uom != null)
 		{
 			return this._uom;
@@ -127,7 +132,7 @@ public class ProductBOMLineBuilder
 		final I_M_Product product = getM_Product();
 		if (product != null)
 		{
-			uom = product.getC_UOM();
+			uom = uomDAO.getById(product.getC_UOM_ID());
 		}
 
 		Check.assumeNotNull(uom, "uom not null");
@@ -142,7 +147,7 @@ public class ProductBOMLineBuilder
 
 	/**
 	 * Sets Qty to be used with {@link #setIsQtyPercentage(boolean)} is set to <code>false</code>.
-	 * 
+	 *
 	 * @param qtyBOM
 	 * @return this
 	 */
@@ -154,7 +159,7 @@ public class ProductBOMLineBuilder
 
 	/**
 	 * Sets Qty to be used with {@link #setIsQtyPercentage(boolean)} is set to <code>false</code>.
-	 * 
+	 *
 	 * @param qtyBOM
 	 * @return this
 	 */
@@ -165,7 +170,7 @@ public class ProductBOMLineBuilder
 
 	/**
 	 * Sets Qty to be used with {@link #setIsQtyPercentage(boolean)} is set to <code>false</code>.
-	 * 
+	 *
 	 * @param qtyBOM
 	 * @return this
 	 */
@@ -182,7 +187,7 @@ public class ProductBOMLineBuilder
 
 	/**
 	 * Sets Qty to be used with {@link #setIsQtyPercentage(boolean)} is set to true.
-	 * 
+	 *
 	 * @param qtyBatch
 	 * @return this
 	 */
@@ -209,7 +214,7 @@ public class ProductBOMLineBuilder
 
 	/**
 	 * The default is {@link X_PP_Product_BOMLine#ISSUEMETHOD_Issue}.
-	 * 
+	 *
 	 * @param issueMethod
 	 * @return
 	 */
@@ -218,10 +223,10 @@ public class ProductBOMLineBuilder
 		this._issueMethod = issueMethod;
 		return this;
 	}
-	
-	public ProductBOMLineBuilder componentType(@NonNull final String componentType)
+
+	public ProductBOMLineBuilder componentType(@NonNull final BOMComponentType componentType)
 	{
-		this.componentType = componentType;
+		this._componentType = componentType;
 		return this;
 	}
 }

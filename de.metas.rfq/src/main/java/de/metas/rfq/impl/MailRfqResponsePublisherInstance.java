@@ -2,27 +2,32 @@ package de.metas.rfq.impl;
 
 import java.sql.Timestamp;
 
-import javax.mail.internet.InternetAddress;
-
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.IClientDAO;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_User;
 
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.spi.impl.DefaultModelArchiver;
 import de.metas.email.EMail;
+import de.metas.email.EMailAddress;
+import de.metas.email.EMailCustomType;
 import de.metas.email.EMailSentStatus;
-import de.metas.email.IMailBL;
-import de.metas.email.IMailTextBuilder;
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.ClientEMailConfig;
+import de.metas.email.mailboxes.UserEMailConfig;
+import de.metas.email.templates.MailTemplateId;
+import de.metas.email.templates.MailTextBuilder;
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.RfQResponsePublisherRequest;
 import de.metas.rfq.RfQResponsePublisherRequest.PublishingType;
 import de.metas.rfq.exceptions.RfQPublishException;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQ_Topic;
-import de.metas.util.Check;
 import de.metas.util.Services;
 
 /*
@@ -56,13 +61,14 @@ import de.metas.util.Services;
 
 	// services
 	private final transient IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
-	private final transient IMailBL mailBL = Services.get(IMailBL.class);
 	private final transient IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
+	private final transient IClientDAO clientsRepo = Services.get(IClientDAO.class);
+	private final MailService mailService = Adempiere.getBean(MailService.class);
 
-	public static enum RfQReportType
+	public enum RfQReportType
 	{
 		Invitation, InvitationWithoutQtyRequired, Won, Lost,
-	};
+	}
 
 	private MailRfqResponsePublisherInstance()
 	{
@@ -100,14 +106,14 @@ import de.metas.util.Services;
 		{
 			throw new RfQPublishException(request, "@NotFound@ @AD_User_ID@");
 		}
-		final String userToEmail = userTo.getEMail();
-		if (Check.isEmpty(userToEmail, true))
+		final EMailAddress userToEmail = EMailAddress.ofNullableString(userTo.getEMail());
+		if (userToEmail == null)
 		{
 			throw new RfQPublishException(request, "@NotFound@ @AD_User_ID@ @Email@ - " + userTo);
 		}
 
 		//
-		final IMailTextBuilder mailTextBuilder = createMailTextBuilder(rfqResponse, rfqReportType);
+		final MailTextBuilder mailTextBuilder = createMailTextBuilder(rfqResponse, rfqReportType);
 
 		//
 		final String subject = mailTextBuilder.getMailHeader();
@@ -117,34 +123,36 @@ import de.metas.util.Services;
 		final I_AD_Archive pdfArchive = archiver.archive();
 		final byte[] pdfData = archiver.getPdfData();
 
+		final ClientId adClientId = ClientId.ofRepoId(rfqResponse.getAD_Client_ID());
+		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(adClientId);
+		
 		//
 		// Send it
-		final EMail email = mailBL.createEMail(
-				rfqResponse.getAD_Client() //
-				, (String)null // mailCustomType
-				, (I_AD_User)null // from
-				, userToEmail // to
-				, subject, message, mailTextBuilder.isHtml() // html
-		);
+		final EMail email = mailService.createEMail(
+				tenantEmailConfig, //
+				(EMailCustomType)null, // mailCustomType
+				(UserEMailConfig)null, // from
+				userToEmail, // to
+				subject, // subject
+				message,  // message
+				mailTextBuilder.isHtml()); // html
 		email.addAttachment("RfQ_" + rfqResponse.getC_RfQResponse_ID() + ".pdf", pdfData);
 		final EMailSentStatus emailSentStatus = email.send();
 
 		//
 		// Fire mail sent/not sent event (even if there were some errors)
 		{
-			final InternetAddress from = email.getFrom();
-			final String fromStr = from == null ? null : from.toString();
-			final InternetAddress to = email.getTo();
-			final String toStr = to == null ? null : to.getAddress();
+			final EMailAddress from = email.getFrom();
+			final EMailAddress to = email.getTo();
 			archiveEventManager.fireEmailSent(
-					pdfArchive // archive
-					, X_C_Doc_Outbound_Log_Line.ACTION_EMail // action
-					, (I_AD_User)null // user
-					, fromStr // from
-					, toStr // to
-					, (String)null // cc
-					, (String)null // bcc
-					, emailSentStatus.getSentMsg() // status
+					pdfArchive, // archive
+					X_C_Doc_Outbound_Log_Line.ACTION_EMail, // action
+					(UserEMailConfig)null, // user
+					from, // from
+					to, // to
+					(EMailAddress)null, // cc
+					(EMailAddress)null, // bcc
+					emailSentStatus.getSentMsg() // status
 			);
 		}
 
@@ -167,7 +175,7 @@ import de.metas.util.Services;
 		final PublishingType publishingType = request.getPublishingType();
 		if (publishingType == PublishingType.Invitation)
 		{
-			if(rfqDAO.hasQtyRequiered(rfqResponse))
+			if (rfqDAO.hasQtyRequiered(rfqResponse))
 			{
 				return RfQReportType.Invitation;
 			}
@@ -219,35 +227,35 @@ import de.metas.util.Services;
 		}
 	}
 
-	private IMailTextBuilder createMailTextBuilder(final I_C_RfQResponse rfqResponse, final RfQReportType rfqReportType)
+	private MailTextBuilder createMailTextBuilder(final I_C_RfQResponse rfqResponse, final RfQReportType rfqReportType)
 	{
 		final I_C_RfQ_Topic rfqTopic = rfqResponse.getC_RfQ().getC_RfQ_Topic();
 
-		final IMailTextBuilder mailTextBuilder;
+		final MailTextBuilder mailTextBuilder;
 		if (rfqReportType == RfQReportType.Invitation)
 		{
-			mailTextBuilder = mailBL.newMailTextBuilder(rfqTopic.getRfQ_Invitation_MailText());
+			mailTextBuilder = mailService.newMailTextBuilder(MailTemplateId.ofRepoId(rfqTopic.getRfQ_Invitation_MailText_ID()));
 		}
 		else if (rfqReportType == RfQReportType.InvitationWithoutQtyRequired)
 		{
-			mailTextBuilder = mailBL.newMailTextBuilder(rfqTopic.getRfQ_InvitationWithoutQty_MailText());
+			mailTextBuilder = mailService.newMailTextBuilder(MailTemplateId.ofRepoId(rfqTopic.getRfQ_InvitationWithoutQty_MailText_ID()));
 		}
 		else if (rfqReportType == RfQReportType.Won)
 		{
-			mailTextBuilder = mailBL.newMailTextBuilder(rfqTopic.getRfQ_Win_MailText());
+			mailTextBuilder = mailService.newMailTextBuilder(MailTemplateId.ofRepoId(rfqTopic.getRfQ_Win_MailText_ID()));
 		}
 		else if (rfqReportType == RfQReportType.Lost)
 		{
-			mailTextBuilder = mailBL.newMailTextBuilder(rfqTopic.getRfQ_Lost_MailText());
+			mailTextBuilder = mailService.newMailTextBuilder(MailTemplateId.ofRepoId(rfqTopic.getRfQ_Lost_MailText_ID()));
 		}
 		else
 		{
 			throw new AdempiereException("@Invalid@ @Type@: " + rfqReportType);
 		}
 
-		mailTextBuilder.setC_BPartner(rfqResponse.getC_BPartner());
-		mailTextBuilder.setAD_User(rfqResponse.getAD_User());
-		mailTextBuilder.setRecord(rfqResponse);
+		mailTextBuilder.bpartner(rfqResponse.getC_BPartner());
+		mailTextBuilder.bpartnerContact(rfqResponse.getAD_User());
+		mailTextBuilder.record(rfqResponse);
 		return mailTextBuilder;
 	}
 }

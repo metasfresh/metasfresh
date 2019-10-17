@@ -1,29 +1,10 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for AD_ImpFormat_Row
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a
  */
+@SuppressWarnings("javadoc")
 public interface I_AD_ImpFormat_Row 
 {
 
@@ -31,255 +12,490 @@ public interface I_AD_ImpFormat_Row
     public static final String Table_Name = "AD_ImpFormat_Row";
 
     /** AD_Table_ID=382 */
-    public static final int Table_ID = MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-    KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 6 - System - Client 
+    /** AccessLevel = 6 - System - Client
      */
-    BigDecimal accessLevel = BigDecimal.valueOf(6);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(6);
 
     /** Load Meta Data */
 
+	/**
+	 * Get Mandant.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Client_ID();
+
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, org.compiere.model.I_AD_Client>(I_AD_ImpFormat_Row.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-	/** Get Client.
-	  * Client/Tenant for this installation.
-	  */
-	public int getAD_Client_ID();
+	/**
+	 * Set Spalte.
+	 * Column in the table
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Column_ID (int AD_Column_ID);
 
+	/**
+	 * Get Spalte.
+	 * Column in the table
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Column_ID();
+
+	public org.compiere.model.I_AD_Column getAD_Column();
+
+	public void setAD_Column(org.compiere.model.I_AD_Column AD_Column);
+
+    /** Column definition for AD_Column_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, org.compiere.model.I_AD_Column> COLUMN_AD_Column_ID = new org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, org.compiere.model.I_AD_Column>(I_AD_ImpFormat_Row.class, "AD_Column_ID", org.compiere.model.I_AD_Column.class);
     /** Column name AD_Column_ID */
     public static final String COLUMNNAME_AD_Column_ID = "AD_Column_ID";
 
-	/** Set Column.
-	  * Column in the table
-	  */
-	public void setAD_Column_ID (int AD_Column_ID);
+	/**
+	 * Set Import-Format.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_ImpFormat_ID (int AD_ImpFormat_ID);
 
-	/** Get Column.
-	  * Column in the table
-	  */
-	public int getAD_Column_ID();
+	/**
+	 * Get Import-Format.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_ImpFormat_ID();
 
-	public I_AD_Column getAD_Column() throws RuntimeException;
+	public org.compiere.model.I_AD_ImpFormat getAD_ImpFormat();
 
+	public void setAD_ImpFormat(org.compiere.model.I_AD_ImpFormat AD_ImpFormat);
+
+    /** Column definition for AD_ImpFormat_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, org.compiere.model.I_AD_ImpFormat> COLUMN_AD_ImpFormat_ID = new org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, org.compiere.model.I_AD_ImpFormat>(I_AD_ImpFormat_Row.class, "AD_ImpFormat_ID", org.compiere.model.I_AD_ImpFormat.class);
     /** Column name AD_ImpFormat_ID */
     public static final String COLUMNNAME_AD_ImpFormat_ID = "AD_ImpFormat_ID";
 
-	/** Set Import Format	  */
-	public void setAD_ImpFormat_ID (int AD_ImpFormat_ID);
+	/**
+	 * Set Format-Feld.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_ImpFormat_Row_ID (int AD_ImpFormat_Row_ID);
 
-	/** Get Import Format	  */
-	public int getAD_ImpFormat_ID();
+	/**
+	 * Get Format-Feld.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_ImpFormat_Row_ID();
 
-	public I_AD_ImpFormat getAD_ImpFormat() throws RuntimeException;
-
+    /** Column definition for AD_ImpFormat_Row_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object> COLUMN_AD_ImpFormat_Row_ID = new org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object>(I_AD_ImpFormat_Row.class, "AD_ImpFormat_Row_ID", null);
     /** Column name AD_ImpFormat_Row_ID */
     public static final String COLUMNNAME_AD_ImpFormat_Row_ID = "AD_ImpFormat_Row_ID";
 
-	/** Set Format Field	  */
-	public void setAD_ImpFormat_Row_ID (int AD_ImpFormat_Row_ID);
+	/**
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Org_ID (int AD_Org_ID);
 
-	/** Get Format Field	  */
-	public int getAD_ImpFormat_Row_ID();
+	/**
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Org_ID();
 
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, org.compiere.model.I_AD_Org>(I_AD_ImpFormat_Row.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/** Set Organization.
-	  * Organizational entity within client
-	  */
-	public void setAD_Org_ID (int AD_Org_ID);
+	/**
+	 * Set Callout.
+	 * Fully qualified class names and method - separated by semicolons
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCallout (java.lang.String Callout);
 
-	/** Get Organization.
-	  * Organizational entity within client
-	  */
-	public int getAD_Org_ID();
+	/**
+	 * Get Callout.
+	 * Fully qualified class names and method - separated by semicolons
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCallout();
 
+    /** Column definition for Callout */
+    public static final org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object> COLUMN_Callout = new org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object>(I_AD_ImpFormat_Row.class, "Callout", null);
     /** Column name Callout */
     public static final String COLUMNNAME_Callout = "Callout";
 
-	/** Set Callout.
-	  * Fully qualified class names and method - separated by semicolons
-	  */
-	public void setCallout (String Callout);
+	/**
+	 * Set Konstante.
+	 * Constant value
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setConstantValue (java.lang.String ConstantValue);
 
-	/** Get Callout.
-	  * Fully qualified class names and method - separated by semicolons
-	  */
-	public String getCallout();
+	/**
+	 * Get Konstante.
+	 * Constant value
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getConstantValue();
 
+    /** Column definition for ConstantValue */
+    public static final org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object> COLUMN_ConstantValue = new org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object>(I_AD_ImpFormat_Row.class, "ConstantValue", null);
     /** Column name ConstantValue */
     public static final String COLUMNNAME_ConstantValue = "ConstantValue";
 
-	/** Set Constant Value.
-	  * Constant value
-	  */
-	public void setConstantValue (String ConstantValue);
+	/**
+	 * Get Erstellt.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
 
-	/** Get Constant Value.
-	  * Constant value
-	  */
-	public String getConstantValue();
-
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object>(I_AD_ImpFormat_Row.class, "Created", null);
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
-	/** Get Created.
-	  * Date this record was created
-	  */
-	public Timestamp getCreated();
+	/**
+	 * Get Erstellt durch.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCreatedBy();
 
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, org.compiere.model.I_AD_User>(I_AD_ImpFormat_Row.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
-	/** Get Created By.
-	  * User who created this records
-	  */
-	public int getCreatedBy();
+	/**
+	 * Set Data Format.
+	 * Format String in Java Notation, e.g. ddMMyy
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDataFormat (java.lang.String DataFormat);
 
+	/**
+	 * Get Data Format.
+	 * Format String in Java Notation, e.g. ddMMyy
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDataFormat();
+
+    /** Column definition for DataFormat */
+    public static final org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object> COLUMN_DataFormat = new org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object>(I_AD_ImpFormat_Row.class, "DataFormat", null);
     /** Column name DataFormat */
     public static final String COLUMNNAME_DataFormat = "DataFormat";
 
-	/** Set Data Format.
-	  * Format String in Java Notation, e.g. ddMMyy
-	  */
-	public void setDataFormat (String DataFormat);
+	/**
+	 * Set Daten-Typ.
+	 * Type of data
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDataType (java.lang.String DataType);
 
-	/** Get Data Format.
-	  * Format String in Java Notation, e.g. ddMMyy
-	  */
-	public String getDataFormat();
+	/**
+	 * Get Daten-Typ.
+	 * Type of data
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDataType();
 
+    /** Column definition for DataType */
+    public static final org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object> COLUMN_DataType = new org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object>(I_AD_ImpFormat_Row.class, "DataType", null);
     /** Column name DataType */
     public static final String COLUMNNAME_DataType = "DataType";
 
-	/** Set Data Type.
-	  * Type of data
-	  */
-	public void setDataType (String DataType);
+	/**
+	 * Set Dezimal-Punkt.
+	 * Decimal Point in the data file - if any
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDecimalPoint (java.lang.String DecimalPoint);
 
-	/** Get Data Type.
-	  * Type of data
-	  */
-	public String getDataType();
+	/**
+	 * Get Dezimal-Punkt.
+	 * Decimal Point in the data file - if any
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDecimalPoint();
 
+    /** Column definition for DecimalPoint */
+    public static final org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object> COLUMN_DecimalPoint = new org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object>(I_AD_ImpFormat_Row.class, "DecimalPoint", null);
     /** Column name DecimalPoint */
     public static final String COLUMNNAME_DecimalPoint = "DecimalPoint";
 
-	/** Set Decimal Point.
-	  * Decimal Point in the data file - if any
-	  */
-	public void setDecimalPoint (String DecimalPoint);
+	/**
+	 * Set Durch 100 teilen.
+	 * Divide number by 100 to get correct amount
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDivideBy100 (boolean DivideBy100);
 
-	/** Get Decimal Point.
-	  * Decimal Point in the data file - if any
-	  */
-	public String getDecimalPoint();
+	/**
+	 * Get Durch 100 teilen.
+	 * Divide number by 100 to get correct amount
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isDivideBy100();
 
+    /** Column definition for DivideBy100 */
+    public static final org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object> COLUMN_DivideBy100 = new org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object>(I_AD_ImpFormat_Row.class, "DivideBy100", null);
     /** Column name DivideBy100 */
     public static final String COLUMNNAME_DivideBy100 = "DivideBy100";
 
-	/** Set Divide by 100.
-	  * Divide number by 100 to get correct amount
-	  */
-	public void setDivideBy100 (boolean DivideBy100);
+	/**
+	 * Set End-Nr..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setEndNo (int EndNo);
 
-	/** Get Divide by 100.
-	  * Divide number by 100 to get correct amount
-	  */
-	public boolean isDivideBy100();
+	/**
+	 * Get End-Nr..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getEndNo();
 
+    /** Column definition for EndNo */
+    public static final org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object> COLUMN_EndNo = new org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object>(I_AD_ImpFormat_Row.class, "EndNo", null);
     /** Column name EndNo */
     public static final String COLUMNNAME_EndNo = "EndNo";
 
-	/** Set End No	  */
-	public void setEndNo (int EndNo);
+	/**
+	 * Set Aktiv.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsActive (boolean IsActive);
 
-	/** Get End No	  */
-	public int getEndNo();
+	/**
+	 * Get Aktiv.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isActive();
 
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object>(I_AD_ImpFormat_Row.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
-	/** Set Active.
-	  * The record is active in the system
-	  */
-	public void setIsActive (boolean IsActive);
+	/**
+	 * Set Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setName (java.lang.String Name);
 
-	/** Get Active.
-	  * The record is active in the system
-	  */
-	public boolean isActive();
+	/**
+	 * Get Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getName();
 
+    /** Column definition for Name */
+    public static final org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object>(I_AD_ImpFormat_Row.class, "Name", null);
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
 
-	/** Set Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public void setName (String Name);
+	/**
+	 * Set Skript.
+	 * Dynamic Java Language Script to calculate result
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setScript (java.lang.String Script);
 
-	/** Get Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public String getName();
+	/**
+	 * Get Skript.
+	 * Dynamic Java Language Script to calculate result
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getScript();
 
+    /** Column definition for Script */
+    public static final org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object> COLUMN_Script = new org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object>(I_AD_ImpFormat_Row.class, "Script", null);
     /** Column name Script */
     public static final String COLUMNNAME_Script = "Script";
 
-	/** Set Script.
-	  * Dynamic Java Language Script to calculate result
-	  */
-	public void setScript (String Script);
+	/**
+	 * Set Reihenfolge.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setSeqNo (int SeqNo);
 
-	/** Get Script.
-	  * Dynamic Java Language Script to calculate result
-	  */
-	public String getScript();
+	/**
+	 * Get Reihenfolge.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getSeqNo();
 
+    /** Column definition for SeqNo */
+    public static final org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object>(I_AD_ImpFormat_Row.class, "SeqNo", null);
     /** Column name SeqNo */
     public static final String COLUMNNAME_SeqNo = "SeqNo";
 
-	/** Set Sequence.
-	  * Method of ordering records;
- lowest number comes first
-	  */
-	public void setSeqNo (int SeqNo);
+	/**
+	 * Set Start No.
+	 * Starting number/position
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setStartNo (int StartNo);
 
-	/** Get Sequence.
-	  * Method of ordering records;
- lowest number comes first
-	  */
-	public int getSeqNo();
+	/**
+	 * Get Start No.
+	 * Starting number/position
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getStartNo();
 
+    /** Column definition for StartNo */
+    public static final org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object> COLUMN_StartNo = new org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object>(I_AD_ImpFormat_Row.class, "StartNo", null);
     /** Column name StartNo */
     public static final String COLUMNNAME_StartNo = "StartNo";
 
-	/** Set Start No.
-	  * Starting number/position
-	  */
-	public void setStartNo (int StartNo);
+	/**
+	 * Get Aktualisiert.
+	 * Date this record was updated
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getUpdated();
 
-	/** Get Start No.
-	  * Starting number/position
-	  */
-	public int getStartNo();
-
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, Object>(I_AD_ImpFormat_Row.class, "Updated", null);
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
-	/** Get Updated.
-	  * Date this record was updated
-	  */
-	public Timestamp getUpdated();
+	/**
+	 * Get Aktualisiert durch.
+	 * User who updated this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getUpdatedBy();
 
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_AD_ImpFormat_Row, org.compiere.model.I_AD_User>(I_AD_ImpFormat_Row.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/** Get Updated By.
-	  * User who updated this records
-	  */
-	public int getUpdatedBy();
 }

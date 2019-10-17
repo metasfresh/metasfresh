@@ -32,8 +32,6 @@ public interface I_M_InventoryLine
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_M_InventoryLine, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_InventoryLine, org.compiere.model.I_AD_Client>(I_M_InventoryLine.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -58,10 +56,6 @@ public interface I_M_InventoryLine
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_M_InventoryLine, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_InventoryLine, org.compiere.model.I_AD_Org>(I_M_InventoryLine.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
@@ -140,10 +134,6 @@ public interface I_M_InventoryLine
 	 */
 	public int getC_UOM_ID();
 
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
     /** Column definition for C_UOM_ID */
     public static final org.adempiere.model.ModelColumn<I_M_InventoryLine, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_InventoryLine, org.compiere.model.I_C_UOM>(I_M_InventoryLine.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
     /** Column name C_UOM_ID */
@@ -201,6 +191,29 @@ public interface I_M_InventoryLine
     public static final org.adempiere.model.ModelColumn<I_M_InventoryLine, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_M_InventoryLine, Object>(I_M_InventoryLine.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setExternalId (java.lang.String ExternalId);
+
+	/**
+	 * Get External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getExternalId();
+
+    /** Column definition for ExternalId */
+    public static final org.adempiere.model.ModelColumn<I_M_InventoryLine, Object> COLUMN_ExternalId = new org.adempiere.model.ModelColumn<I_M_InventoryLine, Object>(I_M_InventoryLine.class, "ExternalId", null);
+    /** Column name ExternalId */
+    public static final String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
 	 * Set Inventory Type.
@@ -364,7 +377,7 @@ public interface I_M_InventoryLine
 	 * Set Inventur.
 	 * Parameters for a Physical Inventory
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -374,7 +387,7 @@ public interface I_M_InventoryLine
 	 * Get Inventur.
 	 * Parameters for a Physical Inventory
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -434,10 +447,6 @@ public interface I_M_InventoryLine
 	 */
 	public int getM_Locator_ID();
 
-	public org.compiere.model.I_M_Locator getM_Locator();
-
-	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator);
-
     /** Column definition for M_Locator_ID */
     public static final org.adempiere.model.ModelColumn<I_M_InventoryLine, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<I_M_InventoryLine, org.compiere.model.I_M_Locator>(I_M_InventoryLine.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);
     /** Column name M_Locator_ID */
@@ -462,10 +471,6 @@ public interface I_M_InventoryLine
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Product_ID();
-
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
 
     /** Column definition for M_Product_ID */
     public static final org.adempiere.model.ModelColumn<I_M_InventoryLine, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_M_InventoryLine, org.compiere.model.I_M_Product>(I_M_InventoryLine.class, "M_Product_ID", org.compiere.model.I_M_Product.class);

@@ -127,6 +127,35 @@ public interface I_AD_Tab
     public static final String COLUMNNAME_AD_ColumnSortYesNo_ID = "AD_ColumnSortYesNo_ID";
 
 	/**
+	 * Set System-Element.
+	 * Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Element_ID (int AD_Element_ID);
+
+	/**
+	 * Get System-Element.
+	 * Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Element_ID();
+
+	public org.compiere.model.I_AD_Element getAD_Element();
+
+	public void setAD_Element(org.compiere.model.I_AD_Element AD_Element);
+
+    /** Column definition for AD_Element_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Element> COLUMN_AD_Element_ID = new org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Element>(I_AD_Tab.class, "AD_Element_ID", org.compiere.model.I_AD_Element.class);
+    /** Column name AD_Element_ID */
+    public static final String COLUMNNAME_AD_Element_ID = "AD_Element_ID";
+
+	/**
 	 * Set Bild.
 	 * Image or Icon
 	 *
@@ -324,6 +353,29 @@ public interface I_AD_Tab
     public static final org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Window> COLUMN_AD_Window_ID = new org.adempiere.model.ModelColumn<I_AD_Tab, org.compiere.model.I_AD_Window>(I_AD_Tab.class, "AD_Window_ID", org.compiere.model.I_AD_Window.class);
     /** Column name AD_Window_ID */
     public static final String COLUMNNAME_AD_Window_ID = "AD_Window_ID";
+
+	/**
+	 * Set Schnelleingabe einschalten.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAllowQuickInput (boolean AllowQuickInput);
+
+	/**
+	 * Get Schnelleingabe einschalten.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isAllowQuickInput();
+
+    /** Column definition for AllowQuickInput */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_AllowQuickInput = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "AllowQuickInput", null);
+    /** Column name AllowQuickInput */
+    public static final String COLUMNNAME_AllowQuickInput = "AllowQuickInput";
 
 	/**
 	 * Set Speicherwarnung.
@@ -585,6 +637,31 @@ public interface I_AD_Tab
     public static final String COLUMNNAME_Included_Tab_ID = "Included_Tab_ID";
 
 	/**
+	 * Set Interner Name.
+	 * Generally used to give records a name that can be safely referenced from code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setInternalName (java.lang.String InternalName);
+
+	/**
+	 * Get Interner Name.
+	 * Generally used to give records a name that can be safely referenced from code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getInternalName();
+
+    /** Column definition for InternalName */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_InternalName = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "InternalName", null);
+    /** Column name InternalName */
+    public static final String COLUMNNAME_InternalName = "InternalName";
+
+	/**
 	 * Set Aktiv.
 	 * The record is active in the system
 	 *
@@ -808,6 +885,29 @@ public interface I_AD_Tab
     public static final String COLUMNNAME_IsRefreshAllOnActivate = "IsRefreshAllOnActivate";
 
 	/**
+	 * Set Refresh view on change events.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsRefreshViewOnChangeEvents (boolean IsRefreshViewOnChangeEvents);
+
+	/**
+	 * Get Refresh view on change events.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isRefreshViewOnChangeEvents();
+
+    /** Column definition for IsRefreshViewOnChangeEvents */
+    public static final org.adempiere.model.ModelColumn<I_AD_Tab, Object> COLUMN_IsRefreshViewOnChangeEvents = new org.adempiere.model.ModelColumn<I_AD_Tab, Object>(I_AD_Tab.class, "IsRefreshViewOnChangeEvents", null);
+    /** Column name IsRefreshViewOnChangeEvents */
+    public static final String COLUMNNAME_IsRefreshViewOnChangeEvents = "IsRefreshViewOnChangeEvents";
+
+	/**
 	 * Set Search Active.
 	 * This mark activates the search button from toolbar
 	 *
@@ -957,7 +1057,6 @@ public interface I_AD_Tab
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -967,7 +1066,6 @@ public interface I_AD_Tab
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true

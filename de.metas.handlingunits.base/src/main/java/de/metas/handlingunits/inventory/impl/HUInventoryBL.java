@@ -12,6 +12,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Inventory;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Services;
 
 /*
@@ -39,12 +40,22 @@ import de.metas.util.Services;
 public class HUInventoryBL implements IHUInventoryBL
 {
 	@Override
-	public List<I_M_Inventory> moveToGarbage(final Collection<I_M_HU> husToDestroy, final Timestamp movementDate)
+	public List<I_M_Inventory> moveToGarbage(
+			final Collection<I_M_HU> husToDestroy,
+			final Timestamp movementDate,
+			final ActivityId activityId,
+			final String description,
+			final boolean isCompleteInventory,
+			final boolean isCreateMovement)
 	{
 		return HUInternalUseInventoryProducer.newInstance()
 				.setMovementDate(movementDate)
 				.setDocSubType(X_C_DocType.DOCSUBTYPE_InternalUseInventory)
 				.addHUs(husToDestroy)
+				.setActivityId(activityId)
+				.setDescription(description)
+				.setIsCompleteInventory(isCompleteInventory)
+				.setIsCreateMovement(isCreateMovement)
 				.createInventories();
 	}
 

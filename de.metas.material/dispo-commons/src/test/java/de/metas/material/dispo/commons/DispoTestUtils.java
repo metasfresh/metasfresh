@@ -1,11 +1,15 @@
 package de.metas.material.dispo.commons;
 
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.warehouse.WarehouseId;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.model.I_MD_Candidate;
@@ -54,31 +58,40 @@ public class DispoTestUtils
 				.collect(Collectors.toList());
 	}
 
-	public List<I_MD_Candidate> filter(@NonNull final CandidateType type, @NonNull final Date date)
+	public List<I_MD_Candidate> filter(
+			@NonNull final CandidateType type,
+			@NonNull final Instant date)
 	{
 		return filter(type).stream()
-				.filter(r -> date.getTime() == r.getDateProjected().getTime())
+				.filter(r -> Date.from(date).getTime() == r.getDateProjected().getTime())
 				.collect(Collectors.toList());
 	}
 
-	public List<I_MD_Candidate> filter(@NonNull final CandidateType type, @NonNull final Date date, final int productId)
+	public List<I_MD_Candidate> filter(
+			@NonNull final CandidateType type,
+			@NonNull final Instant date,
+			final int productId)
 	{
 		return filter(type, date).stream()
 				.filter(r -> r.getM_Product_ID() == productId)
 				.collect(Collectors.toList());
 	}
 
-	public List<I_MD_Candidate> filter(@NonNull final CandidateType type, @NonNull final Date date, final int productId, final int warehouseId)
+	public List<I_MD_Candidate> filter(
+			@NonNull final CandidateType type,
+			@NonNull final Instant date,
+			final int productId,
+			final WarehouseId warehouseId)
 	{
 		return filter(type, date, productId).stream()
-				.filter(r -> r.getM_Warehouse_ID() == warehouseId)
+				.filter(r -> r.getM_Warehouse_ID() == warehouseId.getRepoId())
 				.collect(Collectors.toList());
 	}
 
-	public List<I_MD_Candidate> filter(@NonNull final CandidateType type, final int warehouseId)
+	public List<I_MD_Candidate> filter(@NonNull final CandidateType type, final WarehouseId warehouseId)
 	{
 		return filter(type).stream()
-				.filter(r -> r.getM_Warehouse_ID() == warehouseId)
+				.filter(r -> r.getM_Warehouse_ID() == warehouseId.getRepoId())
 				.collect(Collectors.toList());
 	}
 
@@ -102,9 +115,11 @@ public class DispoTestUtils
 
 	public List<I_MD_Candidate> sortByDateProjected(@NonNull final List<I_MD_Candidate> candidateRecords)
 	{
-		final List<I_MD_Candidate> allRecordBySeqNo = DispoTestUtils.retrieveAllRecords().stream()
-				.sorted(Comparator.comparing(I_MD_Candidate::getDateProjected))
-				.collect(Collectors.toList());
-		return allRecordBySeqNo;
+		final List<I_MD_Candidate> sorted = candidateRecords.stream()
+				.sorted(Comparator
+						.comparing(I_MD_Candidate::getDateProjected)
+						.thenComparing(I_MD_Candidate::getSeqNo))
+				.collect(ImmutableList.toImmutableList());
+		return sorted;
 	}
 }

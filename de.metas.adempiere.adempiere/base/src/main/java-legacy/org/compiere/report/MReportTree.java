@@ -22,9 +22,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MHierarchy;
 import org.compiere.model.MTree;
 import org.compiere.model.MTreeNode;
@@ -32,8 +33,14 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import lombok.NonNull;
 
 /**
  *	Report Tree Model
@@ -47,16 +54,16 @@ public class MReportTree
 	 * 	Get Report Tree (cached)
 	 *	@param ctx context
 	 *	@param PA_Hierarchy_ID optional hierarchy
-	 *	@param ElementType Account Schema Element Type
+	 *	@param elementType Account Schema Element Type
 	 *	@return tree
 	 */
-	public static MReportTree get (Properties ctx, int PA_Hierarchy_ID, String ElementType)
+	private static MReportTree get (Properties ctx, int PA_Hierarchy_ID, final AcctSchemaElementType elementType)
 	{
-		String key = PA_Hierarchy_ID + ElementType;
+		final String key = PA_Hierarchy_ID + elementType.getCode();
 		MReportTree tree = s_trees.get(key);
 		if (tree == null)
 		{
-			tree = new MReportTree (ctx, PA_Hierarchy_ID, ElementType);
+			tree = new MReportTree (ctx, PA_Hierarchy_ID, elementType);
 			s_trees.put(key, tree);
 		}
 		return tree;	
@@ -66,15 +73,14 @@ public class MReportTree
 	 * 	Get Where Clause
 	 *	@param ctx context
 	 *	@param PA_Hierarchy_ID optional hierarchy
-	 *	@param ElementType Account Schema Element Type
-	 *	@param ID leaf element id
+	 *	@param elementType Account Schema Element Type
+	 *	@param id leaf element id
 	 *	@return where clause
 	 */
-	public static String getWhereClause (Properties ctx,
-		int PA_Hierarchy_ID, String ElementType, int ID)
+	public static String getWhereClause (Properties ctx, int PA_Hierarchy_ID, AcctSchemaElementType elementType, int id)
 	{
-		MReportTree tree = get (ctx, PA_Hierarchy_ID, ElementType);
-		return tree.getWhereClause(ID);	
+		MReportTree tree = get (ctx, PA_Hierarchy_ID, elementType);
+		return tree.getWhereClause(id);	
 	}	//	getWhereClause
 
 	/**
@@ -85,12 +91,26 @@ public class MReportTree
 	 *	@param ID id
 	 *	@return array of IDs
 	 */
-	public static Integer[] getChildIDs (Properties ctx,
-		int PA_Hierarchy_ID, String ElementType, int ID)
+	public static Integer[] getChildIDs (Properties ctx, int PA_Hierarchy_ID, AcctSchemaElementType elementType, int ID)
 	{
-		MReportTree tree = get (ctx, PA_Hierarchy_ID, ElementType);
+		MReportTree tree = get (ctx, PA_Hierarchy_ID, elementType);
 		return tree.getChildIDs(ID);	
 	}	//	getChildIDs
+	
+	public static Set<OrgId> getChildOrgIds(@NonNull final OrgId orgId)
+	{
+		final Integer[] childOrgIds = getChildIDs(
+				Env.getCtx(),
+				0, // PA_Hierarchy_ID
+				AcctSchemaElementType.Organization,
+				orgId.getRepoId());
+
+		return Stream.of(childOrgIds)
+				.filter(Predicates.notNull())
+				.map(OrgId::ofRepoIdOrNull)
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
+	}
 
 	/**	Map with Tree				*/
 	private static CCache<String,MReportTree> s_trees = new CCache<String,MReportTree>("MReportTree", 20);
@@ -102,16 +122,25 @@ public class MReportTree
 	 *	@param PA_Hierarchy_ID optional hierarchy
 	 *	@param ElementType Account Schema Element Type
 	 */
-	public MReportTree (Properties ctx, int PA_Hierarchy_ID, String ElementType)
+	public MReportTree (Properties ctx, int PA_Hierarchy_ID, AcctSchemaElementType elementType)
 	{
-		m_ElementType = ElementType;
-		m_TreeType = m_ElementType;
-		if (MAcctSchemaElement.ELEMENTTYPE_Account.equals(m_ElementType)
-			|| MAcctSchemaElement.ELEMENTTYPE_UserList1.equals(m_ElementType)
-			|| MAcctSchemaElement.ELEMENTTYPE_UserList2.equals(m_ElementType) )
+		this.elementType = elementType;
+		
+		if (AcctSchemaElementType.Account.equals(elementType)
+			|| AcctSchemaElementType.UserList1.equals(elementType)
+			|| AcctSchemaElementType.UserList2.equals(elementType) )
+		{
 			m_TreeType = MTree.TREETYPE_ElementValue;
-		if (MAcctSchemaElement.ELEMENTTYPE_OrgTrx.equals(m_ElementType))
-				m_TreeType = MTree.TREETYPE_Organization;
+		}
+		else if (AcctSchemaElementType.OrgTrx.equals(elementType))
+		{
+			m_TreeType = MTree.TREETYPE_Organization;
+		}
+		else
+		{
+			m_TreeType = elementType.getCode();
+		}
+		
 		m_PA_Hierarchy_ID = PA_Hierarchy_ID;
 		m_ctx = ctx;
 		//
@@ -136,15 +165,15 @@ public class MReportTree
 	/** Optional Hierarchy		*/
 	private int			m_PA_Hierarchy_ID = 0;
 	/**	Element Type			*/
-	private String		m_ElementType = null;
+	private final AcctSchemaElementType elementType;
 	/** Context					*/
 	private Properties	m_ctx = null;
 	/** Tree Type				*/
-	private String		m_TreeType = null;
+	private final String m_TreeType;
 	/**	The Tree				*/
 	private MTree 		m_tree = null;
 	/**	Logger					*/
-	private Logger		log = LogManager.getLogger(getClass());
+	private static final Logger log = LogManager.getLogger(MReportTree.class);
 
 	
 	/**
@@ -201,9 +230,9 @@ public class MReportTree
 	 * 	Get Account Schema Element Type
 	 *	@return element Type
 	 */
-	public String getElementType()
+	public AcctSchemaElementType getElementType()
 	{
-		return m_ElementType;
+		return elementType;
 	}	//	getElementType
 	
 	/**
@@ -231,8 +260,7 @@ public class MReportTree
 	 */	
 	public String getWhereClause (int ID)
 	{
-		log.debug("(" + m_ElementType + ") ID=" + ID);
-		String ColumnName = MAcctSchemaElement.getColumnName(m_ElementType);
+		String ColumnName = getElementType().getColumnName();
 		//
 		MTreeNode node = m_tree.getRoot().findNode(ID);
 		log.trace("Root=" + node);
@@ -278,7 +306,6 @@ public class MReportTree
 	 */	
 	public Integer[] getChildIDs (int ID)
 	{
-		log.debug("(" + m_ElementType + ") ID=" + ID);
 		ArrayList<Integer> list = new ArrayList<Integer>(); 
 		//
 		MTreeNode node = m_tree.getRoot().findNode(ID);
@@ -316,7 +343,7 @@ public class MReportTree
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder("MReportTree[ElementType=");
-		sb.append(m_ElementType).append(",TreeType=").append(m_TreeType)
+		sb.append(elementType).append(",TreeType=").append(m_TreeType)
 			.append(",").append(m_tree)
 			.append("]");
 		return sb.toString();

@@ -1,10 +1,9 @@
 package org.adempiere.ad.table.process;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Column;
-import org.compiere.model.I_AD_Field;
 import org.compiere.util.DB;
 
 import de.metas.process.JavaProcess;
@@ -43,7 +42,7 @@ import de.metas.util.Services;
 public class AD_Column_Delete extends JavaProcess
 {
 	// services
-	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IADWindowDAO adWindowsRepo = Services.get(IADWindowDAO.class);
 
 	@Param(parameterName = "IsDropDBColumn")
 	private boolean p_IsDropDBColumn;
@@ -57,7 +56,8 @@ public class AD_Column_Delete extends JavaProcess
 
 		if (p_IsDeleteFields)
 		{
-			deleteFields(adColumn);
+			final int adColumnId = adColumn.getAD_Column_ID();
+			adWindowsRepo.deleteFieldsByColumnId(adColumnId);
 		}
 
 		if (p_IsDropDBColumn)
@@ -69,21 +69,6 @@ public class AD_Column_Delete extends JavaProcess
 		addLog("AD_Column Deleted {}", adColumn);
 
 		return MSG_OK;
-	}
-
-	private void deleteFields(final I_AD_Column adColumn)
-	{
-		queryBL.createQueryBuilder(I_AD_Field.class, adColumn)
-				.addEqualsFilter(I_AD_Field.COLUMN_AD_Column_ID, adColumn.getAD_Column_ID())
-				.create()
-				.stream(I_AD_Field.class)
-				.forEach(this::deleteField);
-	}
-
-	private void deleteField(final I_AD_Field adField)
-	{
-		InterfaceWrapperHelper.delete(adField);
-		addLog("AD_Field deleted: {}", adField);
 	}
 
 	private void dropDBColumn(final I_AD_Column adColumn)

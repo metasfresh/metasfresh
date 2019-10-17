@@ -11,21 +11,24 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.handlingunits.IHUAssignmentBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.handlingunits.movement.api.HUMovementResult;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.interfaces.I_M_Movement;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
-import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -113,18 +116,17 @@ public class HUMovementBL implements IHUMovementBL
 		// iterate the HUs,
 		// create one builder per source warehouse
 		// add each HU to one builder
-		final Map<Integer, HUMovementBuilder> warehouseId2builder = new HashMap<>();
+		final Map<WarehouseId, HUMovementBuilder> warehouseId2builder = new HashMap<>();
 		for (final I_M_HU hu : hus)
 		{
 
-			final I_M_Locator huLocator = hu.getM_Locator();
-			final int sourceWarehouseId = huLocator.getM_Warehouse_ID();
+			final WarehouseId sourceWarehouseId = IHandlingUnitsBL.extractWarehouseId(hu);
 			HUMovementBuilder movementBuilder = warehouseId2builder.get(sourceWarehouseId);
 			if (movementBuilder == null)
 			{
 				movementBuilder = new HUMovementBuilder();
 				movementBuilder.setContextInitial(initialContext);
-				movementBuilder.setWarehouseFrom(huLocator.getM_Warehouse());
+				movementBuilder.setWarehouseFrom(Services.get(IWarehouseDAO.class).getById(sourceWarehouseId));
 				movementBuilder.setLocatorTo(locatorTo);
 
 				warehouseId2builder.put(sourceWarehouseId, movementBuilder);

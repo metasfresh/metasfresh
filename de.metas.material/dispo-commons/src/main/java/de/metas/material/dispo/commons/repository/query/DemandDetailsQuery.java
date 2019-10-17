@@ -1,6 +1,7 @@
 package de.metas.material.dispo.commons.repository.query;
 
 import static de.metas.material.dispo.commons.candidate.IdConstants.UNSPECIFIED_REPO_ID;
+import static de.metas.material.dispo.commons.candidate.IdConstants.toUnspecifiedIfZero;
 
 import javax.annotation.Nullable;
 
@@ -60,15 +61,16 @@ public class DemandDetailsQuery
 
 	public static DemandDetailsQuery ofDemandDetailOrNull(@Nullable final DemandDetail demandDetail)
 	{
-		if (demandDetail == null)
-		{
-			return null;
-		}
+		return demandDetail != null ? ofDemandDetail(demandDetail) : null;
+	}
+
+	public static DemandDetailsQuery ofDemandDetail(@NonNull final DemandDetail demandDetail)
+	{
 		return new DemandDetailsQuery(
-				demandDetail.getShipmentScheduleId() == 0 ? UNSPECIFIED_REPO_ID : demandDetail.getShipmentScheduleId(),
-				demandDetail.getOrderLineId() == 0 ? UNSPECIFIED_REPO_ID : demandDetail.getOrderLineId(),
-				demandDetail.getSubscriptionProgressId() == 0 ? UNSPECIFIED_REPO_ID : demandDetail.getSubscriptionProgressId(),
-				demandDetail.getForecastLineId() == 0 ? UNSPECIFIED_REPO_ID : demandDetail.getForecastLineId());
+				toUnspecifiedIfZero(demandDetail.getShipmentScheduleId()),
+				toUnspecifiedIfZero(demandDetail.getOrderLineId()),
+				toUnspecifiedIfZero(demandDetail.getSubscriptionProgressId()),
+				toUnspecifiedIfZero(demandDetail.getForecastLineId()));
 	}
 
 	public static DemandDetailsQuery forDocumentLine(

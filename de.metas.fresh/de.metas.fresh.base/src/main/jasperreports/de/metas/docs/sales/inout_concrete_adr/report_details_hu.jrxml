@@ -36,21 +36,21 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_HU( $P{m_inout
 			<textField>
 				<reportElement uuid="142bbe9f-777c-4879-ba97-2b347192bce4" key="textField-16" x="37" y="0" width="160" height="12" forecolor="#000000"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{PackingMaterial}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="f93f9ef8-2629-458c-ab2a-7fc91a2a8307" key="textField-20" x="405" y="0" width="40" height="12" forecolor="#000000"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="66821000-4e7b-4f69-b099-73eff29e9bd5" key="textField-19" x="362" y="0" width="41" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>

@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.api.impl;
 
+import java.util.Optional;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -13,33 +15,35 @@ package de.metas.invoicecandidate.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.ArrayKeyBuilder;
 import org.compiere.util.Evaluatee2;
-import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inout.invoicecandidate.M_InOutLine_Handler;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.util.Check;
+import lombok.Builder;
+import lombok.NonNull;
 
 /**
  * Evaluation context used to parse the header and line aggregation key right before aggregating to invoice or invoice lines
@@ -48,11 +52,6 @@ import de.metas.util.Check;
  */
 public class AggregationKeyEvaluationContext implements Evaluatee2
 {
-	public static final Builder builder()
-	{
-		return new Builder();
-	}
-
 	//
 	// Supporterted aggregation attributes
 	// NOTE: keep them in sync with the values from I_C_Aggregation_Attribute.Code
@@ -71,22 +70,24 @@ public class AggregationKeyEvaluationContext implements Evaluatee2
 			.build();
 
 	private final I_C_Invoice_Candidate invoiceCandidate;
-	//
-	private I_M_InOutLine inoutLine;
-	private boolean inoutLineSet = false;
-	private Integer shipReceiptBPLocationId = null;
-	//
-	private final Set<IInvoiceLineAttribute> invoiceLineAttributes;
-	private ArrayKey invoiceLineAttributesKey;
+	private final ImmutableSet<IInvoiceLineAttribute> invoiceLineAttributes;
 
-	private AggregationKeyEvaluationContext(final Builder builder)
+	//
+	private Optional<I_M_InOutLine> _inoutLine; // lazy
+	private Optional<BPartnerLocationId> _shipReceiptBPLocationId = null; // lazy
+	private ArrayKey _invoiceLineAttributesKey; // lazy
+
+	@Builder
+	private AggregationKeyEvaluationContext(
+			@NonNull final I_C_Invoice_Candidate invoiceCandidate,
+			@Nullable final I_M_InOutLine inoutLine,
+			@Nullable final Set<IInvoiceLineAttribute> invoiceLineAttributes)
 	{
-		super();
-
-		Check.assumeNotNull(builder, "builder not null");
-		this.invoiceCandidate = builder.getC_Invoice_Candidate();
-		this.inoutLine = builder.getM_InOutLine();
-		this.invoiceLineAttributes = builder.getInvoiceLineAttributes();
+		this.invoiceCandidate = invoiceCandidate;
+		this._inoutLine = inoutLine != null ? Optional.of(inoutLine) : null;
+		this.invoiceLineAttributes = invoiceLineAttributes != null
+				? ImmutableSet.copyOf(invoiceLineAttributes)
+				: ImmutableSet.of();
 	}
 
 	@Override
@@ -94,12 +95,17 @@ public class AggregationKeyEvaluationContext implements Evaluatee2
 	{
 		if (ATTRIBUTE_CODE_AggregatePer_M_InOut_ID.equals(variableName))
 		{
-			final int inoutId = inoutLine == null ? -1 : inoutLine.getM_InOut_ID();
-			return inoutId <= 0 ? "-" : String.valueOf(inoutId);
+			return getInOutLine()
+					.map(I_M_InOutLine::getM_InOut_ID)
+					.map(String::valueOf)
+					.orElse("-");
 		}
 		else if (ATTRIBUTE_CODE_AggregatePer_InOut_BPLocation_ID.equals(variableName))
 		{
-			return String.valueOf(getShipReceipt_BPLocation_ID());
+			return getShipReceiptBPLocationId()
+					.map(BPartnerLocationId::getRepoId)
+					.map(String::valueOf)
+					.orElse("-1");
 		}
 		else if (ATTRIBUTE_CODE_AggregatePer_ProductAttributes.equals(variableName))
 		{
@@ -121,128 +127,61 @@ public class AggregationKeyEvaluationContext implements Evaluatee2
 		return null;
 	}
 
-	/**
-	 * Gets current shipment/receipt line. It evaluates in following order:
-	 * <ul>
-	 * <li>current shipment/receipt line if any
-	 * <li>IC's shipment/receipt line, if the IC was created from a shipment/receipt line
-	 * </ul>
-	 * 
-	 * @return current shipment/receipt line or <code>null</code>
-	 */
-	private final I_M_InOutLine getM_InOutLine()
+	private final Optional<I_M_InOutLine> getInOutLine()
 	{
-		if (inoutLine != null || inoutLineSet)
+		if (_inoutLine == null)
 		{
-			return inoutLine;
+			_inoutLine = Optional.ofNullable(M_InOutLine_Handler.getM_InOutLineOrNull(invoiceCandidate));
 		}
-
-		inoutLine = M_InOutLine_Handler.getM_InOutLine(invoiceCandidate);
-		inoutLineSet = true;
-		return inoutLine;
+		return _inoutLine;
 	}
 
-	/**
-	 * Gets actual shipment/receipt C_BPartner_Location_ID. It evaluates:
-	 * <ul>
-	 * <li>current shipment/receipt line ({@link #getM_InOutLine()}) and takes the BP location from there
-	 * <li>IC's order if any
-	 * <li>returns <code>-1</code>
-	 * </ul>
-	 * 
-	 * @return actual shipment/receipt C_BPartner_Location_ID or <code>-1</code>
-	 */
-	private final int getShipReceipt_BPLocation_ID()
+	private final Optional<BPartnerLocationId> getShipReceiptBPLocationId()
 	{
-		if (shipReceiptBPLocationId != null)
+		Optional<BPartnerLocationId> shipReceiptBPLocationId = this._shipReceiptBPLocationId;
+		if (shipReceiptBPLocationId == null)
 		{
-			return shipReceiptBPLocationId;
+			shipReceiptBPLocationId = this._shipReceiptBPLocationId = computeShipReceiptBPLocationId();
 		}
+		return shipReceiptBPLocationId;
+	}
 
-		final I_M_InOutLine inoutLine = getM_InOutLine();
+	private final Optional<BPartnerLocationId> computeShipReceiptBPLocationId()
+	{
+		final I_M_InOutLine inoutLine = getInOutLine().orElse(null);
 		if (inoutLine != null)
 		{
 			final I_M_InOut inout = inoutLine.getM_InOut();
-			shipReceiptBPLocationId = inout.getC_BPartner_Location_ID();
-			return shipReceiptBPLocationId;
+			return Optional.of(BPartnerLocationId.ofRepoId(inout.getC_BPartner_ID(), inout.getC_BPartner_Location_ID()));
 		}
 
 		final I_C_Order order = invoiceCandidate.getC_Order();
 		if (order != null)
 		{
-			shipReceiptBPLocationId = order.getC_BPartner_Location_ID();
-			return shipReceiptBPLocationId;
+			return Optional.of(BPartnerLocationId.ofRepoId(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID()));
 		}
 
-		shipReceiptBPLocationId = -1;
-		return -shipReceiptBPLocationId;
+		return Optional.empty();
 	}
 
 	public ArrayKey getInvoiceLineAttributesKey()
 	{
+		ArrayKey invoiceLineAttributesKey = _invoiceLineAttributesKey;
 		if (invoiceLineAttributesKey == null)
 		{
-			final ArrayKeyBuilder keyBuilder = Util.mkKey();
-			for (final IInvoiceLineAttribute invoiceLineAttribute : invoiceLineAttributes)
-			{
-				keyBuilder.append(invoiceLineAttribute.toAggregationKey());
-			}
-
-			invoiceLineAttributesKey = keyBuilder.build();
+			invoiceLineAttributesKey = _invoiceLineAttributesKey = computeInvoiceLineAttributesKey();
 		}
-
 		return invoiceLineAttributesKey;
 	}
 
-	public static class Builder
+	private ArrayKey computeInvoiceLineAttributesKey()
 	{
-		private I_C_Invoice_Candidate invoiceCandidate;
-		private I_M_InOutLine inoutLine;
-		private Set<IInvoiceLineAttribute> invoiceLineAttributes = ImmutableSet.of();
-
-		private Builder()
+		final ArrayKeyBuilder keyBuilder = ArrayKey.builder();
+		for (final IInvoiceLineAttribute invoiceLineAttribute : invoiceLineAttributes)
 		{
-			super();
+			keyBuilder.append(invoiceLineAttribute.toAggregationKey());
 		}
 
-		public AggregationKeyEvaluationContext build()
-		{
-			return new AggregationKeyEvaluationContext(this);
-		}
-
-		public Builder setC_Invoice_Candidate(final I_C_Invoice_Candidate invoiceCandidate)
-		{
-			this.invoiceCandidate = invoiceCandidate;
-			return this;
-		}
-
-		private I_C_Invoice_Candidate getC_Invoice_Candidate()
-		{
-			Check.assumeNotNull(invoiceCandidate, "invoiceCandidate not null");
-			return this.invoiceCandidate;
-		}
-
-		public Builder setM_InOutLine(final I_M_InOutLine inoutLine)
-		{
-			this.inoutLine = inoutLine;
-			return this;
-		}
-
-		private I_M_InOutLine getM_InOutLine()
-		{
-			return inoutLine;
-		}
-
-		public Builder setInvoiceLineAttributes(final Set<IInvoiceLineAttribute> invoiceLineAttributes)
-		{
-			this.invoiceLineAttributes = ImmutableSet.copyOf(invoiceLineAttributes);
-			return this;
-		}
-
-		private Set<IInvoiceLineAttribute> getInvoiceLineAttributes()
-		{
-			return this.invoiceLineAttributes;
-		}
-
+		return keyBuilder.build();
 	}
 }

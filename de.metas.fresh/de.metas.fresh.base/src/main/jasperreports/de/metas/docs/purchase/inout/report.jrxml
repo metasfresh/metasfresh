@@ -321,14 +321,14 @@
 			<textField>
 				<reportElement x="26" y="7" width="147" height="13" uuid="02b7b566-3ec1-453d-823a-bce6f71fe49d"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{RecipientSignature}+":"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="26" y="44" width="143" height="13" uuid="2c6ae606-0cb0-43d7-85eb-9684da7dadbc"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{ShipperSignature}+":"]]></textFieldExpression>
 			</textField>

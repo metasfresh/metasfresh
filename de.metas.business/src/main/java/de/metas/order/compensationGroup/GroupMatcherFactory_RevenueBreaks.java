@@ -4,13 +4,13 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-import org.compiere.util.Util;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Range;
 
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.order.model.X_C_CompensationGroup_SchemaLine;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -51,7 +51,7 @@ public final class GroupMatcherFactory_RevenueBreaks implements GroupMatcherFact
 	{
 		final Optional<I_C_CompensationGroup_SchemaLine> nextSchemaLine = getNextLine(schemaLine, allSchemaLines);
 
-		final BigDecimal valueMin = Util.coalesce(schemaLine.getBreakValue(), BigDecimal.ZERO);
+		final BigDecimal valueMin = CoalesceUtil.coalesce(schemaLine.getBreakValue(), BigDecimal.ZERO);
 		final BigDecimal valueMax = nextSchemaLine.map(I_C_CompensationGroup_SchemaLine::getBreakValue).orElse(null);
 		final Range<BigDecimal> range = valueMax != null ? Range.closedOpen(valueMin, valueMax) : Range.atLeast(valueMin);
 

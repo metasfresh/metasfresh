@@ -23,6 +23,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Properties;
+
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.ValueNamePair;
@@ -36,7 +37,7 @@ import org.compiere.util.ValueNamePair;
 public class MClickCount extends X_W_ClickCount
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -5233509415147834823L;
 
@@ -56,11 +57,11 @@ public class MClickCount extends X_W_ClickCount
 		//	setTargetURL (null);
 		}
 	}	//	MClickCount
-	
-	/** 
+
+	/**
 	 * 	Load Constructor
 	 * 	@param ctx context
-	 * 	@param rs result set 
+	 * 	@param rs result set
 	 *	@param trxName transaction
 	 */
 	public MClickCount (Properties ctx, ResultSet rs, String trxName)
@@ -68,7 +69,7 @@ public class MClickCount extends X_W_ClickCount
 		super(ctx, rs, trxName);
 	}	//	MClickCount
 
-	/** 
+	/**
 	 * 	Parent Constructor
 	 * 	@param ad parent
 	 */
@@ -79,11 +80,11 @@ public class MClickCount extends X_W_ClickCount
 		setTargetURL("#");
 		setC_BPartner_ID(ad.getC_BPartner_ID());
 	}	//	MClickCount
-	
+
 	private SimpleDateFormat		m_dateFormat = DisplayType.getDateFormat(DisplayType.Date);
 	private DecimalFormat			m_intFormat = DisplayType.getNumberFormat(DisplayType.Integer);
 
-	
+
 	/**************************************************************************
 	 * 	Get Clicks
 	 *	@return clicks
@@ -121,7 +122,7 @@ public class MClickCount extends X_W_ClickCount
 			{
 				String value = m_dateFormat.format(rs.getTimestamp(1));
 				String name = m_intFormat.format(rs.getInt(2));
-				ValueNamePair pp = new ValueNamePair (value, name);
+				ValueNamePair pp = ValueNamePair.of(value, name);
 				list.add(pp);
 			}
 			rs.close();

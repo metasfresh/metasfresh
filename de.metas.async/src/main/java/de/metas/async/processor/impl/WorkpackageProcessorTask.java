@@ -23,11 +23,13 @@ package de.metas.async.processor.impl;
  */
 
 import java.sql.Timestamp;
+import java.util.Optional;
 import java.util.Properties;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
@@ -42,13 +44,9 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.logging.LoggingHelper;
-import org.compiere.model.I_AD_Issue;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
-
-import com.google.common.base.Optional;
 
 import ch.qos.logback.classic.Level;
 import de.metas.async.Async_Constants;
@@ -67,6 +65,8 @@ import de.metas.async.processor.IWorkpackageSkipRequest;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.IWorkpackageProcessor.Result;
 import de.metas.async.spi.IWorkpackageProcessor2;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.exceptions.LockFailedException;
@@ -74,12 +74,16 @@ import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.exceptions.ServiceConnectionException;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /* package */class WorkpackageProcessorTask implements Runnable
 {
@@ -157,16 +161,11 @@ import de.metas.util.time.SystemTime;
 				trxManager.run(
 						trxNamePrefix,
 						trxRunConfig,
-						new TrxRunnable()
-						{
-							@Override
-							public void run(final String trxName) throws Exception
-							{
-								// ignore the concrete trxName param,
-								// by default everything shall use the thread inherited trx
-								final Result result = processWorkpackage(ITrx.TRXNAME_ThreadInherited);
-								resultRef.setValue(result);
-							}
+						(TrxRunnable)trxName_IGNORED -> {
+							// ignore the concrete trxName param,
+							// by default everything shall use the thread inherited trx
+							final Result result = processWorkpackage(ITrx.TRXNAME_ThreadInherited);
+							resultRef.setValue(result);
 						});
 			}
 			//
@@ -216,9 +215,9 @@ import de.metas.util.time.SystemTime;
 				markError(workPackage, e);
 			}
 		}
-		catch (final Exception e)
+		catch (final Throwable ex)
 		{
-			final IWorkpackageSkipRequest skipRequest = getWorkpackageSkipRequest(e);
+			final IWorkpackageSkipRequest skipRequest = getWorkpackageSkipRequest(ex);
 			if (skipRequest != null)
 			{
 				finallyReleaseElementLockIfAny = false; // task 08999: don't release the lock yet, because we are going to retry later
@@ -226,7 +225,7 @@ import de.metas.util.time.SystemTime;
 			}
 			else
 			{
-				markError(workPackage, AdempiereException.wrapIfNeeded(e));
+				markError(workPackage, AdempiereException.wrapIfNeeded(ex));
 			}
 		}
 		finally
@@ -285,20 +284,56 @@ import de.metas.util.time.SystemTime;
 		return result;
 	}
 
-	private Result invokeProcessorAndHandleException(final String trxName)
+	private Result invokeProcessorAndHandleException(@Nullable final String trxName)
 	{
 		try
 		{
 			return workPackageProcessorWrapped.processWorkPackage(workPackage, trxName);
 		}
+		catch (final ServiceConnectionException e)
+		{
+			throw handleServiceConnectionException(trxName, e);
+		}
+		catch (final AdempiereException e)
+		{
+			final Throwable cause = e.getCause();
+			if (cause instanceof ServiceConnectionException)
+			{
+				throw handleServiceConnectionException(trxName, (ServiceConnectionException)cause);
+			}
+			throw appendParameters(AdempiereException.wrapIfNeeded(e), trxName);
+		}
 		catch (final RuntimeException e)
 		{
-			throw AdempiereException.wrapIfNeeded(e)
-					.appendParametersToMessage()
-					.setParameter("I_C_Queue_WorkPackage", workPackage)
-					.setParameter("IQueueProcessor", queueProcessor)
-					.setParameter("trxName", trxName);
+			throw appendParameters(AdempiereException.wrapIfNeeded(e), trxName);
 		}
+	}
+
+	private RuntimeException handleServiceConnectionException(final String trxName, final ServiceConnectionException e)
+	{
+		final int retryAdvisedInMillis = e.getRetryAdvisedInMillis();
+		if (retryAdvisedInMillis > 0)
+		{
+			Loggables.addLog("Caught a {} with an advise to retry in {}ms; ServiceURL={}",
+					e.getClass().getSimpleName(), retryAdvisedInMillis, e.getServiceURL());
+
+			final WorkpackageSkipRequestException //
+			workpackageSkipRequestException = WorkpackageSkipRequestException
+					.createWithTimeoutAndThrowable(
+							e.getMessage(),
+							retryAdvisedInMillis,
+							e);
+			return appendParameters(workpackageSkipRequestException, trxName);
+		}
+		return appendParameters(AdempiereException.wrapIfNeeded(e), trxName);
+	}
+
+	private AdempiereException appendParameters(@NonNull final AdempiereException e, @Nullable final String trxName)
+	{
+		return e.appendParametersToMessage()
+				.setParameter("I_C_Queue_WorkPackage", workPackage)
+				.setParameter("IQueueProcessor", queueProcessor)
+				.setParameter("trxName", trxName);
 	}
 
 	/**
@@ -324,7 +359,6 @@ import de.metas.util.time.SystemTime;
 				elementsLock.get().close();
 			}
 
-			queueProcessor.getQueue().unlock(workPackage);
 		}
 		catch (final LockFailedException e)
 		{
@@ -334,6 +368,17 @@ import de.metas.util.time.SystemTime;
 		catch (final Exception e)
 		{
 			markError(workPackage, AdempiereException.wrapIfNeeded(e));
+		}
+		finally
+		{
+			try
+			{
+				queueProcessor.getQueue().unlock(workPackage);
+			}
+			catch (final Exception e)
+			{
+				markError(workPackage, AdempiereException.wrapIfNeeded(e));
+			}
 		}
 
 		// NOTE: when notifying, we shall use the original workpackage processor, because that one is known in exterior
@@ -401,11 +446,10 @@ import de.metas.util.time.SystemTime;
 	 *
 	 * @param workPackage
 	 */
-	private void markSkipped(final I_C_Queue_WorkPackage workPackage,
-			final IWorkpackageSkipRequest skipRequest)
+	private void markSkipped(
+			@NonNull final I_C_Queue_WorkPackage workPackage,
+			@NonNull final IWorkpackageSkipRequest skipRequest)
 	{
-		Check.assumeNotNull(workPackage, "Param 'workPackage' not null");
-		Check.assumeNotNull(skipRequest, "Param 'skipRequest' not null");
 
 		final Timestamp skippedAt = SystemTime.asTimestamp();
 		final Exception skipException = skipRequest.getException();
@@ -438,18 +482,18 @@ import de.metas.util.time.SystemTime;
 		else
 		{
 			final I_C_Queue_PackageProcessor packageProcessor = queueBlock.getC_Queue_PackageProcessor();
-			processorName = Util.coalesce(packageProcessor.getInternalName(), packageProcessor.getClassname());
+			processorName = CoalesceUtil.coalesce(packageProcessor.getInternalName(), packageProcessor.getClassname());
 		}
 		final String msg = StringUtils.formatMessage("Skipped while processing workpackage by processor {}; workpackage={}", processorName, workPackage);
 
 		// log error to console (for later audit):
 		logger.info(msg, skipException);
-		Loggables.get().addLog(msg);
+		Loggables.addLog(msg);
 	}
 
 	private void markError(final I_C_Queue_WorkPackage workPackage, final AdempiereException ex)
 	{
-		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(ex);
+		final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(ex);
 
 		//
 		// Allow retry processing this workpackage?
@@ -468,7 +512,7 @@ import de.metas.util.time.SystemTime;
 
 		workPackage.setIsError(true);
 		workPackage.setErrorMsg(ex.getLocalizedMessage());
-		workPackage.setAD_Issue(issue);
+		workPackage.setAD_Issue_ID(issueId.getRepoId());
 
 		setLastEndTime(workPackage); // update statistics
 
@@ -477,15 +521,15 @@ import de.metas.util.time.SystemTime;
 		// log error to console (for later audit):
 		final Level logLevel = Services.get(IDeveloperModeBL.class).isEnabled() ? Level.WARN : Level.INFO;
 		LoggingHelper.log(logger, logLevel, "Error while processing workpackage: {}", workPackage, ex);
-		Loggables.get().addLog("Error while processing workpackage: {0}", workPackage);
+		Loggables.addLog("Error while processing workpackage: {0}", workPackage);
 
 		notifyErrorAfterCommit(workPackage, ex);
 	}
 
 	private void notifyErrorAfterCommit(final I_C_Queue_WorkPackage workpackage, final AdempiereException ex)
 	{
-		final int userInChargeId = workpackage.getAD_User_InCharge_ID();
-		if (userInChargeId <= 0)
+		final UserId userInChargeId = workpackage.getAD_User_InCharge_ID() > 0 ? UserId.ofRepoId(workpackage.getAD_User_InCharge_ID()) : null;
+		if (userInChargeId == null)
 		{
 			return;
 		}

@@ -14,7 +14,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1956284711L;
+	private static final long serialVersionUID = 669458688L;
 
     /** Standard Constructor */
     public X_AD_Process (Properties ctx, int AD_Process_ID, String trxName)
@@ -31,6 +31,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 			setIsOneInstanceOnly (false); // N
 			setIsReport (false);
 			setIsServerProcess (false);
+			setIsTranslateExcelHeaders (true); // Y
 			setIsUseBPartnerLanguage (true); // Y
 			setName (null);
 			setRefreshAllAfterExecution (false); // N
@@ -538,6 +539,32 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 		return false;
 	}
 
+	/** Set Excel-Spaltenüberschriften übersetzen.
+		@param IsTranslateExcelHeaders 
+		Wenn angehakt, dann wird metasfresh die jeweiligen Spaltenüberschriften durch Übersetzungen ersetzen, sofern welche in Meldung (AD_Message) oder Element (AD_Element) vorhanden sind.
+	  */
+	@Override
+	public void setIsTranslateExcelHeaders (boolean IsTranslateExcelHeaders)
+	{
+		set_Value (COLUMNNAME_IsTranslateExcelHeaders, Boolean.valueOf(IsTranslateExcelHeaders));
+	}
+
+	/** Get Excel-Spaltenüberschriften übersetzen.
+		@return Wenn angehakt, dann wird metasfresh die jeweiligen Spaltenüberschriften durch Übersetzungen ersetzen, sofern welche in Meldung (AD_Message) oder Element (AD_Element) vorhanden sind.
+	  */
+	@Override
+	public boolean isTranslateExcelHeaders () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsTranslateExcelHeaders);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set IsUseBPartnerLanguage.
 		@param IsUseBPartnerLanguage IsUseBPartnerLanguage	  */
 	@Override
@@ -596,6 +623,22 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 		return (java.lang.String)get_Value(COLUMNNAME_JasperReport_Tabular);
 	}
 
+	/** Set JSON Path.
+		@param JSONPath JSON Path	  */
+	@Override
+	public void setJSONPath (java.lang.String JSONPath)
+	{
+		set_Value (COLUMNNAME_JSONPath, JSONPath);
+	}
+
+	/** Get JSON Path.
+		@return JSON Path	  */
+	@Override
+	public java.lang.String getJSONPath () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_JSONPath);
+	}
+
 	/** Set Wait Timeout.
 		@param LockWaitTimeout 
 		If only one instance is allowed to run at a time, how many seconds to wait for it. Zero or negative number means forever.
@@ -619,9 +662,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -629,8 +670,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{
@@ -684,11 +724,9 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 
 	/** 
 	 * ShowHelp AD_Reference_ID=50007
-	 * Reference name: ShowHelp List
+	 * Reference name: AD_Process_ShowHelp
 	 */
 	public static final int SHOWHELP_AD_Reference_ID=50007;
-	/** Ask user (for future use) = A */
-	public static final String SHOWHELP_AskUserForFutureUse = "A";
 	/** Don't show help = N */
 	public static final String SHOWHELP_DonTShowHelp = "N";
 	/** Show Help = Y */
@@ -758,8 +796,10 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	public static final String TYPE_Java = "Java";
 	/** Excel = Excel */
 	public static final String TYPE_Excel = "Excel";
-	/** JasperReports = JasperReports */
-	public static final String TYPE_JasperReports = "JasperReports";
+	/** JasperReportsSQL = JasperReportsSQL */
+	public static final String TYPE_JasperReportsSQL = "JasperReportsSQL";
+	/** JasperReportsJSON = JasperReportsJSON */
+	public static final String TYPE_JasperReportsJSON = "JasperReportsJSON";
 	/** Set Art.
 		@param Type Art	  */
 	@Override

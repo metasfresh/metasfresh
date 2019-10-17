@@ -34,6 +34,8 @@ public class Fresh_AvailableSingletonServices_Test
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+
 	}
 
 	@Test
@@ -44,15 +46,23 @@ public class Fresh_AvailableSingletonServices_Test
 				.skipServiceInterface(org.adempiere.inout.replenish.service.IReplenishForFutureQty.class) // is registered programmatically
 				.skipServiceInterface(de.metas.adempiere.service.IAppDictionaryBL.class) // is registered programmatically
 				.skipServiceInterface(de.metas.letters.api.ITextTemplateBL.class) // is registered programmatically
+				.skipServiceInterface(de.metas.product.IProductActivityProvider.class) // is registered programatically
 				.skipServiceInterface(de.metas.procurement.base.IAgentSyncBL.class) // JAX-RS
-				.skipServiceInterface(org.eevolution.mrp.api.ILiberoMRPContextFactory.class) // skip for now because the impl it's coming from spring context
-				.skipServiceInterface(de.metas.material.planning.IMRPContextFactory.class) // skip for now because the impl it's coming from spring context
-				.skipServiceInterface(de.metas.bpartner.service.IBPartnerBL.class) // skip for now because the impl it's coming from spring context
+				.skipServiceInterface(org.eevolution.mrp.api.ILiberoMRPContextFactory.class) // skip for now because the impl is coming from spring context
+				.skipServiceInterface(de.metas.material.planning.IMRPContextFactory.class) // skip for now because the impl is coming from spring context
+				.skipServiceInterface(de.metas.bpartner.service.IBPartnerBL.class) // skip for now because the impl is coming from spring context
+				.skipServiceInterface(de.metas.document.sequence.IDocumentNoBuilderFactory.class) // skip for now because the impl is coming from spring context
 				//
 				.skipServiceInterface(org.adempiere.util.testservice.ITestServiceWithFailingConstructor.class) // because it's supposed to fail
 				.skipServiceInterface(org.adempiere.util.testservice.ITestMissingService.class) // because it's supposed to fail
 				.skipServiceInterfaceIfStartsWith("org.adempiere.util.proxy.impl.JavaAssistInterceptorTests") // some test interface
 				.skipServiceInterface(de.metas.cache.interceptor.testservices.ITestServiceWithPrivateCachedMethod.class)
+				//
+				// Skip services with no default constructor (spring components):
+				.skipServiceInterface(de.metas.payment.esr.api.IESRImportBL.class)
+				.skipServiceInterface(de.metas.notification.INotificationRepository.class)
+				.skipServiceInterface(de.metas.inoutcandidate.api.IShipmentScheduleBL.class)
+				//
 				.test();
 	}
 }

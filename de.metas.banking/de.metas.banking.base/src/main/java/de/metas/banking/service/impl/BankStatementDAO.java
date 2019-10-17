@@ -1,5 +1,7 @@
 package de.metas.banking.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.util.Date;
 
 /*
@@ -12,12 +14,12 @@ import java.util.Date;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -45,6 +47,18 @@ import de.metas.util.Services;
 
 public class BankStatementDAO implements IBankStatementDAO
 {
+	@Override
+	public de.metas.banking.model.I_C_BankStatement getById(int id)
+	{
+		return load(id, de.metas.banking.model.I_C_BankStatement.class);
+	}
+
+
+	@Override
+	public de.metas.banking.model.I_C_BankStatementLine getLineById(int lineId)
+	{
+		return load(lineId, de.metas.banking.model.I_C_BankStatementLine.class);
+	}
 
 	@Override
 	public <T extends I_C_BankStatementLine> List<T> retrieveLines(final I_C_BankStatement bankStatement, final Class<T> clazz)
@@ -155,4 +169,5 @@ public class BankStatementDAO implements IBankStatementDAO
 				.list(I_C_BankStatement.class);
 
 	}
+
 }

@@ -6,10 +6,12 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.user.api.IUserBL;
+import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.user.UserPOCopyRecordSupport;
+import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -29,6 +31,9 @@ public class AD_User
 	public void init()
 	{
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+
+		CopyRecordFactory.enableForTableName(I_AD_User.Table_Name);
+		CopyRecordFactory.registerCopyRecordSupport(I_AD_User.Table_Name, UserPOCopyRecordSupport.class);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //

@@ -66,7 +66,7 @@ public class CompositeQueryFilterAssert extends AbstractAssert<CompositeQueryFil
 
 	public CompositeQueryFilterAssert isJoinAnd()
 	{
-		if(!actual.isJoinAnd())
+		if (!actual.isJoinAnd())
 		{
 			failWithMessage("Expected the ICompositeQueryFilter <%s> to have JoinAnd", actual);
 		}
@@ -75,7 +75,7 @@ public class CompositeQueryFilterAssert extends AbstractAssert<CompositeQueryFil
 
 	public CompositeQueryFilterAssert isJoinOr()
 	{
-		if(!actual.isJoinOr())
+		if (!actual.isJoinOr())
 		{
 			failWithMessage("Expected the ICompositeQueryFilter <%s> to be JoinOr", actual);
 		}
@@ -83,6 +83,11 @@ public class CompositeQueryFilterAssert extends AbstractAssert<CompositeQueryFil
 	}
 
 	public CompositeQueryFilterAssert hasEqualsFilter(final ModelColumn column, final Object value)
+	{
+		return hasEqualsFilter(column.getColumnName(), value);
+	}
+
+	public CompositeQueryFilterAssert hasEqualsFilter(final String columnName, final Object value)
 	{
 		final Predicate<IQueryFilter> p = filter -> {
 
@@ -92,7 +97,7 @@ public class CompositeQueryFilterAssert extends AbstractAssert<CompositeQueryFil
 				return false;
 			}
 
-			final boolean hasColumnName = equalsQueryFilter.getColumnName().equals(column.getColumnName());
+			final boolean hasColumnName = equalsQueryFilter.getColumnName().equals(columnName);
 			if (!hasColumnName)
 			{
 				return false;
@@ -109,7 +114,7 @@ public class CompositeQueryFilterAssert extends AbstractAssert<CompositeQueryFil
 		return anyFilterMatches(p);
 	}
 
-	public CompositeQueryFilterAssert hasInArrayFilter(final ModelColumn column, final Object ... values)
+	public CompositeQueryFilterAssert hasInArrayFilter(final ModelColumn column, final Object... values)
 	{
 		return hasInArrayFilter(column, Arrays.asList(values));
 	}
@@ -266,6 +271,11 @@ public class CompositeQueryFilterAssert extends AbstractAssert<CompositeQueryFil
 
 	public CompositeQueryFilterAssert hasNoFilterRegarding(ModelColumn column)
 	{
+		return hasNoFilterRegarding(column.getColumnName());
+	}
+
+	public CompositeQueryFilterAssert hasNoFilterRegarding(final String expectedColumnName)
+	{
 		Predicate<IQueryFilter> p = filter -> {
 
 			Method columnNameMethod = ReflectionUtils.findMethod(filter.getClass(), "getColumnName");
@@ -276,8 +286,8 @@ public class CompositeQueryFilterAssert extends AbstractAssert<CompositeQueryFil
 
 			try
 			{
-				String columnName = (String)columnNameMethod.invoke(filter);
-				return Objects.equals(columnName, column.getColumnName());
+				final String columnName = (String)columnNameMethod.invoke(filter);
+				return Objects.equals(columnName, expectedColumnName);
 			}
 			catch (final Exception e)
 			{
@@ -294,7 +304,7 @@ public class CompositeQueryFilterAssert extends AbstractAssert<CompositeQueryFil
 			if (p.test(filter))
 			{
 				failWithMessage("None of the filters included in actual \n<%s>\n should have columnName <%s>, but this filter does:\n<%s>",
-						actual, column.getColumnName(), filter);
+						actual, expectedColumnName, filter);
 			}
 		}
 		return this;

@@ -28,11 +28,9 @@ public interface IScript
 {
 	String getProjectName();
 
-	String getModuleName();
-
 	String getFileName();
 
-	String getType();
+	ScriptType getType();
 
 	File getLocalFile();
 

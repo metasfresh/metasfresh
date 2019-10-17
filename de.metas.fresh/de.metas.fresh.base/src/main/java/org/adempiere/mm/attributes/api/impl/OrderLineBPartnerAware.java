@@ -31,19 +31,16 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
 import de.metas.fresh.model.I_C_BPartner;
+import de.metas.order.IOrderBL;
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class OrderLineBPartnerAware implements IBPartnerAware
 {
-	public static final IBPartnerAwareFactory factory = new IBPartnerAwareFactory()
-	{
-		@Override
-		public IBPartnerAware createBPartnerAware(Object model)
-		{
-			final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
-			final IBPartnerAware partnerAware = new OrderLineBPartnerAware(orderLine);
-			return partnerAware;
-		}
+	public static final IBPartnerAwareFactory factory = model -> {
+		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
+		final IBPartnerAware partnerAware = new OrderLineBPartnerAware(orderLine);
+		return partnerAware;
 	};
 
 	private final I_C_OrderLine orderLine;
@@ -79,13 +76,8 @@ public class OrderLineBPartnerAware implements IBPartnerAware
 	{
 		final I_C_Order order = getOrder();
 
-		final I_C_BPartner partner = InterfaceWrapperHelper.create(order.getC_BPartner(), I_C_BPartner.class);
-		if (partner == null)
-		{
-			return null;
-		}
-
-		return partner;
+		
+		return InterfaceWrapperHelper.create(Services.get(IOrderBL.class).getBPartnerOrNull(order), I_C_BPartner.class);
 	}
 
 	private I_C_Order getOrder()

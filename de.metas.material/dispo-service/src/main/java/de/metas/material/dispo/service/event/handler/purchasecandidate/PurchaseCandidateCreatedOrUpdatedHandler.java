@@ -3,7 +3,6 @@ package de.metas.material.dispo.service.event.handler.purchasecandidate;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
-import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
@@ -77,12 +76,13 @@ public abstract class PurchaseCandidateCreatedOrUpdatedHandler<T extends Purchas
 		}
 		else
 		{
-			candidateBuilder = createInitialBuilder();
+			candidateBuilder = createInitialBuilder()
+					.clientAndOrgId(event.getEventDescriptor().getClientAndOrgId());
 			purchaseDetailBuilder = PurchaseDetail.builder();
 		}
 
 		final PurchaseDetail purchaseDetail = purchaseDetailBuilder
-				.plannedQty(materialDescriptor.getQuantity())
+				.qty(materialDescriptor.getQuantity())
 				.vendorRepoId(event.getVendorId())
 				.purchaseCandidateRepoId(event.getPurchaseCandidateRepoId())
 				.advised(Flag.FALSE_DONT_UPDATE)
@@ -106,6 +106,7 @@ public abstract class PurchaseCandidateCreatedOrUpdatedHandler<T extends Purchas
 		return Candidate.builder()
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PURCHASE)
-				.status(CandidateStatus.doc_planned);
+		// .status(CandidateStatus.doc_planned)
+		;
 	}
 }

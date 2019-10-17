@@ -30,6 +30,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.MPayment;
 
 import de.metas.banking.model.I_C_Payment;
+import de.metas.payment.TenderType;
 
 /**
  * Log of online payment transactions (cc, direct debit).
@@ -67,7 +68,10 @@ public class PayOnlinePaymentHistory extends X_Pay_OnlinePaymentHistory {
 		setCCPaymentState(payment.getCCPaymentState());
 		setOrig_TrxID(payment.getOrig_TrxID());
 		setAmount(payment.getPayAmt());
-		if (payment.getTenderType().equals(MPayment.TENDERTYPE_CreditCard)) {
+		
+		final TenderType tenderType = TenderType.ofCode(paymentPO.getTenderType());
+		if(tenderType.isCreditCard())
+		{
 			String ccno = payment.getCreditCardNumber();
 
 			if (ccno.length() > 4) {

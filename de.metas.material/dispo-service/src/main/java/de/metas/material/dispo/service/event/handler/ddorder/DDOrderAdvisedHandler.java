@@ -16,6 +16,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
@@ -27,6 +28,7 @@ import de.metas.material.event.ddorder.AbstractDDOrderEvent;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.util.Check;
 import lombok.NonNull;
 
@@ -103,16 +105,16 @@ public class DDOrderAdvisedHandler
 			return;
 		}
 
-		final Set<Integer> groupIds = handleAbstractDDOrderEvent(event);
+		final Set<MaterialDispoGroupId> groupIds = handleAbstractDDOrderEvent(event);
 
 		if (!event.isAdvisedToCreateDDrder())
 		{
 			return;
 		}
 
-		for (final int groupId : groupIds)
+		for (final MaterialDispoGroupId groupId : groupIds)
 		{
-			requestMaterialOrderService.requestMaterialOrder(groupId);
+			requestMaterialOrderService.requestMaterialOrderForCandidates(groupId);
 		}
 	}
 
@@ -136,11 +138,13 @@ public class DDOrderAdvisedHandler
 
 		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.ofDemandDetailOrNull(demandDetail);
 
+		final DateAndSeqNo atTime = DateAndSeqNo.atTimeNoSeqNo(computeDate(ddOrderEvent, ddOrderLine, candidateType));
+
 		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
 				.productId(ddOrderLine.getProductDescriptor().getProductId())
 				.storageAttributesKey(ddOrderLine.getProductDescriptor().getStorageAttributesKey())
 				.warehouseId(computeWarehouseId(ddOrderEvent, candidateType))
-				.date(computeDate(ddOrderEvent, ddOrderLine, candidateType))
+				.atTime(atTime)
 				.build();
 
 		final DDOrder ddOrder = ddOrderAdvisedEvent.getDdOrder();

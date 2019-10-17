@@ -135,8 +135,8 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 	protected I_M_ReceiptSchedule createReceiptSchedule(final BigDecimal qty)
 	{
 		final I_M_ReceiptSchedule receiptSchedule = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class, helper.contextProvider);
-		receiptSchedule.setM_Product(pTomato);
-		receiptSchedule.setC_UOM(uomKg);
+		receiptSchedule.setM_Product_ID(pTomato.getM_Product_ID());
+		receiptSchedule.setC_UOM_ID(uomKg.getC_UOM_ID());
 		receiptSchedule.setQtyOrdered(qty);
 		receiptSchedule.setQtyMoved(BigDecimal.ZERO);
 
@@ -145,7 +145,7 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 		{
 			final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class, helper.contextProvider);
 			InterfaceWrapperHelper.save(bpartner);
-			receiptSchedule.setC_BPartner(bpartner);
+			receiptSchedule.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		}
 
 		//
@@ -157,8 +157,8 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 
 			final I_C_OrderLine orderLine = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class, receiptSchedule);
 			orderLine.setC_Order(order);
-			orderLine.setM_Product(receiptSchedule.getM_Product());
-			orderLine.setC_UOM(receiptSchedule.getC_UOM());
+			orderLine.setM_Product_ID(receiptSchedule.getM_Product_ID());
+			orderLine.setC_UOM_ID(receiptSchedule.getC_UOM_ID());
 			orderLine.setQtyOrdered(receiptSchedule.getQtyOrdered());
 			orderLine.setPriceActual(rs_PriceActual);
 			InterfaceWrapperHelper.save(orderLine);
@@ -183,7 +183,7 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 
 		//
 		// Configure RS warehouse
-		receiptSchedule.setM_Warehouse(helper.defaultWarehouse);
+		receiptSchedule.setM_Warehouse_ID(helper.defaultWarehouse.getM_Warehouse_ID());
 
 		//
 		// Save the receipt schedule

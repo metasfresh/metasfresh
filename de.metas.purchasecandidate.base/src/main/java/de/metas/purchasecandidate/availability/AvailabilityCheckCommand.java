@@ -4,7 +4,6 @@ import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
@@ -12,6 +11,7 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import de.metas.vendor.gateway.api.VendorGatewayRegistry;
 import de.metas.vendor.gateway.api.VendorGatewayService;

@@ -1,6 +1,8 @@
 package org.adempiere.ad.dao.impl;
 
-import lombok.Value;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -15,15 +17,14 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,22 +32,39 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.annotations.VisibleForTesting;
+
+import de.metas.adempiere.model.I_C_Order;
+import de.metas.document.engine.DocStatus;
 import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
 
 public class InArrayQueryFilterTest
 {
 	private final Properties ctx = null; // Context is not used in InArrayQueryFilter
 
-	@Test(expected = Exception.class)
+	@BeforeEach
+	public void init()
+	{
+		AdempiereTestHelper.get().init();
+	}
+
+	@Test
 	public void test_ColumnName_NULL()
 	{
 		final String columnName = null;
 
 		// Expect exception:
-		new InArrayQueryFilter<>(columnName, Collections.emptyList());
+		assertThatThrownBy(() -> new InArrayQueryFilter<>(columnName, Collections.emptyList()))
+				.isInstanceOf(NullPointerException.class)
+				.hasMessage("columnName");
 	}
 
 	@Test
@@ -106,20 +124,67 @@ public class InArrayQueryFilterTest
 				// Expected output
 				"MyColumnName IS NULL",
 				Collections.emptyList());
+	}
 
+	@Test
+	public void test_RepoIds()
+	{
 		assertFilter(
 				// Input
 				"MyColumnName",
-				Arrays.<Object> asList("Value1", new RepoId(30), "Value2", null),
+				Arrays.<Object> asList("Value1", RepoId.ofRepoId(30), "Value2", null),
 				// Expected output
 				"(MyColumnName IN (?,?,?) OR MyColumnName IS NULL)",
 				Arrays.<Object> asList("Value1", 30, "Value2"));
 	}
 
-	@Value
-	private static final class RepoId implements RepoIdAware
+	@Test
+	public void test_ReferenceListAwareEnums()
 	{
+		final InArrayQueryFilter<Object> filter = new InArrayQueryFilter<>(
+				"DocStatus",
+				Arrays.<Object> asList(DocStatus.Completed, DocStatus.Closed, null));
+
+		assertFilter(filter,
+				// Expected output
+				"(DocStatus IN (?,?) OR DocStatus IS NULL)",
+				Arrays.<Object> asList("CO", "CL"));
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+
+		order.setDocStatus(DocStatus.Drafted.getCode());
+		assertThat(filter.accept(order)).isFalse();
+
+		order.setDocStatus(DocStatus.Completed.getCode());
+		assertThat(filter.accept(order)).isTrue();
+
+		order.setDocStatus(DocStatus.Closed.getCode());
+		assertThat(filter.accept(order)).isTrue();
+	}
+
+	@Value
+	@VisibleForTesting
+	public static final class RepoId implements RepoIdAware
+	{
+		@JsonCreator
+		public static RepoId ofRepoId(final int repoId)
+		{
+			return new RepoId(repoId);
+		}
+
+		public static RepoId ofRepoIdOrNull(final int repoId)
+		{
+			return repoId > 0 ? ofRepoId(repoId) : null;
+		}
+
 		int repoId;
+
+		@Override
+		@JsonValue
+		public int getRepoId()
+		{
+			return repoId;
+		}
 	}
 
 	/**
@@ -131,8 +196,7 @@ public class InArrayQueryFilterTest
 		final String columnName = "MyColumnName";
 		final InArrayQueryFilter<Object> filter = new InArrayQueryFilter<>(columnName, Collections.emptyList());
 
-		Assert.assertEquals("Invalid DefaultReturnWhenEmpty default", true, filter.isDefaultReturnWhenEmpty());
-
+		assertThat(filter.isDefaultReturnWhenEmpty()).isTrue();
 	}
 
 	@Test
@@ -151,6 +215,17 @@ public class InArrayQueryFilterTest
 		assertDefaultReturnWhenEmpty(false, new ArrayList<>());
 	}
 
+	@Test
+	public void test_equals()
+	{
+		final InArrayQueryFilter<I_Test> filter1 = new InArrayQueryFilter<>("columnName", "value1", "value2");
+		final InArrayQueryFilter<I_Test> filter2 = new InArrayQueryFilter<>("columnName", "value1", "value2");
+		assertThat(filter1).isEqualTo(filter2);
+
+		filter1.getSql(); // IMPORTANT: trigger sql build
+		assertThat(filter1).isEqualTo(filter2);
+	}
+
 	private void assertDefaultReturnWhenEmpty(final boolean defaultReturnWhenEmpty, final List<Object> params)
 	{
 		final String columnName = "MyColumnName";
@@ -160,12 +235,13 @@ public class InArrayQueryFilterTest
 		final InArrayQueryFilter<Object> filter = new InArrayQueryFilter<>(columnName, params);
 		filter.setDefaultReturnWhenEmpty(defaultReturnWhenEmpty);
 
-		Assert.assertEquals("Invalid build SQL: " + filter, sqlExpected, filter.getSql());
-		Assert.assertEquals("Invalid build SQL Params: " + filter, sqlParamsExpected, filter.getSqlParams(ctx));
+		assertFilter(filter, sqlExpected, sqlParamsExpected);
 	}
 
-	private void assertFilter(final String columnName,
+	private void assertFilter(
+			final String columnName,
 			final List<Object> values,
+			//
 			final String sqlExpected,
 			final List<Object> sqlParamsExpected)
 	{
@@ -173,14 +249,13 @@ public class InArrayQueryFilterTest
 		assertFilter(filter, sqlExpected, sqlParamsExpected);
 	}
 
-	private void assertFilter(final InArrayQueryFilter<Object> filter,
+	private void assertFilter(
+			final InArrayQueryFilter<Object> filter,
+			//
 			final String sqlExpected,
 			final List<Object> sqlParamsExpected)
 	{
-		final String sqlActual = filter.getSql();
-		final List<Object> sqlParamsActual = filter.getSqlParams(ctx);
-
-		Assert.assertEquals("Invalid build SQL: " + filter, sqlExpected, sqlActual);
-		Assert.assertEquals("Invalid build SQL Params: " + filter, sqlParamsExpected, sqlParamsActual);
+		assertThat(filter.getSql()).isEqualTo(sqlExpected);
+		assertThat(filter.getSqlParams(ctx)).isEqualTo(sqlParamsExpected);
 	}
 }

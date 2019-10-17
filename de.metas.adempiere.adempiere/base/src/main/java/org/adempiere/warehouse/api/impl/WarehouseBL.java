@@ -1,5 +1,7 @@
 package org.adempiere.warehouse.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -24,7 +26,7 @@ package org.adempiere.warehouse.api.impl;
 
 import java.util.List;
 
-import org.adempiere.location.CountryId;
+import de.metas.location.CountryId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -36,6 +38,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -137,5 +140,12 @@ public class WarehouseBL implements IWarehouseBL
 	{
 		final I_C_Location location = getC_Location(warehouseId);
 		return CountryId.ofRepoIdOrNull(location.getC_Country_ID());
+	}
+
+	@Override
+	public OrgId getWarehouseOrgId(@NonNull final WarehouseId warehouseId)
+	{
+		final I_M_Warehouse warehouseRecord = loadOutOfTrx(warehouseId, I_M_Warehouse.class);
+		return OrgId.ofRepoIdOrAny(warehouseRecord.getAD_Org_ID());
 	}
 }

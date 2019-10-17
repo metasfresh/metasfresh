@@ -15,7 +15,7 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1325249708L;
+	private static final long serialVersionUID = -669384970L;
 
     /** Standard Constructor */
     public X_M_ReceiptSchedule_Alloc (Properties ctx, int M_ReceiptSchedule_Alloc_ID, String trxName)
@@ -93,7 +93,7 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public org.compiere.model.I_M_InOut getM_InOut() throws RuntimeException
+	public org.compiere.model.I_M_InOut getM_InOut()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class);
 	}
@@ -126,7 +126,7 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public org.compiere.model.I_M_InOutLine getM_InOutLine() throws RuntimeException
+	public org.compiere.model.I_M_InOutLine getM_InOutLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class);
 	}
@@ -185,7 +185,7 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public de.metas.inoutcandidate.model.I_M_ReceiptSchedule getM_ReceiptSchedule() throws RuntimeException
+	public de.metas.inoutcandidate.model.I_M_ReceiptSchedule getM_ReceiptSchedule()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_ReceiptSchedule_ID, de.metas.inoutcandidate.model.I_M_ReceiptSchedule.class);
 	}

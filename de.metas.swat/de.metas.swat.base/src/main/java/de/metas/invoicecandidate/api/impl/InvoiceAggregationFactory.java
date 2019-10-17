@@ -28,7 +28,7 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 
-import de.metas.aggregation.api.IAggregation;
+import de.metas.aggregation.api.Aggregation;
 import de.metas.aggregation.api.IAggregationDAO;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
@@ -80,12 +80,12 @@ public class InvoiceAggregationFactory implements IInvoiceAggregationFactory
 	}
 
 	@Override
-	public IAggregation getAggregation(final Properties ctx, final I_C_BPartner bpartner, final boolean isSOTrx, final String aggregationUsageLevel)
+	public Aggregation getAggregation(final Properties ctx, final I_C_BPartner bpartner, final boolean isSOTrx, final String aggregationUsageLevel)
 	{
 		final IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
 		final int aggregationId = getInvoice_Aggregation_ID(bpartner, isSOTrx, aggregationUsageLevel);
 
-		final IAggregation aggregation;
+		final Aggregation aggregation;
 		if (aggregationId > 0)
 		{
 			aggregation = aggregationDAO.retrieveAggregation(ctx, aggregationId);

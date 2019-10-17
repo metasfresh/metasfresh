@@ -45,7 +45,7 @@ public interface IAggregationKeyBuilder<ModelType> extends org.adempiere.util.ag
 	@Override
 	String buildKey(ModelType model);
 
-	IAggregationKey buildAggregationKey(ModelType model);
+	AggregationKey buildAggregationKey(ModelType model);
 
 	/**
 	 * Build aggregation keys for the given items and compare them.

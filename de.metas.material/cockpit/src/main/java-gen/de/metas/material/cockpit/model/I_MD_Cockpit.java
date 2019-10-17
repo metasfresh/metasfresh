@@ -124,7 +124,7 @@ public interface I_MD_Cockpit
 	/**
 	 * Set Datum.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -133,7 +133,7 @@ public interface I_MD_Cockpit
 	/**
 	 * Get Datum.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -324,7 +324,7 @@ public interface I_MD_Cockpit
     public static final String COLUMNNAME_ProductValue = "ProductValue";
 
 	/**
-	 * Set Zusagbare Menge (Zählbestand).
+	 * Set Zusagbar Zählbestand.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -333,7 +333,7 @@ public interface I_MD_Cockpit
 	public void setQtyAvailableToPromiseEstimate (java.math.BigDecimal QtyAvailableToPromiseEstimate);
 
 	/**
-	 * Get Zusagbare Menge (Zählbestand).
+	 * Get Zusagbar Zählbestand.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false

@@ -8,6 +8,9 @@ import java.math.BigDecimal;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import de.metas.JsonObjectMapperHolder;
 import lombok.NonNull;
 
 /*
@@ -92,5 +95,36 @@ public class MoneyTest
 
 		assertThatThrownBy(() -> money_1EUR.min(money_2CHF)).isNotNull();
 		assertThatThrownBy(() -> money_1EUR.max(money_2CHF)).isNotNull();
+	}
+
+	@Test
+	public void testJsonSerialization() throws Exception
+	{
+		testJsonSerialization(Money.of(new BigDecimal("13.14"), CurrencyId.ofRepoId(55)));
+	}
+
+	private void testJsonSerialization(final Money money) throws Exception
+	{
+		final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+		final String json = objectMapper.writeValueAsString(money);
+		System.out.println("Serialized " + money + " to " + json);
+
+		final Money moneyDeserialized = objectMapper.readValue(json, money.getClass());
+		assertThat(moneyDeserialized).isEqualTo(money);
+	}
+
+	@Test
+	public void test_isLessThanOrEqualTo()
+	{
+		final Money money_1EUR = Money.of(1, EUR);
+		final Money money_2EUR = Money.of(2, EUR);
+		final Money money_2CHF = Money.of(2, CHF);
+
+		assertThat(money_1EUR.isLessThanOrEqualTo(money_2EUR)).isTrue();
+		assertThat(money_2EUR.isLessThanOrEqualTo(money_2EUR)).isTrue();
+
+		assertThat(money_2EUR.isLessThanOrEqualTo(money_1EUR)).isFalse();
+
+		assertThatThrownBy(() -> money_1EUR.isLessThanOrEqualTo(money_2CHF)).isNotNull();
 	}
 }

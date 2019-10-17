@@ -3,12 +3,14 @@ package de.metas.report.jasper.client.interceptor;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.ModelValidator;
-import org.compiere.model.X_AD_Process;
 import org.springframework.stereotype.Component;
 
+import de.metas.process.ProcessType;
 import de.metas.report.jasper.client.process.JasperReportStarter;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -37,6 +39,7 @@ import lombok.NonNull;
  */
 
 @Callout(I_AD_Process.class)
+@Interceptor(I_AD_Process.class)
 @Component
 public class AD_Process
 {
@@ -47,12 +50,18 @@ public class AD_Process
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Process.COLUMNNAME_Type)
 	@CalloutMethod(columnNames = I_AD_Process.COLUMNNAME_Type)
-	public void setClassnameIfTypeSQL(final I_AD_Process process)
+	public void setClassnameIfTypeJasperReportsSQL(final I_AD_Process process)
 	{
-		final String processType = process.getType();
-		if (X_AD_Process.TYPE_JasperReports.equals(processType))
+		final ProcessType type = ProcessType.ofCode(process.getType());
+		if (type.isJasper())
 		{
 			process.setClassname(JasperReportStarter.class.getName());
+		}
+
+		final String JSONPath = process.getJSONPath();
+		if (type.isJasperJson() && Check.isEmpty(JSONPath, true))
+		{
+			throw new FillMandatoryException(I_AD_Process.COLUMNNAME_JSONPath);
 		}
 	}
 

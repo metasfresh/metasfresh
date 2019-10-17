@@ -1,7 +1,14 @@
 package de.metas.cache.model;
 
+import static de.metas.util.Check.isEmpty;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
@@ -11,6 +18,10 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CacheMgt;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -36,45 +47,140 @@ import de.metas.util.Services;
 
 public class WindowBasedCacheInvalidateRequestInitializer
 {
-	public static final transient WindowBasedCacheInvalidateRequestInitializer instance = new WindowBasedCacheInvalidateRequestInitializer();
+	public static void setup()
+	{
+		new WindowBasedCacheInvalidateRequestInitializer().initialize();
+	}
 
 	private static final Logger logger = LogManager.getLogger(WindowBasedCacheInvalidateRequestInitializer.class);
+	private final IModelCacheInvalidationService registry = Services.get(IModelCacheInvalidationService.class);
+	private final CacheMgt cacheMgt = CacheMgt.get();
 
 	private WindowBasedCacheInvalidateRequestInitializer()
 	{
 	}
 
-	public void initialize()
+	private void initialize()
 	{
-		final IModelCacheInvalidationService registry = Services.get(IModelCacheInvalidationService.class);
-		final CacheMgt cacheMgt = CacheMgt.get();
+		final Set<ParentChildInfo> parentChildInfos = retrieveParentChildInfos();
+		logger.info("Found {} parentChildInfo instances to be registered", parentChildInfos.size());
 
-		final Set<GenericModelCacheInvalidateRequestFactory> factories = retrieveFactories();
-		logger.info("Found {} factories to be registered", factories.size());
+		for (final ParentChildInfo info : parentChildInfos)
+		{
+			registerParentTable(info);
+			registerChildTable(info);
+		}
 
-		factories.forEach(factory -> {
-			registry.register(factory.getRootTableName(), DirectModelCacheInvalidateRequestFactory.instance);
-			cacheMgt.enableRemoteCacheInvalidationForTableName(factory.getRootTableName());
-
-			registry.register(factory.getChildTableName(), factory);
-			cacheMgt.enableRemoteCacheInvalidationForTableName(factory.getChildTableName());
-		});
 	}
 
-	private final Set<GenericModelCacheInvalidateRequestFactory> retrieveFactories()
+	private void registerParentTable(final ParentChildInfo info)
 	{
-		final ImmutableSet.Builder<GenericModelCacheInvalidateRequestFactory> factories = ImmutableSet.builder();
+		final String parentTableName = info.getParentTableName();
+
+		registry.register(parentTableName, DirectModelCacheInvalidateRequestFactory.instance);
+
+		if (info.isParentNeedsRemoteCacheInvalidation())
+		{
+			cacheMgt.enableRemoteCacheInvalidationForTableName(parentTableName);
+		}
+	}
+
+	private void registerChildTable(final ParentChildInfo info)
+	{
+		final String childTableName = info.getChildTableName();
+		if (isEmpty(childTableName, true))
+		{
+			return;
+		}
+
+		try
+		{
+			final ParentChildModelCacheInvalidateRequestFactory factory = info.toGenericModelCacheInvalidateRequestFactoryOrNull();
+			if (factory != null)
+			{
+				registry.register(childTableName, factory);
+			}
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed registering model cache invalidate for {}: {}", childTableName, info, ex);
+		}
+
+		if (info.isChildNeedsRemoteCacheInvalidation())
+		{
+			cacheMgt.enableRemoteCacheInvalidationForTableName(childTableName);
+		}
+	}
+
+	private final Set<ParentChildInfo> retrieveParentChildInfos()
+	{
+		final ImmutableSet.Builder<ParentChildInfo> infos = ImmutableSet.builder();
 		DB.forEachRow(
-				"select * from AD_Window_ParentChildTableNames_v1 where ChildLinkColumnName is not null",
+				"select * from AD_Window_ParentChildTableNames_v1 order by ParentTableName, ChildTableName",
 				ImmutableList.of(),
-				rs -> factories.add(GenericModelCacheInvalidateRequestFactory.builder()
-						.rootTableName(rs.getString("ParentTableName"))
-						.childTableName(rs.getString("ChildTableName"))
-						.childKeyColumnName(rs.getString("ChildKeyColumnName"))
-						.childLinkColumnName(rs.getString("ChildLinkColumnName"))
-						.build()));
+				rs -> infos.add(retrieveParentChildInfo(rs)));
 
-		return factories.build();
+		return infos.build();
 	}
 
+	private ParentChildInfo retrieveParentChildInfo(final ResultSet rs) throws SQLException
+	{
+		return ParentChildInfo.builder()
+				.parentTableName(rs.getString("ParentTableName"))
+				.parentNeedsRemoteCacheInvalidation(StringUtils.toBoolean(rs.getString("Parent_Table_IsEnableRemoteCacheInvalidation"), false))
+				.childTableName(rs.getString("ChildTableName"))
+				.childNeedsRemoteCacheInvalidation(StringUtils.toBoolean(rs.getString("Child_Table_IsEnableRemoteCacheInvalidation"), false))
+				.childKeyColumnName(rs.getString("ChildKeyColumnName"))
+				.childLinkColumnName(rs.getString("ChildLinkColumnName"))
+				.build();
+	}
+
+	@Value
+	@Builder
+	private static class ParentChildInfo
+	{
+		@NonNull
+		String parentTableName;
+
+		boolean parentNeedsRemoteCacheInvalidation;
+
+		@Nullable
+		String childTableName;
+
+		boolean childNeedsRemoteCacheInvalidation;
+
+		@Nullable
+		String childKeyColumnName;
+
+		@Nullable
+		String childLinkColumnName;
+
+		private ParentChildModelCacheInvalidateRequestFactory toGenericModelCacheInvalidateRequestFactoryOrNull()
+		{
+			if (isEmpty(childTableName, true))
+			{
+				logger.warn("Cannot create parent/child cache invalidate request factory because childTableName is not set: {}", this);
+				return null;
+			}
+			if (isEmpty(childLinkColumnName, true))
+			{
+				logger.warn("Cannot create parent/child cache invalidate request factory because childLinkColumnName is not set: {}", this);
+				return null;
+			}
+
+			try
+			{
+				return ParentChildModelCacheInvalidateRequestFactory.builder()
+						.rootTableName(parentTableName)
+						.childTableName(childTableName)
+						.childKeyColumnName(childKeyColumnName)
+						.childLinkColumnName(childLinkColumnName)
+						.build();
+			}
+			catch (final Exception ex)
+			{
+				throw new AdempiereException("Failed creating " + ParentChildModelCacheInvalidateRequestFactory.class.getSimpleName() + " for " + this, ex);
+			}
+		}
+	}
 }

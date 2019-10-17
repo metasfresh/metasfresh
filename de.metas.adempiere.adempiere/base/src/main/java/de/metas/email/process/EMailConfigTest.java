@@ -3,6 +3,8 @@
  */
 package de.metas.email.process;
 
+import org.adempiere.service.ClientId;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -26,18 +28,24 @@ package de.metas.email.process;
  */
 
 import org.adempiere.service.IClientDAO;
-import org.adempiere.user.api.IUserDAO;
-import org.compiere.model.I_AD_Client;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_MailConfig;
-import org.compiere.model.I_AD_User;
 
 import de.metas.email.EMail;
+import de.metas.email.EMailAddress;
+import de.metas.email.EMailCustomType;
 import de.metas.email.EMailSentStatus;
-import de.metas.email.IMailBL;
-import de.metas.email.Mailbox;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.util.Services;
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.ClientEMailConfig;
+import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.mailboxes.UserEMailConfig;
+import de.metas.organization.OrgId;
+import de.metas.process.AdProcessId;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserBL;
+import de.metas.util.Services;
 
 /**
  *
@@ -46,9 +54,9 @@ import de.metas.process.JavaProcess;
  */
 public class EMailConfigTest extends JavaProcess
 {
-	private final IUserDAO userDAO = Services.get(IUserDAO.class);
-	private final IMailBL mailBL = Services.get(IMailBL.class);
-	private final IClientDAO clientDAO = Services.get(IClientDAO.class);
+	private final IUserBL usersService = Services.get(IUserBL.class);
+	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
+	private final MailService mailService = Adempiere.getBean(MailService.class);
 
 	public static final String PARA_AD_Client_ID = I_AD_MailConfig.COLUMNNAME_AD_Client_ID;
 	public static final String PARA_AD_Org_ID = I_AD_MailConfig.COLUMNNAME_AD_Org_ID;
@@ -60,12 +68,12 @@ public class EMailConfigTest extends JavaProcess
 	public static final String PARA_Message = "Message";
 	public static final String PARA_IsHtml = "IsHtml";
 
-	private int p_AD_Client_ID;
-	private int p_AD_Org_ID;
-	private int p_AD_Process_ID;
-	private String p_CustomType;
-	private int p_From_User_ID;
-	private String p_EMail_To;
+	private ClientId p_AD_Client_ID;
+	private OrgId p_AD_Org_ID;
+	private AdProcessId p_AD_Process_ID;
+	private EMailCustomType p_CustomType;
+	private UserId p_From_User_ID;
+	private EMailAddress p_EMail_To;
 	private String p_Subject;
 	private String p_Message;
 	private boolean p_IsHtml;
@@ -78,31 +86,31 @@ public class EMailConfigTest extends JavaProcess
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)
 			{
-				;
+
 			}
 			else if (name.equals(PARA_AD_Client_ID))
 			{
-				p_AD_Client_ID = para.getParameterAsInt();
+				p_AD_Client_ID = para.getParameterAsRepoId(ClientId::ofRepoIdOrNull);
 			}
 			else if (name.equals(PARA_AD_Org_ID))
 			{
-				p_AD_Org_ID = para.getParameterAsInt();
+				p_AD_Org_ID = para.getParameterAsRepoId(OrgId::ofRepoIdOrNull);
 			}
 			else if (name.equals(PARA_AD_Process_ID))
 			{
-				p_AD_Process_ID = para.getParameterAsInt();
+				p_AD_Process_ID = para.getParameterAsRepoId(AdProcessId::ofRepoIdOrNull);
 			}
 			else if (name.equals(PARA_CustomType))
 			{
-				p_CustomType = (String)para.getParameter();
+				p_CustomType = EMailCustomType.ofNullableCode(para.getParameterAsString());
 			}
 			else if (name.equals(PARA_From_User_ID))
 			{
-				p_From_User_ID = para.getParameterAsInt();
+				p_From_User_ID = para.getParameterAsRepoId(UserId::ofRepoIdOrNull);
 			}
 			else if (name.equals(PARA_EMail_To))
 			{
-				p_EMail_To = (String)para.getParameter();
+				p_EMail_To = EMailAddress.ofString(para.getParameterAsString());
 			}
 			else if (name.equals(PARA_Subject))
 			{
@@ -130,33 +138,26 @@ public class EMailConfigTest extends JavaProcess
 		return "Done";
 	}
 
-	public I_AD_User getFrom_User()
+	public UserEMailConfig getUserEMailConfig()
 	{
-		if (p_From_User_ID > 0)
-		{
-
-			return userDAO.retrieveUserOrNull(getCtx(), p_From_User_ID);
-		}
-		else
-		{
-			return null;
-		}
+		return p_From_User_ID != null ? usersService.getEmailConfigById(p_From_User_ID) : null;
 	}
 
 	private void testSend()
 	{
-		final I_AD_Client client = clientDAO.retriveClient(getCtx(), p_AD_Client_ID);
+		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(p_AD_Client_ID);
+		final UserEMailConfig userEmailConfig = getUserEMailConfig();
 
-		final Mailbox mailbox = mailBL.findMailBox(
-				client,
+		final Mailbox mailbox = mailService.findMailBox(
+				tenantEmailConfig,
 				p_AD_Org_ID,
 				p_AD_Process_ID,
 				null,  // C_DocType - Task FRESH-203. This shall work as before
-				p_CustomType, getFrom_User());
+				p_CustomType)
+				.mergeFrom(userEmailConfig);
 		addLog("Using configuration: " + mailbox);
 
-		final EMail email = mailBL.createEMail(getCtx(), mailbox, p_EMail_To,
-				p_Subject, p_Message, p_IsHtml);
+		final EMail email = mailService.createEMail(mailbox, p_EMail_To, p_Subject, p_Message, p_IsHtml);
 		addLog("EMail: " + email);
 
 		final EMailSentStatus emailSentStatus = email.send();

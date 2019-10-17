@@ -10,6 +10,8 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -20,13 +22,13 @@ import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
 import de.metas.cache.CCache;
@@ -35,10 +37,11 @@ import de.metas.dimension.model.I_DIM_Dimension_Spec_Attribute;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_AttributeValue;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.AttributesKeyPart;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -77,7 +80,7 @@ public class DimensionSpec
 			+ "#" + I_DIM_Dimension_Spec.Table_Name
 			+ "#" + I_DIM_Dimension_Spec_Attribute.Table_Name
 			+ "#" + I_DIM_Dimension_Spec_AttributeValue.Table_Name
-			+ "#" + I_M_AttributeValue.Table_Name;
+			+ "#" + IAttributeDAO.CACHEKEY_ATTRIBUTE_VALUE;
 
 	private static final transient CCache<Integer, List<DimensionSpecGroup>> dimentsionSpecIdToGroups = CCache.newCache(
 			GROUPS_CACHE_NAME,
@@ -228,9 +231,11 @@ public class DimensionSpec
 			return DimensionConstants.DIM_EMPTY;
 		}
 
-		final I_M_AttributeValue attributeValue = attributeInstance.getM_AttributeValue();
-		if (attributeValue != null)
+		final AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(attributeInstance.getM_AttributeValue_ID());
+		if (attributeValueId != null)
 		{
+			final AttributeListValue attributeValue = attributeDAO.retrieveAttributeValueOrNull(attributeId, attributeValueId);
+
 			final String nameOrValue = !Check.isEmpty(attributeValue.getName())
 					? attributeValue.getName()
 					: attributeValue.getValue();
@@ -259,23 +264,27 @@ public class DimensionSpec
 	public List<I_M_Attribute> retrieveAttributes()
 	{
 		return dimentsionSpecIdToAttributes
-				.getOrLoad(dimensionSpecRecord.getDIM_Dimension_Spec_ID(), () -> retrieveAttributesForDimensionSpec(dimensionSpecRecord));
+				.getOrLoad(dimensionSpecRecord.getDIM_Dimension_Spec_ID(), this::retrieveAttributesForDimensionSpec);
 	}
 
-	private static List<I_M_Attribute> retrieveAttributesForDimensionSpec(@NonNull final I_DIM_Dimension_Spec dimensionSpecRecord)
+	private List<I_M_Attribute> retrieveAttributesForDimensionSpec(final int dimensionSpecRecordId)
+	{
+		final ImmutableSet<AttributeId> attributeIds = retrieveAttributeIdsForDimensionSpec(dimensionSpecRecordId);
+		return Services.get(IAttributeDAO.class).getAttributesByIds(attributeIds);
+	}
+
+	private ImmutableSet<AttributeId> retrieveAttributeIdsForDimensionSpec(final int dimensionSpecRecordId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		return queryBL.createQueryBuilder(I_DIM_Dimension_Spec_Attribute.class)
-				.addEqualsFilter(I_DIM_Dimension_Spec_Attribute.COLUMNNAME_DIM_Dimension_Spec_ID,
-						dimensionSpecRecord.getDIM_Dimension_Spec_ID())
+				.addEqualsFilter(I_DIM_Dimension_Spec_Attribute.COLUMNNAME_DIM_Dimension_Spec_ID, dimensionSpecRecordId)
 				.addOnlyActiveRecordsFilter()
-				.andCollect(I_DIM_Dimension_Spec_Attribute.COLUMN_M_Attribute_ID, I_M_Attribute.class)
-
-				// important to get a correct AttributesKey *if* we used these attributes for that purpose
-				.orderBy().addColumn(I_M_Attribute.COLUMN_M_Attribute_ID).endOrderBy()
 				.create()
-				.list(I_M_Attribute.class);
+				.listDistinct(I_DIM_Dimension_Spec_Attribute.COLUMNNAME_M_Attribute_ID, Integer.class)
+				.stream()
+				.map(AttributeId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public List<DimensionSpecGroup> retrieveGroups()
@@ -288,14 +297,15 @@ public class DimensionSpec
 			@NonNull final I_DIM_Dimension_Spec dimensionSpecRecord)
 	{
 
-		final List<I_DIM_Dimension_Spec_Attribute> attrs = Services.get(IQueryBL.class).createQueryBuilder(I_DIM_Dimension_Spec_Attribute.class)
+		final List<I_DIM_Dimension_Spec_Attribute> attrs = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DIM_Dimension_Spec_Attribute.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DIM_Dimension_Spec_Attribute.COLUMN_DIM_Dimension_Spec_ID, dimensionSpecRecord.getDIM_Dimension_Spec_ID())
-				.orderBy().addColumn(I_DIM_Dimension_Spec_Attribute.COLUMN_M_Attribute_ID).endOrderBy() // important to get a correct AttributesKey
+				.orderBy(I_DIM_Dimension_Spec_Attribute.COLUMNNAME_M_Attribute_ID) // important to get a correct AttributesKey
 				.create()
 				.list();
 
-		final Multimap<IPair<String, AttributeId>, Integer> groupName2AttributeValueIds = mapGroupNamesToAttributeValues(attrs);
+		final Multimap<IPair<String, AttributeId>, AttributeValueId> groupName2AttributeValueIds = mapGroupNamesToAttributeValues(attrs);
 
 		final Builder<DimensionSpecGroup> groupList = ImmutableList.builder();
 		if (dimensionSpecRecord.isIncludeEmpty())
@@ -312,10 +322,10 @@ public class DimensionSpec
 		return groupList.build();
 	}
 
-	private static Multimap<IPair<String, AttributeId>, Integer> mapGroupNamesToAttributeValues(
+	private static Multimap<IPair<String, AttributeId>, AttributeValueId> mapGroupNamesToAttributeValues(
 			@NonNull final List<I_DIM_Dimension_Spec_Attribute> attrs)
 	{
-		final Multimap<IPair<String, AttributeId>, Integer> groupName2AttributeValues = ArrayListMultimap.create();
+		final Multimap<IPair<String, AttributeId>, AttributeValueId> groupName2AttributeValues = ArrayListMultimap.create();
 
 		for (final I_DIM_Dimension_Spec_Attribute dsa : attrs)
 		{
@@ -333,26 +343,27 @@ public class DimensionSpec
 
 	private static void addAllAttributeValuesToMap(
 			@NonNull final I_DIM_Dimension_Spec_Attribute dimensionspecAttribute,
-			@NonNull final Multimap<IPair<String, AttributeId>, Integer> groupName2AttributeValues)
+			@NonNull final Multimap<IPair<String, AttributeId>, AttributeValueId> groupName2AttributeValues)
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
-		final List<I_M_AttributeValue> attributeValues = attributeDAO.retrieveAttributeValues(dimensionspecAttribute.getM_Attribute());
+		final AttributeId attributeId = AttributeId.ofRepoId(dimensionspecAttribute.getM_Attribute_ID());
+		final List<AttributeListValue> attributeValues = attributeDAO.retrieveAttributeValuesByAttributeId(attributeId);
 
-		for (final I_M_AttributeValue attributeValue : attributeValues)
+		for (final AttributeListValue attributeValue : attributeValues)
 		{
 			final String groupName = dimensionspecAttribute.isValueAggregate()
 					? dimensionspecAttribute.getValueAggregateName()
 					: attributeValue.getName();
 
-			final ImmutablePair<String, AttributeId> key = ImmutablePair.of(groupName, AttributeId.ofRepoId(dimensionspecAttribute.getM_Attribute_ID()));
-			groupName2AttributeValues.put(key, attributeValue.getM_AttributeValue_ID());
+			final ImmutablePair<String, AttributeId> key = ImmutablePair.of(groupName, attributeId);
+			groupName2AttributeValues.put(key, attributeValue.getId());
 		}
 	}
 
 	private static void addIndividualAttributeValuestoMap(
 			@NonNull final I_DIM_Dimension_Spec_Attribute dimensionSpecAttribute,
-			@NonNull final Multimap<IPair<String, AttributeId>, Integer> groupName2AttributeValues)
+			@NonNull final Multimap<IPair<String, AttributeId>, AttributeValueId> groupName2AttributeValues)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -364,37 +375,57 @@ public class DimensionSpec
 						dimensionSpecAttribute.getDIM_Dimension_Spec_Attribute_ID())
 				.create()
 				.list();
+		
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		final AttributeId attributeId = AttributeId.ofRepoId(dimensionSpecAttribute.getM_Attribute_ID());
 
 		for (final I_DIM_Dimension_Spec_AttributeValue attrValue : attrValues)
 		{
-			final String groupName = dimensionSpecAttribute.isValueAggregate()
-					? dimensionSpecAttribute.getValueAggregateName()
-					: attrValue.getM_AttributeValue().getName();
+			final AttributeValueId attributeValueId = AttributeValueId.ofRepoId(attrValue.getM_AttributeValue_ID());
+			
+			final String groupName;
+			if(dimensionSpecAttribute.isValueAggregate())
+			{
+				groupName = dimensionSpecAttribute.getValueAggregateName();
+			}
+			else
+			{
+				final AttributeListValue attributeListValue = attributesRepo.retrieveAttributeValueOrNull(attributeId, attributeValueId);
+				groupName = attributeListValue.getName();
+			}
 
-			final ImmutablePair<String, AttributeId> key = ImmutablePair.of(groupName, AttributeId.ofRepoId(dimensionSpecAttribute.getM_Attribute_ID()));
-			groupName2AttributeValues.put(key, attrValue.getM_AttributeValue_ID());
+			final ImmutablePair<String, AttributeId> key = ImmutablePair.of(groupName, attributeId);
+			groupName2AttributeValues.put(key, attributeValueId);
 		}
 	}
 
 	private static void sortAndAddMapEntriesToList(
-			@NonNull final Multimap<IPair<String, AttributeId>, Integer> groupNameToAttributeValueIds,
+			@NonNull final Multimap<IPair<String, AttributeId>, AttributeValueId> groupNameToAttributeValueIds,
 			@NonNull final Builder<DimensionSpecGroup> list)
 	{
-		final Collection<Entry<IPair<String, AttributeId>, Collection<Integer>>> //
+		final Collection<Entry<IPair<String, AttributeId>, Collection<AttributeValueId>>> //
 		entrySet = groupNameToAttributeValueIds.asMap().entrySet();
 
-		for (final Entry<IPair<String, AttributeId>, Collection<Integer>> entry : entrySet)
+		for (final Entry<IPair<String, AttributeId>, Collection<AttributeValueId>> entry : entrySet)
 		{
 			final String groupName = entry.getKey().getLeft();
-			final ITranslatableString groupNameTrl = ITranslatableString.constant(groupName);
+			final ITranslatableString groupNameTrl = TranslatableStrings.constant(groupName);
 			final Optional<AttributeId> groupAttributeId = Optional.ofNullable(entry.getKey().getRight());
-			final AttributesKey attributesKey = AttributesKey.ofAttributeValueIds(entry.getValue());
+			final AttributesKey attributesKey = createAttributesKey(entry.getValue());
 
 			final DimensionSpecGroup newGroup = new DimensionSpecGroup(
-					groupNameTrl,
+					() -> groupNameTrl,
 					attributesKey,
 					groupAttributeId);
 			list.add(newGroup);
 		}
+	}
+
+	private static AttributesKey createAttributesKey(final Collection<AttributeValueId> values)
+	{
+		return AttributesKey.ofParts(
+				values.stream()
+						.map(AttributesKeyPart::ofAttributeValueId)
+						.collect(ImmutableSet.toImmutableSet()));
 	}
 }

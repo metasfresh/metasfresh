@@ -574,6 +574,31 @@ public interface I_R_Request
     public static final String COLUMNNAME_DateCompletePlan = "DateCompletePlan";
 
 	/**
+	 * Set Lieferdatum.
+	 * Datum, zu dem die Ware geliefert wurde
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDateDelivered (java.sql.Timestamp DateDelivered);
+
+	/**
+	 * Get Lieferdatum.
+	 * Datum, zu dem die Ware geliefert wurde
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getDateDelivered();
+
+    /** Column definition for DateDelivered */
+    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_DateDelivered = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "DateDelivered", null);
+    /** Column name DateDelivered */
+    public static final String COLUMNNAME_DateDelivered = "DateDelivered";
+
+	/**
 	 * Set Date last action.
 	 * Date this request was last acted on
 	 *
@@ -699,7 +724,7 @@ public interface I_R_Request
     public static final String COLUMNNAME_DateTrx = "DateTrx";
 
 	/**
-	 * Set Beleg Nr..
+	 * Set Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -709,7 +734,7 @@ public interface I_R_Request
 	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Beleg Nr..
+	 * Get Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -1044,6 +1069,29 @@ public interface I_R_Request
     public static final String COLUMNNAME_M_ProductSpent_ID = "M_ProductSpent_ID";
 
 	/**
+	 * Set Qualität-Notiz.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_QualityNote_ID (int M_QualityNote_ID);
+
+	/**
+	 * Get Qualität-Notiz.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_QualityNote_ID();
+
+    /** Column definition for M_QualityNote_ID */
+    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_M_QualityNote_ID = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "M_QualityNote_ID", null);
+    /** Column name M_QualityNote_ID */
+    public static final String COLUMNNAME_M_QualityNote_ID = "M_QualityNote_ID";
+
+	/**
 	 * Set RMA.
 	 * Return Material Authorization
 	 *
@@ -1096,6 +1144,29 @@ public interface I_R_Request
     public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_NextAction = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "NextAction", null);
     /** Column name NextAction */
     public static final String COLUMNNAME_NextAction = "NextAction";
+
+	/**
+	 * Set PerformanceType.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPerformanceType (java.lang.String PerformanceType);
+
+	/**
+	 * Get PerformanceType.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPerformanceType();
+
+    /** Column definition for PerformanceType */
+    public static final org.adempiere.model.ModelColumn<I_R_Request, Object> COLUMN_PerformanceType = new org.adempiere.model.ModelColumn<I_R_Request, Object>(I_R_Request.class, "PerformanceType", null);
+    /** Column name PerformanceType */
+    public static final String COLUMNNAME_PerformanceType = "PerformanceType";
 
 	/**
 	 * Set Priority.

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
 import de.metas.util.time.SystemTime;
 
@@ -36,7 +37,10 @@ public class IBPartnerStatsBLTest
 	@Test
 	public void build_CalculateSOCreditStatusRequest()
 	{
-		final BPartnerStats stat = BPartnerStats.builder().bpartnerId(10).recordId(20).build();
+		final BPartnerStats stat = BPartnerStats.builder()
+				.repoId(20)
+				.bpartnerId(BPartnerId.ofRepoId(10))
+				.build();
 
 		final CalculateSOCreditStatusRequest calculateSOCreditStatusRequest = CalculateSOCreditStatusRequest.builder()
 				.date(SystemTime.asTimestamp())

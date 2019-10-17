@@ -13,58 +13,39 @@ package de.metas.invoicecandidate.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 
-import org.adempiere.util.lang.ObjectUtils;
-
-import de.metas.aggregation.api.IAggregationKey;
+import de.metas.aggregation.api.AggregationKey;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.util.Check;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
 
+@ToString(doNotUseGetters = true)
 /* package */class InvoiceHeaderAndLineAggregators
 {
-	private final IAggregationKey headerAggregationKey;
+	private final AggregationKey headerAggregationKey;
+	@Getter
 	private final InvoiceHeaderImplBuilder invoiceHeader;
 
 	/** Map: C_Invoice_Candidate_Agg_ID to invoice line aggregator ({@link IAggregator}) */
-	private final Map<Object, IAggregator> lineAggregators = new HashMap<>();
+	private final HashMap<Object, IAggregator> lineAggregators = new HashMap<>();
 
-	public InvoiceHeaderAndLineAggregators(final IAggregationKey headerAggregationKey, final InvoiceHeaderImplBuilder invoiceHeader)
+	public InvoiceHeaderAndLineAggregators(@NonNull final AggregationKey headerAggregationKey)
 	{
-		super();
-
 		this.headerAggregationKey = headerAggregationKey;
-
-		Check.assumeNotNull(invoiceHeader, "invoiceHeader not null");
-		this.invoiceHeader = invoiceHeader;
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
-	}
-
-	public IAggregationKey getHeaderAggregationKey()
-	{
-		return headerAggregationKey;
-	}
-
-	public InvoiceHeaderImplBuilder getInvoiceHeader()
-	{
-		return invoiceHeader;
+		this.invoiceHeader = InvoiceHeaderImpl.builder();
 	}
 
 	public IAggregator getLineAggregator(final int invoiceCandidateAggId)
@@ -79,7 +60,7 @@ import de.metas.util.Check;
 		final Object key = mkLineAggregatorKey(invoiceCandidateAggId);
 		lineAggregators.put(key, lineAggregator);
 	}
-	
+
 	private final Object mkLineAggregatorKey(final int invoiceCandidateAggId)
 	{
 		return invoiceCandidateAggId > 0 ? invoiceCandidateAggId : 0;
@@ -89,6 +70,5 @@ import de.metas.util.Check;
 	{
 		return lineAggregators.values();
 	}
-	
-	
+
 }

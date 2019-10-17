@@ -68,8 +68,8 @@ public final class PaymentAllocationLineMaterialTrackingListener extends Materia
 		final IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);
 		materialTrackingBL.linkModelToMaterialTracking(
 				MTLinkRequest.builder()
-						.setModel(payment)
-						.setMaterialTracking(request.getMaterialTracking())
+						.model(payment)
+						.materialTrackingRecord(request.getMaterialTrackingRecord())
 						.build());
 	}
 
@@ -87,7 +87,7 @@ public final class PaymentAllocationLineMaterialTrackingListener extends Materia
 		}
 
 		final IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);
-		materialTrackingBL.unlinkModelFromMaterialTracking(payment, materialTrackingOld);
+		materialTrackingBL.unlinkModelFromMaterialTrackings(payment, materialTrackingOld);
 	}
 
 }

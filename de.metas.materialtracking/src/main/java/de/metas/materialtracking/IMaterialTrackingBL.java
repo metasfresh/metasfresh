@@ -13,7 +13,6 @@ public interface IMaterialTrackingBL extends ISingletonService
 	String C_DocType_PPORDER_DOCSUBTYPE_QualityInspection = "QI";
 
 	/**
-	 *
 	 * @return true if material tracking module is enabled
 	 */
 	boolean isEnabled();
@@ -22,8 +21,6 @@ public interface IMaterialTrackingBL extends ISingletonService
 	 * Enable/Disable material tracking module.
 	 *
 	 * NOTE: this is just a flag, it won't prevent anything but depending functionalities can decide if they shall perform or not, based on this flag.
-	 *
-	 * @param enabled
 	 */
 	void setEnabled(boolean enabled);
 
@@ -31,37 +28,29 @@ public interface IMaterialTrackingBL extends ISingletonService
 	 * Registers material tracking listener for given table name.
 	 *
 	 * When a model from given table name is linked or unlinked to a material tracking this listener will be called.
-	 *
-	 * @param tableName
-	 * @param listener
 	 */
-	void addModelTrackingListener(final String tableName, final IMaterialTrackingListener listener);
+	void addModelTrackingListener(String tableName, IMaterialTrackingListener listener);
 
 	/**
 	 * Link given model to a material tracking record. The beforeModelLinked() and afterModelLinked() methods of all registered {@link IMaterialTrackingListener}s will be called before resp. after the
 	 * new {@link I_M_Material_Tracking_Ref} record is saved.
 	 *
 	 * If model was previously assigned to another material tracking and {@link MTLinkRequest#isAssumeNotAlreadyAssigned()} is <code>false</code>, then it will be unlinked first.
-	 *
-	 * @param req
 	 */
 	void linkModelToMaterialTracking(MTLinkRequest req);
 
 	/**
 	 * Unlink given model from ANY material tracking.
 	 *
-	 * @param model
 	 * @return <code>true</code> if there was a <code>M_MaterialTracking_Ref</code> to delete.
 	 */
-	boolean unlinkModelFromMaterialTracking(Object model);
+	boolean unlinkModelFromMaterialTrackings(Object model);
 
 	/**
 	 * Unlink given given <code>model</code> from the given <code>materialTracking </code>, if such a link exists.
 	 *
-	 * @param model
-	 * @param materialTracking
 	 * @return <code>true</code> if there was a <code>M_MaterialTracking_Ref</code> to delete.
 	 */
-	boolean unlinkModelFromMaterialTracking(Object model, I_M_Material_Tracking materialTracking);
+	boolean unlinkModelFromMaterialTrackings(Object model, I_M_Material_Tracking materialTracking);
 
 }

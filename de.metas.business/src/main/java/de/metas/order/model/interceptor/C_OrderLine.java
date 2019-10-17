@@ -1,5 +1,7 @@
 package de.metas.order.model.interceptor;
 
+import static org.adempiere.model.InterfaceWrapperHelper.isCopy;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -39,6 +41,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner_product.IBPartnerProductBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
@@ -48,14 +51,13 @@ import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.product.ProductId;
-import de.metas.purchasing.api.IBPartnerProductBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 @Interceptor(I_C_OrderLine.class)
 @Callout(I_C_OrderLine.class)
-@Component("de.metas.order.model.interceptor.C_OrderLine")
+@Component
 public class C_OrderLine
 {
 	private static final Logger logger = LogManager.getLogger(C_OrderLine.class);
@@ -69,7 +71,7 @@ public class C_OrderLine
 		this.groupChangesHandler = groupChangesHandler;
 
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
-	};
+	}
 
 	/**
 	 * 09557: If a purchase order line is deleted, then all sales order lines need to un-reference it to avoid an FK-constraint-error
@@ -232,6 +234,10 @@ public class C_OrderLine
 	})
 	public void onGroupCompensationLineChanged(final I_C_OrderLine orderLine)
 	{
+		if (Check.isEmpty(orderLine.getGroupCompensationType()) && !orderLine.isGroupCompensationLine())
+		{
+			return; // nothing to do..however note that ideally we wouldn't have been called in the first place
+		}
 		groupChangesHandler.updateCompensationLineNoSave(orderLine);
 	}
 
@@ -274,24 +280,26 @@ public class C_OrderLine
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
-			ifColumnsChanged = I_C_OrderLine.COLUMNNAME_QtyEntered)
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyEntered, I_C_OrderLine.COLUMNNAME_M_DiscountSchemaBreak_ID })
 	public void updatePricesOverrideExistingDiscounts(final I_C_OrderLine orderLine)
 	{
-		final boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet = false;
-
-		// make the BL revalidates the discounts..the new QtyEntered might also mean a new discount schema break
-		orderLine.setM_DiscountSchemaBreak(null);
-
+		if (isCopy(orderLine))
+		{
+			return;
+		}
 		if (orderLine.isProcessed())
 		{
 			return;
 		}
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
+		// make the BL revalidate the discounts..the new QtyEntered might also mean a new discount schema break
+		orderLine.setM_DiscountSchemaBreak(null);
+
+		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
 				.orderLine(orderLine)
 				.resultUOM(ResultUOM.PRICE_UOM)
-				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(updatePriceEnteredAndDiscountOnlyIfNotAlreadySet)
+				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(false) // i.e. always update them
 				.updateLineNetAmt(true)
 				.build());
 
@@ -316,5 +324,12 @@ public class C_OrderLine
 	public void updateProductDescriptionFromProductBOMIfConfigured(final I_C_OrderLine orderLine)
 	{
 		Services.get(IOrderLineBL.class).updateProductDescriptionFromProductBOMIfConfigured(orderLine);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
+	public void updateProductDocumentNote(final I_C_OrderLine orderLine)
+	{
+		Services.get(IOrderLineBL.class).updateProductDocumentNote(orderLine);
 	}
 }

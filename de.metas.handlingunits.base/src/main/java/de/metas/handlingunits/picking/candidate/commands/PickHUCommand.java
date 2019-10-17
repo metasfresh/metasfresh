@@ -67,6 +67,8 @@ public class PickHUCommand
 	private final PickingSlotId pickingSlotId;
 	private final Quantity qtyToPick;
 	private final HuPackingInstructionsId packToId;
+	private final boolean autoReview;
+	boolean createPickingCandidatesOnly;
 
 	private I_M_ShipmentSchedule _shipmentSchedule; // lazy
 
@@ -82,6 +84,7 @@ public class PickHUCommand
 		this.pickingSlotId = request.getPickingSlotId();
 		this.packToId = request.getPackToId();
 		this.qtyToPick = request.getQtyToPick();
+		this.autoReview = request.isAutoReview();
 	}
 
 	public PickHUResult perform()
@@ -102,6 +105,11 @@ public class PickHUCommand
 
 		pickingCandidate.pick(qtyToPick);
 		pickingCandidate.packTo(packToId);
+		if (autoReview)
+		{
+			pickingCandidate.reviewPicking(qtyToPick.toBigDecimal());
+		}
+
 		pickingCandidateRepository.save(pickingCandidate);
 
 		allocatePickingSlotIfPossible();

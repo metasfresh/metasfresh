@@ -8,6 +8,7 @@ import java.util.Map;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import de.metas.inout.InOutAndLineId;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.HUDescriptor;
@@ -53,9 +54,8 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 
 	private final Map<Integer, BigDecimal> receiptScheduleIds2Qtys;
 
-	private final int inOutId;
-
-	private final int inOutLineId;
+	private final InOutAndLineId receiptId;
+	private final InOutAndLineId shipmentId;
 
 	private final int transactionId;
 
@@ -76,8 +76,8 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 			final MaterialDescriptor materialDescriptor,
 			final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys,
 			final Map<Integer, BigDecimal> receiptScheduleIds2Qtys,
-			final int inOutId,
-			final int inOutLineId,
+			final InOutAndLineId receiptId,
+			final InOutAndLineId shipmentId,
 			final int ppOrderId,
 			final int ppOrderLineId,
 			final int ddOrderId,
@@ -96,8 +96,8 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 		this.shipmentScheduleIds2Qtys = shipmentScheduleIds2Qtys;
 		this.receiptScheduleIds2Qtys = receiptScheduleIds2Qtys;
 
-		this.inOutId = inOutId;
-		this.inOutLineId = inOutLineId;
+		this.receiptId = receiptId;
+		this.shipmentId = shipmentId;
 
 		this.ddOrderLineId = ddOrderLineId;
 		this.ddOrderId = ddOrderId;
@@ -108,8 +108,10 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 		this.directMovementWarehouse = directMovementWarehouse;
 	}
 
+	/** Never return {@code null}. */
 	public abstract BigDecimal getQuantity();
 
+	/** Never return {@code null}. */
 	public abstract BigDecimal getQuantityDelta();
 
 	@OverridingMethodsMustInvokeSuper

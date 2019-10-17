@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.metas.fresh</groupId>
 		<artifactId>de.metas.fresh</artifactId>
-		<version>[1,10.0.0]</version>
+		<version>10.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -157,6 +157,24 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.vertical.creditscore</groupId>
+			<artifactId>metasfresh-creditscore-base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.vertical.creditscore</groupId>
+			<artifactId>metasfresh-creditscore-creditpass</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.vertical.pharma</groupId>
+			<artifactId>metasfresh-pharma.securpharm</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>de.metas.payment.esr</groupId>
 			<artifactId>de.metas.payment.esr</artifactId>
 			<version>${metasfresh.version}</version>
@@ -165,6 +183,12 @@
 		<dependency>
 			<groupId>de.metas.payment.sepa</groupId>
 			<artifactId>de.metas.payment.sepa</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.payment.paypal</groupId>
+			<artifactId>de.metas.payment.paypal</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 
@@ -275,10 +299,26 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 
+		<!-- include material-dispo; 
+			This component will only be active within metasfresh-app (a.k.a. serverRoot) 
+			if the spring profile "material-dispo" is active. One way of activating that profile is to 
+			find the existing AD_SysConfig with Name="de.metas.spring.profiles.active_material-dispo" and set is to IsActive='Y' -->
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-dispo-service</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>

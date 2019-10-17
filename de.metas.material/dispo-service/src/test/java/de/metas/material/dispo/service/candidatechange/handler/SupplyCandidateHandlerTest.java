@@ -3,11 +3,11 @@ package de.metas.material.dispo.service.candidatechange.handler;
 import static de.metas.material.dispo.commons.DispoTestUtils.filter;
 import static de.metas.material.dispo.commons.DispoTestUtils.retrieveAllRecords;
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
-import static de.metas.material.event.EventTestHelper.CLIENT_ID;
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,10 +18,9 @@ import java.util.function.Consumer;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -57,7 +56,7 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@ExtendWith(AdempiereTestWatcher.class)
 public class SupplyCandidateHandlerTest
 {
 
@@ -65,15 +64,11 @@ public class SupplyCandidateHandlerTest
 
 	private static final BigDecimal TWENTY_THREE = new BigDecimal("23");
 
-	/** Watches the current tests and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private SupplyCandidateHandler supplyCandiateHandler;
 
 	private CandidateRepositoryWriteService candidateRepositoryWriteService;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -85,7 +80,7 @@ public class SupplyCandidateHandlerTest
 				candidateRepository,
 				candidateRepositoryWriteService);
 
-		supplyCandiateHandler = new SupplyCandidateHandler(candidateRepository, candidateRepositoryWriteService, stockCandidateService);
+		supplyCandiateHandler = new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService);
 	}
 
 	@Test
@@ -102,8 +97,7 @@ public class SupplyCandidateHandlerTest
 
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.SUPPLY)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescriptor)
 				.build();
 		supplyCandiateHandler.onCandidateNewOrChange(candidate);
@@ -116,7 +110,9 @@ public class SupplyCandidateHandlerTest
 		assertThat(supplyRecord.getQty()).isEqualByComparingTo(qty);
 		assertThat(stockRecord.getQty()).isEqualByComparingTo(qty); // ..because there was no older record, the "delta" we provided is the current quantity
 		assertThat(supplyRecord.getMD_Candidate_Parent_ID()).isEqualTo(stockRecord.getMD_Candidate_ID());
-		assertThat(supplyRecord.getSeqNo() - 1).isEqualTo(stockRecord.getSeqNo()); // when we sort by SeqNo, the stock needs to be first
+
+		// note that now, the stock record shall have the same SeqNo as it's "actual" record
+		assertThat(supplyRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo());
 	}
 
 	@Test
@@ -133,8 +129,7 @@ public class SupplyCandidateHandlerTest
 
 		final Candidate candidatee = Candidate.builder()
 				.type(CandidateType.SUPPLY)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescriptor)
 				.build();
 
@@ -151,7 +146,8 @@ public class SupplyCandidateHandlerTest
 			assertThat(stockRecord.getQty()).isEqualByComparingTo(qty); // ..because there was no older record, the "delta" we provided is the current quantity
 			assertThat(supplyRecord.getMD_Candidate_Parent_ID()).isEqualTo(stockRecord.getMD_Candidate_ID());
 
-			assertThat(supplyRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo() + 1); // when we sort by SeqNo, the stock needs to be first and thus have the smaller value
+			// note that now, the stock record shall have the same SeqNo as it's "actual" record
+			assertThat(supplyRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo());
 		};
 
 		doTest.accept(candidatee); // 1st invocation
@@ -172,8 +168,7 @@ public class SupplyCandidateHandlerTest
 
 		final Candidate candidatee = Candidate.builder()
 				.type(CandidateType.SUPPLY)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescriptor)
 				.build();
 
@@ -190,11 +185,12 @@ public class SupplyCandidateHandlerTest
 			assertThat(stockRecord.getQty()).isEqualByComparingTo(exptectedQty); // ..because there was no older record, the "delta" we provided is the current quantity
 			assertThat(supplyRecord.getMD_Candidate_Parent_ID()).isEqualTo(stockRecord.getMD_Candidate_ID());
 
-			assertThat(supplyRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo() + 1); // when we sort by SeqNo, the stock needs to be first and thus have the smaller value
+			// note that now, the stock record shall have the same SeqNo as it's "actual" record
+			assertThat(supplyRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo());
 		};
 
-		doTest.accept(candidatee, qty); // 1st invocation
-		doTest.accept(candidatee.withQuantity(qty.add(BigDecimal.ONE)), qty.add(BigDecimal.ONE)); // 2nd invocation, same candidate
+		doTest.accept(candidatee, qty/*exptectedQty*/); // 1st invocation
+		doTest.accept(candidatee.withQuantity(qty.add(ONE)), qty.add(ONE)/*exptectedQty*/); // 2nd invocation, same candidate
 	}
 
 	/**
@@ -214,8 +210,7 @@ public class SupplyCandidateHandlerTest
 
 		final Candidate olderStockCandidate = Candidate.builder()
 				.type(CandidateType.STOCK)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(olderMaterialDescriptor)
 				.build();
 		candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(olderStockCandidate);
@@ -229,8 +224,7 @@ public class SupplyCandidateHandlerTest
 
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.SUPPLY)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescriptoriptor)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.build();
@@ -245,7 +239,8 @@ public class SupplyCandidateHandlerTest
 		assertThat(supplyRecord.getMD_Candidate_BusinessCase()).isEqualTo(CandidateBusinessCase.PRODUCTION.toString());
 		assertThat(stockRecord.getQty()).isEqualByComparingTo(ELEVEN.add(TWENTY_THREE));
 
-		assertThat(supplyRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo() + 1); // when we sort by SeqNo, the stock needs to be first and thus have the smaller value
+		// note that now, the stock record shall have the same SeqNo as it's "actual" record
+		assertThat(supplyRecord.getSeqNo()).isEqualTo(stockRecord.getSeqNo());
 	}
 
 	@Test
@@ -280,8 +275,7 @@ public class SupplyCandidateHandlerTest
 
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.SUPPLY)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescriptor)
 				.businessCase(CandidateBusinessCase.PURCHASE)
 				.build();
@@ -312,10 +306,11 @@ public class SupplyCandidateHandlerTest
 	private Candidate createCandidateWithType(@NonNull final CandidateType type)
 	{
 		final Candidate candidate = Candidate.builder()
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.type(type)
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())
-						.date(SystemTime.asTimestamp())
+						.date(SystemTime.asInstant())
 						.warehouseId(WAREHOUSE_ID)
 						.quantity(BigDecimal.TEN)
 						.build())

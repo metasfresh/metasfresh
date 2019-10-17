@@ -48,12 +48,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.VetoableChangeListener;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Vector;
-import org.slf4j.Logger;
-
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
 
 import javax.swing.AbstractCellEditor;
 import javax.swing.JCheckBox;
@@ -66,30 +61,35 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.compiere.apps.AEnv;
 import org.compiere.grid.ed.VLocator;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.minigrid.MiniTable;
 import org.compiere.model.GridTab;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.MLocator;
 import org.compiere.model.MLocatorLookup;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
-import org.compiere.model.MProduct;
 import org.compiere.model.Query;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.product.IProductDAO;
+import de.metas.util.Services;
 
 public class VCreateFromShipmentUI extends CreateFromShipment implements ActionListener, VetoableChangeListener
 {
-	private static final int WINDOW_CUSTOMER_RETURN = 53097;
+	private static final AdWindowId WINDOW_CUSTOMER_RETURN = AdWindowId.ofRepoId(53097);
 
-	private static final int WINDOW_RETURN_TO_VENDOR = 53098;
+	private static final AdWindowId WINDOW_RETURN_TO_VENDOR = AdWindowId.ofRepoId(53098);
 
 	private VCreateFromDialog dialog;
 
@@ -105,7 +105,9 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
 		try
 		{
 			if (!dynInit())
+			{
 				return;
+			}
 			jbInit();
 
 			setInitOK(true);
@@ -151,6 +153,7 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
 	 *  @throws Exception if Lookups cannot be initialized
 	 *  @return true if initialized
 	 */
+	@Override
 	public boolean dynInit() throws Exception
 	{
 		log.info("");
@@ -187,7 +190,8 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
 	 */
     private void jbInit() throws Exception
     {
-    	boolean isRMAWindow = ((getGridTab().getAD_Window_ID() == WINDOW_RETURN_TO_VENDOR) || (getGridTab().getAD_Window_ID() == WINDOW_CUSTOMER_RETURN)); 
+    	boolean isRMAWindow = AdWindowId.equals(getGridTab().getAdWindowId(), WINDOW_RETURN_TO_VENDOR)
+    			|| AdWindowId.equals(getGridTab().getAdWindowId(), WINDOW_CUSTOMER_RETURN);
     	
     	bPartnerLabel.setText(Msg.getElement(Env.getCtx(), "C_BPartner_ID"));
     	orderLabel.setText(Msg.getElement(Env.getCtx(), "C_Order_ID", false));
@@ -206,8 +210,10 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
     	parameterStdPanel.add(bPartnerLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0
     			,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0));
     	if (bPartnerField != null)
-    		parameterStdPanel.add(bPartnerField, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0
+		{
+			parameterStdPanel.add(bPartnerField, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0
     				,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 5, 5), 0, 0));
+		}
     	
     	if (! isRMAWindow) {
         	parameterStdPanel.add(orderLabel, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0
@@ -249,12 +255,15 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
 	 *  Action Listener
 	 *  @param e event
 	 */
+	@Override
 	public void actionPerformed(ActionEvent e)
 	{
 		log.info("Action=" + e.getActionCommand());
 		
 		if (m_actionActive)
+		{
 			return;
+		}
 		m_actionActive = true;
 		log.info("Action=" + e.getActionCommand());
 		//  Order
@@ -263,7 +272,9 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
 			KeyNamePair pp = (KeyNamePair)orderField.getSelectedItem();
 			int C_Order_ID = 0;
 			if (pp != null)
+			{
 				C_Order_ID = pp.getKey();
+			}
 			//  set Invoice, RMA and Shipment to Null
 			rmaField.setSelectedIndex(-1);
 			invoiceField.setSelectedIndex(-1);
@@ -275,7 +286,9 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
 			KeyNamePair pp = (KeyNamePair)invoiceField.getSelectedItem();
 			int C_Invoice_ID = 0;
 			if (pp != null)
+			{
 				C_Invoice_ID = pp.getKey();
+			}
 			//  set Order, RMA to Null
 			orderField.setSelectedIndex(-1);
 			rmaField.setSelectedIndex(-1);
@@ -287,7 +300,9 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
 		    KeyNamePair pp = (KeyNamePair)rmaField.getSelectedItem();
 		    int M_RMA_ID = 0;
 		    if (pp != null)
-		        M_RMA_ID = pp.getKey();
+			{
+				M_RMA_ID = pp.getKey();
+			}
 		    //  set Order and Invoice to Null
 		    orderField.setSelectedIndex(-1);
 		    invoiceField.setSelectedIndex(-1);
@@ -309,6 +324,7 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
 	 *  Change Listener
 	 *  @param e event
 	 */
+	@Override
 	public void vetoableChange (PropertyChangeEvent e)
 	{
 		log.info(e.getPropertyName() + "=" + e.getNewValue());
@@ -357,7 +373,9 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
 		
 		ArrayList<KeyNamePair> list = loadOrderData(C_BPartner_ID, forInvoice, sameWarehouseCb.isSelected());
 		for(KeyNamePair knp : list)
+		{
 			orderField.addItem(knp);
+		}
 		
 		orderField.setSelectedIndex(0);
 		orderField.addActionListener(this);
@@ -389,7 +407,9 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
 		
 		ArrayList<KeyNamePair> list = loadInvoiceData(C_BPartner_ID);
 		for(KeyNamePair knp : list)
+		{
 			invoiceField.addItem(knp);
+		}
 		
 		invoiceField.setSelectedIndex(0);
 		invoiceField.addActionListener(this);
@@ -410,7 +430,9 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
 	    
 	    ArrayList<KeyNamePair> list = loadRMAData(C_BPartner_ID);
 		for(KeyNamePair knp : list)
+		{
 			rmaField.addItem(knp);
+		}
 		
 	    rmaField.setSelectedIndex(0);
 	    rmaField.addActionListener(this);
@@ -464,11 +486,13 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
 		configureMiniTable(dialog.getMiniTable());
 	}   //  loadOrder
 	
+	@Override
 	public void showWindow()
 	{
 		dialog.setVisible(true);
 	}
 	
+	@Override
 	public void closeWindow()
 	{
 		dialog.dispose();
@@ -483,10 +507,9 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
 		String upc = upcField.getText();
 		DefaultTableModel model = (DefaultTableModel)dialog.getMiniTable().getModel();
 		// Lookup UPC
-		List<MProduct> products = MProduct.getByUPC(Env.getCtx(), upc, null);
-		for (MProduct product : products)
 		{
-			int row = findProductRow(product.get_ID());
+			final I_M_Product product = Services.get(IProductDAO.class).retrieveProductByValue(upc);
+			int row = findProductRow(product.getM_Product_ID());
 			if (row >= 0)
 			{
 				BigDecimal qty = (BigDecimal)model.getValueAt(row, 1);
@@ -543,6 +566,7 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
 		KeyNamePair currentValue;
 		JTextField 	editor;
 
+		@Override
 		public Object getCellEditorValue() {
 			String locatorValue = editor.getText();
 			MLocator loc = null;
@@ -563,6 +587,7 @@ public class VCreateFromShipmentUI extends CreateFromShipment implements ActionL
 
 		}
 
+		@Override
 		public Component getTableCellEditorComponent(JTable table,
 				Object value, boolean isSelected, int row, int column) {
 

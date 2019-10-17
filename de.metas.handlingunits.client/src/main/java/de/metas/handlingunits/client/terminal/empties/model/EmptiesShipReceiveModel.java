@@ -1,5 +1,7 @@
 package de.metas.handlingunits.client.terminal.empties.model;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.handlingunits.client
@@ -10,12 +12,12 @@ package de.metas.handlingunits.client.terminal.empties.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -79,7 +81,7 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final transient IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 
-	public static enum BPartnerReturnType
+	public enum BPartnerReturnType
 	{
 		ReturnToVendor(X_M_Transaction.MOVEMENTTYPE_VendorReturns, Color.CYAN), ReturnFromCustomer(X_M_Transaction.MOVEMENTTYPE_CustomerReturns, Color.ORANGE);
 
@@ -156,8 +158,8 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 
 		if (receiptSchedule != null)
 		{
-			_bpartner = receiptSchedule.getC_BPartner();
-			_bpLocation = receiptSchedule.getC_BPartner_Location();
+			_bpartner = loadOutOfTrx(receiptSchedule.getC_BPartner_ID(), I_C_BPartner.class);
+			_bpLocation = loadOutOfTrx(receiptSchedule.getC_BPartner_Location_ID(), I_C_BPartner_Location.class);
 			_order = receiptSchedule.getC_Order();
 		}
 
@@ -226,7 +228,7 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 		try
 		{
 			final I_M_InOut emptiesInOut = createEmptiesInOut();
-			
+
 			//
 			// Open window with shipment document for the user if it was created successfully
 			if (emptiesInOut != null)

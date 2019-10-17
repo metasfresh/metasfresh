@@ -25,24 +25,26 @@ package de.metas.adempiere.report.jasper;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Image;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Logo hook: called by {@link JasperClassLoader} in order to intercept logo picture resources and provide the actual logo for current organization.
@@ -52,7 +54,7 @@ import de.metas.util.Services;
  */
 class OrgLogoClassLoaderHook
 {
-	public static final OrgLogoClassLoaderHook forAD_Org_ID(final int adOrgId)
+	public static final OrgLogoClassLoaderHook ofOrgId(@NonNull final OrgId adOrgId)
 	{
 		return new OrgLogoClassLoaderHook(adOrgId);
 	}
@@ -61,7 +63,7 @@ class OrgLogoClassLoaderHook
 	private static final transient Logger logger = LogManager.getLogger(OrgLogoClassLoaderHook.class);
 
 	// Parameters
-	private final int adOrgId;
+	private final OrgId adOrgId;
 
 	//
 	// Org Logo resource matchers
@@ -71,7 +73,7 @@ class OrgLogoClassLoaderHook
 
 	//
 	// Caching (static)
-	private static final CCache<Integer, Optional<File>> adOrgId2logoLocalFile = CCache.<Integer, Optional<File>> builder()
+	private static final CCache<OrgId, Optional<File>> adOrgId2logoLocalFile = CCache.<OrgId, Optional<File>> builder()
 			.cacheName(I_AD_Image.Table_Name + "#LogoBy_AD_Org_ID")
 			.tableName(I_AD_Image.Table_Name)
 			.initialCapacity(10)
@@ -81,12 +83,11 @@ class OrgLogoClassLoaderHook
 			.build();
 	private final Callable<Optional<File>> orgLogoLocalFileLoader;
 
-	private OrgLogoClassLoaderHook(final int adOrgId)
+	private OrgLogoClassLoaderHook(@NonNull final OrgId adOrgId)
 	{
-		super();
 		this.adOrgId = adOrgId;
 		this.resourceNameEndsWithMatchers = buildResourceNameEndsWithMatchers();
-		this.orgLogoLocalFileLoader = OrgLogoLocalFileLoader.forAD_Org_ID(adOrgId);
+		this.orgLogoLocalFileLoader = OrgLogoLocalFileLoader.ofOrgId(adOrgId);
 	}
 
 	private static final Set<String> buildResourceNameEndsWithMatchers()
@@ -134,13 +135,13 @@ class OrgLogoClassLoaderHook
 
 	private final File getLogoFile()
 	{
-		File logoFile = adOrgId2logoLocalFile.get(adOrgId, orgLogoLocalFileLoader).orNull();
+		File logoFile = adOrgId2logoLocalFile.get(adOrgId, orgLogoLocalFileLoader).orElse(null);
 
 		// If logo file does not exist or it's not readable, try recreating it
 		if (logoFile != null && !logoFile.canRead())
 		{
 			adOrgId2logoLocalFile.put(adOrgId, null); // invalidate current cached record
-			logoFile = adOrgId2logoLocalFile.get(adOrgId, orgLogoLocalFileLoader).orNull(); // get it again
+			logoFile = adOrgId2logoLocalFile.get(adOrgId, orgLogoLocalFileLoader).orElse(null); // get it again
 		}
 
 		return logoFile;

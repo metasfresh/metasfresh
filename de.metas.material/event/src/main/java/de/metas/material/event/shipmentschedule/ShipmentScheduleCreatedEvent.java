@@ -2,6 +2,8 @@ package de.metas.material.event.shipmentschedule;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.commons.DocumentLineDescriptor;
@@ -39,6 +41,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @Getter
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class ShipmentScheduleCreatedEvent extends AbstractShipmentScheduleEvent
 {
 	public static final String TYPE = "ShipmentScheduleCreatedEvent";

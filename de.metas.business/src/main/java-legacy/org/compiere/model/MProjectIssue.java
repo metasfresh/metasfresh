@@ -25,6 +25,7 @@ import org.compiere.util.DB;
 
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -147,10 +148,8 @@ public class MProjectIssue extends X_C_ProjectIssue
 			return false;
 		}
 
-		MProduct product = MProduct.get (getCtx(), getM_Product_ID());
-
 		//	If not a stocked Item nothing to do
-		if (!Services.get(IProductBL.class).isStocked(product))
+		if (!Services.get(IProductBL.class).isStocked(ProductId.ofRepoIdOrNull(getM_Product_ID())))
 		{
 			setProcessed(true);
 			return save();

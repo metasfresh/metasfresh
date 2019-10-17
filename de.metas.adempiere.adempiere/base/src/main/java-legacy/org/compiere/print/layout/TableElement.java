@@ -44,7 +44,6 @@ import org.compiere.print.MPrintFormatItem;
 import org.compiere.print.MPrintTableFormat;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
-import org.compiere.util.Util;
 import org.compiere.util.ValueNamePair;
 
 import net.sourceforge.barbecue.Barcode;
@@ -165,15 +164,21 @@ public class TableElement extends PrintElement
 		m_rowColFont = rowColFont;
 		m_baseFont = m_rowColFont.get(pAll);
 		if (m_baseFont == null)
+		{
 			m_baseFont = new Font(null);
+		}
 		m_rowColColor = rowColColor;
 		m_baseColor = m_rowColColor.get(pAll);
 		if (m_baseColor == null)
+		{
 			m_baseColor = Color.black;
+		}
 		m_rowColBackground = rowColBackground;
 		m_baseBackground = m_rowColBackground.get(pAll);
 		if (m_baseBackground == null)
+		{
 			m_baseBackground = Color.white;
+		}
 		m_tFormat = tFormat;
 
 		// Page Break - not two after each other
@@ -191,7 +196,9 @@ public class TableElement extends PrintElement
 					row = nextRow;
 				}
 				else
+				{
 					break;
+				}
 			}
 		} // for all page breaks
 
@@ -250,21 +257,21 @@ public class TableElement extends PrintElement
 	private ArrayList<Integer> m_pageBreak;
 
 	/** width of columns (float) */
-	private ArrayList<Float> m_columnWidths = new ArrayList<Float>();
+	private ArrayList<Float> m_columnWidths = new ArrayList<>();
 	/** height of rows (float) */
-	private ArrayList<Float> m_rowHeights = new ArrayList<Float>();
+	private ArrayList<Float> m_rowHeights = new ArrayList<>();
 	/** height of header */
 	private int m_headerHeight = 0;
 
 	/** first data row number per page */
-	private ArrayList<Integer> m_firstRowOnPage = new ArrayList<Integer>();
+	private ArrayList<Integer> m_firstRowOnPage = new ArrayList<>();
 	/** first column number per -> page */
-	private ArrayList<Integer> m_firstColumnOnPage = new ArrayList<Integer>();
+	private ArrayList<Integer> m_firstColumnOnPage = new ArrayList<>();
 	/** Height of page */
-	private ArrayList<Float> m_pageHeight = new ArrayList<Float>();
+	private ArrayList<Float> m_pageHeight = new ArrayList<>();
 
 	/** Key: Point(row,col) - Value: NamePair */
-	private HashMap<Point, NamePair> m_rowColDrillDown = new HashMap<Point, NamePair>();
+	private HashMap<Point, NamePair> m_rowColDrillDown = new HashMap<>();
 
 	/** Key: Integer (original Column) - Value: Integer (below column) */
 	private HashMap<Integer, Integer> m_additionalLines;
@@ -293,10 +300,12 @@ public class TableElement extends PrintElement
 	protected boolean calculateSize()
 	{
 		if (p_sizeCalculated)
+		{
 			return true;
+		}
 
 		p_width = 0;
-		m_printRows = new ArrayList<ArrayList<ArrayList<Object>>>(m_data.length); // reset
+		m_printRows = new ArrayList<>(m_data.length); // reset
 
 		// Max Column Width = 50% of available width (used if maxWidth not set)
 		float dynMxColumnWidth = m_firstPage.width / 2;
@@ -354,7 +363,9 @@ public class TableElement extends PrintElement
 					float width = (float)Math.ceil(dataSizes[row][col]
 							.getWidth());
 					if (colWidth < width)
+					{
 						colWidth = width;
+					}
 					continue;
 				}
 				else if (dataItem instanceof BarcodeElement)
@@ -368,7 +379,9 @@ public class TableElement extends PrintElement
 						float width = (float)Math.ceil(dataSizes[row][col]
 								.getWidth());
 						if (colWidth < width)
+						{
 							colWidth = width;
+						}
 					}
 
 					continue;
@@ -383,10 +396,14 @@ public class TableElement extends PrintElement
 					float height = layout.getAscent() + layout.getDescent()
 							+ layout.getLeading();
 					if (width > dynMxColumnWidth)
+					{
 						m_columnMaxWidth[col] = (int)Math
 								.ceil(dynMxColumnWidth);
+					}
 					else if (colWidth < width)
+					{
 						colWidth = width;
+					}
 					if (dataSizes[row][col] == null)
 					{
 						dataSizes[row][col] = new Dimension2DImpl();
@@ -406,10 +423,14 @@ public class TableElement extends PrintElement
 						// dataCol);
 						HTMLRenderer renderer = HTMLRenderer.get(string);
 						colWidth = renderer.getWidth();
-						if (m_columnMaxHeight[col] == -1) // one line only
+						if (m_columnMaxHeight[col] == -1)
+						{
 							height = renderer.getHeightOneLine();
+						}
 						else
+						{
 							height = renderer.getHeight();
+						}
 						renderer.setAllocation((int)colWidth, (int)height);
 						// log.trace( "calculateSize HTML - " +
 						// renderer.getAllocation());
@@ -419,10 +440,10 @@ public class TableElement extends PrintElement
 					{
 						String[] lines = Pattern
 								.compile("$", Pattern.MULTILINE).split(string);
-						for (int lineNo = 0; lineNo < lines.length; lineNo++)
+						for (String line : lines)
 						{
 							AttributedString aString = new AttributedString(
-									lines[lineNo]);
+									line);
 							aString.addAttribute(TextAttribute.FONT, font);
 							AttributedCharacterIterator iter = aString
 									.getIterator();
@@ -434,7 +455,9 @@ public class TableElement extends PrintElement
 										.abs(m_columnMaxWidth[col]));
 								float width = layout.getAdvance();
 								if (colWidth < width)
+								{
 									colWidth = width;
+								}
 								float lineHeight = layout.getAscent()
 										+ layout.getDescent()
 										+ layout.getLeading();
@@ -446,18 +469,24 @@ public class TableElement extends PrintElement
 								}
 								else if (m_columnMaxHeight[col] == 0
 										|| (height + lineHeight) <= m_columnMaxHeight[col])
+								{
 									height += lineHeight;
+								}
 							}
 						} // for all lines
 					}
 					if (m_fixedWidth[col])
+					{
 						colWidth = Math.abs(m_columnMaxWidth[col]);
+					}
 					dataSizes[row][col].addBelow(colWidth, height);
 				}
 				dataSizes[row][col].roundUp();
 				if (dataItem instanceof NamePair)
+				{
 					m_rowColDrillDown.put(new Point(row, col),
 							(NamePair)dataItem);
+				}
 				//
 				log.trace("Col=" + col + ", row=" + row + " => "
 						+ dataSizes[row][col] + " - ColWidth=" + colWidth);
@@ -466,20 +495,28 @@ public class TableElement extends PrintElement
 			// Column Width for Header
 			String string = "";
 			if (m_columnHeader[dataCol] != null)
+			{
 				string = m_columnHeader[dataCol].toString();
+			}
 
 			// Print below existing column
 			if (col != dataCol)
+			{
 				headerSizes[dataCol] = new Dimension2DImpl();
+			}
 			else if (colWidth == 0 && m_columnMaxWidth[dataCol] < 0 // suppress
 																	// Null
 					|| string.length() == 0)
+			{
 				headerSizes[dataCol] = new Dimension2DImpl();
+			}
 			else
 			{
 				Font font = getFont(HEADER_ROW, dataCol);
 				if (!font.isBold())
+				{
 					font = new Font(font.getName(), Font.BOLD, font.getSize());
+				}
 				// No Width Limitations
 				if (m_columnMaxWidth[dataCol] == 0
 						|| m_columnMaxWidth[dataCol] == -1
@@ -490,10 +527,14 @@ public class TableElement extends PrintElement
 					float height = layout.getAscent() + layout.getDescent()
 							+ layout.getLeading();
 					if (width > dynMxColumnWidth)
+					{
 						m_columnMaxWidth[dataCol] = (int)Math
 								.ceil(dynMxColumnWidth);
+					}
 					else if (colWidth < width)
+					{
 						colWidth = width;
+					}
 					headerSizes[dataCol] = new Dimension2DImpl(width, height);
 				}
 				// Width limitations
@@ -504,10 +545,10 @@ public class TableElement extends PrintElement
 					//
 					String[] lines = Pattern.compile("$", Pattern.MULTILINE)
 							.split(string);
-					for (int lineNo = 0; lineNo < lines.length; lineNo++)
+					for (String line : lines)
 					{
 						AttributedString aString = new AttributedString(
-								lines[lineNo]);
+								line);
 						aString.addAttribute(TextAttribute.FONT, font);
 						AttributedCharacterIterator iter = aString
 								.getIterator();
@@ -525,12 +566,14 @@ public class TableElement extends PrintElement
 								break;
 							}
 							else
+							{
 								/*
 								 * if (m_columnMaxHeight[dataCol] == 0 ||
 								 * (height + lineHeight) <=
 								 * m_columnMaxHeight[dataCol])
 								 */
 								height += lineHeight;
+							}
 						}
 					} // for all header lines
 					headerSizes[dataCol] = new Dimension2DImpl(colWidth, height);
@@ -544,10 +587,14 @@ public class TableElement extends PrintElement
 
 			// Round Column Width
 			if (dataCol == 0)
+			{
 				colWidth += m_tFormat.getVLineStroke().floatValue();
+			}
 			if (colWidth != 0)
+			{
 				colWidth += (2 * H_GAP)
 						+ m_tFormat.getVLineStroke().floatValue();
+			}
 
 			// Print below existing column
 			if (col != dataCol)
@@ -555,8 +602,10 @@ public class TableElement extends PrintElement
 				m_columnWidths.add(new Float(0.0)); // for the data column
 				Float origWidth = m_columnWidths.get(col);
 				if (origWidth == null)
+				{
 					log.error("Column " + dataCol + " below " + col
 							+ " - no value for orig width");
+				}
 				else
 				{
 					if (origWidth.compareTo(new Float(colWidth)) >= 0)
@@ -592,8 +641,10 @@ public class TableElement extends PrintElement
 			float rowHeight = 0f;
 			for (int col = 0; col < cols; col++)
 			{
-				if (dataSizes[row][col].height > rowHeight) // max
+				if (dataSizes[row][col].height > rowHeight)
+				{
 					rowHeight = (float)dataSizes[row][col].height;
+				}
 			} // for all columns
 			rowHeight += m_tFormat.getLineStroke().floatValue() + (2 * V_GAP);
 			m_rowHeights.add(new Float(rowHeight));
@@ -604,7 +655,9 @@ public class TableElement extends PrintElement
 		for (int col = 0; col < cols; col++)
 		{
 			if (headerSizes[col].height > m_headerHeight)
+			{
 				m_headerHeight = (int)headerSizes[col].height;
+			}
 		} // for all columns
 		m_headerHeight += (4 * m_tFormat.getLineStroke().floatValue())
 				+ (2 * V_GAP); // Thick lines
@@ -716,7 +769,9 @@ public class TableElement extends PrintElement
 				if (availableWidth < columnWidth)
 				{
 					if (col != 0)
+					{
 						distributeColumns(availableWidth, lastStart, col);
+					}
 					//
 					m_firstColumnOnPage.add(new Integer(col)); // X
 					log.trace("Page X=" + m_firstColumnOnPage.size()
@@ -732,7 +787,9 @@ public class TableElement extends PrintElement
 								.floatValue();
 						// leave 50% of space available for non repeated columns
 						if (availableWidth < m_firstPage.width * 0.5)
+						{
 							break;
+						}
 						availableWidth -= repColumnWidth;
 					}
 				} // pageBreak
@@ -762,11 +819,15 @@ public class TableElement extends PrintElement
 				+ "->" + toCol);
 		int start = fromCol;
 		if (fromCol == 0 && m_repeatedColumns > 0)
+		{
 			start = m_repeatedColumns;
+		}
 		// calculate total Width
 		int totalWidth = availableWidth;
 		for (int col = start; col < toCol; col++)
+		{
 			totalWidth += m_columnWidths.get(col).floatValue();
+		}
 		int remainingWidth = availableWidth;
 		// distribute proportionally (does not increase zero width columns)
 		for (int x = 0; remainingWidth > 0 && x < 5; x++) // max 4 iterations
@@ -824,9 +885,13 @@ public class TableElement extends PrintElement
 		{
 			Integer rr = m_pageBreak.get(i);
 			if (rr.intValue() + 1 == row)
+			{
 				return true;
+			}
 			else if (rr.intValue() > row)
+			{
 				return false;
+			}
 		}
 		return false;
 	} // isPageBreak
@@ -870,15 +935,21 @@ public class TableElement extends PrintElement
 		// First specific position
 		Font font = m_rowColFont.get(new Point(row, col));
 		if (font != null)
+		{
 			return font;
+		}
 		// Row Next
 		font = m_rowColFont.get(new Point(row, ALL));
 		if (font != null)
+		{
 			return font;
+		}
 		// Column then
 		font = m_rowColFont.get(new Point(ALL, col));
 		if (font != null)
+		{
 			return font;
+		}
 		// default
 		return m_baseFont;
 	} // getFont
@@ -897,15 +968,21 @@ public class TableElement extends PrintElement
 		// First specific position
 		Color color = m_rowColColor.get(new Point(row, col));
 		if (color != null)
+		{
 			return color;
+		}
 		// Row Next
 		color = m_rowColColor.get(new Point(row, ALL));
 		if (color != null)
+		{
 			return color;
+		}
 		// Column then
 		color = m_rowColColor.get(new Point(ALL, col));
 		if (color != null)
+		{
 			return color;
+		}
 		// default
 		return m_baseColor;
 	} // getFont
@@ -924,15 +1001,21 @@ public class TableElement extends PrintElement
 		// First specific position
 		Color color = m_rowColBackground.get(new Point(row, col));
 		if (color != null)
+		{
 			return color;
+		}
 		// Row Next
 		color = m_rowColBackground.get(new Point(row, ALL));
 		if (color != null)
+		{
 			return color;
+		}
 		// Column then
 		color = m_rowColBackground.get(new Point(ALL, col));
 		if (color != null)
+		{
 			return color;
+		}
 		// default
 		return m_baseBackground;
 	} // getFont
@@ -954,7 +1037,9 @@ public class TableElement extends PrintElement
 		float pageHeight = m_pageHeight.get(pageYindex).floatValue();
 		float pageHeightPrevious = 0f;
 		if (pageYindex > 0)
+		{
 			pageHeightPrevious = m_pageHeight.get(pageYindex - 1).floatValue();
+		}
 		float retValue = pageHeight - pageHeightPrevious;
 		log.debug("Page=" + pageNo + " - PageIndex=" + pageIndex
 				+ ", PageYindex=" + pageYindex + ", Height="
@@ -973,7 +1058,9 @@ public class TableElement extends PrintElement
 	{
 		int pageIndex = getPageIndex(pageNo);
 		if (pageIndex == 0)
+		{
 			return m_firstPage.width;
+		}
 		return m_nextPages.width;
 	} // getHeight
 
@@ -999,7 +1086,9 @@ public class TableElement extends PrintElement
 	{
 		int index = pageNo - m_pageNoStart;
 		if (index < 0)
+		{
 			log.error("index=" + index, new Exception());
+		}
 		return index;
 	} // getPageIndex
 
@@ -1108,26 +1197,38 @@ public class TableElement extends PrintElement
 	public MQuery getDrillDown(Point relativePoint, int pageNo)
 	{
 		if (m_rowColDrillDown.size() == 0)
+		{
 			return null;
+		}
 		if (!getBounds(pageNo).contains(relativePoint))
+		{
 			return null;
+		}
 		int row = getRow(relativePoint.y, pageNo);
 		if (row == -1)
+		{
 			return null;
+		}
 		int col = getCol(relativePoint.x, pageNo);
 		if (col == -1)
+		{
 			return null;
+		}
 		log.debug("Row=" + row + ", Col=" + col + ", PageNo=" + pageNo);
 		//
 		NamePair pp = m_rowColDrillDown.get(new Point(row, col));
 		if (pp == null)
+		{
 			return null;
+		}
 		String columnName = MQuery.getZoomColumnName(m_columnHeader[col]
 				.getID());
 		String tableName = MQuery.getZoomTableName(columnName);
 		Object code = pp.getID();
 		if (pp instanceof KeyNamePair)
+		{
 			code = new Integer(((KeyNamePair)pp).getKey());
+		}
 		//
 		MQuery query = new MQuery(tableName);
 		query.addRestriction(columnName, Operator.EQUAL, code, null,
@@ -1148,14 +1249,20 @@ public class TableElement extends PrintElement
 	public MQuery getDrillAcross(Point relativePoint, int pageNo)
 	{
 		if (!getBounds(pageNo).contains(relativePoint))
+		{
 			return null;
+		}
 		int row = getRow(relativePoint.y, pageNo);
 		if (row == -1)
+		{
 			return null;
+		}
 		log.debug("Row=" + row + ", PageNo=" + pageNo);
 		//
-		if (m_pk[row] == null) // FunctionRows
+		if (m_pk[row] == null)
+		{
 			return null;
+		}
 		return MQuery.getEqualQuery(m_pkColumnName, m_pk[row].getKey());
 	} // getDrillAcross
 
@@ -1171,9 +1278,13 @@ public class TableElement extends PrintElement
 		int pageIndex = getPageIndex(pageNo);
 		int pageYindex = getPageYIndex(pageIndex);
 		if (pageYindex == 0)
+		{
 			return m_firstPage;
+		}
 		else
+		{
 			return m_nextPages;
+		}
 	} // getBounds
 
 	/**
@@ -1193,19 +1304,25 @@ public class TableElement extends PrintElement
 		int curY = (pageYindex == 0 ? m_firstPage.y : m_nextPages.y)
 				+ m_headerHeight;
 		if (yPos < curY)
+		 {
 			return -1; // above
+		}
 		//
 		int firstRow = m_firstRowOnPage.get(pageYindex).intValue();
 		int nextPageRow = m_data.length; // no of rows
 		if (pageYindex + 1 < m_firstRowOnPage.size())
+		{
 			nextPageRow = m_firstRowOnPage.get(pageYindex + 1).intValue();
+		}
 		//
 		for (int row = firstRow; row < nextPageRow; row++)
 		{
 			int rowHeight = m_rowHeights.get(row).intValue(); // includes
 																// 2*Gaps+Line
 			if (yPos >= curY && yPos < (curY + rowHeight))
+			{
 				return row;
+			}
 			curY += rowHeight;
 		}
 		// below
@@ -1228,12 +1345,16 @@ public class TableElement extends PrintElement
 		//
 		int curX = pageXindex == 0 ? m_firstPage.x : m_nextPages.x;
 		if (xPos < curX)
+		 {
 			return -1; // too left
+		}
 
 		int firstColumn = m_firstColumnOnPage.get(pageXindex).intValue();
 		int nextPageColumn = m_columnHeader.length; // no of cols
 		if (pageXindex + 1 < m_firstColumnOnPage.size())
+		{
 			nextPageColumn = m_firstColumnOnPage.get(pageXindex + 1).intValue();
+		}
 
 		// fixed volumns
 		int regularColumnStart = firstColumn;
@@ -1242,10 +1363,14 @@ public class TableElement extends PrintElement
 			int colWidth = m_columnWidths.get(col).intValue(); // includes
 																// 2*Gaps+Line
 			if (xPos >= curX && xPos < (curX + colWidth))
+			{
 				return col;
+			}
 			curX += colWidth;
 			if (regularColumnStart == col)
+			{
 				regularColumnStart++;
+			}
 		}
 		// regular columns
 		for (int col = regularColumnStart; col < nextPageColumn; col++)
@@ -1253,7 +1378,9 @@ public class TableElement extends PrintElement
 			int colWidth = m_columnWidths.get(col).intValue(); // includes
 																// 2*Gaps+Line
 			if (xPos >= curX && xPos < (curX + colWidth))
+			{
 				return col;
+			}
 			curX += colWidth;
 		} // for all columns
 			// too right
@@ -1282,21 +1409,29 @@ public class TableElement extends PrintElement
 		int pageXindex = getPageXIndex(pageIndex);
 		int pageYindex = getPageYIndex(pageIndex);
 		if (DEBUG_PRINT)
+		{
 			log.info("Page=" + pageNo + " [x=" + pageXindex + ", y="
 					+ pageYindex + "]");
+		}
 		//
 		int firstColumn = m_firstColumnOnPage.get(pageXindex).intValue();
 		int nextPageColumn = m_columnHeader.length; // no of cols
 		if (pageXindex + 1 < m_firstColumnOnPage.size())
+		{
 			nextPageColumn = m_firstColumnOnPage.get(pageXindex + 1).intValue();
+		}
 		//
 		int firstRow = m_firstRowOnPage.get(pageYindex).intValue();
 		int nextPageRow = m_data.length; // no of rows
 		if (pageYindex + 1 < m_firstRowOnPage.size())
+		{
 			nextPageRow = m_firstRowOnPage.get(pageYindex + 1).intValue();
+		}
 		if (DEBUG_PRINT)
+		{
 			log.trace("Col=" + firstColumn + "-" + (nextPageColumn - 1)
 					+ ", Row=" + firstRow + "-" + (nextPageRow - 1));
+		}
 
 		// Top Left
 		int startX = (int)pageStart.getX();
@@ -1305,8 +1440,10 @@ public class TableElement extends PrintElement
 		startX += pageXindex == 0 ? m_firstPage.x : m_nextPages.x;
 		startY += pageYindex == 0 ? m_firstPage.y : m_nextPages.y;
 		if (DEBUG_PRINT)
+		{
 			log.trace("PageStart=" + pageStart + ", StartTable x=" + startX
 					+ ", y=" + startY);
+		}
 
 		// paint first fixed volumns
 		boolean firstColumnPrint = true;
@@ -1324,7 +1461,9 @@ public class TableElement extends PrintElement
 				firstColumnPrint = false;
 			}
 			if (regularColumnStart == col)
+			{
 				regularColumnStart++;
+			}
 		}
 
 		// paint columns
@@ -1373,13 +1512,17 @@ public class TableElement extends PrintElement
 		float colWidth = m_columnWidths.get(col).floatValue();		// includes 2*Gaps+Line
 		float netWidth = colWidth - (2 * H_GAP) - m_tFormat.getVLineStroke().floatValue();
 		if (leftVline)
+		{
 			netWidth -= m_tFormat.getVLineStroke().floatValue();
+		}
 		int rowHeight = m_headerHeight;
 		float netHeight = rowHeight - (4 * m_tFormat.getLineStroke().floatValue()) + (2 * V_GAP);
 
 		if (DEBUG_PRINT)
+		{
 			log.trace("#" + col + " - x=" + curX + ", y=" + curY
 					+ ", width=" + colWidth + "/" + netWidth + ", HeaderHeight=" + rowHeight + "/" + netHeight);
+		}
 		String alignment = m_columnJustification[col];
 
 		// paint header ***************************************************
@@ -1387,9 +1530,11 @@ public class TableElement extends PrintElement
 		{
 			g2D.setPaint(m_tFormat.getVLine_Color());
 			g2D.setStroke(m_tFormat.getVLine_Stroke());
-			if (m_tFormat.isPaintBoundaryLines())				// -> | (left)
+			if (m_tFormat.isPaintBoundaryLines())
+			{
 				g2D.drawLine(origX, (int)(origY + m_tFormat.getLineStroke().floatValue()),
 						origX, (int)(origY + rowHeight - (4 * m_tFormat.getLineStroke().floatValue())));
+			}
 			curX += m_tFormat.getVLineStroke().floatValue();
 		}
 		// X - start line
@@ -1424,7 +1569,9 @@ public class TableElement extends PrintElement
 		// Calculate column header height - teo_sarca [ 1673429 ]
 		String headerString = m_columnHeader[col].toString();
 		if (headerString.length() == 0)
+		{
 			headerString = " ";
+		}
 		// if (m_columnHeader[col].toString().length() > 0)
 		{
 			aString = new AttributedString(headerString);
@@ -1432,15 +1579,19 @@ public class TableElement extends PrintElement
 			aString.addAttribute(TextAttribute.FOREGROUND, getColor(HEADER_ROW, col));
 			//
 			boolean fastDraw = LayoutEngine.s_FASTDRAW;
-			if (fastDraw && !isView && !Util.is8Bit(headerString))
+			if (fastDraw && !isView && !is8Bit(headerString))
+			{
 				fastDraw = false;
+			}
 			iter = aString.getIterator();
 			measurer = new LineBreakMeasurer(iter, g2D.getFontRenderContext());
 			while (measurer.getPosition() < iter.getEndIndex())		// print header
 			{
 				TextLayout layout = measurer.nextLayout(netWidth + 2);
 				if (iter.getEndIndex() != measurer.getPosition())
+				{
 					fastDraw = false;
+				}
 				float lineHeight = layout.getAscent() + layout.getDescent() + layout.getLeading();
 
 				if (alignment.equals(MPrintFormatItem.FIELDALIGNMENTTYPE_Block))
@@ -1451,10 +1602,14 @@ public class TableElement extends PrintElement
 				curY += layout.getAscent();
 				float penX = curX;
 				if (alignment.equals(MPrintFormatItem.FIELDALIGNMENTTYPE_Center))
+				{
 					penX += (netWidth - layout.getAdvance()) / 2;
+				}
 				else if ((alignment.equals(MPrintFormatItem.FIELDALIGNMENTTYPE_TrailingRight) && layout.isLeftToRight())
 						|| (alignment.equals(MPrintFormatItem.FIELDALIGNMENTTYPE_LeadingLeft) && !layout.isLeftToRight()))
+				{
 					penX += netWidth - layout.getAdvance();
+				}
 				//
 				if (fastDraw)
 				{	// Bug - set Font/Color explicitly
@@ -1462,13 +1617,16 @@ public class TableElement extends PrintElement
 					g2D.setColor(getColor(HEADER_ROW, col));
 					g2D.drawString(iter, penX, curY);
 				}
-				else
+				else {
 					layout.draw(g2D, penX, curY);										// -> text
+				}
 				curY += layout.getDescent() + layout.getLeading();
 				usedHeight += layout.getAscent() + layout.getDescent();
 
-				if (!m_multiLineHeader)			// one line only
+				if (!m_multiLineHeader)
+				{
 					break;
+				}
 			}
 		}
 
@@ -1477,9 +1635,11 @@ public class TableElement extends PrintElement
 		// Y end line
 		g2D.setPaint(m_tFormat.getVLine_Color());
 		g2D.setStroke(m_tFormat.getVLine_Stroke());
-		if (m_tFormat.isPaintVLines())					// -> | (right)
+		if (m_tFormat.isPaintVLines())
+		{
 			g2D.drawLine(curX, (int)(origY + m_tFormat.getLineStroke().floatValue()),
 					curX, (int)(origY + rowHeight - (4 * m_tFormat.getLineStroke().floatValue())));
+		}
 		curX += m_tFormat.getVLineStroke().floatValue();
 		// X end line
 		if (m_tFormat.isPaintHeaderLines())
@@ -1504,8 +1664,10 @@ public class TableElement extends PrintElement
 				g2D.setPaint(m_tFormat.getVLine_Color());
 				g2D.setStroke(m_tFormat.getVLine_Stroke());
 				if (m_tFormat.isPaintBoundaryLines())
+				{
 					g2D.drawLine(curX, rowYstart, 				// -> | (left)
 							curX, (int)(rowYstart + rowHeight - m_tFormat.getLineStroke().floatValue()));
+				}
 				curX += m_tFormat.getVLineStroke().floatValue();
 			}
 			// Background
@@ -1532,22 +1694,26 @@ public class TableElement extends PrintElement
 				Object[] lastItems = {};
 				lastItems = getPrintItems(row - 1, col);
 				if (Arrays.equals(lastItems, printItems))
+				{
 					suppress = true;
+				}
 			}
 
 			if (!suppress)
 			{
-				for (int index = 0; index < printItems.length; index++)
+				for (Object printItem : printItems)
 				{
-					if (printItems[index] == null)
-						;
-					else if (printItems[index] instanceof ImageElement)
+					if (printItem == null)
 					{
-						Image imageToDraw = ((ImageElement)printItems[index]).getImage();
+						
+					}
+					else if (printItem instanceof ImageElement)
+					{
+						Image imageToDraw = ((ImageElement)printItem).getImage();
 						if (imageToDraw != null) // teo_sarca [ 1674706 ]
 						{
 							// Draw image using the scale factor - teo_sarca, [ 1673548 ] Image is not scaled in a report table cell
-							double scale = ((ImageElement)printItems[index]).getScaleFactor();
+							double scale = ((ImageElement)printItem).getScaleFactor();
 							if (scale != 1.0)
 							{
 								AffineTransform transform = new AffineTransform();
@@ -1561,14 +1727,14 @@ public class TableElement extends PrintElement
 							}
 						}
 					}
-					else if (printItems[index] instanceof BarcodeElement)
+					else if (printItem instanceof BarcodeElement)
 					{
 						try
 						{
-							Barcode barcode = ((BarcodeElement)printItems[index]).getBarcode();
+							Barcode barcode = ((BarcodeElement)printItem).getBarcode();
 							if (barcode != null)
 							{
-								double scale = ((BarcodeElement)printItems[index]).getScaleFactor();
+								double scale = ((BarcodeElement)printItem).getScaleFactor();
 								if (scale != 1.0)
 								{
 									int w = barcode.getWidth();
@@ -1596,9 +1762,9 @@ public class TableElement extends PrintElement
 						}
 					}
 
-					else if (printItems[index] instanceof HTMLRenderer)
+					else if (printItem instanceof HTMLRenderer)
 					{
-						HTMLRenderer renderer = (HTMLRenderer)printItems[index];
+						HTMLRenderer renderer = (HTMLRenderer)printItem;
 						Rectangle allocation = new Rectangle((int)colWidth, (int)netHeight);
 						// log.trace( "printColumn HTML - " + allocation);
 						g2D.translate(curX, penY);
@@ -1612,9 +1778,9 @@ public class TableElement extends PrintElement
 
 						// task 09359
 						// Handle Boolean as String: x when true, empty when false
-						if (printItems[index] instanceof Boolean)
+						if (printItem instanceof Boolean)
 						{
-							if (((Boolean)printItems[index]).booleanValue())
+							if (((Boolean)printItem).booleanValue())
 							{
 								str = "x";
 							}
@@ -1626,37 +1792,45 @@ public class TableElement extends PrintElement
 						}
 						else
 						{
-							str = printItems[index].toString();
+							str = printItem.toString();
 						}
 						
 						if (DEBUG_PRINT)
-							log.debug("row=" + row + ",col=" + col + " - " + str + " 8Bit=" + Util.is8Bit(str));
+						{
+							log.debug("row=" + row + ",col=" + col + " - " + str + " 8Bit=" + is8Bit(str));
+						}
 						if (str.length() > 0)
 						{
 							usedHeight = 0;
 							String[] lines = Pattern.compile("$", Pattern.MULTILINE).split(str);
-							for (int lineNo = 0; lineNo < lines.length; lineNo++)
+							for (String line : lines)
 							{
-								aString = new AttributedString(lines[lineNo]);
+								aString = new AttributedString(line);
 								aString.addAttribute(TextAttribute.FONT, getFont(row, col));
-								if (isView && printItems[index] instanceof NamePair)	// ID
+								if (isView && printItem instanceof NamePair)	// ID
 								{
 									aString.addAttribute(TextAttribute.FOREGROUND, LINK_COLOR);
 									aString.addAttribute(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_LOW_ONE_PIXEL, 0, str.length());
 								}
 								else
+								{
 									aString.addAttribute(TextAttribute.FOREGROUND, getColor(row, col));
+								}
 								//
 								iter = aString.getIterator();
 								boolean fastDraw = LayoutEngine.s_FASTDRAW;
-								if (fastDraw && !isView && !Util.is8Bit(lines[lineNo]))
+								if (fastDraw && !isView && !is8Bit(line))
+								{
 									fastDraw = false;
+								}
 								measurer = new LineBreakMeasurer(iter, g2D.getFontRenderContext());
 								while (measurer.getPosition() < iter.getEndIndex())		// print element
 								{
 									TextLayout layout = measurer.nextLayout(netWidth + 2);
 									if (iter.getEndIndex() != measurer.getPosition())
+									{
 										fastDraw = false;
+									}
 									float lineHeight = layout.getAscent() + layout.getDescent() + layout.getLeading();
 									if ((m_columnMaxHeight[col] <= 0
 											|| (usedHeight + lineHeight) <= m_columnMaxHeight[col])
@@ -1670,32 +1844,43 @@ public class TableElement extends PrintElement
 										penY += layout.getAscent();
 										float penX = curX;
 										if (alignment.equals(MPrintFormatItem.FIELDALIGNMENTTYPE_Center))
+										{
 											penX += (netWidth - layout.getAdvance()) / 2;
+										}
 										else if ((alignment.equals(MPrintFormatItem.FIELDALIGNMENTTYPE_TrailingRight) && layout.isLeftToRight())
 												|| (alignment.equals(MPrintFormatItem.FIELDALIGNMENTTYPE_LeadingLeft) && !layout.isLeftToRight()))
+										{
 											penX += netWidth - layout.getAdvance();
+										}
 										//
 										if (fastDraw)
 										{	// Bug - set Font/Color explicitly
 											g2D.setFont(getFont(row, col));
-											if (isView && printItems[index] instanceof NamePair)	// ID
+											if (isView && printItem instanceof NamePair)	// ID
 											{
 												g2D.setColor(LINK_COLOR);
 												// TextAttribute.UNDERLINE
 											}
 											else
+											{
 												g2D.setColor(getColor(row, col));
+											}
 											g2D.drawString(iter, penX, penY);
 										}
-										else
+										else {
 											layout.draw(g2D, penX, penY);										// -> text
+										}
 										if (DEBUG_PRINT)
+										{
 											log.debug("row=" + row + ",col=" + col + " - " + str + " - x=" + penX + ",y=" + penY);
+										}
 										penY += layout.getDescent() + layout.getLeading();
 										usedHeight += lineHeight;
 										//
-										if (m_columnMaxHeight[col] == -1)	// FirstLineOny
+										if (m_columnMaxHeight[col] == -1)
+										{
 											break;
+										}
 									}
 								}	// print element
 							}	// for all lines
@@ -1710,8 +1895,10 @@ public class TableElement extends PrintElement
 			g2D.setPaint(m_tFormat.getVLine_Color());
 			g2D.setStroke(m_tFormat.getVLine_Stroke());
 			if (m_tFormat.isPaintVLines())
+			{
 				g2D.drawLine(curX, rowYstart, 				// -> | (right)
 						curX, (int)(rowYstart + rowHeight - m_tFormat.getLineStroke().floatValue()));
+			}
 			curX += m_tFormat.getVLineStroke().floatValue();
 
 			// X end line
@@ -1740,7 +1927,9 @@ public class TableElement extends PrintElement
 				// next line is a funcion column -> underline this
 				boolean nextIsFunction = m_functionRows.contains(new Integer(row + 1));
 				if (nextIsFunction && m_functionRows.contains(new Integer(row)))
+				 {
 					nextIsFunction = false;     // this is a function line too
+				}
 				if (nextIsFunction)
 				{
 					g2D.setPaint(m_tFormat.getFunctFG_Color());
@@ -1762,6 +1951,30 @@ public class TableElement extends PrintElement
 	}	// printColumn
 
 	/**
+	 * Is 8 Bit
+	 *
+	 * @param str string
+	 * @return true if string contains chars > 255
+	 */
+	private static boolean is8Bit(String str)
+	{
+		if (str == null || str.length() == 0)
+		{
+			return true;
+		}
+		final char[] cc = str.toCharArray();
+		for (final char element : cc)
+		{
+			if (element > 255)
+			{
+				// System.out.println("Not 8 Bit - " + str);
+				return false;
+			}
+		}
+		return true;
+	}	// is8Bit
+
+	/**
 	 * Add Additional Lines to row/col
 	 * 
 	 * @param row
@@ -1774,16 +1987,24 @@ public class TableElement extends PrintElement
 	private void addPrintLines(int row, int col, Object data)
 	{
 		while (m_printRows.size() <= row)
+		{
 			m_printRows.add(null);
+		}
 		ArrayList<ArrayList<Object>> columns = m_printRows.get(row);
 		if (columns == null)
-			columns = new ArrayList<ArrayList<Object>>(m_columnHeader.length);
+		{
+			columns = new ArrayList<>(m_columnHeader.length);
+		}
 		while (columns.size() <= col)
+		{
 			columns.add(null);
+		}
 		//
 		ArrayList<Object> coordinate = columns.get(col);
 		if (coordinate == null)
-			coordinate = new ArrayList<Object>();
+		{
+			coordinate = new ArrayList<>();
+		}
 		coordinate.add(data);
 		//
 		columns.set(col, coordinate);
@@ -1794,7 +2015,7 @@ public class TableElement extends PrintElement
 	} // addAdditionalLines
 
 	/** Print Data */
-	private ArrayList<ArrayList<ArrayList<Object>>> m_printRows = new ArrayList<ArrayList<ArrayList<Object>>>();
+	private ArrayList<ArrayList<ArrayList<Object>>> m_printRows = new ArrayList<>();
 
 	/**
 	 * Insert empty Row after current Row
@@ -1819,14 +2040,22 @@ public class TableElement extends PrintElement
 	{
 		ArrayList<ArrayList<Object>> columns = null;
 		if (m_printRows.size() > row)
+		{
 			columns = m_printRows.get(row);
+		}
 		if (columns == null)
+		{
 			return new Object[] {};
+		}
 		ArrayList<Object> coordinate = null;
 		if (columns.size() > col)
+		{
 			coordinate = columns.get(col);
+		}
 		if (coordinate == null)
+		{
 			return new Object[] {};
+		}
 		//
 		return coordinate.toArray();
 	} // getPrintItems

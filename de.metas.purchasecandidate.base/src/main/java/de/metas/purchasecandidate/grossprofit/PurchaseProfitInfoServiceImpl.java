@@ -5,13 +5,13 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Set;
 
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -32,7 +32,6 @@ import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-
 import lombok.NonNull;
 
 /*
@@ -166,15 +165,15 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 			@NonNull final BPartnerId vendorId,
 			@NonNull final LocalDate date)
 	{
-		final int countryId = bpartnersRepo.getDefaultShipToLocationCountryId(vendorId);
+		final CountryId countryId = bpartnersRepo.getDefaultShipToLocationCountryIdOrNull(vendorId);
 
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
 		pricingCtx.setProductId(productId);
 		pricingCtx.setQty(BigDecimal.ONE);
 		pricingCtx.setBPartnerId(vendorId);
-		pricingCtx.setC_Country_ID(countryId);
+		pricingCtx.setCountryId(countryId);
 		pricingCtx.setSOTrx(SOTrx.PURCHASE);
-		pricingCtx.setPriceDate(TimeUtil.asTimestamp(date));
+		pricingCtx.setPriceDate(date);
 
 		return pricingCtx;
 	}

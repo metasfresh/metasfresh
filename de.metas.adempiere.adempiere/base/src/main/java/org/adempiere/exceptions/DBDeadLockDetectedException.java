@@ -31,6 +31,7 @@ import org.compiere.util.DB;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 
 /**
  * Dedicated exception to handle the case that the DB detected a deadlock and killed one of the participants.
@@ -78,7 +79,7 @@ public class DBDeadLockDetectedException extends DBException
 	{
 		// NOTE: completely override super's message because it's not relevant for our case
 
-		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder message = TranslatableStrings.builder();
 		message.append("Own Backend/Process ID =");
 		message.append(ownBackEndId);
 		message.append("; ExceptionMessage: ");

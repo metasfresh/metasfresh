@@ -98,7 +98,7 @@ public class TraceHUTrxListener implements IHUTrxListener
 					// do a brand new transaction in which we execute our things,
 					// because basically 'innerTrx' is already done and might even already be closed
 					final ITrxManager innerTrxManager = Services.get(ITrxManager.class);
-					innerTrxManager.run(localTrxName -> {
+					innerTrxManager.runInNewTrx(localTrxName -> {
 
 						// we need to update our subjects' trxNames, because the one this listener method was called with was committed and therefore is not valid anymore
 						setTrxName(trxHdr, localTrxName);

@@ -36,14 +36,14 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_Sum( $P{m_inou
 					<printWhenExpression><![CDATA[new Boolean($R{show_summary}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Summary}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="483" y="0" width="60" height="12" forecolor="#000000" uuid="ed1ae25e-79c3-483b-ae11-3bf61fb619fb"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 			</textField>
@@ -155,7 +155,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_Sum( $P{m_inou
 			<textField>
 				<reportElement key="textField-16" x="37" y="0" width="261" height="12" forecolor="#000000" uuid="2602d18d-3edb-4478-9829-4f29d1f4a834"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{GrandTotal}]]></textFieldExpression>
 			</textField>
@@ -168,7 +168,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details_Sum( $P{m_inou
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{nonhutotal}]]></textFieldExpression>
 			</textField>

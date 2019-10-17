@@ -2,11 +2,11 @@ package de.metas.product;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
-import org.adempiere.uom.UomId;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Repository;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.uom.UomId;
 import lombok.NonNull;
 
 /*

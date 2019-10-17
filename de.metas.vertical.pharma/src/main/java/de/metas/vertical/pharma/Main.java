@@ -2,15 +2,17 @@ package de.metas.vertical.pharma;
 
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.impexp.IImportProcessFactory;
 import org.compiere.model.I_AD_Client;
 
+import de.metas.impexp.bpartner.IFABPartnerImportProcess;
 import de.metas.impexp.bpartner.PharmaImportPartnerInterceptor;
+import de.metas.impexp.processing.IImportProcessFactory;
+import de.metas.impexp.product.IFAProductImportProcess;
 import de.metas.impexp.product.PharmaImportProductInterceptor;
-import de.metas.impexp.product.PharmaProductImportProcess;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.model.I_I_BPartner;
+import de.metas.vertical.pharma.model.I_I_Pharma_BPartner;
 import de.metas.vertical.pharma.model.I_I_Pharma_Product;
 import de.metas.vertical.pharma.model.I_I_Product;
 import de.metas.vertical.pharma.pricing.PharmaPriceLimitRule;
@@ -48,7 +50,8 @@ public class Main extends AbstractModuleInterceptor
 	@Override
 	protected void onAfterInit()
 	{
-		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_Pharma_Product.class, PharmaProductImportProcess.class);
+		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_Pharma_Product.class, IFAProductImportProcess.class);
+		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_Pharma_BPartner.class, IFABPartnerImportProcess.class);
 		Services.get(IPricingBL.class).registerPriceLimitRule(new PharmaPriceLimitRule());
 	}
 

@@ -23,20 +23,16 @@ package de.metas.material.planning.pporder.impl;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_DocType;
 import org.eevolution.LiberoConfiguration;
 import org.eevolution.LiberoTestConfiguration;
-import org.eevolution.api.IPPOrderBL;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
-import org.eevolution.mrp.api.impl.MRPTestDataSimple;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.junit.Assert;
 import org.junit.Before;
@@ -48,12 +44,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import de.metas.document.engine.IDocument;
 import de.metas.material.planning.MaterialPlanningConfiguration;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /**
  * This class tests {@link IPPOrderBOMBL} in convert with {@link IPPOrderBOMDAO}.
@@ -67,7 +61,6 @@ import de.metas.util.time.SystemTime;
 public class PPOrderBOMBLTest
 {
 	private MRPTestHelper helper;
-	private MRPTestDataSimple masterData;
 
 	/** Service under test */
 	@Autowired
@@ -81,7 +74,6 @@ public class PPOrderBOMBLTest
 	{
 		// NOTE: after this, model validators will be also registered
 		helper = new MRPTestHelper();
-		masterData = new MRPTestDataSimple(helper);
 
 		this.ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	}
@@ -167,7 +159,7 @@ public class PPOrderBOMBLTest
 
 		//
 		// Create and save PP Order
-		final I_PP_Order ppOrder = createPP_Order(saladProductBom, "100", uomStuck);
+		final I_PP_Order ppOrder = helper.createPP_Order(saladProductBom, "100", uomStuck);
 
 		//
 		// Test: Carrot
@@ -222,39 +214,6 @@ public class PPOrderBOMBLTest
 			final BigDecimal multipliedQty = ppOrderBOMBL.getQtyMultiplier(ppOrderBOMBL.fromRecord(ppOrderBOMLine_Folie)); // lineFolie
 			Assert.assertTrue("Should be" + expectedQty + "but it is " + multipliedQty, expectedQty.compareTo(multipliedQty) == 0);
 		}
-	}
-
-	private I_PP_Order createPP_Order(final I_PP_Product_BOM productBOM, final String qtyOrderedStr, final I_C_UOM uom)
-	{
-		final I_M_Product product = productBOM.getM_Product();
-
-		final I_PP_Order ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class, helper.contextProvider);
-		ppOrder.setAD_Org(masterData.adOrg01);
-
-		setCommonProperties(ppOrder);
-
-		ppOrder.setM_Product(product);
-		ppOrder.setPP_Product_BOM(productBOM);
-		ppOrder.setAD_Workflow(masterData.workflow_Standard);
-		ppOrder.setM_Warehouse(masterData.warehouse_plant01);
-		ppOrder.setS_Resource(masterData.plant01);
-		ppOrder.setQtyOrdered(new BigDecimal(qtyOrderedStr));
-		ppOrder.setDatePromised(helper.getToday());
-		ppOrder.setDocStatus(IDocument.STATUS_Drafted);
-		ppOrder.setDocAction(IDocument.ACTION_Complete);
-		ppOrder.setC_UOM(uom);
-		InterfaceWrapperHelper.save(ppOrder);
-		return ppOrder;
-	}
-
-	private void setCommonProperties(final I_PP_Order ppOrder)
-	{
-		Services.get(IPPOrderBL.class).setDocType(ppOrder, X_C_DocType.DOCBASETYPE_ManufacturingOrder, null);
-
-		// required to avoid an NPE when building the lightweight PPOrder pojo
-		final Timestamp t1 = SystemTime.asTimestamp();
-		ppOrder.setDateOrdered(t1);
-		ppOrder.setDateStartSchedule(t1);
 	}
 
 	private I_C_UOM createUOM(final String name, final int stdPrecision, final int costingPrecission)

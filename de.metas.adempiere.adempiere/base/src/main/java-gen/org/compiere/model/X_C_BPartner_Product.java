@@ -15,7 +15,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 581798620L;
+	private static final long serialVersionUID = 1818758757L;
 
     /** Standard Constructor */
     public X_C_BPartner_Product (Properties ctx, int C_BPartner_Product_ID, String trxName)
@@ -50,18 +50,6 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
 
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
@@ -108,18 +96,6 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner_Vendor() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_Vendor_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner_Vendor(org.compiere.model.I_C_BPartner C_BPartner_Vendor)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_Vendor_ID, org.compiere.model.I_C_BPartner.class, C_BPartner_Vendor);
 	}
 
 	/** Set C_BPartner_Vendor_ID.
@@ -198,32 +174,48 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** Set Exclusion From Sale Reason.
-		@param ExclusionFromSaleReason Exclusion From Sale Reason	  */
+	/** Set CU-EAN.
+		@param EAN_CU CU-EAN	  */
+	@Override
+	public void setEAN_CU (java.lang.String EAN_CU)
+	{
+		set_Value (COLUMNNAME_EAN_CU, EAN_CU);
+	}
+
+	/** Get CU-EAN.
+		@return CU-EAN	  */
+	@Override
+	public java.lang.String getEAN_CU () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EAN_CU);
+	}
+
+	/** Set Sperre Verkauf Grund.
+		@param ExclusionFromSaleReason Sperre Verkauf Grund	  */
 	@Override
 	public void setExclusionFromSaleReason (java.lang.String ExclusionFromSaleReason)
 	{
 		set_Value (COLUMNNAME_ExclusionFromSaleReason, ExclusionFromSaleReason);
 	}
 
-	/** Get Exclusion From Sale Reason.
-		@return Exclusion From Sale Reason	  */
+	/** Get Sperre Verkauf Grund.
+		@return Sperre Verkauf Grund	  */
 	@Override
 	public java.lang.String getExclusionFromSaleReason () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ExclusionFromSaleReason);
 	}
 
-	/** Set Ingredients.
-		@param Ingredients Ingredients	  */
+	/** Set Zutaten.
+		@param Ingredients Zutaten	  */
 	@Override
 	public void setIngredients (java.lang.String Ingredients)
 	{
 		set_Value (COLUMNNAME_Ingredients, Ingredients);
 	}
 
-	/** Get Ingredients.
-		@return Ingredients	  */
+	/** Get Zutaten.
+		@return Zutaten	  */
 	@Override
 	public java.lang.String getIngredients () 
 	{
@@ -305,16 +297,60 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		return false;
 	}
 
+	/** Set Hersteller.
+		@param Manufacturer 
+		Manufacturer of the Product
+	  */
 	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	public void setManufacturer (java.lang.String Manufacturer)
 	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+		set_Value (COLUMNNAME_Manufacturer, Manufacturer);
+	}
+
+	/** Get Hersteller.
+		@return Manufacturer of the Product
+	  */
+	@Override
+	public java.lang.String getManufacturer () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Manufacturer);
 	}
 
 	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
+	}
+
+	@Override
+	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	{
+		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
+	}
+
+	/** Set Merkmale.
+		@param M_AttributeSetInstance_ID 
+		Merkmals Ausprägungen zum Produkt
+	  */
+	@Override
+	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
+	{
+		if (M_AttributeSetInstance_ID < 0) 
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
+	}
+
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
+	  */
+	@Override
+	public int getM_AttributeSetInstance_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Produkt.
@@ -340,25 +376,6 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Hersteller.
-		@param Manufacturer 
-		Manufacturer of the Product
-	  */
-	@Override
-	public void setManufacturer (java.lang.String Manufacturer)
-	{
-		set_Value (COLUMNNAME_Manufacturer, Manufacturer);
-	}
-
-	/** Get Hersteller.
-		@return Manufacturer of the Product
-	  */
-	@Override
-	public java.lang.String getManufacturer () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Manufacturer);
 	}
 
 	/** Set Mindestbestellmenge.
@@ -497,6 +514,28 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		return bd;
 	}
 
+	/** Set Reihenfolge.
+		@param SeqNo 
+		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public void setSeqNo (int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
+	}
+
+	/** Get Reihenfolge.
+		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public int getSeqNo () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Mindesthaltbarkeit Tage.
 		@param ShelfLifeMinDays 
 		Minimum Shelf Life in days based on Product Instance Guarantee Date
@@ -606,9 +645,9 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		return false;
 	}
 
-	/** Set Produkt-Kategorie Geschäftspartner.
+	/** Set Lieferanten Kategorie.
 		@param VendorCategory 
-		Product Category of the Business Partner
+		Lieferanten Kategorie
 	  */
 	@Override
 	public void setVendorCategory (java.lang.String VendorCategory)
@@ -616,8 +655,8 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 		set_Value (COLUMNNAME_VendorCategory, VendorCategory);
 	}
 
-	/** Get Produkt-Kategorie Geschäftspartner.
-		@return Product Category of the Business Partner
+	/** Get Lieferanten Kategorie.
+		@return Lieferanten Kategorie
 	  */
 	@Override
 	public java.lang.String getVendorCategory () 

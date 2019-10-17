@@ -16,13 +16,13 @@
  *****************************************************************************/
 package org.compiere.server;
 
+import java.io.File;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import org.adempiere.user.api.IUserDAO;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.MChangeRequest;
 import org.compiere.model.MClient;
@@ -37,6 +37,8 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.i18n.Msg;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 
 /**
@@ -102,7 +104,9 @@ public class RequestProcessor extends AdempiereServer
 			+ " AND DateNextAction < now()"
 			+ " AND AD_Client_ID=?"; 
 		if (m_model.getR_RequestType_ID() != 0)
+		{
 			sql += " AND R_RequestType_ID=?";
+		}
 		PreparedStatement pstmt = null;
 		int count = 0;
 		int countEMails = 0;
@@ -111,7 +115,9 @@ public class RequestProcessor extends AdempiereServer
 			pstmt = DB.prepareStatement (sql, null);
 			pstmt.setInt (1, m_model.getAD_Client_ID());
 			if (m_model.getR_RequestType_ID() != 0)
+			{
 				pstmt.setInt(2, m_model.getR_RequestType_ID());
+			}
 			ResultSet rs = pstmt.executeQuery ();
 			while (rs.next ())
 			{
@@ -143,7 +149,9 @@ public class RequestProcessor extends AdempiereServer
 		}
 		m_summary.append("New Due #").append(count);
 		if (countEMails > 0)
+		{
 			m_summary.append(" (").append(countEMails).append(" EMail)");
+		}
 		m_summary.append (" - ");
 		
 		/**
@@ -157,7 +165,9 @@ public class RequestProcessor extends AdempiereServer
 				+ "WHERE r.R_RequestType_ID=rt.R_RequestType_ID"
 				+ " AND (r.DateNextAction+rt.DueDateTolerance) < now())";
 		if (m_model.getR_RequestType_ID() != 0)
+		{
 			sql += " AND r.R_RequestType_ID=?";
+		}
 		count = 0;
 		countEMails = 0;
 		try
@@ -165,7 +175,9 @@ public class RequestProcessor extends AdempiereServer
 			pstmt = DB.prepareStatement (sql, null);
 			pstmt.setInt (1, m_model.getAD_Client_ID());
 			if (m_model.getR_RequestType_ID() != 0)
+			{
 				pstmt.setInt(2, m_model.getR_RequestType_ID());
+			}
 			ResultSet rs = pstmt.executeQuery ();
 			while (rs.next ())
 			{
@@ -198,7 +210,9 @@ public class RequestProcessor extends AdempiereServer
 		}
 		m_summary.append("New Overdue #").append(count);
 		if (countEMails > 0)
+		{
 			m_summary.append(" (").append(countEMails).append(" EMail)");
+		}
 		m_summary.append (" - ");
 		
 		/**
@@ -212,11 +226,15 @@ public class RequestProcessor extends AdempiereServer
 				+ " AND (DateNextAction+" + m_model.getOverdueAlertDays() + ") < now()"
 				+ " AND (DateLastAlert IS NULL";
 			if (m_model.getRemindDays() > 0)
+			{
 				sql += " OR (DateLastAlert+" + m_model.getRemindDays() 
 					+ ") < now()";
+			}
 			sql += ")";
 			if (m_model.getR_RequestType_ID() != 0)
+			{
 				sql += " AND R_RequestType_ID=?";
+			}
 			count = 0;
 			countEMails = 0;
 			try
@@ -224,7 +242,9 @@ public class RequestProcessor extends AdempiereServer
 				pstmt = DB.prepareStatement(sql, null);
 				pstmt.setInt(1, m_model.getAD_Client_ID());
 				if (m_model.getR_RequestType_ID() != 0)
+				{
 					pstmt.setInt(2, m_model.getR_RequestType_ID());
+				}
 				ResultSet rs = pstmt.executeQuery();
 				while (rs.next())
 				{
@@ -255,7 +275,9 @@ public class RequestProcessor extends AdempiereServer
 			}
 			m_summary.append("Alerts #").append(count);
 			if (countEMails > 0)
+			{
 				m_summary.append(" (").append(countEMails).append(" EMail)");
+			}
 			m_summary.append (" - ");
 		}	//	Overdue
 		
@@ -271,7 +293,9 @@ public class RequestProcessor extends AdempiereServer
 				+ " AND (DateNextAction+" + m_model.getOverdueAssignDays() 
 					+ ") < now()";
 			if (m_model.getR_RequestType_ID() != 0)
+			{
 				sql += " AND R_RequestType_ID=?";
+			}
 			count = 0;
 			countEMails = 0;
 			try
@@ -279,13 +303,17 @@ public class RequestProcessor extends AdempiereServer
 				pstmt = DB.prepareStatement(sql, null);
 				pstmt.setInt(1, m_model.getAD_Client_ID());
 				if (m_model.getR_RequestType_ID() != 0)
+				{
 					pstmt.setInt(2, m_model.getR_RequestType_ID());
+				}
 				ResultSet rs = pstmt.executeQuery();
 				while (rs.next())
 				{
 					MRequest request = new MRequest (getCtx(), rs, null);
 					if (escalate(request))
+					{
 						count++;
+					}
 				}
 				rs.close();
 			}
@@ -311,11 +339,15 @@ public class RequestProcessor extends AdempiereServer
 				+ " AND (Updated+" + m_model.getInactivityAlertDays() + ") < now()"
 				+ " AND (DateLastAlert IS NULL";
 			if (m_model.getRemindDays() > 0)
+			{
 				sql += " OR (DateLastAlert+" + m_model.getRemindDays() 
 					+ ") < now()";
+			}
 			sql += ")";
 			if (m_model.getR_RequestType_ID() != 0)
+			{
 				sql += " AND R_RequestType_ID=?";
+			}
 			count = 0;
 			countEMails = 0;
 			try
@@ -323,7 +355,9 @@ public class RequestProcessor extends AdempiereServer
 				pstmt = DB.prepareStatement(sql, null);
 				pstmt.setInt(1, m_model.getAD_Client_ID());
 				if (m_model.getR_RequestType_ID() != 0)
+				{
 					pstmt.setInt(2, m_model.getR_RequestType_ID());
+				}
 				ResultSet rs = pstmt.executeQuery();
 				while (rs.next())
 				{
@@ -353,7 +387,9 @@ public class RequestProcessor extends AdempiereServer
 			}
 			m_summary.append("Inactivity #").append(count);
 			if (countEMails > 0)
+			{
 				m_summary.append(" (").append(countEMails).append(" EMail)");
+			}
 			m_summary.append (" - ");
 		}	//	Inactivity		
 	}	//  processRequests
@@ -367,10 +403,14 @@ public class RequestProcessor extends AdempiereServer
 	private boolean sendEmail (MRequest request, String AD_Message)
 	{
 		//  Alert: Request {} overdue
-		String subject = Msg.getMsg(m_client.getAD_Language(), AD_Message, 
-			new String[] {request.getDocumentNo()});
-		return m_client.sendEMail(request.getSalesRep_ID(), 
-			subject, request.getSummary(), request.createPDF());
+		final String subject = Msg.getMsg(m_client.getAD_Language(), AD_Message,
+				new String[] { request.getDocumentNo() });
+		final File attachment = null;
+		return m_client.sendEMail(
+				UserId.ofRepoId(request.getSalesRep_ID()),
+				subject,
+				request.getSummary(),
+				attachment);
 	}   //  sendAlert
 
 	/**
@@ -384,29 +424,49 @@ public class RequestProcessor extends AdempiereServer
 		I_AD_User supervisor = request.getSalesRep();	//	self
 		int supervisor_ID = request.getSalesRep().getSupervisor_ID();
 		if (supervisor_ID == 0 && m_model.getSupervisor_ID() != 0)
+		{
 			supervisor_ID = m_model.getSupervisor_ID();
+		}
 		if (supervisor_ID != 0 && supervisor_ID != request.getAD_User_ID())
+		{
 			supervisor = Services.get(IUserDAO.class).retrieveUserOrNull(getCtx(), supervisor_ID);
+		}
 		
 		//  Escalated: Request {} to {}
 		String subject = Msg.getMsg(m_client.getAD_Language(), "RequestEscalate", 
 			new String[] {request.getDocumentNo(), supervisor.getName()});
 		String to = request.getSalesRep().getEMail();
 		if (to == null || to.length() == 0)
+		{
 			log.warn("SalesRep has no EMail - " + request.getSalesRep());
+		}
 		else
-			m_client.sendEMail(request.getSalesRep_ID(), 
-				subject, request.getSummary(), request.createPDF());
+		{
+			final File attachment = null;
+			m_client.sendEMail(
+					UserId.ofRepoId(request.getSalesRep_ID()),
+					subject,
+					request.getSummary(),
+					attachment);
+		}
 
 		//	Not the same - send mail to supervisor
 		if (request.getSalesRep_ID() != supervisor.getAD_User_ID())
 		{
 			to = supervisor.getEMail();
 			if (to == null || to.length() == 0)
-				log.warn("Supervisor has no EMail - " + supervisor);
+			{
+				log.warn("Supervisor has no EMail - {}", supervisor);
+			}
 			else
-				m_client.sendEMail(supervisor.getAD_User_ID(), 
-					subject, request.getSummary(), request.createPDF());
+			{
+				final File attachment = null;
+				m_client.sendEMail(
+						UserId.ofRepoId(supervisor.getAD_User_ID()),
+						subject,
+						request.getSummary(),
+						attachment);
+			}
 		}
 		
 		//  ----------------
@@ -443,20 +503,28 @@ public class RequestProcessor extends AdempiereServer
 				MRequest r = new MRequest(getCtx(), rs, null);
 				//	Get/Check Status
 				if (status == null || status.getR_Status_ID() != r.getR_Status_ID())
+				{
 					status = MStatus.get(getCtx(), r.getR_Status_ID());
+				}
 				if (status.getTimeoutDays() <= 0
 					|| status.getNext_Status_ID() == 0)
+				{
 					continue;
+				}
 				//	Next Status
 				if (next == null || next.getR_Status_ID() != status.getNext_Status_ID())
+				{
 					next = MStatus.get(getCtx(), status.getNext_Status_ID());
+				}
 				//
 				String result = Msg.getMsg(getCtx(), "RequestStatusTimeout")
 					+ ": " + status.getName() + " -> " + next.getName();
 				r.setResult(result);
 				r.setR_Status_ID(status.getNext_Status_ID());
 				if (r.save())
+				{
 					count++;
+				}
 			}
 			rs.close ();
 		}
@@ -507,12 +575,18 @@ public class RequestProcessor extends AdempiereServer
 				{
 					r.setM_ChangeRequest_ID(ecr.getM_ChangeRequest_ID());
 					if (r.save())
+					{
 						count++;
+					}
 					else
+					{
 						failure++;
+					}
 				}
 				else
+				{
 					failure++;
+				}
 			}
 			rs.close ();
 		}
@@ -527,7 +601,9 @@ public class RequestProcessor extends AdempiereServer
 
 		m_summary.append("Auto Change Request #").append(count);
 		if (failure > 0)
+		{
 			m_summary.append("(fail=").append(failure).append(")");
+		}
 		m_summary.append(" - ");
 	}	//	processECR
 	
@@ -555,20 +631,26 @@ public class RequestProcessor extends AdempiereServer
 			+ "WHERE AD_Client_ID=?"
 			+ " AND SalesRep_ID=0 AND Processed='N'";
 		if (m_model.getR_RequestType_ID() != 0)
+		{
 			sql += " AND R_RequestType_ID=?";
+		}
 		PreparedStatement pstmt = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, null);
 			pstmt.setInt(1, m_model.getAD_Client_ID());
 			if (m_model.getR_RequestType_ID() != 0)
+			{
 				pstmt.setInt(2, m_model.getR_RequestType_ID());
+			}
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next())
 			{
 				MRequest request = new MRequest (ctx, rs, null);
 				if (request.getSalesRep_ID() != 0)
+				{
 					continue;
+				}
 				int SalesRep_ID = findSalesRep(request);
 				if (SalesRep_ID != 0)
 				{
@@ -577,7 +659,9 @@ public class RequestProcessor extends AdempiereServer
 					changed++;
 				}
 				else
+				{
 					notFound++;
+				}
 			}
 			rs.close();
 		}
@@ -592,11 +676,17 @@ public class RequestProcessor extends AdempiereServer
 		pstmt = null;
 		//
 		if (changed == 0 && notFound == 0)
+		{
 			m_summary.append("No unallocated Requests");
+		}
 		else
+		{
 			m_summary.append("Allocated SalesRep=").append(changed);
+		}
 		if (notFound > 0)
+		{
 			m_summary.append(",Not=").append(notFound);
+		}
 		m_summary.append(" - ");
 	}	//	findSalesRep
 
@@ -609,19 +699,23 @@ public class RequestProcessor extends AdempiereServer
 	{
 		String QText = request.getSummary();
 		if (QText == null)
+		{
 			QText = "";
+		}
 		else
+		{
 			QText = QText.toUpperCase();
+		}
 		//
 		MRequestProcessorRoute[] routes = m_model.getRoutes(false);
-		for (int i = 0; i < routes.length; i++)
+		for (MRequestProcessorRoute route : routes)
 		{
-			MRequestProcessorRoute route = routes[i];
-			
 			//	Match first on Request Type
 			if (request.getR_RequestType_ID() == route.getR_RequestType_ID()
 				&& route.getR_RequestType_ID() != 0)
+			{
 				return route.getAD_User_ID();
+			}
 			
 			//	Match on element of keyword
 			String keyword = route.getKeyword();
@@ -631,7 +725,9 @@ public class RequestProcessor extends AdempiereServer
 				while (st.hasMoreElements())
 				{
 					if (QText.indexOf(st.nextToken()) != -1)
+					{
 						return route.getAD_User_ID();
+					}
 				}
 			}
 		}	//	for all routes

@@ -28,9 +28,13 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.product.ProductId;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -43,20 +47,9 @@ import lombok.NonNull;
 public final class OlAndSched
 {
 	private final I_M_ShipmentSchedule shipmentSchedule;
-	@Nullable
-	private final I_C_OrderLine orderLineOrNull;
+	private final Optional<I_C_OrderLine> salesOrderLine;
 	private final IDeliverRequest deliverRequest;
 	private final BigDecimal initialSchedQtyDelivered;
-
-	private boolean availForShipmentRun;
-
-	@Deprecated
-	public OlAndSched(
-			@Nullable final org.compiere.model.I_C_OrderLine ol,
-			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
-	{
-		this(ol, shipmentSchedule, Services.get(IShipmentScheduleHandlerBL.class).createDeliverRequest(shipmentSchedule));
-	}
 
 	@Builder
 	private OlAndSched(
@@ -64,12 +57,13 @@ public final class OlAndSched
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@Nullable final IDeliverRequest deliverRequest)
 	{
-		this.orderLineOrNull = InterfaceWrapperHelper.create(orderLineOrNull, I_C_OrderLine.class);
+		this.salesOrderLine = Optional.ofNullable(InterfaceWrapperHelper.create(orderLineOrNull, I_C_OrderLine.class));
+
 		this.shipmentSchedule = shipmentSchedule;
 
 		if (deliverRequest == null)
 		{
-			this.deliverRequest = Services.get(IShipmentScheduleHandlerBL.class).createDeliverRequest(shipmentSchedule);
+			this.deliverRequest = Services.get(IShipmentScheduleHandlerBL.class).createDeliverRequest(shipmentSchedule, orderLineOrNull);
 		}
 		else
 		{
@@ -79,14 +73,51 @@ public final class OlAndSched
 		initialSchedQtyDelivered = shipmentSchedule.getQtyDelivered();
 	}
 
+	@Override
+	public String toString()
+	{
+		return shipmentSchedule + "/" + salesOrderLine.orElse(null);
+	}
+
 	public IDeliverRequest getDeliverRequest()
 	{
 		return deliverRequest;
 	}
 
-	public Optional<I_C_OrderLine> getOl()
+	public boolean hasSalesOrderLine()
 	{
-		return Optional.ofNullable(orderLineOrNull);
+		return salesOrderLine.isPresent();
+	}
+
+	private I_C_OrderLine getSalesOrderLine()
+	{
+		return salesOrderLine.get();
+	}
+
+	public ProductId getProductId()
+	{
+		return ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
+	}
+
+	public I_C_UOM getOrderPriceUOM()
+	{
+		final int priceUomId = getSalesOrderLine().getPrice_UOM_ID();
+		return Services.get(IUOMDAO.class).getById(priceUomId);
+	}
+
+	public BigDecimal getOrderQtyReserved()
+	{
+		return getSalesOrderLine().getQtyReserved();
+	}
+
+	public BigDecimal getOrderPriceActual()
+	{
+		return getSalesOrderLine().getPriceActual();
+	}
+
+	public DocStatus getOrderDocStatus()
+	{
+		return DocStatus.ofCode(getSalesOrderLine().getC_Order().getDocStatus());
 	}
 
 	public I_M_ShipmentSchedule getSched()
@@ -102,24 +133,13 @@ public final class OlAndSched
 		return InterfaceWrapperHelper.getValueOrNull(shipmentSchedule, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
 	}
 
-	public boolean isAvailForShipmentRun()
-	{
-		return availForShipmentRun;
-	}
-
-	public void setAvailForShipmentRun(final boolean availForShipmentRun)
-	{
-		this.availForShipmentRun = availForShipmentRun;
-	}
-
 	public BigDecimal getInitialSchedQtyDelivered()
 	{
 		return initialSchedQtyDelivered;
 	}
 
-	@Override
-	public String toString()
+	public void setShipmentScheduleLineNetAmt(final BigDecimal lineNetAmt)
 	{
-		return String.valueOf(orderLineOrNull) + " / " + shipmentSchedule;
+		shipmentSchedule.setLineNetAmt(lineNetAmt);
 	}
 }

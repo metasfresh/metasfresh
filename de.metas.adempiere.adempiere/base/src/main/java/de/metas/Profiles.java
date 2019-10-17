@@ -1,6 +1,6 @@
 package de.metas;
 
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 
@@ -66,7 +66,7 @@ public class Profiles
 	/** @return true if given profile is active */
 	public boolean isProfileActive(final String profile)
 	{
-		final ApplicationContext context = Adempiere.getSpringApplicationContext();
+		final ApplicationContext context = SpringContextHolder.instance.getApplicationContext();
 		if (context == null)
 		{
 			logger.warn("No application context found to determine if '{}' profile is active", profile);

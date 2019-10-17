@@ -89,15 +89,6 @@ public interface IMRPDAO extends ISingletonService
 	boolean hasProductRecords(I_M_Product product);
 
 	/**
-	 * Maximum Low Level Code
-	 *
-	 * @param ctx
-	 * @param trxName
-	 * @return maximum low level
-	 */
-	int getMaxLowLevel(final IContextAware context);
-
-	/**
 	 * Get Qty On Hand
 	 *
 	 * @param context
@@ -156,4 +147,8 @@ public interface IMRPDAO extends ISingletonService
 
 	/** @return {@link I_PP_MRP_Alloc}s which are linking to given MRP demand */
 	IQueryBuilder<I_PP_MRP_Alloc> retrieveMRPAllocsForDemandQuery(I_PP_MRP mrpDemand);
+
+	void save(I_PP_MRP mrpRecord);
+
+	void save(I_PP_MRP_Alloc alloc);
 }

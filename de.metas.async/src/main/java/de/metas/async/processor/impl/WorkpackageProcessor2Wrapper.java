@@ -4,7 +4,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.IWorkpackageProcessor2;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.util.Check;
+import lombok.NonNull;
 
 public final class WorkpackageProcessor2Wrapper extends WorkpackageProcessorAdapter implements IWorkpackageProcessor2
 {
@@ -21,10 +21,8 @@ public final class WorkpackageProcessor2Wrapper extends WorkpackageProcessorAdap
 	}
 	private final IWorkpackageProcessor delegate;
 
-	private WorkpackageProcessor2Wrapper(final IWorkpackageProcessor delegate)
+	private WorkpackageProcessor2Wrapper(@NonNull final IWorkpackageProcessor delegate)
 	{
-		super();
-		Check.assumeNotNull(delegate, "delegate not null");
 		this.delegate = delegate;
 	}
 

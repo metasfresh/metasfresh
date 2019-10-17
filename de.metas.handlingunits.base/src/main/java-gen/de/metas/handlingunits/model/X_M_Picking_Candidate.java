@@ -15,7 +15,7 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1975427925L;
+	private static final long serialVersionUID = 1657834495L;
 
     /** Standard Constructor */
     public X_M_Picking_Candidate (Properties ctx, int M_Picking_Candidate_ID, String trxName)
@@ -59,8 +59,8 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	public static final String APPROVALSTATUS_Approved = "A";
 	/** Rejected = R */
 	public static final String APPROVALSTATUS_Rejected = "R";
-	/** Set Approval Status.
-		@param ApprovalStatus Approval Status	  */
+	/** Set Status.
+		@param ApprovalStatus Status	  */
 	@Override
 	public void setApprovalStatus (java.lang.String ApprovalStatus)
 	{
@@ -68,24 +68,12 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 		set_Value (COLUMNNAME_ApprovalStatus, ApprovalStatus);
 	}
 
-	/** Get Approval Status.
-		@return Approval Status	  */
+	/** Get Status.
+		@return Status	  */
 	@Override
 	public java.lang.String getApprovalStatus () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ApprovalStatus);
-	}
-
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
 	}
 
 	/** Set Maßeinheit.
@@ -114,7 +102,7 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU getM_HU() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU getM_HU()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
 	}
@@ -125,8 +113,8 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 		set_ValueFromPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU);
 	}
 
-	/** Set Handling Units.
-		@param M_HU_ID Handling Units	  */
+	/** Set Handling Unit.
+		@param M_HU_ID Handling Unit	  */
 	@Override
 	public void setM_HU_ID (int M_HU_ID)
 	{
@@ -136,8 +124,8 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 			set_Value (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
 	}
 
-	/** Get Handling Units.
-		@return Handling Units	  */
+	/** Get Handling Unit.
+		@return Handling Unit	  */
 	@Override
 	public int getM_HU_ID () 
 	{
@@ -214,7 +202,7 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI getPackTo_HU_PI() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_PI getPackTo_HU_PI()
 	{
 		return get_ValueAsPO(COLUMNNAME_PackTo_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class);
 	}
@@ -248,7 +236,7 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU getPickFrom_HU() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU getPickFrom_HU()
 	{
 		return get_ValueAsPO(COLUMNNAME_PickFrom_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
 	}
@@ -294,8 +282,8 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	public static final String PICKSTATUS_WillNotBePicked = "N";
 	/** Packed = A */
 	public static final String PICKSTATUS_Packed = "A";
-	/** Set Pick Status.
-		@param PickStatus Pick Status	  */
+	/** Set Komm. Status.
+		@param PickStatus Komm. Status	  */
 	@Override
 	public void setPickStatus (java.lang.String PickStatus)
 	{
@@ -303,8 +291,8 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 		set_Value (COLUMNNAME_PickStatus, PickStatus);
 	}
 
-	/** Get Pick Status.
-		@return Pick Status	  */
+	/** Get Komm. Status.
+		@return Komm. Status	  */
 	@Override
 	public java.lang.String getPickStatus () 
 	{

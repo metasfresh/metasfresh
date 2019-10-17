@@ -10,36 +10,32 @@ package de.metas.adempiere.gui.search.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.handlingunits.model.I_C_InvoiceLine;
 import de.metas.handlingunits.model.I_C_OrderLine;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class InvoiceLineHUPackingAware implements IHUPackingAware
 {
@@ -61,12 +57,6 @@ public class InvoiceLineHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public I_M_Product getM_Product()
-	{
-		return invoiceLine.getM_Product();
-	}
-
-	@Override
 	public void setM_Product_ID(final int productId)
 	{
 		invoiceLine.setM_Product_ID(productId);
@@ -85,25 +75,25 @@ public class InvoiceLineHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public I_C_UOM getC_UOM()
+	public int getC_UOM_ID()
 	{
-		return invoiceLine.getC_UOM();
+		return invoiceLine.getC_UOM_ID();
 	}
 
 	@Override
-	public void setC_UOM(final I_C_UOM uom)
+	public void setC_UOM_ID(final int uomId)
 	{
-		invoiceLine.setC_UOM(uom);
+		invoiceLine.setC_UOM_ID(uomId);
 	}
 
 	@Override
-	public void setQty(final BigDecimal qty)
+	public void setQty(@NonNull final BigDecimal qtyInHUsUOM)
 	{
-		invoiceLine.setQtyEntered(qty);
+		invoiceLine.setQtyEntered(qtyInHUsUOM);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceLine);
 		final ProductId productId = ProductId.ofRepoIdOrNull(getM_Product_ID());
-		final BigDecimal qtyInvoiced = Services.get(IUOMConversionBL.class).convertToProductUOM(ctx, productId, getC_UOM(), qty);
+		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(getC_UOM_ID());
+		final BigDecimal qtyInvoiced = Services.get(IUOMConversionBL.class).convertToProductUOM(productId, uom, qtyInHUsUOM);
 		invoiceLine.setQtyInvoiced(qtyInvoiced);
 	}
 
@@ -123,7 +113,7 @@ public class InvoiceLineHUPackingAware implements IHUPackingAware
 		{
 			return invoiceLine_PIItemProductId;
 		}
-		
+
 		//
 		// Check order line
 		final I_C_OrderLine orderline = InterfaceWrapperHelper.create(invoiceLine.getC_OrderLine(), I_C_OrderLine.class);
@@ -137,30 +127,9 @@ public class InvoiceLineHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
+	public void setM_HU_PI_Item_Product_ID(final int huPiItemProductId)
 	{
-		// 
-		// In case the invoice line has an pi item product, just return it (task 08908)
-		final I_M_HU_PI_Item_Product il_piip = invoiceLine.getM_HU_PI_Item_Product();
-		if(il_piip != null)
-		{
-			return il_piip;
-		}
-		
-		final I_C_OrderLine orderline = InterfaceWrapperHelper.create(invoiceLine.getC_OrderLine(), I_C_OrderLine.class);
-		if (orderline == null)
-		{
-			//
-			// C_OrderLine not found (i.e Manual Invoice)
-			return null;
-		}
-		return orderline.getM_HU_PI_Item_Product();
-	}
-
-	@Override
-	public void setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product huPiItemProduct)
-	{
-		invoiceLine.setM_HU_PI_Item_Product(huPiItemProduct);
+		invoiceLine.setM_HU_PI_Item_Product_ID(huPiItemProductId);
 	}
 
 	@Override
@@ -176,27 +145,15 @@ public class InvoiceLineHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public void setC_BPartner(final I_C_BPartner partner)
+	public void setC_BPartner_ID(final int partnerId)
 	{
-		values.setC_BPartner(partner);
+		values.setC_BPartner_ID(partnerId);
 	}
 
 	@Override
-	public I_C_BPartner getC_BPartner()
+	public int getC_BPartner_ID()
 	{
-		return values.getC_BPartner();
-	}
-
-	@Override
-	public void setDateOrdered(final Timestamp dateOrdered)
-	{
-		values.setDateOrdered(dateOrdered);
-	}
-
-	@Override
-	public Timestamp getDateOrdered()
-	{
-		return values.getDateOrdered();
+		return values.getC_BPartner_ID();
 	}
 
 	@Override

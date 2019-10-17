@@ -26,10 +26,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.KeyNamePair;
 
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductDisplayNameBuilder;
@@ -45,6 +49,12 @@ import lombok.NonNull;
 
 public class HUPIItemProductBL implements IHUPIItemProductBL
 {
+	@Override
+	public I_M_HU_PI_Item_Product getById(@NonNull final HUPIItemProductId id)
+	{
+		return Services.get(IHUPIItemProductDAO.class).getById(id);
+	}
+
 	@Override
 	public List<I_M_HU_PI_Item_Product> getCompatibleItemDefProducts(
 			@NonNull final I_M_HU_PI_Version version,
@@ -114,7 +124,7 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 	@Override
 	public boolean isVirtualHUPIItemProduct(final I_M_HU_PI_Item_Product piip)
 	{
-		return piip.getM_HU_PI_Item_Product_ID() == HUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID.getRepoId();
+		return HUPIItemProductId.isVirtualHU(piip.getM_HU_PI_Item_Product_ID());
 	}
 
 	@Override
@@ -146,5 +156,18 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 	public IHUPIItemProductDisplayNameBuilder buildDisplayName()
 	{
 		return new HUPIItemProductDisplayNameBuilder();
+	}
+
+	@Override
+	public KeyNamePair getDisplayName(
+			@NonNull final HUPIItemProductId piItemProductId,
+			@Nullable final String adLanguage)
+	{
+		final I_M_HU_PI_Item_Product piItemProduct = Services
+				.get(IHUPIItemProductDAO.class)
+				.getById(piItemProductId);
+
+		final I_M_HU_PI_Item_Product trl = InterfaceWrapperHelper.translate(piItemProduct, I_M_HU_PI_Item_Product.class, adLanguage);
+		return KeyNamePair.of(piItemProductId, trl.getName(), trl.getDescription());
 	}
 }

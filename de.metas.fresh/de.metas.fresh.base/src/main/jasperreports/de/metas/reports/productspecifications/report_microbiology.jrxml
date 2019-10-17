@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_microbiology" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/productspecifications/report" uuid="d337e18a-4953-4f43-8409-fe9b871ee4b5">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="2.593742460100013"/>
+	<property name="ireport.x" value="343"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="erptest.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="RECORD_ID" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[0]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT 1;]]>
+	</queryString>
+	<field name="?column?" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="?column?"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="41" splitType="Stretch">
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="5" width="180" height="14" uuid="c58e81c9-237f-4152-9114-98b1c96b0be3"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_8}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="27" width="136" height="12" uuid="0d3a612e-a2bb-4b80-907d-b300c7871422"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" isItalic="true"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_8_Param}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="430" y="27" width="121" height="12" uuid="a696f27b-f834-40ee-a8b7-f692409002a6"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false" isItalic="true"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_8_MaxValue}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<detail>
+		<band height="56">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="0" y="0" width="180" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="81066c2f-dfac-4ca0-8b4e-29585ecb945f"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_8_Aerobe}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="430" y="0" width="121" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="8f2b5d7e-bbfc-4ab3-9ad5-9d7335c9041d"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" isItalic="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_8_Aerobe_val}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="0" y="12" width="180" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="017c3ba7-881c-4d1c-87fc-88b0fdd86908"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_8_Listeria}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="430" y="12" width="121" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="08ef407f-d9ab-450a-b937-f452b847630b"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" isItalic="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_8_Listeria_val}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="0" y="24" width="180" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="1bae192d-7528-4734-a7fa-1c63e20f9b75"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_8_EColi}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="430" y="24" width="121" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="6d5e9391-3946-42f3-94c3-6636c05511f9"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false" isItalic="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_8_EColi_val}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="0" y="43" width="590" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="c31ac9fa-5a84-4471-ac12-eaa77e57e6a7"/>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_8_txt}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

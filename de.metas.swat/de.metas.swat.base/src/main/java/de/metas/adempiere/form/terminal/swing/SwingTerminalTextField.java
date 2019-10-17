@@ -581,6 +581,10 @@ import net.miginfocom.swing.MigLayout;
 	@Override
 	public void requestFocus(final boolean selectAllText)
 	{
+		if (textComponent == null)
+		{
+			return; // nothing to do; we are already disposed
+		}
 		textComponent.requestFocusInWindow();
 
 		// Select all text on focus gained (especially helpful for POSes) if it wasn't already selected

@@ -1,8 +1,7 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
-import static de.metas.material.event.EventTestHelper.CLIENT_ID;
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
@@ -16,10 +15,11 @@ import java.util.function.Consumer;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
@@ -37,11 +37,9 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
-import mockit.Expectations;
-import mockit.Mocked;
-import mockit.Verifications;
 
 /*
  * #%L
@@ -65,27 +63,23 @@ import mockit.Verifications;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class DemandCandiateHandlerTest
 {
-	/** Watches the current tests and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
-	@Mocked
 	private PostMaterialEventService postMaterialEventService;
-
 	private DemandCandiateHandler demandCandidateHandler;
+	private AvailableToPromiseRepository availableToPromiseRepository;
 
-	@Mocked
-	private AvailableToPromiseRepository stockRepository;
-
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
 		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService();
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
+
+		postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
+		availableToPromiseRepository = Mockito.spy(AvailableToPromiseRepository.class);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
@@ -95,7 +89,7 @@ public class DemandCandiateHandlerTest
 				candidateRepositoryRetrieval,
 				candidateRepositoryWriteService,
 				postMaterialEventService,
-				stockRepository,
+				availableToPromiseRepository,
 				stockCandidateService);
 	}
 
@@ -118,7 +112,7 @@ public class DemandCandiateHandlerTest
 		assertThat(stockRecord.getQty()).isEqualByComparingTo("-23"); // ..because there was no older record, the "delta" we provided is the current quantity
 		assertThat(stockRecord.getMD_Candidate_Parent_ID()).isEqualTo(demandRecord.getMD_Candidate_ID());
 
-		assertThat(stockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo() + 1); // when we sort by SeqNo, the demand needs to be first and thus have the smaller value
+		assertThat(stockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo());
 	}
 
 	@Test
@@ -126,7 +120,6 @@ public class DemandCandiateHandlerTest
 	{
 		final Candidate candidate = createDemandCandidateWithQuantity("23");
 		setupRepositoryReturnsQuantityForMaterial("-13", candidate.getMaterialDescriptor());
-		//setupRetrieveLatestMatchOrNullAlwaysReturnsNull();
 
 		demandCandidateHandler.onCandidateNewOrChange(candidate);
 
@@ -143,7 +136,7 @@ public class DemandCandiateHandlerTest
 		assertThat(stockRecord.getStorageAttributesKey()).isEqualTo(STORAGE_ATTRIBUTES_KEY.getAsString());
 		assertThat(stockRecord.getMD_Candidate_Parent_ID()).isEqualTo(demandRecord.getMD_Candidate_ID());
 
-		assertThat(stockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo() + 1); // when we sort by SeqNo, the demand needs to be first and thus have the smaller value
+		assertThat(stockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo());
 	}
 
 	private void setupRepositoryReturnsQuantityForMaterial(
@@ -152,51 +145,35 @@ public class DemandCandiateHandlerTest
 	{
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.forDescriptorAndAllPossibleBPartnerIds(materialDescriptor);
 
-		// @formatter:off
-		new Expectations()
-		{{
-			stockRepository.retrieveAvailableStockQtySum(query);
-			times = 1;
-			result = new BigDecimal(quantity);
-		}}; // @formatter:on
-	}
-
-	private Candidate createDemandCandidateWithQuantity(@NonNull final String quantity)
-	{
-		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-				.productDescriptor(createProductDescriptor())
-				.warehouseId(WAREHOUSE_ID)
-				.quantity(new BigDecimal(quantity))
-				.date(NOW)
-				.build();
-		final Candidate candidate = Candidate.builder()
-				.type(CandidateType.DEMAND)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
-				.materialDescriptor(materialDescriptor)
-				.build();
-
-		return candidate;
+		Mockito.doReturn(new BigDecimal(quantity))
+				.when(availableToPromiseRepository)
+				.retrieveAvailableStockQtySum(query);
+//		// @formatter:off
+//		new Expectations()
+//		{{
+//			availableToPromiseRepository.retrieveAvailableStockQtySum(query);
+//			times = 1;
+//			result = new BigDecimal(quantity);
+//		}}; // @formatter:on
 	}
 
 	private void assertDemandEventWasFiredWithQuantity(@NonNull final String expectedQty)
 	{
-		// @formatter:off
-		new Verifications()
-		{{
-			MaterialEvent event;
-			postMaterialEventService.postEventAfterNextCommit(event = withCapture());
+		final ArgumentCaptor<MaterialEvent> eventCaptor = ArgumentCaptor.forClass(MaterialEvent.class);
+		Mockito.verify(postMaterialEventService)
+				.postEventAfterNextCommit(eventCaptor.capture());
 
-			assertThat(event).isInstanceOf(SupplyRequiredEvent.class);
-			final SupplyRequiredEvent materialDemandEvent = (SupplyRequiredEvent)event;
-			final SupplyRequiredDescriptor supplyRequiredDescriptor = materialDemandEvent.getSupplyRequiredDescriptor();
-			assertThat(supplyRequiredDescriptor).isNotNull();
+		final MaterialEvent event = eventCaptor.getValue();
 
-			final MaterialDescriptor materialDescriptorOfEvent = supplyRequiredDescriptor.getMaterialDescriptor();
-			assertThat(materialDescriptorOfEvent.getProductId()).isEqualTo(PRODUCT_ID);
-			assertThat(materialDescriptorOfEvent.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
-			assertThat(materialDescriptorOfEvent.getQuantity()).isEqualByComparingTo(expectedQty);
-		}}; // @formatter:on
+		assertThat(event).isInstanceOf(SupplyRequiredEvent.class);
+		final SupplyRequiredEvent materialDemandEvent = (SupplyRequiredEvent)event;
+		final SupplyRequiredDescriptor supplyRequiredDescriptor = materialDemandEvent.getSupplyRequiredDescriptor();
+		assertThat(supplyRequiredDescriptor).isNotNull();
+
+		final MaterialDescriptor materialDescriptorOfEvent = supplyRequiredDescriptor.getMaterialDescriptor();
+		assertThat(materialDescriptorOfEvent.getProductId()).isEqualTo(PRODUCT_ID);
+		assertThat(materialDescriptorOfEvent.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
+		assertThat(materialDescriptorOfEvent.getQuantity()).isEqualByComparingTo(expectedQty);
 	}
 
 	@Test
@@ -218,20 +195,23 @@ public class DemandCandiateHandlerTest
 		assertThat(stockCandidate.getQty()).isEqualByComparingTo("-10");
 		assertThat(stockCandidate.getMD_Candidate_Parent_ID()).isEqualTo(unrelatedTransactionCandidate.getMD_Candidate_ID());
 
-		// @formatter:off verify that no event was fired
-		new Verifications()
-		{{
-			postMaterialEventService.postEventNow((MaterialEvent)any); times = 0;
-		}}; // @formatter:on
+		Mockito.verify(postMaterialEventService, Mockito.times(0))
+				.postEventNow(Mockito.any());
+//		// @formatter:off verify that no event was fired
+//		new Verifications()
+//		{{
+//			postMaterialEventService.postEventNow((MaterialEvent)any); times = 0;
+//		}}; // @formatter:on
 	}
 
 	private static Candidate createCandidateWithType(@NonNull final CandidateType type)
 	{
 		final Candidate candidate = Candidate.builder()
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1, 1))
 				.type(type)
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())
-						.date(SystemTime.asTimestamp())
+						.date(SystemTime.asInstant())
 						.warehouseId(WAREHOUSE_ID)
 						.quantity(BigDecimal.TEN)
 						.build())
@@ -256,14 +236,13 @@ public class DemandCandiateHandlerTest
 				.build();
 
 		RepositoryTestHelper.setupMockedRetrieveAvailableToPromise(
-				stockRepository,
+				availableToPromiseRepository,
 				materialDescriptor,
 				"0");
 
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescriptor)
 				.build();
 
@@ -280,7 +259,7 @@ public class DemandCandiateHandlerTest
 			assertThat(stockRecord.getQty()).isEqualByComparingTo(qty.negate()); // ..because there was no older record, the "delta" we provided is the current quantity
 			assertThat(stockRecord.getMD_Candidate_Parent_ID()).isEqualTo(demandRecord.getMD_Candidate_ID());
 
-			assertThat(stockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo() + 1); // when we sort by SeqNo, the demand needs to be first and thus have a smaller value
+			assertThat(stockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo());
 		};
 
 		doTest.accept(candidate); // first invocation
@@ -304,13 +283,12 @@ public class DemandCandiateHandlerTest
 				.build();
 		final Candidate candidate = Candidate.builder()
 				.type(CandidateType.DEMAND)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescriptor)
 				.build();
 
 		RepositoryTestHelper.setupMockedRetrieveAvailableToPromise(
-				stockRepository,
+				availableToPromiseRepository,
 				materialDescriptor,
 				"0");
 
@@ -326,7 +304,7 @@ public class DemandCandiateHandlerTest
 			assertThat(stockRecord.getQty()).isEqualByComparingTo(expectedQty.negate());
 			assertThat(stockRecord.getMD_Candidate_Parent_ID()).isEqualTo(demandRecord.getMD_Candidate_ID());
 
-			assertThat(stockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo() + 1); // when we sort by SeqNo, the demand needs to be first and thus have the smaller number
+			assertThat(stockRecord.getSeqNo()).isEqualTo(demandRecord.getSeqNo());
 		};
 
 		// first invocation
@@ -335,11 +313,51 @@ public class DemandCandiateHandlerTest
 		// second invocation with different quantity
 		final Candidate secondInvocationCanddiate = candidate.withQuantity(qty.add(BigDecimal.ONE));
 		RepositoryTestHelper.setupMockedRetrieveAvailableToPromise(
-				stockRepository,
+				availableToPromiseRepository,
 				secondInvocationCanddiate.getMaterialDescriptor(),
 				"0");
 
 		final BigDecimal secondInvocationExpectedQty = qty.add(BigDecimal.ONE);
 		doTest.accept(secondInvocationCanddiate, secondInvocationExpectedQty);
+	}
+
+	/**
+	 * given: existing candidate
+	 *
+	 * change its date and invoke the handler under test
+	 *
+	 * verify that
+	 * <li>the candidate's stock-candidate's date also changed</li>
+	 * <li>
+	 */
+	@Test
+	public void onCandidateNewOrChange_dateChange()
+	{
+		final Candidate demandCandidate = createDemandCandidateWithQuantity("30");
+
+		RepositoryTestHelper.setupMockedRetrieveAvailableToPromise(
+				availableToPromiseRepository,
+				demandCandidate.getMaterialDescriptor(),
+				"0");
+
+		assertThat(demandCandidate.getMaterialDescriptor().getDate()).isEqualTo(NOW); // guard
+		demandCandidateHandler.onCandidateNewOrChange(demandCandidate);
+	}
+
+	private Candidate createDemandCandidateWithQuantity(@NonNull final String quantity)
+	{
+		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
+				.productDescriptor(createProductDescriptor())
+				.warehouseId(WAREHOUSE_ID)
+				.quantity(new BigDecimal(quantity))
+				.date(NOW)
+				.build();
+		final Candidate candidate = Candidate.builder()
+				.type(CandidateType.DEMAND)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
+				.materialDescriptor(materialDescriptor)
+				.build();
+
+		return candidate;
 	}
 }

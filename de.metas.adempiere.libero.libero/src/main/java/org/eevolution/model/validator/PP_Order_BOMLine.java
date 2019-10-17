@@ -13,42 +13,46 @@ package org.eevolution.model.validator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.X_PP_Order_BOMLine;
 
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 
 @Validator(I_PP_Order_BOMLine.class)
 public class PP_Order_BOMLine
 {
 	private static final String DYNATTR_ExplodePhantomRunnable = PP_Order_BOMLine.class.getName() + "#explodePhantomRunnable";
-	
+
 	@Init
 	public void init()
 	{
@@ -56,11 +60,11 @@ public class PP_Order_BOMLine
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void beforeSave(final I_PP_Order_BOMLine orderBOMLine, final int changeType)
+	public void beforeSave(final I_PP_Order_BOMLine orderBOMLine, final ModelChangeType changeType)
 	{
 		final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 
-		final boolean newRecord = ModelValidator.TYPE_BEFORE_NEW == changeType;
+		final boolean newRecord = changeType.isNew();
 
 		// Victor Perez: The best practice in this case you do should change the component you need
 		// adding a new line in Order BOM Line with new component so do not is right
@@ -79,25 +83,19 @@ public class PP_Order_BOMLine
 		// Get Line No
 		if (orderBOMLine.getLine() == 0)
 		{
-			final int line = Services.get(IPPOrderBOMDAO.class).retrieveNextLineNo(orderBOMLine.getPP_Order());
+			final PPOrderId orderId = PPOrderId.ofRepoId(orderBOMLine.getPP_Order_ID());
+			final int line = Services.get(IPPOrderBOMDAO.class).retrieveNextLineNo(orderId);
 			orderBOMLine.setLine(line);
 		}
 
 		//
 		// If Phantom, we need to explode this line (see afterSave):
-		if (newRecord && X_PP_Order_BOMLine.COMPONENTTYPE_Phantom.equals(orderBOMLine.getComponentType()))
+		if (newRecord && BOMComponentType.ofCode(orderBOMLine.getComponentType()).isPhantom())
 		{
-			final BigDecimal qtyOrderedForPhantom = orderBOMLine.getQtyRequiered();
+			final Quantity qtyRequired = ppOrderBOMBL.getQtyRequiredToIssue(orderBOMLine);
 			orderBOMLine.setQtyRequiered(BigDecimal.ZERO);
 
-			final Runnable explodePhantomRunnable = new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					ppOrderBOMBL.explodePhantom(orderBOMLine, qtyOrderedForPhantom);
-				}
-			};
+			final Runnable explodePhantomRunnable = () -> ppOrderBOMBL.explodePhantom(orderBOMLine, qtyRequired);
 			InterfaceWrapperHelper.setDynAttribute(orderBOMLine, DYNATTR_ExplodePhantomRunnable, explodePhantomRunnable);
 		}
 
@@ -106,7 +104,7 @@ public class PP_Order_BOMLine
 				|| InterfaceWrapperHelper.isValueChanged(orderBOMLine, I_PP_Order_BOMLine.COLUMNNAME_QtyEntered)
 				|| InterfaceWrapperHelper.isValueChanged(orderBOMLine, I_PP_Order_BOMLine.COLUMNNAME_QtyRequiered))
 		{
-			final I_C_UOM uom = orderBOMLine.getC_UOM();
+			I_C_UOM uom = Services.get(IUOMDAO.class).getById(orderBOMLine.getC_UOM_ID());
 			final int precision = uom.getStdPrecision();
 			orderBOMLine.setQtyEntered(orderBOMLine.getQtyEntered().setScale(precision, RoundingMode.UP));
 			orderBOMLine.setQtyRequiered(orderBOMLine.getQtyRequiered().setScale(precision, RoundingMode.UP));
@@ -117,26 +115,13 @@ public class PP_Order_BOMLine
 		if (InterfaceWrapperHelper.isValueChanged(orderBOMLine, I_PP_Order_BOMLine.COLUMNNAME_M_Warehouse_ID)
 				|| InterfaceWrapperHelper.isValueChanged(orderBOMLine, I_PP_Order_BOMLine.COLUMNNAME_M_Locator_ID))
 		{
-			final int warehouseId = orderBOMLine.getM_Warehouse_ID();
-			final I_M_Locator locator = orderBOMLine.getM_Locator();
-			if (locator == null || locator.getM_Locator_ID() <= 0 || locator.getM_Warehouse_ID() != warehouseId)
+			final WarehouseId warehouseId = WarehouseId.ofRepoId(orderBOMLine.getM_Warehouse_ID());
+			final LocatorId locatorId = Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(orderBOMLine.getM_Locator_ID());
+			if (locatorId == null || !locatorId.getWarehouseId().equals(warehouseId))
 			{
-				final I_M_Warehouse warehouse = orderBOMLine.getM_Warehouse();
-				final I_M_Locator locatorNew = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse);
-				orderBOMLine.setM_Locator(locatorNew);
+				final LocatorId locatorIdToUse = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
+				orderBOMLine.setM_Locator_ID(locatorIdToUse.getRepoId());
 			}
-		}
-
-		if (!newRecord
-				&& (InterfaceWrapperHelper.isValueChanged(orderBOMLine, I_PP_Order_BOMLine.COLUMNNAME_QtyDelivered)
-						|| InterfaceWrapperHelper.isValueChanged(orderBOMLine, I_PP_Order_BOMLine.COLUMNNAME_QtyRequiered)
-						|| InterfaceWrapperHelper.isValueChanged(orderBOMLine, I_PP_Order_BOMLine.COLUMNNAME_M_Warehouse_ID)
-						|| InterfaceWrapperHelper.isValueChanged(orderBOMLine, I_PP_Order_BOMLine.COLUMNNAME_M_Locator_ID)
-						|| InterfaceWrapperHelper.isValueChanged(orderBOMLine, I_PP_Order_BOMLine.COLUMNNAME_Processed) // changed to processed
-				) //
-		) //
-		{
-			ppOrderBOMBL.reserveStock(orderBOMLine);
 		}
 	}
 
@@ -150,18 +135,4 @@ public class PP_Order_BOMLine
 			InterfaceWrapperHelper.setDynAttribute(orderBOMLine, DYNATTR_ExplodePhantomRunnable, null);
 		}
 	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
-	public void beforeDelete(final I_PP_Order_BOMLine orderBOMLine)
-	{
-		// Release Reservation
-		orderBOMLine.setQtyRequiered(BigDecimal.ZERO);
-		Services.get(IPPOrderBOMBL.class).reserveStock(orderBOMLine);
-	}
-
-	public void updateReservationOnWarehouseLocatorChange(final I_PP_Order_BOMLine orderBOMLine)
-	{
-
-	}
-
 }

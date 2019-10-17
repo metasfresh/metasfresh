@@ -33,7 +33,6 @@ import javax.swing.AbstractButton;
 import javax.swing.JComponent;
 import javax.swing.LookAndFeel;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
 import org.adempiere.ui.editor.ICopyPasteSupportEditor;
@@ -49,7 +48,10 @@ import org.compiere.util.Env;
 import org.compiere.util.SwingUtils;
 import org.slf4j.Logger;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 
 /**
  * Account Control - Displays ValidCombination and launches Dialog
@@ -327,8 +329,8 @@ public final class VAccount extends JComponent
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		try
 		{
-			final int C_AcctSchema_ID = getAcctSchemaID();
-			final VAccountDialog ad = new VAccountDialog(SwingUtils.getFrame(this), m_title, m_mAccount, C_AcctSchema_ID);
+			final AcctSchemaId acctSchemaId = getAcctSchemaId();
+			final VAccountDialog ad = new VAccountDialog(SwingUtils.getFrame(this), m_title, m_mAccount, acctSchemaId);
 			//
 			final Integer newValue = ad.getValue();
 			// if (newValue == null)
@@ -343,7 +345,7 @@ public final class VAccount extends JComponent
 		}
 	}	// cmd_button
 
-	private int getAcctSchemaID()
+	private AcctSchemaId getAcctSchemaId()
 	{
 		int C_AcctSchema_ID = Env.getContextAsInt(Env.getCtx(), m_WindowNo, "C_AcctSchema_ID", false);
 		// Try to get C_AcctSchema_ID from global context - teo_sarca BF [ 1830531 ]
@@ -351,7 +353,7 @@ public final class VAccount extends JComponent
 		{
 			C_AcctSchema_ID = Env.getContextAsInt(Env.getCtx(), "$C_AcctSchema_ID");
 		}
-		return C_AcctSchema_ID;
+		return AcctSchemaId.ofRepoId(C_AcctSchema_ID);
 	}
 
 	private boolean m_cmdTextRunning = false;
@@ -384,7 +386,7 @@ public final class VAccount extends JComponent
 				+ "WHERE C_AcctSchema_ID=?"
 				+ " AND (UPPER(Alias) LIKE ? OR UPPER(Combination) LIKE ?)";
 		sql = Env.getUserRolePermissions().addAccessSQL(sql,
-				"C_ValidCombination", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
+				"C_ValidCombination", IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);
 		int C_AcctSchema_ID = Env.getContextAsInt(Env.getCtx(), m_WindowNo, "C_AcctSchema_ID");
 		//
 		int C_ValidCombination_ID = 0;
@@ -491,7 +493,7 @@ public final class VAccount extends JComponent
 		}
 
 		// FIXME: check what happens when lookup changes
-		lookupAutoCompleter = new VAccountAutoCompleter(m_text, this, m_mAccount, getAcctSchemaID());
+		lookupAutoCompleter = new VAccountAutoCompleter(m_text, this, m_mAccount, getAcctSchemaId());
 		return true;
 	}
 

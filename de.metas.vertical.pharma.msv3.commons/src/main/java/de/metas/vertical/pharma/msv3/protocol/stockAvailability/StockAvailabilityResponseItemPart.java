@@ -1,6 +1,6 @@
 package de.metas.vertical.pharma.msv3.protocol.stockAvailability;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
 import lombok.Builder;
@@ -44,7 +44,7 @@ public class StockAvailabilityResponseItemPart
 	 * Expected! e.g. 1.1.2011 15:00 Uhr.
 	 * For {@link #type} = {@link StockAvailabilityResponseItemPartType#NORMAL} or {@link StockAvailabilityResponseItemPartType#COMPOSITE} and specific feedback, either delivery time or tour must be filled!
 	 */
-	LocalDateTime deliveryDate;
+	ZonedDateTime deliveryDate;
 
 	/**
 	 * Description of the tour e.g. "9 o'clock tour" or "Mittagstour".

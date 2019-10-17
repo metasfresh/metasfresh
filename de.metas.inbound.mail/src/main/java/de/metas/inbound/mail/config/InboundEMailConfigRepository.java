@@ -7,7 +7,6 @@ import java.util.Map;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Repository;
@@ -17,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.cache.CCache;
 import de.metas.inbound.mail.model.I_C_InboundMailConfig;
+import de.metas.organization.OrgId;
 import de.metas.request.RequestTypeId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;

@@ -1,7 +1,5 @@
 package de.metas.attachments.storeattachment;
 
-import lombok.NonNull;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +14,7 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.logging.LogManager;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -70,7 +69,7 @@ public class StoreAttachmentService
 	 */
 	public boolean storeAttachment(@NonNull final AttachmentEntry attachmentEntry)
 	{
-		final ILoggable loggable = Loggables.get().withLogger(logger, Level.DEBUG);
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 
 		final StoreAttachmentServiceImpl service = extractFor(attachmentEntry);
 		if (service == null)

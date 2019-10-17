@@ -36,6 +36,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.StatusBar;
@@ -48,10 +49,9 @@ import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Trx;
-import org.compiere.util.TrxRunnable;
 
 import de.metas.i18n.Msg;
+import de.metas.util.Services;
 
 public class VAllocation extends Allocation
 	implements FormPanel, ActionListener, TableModelListener, VetoableChangeListener
@@ -236,7 +236,9 @@ public class VAllocation extends Allocation
 	public void dispose()
 	{
 		if (m_frame != null)
+		{
 			m_frame.dispose();
+		}
 		m_frame = null;
 	}	//	dispose
 
@@ -287,8 +289,9 @@ public class VAllocation extends Allocation
 	{
 		log.info("");
 		if (e.getSource().equals(multiCurrency))
+		{
 			loadBPartner();
-		//	Allocate
+		}
 		else if (e.getSource().equals(allocateButton))
 		{
 			allocateButton.setEnabled(false);
@@ -321,7 +324,9 @@ public class VAllocation extends Allocation
 
 		String msg = writeOff(row, col, isInvoice, paymentTable, invoiceTable, isAutoWriteOff);
 		if(msg != null && msg.length() > 0)
+		{
 			ADialog.warn(m_WindowNo, panel, "AllocationWriteOffWarn");
+		}
 
 		calculate();
 	}   //  tableChanged
@@ -341,15 +346,21 @@ public class VAllocation extends Allocation
 		log.info(name + "=" + value);
 
 		if (value == null)
+		{
 			return;
+		}
 
 		// Organization
 		if (name.equals("AD_Org_ID"))
 		{
 			if (value == null)
+			{
 				m_AD_Org_ID = 0;
+			}
 			else
+			{
 				m_AD_Org_ID = ((Integer) value).intValue();
+			}
 
 			loadBPartner();
 		}
@@ -369,7 +380,9 @@ public class VAllocation extends Allocation
 		}
 		//	Date for Multi-Currency
 		else if (name.equals("Date") && multiCurrency.isSelected())
+		{
 			loadBPartner();
+		}
 	}   //  vetoableChange
 
 	public void loadBPartner()
@@ -417,7 +430,9 @@ public class VAllocation extends Allocation
 
 		//	Set AllocationDate
 		if (allocDate != null)
+		{
 			dateField.setValue(allocDate);
+		}
 		//  Set Allocation Currency
 		allocCurrencyLabel.setText(currencyPick.getDisplay());
 		//  Difference
@@ -425,9 +440,13 @@ public class VAllocation extends Allocation
 		differenceField.setText(format.format(totalDiff));
 
 		if (totalDiff.compareTo(new BigDecimal(0.0)) == 0)
+		{
 			allocateButton.setEnabled(true);
+		}
 		else
+		{
 			allocateButton.setEnabled(false);
+		}
 	}
 
 	/**************************************************************************
@@ -437,14 +456,7 @@ public class VAllocation extends Allocation
 	{
 		try
 		{
-			Trx.run(new TrxRunnable()
-			{
-				@Override
-				public void run(String trxName)
-				{
-					statusBar.setStatusLine(saveData(m_WindowNo, dateField.getValue(), paymentTable, invoiceTable, trxName));
-				}
-			});
+			Services.get(ITrxManager.class).runInNewTrx(trxName -> statusBar.setStatusLine(saveData(m_WindowNo, dateField.getValue(), paymentTable, invoiceTable, trxName)));
 		}
 		catch (Exception e)
 		{

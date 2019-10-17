@@ -1,38 +1,43 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.acct;
 
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.MBankStatementLine;
 import org.compiere.model.MPeriod;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementDAO;
-import de.metas.currency.ConversionType;
+import de.metas.bpartner.BPartnerId;
+import de.metas.currency.ConversionTypeMethod;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 
 /**
@@ -41,7 +46,7 @@ import de.metas.util.Services;
  * @author Jorg Janke
  * @version $Id: DocLine_Bank.java,v 1.2 2006/07/30 00:53:33 jjanke Exp $
  */
-class DocLine_BankStatement extends DocLine
+class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 {
 	// services
 	private final transient IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
@@ -54,9 +59,9 @@ class DocLine_BankStatement extends DocLine
 	 * @param line statement line
 	 * @param doc header
 	 */
-	public DocLine_BankStatement(final MBankStatementLine line, final Doc_BankStatement doc)
+	public DocLine_BankStatement(final I_C_BankStatementLine line, final Doc_BankStatement doc)
 	{
-		super(line, doc);
+		super(InterfaceWrapperHelper.getPO(line), doc);
 
 		final I_C_Payment payment = line.getC_Payment();
 		if (payment == null || payment.getC_Payment_ID() <= 0)
@@ -73,14 +78,14 @@ class DocLine_BankStatement extends DocLine
 		m_InterestAmt = line.getInterestAmt();
 		m_TrxAmt = line.getTrxAmt();
 		//
-		setDateDoc(line.getValutaDate());
-		setC_BPartner_ID(line.getC_BPartner_ID());
+		setDateDoc(TimeUtil.asLocalDate(line.getValutaDate()));
+		setBPartnerId(BPartnerId.ofRepoIdOrNull(line.getC_BPartner_ID()));
 
 		this._bankStatementLineReferences = ImmutableList.copyOf(bankStatementDAO.retrieveLineReferences(line));
-		
+
 		//
 		// Period
-		final MPeriod period = MPeriod.get(getCtx(), line.getDateAcct(), line.getAD_Org_ID());
+		final MPeriod period = MPeriod.get(Env.getCtx(), line.getDateAcct(), line.getAD_Org_ID());
 		if (period != null && period.isOpen(Doc.DOCTYPE_BankStatement, line.getDateAcct(), line.getAD_Org_ID()))
 		{
 			setC_Period_ID(period.getC_Period_ID());
@@ -113,25 +118,25 @@ class DocLine_BankStatement extends DocLine
 		{
 			return null;
 		}
-		InterfaceWrapperHelper.setTrxName(_payment, getTrxName());
+		InterfaceWrapperHelper.setTrxName(_payment, ITrx.TRXNAME_ThreadInherited);
 		return _payment;
 	}
 
 	/** @return payment org (if exists) or line's org */
-	public int getPaymentOrg_ID()
+	public OrgId getPaymentOrgId()
 	{
 		final I_C_Payment paymentToUse = getC_Payment();
-		return getPaymentOrg_ID(paymentToUse);
+		return getPaymentOrgId(paymentToUse);
 	}	// getAD_Org_ID
 
 	/** @return C_Payment.AD_Org_ID (if any); fallback to {@link #getAD_Org_ID()} */
-	public final int getPaymentOrg_ID(final I_C_Payment paymentToUseOrNull)
+	public final OrgId getPaymentOrgId(final I_C_Payment paymentToUseOrNull)
 	{
 		if (paymentToUseOrNull != null)
 		{
-			return paymentToUseOrNull.getAD_Org_ID();
+			return OrgId.ofRepoId(paymentToUseOrNull.getAD_Org_ID());
 		}
-		return super.getAD_Org_ID();
+		return super.getOrgId();
 
 	}
 
@@ -176,7 +181,8 @@ class DocLine_BankStatement extends DocLine
 	}   // getTrxAmt
 
 	/**
-	 * @return <ul>
+	 * @return
+	 *         <ul>
 	 *         <li>true if this line is an inbound transaction (i.e. we received money in our bank account)
 	 *         <li>false if this line is an outbound transaction (i.e. we paid money from our bank account)
 	 *         </ul>
@@ -194,24 +200,24 @@ class DocLine_BankStatement extends DocLine
 	/**
 	 * @return the currency conversion used for bank transfer (i.e. Spot)
 	 */
-	public ICurrencyConversionContext getBankTransferCurrencyConversionCtx()
+	public CurrencyConversionContext getBankTransferCurrencyConversionCtx()
 	{
-		return getCurrencyConversionCtx(ConversionType.Spot);
+		return getCurrencyConversionCtx(ConversionTypeMethod.Spot);
 	}
 
-	private final ICurrencyConversionContext getCurrencyConversionCtx(final ConversionType type)
+	private final CurrencyConversionContext getCurrencyConversionCtx(final ConversionTypeMethod type)
 	{
-		final int conversionTypeId = currencyDAO.retrieveConversionType(getCtx(), type).getC_ConversionType_ID();
+		final CurrencyConversionTypeId conversionTypeId = currencyDAO.getConversionTypeId(type);
 		return getCurrencyConversionCtx(conversionTypeId);
 	}
 
-	private final ICurrencyConversionContext getCurrencyConversionCtx(final int conversionTypeId)
+	private final CurrencyConversionContext getCurrencyConversionCtx(final CurrencyConversionTypeId conversionTypeId)
 	{
 		return currencyConversionBL.createCurrencyConversionContext(
 				getDateAcct(),
 				conversionTypeId,
-				getAD_Client_ID(),
-				getAD_Org_ID());
+				getClientId(),
+				getOrgId());
 	}
 
 	public boolean isBankTransfer()
@@ -225,4 +231,3 @@ class DocLine_BankStatement extends DocLine
 		return true;
 	}
 }
-

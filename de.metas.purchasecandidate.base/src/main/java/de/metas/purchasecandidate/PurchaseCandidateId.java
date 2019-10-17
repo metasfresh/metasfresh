@@ -3,11 +3,12 @@ package de.metas.purchasecandidate;
 import java.util.Collection;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -35,6 +36,7 @@ import lombok.Value;
 @Value
 public class PurchaseCandidateId implements RepoIdAware
 {
+	@JsonCreator
 	public static PurchaseCandidateId ofRepoId(final int repoId)
 	{
 		return new PurchaseCandidateId(repoId);
@@ -77,5 +79,12 @@ public class PurchaseCandidateId implements RepoIdAware
 	private PurchaseCandidateId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

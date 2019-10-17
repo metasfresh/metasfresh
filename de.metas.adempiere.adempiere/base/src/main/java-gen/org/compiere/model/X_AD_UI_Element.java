@@ -14,7 +14,7 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2043605441L;
+	private static final long serialVersionUID = 2130719123L;
 
     /** Standard Constructor */
     public X_AD_UI_Element (Properties ctx, int AD_UI_Element_ID, String trxName)
@@ -54,7 +54,7 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
     }
 
 	@Override
-	public org.compiere.model.I_AD_Field getAD_Field() throws RuntimeException
+	public org.compiere.model.I_AD_Field getAD_Field()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Field_ID, org.compiere.model.I_AD_Field.class);
 	}
@@ -91,7 +91,7 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Tab getAD_Tab() throws RuntimeException
+	public org.compiere.model.I_AD_Tab getAD_Tab()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Tab_ID, org.compiere.model.I_AD_Tab.class);
 	}
@@ -150,7 +150,7 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	}
 
 	@Override
-	public org.compiere.model.I_AD_UI_ElementGroup getAD_UI_ElementGroup() throws RuntimeException
+	public org.compiere.model.I_AD_UI_ElementGroup getAD_UI_ElementGroup()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_UI_ElementGroup_ID, org.compiere.model.I_AD_UI_ElementGroup.class);
 	}
@@ -392,7 +392,7 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Field getLabels_Selector_Field() throws RuntimeException
+	public org.compiere.model.I_AD_Field getLabels_Selector_Field()
 	{
 		return get_ValueAsPO(COLUMNNAME_Labels_Selector_Field_ID, org.compiere.model.I_AD_Field.class);
 	}
@@ -426,7 +426,7 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Tab getLabels_Tab() throws RuntimeException
+	public org.compiere.model.I_AD_Tab getLabels_Tab()
 	{
 		return get_ValueAsPO(COLUMNNAME_Labels_Tab_ID, org.compiere.model.I_AD_Tab.class);
 	}
@@ -495,9 +495,7 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -505,8 +503,7 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{
@@ -603,6 +600,10 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	public static final String WIDGETSIZE_Medium = "M";
 	/** Large = L */
 	public static final String WIDGETSIZE_Large = "L";
+	/** ExtraLarge = XL */
+	public static final String WIDGETSIZE_ExtraLarge = "XL";
+	/** XXL = XXL */
+	public static final String WIDGETSIZE_XXL = "XXL";
 	/** Set Widget size.
 		@param WidgetSize Widget size	  */
 	@Override

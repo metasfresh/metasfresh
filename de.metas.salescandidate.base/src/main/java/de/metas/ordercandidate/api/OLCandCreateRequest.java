@@ -1,20 +1,22 @@
 package de.metas.ordercandidate.api;
 
+import static de.metas.util.Check.assumeNotEmpty;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.service.OrgId;
-import org.adempiere.uom.UomId;
+import org.adempiere.warehouse.WarehouseId;
 
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
-import de.metas.util.Check;
+import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -44,51 +46,68 @@ import lombok.Value;
 @Value
 public class OLCandCreateRequest
 {
-	private String externalId;
+	String externalLineId;
 
-	private String dataSourceInternalName;
-	private String dataDestInternalName;
+	String externalHeaderId;
 
-	private OrgId orgId;
+	/** Mandatory; {@code AD_InputDataSource.InternalName} of an existing AD_InputDataSource record. */
+	String dataSourceInternalName;
 
-	private OLCandBPartnerInfo bpartner;
-	private OLCandBPartnerInfo billBPartner;
-	private OLCandBPartnerInfo dropShipBPartner;
-	private OLCandBPartnerInfo handOverBPartner;
+	/**
+	 * Mandatory; {@code AD_InputDataSource.InternalName} of an existing AD_InputDataSource record.
+	 * It's mandatory because all the code that processes C_OLCands into something else expects this to be set to its respective destination.
+	 * Therefore, {@code C_OLCand}s without any dataDest will go nowhere.
+	 */
+	String dataDestInternalName;
 
-	private String poReference;
+	OrgId orgId;
 
-	private LocalDate dateRequired;
+	BPartnerInfo bpartner;
+	BPartnerInfo billBPartner;
+	BPartnerInfo dropShipBPartner;
+	BPartnerInfo handOverBPartner;
 
-	private LocalDate dateInvoiced;
-	private DocTypeId docTypeInvoiceId;
+	String poReference;
 
-	private int flatrateConditionsId;
+	LocalDate dateOrdered;
+	LocalDate dateRequired;
 
-	private ProductId productId;
-	private String productDescription;
-	private BigDecimal qty;
-	private UomId uomId;
-	private int huPIItemProductId;
+	LocalDate presetDateInvoiced;
+	DocTypeId docTypeInvoiceId;
 
-	private PricingSystemId pricingSystemId;
-	private BigDecimal price;
-	private CurrencyId currencyId; // mandatory if price is provided
-	private Percent discount;
+	LocalDate presetDateShipped;
+
+	int flatrateConditionsId;
+
+	ProductId productId;
+	String productDescription;
+	BigDecimal qty;
+	UomId uomId;
+	int huPIItemProductId;
+
+	PricingSystemId pricingSystemId;
+	BigDecimal price;
+	CurrencyId currencyId; // mandatory if price is provided
+	Percent discount;
+
+	WarehouseId warehouseDestId;
 
 	@Builder
 	private OLCandCreateRequest(
-			@Nullable final String externalId,
+			@Nullable final String externalLineId,
+			@Nullable final String externalHeaderId,
 			final OrgId orgId,
-			@NonNull final  String dataSourceInternalName,
-			@Nullable final  String dataDestInternalName,
-			@NonNull final OLCandBPartnerInfo bpartner,
-			final OLCandBPartnerInfo billBPartner,
-			final OLCandBPartnerInfo dropShipBPartner,
-			final OLCandBPartnerInfo handOverBPartner,
+			@NonNull final String dataSourceInternalName,
+			@Nullable final String dataDestInternalName,
+			@NonNull final BPartnerInfo bpartner,
+			final BPartnerInfo billBPartner,
+			final BPartnerInfo dropShipBPartner,
+			final BPartnerInfo handOverBPartner,
 			final String poReference,
+			@Nullable final LocalDate dateOrdered,
 			@Nullable final LocalDate dateRequired,
-			@Nullable final LocalDate dateInvoiced,
+			@Nullable final LocalDate presetDateInvoiced,
+			@Nullable final LocalDate presetDateShipped,
 			@Nullable final DocTypeId docTypeInvoiceId,
 			final int flatrateConditionsId,
 			@NonNull final ProductId productId,
@@ -100,19 +119,17 @@ public class OLCandCreateRequest
 			final BigDecimal price,
 			final CurrencyId currencyId,
 			final Percent discount,
-			//
-			final String adInputDataSourceInternalName)
+			@Nullable final WarehouseId warehouseDestId)
 	{
-		Check.assume(qty.signum() > 0, "qty > 0");
-		// Check.assume(price == null || price.signum() >= 0, "price >= 0");
-		// Check.assume(discount == null || discount.signum() >= 0, "discount >= 0");
-		Check.assumeNotEmpty(adInputDataSourceInternalName, "adInputDataSourceInternalName is not empty");
+		// Check.assume(qty.signum() > 0, "qty > 0"); qty might very well also be <= 0
 
-		this.externalId = externalId;
+		this.externalLineId = externalLineId;
+		this.externalHeaderId = externalHeaderId;
+
 		this.orgId = orgId;
 
-		this.dataDestInternalName = dataDestInternalName;
-		this.dataSourceInternalName = dataSourceInternalName;
+		this.dataDestInternalName = assumeNotEmpty(dataDestInternalName, "dataDestInternalName may not be empty");
+		this.dataSourceInternalName = assumeNotEmpty(dataSourceInternalName, "dataSourceInternalName may not be empty");
 
 		this.bpartner = bpartner;
 		this.billBPartner = billBPartner;
@@ -121,8 +138,11 @@ public class OLCandCreateRequest
 		this.poReference = poReference;
 		this.dateRequired = dateRequired;
 
-		this.dateInvoiced = dateInvoiced;
+		this.dateOrdered = dateOrdered;
+		this.presetDateInvoiced = presetDateInvoiced;
 		this.docTypeInvoiceId = docTypeInvoiceId;
+
+		this.presetDateShipped = presetDateShipped;
 
 		this.flatrateConditionsId = flatrateConditionsId;
 		this.productId = productId;
@@ -134,5 +154,7 @@ public class OLCandCreateRequest
 		this.price = price;
 		this.currencyId = currencyId;
 		this.discount = discount;
+
+		this.warehouseDestId = warehouseDestId;
 	}
 }

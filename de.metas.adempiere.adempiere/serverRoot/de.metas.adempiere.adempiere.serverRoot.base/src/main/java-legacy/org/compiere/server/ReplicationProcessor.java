@@ -35,23 +35,26 @@ import org.adempiere.server.rpl.IImportProcessor;
 import org.adempiere.server.rpl.IReplicationProcessor;
 import org.adempiere.server.rpl.api.IIMPProcessorBL;
 import org.adempiere.server.rpl.api.IIMPProcessorDAO;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.AdempiereProcessor;
 import org.compiere.model.I_IMP_Processor;
 import org.compiere.util.TimeUtil;
 
+import ch.qos.logback.classic.Level;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 
 /**
- * 
  * @author Trifon N. Trifonov
- * 
  */
 public class ReplicationProcessor extends AdempiereServer
 		implements IReplicationProcessor
 {
 
-	/** Last Summary */
+	/**
+	 * Last Summary
+	 */
 	private StringBuffer m_summary = new StringBuffer();
 
 	/**
@@ -86,7 +89,7 @@ public class ReplicationProcessor extends AdempiereServer
 		//
 		InterfaceWrapperHelper.refresh(mImportProcessor); // daysToKeepLog might have changed
 		final int no = Services.get(IIMPProcessorDAO.class).deleteLogs(mImportProcessor);
-		if(no > 0)
+		if (no > 0)
 		{
 			m_summary.append("Logs Records deleted=").append(no).append("; ");
 		}
@@ -103,11 +106,14 @@ public class ReplicationProcessor extends AdempiereServer
 		log.debug("trxName = " + trxName);
 		log.debug("ImportProcessor = " + mImportProcessor);
 
-		try
+		final String reference = "#" + getRunCount() + " - " + TimeUtil.formatElapsed(getStartWork());
+		final IIMPProcessorBL impProcessorBL = Services.get(IIMPProcessorBL.class);
+		try (final IAutoCloseable closable = impProcessorBL.setupTemporaryLoggable(mImportProcessor, reference))
 		{
-			importProcessor = Services.get(IIMPProcessorBL.class).getIImportProcessor(mImportProcessor);
+			importProcessor = impProcessorBL.getIImportProcessor(mImportProcessor);
 			importProcessor.start(ctx, this, trxName);
 			Check.assume(isProcessRunning(), importProcessor + " has called setProcessRunning(true)");
+			Loggables.withLogger(log, Level.INFO).addLog(m_summary.toString());
 		}
 		catch (Exception e)
 		{
@@ -123,9 +129,7 @@ public class ReplicationProcessor extends AdempiereServer
 				log(null, e1);
 			}
 		}
-		
-		//
-		log(m_summary.toString(), null);
+
 	}
 
 	private void log(String summary, Throwable t)
@@ -138,7 +142,7 @@ public class ReplicationProcessor extends AdempiereServer
 		{
 			log.error(summary, t);
 		}
-		
+
 		final String reference = "#" + getRunCount() + " - " + TimeUtil.formatElapsed(getStartWork());
 		String text = null;
 		Services.get(IIMPProcessorBL.class).createLog(mImportProcessor, summary, text, reference, t);

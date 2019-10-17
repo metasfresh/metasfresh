@@ -26,12 +26,12 @@ import java.util.Collection;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
 
 /**
  * Used to retrieve {@link IStorageRecord}s. Use {@link IStorageEngine#newStorageQuery()} to get an instance.
@@ -40,12 +40,15 @@ import de.metas.order.OrderLineId;
  */
 public interface IStorageQuery
 {
-	IStorageQuery addProduct(I_M_Product product);
+	IStorageQuery addProductId(ProductId productId);
 
-	IStorageQuery addPartner(I_C_BPartner bpartner);
+	/**
+	 * @param bpartnerId may also be <code>null</code> to indicate that storages without any bpartner assignment shall be matched.
+	 */
+	IStorageQuery addBPartnerId(BPartnerId bpartnerId);
 
 	IStorageQuery addWarehouseId(WarehouseId warehouseId);
-	
+
 	IStorageQuery addWarehouseIds(Collection<WarehouseId> warehouseIds);
 
 	/**

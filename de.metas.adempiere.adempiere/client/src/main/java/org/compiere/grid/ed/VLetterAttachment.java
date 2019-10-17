@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.compiere.grid.ed;
 
@@ -13,12 +13,12 @@ package org.compiere.grid.ed;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,15 +39,15 @@ import org.compiere.apps.LetterDialog;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CPanel;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import de.metas.i18n.Msg;
 import de.metas.letters.model.Letters;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
+import de.metas.util.Check;
 
 /**
  * @author teo_sarca
- * 
+ *
  */
 public class VLetterAttachment extends CPanel {
 	private final Dialog parentDialog;
@@ -90,7 +90,7 @@ public class VLetterAttachment extends CPanel {
 
 	private void init() {
 		fPreview.setText("");
-		fPreview.setPreferredSize(new Dimension (500,80)); // else the component will be displayed too small if empty (when using FlowLayout) 
+		fPreview.setPreferredSize(new Dimension (500,80)); // else the component will be displayed too small if empty (when using FlowLayout)
 		bEdit.setIcon(Images.getImageIcon2("Open16"));
 		bEdit.setText("");
 		bEdit.addActionListener(editAction);
@@ -106,7 +106,7 @@ public class VLetterAttachment extends CPanel {
 
 	private void updateComponentsStatus() {
 		fPreview.setText(letterHtml == null ? "" : letterHtml);
-		bCancel.setEnabled(!Util.isEmpty(letterHtml, false));
+		bCancel.setEnabled(!Check.isEmpty(letterHtml, false));
 	}
 
 	public void setVariables(final BoilerPlateContext variables) {

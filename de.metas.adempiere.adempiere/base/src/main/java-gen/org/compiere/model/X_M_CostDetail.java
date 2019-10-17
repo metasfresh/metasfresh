@@ -15,7 +15,7 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1377042531L;
+	private static final long serialVersionUID = -1642738087L;
 
     /** Standard Constructor */
     public X_M_CostDetail (Properties ctx, int M_CostDetail_ID, String trxName)
@@ -25,10 +25,18 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
         {
 			setAmt (BigDecimal.ZERO);
 			setC_AcctSchema_ID (0);
+			setC_Currency_ID (0);
+			setC_UOM_ID (0);
+			setIsChangingCosts (false); // N
 			setIsSOTrx (false);
 			setM_AttributeSetInstance_ID (0);
 			setM_CostDetail_ID (0);
 			setM_Product_ID (0);
+			setPrev_CumulatedAmt (BigDecimal.ZERO); // 0
+			setPrev_CumulatedQty (BigDecimal.ZERO); // 0
+			setPrev_CurrentCostPrice (BigDecimal.ZERO); // 0
+			setPrev_CurrentCostPriceLL (BigDecimal.ZERO); // 0
+			setPrev_CurrentQty (BigDecimal.ZERO); // 0
 			setProcessed (false);
 			setQty (BigDecimal.ZERO);
         } */
@@ -103,6 +111,43 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 	public int getC_AcctSchema_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_AcctSchema_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
+	}
+
+	@Override
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+	}
+
+	/** Set Währung.
+		@param C_Currency_ID 
+		Die Währung für diesen Eintrag
+	  */
+	@Override
+	public void setC_Currency_ID (int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+	}
+
+	/** Get Währung.
+		@return Die Währung für diesen Eintrag
+	  */
+	@Override
+	public int getC_Currency_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -219,6 +264,43 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 		return ii.intValue();
 	}
 
+	@Override
+	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
+	}
+
+	@Override
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
+	{
+		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
+	}
+
+	/** Set Maßeinheit.
+		@param C_UOM_ID 
+		Maßeinheit
+	  */
+	@Override
+	public void setC_UOM_ID (int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+	}
+
+	/** Get Maßeinheit.
+		@return Maßeinheit
+	  */
+	@Override
+	public int getC_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Delta Amount.
 		@param DeltaAmt 
 		Difference Amount
@@ -277,6 +359,32 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set Changing costs.
+		@param IsChangingCosts 
+		Set if this record is changing the costs.
+	  */
+	@Override
+	public void setIsChangingCosts (boolean IsChangingCosts)
+	{
+		set_Value (COLUMNNAME_IsChangingCosts, Boolean.valueOf(IsChangingCosts));
+	}
+
+	/** Get Changing costs.
+		@return Set if this record is changing the costs.
+	  */
+	@Override
+	public boolean isChangingCosts () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsChangingCosts);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Verkaufs-Transaktion.
@@ -479,6 +587,80 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 	}
 
 	@Override
+	public org.compiere.model.I_M_MatchInv getM_MatchInv() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_MatchInv_ID, org.compiere.model.I_M_MatchInv.class);
+	}
+
+	@Override
+	public void setM_MatchInv(org.compiere.model.I_M_MatchInv M_MatchInv)
+	{
+		set_ValueFromPO(COLUMNNAME_M_MatchInv_ID, org.compiere.model.I_M_MatchInv.class, M_MatchInv);
+	}
+
+	/** Set Abgleich Rechnung.
+		@param M_MatchInv_ID 
+		Match Shipment/Receipt to Invoice
+	  */
+	@Override
+	public void setM_MatchInv_ID (int M_MatchInv_ID)
+	{
+		if (M_MatchInv_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_MatchInv_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_MatchInv_ID, Integer.valueOf(M_MatchInv_ID));
+	}
+
+	/** Get Abgleich Rechnung.
+		@return Match Shipment/Receipt to Invoice
+	  */
+	@Override
+	public int getM_MatchInv_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_MatchInv_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_MatchPO getM_MatchPO() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_MatchPO_ID, org.compiere.model.I_M_MatchPO.class);
+	}
+
+	@Override
+	public void setM_MatchPO(org.compiere.model.I_M_MatchPO M_MatchPO)
+	{
+		set_ValueFromPO(COLUMNNAME_M_MatchPO_ID, org.compiere.model.I_M_MatchPO.class, M_MatchPO);
+	}
+
+	/** Set Abgleich Bestellung.
+		@param M_MatchPO_ID 
+		Match Purchase Order to Shipment/Receipt and Invoice
+	  */
+	@Override
+	public void setM_MatchPO_ID (int M_MatchPO_ID)
+	{
+		if (M_MatchPO_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_MatchPO_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_MatchPO_ID, Integer.valueOf(M_MatchPO_ID));
+	}
+
+	/** Get Abgleich Bestellung.
+		@return Match Purchase Order to Shipment/Receipt and Invoice
+	  */
+	@Override
+	public int getM_MatchPO_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_MatchPO_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_M_MovementLine getM_MovementLine() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_M_MovementLine_ID, org.compiere.model.I_M_MovementLine.class);
@@ -584,6 +766,101 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Previous Cumulated Amount.
+		@param Prev_CumulatedAmt Previous Cumulated Amount	  */
+	@Override
+	public void setPrev_CumulatedAmt (java.math.BigDecimal Prev_CumulatedAmt)
+	{
+		set_Value (COLUMNNAME_Prev_CumulatedAmt, Prev_CumulatedAmt);
+	}
+
+	/** Get Previous Cumulated Amount.
+		@return Previous Cumulated Amount	  */
+	@Override
+	public java.math.BigDecimal getPrev_CumulatedAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Prev_CumulatedAmt);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Previous Cumulated Quantity.
+		@param Prev_CumulatedQty Previous Cumulated Quantity	  */
+	@Override
+	public void setPrev_CumulatedQty (java.math.BigDecimal Prev_CumulatedQty)
+	{
+		set_Value (COLUMNNAME_Prev_CumulatedQty, Prev_CumulatedQty);
+	}
+
+	/** Get Previous Cumulated Quantity.
+		@return Previous Cumulated Quantity	  */
+	@Override
+	public java.math.BigDecimal getPrev_CumulatedQty () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Prev_CumulatedQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Previous Current Cost Price.
+		@param Prev_CurrentCostPrice Previous Current Cost Price	  */
+	@Override
+	public void setPrev_CurrentCostPrice (java.math.BigDecimal Prev_CurrentCostPrice)
+	{
+		set_Value (COLUMNNAME_Prev_CurrentCostPrice, Prev_CurrentCostPrice);
+	}
+
+	/** Get Previous Current Cost Price.
+		@return Previous Current Cost Price	  */
+	@Override
+	public java.math.BigDecimal getPrev_CurrentCostPrice () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Prev_CurrentCostPrice);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Previous Current Cost Price LL.
+		@param Prev_CurrentCostPriceLL Previous Current Cost Price LL	  */
+	@Override
+	public void setPrev_CurrentCostPriceLL (java.math.BigDecimal Prev_CurrentCostPriceLL)
+	{
+		set_Value (COLUMNNAME_Prev_CurrentCostPriceLL, Prev_CurrentCostPriceLL);
+	}
+
+	/** Get Previous Current Cost Price LL.
+		@return Previous Current Cost Price LL	  */
+	@Override
+	public java.math.BigDecimal getPrev_CurrentCostPriceLL () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Prev_CurrentCostPriceLL);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Previous Current Qty.
+		@param Prev_CurrentQty Previous Current Qty	  */
+	@Override
+	public void setPrev_CurrentQty (java.math.BigDecimal Prev_CurrentQty)
+	{
+		set_Value (COLUMNNAME_Prev_CurrentQty, Prev_CurrentQty);
+	}
+
+	/** Get Previous Current Qty.
+		@return Previous Current Qty	  */
+	@Override
+	public java.math.BigDecimal getPrev_CurrentQty () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Prev_CurrentQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Preis.

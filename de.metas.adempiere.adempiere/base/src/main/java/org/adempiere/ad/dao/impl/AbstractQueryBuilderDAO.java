@@ -318,7 +318,6 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 
 		private QueryBuildContext(final QueryBuildContext<T> parent)
 		{
-			super();
 			// Final attributes:
 			this.ctx = parent.ctx;
 			this.trxName = parent.trxName;

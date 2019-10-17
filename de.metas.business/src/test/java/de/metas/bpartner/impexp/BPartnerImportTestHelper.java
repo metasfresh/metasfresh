@@ -8,7 +8,12 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_I_BPartner;
 
-import de.metas.bpartner.impexp.BPartnerLocationImportHelper;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Services;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -21,12 +26,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,7 +40,7 @@ import lombok.experimental.UtilityClass;
 
 /**
  * A collection of bpartner import test helpers.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -51,17 +56,22 @@ import lombok.experimental.UtilityClass;
 
 	public static void assertBPartnerImported(final I_I_BPartner ibpartner)
 	{
-		final I_C_BPartner bpartner = ibpartner.getC_BPartner();
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
+		final I_C_BPartner bpartner = partnerDAO.getById(BPartnerId.ofRepoId(ibpartner.getC_BPartner_ID()));
 		assertThat(bpartner).isNotNull();
 		assertThat(bpartner.getValue()).isNotNull();
 		assertThat(bpartner.getName()).isNotNull();
-		assertThat(bpartner.getValue()).isEqualTo(ibpartner.getValue());
+		assertThat(bpartner.getValue()).isEqualTo(ibpartner.getBPValue());
 		assertThat(bpartner.getAD_Language()).isEqualTo(ibpartner.getAD_Language());
 	}
 
 	public static void assertLocationImported(final I_I_BPartner ibpartner)
 	{
-		final I_C_BPartner_Location bplocation = ibpartner.getC_BPartner_Location();
+
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
+		final I_C_BPartner_Location bplocation = partnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(ibpartner.getC_BPartner_ID(), ibpartner.getC_BPartner_Location_ID()));
 		assertThat(bplocation).isNotNull();
 		assertThat(bplocation.getC_Location_ID()).isGreaterThan(0);
 		assertThat(bplocation.isBillToDefault()).isEqualTo(ibpartner.isBillToDefault());
@@ -71,6 +81,7 @@ import lombok.experimental.UtilityClass;
 		assertThat(bplocation.getPhone()).isEqualTo(ibpartner.getPhone());
 		assertThat(bplocation.getPhone2()).isEqualTo(ibpartner.getPhone2());
 		assertThat(bplocation.getFax()).isEqualTo(ibpartner.getFax());
+		assertThat(bplocation.getGLN()).isEqualTo(ibpartner.getGLN());
 
 		// Location
 		final I_C_Location location = bplocation.getC_Location();
@@ -86,7 +97,9 @@ import lombok.experimental.UtilityClass;
 
 	public static void assertContactImported(final I_I_BPartner ibpartner)
 	{
-		final I_AD_User user = ibpartner.getAD_User();
+		final IUserDAO userDAO = Services.get(IUserDAO.class);
+
+		final I_AD_User user = userDAO.getById(UserId.ofRepoIdOrNull(ibpartner.getAD_User_ID()));
 		assertThat(user).isNotNull();
 		assertThat(user.getLastname()).isEqualTo(ibpartner.getLastname());
 		assertThat(user.getFirstname()).isEqualTo(ibpartner.getFirstname());

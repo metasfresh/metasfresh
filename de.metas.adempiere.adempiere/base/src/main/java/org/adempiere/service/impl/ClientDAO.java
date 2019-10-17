@@ -15,15 +15,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -32,6 +31,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Client;
@@ -39,12 +39,16 @@ import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.util.Env;
 
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.email.EMailAddress;
+import de.metas.email.mailboxes.ClientEMailConfig;
+import de.metas.email.templates.MailTemplateId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class ClientDAO implements IClientDAO
 {
 	@Override
-	public I_AD_Client getById(final int adClientId)
+	public I_AD_Client getById(@NonNull final ClientId adClientId)
 	{
 		return loadOutOfTrx(adClientId, I_AD_Client.class);
 	}
@@ -97,5 +101,38 @@ public class ClientDAO implements IClientDAO
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		return retrieveClientInfo(ctx, adClientId);
 	}	// get
+
+	@Override
+	public ClientEMailConfig getEMailConfigById(@NonNull final ClientId clientId)
+	{
+		final I_AD_Client record = getById(clientId);
+		return toClientEMailConfig(record);
+	}
+
+	public static ClientEMailConfig toClientEMailConfig(@NonNull final I_AD_Client client)
+	{
+		return ClientEMailConfig.builder()
+				.clientId(ClientId.ofRepoId(client.getAD_Client_ID()))
+				.sendEmailsFromServer(client.isServerEMail())
+				.smtpHost(client.getSMTPHost())
+				.smtpPort(client.getSMTPPort())
+				.startTLS(client.isStartTLS())
+				//
+				.email(EMailAddress.ofNullableString(client.getRequestEMail()))
+				.smtpAuthorization(client.isSmtpAuthorization())
+				.username(client.getRequestUser())
+				.password(client.getRequestUserPW())
+				//
+				.passwordResetMailTemplateId(MailTemplateId.optionalOfRepoId(client.getPasswordReset_MailText_ID()))
+				//
+				.build();
+	}
+
+	@Override
+	public boolean isMultilingualDocumentsEnabled(@NonNull final ClientId adClientId)
+	{
+		final I_AD_Client client = getById(adClientId);
+		return client.isMultiLingualDocument();
+	}
 
 }

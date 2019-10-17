@@ -10,18 +10,17 @@ package de.metas.payment.esr.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -33,15 +32,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
-import de.metas.document.refid.api.IReferenceNoDAO;
-import de.metas.document.refid.model.I_C_ReferenceNo;
-import de.metas.document.refid.model.I_C_ReferenceNo_Type;
-import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
-import de.metas.util.Services;
 
 public class ESRImportDAO extends AbstractESRImportDAO
 {
@@ -106,7 +99,7 @@ public class ESRImportDAO extends AbstractESRImportDAO
 			sb.append(" AND " + I_ESR_ImportLine.COLUMNNAME_Processed + " = ? ");
 			params.add(processed);
 		}
-		
+
 		final String whereClause = sb.toString();
 
 		return new Query(ctx, I_ESR_ImportLine.Table_Name, whereClause, trxName)
@@ -117,45 +110,16 @@ public class ESRImportDAO extends AbstractESRImportDAO
 	}
 
 	@Override
-	protected I_C_ReferenceNo fetchESRInvoiceReferenceNumber(final Properties ctx, final String esrReferenceNumber)
-	{
-		final String trxName = ITrx.TRXNAME_None;
-
-		final IReferenceNoDAO refNoDAO = Services.get(IReferenceNoDAO.class);
-		final I_C_ReferenceNo_Type refNoType = refNoDAO.retrieveRefNoTypeByName(ctx, ESRConstants.DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber);
-
-		// Use wild cards because we won't match after the bank account no (first 6 digits) and the check digit (the last one)
-		final String esrReferenceNoToMatch = "_______" + esrReferenceNumber + "_";
-		final String whereClause = I_C_ReferenceNo.COLUMNNAME_ReferenceNo + " LIKE ? AND "
-				+ I_C_ReferenceNo.COLUMNNAME_C_ReferenceNo_Type_ID + " = ? AND "
-				+ I_C_ReferenceNo_Type.COLUMNNAME_AD_Client_ID + " IN (0,?) AND "
-				+ I_C_ReferenceNo_Type.COLUMNNAME_AD_Org_ID + " IN (0,?)"; // Note that we do need to filter by AD_Org_ID, because 'esrReferenceNumber' is not guaranteed to be unique!
-
-		final I_C_ReferenceNo referenceNo = new Query(ctx, I_C_ReferenceNo.Table_Name, whereClause, trxName)
-				// .setClient_ID() // not filtering by Client_ID here, see above 'whereClause'
-				.setParameters(
-						esrReferenceNoToMatch,
-						refNoType.getC_ReferenceNo_Type_ID(),
-						Env.getAD_Client_ID(ctx),
-						Env.getAD_Org_ID(ctx))
-				.setOnlyActiveRecords(true)
-				.setOrderBy(I_C_ReferenceNo.COLUMNNAME_C_ReferenceNo_ID)
-				.firstOnly(I_C_ReferenceNo.class); // unique constraint uc_referenceno_and_type
-
-		return referenceNo;
-	}
-
-	@Override
 	public Iterator<I_ESR_Import> retrieveESRImports(final Properties ctx, final int orgID)
 	{
 		final String trxName = ITrx.TRXNAME_None;
-		
+
 		final String whereClause = I_ESR_Import.COLUMNNAME_AD_Org_ID + " =? ";
-		
+
 		return new Query(ctx, I_ESR_Import.Table_Name, whereClause, trxName)
-		.setParameters(orgID)
-		.setOnlyActiveRecords(true)
-		.iterate(I_ESR_Import.class);
+				.setParameters(orgID)
+				.setOnlyActiveRecords(true)
+				.iterate(I_ESR_Import.class);
 	}
 
 	@Override

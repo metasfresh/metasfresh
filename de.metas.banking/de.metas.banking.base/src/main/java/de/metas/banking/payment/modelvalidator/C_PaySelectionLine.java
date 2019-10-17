@@ -4,7 +4,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.ModelValidator;
@@ -12,9 +11,11 @@ import org.compiere.model.ModelValidator;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.interfaces.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BP_BankAccount;
-import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaymentRequestBL;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 
 @Interceptor(I_C_PaySelectionLine.class)
@@ -30,7 +31,7 @@ public class C_PaySelectionLine
 	}
 
 	/**
-	 * Updates given pay selection line from invoice's {@link I_C_Payment_Request}.
+	 * Updates given pay selection line from invoice's payment request.
 	 *
 	 * @param paySelectionLine
 	 */
@@ -74,12 +75,18 @@ public class C_PaySelectionLine
 			return;
 		}
 
-		final I_C_Currency iCurrency = invoice.getC_Currency();
-		final I_C_Currency baCurrency = bankAccount.getC_Currency();
+		final CurrencyCode invoiceCurrencyCode = getCurrencyCodeById(invoice.getC_Currency_ID());
+		final CurrencyCode bankAccountCurrencyCode = getCurrencyCodeById(bankAccount.getC_Currency_ID());
 
 		throw new AdempiereException(MSG_PaySelectionLine_Invoice_InvalidCurrency, new Object[] {
 				invoice.getDocumentNo(),     // invoice
-				iCurrency.getISO_Code(),      // Actual
-				baCurrency.getISO_Code() }); // Expected
+				invoiceCurrencyCode.toThreeLetterCode(),      // Actual
+				bankAccountCurrencyCode.toThreeLetterCode() }); // Expected
+	}
+
+	private CurrencyCode getCurrencyCodeById(final int currencyRepoId)
+	{
+		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
+		return currenciesRepo.getCurrencyCodeById(CurrencyId.ofRepoId(currencyRepoId));
 	}
 }

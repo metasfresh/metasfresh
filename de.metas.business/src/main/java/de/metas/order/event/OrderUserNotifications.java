@@ -12,6 +12,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.slf4j.Logger;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -21,6 +22,8 @@ import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.order.IOrderBL;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -89,9 +92,9 @@ public class OrderUserNotifications
 	{
 		final I_C_Order order = request.getOrder();
 
-		final Set<Integer> recipientUserIds = Optional
+		final Set<UserId> recipientUserIds = Optional
 				.ofNullable(request.getRecipientUserIds())
-				.orElse(ImmutableSet.of(extractRecipientUserIdFromOrder(order)));
+				.orElse(extractRecipientUserIdsFromOrder(order));
 
 		final ADMessageAndParams adMessageAndParams = Optional
 				.ofNullable(request.getAdMessageAndParams())
@@ -114,13 +117,13 @@ public class OrderUserNotifications
 
 	private final List<UserNotificationRequest> createOrderCompletedEvents(
 			@NonNull final I_C_Order order,
-			@NonNull final Set<Integer> recipientUserIds,
+			@NonNull final Set<UserId> recipientUserIds,
 			@NonNull final ADMessageAndParams adMessageAndParams)
 	{
 		Check.assumeNotEmpty(recipientUserIds, "recipientUserIds is not empty");
 
 		return recipientUserIds.stream()
-				.filter(recipientUserId -> recipientUserId > 0)
+				.filter(Predicates.notNull())
 				.map(recipientUserId -> newUserNotificationRequest()
 						.recipientUserId(recipientUserId)
 						.contentADMessage(adMessageAndParams.getAdMessage())
@@ -138,7 +141,7 @@ public class OrderUserNotifications
 
 	private static ADMessageAndParams extractOrderCompletedADMessageAndParams(final I_C_Order order)
 	{
-		final I_C_BPartner bpartner = order.getC_BPartner();
+		final I_C_BPartner bpartner = Services.get(IOrderBL.class).getBPartner(order);
 		return ADMessageAndParams.builder()
 				.adMessage(order.isSOTrx() ? MSG_SalesOrderCompleted : MSG_PurchaseOrderCompleted)
 				.param(TableRecordReference.of(order))
@@ -147,10 +150,11 @@ public class OrderUserNotifications
 				.build();
 	}
 
-	private static int extractRecipientUserIdFromOrder(final I_C_Order order)
+	private static Set<UserId> extractRecipientUserIdsFromOrder(final I_C_Order order)
 	{
 		final Integer createdBy = InterfaceWrapperHelper.getValueOrNull(order, "CreatedBy");
-		return createdBy == null ? -1 : createdBy;
+		final UserId recipientUserId = createdBy == null ? null : UserId.ofRepoIdOrNull(createdBy);
+		return recipientUserId != null ? ImmutableSet.of(recipientUserId) : ImmutableSet.of();
 	}
 
 	private void postNotifications(final List<UserNotificationRequest> notifications)
@@ -176,7 +180,7 @@ public class OrderUserNotifications
 		I_C_Order order;
 
 		@Nullable
-		Set<Integer> recipientUserIds;
+		Set<UserId> recipientUserIds;
 
 		@Nullable
 		ADMessageAndParams adMessageAndParams;

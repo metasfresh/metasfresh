@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.acct.model;
 
 
@@ -77,8 +61,6 @@ public interface I_Fact_Acct_Summary
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_Fact_Acct_Summary, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct_Summary, org.compiere.model.I_AD_Client>(I_Fact_Acct_Summary.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -104,10 +86,6 @@ public interface I_Fact_Acct_Summary
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_Fact_Acct_Summary, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct_Summary, org.compiere.model.I_AD_Org>(I_Fact_Acct_Summary.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
@@ -117,7 +95,7 @@ public interface I_Fact_Acct_Summary
 	 * Set Trx Organization.
 	 * Performing or initiating organization
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -127,15 +105,11 @@ public interface I_Fact_Acct_Summary
 	 * Get Trx Organization.
 	 * Performing or initiating organization
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_OrgTrx_ID();
-
-	public org.compiere.model.I_AD_Org getAD_OrgTrx();
-
-	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx);
 
     /** Column definition for AD_OrgTrx_ID */
     public static final org.adempiere.model.ModelColumn<I_Fact_Acct_Summary, org.compiere.model.I_AD_Org> COLUMN_AD_OrgTrx_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct_Summary, org.compiere.model.I_AD_Org>(I_Fact_Acct_Summary.class, "AD_OrgTrx_ID", org.compiere.model.I_AD_Org.class);
@@ -316,10 +290,6 @@ public interface I_Fact_Acct_Summary
 	 */
 	public int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
     /** Column definition for C_BPartner_ID */
     public static final org.adempiere.model.ModelColumn<I_Fact_Acct_Summary, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct_Summary, org.compiere.model.I_C_BPartner>(I_Fact_Acct_Summary.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
@@ -358,7 +328,7 @@ public interface I_Fact_Acct_Summary
 	 * Set Location From.
 	 * Location that inventory was moved from
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -368,7 +338,7 @@ public interface I_Fact_Acct_Summary
 	 * Get Location From.
 	 * Location that inventory was moved from
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -387,7 +357,7 @@ public interface I_Fact_Acct_Summary
 	 * Set Location To.
 	 * Location that inventory was moved to
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -397,7 +367,7 @@ public interface I_Fact_Acct_Summary
 	 * Get Location To.
 	 * Location that inventory was moved to
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -529,36 +499,6 @@ public interface I_Fact_Acct_Summary
     public static final String COLUMNNAME_C_ProjectTask_ID = "C_ProjectTask_ID";
 
 	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getCreated();
-
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct_Summary, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_Fact_Acct_Summary, Object>(I_Fact_Acct_Summary.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getCreatedBy();
-
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct_Summary, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_Fact_Acct_Summary, org.compiere.model.I_AD_User>(I_Fact_Acct_Summary.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
 	 * Set Sales Region.
 	 * Sales coverage region
 	 *
@@ -644,6 +584,36 @@ public interface I_Fact_Acct_Summary
     public static final org.adempiere.model.ModelColumn<I_Fact_Acct_Summary, org.compiere.model.I_C_Year> COLUMN_C_Year_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct_Summary, org.compiere.model.I_C_Year>(I_Fact_Acct_Summary.class, "C_Year_ID", org.compiere.model.I_C_Year.class);
     /** Column name C_Year_ID */
     public static final String COLUMNNAME_C_Year_ID = "C_Year_ID";
+
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
+
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct_Summary, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_Fact_Acct_Summary, Object>(I_Fact_Acct_Summary.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCreatedBy();
+
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct_Summary, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_Fact_Acct_Summary, org.compiere.model.I_AD_User>(I_Fact_Acct_Summary.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Buchungsdatum.
@@ -743,10 +713,6 @@ public interface I_Fact_Acct_Summary
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Product_ID();
-
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
 
     /** Column definition for M_Product_ID */
     public static final org.adempiere.model.ModelColumn<I_Fact_Acct_Summary, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct_Summary, org.compiere.model.I_M_Product>(I_Fact_Acct_Summary.class, "M_Product_ID", org.compiere.model.I_M_Product.class);

@@ -1,10 +1,15 @@
 package org.adempiere.mm.attributes.api;
 
+import java.util.function.Predicate;
+
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
+
+import com.google.common.base.Predicates;
 
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
@@ -64,13 +69,13 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	I_M_AttributeInstance getCreateAttributeInstance(I_M_AttributeSetInstance asi, AttributeId attributeId);
 
 	/**
-	 * Convenient way to quickly create/update and save an {@link I_M_AttributeInstance} for {@link I_M_AttributeValue}.
+	 * Convenient way to quickly create/update and save an {@link I_M_AttributeInstance} for {@link AttributeListValue}.
 	 *
 	 * @param asi
 	 * @param attributeValue attribute value to set; must be not null
 	 * @return created/updated attribute instance
 	 */
-	I_M_AttributeInstance getCreateAttributeInstance(I_M_AttributeSetInstance asi, I_M_AttributeValue attributeValue);
+	I_M_AttributeInstance getCreateAttributeInstance(I_M_AttributeSetInstance asi, AttributeListValue attributeValue);
 
 	/**
 	 * If both the given <code>to</code> and <code>from</code> can be converted to {@link IAttributeSetInstanceAware}s and if <code>from</code>'s ASI-aware has an M_AttributeSetInstance,
@@ -84,7 +89,12 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	 */
 	void cloneASI(Object to, Object from);
 
-	I_M_AttributeSetInstance createASIFromAttributeSet(IAttributeSet attributeSet);
+	default I_M_AttributeSetInstance createASIFromAttributeSet(IAttributeSet attributeSet)
+	{
+		return createASIFromAttributeSet(attributeSet, Predicates.alwaysTrue());
+	}
+
+	I_M_AttributeSetInstance createASIFromAttributeSet(IAttributeSet attributeSet, Predicate<I_M_Attribute> filter);
 
 	I_M_AttributeSetInstance createASIWithASFromProductAndInsertAttributeSet(ProductId productId, IAttributeSet attributeSet);
 
@@ -101,4 +111,10 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	void setAttributeInstanceValue(I_M_AttributeSetInstance asi, I_M_Attribute attribute, Object value);
 
 	void setAttributeInstanceValue(I_M_AttributeSetInstance asi, AttributeId attributeId, Object value);
+
+	String getASIDescriptionById(AttributeSetInstanceId asiId);
+
+	void updateASIAttributeFromModel(String attributeCode, Object fromModel);
+
+	boolean isStorageRelevant(I_M_AttributeInstance ai);
 }

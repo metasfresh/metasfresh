@@ -106,7 +106,7 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 
 		if (_locatorSet)
 		{
-			assertModelEquals(prefix + "M_Locator", _locator, hu.getM_Locator());
+			assertModelEquals(prefix + "M_Locator", _locator, IHandlingUnitsBL.extractLocatorOrNull(hu));
 		}
 
 		if (_huPI != null)
@@ -123,11 +123,11 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 
 		if (_bpartner != null)
 		{
-			Assert.assertEquals(prefix + " C_BPartner", _bpartner, hu.getC_BPartner());
+			Assert.assertEquals(prefix + " C_BPartner", _bpartner, IHandlingUnitsBL.extractBPartnerOrNull(hu));
 		}
 		if (_bpartnerLocation != null)
 		{
-			Assert.assertEquals(prefix + " C_BPartner_Location", _bpartnerLocation, hu.getC_BPartner_Location());
+			Assert.assertEquals(prefix + " C_BPartner_Location", _bpartnerLocation, IHandlingUnitsBL.extractBPartnerLocationOrNull(hu));
 		}
 
 		//
@@ -215,7 +215,7 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 		}
 		else if (parentHUItem != null)
 		{
-			locator = parentHUItem.getM_HU().getM_Locator();
+			locator = IHandlingUnitsBL.extractLocatorOrNull(parentHUItem.getM_HU());
 		}
 		else
 		{
@@ -228,10 +228,10 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 		POJOWrapper.setInstanceName(hu, _instanceName);
 		hu.setM_HU_PI_Version(getM_HU_PI_Version());
 		hu.setM_HU_Item_Parent(parentHUItem);
-		hu.setC_BPartner(_bpartner);
-		hu.setC_BPartner_Location(_bpartnerLocation);
+		hu.setC_BPartner_ID(_bpartner != null ? _bpartner.getC_BPartner_ID() : -1);
+		hu.setC_BPartner_Location_ID(_bpartnerLocation != null ? _bpartnerLocation.getC_BPartner_Location_ID() : -1);
 		hu.setHUStatus(huStatus);
-		hu.setM_Locator(locator);
+		hu.setM_Locator_ID(locator != null ? locator.getM_Locator_ID() : -1);
 		InterfaceWrapperHelper.save(hu);
 
 		//

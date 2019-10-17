@@ -3,13 +3,14 @@ package de.metas.material.event.ddorder;
 import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.material.event.MaterialEvent;
-import de.metas.material.event.MaterialEventUtils;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
+import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -58,12 +59,12 @@ public abstract class AbstractDDOrderEvent implements MaterialEvent
 	 * Note: this field is a bit redundant because the {@link #getPpOrder()}'s lines contain a network distribution line with this info.<br>
 	 * However, the material-dispo code doesn't know or care about how to get to that information.
 	 */
-	private final int fromWarehouseId;
+	private final WarehouseId fromWarehouseId;
 
 	/**
 	 * Also check the note about {@link #getFromWarehouseId()}.
 	 */
-	private final int toWarehouseId;
+	private final WarehouseId toWarehouseId;
 
 	/**
 	 * Set to not-null mainly if this event is about and "advise" that was created due to a {@link SupplyRequiredEvent}, but also<br>
@@ -74,8 +75,8 @@ public abstract class AbstractDDOrderEvent implements MaterialEvent
 	public AbstractDDOrderEvent(
 			@NonNull final EventDescriptor eventDescriptor,
 			@NonNull final DDOrder ddOrder,
-			final int fromWarehouseId,
-			final int toWarehouseId,
+			final WarehouseId fromWarehouseId,
+			final WarehouseId toWarehouseId,
 			@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
 		this.eventDescriptor = eventDescriptor;
@@ -88,7 +89,7 @@ public abstract class AbstractDDOrderEvent implements MaterialEvent
 	@OverridingMethodsMustInvokeSuper
 	public void validate()
 	{
-		MaterialEventUtils.checkIdGreaterThanZero("fromWarehouseId", fromWarehouseId);
-		MaterialEventUtils.checkIdGreaterThanZero("toWarehouseId", toWarehouseId);
+		Check.assumeNotNull(fromWarehouseId, "Parameter fromWarehouseId is not null");
+		Check.assumeNotNull(toWarehouseId, "Parameter toWarehouseId is not null");
 	}
 }

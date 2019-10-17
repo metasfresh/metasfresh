@@ -25,6 +25,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -65,7 +66,11 @@ public class DB_PostgreSQL implements AdempiereDatabase
 {
 	private static final String CONFIG_UseNativeConverter = "org.compiere.db.DB_PostgreSQL.UseNativeConverter";
 	private static final String CONFIG_UseNativeConverter_DefaultValue = "true";
-	private static final String CONFIG_CheckoutTimeout = "org.compiere.db.DB_PostgreSQL.CheckoutTimeout";
+
+	private static final String CONFIG_CheckoutTimeout_SwingClient = "org.compiere.db.DB_PostgreSQL.CheckoutTimeout";
+
+	private static final String CONFIG_UnreturnedConnectionTimeoutMillis = "db.postgresql.unreturnedConnectionTimeoutMillis";
+	private static final int CONFIG_UnreturnedConnectionTimeoutMillis_DefaultValue = 0;
 
 	/**
 	 * Statement Converter for external use (i.e. returned by {@link #getConvert()}.
@@ -452,6 +457,10 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			final int numConnections = m_ds.getNumBusyConnections();
 			if (numConnections >= m_maxbusyconnectionsThreshold && m_maxbusyconnectionsThreshold > 0)
 			{
+				// metas-ts: i think running the finalizer won't be a big help, but anyways, exhausting the connection pool is usually an issue
+				// suggestions to consider:
+				// * allow it to be configured for certain scenarios
+				// * only log, but don't even try the finalizing
 				final String statusBefore = getStatus();
 
 				// hengsin: make a best effort to reclaim leak connection
@@ -460,11 +469,11 @@ public class DB_PostgreSQL implements AdempiereDatabase
 				final String statusAfter = getStatus();
 
 				final Thread currentThread = Thread.currentThread();
-				log.warn("Too many busy connections found. Running finalizations..."
+				log.warn(numConnections + " busy connections found (>= " + m_maxbusyconnectionsThreshold + "). Running finalizations..."
 						+ "\n                              Thread: " + currentThread.getName() + " (ID=" + currentThread.getId() + ")"
 						+ "\n                     Status(initial): " + statusBefore
 						+ "\n Status(after finalizations started): " + statusAfter
-						+ "\n                                Time: " + new java.util.Date());
+						+ "\n                                Time: " + ZonedDateTime.now());
 			}
 
 			connOk = true;
@@ -567,11 +576,11 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			// cpds.setTestConnectionOnCheckout(true);
 			cpds.setAcquireRetryAttempts(2);
 
-			// Set checkout timeout to avoid forever locking when trying to connect to a not existing host.
-			cpds.setCheckoutTimeout(SystemUtils.getSystemProperty(CONFIG_CheckoutTimeout, 20 * 1000));
-
-			if (Ini.isClient())
+			if (Ini.isSwingClient())
 			{
+				// Set checkout timeout to avoid forever locking when trying to connect to a not existing host.
+				cpds.setCheckoutTimeout(SystemUtils.getSystemProperty(CONFIG_CheckoutTimeout_SwingClient, 20 * 1000));
+
 				cpds.setInitialPoolSize(1);
 				cpds.setMinPoolSize(1);
 				cpds.setMaxPoolSize(20);
@@ -581,17 +590,24 @@ public class DB_PostgreSQL implements AdempiereDatabase
 			}
 			else
 			{
-				cpds.setInitialPoolSize(10);
-				cpds.setMinPoolSize(5);
-				cpds.setMaxPoolSize(150);
+				// these are set in c3p0.properties files
+				// cpds.setInitialPoolSize(10);
+				// cpds.setMinPoolSize(5);
+				// cpds.setMaxPoolSize(150);
 				cpds.setMaxIdleTimeExcessConnections(1200);
 				cpds.setMaxIdleTime(1200);
 				m_maxbusyconnectionsThreshold = 120;
 			}
 
-			// the following sometimes kill active connection!
-			// cpds.setUnreturnedConnectionTimeout(1200);
-			// cpds.setDebugUnreturnedConnectionStackTraces(true);
+			//
+			// Timeout unreturned connections
+			// i.e. kill them and get them back to the pool.
+			final int unreturnedConnectionTimeoutMillis = SystemUtils.getSystemProperty(CONFIG_UnreturnedConnectionTimeoutMillis, CONFIG_UnreturnedConnectionTimeoutMillis_DefaultValue);
+			if (unreturnedConnectionTimeoutMillis > 0)
+			{
+				cpds.setUnreturnedConnectionTimeout(unreturnedConnectionTimeoutMillis);
+				cpds.setDebugUnreturnedConnectionStackTraces(true);
+			}
 
 			// 04006: add a customizer to set the log level for message that are send to the client
 			// background: if there are too many messages sent (e.g. from a verbose and long-running DB function)

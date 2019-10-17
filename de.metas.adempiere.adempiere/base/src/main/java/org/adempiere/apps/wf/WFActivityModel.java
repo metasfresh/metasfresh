@@ -33,7 +33,6 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.user.api.IUserDAO;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_WF_Activity;
@@ -44,6 +43,7 @@ import org.compiere.wf.MWFActivity;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 

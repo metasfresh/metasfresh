@@ -1,13 +1,15 @@
 package de.metas.vertical.pharma.msv3.protocol.order;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import de.metas.vertical.pharma.msv3.protocol.order.OrderResponsePackageItemPart.Type;
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
@@ -44,8 +46,10 @@ public class OrderCreateResponseTest
 	@Before
 	public void init()
 	{
-		jsonObjectMapper = new ObjectMapper();
-		jsonObjectMapper.findAndRegisterModules();
+		jsonObjectMapper = new ObjectMapper()
+				.findAndRegisterModules()
+				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+				.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
 	}
 
 	@Test
@@ -74,7 +78,7 @@ public class OrderCreateResponseTest
 												.qty(Quantity.of(66))
 												.type(Type.KEINE_LIEFERUNG_ABER_DISPO_MOEGLICH)
 												.defectReason(OrderDefectReason.MANUFACTURER_NOT_AVAILABLE)
-												.deliveryDate(LocalDateTime.now())
+												.deliveryDate(ZonedDateTime.now())
 												.tour("tour")
 												.tourId("tourId")
 												.tourDeviation(true)
@@ -86,8 +90,14 @@ public class OrderCreateResponseTest
 
 	public void testSerializeDeserialize(final OrderCreateResponse request) throws IOException
 	{
+		System.out.println("Object: " + request);
+
 		final String json = jsonObjectMapper.writeValueAsString(request);
+		System.out.println("JSON: " + json);
+
 		final OrderCreateResponse request2 = jsonObjectMapper.readValue(json, OrderCreateResponse.class);
+		System.out.println("Object deserialized: " + request2);
+
 		Assert.assertEquals(request, request2);
 	}
 

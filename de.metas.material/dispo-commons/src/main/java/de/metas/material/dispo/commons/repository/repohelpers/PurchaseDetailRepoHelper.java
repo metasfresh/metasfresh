@@ -67,7 +67,7 @@ public final class PurchaseDetailRepoHelper
 		return PurchaseDetail.builder()
 				.orderLineRepoId(purchaseDetailRecord.getC_OrderLinePO_ID())
 				.orderedQty(purchaseDetailRecord.getQtyOrdered())
-				.plannedQty(purchaseDetailRecord.getPlannedQty())
+				.qty(purchaseDetailRecord.getPlannedQty())
 				.purchaseCandidateRepoId(purchaseDetailRecord.getC_PurchaseCandidate_ID())
 				.productPlanningRepoId(purchaseDetailRecord.getPP_Product_Planning_ID())
 				.receiptScheduleRepoId(purchaseDetailRecord.getM_ReceiptSchedule_ID())
@@ -96,7 +96,7 @@ public final class PurchaseDetailRepoHelper
 
 		if (purchaseDetail.getAdvised().isUpdateExistingRecord())
 		{
-			recordToUpdate.setIsAdvised(purchaseDetail.getAdvised().toBoolean());
+			recordToUpdate.setIsAdvised(purchaseDetail.getAdvised().isTrue());
 		}
 
 		// don't set anything to null just because it's missing in a partial purchase detail instance
@@ -125,7 +125,7 @@ public final class PurchaseDetailRepoHelper
 			recordToUpdate.setQtyOrdered(purchaseDetail.getOrderedQty());
 		}
 
-		recordToUpdate.setPlannedQty(purchaseDetail.getPlannedQty());
+		recordToUpdate.setPlannedQty(purchaseDetail.getQty());
 
 		saveRecord(recordToUpdate);
 	}

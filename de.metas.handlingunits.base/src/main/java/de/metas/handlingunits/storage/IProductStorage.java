@@ -31,7 +31,10 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public interface IProductStorage
 {
@@ -68,13 +71,18 @@ public interface IProductStorage
 
 	default BigDecimal getQtyAsBigDecimal()
 	{
-		return getQty().getAsBigDecimal();
+		return getQty().toBigDecimal();
+	}
+
+	default Quantity getQty(@NonNull final UomId uomId)
+	{
+		final I_C_UOM uomRecord = Services.get(IUOMDAO.class).getById(uomId);
+		return getQty(uomRecord);
 	}
 
 	/**
 	 * Gets storage Qty, converted to given UOM.
 	 *
-	 * @param uom
 	 * @return Qty converted to given UOM.
 	 */
 	Quantity getQty(I_C_UOM uom);

@@ -42,10 +42,13 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 
 public interface IFlatrateDAO extends ISingletonService
 {
+	I_C_Flatrate_Term getById(final int flatrateTermId);
+
 	List<I_C_Invoice_Clearing_Alloc> retrieveClearingAllocs(I_C_Flatrate_DataEntry dataEntry);
 
 	/**
@@ -92,7 +95,7 @@ public interface IFlatrateDAO extends ISingletonService
 	 * @param onlyNonSim
 	 * @return
 	 */
-	List<I_C_Flatrate_DataEntry> retrieveDataEntries(I_C_Flatrate_Conditions fc, Timestamp dateOrdered, String typeInvoicingPeriodbased, I_C_UOM uom, boolean onlyNonSim);
+	List<I_C_Flatrate_DataEntry> retrieveDataEntries(I_C_Flatrate_Conditions fc, Timestamp dateOrdered, String typeInvoicingPeriodbased, UomId uomId, boolean onlyNonSim);
 
 	/**
 	 * Retrieves the dataEntry that matches the given params and has IsSimulation=N.
@@ -113,19 +116,19 @@ public interface IFlatrateDAO extends ISingletonService
 	 * @param term
 	 * @param dateFrom entries to return must have
 	 * @param dateTo
-	 * @param uom
+	 * @param uomId
 	 * @return
 	 */
-	List<I_C_Flatrate_DataEntry> retrieveInvoicingEntries(I_C_Flatrate_Term term, Timestamp dateFrom, Timestamp dateTo, I_C_UOM uom);
+	List<I_C_Flatrate_DataEntry> retrieveInvoicingEntries(I_C_Flatrate_Term term, Timestamp dateFrom, Timestamp dateTo, UomId uomId);
 
 	/**
 	 *
 	 * @param term mandatory; the term whose data entries are returned
 	 * @param dataEntryType optional; if set, then only data entries with the given type are returned
-	 * @param uom optional; if set, then only data entries with the given uom are returned
+	 * @param uomId optional; if set, then only data entries with the given uom are returned
 	 * @return
 	 */
-	List<I_C_Flatrate_DataEntry> retrieveDataEntries(I_C_Flatrate_Term term, String dataEntryType, I_C_UOM uom);
+	List<I_C_Flatrate_DataEntry> retrieveDataEntries(I_C_Flatrate_Term term, String dataEntryType, UomId uomId);
 
 	/**
 	 * Retrieves from DB the allocation record that references the given invoice candidate (column <code>C_Invoice_Cand_ToClear_ID</code>) and the given data entry. If there is no such record it
@@ -181,7 +184,7 @@ public interface IFlatrateDAO extends ISingletonService
 	 */
 	List<I_C_Invoice_Candidate> updateCandidates(I_C_Flatrate_DataEntry dataEntry);
 
-	List<I_C_Flatrate_DataEntry> retrieveEntries(I_C_Flatrate_Conditions fc, I_C_Flatrate_Term term, Timestamp date, String dataEntryType, I_C_UOM uom, boolean onlyNonSim);
+	List<I_C_Flatrate_DataEntry> retrieveEntries(I_C_Flatrate_Conditions fc, I_C_Flatrate_Term term, Timestamp date, String dataEntryType, UomId uomId, boolean onlyNonSim);
 
 	/**
 	 * Retrieve all active {@link I_C_Flatrate_Conditions} of context tenant.

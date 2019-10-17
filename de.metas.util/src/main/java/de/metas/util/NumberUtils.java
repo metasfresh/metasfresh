@@ -13,17 +13,19 @@ package de.metas.util;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+
+import javax.annotation.Nullable;
 
 import de.metas.util.lang.RepoIdAware;
 
@@ -82,7 +84,7 @@ public final class NumberUtils
 	 * @param bd
 	 * @param minScale
 	 */
-	public static final BigDecimal setMinimumScale(final BigDecimal bd, final int minScale)
+	public static BigDecimal setMinimumScale(final BigDecimal bd, final int minScale)
 	{
 		BigDecimal result = bd;
 		if (result.scale() < minScale)
@@ -114,7 +116,7 @@ public final class NumberUtils
 	 * @param scale
 	 * @return error mergin (absolute value)
 	 */
-	public static final BigDecimal getErrorMarginForScale(final int scale)
+	public static BigDecimal getErrorMarginForScale(final int scale)
 	{
 		if (scale == 0)
 		{
@@ -129,12 +131,28 @@ public final class NumberUtils
 	 * @param value
 	 * @param defaultValue
 	 * @return
-	 * 		<ul>
+	 *         <ul>
 	 *         <li>{@link BigDecimal} if the value is a BigDecimal or its string representation can be converted to BigDecimal
 	 *         <li><code>defaultValue</code> if value is <code>null</code> or it's string representation cannot be converted to BigDecimal.
 	 *         </ul>
 	 */
-	public static final BigDecimal asBigDecimal(final Object value, final BigDecimal defaultValue)
+	public static BigDecimal asBigDecimal(@Nullable final Object value, @Nullable final BigDecimal defaultValue)
+	{
+		final boolean failIfUnparsable = false;
+		return asBigDecimal(value, defaultValue, failIfUnparsable);
+	}
+
+	public static BigDecimal asBigDecimal(@Nullable final Object value)
+	{
+		final BigDecimal defaultValue = null;
+		final boolean failIfUnparsable = true;
+		return asBigDecimal(value, defaultValue, failIfUnparsable);
+	}
+
+	private static BigDecimal asBigDecimal(
+			@Nullable final Object value,
+			@Nullable final BigDecimal defaultValue,
+			final boolean failIfUnparsable)
 	{
 		if (value == null)
 		{
@@ -159,14 +177,29 @@ public final class NumberUtils
 			{
 				return new BigDecimal(valueStr);
 			}
-			catch (final NumberFormatException e)
+			catch (final NumberFormatException numberFormatException)
 			{
-				System.err.println("Cannot convert " + value + " to BigDecimal.");
-				e.printStackTrace();
+				final String errorMsg = "Cannot convert `" + value + "` (" + value.getClass() + ") to BigDecimal";
 
-				return defaultValue;
+				if (failIfUnparsable)
+				{
+					final RuntimeException ex = Check.mkEx(errorMsg);
+					ex.initCause(numberFormatException);
+					throw ex;
+				}
+				else
+				{
+					System.err.println(errorMsg + ". Returning defaultValue=" + defaultValue);
+					numberFormatException.printStackTrace();
+					return defaultValue;
+				}
 			}
 		}
+	}
+
+	public static int asIntOrZero(final Object value)
+	{
+		return asInt(value, 0);
 	}
 
 	/**
@@ -175,17 +208,22 @@ public final class NumberUtils
 	 * @param value
 	 * @param defaultValue
 	 * @return
-	 * 		<ul>
+	 *         <ul>
 	 *         <li>integer value if the value is a integer or its string representation can be converted to integer
 	 *         <li><code>defaultValue</code> if value is <code>null</code> or it's string representation cannot be converted to integer.
 	 *         </ul>
 	 */
-	public static final int asInt(final Object value, final int defaultValue)
+	public static int asInt(final Object value, final int defaultValue)
 	{
 		return asInteger(value, defaultValue);
 	}
 
-	public static final Integer asInteger(final Object value, final Integer defaultValue)
+	public static Integer asIntegerOrNull(final Object value)
+	{
+		return asInteger(value, null);
+	}
+
+	public static Integer asInteger(final Object value, final Integer defaultValue)
 	{
 		if (value == null)
 		{
@@ -208,8 +246,8 @@ public final class NumberUtils
 			}
 			catch (final NumberFormatException e)
 			{
-				System.err.println("Cannot convert " + value + " to integer.");
-				e.printStackTrace();
+				// System.err.println("Cannot convert " + value + " to integer.");
+				// e.printStackTrace();
 
 				return defaultValue;
 			}

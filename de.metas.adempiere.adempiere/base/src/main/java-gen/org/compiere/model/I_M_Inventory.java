@@ -32,8 +32,6 @@ public interface I_M_Inventory
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_AD_Client>(I_M_Inventory.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -59,10 +57,6 @@ public interface I_M_Inventory
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_AD_Org>(I_M_Inventory.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
@@ -87,10 +81,6 @@ public interface I_M_Inventory
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_OrgTrx_ID();
-
-	public org.compiere.model.I_AD_Org getAD_OrgTrx();
-
-	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx);
 
     /** Column definition for AD_OrgTrx_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_AD_Org> COLUMN_AD_OrgTrx_ID = new org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_AD_Org>(I_M_Inventory.class, "AD_OrgTrx_ID", org.compiere.model.I_AD_Org.class);
@@ -184,7 +174,7 @@ public interface I_M_Inventory
 	 * Set Belegart.
 	 * Document type or rules
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -194,15 +184,11 @@ public interface I_M_Inventory
 	 * Get Belegart.
 	 * Document type or rules
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getC_DocType_ID();
-
-	public org.compiere.model.I_C_DocType getC_DocType();
-
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
 
     /** Column definition for C_DocType_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_C_DocType>(I_M_Inventory.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
@@ -228,10 +214,6 @@ public interface I_M_Inventory
 	 * <br>Virtual Column: false
 	 */
 	public int getC_Project_ID();
-
-	public org.compiere.model.I_C_Project getC_Project();
-
-	public void setC_Project(org.compiere.model.I_C_Project C_Project);
 
     /** Column definition for C_Project_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_C_Project> COLUMN_C_Project_ID = new org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_C_Project>(I_M_Inventory.class, "C_Project_ID", org.compiere.model.I_C_Project.class);
@@ -342,7 +324,7 @@ public interface I_M_Inventory
     public static final String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
-	 * Set Beleg Nr..
+	 * Set Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -352,7 +334,7 @@ public interface I_M_Inventory
 	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Beleg Nr..
+	 * Get Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -365,6 +347,29 @@ public interface I_M_Inventory
     public static final org.adempiere.model.ModelColumn<I_M_Inventory, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_M_Inventory, Object>(I_M_Inventory.class, "DocumentNo", null);
     /** Column name DocumentNo */
     public static final String COLUMNNAME_DocumentNo = "DocumentNo";
+
+	/**
+	 * Set External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setExternalId (java.lang.String ExternalId);
+
+	/**
+	 * Get External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getExternalId();
+
+    /** Column definition for ExternalId */
+    public static final org.adempiere.model.ModelColumn<I_M_Inventory, Object> COLUMN_ExternalId = new org.adempiere.model.ModelColumn<I_M_Inventory, Object>(I_M_Inventory.class, "ExternalId", null);
+    /** Column name ExternalId */
+    public static final String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
 	 * Set Generate List.
@@ -502,7 +507,7 @@ public interface I_M_Inventory
 	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setM_Warehouse_ID (int M_Warehouse_ID);
@@ -512,14 +517,10 @@ public interface I_M_Inventory
 	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Warehouse_ID();
-
-	public org.compiere.model.I_M_Warehouse getM_Warehouse();
-
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
 
     /** Column definition for M_Warehouse_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_M_Inventory, org.compiere.model.I_M_Warehouse>(I_M_Inventory.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
@@ -650,7 +651,7 @@ public interface I_M_Inventory
     public static final String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Reversal ID.
+	 * Set Storno-Gegenbeleg.
 	 * ID of document reversal
 	 *
 	 * <br>Type: Table
@@ -660,7 +661,7 @@ public interface I_M_Inventory
 	public void setReversal_ID (int Reversal_ID);
 
 	/**
-	 * Get Reversal ID.
+	 * Get Storno-Gegenbeleg.
 	 * ID of document reversal
 	 *
 	 * <br>Type: Table

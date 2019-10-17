@@ -10,12 +10,12 @@ package de.metas.materialtracking.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -96,7 +96,7 @@ public class MaterialTrackingDAOTest
 		final I_M_Material_Tracking materialTracking = createMaterialTracking();
 		createMaterialTrackingRef(materialTracking, orderLine, false);
 
-		final I_M_Material_Tracking materialTrackingActual = materialTrackingDAO.retrieveMaterialTrackingForModel(orderLine);
+		final I_M_Material_Tracking materialTrackingActual = materialTrackingDAO.retrieveSingleMaterialTrackingForModel(orderLine);
 		Assert.assertEquals("Invalid material tracking retrieved", materialTracking, materialTrackingActual);
 
 		test_retrieveMaterialTrackingForModels_UsingQueryBuilder(materialTracking, orderLine);
@@ -107,7 +107,7 @@ public class MaterialTrackingDAOTest
 	{
 		final I_C_OrderLine orderLine = createDocument(I_C_OrderLine.class);
 
-		final I_M_Material_Tracking materialTrackingActual = materialTrackingDAO.retrieveMaterialTrackingForModel(orderLine);
+		final I_M_Material_Tracking materialTrackingActual = materialTrackingDAO.retrieveSingleMaterialTrackingForModel(orderLine);
 		Assert.assertEquals("Invalid material tracking retrieved", null, materialTrackingActual);
 
 		test_retrieveMaterialTrackingForModels_UsingQueryBuilder(null, orderLine);
@@ -115,7 +115,7 @@ public class MaterialTrackingDAOTest
 
 	/**
 	 * Tests the result of {@link MaterialTrackingDAO#retrieveMaterialTrackingForModels(IQueryBuilder)}.
-	 * 
+	 *
 	 * @param materialTrackingExpected
 	 * @param orderLine
 	 */
@@ -162,7 +162,7 @@ public class MaterialTrackingDAOTest
 		// Following method shall fail
 		try
 		{
-			materialTrackingDAO.retrieveMaterialTrackingForModel(orderLine);
+			materialTrackingDAO.retrieveSingleMaterialTrackingForModel(orderLine);
 			Assert.fail("Retrieval in case document is assigned to multiple material trackings shall fail");
 		}
 		catch (Exception e)

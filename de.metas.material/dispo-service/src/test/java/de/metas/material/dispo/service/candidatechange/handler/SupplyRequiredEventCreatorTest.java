@@ -6,15 +6,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
-import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.util.time.SystemTime;
 
@@ -49,12 +49,12 @@ public class SupplyRequiredEventCreatorTest
 				.id(CandidateId.ofRepoId(10))
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
-				.status(CandidateStatus.doc_closed)
-				.groupId(40)
+				// .status(CandidateStatus.doc_closed)
+				.groupId(MaterialDispoGroupId.ofInt(40))
 				.seqNo(50)
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())
-						.date(SystemTime.asTimestamp())
+						.date(SystemTime.asInstant())
 						.quantity(BigDecimal.TEN)
 						.warehouseId(WAREHOUSE_ID)
 						.build())
@@ -62,8 +62,8 @@ public class SupplyRequiredEventCreatorTest
 
 		final SupplyRequiredEvent result = SupplyRequiredEventCreator.createSupplyRequiredEvent(demandCandidate, BigDecimal.TEN);
 		assertThat(result).isNotNull();
-		assertThat(result.getEventDescriptor().getClientId()).isEqualTo(20);
-		assertThat(result.getEventDescriptor().getOrgId()).isEqualTo(30);
+		assertThat(result.getEventDescriptor().getClientId().getRepoId()).isEqualTo(20);
+		assertThat(result.getEventDescriptor().getOrgId().getRepoId()).isEqualTo(30);
 		assertThat(result.getSupplyRequiredDescriptor().getDemandCandidateId()).isEqualTo(10);
 	}
 }

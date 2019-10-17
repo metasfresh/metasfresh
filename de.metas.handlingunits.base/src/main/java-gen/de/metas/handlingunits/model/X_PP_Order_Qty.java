@@ -15,7 +15,7 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1843637414L;
+	private static final long serialVersionUID = -1021896382L;
 
     /** Standard Constructor */
     public X_PP_Order_Qty (Properties ctx, int PP_Order_Qty_ID, String trxName)
@@ -50,18 +50,6 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
-	}
-
 	/** Set Maßeinheit.
 		@param C_UOM_ID 
 		Maßeinheit
@@ -88,7 +76,7 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU getM_HU() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU getM_HU()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
 	}
@@ -99,8 +87,8 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 		set_ValueFromPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU);
 	}
 
-	/** Set Handling Units.
-		@param M_HU_ID Handling Units	  */
+	/** Set Handling Unit.
+		@param M_HU_ID Handling Unit	  */
 	@Override
 	public void setM_HU_ID (int M_HU_ID)
 	{
@@ -110,8 +98,8 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 			set_Value (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
 	}
 
-	/** Get Handling Units.
-		@return Handling Units	  */
+	/** Get Handling Unit.
+		@return Handling Unit	  */
 	@Override
 	public int getM_HU_ID () 
 	{
@@ -119,18 +107,6 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Locator getM_Locator() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class);
-	}
-
-	@Override
-	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class, M_Locator);
 	}
 
 	/** Set Lagerort.
@@ -156,18 +132,6 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.
@@ -215,7 +179,7 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Cost_Collector getPP_Cost_Collector() throws RuntimeException
+	public org.eevolution.model.I_PP_Cost_Collector getPP_Cost_Collector()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Cost_Collector_ID, org.eevolution.model.I_PP_Cost_Collector.class);
 	}
@@ -249,7 +213,7 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Order_BOMLine getPP_Order_BOMLine() throws RuntimeException
+	public org.eevolution.model.I_PP_Order_BOMLine getPP_Order_BOMLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Order_BOMLine_ID, org.eevolution.model.I_PP_Order_BOMLine.class);
 	}
@@ -283,7 +247,7 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Order getPP_Order() throws RuntimeException
+	public org.eevolution.model.I_PP_Order getPP_Order()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class);
 	}

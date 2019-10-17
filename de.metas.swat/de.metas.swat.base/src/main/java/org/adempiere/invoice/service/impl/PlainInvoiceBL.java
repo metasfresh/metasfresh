@@ -24,24 +24,15 @@ package org.adempiere.invoice.service.impl;
 
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.MInvoice;
 
 import de.metas.document.IDocLineCopyHandler;
 import de.metas.util.Services;
 
 public class PlainInvoiceBL extends AbstractInvoiceBL
 {
-	@Override
-	public MInvoice createAndCompleteForInOut(final I_M_InOut inOut, final Timestamp dateInvoiced, final String trxName)
-	{
-		throw new UnsupportedOperationException();
-	}
-
 	@Override
 	public String getSummary(final I_C_Invoice invoice)
 	{

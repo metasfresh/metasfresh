@@ -23,26 +23,31 @@ package org.adempiere.mm.attributes.api;
  */
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Date;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.exceptions.AttributeNotFoundException;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.util.TimeUtil;
 
 import lombok.NonNull;
 
 /**
  * Goal of this interface: get an instance from an attribute set instance, one can use in a storage context.
- *
+ * <p>
  * Also see {@link ImmutableAttributeSet} for methods to create simple instances that are not necessarily in a HU context.
  */
 public interface IAttributeSet
 {
 	/**
-	 * @return collection of available attributes in this set
+	 * @return collection of available attributes in this set. Never return {@code null}.
 	 */
 	Collection<I_M_Attribute> getAttributes();
 
@@ -116,6 +121,16 @@ public interface IAttributeSet
 
 	Date getValueAsDate(String attributeKey);
 
+	default LocalDateTime getValueAsLocalDateTime(final String attributeKey)
+	{
+		return TimeUtil.asLocalDateTime(getValueAsDate(attributeKey));
+	}
+
+	default LocalDate getValueAsLocalDate(final String attributeKey)
+	{
+		return TimeUtil.asLocalDate(getValueAsDate(attributeKey));
+	}
+
 	default Date getValueAsDate(final I_M_Attribute attribute)
 	{
 		return getValueAsDate(attribute.getValue());
@@ -128,7 +143,8 @@ public interface IAttributeSet
 		return getValueAsString(attribute.getValue());
 	}
 
-	default AttributeValueId getAttributeValueIdOrNull(String attributeKey)
+	@Nullable
+	default AttributeValueId getAttributeValueIdOrNull(final String attributeKey)
 	{
 		return null;
 	}
@@ -153,7 +169,6 @@ public interface IAttributeSet
 	IAttributeValueCallout getAttributeValueCallout(final I_M_Attribute attribute);
 
 	/**
-	 *
 	 * @param attribute
 	 * @return true if the given <code>attribute</code>'s value was newly generated
 	 */

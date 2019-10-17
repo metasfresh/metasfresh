@@ -31,12 +31,9 @@ public class M_ProductPlanning_Create_Default_ProductPlanningData extends JavaPr
 	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-
 		productPlanningSchemaBL.createDefaultProductPlanningsForAllProducts();
-
 		return MSG_OK;
 	}
-
 }

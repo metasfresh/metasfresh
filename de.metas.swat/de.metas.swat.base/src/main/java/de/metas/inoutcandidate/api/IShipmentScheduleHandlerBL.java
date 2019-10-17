@@ -25,6 +25,8 @@ package de.metas.inoutcandidate.api;
 import java.util.List;
 import java.util.Properties;
 
+import org.compiere.model.I_C_OrderLine;
+
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
@@ -77,10 +79,6 @@ public interface IShipmentScheduleHandlerBL extends ISingletonService
 
 	/**
 	 * Invokes all registered {@link ShipmentScheduleHandler}s to create missing InOut candidates.
-	 *
-	 * @param ctx
-	 * @param trxName
-	 * @return
 	 */
 	List<I_M_ShipmentSchedule> createMissingCandidates(Properties ctx, String trxName);
 
@@ -90,7 +88,7 @@ public interface IShipmentScheduleHandlerBL extends ISingletonService
 	 * @param sched
 	 * @return
 	 */
-	IDeliverRequest createDeliverRequest(I_M_ShipmentSchedule sched);
+	IDeliverRequest createDeliverRequest(I_M_ShipmentSchedule sched, final I_C_OrderLine salesOrderLine);
 
 	ShipmentScheduleHandler getHandlerFor(I_M_ShipmentSchedule sched);
 }

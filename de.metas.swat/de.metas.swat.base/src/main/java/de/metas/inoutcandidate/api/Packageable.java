@@ -1,6 +1,6 @@
 package de.metas.inoutcandidate.api;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Function;
@@ -9,7 +9,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.user.UserId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseTypeId;
 
@@ -18,13 +17,16 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
+import de.metas.user.UserId;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -42,9 +44,10 @@ public class Packageable
 	Quantity qtyToDeliver;
 	@NonNull
 	Quantity qtyDelivered;
-	/** quantity picked, not yet delivered */
 	@NonNull
-	Quantity qtyPicked;
+	Quantity qtyPickedAndDelivered;
+	@NonNull
+	Quantity qtyPickedNotDelivered;
 	/** quantity picked planned (i.e. picking candidates not already processed) */
 	@NonNull
 	Quantity qtyPickedPlanned;
@@ -71,8 +74,12 @@ public class Packageable
 
 	boolean displayed;
 
-	LocalDateTime deliveryDate;
-	LocalDateTime preparationDate;
+	ZonedDateTime deliveryDate;
+	ZonedDateTime preparationDate;
+	
+	@NonNull
+	@Default
+	Optional<ShipmentAllocationBestBeforePolicy> bestBeforePolicy = Optional.empty();
 
 	String freightCostRule;
 
@@ -94,7 +101,7 @@ public class Packageable
 	OrderLineId salesOrderLineIdOrNull;
 	@Nullable
 	Money salesOrderLineNetAmt;
-	
+
 	@Nullable
 	UserId lockedBy;
 
@@ -121,7 +128,16 @@ public class Packageable
 		}
 		else
 		{
-			throw new AdempiereException("More than one value ware extracted (" + values + ") from " + packageables);
+			throw new AdempiereException("More than one value were extracted (" + values + ") from " + packageables);
 		}
+	}
+
+	public Quantity getQtyPickedOrDelivered()
+	{
+		// NOTE: keep in sync with M_Packageable_V.QtyPickedOrDelivered
+		return getQtyDelivered()
+				.add(getQtyPickedNotDelivered())
+				.add(getQtyPickedPlanned());
+
 	}
 }

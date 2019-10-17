@@ -1,23 +1,28 @@
 package de.metas.inoutcandidate.spi.impl;
 
-import lombok.NonNull;
-
-import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.springframework.stereotype.Service;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineProvider;
 import de.metas.material.event.commons.DocumentLineDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -41,9 +46,12 @@ import de.metas.util.Services;
  * #L%
  */
 
-@Service
+@Component
 public class ShipmentScheduleOrderReferenceProvider implements ShipmentScheduleReferencedLineProvider
 {
+	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
+	private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
+
 	/**
 	 * @return {@link I_C_OrderLine#Table_Name}
 	 */
@@ -56,41 +64,52 @@ public class ShipmentScheduleOrderReferenceProvider implements ShipmentScheduleR
 	@Override
 	public ShipmentScheduleReferencedLine provideFor(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
+		final OrderAndLineId orderAndLineId = extractOrderAndLineId(shipmentSchedule);
+		return provideFor(orderAndLineId);
+	}
+
+	private ShipmentScheduleReferencedLine provideFor(@NonNull final OrderAndLineId orderAndLineId)
+	{
+		final OrderId orderId = orderAndLineId.getOrderId();
+
+		final I_C_Order order = ordersRepo.getById(orderId);
+		final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(orderAndLineId);
+
 		return ShipmentScheduleReferencedLine.builder()
-				.groupId(shipmentSchedule.getC_Order_ID())
-				.preparationDate(getOrderPreparationDate(shipmentSchedule))
-				.deliveryDate(getOrderLineDeliveryDate(shipmentSchedule))
-				.warehouseId(getWarehouseId(shipmentSchedule))
-				.shipperId(ShipperId.optionalOfRepoId(shipmentSchedule.getC_OrderLine().getM_Shipper_ID()))
-				.documentLineDescriptor(getDocumentLineDescriptor(shipmentSchedule))
+				.recordRef(TableRecordReference.of(I_C_Order.Table_Name, orderId))
+				.preparationDate(TimeUtil.asZonedDateTime(order.getPreparationDate()))
+				.deliveryDate(computeOrderLineDeliveryDate(orderLine, order))
+				.warehouseId(warehouseAdvisor.evaluateWarehouse(orderLine))
+				.shipperId(ShipperId.optionalOfRepoId(orderLine.getM_Shipper_ID()))
+				.documentLineDescriptor(createDocumentLineDescriptor(orderAndLineId, order))
 				.build();
 	}
 
-	/**
-	 * Fetch it from order header if possible.
-	 *
-	 * @param shipmentSchedule
-	 * @return
-	 */
-	private static Timestamp getOrderPreparationDate(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	private static OrderAndLineId extractOrderAndLineId(final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final I_C_Order order = shipmentSchedule.getC_Order();
-		return order.getPreparationDate();
+		return OrderAndLineId.ofRepoIds(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID());
 	}
 
-	private static Timestamp getOrderLineDeliveryDate(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	@VisibleForTesting
+	static ZonedDateTime computeOrderLineDeliveryDate(
+			@NonNull final I_C_OrderLine orderLine,
+			@NonNull final I_C_Order order)
 	{
+		final ZonedDateTime presetDateShipped = TimeUtil.asZonedDateTime(orderLine.getPresetDateShipped());
+		if (presetDateShipped != null)
+		{
+			return presetDateShipped;
+		}
+
 		// Fetch it from order line if possible
-		final I_C_OrderLine orderLine = shipmentSchedule.getC_OrderLine();
-		final Timestamp datePromised = orderLine.getDatePromised();
+		final ZonedDateTime datePromised = TimeUtil.asZonedDateTime(orderLine.getDatePromised());
 		if (datePromised != null)
 		{
 			return datePromised;
 		}
 
 		// Fetch it from order header if possible
-		final I_C_Order order = shipmentSchedule.getC_Order();
-		final Timestamp datePromisedFromOrder = order.getDatePromised();
+		final ZonedDateTime datePromisedFromOrder = TimeUtil.asZonedDateTime(order.getDatePromised());
 		if (datePromisedFromOrder != null)
 		{
 			return datePromisedFromOrder;
@@ -99,23 +118,19 @@ public class ShipmentScheduleOrderReferenceProvider implements ShipmentScheduleR
 		// Fail miserably...
 		throw new AdempiereException("@NotFound@ @DeliveryDate@")
 				.appendParametersToMessage()
-				.setParameter("shipmentSchedule", shipmentSchedule)
-				.setParameter("oderLine", shipmentSchedule.getC_OrderLine())
-				.setParameter("order", shipmentSchedule.getC_Order());
+				.setParameter("oderLine", orderLine)
+				.setParameter("order", order);
 	}
 
-	private WarehouseId getWarehouseId(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
-	{
-		return Services.get(IWarehouseAdvisor.class).evaluateWarehouse(shipmentSchedule.getC_OrderLine());
-	}
-
-	private DocumentLineDescriptor getDocumentLineDescriptor(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	private static DocumentLineDescriptor createDocumentLineDescriptor(
+			@NonNull final OrderAndLineId orderAndLineId,
+			@NonNull final I_C_Order order)
 	{
 		return OrderLineDescriptor.builder()
-				.orderId(shipmentSchedule.getC_Order_ID())
-				.orderLineId(shipmentSchedule.getC_OrderLine_ID())
-				.orderBPartnerId(shipmentSchedule.getC_Order().getC_BPartner_ID())
-				.docTypeId(shipmentSchedule.getC_Order().getC_DocType_ID())
+				.orderId(orderAndLineId.getOrderRepoId())
+				.orderLineId(orderAndLineId.getOrderLineRepoId())
+				.orderBPartnerId(order.getC_BPartner_ID())
+				.docTypeId(order.getC_DocType_ID())
 				.build();
 	}
 

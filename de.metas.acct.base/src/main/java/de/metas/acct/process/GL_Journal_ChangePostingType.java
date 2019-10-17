@@ -2,13 +2,13 @@ package de.metas.acct.process;
 
 import java.util.List;
 
-import org.adempiere.acct.api.IGLJournalBL;
-import org.adempiere.acct.api.IGLJournalDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalBatch;
 
+import de.metas.acct.gljournal.IGLJournalBL;
+import de.metas.acct.gljournal.IGLJournalDAO;
 import de.metas.process.JavaProcess;
 import de.metas.util.Check;
 import de.metas.util.Services;

@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.user.UserRepository;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_I_BPartner;
@@ -17,10 +17,19 @@ import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.impexp.format.ImportTableDescriptorRepository;
+import de.metas.impexp.processing.DBFunctionsRepository;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 
 /*
@@ -51,6 +60,10 @@ import de.metas.util.Services;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
+		DBFunctionsRepository.class,
+		ImportTableDescriptorRepository.class })
 public class BPartnerImportProcess_MultiLocations_gh2543_Test
 {
 	private Properties ctx;
@@ -75,14 +88,15 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 
 		final IMutable<Object> state = new Mutable<>();
 
-		ibpartners.forEach(importRecord -> importProcess.importRecord(state, importRecord));
+		ibpartners.forEach(importRecord -> importProcess.importRecord(state, importRecord, false /* isInsertOnly */));
 
 		assertMultipleBpartnerImported(ibpartners);
-
 	}
 
 	private void assertMultipleBpartnerImported(final List<I_I_BPartner> ibpartners)
 	{
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
 		ibpartners.forEach(BPartnerImportTestHelper::assertImported);
 
 		// check first partner imported
@@ -95,8 +109,9 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 			assertSecondImportedBpartner(ibpartners);
 
 			// check location - is similar with the one from first partner, but should have different id
-			final I_C_BPartner firstBpartner = ibpartners.get(0).getC_BPartner();
-			final I_C_BPartner secondBPartner = ibpartners.get(2).getC_BPartner();
+			final I_C_BPartner firstBpartner = partnerDAO.getById(BPartnerId.ofRepoId(ibpartners.get(0).getC_BPartner_ID()));
+			final I_C_BPartner secondBPartner = partnerDAO.getById(BPartnerId.ofRepoId(ibpartners.get(2).getC_BPartner_ID()));
+
 			final List<org.compiere.model.I_C_BPartner_Location> fbplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(firstBpartner);
 			final List<org.compiere.model.I_C_BPartner_Location> sbplocations = Services.get(IBPartnerDAO.class).retrieveBPartnerLocations(secondBPartner);
 			assertThat(fbplocations.get(0).getC_Location_ID()).isNotEqualTo(sbplocations.get(0).getC_Location_ID());
@@ -111,11 +126,13 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 
 	private void assertFirstImportedBpartner(final List<I_I_BPartner> ibpartners)
 	{
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
 		Assert.assertTrue(ibpartners.get(0).getC_BPartner_ID() == ibpartners.get(1).getC_BPartner_ID());
-		final I_C_BPartner firstBPartner = ibpartners.get(0).getC_BPartner();
+		final I_C_BPartner firstBPartner = partnerDAO.getById(BPartnerId.ofRepoIdOrNull(ibpartners.get(0).getC_BPartner_ID()));
 		//
 		// check user
-		final List<de.metas.adempiere.model.I_AD_User> fusers = Services.get(IBPartnerDAO.class).retrieveContacts(firstBPartner);
+		final List<I_AD_User> fusers = Services.get(IBPartnerDAO.class).retrieveContacts(firstBPartner);
 		assertThat(fusers).isNotEmpty();
 		assertThat(fusers).hasSize(2);
 		fusers.forEach(user -> {
@@ -138,10 +155,12 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 
 	private void assertSecondImportedBpartner(final List<I_I_BPartner> ibpartners)
 	{
-		final I_C_BPartner secondBPartner = ibpartners.get(2).getC_BPartner();
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
+		final I_C_BPartner secondBPartner = partnerDAO.getById(BPartnerId.ofRepoIdOrNull(ibpartners.get(2).getC_BPartner_ID()));
 		//
 		// check user
-		final List<de.metas.adempiere.model.I_AD_User> users = Services.get(IBPartnerDAO.class).retrieveContacts(secondBPartner);
+		final List<I_AD_User> users = Services.get(IBPartnerDAO.class).retrieveContacts(secondBPartner);
 		assertThat(users).isNotEmpty();
 		assertThat(users).hasSize(1);
 		users.forEach(user -> {
@@ -164,10 +183,12 @@ public class BPartnerImportProcess_MultiLocations_gh2543_Test
 
 	private void assertThirdImportedBpartner(final List<I_I_BPartner> ibpartners)
 	{
-		final I_C_BPartner thirdBPartner = ibpartners.get(3).getC_BPartner();
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
+		final I_C_BPartner thirdBPartner = partnerDAO.getById(BPartnerId.ofRepoIdOrNull(ibpartners.get(3).getC_BPartner_ID()));
 		//
 		// check user
-		final List<de.metas.adempiere.model.I_AD_User> users = Services.get(IBPartnerDAO.class).retrieveContacts(thirdBPartner);
+		final List<I_AD_User> users = Services.get(IBPartnerDAO.class).retrieveContacts(thirdBPartner);
 		assertThat(users).isNotEmpty();
 		assertThat(users).hasSize(1);
 		users.forEach(user -> {

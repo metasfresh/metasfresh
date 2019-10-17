@@ -34,6 +34,7 @@ import org.adempiere.process.rpl.requesthandler.model.I_IMP_RequestHandler;
 import org.adempiere.process.rpl.requesthandler.model.I_IMP_RequestHandlerType;
 import org.adempiere.process.rpl.requesthandler.spi.IReplRequestHandler;
 import org.adempiere.server.rpl.interfaces.I_EXP_Format;
+import org.adempiere.service.ClientId;
 import org.compiere.model.MEXPFormat;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_ReplicationTable;
@@ -43,19 +44,19 @@ import org.w3c.dom.Document;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 public class ReplRequestHandlerBL implements IReplRequestHandlerBL
 {
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	@Override
-	public IReplRequestHandler getRequestHandlerInstance(I_IMP_RequestHandler requestHandlerDef)
+	public IReplRequestHandler getRequestHandlerInstance(@NonNull final I_IMP_RequestHandler requestHandlerDef)
 	{
-		Util.assume(requestHandlerDef != null, "requestHandlerDef is not null");
-		Util.assume(requestHandlerDef.isActive(), "Request handler {} is active", requestHandlerDef);
+		Check.assume(requestHandlerDef.isActive(), "Request handler {} is active", requestHandlerDef);
 
 		final I_IMP_RequestHandlerType requestHandlerType = requestHandlerDef.getIMP_RequestHandlerType();
-		Util.assume(requestHandlerType.isActive(), "Request handler type {} is active", requestHandlerType);
+		Check.assume(requestHandlerType.isActive(), "Request handler type {} is active", requestHandlerType);
 
 		final String classname = requestHandlerType.getClassname();
 		final IReplRequestHandler requestHandler = Util.getInstance(IReplRequestHandler.class, classname);
@@ -78,7 +79,9 @@ public class ReplRequestHandlerBL implements IReplRequestHandlerBL
 
 		final MEXPFormat formatToUsePO = (MEXPFormat)InterfaceWrapperHelper.getStrictPO(formatToUse);
 
-		final ExportHelper exportHelper = new ExportHelper(poToExport.getCtx(), formatToUse.getAD_Client_ID());
+		final ExportHelper exportHelper = new ExportHelper(
+				poToExport.getCtx(),
+				ClientId.ofRepoId(formatToUse.getAD_Client_ID()));
 
 		return exportHelper.createExportDOM(poToExport,
 				formatToUsePO,

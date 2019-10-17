@@ -26,13 +26,13 @@ package de.metas.handlingunits.receiptschedule.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMDAO;
 
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.storage.impl.AbstractProductStorage;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 
 /* package */class ReceiptScheduleProductStorage extends AbstractProductStorage
@@ -64,7 +64,7 @@ import de.metas.util.Services;
 
 		//
 		// Capacity is the total Qty required on receipt schedule
-		final BigDecimal qtyCapacity = getTotalCapacity().getCapacityQty();
+		final BigDecimal qtyCapacity = getTotalCapacity().toBigDecimal();
 		final BigDecimal qtyMoved = receiptScheduleBL.getQtyMoved(schedule);
 		// final BigDecimal qtyAllocatedOnHUs = Services.get(IHUReceiptScheduleDAO.class).getQtyAllocatedOnHUs(schedule);
 		final BigDecimal qtyAllocatedOnHUs = BigDecimal.ZERO;

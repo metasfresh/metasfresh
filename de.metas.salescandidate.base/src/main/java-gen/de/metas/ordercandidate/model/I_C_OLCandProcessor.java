@@ -32,8 +32,6 @@ public interface I_C_OLCandProcessor
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_AD_Client>(I_C_OLCandProcessor.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -58,10 +56,6 @@ public interface I_C_OLCandProcessor
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_AD_Org>(I_C_OLCandProcessor.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
@@ -117,10 +111,6 @@ public interface I_C_OLCandProcessor
 	 */
 	public int getAD_User_InCharge_ID();
 
-	public org.compiere.model.I_AD_User getAD_User_InCharge();
-
-	public void setAD_User_InCharge(org.compiere.model.I_AD_User AD_User_InCharge);
-
     /** Column definition for AD_User_InCharge_ID */
     public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_AD_User> COLUMN_AD_User_InCharge_ID = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_AD_User>(I_C_OLCandProcessor.class, "AD_User_InCharge_ID", org.compiere.model.I_AD_User.class);
     /** Column name AD_User_InCharge_ID */
@@ -145,10 +135,6 @@ public interface I_C_OLCandProcessor
 	 * <br>Virtual Column: false
 	 */
 	public int getC_DocTypeTarget_ID();
-
-	public org.compiere.model.I_C_DocType getC_DocTypeTarget();
-
-	public void setC_DocTypeTarget(org.compiere.model.I_C_DocType C_DocTypeTarget);
 
     /** Column definition for C_DocTypeTarget_ID */
     public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_C_DocType> COLUMN_C_DocTypeTarget_ID = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_C_DocType>(I_C_OLCandProcessor.class, "C_DocTypeTarget_ID", org.compiere.model.I_C_DocType.class);
@@ -457,10 +443,6 @@ public interface I_C_OLCandProcessor
 	 */
 	public int getM_PricingSystem_ID();
 
-	public org.compiere.model.I_M_PricingSystem getM_PricingSystem();
-
-	public void setM_PricingSystem(org.compiere.model.I_M_PricingSystem M_PricingSystem);
-
     /** Column definition for M_PricingSystem_ID */
     public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_M_PricingSystem> COLUMN_M_PricingSystem_ID = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_M_PricingSystem>(I_C_OLCandProcessor.class, "M_PricingSystem_ID", org.compiere.model.I_M_PricingSystem.class);
     /** Column name M_PricingSystem_ID */
@@ -515,10 +497,6 @@ public interface I_C_OLCandProcessor
 	 */
 	public int getM_Warehouse_ID();
 
-	public org.compiere.model.I_M_Warehouse getM_Warehouse();
-
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
-
     /** Column definition for M_Warehouse_ID */
     public static final org.adempiere.model.ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_C_OLCandProcessor, org.compiere.model.I_M_Warehouse>(I_C_OLCandProcessor.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
     /** Column name M_Warehouse_ID */
@@ -526,7 +504,6 @@ public interface I_C_OLCandProcessor
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -536,7 +513,6 @@ public interface I_C_OLCandProcessor
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true

@@ -25,7 +25,6 @@ package de.metas.handlingunits.impl;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Predicate;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.util.Util;
@@ -44,10 +43,10 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
  * @author tsa
  *
  */
-public final class HUPIItemProductRetainOnePerPIFilter implements Predicate<I_M_HU_PI_Item_Product>, IQueryFilter<I_M_HU_PI_Item_Product>
+public final class HUPIItemProductRetainOnePerPIFilter implements IQueryFilter<I_M_HU_PI_Item_Product>
 {
 	private final boolean allowDifferentCapacities;
-	private final Set<ArrayKey> seenSet = new HashSet<ArrayKey>();
+	private final Set<ArrayKey> seenSet = new HashSet<>();
 
 	public HUPIItemProductRetainOnePerPIFilter(final boolean allowDifferentCapacities)
 	{
@@ -110,13 +109,7 @@ public final class HUPIItemProductRetainOnePerPIFilter implements Predicate<I_M_
 		return true;
 	}
 
-	@Override
-	public boolean test(final I_M_HU_PI_Item_Product itemProduct)
-	{
-		return accept(itemProduct);
-	}
-
-	private final Object createCapacityKey(final I_M_HU_PI_Item_Product itemProduct)
+	private Object createCapacityKey(final I_M_HU_PI_Item_Product itemProduct)
 	{
 		if (!allowDifferentCapacities)
 		{

@@ -2,14 +2,14 @@ package de.metas.adempiere.callout;
 
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.CalloutEngine;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;

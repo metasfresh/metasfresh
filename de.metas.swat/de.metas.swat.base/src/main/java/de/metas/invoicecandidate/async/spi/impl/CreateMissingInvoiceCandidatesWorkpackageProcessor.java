@@ -124,7 +124,7 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 			for (final Object model : models)
 			{
 				final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidateHandlerBL.createMissingCandidatesFor(model);
-				Loggables.get().addLog("Created " + invoiceCandidates.size() + " invoice candidate for " + model);
+				Loggables.addLog("Created " + invoiceCandidates.size() + " invoice candidate for " + model);
 			}
 		}
 		catch (final LockFailedException e)

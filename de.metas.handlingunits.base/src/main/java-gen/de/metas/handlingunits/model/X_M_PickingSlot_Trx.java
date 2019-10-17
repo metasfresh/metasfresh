@@ -14,7 +14,7 @@ public class X_M_PickingSlot_Trx extends org.compiere.model.PO implements I_M_Pi
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -968489584L;
+	private static final long serialVersionUID = -1462051612L;
 
     /** Standard Constructor */
     public X_M_PickingSlot_Trx (Properties ctx, int M_PickingSlot_Trx_ID, String trxName)
@@ -58,9 +58,7 @@ public class X_M_PickingSlot_Trx extends org.compiere.model.PO implements I_M_Pi
 	/** Close_Current_HU = C */
 	public static final String ACTION_Close_Current_HU = "C";
 	/** Set Aktion.
-		@param Action 
-		Zeigt die durchzuführende Aktion an
-	  */
+		@param Action Aktion	  */
 	@Override
 	public void setAction (java.lang.String Action)
 	{
@@ -69,8 +67,7 @@ public class X_M_PickingSlot_Trx extends org.compiere.model.PO implements I_M_Pi
 	}
 
 	/** Get Aktion.
-		@return Zeigt die durchzuführende Aktion an
-	  */
+		@return Aktion	  */
 	@Override
 	public java.lang.String getAction () 
 	{
@@ -101,7 +98,7 @@ public class X_M_PickingSlot_Trx extends org.compiere.model.PO implements I_M_Pi
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU getM_HU() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU getM_HU()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
 	}
@@ -112,8 +109,8 @@ public class X_M_PickingSlot_Trx extends org.compiere.model.PO implements I_M_Pi
 		set_ValueFromPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU);
 	}
 
-	/** Set Handling Units.
-		@param M_HU_ID Handling Units	  */
+	/** Set Handling Unit.
+		@param M_HU_ID Handling Unit	  */
 	@Override
 	public void setM_HU_ID (int M_HU_ID)
 	{
@@ -123,8 +120,8 @@ public class X_M_PickingSlot_Trx extends org.compiere.model.PO implements I_M_Pi
 			set_Value (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
 	}
 
-	/** Get Handling Units.
-		@return Handling Units	  */
+	/** Get Handling Unit.
+		@return Handling Unit	  */
 	@Override
 	public int getM_HU_ID () 
 	{

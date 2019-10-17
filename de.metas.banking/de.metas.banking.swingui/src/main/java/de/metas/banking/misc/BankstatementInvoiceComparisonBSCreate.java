@@ -65,6 +65,8 @@ import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.misc.ImportBankstatementCtrl.MatchablePO;
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.model.I_C_BankStatementLine;
+import de.metas.payment.TenderType;
+import de.metas.security.permissions.Access;
 import de.schaeffer.compiere.mt940.Bankstatement;
 import de.schaeffer.compiere.mt940.BankstatementLine;
 
@@ -268,7 +270,7 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 	 */
 	private List<I_C_BP_BankAccount> getAllBankaccounts() {
 
-		final String whereClause = Env.getUserRolePermissions().getOrgWhere(false);
+		final String whereClause = Env.getUserRolePermissions().getOrgWhere(I_C_BP_BankAccount.Table_Name, Access.READ);
 
 		final List<I_C_BP_BankAccount> bankAccountList = new Query(Env.getCtx(),
 				I_C_BP_BankAccount.Table_Name, whereClause, null).setClient_ID()
@@ -282,7 +284,7 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 	 */
 	private List<MBankStatement> getOpenBankstatements() {
 
-		final String whereClause = Env.getUserRolePermissions().getOrgWhere(false)
+		final String whereClause = Env.getUserRolePermissions().getOrgWhere(I_C_BankStatement.Table_Name, Access.READ)
 				+ " AND docstatus = 'DR'";
 
 		final List<MBankStatement> bankStatementList = new Query(Env.getCtx(),
@@ -349,16 +351,16 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 					payment.setDateTrx(new Timestamp(mt940Line
 							.getBuchungsdatum().getTime()));
 					if (invoiceExtendedList.get(0).isSOTrx()) {
-						payment.setC_DocType_ID(true);
+						payment.setIsReceiptAndUpdateDocType(true);
 					} else {
-						payment.setC_DocType_ID(false);
+						payment.setIsReceiptAndUpdateDocType(false);
 					}
-					payment.setTenderType(MPayment.TENDERTYPE_DirectDeposit);
+					payment.setTenderType(TenderType.DirectDeposit.getCode());
 					payment.setC_BPartner_ID(invoiceExtendedList.get(0)
 							.getC_BPartner_ID());
 					payment.setC_Currency_ID(invoiceExtendedList.get(0)
 							.getC_Currency_ID());
-					payment.setDiscountAmt(Env.ZERO);
+					payment.setDiscountAmt(BigDecimal.ZERO);
 					payment.saveEx();
 
 					MAllocationHdr alloc = new MAllocationHdr(Env.getCtx(),
@@ -407,7 +409,7 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 							line.setWriteOffAmt(writeOff);
 							line.setOverUnderAmt(overUnder);
 							line.setIsOverUnderPayment(line.getOverUnderAmt()
-									.compareTo(Env.ZERO) != 0);
+									.compareTo(BigDecimal.ZERO) != 0);
 
 							payment.setDiscountAmt(discount);
 							payment.setWriteOffAmt(writeOff);
@@ -415,7 +417,7 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 							payment
 									.setIsOverUnderPayment(payment
 											.getOverUnderAmt().compareTo(
-													Env.ZERO) != 0);
+													BigDecimal.ZERO) != 0);
 
 							alloc.deleteEx(true);
 							alloc = null;
@@ -432,7 +434,7 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 							payment.setWriteOffAmt(payment.getWriteOffAmt()
 									.add(writeOff));
 							payment.setIsOverUnderPayment(overUnder
-									.compareTo(Env.ZERO) != 0);
+									.compareTo(BigDecimal.ZERO) != 0);
 							payment.setOverUnderAmt(payment.getOverUnderAmt()
 									.add(overUnder));
 							line.setDiscountAmt(line.getDiscountAmt().add(
@@ -442,7 +444,7 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 							line.setOverUnderAmt(line.getOverUnderAmt().add(
 									overUnder));
 							line.setIsOverUnderPayment(line.getOverUnderAmt()
-									.compareTo(Env.ZERO) != 0);
+									.compareTo(BigDecimal.ZERO) != 0);
 
 							linePO.saveEx();
 							final I_C_BankStatementLine_Ref bslr =
@@ -463,7 +465,7 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 							bslr.setTrxAmt(matchingPO.getPAmt());
 							bslr.setWriteOffAmt(writeOff);
 							bslr.setOverUnderAmt(overUnder);
-							bslr.setIsOverUnderPayment(bslr.getOverUnderAmt().compareTo(Env.ZERO) != 0);
+							bslr.setIsOverUnderPayment(bslr.getOverUnderAmt().compareTo(BigDecimal.ZERO) != 0);
 
 							bslr.setLine(refline);
 
@@ -526,8 +528,7 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 		if (payment.processIt(MPayment.ACTION_Complete)) {
 			payment.saveEx();
 		} else {
-			throw new AdempiereException("Completion failed: " + payment
-					+ " Logger: " + MiscUtils.loggerMsgs());
+			throw new AdempiereException("Completion failed: " + payment);
 		}
 	}
 
@@ -586,12 +587,12 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 					payment.setPayAmt(mt940Line.getBetrag());
 					payment.setDateAcct(mt940DateAcct);
 					payment.setDateTrx(mt940DateAcct);
-					payment.setTenderType(MPayment.TENDERTYPE_DirectDeposit);
+					payment.setTenderType(TenderType.DirectDeposit.getCode());
 					payment.setC_BPartner_ID(invoiceExtendedList.get(0)
 							.getC_BPartner_ID());
 					payment.setC_Currency_ID(invoiceExtendedList.get(0)
 							.getC_Currency_ID());
-					payment.setDiscountAmt(Env.ZERO);
+					payment.setDiscountAmt(BigDecimal.ZERO);
 					payment.saveEx();
 
 					final MAllocationHdr alloc = new MAllocationHdr(Env
@@ -657,7 +658,7 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 
 							payment.setDiscountAmt(payment.getDiscountAmt().add(discount));
 							payment.setWriteOffAmt(payment.getWriteOffAmt().add(writeOff));
-							payment.setIsOverUnderPayment(overUnder.compareTo(Env.ZERO) != 0);
+							payment.setIsOverUnderPayment(overUnder.compareTo(BigDecimal.ZERO) != 0);
 							payment.setOverUnderAmt(payment.getOverUnderAmt().add(overUnder));
 
 							line.setDiscountAmt(line.getDiscountAmt().add(discount));
@@ -691,7 +692,7 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 							bslr.setWriteOffAmt(writeOff);
 							bslr.setOverUnderAmt(overUnder);
 							bslr.setIsOverUnderPayment(bslr.getOverUnderAmt()
-									.compareTo(Env.ZERO) != 0);
+									.compareTo(BigDecimal.ZERO) != 0);
 
 							bslr.setLine(refline);
 
@@ -769,7 +770,7 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 		line.setValutaDate(toTimestamp(mt940Line.getValuta()));
 		line.setC_Currency_ID(bankAccountList.get(comboBox.getSelectedIndex())
 				.getC_Currency_ID());
-		line.setDiscountAmt(Env.ZERO);
+		line.setDiscountAmt(BigDecimal.ZERO);
 
 		line.setEftCheckNo(model.getStatement().getAuszugsNr().toString());
 

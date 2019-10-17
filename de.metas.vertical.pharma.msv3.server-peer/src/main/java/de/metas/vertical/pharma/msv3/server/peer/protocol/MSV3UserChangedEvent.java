@@ -1,5 +1,7 @@
 package de.metas.vertical.pharma.msv3.server.peer.protocol;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -37,14 +39,19 @@ import lombok.Value;
 @ToString(exclude = "password")
 public class MSV3UserChangedEvent
 {
-	public static MSV3UserChangedEventBuilder prepareCreatedOrUpdatedEvent()
+	public static MSV3UserChangedEventBuilder prepareCreatedOrUpdatedEvent(@NonNull final MSV3MetasfreshUserId msv3MetasfreshUserId)
 	{
-		return _builder().changeType(ChangeType.CREATED_OR_UPDATED);
+		return _builder()
+				.changeType(ChangeType.CREATED_OR_UPDATED)
+				.msv3MetasfreshUserId(msv3MetasfreshUserId);
 	}
 
-	public static MSV3UserChangedEvent deletedEvent(final String username)
+	public static MSV3UserChangedEvent deletedEvent(@NonNull final MSV3MetasfreshUserId msv3MetasfreshUserId)
 	{
-		return _builder().changeType(ChangeType.DELETED).username(username).build();
+		return _builder()
+				.changeType(ChangeType.DELETED)
+				.msv3MetasfreshUserId(msv3MetasfreshUserId)
+				.build();
 	}
 
 	public static enum ChangeType
@@ -52,27 +59,35 @@ public class MSV3UserChangedEvent
 		CREATED_OR_UPDATED, DELETED
 	};
 
+	@JsonProperty("msv3MetasfreshUserId")
+	private MSV3MetasfreshUserId msv3MetasfreshUserId;
+
 	@JsonProperty("changeType")
 	private ChangeType changeType;
 
 	@JsonProperty("username")
 	private String username;
+
 	@JsonProperty("password")
 	private String password;
+
 	@JsonProperty("bpartnerId")
 	private Integer bpartnerId;
+
 	@JsonProperty("bpartnerLocationId")
 	private Integer bpartnerLocationId;
 
 	@JsonCreator
 	@Builder(builderMethodName = "_builder")
 	private MSV3UserChangedEvent(
+			@JsonProperty("msv3MetasfreshUserId") @NonNull final MSV3MetasfreshUserId msv3MetasfreshUserId,
 			@JsonProperty("changeType") @NonNull final ChangeType changeType,
-			@JsonProperty("username") @NonNull final String username,
-			@JsonProperty("password") final String password,
-			@JsonProperty("bpartnerId") final Integer bpartnerId,
-			@JsonProperty("bpartnerLocationId") final Integer bpartnerLocationId)
+			@JsonProperty("username") @Nullable final String username,
+			@JsonProperty("password") @Nullable final String password,
+			@JsonProperty("bpartnerId") @Nullable final Integer bpartnerId,
+			@JsonProperty("bpartnerLocationId") @Nullable final Integer bpartnerLocationId)
 	{
+		this.msv3MetasfreshUserId = msv3MetasfreshUserId;
 		this.changeType = changeType;
 		this.username = username;
 		this.password = password;

@@ -46,7 +46,7 @@ import lombok.Value;
 	private final String value;
 	private final String groupValue;
 	private final String language;
-	
+
 	// Location
 	private final String address1;
 	private final String address2;
@@ -62,7 +62,7 @@ import lombok.Value;
 	private final String locationPhone;
 	private final String locationPhone2;
 	private final String locationFax;
-	
+
 	// Contact
 	private final String firstName;
 	private final String lastName;
@@ -77,10 +77,10 @@ import lombok.Value;
 		private I_I_BPartner createImportRecord()
 		{
 			final I_I_BPartner ibpartner = InterfaceWrapperHelper.create(ctx, I_I_BPartner.class, ITrx.TRXNAME_None);
-			ibpartner.setValue(value);
+			ibpartner.setBPValue(value);
 			ibpartner.setGroupValue(groupValue);
 			ibpartner.setAD_Language(language);
-			
+
 			//
 			// Location
 			ibpartner.setAddress1(address1);
@@ -95,14 +95,14 @@ import lombok.Value;
 			ibpartner.setPhone(locationPhone);
 			ibpartner.setPhone2(locationPhone2);
 			ibpartner.setFax(locationFax);
-			
+
 			//
 			// Contact
 			ibpartner.setFirstname(firstName);
 			ibpartner.setLastname(lastName);
 			ibpartner.setIsBillToContact_Default(billToContact);
 			ibpartner.setIsShipToContact_Default(shipToContact);
-			
+
 			InterfaceWrapperHelper.save(ibpartner);
 			return ibpartner;
 		}

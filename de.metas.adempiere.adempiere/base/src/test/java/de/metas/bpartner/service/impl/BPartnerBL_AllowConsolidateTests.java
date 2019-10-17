@@ -26,11 +26,12 @@ package de.metas.bpartner.service.impl;
 import static org.junit.Assert.assertSame;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.user.UserRepository;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.lang.SOTrx;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import mockit.Expectations;
 import mockit.Mocked;
@@ -62,15 +63,15 @@ public class BPartnerBL_AllowConsolidateTests
 		{
 			sysConfigValue = false;
 			{
-				verifyIsAllowConsolidateInOutEffective(allowsConsolidate, false, sysConfigValue, false);
-				verifyIsAllowConsolidateInOutEffective(allowsConsolidate, true, sysConfigValue, false);
+				verifyIsAllowConsolidateInOutEffective(allowsConsolidate, SOTrx.PURCHASE, sysConfigValue, false);
+				verifyIsAllowConsolidateInOutEffective(allowsConsolidate, SOTrx.SALES, sysConfigValue, false);
 			}
 
 			sysConfigValue = true;
 			{
 				// soTrx=false (i.e. purchase-side) and the sysconfig-value is also set to true => override the allowsConsolidate = false
-				verifyIsAllowConsolidateInOutEffective(allowsConsolidate, false, sysConfigValue, false);
-				verifyIsAllowConsolidateInOutEffective(allowsConsolidate, true, sysConfigValue, true);
+				verifyIsAllowConsolidateInOutEffective(allowsConsolidate, SOTrx.PURCHASE, sysConfigValue, false);
+				verifyIsAllowConsolidateInOutEffective(allowsConsolidate, SOTrx.SALES, sysConfigValue, true);
 			}
 		}
 
@@ -79,21 +80,22 @@ public class BPartnerBL_AllowConsolidateTests
 		{
 			sysConfigValue = false;
 			{
-				verifyIsAllowConsolidateInOutEffective(allowsConsolidate, false, sysConfigValue, expectedResultInthisWholeBlock);
-				verifyIsAllowConsolidateInOutEffective(allowsConsolidate, true, sysConfigValue, expectedResultInthisWholeBlock);
+				verifyIsAllowConsolidateInOutEffective(allowsConsolidate, SOTrx.PURCHASE, sysConfigValue, expectedResultInthisWholeBlock);
+				verifyIsAllowConsolidateInOutEffective(allowsConsolidate, SOTrx.SALES, sysConfigValue, expectedResultInthisWholeBlock);
 			}
 
 			sysConfigValue = true;
 			{
 				// soTrx=false (i.e. purchase-side) and the sysconfig-value is also set to true => override the allowsConsolidate = false
-				verifyIsAllowConsolidateInOutEffective(allowsConsolidate, false, sysConfigValue, expectedResultInthisWholeBlock);
-				verifyIsAllowConsolidateInOutEffective(allowsConsolidate, true, sysConfigValue, expectedResultInthisWholeBlock);
+				verifyIsAllowConsolidateInOutEffective(allowsConsolidate, SOTrx.PURCHASE, sysConfigValue, expectedResultInthisWholeBlock);
+				verifyIsAllowConsolidateInOutEffective(allowsConsolidate, SOTrx.SALES, sysConfigValue, expectedResultInthisWholeBlock);
 			}
 		}
 	}
 
-	protected void verifyIsAllowConsolidateInOutEffective(final boolean partnerAllowsConsolidateInOut,
-			final boolean isSOTrx,
+	protected void verifyIsAllowConsolidateInOutEffective(
+			final boolean partnerAllowsConsolidateInOut,
+			final SOTrx soTrx,
 			final boolean sysConfigValue,
 			final boolean expectedResult)
 	{
@@ -101,7 +103,7 @@ public class BPartnerBL_AllowConsolidateTests
 		sysConfig_AllowConsolidateInOut_ReturnsTrue(sysConfigValue);
 
 		final BPartnerBL testee = new BPartnerBL(new UserRepository());
-		assertSame(expectedResult, testee.isAllowConsolidateInOutEffective(partner, isSOTrx));
+		assertSame(expectedResult, testee.isAllowConsolidateInOutEffective(partner, soTrx));
 	}
 
 	private void partnerAllowsConsolidateInOut(final boolean partnerAllowsConsolidateInOut)

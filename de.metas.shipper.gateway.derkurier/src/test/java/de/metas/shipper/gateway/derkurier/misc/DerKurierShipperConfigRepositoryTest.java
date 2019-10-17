@@ -1,8 +1,11 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalTime;
+import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_MailBox;
@@ -11,10 +14,11 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
+import de.metas.email.EMailAddress;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_Shipper_Config;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -47,6 +51,9 @@ public class DerKurierShipperConfigRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 
+		final IDocumentNoBuilderFactory documentNoBuilderFactory = new DocumentNoBuilderFactory(Optional.empty());
+		Services.registerService(IDocumentNoBuilderFactory.class, documentNoBuilderFactory);
+
 		sequenceRecord = newInstance(I_AD_Sequence.class);
 		sequenceRecord.setName("mysequencename");
 		save(sequenceRecord);
@@ -74,20 +81,21 @@ public class DerKurierShipperConfigRepositoryTest
 
 		final I_AD_MailBox mailbox = newInstance(I_AD_MailBox.class);
 		mailbox.setSMTPHost("smtphost");
+		mailbox.setEMail("from@metasfresh.com");
 		save(mailbox);
 
 		configRecord.setAD_MailBox_ID(mailbox.getAD_MailBox_ID());
 		configRecord.setEMail_To("we@us.test");
 		configRecord.setDK_DesiredDeliveryTime_From(TimeUtil.asTimestamp(LocalTime.of(9, 0)));
 		configRecord.setDK_DesiredDeliveryTime_To(TimeUtil.asTimestamp(LocalTime.of(17, 30)));
-		
+
 		save(configRecord);
 
 		final DerKurierShipperConfig config = new DerKurierShipperConfigRepository().retrieveConfigForShipperId(20);
 		assertThat(config.getCustomerNumber()).isEqualTo("1234");
 		assertThat(config.getRestApiBaseUrl()).isEqualTo("https://testurl");
 		assertThat(config.getDeliveryOrderMailBoxOrNull().getSmtpHost()).isEqualTo("smtphost");
-		assertThat(config.getDeliveryOrderRecipientEmailOrNull()).isEqualTo("we@us.test");
+		assertThat(config.getDeliveryOrderRecipientEmailOrNull()).isEqualTo(EMailAddress.ofString("we@us.test"));
 
 		final ParcelNumberGenerator parcelNumberGenerator = config.getParcelNumberGenerator();
 		assertThat(parcelNumberGenerator.getAdSequenceId()).isEqualTo(sequenceRecord.getAD_Sequence_ID());

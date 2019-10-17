@@ -1,5 +1,7 @@
 package de.metas.inoutcandidate.api;
 
+import java.util.Set;
+
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -9,26 +11,26 @@ import de.metas.util.ISingletonService;
 
 public interface IShipmentScheduleInvalidateBL extends ISingletonService
 {
+	boolean isInvalid(ShipmentScheduleId shipmentScheduleId);
+
+	void invalidateShipmentSchedule(ShipmentScheduleId shipmentScheduleId);
+
+	void invalidateShipmentSchedules(Set<ShipmentScheduleId> shipmentScheduleIds);
+
 	/**
 	 * Invalidate just the shipment schedules that directly reference the given <code>shipment</code>'s lines.<br>
 	 * Use this method if you know that no re-allocation of on-hand-qtys is required, but just the affected schedules
 	 * need to be updated (e.g. QtyPicked => QtyDelivered, if an InOut is completed).
-	 *
-	 * @param shipment
 	 */
 	void invalidateJustForLines(I_M_InOut shipment);
 
 	/**
 	 * See {@link #invalidateJustForLines(I_M_InOut)}.
-	 *
-	 * @param shipmentLine
 	 */
 	void invalidateJustForLine(I_M_InOutLine shipmentLine);
 
 	/**
 	 * See {@link #invalidateSegmentForLine(I_M_InOutLine)}.
-	 *
-	 * @param shipment
 	 */
 	void invalidateSegmentsForLines(I_M_InOut shipment);
 
@@ -43,7 +45,7 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 	 * <ul>
 	 *
 	 * @param shipmentLine
-	 * @see IShipmentSchedulePA#invalidate(java.util.Collection)
+	 * @see IShipmentSchedulePA#invalidateStorageSegments(java.util.Collection)
 	 */
 	void invalidateSegmentForLine(I_M_InOutLine shipmentLine);
 

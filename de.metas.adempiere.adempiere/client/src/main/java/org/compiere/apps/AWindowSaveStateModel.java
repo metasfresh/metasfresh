@@ -1,5 +1,7 @@
 package org.compiere.apps;
 
+import java.time.LocalDate;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.client
@@ -13,40 +15,37 @@ package org.compiere.apps;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Properties;
-import java.util.function.Predicate;
 
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_Field;
+import org.compiere.model.I_AD_Role;
 import org.compiere.model.MTable;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_AD_Role;
 import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * 
@@ -58,7 +57,7 @@ public class AWindowSaveStateModel
 	private static final String ACTION_Name = "org.compiere.apps.AWindowSaveStateModel.action";
 
 	private static final transient Logger logger = LogManager.getLogger(AWindowSaveStateModel.class);
-	private static final transient CCache<Integer, Boolean> userId2enabled = new CCache<Integer, Boolean>(I_AD_Role.Table_Name, 5, 0);
+	private static final transient CCache<UserId, Boolean> userId2enabled = new CCache<>(I_AD_Role.Table_Name, 5, 0);
 
 	public String getActionName()
 	{
@@ -68,67 +67,48 @@ public class AWindowSaveStateModel
 	public boolean isEnabled()
 	{
 		final Properties ctx = Env.getCtx();
-		final int loggedUserId = Env.getAD_User_ID(ctx);
+		final UserId loggedUserId = Env.getLoggedUserId(ctx);
+		return userId2enabled.getOrLoad(loggedUserId, this::retrieveEnabledNoFail);
+	}
 
-		synchronized (userId2enabled)
+	private boolean retrieveEnabledNoFail(final UserId loggedUserId)
+	{
+
+		try
 		{
-			Boolean enabled = userId2enabled.get(loggedUserId);
-			if (enabled == null)
-			{
-				try
-				{
-					enabled = retrieveEnabled(ctx, loggedUserId);
-					userId2enabled.put(loggedUserId, enabled);
-				}
-				catch (Exception e)
-				{
-					logger.error(e.getLocalizedMessage(), e);
-					enabled = false;
-				}
-			}
-			return enabled;
+			return retrieveEnabled(loggedUserId);
+		}
+		catch (Exception ex)
+		{
+			logger.error(ex.getLocalizedMessage(), ex);
+			return false;
 		}
 	}
 
-	private boolean retrieveEnabled(final Properties ctx, final int loggedUserId)
+	private boolean retrieveEnabled(final UserId loggedUserId)
 	{
-		if (loggedUserId < 0)
+		final AdWindowId windowId = AdWindowId.ofRepoIdOrNull(MTable.get(Env.getCtx(), I_AD_Field.Table_Name).getAD_Window_ID());
+		if (windowId == null)
 		{
-			// shall not happen
 			return false;
 		}
 
-		final int windowId = MTable.get(ctx, I_AD_Field.Table_Name).getAD_Window_ID();
-		if (windowId <= 0)
-		{
-			return false;
-		}
+		final ClientId clientId = Env.getClientId();
+		final LocalDate date = Env.getLocalDate();
 
 		//
 		// Makes sure the logged in user has at least one role assigned which has read-write access to our window
 		return Services.get(IUserRolePermissionsDAO.class)
-				.matchUserRolesPermissionsForUser(ctx, loggedUserId, new Predicate<IUserRolePermissions>()
-				{
-					@Override
-					public boolean test(final IUserRolePermissions rolePermissions)
-					{
-						final Boolean accessRW = rolePermissions.checkWindowAccess(windowId);
-						return accessRW != null && accessRW.booleanValue();
-					}
-				});
+				.matchUserRolesPermissionsForUser(
+						clientId,
+						loggedUserId,
+						date,
+						rolePermissions -> rolePermissions.checkWindowPermission(windowId).hasWriteAccess());
 	}
 
 	public void save(final GridTab gridTab)
 	{
-		Services.get(ITrxManager.class).run(new TrxRunnable()
-		{
-
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				save0(gridTab, localTrxName);
-			}
-		});
+		Services.get(ITrxManager.class).runInNewTrx((TrxRunnable)localTrxName -> save0(gridTab, localTrxName));
 	}
 
 	private void save0(final GridTab gridTab, final String trxName)

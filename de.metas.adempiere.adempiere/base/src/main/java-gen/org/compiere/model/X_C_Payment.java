@@ -17,9 +17,12 @@
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
+import static org.compiere.model.I_C_Payment.COLUMNNAME_IsApproved;
+
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+
 import org.compiere.util.Env;
 
 /** Generated Model for C_Payment
@@ -187,10 +190,14 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	@Override
 	public void setAD_OrgTrx_ID (int AD_OrgTrx_ID)
 	{
-		if (AD_OrgTrx_ID < 1) 
+		if (AD_OrgTrx_ID < 1)
+		{
 			set_Value (COLUMNNAME_AD_OrgTrx_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_AD_OrgTrx_ID, Integer.valueOf(AD_OrgTrx_ID));
+		}
 	}
 
 	/** Get Buchende Organisation.
@@ -201,7 +208,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_OrgTrx_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -357,10 +366,14 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	@Override
 	public void setC_Activity_ID (int C_Activity_ID)
 	{
-		if (C_Activity_ID < 1) 
+		if (C_Activity_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_Activity_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_Activity_ID, Integer.valueOf(C_Activity_ID));
+		}
 	}
 
 	/** Get Kostenstelle.
@@ -371,7 +384,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Activity_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -394,10 +409,14 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	@Override
 	public void setC_BankAccount_ID (int C_BankAccount_ID)
 	{
-		if (C_BankAccount_ID < 1) 
+		if (C_BankAccount_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_BankAccount_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_BankAccount_ID, Integer.valueOf(C_BankAccount_ID));
+		}
 	}
 
 	/** Get Bankkonto.
@@ -408,7 +427,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BankAccount_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -431,10 +452,14 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	@Override
 	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
-		if (C_BPartner_ID < 1) 
+		if (C_BPartner_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_BPartner_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+		}
 	}
 
 	/** Get Geschäftspartner.
@@ -445,7 +470,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -468,10 +495,14 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	@Override
 	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID)
 	{
-		if (C_BP_BankAccount_ID < 1) 
+		if (C_BP_BankAccount_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_BP_BankAccount_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_BP_BankAccount_ID, Integer.valueOf(C_BP_BankAccount_ID));
+		}
 	}
 
 	/** Get Bankverbindung.
@@ -482,7 +513,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_BankAccount_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -505,10 +538,14 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	@Override
 	public void setC_Campaign_ID (int C_Campaign_ID)
 	{
-		if (C_Campaign_ID < 1) 
+		if (C_Campaign_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_Campaign_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_Campaign_ID, Integer.valueOf(C_Campaign_ID));
+		}
 	}
 
 	/** Get Werbemassnahme.
@@ -519,7 +556,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Campaign_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -542,10 +581,14 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	@Override
 	public void setC_CashBook_ID (int C_CashBook_ID)
 	{
-		if (C_CashBook_ID < 1) 
+		if (C_CashBook_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_CashBook_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_CashBook_ID, Integer.valueOf(C_CashBook_ID));
+		}
 	}
 
 	/** Get Kassenbuch.
@@ -556,7 +599,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_CashBook_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -579,10 +624,14 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	@Override
 	public void setC_Charge_ID (int C_Charge_ID)
 	{
-		if (C_Charge_ID < 1) 
+		if (C_Charge_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_Charge_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_Charge_ID, Integer.valueOf(C_Charge_ID));
+		}
 	}
 
 	/** Get Kosten.
@@ -593,7 +642,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Charge_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -616,10 +667,14 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	@Override
 	public void setC_ConversionType_ID (int C_ConversionType_ID)
 	{
-		if (C_ConversionType_ID < 1) 
+		if (C_ConversionType_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_ConversionType_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_ConversionType_ID, Integer.valueOf(C_ConversionType_ID));
+		}
 	}
 
 	/** Get Kursart.
@@ -630,7 +685,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_ConversionType_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -653,10 +710,14 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	@Override
 	public void setC_Currency_ID (int C_Currency_ID)
 	{
-		if (C_Currency_ID < 1) 
+		if (C_Currency_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_Currency_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+		}
 	}
 
 	/** Get Währung.
@@ -667,7 +728,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -690,10 +753,14 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	@Override
 	public void setC_DocType_ID (int C_DocType_ID)
 	{
-		if (C_DocType_ID < 0) 
+		if (C_DocType_ID < 0)
+		{
 			set_Value (COLUMNNAME_C_DocType_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
+		}
 	}
 
 	/** Get Belegart.
@@ -704,7 +771,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -723,7 +792,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ChargeAmt);
 		if (bd == null)
-			 return Env.ZERO;
+		{
+			return Env.ZERO;
+		}
 		return bd;
 	}
 
@@ -765,10 +836,14 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	@Override
 	public void setC_Invoice_ID (int C_Invoice_ID)
 	{
-		if (C_Invoice_ID < 1) 
+		if (C_Invoice_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_Invoice_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_Invoice_ID, Integer.valueOf(C_Invoice_ID));
+		}
 	}
 
 	/** Get Rechnung.
@@ -779,7 +854,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -802,10 +879,14 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	@Override
 	public void setC_Order_ID (int C_Order_ID)
 	{
-		if (C_Order_ID < 1) 
+		if (C_Order_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_Order_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_Order_ID, Integer.valueOf(C_Order_ID));
+		}
 	}
 
 	/** Get Auftrag.
@@ -816,7 +897,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -839,10 +922,14 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	@Override
 	public void setC_PaymentBatch_ID (int C_PaymentBatch_ID)
 	{
-		if (C_PaymentBatch_ID < 1) 
+		if (C_PaymentBatch_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_PaymentBatch_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_PaymentBatch_ID, Integer.valueOf(C_PaymentBatch_ID));
+		}
 	}
 
 	/** Get Zahlungslauf.
@@ -853,7 +940,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentBatch_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -864,10 +953,14 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	@Override
 	public void setC_Payment_ID (int C_Payment_ID)
 	{
-		if (C_Payment_ID < 1) 
+		if (C_Payment_ID < 1)
+		{
 			set_ValueNoCheck (COLUMNNAME_C_Payment_ID, null);
-		else 
+		}
+		else
+		{
 			set_ValueNoCheck (COLUMNNAME_C_Payment_ID, Integer.valueOf(C_Payment_ID));
+		}
 	}
 
 	/** Get Zahlung.
@@ -878,7 +971,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Payment_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -901,10 +996,14 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	@Override
 	public void setC_Project_ID (int C_Project_ID)
 	{
-		if (C_Project_ID < 1) 
+		if (C_Project_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_Project_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_Project_ID, Integer.valueOf(C_Project_ID));
+		}
 	}
 
 	/** Get Projekt.
@@ -915,7 +1014,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Project_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -937,7 +1038,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CreditCardExpMM);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -959,7 +1062,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CreditCardExpYY);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -1112,7 +1217,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DiscountAmt);
 		if (bd == null)
-			 return Env.ZERO;
+		{
+			return Env.ZERO;
+		}
 		return bd;
 	}
 
@@ -1169,35 +1276,35 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		return (java.lang.String)get_Value(COLUMNNAME_DocAction);
 	}
 
-	/** 
-	 * DocStatus AD_Reference_ID=131
-	 * Reference name: _Document Status
-	 */
-	public static final int DOCSTATUS_AD_Reference_ID=131;
-	/** Drafted = DR */
-	public static final String DOCSTATUS_Drafted = "DR";
-	/** Completed = CO */
-	public static final String DOCSTATUS_Completed = "CO";
-	/** Approved = AP */
-	public static final String DOCSTATUS_Approved = "AP";
-	/** NotApproved = NA */
-	public static final String DOCSTATUS_NotApproved = "NA";
-	/** Voided = VO */
-	public static final String DOCSTATUS_Voided = "VO";
-	/** Invalid = IN */
-	public static final String DOCSTATUS_Invalid = "IN";
-	/** Reversed = RE */
-	public static final String DOCSTATUS_Reversed = "RE";
-	/** Closed = CL */
-	public static final String DOCSTATUS_Closed = "CL";
-	/** Unknown = ?? */
-	public static final String DOCSTATUS_Unknown = "??";
-	/** InProgress = IP */
-	public static final String DOCSTATUS_InProgress = "IP";
-	/** WaitingPayment = WP */
-	public static final String DOCSTATUS_WaitingPayment = "WP";
-	/** WaitingConfirmation = WC */
-	public static final String DOCSTATUS_WaitingConfirmation = "WC";
+//	/** 
+//	 * DocStatus AD_Reference_ID=131
+//	 * Reference name: _Document Status
+//	 */
+//	public static final int DOCSTATUS_AD_Reference_ID=131;
+//	/** Drafted = DR */
+//	public static final String DOCSTATUS_Drafted = "DR";
+//	/** Completed = CO */
+//	public static final String DOCSTATUS_Completed = "CO";
+//	/** Approved = AP */
+//	public static final String DOCSTATUS_Approved = "AP";
+//	/** NotApproved = NA */
+//	public static final String DOCSTATUS_NotApproved = "NA";
+//	/** Voided = VO */
+//	public static final String DOCSTATUS_Voided = "VO";
+//	/** Invalid = IN */
+//	public static final String DOCSTATUS_Invalid = "IN";
+//	/** Reversed = RE */
+//	public static final String DOCSTATUS_Reversed = "RE";
+//	/** Closed = CL */
+//	public static final String DOCSTATUS_Closed = "CL";
+//	/** Unknown = ?? */
+//	public static final String DOCSTATUS_Unknown = "??";
+//	/** InProgress = IP */
+//	public static final String DOCSTATUS_InProgress = "IP";
+//	/** WaitingPayment = WP */
+//	public static final String DOCSTATUS_WaitingPayment = "WP";
+//	/** WaitingConfirmation = WC */
+//	public static final String DOCSTATUS_WaitingConfirmation = "WC";
 	/** Set Belegstatus.
 		@param DocStatus 
 		The current status of the document
@@ -1264,8 +1371,10 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		Object oo = get_Value(COLUMNNAME_IsAllocated);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1290,8 +1399,10 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		Object oo = get_Value(COLUMNNAME_IsApproved);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1313,8 +1424,10 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		Object oo = get_Value(COLUMNNAME_IsAutoAllocateAvailableAmt);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1339,8 +1452,10 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		Object oo = get_Value(COLUMNNAME_IsDelayedCapture);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1365,8 +1480,10 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		Object oo = get_Value(COLUMNNAME_IsOnline);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1391,8 +1508,10 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		Object oo = get_Value(COLUMNNAME_IsOnlineApproved);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1417,8 +1536,10 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		Object oo = get_Value(COLUMNNAME_IsOverUnderPayment);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1443,8 +1564,10 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		Object oo = get_Value(COLUMNNAME_IsPrepayment);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1469,8 +1592,10 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		Object oo = get_Value(COLUMNNAME_IsReceipt);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1495,8 +1620,10 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		Object oo = get_Value(COLUMNNAME_IsReconciled);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1521,8 +1648,10 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		Object oo = get_Value(COLUMNNAME_IsSelfService);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1603,7 +1732,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_OverUnderAmt);
 		if (bd == null)
-			 return Env.ZERO;
+		{
+			return Env.ZERO;
+		}
 		return bd;
 	}
 
@@ -1625,7 +1756,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PayAmt);
 		if (bd == null)
-			 return Env.ZERO;
+		{
+			return Env.ZERO;
+		}
 		return bd;
 	}
 
@@ -1667,8 +1800,10 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		Object oo = get_Value(COLUMNNAME_Posted);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1693,8 +1828,10 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		Object oo = get_Value(COLUMNNAME_Processed);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1716,8 +1853,10 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		Object oo = get_Value(COLUMNNAME_Processing);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1842,8 +1981,10 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 		Object oo = get_Value(COLUMNNAME_R_CVV2Match);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1866,10 +2007,14 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	@Override
 	public void setRef_Payment_ID (int Ref_Payment_ID)
 	{
-		if (Ref_Payment_ID < 1) 
+		if (Ref_Payment_ID < 1)
+		{
 			set_ValueNoCheck (COLUMNNAME_Ref_Payment_ID, null);
-		else 
+		}
+		else
+		{
 			set_ValueNoCheck (COLUMNNAME_Ref_Payment_ID, Integer.valueOf(Ref_Payment_ID));
+		}
 	}
 
 	/** Get Referenced Payment.
@@ -1879,7 +2024,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Ref_Payment_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -1902,10 +2049,14 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	@Override
 	public void setReversal_ID (int Reversal_ID)
 	{
-		if (Reversal_ID < 1) 
+		if (Reversal_ID < 1)
+		{
 			set_Value (COLUMNNAME_Reversal_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_Reversal_ID, Integer.valueOf(Reversal_ID));
+		}
 	}
 
 	/** Get Reversal ID.
@@ -1916,7 +2067,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Reversal_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -2071,15 +2224,17 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TaxAmt);
 		if (bd == null)
-			 return Env.ZERO;
+		{
+			return Env.ZERO;
+		}
 		return bd;
 	}
 
-	/** 
-	 * TenderType AD_Reference_ID=214
-	 * Reference name: C_Payment Tender Type
-	 */
-	public static final int TENDERTYPE_AD_Reference_ID=214;
+//	/** 
+//	 * TenderType AD_Reference_ID=214
+//	 * Reference name: C_Payment Tender Type
+//	 */
+//	public static final int TENDERTYPE_AD_Reference_ID=214;
 	/** CreditCard = C */
 	public static final String TENDERTYPE_CreditCard = "C";
 	/** Check = K */
@@ -2170,10 +2325,14 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	@Override
 	public void setUser1_ID (int User1_ID)
 	{
-		if (User1_ID < 1) 
+		if (User1_ID < 1)
+		{
 			set_Value (COLUMNNAME_User1_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_User1_ID, Integer.valueOf(User1_ID));
+		}
 	}
 
 	/** Get Nutzer 1.
@@ -2184,7 +2343,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_User1_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -2207,10 +2368,14 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	@Override
 	public void setUser2_ID (int User2_ID)
 	{
-		if (User2_ID < 1) 
+		if (User2_ID < 1)
+		{
 			set_Value (COLUMNNAME_User2_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_User2_ID, Integer.valueOf(User2_ID));
+		}
 	}
 
 	/** Get Nutzer 2.
@@ -2221,7 +2386,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_User2_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -2262,7 +2429,9 @@ public class X_C_Payment extends org.compiere.model.PO implements I_C_Payment, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_WriteOffAmt);
 		if (bd == null)
-			 return Env.ZERO;
+		{
+			return Env.ZERO;
+		}
 		return bd;
 	}
 }

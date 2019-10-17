@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -46,7 +47,7 @@ public class HUToReportWrapper implements HUToReport
 
 	private final I_M_HU hu;
 	private final HuId huId;
-	private final int bpartnerId;
+	private final BPartnerId bpartnerId;
 	private final String huUnitType;
 
 	private List<HUToReport> _includedHUs; // lazy
@@ -55,7 +56,7 @@ public class HUToReportWrapper implements HUToReport
 	{
 		this.hu = hu;
 		this.huId = HuId.ofRepoId(hu.getM_HU_ID());
-		this.bpartnerId = hu.getC_BPartner_ID();
+		this.bpartnerId = BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID());
 		this.huUnitType = extractHUType(hu);
 	}
 
@@ -88,7 +89,7 @@ public class HUToReportWrapper implements HUToReport
 	}
 
 	@Override
-	public int getBPartnerId()
+	public BPartnerId getBPartnerId()
 	{
 		return bpartnerId;
 	}

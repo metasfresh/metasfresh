@@ -1,10 +1,10 @@
 /**
- * 
+ *
  */
 package de.metas.contracts.flatrate.impexp;
 
-import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_ErrorMsg;
-import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_IsImported;
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_C_BPartner;
@@ -29,12 +29,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -55,7 +55,7 @@ public class FlatrateTermImportTableSqlUpdater
 		dbUpdateFlatrateTerm(sqlImportWhereClause);
 		validateUpdatedFlaterateTerm(sqlImportWhereClause);
 	}
-	
+
 	private void dbUpdateFlatrateTerm(@NonNull final String sqlImportWhereClause)
 	{
 		dbUpdateBPartnerIds(sqlImportWhereClause);
@@ -64,7 +64,7 @@ public class FlatrateTermImportTableSqlUpdater
 		dbUpdateProductIdsByValue(sqlImportWhereClause);
 		dbUpdateProductIdsByName(sqlImportWhereClause);
 	}
-	
+
 	private void validateUpdatedFlaterateTerm(@NonNull final String sqlImportWhereClause)
 	{
 		markAsError("BPartner not found", I_I_Flatrate_Term.COLUMNNAME_C_BPartner_ID + " IS NULL"
@@ -156,7 +156,7 @@ public class FlatrateTermImportTableSqlUpdater
 
 	private final void markAsError(final String errorMsg, final String sqlWhereClause)
 	{
-		final String sql = "UPDATE " + I_I_Flatrate_Term.Table_Name
+		final String sql = "UPDATE " + I_I_Flatrate_Term.Table_Name + " i "
 				+ "\n SET " + COLUMNNAME_I_IsImported + "=?, " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||? "
 				+ "\n WHERE " + sqlWhereClause;
 		final Object[] sqlParams = new Object[] { X_I_Flatrate_Term.I_ISIMPORTED_ImportFailed, errorMsg + "; " };

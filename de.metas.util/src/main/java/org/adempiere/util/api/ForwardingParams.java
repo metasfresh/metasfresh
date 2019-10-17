@@ -2,6 +2,7 @@ package org.adempiere.util.api;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collection;
 
 import lombok.EqualsAndHashCode;
@@ -18,12 +19,12 @@ import lombok.ToString;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -66,13 +67,13 @@ public class ForwardingParams implements IParams
 	}
 
 	@Override
-	public int getParameterAsInt(final String parameterName)
+	public int getParameterAsInt(final String parameterName, final int defaultValue)
 	{
-		return params.getParameterAsInt(parameterName);
+		return params.getParameterAsInt(parameterName, defaultValue);
 	}
 
 	@Override
-	public BigDecimal getParameterAsBigDecimal(String parameterName)
+	public BigDecimal getParameterAsBigDecimal(final String parameterName)
 	{
 		return params.getParameterAsBigDecimal(parameterName);
 	}
@@ -84,8 +85,20 @@ public class ForwardingParams implements IParams
 	}
 
 	@Override
+	public LocalDate getParameterAsLocalDate(final String parameterName)
+	{
+		return params.getParameterAsLocalDate(parameterName);
+	}
+
+	@Override
 	public boolean getParameterAsBool(final String parameterName)
 	{
 		return params.getParameterAsBool(parameterName);
+	}
+
+	@Override
+	public <T extends Enum<T>> T getParameterAsEnum(final String parameterName, final Class<T> enumType, final T defaultValueWhenNull)
+	{
+		return params.getParameterAsEnum(parameterName, enumType, defaultValueWhenNull);
 	}
 }

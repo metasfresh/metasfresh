@@ -56,12 +56,12 @@ import de.metas.util.Services;
 
 public interface IHandlingUnitsDAO extends ISingletonService
 {
-	final IQueryOrderBy queryOrderBy = Services.get(IQueryBL.class)
+	IQueryOrderBy queryOrderBy = Services.get(IQueryBL.class)
 			.createQueryOrderByBuilder(I_M_HU_Item.class)
 			.addColumn(I_M_HU_Item.COLUMN_M_HU_Item_ID, Direction.Ascending, Nulls.Last)
-			.createQueryOrderBy();;
+			.createQueryOrderBy();
 
-	final Map<String, Integer> ITEM_TYPE_ORDERING = ImmutableMap.of(
+	Map<String, Integer> ITEM_TYPE_ORDERING = ImmutableMap.of(
 			X_M_HU_Item.ITEMTYPE_Material, 1,
 			X_M_HU_Item.ITEMTYPE_HandlingUnit, 2,
 			X_M_HU_Item.ITEMTYPE_HUAggregate, 3,
@@ -71,7 +71,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * Specifies that material items shall be first, followed by HU-items, HU--aggregate-items and finally packing material items.
 	 * The ordering of HU-items before HU-aggregate-items is important when we deallocate from HUs, because we only want to "touch" the aggregate VHU if we need to.
 	 */
-	final Comparator<I_M_HU_Item> HU_ITEMS_COMPARATOR = Comparator
+	Comparator<I_M_HU_Item> HU_ITEMS_COMPARATOR = Comparator
 			.<I_M_HU_Item, Integer> comparing(
 					item -> ITEM_TYPE_ORDERING.get(Services.get(IHandlingUnitsBL.class).getItemType(item)))
 			.thenComparing(
@@ -107,10 +107,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	I_M_HU_PI retrieveVirtualPI(Properties ctx);
 
 	I_M_HU_PI_Item retrieveVirtualPIItem(Properties ctx);
-
-	int getPackingItemTemplate_HU_PI_Item_ID();
-
-	int getVirtual_HU_PI_Item_ID();
 
 	/**
 	 * Create a new HU builder using the given {@code huContext}. Set the builder's {@code date} to the {@code huContext}'s date.
@@ -310,8 +306,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	List<I_M_HU> retrieveHUsForWarehouses(Properties ctx, Collection<WarehouseId> warehouseIds, String trxName);
 
-	List<I_M_HU> retrieveHUsForWarehousesAndProductId(Properties ctx, Collection<WarehouseId> warehouseIds, int productId, String trxName);
-
 	IHUQueryBuilder createHUQueryBuilder();
 
 	/**
@@ -383,4 +377,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	List<I_M_Warehouse> retrieveWarehousesWhichContainNoneOf(List<I_M_HU> hus);
 
 	List<I_M_HU> retrieveByIds(Collection<HuId> huIds);
+
+	void setReservedByHUIds(final Collection<HuId> huIds, boolean reserved);
 }

@@ -31,13 +31,12 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.user.UserRepository;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
@@ -45,17 +44,22 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.order.invoicecandidate.C_OrderLine_Handler;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
-import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import mockit.Expectations;
 import mockit.Mocked;
@@ -70,7 +74,7 @@ public abstract class AbstractDeliveryTest
 	protected final String trxName = ITrx.TRXNAME_None;
 
 	protected final C_OrderLine_Handler olHandler = new C_OrderLine_Handler();
-	protected final I_C_ILCandHandler handler = InterfaceWrapperHelper.create(ctx, I_C_ILCandHandler.class, trxName);
+	protected I_C_ILCandHandler handler;
 
 	// task 07442
 	private final ClientId clientId = ClientId.ofRepoId(2);
@@ -86,13 +90,15 @@ public abstract class AbstractDeliveryTest
 	protected ITaxBL taxBL;
 	// task 07442 end
 
-	protected final I_C_Order order = InterfaceWrapperHelper.create(ctx, I_C_Order.class, trxName);
-	protected final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(ctx, I_C_OrderLine.class, trxName);
+	protected I_C_Order order;
+	protected I_C_OrderLine orderLine;
 
-	protected final I_M_InOut mInOut = InterfaceWrapperHelper.create(ctx, I_M_InOut.class, trxName);
-	protected final I_M_InOutLine mInOutLine = InterfaceWrapperHelper.create(ctx, I_M_InOutLine.class, trxName);
+	protected I_M_InOut mInOut;
+	protected I_M_InOutLine mInOutLine;
 
-	protected final I_C_BPartner bPartner = InterfaceWrapperHelper.create(ctx, I_C_BPartner.class, trxName);
+	protected I_C_BPartner bPartner;
+
+	private UomId stockUomId;
 
 	@Before
 	public void init()
@@ -102,7 +108,12 @@ public abstract class AbstractDeliveryTest
 
 		initHandlers();
 
+		final I_C_UOM stockUom = newInstance(I_C_UOM.class);
+		saveRecord(stockUom);
+		stockUomId = UomId.ofRepoId(stockUom.getC_UOM_ID());
+
 		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setC_UOM_ID(stockUom.getC_UOM_ID());
 		saveRecord(product);
 		productId = ProductId.ofRepoId(product.getM_Product_ID());
 
@@ -136,13 +147,13 @@ public abstract class AbstractDeliveryTest
 			taxBL.getTax(
 					ctx,
 					order,
-					-1, // taxCategoryId
-			 orderLine.getM_Product_ID(),
-			 order.getDatePromised(),
-			 OrgId.ofRepoId(order.getAD_Org_ID()),
-			 WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
-			 order.getC_BPartner_Location_ID(),
-			 order.isSOTrx());
+					(TaxCategoryId)null, // taxCategoryId
+					orderLine.getM_Product_ID(),
+					order.getDatePromised(),
+					OrgId.ofRepoId(order.getAD_Org_ID()),
+					WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
+					order.getC_BPartner_Location_ID(),
+					order.isSOTrx());
 
 			minTimes = 0;
 			result = 3;
@@ -152,12 +163,17 @@ public abstract class AbstractDeliveryTest
 
 	private void initC_BPartner()
 	{
+		bPartner = InterfaceWrapperHelper.create(ctx, I_C_BPartner.class, trxName);
+
 		// ...
+
 		InterfaceWrapperHelper.save(bPartner);
 	}
 
 	private void initHandlers()
 	{
+		handler = InterfaceWrapperHelper.create(ctx, I_C_ILCandHandler.class, trxName);
+
 		// current DB structure for OLHandler
 		handler.setC_ILCandHandler_ID(540001);
 		handler.setClassname(C_OrderLine_Handler.class.getName());
@@ -172,19 +188,24 @@ public abstract class AbstractDeliveryTest
 
 	private void initC_Order()
 	{
+		order = InterfaceWrapperHelper.create(ctx, I_C_Order.class, trxName);
 		order.setAD_Org_ID(orgId.getRepoId());
 		order.setBill_BPartner_ID(bPartner.getC_BPartner_ID());
+		order.setDocStatus(DocStatus.Completed.getCode());
 		InterfaceWrapperHelper.save(order);
 	}
 
 	private void initC_OrderLine()
 	{
+		orderLine = InterfaceWrapperHelper.create(ctx, I_C_OrderLine.class, trxName);
+
 		orderLine.setAD_Org_ID(orgId.getRepoId());
 		orderLine.setM_Product_ID(productId.getRepoId());
 
 		final BigDecimal qty = new BigDecimal(13);
 		orderLine.setQtyEntered(qty);
 		orderLine.setQtyOrdered(qty);
+		orderLine.setC_UOM_ID(stockUomId.getRepoId());
 		orderLine.setQtyReserved(qty);
 
 		// assume that the process (no direct access in decoupled mode) already set the orderLine qty
@@ -198,6 +219,8 @@ public abstract class AbstractDeliveryTest
 
 	private void initM_InOut()
 	{
+		mInOut = InterfaceWrapperHelper.create(ctx, I_M_InOut.class, trxName);
+
 		mInOut.setC_Order_ID(order.getC_Order_ID());
 
 		mInOut.setDocStatus(IDocument.STATUS_Completed);
@@ -208,6 +231,8 @@ public abstract class AbstractDeliveryTest
 
 	private void initM_InOutLine()
 	{
+		mInOutLine = InterfaceWrapperHelper.create(ctx, I_M_InOutLine.class, trxName);
+
 		mInOutLine.setM_InOut_ID(mInOut.getM_InOut_ID());
 
 		// link to C_OrderLine
@@ -219,6 +244,7 @@ public abstract class AbstractDeliveryTest
 		// set the orderLine's qty
 		mInOutLine.setQtyEntered(orderLine.getQtyEntered());
 		mInOutLine.setMovementQty(orderLine.getQtyEntered()); // TODO should use ReceiptSchedule for conversion
+		mInOutLine.setC_UOM_ID(stockUomId.getRepoId());
 
 		InterfaceWrapperHelper.save(mInOutLine);
 	}

@@ -82,7 +82,8 @@ public class MTransaction extends X_M_Transaction
 	 * @param MovementDate optional date
 	 * @param trxName transaction
 	 */
-	public MTransaction(final Properties ctx,
+	public MTransaction(
+			final Properties ctx,
 			final int AD_Org_ID,
 			final String MovementType,
 			final int M_Locator_ID,
@@ -95,12 +96,12 @@ public class MTransaction extends X_M_Transaction
 		super(ctx, 0, trxName);
 		setAD_Org_ID(AD_Org_ID);
 		setMovementType(MovementType);
-		if (M_Locator_ID == 0)
+		if (M_Locator_ID <= 0)
 		{
 			throw new IllegalArgumentException("No Locator");
 		}
 		setM_Locator_ID(M_Locator_ID);
-		if (M_Product_ID == 0)
+		if (M_Product_ID <= 0)
 		{
 			throw new IllegalArgumentException("No Product");
 		}
@@ -123,21 +124,16 @@ public class MTransaction extends X_M_Transaction
 		}
 	}	// MTransaction
 
-	/**
-	 * String Representation
-	 *
-	 * @return info
-	 */
 	@Override
 	public String toString()
 	{
-		final StringBuffer sb = new StringBuffer("MTransaction[");
+		final StringBuilder sb = new StringBuilder("MTransaction[");
 		sb.append(get_ID()).append(",").append(getMovementType())
 				.append(",Qty=").append(getMovementQty())
 				.append(",M_Product_ID=").append(getM_Product_ID())
 				.append(",ASI=").append(getM_AttributeSetInstance_ID())
 				.append("]");
 		return sb.toString();
-	}	// toString
+	}
 
 }	// MTransaction

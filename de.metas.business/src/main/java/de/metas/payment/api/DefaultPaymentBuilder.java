@@ -13,69 +13,140 @@ package de.metas.payment.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
+import org.compiere.util.TimeUtil;
 
-import de.metas.builder.IBuilder;
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.invoice.InvoiceId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.payment.TenderType;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
-public class DefaultPaymentBuilder implements IBuilder
+public class DefaultPaymentBuilder
 {
-	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-
-	private final I_C_Payment payment;
-	private String _docbaseType;
-	private boolean _built = false;
-
-	public enum TenderType
+	public static DefaultPaymentBuilder newInboundReceiptBuilder()
 	{
-		ACH("A"),
-		CREDIT_CARD("C"),
-		DIRECT_DEBIT("D"),
-		CASH("X");
-
-		private final String name;
-
-		private TenderType(String name)
-		{
-			this.name = name;
-		}
-
-		@Override
-		public String toString()
-		{
-			return name;
-		}
+		return new DefaultPaymentBuilder()
+				.receipt(true);
 	}
 
-	public DefaultPaymentBuilder(final Object contextProvider)
+	public static DefaultPaymentBuilder newOutboundPaymentBuilder()
 	{
-		payment = InterfaceWrapperHelper.newInstance(I_C_Payment.class, contextProvider);
+		return new DefaultPaymentBuilder()
+				.receipt(false);
+	}
+
+	public static DefaultPaymentBuilder newBuilderOfInvoice(@NonNull final I_C_Invoice invoice)
+	{
+		return new DefaultPaymentBuilder()
+				.invoice(invoice);
+	}
+
+	private final transient IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
+
+	private boolean _built = false;
+	private final I_C_Payment payment;
+
+	private DefaultPaymentBuilder()
+	{
+		payment = InterfaceWrapperHelper.newInstance(I_C_Payment.class);
 		payment.setProcessed(false);
-		payment.setDocStatus(IDocument.STATUS_Drafted);
+		payment.setDocStatus(DocStatus.Drafted.getCode());
 		payment.setDocAction(IDocument.ACTION_Complete);
+	}
+
+	/**
+	 * Creates and completes the payment
+	 *
+	 * @return payment
+	 */
+	public I_C_Payment createAndProcess()
+	{
+		return createAndProcess(IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+	}
+
+	/**
+	 * Creates and processes the payment.
+	 *
+	 * @param docAction
+	 * @param expectedDocStatus
+	 * @return payment
+	 */
+	private I_C_Payment createAndProcess(final String docAction, final String expectedDocStatus)
+	{
+		final I_C_Payment payment = createDraft();
+
+		payment.setDocAction(docAction);
+		Services.get(IDocumentBL.class).processEx(payment, docAction, expectedDocStatus);
+
+		return payment;
+	}
+
+	/**
+	 * Creates the draft payment.
+	 *
+	 * @return draft payment
+	 */
+	private I_C_Payment createDraft()
+	{
+		final I_C_Payment payment = createNoSave();
+		InterfaceWrapperHelper.save(payment);
+		return payment;
+	}
+
+	/**
+	 * Creates the payment but it does not save it.
+	 *
+	 * @return payment (not saved!)
+	 */
+	public I_C_Payment createNoSave()
+	{
+		markAsBuilt();
+
+		// note: the only reason why we are calling the "...OrNull" method is because some unit tests are failing.
+		final DocTypeId docTypeId = getDocTypeIdOrNull();
+		payment.setC_DocType_ID(DocTypeId.toRepoId(docTypeId));
+
+		return payment;
+	}
+
+	private DocTypeId getDocTypeIdOrNull()
+	{
+		final String docBaseType = payment.isReceipt() ? X_C_DocType.DOCBASETYPE_ARReceipt : X_C_DocType.DOCBASETYPE_APPayment;
+
+		return docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
+				.docBaseType(docBaseType)
+				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
+				.adClientId(payment.getAD_Client_ID())
+				.adOrgId(payment.getAD_Org_ID())
+				.build());
 	}
 
 	private final void assertNotBuilt()
@@ -89,175 +160,87 @@ public class DefaultPaymentBuilder implements IBuilder
 		_built = true;
 	}
 
-	public final DefaultPaymentBuilder setAD_Org_ID(int AD_Org_ID)
+	public final DefaultPaymentBuilder adOrgId(@NonNull final OrgId adOrgId)
 	{
 		assertNotBuilt();
-		payment.setAD_Org_ID(AD_Org_ID);
+		payment.setAD_Org_ID(adOrgId.getRepoId());
 		return this;
 	}
 
-	public final DefaultPaymentBuilder setIsReceipt(boolean isReceipt)
+	private final DefaultPaymentBuilder receipt(final boolean isReceipt)
 	{
 		assertNotBuilt();
 		payment.setIsReceipt(isReceipt);
 		return this;
 	}
 
-	public final DefaultPaymentBuilder setDocbaseType(final String docBaseType)
+	public final DefaultPaymentBuilder bpBankAccountId(final int bpBankAccountId)
 	{
 		assertNotBuilt();
-		this._docbaseType = docBaseType;
+		payment.setC_BP_BankAccount_ID(bpBankAccountId);
 		return this;
 	}
 
-	private final String getDocBaseType()
-	{
-		if (_docbaseType == null)
-		{
-			final boolean isReceipt = payment.isReceipt();
-			return isReceipt ? X_C_DocType.DOCBASETYPE_ARReceipt : X_C_DocType.DOCBASETYPE_APPayment;
-		}
-		return _docbaseType;
-	}
-
-	private DefaultPaymentBuilder setDocAction(final String docAction)
+	public final DefaultPaymentBuilder accountNo(final String accountNo)
 	{
 		assertNotBuilt();
-		payment.setDocAction(docAction);
+		payment.setAccountNo(accountNo);
 		return this;
 	}
 
-	/**
-	 * Creates the payment but it does not save it.
-	 * @return payment
-	 */
-	public I_C_Payment createNoSave()
-	{
-		markAsBuilt();
-
-		// note: the only reason why we are calling the "...OrNull" method is because some unit tests are failing.
-		final DocTypeQuery query = DocTypeQuery.builder()
-				.docBaseType(getDocBaseType())
-				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
-				.adClientId(payment.getAD_Client_ID())
-				.adOrgId(payment.getAD_Org_ID())
-				.build();
-		final int docTypeId = DocTypeId.toRepoId(docTypeDAO.getDocTypeIdOrNull(query));
-		payment.setC_DocType_ID(docTypeId);
-
-		return payment;
-	}
-
-	/**
-	 * Creates the draft payment.
-	 * @return payment
-	 */
-	public I_C_Payment createDraft()
-	{
-		final I_C_Payment payment = createNoSave();
-		InterfaceWrapperHelper.save(payment);
-		return payment;
-	}
-
-	/**
-	 * Creates and processes the payment.
-	 * @param docAction
-	 * @param expectedDocStatus
-	 * @return payment
-	 */
-	public I_C_Payment createAndProcess(final String docAction, final String expectedDocStatus)
-	{
-		setDocAction(docAction);
-
-		final I_C_Payment payment = createDraft();
-		Services.get(IDocumentBL.class).processEx(payment, docAction, expectedDocStatus);
-
-		return payment;
-	}
-
-	/**
-	 * Creates and completes the payment
-	 * @return payment
-	 */
-	public I_C_Payment createAndProcess()
-	{
-		return createAndProcess(IDocument.ACTION_Complete, IDocument.STATUS_Completed);
-	}
-
-	public final DefaultPaymentBuilder setC_BP_BankAccount_ID(int C_BP_BankAccount_ID)
+	public final DefaultPaymentBuilder dateAcct(@Nullable final LocalDate dateAcct)
 	{
 		assertNotBuilt();
-		payment.setC_BP_BankAccount_ID(C_BP_BankAccount_ID);
+		payment.setDateAcct(TimeUtil.asTimestamp(dateAcct));
 		return this;
 	}
 
-	public final DefaultPaymentBuilder setAccountNo(String AccountNo)
+	public final DefaultPaymentBuilder dateTrx(@Nullable final LocalDate dateTrx)
 	{
 		assertNotBuilt();
-		payment.setAccountNo(AccountNo);
+		payment.setDateTrx(TimeUtil.asTimestamp(dateTrx));
 		return this;
 	}
 
-	public final DefaultPaymentBuilder setDateAcct(Timestamp DateAcct)
+	public final DefaultPaymentBuilder bpartnerId(@NonNull final BPartnerId bpartnerId)
 	{
 		assertNotBuilt();
-		payment.setDateAcct(DateAcct);
+		payment.setC_BPartner_ID(bpartnerId.getRepoId());
 		return this;
 	}
 
-	public final DefaultPaymentBuilder setDateTrx(Timestamp DateTrx)
-	{
-		assertNotBuilt();
-		payment.setDateTrx(DateTrx);
-		return this;
-	}
-
-	public final DefaultPaymentBuilder setC_BPartner_ID(int C_BPartner_ID)
-	{
-		assertNotBuilt();
-		payment.setC_BPartner_ID(C_BPartner_ID);
-		return this;
-	}
-
-	public final DefaultPaymentBuilder setPayAmt(BigDecimal payAmt)
+	public final DefaultPaymentBuilder payAmt(final BigDecimal payAmt)
 	{
 		assertNotBuilt();
 		payment.setPayAmt(payAmt);
 		return this;
 	}
 
-	public final DefaultPaymentBuilder setDiscountAmt(BigDecimal DiscountAmt)
+	public final DefaultPaymentBuilder discountAmt(final BigDecimal discountAmt)
 	{
 		assertNotBuilt();
-		payment.setDiscountAmt(DiscountAmt);
+		payment.setDiscountAmt(discountAmt);
 		return this;
 	}
 
-	public final DefaultPaymentBuilder setWriteoffAmt(BigDecimal WriteoffAmt)
+	public final DefaultPaymentBuilder writeoffAmt(final BigDecimal writeoffAmt)
 	{
 		assertNotBuilt();
-		payment.setWriteOffAmt(WriteoffAmt);
+		payment.setWriteOffAmt(writeoffAmt);
 		return this;
 	}
 
-	public final DefaultPaymentBuilder setOverUnderAmt(BigDecimal OverUnderAmt)
+	public final DefaultPaymentBuilder currencyId(@NonNull final CurrencyId currencyId)
 	{
 		assertNotBuilt();
-		payment.setOverUnderAmt(OverUnderAmt);
+		payment.setC_Currency_ID(currencyId.getRepoId());
 		return this;
 	}
 
-	public final DefaultPaymentBuilder setC_Currency_ID(int c_Currency_ID)
+	public final DefaultPaymentBuilder tenderType(@NonNull final TenderType tenderType)
 	{
 		assertNotBuilt();
-		payment.setC_Currency_ID(c_Currency_ID);
-		return this;
-	}
-
-	public final DefaultPaymentBuilder setTenderType(TenderType tenderType)
-	{
-		assertNotBuilt();
-		payment.setTenderType(tenderType.toString());
+		payment.setTenderType(tenderType.getCode());
 		return this;
 	}
 
@@ -273,30 +256,39 @@ public class DefaultPaymentBuilder implements IBuilder
 	 * @param invoice
 	 * @return
 	 */
-	public final DefaultPaymentBuilder setC_Invoice(I_C_Invoice invoice)
+	private final DefaultPaymentBuilder invoice(@NonNull final I_C_Invoice invoice)
 	{
-		assertNotBuilt();
-		payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
-		payment.setC_BPartner_ID(invoice.getC_BPartner_ID());
-		payment.setC_Currency_ID(invoice.getC_Currency_ID());
-
-		final boolean isReceipt;
-		if (Services.get(IInvoiceBL.class).isCreditMemo(invoice))
-		{
-			// SOTrx=Y, but credit memo => receipt=N
-			isReceipt = !invoice.isSOTrx();
-		}
-		else
-		{
-			// SOTrx=Y => receipt=Y
-			isReceipt = invoice.isSOTrx();
-		}
-		payment.setIsReceipt(isReceipt);
+		adOrgId(OrgId.ofRepoId(invoice.getAD_Org_ID()));
+		invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+		bpartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()));
+		currencyId(CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
+		receipt(computeIsReceiptFlag(invoice));
 
 		return this;
 	}
 
-	public final DefaultPaymentBuilder setDescription(final String description)
+	public final DefaultPaymentBuilder invoiceId(@NonNull final InvoiceId invoiceId)
+	{
+		assertNotBuilt();
+		payment.setC_Invoice_ID(invoiceId.getRepoId());
+		return this;
+	}
+
+	private boolean computeIsReceiptFlag(@NonNull final I_C_Invoice invoice)
+	{
+		if (Services.get(IInvoiceBL.class).isCreditMemo(invoice))
+		{
+			// SOTrx=Y, but credit memo => receipt=N
+			return !invoice.isSOTrx();
+		}
+		else
+		{
+			// SOTrx=Y => receipt=Y
+			return invoice.isSOTrx();
+		}
+	}
+
+	public final DefaultPaymentBuilder description(final String description)
 	{
 		assertNotBuilt();
 		payment.setDescription(description);

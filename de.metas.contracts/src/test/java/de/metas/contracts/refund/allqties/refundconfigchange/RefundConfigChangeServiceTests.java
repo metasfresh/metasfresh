@@ -14,24 +14,18 @@ import org.junit.Test;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.refund.AssignmentAggregateService;
 import de.metas.contracts.refund.AssignmentToRefundCandidateRepository;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
-import de.metas.contracts.refund.allqties.refundconfigchange.RefundConfigChangeService;
-import de.metas.contracts.refund.RefundConfigRepository;
+import de.metas.currency.CurrencyRepository;
 import de.metas.contracts.refund.RefundContract;
-import de.metas.contracts.refund.RefundContractRepository;
-import de.metas.contracts.refund.RefundInvoiceCandidateFactory;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidateService;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleId;
-import de.metas.invoice.InvoiceScheduleRepository;
-import de.metas.money.CurrencyRepository;
 import de.metas.money.MoneyService;
 import de.metas.util.lang.Percent;
 
@@ -68,15 +62,7 @@ public class RefundConfigChangeServiceTests
 	{
 		AdempiereTestHelper.get().init();
 
-		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
-
-		final RefundContractRepository refundContractRepository = new RefundContractRepository(refundConfigRepository);
-
-		final AssignmentAggregateService assignmentAggregateService = new AssignmentAggregateService(refundConfigRepository);
-
-		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, assignmentAggregateService);
-
-		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(refundContractRepository, refundInvoiceCandidateFactory);
+		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = RefundInvoiceCandidateRepository.createInstanceForUnitTesting();
 
 		final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository = new AssignmentToRefundCandidateRepository(
 				refundInvoiceCandidateRepository);
@@ -85,9 +71,7 @@ public class RefundConfigChangeServiceTests
 
 		final RefundInvoiceCandidateService refundInvoiceCandidateService = new RefundInvoiceCandidateService(
 				refundInvoiceCandidateRepository,
-				refundInvoiceCandidateFactory,
-				moneyService,
-				assignmentAggregateService);
+				moneyService);
 
 		refundConfigChangeService = new RefundConfigChangeService(
 				assignmentToRefundCandidateRepository,

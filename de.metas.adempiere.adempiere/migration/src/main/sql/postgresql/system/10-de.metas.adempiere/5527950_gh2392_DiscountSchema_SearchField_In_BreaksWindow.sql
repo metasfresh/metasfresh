@@ -1,0 +1,5 @@
+-- 2019-07-24T09:06:11.004Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2019-07-24 12:06:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=578064
+;
+

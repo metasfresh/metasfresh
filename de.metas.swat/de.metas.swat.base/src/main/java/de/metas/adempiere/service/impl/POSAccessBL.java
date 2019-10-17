@@ -31,14 +31,12 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.I_C_POS_Profile;
 import org.adempiere.model.I_C_POS_Profile_Warehouse;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.service.IPOSAccessBL;
 import de.metas.adempiere.service.IPOSAccessDAO;
-import de.metas.util.Check;
+import de.metas.security.RoleId;
 import de.metas.util.Services;
 
 public class POSAccessBL implements IPOSAccessBL
@@ -47,10 +45,8 @@ public class POSAccessBL implements IPOSAccessBL
 	@Override
 	public List<I_M_Warehouse> getAvailableWarehouses(Properties ctx)
 	{
-		final I_AD_Role role = InterfaceWrapperHelper.create(ctx, Env.getAD_Role_ID(ctx), I_AD_Role.class, ITrx.TRXNAME_None);
-		Check.assumeNotNull(role, "role not null");
-
-		final I_C_POS_Profile profile = Services.get(IPOSAccessDAO.class).retrieveProfileByRole(ctx, role.getAD_Role_ID(), ITrx.TRXNAME_None);
+		final RoleId roleId = Env.getLoggedRoleId(ctx);
+		final I_C_POS_Profile profile = Services.get(IPOSAccessDAO.class).retrieveProfileByRole(ctx, roleId.getRepoId(), ITrx.TRXNAME_None);
 
 		if (null == profile)
 		{

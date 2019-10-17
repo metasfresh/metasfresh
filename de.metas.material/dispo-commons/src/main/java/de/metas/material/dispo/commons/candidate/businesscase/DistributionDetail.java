@@ -27,7 +27,7 @@ public class DistributionDetail implements BusinessCaseDetail
 				.ddOrderId(distributionDetailRecord.getDD_Order_ID())
 				.ddOrderLineId(distributionDetailRecord.getDD_OrderLine_ID())
 				.ddOrderDocStatus(distributionDetailRecord.getDD_Order_DocStatus())
-				.plannedQty(distributionDetailRecord.getPlannedQty())
+				.qty(distributionDetailRecord.getPlannedQty())
 				.shipperId(distributionDetailRecord.getM_Shipper_ID())
 				.build();
 
@@ -55,7 +55,7 @@ public class DistributionDetail implements BusinessCaseDetail
 	Flag pickDirectlyIfFeasible=Flag.FALSE;
 
 	@NonNull
-	BigDecimal plannedQty;
+	BigDecimal qty;
 
 	public static DistributionDetail castOrNull(@Nullable final BusinessCaseDetail businessCaseDetail)
 	{

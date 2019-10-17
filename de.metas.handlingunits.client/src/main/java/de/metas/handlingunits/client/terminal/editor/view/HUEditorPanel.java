@@ -1298,7 +1298,7 @@ public class HUEditorPanel
 		boolean haveHUsNotMarked = false;
 		for (final HUKey huKey : model.getSelectedHUKeys())
 		{
-			final IQualityInspectionSchedulable qualityInspectionAware = huKey.asQualityInspectionSchedulable().orNull();
+			final IQualityInspectionSchedulable qualityInspectionAware = huKey.asQualityInspectionSchedulable().orElse(null);
 			if (qualityInspectionAware == null)
 			{
 				haveHUsWithoutSupport = true;

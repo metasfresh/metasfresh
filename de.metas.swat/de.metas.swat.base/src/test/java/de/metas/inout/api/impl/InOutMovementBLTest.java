@@ -24,9 +24,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.interfaces.I_M_Movement;
+import de.metas.product.IProductActivityProvider;
 import de.metas.util.Services;
 
 /*
@@ -72,6 +74,8 @@ public class InOutMovementBLTest
 		save(warehouseForIssues);
 
 		locatorForIssues = createLocator(warehouseForIssues);
+
+		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
 
 		inOutMovementBL = new InOutMovementBL();
 	}
@@ -126,7 +130,7 @@ public class InOutMovementBLTest
 		Assert.assertEquals("1 movement line shall be created", 1, movementLines.size());
 
 		Assert.assertEquals("Wrong qty in movement line", receiptLine.getMovementQty(), movementLines.get(0).getMovementQty());
-		Assert.assertEquals("Wrong product in movement line", receiptLine.getM_Product(), movementLines.get(0).getM_Product());
+		Assert.assertEquals("Wrong product in movement line", receiptLine.getM_Product_ID(), movementLines.get(0).getM_Product_ID());
 		Assert.assertEquals("Wrong locator in movement line", receiptLocator, movementLines.get(0).getM_Locator());
 		Assert.assertEquals("Wrong locator To in movement line", locatorForIssues, movementLines.get(0).getM_LocatorTo());
 
@@ -159,7 +163,7 @@ public class InOutMovementBLTest
 		Assert.assertEquals("1 movement line shall be created", 1, movementLines.size());
 
 		Assert.assertEquals("Wrong qty in movement line", receiptLine.getMovementQty(), movementLines.get(0).getMovementQty());
-		Assert.assertEquals("Wrong product in movement line", receiptLine.getM_Product(), movementLines.get(0).getM_Product());
+		Assert.assertEquals("Wrong product in movement line", receiptLine.getM_Product_ID(), movementLines.get(0).getM_Product_ID());
 		Assert.assertEquals("Wrong locator in movement line", receiptLocator, movementLines.get(0).getM_Locator());
 	}
 
@@ -187,7 +191,7 @@ public class InOutMovementBLTest
 		Assert.assertEquals("1 movement line shall be created", 1, movementLines.size());
 
 		Assert.assertEquals("Wrong qty in movement line", receiptLine.getMovementQty(), movementLines.get(0).getMovementQty());
-		Assert.assertEquals("Wrong product in movement line", receiptLine.getM_Product(), movementLines.get(0).getM_Product());
+		Assert.assertEquals("Wrong product in movement line", receiptLine.getM_Product_ID(), movementLines.get(0).getM_Product_ID());
 		Assert.assertEquals("Wrong locator in movement line", receiptLocator, movementLines.get(0).getM_Locator());
 		Assert.assertEquals("Wrong locator To in movement line", locatorForIssues, movementLines.get(0).getM_LocatorTo());
 	}

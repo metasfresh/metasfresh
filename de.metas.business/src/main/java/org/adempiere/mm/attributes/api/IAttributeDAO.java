@@ -1,5 +1,7 @@
 package org.adempiere.mm.attributes.api;
 
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -24,10 +26,12 @@ package org.adempiere.mm.attributes.api;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
@@ -38,22 +42,37 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_AttributeValue_Mapping;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.util.ISingletonService;
 
 public interface IAttributeDAO extends ISingletonService
 {
+	String CACHEKEY_ATTRIBUTE_VALUE = I_M_AttributeValue.Table_Name;
+
+	void save(I_M_AttributeSetInstance asi);
+
+	void save(I_M_AttributeInstance ai);
+
 	I_M_AttributeSet getAttributeSetById(AttributeSetId attributeSetId);
 
 	I_M_Attribute getAttributeById(int attributeId);
 
 	I_M_Attribute getAttributeById(AttributeId attributeId);
 
+	<T extends I_M_Attribute> T getAttributeById(AttributeId attributeId, Class<T> type);
+
+	List<I_M_Attribute> getAttributesByIds(Collection<AttributeId> attributeIds);
+
 	/** @return attributeIds ordered by M_AttributeUse.SeqNo */
 	List<AttributeId> getAttributeIdsByAttributeSetId(AttributeSetId attributeSetId);
 
+	Set<AttributeId> getAttributeIdsByAttributeSetInstanceId(AttributeSetInstanceId attributeSetInstanceId);
+
 	/** @return attributes, ordered by M_AttributeUse.SeqNo */
 	List<I_M_Attribute> getAttributesByAttributeSetId(AttributeSetId attributeSetId);
+
+	List<I_M_Attribute> getAllAttributes();
 
 	String getAttributeCodeById(AttributeId attributeId);
 
@@ -67,7 +86,13 @@ public interface IAttributeDAO extends ISingletonService
 	 */
 	I_M_AttributeSetInstance retrieveNoAttributeSetInstance();
 
-	List<I_M_AttributeValue> retrieveAttributeValues(I_M_Attribute attribute);
+	List<AttributeListValue> retrieveAttributeValues(I_M_Attribute attribute);
+
+	List<AttributeListValue> retrieveAttributeValuesByAttributeId(AttributeId attributeId);
+	
+	List<AttributeListValue> retrieveAttributeValuesByIds(Collection<AttributeValueId> attributeValueIds);
+
+	List<I_M_AttributeInstance> retrieveAttributeInstances(AttributeSetInstanceId attributeSetInstanceId);
 
 	/**
 	 * Retrieves all attribute instances associated with an attribute instance set.
@@ -84,7 +109,7 @@ public interface IAttributeDAO extends ISingletonService
 	 *
 	 * @param soTrx if NULL, retrieve all attribute values.
 	 */
-	List<I_M_AttributeValue> retrieveFilteredAttributeValues(I_M_Attribute attribute, SOTrx soTrx);
+	List<AttributeListValue> retrieveFilteredAttributeValues(I_M_Attribute attribute, SOTrx soTrx);
 
 	/**
 	 * Retrieves all attributes in a set that are (or aren't) instance attributes
@@ -98,9 +123,15 @@ public interface IAttributeDAO extends ISingletonService
 
 	I_M_Attribute retrieveAttribute(AttributeSetId attributeSetId, AttributeId attributeId);
 
-	I_M_AttributeValue retrieveAttributeValueOrNull(I_M_Attribute attribute, String value);
+	AttributeListValue retrieveAttributeValueOrNull(AttributeId attributeId, String value);
 
-	I_M_AttributeValue retrieveAttributeValueOrNull(I_M_Attribute attribute, AttributeValueId attributeValueId);
+	AttributeListValue retrieveAttributeValueOrNull(I_M_Attribute attribute, String value);
+
+	AttributeListValue retrieveAttributeValueOrNull(AttributeId attributeId, AttributeValueId attributeValueId);
+
+	AttributeListValue retrieveAttributeValueOrNull(I_M_Attribute attribute, AttributeValueId attributeValueId);
+
+	AttributeListValue retrieveAttributeValueOrNull(I_M_Attribute attribute, String value, boolean includeInactive);
 
 	/**
 	 * Retrieves substitutes (M_AttributeValue.Value) for given value.
@@ -129,6 +160,12 @@ public interface IAttributeDAO extends ISingletonService
 	 * @return substitutes (M_AttributeValue.Value).
 	 */
 	Set<String> retrieveAttributeValueSubstitutes(I_M_Attribute attribute, String value);
+
+	AttributeListValue createAttributeValue(AttributeListValueCreateRequest request);
+
+	AttributeListValue changeAttributeValue(AttributeListValueChangeRequest request);
+
+	boolean deleteAttributeValueByCode(AttributeId attributeId, String value);
 
 	AttributeId retrieveAttributeIdByValue(String value);
 
@@ -172,11 +209,19 @@ public interface IAttributeDAO extends ISingletonService
 	}
 
 	/**
-	 * @return true if given attribute is expected to have a huge amount of {@link I_M_AttributeValue}s.
+	 * @return true if given attribute is expected to have a huge amount of attribute values
 	 */
 	boolean isHighVolumeValuesList(I_M_Attribute attribute);
 
 	ImmutableAttributeSet getImmutableAttributeSetById(AttributeSetInstanceId asiId);
 
 	Map<AttributeSetInstanceId, ImmutableAttributeSet> getAttributesForASIs(Set<AttributeSetInstanceId> asiIds, Set<AttributeId> attributeIds);
+
+	Optional<ITranslatableString> getAttributeDisplayNameByValue(String value);
+
+	boolean areAttributeSetsEqual(AttributeSetInstanceId firstASIId, AttributeSetInstanceId secondASIId);
+
+	I_M_AttributeSetInstance getAttributeSetInstanceById(AttributeSetInstanceId attributeSetInstanceId);
+
+	AttributeSetInstanceId copyASI(AttributeSetInstanceId asiSourceId);
 }

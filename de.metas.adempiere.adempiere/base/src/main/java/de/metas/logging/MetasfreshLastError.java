@@ -19,12 +19,12 @@ import org.slf4j.Logger;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,11 +33,12 @@ import org.slf4j.Logger;
 
 /**
  * Last error/warning/info holder.
- * 
+ *
  * NOTE: in future we will remove this class, because the feature is legacy.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
+ * @deprecated
  */
 public class MetasfreshLastError
 {
@@ -77,7 +78,7 @@ public class MetasfreshLastError
 
 	private static final void saveError(final Logger logger, final String AD_Message, final String message, final Throwable exception, final boolean issueError)
 	{
-		final ValueNamePair lastError = new ValueNamePair(AD_Message, message);
+		final ValueNamePair lastError = ValueNamePair.of(AD_Message, message);
 
 		final LastErrorsInstance lastErrors = getLastErrorsInstance();
 		lastErrors.setLastError(lastError);
@@ -141,7 +142,7 @@ public class MetasfreshLastError
 	 */
 	public static void saveWarning(final Logger logger, final String AD_Message, final String message)
 	{
-		final ValueNamePair lastWarning = new ValueNamePair(AD_Message, message);
+		final ValueNamePair lastWarning = ValueNamePair.of(AD_Message, message);
 		getLastErrorsInstance().setLastWarning(lastWarning);
 
 		// print it

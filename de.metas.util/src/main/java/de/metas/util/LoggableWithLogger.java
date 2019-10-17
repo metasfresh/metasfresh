@@ -4,6 +4,7 @@ import org.adempiere.util.logging.LoggingHelper;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -27,19 +28,13 @@ import ch.qos.logback.classic.Level;
  * #L%
  */
 
-/**
- * To be created by {@link ILoggable#withLogger(Logger, Level)}.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-public class LoggableWithLogger implements ILoggable
+final class LoggableWithLogger implements ILoggable
 {
 	private final ILoggable parent;
 	private final Logger logger;
 	private final Level level;
 
-	/* package */ LoggableWithLogger(ILoggable parent, Logger logger, Level level)
+	/* package */ LoggableWithLogger(@NonNull final ILoggable parent, @NonNull final Logger logger, @NonNull final Level level)
 	{
 		this.parent = parent;
 		this.logger = logger;
@@ -47,9 +42,10 @@ public class LoggableWithLogger implements ILoggable
 	}
 
 	@Override
-	public void addLog(String msg, Object... msgParameters)
+	public ILoggable addLog(final String msg, final Object... msgParameters)
 	{
 		parent.addLog(msg, msgParameters);
 		LoggingHelper.log(logger, level, msg, msgParameters);
+		return this;
 	}
 }

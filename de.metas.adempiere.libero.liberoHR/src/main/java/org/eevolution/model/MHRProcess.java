@@ -627,22 +627,22 @@ public class MHRProcess extends X_HR_Process implements IDocument
 		StringBuffer whereClause = new StringBuffer();
 		whereClause.append("EXISTS (SELECT 1 FROM AD_User u WHERE u.AD_User_ID=PP_Cost_Collector.AD_User_ID AND u.C_BPartner_ID=?)");
 		params.add(C_BPartner_ID);
-		whereClause.append(" AND " + MPPCostCollector.COLUMNNAME_MovementDate + ">=?");
+		whereClause.append(" AND " + I_PP_Cost_Collector.COLUMNNAME_MovementDate + ">=?");
 		params.add(period.getStartDate());
-		whereClause.append(" AND " + MPPCostCollector.COLUMNNAME_MovementDate + "<=?");
+		whereClause.append(" AND " + I_PP_Cost_Collector.COLUMNNAME_MovementDate + "<=?");
 		params.add(period.getEndDate());
-		whereClause.append(" AND " + MPPCostCollector.COLUMNNAME_DocStatus + " IN (?,?)");
-		params.add(MPPCostCollector.DOCSTATUS_Completed);
-		params.add(MPPCostCollector.DOCSTATUS_Closed);
+		whereClause.append(" AND " + I_PP_Cost_Collector.COLUMNNAME_DocStatus + " IN (?,?)");
+		params.add(X_PP_Cost_Collector.DOCSTATUS_Completed);
+		params.add(X_PP_Cost_Collector.DOCSTATUS_Closed);
 
-		List<MPPCostCollector> listColector = new Query(getCtx(), MPPCostCollector.Table_Name,
+		List<I_PP_Cost_Collector> listColector = new Query(getCtx(), I_PP_Cost_Collector.Table_Name,
 				whereClause.toString(), get_TrxName())
 						.setOnlyActiveRecords(true)
 						.setParameters(params)
-						.setOrderBy(MPPCostCollector.COLUMNNAME_PP_Cost_Collector_ID + " DESC")
-						.list(MPPCostCollector.class);
+						.setOrderBy(I_PP_Cost_Collector.COLUMNNAME_PP_Cost_Collector_ID + " DESC")
+						.list(I_PP_Cost_Collector.class);
 
-		for (MPPCostCollector cc : listColector)
+		for (I_PP_Cost_Collector cc : listColector)
 		{
 			createMovementForCC(C_BPartner_ID, cc, scriptCtx);
 		}

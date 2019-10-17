@@ -44,12 +44,11 @@ public class PaymentString implements IPaymentString
 	private final Timestamp paymentDate;
 	private final Timestamp accountDate;
 	private final String orgValue;
-	private final String bpValue;
-	private final String documentNo;
 
 	private IPaymentStringDataProvider dataProvider = null;
 
-	public PaymentString(final List<String> collectedErrors,
+	public PaymentString(
+			final List<String> collectedErrors,
 			final String rawPaymentString,
 			final String postAccountNo,
 			final String innerAccountNo,
@@ -57,12 +56,8 @@ public class PaymentString implements IPaymentString
 			final String referenceNoComplete,
 			final Timestamp paymentDate,
 			final Timestamp accountDate,
-			final String orgValue,
-			final String bpValue,
-			final String documentNo)
+			final String orgValue)
 	{
-		super();
-
 		this.collectedErrors = collectedErrors;
 
 		this.rawPaymentString = rawPaymentString;
@@ -73,8 +68,6 @@ public class PaymentString implements IPaymentString
 		this.paymentDate = paymentDate;
 		this.accountDate = accountDate;
 		this.orgValue = orgValue;
-		this.bpValue = bpValue;
-		this.documentNo = documentNo;
 	}
 
 	@Override
@@ -129,24 +122,6 @@ public class PaymentString implements IPaymentString
 	public Timestamp getAccountDate()
 	{
 		return accountDate;
-	}
-
-	@Override
-	public String getOrgValue()
-	{
-		return orgValue;
-	}
-
-	@Override
-	public String getBPValue()
-	{
-		return bpValue;
-	}
-
-	@Override
-	public String getDocumentNo()
-	{
-		return documentNo;
 	}
 
 	/**

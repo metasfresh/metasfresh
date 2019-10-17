@@ -39,7 +39,6 @@ import org.compiere.util.NamePair;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HUConstants;
-import de.metas.handlingunits.IMutableHUTransactionAttribute;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.exceptions.AttributeNotFoundException;
 import de.metas.handlingunits.attribute.propagation.impl.NullHUAttributePropagator;
@@ -49,6 +48,7 @@ import de.metas.handlingunits.attribute.strategy.IAttributeAggregationStrategy;
 import de.metas.handlingunits.attribute.strategy.IAttributeSplitterStrategy;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.hutransaction.MutableHUTransactionAttribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.product.ProductId;
@@ -98,6 +98,8 @@ public interface IAttributeStorage extends IAttributeSet
 	 * @return {@link IAttributeValue}s contained in this storage
 	 */
 	List<IAttributeValue> getAttributeValues();
+
+
 
 	/**
 	 * @return {@link IAttributeValue} for the current attribute set
@@ -156,7 +158,7 @@ public interface IAttributeStorage extends IAttributeSet
 	 * @param huTrxAttribute
 	 * @param fromAttributeValue
 	 */
-	void updateHUTrxAttribute(IMutableHUTransactionAttribute huTrxAttribute, IAttributeValue fromAttributeValue);
+	void updateHUTrxAttribute(MutableHUTransactionAttribute huTrxAttribute, IAttributeValue fromAttributeValue);
 
 	/**
 	 * Check if this is a propagated value and not a value we can set it directly.

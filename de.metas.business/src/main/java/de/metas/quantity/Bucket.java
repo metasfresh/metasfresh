@@ -24,9 +24,9 @@ package de.metas.quantity;
 
 import java.math.BigDecimal;
 
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.I_C_UOM;
 
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
@@ -110,7 +110,7 @@ public class Bucket
 
 	public final BigDecimal getCapacity()
 	{
-		return capacity.getCapacityQty();
+		return capacity.toBigDecimal();
 	}
 
 	public final I_C_UOM getC_UOM()
@@ -160,7 +160,7 @@ public class Bucket
 	{
 		Check.assume(qtyToAdd.signum() >= 0, "qtyToAdd({}) >= 0", qtyToAdd);
 
-		final BigDecimal qtyToAdd_Qty = qtyToAdd.getAsBigDecimal();
+		final BigDecimal qtyToAdd_Qty = qtyToAdd.toBigDecimal();
 		final I_C_UOM qtyToAdd_UOM = qtyToAdd.getUOM();
 		final I_C_UOM baseUOM = getC_UOM();
 
@@ -231,7 +231,7 @@ public class Bucket
 		Check.assumeNotNull(qtyToRemove, "qtyToRemove not null");
 		Check.assume(qtyToRemove.signum() >= 0, "qtyToRemove({}) >= 0", qtyToRemove);
 
-		final BigDecimal qtyToRemove_Qty = qtyToRemove.getAsBigDecimal();
+		final BigDecimal qtyToRemove_Qty = qtyToRemove.toBigDecimal();
 		final I_C_UOM qtyToRemove_UOM = qtyToRemove.getUOM();
 		final I_C_UOM baseUOM = getC_UOM();
 

@@ -32,8 +32,6 @@ public interface I_M_ShipmentSchedule
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_AD_Client>(I_M_ShipmentSchedule.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -43,7 +41,7 @@ public interface I_M_ShipmentSchedule
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -53,15 +51,11 @@ public interface I_M_ShipmentSchedule
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_AD_Org>(I_M_ShipmentSchedule.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
@@ -88,10 +82,6 @@ public interface I_M_ShipmentSchedule
 	 */
 	public int getAD_Table_ID();
 
-	public org.compiere.model.I_AD_Table getAD_Table();
-
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
-
     /** Column definition for AD_Table_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_AD_Table>(I_M_ShipmentSchedule.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
     /** Column name AD_Table_ID */
@@ -117,10 +107,6 @@ public interface I_M_ShipmentSchedule
 	 */
 	public int getAD_User_ID();
 
-	public org.compiere.model.I_AD_User getAD_User();
-
-	public void setAD_User(org.compiere.model.I_AD_User AD_User);
-
     /** Column definition for AD_User_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_AD_User> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_AD_User>(I_M_ShipmentSchedule.class, "AD_User_ID", org.compiere.model.I_AD_User.class);
     /** Column name AD_User_ID */
@@ -143,10 +129,6 @@ public interface I_M_ShipmentSchedule
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_User_Override_ID();
-
-	public org.compiere.model.I_AD_User getAD_User_Override();
-
-	public void setAD_User_Override(org.compiere.model.I_AD_User AD_User_Override);
 
     /** Column definition for AD_User_Override_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_AD_User> COLUMN_AD_User_Override_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_AD_User>(I_M_ShipmentSchedule.class, "AD_User_Override_ID", org.compiere.model.I_AD_User.class);
@@ -178,7 +160,7 @@ public interface I_M_ShipmentSchedule
 
 	/**
 	 * Set Rechnungspartner.
-	 * Geschäftspartners für die Rechnungsstellung
+	 * Geschäftspartner für die Rechnungsstellung
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -188,17 +170,13 @@ public interface I_M_ShipmentSchedule
 
 	/**
 	 * Get Rechnungspartner.
-	 * Geschäftspartners für die Rechnungsstellung
+	 * Geschäftspartner für die Rechnungsstellung
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getBill_BPartner_ID();
-
-	public org.compiere.model.I_C_BPartner getBill_BPartner();
-
-	public void setBill_BPartner(org.compiere.model.I_C_BPartner Bill_BPartner);
 
     /** Column definition for Bill_BPartner_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_BPartner> COLUMN_Bill_BPartner_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_BPartner>(I_M_ShipmentSchedule.class, "Bill_BPartner_ID", org.compiere.model.I_C_BPartner.class);
@@ -271,10 +249,6 @@ public interface I_M_ShipmentSchedule
 	 */
 	public int getC_BP_Location_Override_ID();
 
-	public org.compiere.model.I_C_BPartner_Location getC_BP_Location_Override();
-
-	public void setC_BP_Location_Override(org.compiere.model.I_C_BPartner_Location C_BP_Location_Override);
-
     /** Column definition for C_BP_Location_Override_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BP_Location_Override_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_BPartner_Location>(I_M_ShipmentSchedule.class, "C_BP_Location_Override_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name C_BP_Location_Override_ID */
@@ -299,10 +273,6 @@ public interface I_M_ShipmentSchedule
 	 * <br>Virtual Column: false
 	 */
 	public int getC_BPartner_ID();
-
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
 
     /** Column definition for C_BPartner_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_BPartner>(I_M_ShipmentSchedule.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
@@ -329,10 +299,6 @@ public interface I_M_ShipmentSchedule
 	 */
 	public int getC_BPartner_Location_ID();
 
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location();
-
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location);
-
     /** Column definition for C_BPartner_Location_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_BPartner_Location>(I_M_ShipmentSchedule.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name C_BPartner_Location_ID */
@@ -358,10 +324,6 @@ public interface I_M_ShipmentSchedule
 	 */
 	public int getC_BPartner_Override_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner_Override();
-
-	public void setC_BPartner_Override(org.compiere.model.I_C_BPartner C_BPartner_Override);
-
     /** Column definition for C_BPartner_Override_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_Override_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_BPartner>(I_M_ShipmentSchedule.class, "C_BPartner_Override_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_Override_ID */
@@ -384,10 +346,6 @@ public interface I_M_ShipmentSchedule
 	 * <br>Virtual Column: false
 	 */
 	public int getC_BPartner_Vendor_ID();
-
-	public org.compiere.model.I_C_BPartner getC_BPartner_Vendor();
-
-	public void setC_BPartner_Vendor(org.compiere.model.I_C_BPartner C_BPartner_Vendor);
 
     /** Column definition for C_BPartner_Vendor_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_Vendor_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_BPartner>(I_M_ShipmentSchedule.class, "C_BPartner_Vendor_ID", org.compiere.model.I_C_BPartner.class);
@@ -418,12 +376,6 @@ public interface I_M_ShipmentSchedule
 	@Deprecated
 	public int getC_Currency_ID();
 
-	@Deprecated
-	public org.compiere.model.I_C_Currency getC_Currency();
-
-	@Deprecated
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
-
     /** Column definition for C_Currency_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_Currency>(I_M_ShipmentSchedule.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
     /** Column name C_Currency_ID */
@@ -448,10 +400,6 @@ public interface I_M_ShipmentSchedule
 	 * <br>Virtual Column: false
 	 */
 	public int getC_DocType_ID();
-
-	public org.compiere.model.I_C_DocType getC_DocType();
-
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
 
     /** Column definition for C_DocType_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_DocType>(I_M_ShipmentSchedule.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
@@ -540,16 +488,35 @@ public interface I_M_ShipmentSchedule
 	@Deprecated
 	public int getC_UOM_ID();
 
-	@Deprecated
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	@Deprecated
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
     /** Column definition for C_UOM_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_UOM>(I_M_ShipmentSchedule.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
     /** Column name C_UOM_ID */
     public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Set Catch Einheit.
+	 * Aus dem Produktstamm übenommene Catch Weight Einheit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCatch_UOM_ID (int Catch_UOM_ID);
+
+	/**
+	 * Get Catch Einheit.
+	 * Aus dem Produktstamm übenommene Catch Weight Einheit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getCatch_UOM_ID();
+
+    /** Column definition for Catch_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_UOM> COLUMN_Catch_UOM_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_UOM>(I_M_ShipmentSchedule.class, "Catch_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name Catch_UOM_ID */
+    public static final String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
 
 	/**
 	 * Get Erstellt.
@@ -1095,10 +1062,6 @@ public interface I_M_ShipmentSchedule
 	 */
 	public int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
-
     /** Column definition for M_Product_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_M_Product>(I_M_ShipmentSchedule.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
@@ -1176,12 +1139,6 @@ public interface I_M_ShipmentSchedule
 	@Deprecated
 	public int getM_Warehouse_Dest_ID();
 
-	@Deprecated
-	public org.compiere.model.I_M_Warehouse getM_Warehouse_Dest();
-
-	@Deprecated
-	public void setM_Warehouse_Dest(org.compiere.model.I_M_Warehouse M_Warehouse_Dest);
-
     /** Column definition for M_Warehouse_Dest_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_Dest_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_M_Warehouse>(I_M_ShipmentSchedule.class, "M_Warehouse_Dest_ID", org.compiere.model.I_M_Warehouse.class);
     /** Column name M_Warehouse_Dest_ID */
@@ -1207,10 +1164,6 @@ public interface I_M_ShipmentSchedule
 	 */
 	public int getM_Warehouse_ID();
 
-	public org.compiere.model.I_M_Warehouse getM_Warehouse();
-
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
-
     /** Column definition for M_Warehouse_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_M_Warehouse>(I_M_ShipmentSchedule.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
     /** Column name M_Warehouse_ID */
@@ -1235,10 +1188,6 @@ public interface I_M_ShipmentSchedule
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Warehouse_Override_ID();
-
-	public org.compiere.model.I_M_Warehouse getM_Warehouse_Override();
-
-	public void setM_Warehouse_Override(org.compiere.model.I_M_Warehouse M_Warehouse_Override);
 
     /** Column definition for M_Warehouse_Override_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_Override_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_M_Warehouse>(I_M_ShipmentSchedule.class, "M_Warehouse_Override_ID", org.compiere.model.I_M_Warehouse.class);
@@ -1594,7 +1543,7 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_QtyOrdered_Override = "QtyOrdered_Override";
 
 	/**
-	 * Set Auf Packzettel.
+	 * Set Auf Packzettel (Lagereinheit).
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1603,7 +1552,7 @@ public interface I_M_ShipmentSchedule
 	public void setQtyPickList (java.math.BigDecimal QtyPickList);
 
 	/**
-	 * Get Auf Packzettel.
+	 * Get Auf Packzettel (Lagereinheit).
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1715,6 +1664,29 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_QtyToDeliver_OverrideFulfilled = "QtyToDeliver_OverrideFulfilled";
 
 	/**
+	 * Set Abw. Catch Weight Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyToDeliverCatch_Override (java.math.BigDecimal QtyToDeliverCatch_Override);
+
+	/**
+	 * Get Abw. Catch Weight Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyToDeliverCatch_Override();
+
+    /** Column definition for QtyToDeliverCatch_Override */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyToDeliverCatch_Override = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "QtyToDeliverCatch_Override", null);
+    /** Column name QtyToDeliverCatch_Override */
+    public static final String COLUMNNAME_QtyToDeliverCatch_Override = "QtyToDeliverCatch_Override";
+
+	/**
 	 * Set Datensatz-ID.
 	 * Direct internal record ID
 	 *
@@ -1738,6 +1710,29 @@ public interface I_M_ShipmentSchedule
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "Record_ID", null);
     /** Column name Record_ID */
     public static final String COLUMNNAME_Record_ID = "Record_ID";
+
+	/**
+	 * Set Zuordnung Mindesthaltbarkeit.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setShipmentAllocation_BestBefore_Policy (java.lang.String ShipmentAllocation_BestBefore_Policy);
+
+	/**
+	 * Get Zuordnung Mindesthaltbarkeit.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getShipmentAllocation_BestBefore_Policy();
+
+    /** Column definition for ShipmentAllocation_BestBefore_Policy */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_ShipmentAllocation_BestBefore_Policy = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "ShipmentAllocation_BestBefore_Policy", null);
+    /** Column name ShipmentAllocation_BestBefore_Policy */
+    public static final String COLUMNNAME_ShipmentAllocation_BestBefore_Policy = "ShipmentAllocation_BestBefore_Policy";
 
 	/**
 	 * Set Positionssumme.

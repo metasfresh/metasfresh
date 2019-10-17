@@ -6,13 +6,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
 import de.metas.dlm.partitioner.IIterateResultHandler;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 
 /*
@@ -75,7 +75,7 @@ public class SalesPurchaseWatchDog implements IIterateResultHandler
 		}
 		if (getNotNullReferenceCount() > 1)
 		{
-			Loggables.get().withLogger(logger, Level.WARN).addLog("Records which do not fit together are added to the same result.\n"
+			Loggables.withLogger(logger, Level.WARN).addLog("Records which do not fit together are added to the same result.\n"
 					+ "Signaling the crawler to stop! The records are:\n"
 					+ "IsSOTrx=true, seen at {}: {}\n"
 					+ "IsSOTrx=false, seen at {}: {}\n"
@@ -122,7 +122,7 @@ public class SalesPurchaseWatchDog implements IIterateResultHandler
 			return;
 		}
 
-		final Boolean soTrx = Util.coalesce(
+		final Boolean soTrx = CoalesceUtil.coalesce(
 				InterfaceWrapperHelper.getValueOrNull(model, soTrxColName1),
 				InterfaceWrapperHelper.getValueOrNull(model, soTrxColName2));
 

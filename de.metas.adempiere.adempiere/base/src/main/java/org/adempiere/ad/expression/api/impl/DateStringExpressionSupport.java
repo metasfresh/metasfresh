@@ -12,9 +12,11 @@ import org.adempiere.ad.expression.api.impl.DateStringExpressionSupport.DateStri
 import org.compiere.util.CtxName;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -29,18 +31,18 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public class DateStringExpressionSupport extends StringExpressionSupportTemplate<java.util.Date, DateStringExpression>
 {
-	public static interface DateStringExpression extends IExpression<Date>
+	public interface DateStringExpression extends IExpression<Date>
 	{
 		String PARAM_DateFormat = DateFormat.class.getName();
 	}
@@ -94,12 +96,21 @@ public class DateStringExpressionSupport extends StringExpressionSupportTemplate
 			{
 				return (Date)valueObj;
 			}
+			else if (TimeUtil.isDateOrTimeObject(valueObj))
+			{
+				return TimeUtil.asDate(valueObj);
+			}
+			else
+			{
+				return convertFromString(valueObj.toString(), options);
+			}
+		}
 
-			String valueStr = valueObj.toString();
-			// JSONVa
+		private Date convertFromString(String valueStr, @NonNull final ExpressionContext options)
+		{
 			if (valueStr == null)
 			{
-				return null; // shall not happen
+				return null;
 			}
 
 			valueStr = valueStr.trim();
@@ -138,11 +149,10 @@ public class DateStringExpressionSupport extends StringExpressionSupportTemplate
 				final IllegalArgumentException exFinal = new IllegalArgumentException("Failed converting '" + valueStr + "' to date", ex2);
 				throw exFinal;
 			}
-
 		}
 	}
 
-	private static final class NullExpression extends NullExpressionTemplate<Date, DateStringExpression>implements DateStringExpression
+	private static final class NullExpression extends NullExpressionTemplate<Date, DateStringExpression> implements DateStringExpression
 	{
 		public NullExpression(final Compiler<Date, DateStringExpression> compiler)
 		{
@@ -150,7 +160,7 @@ public class DateStringExpressionSupport extends StringExpressionSupportTemplate
 		}
 	}
 
-	private static final class ConstantExpression extends ConstantExpressionTemplate<Date, DateStringExpression>implements DateStringExpression
+	private static final class ConstantExpression extends ConstantExpressionTemplate<Date, DateStringExpression> implements DateStringExpression
 	{
 		public ConstantExpression(final ExpressionContext context, final Compiler<Date, DateStringExpression> compiler, final String expressionStr, final Date constantValue)
 		{
@@ -159,7 +169,7 @@ public class DateStringExpressionSupport extends StringExpressionSupportTemplate
 
 	}
 
-	private static final class SingleParameterExpression extends SingleParameterExpressionTemplate<Date, DateStringExpression>implements DateStringExpression
+	private static final class SingleParameterExpression extends SingleParameterExpressionTemplate<Date, DateStringExpression> implements DateStringExpression
 	{
 		public SingleParameterExpression(final ExpressionContext context, final Compiler<Date, DateStringExpression> compiler, final String expressionStr, final CtxName parameter)
 		{
@@ -173,7 +183,7 @@ public class DateStringExpressionSupport extends StringExpressionSupportTemplate
 		}
 	}
 
-	private static final class GeneralExpression extends GeneralExpressionTemplate<Date, DateStringExpression>implements DateStringExpression
+	private static final class GeneralExpression extends GeneralExpressionTemplate<Date, DateStringExpression> implements DateStringExpression
 	{
 
 		public GeneralExpression(final ExpressionContext context, final Compiler<Date, DateStringExpression> compiler, final String expressionStr, final List<Object> expressionChunks)

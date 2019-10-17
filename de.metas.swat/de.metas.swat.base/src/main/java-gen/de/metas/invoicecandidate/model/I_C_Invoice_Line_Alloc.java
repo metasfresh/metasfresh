@@ -32,8 +32,6 @@ public interface I_C_Invoice_Line_Alloc
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Line_Alloc, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Line_Alloc, org.compiere.model.I_AD_Client>(I_C_Invoice_Line_Alloc.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -58,10 +56,6 @@ public interface I_C_Invoice_Line_Alloc
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Line_Alloc, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Line_Alloc, org.compiere.model.I_AD_Org>(I_C_Invoice_Line_Alloc.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
@@ -207,6 +201,31 @@ public interface I_C_Invoice_Line_Alloc
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Line_Alloc, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Line_Alloc, org.compiere.model.I_C_UOM>(I_C_Invoice_Line_Alloc.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Set Belegstatus.
 	 * The current status of the document
 	 *
@@ -308,7 +327,7 @@ public interface I_C_Invoice_Line_Alloc
 
 	/**
 	 * Set Berechn. Menge.
-	 * Menge, die bereits in Rechnung gestellt wurde
+	 * Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -318,7 +337,7 @@ public interface I_C_Invoice_Line_Alloc
 
 	/**
 	 * Get Berechn. Menge.
-	 * Menge, die bereits in Rechnung gestellt wurde
+	 * Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -330,6 +349,29 @@ public interface I_C_Invoice_Line_Alloc
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Line_Alloc, Object> COLUMN_QtyInvoiced = new org.adempiere.model.ModelColumn<I_C_Invoice_Line_Alloc, Object>(I_C_Invoice_Line_Alloc.class, "QtyInvoiced", null);
     /** Column name QtyInvoiced */
     public static final String COLUMNNAME_QtyInvoiced = "QtyInvoiced";
+
+	/**
+	 * Set Abgerechnet.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyInvoicedInUOM (java.math.BigDecimal QtyInvoicedInUOM);
+
+	/**
+	 * Get Abgerechnet.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyInvoicedInUOM();
+
+    /** Column definition for QtyInvoicedInUOM */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Line_Alloc, Object> COLUMN_QtyInvoicedInUOM = new org.adempiere.model.ModelColumn<I_C_Invoice_Line_Alloc, Object>(I_C_Invoice_Line_Alloc.class, "QtyInvoicedInUOM", null);
+    /** Column name QtyInvoicedInUOM */
+    public static final String COLUMNNAME_QtyInvoicedInUOM = "QtyInvoicedInUOM";
 
 	/**
 	 * Set Zu berechn. Menge abw..

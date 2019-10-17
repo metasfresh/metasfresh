@@ -13,15 +13,14 @@ package org.adempiere.mm.attributes.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -32,6 +31,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.IWeightable;
 import de.metas.handlingunits.attribute.IWeightableFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.hutransaction.IHUTrxDAO;
 import de.metas.handlingunits.hutransaction.IHUTrxListener;
 import de.metas.handlingunits.model.I_M_HU;
@@ -49,7 +49,7 @@ import de.metas.util.Services;
 public class WeightGenerateHUTrxListener implements IHUTrxListener
 {
 	public static final transient WeightGenerateHUTrxListener instance = new WeightGenerateHUTrxListener();
-	
+
 	@Override
 	public void trxLineProcessed(final IHUContext huContext, final I_M_HU_Trx_Line trxLine)
 	{
@@ -61,7 +61,7 @@ public class WeightGenerateHUTrxListener implements IHUTrxListener
 		{
 			return;
 		}
-		
+
 		final BigDecimal trxWeightNet = calculateTrxWeightIfApplies(trxLine);
 		if (trxWeightNet == null || trxWeightNet.signum() == 0)
 		{
@@ -108,7 +108,7 @@ public class WeightGenerateHUTrxListener implements IHUTrxListener
 		//
 		// Get transaction Product.
 		// Make sure we are dealing with a non-weightable product
-		final I_M_Product product = trxLine.getM_Product();
+		final I_M_Product product = IHUTrxBL.extractProductOrNull(trxLine);
 		if (product == null)
 		{
 			return null;
@@ -123,7 +123,7 @@ public class WeightGenerateHUTrxListener implements IHUTrxListener
 
 		//
 		// Get transaction UOM.
-		final I_C_UOM qtyUOM = trxLine.getC_UOM();
+		final I_C_UOM qtyUOM = IHUTrxBL.extractUOMOrNull(trxLine);
 		if (qtyUOM == null)
 		{
 			return null;

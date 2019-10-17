@@ -40,6 +40,8 @@ import de.metas.handlingunits.attribute.strategy.IAttributeSplitterStrategy;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 
+import javax.annotation.Nullable;
+
 public interface IAttributeValue
 {
 	/**
@@ -67,9 +69,7 @@ public interface IAttributeValue
 	void setValue(IAttributeValueContext attributeValueContext, Object value);
 
 	/**
-	 * Gets attribute value
-	 *
-	 * @return
+	 * Gets attribute value which may be {@code null}
 	 */
 	Object getValue();
 
@@ -168,7 +168,7 @@ public interface IAttributeValue
 	/**
 	 * @return the default empty value of an attribute (hard-coded)
 	 */
-	Object getEmptyValue();
+	@Nullable Object getEmptyValue();
 
 	void addAttributeValueListener(IAttributeValueListener listener);
 
@@ -199,7 +199,7 @@ public interface IAttributeValue
 	 * @return true if attribute is displayed to user
 	 */
 	boolean isDisplayedUI();
-	
+
 	boolean isMandatory();
 
 	/**

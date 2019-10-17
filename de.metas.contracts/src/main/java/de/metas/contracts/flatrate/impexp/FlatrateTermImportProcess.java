@@ -6,7 +6,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.PO;
@@ -15,6 +14,9 @@ import org.compiere.util.DB;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.model.X_I_Flatrate_Term;
+import de.metas.impexp.format.ImportTableDescriptor;
+import de.metas.impexp.processing.ImportRecordsSelection;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
 
 /*
  * #%L
@@ -38,7 +40,7 @@ import de.metas.contracts.model.X_I_Flatrate_Term;
  * #L%
  */
 
-public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrate_Term>
+public class FlatrateTermImportProcess extends SimpleImportProcessTemplate<I_I_Flatrate_Term>
 {
 	private final FlatrateTermImporter flatRateImporter;
 
@@ -74,8 +76,10 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-		final String sqlImportWhereClause = COLUMNNAME_I_IsImported + "<>" + DB.TO_BOOLEAN(true)
-				+ "\n " + getWhereClause();
+		final ImportRecordsSelection selection = getImportRecordsSelection();
+
+		final String sqlImportWhereClause = ImportTableDescriptor.COLUMNNAME_I_IsImported + "<>" + DB.TO_BOOLEAN(true)
+				+ "\n " + selection.toSqlWhereClause("i");
 		FlatrateTermImportTableSqlUpdater.updateFlatrateTermImportTable(sqlImportWhereClause);
 	}
 
@@ -87,7 +91,9 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_Flatrate_Term importRecord)
+	protected ImportRecordResult importRecord(final IMutable<Object> state,
+			final I_I_Flatrate_Term importRecord,
+			final boolean isInsertOnly /* not used. This import always inserts*/)
 	{
 		flatRateImporter.importRecord(importRecord);
 		return ImportRecordResult.Inserted;

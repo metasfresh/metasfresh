@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Test;
 
+import de.metas.organization.OrgId;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base

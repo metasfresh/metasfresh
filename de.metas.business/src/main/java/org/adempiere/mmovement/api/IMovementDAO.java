@@ -13,26 +13,28 @@ package org.adempiere.mmovement.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.mmovement.MovementLineId;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 
+import de.metas.inventory.InventoryId;
 import de.metas.util.ISingletonService;
 
 public interface IMovementDAO extends ISingletonService
 {
+	I_M_MovementLine getLineById(MovementLineId movementLineId);
 
 	/**
 	 * Retrieves all {@link I_M_MovementLine}s (including inactive ones), ordered by "Line" column.
@@ -52,5 +54,9 @@ public interface IMovementDAO extends ISingletonService
 	 */
 	<MovementLineType extends I_M_MovementLine> List<MovementLineType> retrieveLines(I_M_Movement movement, final Class<MovementLineType> movementLineClass);
 
-	IQueryBuilder<I_M_Movement> retrieveMovementsForInventoryQuery(int inventoryId);
+	IQueryBuilder<I_M_Movement> retrieveMovementsForInventoryQuery(InventoryId inventoryId);
+
+	void save(final I_M_Movement movement);
+
+	void save(final I_M_MovementLine movementLine);
 }

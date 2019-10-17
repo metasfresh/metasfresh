@@ -108,7 +108,7 @@ public class M_ShipmentSchedule_OpenProcessed extends JavaProcess implements IPr
 	private void openInTrx(final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		Services.get(ITrxManager.class)
-				.run(new TrxRunnable()
+				.runInNewTrx(new TrxRunnable()
 				{
 					@Override
 					public void run(String localTrxName) throws Exception

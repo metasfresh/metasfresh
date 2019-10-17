@@ -2,6 +2,8 @@ package de.metas.material.event.receiptschedule;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -39,6 +41,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @Getter
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 {
 	public static ReceiptScheduleCreatedEvent cast(@NonNull final AbstractReceiptScheduleEvent event)
@@ -57,7 +60,7 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 	@Builder
 	@JsonCreator
 	public ReceiptScheduleCreatedEvent(
-			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
+			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
 			@JsonProperty("orderLineDescriptor") @NonNull final OrderLineDescriptor orderLineDescriptor,
 			@JsonProperty("purchaseCandidateRepoId") final int purchaseCandidateRepoId,
 			@JsonProperty("materialDescriptor") final MaterialDescriptor materialDescriptor,
@@ -89,10 +92,11 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 	}
 
 	@Override
-	public void validate()
+	public ReceiptScheduleCreatedEvent validate()
 	{
 		super.validate();
 		orderLineDescriptor.validate();
+		return this;
 	}
 
 }

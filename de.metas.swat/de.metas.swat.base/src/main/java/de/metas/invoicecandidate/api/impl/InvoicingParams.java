@@ -24,7 +24,7 @@ package de.metas.invoicecandidate.api.impl;
 
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 
 import org.adempiere.util.api.IParams;
 
@@ -37,7 +37,6 @@ import lombok.NonNull;
  */
 public class InvoicingParams implements IInvoicingParams
 {
-
 	private static final String PARA_OnlyApprovedForInvoicing = "OnlyApprovedForInvoicing";
 	private static final String PARA_IsConsolidateApprovedICs = "IsConsolidateApprovedICs";
 	private static final String PARA_IgnoreInvoiceSchedule = "IgnoreInvoiceSchedule";
@@ -46,6 +45,7 @@ public class InvoicingParams implements IInvoicingParams
 	private static final String PARA_DateAcct = I_C_Invoice_Candidate.COLUMNNAME_DateAcct;
 	private static final String PARA_POReference = I_C_Invoice_Candidate.COLUMNNAME_POReference;
 	private static final String PARA_Check_NetAmtToInvoice = ICNetAmtToInvoiceChecker.PARAMETER_NAME;
+	private static final String PARA_IsUpdateLocationAndContactForInvoice = "IsUpdateLocationAndContactForInvoice";
 
 	private final IParams params;
 
@@ -73,15 +73,21 @@ public class InvoicingParams implements IInvoicingParams
 	}
 
 	@Override
-	public Timestamp getDateInvoiced()
+	public boolean isUpdateLocationAndContactForInvoice()
 	{
-		return params.getParameterAsTimestamp(PARA_DateInvoiced);
+		return params.getParameterAsBool(PARA_IsUpdateLocationAndContactForInvoice);
 	}
 
 	@Override
-	public Timestamp getDateAcct()
+	public LocalDate getDateInvoiced()
 	{
-		return params.getParameterAsTimestamp(PARA_DateAcct);
+		return params.getParameterAsLocalDate(PARA_DateInvoiced);
+	}
+
+	@Override
+	public LocalDate getDateAcct()
+	{
+		return params.getParameterAsLocalDate(PARA_DateAcct);
 	}
 
 	@Override

@@ -13,7 +13,7 @@ import de.metas.invoice.IInvoiceLineBL;
 import de.metas.util.Services;
 
 @Validator(I_C_InvoiceLine.class)
-@Component(" de.metas.invoice.interceptor.C_InvoiceLine")
+@Component
 public class C_InvoiceLine
 {
 	/**

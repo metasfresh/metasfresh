@@ -1,9 +1,5 @@
 package de.metas.util;
 
-import org.slf4j.Logger;
-
-import ch.qos.logback.classic.Level;
-
 /*
  * #%L
  * de.metas.util
@@ -36,22 +32,7 @@ import ch.qos.logback.classic.Level;
 public interface ILoggable
 {
 	/**
-	 * Add a log message.
-	 *
-	 * @param msg
-	 * @param msgParameters
+	 * Add a log message and return the loggable.
 	 */
-	public void addLog(String msg, Object... msgParameters);
-
-	/**
-	 * Create a new {@link ILoggable} instance that delegates {@link #addLog(String, Object...)} invokations to this instance and in addition logs to the given logger.
-	 *
-	 * @param logger
-	 * @param level
-	 * @return
-	 */
-	default ILoggable withLogger(final Logger logger, final Level level)
-	{
-		return new LoggableWithLogger(this, logger, level);
-	}
+	ILoggable addLog(String msg, Object... msgParameters);
 }

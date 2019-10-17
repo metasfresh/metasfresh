@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" columnCount="3" pageWidth="595" pageHeight="842" columnWidth="198" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/addresslabel/report" uuid="3f1b9da2-d681-4fed-b0c8-d8d3fe171bdf">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.9965000000000224"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="RECORD_ID" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[0]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT 	bprep.* from MKTG_Campaign_ContactPerson  cmpg_contact
+join de_metas_endcustomer_fresh_reports.Docs_Generics_BPartner_Report( cmpg_contact.ad_org_ID, 'mkt', null,cmpg_contact.mktg_contactperson_id) as bprep on 1=1
+where cmpg_contact.mktg_campaign_id = $P{RECORD_ID}
+;]]>
+	</queryString>
+	<field name="org_addressline" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="org_addressline"/>
+	</field>
+	<field name="addressblock" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="addressblock"/>
+	</field>
+	<group name="Section" isStartNewPage="true">
+		<groupExpression><![CDATA[]]></groupExpression>
+	</group>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="105" splitType="Stretch">
+			<line>
+				<reportElement mode="Opaque" x="13" y="35" width="178" height="1" uuid="9d40a193-2b1f-4ef6-aeba-c12bfb949444"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement mode="Transparent" x="13" y="40" width="178" height="65" uuid="f142acc8-427c-47a3-942b-1b7e9de84681"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{addressblock}]]></textFieldExpression>
+			</textField>
+			<rectangle>
+				<reportElement x="13" y="13" width="130" height="20" uuid="57a04e60-53a5-4400-a56a-682c2f060fb6"/>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</rectangle>
+			<textField>
+				<reportElement key="textField-10" mode="Transparent" x="48" y="13" width="88" height="21" uuid="4a8fe744-5240-4e34-9768-a69d4e10382d"/>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="SansSerif" size="8" isUnderline="false"/>
+					<paragraph lineSpacing="Fixed" lineSpacingSize="6.0"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{org_addressline}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="17" y="13" width="50" height="21" uuid="5d047808-06cc-4256-a5de-de0faf39e259"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="12" fontName="Arial" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paid}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="144" y="13" width="48" height="21" uuid="5308ad17-f0fa-4662-b9e2-dc23059fd191"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{post}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

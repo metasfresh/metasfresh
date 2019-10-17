@@ -1,22 +1,14 @@
 package de.metas.banking.bankstatement.match.form;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Properties;
 
 import javax.swing.JComboBox;
-
-import net.miginfocom.layout.AC;
-import net.miginfocom.layout.CC;
-import net.miginfocom.layout.LC;
-import net.miginfocom.swing.MigLayout;
 
 import org.compiere.swing.CButton;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.ListComboBoxModel;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import de.metas.banking.bankstatement.match.model.BankAccount;
 import de.metas.banking.bankstatement.match.model.BankStatement;
@@ -24,6 +16,11 @@ import de.metas.banking.bankstatement.match.service.BankStatementMatchQuery;
 import de.metas.banking.bankstatement.match.service.IBankStatementMatchDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
+import net.miginfocom.layout.AC;
+import net.miginfocom.layout.CC;
+import net.miginfocom.layout.LC;
+import net.miginfocom.swing.MigLayout;
 
 /*
  * #%L
@@ -104,15 +101,7 @@ class QueryPanel extends CPanel
 		{
 			btnQuery.setText(msgBL.translate(ctx, "Refresh"));
 			add(btnQuery);
-			btnQuery.addActionListener(new ActionListener()
-			{
-
-				@Override
-				public void actionPerformed(final ActionEvent e)
-				{
-					onQuery();
-				}
-			});
+			btnQuery.addActionListener(e -> onQuery());
 		}
 
 		//
@@ -152,11 +141,11 @@ class QueryPanel extends CPanel
 
 	public void setQuery(final BankStatementMatchQuery query)
 	{
-		final BankStatement bankStatement = Util.coalesce(query.getBankStatement(), BankStatement.NULL);
+		final BankStatement bankStatement = CoalesceUtil.coalesce(query.getBankStatement(), BankStatement.NULL);
 		bankStatementsModel.addIfAbsent(bankStatement);
 		bankStatementsModel.setSelectedItem(bankStatement);
 
-		final BankAccount bankAccount = Util.coalesce(query.getBankAccount(), BankAccount.NULL);
+		final BankAccount bankAccount = CoalesceUtil.coalesce(query.getBankAccount(), BankAccount.NULL);
 		bankAccountsModel.addIfAbsent(bankAccount);
 		bankAccountsModel.setSelectedItem(bankAccount);
 

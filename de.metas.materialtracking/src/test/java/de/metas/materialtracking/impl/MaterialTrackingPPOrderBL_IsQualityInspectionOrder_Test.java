@@ -25,12 +25,10 @@ package de.metas.materialtracking.impl;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
-import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order;
 import org.junit.Assert;
 import org.junit.Before;
@@ -55,7 +53,7 @@ public class MaterialTrackingPPOrderBL_IsQualityInspectionOrder_Test
 	public final void init()
 	{
 		AdempiereTestHelper.get().init();
-		this.context = new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None);
+		this.context = PlainContextAware.newOutOfTrx();
 
 		this.materialTrackingPPOrderBL = (MaterialTrackingPPOrderBL)Services.get(IMaterialTrackingPPOrderBL.class);
 	}
@@ -76,9 +74,6 @@ public class MaterialTrackingPPOrderBL_IsQualityInspectionOrder_Test
 
 	/**
 	 * Checks various methods which are checking if an order is a quality inspection order.
-	 *
-	 * @param isQualityInspectionOrderExpected
-	 * @param ppOrder
 	 */
 	protected void testIsQualityInspectionOrder(final boolean isQualityInspectionOrderExpected, final I_PP_Order ppOrder)
 	{

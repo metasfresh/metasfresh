@@ -1,14 +1,16 @@
 package de.metas.material.dispo.commons;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -23,6 +25,7 @@ import de.metas.material.event.ddorder.DDOrder.DDOrderBuilder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.ddorder.DDOrderLine.DDOrderLineBuilder;
 import de.metas.material.event.ddorder.DDOrderRequestedEvent;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -67,27 +70,45 @@ public class RequestMaterialOrderService
 		this.candidateRepository = candidateRepository;
 	}
 
-	public void requestMaterialOrder(@NonNull final Integer groupId)
+	/**
+	 * Creates and fires an event to request the creation of a particular material order (production, distribution or purchase).
+	 *
+	 * @param groupId of the candidates that are used to derive the material order to be requested.
+	 */
+	public void requestMaterialOrderForCandidates(@NonNull final MaterialDispoGroupId groupId)
 	{
-		final List<Candidate> group = candidateRepository.retrieveGroup(groupId);
-		if (group.isEmpty())
+		List<Candidate> groupOfCandidates = null;
+		try
 		{
-			return;
-		}
+			groupOfCandidates = candidateRepository.retrieveGroup(groupId);
+			if (groupOfCandidates.isEmpty())
+			{
+				return;
+			}
 
-		switch (group.get(0).getBusinessCase())
+			final CandidateBusinessCase businessCase = CollectionUtils.extractSingleElement(groupOfCandidates, Candidate::getBusinessCase);
+			switch (businessCase)
+			{
+				case PRODUCTION:
+					createAndFirePPOrderRequestedEvent(groupOfCandidates);
+					break;
+				case DISTRIBUTION:
+					createAndFireDDOrderRequestedEvent(groupOfCandidates);
+					break;
+				case PURCHASE:
+					createAndFirePurchaseCandidateRequestedEvent(groupOfCandidates);
+					break;
+				default:
+					break;
+			}
+		}
+		catch (final RuntimeException e)
 		{
-			case PRODUCTION:
-				createAndFirePPOrderRequestedEvent(group);
-				break;
-			case DISTRIBUTION:
-				createAndFireDDOrderRequestedEvent(group);
-				break;
-			case PURCHASE:
-				createAndFirePurchaseCandidateRequestedEvent(group);
-				break;
-			default:
-				break;
+			throw AdempiereException
+					.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("groupId", groupId)
+					.setParameter("groupOfCandidates", groupOfCandidates);
 		}
 	}
 
@@ -96,9 +117,7 @@ public class RequestMaterialOrderService
 	 * @param group a non-empty list of candidates that all have {@link CandidateBusinessCase#PRODUCTION},
 	 *            all have the same {@link Candidate#getGroupId()}
 	 *            and all have appropriate not-null {@link Candidate#getProductionDetail()}s.
-	 * @return
 	 */
-
 	private void createAndFirePPOrderRequestedEvent(@NonNull final List<Candidate> group)
 	{
 		final PPOrderRequestedEvent ppOrderRequestEvent = createPPOrderRequestedEvent(group);
@@ -108,7 +127,7 @@ public class RequestMaterialOrderService
 	@VisibleForTesting
 	PPOrderRequestedEvent createPPOrderRequestedEvent(@NonNull final List<Candidate> group)
 	{
-		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' is an empty list");
+		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' may not be an empty list");
 
 		final PPOrderBuilder ppOrderBuilder = PPOrder.builder();
 
@@ -125,12 +144,12 @@ public class RequestMaterialOrderService
 			{
 				// we talk about a ppOrder (header)
 				ppOrderBuilder
+						.clientAndOrgId(groupMember.getClientAndOrgId())
 						.productPlanningId(prodDetail.getProductPlanningId())
 						.datePromised(groupMember.getDate())
-						.orgId(groupMember.getOrgId())
 						.plantId(prodDetail.getPlantId())
 						.productDescriptor(materialDescriptor)
-						.bPartnerId(materialDescriptor.getCustomerId())
+						.bpartnerId(materialDescriptor.getCustomerId())
 						.qtyRequired(groupMember.getQuantity())
 						.warehouseId(groupMember.getWarehouseId());
 			}
@@ -164,8 +183,8 @@ public class RequestMaterialOrderService
 		ppOrderBuilder.materialDispoGroupId(firstGroupMember.getEffectiveGroupId());
 
 		return PPOrderRequestedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
-				.dateOrdered(SystemTime.asDate())
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(firstGroupMember.getClientAndOrgId()))
+				.dateOrdered(SystemTime.asInstant())
 				.ppOrder(ppOrderBuilder.build())
 				.build();
 	}
@@ -181,14 +200,13 @@ public class RequestMaterialOrderService
 	{
 		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' is an empty list");
 
-		final DDOrderBuilder ddOrderBuilder = DDOrder
-				.builder()
-				.materialDispoGroupId(10);
+		final DDOrderBuilder ddOrderBuilder = DDOrder.builder()
+				.materialDispoGroupId(MaterialDispoGroupId.ofInt(10));
 
 		final DDOrderLineBuilder ddOrderLineBuilder = DDOrderLine.builder();
 
-		Date startDate = null;
-		Date endDate = null;
+		Instant startDate = null;
+		Instant endDate = null;
 
 		for (final Candidate groupMember : group)
 		{
@@ -206,7 +224,7 @@ public class RequestMaterialOrderService
 			final MaterialDescriptor materialDescriptor = groupMember.getMaterialDescriptor();
 			ddOrderLineBuilder
 					.productDescriptor(materialDescriptor)
-					.bPartnerId(materialDescriptor.getCustomerId())
+					.bPartnerId(BPartnerId.toRepoId(materialDescriptor.getCustomerId()))
 					.qty(groupMember.getQuantity());
 
 			if (groupMember.getDemandDetail() != null && groupMember.getDemandDetail().getOrderLineId() > 0)
@@ -229,8 +247,8 @@ public class RequestMaterialOrderService
 		final Candidate firstGroupMember = group.get(0);
 
 		return DDOrderRequestedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
-				.dateOrdered(SystemTime.asDate())
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(firstGroupMember.getClientAndOrgId()))
+				.dateOrdered(SystemTime.asInstant())
 				.ddOrder(ddOrderBuilder
 						.line(ddOrderLineBuilder
 								.durationDays(durationDays)
@@ -250,7 +268,7 @@ public class RequestMaterialOrderService
 		final Candidate createdCandidate = CollectionUtils.singleElement(group);
 
 		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = PurchaseCandidateRequestedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(createdCandidate.getClientId(), createdCandidate.getOrgId()))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(createdCandidate.getClientAndOrgId()))
 				.purchaseMaterialDescriptor(createdCandidate.getMaterialDescriptor())
 				.supplyCandidateRepoId(createdCandidate.getId().getRepoId())
 				.salesOrderLineRepoId(createdCandidate.getAdditionalDemandDetail().getOrderLineId())

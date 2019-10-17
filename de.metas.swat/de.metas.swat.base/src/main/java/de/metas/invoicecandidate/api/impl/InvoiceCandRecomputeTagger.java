@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,9 +28,6 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.util.lang.ObjectUtils;
-import org.adempiere.util.text.annotation.ToStringBuilder;
-
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
@@ -38,16 +35,17 @@ import de.metas.invoicecandidate.api.InvoiceCandRecomputeTag;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lock.api.ILock;
 import de.metas.util.Check;
+import lombok.NonNull;
+import lombok.ToString;
 
+@ToString(exclude= {"_ctx", "invoiceCandDAO"})
 /*package*/class InvoiceCandRecomputeTagger implements IInvoiceCandRecomputeTagger
 {
 	// services
-	@ToStringBuilder(skip = true)
 	private final transient InvoiceCandDAO invoiceCandDAO;
 
 	//
 	// Parameters
-	@ToStringBuilder(skip = true)
 	private Properties _ctx;
 	private String _trxName;
 	private InvoiceCandRecomputeTag _recomputeTagToUseForTagging;
@@ -55,7 +53,7 @@ import de.metas.util.Check;
 	private InvoiceCandRecomputeTag _taggedWith = null;
 	private int _limit = -1;
 	private Set<Integer> onlyC_Invoice_Candidate_IDs = null;
-	
+
 	//
 	// State
 	private InvoiceCandRecomputeTag _recomputeTag;
@@ -65,12 +63,6 @@ import de.metas.util.Check;
 		super();
 		Check.assumeNotNull(invoiceCandDAO, "invoiceCandDAO not null");
 		this.invoiceCandDAO = invoiceCandDAO;
-	}
-	
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
 	}
 
 	@Override
@@ -88,14 +80,14 @@ import de.metas.util.Check;
 	{
 		return invoiceCandDAO.countToBeTagged(this);
 	}
-	
+
 	@Override
 	public void deleteAllTaggedAndInvalidateCache()
 	{
 		final Collection<Integer> onlyInvoiceCandidateIds = null; // i.e. ALL
 		invoiceCandDAO.deleteRecomputeMarkersAndInvalidateCache(this, onlyInvoiceCandidateIds);
 	}
-	
+
 	@Override
 	public void deleteTaggedAndInvalidateCache(final Collection<Integer> invoiceCandidateIds)
 	{
@@ -193,7 +185,7 @@ import de.metas.util.Check;
 		_taggedWith = tag;
 		return this;
 	}
-	
+
 	@Override
 	public InvoiceCandRecomputeTagger setTaggedWithNoTag()
 	{
@@ -223,12 +215,10 @@ import de.metas.util.Check;
 	{
 		return _limit;
 	}
-	
+
 	@Override
-	public InvoiceCandRecomputeTagger setOnlyC_Invoice_Candidates(final Iterator<? extends I_C_Invoice_Candidate> invoiceCandidates)
+	public InvoiceCandRecomputeTagger setOnlyC_Invoice_Candidates(@NonNull final Iterator<? extends I_C_Invoice_Candidate> invoiceCandidates)
 	{
-		Check.assumeNotNull(invoiceCandidates, "invoiceCandidates not null");
-		
 		final Set<Integer> invoiceCandidateIds = new HashSet<>();
 		while (invoiceCandidates.hasNext())
 		{
@@ -238,28 +228,27 @@ import de.metas.util.Check;
 			{
 				continue;
 			}
-			
+
 			invoiceCandidateIds.add(invoiceCandidateId);
 		}
-		
+
 		this.onlyC_Invoice_Candidate_IDs = ImmutableSet.copyOf(invoiceCandidateIds);
-		
+
 		return this;
 	}
 
 	@Override
-	public InvoiceCandRecomputeTagger setOnlyC_Invoice_Candidates(final Iterable<? extends I_C_Invoice_Candidate> invoiceCandidates)
+	public InvoiceCandRecomputeTagger setOnlyC_Invoice_Candidates(@NonNull final Iterable<? extends I_C_Invoice_Candidate> invoiceCandidates)
 	{
-		Check.assumeNotNull(invoiceCandidates, "invoiceCandidates not null");
 		return setOnlyC_Invoice_Candidates(invoiceCandidates.iterator());
 	}
-	
+
 	@Override
 	public boolean isOnlyC_Invoice_Candidate_IDs()
 	{
 		return onlyC_Invoice_Candidate_IDs != null;
 	}
-	
+
 	final Set<Integer> getOnlyC_Invoice_Candidate_IDs()
 	{
 		return onlyC_Invoice_Candidate_IDs;

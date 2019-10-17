@@ -6,16 +6,17 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.concurrent.ExecutionException;
 
+import javax.annotation.Nullable;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Util;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -74,6 +75,9 @@ public final class MFColor implements Serializable
 	/** Gradient repeat distance in points */
 	private final int gradientRepeatDistance;
 
+	/** Can be null if the color is not persisted in metasfresh */
+	private final ColorId id;
+
 	public static MFColor defaultOfType(@NonNull final MFColorType type)
 	{
 		final Color defaultColor = UIManager.getColor("Panel.background");
@@ -110,7 +114,7 @@ public final class MFColor implements Serializable
 		}
 	}
 
-	private static final MFColor newFlatColor(final @NonNull Color flatColor)
+	private static MFColor newFlatColor(final @NonNull Color flatColor)
 	{
 		return MFColor._builder()
 				.type(MFColorType.FLAT)
@@ -175,6 +179,7 @@ public final class MFColor implements Serializable
 
 	@Builder(toBuilder = true, builderMethodName = "_builder")
 	private MFColor(
+			@Nullable final ColorId id,
 			@NonNull final MFColorType type,
 			//
 			final Color flatColor,
@@ -193,6 +198,7 @@ public final class MFColor implements Serializable
 			final Integer gradientStartPoint,
 			final Integer gradientRepeatDistance)
 	{
+		this.id = id;
 		this.type = type;
 
 		if (type == MFColorType.FLAT)
@@ -215,9 +221,9 @@ public final class MFColor implements Serializable
 		{
 			Check.assumeNotNull(gradientUpperColor, "Parameter gradientUpperColor is not null");
 			this.gradientUpperColor = gradientUpperColor;
-			this.gradientLowerColor = Util.coalesce(gradientLowerColor, DEFAULT_GradientLowerColor); // lower color
-			this.gradientStartPoint = Util.coalesce(gradientStartPoint, DEFAULT_GradientStartPoint);
-			this.gradientRepeatDistance = Util.coalesce(gradientRepeatDistance, DEFAULT_GradientRepeatDistance);
+			this.gradientLowerColor = CoalesceUtil.coalesce(gradientLowerColor, DEFAULT_GradientLowerColor); // lower color
+			this.gradientStartPoint = CoalesceUtil.coalesce(gradientStartPoint, DEFAULT_GradientStartPoint);
+			this.gradientRepeatDistance = CoalesceUtil.coalesce(gradientRepeatDistance, DEFAULT_GradientRepeatDistance);
 			this.flatColor = null;
 			this.textureTaintColor = null;
 			this.textureURL = null;
@@ -231,9 +237,9 @@ public final class MFColor implements Serializable
 		{
 			Check.assumeNotNull(lineBackColor, "Parameter lineBackColor is not null");
 			this.lineBackColor = lineBackColor;
-			this.lineColor = Util.coalesce(lineColor, DEFAULT_LineColor); // line color
-			this.lineWidth = Util.coalesce(lineWidth, DEFAULT_LineWidth);
-			this.lineDistance = Util.coalesce(lineDistance, DEFAULT_LineDistance);
+			this.lineColor = CoalesceUtil.coalesce(lineColor, DEFAULT_LineColor); // line color
+			this.lineWidth = CoalesceUtil.coalesce(lineWidth, DEFAULT_LineWidth);
+			this.lineDistance = CoalesceUtil.coalesce(lineDistance, DEFAULT_LineDistance);
 			this.flatColor = null;
 			this.gradientUpperColor = null;
 			this.gradientLowerColor = null;
@@ -248,7 +254,7 @@ public final class MFColor implements Serializable
 			Check.assumeNotNull(textureTaintColor, "Parameter textureTaintColor is not null");
 			this.textureTaintColor = textureTaintColor;
 			this.textureURL = textureURL;
-			this.textureCompositeAlpha = Util.coalesce(textureCompositeAlpha, DEFAULT_TextureCompositeAlpha);
+			this.textureCompositeAlpha = CoalesceUtil.coalesce(textureCompositeAlpha, DEFAULT_TextureCompositeAlpha);
 			this.flatColor = null;
 			this.gradientUpperColor = null;
 			this.gradientLowerColor = null;
@@ -300,7 +306,7 @@ public final class MFColor implements Serializable
 		return sb.toString();
 	}
 
-	private static final String getColorAsString(Color color)
+	private static String getColorAsString(Color color)
 	{
 		if (color == null)
 		{

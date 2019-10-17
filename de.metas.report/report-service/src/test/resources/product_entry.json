@@ -1,0 +1,69 @@
+{
+  "result": {
+    "tabs": [
+      {
+        "id": 1000000,
+        "caption": "Product Labels",
+        "description": "",
+        "subtabs": [
+          {
+            "id": 1000000,
+            "caption": "Labels subtab",
+            "description": "",
+            "sections": [
+              {
+                "id": 1000000,
+                "caption": "Labels subtab 1",
+                "description": "",
+                "initially_closed": false,
+                "lines": [
+                  {
+                    "fields": [
+                      {
+                        "id": 1000000,
+                        "caption": "Left 1",
+                        "description": "",
+                        "type": "TEXT",
+                        "mandatory": false,
+                        "value": "Text from Left 1"
+                      },
+                      {
+                        "id": 1000001,
+                        "caption": "Right 1",
+                        "description": "",
+                        "type": "TEXT",
+                        "mandatory": false,
+                        "value": "Text from Right 1"
+                      }
+                    ]
+                  },
+                  {
+                    "fields": [
+                      {
+                        "id": 1000003,
+                        "caption": "Left 2",
+                        "description": "",
+                        "type": "TEXT",
+                        "mandatory": false,
+                        "value": "Text from Left 2"
+                      },
+                      {
+                        "id": 1000004,
+                        "caption": "Right 2",
+                        "description": "",
+                        "type": "TEXT",
+                        "mandatory": false,
+                        "value": "Text from Right 2"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "status": 200
+}

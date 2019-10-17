@@ -15,7 +15,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 493556848L;
+	private static final long serialVersionUID = 999490621L;
 
     /** Standard Constructor */
     public X_C_OLCand (Properties ctx, int C_OLCand_ID, String trxName)
@@ -23,6 +23,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
       super (ctx, C_OLCand_ID, trxName);
       /** if (C_OLCand_ID == 0)
         {
+			setAD_DataDestination_ID (0);
 			setAD_InputDataSource_ID (0);
 			setAD_User_EnteredBy_ID (0); // @#AD_User@
 			setC_BPartner_Location_ID (0);
@@ -31,6 +32,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 			setDateCandidate (new Timestamp( System.currentTimeMillis() )); // @Created@
 			setDeliveryRule (null); // A
 			setDeliveryViaRule (null); // P
+			setInvoicableQtyBasedOn (null); // Nominal
 			setIsError (false); // N
 			setIsExplicitProductPriceAttribute (false); // N
 			setIsManualDiscount (false); // N
@@ -54,8 +56,10 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
       return poi;
     }
 
-	/** Set Data Destination.
-		@param AD_DataDestination_ID Data Destination	  */
+	/** Set Verarbeitungsziel.
+		@param AD_DataDestination_ID 
+		Legt fest, welcher Teil von metafresh den jeweiligen Datensatz weiterverarbeiten soll
+	  */
 	@Override
 	public void setAD_DataDestination_ID (int AD_DataDestination_ID)
 	{
@@ -65,8 +69,9 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 			set_Value (COLUMNNAME_AD_DataDestination_ID, Integer.valueOf(AD_DataDestination_ID));
 	}
 
-	/** Get Data Destination.
-		@return Data Destination	  */
+	/** Get Verarbeitungsziel.
+		@return Legt fest, welcher Teil von metafresh den jeweiligen Datensatz weiterverarbeiten soll
+	  */
 	@Override
 	public int getAD_DataDestination_ID () 
 	{
@@ -99,7 +104,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Note getAD_Note() throws RuntimeException
+	public org.compiere.model.I_AD_Note getAD_Note()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Note_ID, org.compiere.model.I_AD_Note.class);
 	}
@@ -136,7 +141,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
+	public org.compiere.model.I_AD_Table getAD_Table()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
 	}
@@ -172,18 +177,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_AD_User getAD_User_EnteredBy() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_EnteredBy_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User_EnteredBy(org.compiere.model.I_AD_User AD_User_EnteredBy)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_EnteredBy_ID, org.compiere.model.I_AD_User.class, AD_User_EnteredBy);
-	}
-
 	/** Set Erfasst durch.
 		@param AD_User_EnteredBy_ID Erfasst durch	  */
 	@Override
@@ -204,18 +197,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User(org.compiere.model.I_AD_User AD_User)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
 	}
 
 	/** Set Ansprechpartner.
@@ -243,21 +224,9 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner getBill_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_Bill_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setBill_BPartner(org.compiere.model.I_C_BPartner Bill_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_Bill_BPartner_ID, org.compiere.model.I_C_BPartner.class, Bill_BPartner);
-	}
-
 	/** Set Rechnungspartner.
 		@param Bill_BPartner_ID 
-		Geschäftspartners für die Rechnungsstellung
+		Geschäftspartner für die Rechnungsstellung
 	  */
 	@Override
 	public void setBill_BPartner_ID (int Bill_BPartner_ID)
@@ -269,7 +238,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	/** Get Rechnungspartner.
-		@return Geschäftspartners für die Rechnungsstellung
+		@return Geschäftspartner für die Rechnungsstellung
 	  */
 	@Override
 	public int getBill_BPartner_ID () 
@@ -278,18 +247,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner_Location getBill_Location() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_Bill_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setBill_Location(org.compiere.model.I_C_BPartner_Location Bill_Location)
-	{
-		set_ValueFromPO(COLUMNNAME_Bill_Location_ID, org.compiere.model.I_C_BPartner_Location.class, Bill_Location);
 	}
 
 	/** Set Rechnungsstandort.
@@ -317,18 +274,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_AD_User getBill_User() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_Bill_User_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setBill_User(org.compiere.model.I_AD_User Bill_User)
-	{
-		set_ValueFromPO(COLUMNNAME_Bill_User_ID, org.compiere.model.I_AD_User.class, Bill_User);
-	}
-
 	/** Set Rechnungskontakt.
 		@param Bill_User_ID 
 		Ansprechpartner des Geschäftspartners für die Rechnungsstellung
@@ -354,16 +299,50 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return ii.intValue();
 	}
 
+	/** Set Standort eff..
+		@param C_BP_Location_Effective_ID 
+		Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
 	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner_Effective() throws RuntimeException
+	public void setC_BP_Location_Effective_ID (int C_BP_Location_Effective_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_Effective_ID, org.compiere.model.I_C_BPartner.class);
+		throw new IllegalArgumentException ("C_BP_Location_Effective_ID is virtual column");	}
+
+	/** Get Standort eff..
+		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public int getC_BP_Location_Effective_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Location_Effective_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
+	/** Set Standort abw..
+		@param C_BP_Location_Override_ID 
+		Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
 	@Override
-	public void setC_BPartner_Effective(org.compiere.model.I_C_BPartner C_BPartner_Effective)
+	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID)
 	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_Effective_ID, org.compiere.model.I_C_BPartner.class, C_BPartner_Effective);
+		if (C_BP_Location_Override_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_Location_Override_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_Location_Override_ID, Integer.valueOf(C_BP_Location_Override_ID));
+	}
+
+	/** Get Standort abw..
+		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public int getC_BP_Location_Override_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Location_Override_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Geschäftspartner eff..
@@ -382,18 +361,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
 	}
 
 	/** Set Geschäftspartner.
@@ -421,18 +388,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class, C_BPartner_Location);
-	}
-
 	/** Set Standort.
 		@param C_BPartner_Location_ID 
 		Identifiziert die (Liefer-) Adresse des Geschäftspartners
@@ -456,18 +411,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner_Override() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_Override_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner_Override(org.compiere.model.I_C_BPartner C_BPartner_Override)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_Override_ID, org.compiere.model.I_C_BPartner.class, C_BPartner_Override);
 	}
 
 	/** Set Geschäftspartner abw..
@@ -496,77 +439,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public org.compiere.model.I_C_BPartner_Location getC_BP_Location_Effective() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BP_Location_Effective_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setC_BP_Location_Effective(org.compiere.model.I_C_BPartner_Location C_BP_Location_Effective)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BP_Location_Effective_ID, org.compiere.model.I_C_BPartner_Location.class, C_BP_Location_Effective);
-	}
-
-	/** Set Standort eff..
-		@param C_BP_Location_Effective_ID 
-		Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public void setC_BP_Location_Effective_ID (int C_BP_Location_Effective_ID)
-	{
-		throw new IllegalArgumentException ("C_BP_Location_Effective_ID is virtual column");	}
-
-	/** Get Standort eff..
-		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public int getC_BP_Location_Effective_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Location_Effective_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner_Location getC_BP_Location_Override() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BP_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setC_BP_Location_Override(org.compiere.model.I_C_BPartner_Location C_BP_Location_Override)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BP_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class, C_BP_Location_Override);
-	}
-
-	/** Set Standort abw..
-		@param C_BP_Location_Override_ID 
-		Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID)
-	{
-		if (C_BP_Location_Override_ID < 1) 
-			set_Value (COLUMNNAME_C_BP_Location_Override_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BP_Location_Override_ID, Integer.valueOf(C_BP_Location_Override_ID));
-	}
-
-	/** Get Standort abw..
-		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public int getC_BP_Location_Override_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Location_Override_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Charge getC_Charge() throws RuntimeException
+	public org.compiere.model.I_C_Charge getC_Charge()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Charge_ID, org.compiere.model.I_C_Charge.class);
 	}
@@ -602,18 +475,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
-	}
-
-	@Override
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
-	}
-
 	/** Set Währung.
 		@param C_Currency_ID 
 		Die Währung für diesen Eintrag
@@ -637,18 +498,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_DocType getC_DocTypeInvoice() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_DocTypeInvoice_ID, org.compiere.model.I_C_DocType.class);
-	}
-
-	@Override
-	public void setC_DocTypeInvoice(org.compiere.model.I_C_DocType C_DocTypeInvoice)
-	{
-		set_ValueFromPO(COLUMNNAME_C_DocTypeInvoice_ID, org.compiere.model.I_C_DocType.class, C_DocTypeInvoice);
 	}
 
 	/** Set Rechnungs-Belegart.
@@ -720,18 +569,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_TaxCategory getC_TaxCategory() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_TaxCategory_ID, org.compiere.model.I_C_TaxCategory.class);
-	}
-
-	@Override
-	public void setC_TaxCategory(org.compiere.model.I_C_TaxCategory C_TaxCategory)
-	{
-		set_ValueFromPO(COLUMNNAME_C_TaxCategory_ID, org.compiere.model.I_C_TaxCategory.class, C_TaxCategory);
-	}
-
 	/** Set Steuerkategorie.
 		@param C_TaxCategory_ID 
 		Steuerkategorie
@@ -757,18 +594,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
-	}
-
 	/** Set Maßeinheit.
 		@param C_UOM_ID 
 		Maßeinheit
@@ -792,18 +617,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM_Internal() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_Internal_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM_Internal(org.compiere.model.I_C_UOM C_UOM_Internal)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_Internal_ID, org.compiere.model.I_C_UOM.class, C_UOM_Internal);
 	}
 
 	/** Set Maßeinheit int..
@@ -844,23 +657,23 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateCandidate);
 	}
 
-	/** Set Rechnungsdatum.
-		@param DateInvoiced 
-		Datum auf der Rechnung
+	/** Set Auftragsdatum.
+		@param DateOrdered 
+		Datum des Auftrags
 	  */
 	@Override
-	public void setDateInvoiced (java.sql.Timestamp DateInvoiced)
+	public void setDateOrdered (java.sql.Timestamp DateOrdered)
 	{
-		set_Value (COLUMNNAME_DateInvoiced, DateInvoiced);
+		set_Value (COLUMNNAME_DateOrdered, DateOrdered);
 	}
 
-	/** Get Rechnungsdatum.
-		@return Datum auf der Rechnung
+	/** Get Auftragsdatum.
+		@return Datum des Auftrags
 	  */
 	@Override
-	public java.sql.Timestamp getDateInvoiced () 
+	public java.sql.Timestamp getDateOrdered () 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateInvoiced);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateOrdered);
 	}
 
 	/** Set Zugesagter Termin.
@@ -1059,18 +872,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return bd;
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner getDropShip_BPartner_Effective() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_DropShip_BPartner_Effective_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setDropShip_BPartner_Effective(org.compiere.model.I_C_BPartner DropShip_BPartner_Effective)
-	{
-		set_ValueFromPO(COLUMNNAME_DropShip_BPartner_Effective_ID, org.compiere.model.I_C_BPartner.class, DropShip_BPartner_Effective);
-	}
-
 	/** Set Lieferempfänger eff..
 		@param DropShip_BPartner_Effective_ID Lieferempfänger eff.	  */
 	@Override
@@ -1087,18 +888,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner getDropShip_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_DropShip_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setDropShip_BPartner(org.compiere.model.I_C_BPartner DropShip_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_DropShip_BPartner_ID, org.compiere.model.I_C_BPartner.class, DropShip_BPartner);
 	}
 
 	/** Set Lieferempfänger.
@@ -1126,18 +915,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner getDropShip_BPartner_Override() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_DropShip_BPartner_Override_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setDropShip_BPartner_Override(org.compiere.model.I_C_BPartner DropShip_BPartner_Override)
-	{
-		set_ValueFromPO(COLUMNNAME_DropShip_BPartner_Override_ID, org.compiere.model.I_C_BPartner.class, DropShip_BPartner_Override);
-	}
-
 	/** Set Lieferempfänger abw..
 		@param DropShip_BPartner_Override_ID Lieferempfänger abw.	  */
 	@Override
@@ -1160,18 +937,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner_Location getDropShip_Location_Effective() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_DropShip_Location_Effective_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setDropShip_Location_Effective(org.compiere.model.I_C_BPartner_Location DropShip_Location_Effective)
-	{
-		set_ValueFromPO(COLUMNNAME_DropShip_Location_Effective_ID, org.compiere.model.I_C_BPartner_Location.class, DropShip_Location_Effective);
-	}
-
 	/** Set Lieferadresse eff..
 		@param DropShip_Location_Effective_ID Lieferadresse eff.	  */
 	@Override
@@ -1188,18 +953,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner_Location getDropShip_Location() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_DropShip_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setDropShip_Location(org.compiere.model.I_C_BPartner_Location DropShip_Location)
-	{
-		set_ValueFromPO(COLUMNNAME_DropShip_Location_ID, org.compiere.model.I_C_BPartner_Location.class, DropShip_Location);
 	}
 
 	/** Set Lieferadresse.
@@ -1225,18 +978,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner_Location getDropShip_Location_Override() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_DropShip_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setDropShip_Location_Override(org.compiere.model.I_C_BPartner_Location DropShip_Location_Override)
-	{
-		set_ValueFromPO(COLUMNNAME_DropShip_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class, DropShip_Location_Override);
 	}
 
 	/** Set Lieferadresse abw..
@@ -1277,32 +1018,36 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return (java.lang.String)get_Value(COLUMNNAME_ErrorMsg);
 	}
 
-	/** Set External ID.
-		@param ExternalId External ID	  */
+	/** Set Externe Datensatz-Kopf-ID.
+		@param ExternalHeaderId Externe Datensatz-Kopf-ID	  */
 	@Override
-	public void setExternalId (java.lang.String ExternalId)
+	public void setExternalHeaderId (java.lang.String ExternalHeaderId)
 	{
-		set_Value (COLUMNNAME_ExternalId, ExternalId);
+		set_Value (COLUMNNAME_ExternalHeaderId, ExternalHeaderId);
 	}
 
-	/** Get External ID.
-		@return External ID	  */
+	/** Get Externe Datensatz-Kopf-ID.
+		@return Externe Datensatz-Kopf-ID	  */
 	@Override
-	public java.lang.String getExternalId () 
+	public java.lang.String getExternalHeaderId () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ExternalId);
+		return (java.lang.String)get_Value(COLUMNNAME_ExternalHeaderId);
 	}
 
+	/** Set Externe Datensatz-Zeilen-ID.
+		@param ExternalLineId Externe Datensatz-Zeilen-ID	  */
 	@Override
-	public org.compiere.model.I_C_BPartner_Location getHandOver_Location_Effective() throws RuntimeException
+	public void setExternalLineId (java.lang.String ExternalLineId)
 	{
-		return get_ValueAsPO(COLUMNNAME_HandOver_Location_Effective_ID, org.compiere.model.I_C_BPartner_Location.class);
+		set_Value (COLUMNNAME_ExternalLineId, ExternalLineId);
 	}
 
+	/** Get Externe Datensatz-Zeilen-ID.
+		@return Externe Datensatz-Zeilen-ID	  */
 	@Override
-	public void setHandOver_Location_Effective(org.compiere.model.I_C_BPartner_Location HandOver_Location_Effective)
+	public java.lang.String getExternalLineId () 
 	{
-		set_ValueFromPO(COLUMNNAME_HandOver_Location_Effective_ID, org.compiere.model.I_C_BPartner_Location.class, HandOver_Location_Effective);
+		return (java.lang.String)get_Value(COLUMNNAME_ExternalLineId);
 	}
 
 	/** Set Übergabeadresse eff..
@@ -1321,18 +1066,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner_Location getHandOver_Location() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_HandOver_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setHandOver_Location(org.compiere.model.I_C_BPartner_Location HandOver_Location)
-	{
-		set_ValueFromPO(COLUMNNAME_HandOver_Location_ID, org.compiere.model.I_C_BPartner_Location.class, HandOver_Location);
 	}
 
 	/** Set Übergabeadresse.
@@ -1357,18 +1090,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner_Location getHandOver_Location_Override() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_HandOver_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setHandOver_Location_Override(org.compiere.model.I_C_BPartner_Location HandOver_Location_Override)
-	{
-		set_ValueFromPO(COLUMNNAME_HandOver_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class, HandOver_Location_Override);
-	}
-
 	/** Set Übergabeadresse abw..
 		@param HandOver_Location_Override_ID Übergabeadresse abw.	  */
 	@Override
@@ -1391,18 +1112,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner getHandOver_Partner_Effective() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_HandOver_Partner_Effective_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setHandOver_Partner_Effective(org.compiere.model.I_C_BPartner HandOver_Partner_Effective)
-	{
-		set_ValueFromPO(COLUMNNAME_HandOver_Partner_Effective_ID, org.compiere.model.I_C_BPartner.class, HandOver_Partner_Effective);
-	}
-
 	/** Set Übergabe an eff..
 		@param HandOver_Partner_Effective_ID Übergabe an eff.	  */
 	@Override
@@ -1419,18 +1128,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner getHandOver_Partner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_HandOver_Partner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setHandOver_Partner(org.compiere.model.I_C_BPartner HandOver_Partner)
-	{
-		set_ValueFromPO(COLUMNNAME_HandOver_Partner_ID, org.compiere.model.I_C_BPartner.class, HandOver_Partner);
 	}
 
 	/** Set Übergabe an.
@@ -1455,18 +1152,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner getHandOver_Partner_Override() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_HandOver_Partner_Override_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setHandOver_Partner_Override(org.compiere.model.I_C_BPartner HandOver_Partner_Override)
-	{
-		set_ValueFromPO(COLUMNNAME_HandOver_Partner_Override_ID, org.compiere.model.I_C_BPartner.class, HandOver_Partner_Override);
-	}
-
 	/** Set Übergabe an abw..
 		@param HandOver_Partner_Override_ID Übergabe an abw.	  */
 	@Override
@@ -1487,6 +1172,35 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * InvoicableQtyBasedOn AD_Reference_ID=541023
+	 * Reference name: InvoicableQtyBasedOn
+	 */
+	public static final int INVOICABLEQTYBASEDON_AD_Reference_ID=541023;
+	/** Nominal = Nominal */
+	public static final String INVOICABLEQTYBASEDON_Nominal = "Nominal";
+	/** CatchWeight = CatchWeight */
+	public static final String INVOICABLEQTYBASEDON_CatchWeight = "CatchWeight";
+	/** Set Abr. Menge basiert auf.
+		@param InvoicableQtyBasedOn 
+		Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
+	  */
+	@Override
+	public void setInvoicableQtyBasedOn (java.lang.String InvoicableQtyBasedOn)
+	{
+
+		set_Value (COLUMNNAME_InvoicableQtyBasedOn, InvoicableQtyBasedOn);
+	}
+
+	/** Get Abr. Menge basiert auf.
+		@return Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
+	  */
+	@Override
+	public java.lang.String getInvoicableQtyBasedOn () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_InvoicableQtyBasedOn);
 	}
 
 	/** Set Fehler.
@@ -1610,7 +1324,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public org.compiere.model.I_M_AttributeSet getM_AttributeSet() throws RuntimeException
+	public org.compiere.model.I_M_AttributeSet getM_AttributeSet()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSet_ID, org.compiere.model.I_M_AttributeSet.class);
 	}
@@ -1647,7 +1361,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
@@ -1745,18 +1459,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_PricingSystem getM_PricingSystem() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class);
-	}
-
-	@Override
-	public void setM_PricingSystem(org.compiere.model.I_M_PricingSystem M_PricingSystem)
-	{
-		set_ValueFromPO(COLUMNNAME_M_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class, M_PricingSystem);
-	}
-
 	/** Set Preissystem.
 		@param M_PricingSystem_ID 
 		Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
@@ -1782,18 +1484,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Product getM_Product_Effective() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_Effective_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product_Effective(org.compiere.model.I_M_Product M_Product_Effective)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_Effective_ID, org.compiere.model.I_M_Product.class, M_Product_Effective);
-	}
-
 	/** Set Produkt eff..
 		@param M_Product_Effective_ID Produkt eff.	  */
 	@Override
@@ -1810,18 +1500,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.
@@ -1847,18 +1525,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product_Override() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_Override_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product_Override(org.compiere.model.I_M_Product M_Product_Override)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_Override_ID, org.compiere.model.I_M_Product.class, M_Product_Override);
 	}
 
 	/** Set Produkt abw..
@@ -1906,7 +1572,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public org.compiere.model.I_M_ProductPrice getM_ProductPrice() throws RuntimeException
+	public org.compiere.model.I_M_ProductPrice getM_ProductPrice()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_ProductPrice_ID, org.compiere.model.I_M_ProductPrice.class);
 	}
@@ -1937,18 +1603,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Warehouse getM_Warehouse_Dest() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Warehouse_Dest_ID, org.compiere.model.I_M_Warehouse.class);
-	}
-
-	@Override
-	public void setM_Warehouse_Dest(org.compiere.model.I_M_Warehouse M_Warehouse_Dest)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Warehouse_Dest_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse_Dest);
 	}
 
 	/** Set Ziel-Lager.
@@ -1990,6 +1644,63 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public java.lang.String getPOReference () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_POReference);
+	}
+
+	/** Set Vorbelegtes Rechnungsdatum.
+		@param PresetDateInvoiced Vorbelegtes Rechnungsdatum	  */
+	@Override
+	public void setPresetDateInvoiced (java.sql.Timestamp PresetDateInvoiced)
+	{
+		set_Value (COLUMNNAME_PresetDateInvoiced, PresetDateInvoiced);
+	}
+
+	/** Get Vorbelegtes Rechnungsdatum.
+		@return Vorbelegtes Rechnungsdatum	  */
+	@Override
+	public java.sql.Timestamp getPresetDateInvoiced () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_PresetDateInvoiced);
+	}
+
+	/** Set Vorbelegtes Lieferdatum.
+		@param PresetDateShipped Vorbelegtes Lieferdatum	  */
+	@Override
+	public void setPresetDateShipped (java.sql.Timestamp PresetDateShipped)
+	{
+		set_Value (COLUMNNAME_PresetDateShipped, PresetDateShipped);
+	}
+
+	/** Get Vorbelegtes Lieferdatum.
+		@return Vorbelegtes Lieferdatum	  */
+	@Override
+	public java.sql.Timestamp getPresetDateShipped () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_PresetDateShipped);
+	}
+
+	/** Set Preiseinheit int..
+		@param Price_UOM_Internal_ID 
+		Interne Preiseinheit laut Stammdaten
+	  */
+	@Override
+	public void setPrice_UOM_Internal_ID (int Price_UOM_Internal_ID)
+	{
+		if (Price_UOM_Internal_ID < 1) 
+			set_Value (COLUMNNAME_Price_UOM_Internal_ID, null);
+		else 
+			set_Value (COLUMNNAME_Price_UOM_Internal_ID, Integer.valueOf(Price_UOM_Internal_ID));
+	}
+
+	/** Get Preiseinheit int..
+		@return Interne Preiseinheit laut Stammdaten
+	  */
+	@Override
+	public int getPrice_UOM_Internal_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Price_UOM_Internal_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Einzelpreis.
@@ -2074,43 +1785,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
-	}
-
-	@Override
-	public org.compiere.model.I_C_UOM getPrice_UOM_Internal() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_Price_UOM_Internal_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setPrice_UOM_Internal(org.compiere.model.I_C_UOM Price_UOM_Internal)
-	{
-		set_ValueFromPO(COLUMNNAME_Price_UOM_Internal_ID, org.compiere.model.I_C_UOM.class, Price_UOM_Internal);
-	}
-
-	/** Set Preiseinheit int..
-		@param Price_UOM_Internal_ID 
-		Interne Preiseinheit laut Stammdaten
-	  */
-	@Override
-	public void setPrice_UOM_Internal_ID (int Price_UOM_Internal_ID)
-	{
-		if (Price_UOM_Internal_ID < 1) 
-			set_Value (COLUMNNAME_Price_UOM_Internal_ID, null);
-		else 
-			set_Value (COLUMNNAME_Price_UOM_Internal_ID, Integer.valueOf(Price_UOM_Internal_ID));
-	}
-
-	/** Get Preiseinheit int..
-		@return Interne Preiseinheit laut Stammdaten
-	  */
-	@Override
-	public int getPrice_UOM_Internal_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Price_UOM_Internal_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
 	}
 
 	/** Set Verarbeitet.

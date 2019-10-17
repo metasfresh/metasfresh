@@ -1,5 +1,7 @@
 package de.metas.handlingunits.receiptschedule.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -10,12 +12,12 @@ package de.metas.handlingunits.receiptschedule.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -79,19 +81,20 @@ import de.metas.util.Services;
 
 		final I_M_HU_PI_Item_Product tuPIItemProduct = getM_HU_PI_Item_Product(documentLine);
 		final ProductId cuProductId = ProductId.ofRepoId(documentLine.getM_Product_ID());
-		final I_C_UOM cuUOM = documentLine.getC_UOM();
+
+		final I_C_UOM cuUOM = loadOutOfTrx(documentLine.getC_UOM_ID(), I_C_UOM.class);
 
 		final I_C_BPartner bpartner = receiptScheduleBL.getC_BPartner_Effective(documentLine);
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuFactory.createLUTUConfiguration(
-				tuPIItemProduct, 
-				cuProductId, 
-				cuUOM, 
+				tuPIItemProduct,
+				cuProductId,
+				cuUOM,
 				bpartner,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
 
 		// Update LU/TU configuration
 		updateLUTUConfigurationFromPPOrder(lutuConfiguration, documentLine);
-		
+
 		// NOTE: don't save it...we might use it as "in-memory POJO"
 
 		return lutuConfiguration;
@@ -108,15 +111,15 @@ import de.metas.util.Services;
 
 		//
 		// Set BPartner / Location to be used
-		final I_C_BPartner bpartner = receiptScheduleBL.getC_BPartner_Effective(documentLine);
+		final int bpartnerId = receiptScheduleBL.getC_BPartner_Effective_ID(documentLine);
 		final int bpartnerLocationId = receiptScheduleBL.getC_BPartner_Location_Effective_ID(documentLine);
-		lutuConfiguration.setC_BPartner(bpartner);
+		lutuConfiguration.setC_BPartner_ID(bpartnerId);
 		lutuConfiguration.setC_BPartner_Location_ID(bpartnerLocationId);
 
 		//
 		// Set Locator
 		final I_M_Locator locator = receiptScheduleBL.getM_Locator_Effective(documentLine);
-		lutuConfiguration.setM_Locator(locator);
+		lutuConfiguration.setM_Locator_ID(locator.getM_Locator_ID());
 
 		//
 		// Set HUStatus=Planning because receipt schedules are always about planning

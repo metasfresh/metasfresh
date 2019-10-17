@@ -4,12 +4,18 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Optional;
+
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Sequence;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -40,6 +46,9 @@ public class ParcelNumberGeneratorTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		final IDocumentNoBuilderFactory documentNoBuilderFactory = new DocumentNoBuilderFactory(Optional.empty());
+		Services.registerService(IDocumentNoBuilderFactory.class, documentNoBuilderFactory);
 	}
 
 	@Test

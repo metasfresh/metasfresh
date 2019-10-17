@@ -1,0 +1,5 @@
+-- 2019-09-12T10:12:34.453Z
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30,Updated=TO_TIMESTAMP('2019-09-12 13:12:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column.AD_Element_ID=113
+;
+

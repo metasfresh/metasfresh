@@ -63,8 +63,8 @@ public class Fresh_AllCachedMethodsTest
 				// Legacy code
 				.skipIfClassnameStartsWith("de.metas.dpd.process.ImportStatusData")
 				// Tests:
-				.skipIfClassnameStartsWith("de.metas.adempiere.util.cache.testservices.")
-				.skipIfClassnameStartsWith("de.metas.adempiere.util.cache.CachedMethodDescriptorTest$TestClass")
+				.skipIfClassnameStartsWith("de.metas.cache.interceptor.testservices.")
+				.skipIfClassnameStartsWith("de.metas.cache.interceptor.CachedMethodDescriptorTest$TestClass")
 				//
 				.test();
 	}

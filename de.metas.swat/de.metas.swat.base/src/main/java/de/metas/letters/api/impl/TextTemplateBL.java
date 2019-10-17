@@ -32,6 +32,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
@@ -55,10 +56,13 @@ import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.spi.ILetterProducer;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
 import de.metas.report.jasper.client.JRClient;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 
 public final class TextTemplateBL implements ITextTemplateBL
@@ -66,7 +70,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 	private static final TextTemplateBL instance = new TextTemplateBL();
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
-	private static final int AD_Process_ID_T_Letter_Spool_Print = 540278; // TODO: HARDCODED
+	private static final AdProcessId AD_Process_ID_T_Letter_Spool_Print = AdProcessId.ofRepoId(540278); // TODO: HARDCODED
 
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
@@ -95,7 +99,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 				.addOnlyContextClient()
 				.orderBy(I_AD_BoilerPlate.COLUMNNAME_Name)
 				.create()
-				.setApplyAccessFilterRW(false)
+				.setRequiredAccess(Access.READ)
 				.list(I_AD_BoilerPlate.class);
 	}
 
@@ -188,9 +192,9 @@ public final class TextTemplateBL implements ITextTemplateBL
 		return pdf;
 	}
 
-	private static int getJasperProcess_ID(final Letter request)
+	private static AdProcessId getJasperProcess_ID(final Letter request)
 	{
-		if (request.getBoilerPlateId() != null)
+		if (request.getBoilerPlateId() == null)
 		{
 			return AD_Process_ID_T_Letter_Spool_Print;
 		}
@@ -201,8 +205,8 @@ public final class TextTemplateBL implements ITextTemplateBL
 			return AD_Process_ID_T_Letter_Spool_Print;
 		}
 
-		int jasperProcessId = textTemplate.getJasperProcess_ID();
-		if (jasperProcessId <= 0)
+		AdProcessId jasperProcessId = AdProcessId.ofRepoIdOrNull(textTemplate.getJasperProcess_ID());
+		if (jasperProcessId == null)
 		{
 			jasperProcessId = AD_Process_ID_T_Letter_Spool_Print;
 		}
@@ -269,8 +273,8 @@ public final class TextTemplateBL implements ITextTemplateBL
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(textTemplate);
-		final int adClientId = textTemplate.getAD_Client_ID();
-		final int adOrgId = textTemplate.getAD_Org_ID();
+		final ClientId adClientId = ClientId.ofRepoId(textTemplate.getAD_Client_ID());
+		final OrgId adOrgId = OrgId.ofRepoId(textTemplate.getAD_Org_ID());
 		final int tableId = InterfaceWrapperHelper.getTableId(I_AD_BoilerPlate.class);
 		final int recordId = textTemplate.getAD_BoilerPlate_ID();
 		final boolean createError = false;

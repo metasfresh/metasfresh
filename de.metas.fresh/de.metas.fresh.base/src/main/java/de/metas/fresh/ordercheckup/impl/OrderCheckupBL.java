@@ -10,35 +10,34 @@ package de.metas.fresh.ordercheckup.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.order.IOrderDAO;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.warehouse.model.I_M_Warehouse;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.eevolution.model.I_PP_Product_Planning;
+import org.slf4j.Logger;
 
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.X_C_Order_MFGWarehouse_Report;
@@ -47,7 +46,16 @@ import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
 import de.metas.fresh.ordercheckup.model.I_C_BPartner;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.material.planning.IResourceDAO;
+import de.metas.material.planning.pporder.IPPRoutingRepository;
+import de.metas.material.planning.pporder.PPRouting;
+import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.product.ResourceId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 
 /**
@@ -85,7 +93,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 		//
-		// Iterate all order lines and those lines to corresponding "per Warehouse" reports.
+		// Iterate all order lines and add those lines to corresponding "per workflow" reports.
 		final Map<ArrayKey, OrderCheckupBuilder> reportBuilders = new HashMap<>();
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
 		for (final I_C_OrderLine orderLine : orderLines)
@@ -100,30 +108,36 @@ public class OrderCheckupBL implements IOrderCheckupBL
 			}
 
 			//
-			// Retrieve the manufacturing warehouse
-			final I_M_Warehouse mfgWarehouse = InterfaceWrapperHelper.create(mfgProductPlanning.getM_Warehouse(), I_M_Warehouse.class);
-			if (mfgWarehouse == null || mfgWarehouse.getM_Warehouse_ID() <= 0)
+			// Retrieve the manufacturing workflow
+			if (mfgProductPlanning.getAD_Workflow_ID() <= 0)
 			{
-				logger.info("Skip order line because no manufacturing warehouse was found for it: {}", orderLine);
+				logger.info("Skip order line because no manufacturing workflow was found for it: {}", orderLine);
 				continue;
 			}
 
-			final I_S_Resource plant = mfgProductPlanning.getS_Resource();
+			final ResourceId plantId = ResourceId.ofRepoId(mfgProductPlanning.getS_Resource_ID());
+			
+			final PPRoutingId routingId = PPRoutingId.ofRepoIdOrNull(mfgProductPlanning.getAD_Workflow_ID());
+			final PPRouting routing = routingId != null
+					? Services.get(IPPRoutingRepository.class).getById(routingId)
+					: null;
 
 			//
 			// Add order line to per Manufacturing warehouse report
 			{
 				final String documentType = X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Warehouse;
-				final ArrayKey reportBuilderKey = Util.mkKey(order.getC_Order_ID(), documentType, mfgWarehouse.getM_Warehouse_ID());
+				final UserId responsibleUserId = routing != null ? routing.getUserInChargeId() : null;
+				final ArrayKey reportBuilderKey = Util.mkKey(order.getC_Order_ID(), documentType, responsibleUserId);
 				OrderCheckupBuilder reportBuilder = reportBuilders.get(reportBuilderKey);
 				if (reportBuilder == null)
 				{
+					final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(mfgProductPlanning.getM_Warehouse_ID());
 					reportBuilder = OrderCheckupBuilder.newBuilder()
 							.setC_Order(order)
 							.setDocumentType(documentType)
-							.setM_Warehouse(mfgWarehouse)
-							.setPP_Plant(plant)
-							.setReponsibleUser(mfgWarehouse.getAD_User());
+							.setWarehouseId(warehouseId)
+							.setPlantId(plantId)
+							.setReponsibleUserId(responsibleUserId);
 					reportBuilders.put(reportBuilderKey, reportBuilder);
 				}
 				reportBuilder.addOrderLine(orderLine);
@@ -141,10 +155,10 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		// task 09508: we actually want it on the report for transportation, no matter if there is manufactoring PP_Product_Planning record.
 		{
 			// make sure the user knows if the master data is not OK, but also give them a chance to disable the error-exception in urgent cases.
-			final org.compiere.model.I_M_Warehouse warehouse = order.getM_Warehouse();
-			final I_S_Resource plant = warehouse.getPP_Plant();
+			final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()));
+			final ResourceId plantId = ResourceId.ofRepoIdOrNull(warehouse.getPP_Plant_ID());
 
-			if (plant == null || plant.getS_Resource_ID() <= 0)
+			if (plantId == null)
 			{
 				final IMsgBL msgBL = Services.get(IMsgBL.class);
 				final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -158,16 +172,19 @@ public class OrderCheckupBL implements IOrderCheckupBL
 								new Object[] {
 										warehouse.getValue() + " - " + warehouse.getName(),
 										SYSCONFIG_FAIL_IF_WAREHOUSE_HAS_NO_PLANT }))
-						.throwOrLogWarning(throwIt, logger);
+												.throwOrLogWarning(throwIt, logger);
 			}
 			else
 			{
+				final I_S_Resource plant = Services.get(IResourceDAO.class).getById(plantId);
+				final UserId responsibleUserId = UserId.ofRepoIdOrNull(plant.getAD_User_ID());
+
 				final OrderCheckupBuilder reportBuilder = OrderCheckupBuilder.newBuilder()
 						.setC_Order(order)
 						.setDocumentType(X_C_Order_MFGWarehouse_Report.DOCUMENTTYPE_Plant)
-						.setM_Warehouse(null) // no warehouse because we are aggregating on plant level
-						.setPP_Plant(plant)
-						.setReponsibleUser(plant.getAD_User());
+						.setWarehouseId(null) // no warehouse because we are aggregating on plant level
+						.setPlantId(plantId)
+						.setReponsibleUserId(responsibleUserId);
 				for (final I_C_OrderLine orderLine : orderLines)
 				{
 					// Don't add the packing materials
@@ -222,7 +239,8 @@ public class OrderCheckupBL implements IOrderCheckupBL
 							order.getC_Order_ID() });
 			return false; // nothing to do
 		}
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(order.getC_BPartner(), I_C_BPartner.class);
+		
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(Services.get(IOrderBL.class).getBPartner(order), I_C_BPartner.class);
 		if (bpartner.isDisableOrderCheckup())
 		{
 			logger.debug("C_BPartner {} has IsDisableOrderCheckup='Y'; nothing to do for C_Order_ID {}.",

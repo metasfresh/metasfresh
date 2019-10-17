@@ -21,10 +21,8 @@ import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
@@ -38,9 +36,14 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.model.I_C_Flatrate_Term;
 import de.metas.procurement.base.model.I_PMM_Product;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -116,9 +119,9 @@ public class PMMContractBuilder
 	private Timestamp _startDate;
 	private Timestamp _endDate;
 	private I_PMM_Product _pmmProduct;
-	private I_C_UOM _uom;
+	private UomId _uomId;
 	private Optional<I_AD_User> _userInCharge;
-	private I_C_Currency _currency;
+	private CurrencyId _currencyId;
 	private boolean _failIfNotCreated = true;
 	private boolean _complete = false;
 
@@ -213,7 +216,8 @@ public class PMMContractBuilder
 		final IContextAware context = getContext();
 		final boolean completeItOnCreate = false; // don't complete initially, we will do it later if needed
 		final I_PMM_Product pmmProduct = getPMM_Product();
-		final I_M_Product product = pmmProduct.getM_Product();
+		final ProductId productId = ProductId.ofRepoId(pmmProduct.getM_Product_ID());
+		final ProductAndCategoryId productAndCategoryId = Services.get(IProductDAO.class).retrieveProductAndCategoryIdByProductId(productId);
 		final I_C_BPartner bpartner = getC_BPartner();
 		final I_C_Flatrate_Conditions flatrateConditions = getC_Flatrate_Conditions();
 		final Timestamp startDate = getStartDate();
@@ -223,7 +227,9 @@ public class PMMContractBuilder
 
 		try
 		{
-			contract = InterfaceWrapperHelper.create(flatrateBL.createTerm(context, bpartner, flatrateConditions, startDate, userInCharge, product, completeItOnCreate), I_C_Flatrate_Term.class);
+			contract = InterfaceWrapperHelper.create(
+					flatrateBL.createTerm(context, bpartner, flatrateConditions, startDate, userInCharge, productAndCategoryId, completeItOnCreate),
+					I_C_Flatrate_Term.class);
 			Check.assumeNotNull(contract, "contract not null"); // shall not happen
 		}
 		catch (Exception ex)
@@ -240,12 +246,12 @@ public class PMMContractBuilder
 
 		contract.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Running);
 		contract.setEndDate(getEndDate());
-		contract.setC_Currency(getC_Currency());
+		contract.setC_Currency_ID(getCurrencyId().getRepoId());
 
 		// Product/UOM
 		contract.setPMM_Product(pmmProduct);
-		contract.setM_Product(product);
-		contract.setC_UOM(getC_UOM());
+		contract.setM_Product_ID(productId.getRepoId());
+		contract.setC_UOM_ID(getUomId().getRepoId());
 
 		InterfaceWrapperHelper.save(contract);
 
@@ -269,9 +275,9 @@ public class PMMContractBuilder
 		newDataEntry.setAD_Org_ID(term.getAD_Org_ID());
 		newDataEntry.setC_Flatrate_Term(term);
 		newDataEntry.setC_Period(period);
-		newDataEntry.setM_Product_DataEntry(term.getM_Product());
-		newDataEntry.setC_Currency(term.getC_Currency());
-		newDataEntry.setC_UOM(term.getC_UOM());
+		newDataEntry.setM_Product_DataEntry_ID(term.getM_Product_ID());
+		newDataEntry.setC_Currency_ID(term.getC_Currency_ID());
+		newDataEntry.setC_UOM_ID(term.getC_UOM_ID());
 		newDataEntry.setType(I_C_Flatrate_DataEntry.TYPE_Procurement_PeriodBased);
 
 		// gh #549 if there are _flatrateAmtPerUOMByDay entries for 'period' then use the first one
@@ -384,7 +390,7 @@ public class PMMContractBuilder
 	{
 		assertNotProcessed();
 		Check.assumeNotNull(endDate, "endDate not null");
-		_endDate = TimeUtil.trunc(endDate, TimeUtil.TRUNC_DAY);;
+		_endDate = TimeUtil.trunc(endDate, TimeUtil.TRUNC_DAY);
 		return this;
 	}
 
@@ -410,14 +416,14 @@ public class PMMContractBuilder
 	public PMMContractBuilder setC_UOM(final I_C_UOM uom)
 	{
 		assertNotProcessed();
-		_uom = uom;
+		_uomId = uom != null ? UomId.ofRepoId(uom.getC_UOM_ID()) : null;
 		return this;
 	}
 
-	private I_C_UOM getC_UOM()
+	private UomId getUomId()
 	{
-		Check.assumeNotNull(_uom, "uom not null");
-		return _uom;
+		Check.assumeNotNull(_uomId, "uom not null");
+		return _uomId;
 	}
 
 	public PMMContractBuilder setAD_User_InCharge(final I_AD_User userInCharge)
@@ -438,17 +444,17 @@ public class PMMContractBuilder
 		return _userInCharge.orNull();
 	}
 
-	public PMMContractBuilder setC_Currency(final I_C_Currency currency)
+	public PMMContractBuilder setCurrencyId(final CurrencyId currencyId)
 	{
 		assertNotProcessed();
-		_currency = currency;
+		_currencyId = currencyId;
 		return this;
 	}
 
-	private I_C_Currency getC_Currency()
+	private CurrencyId getCurrencyId()
 	{
-		Check.assumeNotNull(_currency, "_currency not null");
-		return _currency;
+		Check.assumeNotNull(_currencyId, "_currency not null");
+		return _currencyId;
 	}
 
 	public PMMContractBuilder setFailIfNotCreated(final boolean failIfNotCreated)
@@ -580,7 +586,7 @@ public class PMMContractBuilder
 
 	private static final class DailyFlatrateDataEntry
 	{
-		public static final DailyFlatrateDataEntry of(final Date day)
+		public static DailyFlatrateDataEntry of(final Date day)
 		{
 			return new DailyFlatrateDataEntry(day);
 		}

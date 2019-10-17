@@ -159,7 +159,7 @@ public class ShipmentScheduleQtyPickedExpectation<ParentExpectationType> extends
 
 		if (qtyPicked != null)
 		{
-			assertEquals(prefix + "QtyPicked", qtyPicked, candidate.getQtyPicked().getAsBigDecimal());
+			assertEquals(prefix + "QtyPicked", qtyPicked, candidate.getQtyPicked().toBigDecimal());
 		}
 
 		if (inoutLineSet)

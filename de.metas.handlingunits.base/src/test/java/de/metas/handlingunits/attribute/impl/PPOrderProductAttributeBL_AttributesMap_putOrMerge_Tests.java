@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.hamcrest.Matcher;
@@ -61,7 +62,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 	{
 		AdempiereTestHelper.get().init();
 	}
-	
+
 	@Test
 	public void transferWhenNullWithThreeAttributesOneFilled_AllNull()
 	{
@@ -78,7 +79,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 				nullValue() // expected
 		);
 	}
-	
+
 	@Test
 	public void dontTransferWhenNullWithThreeAttributesOneFilled_AllNull()
 	{
@@ -95,8 +96,6 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 				nullValue() // expected
 		);
 	}
-
-
 
 	@Test
 	public void transferWhenNullWithThreeAttributesOneFilled_Value()
@@ -455,7 +454,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 	private I_PP_Order_ProductAttribute mkPPOrderAttribute(final I_M_Attribute attribute, final String value, final BigDecimal valueNumber)
 	{
 		final I_PP_Order_ProductAttribute ppOrderAttribute1 = InterfaceWrapperHelper.newInstance(I_PP_Order_ProductAttribute.class);
-		ppOrderAttribute1.setM_Attribute(attribute);
+		ppOrderAttribute1.setM_Attribute_ID(attribute.getM_Attribute_ID());
 		ppOrderAttribute1.setValue(value);
 		ppOrderAttribute1.setValueNumber(valueNumber);
 		InterfaceWrapperHelper.save(ppOrderAttribute1);
@@ -478,10 +477,10 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 
 		// we want to check each different ordering (i.e. all possible permutations).
 		final Collection<List<I_PP_Order_ProductAttribute>> permutations = Collections2.permutations(ImmutableList.of(ppOrderAttribute1, ppOrderAttribute2, ppOrderAttribute3));
-		
+
 		permutations.forEach(permutation -> {
 			final AttributesMap attributesMap = new AttributesMap();
-			
+
 			// invoke the code under test
 			permutation.forEach(ppOrderAttribute -> attributesMap.putOrMerge(ppOrderAttribute));
 
@@ -502,15 +501,15 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 
 	/**
 	 * Called by {@link #performTestWithThreeAttributes(I_M_Attribute, I_PP_Order_ProductAttribute, I_PP_Order_ProductAttribute, I_PP_Order_ProductAttribute, Function, Matcher)} to verify each single result.
-	 *
-	 * @param attribute
-	 * @param attributesMap
-	 * @param actualValue
-	 * @param expectedValue
 	 */
-	private <T> void verifyInvariants(final I_M_Attribute attribute, final AttributesMap attributesMap, final Function<PPOrderProductAttributeBL.AttributeWithValue, T> actualValue, final Matcher<?> expectedValue)
+	private <T> void verifyInvariants(
+			final I_M_Attribute attribute,
+			final AttributesMap attributesMap,
+			final Function<PPOrderProductAttributeBL.AttributeWithValue, T> actualValue,
+			final Matcher<?> expectedValue)
 	{
-		final AttributeWithValue attributeFromMap = attributesMap.getByAttributeId(attribute.getM_Attribute_ID());
+		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
+		final AttributeWithValue attributeFromMap = attributesMap.getByAttributeId(attributeId);
 		if (attributeFromMap == null)
 		{
 			if (!expectedValue.equals(nullValue()))

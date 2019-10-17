@@ -1,311 +1,320 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<modelVersion>4.0.0</modelVersion>
+         xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<artifactId>de.metas.parent</artifactId>
-		<groupId>de.metas</groupId>
-		<version>[1,10.0.0]</version>
-		<relativePath>../../pom.xml</relativePath>
-	</parent>
+    <parent>
+        <artifactId>de.metas.parent</artifactId>
+        <groupId>de.metas</groupId>
+        <version>10.0.0</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
 
-	<groupId>de.metas.adempiere.adempiere</groupId>
-	<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-	<version>10.0.0</version>
-	<packaging>jar</packaging>
+    <groupId>de.metas.adempiere.adempiere</groupId>
+    <artifactId>de.metas.adempiere.adempiere.base</artifactId>
+    <version>10.0.0</version>
+    <packaging>jar</packaging>
 
-	<properties>
-		<metasfresh.version>[1,10.0.0]</metasfresh.version>
-	</properties>
+    <properties>
+        <metasfresh.version>[1,10.0.0]</metasfresh.version>
+    </properties>
 
-	<dependencies>
+    <dependencies>
 
-		<dependency>
-			<groupId>de.metas.util</groupId>
-			<artifactId>de.metas.util</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>de.metas.util</groupId>
+            <artifactId>de.metas.util</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>de.metas.monitoring</groupId>
-			<artifactId>de.metas.monitoring</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>de.metas.monitoring</groupId>
+            <artifactId>de.metas.monitoring</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
 
-		<!-- used to build html strings in some legacy code such as GridWindow.java -->
-		<dependency>
-			<groupId>de.metas.adempiere.adempiere</groupId>
-			<artifactId>de.metas.adempiere.adempiere.patched-ecs</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
+        <!-- used to build html strings in some legacy code such as GridWindow.java -->
+        <dependency>
+            <groupId>de.metas.adempiere.adempiere</groupId>
+            <artifactId>de.metas.adempiere.adempiere.patched-ecs</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
 
-		<dependency>
-			<!-- NOTE: we need this for MG to be able to track dependencies -->
-			<groupId>de.metas.adempiere.adempiere</groupId>
-			<artifactId>de.metas.adempiere.adempiere.migration-sql</artifactId>
-			<version>${metasfresh.version}</version>
-			<scope>provided</scope>
-		</dependency>
+        <dependency>
+            <!-- NOTE: we need this for MG to be able to track dependencies -->
+            <groupId>de.metas.adempiere.adempiere</groupId>
+            <artifactId>de.metas.adempiere.adempiere.migration-sql</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>provided</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>org.jolokia</groupId>
-			<artifactId>jolokia-core</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.jolokia</groupId>
+            <artifactId>jolokia-core</artifactId>
+        </dependency>
 
 
-		<!-- we use javax.mail to actually send mails. In order to encode/decode base64, we recommend to use guava instead -->
-		<dependency>
-			<groupId>com.sun.mail</groupId>
-			<artifactId>javax.mail</artifactId>
-		</dependency>
+        <!-- we use javax.mail to actually send mails. In order to encode/decode base64, we recommend to use guava instead -->
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>javax.mail</artifactId>
+        </dependency>
 
-		<!--
-		task 09848: 
-		Required so that we can annotate services to be jax-rs restful web services.
-		Note that the actual magic happens in the module de.metas.jax.rs 
-		-->
-		<dependency>
-			<groupId>javax.ws.rs</groupId>
-			<artifactId>javax.ws.rs-api</artifactId>
-			<version>2.0.1</version>
-		</dependency>
+        <!--
+        task 09848:
+        Required so that we can annotate services to be jax-rs restful web services.
+        Note that the actual magic happens in the module de.metas.jax.rs
+        -->
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <version>2.0.1</version>
+        </dependency>
 
-		<dependency>
-			<groupId>javax.activation</groupId>
-			<artifactId>activation</artifactId>
-			<version>1.1</version>
-		</dependency>
+        <dependency>
+            <groupId>javax.activation</groupId>
+            <artifactId>activation</artifactId>
+            <version>1.1</version>
+        </dependency>
 
-		<dependency>
-			<groupId>javax.jms</groupId>
-			<artifactId>jms</artifactId>
-			<version>1.1</version>
-		</dependency>
+        <dependency>
+            <groupId>javax.jms</groupId>
+            <artifactId>jms</artifactId>
+            <version>1.1</version>
+        </dependency>
 
-		<!-- ActiveMQ is generally needed only by the swingUI and the app-server,
-			but shall not be present in the classpath of other services that don't need it.
- 		-->
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-broker</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-client</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-kahadb-store</artifactId>
-			<scope>provided</scope>
-		</dependency>
+        <!-- ActiveMQ is generally needed only by the swingUI and the app-server,
+            but shall not be present in the classpath of other services that don't need it.
+        -->
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-broker</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-client</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-kahadb-store</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-amqp</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
 
-		<!-- Persistence -->
-		<!-- task 08353: using latest version so that we can display the trxName in the DBMS server status -->
-		<dependency>
-			<groupId>com.mchange</groupId>
-			<artifactId>c3p0</artifactId>
-			<version>0.9.5</version>
-		</dependency>
+        <!-- Persistence -->
+        <!-- task 08353: using latest version so that we can display the trxName in the DBMS server status -->
+        <dependency>
+            <groupId>com.mchange</groupId>
+            <artifactId>c3p0</artifactId>
+            <version>0.9.5.3</version>
+        </dependency>
 
-		<!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
 
-		<!-- Scripting support -->
-		<dependency>
-			<!-- required by AD_Rule scripts -->
-			<groupId>org.codehaus.groovy</groupId>
-			<artifactId>groovy-jsr223</artifactId>
-		</dependency>
-		
+        <!-- Scripting support -->
+        <dependency>
+            <!-- required by AD_Rule scripts -->
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-jsr223</artifactId>
+        </dependency>
 
-		<!-- Swing -->
-		<dependency>
-			<!-- currently needed in base because the also have the PLAF stuff in base -->
-			<groupId>com.jgoodies</groupId>
-			<artifactId>jgoodies-looks</artifactId>
-			<!-- more recent versions of jgoodies (including 2.7.0) might trigger 
-			"09642 Auftrag product autocomplete - previous field input is marked on autocomplete popup (107363971713)"
-			to solve the respective problem, make sure to explicitly set the component's clientProperty 
-			Options.SELECT_ON_FOCUS_GAIN_KEY to true or false, as required in the particualr case
-			-->
-			<version>2.7.0</version>
-		</dependency>
 
-		<dependency>
-			<groupId>org.swinglabs</groupId>
-			<artifactId>swingx</artifactId>
-			<version>1.6.1</version>
-		</dependency>
+        <!-- Swing -->
+        <dependency>
+            <!-- currently needed in base because the also have the PLAF stuff in base -->
+            <groupId>com.jgoodies</groupId>
+            <artifactId>jgoodies-looks</artifactId>
+            <!-- more recent versions of jgoodies (including 2.7.0) might trigger
+            "09642 Auftrag product autocomplete - previous field input is marked on autocomplete popup (107363971713)"
+            to solve the respective problem, make sure to explicitly set the component's clientProperty
+            Options.SELECT_ON_FOCUS_GAIN_KEY to true or false, as required in the particualr case
+            -->
+            <version>2.7.0</version>
+        </dependency>
 
-		<!-- Support libraries -->
-		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.17</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>jul-to-slf4j</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.swinglabs</groupId>
+            <artifactId>swingx</artifactId>
+            <version>1.6.1</version>
+        </dependency>
 
-		<dependency>
-			<groupId>it.sauronsoftware.cron4j</groupId>
-			<artifactId>cron4j</artifactId>
-			<version>2.2.5</version>
-		</dependency>
+        <!-- Support libraries -->
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
 
-		<!-- Reporting -->
-		<dependency>
-			<groupId>de.metas.report</groupId>
-			<artifactId>de.metas.report.jasper.commons</artifactId>
-			<version>${metasfresh.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>xml-apis</groupId>
-					<artifactId>xmlParserAPIs</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<!-- poi 3.12 is also the version contained in jasperreports 6.2.2 -->
-		<dependency>
-			<groupId>org.apache.poi</groupId>
-			<artifactId>poi</artifactId>
+        <dependency>
+            <groupId>it.sauronsoftware.cron4j</groupId>
+            <artifactId>cron4j</artifactId>
+            <version>2.2.5</version>
+        </dependency>
 
-			<exclusions>
-				<!-- working on ..root-webapp-3.7.0-FR3403603-SNAPSHOT-exp.war\WEB-INF\lib\servlet-api-2.3.jar) 
-					- jar not loaded. See Servlet Spec 2.3, section 9.7.2. Offending class: javax/servlet/Servlet.class -->
-				<exclusion>
-					<groupId>javax.servlet</groupId>
-					<artifactId>servlet-api</artifactId>
-				</exclusion>
-			</exclusions>
+        <!-- Reporting -->
+        <dependency>
+            <groupId>de.metas.report</groupId>
+            <artifactId>de.metas.report.jasper.commons</artifactId>
+            <version>${metasfresh.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xmlParserAPIs</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <!-- poi 3.12 is also the version contained in jasperreports 6.2.2 -->
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
 
-		</dependency>
+            <exclusions>
+                <!-- working on ..root-webapp-3.7.0-FR3403603-SNAPSHOT-exp.war\WEB-INF\lib\servlet-api-2.3.jar)
+                    - jar not loaded. See Servlet Spec 2.3, section 9.7.2. Offending class: javax/servlet/Servlet.class -->
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+        </dependency>
 
-		<!-- required by /adempiereTrunkMvcForms/base/src/org/compiere/print/layout/BarcodeElement.java -->
-		<dependency>
-			<groupId>net.sourceforge.barbecue</groupId>
-			<artifactId>barbecue</artifactId>
-			<version>1.5-beta1</version>
-		</dependency>
-		<!-- itext is required by org.adempiere.pdf.Document.java-->
-		<dependency>
-			<groupId>com.lowagie</groupId>
-			<artifactId>itext</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>bouncycastle</groupId>
-					<artifactId>bcmail-jdk14</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>bouncycastle</groupId>
-					<artifactId>bcprov-jdk14</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>bouncycastle</groupId>
-					<artifactId>bctsp-jdk14</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
+        <!-- required by /adempiereTrunkMvcForms/base/src/org/compiere/print/layout/BarcodeElement.java -->
+        <dependency>
+            <groupId>net.sourceforge.barbecue</groupId>
+            <artifactId>barbecue</artifactId>
+            <version>1.5-beta1</version>
+        </dependency>
+        <!-- itext is required by org.adempiere.pdf.Document.java-->
+        <dependency>
+            <groupId>com.lowagie</groupId>
+            <artifactId>itext</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>bouncycastle</groupId>
+                    <artifactId>bcmail-jdk14</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>bouncycastle</groupId>
+                    <artifactId>bcprov-jdk14</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>bouncycastle</groupId>
+                    <artifactId>bctsp-jdk14</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
-		<dependency>
-			<groupId>org.jpedal</groupId>
-			<artifactId>jpedal</artifactId>
-			<version>1.0</version>
-		</dependency>
+        <dependency>
+            <groupId>org.jpedal</groupId>
+            <artifactId>jpedal</artifactId>
+            <version>1.0</version>
+        </dependency>
 
-		<!-- required for PI-stuff in org.adempiere.apps.graph and also other stuff
-		this is the jfreechart version also used by jasperreports-6.2.2 -->
-		<dependency>
-			<groupId>org.jfree</groupId>
-			<artifactId>jfreechart</artifactId>
-			<version>1.0.19</version>
-		</dependency>
+        <!-- required for PI-stuff in org.adempiere.apps.graph and also other stuff
+        this is the jfreechart version also used by jasperreports-6.2.2 -->
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.0.19</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-collections4</artifactId>
-			<version>4.0</version>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>4.0</version>
+        </dependency>
 
-		<!-- needed for org.adempiere.plaf.UIDefaultsSerializer -->
-		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-		</dependency>
+        <!-- needed for org.adempiere.plaf.UIDefaultsSerializer -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
 
-		<!-- we use this for its "capability of serializing java.time objects with the Jackson core".  -->
-		<!-- jackson itself is pulled in via spring-boot -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-jsr310</artifactId>
-		</dependency>
-		
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<scope>provided</scope>
-		</dependency>
+        <!-- we use this for its "capability of serializing java.time objects with the Jackson core".  -->
+        <!-- jackson itself is pulled in via spring-boot -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>com.github.zafarkhaja</groupId>
-			<artifactId>java-semver</artifactId>
-			<version>0.9.0</version>
-		</dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
+        <dependency>
+            <groupId>com.github.zafarkhaja</groupId>
+            <artifactId>java-semver</artifactId>
+            <version>0.9.0</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.assertj</groupId>
-			<artifactId>assertj-core</artifactId>
-			<scope>test</scope>
-		</dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
 
-	</dependencies>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
 
-	<build>
-		<plugins>
-			<!-- Create tests JAR -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>test-jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+        <dependency>
+            <groupId>com.google.maps</groupId>
+            <artifactId>google-maps-services</artifactId>
+            <version>0.10.1</version>
+            <scope>compile</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Create tests JAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

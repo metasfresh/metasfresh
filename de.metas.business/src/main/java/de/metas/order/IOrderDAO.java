@@ -2,6 +2,7 @@ package de.metas.order;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 
 /*
@@ -31,20 +32,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Order;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
 public interface IOrderDAO extends ISingletonService
 {
 	I_C_Order getById(final OrderId orderId);
-	
+
 	/**
 	 * Similar to {@link #getById(OrderId)}, but allows to specify which {@link I_C_Order} sub-type the result shall be in.
 	 * 
@@ -58,7 +62,7 @@ public interface IOrderDAO extends ISingletonService
 
 	I_C_OrderLine getOrderLineById(final OrderLineId orderLineId);
 
-	<T extends I_C_OrderLine> T getOrderLineById(final OrderLineId orderLineId, Class<T> modelClass);
+	<T extends org.compiere.model.I_C_OrderLine> T getOrderLineById(final OrderLineId orderLineId, Class<T> modelClass);
 
 	Map<OrderAndLineId, I_C_OrderLine> getOrderLinesByIds(Collection<OrderAndLineId> orderAndLineIds);
 
@@ -99,7 +103,7 @@ public interface IOrderDAO extends ISingletonService
 	 */
 	<T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(I_C_Order order, Class<T> clazz);
 
-	List<I_C_OrderLine> retrieveOrderLines(int orderId);
+	List<I_C_OrderLine> retrieveOrderLines(OrderId orderId);
 
 	/** @return all C_OrderLine_IDs for given order, including the inactive ones */
 	List<Integer> retrieveAllOrderLineIds(I_C_Order order);
@@ -143,9 +147,24 @@ public interface IOrderDAO extends ISingletonService
 	 */
 	List<I_C_Order> retrievePurchaseOrdersForPickup(I_C_BPartner_Location bpLoc, Date deliveryDateTime, Date deliveryDateTimeMax);
 
-	Set<Integer> retriveOrderCreatedByUserIds(Collection<Integer> orderIds);
-	
-	<T extends I_C_Order>  List<T> getByIds(Collection<OrderId> orderIds, Class<T> clazz);
+	Set<UserId> retriveOrderCreatedByUserIds(Collection<Integer> orderIds);
+
+	<T extends I_C_Order> List<T> getByIds(Collection<OrderId> orderIds, Class<T> clazz);
 
 	List<I_C_Order> getByIds(Collection<OrderId> orderIds);
+
+	/**
+	 * Get Not Invoiced Shipments
+	 *
+	 * @return value in accounting currency
+	 */
+	BigDecimal getNotInvoicedAmt(BPartnerId bpartnerId);
+
+	Stream<OrderId> streamOrderIdsByBPartnerId(BPartnerId bpartnerId);
+
+	void delete(org.compiere.model.I_C_OrderLine orderLine);
+
+	void save(org.compiere.model.I_C_Order order);
+
+	void save(org.compiere.model.I_C_OrderLine orderLine);
 }

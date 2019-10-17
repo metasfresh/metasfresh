@@ -1,6 +1,7 @@
 package de.metas.inout.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -31,6 +32,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -41,9 +44,14 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutAndLineId;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -54,6 +62,25 @@ import lombok.NonNull;
 
 public class InOutDAO implements IInOutDAO
 {
+	@Override
+	public I_M_InOut getById(@NonNull final InOutId inoutId)
+	{
+		return load(inoutId, I_M_InOut.class);
+	}
+
+	@Override
+	public I_M_InOutLine getLineById(@NonNull final InOutLineId inoutLineId)
+	{
+		return load(inoutLineId, I_M_InOutLine.class);
+	}
+
+	@Override
+	public <T extends I_M_InOutLine> T getLineById(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
+	{
+		final T inoutLine = loadOutOfTrx(inoutLineId.getRepoId(), modelClass);
+		return inoutLine;
+	}
+
 	@Override
 	public List<I_M_InOutLine> retrieveLines(final I_M_InOut inOut)
 	{
@@ -250,5 +277,32 @@ public class InOutDAO implements IInOutDAO
 		final I_M_InOut receipt = load(inOutId, I_M_InOut.class);
 
 		return receipt;
+	}
+
+	@Override
+	public Stream<InOutId> streamInOutIdsByBPartnerId(@NonNull final BPartnerId bpartnerId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_InOut.class)
+				.addEqualsFilter(I_M_InOut.COLUMN_C_BPartner_ID, bpartnerId)
+				.create()
+				.listIds(InOutId::ofRepoId)
+				.stream();
+	}
+
+	@Override
+	public Set<InOutAndLineId> retrieveLinesForInOutId(final InOutId inOutId)
+	{
+		final I_M_InOut inOut = getById(inOutId);
+
+		return retrieveLines(inOut)
+				.stream()
+				.map(this::extractInOutAndLineId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private InOutAndLineId extractInOutAndLineId(final I_M_InOutLine line)
+	{
+		return InOutAndLineId.ofRepoId(line.getM_InOut_ID(), line.getM_InOutLine_ID());
 	}
 }

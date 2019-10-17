@@ -71,7 +71,7 @@ public class TrxManagerTest
 	private void assertInActiveTransactionList(final ITrx trx, final boolean expectedActive)
 	{
 		boolean actualActive = false;
-		for (final ITrx t : trxManager.getActiveTransactions())
+		for (final ITrx t : trxManager.getActiveTransactionsList())
 		{
 			if (t == trx)
 			{
@@ -223,16 +223,9 @@ public class TrxManagerTest
 		final MockedTrxRunnable runnableInner = new MockedTrxRunnable(trxManager);
 		final MockedTrxRunnable runnable = new MockedTrxRunnable(trxManager);
 
-		runnable.setInnerRunnable(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				trxManager.run(ITrx.TRXNAME_ThreadInherited, runnableInner);
-			}
-		});
+		runnable.setInnerRunnable(() -> trxManager.run(ITrx.TRXNAME_ThreadInherited, runnableInner));
 
-		trxManager.run(runnable);
+		trxManager.runInNewTrx(runnable);
 
 		Assert.assertTrue("Runnable was executed", runnable.isExecuted());
 		Assert.assertTrue("Inner Runnable was executed", runnableInner.isExecuted());
@@ -369,13 +362,8 @@ public class TrxManagerTest
 		//
 		// TrxRunnable which will throw our custom exception when executed
 		final MockedTrxRunnable runnable = new MockedTrxRunnable(trxManager);
-		runnable.setInnerRunnable(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				throw new MyCustomAdempiereException("FAIL");
-			}
+		runnable.setInnerRunnable(() -> {
+			throw new MyCustomAdempiereException("FAIL");
 		});
 
 		//
@@ -522,23 +510,11 @@ public class TrxManagerTest
 		final MyCustomAdempiereException doFinallyException = new MyCustomAdempiereException("test - fail on doFinally()");
 
 		final MockedTrxRunnable runnable = new MockedTrxRunnable(trxManager);
-		runnable.setInnerRunnable(new Runnable()
-		{
-
-			@Override
-			public void run()
-			{
-				throw expectedException;
-			}
+		runnable.setInnerRunnable(() -> {
+			throw expectedException;
 		});
-		runnable.setDoFinallyRunnable(new Runnable()
-		{
-
-			@Override
-			public void run()
-			{
-				throw doFinallyException;
-			}
+		runnable.setDoFinallyRunnable(() -> {
+			throw doFinallyException;
 		});
 
 		Throwable actualException = null;
@@ -574,22 +550,11 @@ public class TrxManagerTest
 		final MyCustomAdempiereException doFinallyException = new MyCustomAdempiereException("test - fail on doFinally()");
 
 		final MockedTrxRunnable runnable = new MockedTrxRunnable(trxManager);
-		runnable.setInnerRunnable(new Runnable()
-		{
-
-			@Override
-			public void run()
-			{
-				throw expectedException;
-			}
+		runnable.setInnerRunnable(() -> {
+			throw expectedException;
 		});
-		runnable.setDoFinallyRunnable(new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				throw doFinallyException;
-			}
+		runnable.setDoFinallyRunnable(() -> {
+			throw doFinallyException;
 		});
 
 		Throwable actualException = null;

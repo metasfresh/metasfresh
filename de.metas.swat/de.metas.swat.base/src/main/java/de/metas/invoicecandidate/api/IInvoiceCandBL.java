@@ -25,7 +25,6 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
@@ -39,12 +38,21 @@ import org.compiere.model.I_C_Tax;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceRule;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
+import de.metas.money.Money;
 import de.metas.process.PInstanceId;
-import de.metas.util.ILoggable;
+import de.metas.product.ProductPrice;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.ISingletonService;
+import de.metas.util.OptionalBoolean;
+import de.metas.util.lang.Percent;
+import lombok.NonNull;
 
 /**
  *
@@ -74,7 +82,7 @@ public interface IInvoiceCandBL extends ISingletonService
 		 * @return result summary (using context language)
 		 */
 		String getSummary(Properties ctx);
-	};
+	}
 
 	/**
 	 * @return new invoice candidates updater
@@ -93,7 +101,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * <p>
 	 * <b>IMPORTANT:</b> Candidates with {@link I_C_Invoice_Candidate#isError()} are ignored, even if they are part of the selection!
 	 */
-	IInvoiceGenerateResult generateInvoicesFromSelection(Properties ctx, PInstanceId AD_PInstance_ID, boolean ignoreInvoiceSchedule, ILoggable loggable, String trxName);
+	IInvoiceGenerateResult generateInvoicesFromSelection(Properties ctx, PInstanceId AD_PInstance_ID, boolean ignoreInvoiceSchedule, String trxName);
 
 	/**
 	 * Creates <code>de.metas.async</code> work packages from for those invoice candidates that are selected via <code>T_Selection</code> with the given <code>AD_PInstance_ID</code>.
@@ -117,12 +125,9 @@ public interface IInvoiceCandBL extends ISingletonService
 	 *
 	 * NOTE: This method is called both when invoice candidates are enqueued for invoicing and during the actual invoicing.
 	 *
-	 * @param ic
-	 * @param ignoreInvoiceSchedule
-	 * @param loggable <b>may not be null</b>. Use {@link de.metas.util.NullLoggable} if you don't have any other loggable.
 	 * @return true if the invoice candidate is NOT eligible and shall be skipped.
 	 */
-	boolean isSkipCandidateFromInvoicing(I_C_Invoice_Candidate ic, boolean ignoreInvoiceSchedule, ILoggable loggable);
+	boolean isSkipCandidateFromInvoicing(I_C_Invoice_Candidate ic, boolean ignoreInvoiceSchedule);
 
 	IInvoiceGenerateResult generateInvoicesFromQueue(Properties ctx);
 
@@ -130,8 +135,6 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Calculate actual net price.
-	 *
-	 * @param ic
 	 */
 	void setPriceActualNet(I_C_Invoice_Candidate ic);
 
@@ -150,11 +153,11 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	void setPriceActual_Override(I_C_Invoice_Candidate ic);
 
-	BigDecimal getPriceActual(I_C_Invoice_Candidate ic);
+	ProductPrice getPriceActual(I_C_Invoice_Candidate ic);
 
-	BigDecimal getDiscount(I_C_Invoice_Candidate ic);
+	Percent getDiscount(I_C_Invoice_Candidate ic);
 
-	BigDecimal getPriceEntered(I_C_Invoice_Candidate ic);
+	ProductPrice getPriceEntered(I_C_Invoice_Candidate ic);
 
 	boolean isTaxIncluded(I_C_Invoice_Candidate ic);
 
@@ -164,7 +167,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @param ic
 	 * @return precision used to calculate amounts
 	 */
-	int getPrecisionFromCurrency(I_C_Invoice_Candidate ic);
+	CurrencyPrecision getPrecisionFromCurrency(I_C_Invoice_Candidate ic);
 
 	/**
 	 * Invalidates those invoice candidates that reference the given invoice schedule
@@ -188,16 +191,14 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	boolean isCreditMemo(I_C_Invoice_Candidate cand);
 
-	BigDecimal calculateNetAmt(I_C_Invoice_Candidate ic);
-
-	BigDecimal calculateNetAmt(BigDecimal qty, BigDecimal price, int currencyPrecision);
+	Money calculateNetAmt(I_C_Invoice_Candidate ic);
 
 	/**
 	 * @return the newly created, but not yet saved invoice candidate record.
 	 */
 	I_C_Invoice_Candidate splitCandidate(I_C_Invoice_Candidate ic);
 
-	String getInvoiceRule(I_C_Invoice_Candidate ic);
+	InvoiceRule getInvoiceRule(I_C_Invoice_Candidate ic);
 
 	Timestamp getDateToInvoice(I_C_Invoice_Candidate ic);
 
@@ -241,7 +242,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @param note may be null or empty. Use it to provide a user-friendly note that can be displayed to the customer admin/user
 	 * @return returns the invoiceLine allocation that was created or updated never returns <code>null</code>
 	 */
-	I_C_Invoice_Line_Alloc createUpdateIla(I_C_Invoice_Candidate invoiceCand, I_C_InvoiceLine invoiceLine, BigDecimal qtyInvoiced, String note);
+	I_C_Invoice_Line_Alloc createUpdateIla(I_C_Invoice_Candidate invoiceCand, I_C_InvoiceLine invoiceLine, StockQtyAndUOMQty qtysInvoiced, String note);
 
 	void handleReversalForInvoice(org.compiere.model.I_C_Invoice invoice);
 
@@ -270,24 +271,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @param candidate
 	 */
 	void updateProcessedFlag(I_C_Invoice_Candidate candidate);
-
-	/**
-	 * Converts the given <code>qty</code> or amount to the given <code>ic</code>'s price UOM.
-	 * <p>
-	 * E.g. if we have 10 pieces of 0,5kg items priced by kilogram, return 5.
-	 * <p>
-	 * <b>SIDE-FFECT (gh #428):</b> if the qty can't be converted due to a missing UOM conversion rule,<br>
-	 * then return <code>null</code>, set the given <code>ic</code>'s <code>IsError='Y'</code> and append an info-message to the <code>ic</code>'s <code>ErrorMsg</code>.<br>
-	 * But don't save the <code>ic</code>.
-	 *
-	 * @param qty the "raw" Qty in terms of the product UOM
-	 * @param ic the invoice candidate whose price UOM, product and product UOM we use for the conversion.
-	 *
-	 * @return the "price" qty. If the given <code>ic</code>'s product and price UOM is the same or if either product or price UOM is not set, then return the given <code>qty</code>.
-	 *
-	 * @see org.adempiere.uom.api.IUOMConversionBL#convertFromProductUOM(Properties, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal)
-	 */
-	BigDecimal convertToPriceUOM(BigDecimal qty, I_C_Invoice_Candidate ic);
 
 	/**
 	 * Resets {@link I_C_Invoice_Candidate#COLUMNNAME_IsError} field together with some other depending fields:
@@ -326,22 +309,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	void setError(I_C_Invoice_Candidate ic, Throwable e);
 
 	/**
-	 * Update invoice candidate's QtyWithIssues and depending cols by taking it from inout lines. Updates
-	 * <ul>
-	 * <li>QtyWithIssues
-	 * <li>QualityDiscountPercent
-	 * <li>QualityDiscountPercent_Override to <code>null</code>, if <code>QualityDiscountPercent</code> was changed
-	 * <li>IsInDispute to <code>true</code> if <code>QualityDiscountPercent</code> was changed and the new value is <b>not</b> zero.
-	 * </ul>
-	 *
-	 * NOTE: this method is NOT saving the invoice candidate.
-	 *
-	 * @param ic
-	 * @task 06502
-	 */
-	void updateQtyWithIssues(I_C_Invoice_Candidate ic);
-
-	/**
 	 * Retrieve tax override if set, C_Tax otherwise
 	 *
 	 * @param candidate
@@ -351,19 +318,9 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Get quality percent override if set, quality percent otherwise. Never returns <code>null</code>.
-	 *
-	 * @param candidate
-	 * @return
 	 */
-	BigDecimal getQualityDiscountPercentEffective(I_C_Invoice_Candidate candidate);
-
-	/**
-	 * If the given <code>candidate</code> has a currency, it shall return the currency's precision. Otherwise, it shall return <code>2</code> as fallback.
-	 *
-	 * @param candidate
-	 * @return
-	 */
-	int getCurrencyPrecision(I_C_Invoice_Candidate candidate);
+	// TODO kick out
+	Percent getQualityDiscountPercentEffective(I_C_Invoice_Candidate candidate);
 
 	/**
 	 * Update the POReference of a candidate based on the POReference from the order.
@@ -391,7 +348,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * @return current QtyToInvoice_Override or QtyToInvoice
 	 */
-	BigDecimal getQtyToInvoice(I_C_Invoice_Candidate ic);
+	Quantity getQtyToInvoiceStockUOM(I_C_Invoice_Candidate ic);
 
 	/**
 	 * Set the QualityDiscountPercent_Override based on the QualityIssuePercentage from the discount schema.
@@ -407,7 +364,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @param ic
 	 * @return
 	 */
-	int getPrecisionFromPricelist(I_C_Invoice_Candidate ic);
+	CurrencyPrecision getPrecisionFromPricelist(I_C_Invoice_Candidate ic);
 
 	/**
 	 * Close the given invoice candidate.
@@ -420,10 +377,13 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Iterate the candidates to close and close them one by one.
-	 *
-	 * @param candidatesToClose
 	 */
 	void closeInvoiceCandidates(Iterator<I_C_Invoice_Candidate> candidatesToClose);
+
+	default void closeInvoiceCandidates(@NonNull final Iterable<I_C_Invoice_Candidate> candidatesToClose)
+	{
+		closeInvoiceCandidates(candidatesToClose.iterator());
+	}
 
 	/**
 	 * Find out if invoice candidates with flag IsToCLear are supposed to be closed
@@ -457,13 +417,11 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	void closePartiallyInvoiced_InvoiceCandidates(I_C_Invoice invoice);
 
-	/**
-	 * Compute the qty (in stocking UOM) that was ordered but not yet invoiced.<br>
-	 * Also account for negative ordered quantities.<br>
-	 * The result does not depend on the given ic's invoice rule.
-	 */
-	BigDecimal computeOpenQty(I_C_Invoice_Candidate ic);
-
 	void markInvoiceCandInDisputeForReceiptLine(I_M_InOutLine inOutLine);
 
+	void set_DateToInvoice_DefaultImpl(I_C_Invoice_Candidate ic);
+
+	OptionalBoolean extractProcessedOverride(I_C_Invoice_Candidate candidate);
+
+	void updateICIOLAssociationFromIOL(I_C_InvoiceCandidate_InOutLine iciol, org.compiere.model.I_M_InOutLine inOutLine);
 }

@@ -10,23 +10,23 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.adempiere.ad.dao.ICompositeQueryUpdaterExecutor;
 import org.adempiere.ad.dao.IQueryInsertExecutor;
@@ -36,7 +36,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 
-import com.google.common.base.Function;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
@@ -44,7 +43,7 @@ import com.google.common.collect.Multimaps;
 
 /**
  * Contains common methods to be used in {@link IQuery} implementations.
- * 
+ *
  * @author tsa
  *
  * @param <T> model type
@@ -93,7 +92,7 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 	}
 
 	/**
-	 * 
+	 *
 	 * @param clazz
 	 * @param throwExIfMoreThenOneFound if true and there more then one record found it will throw exception, <code>null</code> will be returned otherwise.
 	 * @return model or null
@@ -114,8 +113,7 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 
 		return map;
 	}
-	
-	
+
 	@Override
 	public final List<Map<String, Object>> listColumns(String... columnNames)
 	{
@@ -143,7 +141,7 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 	public <K, ET extends T> Map<K, ET> map(final Class<ET> modelClass, final Function<ET, K> keyFunction)
 	{
 		final List<ET> list = list(modelClass);
-		return Maps.uniqueIndex(list, keyFunction);
+		return Maps.uniqueIndex(list, keyFunction::apply);
 	}
 
 	@Override
@@ -175,13 +173,19 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 	@Override
 	public ICompositeQueryUpdaterExecutor<T> updateDirectly()
 	{
-		return new CompositeQueryUpdaterExecutor<T>(this);
+		return new CompositeQueryUpdaterExecutor<>(this);
 	}
 
 	@Override
 	public <ToModelType> IQueryInsertExecutor<ToModelType, T> insertDirectlyInto(final Class<ToModelType> toModelClass)
 	{
 		return new QueryInsertExecutor<>(toModelClass, this);
+	}
+
+	/** Convenience method that evaluates {@link IQuery#OPTION_ReturnReadOnlyRecords}. */
+	protected boolean isReadOnlyRecords()
+	{
+		return Boolean.TRUE.equals(getOption(OPTION_ReturnReadOnlyRecords));
 	}
 
 	abstract <ToModelType> QueryInsertExecutorResult executeInsert(final QueryInsertExecutor<ToModelType, T> queryInserter);

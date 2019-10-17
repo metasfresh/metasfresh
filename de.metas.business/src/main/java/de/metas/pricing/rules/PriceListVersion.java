@@ -1,14 +1,18 @@
 package de.metas.pricing.rules;
 
-import org.adempiere.uom.UomId;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.util.Env;
+import org.slf4j.Logger;
 
+import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
@@ -16,7 +20,10 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Calculate Price using Price List Version
@@ -26,6 +33,12 @@ import de.metas.util.Services;
  */
 public class PriceListVersion extends AbstractPriceListBasedRule
 {
+	private static final Logger logger = LogManager.getLogger(PriceListVersion.class);
+
+	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+	private final IProductBL productsService = Services.get(IProductBL.class);
+	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
+
 	@Override
 	public void calculate(final IPricingContext pricingCtx, final IPricingResult result)
 	{
@@ -34,63 +47,86 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 			return;
 		}
 
-		final ProductId productId = pricingCtx.getProductId();
-		final I_M_PriceList_Version priceListVersion = getPriceListVersionEffective(pricingCtx);
-		if (priceListVersion == null)
+		final I_M_PriceList_Version ctxPriceListVersion = getPriceListVersionEffective(pricingCtx);
+		if (ctxPriceListVersion == null)
 		{
 			return;
 		}
 
-		// task 09688: in order to make the material tracking module (and others!) testable decoupled, incl. price list versions and stuff,
-		// we get rid of the hardcoded SQL. For the time beeing it's still here (commented), so we can see how it used to be.
-		// !!IMPORTANT!! with this change of implementation, we loose the bomPriceList calculation.
-		// Should bomPricing be needed in future, please consider adding a dedicated pricing rule
-		final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, productId);
+		final I_M_ProductPrice productPrice = getProductPriceOrNull(pricingCtx.getProductId(), ctxPriceListVersion);
 		if (productPrice == null)
 		{
-			log.trace("Not found (PLV)");
+			logger.trace("Not found (PLV)");
 			return;
 		}
 
-		final I_M_PriceList priceList = Services.get(IPriceListDAO.class).getById(priceListVersion.getM_PriceList_ID());
+		final PriceListVersionId resultPriceListVersionId = PriceListVersionId.ofRepoId(productPrice.getM_PriceList_Version_ID());
+		final I_M_PriceList_Version resultPriceListVersion = getOrLoadPriceListVersion(resultPriceListVersionId, ctxPriceListVersion);
+		final I_M_PriceList priceList = priceListsRepo.getById(resultPriceListVersion.getM_PriceList_ID());
 
-		final ProductCategoryId productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
+		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
+		final ProductCategoryId productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
 
 		result.setPriceStd(productPrice.getPriceStd());
 		result.setPriceList(productPrice.getPriceList());
 		result.setPriceLimit(productPrice.getPriceLimit());
 		result.setCurrencyId(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
+		result.setProductId(productId);
 		result.setProductCategoryId(productCategoryId);
 		result.setPriceEditable(productPrice.isPriceEditable());
 		result.setDiscountEditable(productPrice.isDiscountEditable());
-		result.setEnforcePriceLimit(priceList.isEnforcePriceLimit());
+		result.setEnforcePriceLimit(extractEnforcePriceLimit(priceList));
 		result.setTaxIncluded(priceList.isTaxIncluded());
-		result.setC_TaxCategory_ID(productPrice.getC_TaxCategory_ID());
-		result.setPriceListVersionId(PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID())); // make sure that the result doesn't lack this important info, even if it was already known from the context!
+		result.setTaxCategoryId(TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID()));
+		result.setPriceListVersionId(resultPriceListVersionId);
+		result.setPriceUomId(getProductPriceUomId(productPrice)); // 06942 : use product price uom all the time
+		result.setInvoicableQtyBasedOn(InvoicableQtyBasedOn.fromRecordString(productPrice.getInvoicableQtyBasedOn()));
 		result.setCalculated(true);
-
-		// 06942 : use product price uom all the time
-		if (productPrice.getC_UOM_ID() <= 0)
-		{
-			final UomId uomId = Services.get(IProductBL.class).getStockingUOMId(productId);
-			result.setPriceUomId(uomId);
-		}
-		else
-		{
-			result.setPrice_UOM_ID(productPrice.getC_UOM_ID());
-		}
 
 		//
 		// Override with calculated BOM price if suitable
 		BOMPriceCalculator.builder()
 				.bomProductId(productId)
 				.asiAware(pricingCtx.getAttributeSetInstanceAware().orElse(null))
-				.priceListVersion(priceListVersion)
+				.priceListVersion(resultPriceListVersion)
 				.calculate()
 				.ifPresent(bomPrices -> updatePricingResultFromBOMPrices(result, bomPrices));
 	}
 
-	private static I_M_PriceList_Version getPriceListVersionEffective(final IPricingContext pricingCtx)
+	private BooleanWithReason extractEnforcePriceLimit(final I_M_PriceList priceList)
+	{
+		final ITranslatableString reason = TranslatableStrings.builder()
+				.appendADElement("M_PriceList_ID")
+				.append(": ")
+				.append(priceList.getName())
+				.build();
+
+		return priceList.isEnforcePriceLimit()
+				? BooleanWithReason.trueBecause(reason)
+				: BooleanWithReason.falseBecause(reason);
+	}
+
+	private I_M_ProductPrice getProductPriceOrNull(final ProductId productId, final I_M_PriceList_Version ctxPriceListVersion)
+	{
+		return ProductPrices.iterateAllPriceListVersionsAndFindProductPrice(
+				ctxPriceListVersion,
+				priceListVersion -> ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, productId));
+	}
+
+	private I_M_PriceList_Version getOrLoadPriceListVersion(
+			@NonNull final PriceListVersionId priceListVersionId,
+			final I_M_PriceList_Version existingPriceListVersion)
+	{
+		if (existingPriceListVersion != null
+				&& existingPriceListVersion.getM_PriceList_Version_ID() == priceListVersionId.getRepoId())
+		{
+			return existingPriceListVersion;
+		}
+
+		return priceListsRepo.getPriceListVersionById(priceListVersionId);
+	}
+
+	private I_M_PriceList_Version getPriceListVersionEffective(final IPricingContext pricingCtx)
 	{
 		final I_M_PriceList_Version contextPLV = pricingCtx.getM_PriceList_Version();
 		if (contextPLV != null)
@@ -98,15 +134,25 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 			return contextPLV.isActive() ? contextPLV : null;
 		}
 
-		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
-
-		final I_M_PriceList_Version plv = priceListsRepo.retrievePriceListVersionOrNull(Env.getCtx(),
+		final I_M_PriceList_Version plv = priceListsRepo.retrievePriceListVersionOrNull(
 				pricingCtx.getPriceListId(),
 				pricingCtx.getPriceDate(),
 				(Boolean)null // processed
 		);
 
 		return plv != null && plv.isActive() ? plv : null;
+	}
+
+	private UomId getProductPriceUomId(final I_M_ProductPrice productPrice)
+	{
+		final UomId productPriceUomId = UomId.ofRepoIdOrNull(productPrice.getC_UOM_ID());
+		if (productPriceUomId != null)
+		{
+			return productPriceUomId;
+		}
+
+		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
+		return productsService.getStockUOMId(productId);
 	}
 
 	private static void updatePricingResultFromBOMPrices(final IPricingResult to, final BOMPrices from)

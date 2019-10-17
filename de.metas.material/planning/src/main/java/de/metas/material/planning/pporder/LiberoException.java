@@ -20,7 +20,7 @@ public class LiberoException extends AdempiereException
 		super(message);
 	}
 
-	public LiberoException(Exception cause)
+	public LiberoException(Throwable cause)
 	{
 		super(cause);
 	}

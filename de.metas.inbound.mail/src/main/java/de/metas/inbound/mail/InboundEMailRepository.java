@@ -13,8 +13,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.user.UserId;
-import org.adempiere.user.api.IUserDAO;
 import org.compiere.model.I_C_Mail;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -27,6 +25,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.request.RequestId;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 

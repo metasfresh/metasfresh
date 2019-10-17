@@ -5,10 +5,10 @@ package de.metas.impexp.bpartner;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import org.adempiere.impexp.IImportInterceptor;
-import org.adempiere.impexp.IImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.IImportProcess;
 import de.metas.util.Check;
 import de.metas.vertical.pharma.model.I_AD_User;
 import de.metas.vertical.pharma.model.I_C_BPartner;

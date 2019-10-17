@@ -56,6 +56,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.Timer;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -115,7 +116,7 @@ public class CallCenterForm
 	private CButton butUnlock = null;
 	final private VText fUserComments = new VText(I_RV_R_Group_Prospect.COLUMNNAME_Comments, false, true, false, 30, 30);
 	/** Map AD_Table_ID -> VTable */
-	private Map<Integer, VTable> m_mapVTables = new HashMap<Integer, VTable>();
+	private Map<Integer, VTable> m_mapVTables = new HashMap<>();
 	final private CPanel panelContactControl = new CPanel();
 	final private StatusBar m_statusBar = new StatusBar();
 	private Window m_requestFrame = null;
@@ -133,20 +134,14 @@ public class CallCenterForm
 		}
 		//
 		int checkIntervalSec = MSysConfig.getIntValue(SYSCONFIG_CheckInterval, 60, Env.getAD_Client_ID(Env.getCtx()));
-		m_updater = new Timer(checkIntervalSec * 1000, new ActionListener()
-		{
-			// @Override
-			@Override
-			public void actionPerformed(ActionEvent e)
+		m_updater = new Timer(checkIntervalSec * 1000, e -> {
+			try
 			{
-				try
-				{
-					refreshAll(false);
-				}
-				catch (Exception ex1)
-				{
-					log.error("Error", ex1);
-				}
+				refreshAll(false);
+			}
+			catch (Exception ex1)
+			{
+				log.error("Error", ex1);
 			}
 		});
 
@@ -186,11 +181,15 @@ public class CallCenterForm
 	public void dispose()
 	{
 		if (m_updater != null)
+		{
 			m_updater.stop();
+		}
 		m_updater = null;
 		//
 		if (s_instance == this)
+		{
 			s_instance = null;
+		}
 		m_frame = null;
 		m_model = null;
 	}
@@ -310,7 +309,9 @@ public class CallCenterForm
 		final GridController gc = new GridController();
 		gc.initGrid(tab, true, m_model.getWindowNo(), null, null);
 		if (width > 0 && height > 0)
+		{
 			gc.setPreferredSize(new Dimension(width, height));
+		}
 		tab.addPropertyChangeListener(this);
 		m_mapVTables.put(tab.getAD_Table_ID(), gc.getTable());
 		return gc;
@@ -333,7 +334,9 @@ public class CallCenterForm
 	{
 		Font f = c.getFont();
 		if (f == null)
+		{
 			return;
+		}
 		if (style >= 0)
 		{
 			f = f.deriveFont(style);
@@ -422,9 +425,11 @@ public class CallCenterForm
 
 		AWindow frame = new AWindow();
 		new AWindowListener(frame, this);
-		final int AD_Window_ID = m_model.getRequest_Window_ID();
+		final AdWindowId AD_Window_ID = AdWindowId.ofRepoId(m_model.getRequest_Window_ID());
 		if (!frame.initWindow(AD_Window_ID, query))
+		{
 			return false;
+		}
 		AEnv.addToWindowManager(frame);
 
 		final GridTab tab = frame.getAPanel().getCurrentTab();
@@ -502,7 +507,9 @@ public class CallCenterForm
 	public int getR_Group_ID()
 	{
 		if (isShowFromAllBundles())
+		{
 			return CallCenterModel.R_Group_AllBundles;
+		}
 		//
 		Integer value = (Integer)fBundles.getValue();
 		int R_Group_ID = value == null ? 0 : value;

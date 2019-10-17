@@ -11,7 +11,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.user.UserRepository;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
@@ -34,6 +33,8 @@ import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.impexp.format.ImportTableDescriptorRepository;
+import de.metas.impexp.processing.DBFunctionsRepository;
 import de.metas.inout.invoicecandidate.InOutLinesWithMissingInvoiceCandidate;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -43,6 +44,7 @@ import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactor
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 
 /*
@@ -79,7 +81,9 @@ import de.metas.util.Services;
 		GroupCompensationLineCreateRequestFactory.class,
 		BPartnerBL.class,
 		UserRepository.class,
-		ContractLibraryConfiguration.class })
+		ContractLibraryConfiguration.class,
+		DBFunctionsRepository.class,
+		ImportTableDescriptorRepository.class })
 public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateTermTest
 {
 	private final transient IInvoiceCandDAO iinvoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -104,7 +108,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 				.productAndPricingNew()
 				.productValue("01")
 				.productName("testProduct")
-				.currency(getCurrency())
+				.currencyId(getCurrencyId())
 				.country(getCountry())
 				.isTaxInclcuded(false)
 				.validFrom(startDate)
@@ -114,7 +118,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		FlatrateTermDataFactory.productAcctNew()
 				.product(product)
-				.acctSchema(getAcctSchema())
+				.acctSchemaId(getAcctSchemaId())
 				.build();
 
 		final I_C_Flatrate_Conditions conditions = FlatrateTermDataFactory.flatrateConditionsNew()
@@ -142,7 +146,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		final FlatrateTermImportProcess importProcess = new FlatrateTermImportProcess();
 		importProcess.setCtx(helper.getCtx());
-		importProcess.importRecord(new Mutable<>(), iflatrateTerm);
+		importProcess.importRecord(new Mutable<>(), iflatrateTerm, true /* isInsertOnly */);
 
 		final I_C_Flatrate_Term flatrateTerm = iflatrateTerm.getC_Flatrate_Term();
 		assertThat(flatrateTerm).isNotNull();
@@ -172,7 +176,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 		final FlatrateTermDataFactory.ProductAndPricingSystem productAndPricingSystem = FlatrateTermDataFactory.productAndPricingNew()
 				.productValue("02")
 				.productName("testProduct")
-				.currency(getCurrency())
+				.currencyId(getCurrencyId())
 				.country(getCountry())
 				.isTaxInclcuded(true)
 				.validFrom(startDate)
@@ -182,7 +186,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		FlatrateTermDataFactory.productAcctNew()
 				.product(product)
-				.acctSchema(getAcctSchema())
+				.acctSchemaId(getAcctSchemaId())
 				.build();
 
 		final I_C_Flatrate_Conditions conditions = FlatrateTermDataFactory.flatrateConditionsNew()
@@ -193,6 +197,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
 				.onFlatrateTermExtend(X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_CalculatePrice)
 				.extensionType(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne)
+				.isCreateNoInvoice(false)
 				.build();
 
 		final I_I_Flatrate_Term iflatrateTerm = IFlatrateTermFactory.builder()
@@ -210,7 +215,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		final FlatrateTermImportProcess importProcess = new FlatrateTermImportProcess();
 		importProcess.setCtx(helper.getCtx());
-		importProcess.importRecord(new Mutable<>(), iflatrateTerm);
+		importProcess.importRecord(new Mutable<>(), iflatrateTerm, true /* isInsertOnly */);
 
 		final I_C_Flatrate_Term flatrateTerm = iflatrateTerm.getC_Flatrate_Term();
 		assertThat(flatrateTerm).isNotNull();
@@ -241,7 +246,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 				.productAndPricingNew()
 				.productValue("01")
 				.productName("testProduct")
-				.currency(getCurrency())
+				.currencyId(getCurrencyId())
 				.country(getCountry())
 				.isTaxInclcuded(false)
 				.validFrom(startDate)
@@ -275,7 +280,7 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 		final FlatrateTermImportProcess importProcess = new FlatrateTermImportProcess();
 		importProcess.setCtx(helper.getCtx());
-		importProcess.importRecord(new Mutable<>(), iflatrateTerm);
+		importProcess.importRecord(new Mutable<>(), iflatrateTerm, true /* isInsertOnly */);
 
 		final I_C_Flatrate_Term flatrateTerm = iflatrateTerm.getC_Flatrate_Term();
 		assertThat(flatrateTerm).isNotNull();

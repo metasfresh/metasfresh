@@ -18,8 +18,9 @@ package org.compiere.process;
 
 import java.io.File;
 
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.MBPartner;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MDunningLevel;
 import org.compiere.model.MDunningRun;
@@ -32,10 +33,13 @@ import org.compiere.print.MPrintFormat;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.AdempiereUserError;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.email.EMail;
+import de.metas.email.EMailAddress;
 import de.metas.email.EMailSentStatus;
-import de.metas.email.IMailBL;
-import de.metas.email.IMailTextBuilder;
+import de.metas.email.MailService;
+import de.metas.email.templates.MailTemplateId;
+import de.metas.email.templates.MailTextBuilder;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
@@ -53,6 +57,8 @@ import de.metas.util.Services;
 @Deprecated
 public class DunningPrint extends JavaProcess
 {
+	private final MailService mailService = Adempiere.getBean(MailService.class);
+	
 	/**	Mail PDF				*/
 	private boolean		p_EMailPDF = false;
 	/** Mail Template			*/
@@ -72,23 +78,37 @@ public class DunningPrint extends JavaProcess
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
-		for (int i = 0; i < para.length; i++)
+		for (ProcessInfoParameter element : para)
 		{
-			String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
-				;
+			String name = element.getParameterName();
+			if (element.getParameter() == null)
+			{
+				
+			}
 			else if (name.equals("EMailPDF"))
-				p_EMailPDF = "Y".equals(para[i].getParameter());
+			{
+				p_EMailPDF = "Y".equals(element.getParameter());
+			}
 			else if (name.equals("R_MailText_ID"))
-				p_R_MailText_ID = para[i].getParameterAsInt();
+			{
+				p_R_MailText_ID = element.getParameterAsInt();
+			}
 			else if (name.equals("C_DunningRun_ID"))
-				p_C_DunningRun_ID = para[i].getParameterAsInt();
+			{
+				p_C_DunningRun_ID = element.getParameterAsInt();
+			}
 			else if (name.equals("IsOnlyIfBPBalance"))
-				p_IsOnlyIfBPBalance = "Y".equals(para[i].getParameter());
+			{
+				p_IsOnlyIfBPBalance = "Y".equals(element.getParameter());
+			}
 			else if (name.equals("PrintUnprocessedOnly"))
-				p_PrintUnprocessedOnly = "Y".equals(para[i].getParameter());
+			{
+				p_PrintUnprocessedOnly = "Y".equals(element.getParameter());
+			}
 			else
+			{
 				log.error("Unknown Parameter: " + name);
+			}
 		}
 	}	//	prepare
 
@@ -106,43 +126,45 @@ public class DunningPrint extends JavaProcess
 		
 		//	Need to have Template
 		if (p_EMailPDF && p_R_MailText_ID == 0)
+		{
 			throw new AdempiereUserError ("@NotFound@: @R_MailText_ID@");
-		IMailTextBuilder mText = null;
+		}
+		MailTextBuilder mText = null;
 		if (p_EMailPDF)
 		{
-			mText = Services.get(IMailBL.class).newMailTextBuilder(getCtx(), p_R_MailText_ID);
+			mText = mailService.newMailTextBuilder(MailTemplateId.ofRepoId(p_R_MailText_ID));
 		}
 		//
 		MDunningRun run = new MDunningRun (getCtx(), p_C_DunningRun_ID, get_TrxName());
 		if (run.get_ID() == 0)
+		{
 			throw new AdempiereUserError ("@NotFound@: @C_DunningRun_ID@ - " + p_C_DunningRun_ID);
+		}
 		MClient client = MClient.get(getCtx());
 		
 		int count = 0;
 		int errors = 0;
 		MDunningRunEntry[] entries = run.getEntries(false);
-		for (int i = 0; i < entries.length; i++)
+		for (MDunningRunEntry entry : entries)
 		{
-			MDunningRunEntry entry = entries[i];
-
 			//	Print Format on Dunning Level
 			MDunningLevel level = new MDunningLevel (getCtx(), entry.getC_DunningLevel_ID(), get_TrxName());
 			MPrintFormat format = null;
 			if (level.getDunning_PrintFormat_ID() > 0)
+			{
 				format = MPrintFormat.get (getCtx(), level.getDunning_PrintFormat_ID(), false);
+			}
 			
 			if (p_IsOnlyIfBPBalance && entry.getAmt().signum() <= 0)
-				continue;
-			if (p_PrintUnprocessedOnly && entry.isProcessed())
-				continue;
-			//	To BPartner
-			MBPartner bp = new MBPartner (getCtx(), entry.getC_BPartner_ID(), get_TrxName());
-			if (bp.get_ID() == 0)
 			{
-				addLog (entry.get_ID(), null, null, "@NotFound@: @C_BPartner_ID@ " + entry.getC_BPartner_ID());
-				errors++;
 				continue;
 			}
+			if (p_PrintUnprocessedOnly && entry.isProcessed())
+			{
+				continue;
+			}
+			//	To BPartner
+			I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(entry.getC_BPartner_ID());
 			//	To User
 			I_AD_User to = entry.getAD_User();
 			if (p_EMailPDF)
@@ -174,11 +196,16 @@ public class DunningPrint extends JavaProcess
 			info.setDescription(bp.getName() + ", Amt=" + entry.getAmt());
 			ReportEngine re = null;
 			if (format != null)
+			{
 				re = new ReportEngine(getCtx(), format, query, info);
+			}
 			boolean printed = false;
 			if (p_EMailPDF)
 			{
-				EMail email = client.createEMail(to.getEMail(), null, null);
+				final EMail email = client.createEMail(
+						EMailAddress.ofString(to.getEMail()),
+						(String)null, // subject
+						(String)null); // message
 				if (!email.isValid())
 				{
 					addLog (entry.get_ID(), null, null, 
@@ -186,12 +213,14 @@ public class DunningPrint extends JavaProcess
 					errors++;
 					continue;
 				}
-				mText.setAD_User(to);	//	variable context
-				mText.setC_BPartner(bp);
-				mText.setRecord(entry);
+				mText.bpartnerContact(to);	//	variable context
+				mText.bpartner(bp);
+				mText.record(entry);
 				String message = mText.getFullMailText();
 				if (mText.isHtml())
+				{
 					email.setMessageHTML(mText.getMailHeader(), message);
+				}
 				else
 				{
 					email.setSubject (mText.getMailHeader());
@@ -205,7 +234,12 @@ public class DunningPrint extends JavaProcess
 				}
 				//
 				final EMailSentStatus emailSentStatus = email.send();
-				MUserMail um = new MUserMail(getCtx(), mText.getR_MailText_ID(), entry.getAD_User_ID(), email, emailSentStatus);
+				MUserMail um = new MUserMail(
+						getCtx(),
+						mText.getMailTemplateId().getRepoId(), 
+						entry.getAD_User_ID(), 
+						email, 
+						emailSentStatus);
 				um.save();
 				if (emailSentStatus.isSentOK())
 				{
@@ -251,7 +285,9 @@ public class DunningPrint extends JavaProcess
 			run.save();
 		}
 		if (p_EMailPDF)
+		{
 			return "@Sent@=" + count + " - @Errors@=" + errors;
+		}
 		return "@Printed@=" + count;
 	}	//	doIt
 	

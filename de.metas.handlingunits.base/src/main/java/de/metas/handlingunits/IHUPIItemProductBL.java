@@ -24,15 +24,22 @@ package de.metas.handlingunits;
 
 import java.util.List;
 
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.KeyNamePair;
 
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
+import de.metas.util.Services;
 
 public interface IHUPIItemProductBL extends ISingletonService
 {
+	I_M_HU_PI_Item_Product getById(HUPIItemProductId id);
+
 	List<I_M_HU_PI_Item_Product> getCompatibleItemDefProducts(I_M_HU_PI_Version version, I_M_Product product);
 
 	/**
@@ -43,7 +50,6 @@ public interface IHUPIItemProductBL extends ISingletonService
 	boolean isCompatibleProduct(I_M_HU_PI_Version version, I_M_Product product);
 
 	void deleteForItem(I_M_HU_PI_Item packingInstructionsItem);
-
 
 	/**
 	 * Returns <code>true</code> if the given <code>piip</code> is the "virtual" one, i.e. the one referencing the virtual packing instruction.
@@ -68,4 +74,11 @@ public interface IHUPIItemProductBL extends ISingletonService
 	 */
 	void setNameAndDescription(I_M_HU_PI_Item_Product itemProduct);
 
+	KeyNamePair getDisplayName(HUPIItemProductId piItemProductId, String adLanguage);
+
+	static I_C_UOM extractUOMOrNull(final I_M_HU_PI_Item_Product itemProduct)
+	{
+		final UomId uomId = UomId.ofRepoIdOrNull(itemProduct.getC_UOM_ID());
+		return uomId != null ? Services.get(IUOMDAO.class).getById(uomId) : null;
+	}
 }

@@ -36,17 +36,18 @@ import java.util.Set;
 
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalKeyByNameComparator;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.ILUTUConfigurationEditor;
+import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.client.terminal.mmovement.exception.MaterialMovementException;
 import de.metas.handlingunits.client.terminal.mmovement.model.impl.AbstractLTCUModel;
-import de.metas.handlingunits.impl.HandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -56,6 +57,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 {
@@ -373,8 +375,8 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 
 	private final CUKey createCUKey(final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
-		final I_M_Product cuProduct = lutuConfiguration.getM_Product();
-		final CUKey cuKey = new CUKey(getTerminalContext(), cuProduct);
+		final ProductId cuProductId = ProductId.ofRepoId(lutuConfiguration.getM_Product_ID());
+		final CUKey cuKey = new CUKey(getTerminalContext(), cuProductId);
 		return cuKey;
 	}
 
@@ -496,7 +498,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		// TU
 		Check.errorIf(tuKey.isNoPI(), "TUKey not allowed to be a No PI: {}", tuKey);
 
-		lutuConfiguration.setM_HU_PI_Item_Product(tuKey.getM_HU_PI_Item_Product());
+		lutuConfiguration.setM_HU_PI_Item_Product_ID(tuKey.getM_HU_PI_Item_Product_ID());
 		lutuConfiguration.setM_TU_HU_PI(tuKey.getM_HU_PI());
 		lutuConfiguration.setIsInfiniteQtyTU(false);
 		lutuConfiguration.setQtyTU(BigDecimal.valueOf(qtyTU));
@@ -504,7 +506,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		//
 		// CU
 		lutuConfiguration.setM_Product_ID(cuProduct.getRepoId());
-		lutuConfiguration.setC_UOM(tuKey.getCuUOM());
+		lutuConfiguration.setC_UOM_ID(tuKey.getCuUOMId());
 		lutuConfiguration.setIsInfiniteQtyCU(false);
 		lutuConfiguration.setQtyCU(qtyCU);
 	}
@@ -513,8 +515,8 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 	{
 		final Properties ctx = getCtx();
 		final ProductId cuProductId = ProductId.ofRepoIdOrNull(lutuConfiguration.getM_Product_ID());
-		final I_C_UOM cuUOM = lutuConfiguration.getC_UOM();
-		final I_C_BPartner bpartner = lutuConfiguration.getC_BPartner();
+		final I_C_UOM cuUOM = ILUTUConfigurationFactory.extractUOMOrNull(lutuConfiguration);
+		final I_C_BPartner bpartner = ILUTUConfigurationFactory.extractBPartnerOrNull(lutuConfiguration);
 
 		final List<I_M_HU_PI_Item_Product> availableHUPIItemProducts = itemProductDAO.retrieveTUs(ctx, cuProductId, bpartner);
 
@@ -536,7 +538,8 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		//
 		// Add the virtual PI to TU Keys
 		// gh #1194: ... don't add them if lutuConfiguration is already about a virtual PI to start with
-		if (lutuConfiguration.getM_HU_PI_Item_Product().getM_HU_PI_Item_ID() != HandlingUnitsDAO.VIRTUAL_HU_PI_Item_ID)
+		final I_M_HU_PI_Item_Product piItemProduct = ILUTUConfigurationFactory.extractHUPIItemProduct(lutuConfiguration);
+		if (!HuPackingInstructionsItemId.isVirtualRepoId(piItemProduct.getM_HU_PI_Item_ID()))
 		{
 			final ILUTUCUKey tuKey = createVirtualPITUKey(lutuConfiguration);
 			final String tuKeyId = tuKey.getId();
@@ -570,15 +573,13 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 	}
 
 	private TUKey createTUKey(
-			final I_M_HU_PI_Item_Product tuPIItemProduct,
+			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct,
 			final I_M_HU_PI tuPI,
 			final ProductId cuProductId,
 			final I_C_UOM cuUOM,
 			final BigDecimal qtyCUPerTU)
 	{
-		Check.assumeNotNull(tuPIItemProduct, "tuPIItemProduct not null");
-
-		I_C_UOM cuUOMToUse = tuPIItemProduct.getC_UOM();
+		I_C_UOM cuUOMToUse = IHUPIItemProductBL.extractUOMOrNull(tuPIItemProduct);
 		if (cuUOMToUse == null || cuUOMToUse.getC_UOM_ID() <= 0)
 		{
 			cuUOMToUse = cuUOM;
@@ -610,9 +611,9 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 			return null; // TODO VHU!
 		}
 
-		final I_M_HU_PI_Item_Product huPIIP = lutuConfiguration.getM_HU_PI_Item_Product();
+		final I_M_HU_PI_Item_Product huPIIP = ILUTUConfigurationFactory.extractHUPIItemProductOrNull(lutuConfiguration);
 		final ProductId cuProductId = ProductId.ofRepoIdOrNull(lutuConfiguration.getM_Product_ID());
-		final I_C_UOM cuUOM = lutuConfiguration.getC_UOM();
+		final I_C_UOM cuUOM = ILUTUConfigurationFactory.extractUOMOrNull(lutuConfiguration);
 		final boolean qtyCUPerTUInfinite = lutuConfiguration.isInfiniteQtyCU();
 		final BigDecimal qtyCUPerTU = lutuConfiguration.getQtyCU();
 
@@ -629,7 +630,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		final BigDecimal qtyCUsPerTU = Quantity.QTY_INFINITE;
 
 		final ProductId cuProductId = ProductId.ofRepoIdOrNull(lutuConfiguration.getM_Product_ID());
-		final I_C_UOM cuUOM = lutuConfiguration.getC_UOM();
+		final I_C_UOM cuUOM = ILUTUConfigurationFactory.extractUOMOrNull(lutuConfiguration);
 
 		final TUKey tuKey = createTUKey(virtualItemProduct, virtualPI, cuProductId, cuUOM, qtyCUsPerTU);
 		return tuKey;
@@ -641,7 +642,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 
 		final String huUnitType = X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit;
 
-		final I_C_BPartner bpartner = lutuConfiguration.getC_BPartner();
+		final I_C_BPartner bpartner = ILUTUConfigurationFactory.extractBPartnerOrNull(lutuConfiguration);
 		final List<I_M_HU_PI_Item> luPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(tuPI, huUnitType, bpartner);
 
 		final Map<String, ILUTUCUKey> luKeys = new LinkedHashMap<>(luPIItems.size());
@@ -727,7 +728,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 	 * @param qty
 	 * @return true if quantity could be distributed
 	 */
-	public boolean distributeTotalQtyCU(final BigDecimal qty)
+	public boolean distributeTotalQtyCU(final Quantity qty)
 	{
 		if (qty == null)
 		{
@@ -786,11 +787,11 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		if (qtyCUsPerTUInfinite)
 		{
 			qtyTU = BigDecimal.ONE;
-			qtyCU = qty;
+			qtyCU = qty.toBigDecimal();
 		}
 		else
 		{
-			qtyTU = qty.divide(qtyCUsPerTU, 0, RoundingMode.UP);
+			qtyTU = qty.toBigDecimal().divide(qtyCUsPerTU, 0, RoundingMode.UP);
 			if (qtyTU.signum() <= 0)
 			{
 				// shall not be possible
@@ -798,7 +799,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 			}
 			else if (qtyTU.compareTo(BigDecimal.ONE) == 0)
 			{
-				qtyCU = qty.min(qtyCUsPerTU);
+				qtyCU = qty.toBigDecimal().min(qtyCUsPerTU);
 			}
 			else
 			{

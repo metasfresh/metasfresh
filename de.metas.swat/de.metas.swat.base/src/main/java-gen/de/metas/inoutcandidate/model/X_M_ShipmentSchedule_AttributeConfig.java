@@ -14,7 +14,7 @@ public class X_M_ShipmentSchedule_AttributeConfig extends org.compiere.model.PO 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1460016934L;
+	private static final long serialVersionUID = -531410306L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule_AttributeConfig (Properties ctx, int M_ShipmentSchedule_AttributeConfig_ID, String trxName)
@@ -24,7 +24,7 @@ public class X_M_ShipmentSchedule_AttributeConfig extends org.compiere.model.PO 
         {
 			setM_IolCandHandler_ID (0);
 			setM_ShipmentSchedule_AttributeConfig_ID (0);
-			setOnlyIfInReferencedASI (false);
+			setOnlyIfInReferencedASI (false); // N
         } */
     }
 
@@ -42,18 +42,6 @@ public class X_M_ShipmentSchedule_AttributeConfig extends org.compiere.model.PO 
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_M_Attribute getM_Attribute() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class);
-	}
-
-	@Override
-	public void setM_Attribute(org.compiere.model.I_M_Attribute M_Attribute)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class, M_Attribute);
-	}
 
 	/** Set Merkmal.
 		@param M_Attribute_ID 
@@ -81,7 +69,7 @@ public class X_M_ShipmentSchedule_AttributeConfig extends org.compiere.model.PO 
 	}
 
 	@Override
-	public de.metas.inoutcandidate.model.I_M_IolCandHandler getM_IolCandHandler() throws RuntimeException
+	public de.metas.inoutcandidate.model.I_M_IolCandHandler getM_IolCandHandler()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_IolCandHandler_ID, de.metas.inoutcandidate.model.I_M_IolCandHandler.class);
 	}

@@ -75,7 +75,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="12" isBold="true"/>
+					<font size="12" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{doctype}]]></textFieldExpression>
 			</textField>

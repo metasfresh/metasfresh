@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.table.api.impl.CopyColumnsProducer;
+import org.adempiere.ad.table.api.impl.CopyColumnsResult;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
@@ -27,25 +28,19 @@ import org.compiere.model.MTable;
 
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.process.RunOutOfTrx;
+import de.metas.util.Loggables;
 
 /**
  * Copy columns from one table to other
- *
- * @author Carlos Ruiz - globalqss
- * @version $Id: CopyColumnsFromTable
  */
 public class CopyColumnsFromTable extends JavaProcess
 {
-	/** Target Table */
-	private int p_target_AD_Table_ID = 0;
-	/** Source Table */
-	private int p_source_AD_Table_ID = 0;
-
+	private int p_target_AD_Table_ID;
+	private int p_source_AD_Table_ID;
 	private boolean p_IsTest = false;
+	private boolean p_IsSyncDatabase = false;
 
-	/**
-	 * Prepare - e.g., get Parameters.
-	 */
 	@Override
 	protected void prepare()
 	{
@@ -64,40 +59,48 @@ public class CopyColumnsFromTable extends JavaProcess
 			{
 				p_IsTest = para.getParameterAsBoolean();
 			}
+			else if (name.equals("IsSyncDatabase"))
+			{
+				p_IsSyncDatabase = para.getParameterAsBoolean();
+			}
 		}
 		p_target_AD_Table_ID = getRecord_ID();
 	}	// prepare
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt()
 	{
-		final int countCreated = CopyColumnsProducer.newInstance()
-				.setLogger(this)
-				.setTargetTable(getTargetTable())
+		final I_AD_Table targetTable = getTargetTable();
+
+		final CopyColumnsResult result = CopyColumnsProducer.newInstance()
+				.setLogger(Loggables.nop())
+				.setTargetTable(targetTable)
 				.setSourceColumns(getSourceColumns())
+				.setSyncDatabase(p_IsSyncDatabase)
+				.setDryRun(p_IsTest)
 				.create();
 
-		if (p_IsTest)
-		{
-			throw new AdempiereException("Rollback because we are in test mode");
-		}
-
 		//
-		return "@Created@ #" + countCreated;
-	}	// doIt
+		return "" + result;
+	}
 
-	protected I_AD_Table getTargetTable()
+	private I_AD_Table getTargetTable()
 	{
 		if (p_target_AD_Table_ID <= 0)
+		{
 			throw new AdempiereException("@NotFound@ @AD_Table_ID@ " + p_target_AD_Table_ID);
+		}
 		final MTable targetTable = new MTable(getCtx(), p_target_AD_Table_ID, get_TrxName());
 		return targetTable;
 	}
 
-	protected List<I_AD_Column> getSourceColumns()
+	private List<I_AD_Column> getSourceColumns()
 	{
 		if (p_source_AD_Table_ID <= 0)
+		{
 			throw new AdempiereException("@NotFound@ @AD_Table_ID@ " + p_source_AD_Table_ID);
+		}
 		final MTable sourceTable = new MTable(getCtx(), p_source_AD_Table_ID, get_TrxName());
 
 		final MColumn[] sourceColumnsArr = sourceTable.getColumns(true);
@@ -113,4 +116,4 @@ public class CopyColumnsFromTable extends JavaProcess
 		}
 		return sourceColumns;
 	}
-}	// CopyColumnsFromTable
+}

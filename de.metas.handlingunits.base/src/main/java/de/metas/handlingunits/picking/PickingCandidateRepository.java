@@ -20,7 +20,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
@@ -40,6 +39,7 @@ import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotQuery;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -54,12 +54,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -68,7 +68,7 @@ import lombok.NonNull;
 
 /**
  * Dedicated DAO'ish class centered around {@link I_M_Picking_Candidate}s
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -143,6 +143,7 @@ public class PickingCandidateRepository
 				.pickStatus(PickingCandidatePickStatus.ofCode(record.getPickStatus()))
 				.approvalStatus(PickingCandidateApprovalStatus.ofCode(record.getApprovalStatus()))
 				//
+
 				.pickFromHuId(HuId.ofRepoIdOrNull(record.getPickFrom_HU_ID()))
 				.qtyPicked(qtyPicked)
 				.qtyReview(qtyReview)
@@ -164,8 +165,8 @@ public class PickingCandidateRepository
 
 		record.setPickFrom_HU_ID(HuId.toRepoId(from.getPickFromHuId()));
 
-		record.setQtyPicked(from.getQtyPicked().getAsBigDecimal());
-		record.setC_UOM_ID(from.getQtyPicked().getUOMId());
+		record.setQtyPicked(from.getQtyPicked().toBigDecimal());
+		record.setC_UOM_ID(from.getQtyPicked().getUomId().getRepoId());
 		record.setQtyReview(from.getQtyReview());
 
 		record.setPackTo_HU_PI_ID(HuPackingInstructionsId.toRepoId(from.getPackToInstructionsId()));
@@ -216,9 +217,9 @@ public class PickingCandidateRepository
 				.addOnlyActiveRecordsFilter();
 
 		queryBuilder.addCompositeQueryFilter()
-				.setJoinOr()
-				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_PickFrom_HU_ID, huIds)
-				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, huIds); // pack HUs
+		.setJoinOr()
+		.addInArrayFilter(I_M_Picking_Candidate.COLUMN_PickFrom_HU_ID, huIds)
+		.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, huIds); // pack HUs
 
 		return queryBuilder;
 	}
@@ -296,6 +297,23 @@ public class PickingCandidateRepository
 
 	}
 
+
+	public boolean existsPickingCandidates(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return false;
+		}
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds)
+				.create()
+				.match();
+
+	}
+
 	public boolean hasNotClosedCandidatesForPickingSlot(final PickingSlotId pickingSlotId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -312,12 +330,12 @@ public class PickingCandidateRepository
 		Check.assumeNotEmpty(huIds, "huIds is not empty");
 
 		retrievePickingCandidatesByHUIdsQuery(huIds)
-				.create()
-				.update(record -> {
-					markAsInactiveNoSave(record);
-					return IQueryUpdater.MODEL_UPDATED;
+		.create()
+		.update(record -> {
+			markAsInactiveNoSave(record);
+			return IQueryUpdater.MODEL_UPDATED;
 
-				});
+		});
 	}
 
 	private void markAsInactiveNoSave(I_M_Picking_Candidate record)
@@ -361,9 +379,9 @@ public class PickingCandidateRepository
 			final IHUPickingSlotDAO huPickingSlotsRepo = Services.get(IHUPickingSlotDAO.class);
 			final Set<PickingSlotId> rackSystemPickingSlotIds = huPickingSlotsRepo.retrieveAllPickingSlotIdsWhichAreRackSystems();
 			queryBuilder.addCompositeQueryFilter()
-					.setJoinOr()
-					.addNotEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, PickingCandidateStatus.Closed.getCode())
-					.addNotInArrayFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, rackSystemPickingSlotIds);
+			.setJoinOr()
+			.addNotEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, PickingCandidateStatus.Closed.getCode())
+			.addNotInArrayFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, rackSystemPickingSlotIds);
 		}
 
 		//
@@ -393,15 +411,15 @@ public class PickingCandidateRepository
 
 			// PickFrom HU
 			queryBuilder.addCompositeQueryFilter()
-					.setJoinOr()
-					.addEqualsFilter(I_M_Picking_Candidate.COLUMN_PickFrom_HU_ID, null)
-					.addInSubQueryFilter(I_M_Picking_Candidate.COLUMN_PickFrom_HU_ID, I_M_HU.COLUMN_M_HU_ID, husQuery);
+			.setJoinOr()
+			.addEqualsFilter(I_M_Picking_Candidate.COLUMN_PickFrom_HU_ID, null)
+			.addInSubQueryFilter(I_M_Picking_Candidate.COLUMN_PickFrom_HU_ID, I_M_HU.COLUMN_M_HU_ID, husQuery);
 
 			// Picked HU
 			queryBuilder.addCompositeQueryFilter()
-					.setJoinOr()
-					.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, null)
-					.addInSubQueryFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, I_M_HU.COLUMN_M_HU_ID, husQuery);
+			.setJoinOr()
+			.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, null)
+			.addInSubQueryFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, I_M_HU.COLUMN_M_HU_ID, husQuery);
 		}
 
 		//

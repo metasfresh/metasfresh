@@ -23,20 +23,20 @@ package de.metas.pricing.service.impl;
  */
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.compiere.util.Util;
-
+import de.metas.currency.CurrencyPrecision;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingAttribute;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -44,12 +44,16 @@ import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.Percent;
-
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.ToString;
 
 /**
@@ -63,93 +67,88 @@ import lombok.ToString;
  *
  */
 @ToString
-class PricingResult implements IPricingResult
+@Data
+final class PricingResult implements IPricingResult
 {
 	private boolean calculated = false;
 
-	@Getter
-	@Setter
 	private PricingSystemId pricingSystemId;
-	@Getter
-	@Setter
 	private PriceListId priceListId;
-	@Setter
-	@Getter
-	private CurrencyId currencyId;
-	private int C_UOM_ID = -1;
-	@Setter
-	@Getter
-	private ProductId productId;
-	@Setter
-	@Getter
-	private ProductCategoryId productCategoryId;
-	@Setter
-	@Getter
 	private PriceListVersionId priceListVersionId;
-	private int C_TaxCategory_ID = -1;
-	@Setter
-	@Getter
+	private CurrencyId currencyId;
+	private UomId priceUomId;
+	private CurrencyPrecision precision;
+
+	private ProductId productId;
+	private ProductCategoryId productCategoryId;
+
+	private TaxCategoryId taxCategoryId;
+	private boolean taxIncluded = false;
+
 	private PricingConditionsResult pricingConditions;
 
-	@Setter
-	@Getter
-	private int precision = NO_PRECISION;
 
-	@Setter
-	@Getter
 	private BigDecimal priceList = BigDecimal.ZERO;
-
-	@Setter
-	@Getter
 	private BigDecimal priceStd = BigDecimal.ZERO;
-
-	@Setter
-	@Getter
 	private BigDecimal priceLimit = BigDecimal.ZERO;
 	private Percent discount = Percent.ZERO;
-	private boolean enforcePriceLimit = false;
-	private boolean taxIncluded = false;
-	private boolean isUseDiscountSchema = false;
+
+	@NonNull
+	private BooleanWithReason enforcePriceLimit = BooleanWithReason.FALSE;
+
+	private boolean usesDiscountSchema = false;
 	private boolean disallowDiscount = false;
-	private Timestamp priceDateTS = null;
 
-	private boolean isPriceEditable = true;
-	private boolean isDiscountEditable = true;
+	private final LocalDate priceDate;
 
+	private boolean priceEditable = true;
+
+	private boolean discountEditable = true;
+
+	private InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.NominalWeight;
+
+	@Getter(AccessLevel.NONE)
 	private final List<IPricingRule> rulesApplied = new ArrayList<>();
 
+	@Getter(AccessLevel.NONE)
 	private final List<IPricingAttribute> pricingAttributes = new ArrayList<>();
 
-	/**
-	 * @return the c_UOM_ID
-	 */
-	@Override
-	public int getPrice_UOM_ID()
+	@Builder
+	private PricingResult(
+			@NonNull final LocalDate priceDate,
+			//
+			@Nullable final PricingSystemId pricingSystemId,
+			@Nullable final PriceListId priceListId,
+			@Nullable final PriceListVersionId priceListVersionId,
+			@Nullable final CurrencyId currencyId,
+			//
+			@Nullable final ProductId productId,
+			//
+			final boolean disallowDiscount)
 	{
-		return C_UOM_ID;
+		this.calculated = false;
+
+		this.priceDate = priceDate;
+
+		this.pricingSystemId = pricingSystemId;
+		this.priceListId = priceListId;
+		this.priceListVersionId = priceListVersionId;
+		this.currencyId = currencyId;
+
+		this.productId = productId;
+
+		this.disallowDiscount = disallowDiscount;
 	}
 
 	/**
-	 * @param c_UOM_ID the c_UOM_ID to set
-	 */
-	@Override
-	public void setPrice_UOM_ID(final int c_UOM_ID)
-	{
-		C_UOM_ID = c_UOM_ID;
-	}
-
-	/**
-	 * @return the discount
+	 * @return discount, never {@code null}
 	 */
 	@Override
 	public Percent getDiscount()
 	{
-		return Util.coalesce(discount, Percent.ZERO);
+		return CoalesceUtil.coalesce(discount, Percent.ZERO);
 	}
 
-	/**
-	 * @param discount the discount to set
-	 */
 	@Override
 	public void setDiscount(final Percent discount)
 	{
@@ -157,127 +156,10 @@ class PricingResult implements IPricingResult
 		this.discount = discount;
 	}
 
-	/**
-	 * @return the enforcePriceLimit
-	 */
-	@Override
-	public boolean isEnforcePriceLimit()
-	{
-		return enforcePriceLimit;
-	}
-
-	/**
-	 * @param enforcePriceLimit the enforcePriceLimit to set
-	 */
-	@Override
-	public void setEnforcePriceLimit(final boolean enforcePriceLimit)
-	{
-		this.enforcePriceLimit = enforcePriceLimit;
-	}
-
-	/**
-	 * @return the taxIncluded
-	 */
-	@Override
-	public boolean isTaxIncluded()
-	{
-		return taxIncluded;
-	}
-
-	/**
-	 * @param taxIncluded the taxIncluded to set
-	 */
-	@Override
-	public void setTaxIncluded(final boolean taxIncluded)
-	{
-		this.taxIncluded = taxIncluded;
-	}
-
-	/**
-	 * @return true f a discountSchema is set, false otherwise
-	 */
-	@Override
-	public boolean isUsesDiscountSchema()
-	{
-		return isUseDiscountSchema;
-	}
-
-	/**
-	 * @param wether of not a discount schema is used
-	 */
-	@Override
-	public void setUsesDiscountSchema(final boolean discountSchema)
-	{
-		isUseDiscountSchema = discountSchema;
-	}
-
-	/**
-	 * @return the calculated
-	 */
-	@Override
-	public boolean isCalculated()
-	{
-		return calculated;
-	}
-
-	/**
-	 * @param calculated the calculated to set
-	 */
-	@Override
-	public void setCalculated(final boolean calculated)
-	{
-		this.calculated = calculated;
-	}
-
-	@Override
-	public Timestamp getPriceDate()
-	{
-		return priceDateTS;
-	}
-
-	/**
-	 * @param priceDate the priceDate to set
-	 */
-	@Override
-	public void setPriceDate(final Timestamp priceDate)
-	{
-		priceDateTS = priceDate;
-	}
-
 	@Override
 	public void addPricingRuleApplied(@NonNull IPricingRule rule)
 	{
 		rulesApplied.add(rule);
-	}
-
-	@Override
-	public List<IPricingRule> getPricingRulesApplied()
-	{
-		return rulesApplied;
-	}
-
-	@Override
-	public boolean isDisallowDiscount()
-	{
-		return disallowDiscount;
-	}
-
-	@Override
-	public void setDisallowDiscount(final boolean disallowDiscount)
-	{
-		this.disallowDiscount = disallowDiscount;
-	}
-
-	@Override
-	public int getC_TaxCategory_ID()
-	{
-		return C_TaxCategory_ID;
-	}
-
-	@Override
-	public void setC_TaxCategory_ID(final int C_TaxCategory_ID)
-	{
-		this.C_TaxCategory_ID = C_TaxCategory_ID;
 	}
 
 	@Override
@@ -297,30 +179,6 @@ class PricingResult implements IPricingResult
 		pricingAttributes.addAll(pricingAttributesToAdd);
 	}
 
-	@Override
-	public void setPriceEditable(final boolean isPriceEditable)
-	{
-		this.isPriceEditable = isPriceEditable;
-	}
-
-	@Override
-	public boolean isPriceEditable()
-	{
-		return isPriceEditable;
-	}
-
-	@Override
-	public void setDiscountEditable(final boolean isDiscountEditable)
-	{
-		this.isDiscountEditable = isDiscountEditable;
-	}
-
-	@Override
-	public boolean isDiscountEditable()
-	{
-		return isDiscountEditable;
-	}
-
 	/**
 	 * Supposed to be called by the pricing engine.
 	 *
@@ -335,10 +193,11 @@ class PricingResult implements IPricingResult
 
 	private BigDecimal scaleToPrecision(@Nullable final BigDecimal priceToRound)
 	{
-		if (priceToRound == null || precision < 0)
+		if (priceToRound == null || precision == null)
 		{
 			return priceToRound;
 		}
-		return priceToRound.setScale(precision, RoundingMode.HALF_UP);
+
+		return precision.round(priceToRound);
 	}
 }

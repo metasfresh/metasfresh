@@ -23,11 +23,12 @@ package de.metas.invoicecandidate.api.impl;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
 import de.metas.invoicecandidate.api.IInvoicingParams;
+import lombok.Getter;
 import lombok.ToString;
 
 @ToString
@@ -38,23 +39,24 @@ public class PlainInvoicingParams implements IInvoicingParams
 	private Boolean ignoreInvoiceSchedule = null;
 	private Boolean supplementMissingPaymentTermIds = null;
 
-	private boolean storeInvoicesInResult = false;
-	private boolean assumeOneInvoice = false;
+	private Boolean storeInvoicesInResult = null;
+	private Boolean assumeOneInvoice = null;
 
-	private Timestamp dateInvoiced;
+	private LocalDate dateInvoiced;
 	private boolean dateInvoicedSet = false;
 
-	private Timestamp dateAcct;
+	private LocalDate dateAcct;
 	private boolean dateAcctSet = false;
 
 	private String poReference;
 	private boolean poReferenceSet = false;
 
-
 	private BigDecimal check_NetAmtToInvoice = null;
 
-	private final IInvoicingParams defaults;
+	@Getter
+	private boolean updateLocationAndContactForInvoice = false;
 
+	private final IInvoicingParams defaults;
 
 	public PlainInvoicingParams()
 	{
@@ -86,7 +88,7 @@ public class PlainInvoicingParams implements IInvoicingParams
 		}
 	}
 
-	public void setOnlyApprovedForInvoicing(boolean onlyApprovedForInvoicing)
+	public void setOnlyApprovedForInvoicing(final boolean onlyApprovedForInvoicing)
 	{
 		this.onlyApprovedForInvoicing = onlyApprovedForInvoicing;
 	}
@@ -136,7 +138,7 @@ public class PlainInvoicingParams implements IInvoicingParams
 	}
 
 	@Override
-	public Timestamp getDateInvoiced()
+	public LocalDate getDateInvoiced()
 	{
 		if (dateInvoicedSet)
 		{
@@ -152,14 +154,14 @@ public class PlainInvoicingParams implements IInvoicingParams
 		}
 	}
 
-	public void setDateInvoiced(Timestamp dateInvoiced)
+	public void setDateInvoiced(final LocalDate dateInvoiced)
 	{
 		this.dateInvoiced = dateInvoiced;
-		this.dateInvoicedSet = true;
+		dateInvoicedSet = true;
 	}
 
 	@Override
-	public Timestamp getDateAcct()
+	public LocalDate getDateAcct()
 	{
 		if (dateAcctSet)
 		{
@@ -175,10 +177,10 @@ public class PlainInvoicingParams implements IInvoicingParams
 		}
 	}
 
-	public void setDateAcct(Timestamp dateAcct)
+	public void setDateAcct(final LocalDate dateAcct)
 	{
 		this.dateAcct = dateAcct;
-		this.dateAcctSet = true;
+		dateAcctSet = true;
 	}
 
 	@Override
@@ -201,7 +203,12 @@ public class PlainInvoicingParams implements IInvoicingParams
 	public void setPOReference(@Nullable final String poReference)
 	{
 		this.poReference = poReference;
-		this.poReferenceSet = true;
+		poReferenceSet = true;
+	}
+
+	public void setSupplementMissingPaymentTermIds(final boolean supplementMissingPaymentTermIds)
+	{
+		this.supplementMissingPaymentTermIds = supplementMissingPaymentTermIds;
 	}
 
 	@Override
@@ -216,6 +223,11 @@ public class PlainInvoicingParams implements IInvoicingParams
 			return defaults.isSupplementMissingPaymentTermIds();
 		}
 		return false;
+	}
+
+	public void setCheck_NetAmtToInvoice(final BigDecimal check_NetAmtToInvoice)
+	{
+		this.check_NetAmtToInvoice = check_NetAmtToInvoice;
 	}
 
 	@Override
@@ -242,7 +254,18 @@ public class PlainInvoicingParams implements IInvoicingParams
 	@Override
 	public boolean isStoreInvoicesInResult()
 	{
-		return storeInvoicesInResult;
+		if (storeInvoicesInResult != null)
+		{
+			return storeInvoicesInResult;
+		}
+		else if (defaults != null)
+		{
+			return defaults.isStoreInvoicesInResult();
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	public PlainInvoicingParams setAssumeOneInvoice(final boolean assumeOneInvoice)
@@ -254,6 +277,17 @@ public class PlainInvoicingParams implements IInvoicingParams
 	@Override
 	public boolean isAssumeOneInvoice()
 	{
-		return assumeOneInvoice;
+		if (assumeOneInvoice != null)
+		{
+			return assumeOneInvoice;
+		}
+		else if (defaults != null)
+		{
+			return defaults.isAssumeOneInvoice();
+		}
+		else
+		{
+			return false;
+		}
 	}
 }

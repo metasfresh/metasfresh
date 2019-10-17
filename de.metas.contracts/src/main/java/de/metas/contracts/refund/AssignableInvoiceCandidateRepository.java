@@ -1,11 +1,15 @@
 package de.metas.contracts.refund;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.Iterator;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.springframework.stereotype.Repository;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -74,5 +78,21 @@ public class AssignableInvoiceCandidateRepository
 				.stream()
 				.map(assignableInvoiceCandidateFactory::ofRecord)
 				.iterator();
+	}
+
+	/**
+	 * In production, assignable invoice candidates are created elsewhere and are only loaded if they are relevant for refund contracts.
+	 * That's why this method is intended only for (unit-)testing.
+	 */
+	@VisibleForTesting
+	public AssignableInvoiceCandidate saveNew(@NonNull final AssignableInvoiceCandidate assignableCandidate)
+	{
+		final I_C_Invoice_Candidate assignableCandidateRecord = newInstance(I_C_Invoice_Candidate.class);
+		saveRecord(assignableCandidateRecord);
+
+		return assignableCandidate
+				.toBuilder()
+				.id(InvoiceCandidateId.ofRepoId(assignableCandidateRecord.getC_Invoice_Candidate_ID()))
+				.build();
 	}
 }

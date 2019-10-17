@@ -26,11 +26,11 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_C_Currency;
 
 import de.metas.banking.payment.IPaymentString;
 import de.metas.banking.payment.impl.AbstractPaymentStringDataProvider;
-import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
@@ -70,19 +70,14 @@ public class ESRPaymentStringDataProvider extends AbstractPaymentStringDataProvi
 		final IPaymentString paymentString = getPaymentString();
 
 		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class, contextProvider);
-		if (Check.isEmpty(paymentString.getBPValue()))
-		{
-			Check.assume(bpartnerId > 0, "If this instance's paymentString has no BPValue, then we assume the bPartnerId to be greater than 0. This={}", this);
-			bpBankAccount.setC_BPartner_ID(bpartnerId);
-		}
-		else
-		{
-			Services.get(IBPartnerDAO.class).retrieveBPartnerByValue(contextProvider.getCtx(), paymentString.getBPValue());
-		}
+
+		Check.assume(bpartnerId > 0, "We assume the bPartnerId to be greater than 0. This={}", this);
+		bpBankAccount.setC_BPartner_ID(bpartnerId);
+
 		// bpBankAccount.setC_Bank_ID(C_Bank_ID); // introduce a standard ESR-Dummy-Bank, or leave it empty
 
-		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrencyByISOCode(contextProvider.getCtx(), "CHF"); // CHF, because it's ESR
-		bpBankAccount.setC_Currency(currency);
+		final Currency currency = Services.get(ICurrencyDAO.class).getByCurrencyCode(CurrencyCode.CHF); // CHF, because it's ESR
+		bpBankAccount.setC_Currency_ID(currency.getId().getRepoId());
 		bpBankAccount.setIsEsrAccount(true); // ..because we are creating this from an ESR string
 		bpBankAccount.setIsACH(true);
 		bpBankAccount.setA_Name(bpBankAccount.getC_BPartner().getName());

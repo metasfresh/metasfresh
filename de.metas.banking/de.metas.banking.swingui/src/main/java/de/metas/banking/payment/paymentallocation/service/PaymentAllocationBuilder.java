@@ -106,7 +106,7 @@ public class PaymentAllocationBuilder
 
 		try
 		{
-			trxManager.run(new TrxRunnableAdapter()
+			trxManager.runInNewTrx(new TrxRunnableAdapter()
 			{
 				@Override
 				public void run(final String localTrxName)
@@ -158,8 +158,6 @@ public class PaymentAllocationBuilder
 
 	/**
 	 * Create and complete one {@link I_C_AllocationHdr} for given candidate.
-	 *
-	 * @param line
 	 */
 	private final void createAndCompleteAllocation(final AllocationLineCandidate line)
 	{

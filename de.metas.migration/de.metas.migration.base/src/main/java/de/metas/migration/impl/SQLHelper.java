@@ -33,10 +33,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableSet;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -300,6 +303,38 @@ public class SQLHelper
 		close(rs);
 		close(pstmt);
 		close(conn);
+	}
+
+	public Set<String> getDBFunctionsMatchingPattern(final String functionNamePattern)
+	{
+		ResultSet rs = null;
+		try
+		{
+			rs = database.getConnection()
+					.getMetaData()
+					.getProcedures(database.getDbName(), null, functionNamePattern);
+
+			final ImmutableSet.Builder<String> result = ImmutableSet.builder();
+			while (rs.next())
+			{
+				final String functionName = rs.getString("PROCEDURE_NAME");
+				final String schemaName = rs.getString("PROCEDURE_SCHEM");
+
+				final String functionNameFQ = schemaName != null ? schemaName + "." + functionName : functionName;
+				result.add(functionNameFQ);
+			}
+
+			return result.build();
+		}
+		catch (final SQLException ex)
+		{
+			logger.warn("Error while fetching functions for pattern {}. Considering no functions found.", functionNamePattern, ex);
+			return ImmutableSet.of();
+		}
+		finally
+		{
+			close(rs);
+		}
 	}
 
 	@FunctionalInterface

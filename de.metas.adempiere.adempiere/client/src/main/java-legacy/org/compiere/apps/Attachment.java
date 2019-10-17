@@ -42,7 +42,7 @@ import org.adempiere.images.Images;
 import org.adempiere.pdf.Document;
 import org.adempiere.pdf.viewer.PDFViewerBean;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.MSysConfig;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
@@ -64,7 +64,6 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -205,8 +204,10 @@ public final class Attachment extends CDialog implements ActionListener
 		mainPanel.add(confirmPanel, BorderLayout.SOUTH);
 		confirmPanel.setActionListener(this);
 		bDeleteAll = ConfirmPanel.createDeleteButton(true);
-		if (!MSysConfig.getBooleanValue(Constants.SYSCONFIG_Attachment_HideDeleteAll, false, Env.getAD_Client_ID(Env.getCtx()))) // metas: tsa: 01819
+		if (!MSysConfig.getBooleanValue(Constants.SYSCONFIG_Attachment_HideDeleteAll, false, Env.getAD_Client_ID(Env.getCtx())))
+		{
 			confirmPanel.addButton(bDeleteAll);
+		}
 		bDeleteAll.addActionListener(this);
 		//
 		info.setText("-");
@@ -233,7 +234,7 @@ public final class Attachment extends CDialog implements ActionListener
 	 */
 	private void loadAttachments()
 	{
-		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+		final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 
 		// Set attachment entries combo
 		final List<AttachmentEntry> attachmentEntries = attachmentEntryService.getByReferencedRecord(getRecord());
@@ -266,7 +267,7 @@ public final class Attachment extends CDialog implements ActionListener
 		bOpen.setEnabled(false);
 		bSave.setEnabled(false);
 
-		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+		final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 
 		final AttachmentEntry entry = entryItem != null ? attachmentEntryService.getById(entryItem.getAttachmentEntryId()) : null;
 
@@ -338,7 +339,9 @@ public final class Attachment extends CDialog implements ActionListener
 					}
 				}
 				else
+				{
 					log.error("Could not create image");
+				}
 			}
 		}
 		if (graphPanel.getComponentCount() == 0)
@@ -382,26 +385,34 @@ public final class Attachment extends CDialog implements ActionListener
 		// Delete Attachment
 		else if (event.getSource() == bDeleteAll)
 		{
-			if (deleteAttachment()) // metas: tsa: US1115: dispose only if the user confirmed deletion
+			if (deleteAttachment())
+			{
 				dispose();
+			}
 		}
 		// Delete individual entry and Return
 		else if (event.getSource() == bDelete)
+		{
 			deleteAttachmentEntry();
-		// Show Data
+		}
 		else if (event.getSource() == cbAttachmentEntries)
+		{
 			displayData(cbAttachmentEntries.getSelectedItem());
-		// Load Attachment
+		}
 		else if (event.getSource() == bLoad)
+		{
 			loadFile();
-		// Open Attachment
+		}
 		else if (event.getSource() == bSave)
+		{
 			saveAttachmentToFile();
-		// Open Attachment
+		}
 		else if (event.getSource() == bOpen)
 		{
 			if (!openAttachment())
+			{
 				saveAttachmentToFile();
+			}
 		}
 	}	// actionPerformed
 
@@ -420,7 +431,7 @@ public final class Attachment extends CDialog implements ActionListener
 			return;
 		}
 
-		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+		final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 		//
 		final File[] files = chooser.getSelectedFiles();
 		for (final File file : files)
@@ -453,7 +464,7 @@ public final class Attachment extends CDialog implements ActionListener
 	{
 		if (ADialog.ask(m_WindowNo, this, "AttachmentDelete?"))
 		{
-			final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+			final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 			final List<AttachmentEntry> entries = attachmentEntryService.getByReferencedRecord(getRecord());
 			for (final AttachmentEntry entry : entries)
 			{
@@ -472,11 +483,13 @@ public final class Attachment extends CDialog implements ActionListener
 	{
 		final AttachmentEntryItem entryItem = cbAttachmentEntries.getSelectedItem();
 		if (entryItem == null)
+		{
 			return;
+		}
 		//
 		if (ADialog.ask(m_WindowNo, this, "AttachmentDeleteEntry?", entryItem.getDisplayName()))
 		{
-			final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+			final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 			final AttachmentEntry entry = attachmentEntryService.getById(entryItem.getAttachmentEntryId());
 			attachmentEntryService.unattach(getRecord(), entry);
 
@@ -512,7 +525,7 @@ public final class Attachment extends CDialog implements ActionListener
 			return;
 		}
 
-		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+		final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 		final byte[] data = attachmentEntryService.retrieveData(entryItem.getAttachmentEntryId());
 		try
 		{
@@ -531,7 +544,7 @@ public final class Attachment extends CDialog implements ActionListener
 	 */
 	private boolean openAttachment()
 	{
-		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+		final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 
 		final AttachmentEntryItem entryItem = cbAttachmentEntries.getSelectedItem();
 		final byte[] data = attachmentEntryService.retrieveData(entryItem.getAttachmentEntryId());
@@ -578,7 +591,7 @@ public final class Attachment extends CDialog implements ActionListener
 	@Getter
 	private static final class AttachmentEntryItem
 	{
-		public static final AttachmentEntryItem of(final AttachmentEntry entry)
+		public static AttachmentEntryItem of(final AttachmentEntry entry)
 		{
 			return new AttachmentEntryItem(entry.getId(), entry.getName(), entry.getFilename());
 		}
@@ -648,7 +661,9 @@ public final class Attachment extends CDialog implements ActionListener
 		{
 			m_image = image;
 			if (m_image == null)
+			{
 				return;
+			}
 
 			MediaTracker mt = new MediaTracker(this);
 			mt.addImage(m_image, 0);
@@ -673,7 +688,9 @@ public final class Attachment extends CDialog implements ActionListener
 		{
 			Insets in = getInsets();
 			if (m_image != null)
+			{
 				g.drawImage(m_image, in.left, in.top, this);
+			}
 		}   // paint
 
 		/**

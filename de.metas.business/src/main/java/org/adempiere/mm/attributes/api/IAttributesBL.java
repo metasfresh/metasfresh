@@ -10,28 +10,27 @@ package org.adempiere.mm.attributes.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.MathContext;
 import java.util.Date;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.product.ProductId;
@@ -39,15 +38,15 @@ import de.metas.util.ISingletonService;
 
 public interface IAttributesBL extends ISingletonService
 {
+	I_M_Attribute getAttributeById(AttributeId attributeId);
+
 	AttributeAction getAttributeAction(Properties ctx);
 
 	IAttributeValueGenerator getAttributeValueGenerator(org.compiere.model.I_M_Attribute attributeParam);
 
 	/**
-	 * Returns a new attribute value generator instance for the given <code>attributeParam</code> or <code>null</code> if the given parameter has no <code>AD_JavaClass_ID</code> set.
-	 * 
-	 * @param attributeParam
-	 * @return
+	 * Returns a new attribute value generator instance for the given <code>attributeParam</code>
+	 * or <code>null</code> if the given parameter has no <code>AD_JavaClass_ID</code> set or that class is not an IAttributeValueGenerator.
 	 */
 	IAttributeValueGenerator getAttributeValueGeneratorOrNull(org.compiere.model.I_M_Attribute attributeParam);
 
@@ -61,17 +60,15 @@ public interface IAttributesBL extends ISingletonService
 
 	/**
 	 * Gets product attribute by ID.
-	 * 
+	 *
 	 * If the attribute is applicable to given product (i.e. it's included in product's attribute set), the attribute will be returned.
 	 * Else, null will be returned.
-	 * 
+	 *
 	 * @param product
 	 * @param attributeId
 	 * @return {@link I_M_Attribute} or null
 	 */
 	I_M_Attribute getAttributeOrNull(ProductId productId, AttributeId attributeId);
-
-	boolean isSameTrx(I_M_AttributeValue attributeValue, boolean isSOTrx);
 
 	/**
 	 * @param attribute
@@ -81,7 +78,7 @@ public interface IAttributesBL extends ISingletonService
 
 	/**
 	 * Calculates Best-Before date for given product and bpartner.
-	 * 
+	 *
 	 * @param ctx
 	 * @param productId
 	 * @param vendorBPartnerId
@@ -89,4 +86,10 @@ public interface IAttributesBL extends ISingletonService
 	 * @return best-before date or <code>null</code> if it does not apply
 	 */
 	Date calculateBestBeforeDate(Properties ctx, ProductId productId, BPartnerId vendorBPartnerId, Date dateReceipt);
+
+	int getNumberDisplayType(I_M_Attribute attribute);
+
+	boolean isStorageRelevant(final AttributeId attributeId);
+	
+	AttributeListValue retrieveAttributeValueOrNull(AttributeId attributeId, String value);
 }

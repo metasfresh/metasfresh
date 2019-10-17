@@ -1,12 +1,10 @@
 package de.metas.vertical.pharma.msv3.server.peer.protocol;
 
-import lombok.Builder;
-import lombok.Value;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
@@ -30,13 +28,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
+@Builder
 public class MSV3ServerRequest
 {
+	/** If you have 600K items on the metasfresh server, this request should be used with caution. */
 	public static MSV3ServerRequest requestAll()
 	{
 		return ALL;
+	}
+
+	public static MSV3ServerRequest requestConfig()
+	{
+		return CONFIG;
 	}
 
 	private static final MSV3ServerRequest ALL = MSV3ServerRequest.builder()
@@ -44,16 +48,21 @@ public class MSV3ServerRequest
 			.requestAllStockAvailabilities(true)
 			.build();
 
+	private static final MSV3ServerRequest CONFIG = MSV3ServerRequest.builder()
+			.requestAllUsers(true)
+			.requestAllStockAvailabilities(false)
+			.build();
+
 	boolean requestAllUsers;
 	boolean requestAllStockAvailabilities;
 
 	@JsonCreator
-	@Builder
-	public MSV3ServerRequest(
+	private MSV3ServerRequest(
 			@JsonProperty("requestAllUsers") final boolean requestAllUsers,
 			@JsonProperty("requestAllStockAvailabilities") final boolean requestAllStockAvailabilities)
 	{
 		this.requestAllUsers = requestAllUsers;
 		this.requestAllStockAvailabilities = requestAllStockAvailabilities;
 	}
+
 }

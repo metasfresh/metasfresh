@@ -23,7 +23,7 @@ import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.user.UserId;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.api.RangeAwareParams;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -46,7 +46,10 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
+import de.metas.security.permissions.Access;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -152,7 +155,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 * @param instance
 	 * @return
 	 */
-	public static final IAutoCloseable temporaryChangeCurrentInstance(final Object instance)
+	public static final IAutoCloseable temporaryChangeCurrentInstance(@NonNull final Object instance)
 	{
 		final boolean overrideCurrentInstance = false;
 		return temporaryChangeCurrentInstance(instance, overrideCurrentInstance);
@@ -237,7 +240,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	/**
 	 * Note: This method shall be called by the framework.
-	 * 
+	 *
 	 * @param pi Process Info
 	 * @param trx existing/inherited transaction if any
 	 */
@@ -887,7 +890,9 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 * @param modelClass
 	 * @return record; never returns null
 	 * @throws AdempiereException if no model found
+	 * @deprecated use proper Repository
 	 */
+	@Deprecated
 	protected final <ModelType> ModelType getRecord(final Class<ModelType> modelClass)
 	{
 		String trxName = getTrxName();
@@ -942,11 +947,38 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	}
 
 	/**
-	 * @return AD_Client_ID of Process owner
+	 * @return process owner
 	 */
+	protected final UserId getUserId()
+	{
+		return getProcessInfo().getUserId();
+	}
+
+	protected final ClientId getClientId()
+	{
+		return getProcessInfo().getClientId();
+	}
+
+	/**
+	 * @deprecated please use {@link #getClientID()}.
+	 */
+	@Deprecated
 	protected final int getAD_Client_ID()
 	{
 		return getProcessInfo().getAD_Client_ID();
+	}
+	
+	protected final OrgId getOrgId()
+	{
+		return getProcessInfo().getOrgId();
+	}
+
+	/**
+	 * @return AD_Client_ID of Process owner
+	 */
+	protected final ClientId getClientID()
+	{
+		return getProcessInfo().getClientId();
 	}
 
 	/**
@@ -1009,12 +1041,13 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 * @param msg message
 	 */
 	@Override
-	public final void addLog(final String msg, final Object... msgParameters)
+	public final ILoggable addLog(final String msg, final Object... msgParameters)
 	{
 		if (msg != null)
 		{
 			addLog(0, SystemTime.asTimestamp(), null, StringUtils.formatMessage(msg, msgParameters));
 		}
+		return this;
 	}	// addLog
 
 	/**
@@ -1126,10 +1159,10 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	{
 		return queryBuilder
 				.create()
-				.setApplyAccessFilterRW(false)
+				.setRequiredAccess(Access.READ)
 				.createSelection(pinstanceId);
 	}
-	
+
 	protected final UserId getLoggedUserId()
 	{
 		return Env.getLoggedUserId();

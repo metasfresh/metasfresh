@@ -9,6 +9,8 @@ import java.util.function.Function;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.api.impl.WarehouseDAO;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
@@ -20,8 +22,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.service.IWarehouseDAO;
-import de.metas.adempiere.service.impl.WarehouseDAO;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderBL;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;

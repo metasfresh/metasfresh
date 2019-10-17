@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.metas.organization.OrgId;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.esb.api.LoginRequest;
 import de.metas.printing.esb.api.LoginResponse;
@@ -37,6 +38,7 @@ import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Print_PackageInfo;
 import de.metas.printing.model.X_C_Print_Job_Instructions;
 import de.metas.printing.rpl.requesthandler.CreatePrintPackageRequestHandler;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -258,8 +260,8 @@ public class PrintingRestController
 	{
 		final IUserRolePermissions userPermissions = Env.getUserRolePermissions();
 		final Properties ctx = Env.getCtx();
-		final int adClientId = Env.getAD_Client_ID(ctx);
-		final int adOrgId = Env.getAD_Org_ID(ctx);
+		final ClientId adClientId = Env.getClientId(ctx);
+		final OrgId adOrgId = Env.getOrgId(ctx);
 		final int adTableId = InterfaceWrapperHelper.getTableId(I_AD_PrinterHW.class);
 		final int recordId = -1; // NEW
 		final String errmsg = userPermissions.checkCanUpdate(adClientId, adOrgId, adTableId, recordId);

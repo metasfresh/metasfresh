@@ -34,20 +34,32 @@ import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
+import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 
 public interface IProductBOMDAO extends ISingletonService
 {
+	I_PP_Product_BOM getById(ProductBOMId bomId);
+
+	@Deprecated
+	default I_PP_Product_BOM getById(final int productBomId)
+	{
+		return productBomId > 0 ? getById(ProductBOMId.ofRepoId(productBomId)) : null;
+	}
+
+	I_PP_Product_BOMLine getBOMLineById(int productBOMLineId);
 
 	List<I_PP_Product_BOMLine> retrieveLines(I_PP_Product_BOM productBOM);
 
 	List<I_PP_Product_BOMLine> retrieveLines(I_PP_Product_BOM productBOM, Date date);
 
+	int retrieveLastLineNo(int ppProductBOMId);
+
 	int retrieveDefaultBOMId(I_M_Product product);
 
 	I_PP_Product_BOM retrieveDefaultBOM(I_M_Product product);
 
-	I_PP_Product_BOM retrieveBOMById(Properties ctx, int productBomId);
+	int getDefaultProductBOMIdByProductId(ProductId productId);
 
 	boolean hasBOMs(I_M_Product product);
 
@@ -59,4 +71,10 @@ public interface IProductBOMDAO extends ISingletonService
 	{
 		return retrieveBOMsContainingExactProducts(Arrays.asList(productIds));
 	}
+
+	void save(I_PP_Product_BOMLine bomLine);
+
+	ProductBOMId createBOM(BOMCreateRequest request);
+
+	ProductId getBOMProductId(ProductBOMId bomId);
 }

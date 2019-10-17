@@ -29,7 +29,6 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.IModelInterceptor;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
@@ -47,12 +46,12 @@ import org.adempiere.model.tree.spi.impl.OrgTreeSupport;
 import org.adempiere.model.tree.spi.impl.ProductTreeSupport;
 import org.adempiere.process.rpl.model.I_EXP_ReplicationTrx;
 import org.adempiere.process.rpl.model.I_EXP_ReplicationTrxLine;
-import org.adempiere.scheduler.housekeeping.spi.impl.ResetSchedulerState;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.validationrule.FilterWarehouseByDocTypeValidationRule;
 import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Menu;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Campaign;
 import org.compiere.model.I_C_ElementValue;
@@ -76,10 +75,8 @@ import de.metas.adempiere.callout.C_OrderFastInputTabCallout;
 import de.metas.adempiere.engine.MViewModelValidator;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.modelvalidator.AD_User;
-import de.metas.adempiere.modelvalidator.C_CountryArea_Assign;
 import de.metas.adempiere.modelvalidator.Order;
 import de.metas.adempiere.modelvalidator.OrderLine;
-import de.metas.adempiere.modelvalidator.OrgInfo;
 import de.metas.adempiere.modelvalidator.Payment;
 import de.metas.bpartner.interceptor.C_BPartner_Location;
 import de.metas.cache.CCache.CacheMapType;
@@ -87,7 +84,6 @@ import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.ITableCacheConfig;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
 import de.metas.document.ICounterDocBL;
-import de.metas.freighcost.modelvalidator.FreightCostValidator;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.model.I_M_InOutLine;
@@ -96,7 +92,6 @@ import de.metas.inout.model.validator.M_QualityNote;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.inventory.model.interceptor.M_Inventory;
 import de.metas.invoice.callout.C_InvoiceLine_TabCallout;
 import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.invoicecandidate.spi.impl.AttachmentInvoiceCandidateListener;
@@ -165,12 +160,10 @@ public class SwatValidator implements ModelValidator
 
 		// registering child validators
 		engine.addModelValidator(new ApplicationDictionary(), client);
-		engine.addModelValidator(new FreightCostValidator(), client);
 
 		engine.addModelValidator(new Order(), client);
 		engine.addModelValidator(new OrderLine(), client);
 		engine.addModelValidator(new M_InOut(), client); // 03771
-		engine.addModelValidator(new OrgInfo(), client);
 		engine.addModelValidator(new Payment(), client);
 		// 04359 this MV cripples the processing performance of Sales Orders
 		// the MV has been added to AD_ModelValidator, so that it can be enabled for certain customers *if* required.
@@ -178,8 +171,6 @@ public class SwatValidator implements ModelValidator
 
 		engine.addModelValidator(new AD_User(), client);
 		engine.addModelValidator(new MViewModelValidator(), client);
-		engine.addModelValidator(new CLocationValidator(), client); // us786
-		engine.addModelValidator(new C_CountryArea_Assign(), client);
 
 		engine.addModelValidator(new InOutCandidateValidator(), client);
 		engine.addModelValidator(ReceiptScheduleValidator.instance, client);
@@ -196,9 +187,6 @@ public class SwatValidator implements ModelValidator
 		engine.addModelValidator(new de.metas.activity.model.validator.C_InvoiceLine(), client); // 06788
 
 		engine.addModelValidator(new M_ShipperTransportation(), client); // 06899
-
-		// task #1064
-		engine.addModelValidator(new M_Inventory(), client);
 
 		// task 09700
 		final IModelInterceptor counterDocHandlerInterceptor = Services.get(ICounterDocBL.class).registerHandler(C_Order_CounterDocHandler.instance, I_C_Order.Table_Name);
@@ -236,11 +224,6 @@ public class SwatValidator implements ModelValidator
 		JRClient.get(); // make sure Jasper client is loaded and initialized
 
 		Services.get(IValidationRuleFactory.class).registerTableValidationRule(I_M_Warehouse.Table_Name, FilterWarehouseByDocTypeValidationRule.instance);
-
-		// task 06295: those two are implemented in de.metas.adempiere.adempiere, but we don't have such a nice central MV in there.
-		Services.get(IHouseKeepingBL.class).registerStartupHouseKeepingTask(new ResetSchedulerState());
-		// not registering this one for because is might lead to problems if a swing-client is running while the server is starting up.
-		// Services.get(IHouseKeepingBL.class).registerStartupHouseKeepingTask(new ClearTemporaryTables());
 
 		//
 		// Configure tables which are skipped when we record migration scripts
@@ -288,7 +271,7 @@ public class SwatValidator implements ModelValidator
 			}
 		}
 
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			ReportStarter.setSwingViewerProvider(new org.compiere.report.SwingJRViewerProvider());
 		}
@@ -320,12 +303,14 @@ public class SwatValidator implements ModelValidator
 				.setInitialCapacity(50)
 				.setMaxCapacity(50)
 				.register();
+		
+		cachingService.addTableCacheConfigIfAbsent(I_C_BP_Group.class);
 	}
 
 	@Override
 	public String login(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
 	{
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			configDatabase(); // run it again here because ModelValidator.initialize is run only once
 		}
@@ -383,7 +368,7 @@ public class SwatValidator implements ModelValidator
 		final boolean debugUnreturnedConnectionStackTraces = sysConfigBL.getBooleanValue(SYSCONFIG_C3P0_DebugUnreturnedConnectionStackTraces, false);
 
 		final String maxStatementsSysConfig;
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
 			maxStatementsSysConfig = SYSCONFIG_C3P0_Client_MaxStatements;
 		}

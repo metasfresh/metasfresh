@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
@@ -51,33 +52,31 @@ public class FactAcctZoomProvider implements IZoomProvider
 	}
 
 	@Override
-	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource source, final int targetAD_Window_ID, final boolean checkRecordsCount)
+	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource source, final AdWindowId targetAD_Window_ID, final boolean checkRecordsCount)
 	{
 		//
 		// Get the Fact_Acct AD_Window_ID
-		final int factAcctWindowId = RecordZoomWindowFinder.findAD_Window_ID(I_Fact_Acct.Table_Name);
-		if (factAcctWindowId <= 0)
+		final AdWindowId factAcctWindowId = RecordZoomWindowFinder.findAdWindowId(I_Fact_Acct.Table_Name).orElse(null);
+		if (factAcctWindowId == null)
 		{
 			return ImmutableList.of();
 		}
 
 		// If not our target window ID, return nothing
-		if (targetAD_Window_ID > 0 && targetAD_Window_ID != factAcctWindowId)
+		if (targetAD_Window_ID != null && !AdWindowId.equals(targetAD_Window_ID, factAcctWindowId))
 		{
 			return ImmutableList.of();
 		}
 
-
 		// Return nothing if source is not Posted
-		if(source.hasField(COLUMNNAME_Posted))
+		if (source.hasField(COLUMNNAME_Posted))
 		{
 			final boolean posted = source.getFieldValueAsBoolean(COLUMNNAME_Posted);
-			if(!posted)
+			if (!posted)
 			{
 				return ImmutableList.of();
 			}
 		}
-
 
 		//
 		// Build query and check count if needed
@@ -94,16 +93,21 @@ public class FactAcctZoomProvider implements IZoomProvider
 					.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, source.getRecord_ID())
 					.create()
 					.count();
-			
+
 			final Duration countDuration = Duration.ofNanos(stopwatch.stop().elapsed(TimeUnit.NANOSECONDS));
 			query.setRecordCount(count, countDuration);
 
-			Loggables.get().addLog("FactAcctZoomProvider {} took {}", this, countDuration);
+			Loggables.addLog("FactAcctZoomProvider {} took {}", this, countDuration);
 		}
 
 		//
 		final ITranslatableString destinationDisplay = Services.get(IADWindowDAO.class).retrieveWindowName(factAcctWindowId);
-		return ImmutableList.of(ZoomInfo.of(I_Fact_Acct.Table_Name, factAcctWindowId, query, destinationDisplay));
+		return ImmutableList.of(ZoomInfo.of(
+				I_Fact_Acct.Table_Name/* id */,
+				I_Fact_Acct.Table_Name/* internalName */,
+				factAcctWindowId,
+				query,
+				destinationDisplay));
 	}
 
 }

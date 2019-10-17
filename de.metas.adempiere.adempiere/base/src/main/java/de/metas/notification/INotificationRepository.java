@@ -2,6 +2,7 @@ package de.metas.notification;
 
 import java.util.List;
 
+import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 
 /*
@@ -32,15 +33,15 @@ public interface INotificationRepository extends ISingletonService
 
 	boolean deleteById(int notificationId);
 
-	void deleteAllByUserId(int userId);
+	void deleteAllByUserId(UserId userId);
 
 	boolean markAsReadById(int notificationId);
 
-	void markAllAsReadByUserId(int adUserId);
+	void markAllAsReadByUserId(UserId adUserId);
 
-	List<UserNotification> getByUserId(int adUserId, int limit);
+	List<UserNotification> getByUserId(UserId adUserId, int limit);
 
-	int getTotalCountByUserId(int adUserId);
+	int getTotalCountByUserId(UserId adUserId);
 
-	int getUnreadCountByUserId(int adUserId);
+	int getUnreadCountByUserId(UserId adUserId);
 }

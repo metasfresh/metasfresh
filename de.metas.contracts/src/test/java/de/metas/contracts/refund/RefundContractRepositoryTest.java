@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,6 +54,7 @@ public class RefundContractRepositoryTest
 	private static final BPartnerId BPARTNER_ID = BPartnerId.ofRepoId(10);
 
 	private RefundContractRepository refundContractRepository;
+	private I_C_UOM uomRecord;
 
 	@Before
 	public void init()
@@ -60,6 +62,9 @@ public class RefundContractRepositoryTest
 		AdempiereTestHelper.get().init();
 
 		refundContractRepository = new RefundContractRepository(new RefundConfigRepository(new InvoiceScheduleRepository()));
+
+		uomRecord = newInstance(I_C_UOM.class);
+		saveRecord(uomRecord);
 	}
 
 	@Test

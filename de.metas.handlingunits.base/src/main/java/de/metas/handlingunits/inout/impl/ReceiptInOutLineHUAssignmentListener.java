@@ -36,7 +36,6 @@ import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
-import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
@@ -98,14 +97,9 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 		// which needs to be propagated and the HU attribute transactions needs to be processed.
 		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 		huTrxBL.createHUContextProcessorExecutor(contextProvider)
-				.run(new IHUContextProcessor()
-				{
-					@Override
-					public IMutableAllocationResult process(final IHUContext huContext)
-					{
-						activeHUAfterReceipt(huContext, hu, inoutLine);
-						return NULL_RESULT; // don't care
-					}
+				.run((IHUContextProcessor)huContext -> {
+					activeHUAfterReceipt(huContext, hu, inoutLine);
+					return IHUContextProcessor.NULL_RESULT; // don't care
 				});
 	}
 
@@ -124,7 +118,7 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 	 * @param hu
 	 * @param receiptLine
 	 */
-	private final void activeHUAfterReceipt(final IHUContext huContext, final I_M_HU hu, final I_M_InOutLine receiptLine)
+	private void activeHUAfterReceipt(final IHUContext huContext, final I_M_HU hu, final I_M_InOutLine receiptLine)
 	{
 		//
 		// Activate HU (i.e. it's not a Planning HU anymore)
@@ -171,7 +165,7 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 	 * @param hu
 	 * @task http://dewiki908/mediawiki/index.php/08027_Lieferdispo_Freigabe_nach_BPartner_%28100002853810%29
 	 */
-	private final void resetVendor(final IHUContext huContext, final I_M_HU hu)
+	private void resetVendor(final IHUContext huContext, final I_M_HU hu)
 	{
 		//
 		// Get the HU's BPartner.
@@ -180,8 +174,8 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 
 		//
 		// Reset HU's BPartner & BP Location
-		hu.setC_BPartner(null);
-		hu.setC_BPartner_Location(null);
+		hu.setC_BPartner_ID(-1);
+		hu.setC_BPartner_Location_ID(-1);
 
 		//
 		// If there was no partner, we have nothing to set

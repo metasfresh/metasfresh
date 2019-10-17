@@ -39,7 +39,7 @@ import de.metas.util.Check;
 public class XLookup extends Lookup
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1388987648081532657L;
 
@@ -136,7 +136,7 @@ public class XLookup extends Lookup
 	 * 	@return list of data
 	 */
 	@Override
-	public List<Object> getData (boolean mandatory, 
+	public List<Object> getData (boolean mandatory,
 		boolean onlyValidated, boolean onlyActive, boolean temporary)
 	{
 		final int size = getSize();
@@ -151,14 +151,14 @@ public class XLookup extends Lookup
 		//	Sort Data
 		if (m_keyColumn.endsWith("_ID"))
 		{
-			KeyNamePair p = new KeyNamePair (-1, "");
+			KeyNamePair p = KeyNamePair.EMPTY;
 			if (!mandatory)
 				list.add (p);
 			Collections.sort (list, p);
 		}
 		else
 		{
-			ValueNamePair p = new ValueNamePair (null, "");
+			ValueNamePair p = ValueNamePair.EMPTY;
 			if (!mandatory)
 				list.add (p);
 			Collections.sort (list, p);
@@ -183,7 +183,7 @@ public class XLookup extends Lookup
 		{
 			return null;
 		}
-		
+
 		return MQuery.getZoomTableName(m_keyColumn);
 	}
 
@@ -196,7 +196,7 @@ public class XLookup extends Lookup
 	{
 		return m_keyColumn;
 	}   //  getColumnName
-	
+
 	@Override
 	public String getColumnNameNotFQ()
 	{

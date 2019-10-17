@@ -12,7 +12,8 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.compiere.util.Util;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
@@ -21,9 +22,12 @@ import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.Money;
+import de.metas.product.IProductDAO;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -64,13 +68,8 @@ public class AssignmentToRefundCandidateRepository
 		this.refundInvoiceCandidateRepository = refundInvoiceCandidateRepository;
 	}
 
-	public List<AssignmentToRefundCandidate> getAssignmentsToRefundCandidate(
-			@NonNull final AssignableInvoiceCandidate assignableInvoiceCandidate)
+	public List<AssignmentToRefundCandidate> getAssignmentsByAssignableCandidateId(@NonNull final InvoiceCandidateId assignableCandidateId)
 	{
-		Check.assumeNotNull(assignableInvoiceCandidate.getRepoId(),
-				"The given assignableInvoiceCandidate needs to have a not-null Id; assignableInvoiceCandidate={}",
-				assignableInvoiceCandidate);
-
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final List<I_C_Invoice_Candidate_Assignment> assignmentRecords = queryBL
@@ -78,7 +77,7 @@ public class AssignmentToRefundCandidateRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(
 						I_C_Invoice_Candidate_Assignment.COLUMN_C_Invoice_Candidate_Assigned_ID,
-						assignableInvoiceCandidate.getRepoId().getRepoId())
+						assignableCandidateId.getRepoId())
 				.create()
 				.list(I_C_Invoice_Candidate_Assignment.class); // we might have multiple records with different C_Flatrate_RefundConfig_ID
 
@@ -96,6 +95,9 @@ public class AssignmentToRefundCandidateRepository
 
 	public AssignmentToRefundCandidate ofRecordOrNull(@NonNull final I_C_Invoice_Candidate_Assignment assignmentRecord)
 	{
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+
 		final I_C_Invoice_Candidate refundRecord = load(
 				assignmentRecord.getC_Invoice_Candidate_Term_ID(),
 				I_C_Invoice_Candidate.class);
@@ -114,7 +116,10 @@ public class AssignmentToRefundCandidateRepository
 				assignmentRecord.getAssignedMoneyAmount(),
 				refundCandidate.get().getMoney().getCurrencyId());
 
-		final Quantity assignedQuantity = Quantity.of(assignmentRecord.getAssignedQuantity(), refundRecord.getM_Product().getC_UOM());
+		final I_M_Product product = productDAO.getById(refundRecord.getM_Product_ID());
+		final I_C_UOM productUom = uomDAO.getById(product.getC_UOM_ID());
+
+		final Quantity assignedQuantity = Quantity.of(assignmentRecord.getAssignedQuantity(), productUom);
 
 		final AssignmentToRefundCandidate assignmentToRefundCandidate = new AssignmentToRefundCandidate(
 				RefundConfigId.ofRepoId(assignmentRecord.getC_Flatrate_RefundConfig_ID()),
@@ -137,9 +142,9 @@ public class AssignmentToRefundCandidateRepository
 		assignmentRecord.setC_Flatrate_RefundConfig_ID(assignmentToRefundCandidate.getRefundConfigId().getRepoId());
 		assignmentRecord.setC_Invoice_Candidate_Term_ID(refundInvoiceCandidate.getId().getRepoId());
 		assignmentRecord.setC_Flatrate_Term_ID(refundInvoiceCandidate.getRefundContract().getId().getRepoId());
-		assignmentRecord.setBaseMoneyAmount(assignmentToRefundCandidate.getMoneyBase().getValue());
-		assignmentRecord.setAssignedMoneyAmount(assignmentToRefundCandidate.getMoneyAssignedToRefundCandidate().getValue());
-		assignmentRecord.setAssignedQuantity(assignmentToRefundCandidate.getQuantityAssigendToRefundCandidate().getAsBigDecimal());
+		assignmentRecord.setBaseMoneyAmount(assignmentToRefundCandidate.getMoneyBase().toBigDecimal());
+		assignmentRecord.setAssignedMoneyAmount(assignmentToRefundCandidate.getMoneyAssignedToRefundCandidate().toBigDecimal());
+		assignmentRecord.setAssignedQuantity(assignmentToRefundCandidate.getQuantityAssigendToRefundCandidate().toBigDecimal());
 		assignmentRecord.setIsAssignedQuantityIncludedInSum(assignmentToRefundCandidate.isUseAssignedQtyInSum());
 
 		saveRecord(assignmentRecord);
@@ -163,12 +168,12 @@ public class AssignmentToRefundCandidateRepository
 				.createCompositeQueryFilter(I_C_Invoice_Candidate_Assignment.class)
 				.setJoinOr();
 
-		final InvoiceCandidateId removeForContractCandidateId = request.getRemoveForRefundCandidateId();
-		if (removeForContractCandidateId != null)
+		final InvoiceCandidateId removeForRefundCandidateId = request.getRemoveForRefundCandidateId();
+		if (removeForRefundCandidateId != null)
 		{
 			invoiceCandidateIDsOrFilter.addEqualsFilter(
 					I_C_Invoice_Candidate_Assignment.COLUMN_C_Invoice_Candidate_Term_ID,
-					removeForContractCandidateId.getRepoId());
+					removeForRefundCandidateId.getRepoId());
 		}
 		final InvoiceCandidateId removeForAssignedCandidateId = request.getRemoveForAssignedCandidateId();
 		if (removeForAssignedCandidateId != null)
@@ -180,7 +185,7 @@ public class AssignmentToRefundCandidateRepository
 
 		if (!request.getRefundConfigIds().isEmpty())
 		{
-			invoiceCandidateIDsOrFilter.addInArrayFilter(I_C_Invoice_Candidate_Assignment.COLUMN_C_Flatrate_RefundConfig_ID, request.getRefundConfigIds());
+			queryBuilder.addInArrayFilter(I_C_Invoice_Candidate_Assignment.COLUMN_C_Flatrate_RefundConfig_ID, request.getRefundConfigIds());
 		}
 
 		queryBuilder
@@ -220,7 +225,7 @@ public class AssignmentToRefundCandidateRepository
 							&& removeForAssignedCandidateId == null,
 					"At least one of the two invoiceCandidateId needs to be not-null");
 
-			this.onlyActive = Util.coalesce(onlyActive, true);
+			this.onlyActive = CoalesceUtil.coalesce(onlyActive, true);
 
 			this.removeForRefundCandidateId = removeForRefundCandidateId;
 			this.removeForAssignedCandidateId = removeForAssignedCandidateId;

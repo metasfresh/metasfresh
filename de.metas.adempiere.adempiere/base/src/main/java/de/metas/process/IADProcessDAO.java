@@ -1,35 +1,14 @@
 package de.metas.process;
 
 import java.util.Collection;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
 
@@ -38,26 +17,15 @@ import de.metas.util.ISingletonService;
 
 public interface IADProcessDAO extends ISingletonService
 {
-	I_AD_Process getById(int processId);
-	
-	/**
-	 * Retrieves {@link I_AD_Process}es which are assigned to given <code>tableName</code> and have <code>IsReport=true</code>
-	 *
-	 * @param ctx
-	 * @param tableName
-	 * @return assigned report-processes
-	 */
-	List<I_AD_Process> retrieveReportProcessesForTable(Properties ctx, String tableName);
+	I_AD_Process getById(AdProcessId processId);
 
-	/**
-	 * Retrieves {@link RelatedProcessDescriptor} indexed by AD_Process_ID.
-	 *
-	 * @param ctx
-	 * @param adTableId
-	 * @param adWindowId
-	 * @return AD_Process_ID to {@link RelatedProcessDescriptor}
-	 */
-	Map<Integer, RelatedProcessDescriptor> retrieveRelatedProcessesForTableIndexedByProcessId(Properties ctx, int adTableId, int adWindowId);
+	@Deprecated
+	default I_AD_Process getById(final int processId)
+	{
+		return getById(AdProcessId.ofRepoId(processId));
+	}
+
+	List<RelatedProcessDescriptor> retrieveRelatedProcessDescriptors(int adTableId, AdWindowId adWindowId, AdTabId adTabId);
 
 	/**
 	 * Retrieves the {@link I_AD_Process} which references the given <code>AD_Form_ID</code>. If there is no such process, the method returns <code>null</code>. If there are multiple such records,
@@ -77,11 +45,11 @@ public interface IADProcessDAO extends ISingletonService
 	 * @param adWindowId (optional)
 	 * @param adProcessId
 	 */
-	void registerTableProcess(int adTableId, int adWindowId, int adProcessId);
+	void registerTableProcess(int adTableId, AdWindowId adWindowId, AdProcessId adProcessId);
 
-	default void registerTableProcess(final int adTableId, final int adProcessId)
+	default void registerTableProcess(final int adTableId, final AdProcessId adProcessId)
 	{
-		final int adWindowId = 0;
+		final AdWindowId adWindowId = null;
 		registerTableProcess(adTableId, adWindowId, adProcessId);
 	}
 
@@ -92,24 +60,24 @@ public interface IADProcessDAO extends ISingletonService
 	 * @param adWindowId (optional)
 	 * @param adProcessId
 	 */
-	void registerTableProcess(String tableName, int adWindowId, int adProcessId);
+	void registerTableProcess(String tableName, AdWindowId adWindowId, AdProcessId adProcessId);
 
-	default void registerTableProcess(final String tableName, final int adProcessId)
+	default void registerTableProcess(final String tableName, final AdProcessId adProcessId)
 	{
-		final int adWindowId = 0;
+		final AdWindowId adWindowId = null;
 		registerTableProcess(tableName, adWindowId, adProcessId);
 	}
 
 	void registerTableProcess(RelatedProcessDescriptor descriptor);
 
 	/**
-	 * Similar to {@link #retriveProcessIdByClassIfUnique(Properties, Class)}, but assumes that there is a unique ID and throws an exception if that's not the case.
+	 * Similar to {@link #retrieveProcessIdByClassIfUnique(Class)}, but assumes that there is a unique ID and throws an exception if that's not the case.
 	 * This can be beneficial since the exception message contains the class for which no {@code AD_Process_ID} could be fetched.
 	 * 
 	 * @param processClass
 	 * @return
 	 */
-	int retrieveProcessIdByClass(Class<?> processClass);
+	AdProcessId retrieveProcessIdByClass(Class<?> processClass);
 
 	/**
 	 * Retrieves the ID of the <code>AD_Process</code> whose {@link I_AD_Process#COLUMN_Classname Classname} column matches the given class.
@@ -117,12 +85,12 @@ public interface IADProcessDAO extends ISingletonService
 	 * @param processClass
 	 * @return the <code>AD_Process_ID</code> of the matching process, or <code>-1</code> if there is no matching process or more than one of them
 	 */
-	int retriveProcessIdByClassIfUnique(Class<?> processClass);
+	AdProcessId retrieveProcessIdByClassIfUnique(Class<?> processClass);
 
 	/**
-	 * @see #retriveProcessIdByClassIfUnique(Properties, Class)
+	 * @see #retrieveProcessIdByClassIfUnique(Properties, Class)
 	 */
-	int retriveProcessIdByClassIfUnique(String processClassname);
+	AdProcessId retrieveProcessIdByClassIfUnique(String processClassname);
 
 	Optional<ITranslatableString> retrieveProcessNameByClassIfUnique(Class<?> processClass);
 
@@ -133,7 +101,7 @@ public interface IADProcessDAO extends ISingletonService
 	 * @param processValue
 	 * @return
 	 */
-	int retriveProcessIdByValue(String processValue);
+	AdProcessId retrieveProcessIdByValue(String processValue);
 
 	/**
 	 * Retrieves {@link I_AD_Process} by {@link I_AD_Process#COLUMN_Value}.
@@ -143,13 +111,13 @@ public interface IADProcessDAO extends ISingletonService
 	 * @return process; never returns <code>null</code>.
 	 * @throws DBException in case of any error or if the process was not found
 	 */
-	I_AD_Process retriveProcessByValue(Properties ctx, String processValue);
+	I_AD_Process retrieveProcessByValue(Properties ctx, String processValue);
 
 	int retrieveProcessParaLastSeqNo(I_AD_Process process);
 
 	Collection<I_AD_Process_Para> retrieveProcessParameters(I_AD_Process process);
 
-	I_AD_Process_Para retriveProcessParameter(int adProcessId, String parameterName);
+	I_AD_Process_Para retrieveProcessParameter(AdProcessId adProcessId, String parameterName);
 
 	/**
 	 * Add process execution statistics.
@@ -161,7 +129,7 @@ public interface IADProcessDAO extends ISingletonService
 	 * @param adClientId
 	 * @param durationMillisToAdd
 	 */
-	void addProcessStatistics(Properties ctx, int adProcessId, int adClientId, long durationMillisToAdd);
+	void addProcessStatistics(AdProcessId adProcessId, ClientId adClientId, long durationMillisToAdd);
 
 	/**
 	 * Copy settings from another process
@@ -173,7 +141,9 @@ public interface IADProcessDAO extends ISingletonService
 	 * @param targetProcessId
 	 * @param sourceProcessId
 	 */
-	void copyProcess(int targetProcessId, int sourceProcessId);
+	void copyProcess(AdProcessId targetProcessId, AdProcessId sourceProcessId);
 
-	void copyProcessParameters(int targetProcessId, int sourceProcessId);
+	void copyProcessParameters(AdProcessId targetProcessId, AdProcessId sourceProcessId);
+
+	ITranslatableString getProcessNameById(final AdProcessId id);
 }

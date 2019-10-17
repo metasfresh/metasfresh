@@ -24,13 +24,13 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.service.OrgId;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MDocType;
 import org.compiere.model.MMovement;
@@ -38,7 +38,6 @@ import org.compiere.model.MMovementLine;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MOrg;
-import org.compiere.model.MProduct;
 import org.compiere.model.MRequisition;
 import org.compiere.model.MRequisitionLine;
 import org.compiere.model.MStorage;
@@ -51,11 +50,14 @@ import org.compiere.util.ReplenishInterface;
 import org.eevolution.model.MDDOrder;
 import org.eevolution.model.MDDOrderLine;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.Msg;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
+import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.product.IProductBL;
 import de.metas.util.Services;
 
 /**
@@ -429,7 +431,7 @@ public class ReplenishReport extends JavaProcess
 				order = new MOrder(getCtx(), 0, get_TrxName());
 				order.setIsSOTrx(false);
 				Services.get(IOrderBL.class).setDocTypeTargetIdAndUpdateDescription(order, p_C_DocType_ID);
-				MBPartner bp = new MBPartner(getCtx(), replenish.getC_BPartner_ID(), get_TrxName());
+				I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(replenish.getC_BPartner_ID()); 
 				order.setBPartner(bp);
 				order.setSalesRep_ID(getAD_User_ID());
 				order.setDescription(Msg.getMsg(getCtx(), "Replenishment"));
@@ -549,11 +551,10 @@ public class ReplenishReport extends JavaProcess
 				noMoves++;
 				info += " - " + move.getDocumentNo();
 			}
-			// To
+			//	To
 			final LocatorId M_LocatorTo_ID = Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(wh.getM_Warehouse_ID()));
-			// From: Look-up Storage
-			MProduct product = MProduct.get(getCtx(), replenish.getM_Product_ID());
-			String MMPolicy = product.getMMPolicy();
+			//	From: Look-up Storage
+			final String MMPolicy = Services.get(IProductBL.class).getMMPolicy(replenish.getM_Product_ID());
 			MStorage[] storages = MStorage.getWarehouse(getCtx(),
 					whSource.getM_Warehouse_ID(), replenish.getM_Product_ID(), 0, 0,
 					true, null,
@@ -644,9 +645,11 @@ public class ReplenishReport extends JavaProcess
 				MOrg orgTrx = MOrg.get(getCtx(), wh.getAD_Org_ID());
 				order.setAD_OrgTrx_ID(orgTrx.getAD_Org_ID());
 				int C_BPartner_ID = orgTrx.getLinkedC_BPartner_ID(get_TrxName());
-				if (C_BPartner_ID == 0)
-					throw new AdempiereUserError(Msg.translate(getCtx(), "C_BPartner_ID") + " @FillMandatory@ ");
-				MBPartner bp = new MBPartner(getCtx(), C_BPartner_ID, get_TrxName());
+				if (C_BPartner_ID <= 0)
+					throw new FillMandatoryException("C_BPartner_ID");
+				
+				final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+				final I_C_BPartner bp = bpartnersRepo.getById(C_BPartner_ID);
 				// Set BPartner Link to Org
 				order.setBPartner(bp);
 				order.setDateOrdered(new Timestamp(System.currentTimeMillis()));

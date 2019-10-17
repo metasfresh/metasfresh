@@ -23,13 +23,13 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.OrgId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.MBPartner;
 import org.compiere.model.MDistributionRun;
 import org.compiere.model.MDistributionRunDetail;
 import org.compiere.model.MDistributionRunLine;
@@ -37,7 +37,6 @@ import org.compiere.model.MDocType;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MOrg;
-import org.compiere.model.MOrgInfo;
 import org.compiere.model.MProduct;
 import org.compiere.model.MTable;
 import org.compiere.model.Query;
@@ -46,15 +45,19 @@ import org.compiere.util.Env;
 import org.eevolution.model.MDDOrder;
 import org.eevolution.model.MDDOrderLine;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.Msg;
 import de.metas.order.IOrderBL;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
 
 /**
  * Create Distribution
- * 
+ *
  * @author Jorg Janke
  * @author victor.perez@e-evolution.com
  *         <li>FR Let use the Distribution List and Distribution Run for DO
@@ -106,41 +109,55 @@ public class DistributionRun extends JavaProcess
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
-		for (int i = 0; i < para.length; i++)
+		for (ProcessInfoParameter element : para)
 		{
-			String name = para[i].getParameterName();
+			String name = element.getParameterName();
 			// log.debug("prepare - " + para[i]);
-			if (para[i].getParameter() == null)
-				;
+			if (element.getParameter() == null)
+			{
+				
+			}
 			else if (name.equals("C_DocType_ID"))
 			{
-				p_C_DocType_ID = ((BigDecimal)para[i].getParameter()).intValue();
+				p_C_DocType_ID = ((BigDecimal)element.getParameter()).intValue();
 				m_docType = new MDocType(getCtx(), p_C_DocType_ID, get_TrxName());
 			}
 			else if (name.equals("DatePromised"))
 			{
-				p_DatePromised = (Timestamp)para[i].getParameter();
+				p_DatePromised = (Timestamp)element.getParameter();
 				// p_DatePromised_To = (Timestamp)para[i].getParameter_To();
 			}
 			else if (name.equals("IsTest"))
-				p_IsTest = "Y".equals(para[i].getParameter());
+			{
+				p_IsTest = "Y".equals(element.getParameter());
+			}
 			else if (m_docType.getDocBaseType().equals(MDocType.DOCBASETYPE_DistributionOrder) & name.equals("M_Warehouse_ID"))
-				p_M_Warehouse_ID = ((BigDecimal)para[i].getParameter()).intValue();
+			{
+				p_M_Warehouse_ID = ((BigDecimal)element.getParameter()).intValue();
+			}
 			else if (m_docType.getDocBaseType().equals(MDocType.DOCBASETYPE_DistributionOrder) & name.equals("ConsolidateDocument"))
-				p_ConsolidateDocument = "Y".equals(para[i].getParameter());
+			{
+				p_ConsolidateDocument = "Y".equals(element.getParameter());
+			}
 			else if (m_docType.getDocBaseType().equals(MDocType.DOCBASETYPE_DistributionOrder) & name.equals("M_DistributionList_ID"))
-				p_M_DistributionList_ID = para[i].getParameterAsInt();
+			{
+				p_M_DistributionList_ID = element.getParameterAsInt();
+			}
 			else if (m_docType.getDocBaseType().equals(MDocType.DOCBASETYPE_DistributionOrder) & name.equals("IsRequiredDRP"))
-				p_BasedInDamnd = "Y".equals(para[i].getParameter());
+			{
+				p_BasedInDamnd = "Y".equals(element.getParameter());
+			}
 			else
+			{
 				log.error("prepare - Unknown Parameter: " + name);
+			}
 		}
 		p_M_DistributionRun_ID = getRecord_ID();
 	}	// prepare
 
 	/**
 	 * Perform process.
-	 * 
+	 *
 	 * @return Message (text with variables)
 	 * @throws Exception if not successful
 	 */
@@ -153,44 +170,62 @@ public class DistributionRun extends JavaProcess
 				+ ", Test=" + p_IsTest);
 		// Distribution Run
 		if (p_M_DistributionRun_ID == 0)
+		{
 			throw new IllegalArgumentException("No Distribution Run ID");
+		}
 		m_run = new MDistributionRun(getCtx(), p_M_DistributionRun_ID, get_TrxName());
 		if (m_run.get_ID() == 0)
+		{
 			throw new Exception("Distribution Run not found -  M_DistributionRun_ID=" + p_M_DistributionRun_ID);
+		}
 		m_runLines = m_run.getLines(true);
 		if (m_runLines == null || m_runLines.length == 0)
+		{
 			throw new Exception("No active, non-zero Distribution Run Lines found");
+		}
 
 		// Document Type
 		if (p_C_DocType_ID == 0)
+		{
 			throw new IllegalArgumentException("No Document Type ID");
+		}
 		m_docType = new MDocType(getCtx(), p_C_DocType_ID, null);	// outside trx
 		if (m_docType.get_ID() == 0)
+		{
 			throw new Exception("Document Type not found -  C_DocType_ID=" + p_C_DocType_ID);
+		}
 		//
 		m_DateOrdered = new Timestamp(System.currentTimeMillis());
 		if (p_DatePromised == null)
+		{
 			p_DatePromised = m_DateOrdered;
+		}
 
 		if (m_docType.getDocBaseType().equals(MDocType.DOCBASETYPE_DistributionOrder) & p_M_Warehouse_ID > 0)
 		{
 			if (p_BasedInDamnd)
 			{
 				if (insertDetailsDistributionDemand() == 0)
+				{
 					throw new Exception("No Lines");
+				}
 
 			}
 			else  // Create Temp Lines
 			{
 				if (insertDetailsDistribution() == 0)
+				{
 					throw new Exception("No Lines");
+				}
 			}
 		}
 		else
 		{
 			// Create Temp Lines
 			if (insertDetails() == 0)
+			{
 				throw new Exception("No Lines");
+			}
 		}
 
 		// Order By Distribution Run Line
@@ -205,7 +240,9 @@ public class DistributionRun extends JavaProcess
 			adjustAllocation();
 			addAllocations();
 			if (++loops > 10)
+			{
 				throw new Exception("Loop detected - more than 10 Allocation attempts");
+			}
 		}
 
 		// Order By Business Partner
@@ -227,7 +264,7 @@ public class DistributionRun extends JavaProcess
 
 	/**
 	 * Insert Details
-	 * 
+	 *
 	 * @return number of rows inserted
 	 */
 	private int insertDetails()
@@ -280,18 +317,15 @@ public class DistributionRun extends JavaProcess
 	private void addAllocations()
 	{
 		// Reset
-		for (int j = 0; j < m_runLines.length; j++)
+		for (MDistributionRunLine runLine : m_runLines)
 		{
-			MDistributionRunLine runLine = m_runLines[j];
 			runLine.resetCalculations();
 		}
 		// Add Up
-		for (int i = 0; i < m_details.length; i++)
+		for (MDistributionRunDetail detail : m_details)
 		{
-			MDistributionRunDetail detail = m_details[i];
-			for (int j = 0; j < m_runLines.length; j++)
+			for (MDistributionRunLine runLine : m_runLines)
 			{
-				MDistributionRunLine runLine = m_runLines[j];
 				if (runLine.getM_DistributionRunLine_ID() == detail.getM_DistributionRunLine_ID())
 				{
 					// Round
@@ -313,16 +347,15 @@ public class DistributionRun extends JavaProcess
 		}	// for all detail lines
 
 		// Info
-		for (int j = 0; j < m_runLines.length; j++)
+		for (MDistributionRunLine runLine : m_runLines)
 		{
-			MDistributionRunLine runLine = m_runLines[j];
 			log.debug("Run - " + runLine.getInfo());
 		}
 	}	// addAllocations
 
 	/**
 	 * Is Allocation Equals Total
-	 * 
+	 *
 	 * @return true if allocation eq total
 	 * @throws Exception
 	 */
@@ -330,15 +363,18 @@ public class DistributionRun extends JavaProcess
 	{
 		boolean allocationEqTotal = true;
 		// Check total min qty & delta
-		for (int j = 0; j < m_runLines.length; j++)
+		for (MDistributionRunLine runLine : m_runLines)
 		{
-			MDistributionRunLine runLine = m_runLines[j];
 			if (runLine.isActualMinGtTotal())
+			{
 				throw new Exception("Line " + runLine.getLine()
 						+ " Sum of Min Qty=" + runLine.getActualMin()
 						+ " is greater than Total Qty=" + runLine.getTotalQty());
+			}
 			if (allocationEqTotal && !runLine.isActualAllocationEqTotal())
+			{
 				allocationEqTotal = false;
+			}
 		}	// for all run lines
 		log.info("=" + allocationEqTotal);
 		return allocationEqTotal;
@@ -346,18 +382,20 @@ public class DistributionRun extends JavaProcess
 
 	/**
 	 * Adjust Allocation
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	private void adjustAllocation() throws Exception
 	{
 		for (int j = 0; j < m_runLines.length; j++)
+		{
 			adjustAllocation(j);
+		}
 	}	// adjustAllocation
 
 	/**
 	 * Adjust Run Line Allocation
-	 * 
+	 *
 	 * @param index run line index
 	 * @throws Exception
 	 */
@@ -366,7 +404,9 @@ public class DistributionRun extends JavaProcess
 		MDistributionRunLine runLine = m_runLines[index];
 		BigDecimal difference = runLine.getActualAllocationDiff();
 		if (difference.compareTo(Env.ZERO) == 0)
+		{
 			return;
+		}
 		// Adjust when difference is -1->1 or last difference is the same
 		boolean adjustBiggest = difference.abs().compareTo(Env.ONE) <= 0
 				|| difference.abs().compareTo(runLine.getLastDifference().abs()) == 0;
@@ -375,9 +415,8 @@ public class DistributionRun extends JavaProcess
 		// Adjust Biggest Amount
 		if (adjustBiggest)
 		{
-			for (int i = 0; i < m_details.length; i++)
+			for (MDistributionRunDetail detail : m_details)
 			{
-				MDistributionRunDetail detail = m_details[i];
 				if (runLine.getM_DistributionRunLine_ID() == detail.getM_DistributionRunLine_ID())
 				{
 					log.debug("Biggest - DetailAllocation=" + detail.getActualAllocation()
@@ -399,22 +438,24 @@ public class DistributionRun extends JavaProcess
 		{
 			// New Total Ratio
 			BigDecimal ratioTotal = Env.ZERO;
-			for (int i = 0; i < m_details.length; i++)
+			for (MDistributionRunDetail detail : m_details)
 			{
-				MDistributionRunDetail detail = m_details[i];
 				if (runLine.getM_DistributionRunLine_ID() == detail.getM_DistributionRunLine_ID())
 				{
 					if (detail.isCanAdjust())
+					{
 						ratioTotal = ratioTotal.add(detail.getRatio());
+					}
 				}
 			}
 			if (ratioTotal.compareTo(Env.ZERO) == 0)
+			{
 				throw new Exception("Cannot distribute Difference = " + difference
 						+ " - You need to change Total Qty or Min Qty");
+			}
 			// Distribute
-			for (int i = 0; i < m_details.length; i++)
+			for (MDistributionRunDetail detail : m_details)
 			{
-				MDistributionRunDetail detail = m_details[i];
 				if (runLine.getM_DistributionRunLine_ID() == detail.getM_DistributionRunLine_ID())
 				{
 					if (detail.isCanAdjust())
@@ -435,7 +476,7 @@ public class DistributionRun extends JavaProcess
 
 	/**************************************************************************
 	 * Create Orders
-	 * 
+	 *
 	 * @return true if created
 	 */
 	private boolean createOrders()
@@ -443,32 +484,37 @@ public class DistributionRun extends JavaProcess
 		// Get Counter Org/BP
 		int runAD_Org_ID = m_run.getAD_Org_ID();
 		if (runAD_Org_ID == 0)
+		{
 			runAD_Org_ID = Env.getAD_Org_ID(getCtx());
+		}
 		MOrg runOrg = MOrg.get(getCtx(), runAD_Org_ID);
 		int runC_BPartner_ID = runOrg.getLinkedC_BPartner_ID(get_TrxName());
 		boolean counter = !m_run.isCreateSingleOrder()	// no single Order
 				&& runC_BPartner_ID > 0						// Org linked to BP
 				&& !m_docType.isSOTrx();					// PO
-		MBPartner runBPartner = counter ? new MBPartner(getCtx(), runC_BPartner_ID, get_TrxName()) : null;
-		if (!counter || runBPartner == null || runBPartner.get_ID() != runC_BPartner_ID)
+		I_C_BPartner runBPartner = counter ? Services.get(IBPartnerDAO.class).getById(runC_BPartner_ID) : null;
+		if (!counter || runBPartner == null || runBPartner.getC_BPartner_ID() != runC_BPartner_ID)
+		{
 			counter = false;
+		}
 		if (counter)
+		{
 			log.info("RunBP=" + runBPartner
 					+ " - " + m_docType);
+		}
 		log.info("Single=" + m_run.isCreateSingleOrder()
 				+ " - " + m_docType + ",SO=" + m_docType.isSOTrx());
 		log.debug("Counter=" + counter
 				+ ",C_BPartner_ID=" + runC_BPartner_ID + "," + runBPartner);
 		//
-		MBPartner bp = null;
+		I_C_BPartner bp = null;
 		MOrder singleOrder = null;
 		MProduct product = null;
 		// Consolidated Order
 		if (m_run.isCreateSingleOrder())
 		{
-			bp = new MBPartner(getCtx(), m_run.getC_BPartner_ID(), get_TrxName());
-			if (bp.get_ID() == 0)
-				throw new IllegalArgumentException("Business Partner not found - C_BPartner_ID=" + m_run.getC_BPartner_ID());
+			bp = Services.get(IBPartnerDAO.class).getById(m_run.getC_BPartner_ID());
+			
 			//
 			if (!p_IsTest)
 			{
@@ -478,7 +524,9 @@ public class DistributionRun extends JavaProcess
 				singleOrder.setIsSOTrx(m_docType.isSOTrx());
 				singleOrder.setBPartner(bp);
 				if (m_run.getC_BPartner_Location_ID() != 0)
+				{
 					singleOrder.setC_BPartner_Location_ID(m_run.getC_BPartner_Location_ID());
+				}
 				singleOrder.setDateOrdered(m_DateOrdered);
 				singleOrder.setDatePromised(p_DatePromised);
 				if (!singleOrder.save())
@@ -494,14 +542,13 @@ public class DistributionRun extends JavaProcess
 		int lastC_BPartner_Location_ID = 0;
 		MOrder order = null;
 		// For all lines
-		for (int i = 0; i < m_details.length; i++)
+		for (MDistributionRunDetail detail : m_details)
 		{
-			MDistributionRunDetail detail = m_details[i];
-
 			// Create Order Header
 			if (m_run.isCreateSingleOrder())
+			{
 				order = singleOrder;
-			// New Business Partner
+			}
 			else if (lastC_BPartner_ID != detail.getC_BPartner_ID()
 					|| lastC_BPartner_Location_ID != detail.getC_BPartner_Location_ID())
 			{
@@ -512,9 +559,10 @@ public class DistributionRun extends JavaProcess
 			lastC_BPartner_Location_ID = detail.getC_BPartner_Location_ID();
 
 			// New Order
+			final OrgId bpOrgId = OrgId.ofRepoIdOrAny(bp.getAD_OrgBP_ID());
 			if (order == null)
 			{
-				bp = new MBPartner(getCtx(), detail.getC_BPartner_ID(), get_TrxName());
+				bp = Services.get(IBPartnerDAO.class).getById(detail.getC_BPartner_ID());
 				if (!p_IsTest)
 				{
 					order = new MOrder(getCtx(), 0, get_TrxName());
@@ -522,14 +570,16 @@ public class DistributionRun extends JavaProcess
 					order.setC_DocType_ID(m_docType.getC_DocType_ID());
 					order.setIsSOTrx(m_docType.isSOTrx());
 					// Counter Doc
-					if (counter && bp.getAD_OrgBP_ID_Int() > 0)
+					if (counter && bpOrgId.isRegular())
 					{
-						log.debug("Counter - From_BPOrg=" + bp.getAD_OrgBP_ID_Int()
-								+ "-" + bp + ", To_BP=" + runBPartner);
-						order.setAD_Org_ID(bp.getAD_OrgBP_ID_Int());
-						MOrgInfo oi = MOrgInfo.get(getCtx(), bp.getAD_OrgBP_ID_Int());
-						if (oi.getM_Warehouse_ID() > 0)
-							order.setM_Warehouse_ID(oi.getM_Warehouse_ID());
+						log.debug("Counter - From_BPOrg=" + bpOrgId + "-" + bp + ", To_BP=" + runBPartner);
+						order.setAD_Org_ID(bpOrgId.getRepoId());
+
+						final OrgInfo oi = Services.get(IOrgDAO.class).getOrgInfoById(bpOrgId);
+						if (oi.getWarehouseId() != null)
+						{
+							order.setM_Warehouse_ID(oi.getWarehouseId().getRepoId());
+						}
 						order.setBPartner(runBPartner);
 					}
 					else	// normal
@@ -539,7 +589,9 @@ public class DistributionRun extends JavaProcess
 						order.setAD_Org_ID(runAD_Org_ID);
 						order.setBPartner(bp);
 						if (detail.getC_BPartner_Location_ID() != 0)
+						{
 							order.setC_BPartner_Location_ID(detail.getC_BPartner_Location_ID());
+						}
 					}
 					order.setDateOrdered(m_DateOrdered);
 					order.setDatePromised(p_DatePromised);
@@ -553,7 +605,9 @@ public class DistributionRun extends JavaProcess
 
 			// Line
 			if (product == null || product.getM_Product_ID() != detail.getM_Product_ID())
+			{
 				product = MProduct.get(getCtx(), detail.getM_Product_ID());
+			}
 			if (p_IsTest)
 			{
 				addLog(0, null, detail.getActualAllocation(),
@@ -563,16 +617,22 @@ public class DistributionRun extends JavaProcess
 
 			// Create Order Line
 			MOrderLine line = new MOrderLine(order);
-			if (counter && bp.getAD_OrgBP_ID_Int() > 0)
-				;	// don't overwrite counter doc
+			if (counter && bpOrgId.isRegular())
+			{
+					// don't overwrite counter doc
+			}
 			else	// normal - optionally overwrite
 			{
 				line.setC_BPartner_ID(detail.getC_BPartner_ID());
 				if (detail.getC_BPartner_Location_ID() != 0)
+				{
 					line.setC_BPartner_Location_ID(detail.getC_BPartner_Location_ID());
+				}
 			}
 			//
-			line.setProduct(product);
+			line.setM_Product_ID(product.getM_Product_ID());
+			line.setC_UOM_ID(product.getC_UOM_ID());
+			line.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
 			line.setQty(detail.getActualAllocation());
 			line.setPrice();
 			if (!line.save())
@@ -591,7 +651,7 @@ public class DistributionRun extends JavaProcess
 
 	/**
 	 * Insert Details
-	 * 
+	 *
 	 * @return number of rows inserted
 	 */
 	private int insertDetailsDistributionDemand()
@@ -697,7 +757,7 @@ public class DistributionRun extends JavaProcess
 
 	/**
 	 * Insert Details
-	 * 
+	 *
 	 * @return number of rows inserted
 	 */
 	private int insertDetailsDistribution()
@@ -756,28 +816,29 @@ public class DistributionRun extends JavaProcess
 
 	/**************************************************************************
 	 * Create Orders
-	 * 
+	 *
 	 * @return true if created
 	 */
 	private boolean distributionOrders()
 	{
 		// The Quantity Available is distribute with respect to Distribution Order Demand
+		final OrgId orgId = OrgId.ofRepoIdOrAny(m_run.getAD_Org_ID());
 		if (p_BasedInDamnd)
 		{
 			int M_Warehouse_ID = 0;
 			if (p_M_Warehouse_ID <= 0)
 			{
-				MOrgInfo oi_source = MOrgInfo.get(getCtx(), m_run.getAD_Org_ID());
-				M_Warehouse_ID = oi_source.getM_Warehouse_ID();
+				final OrgInfo oi_source = Services.get(IOrgDAO.class).getOrgInfoById(orgId);
+				M_Warehouse_ID = WarehouseId.toRepoId(oi_source.getWarehouseId());
 			}
 			else
+			{
 				M_Warehouse_ID = p_M_Warehouse_ID;
+			}
 
 			// For all lines
-			for (int i = 0; i < m_details.length; i++)
+			for (MDistributionRunDetail detail : m_details)
 			{
-				MDistributionRunDetail detail = m_details[i];
-
 				StringBuffer sql = new StringBuffer("SELECT * FROM DD_OrderLine ol INNER JOIN DD_Order o ON (o.DD_Order_ID=ol.DD_Order_ID)  INNER JOIN M_Locator l ON (l.M_Locator_ID=ol.M_Locator_ID) ");
 				// sql.append(" WHERE o.DocStatus IN ('DR','IN') AND o.C_BPartner_ID = ? AND M_Product_ID=? AND l.M_Warehouse_ID=? AND ol.DatePromised BETWEEN ? AND ? ");
 				sql.append(" WHERE o.DocStatus IN ('DR','IN') AND o.C_BPartner_ID = ? AND M_Product_ID=? AND  l.M_Warehouse_ID=?  AND ol.DatePromised <=?");
@@ -801,9 +862,13 @@ public class DistributionRun extends JavaProcess
 						line.setM_Product_ID(detail.getM_Product_ID());
 						line.setConfirmedQty(line.getTargetQty().add(detail.getActualAllocation()));
 						if (p_M_Warehouse_ID > 0)
+						{
 							line.setDescription(Msg.translate(getCtx(), "PlannedQty"));
+						}
 						else
+						{
 							line.setDescription(m_run.getName());
+						}
 						line.save();
 						break;
 						// addLog(0,null, detail.getActualAllocation(), order.getDocumentNo()
@@ -827,26 +892,32 @@ public class DistributionRun extends JavaProcess
 		}
 
 		// Get Counter Org/BP
-		int runAD_Org_ID = m_run.getAD_Org_ID();
-		if (runAD_Org_ID == 0)
-			runAD_Org_ID = Env.getAD_Org_ID(getCtx());
-		MOrg runOrg = MOrg.get(getCtx(), runAD_Org_ID);
+		OrgId runAD_Org_ID = orgId;
+		if (runAD_Org_ID.isAny())
+		{
+			runAD_Org_ID = Env.getOrgId(getCtx());
+		}
+		MOrg runOrg = MOrg.get(getCtx(), runAD_Org_ID.getRepoId());
 		int runC_BPartner_ID = runOrg.getLinkedC_BPartner_ID(get_TrxName());
 		boolean counter = !m_run.isCreateSingleOrder()	// no single Order
 				&& runC_BPartner_ID > 0						// Org linked to BP
 				&& !m_docType.isSOTrx();					// PO
-		MBPartner runBPartner = counter ? new MBPartner(getCtx(), runC_BPartner_ID, get_TrxName()) : null;
-		if (!counter || runBPartner == null || runBPartner.get_ID() != runC_BPartner_ID)
+		I_C_BPartner runBPartner = counter ? Services.get(IBPartnerDAO.class).getById(runC_BPartner_ID) : null;
+		if (!counter || runBPartner == null || runBPartner.getC_BPartner_ID() != runC_BPartner_ID)
+		{
 			counter = false;
+		}
 		if (counter)
+		{
 			log.info("RunBP=" + runBPartner
 					+ " - " + m_docType);
+		}
 		log.info("Single=" + m_run.isCreateSingleOrder()
 				+ " - " + m_docType + ",SO=" + m_docType.isSOTrx());
 		log.debug("Counter=" + counter
 				+ ",C_BPartner_ID=" + runC_BPartner_ID + "," + runBPartner);
 		//
-		MBPartner bp = null;
+		I_C_BPartner bp = null;
 		MDDOrder singleOrder = null;
 		MProduct product = null;
 
@@ -855,10 +926,13 @@ public class DistributionRun extends JavaProcess
 		I_M_Warehouse m_target = null;
 		I_M_Locator m_locator_to = null;
 
-		MOrgInfo oi_source = MOrgInfo.get(getCtx(), m_run.getAD_Org_ID());
-		m_source = warehousesRepo.getById(WarehouseId.ofRepoId(oi_source.getM_Warehouse_ID()));
+
+		final OrgInfo oi_source = Services.get(IOrgDAO.class).getOrgInfoById(orgId);
+		m_source = warehousesRepo.getById(oi_source.getWarehouseId());
 		if (m_source == null)
+		{
 			throw new AdempiereException("Do not exist Defautl Warehouse Source");
+		}
 
 		m_locator = warehouseBL.getDefaultLocator(m_source);
 
@@ -868,9 +942,7 @@ public class DistributionRun extends JavaProcess
 		// Consolidated Single Order
 		if (m_run.isCreateSingleOrder())
 		{
-			bp = new MBPartner(getCtx(), m_run.getC_BPartner_ID(), get_TrxName());
-			if (bp.get_ID() == 0)
-				throw new IllegalArgumentException("Business Partner not found - C_BPartner_ID=" + m_run.getC_BPartner_ID());
+			bp = Services.get(IBPartnerDAO.class).getById(m_run.getC_BPartner_ID());
 			//
 			if (!p_IsTest)
 			{
@@ -879,7 +951,9 @@ public class DistributionRun extends JavaProcess
 				singleOrder.setIsSOTrx(m_docType.isSOTrx());
 				singleOrder.setBPartner(bp);
 				if (m_run.getC_BPartner_Location_ID() != 0)
+				{
 					singleOrder.setC_BPartner_Location_ID(m_run.getC_BPartner_Location_ID());
+				}
 				singleOrder.setDateOrdered(m_DateOrdered);
 				singleOrder.setDatePromised(p_DatePromised);
 				singleOrder.setM_Warehouse_ID(warehouseInTransitId.getRepoId());
@@ -897,14 +971,13 @@ public class DistributionRun extends JavaProcess
 		MDDOrder order = null;
 
 		// For all lines
-		for (int i = 0; i < m_details.length; i++)
+		for (MDistributionRunDetail detail : m_details)
 		{
-			MDistributionRunDetail detail = m_details[i];
-
 			// Create Order Header
 			if (m_run.isCreateSingleOrder())
+			{
 				order = singleOrder;
-			// New Business Partner
+			}
 			else if (lastC_BPartner_ID != detail.getC_BPartner_ID()
 					|| lastC_BPartner_Location_ID != detail.getC_BPartner_Location_ID())
 			{
@@ -914,11 +987,15 @@ public class DistributionRun extends JavaProcess
 			lastC_BPartner_ID = detail.getC_BPartner_ID();
 			lastC_BPartner_Location_ID = detail.getC_BPartner_Location_ID();
 
-			bp = new MBPartner(getCtx(), detail.getC_BPartner_ID(), get_TrxName());
-			MOrgInfo oi_target = MOrgInfo.get(getCtx(), bp.getAD_OrgBP_ID_Int());
-			m_target = warehousesRepo.getById(WarehouseId.ofRepoId(oi_target.getM_Warehouse_ID()));
+			bp = Services.get(IBPartnerDAO.class).getById(detail.getC_BPartner_ID());
+
+			final OrgId bpOrgId = OrgId.ofRepoId(bp.getAD_OrgBP_ID());
+			final OrgInfo oi_target = Services.get(IOrgDAO.class).getOrgInfoById(bpOrgId);
+			m_target = warehousesRepo.getById(oi_target.getWarehouseId());
 			if (m_target == null)
+			{
 				throw new AdempiereException("Do not exist Default Warehouse Target");
+			}
 
 			m_locator_to = warehouseBL.getDefaultLocator(m_target);
 
@@ -930,7 +1007,7 @@ public class DistributionRun extends JavaProcess
 			if (p_ConsolidateDocument)
 			{
 
-				String whereClause = "DocStatus IN ('DR','IN') AND AD_Org_ID=" + bp.getAD_OrgBP_ID_Int() + " AND " +
+				String whereClause = "DocStatus IN ('DR','IN') AND AD_Org_ID=" + bpOrgId + " AND " +
 						MDDOrder.COLUMNNAME_C_BPartner_ID + "=? AND " +
 						MDDOrder.COLUMNNAME_M_Warehouse_ID + "=?  AND " +
 						MDDOrder.COLUMNNAME_DatePromised + "<=? ";
@@ -947,27 +1024,27 @@ public class DistributionRun extends JavaProcess
 				if (!p_IsTest)
 				{
 					order = new MDDOrder(getCtx(), 0, get_TrxName());
-					order.setAD_Org_ID(bp.getAD_OrgBP_ID_Int());
+					order.setAD_Org_ID(bpOrgId.getRepoId());
 					order.setC_DocType_ID(m_docType.getC_DocType_ID());
 					order.setIsSOTrx(m_docType.isSOTrx());
 
 					// Counter Doc
-					if (counter && bp.getAD_OrgBP_ID_Int() > 0)
+					if (counter && bpOrgId.isRegular())
 					{
-						log.debug("Counter - From_BPOrg=" + bp.getAD_OrgBP_ID_Int()
-								+ "-" + bp + ", To_BP=" + runBPartner);
-						order.setAD_Org_ID(bp.getAD_OrgBP_ID_Int());
+						log.debug("Counter - From_BPOrg=" + bpOrgId + "-" + bp + ", To_BP=" + runBPartner);
+						order.setAD_Org_ID(bpOrgId.getRepoId());
 						order.setM_Warehouse_ID(warehouseInTransitId.getRepoId());
 						order.setBPartner(runBPartner);
 					}
 					else	// normal
 					{
-						log.debug("From_Org=" + runAD_Org_ID
-								+ ", To_BP=" + bp);
-						order.setAD_Org_ID(bp.getAD_OrgBP_ID_Int());
+						log.debug("From_Org=" + runAD_Org_ID + ", To_BP=" + bp);
+						order.setAD_Org_ID(bpOrgId.getRepoId());
 						order.setBPartner(bp);
 						if (detail.getC_BPartner_Location_ID() != 0)
+						{
 							order.setC_BPartner_Location_ID(detail.getC_BPartner_Location_ID());
+						}
 					}
 					order.setM_Warehouse_ID(warehouseInTransitId.getRepoId());
 					order.setDateOrdered(m_DateOrdered);
@@ -984,7 +1061,9 @@ public class DistributionRun extends JavaProcess
 
 			// Line
 			if (product == null || product.getM_Product_ID() != detail.getM_Product_ID())
+			{
 				product = MProduct.get(getCtx(), detail.getM_Product_ID());
+			}
 			if (p_IsTest)
 			{
 				addLog(0, null, detail.getActualAllocation(),
@@ -1000,14 +1079,16 @@ public class DistributionRun extends JavaProcess
 				if (DD_OrderLine_ID <= 0)
 				{
 					MDDOrderLine line = new MDDOrderLine(order);
-					line.setAD_Org_ID(bp.getAD_OrgBP_ID_Int());
+					line.setAD_Org_ID(bpOrgId.getRepoId());
 					line.setM_Locator_ID(m_locator.getM_Locator_ID());
 					line.setM_LocatorTo_ID(m_locator_to.getM_Locator_ID());
 					line.setIsInvoiced(false);
 					line.setProduct(product);
 					BigDecimal QtyAllocation = detail.getActualAllocation();
 					if (QtyAllocation == null)
+					{
 						QtyAllocation = Env.ZERO;
+					}
 
 					line.setQty(QtyAllocation);
 					line.setQtyEntered(QtyAllocation);
@@ -1015,7 +1096,9 @@ public class DistributionRun extends JavaProcess
 					line.setTargetQty(Env.ZERO);
 					String Description = "";
 					if (m_run.getName() != null)
+					{
 						Description = Description.concat(m_run.getName());
+					}
 					line.setDescription(Description + " " + Msg.translate(getCtx(), "Qty") + " = " + QtyAllocation + " ");
 					// line.setConfirmedQty(QtyAllocation);
 					line.saveEx();
@@ -1025,12 +1108,18 @@ public class DistributionRun extends JavaProcess
 					MDDOrderLine line = new MDDOrderLine(getCtx(), DD_OrderLine_ID, get_TrxName());
 					BigDecimal QtyAllocation = detail.getActualAllocation();
 					if (QtyAllocation == null)
+					{
 						QtyAllocation = Env.ZERO;
+					}
 					String Description = line.getDescription();
 					if (Description == null)
+					{
 						Description = "";
+					}
 					if (m_run.getName() != null)
+					{
 						Description = Description.concat(m_run.getName());
+					}
 					line.setDescription(Description + " " + Msg.translate(getCtx(), "Qty") + " = " + QtyAllocation + " ");
 					line.setQty(line.getQtyEntered().add(QtyAllocation));
 					// line.setConfirmedQty(line.getConfirmedQty().add( QtyAllocation));
@@ -1041,8 +1130,10 @@ public class DistributionRun extends JavaProcess
 			{
 				// Create Order Line
 				MDDOrderLine line = new MDDOrderLine(order);
-				if (counter && bp.getAD_OrgBP_ID_Int() > 0)
-					;	// don't overwrite counter doc
+				if (counter && bpOrgId.isRegular())
+				 {
+						// don't overwrite counter doc
+				}
 				/*
 				 * else // normal - optionally overwrite
 				 * {
@@ -1052,7 +1143,7 @@ public class DistributionRun extends JavaProcess
 				 * }
 				 */
 				//
-				line.setAD_Org_ID(bp.getAD_OrgBP_ID_Int());
+				line.setAD_Org_ID(bpOrgId.getRepoId());
 				line.setM_Locator_ID(m_locator.getM_Locator_ID());
 				line.setM_LocatorTo_ID(m_locator_to.getM_Locator_ID());
 				line.setIsInvoiced(false);
@@ -1064,7 +1155,9 @@ public class DistributionRun extends JavaProcess
 				// line.setConfirmedQty(detail.getActualAllocation());
 				String Description = "";
 				if (m_run.getName() != null)
+				{
 					Description = Description.concat(m_run.getName());
+				}
 				line.setDescription(Description + " " + Msg.translate(getCtx(), "Qty") + " = " + detail.getActualAllocation() + " ");
 				line.saveEx();
 

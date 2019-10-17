@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.util.Env;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -12,8 +11,10 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLinePricingConditions;
 import de.metas.util.Check;
+import de.metas.util.ColorId;
 import de.metas.util.IColorRepository;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -25,12 +26,12 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -45,11 +46,16 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 
 	private static enum HasPricingConditions
 	{
-		NO, YES, TEMPORARY
+		NO,
+
+		YES,
+
+		/** The respective order line has no {@code M_DiscountSchemaBreak_ID}, but manual discount etc. */
+		TEMPORARY
 	}
 
 	@Override
-	public void updateNoPriceConditionsColor(final I_C_OrderLine orderLine)
+	public void updateNoPriceConditionsColor(@NonNull final I_C_OrderLine orderLine)
 	{
 		final HasPricingConditions hasPricingConditions = hasPricingConditions(orderLine);
 		final int colorId = getColorId(hasPricingConditions);
@@ -94,7 +100,8 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 		{
 			return -1;
 		}
-		return Services.get(IColorRepository.class).getColorIdByName(colorName);
+		final ColorId colorId = Services.get(IColorRepository.class).getColorIdByName(colorName);
+		return ColorId.toRepoId(colorId);
 	}
 
 	@Override
@@ -114,7 +121,8 @@ public class OrderLinePricingConditions implements IOrderLinePricingConditions
 		if (existsOrderLineWithNoPricingConditions)
 		{
 			final ITranslatableString translatableMsg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_NoPricingConditionsError);
-			throw new AdempiereException(translatableMsg.translate(Env.getAD_Language()));
+			throw new AdempiereException(translatableMsg)
+					.setParameter("HowToDisablePricingConditionsCheck", "To disable it, please set " + SYSCONFIG_NoPriceConditionsColorName + " to `-`");
 		}
 	}
 

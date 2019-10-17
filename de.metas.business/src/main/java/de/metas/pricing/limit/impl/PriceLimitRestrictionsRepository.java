@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
+import de.metas.location.CountryId;
 import org.compiere.model.I_C_PriceLimit_Restriction;
 
 import com.google.common.collect.ImmutableSet;
@@ -69,14 +70,14 @@ public class PriceLimitRestrictionsRepository implements IPriceLimitRestrictions
 	}
 
 	@Override
-	public Set<Integer> getPriceCountryIds()
+	public Set<CountryId> getPriceCountryIds()
 	{
 		return get()
-				.map(this::getPriceContryIds)
+				.map(this::getPriceCountryIds)
 				.orElseGet(ImmutableSet::of);
 	}
 
-	private final Set<Integer> getPriceContryIds(final PriceLimitRestrictions priceLimitRestrictions)
+	private final Set<CountryId> getPriceCountryIds(final PriceLimitRestrictions priceLimitRestrictions)
 	{
 		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 		return priceListsRepo.retrieveCountryIdsByPricingSystem(priceLimitRestrictions.getBasePricingSystemId());

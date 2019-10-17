@@ -10,12 +10,12 @@ package de.metas.adempiere.pricing.spi.impl.rules;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,6 +31,8 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 
+import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.IMsgBL;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -42,14 +44,16 @@ import de.metas.pricing.service.ProductPrices;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductPA;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
  * Calculate price using {@link I_M_ProductScalePrice}
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public class ProductScalePrice extends AbstractPriceListBasedRule
 {
@@ -82,10 +86,11 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 		{
 			return;
 		}
-		
+
 		final I_M_ProductPrice productPrice = ProductPrices.newQuery(priceListVersion)
 				.setProductId(pricingCtx.getProductId())
 				.noAttributePricing()
+				.onlyValidPrices(true)
 				.onlyScalePrices()
 				.firstMatching();
 		if (productPrice == null)
@@ -110,7 +115,7 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 
 		calculateWithScalePrice(pricingCtx, result, scalePrice);
 
-		result.setC_TaxCategory_ID(productPrice.getC_TaxCategory_ID());
+		result.setTaxCategoryId(TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID()));
 	}
 
 	private IPricingResult calculateWithScalePrice(
@@ -125,19 +130,16 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 		BigDecimal m_PriceStd = null;
 		BigDecimal m_PriceList = null;
 		BigDecimal m_PriceLimit = null;
-		int m_C_UOM_ID = -1;
-		CurrencyId currencyId = null;
-		boolean m_enforcePriceLimit = false;
-		boolean m_isTaxIncluded = false;
+		UomId uomId;
 		//
 		//
 
 		final I_M_ProductPrice productPrice = scalePrice.getM_ProductPrice();
-		int m_pp_C_UOM_ID = productPrice.getC_UOM_ID();
+		UomId ppUomId = UomId.ofRepoId(productPrice.getC_UOM_ID());
 		m_PriceStd = scalePrice.getPriceStd();
 		m_PriceList = scalePrice.getPriceList();
 		m_PriceLimit = scalePrice.getPriceLimit();
-		m_C_UOM_ID = Services.get(IProductBL.class).getStockingUOMId(productId).getRepoId();
+		uomId = Services.get(IProductBL.class).getStockUOMId(productId);
 
 		if (priceListId == null)
 		{
@@ -150,12 +152,10 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 			priceListVersionId = PriceListVersionId.ofRepoId(productPrice.getM_PriceList_Version_ID());
 		}
 
-		// TODO handle bom-prices for products that don't have a price themselves.
-
 		final I_M_PriceList priceList = Services.get(IPriceListDAO.class).getById(priceListId);
-		currencyId = CurrencyId.ofRepoId(priceList.getC_Currency_ID());
-		m_enforcePriceLimit = priceList.isEnforcePriceLimit();
-		m_isTaxIncluded = priceList.isTaxIncluded();
+		final CurrencyId currencyId = CurrencyId.ofRepoId(priceList.getC_Currency_ID());
+		final BooleanWithReason enforcePriceLimit = extractEnforcePriceLimit(priceList);
+		final boolean isTaxIncluded = priceList.isTaxIncluded();
 
 		result.setPriceStd(m_PriceStd);
 		result.setPriceList(m_PriceList);
@@ -163,19 +163,29 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 		result.setCurrencyId(currencyId);
 		result.setPriceEditable(productPrice.isPriceEditable());
 		result.setDiscountEditable(productPrice.isDiscountEditable());
-		result.setEnforcePriceLimit(m_enforcePriceLimit);
-		result.setTaxIncluded(m_isTaxIncluded);
+		result.setEnforcePriceLimit(enforcePriceLimit);
+		result.setTaxIncluded(isTaxIncluded);
 		result.setCalculated(true);
 
 		// 06942 : use product price uom all the time
-		if (m_pp_C_UOM_ID <= 0)
+		if (ppUomId == null)
 		{
-			result.setPrice_UOM_ID(m_C_UOM_ID);
+			result.setPriceUomId(uomId);
 		}
 		else
 		{
-			result.setPrice_UOM_ID(m_pp_C_UOM_ID);
+			result.setPriceUomId(ppUomId);
 		}
 		return result;
 	}
+
+	private BooleanWithReason extractEnforcePriceLimit(final I_M_PriceList priceList)
+	{
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+		return priceList.isEnforcePriceLimit()
+				? BooleanWithReason.trueBecause(msgBL.translatable("M_PriceList_ID"))
+				: BooleanWithReason.falseBecause(msgBL.translatable("M_PriceList_ID"));
+	}
+
 }

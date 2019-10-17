@@ -37,6 +37,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -64,7 +65,7 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 			return ProcessPreconditionsResolution.reject();
 		}
 
-		if (context.getSelectionSize() > 1)
+		if (context.isMoreThanOneSelected())
 		{
 			return ProcessPreconditionsResolution.reject();
 		}
@@ -136,7 +137,7 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 	{
 		try
 		{
-			trxManager.run(() -> checkProductById(product));
+			trxManager.runInNewTrx(() -> checkProductById(product));
 		}
 		catch (final Exception ex)
 		{
@@ -176,7 +177,7 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 	private void updateProductLLCAndMarkAsVerified(final I_M_Product product)
 	{
 		// NOTE: when LLC is calculated, the BOM cycles are also checked
-		final int lowLevelCode = productBOMBL.calculateProductLowestLevel(product.getM_Product_ID());
+		final int lowLevelCode = productBOMBL.calculateProductLowestLevel(ProductId.ofRepoId(product.getM_Product_ID()));
 		product.setLowLevel(lowLevelCode);
 		product.setIsVerified(true);
 		InterfaceWrapperHelper.save(product);

@@ -1,7 +1,11 @@
 package de.metas.contracts.impl;
 
+import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Quit;
+import static de.metas.contracts.model.X_C_Flatrate_Term.CONTRACTSTATUS_Voided;
+import static de.metas.contracts.model.X_C_Flatrate_Term.DOCSTATUS_Completed;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -75,6 +79,8 @@ import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.product.IProductDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.stream.StreamUtils;
@@ -82,7 +88,6 @@ import lombok.NonNull;
 
 public class FlatrateDAO implements IFlatrateDAO
 {
-
 	private static final String MSP_DATA_ENTRY_ERROR_INVOICE_CAND_PROCESSED_3P = "DataEntry_Error_InvoiceCand_Processed";
 	private static final Logger logger = LogManager.getLogger(FlatrateDAO.class);
 
@@ -90,14 +95,25 @@ public class FlatrateDAO implements IFlatrateDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
+	public I_C_Flatrate_Term getById(final int flatrateTermId)
+	{
+		Check.assumeGreaterThanZero(flatrateTermId, "flatrateTermId");
+		return load(flatrateTermId, I_C_Flatrate_Term.class);
+	}
+
+	@Override
 	public List<I_C_Flatrate_Term> retrieveTerms(final I_C_Invoice_Candidate ic)
 	{
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+
 		final Properties ctx = getCtx(ic);
 		final String trxName = getTrxName(ic);
 
 		final int bill_BPartner_ID = ic.getBill_BPartner_ID();
 		final Timestamp dateOrdered = ic.getDateOrdered();
-		final int m_Product_Category_ID = ic.getM_Product().getM_Product_Category_ID();
+
+		final I_M_Product product = productDAO.getById(ic.getM_Product_ID());
+		final int m_Product_Category_ID = product.getM_Product_Category_ID();
 		final int m_Product_ID = ic.getM_Product_ID();
 		final int c_Charge_ID = ic.getC_Charge_ID();
 
@@ -269,10 +285,10 @@ public class FlatrateDAO implements IFlatrateDAO
 			final I_C_Flatrate_Conditions fc,
 			final Timestamp dateOrdered,
 			final String dataEntryType,
-			final I_C_UOM uom,
+			final UomId uomId,
 			final boolean onlyNonSim)
 	{
-		return retrieveEntries(fc, null, dateOrdered, dataEntryType, uom, onlyNonSim);
+		return retrieveEntries(fc, null, dateOrdered, dataEntryType, uomId, onlyNonSim);
 	}
 
 	@Override
@@ -281,7 +297,7 @@ public class FlatrateDAO implements IFlatrateDAO
 			final I_C_Flatrate_Term term,
 			final Timestamp date,
 			final String dataEntryType,
-			final I_C_UOM uom,
+			final UomId uomId,
 			final boolean onlyNonSim)
 	{
 		final Properties ctx;
@@ -334,10 +350,10 @@ public class FlatrateDAO implements IFlatrateDAO
 				I_C_Flatrate_DataEntry.COLUMNNAME_Type + "=? ");
 		params.add(dataEntryType);
 
-		if (uom != null)
+		if (uomId != null)
 		{
 			wc.append(" AND " + I_C_Flatrate_DataEntry.COLUMNNAME_C_UOM_ID + "=? ");
-			params.add(uom.getC_UOM_ID());
+			params.add(uomId);
 		}
 
 		// Return the entries in the order of their UOM.
@@ -377,16 +393,16 @@ public class FlatrateDAO implements IFlatrateDAO
 			final boolean onlyNonSim)
 	{
 		final I_C_Flatrate_Conditions fc = null;
-		final I_C_UOM uom = null;
+		final UomId uomId = null;
 
-		return retrieveEntries(fc, flatrateTerm, date, dataEntryType, uom, onlyNonSim);
+		return retrieveEntries(fc, flatrateTerm, date, dataEntryType, uomId, onlyNonSim);
 	}
 
 	@Override
 	public List<I_C_Flatrate_DataEntry> retrieveDataEntries(
 			final I_C_Flatrate_Term term,
 			final String dataEntryType,
-			final I_C_UOM uom)
+			final UomId uomId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -395,9 +411,9 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addEqualsFilter(I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_Term_ID, term.getC_Flatrate_Term_ID())
 				.addOnlyContextClient();
 
-		if (uom != null)
+		if (uomId != null)
 		{
-			queryBuilder.addEqualsFilter(I_C_Flatrate_DataEntry.COLUMNNAME_C_UOM_ID, uom.getC_UOM_ID());
+			queryBuilder.addEqualsFilter(I_C_Flatrate_DataEntry.COLUMNNAME_C_UOM_ID, uomId);
 		}
 
 		if (!Check.isEmpty(dataEntryType, true))
@@ -511,12 +527,12 @@ public class FlatrateDAO implements IFlatrateDAO
 	public final List<I_C_Flatrate_DataEntry> retrieveInvoicingEntries(
 			final I_C_Flatrate_Term flatrateTerm,
 			final Timestamp dateFrom, final Timestamp dateTo,
-			final I_C_UOM uom)
+			final UomId uomId)
 	{
 		final List<I_C_Flatrate_DataEntry> result = new ArrayList<>();
 
 		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
-		final List<I_C_Flatrate_DataEntry> entriesToCorrect = flatrateDB.retrieveDataEntries(flatrateTerm, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased, uom);
+		final List<I_C_Flatrate_DataEntry> entriesToCorrect = flatrateDB.retrieveDataEntries(flatrateTerm, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased, uomId);
 
 		for (final I_C_Flatrate_DataEntry entryToCorrect : entriesToCorrect)
 		{
@@ -795,38 +811,39 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
-	public I_C_Flatrate_DataEntry retrieveRefundableDataEntry(final int bPartner_ID, final Timestamp movementDate, final org.compiere.model.I_M_Product product)
+	public I_C_Flatrate_DataEntry retrieveRefundableDataEntry(
+			final int bPartner_ID,
+			@NonNull final Timestamp movementDate,
+			@NonNull final org.compiere.model.I_M_Product product)
 	{
-		final Properties ctx = getCtx(product);
-		final String trxName = getTrxName(product);
-		final StringBuilder wc = new StringBuilder();
-		final List<Object> params = new ArrayList<>();
 
-		wc.append("( EXISTS (SELECT * FROM ")
-				.append(I_C_Flatrate_Term.Table_Name + " ft INNER JOIN ")
-				.append(I_C_Flatrate_Conditions.Table_Name + " fc ")
-				.append(" ON fc." + I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Conditions_ID + " = ft." + I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID)
-				.append(" INNER JOIN " + I_C_Period.Table_Name + " per ")
-				.append(" ON per." + I_C_Period.COLUMNNAME_C_Period_ID + " = " + I_C_Flatrate_DataEntry.Table_Name + "." + I_C_Flatrate_DataEntry.COLUMNNAME_C_Period_ID)
-				.append(" WHERE  ( ft." + I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + " = " + I_C_Flatrate_DataEntry.Table_Name + "." + I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_Term_ID)
-				.append(" AND COALESCE(ft." + I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID + ", ft." + I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID + ") =?");
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQuery<I_C_Period> periodQuery = queryBL
+				.createQueryBuilder(I_C_Period.class)
+				.addOnlyActiveRecordsFilter()
+				.addCompareFilter(I_C_Period.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, movementDate)
+				.addCompareFilter(I_C_Period.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, movementDate)
+				.create();
 
-		params.add(bPartner_ID);
+		return queryBL
+				.createQueryBuilder(I_C_Flatrate_Conditions.class)
+				.addOnlyActiveRecordsFilter() // new
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMN_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable)
+				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMN_DocStatus, X_C_Flatrate_Conditions.DOCSTATUS_Completed) // new
 
-		wc.append(" AND fc." + I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions + " = '" + X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refundable + "'")
-				.append(" AND	( ? >= per." + I_C_Period.COLUMNNAME_StartDate)
-				.append(" AND ? <= per." + I_C_Period.COLUMNNAME_EndDate + "))) AND ");
+				.andCollectChildren(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID)
+				.addOnlyActiveRecordsFilter() // new
+				.addCoalesceEqualsFilter(bPartner_ID, I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID, I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DocStatus, DOCSTATUS_Completed) // new
+				.addNotInArrayFilter(I_C_Flatrate_Term.COLUMN_ContractStatus, ImmutableList.of(CONTRACTSTATUS_Quit, CONTRACTSTATUS_Voided)) // new
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, movementDate) // new
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, movementDate) // new
 
-		params.add(movementDate);
-		params.add(movementDate);
-
-		wc.append(I_C_Flatrate_DataEntry.COLUMNNAME_M_Product_DataEntry_ID + " = ? )");
-		params.add(product.getM_Product_ID());
-
-		return new Query(ctx, I_C_Flatrate_DataEntry.Table_Name, wc.toString(), trxName)
-				.setParameters(params)
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
+				.andCollectChildren(I_C_Flatrate_DataEntry.COLUMN_C_Flatrate_Term_ID)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_DataEntry.COLUMN_M_Product_DataEntry_ID, product.getM_Product_ID())
+				.addInSubQueryFilter(I_C_Flatrate_DataEntry.COLUMNNAME_C_Period_ID, I_C_Period.COLUMNNAME_C_Period_ID, periodQuery)
+				.create()
 				.firstOnly(I_C_Flatrate_DataEntry.class);
 	}
 

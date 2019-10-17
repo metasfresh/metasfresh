@@ -34,14 +34,14 @@
 					<printWhenExpression><![CDATA[new Boolean($R{show_summary}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Summary}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="460" y="0" width="85" height="12" forecolor="#000000" uuid="8b2436d9-25f3-42cb-93ab-a3bf4a7f4b33"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 			</textField>
@@ -180,7 +180,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{InvoiceTotal} + " " + $F{iso_code} +
 ($F{isprinttax}.equals( "Y" ) ?
@@ -197,7 +197,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{grandtotal}]]></textFieldExpression>
 			</textField>

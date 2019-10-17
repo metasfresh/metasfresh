@@ -37,12 +37,12 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.storage.IStorageQuery;
-import lombok.NonNull;
 
 /**
  * Developer friendly Query Builder which is oriented on Handling Units concerns.
@@ -156,23 +156,12 @@ public interface IHUQueryBuilder
 	/**
 	 * See {@link #addOnlyWithProductIds(Collection)}.
 	 *
-	 * @param productId
-	 * @return this
-	 */
-	IHUQueryBuilder addOnlyWithProductId(int productId);
-
-	default IHUQueryBuilder addOnlyWithProductId(@NonNull final ProductId productId)
-	{
-		return addOnlyWithProductId(productId.getRepoId());
-	}
-
-	/**
-	 * See {@link #addOnlyWithProductIds(Collection)}.
-	 *
 	 * @param product
 	 * @return this
 	 */
 	IHUQueryBuilder addOnlyWithProduct(org.compiere.model.I_M_Product product);
+
+	IHUQueryBuilder addOnlyWithProductId(ProductId productId);
 
 	/**
 	 * This is only relevant {@link #addOnlyWithProductIds(Collection)} or one of its siblings is used. The default is {@code false}.
@@ -225,13 +214,14 @@ public interface IHUQueryBuilder
 	 * @param bPartnerId HU's BPartner that can be accepted. If it's <code>null</code> we will search for HU's without BPartner too.
 	 * @return this
 	 */
-	IHUQueryBuilder addOnlyInBPartnerId(final Integer bPartnerId);
+	IHUQueryBuilder addOnlyInBPartnerId(final BPartnerId bPartnerId);
 
 	/**
-	 *
 	 * @return an unmodifiable set containing the <code>C_BPartner_ID</code>s that were previously specified by invocations of {@link #addOnlyInBPartnerId(Integer)}.
 	 */
-	Set<Integer> getOnlyInBPartnerIds();
+	Set<BPartnerId> getOnlyInBPartnerIds();
+
+	Set<ProductId> getOnlyWithProductIds();
 
 	/**
 	 * Filter only those HUs which have M_HU.C_BPartner_ID set.
@@ -391,7 +381,7 @@ public interface IHUQueryBuilder
 	 * @param attributeName
 	 */
 	IHUQueryBuilder addOnlyWithAttributeMissingOrNull(String attributeName);
-	
+
 	IHUQueryBuilder allowSqlWhenFilteringAttributes(boolean allow);
 
 	/**

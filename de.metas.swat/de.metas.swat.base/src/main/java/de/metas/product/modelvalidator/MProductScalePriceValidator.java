@@ -10,18 +10,17 @@ package de.metas.product.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -48,20 +47,20 @@ public class MProductScalePriceValidator implements ModelValidator
 	private static final Logger logger = LogManager.getLogger(MProductScalePriceValidator.class);
 
 	private final static String SQL_UPDATE_PRODUCTPRICE = //
-	" UPDATE "
-			+ I_M_ProductPrice.Table_Name //
-			+ " SET " //
-			+ I_M_ProductPrice.COLUMNNAME_PriceLimit + "=?, "
-			+ I_M_ProductPrice.COLUMNNAME_PriceList + "=?, "
-			+ I_M_ProductPrice.COLUMNNAME_PriceStd + "=? "
-			+ " WHERE M_ProductPrice_ID=?";
+			" UPDATE "
+					+ I_M_ProductPrice.Table_Name //
+					+ " SET " //
+					+ I_M_ProductPrice.COLUMNNAME_PriceLimit + "=?, "
+					+ I_M_ProductPrice.COLUMNNAME_PriceList + "=?, "
+					+ I_M_ProductPrice.COLUMNNAME_PriceStd + "=? "
+					+ " WHERE M_ProductPrice_ID=?";
 
 	private final static String SQL_SELECT_EXISTING = //
-	" SELECT " + I_M_ProductScalePrice.COLUMNNAME_M_ProductScalePrice_ID //
-			+ " FROM " + I_M_ProductScalePrice.Table_Name //
-			+ " WHERE " //
-			+ I_M_ProductScalePrice.COLUMNNAME_M_ProductPrice_ID + "=?" //
-			+ "   AND " + I_M_ProductScalePrice.COLUMNNAME_Qty + "=?";
+			" SELECT " + I_M_ProductScalePrice.COLUMNNAME_M_ProductScalePrice_ID //
+					+ " FROM " + I_M_ProductScalePrice.Table_Name //
+					+ " WHERE " //
+					+ I_M_ProductScalePrice.COLUMNNAME_M_ProductPrice_ID + "=?" //
+					+ "   AND " + I_M_ProductScalePrice.COLUMNNAME_Qty + "=?";
 
 	private int ad_Client_ID = -1;
 
@@ -117,17 +116,13 @@ public class MProductScalePriceValidator implements ModelValidator
 					productScalePrice.setQty(BigDecimal.ZERO);
 				}
 
-				throw new AdempiereException("@MProductScalePrice.DuplicateQty@");
+				throw new AdempiereException("@MProductScalePrice.DuplicateQty@").markAsUserValidationError();
 			}
 		}
 
 		if (type == ModelValidator.TYPE_BEFORE_CHANGE)
 		{
 			return handleChange(productScalePrice, po.get_TrxName());
-		}
-		if (type == ModelValidator.TYPE_BEFORE_DELETE)
-		{
-			return handleDelete(productScalePrice);
 		}
 		return null;
 	}
@@ -157,8 +152,8 @@ public class MProductScalePriceValidator implements ModelValidator
 				// OK, we were able to update M_Product_Price
 				return null;
 			}
-			
-			throw new AdempiereException("Didn't find M_Product_Price for M_ProductSalePrice with id " + productScalePrice.getM_ProductScalePrice_ID());
+
+			throw new AdempiereException("Didn't find M_Product_Price for M_ProductSalePrice with id " + productScalePrice.getM_ProductScalePrice_ID()).markAsUserValidationError();
 		}
 		catch (SQLException e)
 		{
@@ -170,16 +165,6 @@ public class MProductScalePriceValidator implements ModelValidator
 		{
 			DB.close(pstmt);
 		}
-	}
-
-	private String handleDelete(final I_M_ProductScalePrice productScalePrice)
-	{
-		if (BigDecimal.ONE.compareTo(productScalePrice.getQty()) == 0)
-		{
-			// Can't allow this scalePrice to be deleted.
-			throw new AdempiereException("@MProductScalePrice.CantDelete@");
-		}
-		return null;
 	}
 
 	private boolean isAlreadyExisting(final int currentId, final int productPriceId, final BigDecimal qty, final String trxName)

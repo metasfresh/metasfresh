@@ -1,7 +1,5 @@
 package de.metas.pricing.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -25,30 +23,26 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.time.LocalDate;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pricing.model.I_C_PricingRule;
-import org.adempiere.uom.UomId;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-import org.compiere.util.Util;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
-import de.metas.cache.annotation.CacheCtx;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
@@ -67,12 +61,17 @@ import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.pricing.service.IPricingDAO;
+import de.metas.pricing.service.PricingRuleDescriptor;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -110,7 +109,7 @@ public class PricingBL implements IPricingBL
 			pricingCtx.setQty(BigDecimal.ONE);
 		}
 		pricingCtx.setSOTrx(SOTrx.ofBoolean(isSOTrx));
-		pricingCtx.setC_UOM_ID(C_UOM_ID);
+		pricingCtx.setUomId(UomId.ofRepoIdOrNull(C_UOM_ID));
 
 		return pricingCtx;
 	}
@@ -137,9 +136,8 @@ public class PricingBL implements IPricingBL
 			// return result;
 		}
 
-		final Properties ctx = Env.getCtx();
-		final AggregatedPricingRule aggregatedPricingRule = getAggregatedPricingRule(ctx);
-		aggregatedPricingRule.calculate(pricingCtxToUse, result);
+		final AggregatedPricingRule rules = createPricingRules();
+		rules.calculate(pricingCtxToUse, result);
 
 		//
 		// After calculation
@@ -170,10 +168,10 @@ public class PricingBL implements IPricingBL
 	{
 		// Direct
 		{
-			final Boolean isManualPrice = pricingCtx.isManualPrice();
-			if (isManualPrice != null)
+			final OptionalBoolean manualPriceEnabled = pricingCtx.getManualPriceEnabled();
+			if (manualPriceEnabled.isPresent())
 			{
-				return isManualPrice;
+				return manualPriceEnabled.isTrue();
 			}
 		}
 
@@ -209,7 +207,7 @@ public class PricingBL implements IPricingBL
 	{
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
-		final Timestamp priceDate = pricingCtx.getPriceDate();
+		final LocalDate priceDate = pricingCtx.getPriceDate();
 
 		//
 		// Set M_PriceList_ID and M_PriceList_Version_ID from pricingSystem, date and country, if necessary;
@@ -217,12 +215,12 @@ public class PricingBL implements IPricingBL
 		if (pricingCtx.getPricingSystemId() != null
 				&& priceDate != null
 				&& pricingCtx.getProductId() != null
-				&& pricingCtx.getC_Country_ID() > 0)
+				&& pricingCtx.getCountryId() != null)
 		{
 			final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 			final I_M_PriceList_Version computedPLV = priceListBL.getCurrentPriceListVersionOrNull(
 					pricingCtx.getPricingSystemId(),
-					pricingCtx.getC_Country_ID(),
+					pricingCtx.getCountryId(),
 					pricingCtx.getPriceDate(),
 					pricingCtx.isSkipCheckingPriceListSOTrxFlag() ? null : pricingCtx.getSoTrx(),
 					null);
@@ -239,7 +237,7 @@ public class PricingBL implements IPricingBL
 						pricingCtx.getM_PriceList_Version(),  // 1
 						pricingCtx.getPricingSystemId(),  // 2
 						pricingCtx.getProductId(),  // 3
-						pricingCtx.getC_Country_ID(),  // 4
+						pricingCtx.getCountryId(),  // 4
 						pricingCtx.getSoTrx(),  // 5
 						computedPLV);
 				pricingCtx.setPriceListVersionId(PriceListVersionId.ofRepoId(computedPLV.getM_PriceList_Version_ID()));
@@ -291,7 +289,7 @@ public class PricingBL implements IPricingBL
 			final I_M_PriceList_Version priceListVersion = pricingCtx.getM_PriceList_Version();
 
 			logger.info("Setting to context: PriceDate={} from M_PriceList_Version={}", priceListVersion.getValidFrom(), priceListVersion);
-			pricingCtx.setPriceDate(priceListVersion.getValidFrom());
+			pricingCtx.setPriceDate(TimeUtil.asLocalDate(priceListVersion.getValidFrom()));
 		}
 	}
 
@@ -299,13 +297,10 @@ public class PricingBL implements IPricingBL
 			@NonNull final IPricingContext pricingCtx,
 			@NonNull final PricingResult result)
 	{
-		if (pricingCtx.getPriceListId() != null && result.getPrecision() == IPricingResult.NO_PRECISION)
+		if (pricingCtx.getPriceListId() != null && result.getPrecision() == null)
 		{
-			final int precision = getPricePrecision(pricingCtx.getPriceListId());
-			if (precision >= 0)
-			{
-				result.setPrecision(precision);
-			}
+			final CurrencyPrecision precision = getPricePrecision(pricingCtx.getPriceListId());
+			result.setPrecision(precision);
 		}
 		result.updatePriceScales();
 	}
@@ -320,10 +315,12 @@ public class PricingBL implements IPricingBL
 			return;
 		}
 
-		if (pricingCtx.getC_UOM_ID() > 0 && pricingCtx.getC_UOM_ID() != result.getPrice_UOM_ID())
+		if (pricingCtx.getUomId() != null
+				&& !UomId.equals(pricingCtx.getUomId(), result.getPriceUomId()))
 		{
-			final I_C_UOM uomTo = loadOutOfTrx(pricingCtx.getC_UOM_ID(), I_C_UOM.class);
-			final I_C_UOM uomFrom = loadOutOfTrx(result.getPrice_UOM_ID(), I_C_UOM.class);
+			final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+			final I_C_UOM uomTo = uomsRepo.getById(pricingCtx.getUomId());
+			final I_C_UOM uomFrom = uomsRepo.getById(result.getPriceUomId());
 
 			final BigDecimal factor = Services.get(IUOMConversionBL.class).convertQty(
 					result.getProductId(),
@@ -334,7 +331,7 @@ public class PricingBL implements IPricingBL
 			result.setPriceLimit(factor.multiply(result.getPriceLimit()));
 			result.setPriceList(factor.multiply(result.getPriceList()));
 			result.setPriceStd(factor.multiply(result.getPriceStd()));
-			result.setPrice_UOM_ID(pricingCtx.getC_UOM_ID());
+			result.setPriceUomId(pricingCtx.getUomId());
 		}
 	}
 
@@ -358,17 +355,17 @@ public class PricingBL implements IPricingBL
 			final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(plv, productId);
 			if (productPrice == null)
 			{
-				final UomId uomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+				final UomId uomId = Services.get(IProductBL.class).getStockUOMId(productId);
 				result.setPriceUomId(uomId);
 			}
 			else
 			{
-				result.setPrice_UOM_ID(productPrice.getC_UOM_ID());
+				result.setPriceUomId(UomId.ofRepoId(productPrice.getC_UOM_ID()));
 			}
 		}
 		else
 		{
-			final UomId uomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+			final UomId uomId = Services.get(IProductBL.class).getStockUOMId(productId);
 			result.setPriceUomId(uomId);
 		}
 	}
@@ -376,98 +373,70 @@ public class PricingBL implements IPricingBL
 	@Override
 	public PricingResult createInitialResult(@NonNull final IPricingContext pricingCtx)
 	{
-		final PricingResult result = new PricingResult();
-		result.setPricingSystemId(pricingCtx.getPricingSystemId());
-		result.setPriceListId(pricingCtx.getPriceListId());
-		result.setPriceListVersionId(pricingCtx.getPriceListVersionId());
-		result.setProductId(pricingCtx.getProductId());
-		result.setCurrencyId(pricingCtx.getCurrencyId());
-		result.setDisallowDiscount(pricingCtx.isDisallowDiscount());
-		result.setPriceDate(pricingCtx.getPriceDate());
-
-		result.setCalculated(false);
+		final PricingResult result = PricingResult.builder()
+				.priceDate(pricingCtx.getPriceDate())
+				//
+				.pricingSystemId(pricingCtx.getPricingSystemId())
+				.priceListId(pricingCtx.getPriceListId())
+				.priceListVersionId(pricingCtx.getPriceListVersionId())
+				.currencyId(pricingCtx.getCurrencyId())
+				//
+				.productId(pricingCtx.getProductId())
+				//
+				.disallowDiscount(pricingCtx.isDisallowDiscount())
+				//
+				.build();
 
 		setProductInfo(pricingCtx, result);
 
 		return result;
 	}
 
-	@Cached(cacheName = I_C_PricingRule.Table_Name + "_AggregatedPricingRule")
-	public AggregatedPricingRule getAggregatedPricingRule(@CacheCtx Properties ctx)
+	private AggregatedPricingRule createPricingRules()
 	{
-		final AggregatedPricingRule aggregatedPricingRule = new AggregatedPricingRule();
-		final List<IPricingRule> rules = retrievePricingRules(ctx);
-		for (IPricingRule rule : rules)
-		{
-			aggregatedPricingRule.addPricingRule(rule);
-		}
+		final IPricingDAO pricingRulesRepo = Services.get(IPricingDAO.class);
 
-		logger.debug("aggregatedPricingRule: {}", aggregatedPricingRule);
-		return aggregatedPricingRule;
+		final ImmutableList<IPricingRule> rules = pricingRulesRepo.getPricingRules()
+				.stream()
+				.map(this::createPricingRuleNoFail)
+				.filter(Predicates.notNull())
+				.collect(ImmutableList.toImmutableList());
+
+		return AggregatedPricingRule.of(rules);
 	}
 
-	private List<IPricingRule> retrievePricingRules(Properties ctx)
+	private IPricingRule createPricingRuleNoFail(final PricingRuleDescriptor ruleDef)
 	{
-		final List<I_C_PricingRule> rulesDef = Services.get(IPricingDAO.class).retrievePricingRules(ctx);
-
-		final List<IPricingRule> rules = new ArrayList<>(rulesDef.size());
-		for (final I_C_PricingRule ruleDef : rulesDef)
-		{
-			final IPricingRule rule = createPricingRule(ruleDef);
-			if (rule == null)
-			{
-				continue;
-			}
-			if (rules.contains(rule))
-			{
-				logger.warn("Rule was already loaded: " + rule + " [SKIP]");
-				continue;
-			}
-			rules.add(rule);
-		}
-
-		return rules;
-	}
-
-	/**
-	 *
-	 * @param ruleDef
-	 * @return {@link IPricingRule} or null if an error occurred
-	 */
-	private IPricingRule createPricingRule(I_C_PricingRule ruleDef)
-	{
-		final String classname = ruleDef.getClassname();
 		try
 		{
-			final IPricingRule rule = Util.getInstance(IPricingRule.class, classname);
-			return rule;
+			return ruleDef.getPricingRuleClass().getReferencedClass().newInstance();
 		}
-		catch (Exception e)
+		catch (final Exception ex)
 		{
-			logger.warn("Cannot load rule for classname " + classname, e);
+			logger.warn("Cannot load rule for {}", ruleDef, ex);
+			return null;
 		}
-		return null;
 	}
 
-	private final int getPricePrecision(@NonNull final PriceListId priceListId)
+	private CurrencyPrecision getPricePrecision(@NonNull final PriceListId priceListId)
 	{
 		return Services.get(IPriceListBL.class).getPricePrecision(priceListId);
 	}
 
 	@Override
-	public void registerPriceLimitRule(final IPriceLimitRule rule)
+	public void registerPriceLimitRule(@NonNull final IPriceLimitRule rule)
 	{
 		priceLimitRules.addEnforcer(rule);
 	}
 
 	@Override
-	public PriceLimitRuleResult computePriceLimit(final PriceLimitRuleContext context)
+	public PriceLimitRuleResult computePriceLimit(@NonNull final PriceLimitRuleContext context)
 	{
 		return priceLimitRules.compute(context);
 	}
 
 	@Override
-	public Set<Integer> getPriceLimitCountryIds()
+	public Set<CountryId> getPriceLimitCountryIds()
 	{
 		return priceLimitRules.getPriceCountryIds();
 	}

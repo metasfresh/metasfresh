@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.X_PP_Order_Report;
 
 import de.metas.materialtracking.IHandlingUnitsInfo;
@@ -84,7 +85,7 @@ import de.metas.util.Check;
 		final IProductionMaterial productionMaterial = getProductionMaterialOrNull();
 		if (productionMaterial != null)
 		{
-			line.setComponentType(productionMaterial.getComponentType());
+			line.setComponentType(BOMComponentType.toCodeOrNull(productionMaterial.getComponentType()));
 			line.setVariantGroup(productionMaterial.getVariantGroup());
 		}
 		else

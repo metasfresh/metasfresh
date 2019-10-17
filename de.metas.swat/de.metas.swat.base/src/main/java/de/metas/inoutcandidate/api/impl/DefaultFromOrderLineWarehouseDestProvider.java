@@ -4,7 +4,10 @@ import java.util.List;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
@@ -14,6 +17,8 @@ import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
+import de.metas.organization.OrgId;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 
@@ -57,6 +62,7 @@ import de.metas.util.Services;
 	@Override
 	public I_M_Warehouse getWarehouseDest(final IContext context)
 	{
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 		//
 		// Try to retrieve destination warehouse from planning
 		// see: http://dewiki908/mediawiki/index.php/07058_Destination_Warehouse_Wareneingang_%28102083181965%29#Development_infrastructure
@@ -69,7 +75,9 @@ import de.metas.util.Services;
 		//
 		// Fallback if no planning destination warehouse was found
 		// see: http://dewiki908/mediawiki/index.php/05940_Wareneingang_Lagerumbuchung
-		final I_M_Locator locator = context.getM_Product().getM_Locator();
+		final I_M_Product product = Services.get(IProductDAO.class).getById(context.getM_Product_ID());
+		final LocatorId locatorId = warehouseDAO.getLocatorIdByRepoIdOrNull(product.getM_Locator_ID());
+		final I_M_Locator locator = locatorId == null? null : warehouseDAO.getLocatorById(locatorId);
 		if (locator != null && locator.getM_Locator_ID() > 0)
 		{
 			return locator.getM_Warehouse();
@@ -92,7 +100,7 @@ import de.metas.util.Services;
 
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 		final ProductPlanningQuery query = ProductPlanningQuery.builder()
-				.orgId(context.getAD_Org_ID())
+				.orgId(OrgId.ofRepoId(context.getAD_Org_ID()))
 				.productId(ProductId.ofRepoId(context.getM_Product_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(attributeSetInstanceId))
 				// no warehouse, no plant

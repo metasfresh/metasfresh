@@ -19,7 +19,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement uuid="a9d03741-b148-4daf-83aa-cb6f1776be79" x="79" y="35" width="188" height="22"/>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{unload_bpartner_name}]]></textFieldExpression>
 			</textField>
@@ -28,7 +28,7 @@
 					<printWhenExpression><![CDATA[new Boolean($F{unload_bpartner_name}!=null)]]></printWhenExpression>
 				</reportElement>
 				<textElement>
-					<font isBold="true"/>
+					<font fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{unload_bp_name}]]></textFieldExpression>
 			</textField>

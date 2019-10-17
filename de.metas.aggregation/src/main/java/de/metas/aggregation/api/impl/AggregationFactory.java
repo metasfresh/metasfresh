@@ -32,7 +32,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
-import de.metas.aggregation.api.IAggregation;
+import de.metas.aggregation.api.Aggregation;
 import de.metas.aggregation.api.IAggregationDAO;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
@@ -52,7 +52,7 @@ public class AggregationFactory implements IAggregationFactory
 	public <ModelType> IAggregationKeyBuilder<ModelType> getAggregationKeyBuilder(final Properties ctx, final Class<ModelType> modelClass, final int aggregationId)
 	{
 		final IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
-		final IAggregation aggregation = aggregationDAO.retrieveAggregation(ctx, aggregationId);
+		final Aggregation aggregation = aggregationDAO.retrieveAggregation(ctx, aggregationId);
 		return createAggregationKeyBuilder(modelClass, aggregation);
 	}
 
@@ -65,7 +65,7 @@ public class AggregationFactory implements IAggregationFactory
 		//
 		// Load it from database
 		{
-			final IAggregation aggregation = aggregationDAO.retrieveDefaultAggregationOrNull(ctx, modelClass, isSOTrx, aggregationUsageLevel);
+			final Aggregation aggregation = aggregationDAO.retrieveDefaultAggregationOrNull(ctx, modelClass, isSOTrx, aggregationUsageLevel);
 			if (aggregation != null)
 			{
 				return createAggregationKeyBuilder(modelClass, aggregation);
@@ -107,7 +107,9 @@ public class AggregationFactory implements IAggregationFactory
 		return Util.mkKey(tableName, aggregationUsageLevel);
 	}
 
-	private final <ModelType> IAggregationKeyBuilder<ModelType> createAggregationKeyBuilder(final Class<ModelType> modelClass, final IAggregation aggregation)
+	private final <ModelType> IAggregationKeyBuilder<ModelType> createAggregationKeyBuilder(
+			final Class<ModelType> modelClass,
+			final Aggregation aggregation)
 	{
 		final GenericAggregationKeyBuilder<ModelType> aggregationKeyBuilder = new GenericAggregationKeyBuilder<>(modelClass, aggregation);
 		return aggregationKeyBuilder;

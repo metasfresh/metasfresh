@@ -54,16 +54,17 @@ public class AmountRefundConfigChangeHandler extends RefundConfigChangeHandler
 
 		final Quantity quantityAssigendToRefundCandidate = existingAssignment.getQuantityAssigendToRefundCandidate();
 
-		final Money moneyToAssign = amountToApply.multiply(quantityAssigendToRefundCandidate.getAsBigDecimal());
+		final Money moneyToAssign = amountToApply.multiply(quantityAssigendToRefundCandidate.toBigDecimal());
 
-		return new AssignmentToRefundCandidate(
-				getCurrentRefundConfig().getId(),
-				existingAssignment.getAssignableInvoiceCandidateId(),
-				existingAssignment.getRefundInvoiceCandidate(),
-				existingAssignment.getMoneyBase(),
-				moneyToAssign,
-				quantityAssigendToRefundCandidate,
-				getCurrentRefundConfig().isIncludeAssignmentsWithThisConfigInSum());
+		return AssignmentToRefundCandidate.builder()
+				.refundConfigId(getCurrentRefundConfig().getId())
+				.assignableInvoiceCandidateId(existingAssignment.getAssignableInvoiceCandidateId())
+				.refundInvoiceCandidate(existingAssignment.getRefundInvoiceCandidate())
+				.moneyBase(existingAssignment.getMoneyBase())
+				.moneyAssignedToRefundCandidate(moneyToAssign)
+				.quantityAssigendToRefundCandidate(quantityAssigendToRefundCandidate)
+				.useAssignedQtyInSum(getCurrentRefundConfig().isIncludeAssignmentsWithThisConfigInSum())
+				.build();
 	}
 
 	@Override

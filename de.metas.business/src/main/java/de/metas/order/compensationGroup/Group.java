@@ -1,27 +1,32 @@
 package de.metas.order.compensationGroup;
 
+import static java.math.BigDecimal.ONE;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
+import de.metas.currency.CurrencyPrecision;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
+import de.metas.quantity.Quantity;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.Percent;
-
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -52,7 +57,10 @@ public class Group
 	private final GroupId groupId;
 	@Getter
 	private final GroupTemplateId groupTemplateId;
-	private final int precision;
+
+	private final CurrencyPrecision pricePrecision;
+	private final CurrencyPrecision amountPrecision;
+
 	@Getter
 	private final BPartnerId bpartnerId;
 	@Getter
@@ -68,9 +76,10 @@ public class Group
 	@Builder
 	private Group(
 			@NonNull final GroupId groupId,
-			final GroupTemplateId groupTemplateId,
-			final int precision,
-			final BPartnerId bpartnerId,
+			@Nullable final GroupTemplateId groupTemplateId,
+			@NonNull final CurrencyPrecision pricePrecision,
+			@NonNull final CurrencyPrecision amountPrecision,
+			@Nullable final BPartnerId bpartnerId,
 			@NonNull final SOTrx soTrx,
 			final int flatrateConditionsId,
 			@NonNull @Singular final List<GroupRegularLine> regularLines,
@@ -78,7 +87,8 @@ public class Group
 	{
 		this.groupId = groupId;
 		this.groupTemplateId = groupTemplateId;
-		this.precision = precision;
+		this.pricePrecision = pricePrecision;
+		this.amountPrecision = amountPrecision;
 		this.bpartnerId = bpartnerId;
 		this.soTrx = soTrx;
 		this.flatrateConditionsId = flatrateConditionsId > 0 ? flatrateConditionsId : -1;
@@ -90,10 +100,10 @@ public class Group
 
 		this.regularLines = ImmutableList.copyOf(regularLines);
 		this.compensationLines = new ArrayList<>(compensationLines);
-		Collections.sort(this.compensationLines, Comparator.comparing(GroupCompensationLine::getSeqNo));
+		this.compensationLines.sort(Comparator.comparing(GroupCompensationLine::getSeqNo));
 	}
 
-	public BigDecimal getRegularLinesNetAmt()
+	BigDecimal getRegularLinesNetAmt()
 	{
 		if (_regularLinesNetAmt == null)
 		{
@@ -102,7 +112,7 @@ public class Group
 		return _regularLinesNetAmt;
 	}
 
-	public BigDecimal getTotalNetAmt()
+	BigDecimal getTotalNetAmt()
 	{
 		final BigDecimal regularLinesNetAmt = getRegularLinesNetAmt();
 		final BigDecimal compensationLinesNetAmt = compensationLines.stream().map(GroupCompensationLine::getLineNetAmt).reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -110,12 +120,12 @@ public class Group
 		return totalNetAmt;
 	}
 
-	public List<GroupRegularLine> getRegularLines()
+	List<GroupRegularLine> getRegularLines()
 	{
 		return regularLines;
 	}
 
-	public boolean hasCompensationLines()
+	boolean hasCompensationLines()
 	{
 		return !compensationLines.isEmpty();
 	}
@@ -158,18 +168,22 @@ public class Group
 			final Percent percentage = compensationLine.getPercentage();
 			final GroupCompensationType compensationType = compensationLine.getType();
 
-			final BigDecimal compensationAmt = percentage.multiply(baseAmt, precision);
+			final BigDecimal compensationAmt = percentage.multiply(baseAmt, pricePrecision.toInt());
 			final BigDecimal amt = OrderGroupCompensationUtils.adjustAmtByCompensationType(compensationAmt, compensationType);
 
-			compensationLine.setPriceAndQty(amt, BigDecimal.ONE, precision);
+			final Quantity one = Quantity.of(ONE,
+					loadOutOfTrx(compensationLine.getUomId(), I_C_UOM.class));
+			compensationLine.setPriceAndQty(amt, one, amountPrecision);
 		}
 	}
 
 	public void addNewCompensationLine(final GroupCompensationLineCreateRequest request)
 	{
 		final BigDecimal price = request.getPrice();
-		final BigDecimal qty = request.getQty();
-		final BigDecimal lineNetAmt = price != null && qty != null ? price.multiply(qty).setScale(precision, RoundingMode.HALF_UP) : null;
+		final BigDecimal qtyEntered = request.getQtyEntered();
+		final BigDecimal lineNetAmt = price != null && qtyEntered != null
+				? amountPrecision.roundIfNeeded(price.multiply(qtyEntered))
+				: null;
 		final GroupCompensationLine compensationLine = GroupCompensationLine.builder()
 				.productId(request.getProductId())
 				.uomId(request.getUomId())
@@ -177,7 +191,7 @@ public class Group
 				.amtType(request.getAmtType())
 				.percentage(request.getPercentage())
 				.price(price)
-				.qty(qty)
+				.qtyEntered(qtyEntered)
 				.lineNetAmt(lineNetAmt)
 				.groupTemplateLineId(request.getGroupTemplateLineId())
 				.build();
@@ -187,16 +201,9 @@ public class Group
 		compensationLines.add(compensationLine);
 	}
 
-	public void removeAllGeneratedCompensationLines()
+	void removeAllGeneratedCompensationLines()
 	{
-		for (final Iterator<GroupCompensationLine> it = compensationLines.iterator(); it.hasNext();)
-		{
-			final GroupCompensationLine compensationLine = it.next();
-			if (compensationLine.isGeneratedLine())
-			{
-				it.remove();
-			}
-		}
+		compensationLines.removeIf(GroupCompensationLine::isGeneratedLine);
 	}
 
 	private void moveAllManualCompensationLinesToEnd()
@@ -215,7 +222,7 @@ public class Group
 		compensationLines.addAll(manualCompensationLines);
 	}
 
-	public boolean isBasedOnGroupTemplate()
+	boolean isBasedOnGroupTemplate()
 	{
 		return getGroupTemplateId() != null;
 	}

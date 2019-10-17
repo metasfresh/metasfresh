@@ -21,12 +21,17 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.model.PrintInfo;
+import org.compiere.model.Query;
 import org.compiere.print.MPrintFormat;
 import org.compiere.print.ReportCtl;
 import org.compiere.print.ReportEngine;
-import org.eevolution.model.MPPOrder;
+import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.model.I_PP_Order;
 
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.process.ClientOnlyProcess;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -41,7 +46,7 @@ import de.metas.util.Services;
 public class CompletePrintOrder extends JavaProcess
 {
 	/** The Order */
-	private int p_PP_Order_ID = 0;
+	private PPOrderId p_PP_Order_ID;
 	private boolean p_IsPrintPickList = false;
 	private boolean p_IsPrintWorkflow = false;
 	private boolean p_IsPrintPackList = false; // for future use
@@ -59,7 +64,7 @@ public class CompletePrintOrder extends JavaProcess
 			if (para.getParameter() == null)
 				;
 			else if (name.equals("PP_Order_ID"))
-				p_PP_Order_ID = para.getParameterAsInt();
+				p_PP_Order_ID = PPOrderId.ofRepoId(para.getParameterAsInt());
 			else if (name.equals("IsPrintPickList"))
 				p_IsPrintPickList = para.getParameterAsBoolean();
 			else if (name.equals("IsPrintWorkflow"))
@@ -81,35 +86,24 @@ public class CompletePrintOrder extends JavaProcess
 	 *             if not successful
 	 */
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 
-		if (p_PP_Order_ID == 0)
+		if (p_PP_Order_ID == null)
 		{
-			throw new FillMandatoryException(MPPOrder.COLUMNNAME_PP_Order_ID);
+			throw new FillMandatoryException(I_PP_Order.COLUMNNAME_PP_Order_ID);
 		}
 
 		if (p_IsComplete)
 		{
-			MPPOrder order = new MPPOrder(getCtx(), p_PP_Order_ID, get_TrxName());
-			if (!order.isAvailable())
+			I_PP_Order order = Services.get(IPPOrderDAO.class).getById(p_PP_Order_ID);
+			if (!isQtyAvailable())
 			{
 				throw new LiberoException("@NoQtyAvailable@");
 			}
 			//
 			// Process document
-			boolean ok = order.processIt(MPPOrder.DOCACTION_Complete);
-			order.saveEx();
-			if (!ok)
-			{
-				throw new LiberoException(order.getProcessMsg());
-			}
-			//
-			// Document Status should be completed
-			if (!MPPOrder.DOCSTATUS_Completed.equals(order.getDocStatus()))
-			{
-				throw new LiberoException(order.getProcessMsg());
-			}
+			Services.get(IDocumentBL.class).processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 		}
 
 		if (p_IsPrintPickList)
@@ -150,6 +144,21 @@ public class CompletePrintOrder extends JavaProcess
 
 	} // doIt
 	
+	/**
+	 * Check if the Quantity from all BOM Lines is available (QtyOnHand >= QtyRequired)
+	 *
+	 * @return true if entire Qty is available for this Order
+	 */
+	public boolean isQtyAvailable()
+	{
+		String whereClause = "QtyOnHand >= QtyRequiered AND PP_Order_ID=?";
+		boolean available = new Query(getCtx(), "RV_PP_Order_Storage", whereClause, get_TrxName())
+				.setParameters(new Object[] { p_PP_Order_ID })
+				.match();
+		return available;
+	}
+
+	
 	/*
 	 * get the a Report Engine Instance using the view table 
 	 * @param tableName
@@ -170,7 +179,7 @@ public class CompletePrintOrder extends JavaProcess
 		MQuery query = new MQuery(tableName);
 		query.addRestriction("PP_Order_ID", Operator.EQUAL, p_PP_Order_ID);
 		// Engine
-		PrintInfo info = new PrintInfo(tableName,  adTableId, p_PP_Order_ID);
+		PrintInfo info = new PrintInfo(tableName,  adTableId, p_PP_Order_ID.getRepoId());
 		ReportEngine re = new ReportEngine(getCtx(), format, query, info);
 		return re;
 	}

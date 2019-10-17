@@ -24,7 +24,6 @@ package de.metas.async.api.impl;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -72,19 +71,12 @@ import de.metas.util.Services;
 			final String parameterName = parameterName2value.getKey();
 			final Object parameterValue = parameterName2value.getValue();
 
-			final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
-			final String trxName = InterfaceWrapperHelper.getTrxName(workpackage);
-			final I_C_Queue_WorkPackage_Param workpackageParam = InterfaceWrapperHelper.create(ctx, I_C_Queue_WorkPackage_Param.class, trxName);
-			workpackageParam.setAD_Org_ID(workpackage.getAD_Org_ID());
-			workpackageParam.setC_Queue_WorkPackage(workpackage);
-			workpackageParam.setIsActive(true);
-
-			workpackageParam.setParameterName(parameterName);
+			final I_C_Queue_WorkPackage_Param workpackageParam = WorkPackageParamsUtil.createWorkPackageParamRecord(workpackage, parameterName);
 			workpackageParamDAO.setParameterValue(workpackageParam, parameterValue);
-
 			InterfaceWrapperHelper.save(workpackageParam);
 		}
 	}
+
 
 	private final void assertNotBuilt()
 	{

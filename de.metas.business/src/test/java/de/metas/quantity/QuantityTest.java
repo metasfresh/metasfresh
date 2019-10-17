@@ -29,7 +29,6 @@ import java.math.RoundingMode;
 
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.uom.api.impl.UOMTestHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
@@ -37,6 +36,10 @@ import org.hamcrest.number.BigDecimalCloseTo;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import de.metas.uom.impl.UOMTestHelper;
+import de.metas.util.JSONObjectMapper;
+import de.metas.util.lang.Percent;
 
 public class QuantityTest
 {
@@ -91,13 +94,13 @@ public class QuantityTest
 			// Calculate average quantity by using "weightedAverage" method
 			final int previousAverageWeight = count - 1;
 			quantity = new Quantity(currentQtyValue, uom)
-					.weightedAverage(quantity.getQty(), previousAverageWeight);
+					.weightedAverage(quantity.toBigDecimal(), previousAverageWeight);
 			// System.out.println("Actual quantity avg=" + quantity.getQty());
 
 			//
 			// Assume their are equal
 			Assert.assertThat("Invalid Quantity.weightedAverage result (count=" + count + ")",
-					quantity.getQty(), // Actual
+					quantity.toBigDecimal(), // Actual
 					BigDecimalCloseTo.closeTo(currentQtyAvg, comparationError) // expectation
 			);
 		}
@@ -113,7 +116,7 @@ public class QuantityTest
 		final I_C_UOM sourceUOM = uomHelper.createUOM("UOM2", 2);
 
 		final Quantity quantity = new Quantity(qty, uom, sourceQty, sourceUOM);
-		Assert.assertSame("Invalid Qty", qty, quantity.getQty());
+		Assert.assertSame("Invalid Qty", qty, quantity.toBigDecimal());
 		Assert.assertSame("Invalid UOM", uom, quantity.getUOM());
 		Assert.assertSame("Invalid Source Qty", sourceQty, quantity.getSourceQty());
 		Assert.assertSame("Invalid Source UOM", sourceUOM, quantity.getSourceUOM());
@@ -151,6 +154,30 @@ public class QuantityTest
 				.sourceQty(sourceQty.negate())
 				.sourceUOM(sourceUOM)
 				.assertExpected("Negated quantity", quantityNegated);
+	}
+
+	@Test
+	public void test_negate_zero()
+	{
+		final I_C_UOM uom = uomHelper.createUOM("UOM1", 2);
+		final Quantity qty = Quantity.zero(uom);
+		assertThat(qty.negate()).isSameAs(qty);
+	}
+
+	@Test
+	public void test_zero_static_factory()
+	{
+		final I_C_UOM uom = uomHelper.createUOM("UOM1", 2);
+		final Quantity qty = Quantity.zero(uom);
+		assertThat(qty.isZero()).isTrue();
+	}
+
+	@Test
+	public void test_infinite_static_factory()
+	{
+		final I_C_UOM uom = uomHelper.createUOM("UOM1", 2);
+		final Quantity qty = Quantity.infinite(uom);
+		assertThat(qty.isInfinite()).isTrue();
 	}
 
 	/**
@@ -292,5 +319,76 @@ public class QuantityTest
 		assertThat(qty.compareTo(qtyPlusOne)).isLessThan(0);
 		assertThat(qtyPlusOne.compareTo(qty)).isGreaterThan(0);
 		assertThat(otherQty.compareTo(qty)).isEqualTo(0);
+	}
+
+	@Test
+	public void addPercent_100_plus_30perc()
+	{
+		final I_C_UOM uom2 = uomHelper.createUOM("uom2", 2);
+		assertThat(Quantity.of(100, uom2).add(Percent.of(33)).toBigDecimal())
+				.isEqualTo("133.00");
+
+		final I_C_UOM uom5 = uomHelper.createUOM("uom5", 5);
+		assertThat(Quantity.of(100, uom5).add(Percent.of(33)).toBigDecimal())
+				.isEqualTo("133.00000");
+	}
+
+	@Test
+	public void divideUsingUOMScale()
+	{
+		final I_C_UOM uom = uomHelper.createUOM(5);
+		final Quantity qty = Quantity.of(1, uom)
+				.divide(BigDecimal.valueOf(3));
+
+		assertThat(qty.toBigDecimal()).isEqualByComparingTo("0.33333");
+	}
+
+	@Test
+	public void test_ToString_SameUOMs()
+	{
+		final I_C_UOM uom = uomHelper.createUOM("UOM", 2);
+		assertThat(Quantity.of(5, uom).toString()).isEqualTo("5 UOM");
+	}
+
+	@Test
+	public void test_ToString_DifferentUOMs()
+	{
+		final I_C_UOM uom = uomHelper.createUOM("UOM", 2);
+		final I_C_UOM sourceUOM = uomHelper.createUOM("SOURCE_UOM", 2);
+		final Quantity qty = new Quantity(BigDecimal.valueOf(5), uom, BigDecimal.valueOf(4), sourceUOM);
+		assertThat(qty.toString()).isEqualTo("5 UOM (source: 4 SOURCE_UOM)");
+	}
+
+	@Test
+	public void serialize_deserialize_with_source()
+	{
+		final BigDecimal qty = new BigDecimal("1234");
+		final I_C_UOM uom = uomHelper.createUOM("UOM1", 2);
+
+		final BigDecimal sourceQty = new BigDecimal("1235");
+		final I_C_UOM sourceUOM = uomHelper.createUOM("UOM2", 2);
+
+		final Quantity quantity = new Quantity(qty, uom, sourceQty, sourceUOM);
+
+		final JSONObjectMapper<Quantity> jsonMapper = JSONObjectMapper.forClass(Quantity.class);
+		final String quantityAsString = jsonMapper.writeValueAsString(quantity);
+		final Quantity deserializedQuantity = jsonMapper.readValue(quantityAsString);
+
+		assertThat(deserializedQuantity).isEqualTo(quantity);
+	}
+
+	@Test
+	public void serialize_deserialize_without_source()
+	{
+		final BigDecimal qty = new BigDecimal("1234");
+		final I_C_UOM uom = uomHelper.createUOM("UOM1", 2);
+
+		final Quantity quantity = Quantity.of(qty, uom);
+
+		final JSONObjectMapper<Quantity> jsonMapper = JSONObjectMapper.forClass(Quantity.class);
+		final String quantityAsString = jsonMapper.writeValueAsString(quantity);
+		final Quantity deserializedQuantity = jsonMapper.readValue(quantityAsString);
+
+		assertThat(deserializedQuantity).isEqualTo(quantity);
 	}
 }

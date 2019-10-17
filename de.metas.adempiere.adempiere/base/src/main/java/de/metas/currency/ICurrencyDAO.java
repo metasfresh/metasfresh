@@ -4,13 +4,13 @@
 package de.metas.currency;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.Properties;
+import java.time.LocalDate;
 
-import org.compiere.model.I_C_ConversionType;
-import org.compiere.model.I_C_Currency;
-import org.compiere.util.Env;
+import org.adempiere.service.ClientId;
 
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 
 /*
@@ -26,11 +26,11 @@ import de.metas.util.ISingletonService;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -41,60 +41,26 @@ import de.metas.util.ISingletonService;
  */
 public interface ICurrencyDAO extends ISingletonService
 {
-	/**
-	 * retrieves Currency by ID
-	 *
-	 * @param ctx
-	 * @param currencyId
-	 * @return
-	 */
-	I_C_Currency retrieveCurrency(Properties ctx, int currencyId);
+	CurrencyPrecision DEFAULT_PRECISION = CurrencyPrecision.TWO;
+
+	Currency getById(CurrencyId currencyId);
 
 	/**
 	 * retrieves currency by ISO code
 	 *
-	 * @param ctx
-	 * @param ISOCode
 	 * @return currency or <code>null</code>
 	 */
-	I_C_Currency retrieveCurrencyByISOCode(Properties ctx, String ISOCode);
+	Currency getByCurrencyCode(CurrencyCode currencyCode);
 
-	/**
-	 * Get Currency Iso Code.
-	 *
-	 * @param ctx Context
-	 * @param C_Currency_ID currency
-	 * @return ISO Code or <code>null</code>
-	 */
-	String getISO_Code(Properties ctx, int C_Currency_ID);
+	CurrencyCode getCurrencyCodeById(CurrencyId currencyId);
 
-	/**
-	 * Get Standard Precision.
-	 *
-	 * @param ctx Context
-	 * @param C_Currency_ID currency
-	 * @return Standard Precision
-	 */
-	int getStdPrecision(Properties ctx, int C_Currency_ID);
+	CurrencyPrecision getStdPrecision(CurrencyId currencyId);
 
-	default int getStdPrecision(int C_Currency_ID)
-	{
-		return getStdPrecision(Env.getCtx(), C_Currency_ID);
-	}
+	CurrencyPrecision getCostingPrecision(CurrencyId currencyId);
 
-	/**
-	 * @param ctx
-	 * @param adClientId
-	 * @param adOrgId
-	 * @param date
-	 * @return default {@link I_C_ConversionType}; never returns null
-	 */
-	I_C_ConversionType retrieveDefaultConversionType(Properties ctx, int adClientId, int adOrgId, Date date);
+	CurrencyConversionTypeId getDefaultConversionTypeId(ClientId adClientId, OrgId adOrgId, LocalDate date);
 
-	/**
-	 * @return conversion type of given {@link ConversionType}; never returns null
-	 */
-	I_C_ConversionType retrieveConversionType(Properties ctx, ConversionType type);
+	CurrencyConversionTypeId getConversionTypeId(ConversionTypeMethod type);
 
-	BigDecimal retrieveRateOrNull(ICurrencyConversionContext conversionCtx, int CurFrom_ID, int CurTo_ID);
+	BigDecimal retrieveRateOrNull(CurrencyConversionContext conversionCtx, CurrencyId currencyFromId, CurrencyId currencyToId);
 }

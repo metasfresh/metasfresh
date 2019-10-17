@@ -1763,7 +1763,7 @@ public final class GridController extends CPanel
 				try
 				{
 					final Integer[] values = newValues;
-					Services.get(ITrxManager.class).run(new TrxRunnableAdapter()
+					Services.get(ITrxManager.class).runInNewTrx(new TrxRunnableAdapter()
 					{
 						@Override
 						public void run(String localTrxName) throws Exception

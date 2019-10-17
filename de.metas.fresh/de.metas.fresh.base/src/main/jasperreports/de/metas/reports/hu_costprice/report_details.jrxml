@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-10-03T11:40:49 -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="782" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/hu_costprice/report" uuid="4bf224c7-9529-4ce1-bff2-53e2cfe07aaa">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -81,7 +80,7 @@ $P{ad_language}
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="10" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{combination} + " " + $F{description}]]></textFieldExpression>
 				</textField>
@@ -94,14 +93,14 @@ $P{ad_language}
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="10" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{Account_LineSum}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-106" x="0" y="0" width="50" height="15" uuid="5de18e02-d8d7-4e4b-ba20-b1df1c1d6e52"/>
 					<textElement markup="none">
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="10" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{account}]]></textFieldExpression>
 				</textField>
@@ -124,7 +123,7 @@ $P{ad_language}
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="10" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{activity} != null ? $F{activity} : $R{none}]]></textFieldExpression>
 				</textField>
@@ -137,14 +136,14 @@ $P{ad_language}
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="10" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{Activity_LineSum}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-106" x="50" y="0" width="75" height="15" uuid="2ea699ac-1ba1-4012-8774-0f8269c48285"/>
 					<textElement markup="none">
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="10" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{activity}]]></textFieldExpression>
 				</textField>
@@ -167,7 +166,7 @@ $P{ad_language}
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{wh_name}]]></textFieldExpression>
 				</textField>
@@ -180,7 +179,7 @@ $P{ad_language}
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{Warehouse_LineSum}]]></textFieldExpression>
 				</textField>
@@ -323,7 +322,7 @@ $P{ad_language}
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="8" isBold="true" isItalic="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="8" isBold="true" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{carry}]]></textFieldExpression>
 			</textField>
@@ -455,7 +454,7 @@ $P{ad_language}
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true" isItalic="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="8" isBold="true" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{subtotal}]]></textFieldExpression>
 			</textField>

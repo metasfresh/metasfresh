@@ -1,8 +1,8 @@
 package de.metas.acct.aggregation.async;
 
-import org.adempiere.acct.api.IFactAcctListener;
 import org.compiere.model.I_Fact_Acct;
 
+import de.metas.acct.api.IFactAcctListener;
 import de.metas.acct.model.I_Fact_Acct_Log;
 
 /*

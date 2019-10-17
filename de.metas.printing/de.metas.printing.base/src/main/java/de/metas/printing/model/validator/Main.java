@@ -83,15 +83,6 @@ public class Main extends AbstractModuleInterceptor
 	@Override
 	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
-		// Do not initialize if the printing module is disabled
-		if (!Printing_Constants.isEnabled())
-		{
-			logger.info("Printing is disabled; not registering any printing MIs, callouts etc");
-			return;
-		}
-
-		super.onInit(engine, client);
-
 		//
 		// Configure tables which are skipped when we record migration scripts
 		{
@@ -112,6 +103,16 @@ public class Main extends AbstractModuleInterceptor
 			migrationLogger.addTableToIgnoreList(I_AD_PrinterHW_MediaTray.Table_Name);
 			migrationLogger.addTableToIgnoreList(I_AD_Printer_Matching.Table_Name);
 		}
+
+		// Do not initialize if the printing module is disabled
+		if (!Printing_Constants.isEnabled())
+		{
+			logger.info("Printing is disabled; not registering any printing MIs, callouts etc");
+			return;
+		}
+
+		super.onInit(engine, client);
+
 
 		//
 		// Configure tables which are excluded by EXP_ReplicationTrx

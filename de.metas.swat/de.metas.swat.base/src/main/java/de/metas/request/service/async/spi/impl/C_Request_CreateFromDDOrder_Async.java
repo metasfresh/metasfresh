@@ -14,7 +14,7 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
-import de.metas.request.api.IRequestDAO;
+import de.metas.request.api.IRequestBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -47,7 +47,7 @@ public class C_Request_CreateFromDDOrder_Async extends WorkpackageProcessorAdapt
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
 	{// Services
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-		final IRequestDAO requestDAO = Services.get(IRequestDAO.class);
+		final IRequestBL requestBL = Services.get(IRequestBL.class);
 
 		// retrieve the items (DDOrder lines) that were enqueued and put them in a list
 		final List<I_DD_OrderLine> lines = queueDAO.retrieveItems(workPackage, I_DD_OrderLine.class, localTrxName);
@@ -55,7 +55,7 @@ public class C_Request_CreateFromDDOrder_Async extends WorkpackageProcessorAdapt
 		// for each line that was enqueued, create a R_Request containing the information from the DDOrder line and DDOrder
 		for (final I_DD_OrderLine line : lines)
 		{
-			requestDAO.createRequestFromDDOrderLine(line);
+			requestBL.createRequestFromDDOrderLine(line);
 		}
 
 		return Result.SUCCESS;

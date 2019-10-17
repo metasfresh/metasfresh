@@ -1,14 +1,16 @@
 package de.metas.report.jasper.client.process;
 
+import javax.annotation.Nullable;
+
 import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.process.ProcessInfo;
 import de.metas.report.ExecuteReportStrategy;
 import de.metas.report.jasper.client.JRClient;
+import de.metas.util.Check;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
-
-
 
 /*
  * #%L
@@ -23,11 +25,11 @@ import lombok.NonNull;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -42,11 +44,18 @@ public class JasperExecuteReportStrategy implements ExecuteReportStrategy
 	@Override
 	public ExecuteReportResult executeReport(
 			@NonNull final ProcessInfo processInfo,
-			@NonNull final OutputType outputType)
+			@Nullable final OutputType outputType)
 	{
-		final JRClient jrClient = JRClient.get();
-		final byte[] reportData = jrClient.report(processInfo, outputType);
+		final OutputType outputTypeEffective = Check.assumeNotNull(
+				CoalesceUtil.coalesce(
+						outputType,
+						processInfo.getJRDesiredOutputType()),
+				"From the given parameters, either outputType or processInfo.getJRDesiredOutputType() need to be non-null; processInfo={}",
+				processInfo);
 
-		return new ExecuteReportResult(outputType, reportData);
+		final JRClient jrClient = JRClient.get();
+		final byte[] reportData = jrClient.report(processInfo, outputTypeEffective);
+
+		return new ExecuteReportResult(outputTypeEffective, reportData);
 	}
 }

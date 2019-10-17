@@ -10,7 +10,7 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<parameter name="C_BPartner_ID" class="java.math.BigDecimal"/>
 	<parameter name="C_BPartner_Location_ID" class="java.math.BigDecimal"/>
@@ -69,7 +69,7 @@ report.bpartner_pricing_conditions ($P{C_BPartner_ID}, $P{C_BPartner_Location_ID
 			<textField>
 				<reportElement x="30" y="30" width="350" height="24" forecolor="#000000" uuid="f986f842-9b0e-4c58-b677-d502bf68e54d"/>
 				<textElement>
-					<font size="18" isBold="true"/>
+					<font size="18" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
 			</textField>
@@ -101,70 +101,70 @@ report.bpartner_pricing_conditions ($P{C_BPartner_ID}, $P{C_BPartner_Location_ID
 			<textField>
 				<reportElement x="30" y="16" width="60" height="14" forecolor="#000000" uuid="86f2973d-eff9-424a-95a9-12f4cb23c657"/>
 				<textElement textAlignment="Left">
-					<font isBold="true"/>
+					<font fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{p_value}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="94" y="16" width="180" height="14" forecolor="#000000" uuid="ce36ad4d-3b81-411a-9ac3-df406a48a449"/>
 				<textElement textAlignment="Left">
-					<font isBold="true"/>
+					<font fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{p_name}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="274" y="16" width="36" height="14" forecolor="#000000" uuid="1dc8280a-f6cc-4245-a840-fd146e2b87e6"/>
 				<textElement textAlignment="Left">
-					<font isBold="true"/>
+					<font fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{op}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="732" y="16" width="70" height="14" forecolor="#000000" uuid="f415880f-ffc8-4db3-b615-ec740fc641ce"/>
 				<textElement textAlignment="Right">
-					<font isBold="true"/>
+					<font fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{final_price}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="684" y="16" width="48" height="14" forecolor="#000000" uuid="d46814ef-f6d6-470b-983b-1666e0c76785"/>
 				<textElement textAlignment="Right">
-					<font isBold="true"/>
+					<font fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{paymentterm_discount}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="310" y="16" width="36" height="14" forecolor="#000000" uuid="e1d06d82-07ff-4df6-be6b-5df57cfdd0b1"/>
 				<textElement textAlignment="Left">
-					<font isBold="true"/>
+					<font fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{me}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="348" y="16" width="180" height="14" forecolor="#000000" uuid="00e095e3-7d2e-46f1-b8b1-4580c5336dff"/>
 				<textElement textAlignment="Left">
-					<font isBold="true"/>
+					<font fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{manufacturer}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="529" y="16" width="55" height="14" forecolor="#000000" uuid="09718361-8e77-46f0-8b7e-b12b39e15aec"/>
 				<textElement textAlignment="Left">
-					<font isBold="true"/>
+					<font fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{base_ps}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="584" y="16" width="50" height="14" forecolor="#000000" uuid="baae87b7-ee15-44ba-b6ef-5ea216b7d8f1"/>
 				<textElement textAlignment="Right">
-					<font isBold="true"/>
+					<font fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{discount}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="634" y="16" width="50" height="14" forecolor="#000000" uuid="ecf2e522-3226-4f81-a6a8-47a92f70e598"/>
 				<textElement textAlignment="Right">
-					<font isBold="true"/>
+					<font fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{fixed}]]></textFieldExpression>
 			</textField>
@@ -196,16 +196,16 @@ report.bpartner_pricing_conditions ($P{C_BPartner_ID}, $P{C_BPartner_Location_ID
 			<textField isBlankWhenNull="true">
 				<reportElement x="732" y="0" width="70" height="14" uuid="000afaa3-7c9c-462b-b422-6234665a57b9"/>
 				<textElement textAlignment="Right">
-					<font isBold="true"/>
+					<font fontName="Arial" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($F{endprice})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{endprice} == null ? "" : new java.text.DecimalFormat("#,##0.00").format($F{endprice})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="684" y="0" width="48" height="14" uuid="8d5951de-843b-485c-a59b-5131cf5cbaec"/>
 				<textElement textAlignment="Right">
 					<font isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00").format($F{discount})
+				<textFieldExpression><![CDATA[$F{discount} == null ? "" : new java.text.DecimalFormat("#,##0.00").format($F{discount})
 + "%"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">

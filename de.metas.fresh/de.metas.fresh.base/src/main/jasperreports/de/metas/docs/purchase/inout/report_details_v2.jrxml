@@ -53,14 +53,14 @@
 			<textField>
 				<reportElement key="textField-19" x="503" y="11" width="70" height="12" forecolor="#000000" uuid="bacf16ca-eb03-4e70-83fc-7ead5b3d9fc6"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{QualityNote}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="409" y="0" width="40" height="12" forecolor="#000000" uuid="bcf49517-5066-429e-a6dc-64c97a459ab0"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
@@ -71,14 +71,14 @@
 					<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{HUQuantity}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement key="textField-20" x="427" y="0" width="74" height="23" forecolor="#000000" uuid="4a06f254-2d43-4b5a-8875-443684dfe832"/>
 				<textElement textAlignment="Right" markup="styled">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{QualityPercent}]]></textFieldExpression>
 			</textField>
@@ -87,7 +87,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
@@ -97,14 +97,14 @@
 					<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Left" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-16" x="59" y="0" width="138" height="12" forecolor="#000000" uuid="50bc7226-6afd-4ce3-b115-2b74cdd846f9"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 			</textField>
@@ -113,7 +113,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$V{showAttributes} !=0 ? $R{Attributes} : ""]]></textFieldExpression>
 			</textField>
@@ -123,7 +123,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Position}]]></textFieldExpression>
 			</textField>

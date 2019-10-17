@@ -15,7 +15,7 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1606647676L;
+	private static final long serialVersionUID = -1645264476L;
 
     /** Standard Constructor */
     public X_MD_Cockpit (Properties ctx, int MD_Cockpit_ID, String trxName)
@@ -229,16 +229,16 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 		return (java.lang.String)get_Value(COLUMNNAME_ProductValue);
 	}
 
-	/** Set Zusagbare Menge (Zählbestand).
-		@param QtyAvailableToPromiseEstimate Zusagbare Menge (Zählbestand)	  */
+	/** Set Zusagbar Zählbestand.
+		@param QtyAvailableToPromiseEstimate Zusagbar Zählbestand	  */
 	@Override
 	public void setQtyAvailableToPromiseEstimate (java.math.BigDecimal QtyAvailableToPromiseEstimate)
 	{
 		set_Value (COLUMNNAME_QtyAvailableToPromiseEstimate, QtyAvailableToPromiseEstimate);
 	}
 
-	/** Get Zusagbare Menge (Zählbestand).
-		@return Zusagbare Menge (Zählbestand)	  */
+	/** Get Zusagbar Zählbestand.
+		@return Zusagbar Zählbestand	  */
 	@Override
 	public java.math.BigDecimal getQtyAvailableToPromiseEstimate () 
 	{

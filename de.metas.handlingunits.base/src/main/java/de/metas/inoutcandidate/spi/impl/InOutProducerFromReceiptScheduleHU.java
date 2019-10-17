@@ -1,5 +1,7 @@
 package de.metas.inoutcandidate.spi.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -196,7 +198,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	{
 		final IHUContext huContext = getHUContext();
 		final I_M_ReceiptSchedule rs = receiptLineCandidate.getM_ReceiptSchedule();
-		final IQtyAndQuality qtyAndQuality = receiptLineCandidate.getQtyAndQuality();
+		final ReceiptQty qtyAndQuality = receiptLineCandidate.getQtyAndQuality();
 		final I_C_UOM uom = receiptLineCandidate.getC_UOM();
 		final int qtyPrecision = uom.getStdPrecision();
 
@@ -704,7 +706,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			final IHUAttributeTransferRequestBuilder requestBuilder = new HUAttributeTransferRequestBuilder(huContext1)
 					.setProductId(ProductId.ofRepoId(rs.getM_Product_ID()))
 					.setQty(receiptScheduleBL.getQtyMoved(rs))
-					.setUOM(rs.getC_UOM())
+					.setUOM(loadOutOfTrx(rs.getC_UOM_ID(), I_C_UOM.class))
 					.setAttributeStorageFrom(huAttributeStorageFrom)
 					.setAttributeStorageTo(receiptLineAttributeStorageTo)
 					.setHUStorageFrom(huStorageFrom);

@@ -38,10 +38,11 @@ import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
-import de.metas.process.JavaProcess;
 
 /**
  * Takes {@link I_M_ReceiptSchedule}s from user's window selection and produces {@link I_M_InOut} receipts.
@@ -105,7 +106,7 @@ public class M_ReceiptSchedule_GenerateInOutFromSelection extends JavaProcess
 		final IQuery<I_M_ReceiptSchedule> query = queryBuilder.create()
 				.setClient_ID()
 				.setOnlyActiveRecords(true)
-				.setApplyAccessFilterRW(true);
+				.setRequiredAccess(Access.WRITE);
 
 		return Services.get(IReceiptScheduleDAO.class).retrieve(query);
 	}

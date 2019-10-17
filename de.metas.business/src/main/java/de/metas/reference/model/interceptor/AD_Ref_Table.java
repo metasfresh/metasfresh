@@ -2,10 +2,10 @@ package de.metas.reference.model.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.AccessSqlParser;
 import org.compiere.model.I_AD_Ref_Table;
 import org.compiere.model.ModelValidator;
 
+import de.metas.security.impl.ParsedSql;
 import de.metas.util.Check;
 
 /*
@@ -45,8 +45,7 @@ public class AD_Ref_Table
 			return;
 		}
 
-		final AccessSqlParser accessSqlParserInstance = new AccessSqlParser();
-		final String adaptedWhereClause = accessSqlParserInstance.rewriteWhereClauseWithLowercaseKeyWords(whereClause);
+		final String adaptedWhereClause = ParsedSql.rewriteWhereClauseWithLowercaseKeyWords(whereClause);
 
 		refTable.setWhereClause(adaptedWhereClause);
 

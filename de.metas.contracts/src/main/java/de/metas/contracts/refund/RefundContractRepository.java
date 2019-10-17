@@ -18,6 +18,8 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.contracts.ConditionsId;
@@ -32,7 +34,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
-
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -72,6 +74,8 @@ public class RefundContractRepository
 					0,
 					CCache.EXPIREMINUTES_Never);
 
+	@VisibleForTesting
+	@Getter
 	private final RefundConfigRepository refundConfigRepository;
 
 	public RefundContractRepository(@NonNull final RefundConfigRepository refundConfigRepository)

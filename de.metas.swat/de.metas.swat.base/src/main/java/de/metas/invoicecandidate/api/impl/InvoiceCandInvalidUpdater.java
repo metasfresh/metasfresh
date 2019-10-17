@@ -1,5 +1,8 @@
 package de.metas.invoicecandidate.api.impl;
 
+import static java.math.BigDecimal.ONE;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -28,6 +31,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
@@ -39,18 +44,25 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
 
+import ch.qos.logback.classic.Level;
 import de.metas.inout.IInOutDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.InvoiceCandRecomputeTag;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lock.api.ILock;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -58,8 +70,9 @@ import lombok.NonNull;
 
 /* package */class InvoiceCandInvalidUpdater implements IInvoiceCandInvalidUpdater
 {
+	private static final Logger logger = LogManager.getLogger(InvoiceCandInvalidUpdater.class);
+
 	// services
-	// private final transient Logger logger = InvoiceCandidate_Constants.getLogger();
 	private final transient InvoiceCandBL invoiceCandBL;
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
@@ -84,8 +97,7 @@ import lombok.NonNull;
 	InvoiceCandInvalidUpdater(@NonNull final InvoiceCandBL invoiceCandBL)
 	{
 		this.invoiceCandBL = invoiceCandBL;
-
-		icTagger = invoiceCandDAO.tagToRecompute();
+		this.icTagger = invoiceCandDAO.tagToRecompute();
 	}
 
 	@Override
@@ -144,6 +156,7 @@ import lombok.NonNull;
 		if (!candidatesToUpdate.hasNext())
 		{
 			// no candidates found => nothing to do
+			Loggables.withLogger(logger, Level.DEBUG).addLog("icTagger has no invoice candidates to update; nothing to do; icTagger={}", icTagger);
 			return;
 		}
 
@@ -182,6 +195,8 @@ import lombok.NonNull;
 							}
 							else
 							{
+								Loggables.withLogger(logger, Level.DEBUG)
+										.addLog("Error processing invoice; ic.errorMessage={}; ic={}", ic.getErrorMsg(), ic);
 								result.incrementErrorsCount();
 							}
 						}
@@ -223,7 +238,7 @@ import lombok.NonNull;
 
 		//
 		// Log the result
-		Loggables.get().addLog("Update invalid result: {}", result.getSummary());
+		Loggables.addLog("Update invalid result: {}", result.getSummary());
 	}
 
 	private final void updateInvalid(final I_C_Invoice_Candidate ic)
@@ -241,11 +256,11 @@ import lombok.NonNull;
 		final BigDecimal factor;
 		if (ic.getQtyOrdered().signum() < 0)
 		{
-			factor = BigDecimal.ONE.negate();
+			factor = ONE.negate();
 		}
 		else
 		{
-			factor = BigDecimal.ONE;
+			factor = ONE;
 		}
 
 		final BigDecimal oldQtyInvoiced = ic.getQtyInvoiced().multiply(factor);
@@ -259,10 +274,14 @@ import lombok.NonNull;
 		// and we need them (depending on which handler) for setDeliveredData()
 		populateC_InvoiceCandidate_InOutLine(ic, ic.getC_OrderLine());
 
-		// updating qty delivered
-		// 07814-IT2 only from now on we have the correct QtyDelivered
-		// note that we need this data to be set before we attempt to compute the price, because the delivered qty and date of delivery might play a role.
-		invoiceCandidateHandlerBL.setDeliveredData(ic);
+		// Update 'QtyToInvoice_OverrideFulfilled'
+		// If is turns out that the fulfillment is now sufficient,
+		// reset both 'QtyToInvoice_Override' and 'QtyToInvoice_OverrideFulfilled'
+		invoiceCandBL.set_QtyToInvoiceOverrideFulfilled(ic, oldQtyInvoiced, factor);
+
+		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
+		final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(ic);
+		invoiceCandidateRecordService.updateRecord(invoiceCandidate, ic);
 
 		//
 		// Update Price and Quantity only if this invoice candidate was NOT approved for invoicing (08610)
@@ -282,12 +301,9 @@ import lombok.NonNull;
 		// update BPartner data from 'ic'
 		invoiceCandidateHandlerBL.setBPartnerData(ic);
 
-		invoiceCandidateHandlerBL.setInvoiceSchedule(ic);
+		invoiceCandidateHandlerBL.setInvoiceScheduleAndDateToInvoice(ic);
 
 		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation0(ctx, ic);
-
-		// update C_UOM_ID data from 'ic'
-		invoiceCandidateHandlerBL.setC_UOM_ID(ic);
 
 		// 06539 add qty overdelivery to qty delivered
 		final org.compiere.model.I_C_OrderLine ol = ic.getC_OrderLine();
@@ -296,36 +312,13 @@ import lombok.NonNull;
 			ic.setQtyOrderedOverUnder(ol.getQtyOrderedOverUnder());
 		}
 
-		// Update 'QtyToInvoice_OverrideFulfilled'
-		// If is turns out that the fulfillment is now sufficient,
-		// reset both 'QtyToInvoice_Override' and 'QtyToInvoice_OverrideFulfilled'
-		invoiceCandBL.set_QtyToInvoiceOverrideFulfilled(ic, oldQtyInvoiced, factor);
-
-		// calculate the fields from 06502: qualityDiscountPercent, qtyWithIssues and IsInDispute.
-		// we'll need QtyWithIssues to be up to date to date in order to have QtyWithIssues_Effective
-		invoiceCandBL.updateQtyWithIssues(ic);
-
-		// we'll need QtyWithIssues_Effective to be up to date to date in order to have the effective qtyDelivered
-		invoiceCandBL.updateQtyWithIssues_Effective(ic);
-
-		//
-		// Set the new qtyToInvoice value, depending on invoiceRule
-		final BigDecimal newQtyToInvoice = invoiceCandBL.computeQtyToInvoice(ctx, ic, factor, true);
-		ic.setQtyToInvoice(newQtyToInvoice);
-
 		// we'll need both qtyToInvoice/qtyToInvoiceInPriceUOM and priceActual to compute the netAmtToInvoice further down
 		invoiceCandBL.setPriceActual_Override(ic);
 
-		final BigDecimal qtyToInvoiceInPriceUOM = invoiceCandBL.convertToPriceUOM(newQtyToInvoice, ic);
-		ic.setQtyToInvoiceInPriceUOM(qtyToInvoiceInPriceUOM);
-
-		final BigDecimal newQtyToInvoiceBeforeDiscount = invoiceCandBL.computeQtyToInvoice(ctx, ic, factor, false);
-		ic.setQtyToInvoiceBeforeDiscount(newQtyToInvoiceBeforeDiscount);
+		invoiceCandBL.setAmountAndDateForFreightCost(ic);
 
 		// Note: ic.setProcessed is not invoked here, but in a model validator
 		// That's because QtyToOrder and QtyInvoiced could also be set somewhere else
-
-		invoiceCandBL.set_DateToInvoice(ctx, ic);
 
 		// We need to update the NetAmtToInvoice again because in some cases this value depends on overall in invoiceable amount
 		// e.g. see ManualCandidateHandler which is calculated how much we can invoice of a credit memo amount
@@ -340,11 +333,10 @@ import lombok.NonNull;
 
 	/**
 	 * Link all orderLine's inoutLine to our invoice candidate.
-	 *
-	 * @param ic
-	 * @param orderLine
 	 */
-	private void populateC_InvoiceCandidate_InOutLine(final I_C_Invoice_Candidate ic, final org.compiere.model.I_C_OrderLine orderLine)
+	private void populateC_InvoiceCandidate_InOutLine(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@Nullable final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		if (orderLine == null)
 		{
@@ -361,11 +353,9 @@ import lombok.NonNull;
 				continue; // nothing to to, record already exists
 			}
 
-			final I_C_InvoiceCandidate_InOutLine iciol = InterfaceWrapperHelper.newInstance(I_C_InvoiceCandidate_InOutLine.class, context);
-			iciol.setAD_Org_ID(inOutLine.getAD_Org_ID());
-			iciol.setM_InOutLine(inOutLine);
+			final I_C_InvoiceCandidate_InOutLine iciol = newInstance(I_C_InvoiceCandidate_InOutLine.class, context);
 			iciol.setC_Invoice_Candidate(ic);
-			InterfaceWrapperHelper.save(iciol);
+			Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLine);
 		}
 	}
 
@@ -487,7 +477,7 @@ import lombok.NonNull;
 		private int countOk = 0;
 		private int countErrors = 0;
 
-		public final void addInvoiceCandidate(final I_C_Invoice_Candidate ic)
+		public void addInvoiceCandidate(final I_C_Invoice_Candidate ic)
 		{
 			countOk++;
 		}
@@ -498,7 +488,7 @@ import lombok.NonNull;
 		}
 
 		@Override
-		public final String toString()
+		public String toString()
 		{
 			return getSummary();
 		}
@@ -511,18 +501,13 @@ import lombok.NonNull;
 
 	/**
 	 * IC update exception handler
-	 *
-	 * @author metas-dev <dev@metasfresh.com>
-	 *
 	 */
 	private final class ICTrxItemExceptionHandler extends FailTrxItemExceptionHandler
 	{
 		private final ICUpdateResult result;
 
-		public ICTrxItemExceptionHandler(final ICUpdateResult result)
+		public ICTrxItemExceptionHandler(@NonNull final ICUpdateResult result)
 		{
-			super();
-			Check.assumeNotNull(result, "result not null");
 			this.result = result;
 		}
 

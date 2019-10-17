@@ -43,7 +43,6 @@ import javax.swing.RootPaneContainer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.images.Images;
 import org.adempiere.plaf.VEditorUI;
 import org.adempiere.service.ISysConfigBL;
@@ -76,6 +75,8 @@ import org.slf4j.Logger;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import net.miginfocom.layout.CC;
@@ -1052,7 +1053,7 @@ public final class FindPanel extends CPanel implements ActionListener
 		// Add Access
 		final IUserRolePermissions role = getUserRolePermissions();
 		String finalSQL = role.addAccessSQL(sql.toString(),
-				m_tableName, IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
+				m_tableName, IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);
 		finalSQL = Env.parseContext(Env.getCtx(), m_targetWindowNo, finalSQL, false);
 		Env.setContext(Env.getCtx(), m_targetWindowNo, TABNO, "FindSQL", finalSQL);
 

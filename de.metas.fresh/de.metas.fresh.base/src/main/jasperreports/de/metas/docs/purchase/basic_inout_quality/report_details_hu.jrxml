@@ -64,21 +64,21 @@ ORDER BY
 			<textField>
 				<reportElement key="textField-19" x="332" y="0" width="57" height="12" forecolor="#000000" uuid="dfe63cc6-c8a3-4b3a-bab2-6e120c66466f"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="394" y="0" width="40" height="12" forecolor="#000000" uuid="8eec1ab9-a421-4ef0-a3f9-0d9ad7322338"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-16" x="37" y="0" width="160" height="12" forecolor="#000000" uuid="b91f34be-6226-49e8-bafb-1d26139a3a57"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{PackingMaterial}]]></textFieldExpression>
 			</textField>

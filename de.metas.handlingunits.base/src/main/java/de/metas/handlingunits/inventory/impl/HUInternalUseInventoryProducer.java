@@ -10,10 +10,13 @@ import java.util.stream.Collectors;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.IHUContextFactory;
@@ -24,7 +27,7 @@ import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Inventory;
-import de.metas.inventory.event.InventoryUserNotificationsProducer;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -74,31 +77,49 @@ public class HUInternalUseInventoryProducer
 	private String _docSubType = X_C_DocType.DOCSUBTYPE_InternalUseInventory;
 	private final List<I_M_HU> _hus = new ArrayList<>();
 
+	private ActivityId activityId;
+	private String description;
+	private boolean isCompleteInventory;
+
+	private boolean isCreateMovement;
+
 	private HUInternalUseInventoryProducer()
 	{
 	}
 
 	public List<I_M_Inventory> createInventories()
 	{
-		final Map<Integer, List<I_M_HU>> topLevelHUsByWarehouseId = getTopLevelHUs()
+		final Map<WarehouseId, List<I_M_HU>> topLevelHUsByWarehouseId = getTopLevelHUs()
 				.stream()
-				.collect(Collectors.groupingBy(hu -> hu.getM_Locator().getM_Warehouse_ID())); // we asserted earlier that each HU has a locator
+				.collect(Collectors.groupingBy(this::extractWarehouseId)); // we asserted earlier that each HU has a locator
 
 		final List<I_M_Inventory> result = new ArrayList<>();
-		for (final Map.Entry<Integer, List<I_M_HU>> warehouseIdAndHUs : topLevelHUsByWarehouseId.entrySet())
+		for (final Map.Entry<WarehouseId, List<I_M_HU>> warehouseIdAndHUs : topLevelHUsByWarehouseId.entrySet())
 		{
-			final int warehouseId = warehouseIdAndHUs.getKey();
+			final WarehouseId warehouseId = warehouseIdAndHUs.getKey();
 			final List<I_M_HU> hus = warehouseIdAndHUs.getValue();
-			final List<I_M_Inventory> inventories = createInventories(warehouseId, hus);
+			final List<I_M_Inventory> inventories = createInventories(warehouseId, hus, activityId, description, isCompleteInventory, isCreateMovement);
 			result.addAll(inventories);
 		}
 
 		return result;
 	}
-
-	private final List<I_M_Inventory> createInventories(final int warehouseId, final List<I_M_HU> hus)
+	
+	private WarehouseId extractWarehouseId(final I_M_HU hu)
 	{
-		final I_M_Warehouse warehouse = InterfaceWrapperHelper.loadOutOfTrx(warehouseId, I_M_Warehouse.class);
+		final int locatorRepoId = hu.getM_Locator_ID();
+		return Services.get(IWarehouseDAO.class).getWarehouseIdByLocatorRepoId(locatorRepoId);
+	}
+
+	private final List<I_M_Inventory> createInventories(
+			final WarehouseId warehouseId,
+			final List<I_M_HU> hus,
+			final ActivityId activityId,
+			final String description,
+			final boolean isCompleteInventory,
+			final boolean isCreateMovement)
+	{
+		final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(warehouseId);
 
 		// Make sure all HUs have ThreadInherited transaction (in order to use caching)
 		InterfaceWrapperHelper.setThreadInheritedTrxName(hus);
@@ -119,8 +140,12 @@ public class HUInternalUseInventoryProducer
 				.disable(); // we assume the inventory destination will do that
 
 		// Inventory allocation destination
-		final int materialDisposalDocTypeId = getInventoryDocTypeId(warehouse);
-		final InventoryAllocationDestination inventoryAllocationDestination = new InventoryAllocationDestination(warehouse, materialDisposalDocTypeId);
+		final DocTypeId materialDisposalDocTypeId = getInventoryDocTypeId(warehouse);
+		final InventoryAllocationDestination inventoryAllocationDestination = new InventoryAllocationDestination(
+				warehouseId,
+				materialDisposalDocTypeId,
+				activityId,
+				description);
 
 		//
 		// Create and configure Loader
@@ -133,7 +158,12 @@ public class HUInternalUseInventoryProducer
 		loader.unloadAllFromSource(huContext);
 
 		//
-		final List<I_M_Inventory> inventories = inventoryAllocationDestination.processInventories();
+		final List<I_M_Inventory> inventories = inventoryAllocationDestination.processInventories(isCompleteInventory);
+
+		if (isCreateMovement)
+		{
+			inventoryAllocationDestination.createMovementsForInventories();
+		}
 
 		// destroy empty hus
 		{
@@ -148,10 +178,6 @@ public class HUInternalUseInventoryProducer
 				handlingUnitsBL.destroyIfEmptyStorage(huContext, hu);
 			}
 		}
-		//
-		// Send notifications
-		InventoryUserNotificationsProducer.newInstance()
-				.notifyGenerated(inventories);
 
 		return inventories;
 	}
@@ -171,6 +197,54 @@ public class HUInternalUseInventoryProducer
 		return _movementDate;
 	}
 
+	public ActivityId getActivityId()
+	{
+		return activityId;
+	}
+
+	public HUInternalUseInventoryProducer setActivityId(ActivityId activityId)
+	{
+		this.activityId = activityId;
+
+		return this;
+	}
+
+	public boolean isCompleteInventory()
+	{
+		return isCompleteInventory;
+	}
+
+	public HUInternalUseInventoryProducer setIsCompleteInventory(boolean isCompleteInventory)
+	{
+		this.isCompleteInventory = isCompleteInventory;
+
+		return this;
+	}
+
+	public boolean isCreateMovement()
+	{
+		return isCreateMovement;
+	}
+
+	public HUInternalUseInventoryProducer setIsCreateMovement(boolean isCreateMovement)
+	{
+		this.isCreateMovement = isCreateMovement;
+
+		return this;
+	}
+
+	public String getDescription()
+	{
+		return description;
+	}
+
+	public HUInternalUseInventoryProducer setDescription(String description)
+	{
+		this.description = description;
+
+		return this;
+	}
+
 	public HUInternalUseInventoryProducer setDocSubType(@NonNull final String docSubType)
 	{
 		_docSubType = docSubType;
@@ -183,7 +257,7 @@ public class HUInternalUseInventoryProducer
 		return _docSubType;
 	}
 
-	private int getInventoryDocTypeId(@NonNull final I_M_Warehouse warehouse)
+	private DocTypeId getInventoryDocTypeId(@NonNull final I_M_Warehouse warehouse)
 	{
 		final DocTypeQuery query = DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
@@ -191,7 +265,7 @@ public class HUInternalUseInventoryProducer
 				.adClientId(warehouse.getAD_Client_ID())
 				.adOrgId(warehouse.getAD_Org_ID())
 				.build();
-		return docTypeDAO.getDocTypeId(query).getRepoId();
+		return docTypeDAO.getDocTypeId(query);
 	}
 
 	/**
@@ -228,4 +302,5 @@ public class HUInternalUseInventoryProducer
 				.build();
 		return handlingUnitsBL.getTopLevelHUs(query);
 	}
+
 }

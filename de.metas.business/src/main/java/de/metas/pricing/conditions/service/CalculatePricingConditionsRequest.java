@@ -14,7 +14,6 @@ import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.util.lang.Percent;
-
 import lombok.Builder;
 import lombok.Value;
 
@@ -50,7 +49,10 @@ public class CalculatePricingConditionsRequest
 {
 	private final PricingConditionsId pricingConditionsId;
 
+	/** If set then the system will "calculate" this break. */
 	private final PricingConditionsBreak forcePricingConditionsBreak;
+
+	/** If {@link #getForcePricingConditionsBreak()} returns {@code null}, then the system will use this query to find a matching break. */
 	private final PricingConditionsBreakQuery pricingConditionsBreakQuery;
 
 	private final Percent bpartnerFlatDiscount;

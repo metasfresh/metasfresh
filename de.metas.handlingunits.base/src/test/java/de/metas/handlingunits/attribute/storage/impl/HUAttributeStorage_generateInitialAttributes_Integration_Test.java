@@ -13,17 +13,17 @@ package de.metas.handlingunits.attribute.storage.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,6 +32,7 @@ import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.X_M_Attribute;
 import org.junit.Test;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
@@ -40,6 +41,7 @@ import org.reflections.util.ConfigurationBuilder;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
@@ -54,6 +56,9 @@ import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.util.Services;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+import lombok.NonNull;
 
 /**
  * This test is making sure current {@link IAttributeValueGenerator} implementations are not failing when {@link HUAttributeStorage#generateInitialAttributes()} is invoked.
@@ -63,29 +68,20 @@ import de.metas.util.Services;
  */
 public class HUAttributeStorage_generateInitialAttributes_Integration_Test extends AbstractHUTest
 {
-	/**
-	 * Retrieves all {@link IAttributeValueGenerator} implementation classes from ALL class loaders which are available atm.
-	 *
-	 * @return
-	 */
-	private static final Set<Class<? extends IAttributeValueGenerator>> retrieveAttributeValueGeneratorClassnames()
-	{
-		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final Reflections reflections = new Reflections(new ConfigurationBuilder()
-				.addUrls(ClasspathHelper.forClassLoader())
-				.setScanners(new SubTypesScanner()));
-
-		final Set<Class<? extends IAttributeValueGenerator>> attributeValueGeneratorClassnames = reflections.getSubTypesOf(IAttributeValueGenerator.class);
-
-		System.out.println("Found " + attributeValueGeneratorClassnames.size() + " classes in " + stopwatch.toString());
-
-		return attributeValueGeneratorClassnames;
-	}
-
 	private IAttributeStorageFactory attributeStorageFactory;
 
 	private I_M_HU_PI huPI;
 	private I_M_HU_PI_Version huPIVersion;
+
+	private final HashMap<Class<? extends IAttributeValueGenerator>, Class<? extends ReferenceListAwareEnum>> //
+	registeredEnums = new HashMap<>();
+
+	protected final void registerEnum(
+			@NonNull final Class<? extends IAttributeValueGenerator> generatorClass,
+			@NonNull final Class<? extends ReferenceListAwareEnum> enumType)
+	{
+		registeredEnums.put(generatorClass, enumType);
+	}
 
 	@Override
 	protected void initialize()
@@ -103,32 +99,68 @@ public class HUAttributeStorage_generateInitialAttributes_Integration_Test exten
 		SSCC18CodeBLTests.setManufacturerCode("0001");
 	}
 
-	private void setupHUPIAttribute(final I_M_HU_PI huPI, final Class<? extends IAttributeValueGenerator> attributeValueGeneratorClass)
+	private void setupHUPIAttribute(
+			final I_M_HU_PI huPI,
+			final Class<? extends IAttributeValueGenerator> attributeValueGeneratorClass)
 	{
 		IAttributeValueGenerator attributeValueGenerator;
 		try
 		{
 			attributeValueGenerator = attributeValueGeneratorClass.newInstance();
 		}
-		catch (InstantiationException | IllegalAccessException e)
+		catch (InstantiationException | IllegalAccessException ex)
 		{
-			throw new AssertionError("Cannot instantiate " + attributeValueGeneratorClass, e);
+			throw new AssertionError("Cannot instantiate " + attributeValueGeneratorClass, ex);
 		}
 
-		final boolean isInstanceAttribute = true;
-		final I_M_Attribute attribute = new AttributesTestHelper().createM_Attribute(
-				"ATTR_" + attributeValueGeneratorClass.getSimpleName(), // Attribute Name
-				attributeValueGenerator.getAttributeValueType(), // Attribute Type
-				attributeValueGeneratorClass,
-				uomKg,
-				isInstanceAttribute);
+		final Set<String> attributeValueTypes;
+		if (attributeValueGenerator.getAttributeValueType() != null)
+		{
+			attributeValueTypes = ImmutableSet.of(attributeValueGenerator.getAttributeValueType());
+		}
+		else
+		{
+			attributeValueTypes = ImmutableSet.of(
+					X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40,
+					X_M_Attribute.ATTRIBUTEVALUETYPE_Number,
+					X_M_Attribute.ATTRIBUTEVALUETYPE_Date,
+					X_M_Attribute.ATTRIBUTEVALUETYPE_List);
+		}
 
-		final I_M_HU_PI_Attribute piAttribute = helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attribute)
-				.setM_HU_PI(huPI)
-				.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation));
-		piAttribute.setIsReadOnly(false);
-		piAttribute.setSeqNo(10);
-		InterfaceWrapperHelper.save(piAttribute);
+		for (final String attributeValueType : attributeValueTypes)
+		{
+			final String attributeName = "ATTR_" + attributeValueGeneratorClass.getSimpleName() + "_" + attributeValueType;
+			final boolean isInstanceAttribute = true;
+			final I_M_Attribute attribute = new AttributesTestHelper().createM_Attribute(
+					attributeName, // Attribute Name
+					attributeValueType, // Attribute Type
+					attributeValueGeneratorClass,
+					uomKg,
+					isInstanceAttribute);
+
+			createAttributeValues(attribute, attributeValueGeneratorClass);
+
+			final I_M_HU_PI_Attribute piAttribute = helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attribute)
+					.setM_HU_PI(huPI)
+					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation));
+			piAttribute.setIsReadOnly(false);
+			piAttribute.setSeqNo(10);
+			InterfaceWrapperHelper.save(piAttribute);
+		}
+	}
+
+	private void createAttributeValues(final I_M_Attribute attribute, final Class<? extends IAttributeValueGenerator> attributeValueGeneratorClass)
+	{
+		final Class<? extends ReferenceListAwareEnum> enumType = registeredEnums.get(attributeValueGeneratorClass);
+		if (enumType != null)
+		{
+			final AttributesTestHelper attributesTestHelper = new AttributesTestHelper();
+
+			for (final ReferenceListAwareEnum value : ReferenceListAwareEnums.values(enumType))
+			{
+				attributesTestHelper.createM_AttributeValue(attribute, value.getCode());
+			}
+		}
 	}
 
 	@Test
@@ -136,8 +168,57 @@ public class HUAttributeStorage_generateInitialAttributes_Integration_Test exten
 	{
 		for (final Class<? extends IAttributeValueGenerator> attributeValueGeneratorClass : retrieveAttributeValueGeneratorClassnames())
 		{
+			if (isSkipTesting(attributeValueGeneratorClass))
+			{
+				continue;
+			}
+
 			test(attributeValueGeneratorClass);
 		}
+	}
+
+	private static final Set<Class<? extends IAttributeValueGenerator>> retrieveAttributeValueGeneratorClassnames()
+	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		final Reflections reflections = new Reflections(new ConfigurationBuilder()
+				.addUrls(ClasspathHelper.forClassLoader())
+				.setScanners(new SubTypesScanner()));
+
+		final Set<Class<? extends IAttributeValueGenerator>> attributeValueGeneratorClassnames = reflections.getSubTypesOf(IAttributeValueGenerator.class);
+		if (attributeValueGeneratorClassnames.isEmpty())
+		{
+			throw new RuntimeException("No classes found. Might be because for some reason Reflections does not work correctly with maven surefire plugin."
+					+ "\n See https://github.com/metasfresh/metasfresh/issues/4773.");
+		}
+
+		System.out.println("Found " + attributeValueGeneratorClassnames.size() + " classes in " + stopwatch.toString());
+
+		return attributeValueGeneratorClassnames;
+	}
+
+	private boolean isSkipTesting(final Class<? extends IAttributeValueGenerator> attributeValueGeneratorClass)
+	{
+		// Skip Mocked implementations, used for testing
+		final String attributeValueGeneratorClassname = attributeValueGeneratorClass.getName();
+		if (attributeValueGeneratorClassname.startsWith("Mocked")
+				|| attributeValueGeneratorClassname.indexOf("$Mocked") > 0)
+		{
+			return true;
+		}
+
+		// Skip interfaces
+		if (attributeValueGeneratorClass.isInterface())
+		{
+			return true;
+		}
+
+		// Skip abstract classes
+		if (Modifier.isAbstract(attributeValueGeneratorClass.getModifiers()))
+		{
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -149,25 +230,7 @@ public class HUAttributeStorage_generateInitialAttributes_Integration_Test exten
 	 */
 	public void test(final Class<? extends IAttributeValueGenerator> attributeValueGeneratorClass)
 	{
-		// Skip Mocked implementations, used for testing
-		final String attributeValueGeneratorClassname = attributeValueGeneratorClass.getName();
-		if (attributeValueGeneratorClassname.startsWith("Mocked")
-				|| attributeValueGeneratorClassname.indexOf("$Mocked") > 0)
-		{
-			return;
-		}
-
-		// Skip interfaces
-		if (attributeValueGeneratorClass.isInterface())
-		{
-			return;
-		}
-
-		// Skip abstract classes
-		if (Modifier.isAbstract(attributeValueGeneratorClass.getModifiers()))
-		{
-			return;
-		}
+		testWatcher.putContext(attributeValueGeneratorClass);
 
 		System.out.println("Testing: " + attributeValueGeneratorClass);
 

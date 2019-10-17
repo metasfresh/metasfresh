@@ -351,7 +351,7 @@ public class TranslationImpExp
 	 */
 	public void validateLanguage(final String AD_Language)
 	{
-		final I_AD_Language language = Services.get(ILanguageDAO.class).retrieveByAD_Language(m_ctx, AD_Language);
+		final I_AD_Language language = Services.get(ILanguageDAO.class).retrieveByAD_Language(AD_Language);
 
 		// No AD_Language Record
 		if (language == null)

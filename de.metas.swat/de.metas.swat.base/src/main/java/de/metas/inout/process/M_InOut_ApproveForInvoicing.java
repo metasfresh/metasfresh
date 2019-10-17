@@ -2,8 +2,7 @@ package de.metas.inout.process;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.inout.api.IInOutInvoiceCandidateBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.process.IProcessPrecondition;
@@ -22,13 +21,17 @@ public class M_InOut_ApproveForInvoicing extends JavaProcess implements IProcess
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
-		for (int i = 0; i < para.length; i++)
+		for (ProcessInfoParameter element : para)
 		{
-			String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
-				;
+			String name = element.getParameterName();
+			if (element.getParameter() == null)
+			{
+				
+			}
 			else
+			{
 				log.error("Unknown Parameter: " + name);
+			}
 		}
 		p_M_InOut_ID = getRecord_ID();
 
@@ -57,17 +60,17 @@ public class M_InOut_ApproveForInvoicing extends JavaProcess implements IProcess
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-
 		// Make this process only available for inout entries that are active and have the status Completed or Closed
-
 		if (I_M_InOut.Table_Name.equals(context.getTableName()))
 		{
-			final I_M_InOut inOut = context.getSelectedModel(I_M_InOut.class);
-			return ProcessPreconditionsResolution.acceptIf(docActionBL.isStatusStrOneOf(inOut.getDocStatus(),
-					IDocument.STATUS_Completed, IDocument.STATUS_Closed));
+			final I_M_InOut inout = context.getSelectedModel(I_M_InOut.class);
+			final DocStatus inoutDocStatus = DocStatus.ofCode(inout.getDocStatus());
+			return ProcessPreconditionsResolution.acceptIf(inoutDocStatus.isCompletedOrClosed());
 		}
-		return ProcessPreconditionsResolution.reject();
+		else
+		{
+			return ProcessPreconditionsResolution.reject();
+		}
 	}
 
 }

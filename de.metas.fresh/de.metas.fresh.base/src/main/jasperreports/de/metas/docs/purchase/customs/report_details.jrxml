@@ -33,7 +33,7 @@ de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Customs_Details($P{C_Orde
 				<textField pattern="#,##0.000">
 					<reportElement uuid="b426425e-81fd-4706-8b95-540f5c1d69eb" key="textField-19" x="438" y="0" width="74" height="12" forecolor="#000000"/>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{QtySum}]]></textFieldExpression>
 				</textField>
@@ -51,28 +51,28 @@ de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Customs_Details($P{C_Orde
 			<staticText>
 				<reportElement uuid="8810b708-ecb1-4a33-91a8-9971754ada0b" key="textField-20" x="516" y="0" width="50" height="12" forecolor="#000000"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Einheit]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="41d29ca1-2c98-4395-a16a-bc3ce80d0e38" key="textField-19" x="438" y="0" width="74" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Menge brutto]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00" key="textField-16" x="36" y="0" width="194" height="12" forecolor="#000000"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Artikel]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="c098d47c-8e7e-49b6-b9b6-4151f0bdafee" key="textField-13" x="368" y="0" width="70" height="12" forecolor="#000000"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Paletten-Nr.]]></text>
 			</staticText>

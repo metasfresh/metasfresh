@@ -27,6 +27,10 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.compiere.model.I_M_Attribute;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
+
 public class AttributeNotFoundException extends AdempiereException
 {
 	/**
@@ -84,35 +88,35 @@ public class AttributeNotFoundException extends AdempiereException
 
 	}
 
-	private static final String buildMsg(final I_M_Attribute attribute, final Object attributeSetObj)
+	private static final ITranslatableString buildMsg(final I_M_Attribute attribute, final Object attributeSetObj)
 	{
 		final String attributeStr = toString(attribute);
 		return buildMsg(attributeStr, attributeSetObj);
 	}
 
-	private static final String buildMsg(final String attributeStr, final Object attributeSetObj)
+	private static final ITranslatableString buildMsg(final String attributeStr, final Object attributeSetObj)
 	{
-		final StringBuilder sb = new StringBuilder();
-		sb.append("Attribute ");
+		final TranslatableStringBuilder builder = TranslatableStrings.builder();
+		builder.append("Attribute ");
 
 		if (attributeStr == null)
 		{
-			sb.append("<NULL>");
+			builder.append("<NULL>");
 		}
 		else
 		{
-			sb.append("'").append(attributeStr).append("'");
+			builder.append("'").append(attributeStr).append("'");
 
 		}
 
-		sb.append(" was not found");
+		builder.append(" was not found");
 
 		if (attributeSetObj != null)
 		{
-			sb.append(" for ").append(attributeSetObj);
+			builder.append(" for ").append(attributeSetObj.toString());
 		}
 
-		return sb.toString();
+		return builder.build();
 	}
 
 	public I_M_Attribute getM_Attribute()

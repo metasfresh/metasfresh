@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -33,7 +34,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IParams;
-import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.X_AD_User;
@@ -42,8 +42,6 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.google.common.base.Optional;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.async.api.IQueueDAO;
@@ -54,6 +52,7 @@ import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.invoicecandidate.AbstractICTestSupport;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -67,6 +66,10 @@ import de.metas.util.ConsoleLoggable;
 import de.metas.util.ILoggable;
 import de.metas.util.Services;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Standard test:
  * <ul>
@@ -74,11 +77,11 @@ import de.metas.util.Services;
  * <li>enqueue them to be invoiced: {@link #step20_enqueueToInvoice()}
  * <li>process workpackages with enqueued invoice candidates: {@link #step30_processEnqueuedWorkpackages()}
  * </ul>
- * 
+ *
  * @author tsa
  *
  */
-public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractICTestSupport
+public abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 {
 	protected PlainLockManager lockManager;
 	protected PlainLockDatabase locksDatabase;
@@ -89,13 +92,14 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractI
 
 	protected List<I_C_Invoice_Candidate> invoiceCandidates;
 	protected IInvoiceCandidateEnqueueResult enqueueResult;
+	protected AbstractICTestSupport icTestSupport;
 
 	@Before
 	public void init()
 	{
-		//
-		// Register C_Invoice_Candidate model interceptor
-		registerModelInterceptors();
+		icTestSupport = new AbstractICTestSupport();
+		icTestSupport.initStuff();
+		icTestSupport.registerModelInterceptors();
 
 		this.lockManager = (PlainLockManager)Services.get(ILockManager.class);
 		this.locksDatabase = lockManager.getLockDatabase();
@@ -103,11 +107,11 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractI
 		this.ctx = Env.getCtx();
 		this.loggable = new ConsoleLoggable();
 
-		this.bpartner1 = bpartner("test-bp");
+		this.bpartner1 = icTestSupport.bpartner("test-bp");
 	}
 
 	@Test
-	public final void test()
+	public void test()
 	{
 		//
 		// Create the initial invoice candidates
@@ -127,32 +131,30 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractI
 
 	private final IInvoiceCandidateEnqueueResult step20_enqueueToInvoice()
 	{
-		final I_AD_PInstance adPInstance = POJOLookupMap.get().createSelectionFromModelsCollection(invoiceCandidates);
-		final PInstanceId adPInstanceId = PInstanceId.ofRepoId(adPInstance.getAD_PInstance_ID());
+		final PInstanceId selectionId = POJOLookupMap.get().createSelectionFromModelsCollection(invoiceCandidates);
 
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 		invoicingParams.setIgnoreInvoiceSchedule(true);
 		invoicingParams.setOnlyApprovedForInvoicing(false);
 
-		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
-				.setContext(ctx, ITrx.TRXNAME_None)
+		final IInvoiceCandidateEnqueueResult enqueueResult = Services.get(IInvoiceCandBL.class).enqueueForInvoicing()
+				.setContext(ctx)
 				.setFailIfNothingEnqueued(true)
 				.setFailOnChanges(true)
-				.setLoggable(loggable)
 				.setInvoicingParams(invoicingParams)
-				.enqueueSelection(adPInstanceId);
+				.enqueueSelection(selectionId);
 
 		//
 		// Make sure nothing is locked by enqueuer lock at this point because:
 		// * invoice candidates which were added to workpackages, they have a lock per workpackage
 		// * invoice candidates which were skipped, they shall be released
 		final ILock enqueuerLock = enqueueResult.getLock();
-		Assert.assertEquals("Invalid enqueuerLock count: " + enqueuerLock, 0, enqueuerLock.getCountLocked());
+		assertEquals("Invalid enqueuerLock count: " + enqueuerLock, 0, enqueuerLock.getCountLocked());
 
 		// Test: all invoice candidates were locked on enqueue
 		for (final I_C_Invoice_Candidate ic : invoiceCandidates)
 		{
-			Assert.assertTrue("IC is locked: " + ic, lockManager.isLocked(ic));
+			assertTrue("IC is locked: " + ic, lockManager.isLocked(ic));
 		}
 
 		return enqueueResult;
@@ -190,12 +192,12 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractI
 		//
 		// Make sure all of them are processed
 		final List<I_C_Queue_WorkPackage> workpackages = retrieveWorkpackages(workpackageProcessorClass);
-		Assert.assertFalse("Some workpackages were created", workpackages.isEmpty());
+		assertFalse("Some workpackages were created", workpackages.isEmpty());
 
 		for (I_C_Queue_WorkPackage workpackage : workpackages)
 		{
-			Assert.assertTrue("Workpackage processed: " + workpackage, workpackage.isProcessed());
-			Assert.assertFalse("Workpackage no error: " + workpackage, workpackage.isError());
+			assertTrue("Workpackage processed: " + workpackage, workpackage.isProcessed());
+			assertFalse("Workpackage no error: " + workpackage, workpackage.isError());
 		}
 
 		//
@@ -203,8 +205,8 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractI
 		InterfaceWrapperHelper.refreshAll(invoiceCandidates);
 		for (final I_C_Invoice_Candidate ic : invoiceCandidates)
 		{
-			Assert.assertFalse("IC no error: " + ic, ic.isError());
-			Assert.assertFalse("IC is not locked: " + ic, lockManager.isLocked(ic));
+			assertFalse("IC shall have no error: " + ic, ic.isError());
+			assertFalse("IC is not locked: " + ic, lockManager.isLocked(ic));
 		}
 
 		//
@@ -236,14 +238,14 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractI
 		//
 		// Test: each workpackage has locked it's own invoice candidates by a separate lock
 		final Optional<ILock> icLock = workpackageProcessor.getElementsLock();
-		Check.assumeNotNull(icLock.orNull(), "icLock not null for workpackageProcessor {}", workpackageProcessor);
+		Check.assumeNotNull(icLock.orElse(null), "icLock not null for workpackageProcessor {}", workpackageProcessor);
 		for (final I_C_Invoice_Candidate ic : ics)
 		{
 			final String message = "IC is locked"
 					+ "\n " + icLock
 					+ "\n" + ic
 					+ "\n" + workpackage;
-			Assert.assertTrue(message, icLock.get().isLocked(ic));
+			assertTrue(message, icLock.get().isLocked(ic));
 		}
 
 		//

@@ -155,7 +155,7 @@ public final class HUSplitModel extends AbstractLTCUModel
 		{
 			final ProductId productId = productStorage.getProductId();
 			final Quantity qty = productStorage.getQty(); // qty is the full qty available in the source. how much we will really split is also restricted by the destination
-			final CUSplitKey key = new CUSplitKey(getTerminalContext(), productId, qty.getAsBigDecimal(), qty.getUOM());
+			final CUSplitKey key = new CUSplitKey(getTerminalContext(), productId, qty.toBigDecimal(), qty.getUOM());
 			keys.add(key);
 		}
 

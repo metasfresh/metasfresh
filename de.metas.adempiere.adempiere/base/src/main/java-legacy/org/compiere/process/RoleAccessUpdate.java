@@ -1,34 +1,31 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.process;
 
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Role;
 
 import de.metas.cache.CacheMgt;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.security.IRoleDAO;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.Role;
+import de.metas.security.RoleId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 
@@ -41,9 +38,9 @@ import de.metas.util.Services;
 public class RoleAccessUpdate extends JavaProcess
 {
 	/** Update Role */
-	private int p_AD_Role_ID = 0;
+	private int p_AD_Role_ID = -1;
 	/** Update Roles of Client */
-	private int p_AD_Client_ID = 0;
+	private int p_AD_Client_ID = -1;
 
 	/**
 	 * Prepare
@@ -75,16 +72,16 @@ public class RoleAccessUpdate extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		log.info("AD_Client_ID=" + p_AD_Client_ID + ", AD_Role_ID=" + p_AD_Role_ID);
-		//
 		if (p_AD_Role_ID > 0)
 		{
-			final I_AD_Role role = InterfaceWrapperHelper.create(getCtx(), p_AD_Role_ID, I_AD_Role.class, ITrx.TRXNAME_ThreadInherited);
+			final RoleId roleId = RoleId.ofRepoId(p_AD_Role_ID);
+			final Role role = Services.get(IRoleDAO.class).getById(roleId);
 			updateRole(role);
 		}
 		else
 		{
-			updateAllRoles(getCtx(), p_AD_Client_ID);
+			final ClientId clientId = ClientId.ofRepoIdOrNull(p_AD_Client_ID);
+			updateAllRoles(clientId);
 		}
 
 		//
@@ -94,31 +91,28 @@ public class RoleAccessUpdate extends JavaProcess
 		return MSG_OK;
 	}	// doIt
 
-	public static void updateAllRoles(final Properties ctx)
+	public static void updateAllRoles()
 	{
-		final int adClientId = -1; // all
-		updateAllRoles(ctx, adClientId);
+		final ClientId clientId = null; // all
+		updateAllRoles(clientId);
 	}
 
-	public static void updateAllRoles(final Properties ctx, final int adClientId)
+	public static void updateAllRoles(final ClientId clientId)
 	{
-		final IQueryBuilder<I_AD_Role> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Role.class, ctx, ITrx.TRXNAME_ThreadInherited)
-				.addOnlyActiveRecordsFilter();
-		if (adClientId > 0)
+		Services.get(IRoleDAO.class).retrieveAllRolesWithAutoMaintenance()
+				.stream()
+				.filter(role -> isRoleMatchingClientId(role, clientId))
+				.forEach(role -> updateRole(role));
+	}
+
+	private static boolean isRoleMatchingClientId(final Role role, final ClientId clientId)
+	{
+		if (clientId == null)
 		{
-			queryBuilder.addEqualsFilter(I_AD_Role.COLUMNNAME_AD_Client_ID, adClientId);
+			return true;
 		}
-		queryBuilder.orderBy()
-				.addColumn(I_AD_Role.COLUMNNAME_AD_Client_ID)
-				.addColumn(I_AD_Role.COLUMNNAME_Name);
-		
-		final List<I_AD_Role> roles = queryBuilder.create().list();
-		
-		for (final I_AD_Role role : roles)
-		{
-			updateRole(role);
-		}
+
+		return ClientId.equals(role.getClientId(), clientId);
 	}
 
 	/**
@@ -126,9 +120,9 @@ public class RoleAccessUpdate extends JavaProcess
 	 * 
 	 * @param role role
 	 */
-	private static void updateRole(final I_AD_Role role)
+	private static void updateRole(final Role role)
 	{
 		final String result = Services.get(IUserRolePermissionsDAO.class).updateAccessRecords(role);
-		Loggables.get().addLog("Role access updated: " + role.getName() + ": " + result);
+		Loggables.addLog("Role access updated: " + role.getName() + ": " + result);
 	}	// updateRole
 }

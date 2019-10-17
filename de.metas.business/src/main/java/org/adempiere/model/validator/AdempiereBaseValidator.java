@@ -74,12 +74,12 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.spi.impl.NotifyAsyncBatch;
 import de.metas.bpartner.product.callout.C_BPartner_Product;
-import de.metas.cache.CacheMgt;
 import de.metas.cache.CCache.CacheMapType;
+import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.ITableCacheConfig;
-import de.metas.cache.model.WindowBasedCacheInvalidateRequestInitializer;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
+import de.metas.cache.model.WindowBasedCacheInvalidateRequestInitializer;
 import de.metas.event.EventBusAdempiereInterceptor;
 import de.metas.event.Topic;
 import de.metas.notification.INotificationGroupNameRepository;
@@ -124,11 +124,6 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
-		// Security and User/Roles
-		{
-			engine.addModelValidator(org.adempiere.ad.security.model.validator.SecurityMainInterceptor.instance, client);
-		}
-
 		// Event bus
 		engine.addModelValidator(EventBusAdempiereInterceptor.instance, client);
 
@@ -191,9 +186,6 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		//
 		// BPartner
 		engine.addModelValidator(new de.metas.bpartner.model.interceptor.C_BPartner(), client);
-		//
-		// Prevent users from creating duplicate main prices https://github.com/metasfresh/metasfresh/issues/2510
-		engine.addModelValidator(de.metas.pricing.interceptor.M_ProductPrice.INSTANCE, client);
 
 		// #2895
 		engine.addModelValidator(AD_Ref_Table.instance, client);
@@ -347,6 +339,6 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Attribute.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_AttributeValue.Table_Name);
 
-		WindowBasedCacheInvalidateRequestInitializer.instance.initialize();
+		WindowBasedCacheInvalidateRequestInitializer.setup();
 	}
 }

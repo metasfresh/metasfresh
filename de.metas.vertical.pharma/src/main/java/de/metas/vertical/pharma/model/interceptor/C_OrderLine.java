@@ -13,15 +13,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.lang.SOTrx;
 import de.metas.order.OrderLine;
 import de.metas.order.OrderLineInputValidatorResults;
 import de.metas.order.OrderLineRepository;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
-import de.metas.vertical.pharma.PharmaBPartner;
+import de.metas.vertical.pharma.PharmaBPartnerProductPermissionValidator;
 import de.metas.vertical.pharma.PharmaBPartnerRepository;
-import de.metas.vertical.pharma.PharmaOrderLineInputValidator;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -46,14 +45,14 @@ import de.metas.vertical.pharma.PharmaOrderLineInputValidator;
  */
 @Callout(I_C_OrderLine.class)
 @Interceptor(I_C_OrderLine.class)
-@Component("de.metas.vertical.pharma.model.interceptor.C_OrderLine")
+@Component
 public class C_OrderLine
 {
 	@Autowired
 	PharmaBPartnerRepository pharmaBPartnerRepo;
 
 	@Autowired
-	PharmaOrderLineInputValidator pharmaOrderLineInputValidator;
+	PharmaBPartnerProductPermissionValidator pharmaBPartnerProductPermissionValidator;
 
 	@Autowired
 	OrderLineRepository orderLineRepository;
@@ -72,7 +71,7 @@ public class C_OrderLine
 			I_C_OrderLine.COLUMNNAME_C_BPartner_ID,
 			I_C_OrderLine.COLUMNNAME_M_Product_ID })
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
-	public void validatePrescriptionProduct(final I_C_OrderLine orderLineRecord)
+	public void validatebPartnerProductPermissions(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		if (orderLineRecord.getM_Product_ID() <= 0)
 		{
@@ -80,26 +79,10 @@ public class C_OrderLine
 		}
 
 		final OrderLine orderLine = orderLineRepository.ofRecord(orderLineRecord);
-		if (SOTrx.PURCHASE.equals(orderLine.getSoTrx()))
-		{
-			// nothing to do, only applies to sales orders
-			return;
-		}
-
-		final BPartnerId bpartnerId = orderLine.getBPartnerId();
-
-		final PharmaBPartner pharmaBPartner = pharmaBPartnerRepo.getById(bpartnerId);
-
-		if (pharmaBPartner.isHasAtLeastOnePermission())
-		{
-			// the partner has permissions for buying prescribed medicine
-			return;
-		}
-
+		final BPartnerId bPartnerId = orderLine.getBPartnerId();
 		final ProductId productId = orderLine.getProductId();
 
-		final OrderLineInputValidatorResults orderLineValidationResult = pharmaOrderLineInputValidator.validate(bpartnerId, productId);
-
+		final OrderLineInputValidatorResults orderLineValidationResult = pharmaBPartnerProductPermissionValidator.validate(bPartnerId, productId, orderLine.getSoTrx());
 		if (orderLineValidationResult.isValid())
 		{
 			// the partner has permissions for buying prescribed medicine
@@ -107,7 +90,5 @@ public class C_OrderLine
 		}
 
 		throw new AdempiereException(orderLineValidationResult.getErrorMessage());
-
 	}
-
 }

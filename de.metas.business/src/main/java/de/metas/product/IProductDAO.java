@@ -1,5 +1,9 @@
 package de.metas.product;
 
+import static de.metas.util.Check.assume;
+import static de.metas.util.Check.isEmpty;
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -25,12 +29,20 @@ package de.metas.product;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
-import org.adempiere.service.OrgId;
+import javax.annotation.Nullable;
+
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 
+import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 public interface IProductDAO extends ISingletonService
 {
@@ -39,6 +51,8 @@ public interface IProductDAO extends ISingletonService
 	I_M_Product getById(ProductId productId);
 
 	I_M_Product getById(final int productId);
+
+	List<I_M_Product> getByIds(final Set<ProductId> productIds);
 
 	/**
 	 * @return default product category; never returns null
@@ -68,6 +82,44 @@ public interface IProductDAO extends ISingletonService
 
 	ProductId retrieveProductIdByValue(String value);
 
+	ProductId retrieveProductIdBy(ProductQuery query);
+
+	@Value
+	public static class ProductQuery
+	{
+		/** Applied if not empty. {@code AND}ed with {@code externalId} if given. At least one of {@code value} or {@code externalId} needs to be given. */
+		String value;
+
+		/** Applied if not empty. {@code AND}ed with {@code value} if given. At least one of {@code value} or {@code externalId} needs to be given. */
+		String externalId;
+
+		OrgId orgId;
+
+		boolean includeAnyOrg;
+		boolean outOfTrx;
+
+		@Builder
+		private ProductQuery(
+				@Nullable final String value,
+				@Nullable final String externalId,
+				@NonNull final OrgId orgId,
+				@Nullable final Boolean includeAnyOrg,
+				@Nullable final Boolean outOfTrx)
+		{
+			final boolean valueIsSet = isEmpty(value, true);
+			final boolean externalIdIsSet = isEmpty(externalId, true);
+			assume(valueIsSet || externalIdIsSet, "At least one of value or externalId need to be specified");
+
+			this.value = value;
+			this.externalId = externalId;
+			this.orgId = orgId;
+			this.includeAnyOrg = coalesce(includeAnyOrg, false);
+			this.outOfTrx = coalesce(outOfTrx, false);
+		}
+	}
+
+	Stream<I_M_Product> streamAllProducts();
+
 	/** @return product category or null */
 	ProductCategoryId retrieveProductCategoryByProductId(ProductId productId);
 
@@ -83,5 +135,17 @@ public interface IProductDAO extends ISingletonService
 
 	<T extends I_M_Product_Category> T getProductCategoryById(ProductCategoryId id, Class<T> modelClass);
 
+	Stream<I_M_Product_Category> streamAllProductCategories();
+
 	String getProductCategoryNameById(ProductCategoryId id);
+
+	ProductId getProductIdByResourceId(ResourceId resourceId);
+
+	void updateProductsByResourceIds(Set<ResourceId> resourceIds, Consumer<I_M_Product> productUpdater);
+
+	void updateProductsByResourceIds(Set<ResourceId> resourceIds, BiConsumer<ResourceId, I_M_Product> productUpdater);
+
+	void deleteProductByResourceId(ResourceId resourceId);
+
+	I_M_Product createProduct(CreateProductRequest request);
 }

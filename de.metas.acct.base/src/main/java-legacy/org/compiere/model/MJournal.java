@@ -24,18 +24,22 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IFactAcctDAO;
-import org.adempiere.acct.api.IGLJournalBL;
-import org.adempiere.acct.api.IGLJournalLineBL;
-import org.adempiere.acct.api.IGLJournalLineDAO;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaGeneralLedger;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.gljournal.IGLJournalBL;
+import de.metas.acct.gljournal.IGLJournalLineBL;
+import de.metas.acct.gljournal.IGLJournalLineDAO;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
@@ -80,7 +84,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 			// setC_Currency_ID (0);
 			// setC_DocType_ID (0);
 			//
-			setCurrencyRate(Env.ONE);
+			setCurrencyRate(BigDecimal.ONE);
 			// setC_ConversionType_ID(0);
 			setDateAcct(new Timestamp(System.currentTimeMillis()));
 			setDateDoc(new Timestamp(System.currentTimeMillis()));
@@ -90,8 +94,8 @@ public class MJournal extends X_GL_Journal implements IDocument
 			// setDocumentNo (null);
 			// setGL_Category_ID (0);
 			setPostingType(POSTINGTYPE_Actual);
-			setTotalCr(Env.ZERO);
-			setTotalDr(Env.ZERO);
+			setTotalCr(BigDecimal.ZERO);
+			setTotalDr(BigDecimal.ZERO);
 			setIsApproved(false);
 			setIsPrinted(false);
 			setPosted(false);
@@ -184,7 +188,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 	/**
 	 * Set Currency Info
 	 *
-	 * @param C_Currency_ID currenct
+	 * @param C_Currency_ID currency
 	 * @param C_ConversionType_ID type
 	 * @param CurrencyRate rate
 	 */
@@ -194,7 +198,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 			setC_Currency_ID(C_Currency_ID);
 		if (C_ConversionType_ID != 0)
 			setC_ConversionType_ID(C_ConversionType_ID);
-		if (CurrencyRate != null && CurrencyRate.compareTo(Env.ZERO) == 0)
+		if (CurrencyRate != null && CurrencyRate.compareTo(BigDecimal.ZERO) == 0)
 			setCurrencyRate(CurrencyRate);
 	}	// setCurrency
 
@@ -464,8 +468,8 @@ public class MJournal extends X_GL_Journal implements IDocument
 		}
 
 		// Add up Amounts
-		BigDecimal AmtAcctDr = Env.ZERO;
-		BigDecimal AmtAcctCr = Env.ZERO;
+		BigDecimal AmtAcctDr = BigDecimal.ZERO;
+		BigDecimal AmtAcctCr = BigDecimal.ZERO;
 		for (final I_GL_JournalLine line : lines)
 		{
 			if (!isActive())
@@ -489,7 +493,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 		setTotalCr(AmtAcctCr);
 
 		// Control Amount
-		if (Env.ZERO.compareTo(getControlAmt()) != 0
+		if (BigDecimal.ZERO.compareTo(getControlAmt()) != 0
 				&& getControlAmt().compareTo(getTotalDr()) != 0)
 		{
 			throw new AdempiereException("@ControlAmtError@");
@@ -498,8 +502,9 @@ public class MJournal extends X_GL_Journal implements IDocument
 		// Unbalanced Jornal & Not Suspense
 		if (AmtAcctDr.compareTo(AmtAcctCr) != 0)
 		{
-			final MAcctSchemaGL gl = MAcctSchemaGL.get(getCtx(), getC_AcctSchema_ID());
-			if (gl == null || !gl.isUseSuspenseBalancing())
+			final AcctSchema acctSchema = getAcctSchema();
+			final AcctSchemaGeneralLedger acctSchemaGL = acctSchema.getGeneralLedger();
+			if (!acctSchemaGL.isSuspenseBalancing())
 			{
 				throw new AdempiereException("@UnbalancedJornal@");
 			}
@@ -519,6 +524,14 @@ public class MJournal extends X_GL_Journal implements IDocument
 		m_justPrepared = true;
 		return IDocument.STATUS_InProgress;
 	}	// prepareIt
+
+	private AcctSchema getAcctSchema()
+	{
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(getC_AcctSchema_ID());
+		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+		final AcctSchema acctSchema = acctSchemasRepo.getById(acctSchemaId);
+		return acctSchema;
+	}
 
 	/**
 	 * Approve Document
@@ -979,14 +992,16 @@ public class MJournal extends X_GL_Journal implements IDocument
 	// metas: cg: 02476
 	private static void setAmtPrecision(final I_GL_Journal journal)
 	{
-		if (journal.getC_AcctSchema_ID() <= 0)
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoIdOrNull(journal.getC_AcctSchema_ID());
+		if (acctSchemaId == null)
 		{
 			return;
 		}
-		final Properties ctx = InterfaceWrapperHelper.getCtx(journal);
-		final MAcctSchema as = MAcctSchema.get(ctx, journal.getC_AcctSchema_ID());
-		final int precision = as.getStdPrecision();
-		if (journal.getControlAmt().scale() > precision)
-			journal.setControlAmt(journal.getControlAmt().setScale(precision, BigDecimal.ROUND_HALF_UP));
+		
+		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
+		final CurrencyPrecision precision = as.getStandardPrecision();
+		
+		final BigDecimal controlAmt = precision.roundIfNeeded(journal.getControlAmt());
+		journal.setControlAmt(controlAmt);
 	}
 }	// MJournal

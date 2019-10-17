@@ -29,19 +29,19 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Properties;
 
-import org.compiere.model.I_M_Product;
-
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.process.PInstanceId;
+import de.metas.product.ProductAndCategoryId;
 import de.metas.util.ISingletonService;
 
 public interface ISubscriptionBL extends ISingletonService
@@ -54,10 +54,8 @@ public interface ISubscriptionBL extends ISingletonService
 	 * <li>there already is an older delayed delivery for the sp's subscription</li>
 	 * </ul>
 	 * In these cases the current delivery is delayed.
-	 * 
-	 * @param trxName
 	 */
-	void evalDeliveries(Properties ctx, String trxName);
+	void evalDeliveries(Properties ctx);
 
 	/**
 	 * Iterate the given deliveries, sum up their price (using their orderline's product and priceActual). Then compute
@@ -89,7 +87,11 @@ public interface ISubscriptionBL extends ISingletonService
 	 */
 	void evalCurrentSPs(I_C_Flatrate_Term sc, Timestamp currentDate);
 
-	I_C_Flatrate_Matching retrieveMatching(Properties ctx, int flatrateConditionsId, I_M_Product product, String trxName);
+	I_C_Flatrate_Matching retrieveMatching(
+			Properties ctx, 
+			int flatrateConditionsId, 
+			ProductAndCategoryId productAndCategoryId, 
+			String trxName);
 
 	/**
 	 * Use the given <code>C_Flatrate_Transition</code>'s <code>TermDurationUnit</code>,
@@ -136,4 +138,6 @@ public interface ISubscriptionBL extends ISingletonService
 	I_C_Flatrate_Term createTermForOLCand(Properties ctx, I_C_OLCand olCand, PInstanceId AD_PInstance_ID, boolean completeIt, String trxName);
 
 	boolean isActiveTerm(I_C_Flatrate_Term term);
+
+	I_C_Flatrate_Term retrieveLastFlatrateTermFromOrder(I_C_Order order);
 }

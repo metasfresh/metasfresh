@@ -24,6 +24,7 @@ package org.adempiere.ad.dao.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -35,6 +36,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -53,10 +55,16 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
+import de.metas.dao.selection.pagination.PageDescriptor;
+import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.process.PInstanceId;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.UIDStringUtil;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class POJOQuery<T> extends AbstractTypedQuery<T>
@@ -81,11 +89,12 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		this(Env.getCtx(), modelClass, null, ITrx.TRXNAME_None);
 	}
 
-	public POJOQuery(final Properties ctx, final Class<T> modelClass, final String tablename, final String trxName)
+	public POJOQuery(
+			final Properties ctx,
+			@NonNull final Class<T> modelClass,
+			final String tablename,
+			final String trxName)
 	{
-		super();
-
-		Check.assumeNotNull(modelClass, "modelClass not null");
 		this.modelClass = modelClass;
 		this.ctx = ctx;
 		this.trxName = trxName;
@@ -238,9 +247,15 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		final POJOLookupMap db = POJOLookupMap.get();
 		final String tableName = getTableNameToUse(clazz);
 
-		final List<T> result = db.getRecords(tableName, modelClass, filters, getOrderByComparator(modelClass), trxName);
+		final List<T> result = db.getRecords(
+				tableName,
+				modelClass,
+				filters,
+				getOrderByComparator(modelClass),
+				trxName);
 		Check.assumeNotNull(result, "Return value of POJOLookupMap.getRecords is *never* null");
 
+		final boolean readOnly = isReadOnlyRecords();
 		final List<ET> resultCasted = new ArrayList<>(result.size());
 		for (final T model : result)
 		{
@@ -250,6 +265,8 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 			}
 
 			final ET modelCasted = InterfaceWrapperHelper.create(model, clazz);
+			InterfaceWrapperHelper.setSaveDeleteDisabled(modelCasted, readOnly);
+
 			resultCasted.add(modelCasted);
 		}
 
@@ -680,7 +697,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 				}
 			};
 		}
-		else if(Comparable.class.isAssignableFrom(type))
+		else if (Comparable.class.isAssignableFrom(type))
 		{
 			return (result, value) -> {
 				final Comparable resultCmp = (Comparable)result;
@@ -726,15 +743,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public POJOQuery<T> setApplyAccessFilter(final boolean flag)
-	{
-		// nothing at the moment
-		// FIXME: implement
-		return this;
-	}
-
-	@Override
-	public POJOQuery<T> setApplyAccessFilterRW(final boolean RW)
+	public POJOQuery<T> setRequiredAccess(final Access access)
 	{
 		// nothing at the moment
 		// FIXME: implement
@@ -998,5 +1007,54 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		}
 
 		return QueryInsertExecutorResult.of(countInsert, insertSelectionId);
+	}
+
+	/** Used for unit testing */
+	private static final Map<String, QueryResultPage<?>> UUID_TO_PAGE = new ConcurrentHashMap<String, QueryResultPage<?>>();
+
+	/** Invoked by the test helper after each individual test. */
+	public static void clear_UUID_TO_PAGE()
+	{
+		UUID_TO_PAGE.clear();
+	}
+
+	@Override
+	public <ET extends T> QueryResultPage<ET> paginate(Class<ET> clazz, int pageSize) throws DBException
+	{
+		final List<ET> bigList = list(clazz);
+
+		final String firstUUID = UIDStringUtil.createRandomUUID();
+		final Instant resultTimestamp = SystemTime.asInstant();
+
+		PageDescriptor currentPageDescriptor = PageDescriptor.createNew(firstUUID, pageSize, bigList.size(), resultTimestamp);
+
+		final List<List<ET>> pages = Lists.partition(bigList, pageSize);
+		if (bigList.isEmpty())
+		{
+			return new QueryResultPage<ET>(currentPageDescriptor, null, 0, resultTimestamp, ImmutableList.of());
+		}
+
+		PageDescriptor nextPageDescriptor = pages.size() > 1 ? currentPageDescriptor.createNext() : null;
+		final QueryResultPage<ET> firstQueryResultPage = new QueryResultPage<ET>(currentPageDescriptor, nextPageDescriptor, bigList.size(), resultTimestamp, ImmutableList.copyOf(pages.get(0)));
+		UUID_TO_PAGE.put(firstQueryResultPage.getCurrentPageDescriptor().getPageIdentifier().getCombinedUid(), firstQueryResultPage);
+
+		currentPageDescriptor = nextPageDescriptor;
+
+		for (int i = 1; i < pages.size(); i++)
+		{
+			final boolean lastPage = pages.size() <= i + 1;
+			nextPageDescriptor = lastPage ? null : currentPageDescriptor.createNext();
+			final QueryResultPage<ET> queryResultPage = new QueryResultPage<ET>(currentPageDescriptor, nextPageDescriptor, bigList.size(), resultTimestamp, ImmutableList.copyOf(pages.get(i)));
+			UUID_TO_PAGE.put(queryResultPage.getCurrentPageDescriptor().getPageIdentifier().getCombinedUid(), queryResultPage);
+
+			currentPageDescriptor = nextPageDescriptor;
+		}
+		return firstQueryResultPage;
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> QueryResultPage<T> getPage(Class<T> clazz, String next)
+	{
+		return (QueryResultPage<T>)UUID_TO_PAGE.get(next);
 	}
 }

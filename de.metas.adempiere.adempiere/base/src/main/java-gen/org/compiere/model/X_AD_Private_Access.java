@@ -14,7 +14,7 @@ public class X_AD_Private_Access extends org.compiere.model.PO implements I_AD_P
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -442623522L;
+	private static final long serialVersionUID = 578094557L;
 
     /** Standard Constructor */
     public X_AD_Private_Access (Properties ctx, int AD_Private_Access_ID, String trxName)
@@ -22,8 +22,8 @@ public class X_AD_Private_Access extends org.compiere.model.PO implements I_AD_P
       super (ctx, AD_Private_Access_ID, trxName);
       /** if (AD_Private_Access_ID == 0)
         {
+			setAD_Private_Access_ID (0);
 			setAD_Table_ID (0);
-			setAD_User_ID (0);
 			setRecord_ID (0);
         } */
     }
@@ -42,6 +42,28 @@ public class X_AD_Private_Access extends org.compiere.model.PO implements I_AD_P
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set AD_Private_Access.
+		@param AD_Private_Access_ID AD_Private_Access	  */
+	@Override
+	public void setAD_Private_Access_ID (int AD_Private_Access_ID)
+	{
+		if (AD_Private_Access_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_AD_Private_Access_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_AD_Private_Access_ID, Integer.valueOf(AD_Private_Access_ID));
+	}
+
+	/** Get AD_Private_Access.
+		@return AD_Private_Access	  */
+	@Override
+	public int getAD_Private_Access_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Private_Access_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	@Override
 	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
@@ -112,6 +134,40 @@ public class X_AD_Private_Access extends org.compiere.model.PO implements I_AD_P
 	public int getAD_User_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_UserGroup getAD_UserGroup() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_UserGroup_ID, org.compiere.model.I_AD_UserGroup.class);
+	}
+
+	@Override
+	public void setAD_UserGroup(org.compiere.model.I_AD_UserGroup AD_UserGroup)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_UserGroup_ID, org.compiere.model.I_AD_UserGroup.class, AD_UserGroup);
+	}
+
+	/** Set Nutzergruppe.
+		@param AD_UserGroup_ID Nutzergruppe	  */
+	@Override
+	public void setAD_UserGroup_ID (int AD_UserGroup_ID)
+	{
+		if (AD_UserGroup_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_AD_UserGroup_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_AD_UserGroup_ID, Integer.valueOf(AD_UserGroup_ID));
+	}
+
+	/** Get Nutzergruppe.
+		@return Nutzergruppe	  */
+	@Override
+	public int getAD_UserGroup_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_UserGroup_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

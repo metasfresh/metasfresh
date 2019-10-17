@@ -46,7 +46,7 @@ import lombok.NonNull;
 	}, afterCommit = true)
 	public void addTraceEvent(@NonNull final I_PP_Cost_Collector costCollector)
 	{
-		Services.get(ITrxManager.class).run(() -> addTraceEvent0(costCollector));
+		Services.get(ITrxManager.class).runInNewTrx(() -> addTraceEvent0(costCollector));
 	}
 
 	private void addTraceEvent0(final I_PP_Cost_Collector costCollector)

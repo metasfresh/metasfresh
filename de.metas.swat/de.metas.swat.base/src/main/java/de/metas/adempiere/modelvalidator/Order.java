@@ -1,7 +1,8 @@
 package de.metas.adempiere.modelvalidator;
 
+import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MFreightCost;
+import org.compiere.Adempiere;
 import org.compiere.model.MClient;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -9,16 +10,17 @@ import org.compiere.model.MSysConfig;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.model.X_C_Order;
 import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.freighcost.FreightCostRule;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
+import de.metas.order.OrderFreightCostsService;
 import de.metas.order.impl.OrderBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -82,9 +84,9 @@ public class Order implements ModelValidator
 				bpartner.setIsCustomer(true);
 				bpartner.setIsProspect(false);
 				//
-				int client_id = Env.getAD_Client_ID(Env.getCtx());
-				int org_id = Env.getAD_Org_ID(Env.getCtx());
-				boolean recreate = MSysConfig.getBooleanValue("RECREATE_SEARCHKEY", true, client_id);
+				final int client_id = Env.getAD_Client_ID(Env.getCtx());
+				final int org_id = Env.getAD_Org_ID(Env.getCtx());
+				final boolean recreate = MSysConfig.getBooleanValue("RECREATE_SEARCHKEY", true, client_id);
 				if (recreate)
 				{
 					final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
@@ -101,18 +103,20 @@ public class Order implements ModelValidator
 
 
 	@Override
-	public String modelChange(final PO po, int type) throws Exception
+	public String modelChange(final PO po, final int typeInt) throws Exception
 	{
+		final ModelChangeType type = ModelChangeType.valueOf(typeInt);
+
 		// start: c.ghita@metas.ro: 01563
 		if (po instanceof X_C_OrderLine)
 		{
-			if (type == TYPE_BEFORE_NEW && po.getDynAttribute(PO.DYNATTR_CopyRecordSupport) == null)
+			if (type.isNew() && type.isBefore() && po.getDynAttribute(PO.DYNATTR_CopyRecordSupport) == null)
 			{
 				final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(po, I_C_OrderLine.class);
 				// bpartner address
 				if (orderLine.getC_BPartner_Location_ID() > 0)
 				{
-					String BPartnerAddress = orderLine.getBPartnerAddress();
+					final String BPartnerAddress = orderLine.getBPartnerAddress();
 					if (Check.isEmpty(BPartnerAddress, true))
 					{
 						Services.get(IDocumentLocationBL.class).setBPartnerAddress(orderLine);
@@ -121,7 +125,7 @@ public class Order implements ModelValidator
 
 				// 01717
 				{
-					org.compiere.model.I_C_Order order = orderLine.getC_Order();
+					final org.compiere.model.I_C_Order order = orderLine.getC_Order();
 					if (order.isDropShip())
 					{
 						if (orderLine.getC_BPartner_ID() < 0)
@@ -142,14 +146,15 @@ public class Order implements ModelValidator
 
 		// start: c.ghita@metas.ro: 01447
 
-		if (po.getDynAttribute(PO.DYNATTR_CopyRecordSupport) == null)
+		if (po.getDynAttribute(PO.DYNATTR_CopyRecordSupport) == null && !type.isAfter())
 		{
 			// BPartner address
 			{
 				if (order.getC_BPartner_Location_ID() > 0)
 				{
-					String BPartnerAddress = order.getBPartnerAddress();
+					final String BPartnerAddress = order.getBPartnerAddress();
 					if (Check.isEmpty(BPartnerAddress, true) || po.is_ValueChanged(I_C_Order.COLUMNNAME_C_BPartner_ID)
+							|| po.is_ValueChanged(I_C_Order.COLUMNNAME_C_BPartner_Location_ID)
 							|| po.is_ValueChanged(I_C_Order.COLUMNNAME_AD_User_ID))
 					{
 						Services.get(IDocumentLocationBL.class).setBPartnerAddress(order);
@@ -160,8 +165,9 @@ public class Order implements ModelValidator
 			{
 				if (order.getBill_Location_ID() > 0)
 				{
-					String BillToAddress = order.getBillToAddress();
+					final String BillToAddress = order.getBillToAddress();
 					if (Check.isEmpty(BillToAddress, true) || po.is_ValueChanged(I_C_Order.COLUMNNAME_Bill_BPartner_ID)
+							|| po.is_ValueChanged(I_C_Order.COLUMNNAME_Bill_Location_ID)
 							|| po.is_ValueChanged(I_C_Order.COLUMNNAME_Bill_User_ID))
 					{
 						Services.get(IDocumentLocationBL.class).setBillToAddress(order);
@@ -170,10 +176,11 @@ public class Order implements ModelValidator
 			}
 			// delivery to address
 			{
-				if ((order.getDropShip_Location_ID() > 0 || order.getM_Warehouse_ID() > 0) && !order.isSOTrx())
+				if (order.getDropShip_Location_ID() > 0 || order.getM_Warehouse_ID() > 0)
 				{
 					final String DeliveryToAddress = order.getDeliveryToAddress();
 					if (Check.isEmpty(DeliveryToAddress, true) || po.is_ValueChanged(I_C_Order.COLUMNNAME_DropShip_BPartner_ID)
+							|| po.is_ValueChanged(I_C_Order.COLUMNNAME_DropShip_Location_ID)
 							|| po.is_ValueChanged(I_C_Order.COLUMNNAME_DropShip_User_ID))
 					{
 						Services.get(IDocumentLocationBL.class).setDeliveryToAddress(order);
@@ -184,38 +191,32 @@ public class Order implements ModelValidator
 		// end: c.ghita@metas.ro: 01447
 
 		// metas: start: task 05899
-		if (type == TYPE_BEFORE_SAVE_TRX || type == TYPE_BEFORE_NEW || type == TYPE_BEFORE_CHANGE)
+		if (type.isBeforeSaveTrx() || (type.isBefore() && type.isNewOrChange()))
 		{
 			final boolean overridePricingSystem = false;
 			orderBL.setM_PricingSystem_ID(order, overridePricingSystem);
 		}
 		// metas: end: task 05899
 
-		if (type == TYPE_AFTER_CHANGE || type == TYPE_AFTER_NEW)
+		if (type.isAfter() && type.isNewOrChange())
 		{
 			// If the Price List is Changed (may be because of a PricingSystem change)
 			// the prices in the order lines need to be updated.
 			if (po.is_ValueChanged(I_C_Order.COLUMNNAME_M_PriceList_ID))
 			{
-				MOrder mOrder = (MOrder)po;
-
+				final MOrder mOrder = (MOrder)po;
 				for (final MOrderLine ol : mOrder.getLines())
 				{
-					if (!MFreightCost.retriveFor(po.getCtx(), ol.getM_Product_ID(), po.get_TrxName()).isEmpty())
-					{
-						// Freight costs are not calculated by Price List.
-						continue;
-					}
 					ol.setPrice();
 					ol.saveEx();
 				}
 			}
+
 			//
 			// checking if all is okay with this order
-			orderBL.checkFreightCost(order);
 			orderBL.checkForPriceList(order);
 		}
-		else if (type == TYPE_BEFORE_CHANGE || type == TYPE_BEFORE_NEW)
+		else if (type.isBefore() && type.isNewOrChange())
 		{
 			//
 			// Reset IncotermLocation if Incoterm is empty
@@ -227,19 +228,12 @@ public class Order implements ModelValidator
 			//
 			// updating the freight cost amount, if necessary
 			final boolean freightCostRuleChanged = po.is_ValueChanged(I_C_Order.COLUMNNAME_FreightCostRule);
-			final boolean notFixPrice = !X_C_Order.FREIGHTCOSTRULE_FixPrice.equals(order.getFreightCostRule());
-
-			if (freightCostRuleChanged && notFixPrice)
+			final FreightCostRule freightCostRule = FreightCostRule.ofCode(order.getFreightCostRule());
+			if (freightCostRuleChanged && freightCostRule.isNotFixPrice())
 			{
-				orderBL.updateFreightAmt(po.getCtx(), InterfaceWrapperHelper.create(po, I_C_Order.class), po.get_TrxName());
+				final OrderFreightCostsService orderFreightCostService = Adempiere.getBean(OrderFreightCostsService.class);
+				orderFreightCostService.updateFreightAmt(order);
 			}
-
-			//
-			// Set Bill Contact - us1010
-			// if (order.getBill_User_ID() <= 0)
-			// {
-			// orderBL.setBill_User_ID(order);
-			// }
 		}
 		return null;
 	}

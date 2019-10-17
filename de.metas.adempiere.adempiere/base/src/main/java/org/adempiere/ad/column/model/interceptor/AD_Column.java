@@ -1,13 +1,21 @@
 package org.adempiere.ad.column.model.interceptor;
 
+import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.AccessSqlParser;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 
+import de.metas.i18n.po.POTrlRepository;
+import de.metas.security.impl.ParsedSql;
+import de.metas.translation.api.IElementTranslationBL;
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -46,8 +54,7 @@ public class AD_Column
 			return;
 		}
 
-		final AccessSqlParser accessSqlParserInstance = new AccessSqlParser();
-		final String adaptedWhereClause = accessSqlParserInstance.rewriteWhereClauseWithLowercaseKeyWords(columnSQL);
+		final String adaptedWhereClause = ParsedSql.rewriteWhereClauseWithLowercaseKeyWords(columnSQL);
 
 		column.setColumnSQL(adaptedWhereClause);
 	}
@@ -64,6 +71,56 @@ public class AD_Column
 		if (!Check.isEmpty(column.getMandatoryLogic(), true))
 		{
 			LogicExpressionCompiler.instance.compile(column.getMandatoryLogic());
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, //
+			ifColumnsChanged = { I_AD_Column.COLUMNNAME_AD_Element_ID })
+	public void onAfterSave_WhenElementChanged(final I_AD_Column column)
+	{
+		updateTranslationsForElement(column);
+	}
+
+	private void updateTranslationsForElement(final I_AD_Column column)
+	{
+		final AdElementId elementId = AdElementId.ofRepoIdOrNull(column.getAD_Element_ID());
+		if (elementId == null)
+		{
+			return;
+		}
+
+		final IElementTranslationBL elementTranslationBL = Services.get(IElementTranslationBL.class);
+		elementTranslationBL.updateColumnTranslationsFromElement(elementId);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_AD_Column.COLUMNNAME_IsTranslated })
+	public void assertTrlColumnExists(final I_AD_Column adColumn)
+	{
+		if (!adColumn.isTranslated())
+		{
+			return;
+		}
+
+		if (!DisplayType.isText(adColumn.getAD_Reference_ID()))
+		{
+			throw new AdempiereException("Only text columns are translatable");
+		}
+
+		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
+		if (adTablesRepo.isVirtualColumn(adColumn))
+		{
+			throw new AdempiereException("Virtual columns are not translatable");
+		}
+
+		final String tableName = adTablesRepo.retrieveTableName(adColumn.getAD_Table_ID());
+		final String trlTableName = POTrlRepository.toTrlTableName(tableName);
+		final String columnName = adColumn.getColumnName();
+
+		if (!DB.isDBColumnPresent(trlTableName, columnName))
+		{
+			throw new AdempiereException("Before marking the column as translatable make sure " + trlTableName + "." + columnName + " exists."
+					+"\n If not, please manually create the table and/or column.");
 		}
 	}
 }

@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicates;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapMaker;
@@ -149,6 +150,8 @@ public final class CacheMgt
 	 */
 	public long reset()
 	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+
 		// Do nothing if already running (i.e. avoid recursion)
 		if (cacheResetRunning.getAndSet(true))
 		{
@@ -171,9 +174,10 @@ public final class CacheMgt
 		finally
 		{
 			cacheResetRunning.set(false);
+			stopwatch.stop();
 		}
 
-		logger.info("Reset all: cache instances invalidated ({} cached items invalidated)", total);
+		logger.info("Reset all: cache instances invalidated ({} cached items invalidated). Took {}", total, stopwatch);
 		return total;
 	}
 
@@ -343,7 +347,7 @@ public final class CacheMgt
 		return total;
 	}
 
-	private final long invalidateForRequest(final CacheInvalidateRequest request)
+	private final long invalidateForRequest(@NonNull final CacheInvalidateRequest request)
 	{
 		if (request.isAllRecords())
 		{

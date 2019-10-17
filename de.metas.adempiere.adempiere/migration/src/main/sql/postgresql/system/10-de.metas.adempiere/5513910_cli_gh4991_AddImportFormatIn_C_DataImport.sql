@@ -1,0 +1,1 @@
+INSERT INTO public.c_dataimport (ad_client_id, ad_impformat_id, ad_org_id, c_dataimport_id, created, createdby, isactive, updated, updatedby) VALUES (1000000, 540027, 1000000, 540000, '2019-02-26 15:55:19.000000', 100, 'Y', '2019-02-26 15:55:19.000000', 100);

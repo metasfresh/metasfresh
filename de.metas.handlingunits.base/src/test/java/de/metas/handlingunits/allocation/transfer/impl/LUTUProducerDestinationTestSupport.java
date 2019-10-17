@@ -69,6 +69,8 @@ import de.metas.util.collections.CollectionUtils;
  */
 public class LUTUProducerDestinationTestSupport
 {
+	private static final String ATTR_Truck_Product = "Truck";
+	
 	public HUTestHelper helper;
 
 	public LocatorId defaultLocatorId;
@@ -166,7 +168,7 @@ public class LUTUProducerDestinationTestSupport
 		}
 
 		{
-			piTruckUnlimitedCapacity = helper.createHUDefinition(HUTestHelper.NAME_Truck_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+			piTruckUnlimitedCapacity = helper.createHUDefinition(ATTR_Truck_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
 			piTruck_UnlimitedCapacity_Item = helper.createHU_PI_Item_Material(piTruckUnlimitedCapacity);
 			final I_M_HU_PI_Item_Product piItemProduct = helper.assignProduct(piTruck_UnlimitedCapacity_Item, helper.pTomatoProductId, new BigDecimal("6"), helper.uomEach);
@@ -175,11 +177,11 @@ public class LUTUProducerDestinationTestSupport
 
 			// helper.createHU_PI_Item_PackingMaterial(huDefTruck, null); // in this case there is no truck M_Product
 
-			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(helper.attr_CountryMadeIn)
+			helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(helper.attr_CountryMadeIn)
 					.setM_HU_PI(piTruckUnlimitedCapacity));
-			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(helper.attr_FragileSticker)
+			helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(helper.attr_FragileSticker)
 					.setM_HU_PI(piTruckUnlimitedCapacity));
-			helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(helper.attr_Volume)
+			helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(helper.attr_Volume)
 					.setM_HU_PI(piTruckUnlimitedCapacity)
 					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp)
 					.setAggregationStrategyClass(SumAggregationStrategy.class));

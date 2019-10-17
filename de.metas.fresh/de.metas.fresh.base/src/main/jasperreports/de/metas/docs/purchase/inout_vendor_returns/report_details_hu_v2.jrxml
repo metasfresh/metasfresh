@@ -41,21 +41,21 @@
 			<textField>
 				<reportElement key="textField-16" x="37" y="0" width="160" height="12" forecolor="#000000" uuid="433ecbd6-eef8-4d50-94b8-651f15faa91d"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{PackingMaterial}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="401" y="0" width="40" height="12" forecolor="#000000" uuid="b84f8a09-88eb-407b-ba45-f4ba28ee1328"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-19" x="354" y="0" width="45" height="12" forecolor="#000000" uuid="1a139402-c44a-4f3d-b1b3-e5bc78be1904"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>

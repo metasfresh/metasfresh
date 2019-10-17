@@ -180,9 +180,13 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	 * @param trxName db transaction name
 	 * @return new instance or <code>null</code> if not found.
 	 */
-	public static <T> T create(final Properties ctx, final String tableName, final int id, final Class<T> modelClass, final String trxName)
+	public static <T> T create(final Properties ctx,
+			@NonNull final String tableName,
+			final int id,
+			final Class<T> modelClass,
+			final String trxName)
 	{
-		Check.assumeNotNull(tableName, "tableName not null");
+		Check.assumeNotEmpty(tableName, "tableName not null");
 
 		if (id < getFirstValidIdByColumnName(tableName + "_ID"))
 		{
@@ -213,7 +217,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 
 	public static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass, final String trxName)
 	{
-		if(ids.isEmpty())
+		if (ids.isEmpty())
 		{
 			return ImmutableList.of();
 		}
@@ -267,7 +271,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	 * @param model
 	 * @return underlying {@link PO} or null
 	 */
-	/*package*/ static <T extends PO> T getPO(final Object model)
+	/* package */ static <T extends PO> T getPO(final Object model)
 	{
 		final boolean checkOtherWrapper = true;
 		final T po = getPO(model, checkOtherWrapper);
@@ -295,11 +299,12 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	 * @param checkOtherWrapper if the given <code>model</code> is handled by a {@link GridTabWrapper} and this param is <code>true</code>, then this method <b>loads a new PO from DB</b>, only using
 	 *            the given <code>model</code>'s table name and record ID. If this param is <code>false</code> and <code>model</code> is not handled by <code>POWrapper</code>, then this method returns
 	 *            <code>null</code>.
-	 * @return <ul>
-	 * <li>PO
-	 * <li>null if model is null
-	 * <li>null if {@link POWrapper} does not support it and <code>checkOtherWrapper</code> is <code>false</code>.
-	 * </ul>
+	 * @return
+	 *         <ul>
+	 *         <li>PO
+	 *         <li>null if model is null
+	 *         <li>null if {@link POWrapper} does not support it and <code>checkOtherWrapper</code> is <code>false</code>.
+	 *         </ul>
 	 */
 	@SuppressWarnings("unchecked")
 	private static <T extends PO> T getPO(final Object model, final boolean checkOtherWrapper)
@@ -452,7 +457,6 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 
 	private POWrapper(final Class<?> interfaceClass, final PO po, final boolean useOldValues, final String trlAdLanguage)
 	{
-		super();
 		this.po = po;
 		this.useOldValues = useOldValues;
 		this.interfaceClass = interfaceClass;
@@ -511,7 +515,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	public boolean isCalculated(final String columnName)
 	{
 		return po.getPOInfo().isCalculated(columnName);
-	};
+	}
 
 	protected Object getValue(final String columnName, final int index, final Class<?> returnType)
 	{
@@ -912,8 +916,12 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		{
 			return true;
 		}
+		
+		final POWrapper poWrapper = getPOWrapperOrNull(model);
+		final boolean useOldValues = poWrapper != null && poWrapper.useOldValues;
 
-		final Object value = po.get_Value(columnName);
+		final Object value = useOldValues ? po.get_ValueOld(columnName) : po.get_Value(columnName);
+
 		return value == null;
 	}
 

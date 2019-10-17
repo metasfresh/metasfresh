@@ -13,24 +13,25 @@ package de.metas.banking.payment.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MAllocationHdr;
@@ -42,6 +43,7 @@ import org.compiere.model.X_C_AllocationHdr;
 import org.compiere.model.X_C_Payment;
 import org.compiere.model.X_I_BankStatement;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
@@ -51,6 +53,10 @@ import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.currency.ICurrencyBL;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.payment.TenderType;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -80,7 +86,9 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		//
 		BigDecimal multiplier = BigDecimal.ONE;
 		if (!payment.isReceipt())
+		{
 			multiplier = multiplier.negate();
+		}
 
 		final BigDecimal payAmt = payment.getPayAmt().multiply(multiplier);
 
@@ -113,7 +121,9 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 			I_C_BankStatementLine bsl = (I_C_BankStatementLine)lineOrRef;
 			bsl.setTrxAmt(payAmt);
 			if (updateStatementAmt || bsl.getStmtAmt().signum() == 0)
+			{
 				bsl.setStmtAmt(payAmt);
+			}
 		}
 		else if (lineOrRef instanceof I_C_BankStatementLine_Ref)
 		{
@@ -303,18 +313,44 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 					// convert amounts
 					final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 
-					amount = currencyConversionBL.convert(ctx, amount, refLine.getC_Currency_ID(),
-							bsl.getC_Currency_ID(), bsl.getDateAcct(), inv.getC_ConversionType_ID(), bsl.getAD_Client_ID(),
-							bsl.getAD_Org_ID());
-					discountAmt = currencyConversionBL.convert(ctx, discountAmt, refLine.getC_Currency_ID(),
-							bsl.getC_Currency_ID(), bsl.getDateAcct(), inv.getC_ConversionType_ID(), bsl.getAD_Client_ID(),
-							bsl.getAD_Org_ID());
-					writeOffAmt = currencyConversionBL.convert(ctx, writeOffAmt, refLine.getC_Currency_ID(),
-							bsl.getC_Currency_ID(), bsl.getDateAcct(), inv.getC_ConversionType_ID(), bsl.getAD_Client_ID(),
-							bsl.getAD_Org_ID());
-					overUnderAmt = currencyConversionBL.convert(ctx, overUnderAmt, refLine.getC_Currency_ID(),
-							bsl.getC_Currency_ID(), bsl.getDateAcct(), inv.getC_ConversionType_ID(), bsl.getAD_Client_ID(),
-							bsl.getAD_Org_ID());
+					final CurrencyId refLineCurrencyId = CurrencyId.ofRepoId(refLine.getC_Currency_ID());
+					final CurrencyId bslCurrencyId = CurrencyId.ofRepoId(bsl.getC_Currency_ID());
+					final LocalDate dateConv = TimeUtil.asLocalDate(bsl.getDateAcct());
+					final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(inv.getC_ConversionType_ID());
+					final ClientId clientId = ClientId.ofRepoId(bsl.getAD_Client_ID());
+					final OrgId orgId = OrgId.ofRepoId(bsl.getAD_Org_ID());
+					amount = currencyConversionBL.convert(
+							amount,
+							refLineCurrencyId,
+							bslCurrencyId,
+							dateConv,
+							conversionTypeId,
+							clientId,
+							orgId);
+					discountAmt = currencyConversionBL.convert(
+							discountAmt, 
+							refLineCurrencyId,
+							bslCurrencyId, 
+							dateConv, 
+							conversionTypeId, 
+							clientId,
+							orgId);
+					writeOffAmt = currencyConversionBL.convert(
+							writeOffAmt, 
+							refLineCurrencyId,
+							bslCurrencyId, 
+							dateConv, 
+							conversionTypeId, 
+							clientId,
+							orgId);
+					overUnderAmt = currencyConversionBL.convert(
+							overUnderAmt, 
+							refLineCurrencyId,
+							bslCurrencyId, 
+							dateConv, 
+							conversionTypeId, 
+							clientId,
+							orgId);
 				}
 				final MAllocationLine aLine = new MAllocationLine(alloc, amount, discountAmt, writeOffAmt, overUnderAmt);
 				aLine.setDocInfo(inv.getC_BPartner_ID(), inv.getC_Order_ID(), inv.get_ID());
@@ -431,10 +467,12 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 			final String trxName)
 	{
 		if (logger.isDebugEnabled())
+		{
 			logger.debug(C_Invoice_ID + " - " + C_BPartner_ID + " - " + C_Currency_ID
 					+ " - " + StmtAmt + " - " + TrxAmt + " - " + discountAmt
 					+ " - " + overUnderAmt + " - " + writeOffAmt + " - " + C_BP_BankAccount_ID
 					+ " - " + DateTrx + " - " + DateAcct + " - " + Description + " - " + AD_Org_ID);
+		}
 
 		// Trx Amount = Payment overwrites Statement Amount if defined
 		BigDecimal PayAmt = TrxAmt;
@@ -458,11 +496,11 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		// FIXME this is a weak workaround
 		if (C_BP_BankAccount_ID > 0)
 		{
-			payment.setTenderType(X_C_Payment.TENDERTYPE_DirectDeposit);
+			payment.setTenderType(TenderType.DirectDeposit.getCode());
 		}
 		else
 		{
-			payment.setTenderType(X_C_Payment.TENDERTYPE_Cash);
+			payment.setTenderType(TenderType.Cash.getCode());
 		}
 
 		if (DateTrx != null)
@@ -483,10 +521,10 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		}
 		payment.setDescription(Description);
 		//
-		if (C_Invoice_ID != 0)
+		if (C_Invoice_ID > 0)
 		{
 			final MInvoice invoice = new MInvoice(ctx, C_Invoice_ID, ITrx.TRXNAME_None);
-			payment.setC_DocType_ID(invoice.isSOTrx());		// Receipt
+			payment.setIsReceiptAndUpdateDocType(invoice.isSOTrx());
 			payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
 			payment.setC_BPartner_ID(invoice.getC_BPartner_ID());
 			if (PayAmt.signum() != 0)	// explicit Amount
@@ -520,20 +558,20 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 				// payment.setOverUnderAmt(overUnderAmt);
 			}
 		}
-		else if (C_BPartner_ID != 0)
+		else if (C_BPartner_ID > 0)
 		{
 			payment.setC_BPartner_ID(C_BPartner_ID);
 			payment.setC_Currency_ID(C_Currency_ID);
 			if (PayAmt.signum() < 0)	// Payment
 			{
 				payment.setPayAmt(PayAmt.abs());
-				payment.setC_DocType_ID(false);
+				payment.setIsReceiptAndUpdateDocType(false);
 			}
 			else
 			// Receipt
 			{
 				payment.setPayAmt(PayAmt);
-				payment.setC_DocType_ID(true);
+				payment.setIsReceiptAndUpdateDocType(true);
 			}
 			// metas: begin
 			payment.setDiscountAmt(discountAmt);

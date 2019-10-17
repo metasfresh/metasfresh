@@ -32,6 +32,7 @@ import org.adempiere.util.lang.ITableRecordReference;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 
 /**
  * General exception thrown on any locking/unlocking error.
@@ -67,7 +68,7 @@ public abstract class LockException extends AdempiereException
 	@Override
 	protected final ITranslatableString buildMessage()
 	{
-		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder message = TranslatableStrings.builder();
 
 		message.append(super.buildMessage());
 

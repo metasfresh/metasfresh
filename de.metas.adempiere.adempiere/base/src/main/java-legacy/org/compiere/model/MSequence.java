@@ -31,6 +31,7 @@ import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.Adempiere.RunMode;
@@ -63,7 +64,7 @@ public class MSequence extends X_AD_Sequence
 	/** Use SQL procedure to get next id */
 	// begin vpj-cd e-evolution 02/11/2005 PostgreSQL
 	// private static final boolean USE_PROCEDURE = true;
-	private static boolean USE_PROCEDURE = false;
+	private static final boolean USE_PROCEDURE = false;
 	// end vpj-cd e-evolution 02/11/2005
 
 	public static final int QUERY_TIME_OUT = 10;
@@ -83,186 +84,166 @@ public class MSequence extends X_AD_Sequence
 	 * @return next no or (-1=not found, -2=error)
 	 */
 	// metas: 01558 - refactored in order to use newly introduced methods
-	public static int getNextID(int AD_Client_ID, String TableName, String trxName_NOT_USED)
+	public static int getNextID(final int AD_Client_ID, final String TableName, final String trxName_NOT_USED)
 	{
+		Check.assumeNotEmpty(TableName, "The given parameter tableName is not empty");
+
+		final boolean adempiereSys = isAdempiereSys(AD_Client_ID);
 		// FIXME: 08240 because we had big issues with AD_Sequence getting locked, we decided to acquire next sequence out of transaction (as a workaround)
 		final String trxName = ITrx.TRXNAME_None;
 
-		Check.assumeNotEmpty(TableName, "The given parameter tableName is not empty");
+		s_log.trace("{} - AdempiereSys={} [{}]", TableName, adempiereSys, trxName);
 
-		int retValue = -1;
-
-		// Check AdempiereSys
-		final boolean adempiereSys = isAdempiereSys(AD_Client_ID);
-		//
-		if (s_log.isTraceEnabled())
-			s_log.trace(TableName + " - AdempiereSys=" + adempiereSys + " [" + trxName + "]");
-		// begin vpj-cd e-evolution 09/02/2005 PostgreSQL
 		final String selectSQL = "SELECT CurrentNext, CurrentNextSys, IncrementNo, AD_Sequence_ID "
 				+ "FROM AD_Sequence "
 				+ "WHERE Name=?"
 				+ " AND IsActive='Y' AND IsTableID='Y' AND IsAutoSequence='Y' "
 				+ " FOR UPDATE OF AD_Sequence ";
-		USE_PROCEDURE = false;
 
-		// hengsin: executing getNextID in transaction create huge performance and locking issue
-		// Trx trx = trxName == null ? null : Trx.get(trxName, true);
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		for (int i = 0; i < 3; i++)
+
+		try
+		{
+			conn = DB.getConnectionID();
+
+			pstmt = conn.prepareStatement(selectSQL, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
+			pstmt.setString(1, TableName);
+			if (!USE_PROCEDURE && DB.getDatabase().isQueryTimeoutSupported())
+			{
+				pstmt.setQueryTimeout(QUERY_TIME_OUT);
+			}
+
+			rs = pstmt.executeQuery();
+			if (rs.next())
+			{
+
+				final int AD_Sequence_ID = rs.getInt(4);
+
+				// If maintaining official dictionary try to get the ID from http official server
+				if (isQueryCentralizedIDServer(TableName, AD_Client_ID))
+				{
+					final int nextId = getNextOfficialID_HTTP(TableName);
+
+					PreparedStatement updateSQL;
+					updateSQL = conn.prepareStatement("UPDATE AD_Sequence SET CurrentNextSys = ? + 1 WHERE AD_Sequence_ID = ?");
+					try
+					{
+						updateSQL.setInt(1, nextId);
+						updateSQL.setInt(2, AD_Sequence_ID);
+						updateSQL.executeUpdate();
+					}
+					finally
+					{
+						updateSQL.close();
+					}
+
+					return nextId;
+				}
+
+				// If not official dictionary try to get the ID from http custom server - if configured
+				if (isQueryProjectIDServer(TableName, AD_Client_ID))
+				{
+					final int nextId = getNextProjectID_HTTP(TableName);
+
+					PreparedStatement updateSQL;
+					updateSQL = conn.prepareStatement("UPDATE AD_Sequence SET CurrentNext = GREATEST(CurrentNext, ? + 1) WHERE AD_Sequence_ID = ?");
+					try
+					{
+						updateSQL.setInt(1, nextId);
+						updateSQL.setInt(2, AD_Sequence_ID);
+						updateSQL.executeUpdate();
+					}
+					finally
+					{
+						updateSQL.close();
+					}
+
+					return nextId;
+				}
+
+				//
+				if (USE_PROCEDURE)
+				{
+					return nextID(conn, AD_Sequence_ID, adempiereSys);
+				}
+				else
+				{
+					PreparedStatement updateSQL;
+					final int incrementNo = rs.getInt(3);
+					final int nextId;
+					if (adempiereSys)
+					{
+						updateSQL = conn.prepareStatement("UPDATE AD_Sequence SET CurrentNextSys = CurrentNextSys + ? WHERE AD_Sequence_ID = ?");
+						nextId = rs.getInt(2);
+					}
+					else
+					{
+						updateSQL = conn.prepareStatement("UPDATE AD_Sequence SET CurrentNext = CurrentNext + ? WHERE AD_Sequence_ID = ?");
+						nextId = rs.getInt(1);
+					}
+
+					try
+					{
+						updateSQL.setInt(1, incrementNo);
+						updateSQL.setInt(2, AD_Sequence_ID);
+						updateSQL.executeUpdate();
+					}
+					finally
+					{
+						updateSQL.close();
+					}
+
+					return nextId;
+				}
+			}
+			else
+			{
+				throw new AdempiereException("No AD_Sequence found for " + TableName);
+			}
+		}
+		catch (final Exception ex)
 		{
 			try
 			{
-				conn = DB.getConnectionID();
-				// Error
-				if (conn == null)
-					return -1;
-
-				pstmt = conn.prepareStatement(selectSQL,
-						ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_UPDATABLE);
-				pstmt.setString(1, TableName);
-				//
-				if (!USE_PROCEDURE && DB.getDatabase().isQueryTimeoutSupported())
-					pstmt.setQueryTimeout(QUERY_TIME_OUT);
-				rs = pstmt.executeQuery();
-				if (LogManager.isLevelFinest())
-					s_log.trace("AC=" + conn.getAutoCommit() + ", RO=" + conn.isReadOnly()
-							+ " - Isolation=" + conn.getTransactionIsolation() + "(" + Connection.TRANSACTION_READ_COMMITTED
-							+ ") - RSType=" + pstmt.getResultSetType() + "(" + ResultSet.TYPE_SCROLL_SENSITIVE
-							+ "), RSConcur=" + pstmt.getResultSetConcurrency() + "(" + ResultSet.CONCUR_UPDATABLE
-							+ ")");
-				if (rs.next())
+				if (conn != null)
 				{
+					conn.rollback();
+				}
+			}
+			catch (SQLException e1)
+			{
+			}
+			finally
+			{
+				conn = null;
+			}
 
-					int AD_Sequence_ID = rs.getInt(4);
-					boolean gotFromHTTP = false;
-
-					// If maintaining official dictionary try to get the ID from http official server
-					if (isQueryCentralizedIDServer(TableName, AD_Client_ID))
-					{
-						// get ID from http site
-						retValue = getNextOfficialID_HTTP(TableName);
-						if (retValue > 0)
-						{
-							PreparedStatement updateSQL;
-							updateSQL = conn.prepareStatement("UPDATE AD_Sequence SET CurrentNextSys = ? + 1 WHERE AD_Sequence_ID = ?");
-							try
-							{
-								updateSQL.setInt(1, retValue);
-								updateSQL.setInt(2, AD_Sequence_ID);
-								updateSQL.executeUpdate();
-							}
-							finally
-							{
-								updateSQL.close();
-							}
-						}
-						gotFromHTTP = true;
-					}
-
-					// If not official dictionary try to get the ID from http custom server - if configured
-					if (isQueryProjectIDServer(TableName, AD_Client_ID))
-					{
-						// get ID from http site
-						retValue = getNextProjectID_HTTP(TableName);
-						if (retValue > 0)
-						{
-							PreparedStatement updateSQL;
-							updateSQL = conn.prepareStatement("UPDATE AD_Sequence SET CurrentNext = GREATEST(CurrentNext, ? + 1) WHERE AD_Sequence_ID = ?");
-							try
-							{
-								updateSQL.setInt(1, retValue);
-								updateSQL.setInt(2, AD_Sequence_ID);
-								updateSQL.executeUpdate();
-							}
-							finally
-							{
-								updateSQL.close();
-							}
-						}
-						gotFromHTTP = true;
-					}
-
-					if (!gotFromHTTP)
-					{
-						//
-						if (USE_PROCEDURE)
-						{
-							retValue = nextID(conn, AD_Sequence_ID, adempiereSys);
-						}
-						else
-						{
-							PreparedStatement updateSQL;
-							int incrementNo = rs.getInt(3);
-							if (adempiereSys)
-							{
-								updateSQL = conn
-										.prepareStatement("UPDATE AD_Sequence SET CurrentNextSys = CurrentNextSys + ? WHERE AD_Sequence_ID = ?");
-								retValue = rs.getInt(2);
-							}
-							else
-							{
-								updateSQL = conn
-										.prepareStatement("UPDATE AD_Sequence SET CurrentNext = CurrentNext + ? WHERE AD_Sequence_ID = ?");
-								retValue = rs.getInt(1);
-							}
-							try
-							{
-								updateSQL.setInt(1, incrementNo);
-								updateSQL.setInt(2, AD_Sequence_ID);
-								updateSQL.executeUpdate();
-							}
-							finally
-							{
-								updateSQL.close();
-							}
-						}
-					}
-
-					// if (trx == null)
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
+		finally
+		{
+			try
+			{
+				if (conn != null)
+				{
 					conn.commit();
 				}
-				else
-					s_log.error("No record found - " + TableName);
-
-				//
-				break;		// EXIT
 			}
-			catch (Exception e)
+			catch (SQLException e)
 			{
-				s_log.error(TableName + " - " + e.getMessage(), e);
-				try
-				{
-					if (conn != null)
-						conn.rollback();
-				}
-				catch (SQLException e1)
-				{
-				}
+				throw DBException.wrapIfNeeded(e);
 			}
 			finally
 			{
 				DB.close(rs, pstmt);
+				DB.close(conn);
 				pstmt = null;
 				rs = null;
-				if (conn != null)
-				{
-					try
-					{
-						conn.close();
-					}
-					catch (SQLException e)
-					{
-					}
-					conn = null;
-				}
+				conn = null;
 			}
-			Thread.yield();		// give it time
 		}
-
-		// s_log.trace(retValue + " - Table=" + TableName + " [" + trx + "]");
-		return retValue;
 	}	// getNextID
 
 	/**
@@ -273,7 +254,7 @@ public class MSequence extends X_AD_Sequence
 	 * @param adempiereSys sys
 	 * @return next id or -1 (error) or -3 (parameter)
 	 */
-	static int nextID(Connection conn, int AD_Sequence_ID, boolean adempiereSys)
+	private static int nextID(Connection conn, int AD_Sequence_ID, boolean adempiereSys)
 	{
 		if (conn == null || AD_Sequence_ID == 0)
 			return -3;
@@ -572,22 +553,17 @@ public class MSequence extends X_AD_Sequence
 			String prm_PROJECT)
 	{
 		final StringBuilder response = new StringBuilder();
-		int retValue = -1;
 		try
 		{
-			String completeUrl = website + "?" + "USER="
-					+ URLEncoder.encode(prm_USER, "UTF-8") + "&PASSWORD="
-					+ URLEncoder.encode(prm_PASSWORD, "UTF-8") + "&PROJECT="
-					+ URLEncoder.encode(prm_PROJECT, "UTF-8") + "&TABLE="
-					+ URLEncoder.encode(prm_TABLE, "UTF-8") + "&ALTKEY="
-					+ URLEncoder.encode(prm_ALTKEY, "UTF-8") + "&COMMENT="
-					+ URLEncoder.encode(prm_COMMENT, "UTF-8");
+			final URL url = new URL(website + "?"
+					+ "USER=" + URLEncoder.encode(prm_USER, "UTF-8")
+					+ "&PASSWORD=" + URLEncoder.encode(prm_PASSWORD, "UTF-8")
+					+ "&PROJECT=" + URLEncoder.encode(prm_PROJECT, "UTF-8")
+					+ "&TABLE=" + URLEncoder.encode(prm_TABLE, "UTF-8")
+					+ "&ALTKEY=" + URLEncoder.encode(prm_ALTKEY, "UTF-8")
+					+ "&COMMENT=" + URLEncoder.encode(prm_COMMENT, "UTF-8"));
 
-			// Now use the URL class to parse the user-specified URL into
-			// its various parts: protocol, host, port, filename.
-			URL url = new URL(completeUrl);
-
-			InputStream from_server = url.openStream();
+			final InputStream from_server = url.openStream();
 
 			// Now read the server's response, and write it to the file
 			byte[] buffer = new byte[4096];
@@ -597,13 +573,21 @@ public class MSequence extends X_AD_Sequence
 				for (int i = 0; i < bytes_read; i++)
 				{
 					if (buffer[i] != 10)
+					{
 						response.append((char)buffer[i]);
+					}
 				}
 			}
 
-			retValue = Integer.parseInt(response.toString());
-			if (retValue <= 0)
-				retValue = -1;
+			final int nextId = Integer.parseInt(response.toString());
+			if (nextId <= 0)
+			{
+				throw new AdempiereException("Got invalid ID from " + website);
+			}
+
+			s_log.info("Got next ID for {}: {} ({})", TableName, nextId, website);
+
+			return nextId;
 		}
 		catch (Exception e)
 		{    // Report any errors that arise
@@ -617,9 +601,6 @@ public class MSequence extends X_AD_Sequence
 					+ "\b Response: " + response;
 			throw new AdempiereException(errmsg, e);
 		}
-		s_log.info("getNextID_HTTP - {}={} ({})", TableName, response, retValue);
-
-		return retValue;
 	}
 
 	private static boolean isExceptionCentralized(String tableName)
@@ -633,6 +614,7 @@ public class MSequence extends X_AD_Sequence
 				"AD_MIGRATION",
 				"AD_MIGRATIONSTEP",
 				"AD_MIGRATIONDATA",
+				I_AD_Note.Table_Name.toUpperCase(),
 				"AD_PACKAGE_IMP",
 				"AD_PACKAGE_IMP_BACKUP",
 				"AD_PACKAGE_IMP_DETAIL",

@@ -1,17 +1,24 @@
 package de.metas.material.event;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.AttributesKeyPart;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.util.time.SystemTime;
 
 /*
@@ -38,31 +45,32 @@ import de.metas.util.time.SystemTime;
 
 public class EventTestHelper
 {
-	public static final Date NOW = SystemTime.asDate();
-	public static final Date BEFORE_NOW = TimeUtil.addMinutes(NOW, -10);
-	public static final Date AFTER_NOW = TimeUtil.addMinutes(NOW, +10);
+	public static final Instant NOW = SystemTime.asInstant();
+	public static final Instant BEFORE_BEFORE_NOW = NOW.minus(20, ChronoUnit.MINUTES);
+	public static final Instant BEFORE_NOW = NOW.minus(10, ChronoUnit.MINUTES);
+	public static final Instant AFTER_NOW = NOW.plus(10, ChronoUnit.MINUTES);
 
 	/**
 	 * This constant is zero because we don't control the client-id used by {@link POJOWrapper} when it creates a new instance.
 	 * It could be done with {@link Env}, but it would add complexity..
 	 */
-	public static final int CLIENT_ID = 0;
-
-	public static final int ORG_ID = 20;
+	public static final ClientId CLIENT_ID = ClientId.SYSTEM;
+	public static final OrgId ORG_ID = OrgId.ofRepoId(20);
+	public static final ClientAndOrgId CLIENT_AND_ORG_ID = ClientAndOrgId.ofClientAndOrg(CLIENT_ID, ORG_ID);
 
 	public static final int TRANSACTION_ID = 60;
 
-	public static final int WAREHOUSE_ID = 51;
+	public static final WarehouseId WAREHOUSE_ID = WarehouseId.ofRepoId(51);
 
 	public static final int SHIPMENT_SCHEDULE_ID = 21;
 
 	public static final int PRODUCT_ID = 24;
 
-	public static final int BPARTNER_ID = 25;
+	public static final BPartnerId BPARTNER_ID = BPartnerId.ofRepoId(25);
 
 	public static final int ATTRIBUTE_SET_INSTANCE_ID = 28;
 
-	public static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofAttributeValueIds(1);
+	public static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofString("1");
 
 	public static SupplyRequiredDescriptor createSupplyRequiredDescriptor()
 	{
@@ -74,7 +82,7 @@ public class EventTestHelper
 		return SupplyRequiredDescriptor.builder()
 				.shipmentScheduleId(SHIPMENT_SCHEDULE_ID)
 				.demandCandidateId(41)
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.materialDescriptor(createMaterialDescriptorWithProductId(productId))
 				.build();
 	}
@@ -110,9 +118,12 @@ public class EventTestHelper
 
 	public static ProductDescriptor createProductDescriptorWithOffSet(final int offset)
 	{
+		final AttributeValueId firstAttributeValueId = STORAGE_ATTRIBUTES_KEY.getParts().iterator().next().getAttributeValueId();
+		final AttributeValueId newAttributeValueId = AttributeValueId.ofRepoId(firstAttributeValueId.getRepoId() + 1 + offset);
+
 		return ProductDescriptor.forProductAndAttributes(
 				PRODUCT_ID + offset,
-				AttributesKey.ofAttributeValueIds(STORAGE_ATTRIBUTES_KEY.getAttributeValueIds().iterator().next() + 1 + offset),
+				AttributesKey.ofParts(AttributesKeyPart.ofAttributeValueId(newAttributeValueId)),
 				ATTRIBUTE_SET_INSTANCE_ID + offset);
 	}
 }

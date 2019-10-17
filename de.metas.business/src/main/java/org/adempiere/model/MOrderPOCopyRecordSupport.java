@@ -16,7 +16,8 @@ import com.google.common.collect.ImmutableList;
 public class MOrderPOCopyRecordSupport extends GeneralCopyRecordSupport
 {
 	private static final List<String> COLUMNNAMES_ToCopyDirectly = ImmutableList.of(
-			I_C_Order.COLUMNNAME_PreparationDate // task 09000
+			I_C_Order.COLUMNNAME_PreparationDate, // task 09000
+			I_C_Order.COLUMNNAME_FreightAmt
 	);
 
 	@Override

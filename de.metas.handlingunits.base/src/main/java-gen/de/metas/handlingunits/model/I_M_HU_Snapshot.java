@@ -32,8 +32,6 @@ public interface I_M_HU_Snapshot
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_M_HU_Snapshot, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_HU_Snapshot, org.compiere.model.I_AD_Client>(I_M_HU_Snapshot.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -58,10 +56,6 @@ public interface I_M_HU_Snapshot
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_M_HU_Snapshot, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_HU_Snapshot, org.compiere.model.I_AD_Org>(I_M_HU_Snapshot.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
@@ -88,10 +82,6 @@ public interface I_M_HU_Snapshot
 	 */
 	public int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
     /** Column definition for C_BPartner_ID */
     public static final org.adempiere.model.ModelColumn<I_M_HU_Snapshot, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_M_HU_Snapshot, org.compiere.model.I_C_BPartner>(I_M_HU_Snapshot.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
@@ -116,10 +106,6 @@ public interface I_M_HU_Snapshot
 	 * <br>Virtual Column: false
 	 */
 	public int getC_BPartner_Location_ID();
-
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location();
-
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location);
 
     /** Column definition for C_BPartner_Location_ID */
     public static final org.adempiere.model.ModelColumn<I_M_HU_Snapshot, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_M_HU_Snapshot, org.compiere.model.I_C_BPartner_Location>(I_M_HU_Snapshot.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
@@ -253,7 +239,7 @@ public interface I_M_HU_Snapshot
     public static final String COLUMNNAME_Locked = "Locked";
 
 	/**
-	 * Set Handling Units.
+	 * Set Handling Unit.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -262,7 +248,7 @@ public interface I_M_HU_Snapshot
 	public void setM_HU_ID (int M_HU_ID);
 
 	/**
-	 * Get Handling Units.
+	 * Get Handling Unit.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -351,10 +337,6 @@ public interface I_M_HU_Snapshot
 	 */
 	public int getM_HU_PI_Item_Product_ID();
 
-	public de.metas.handlingunits.model.I_M_HU_PI_Item_Product getM_HU_PI_Item_Product();
-
-	public void setM_HU_PI_Item_Product(de.metas.handlingunits.model.I_M_HU_PI_Item_Product M_HU_PI_Item_Product);
-
     /** Column definition for M_HU_PI_Item_Product_ID */
     public static final org.adempiere.model.ModelColumn<I_M_HU_Snapshot, de.metas.handlingunits.model.I_M_HU_PI_Item_Product> COLUMN_M_HU_PI_Item_Product_ID = new org.adempiere.model.ModelColumn<I_M_HU_Snapshot, de.metas.handlingunits.model.I_M_HU_PI_Item_Product>(I_M_HU_Snapshot.class, "M_HU_PI_Item_Product_ID", de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class);
     /** Column name M_HU_PI_Item_Product_ID */
@@ -429,10 +411,6 @@ public interface I_M_HU_Snapshot
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Locator_ID();
-
-	public org.compiere.model.I_M_Locator getM_Locator();
-
-	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator);
 
     /** Column definition for M_Locator_ID */
     public static final org.adempiere.model.ModelColumn<I_M_HU_Snapshot, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<I_M_HU_Snapshot, org.compiere.model.I_M_Locator>(I_M_HU_Snapshot.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);

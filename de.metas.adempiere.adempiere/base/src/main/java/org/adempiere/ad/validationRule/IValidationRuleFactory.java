@@ -10,12 +10,12 @@ package org.adempiere.ad.validationRule;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,9 +32,9 @@ import de.metas.util.ISingletonService;
 
 /**
  * Factory class used to create {@link IValidationRule} instances
- * 
+ *
  * @author tsa
- * 
+ *
  * @task http://dewiki908/mediawiki/index.php/03271:_Extend_the_ValidationRule_feature_%282012091210000027%29
  */
 public interface IValidationRuleFactory extends ISingletonService
@@ -42,7 +42,7 @@ public interface IValidationRuleFactory extends ISingletonService
 
 	/**
 	 * Create {@link IValidationRule} for given AD_ValRule_ID, context table and column name
-	 * 
+	 *
 	 * @param tableName
 	 * @param adValRuleId
 	 * @param ctxTableName
@@ -53,7 +53,7 @@ public interface IValidationRuleFactory extends ISingletonService
 
 	/**
 	 * Create SQL {@link IValidationRule} for given whereClause
-	 * 
+	 *
 	 * @param whereClause
 	 * @return
 	 */
@@ -61,11 +61,11 @@ public interface IValidationRuleFactory extends ISingletonService
 
 	/**
 	 * Registers a table-wide validation rule.
-	 * 
+	 *
 	 * Each time we retrieve the validation rules for a column, if there are some table validation rules registered for target table, those rules will be composed too.
-	 * 
+	 *
 	 * E.g. If we register a validation rule for table "C_BPartner_Location" and we try to retrieve the validation rules for C_Order.Bill_Location_ID, our registered rule will be composed too.
-	 * 
+	 *
 	 * @param tableName
 	 * @param rule
 	 */
@@ -73,12 +73,10 @@ public interface IValidationRuleFactory extends ISingletonService
 
 	/**
 	 * Register a table+column pair that is an exception from a table-wide validation rule ( see {@code org.adempiere.ad.validationRule.IValidationRuleFactory.registerTableValidationRule(String, IValidationRule)}).
-	 * 
-	 * @param rule
-	 * @param ctxTableName
-	 * @param ctxColumnName
+	 *
+	 * @param description may be null
 	 */
-	void registerValidationRuleException(IValidationRule rule, String ctxTableName, String ctxColumnName);
+	void registerValidationRuleException(IValidationRule rule, String ctxTableName, String ctxColumnName, String description);
 
 	IValidationContext createValidationContext(Properties ctx, int windowNo, int tabNo, String tableName);
 
@@ -86,9 +84,9 @@ public interface IValidationRuleFactory extends ISingletonService
 
 	/**
 	 * Creates validation context for given <code>gridField</code>.
-	 * 
+	 *
 	 * If gridField is not a lookup then {@link IValidationContext#NULL} is returned.
-	 * 
+	 *
 	 * @param gridField
 	 * @return validation context or {@link IValidationContext#NULL}
 	 */

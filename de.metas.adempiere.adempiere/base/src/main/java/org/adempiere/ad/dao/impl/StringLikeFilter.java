@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryFilterModifier;
 
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 /**
@@ -33,12 +34,14 @@ import lombok.NonNull;
  *
  * @param <T> the type of the class we filter for.
  */
+@EqualsAndHashCode(callSuper = true, doNotUseGetters = true)
 public class StringLikeFilter<T> extends CompareQueryFilter<T>
 {
 	/**
 	 * Modified the given parameters for for the substring-SQL
 	 *
 	 */
+	@EqualsAndHashCode
 	private static class StringLikeQueryFilterModifier implements IQueryFilterModifier
 	{
 		private final boolean ignoreCase;
@@ -59,6 +62,15 @@ public class StringLikeFilter<T> extends CompareQueryFilter<T>
 			final String stringVal = (String)value;
 
 			result.append(" '"); // we need one space after the "LIKE"
+			result.append(supplementWildCards(stringVal));
+			result.append("'");
+			return result.toString();
+		}
+
+		private String supplementWildCards(@NonNull final String stringVal)
+		{
+			final StringBuilder result = new StringBuilder();
+
 			if (!stringVal.startsWith("%"))
 			{
 				result.append("%");
@@ -70,7 +82,7 @@ public class StringLikeFilter<T> extends CompareQueryFilter<T>
 			{
 				result.append("%");
 			}
-			result.append("'");
+
 			return result.toString();
 		}
 
@@ -104,7 +116,7 @@ public class StringLikeFilter<T> extends CompareQueryFilter<T>
 			{
 				str = (String)value;
 			}
-			return str;
+			return supplementWildCards(str);
 		}
 
 		@Override

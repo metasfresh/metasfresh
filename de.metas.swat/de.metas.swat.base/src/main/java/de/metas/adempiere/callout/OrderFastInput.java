@@ -32,17 +32,16 @@ import java.util.function.Consumer;
 
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutRecord;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.UomId;
+import org.compiere.Adempiere;
 import org.compiere.apps.search.IGridTabRowBuilder;
 import org.compiere.apps.search.IInfoWindowGridRowBuilders;
 import org.compiere.apps.search.NullInfoWindowGridRowBuilders;
 import org.compiere.apps.search.impl.InfoWindowGridRowBuilders;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridTab;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_Order;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -50,21 +49,23 @@ import org.slf4j.Logger;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner_product.IBPartnerProductBL;
+import de.metas.freighcost.FreightCostRule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderFreightCostsService;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
-import de.metas.purchasing.api.IBPartnerProductBL;
 import de.metas.shipping.ShipperId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -241,18 +242,18 @@ public class OrderFastInput extends CalloutEngine
 		for (final int recordId : recordIds)
 		{
 			final IGridTabRowBuilder builder = orderLineBuilders.getGridTabRowBuilder(recordId);
-			log.info("Calling addOrderLine for recordId=" + recordId + " and with builder=" + builder);
+			log.debug("Calling addOrderLine for recordId={} and with builder={}", recordId, builder);
 
 			addOrderLine(calloutField.getCtx(), order, builder::apply);
 		}
 		calloutField.getCalloutRecord().dataRefreshRecursively();
 
 		// make sure that the freight amount is up to date
-		final IOrderBL orderBL = Services.get(IOrderBL.class);
-		final boolean fixPrice = X_C_Order.FREIGHTCOSTRULE_FixPrice.equals(order.getFreightCostRule());
-		if (!fixPrice)
+		final FreightCostRule freightCostRule = FreightCostRule.ofNullableCode(order.getFreightCostRule());
+		if (freightCostRule.isNotFixPrice())
 		{
-			orderBL.updateFreightAmt(calloutField.getCtx(), order, ITrx.TRXNAME_None);
+			final OrderFreightCostsService orderFreightCostService = Adempiere.getBean(OrderFreightCostsService.class);
+			orderFreightCostService.updateFreightAmt(order);
 		}
 
 		return NO_ERROR;
@@ -263,7 +264,10 @@ public class OrderFastInput extends CalloutEngine
 		Services.get(IClientUI.class).invokeLater(calloutField.getWindowNo(), () -> clearFields(calloutField, save));
 	}
 
-	public static I_C_OrderLine addOrderLine(final Properties ctx, final I_C_Order order, final Consumer<I_C_OrderLine> orderLineCustomizer)
+	public static I_C_OrderLine addOrderLine(
+			final Properties ctx,
+			final I_C_Order order,
+			final Consumer<I_C_OrderLine> orderLineCustomizer)
 	{
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
@@ -274,7 +278,7 @@ public class OrderFastInput extends CalloutEngine
 		if (ol.getC_UOM_ID() <= 0 && ol.getM_Product_ID() > 0)
 		{
 			// the builders did provide a product, but no UOM, so we take the product's stocking UOM
-			final UomId stockingUOMId = Services.get(IProductBL.class).getStockingUOMId(ol.getM_Product_ID());
+			final UomId stockingUOMId = Services.get(IProductBL.class).getStockUOMId(ol.getM_Product_ID());
 			ol.setC_UOM_ID(stockingUOMId.getRepoId());
 		}
 
@@ -298,10 +302,14 @@ public class OrderFastInput extends CalloutEngine
 		final BPartnerId partnerId = BPartnerId.ofRepoId(ol.getC_BPartner_ID());
 		Services.get(IBPartnerProductBL.class).assertNotExcludedFromSaleToCustomer(productId, partnerId);
 
+		//
 		// set the prices before saveEx, because otherwise, priceEntered is
 		// reset and that way IOrderLineBL.setPrices can't tell whether it
 		// should use priceEntered or a computed price.
-		ol.setPriceEntered(BigDecimal.ZERO);
+		if (!ol.isManualPrice())
+		{
+			ol.setPriceEntered(BigDecimal.ZERO);
+		}
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
 				.orderLine(ol)
 				.resultUOM(ResultUOM.PRICE_UOM)
@@ -309,6 +317,7 @@ public class OrderFastInput extends CalloutEngine
 				.updateLineNetAmt(true)
 				.build());
 
+		//
 		// set OL_DONT_UPDATE_ORDER to inform the ol's model validator not to update the order
 		final String dontUpdateOrderLock = OL_DONT_UPDATE_ORDER + order.getC_Order_ID();
 		Env.setContext(ctx, dontUpdateOrderLock, true);

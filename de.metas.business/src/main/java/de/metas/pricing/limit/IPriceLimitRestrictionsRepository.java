@@ -3,6 +3,8 @@ package de.metas.pricing.limit;
 import java.util.Optional;
 import java.util.Set;
 
+import de.metas.location.CountryId;
+
 import de.metas.util.ISingletonService;
 
 /*
@@ -31,5 +33,5 @@ public interface IPriceLimitRestrictionsRepository extends ISingletonService
 {
 	Optional<PriceLimitRestrictions> get();
 
-	Set<Integer> getPriceCountryIds();
+	Set<CountryId> getPriceCountryIds();
 }

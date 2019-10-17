@@ -4,8 +4,9 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.uom.api.IUOMConversionBL;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +24,7 @@ import de.metas.product.ProductId;
 import de.metas.purchasecandidate.material.event.PurchaseCandidateRequestedHandler;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -86,7 +88,7 @@ public class C_PurchaseCandidate_PostEvents
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(purchaseCandidateRecord);
 
 		final PurchaseCandidateCreatedEvent purchaseCandidateCreatedEvent = PurchaseCandidateCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(purchaseCandidateRecord))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(purchaseCandidateRecord.getAD_Client_ID(), purchaseCandidateRecord.getAD_Org_ID()))
 				.purchaseCandidateRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID())
 				.purchaseMaterialDescriptor(materialDescriptor)
 				.supplyRequiredDescriptor(createSupplyRequiredDescritproOrNull(purchaseCandidateRecord))
@@ -129,7 +131,7 @@ public class C_PurchaseCandidate_PostEvents
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(purchaseCandidateRecord);
 
 		final PurchaseCandidateUpdatedEvent purchaseCandidateUpdatedEvent = PurchaseCandidateUpdatedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(purchaseCandidateRecord))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(purchaseCandidateRecord.getAD_Client_ID(), purchaseCandidateRecord.getAD_Org_ID()))
 				.purchaseCandidateRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID())
 				.vendorId(purchaseCandidateRecord.getVendor_ID())
 				.purchaseMaterialDescriptor(materialDescriptor)
@@ -148,11 +150,11 @@ public class C_PurchaseCandidate_PostEvents
 						productId);
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
-				.date(purchaseCandidateRecord.getPurchaseDatePromised())
-				.warehouseId(purchaseCandidateRecord.getM_WarehousePO_ID())
+				.date(TimeUtil.asInstant(purchaseCandidateRecord.getPurchaseDatePromised()))
+				.warehouseId(WarehouseId.ofRepoId(purchaseCandidateRecord.getM_WarehousePO_ID()))
 				.productDescriptor(productDescriptor)
 				// .customerId() we don't have a customer
-				.quantity(purchaseQty.getAsBigDecimal())
+				.quantity(purchaseQty.toBigDecimal())
 				.build();
 		return materialDescriptor;
 	}

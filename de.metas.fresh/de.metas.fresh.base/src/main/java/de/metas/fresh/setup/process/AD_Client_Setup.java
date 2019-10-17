@@ -5,6 +5,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.interceptor.CacheInterceptor;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.money.CurrencyId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
@@ -168,7 +169,7 @@ public class AD_Client_Setup extends JavaProcess implements IProcessDefaultParam
 				}
 				else if (PARAM_C_Currency_ID.equalsIgnoreCase(name))
 				{
-					clientSetup.setC_Currency_ID(para.getParameterAsInt());
+					clientSetup.setCurrencyId(para.getParameterAsRepoId(CurrencyId::ofRepoIdOrNull));
 				}
 				//
 				//

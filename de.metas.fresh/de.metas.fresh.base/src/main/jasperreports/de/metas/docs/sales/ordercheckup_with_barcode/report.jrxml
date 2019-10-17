@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-06-26T14:56:50 -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/ordercheckup_with_barcode/report" uuid="be165937-8a54-45bb-9624-cc1da8b204f3">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -31,13 +30,26 @@
 	<parameter name="barcodeURL" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA["http://xxxxxxxx:8080/adempiereJasper/BarcodeServlet"]]></defaultValueExpression>
 	</parameter>
+	<parameter name="C_BPartner_ID" class="java.math.BigDecimal"/>
+	<parameter name="DatePromised" class="java.sql.Date"/>
 	<queryString>
-		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Root( $P{RECORD_ID});]]>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Root( $P{RECORD_ID},$P{C_BPartner_ID}, $P{DatePromised});]]>
 	</queryString>
-	<field name="ad_org_id" class="java.math.BigDecimal"/>
-	<field name="docstatus" class="java.lang.String"/>
-	<field name="printname" class="java.lang.String"/>
-	<field name="c_order_id" class="java.lang.Integer"/>
+	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
+	</field>
+	<field name="docstatus" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="docstatus"/>
+	</field>
+	<field name="printname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="printname"/>
+	</field>
+	<field name="c_order_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="c_order_id"/>
+	</field>
+	<field name="c_order_mfgwarehouse_report_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="c_order_mfgwarehouse_report_id"/>
+	</field>
 	<background>
 		<band height="842" splitType="Stretch">
 			<textField evaluationTime="Auto" isBlankWhenNull="true">
@@ -49,7 +61,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center">
-					<font fontName="SansSerif" size="48" isBold="true" isItalic="true" isStrikeThrough="false" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" size="48" isBold="true" isItalic="true" isStrikeThrough="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[(($F{docstatus}.equals("DR")) ? $R{drafted} :
 (($F{docstatus}.equals("IN")) ? $R{invalid} : null))]]></textFieldExpression>
@@ -73,7 +85,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<subreportParameter name="RECORD_ID">
-					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[$F{c_order_mfgwarehouse_report_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
@@ -120,7 +132,7 @@
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="RECORD_ID">
-					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[$F{c_order_mfgwarehouse_report_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="barcodeURL">
 					<subreportParameterExpression><![CDATA[$P{barcodeURL}]]></subreportParameterExpression>
@@ -141,14 +153,14 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="false"/>
+					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER} + "/ "]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement key="textField-63" x="444" y="20" width="63" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="f7a3323d-5e4a-4108-b089-3a8763707882"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="false"/>
+					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<text><![CDATA[Seite]]></text>
 			</staticText>

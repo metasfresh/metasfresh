@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,17 +38,26 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.StartupListener;
+import de.metas.currency.CurrencyRepository;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.invoicecandidate.api.IInvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
+import de.metas.invoicecandidate.api.InvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.expectations.InvoiceCandidateExpectation;
 import de.metas.invoicecandidate.expectations.InvoiceLineAttributeExpectations;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.money.MoneyService;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 
 /**
  * Similar to {@link TestTwoReceiptsOneInvoice_QualityDiscount1}, but only the first InOut has two lines (one of them has <code>IsInDispute=Y</code>) <strike>and the iols of the two inOuts have
@@ -56,10 +65,13 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
  * <p>
  * => Expectation: the MovementQty that is in dispute is not invoiced.
  * <p>
- * 
+ *
  * @author ts
  *
  */
+
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, /* ShutdownListener.class,*/ MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
 public class TestTwoReceiptsOneInvoice_QualityDiscount2 extends AbstractNewAggregationEngineTests
 {
 	protected static final BigDecimal THREE = new BigDecimal("3");
@@ -103,7 +115,7 @@ public class TestTwoReceiptsOneInvoice_QualityDiscount2 extends AbstractNewAggre
 	{
 		final List<I_C_Invoice_Candidate> ics = test_2StepShipment_CommonSetup_Step01(false, null);// isSOTrx, priceEtnered_Override
 		final I_C_Invoice_Candidate ic = ics.get(0);
-		ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_NachLieferung);
+		ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_AfterDelivery);
 		ic.setInvoiceRule_Override(null);
 		InterfaceWrapperHelper.save(ic);
 
@@ -128,12 +140,14 @@ public class TestTwoReceiptsOneInvoice_QualityDiscount2 extends AbstractNewAggre
 			final I_M_AttributeSetInstance asi1 = ic_inout1_attributeExpectations.createM_AttributeSetInstance(ic);
 
 			final String inOutDocumentNo = "1";
+			final StockQtyAndUOMQty qtysDelivered_3 = StockQtyAndUOMQtys.create(new BigDecimal("3"), productId, new BigDecimal("30"), uomId);
 			inOut1 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo);
-			iol11_three = createInvoiceCandidateInOutLine(ic, inOut1, THREE, inOutDocumentNo + "_1");
+			iol11_three = createInvoiceCandidateInOutLine(ic, inOut1, qtysDelivered_3, inOutDocumentNo + "_1");
 			iol11_three.setM_AttributeSetInstance(asi1);
 			InterfaceWrapperHelper.save(iol11_three);
 
-			iol12_five_disp = createInvoiceCandidateInOutLine(ic, inOut1, FIVE, inOutDocumentNo + "_2");
+			final StockQtyAndUOMQty qtysDelivered_5 = StockQtyAndUOMQtys.create(new BigDecimal("5"), productId, new BigDecimal("50"), uomId);
+			iol12_five_disp = createInvoiceCandidateInOutLine(ic, inOut1, qtysDelivered_5, inOutDocumentNo + "_2");
 			iol12_five_disp.setM_AttributeSetInstance(asi1);
 			iol12_five_disp.setIsInDispute(true);
 			InterfaceWrapperHelper.save(iol12_five_disp);
@@ -154,8 +168,9 @@ public class TestTwoReceiptsOneInvoice_QualityDiscount2 extends AbstractNewAggre
 			final I_M_AttributeSetInstance asi2 = ic_inout2_attributeExpectations.createM_AttributeSetInstance(ic);
 
 			final String inOutDocumentNo = "2";
+			final StockQtyAndUOMQty qtysDelivered_10 = StockQtyAndUOMQtys.create(new BigDecimal("10"), productId, new BigDecimal("100"), uomId);
 			inOut2 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo);
-			iol21_ten = createInvoiceCandidateInOutLine(ic, inOut2, TEN, inOutDocumentNo + "_1");
+			iol21_ten = createInvoiceCandidateInOutLine(ic, inOut2, qtysDelivered_10, inOutDocumentNo + "_1");
 			iol21_ten.setM_AttributeSetInstance(asi2);
 			InterfaceWrapperHelper.save(iol21_ten);
 
@@ -199,13 +214,15 @@ public class TestTwoReceiptsOneInvoice_QualityDiscount2 extends AbstractNewAggre
 		{
 			final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol11_three);
 			assertNotNull("Missing IInvoiceLineRW for iol11=" + iol11_three, il1);
-			assertThat(il1.getQtyToInvoice(), comparesEqualTo(THREE));
+			assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(THREE));
+			assertThat(il1.getQtysToInvoice().getUOMQtyNotNull().toBigDecimal(), comparesEqualTo(THIRTY));
 
 			// Validate invoice line attributes
 			ic_inout1_attributeExpectations.assertExpected("invalid il1 attribute", il1.getInvoiceLineAttributes());
 
-			final IInvoiceCandidateInOutLineToUpdate icIol11 = retrieveIcIolToUpdateIfExists(il1, iol11_three);
-			assertThat(icIol11.getQtyInvoiced(), comparesEqualTo(THREE));
+			final InvoiceCandidateInOutLineToUpdate icIol11 = retrieveIcIolToUpdateIfExists(il1, iol11_three);
+			assertThat(icIol11.getQtyInvoiced().getStockQty().toBigDecimal(), comparesEqualTo(THREE));
+			assertThat(icIol11.getQtyInvoiced().getUOMQtyNotNull().toBigDecimal(), comparesEqualTo(THIRTY));
 		}
 
 		//
@@ -213,13 +230,15 @@ public class TestTwoReceiptsOneInvoice_QualityDiscount2 extends AbstractNewAggre
 		{
 			final IInvoiceLineRW il2 = getSingleForInOutLine(invoiceLines1, iol21_ten);
 			assertNotNull("Missing IInvoiceLineRW for iol21=" + iol21_ten, il2);
-			assertThat(il2.getQtyToInvoice(), comparesEqualTo(TEN));
+			assertThat(il2.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(TEN));
+			assertThat(il2.getQtysToInvoice().getUOMQtyNotNull().toBigDecimal(), comparesEqualTo(HUNDRET));
 
 			// Validate invoice line attributes
 			ic_inout2_attributeExpectations.assertExpected("invalid il2 attribute", il2.getInvoiceLineAttributes());
 
-			final IInvoiceCandidateInOutLineToUpdate icIol21 = retrieveIcIolToUpdateIfExists(il2, iol21_ten);
-			assertThat(icIol21.getQtyInvoiced(), comparesEqualTo(TEN));
+			final InvoiceCandidateInOutLineToUpdate icIol21 = retrieveIcIolToUpdateIfExists(il2, iol21_ten);
+			assertThat(icIol21.getQtyInvoiced().getStockQty().toBigDecimal(), comparesEqualTo(TEN));
+			assertThat(icIol21.getQtyInvoiced().getUOMQtyNotNull().toBigDecimal(), comparesEqualTo(HUNDRET));
 		}
 
 		//

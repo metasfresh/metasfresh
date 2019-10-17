@@ -26,13 +26,12 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
-import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.ITaxDAO;
 import de.metas.util.Services;
 
 /**
@@ -119,11 +118,13 @@ public class MOrderTax extends X_C_OrderTax
 		else
 		{
 			if (isOldTax)
+			{
 				return null;
+			}
 		}
 
 		final boolean taxIncluded = Services.get(IOrderLineBL.class).isTaxIncluded(line);
-		final I_C_Tax tax = line.getC_Tax();
+		final I_C_Tax tax = Services.get(ITaxDAO.class).getTaxById(line.getC_Tax_ID());
 
 		//
 		// Create New
@@ -183,7 +184,9 @@ public class MOrderTax extends X_C_OrderTax
 	private int getPrecision()
 	{
 		if (m_precision == null)
+		{
 			return 2;
+		}
 		return m_precision.intValue();
 	}	// getPrecision
 
@@ -205,7 +208,9 @@ public class MOrderTax extends X_C_OrderTax
 	protected MTax getTax()
 	{
 		if (m_tax == null)
+		{
 			m_tax = MTax.get(getCtx(), getC_Tax_ID());
+		}
 		return m_tax;
 	}	// getTax
 
@@ -251,8 +256,10 @@ public class MOrderTax extends X_C_OrderTax
 				final BigDecimal baseAmt = rs.getBigDecimal(1);
 				taxBaseAmt = taxBaseAmt.add(baseAmt);
 				//
-				if (!documentLevel)		// calculate line tax
+				if (!documentLevel)
+				{
 					taxAmt = taxAmt.add(taxBL.calculateTax(tax, baseAmt, isTaxIncluded(), getPrecision()));
+				}
 
 				//
 				final boolean lineIsPackingMaterial = DisplayType.toBoolean(rs.getString(2));
@@ -278,18 +285,26 @@ public class MOrderTax extends X_C_OrderTax
 
 		//
 		if (taxBaseAmt == null)
+		{
 			return false;
+		}
 
 		// Calculate Tax
-		if (documentLevel)		// document level
+		if (documentLevel)
+		{
 			taxAmt = taxBL.calculateTax(tax, taxBaseAmt, isTaxIncluded(), getPrecision());
+		}
 		setTaxAmt(taxAmt);
 
 		// Set Base
 		if (isTaxIncluded())
+		{
 			setTaxBaseAmt(taxBaseAmt.subtract(taxAmt));
+		}
 		else
+		{
 			setTaxBaseAmt(taxBaseAmt);
+		}
 
 		// Deactivate InvoiceTax if there were no invoice lines matching our C_Tax_ID
 		// Active it otherwise

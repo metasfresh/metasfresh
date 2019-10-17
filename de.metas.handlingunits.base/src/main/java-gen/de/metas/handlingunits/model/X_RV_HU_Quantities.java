@@ -15,7 +15,7 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1900907025L;
+	private static final long serialVersionUID = -799081529L;
 
     /** Standard Constructor */
     public X_RV_HU_Quantities (Properties ctx, int RV_HU_Quantities_ID, String trxName)
@@ -71,18 +71,6 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 	public java.lang.String getASIKeyName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ASIKeyName);
-	}
-
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
 	}
 
 	/** Set Maßeinheit.
@@ -176,7 +164,7 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 	}
 
 	@Override
-	public org.compiere.model.I_M_Product_Category getM_Product_Category() throws RuntimeException
+	public org.compiere.model.I_M_Product_Category getM_Product_Category()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class);
 	}
@@ -210,18 +198,6 @@ public class X_RV_HU_Quantities extends org.compiere.model.PO implements I_RV_HU
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.

@@ -1,24 +1,26 @@
 package de.metas.procurement.base.impl;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;
@@ -30,6 +32,9 @@ import de.metas.procurement.base.IPMMPricingAware;
 import de.metas.procurement.base.IPMMPricingBL;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -96,18 +101,17 @@ public class PMMPricingBL implements IPMMPricingBL
 	private void updatePriceFromPricingMasterdata(final IPMMPricingAware pricingAware)
 	{
 		final SOTrx soTrx = SOTrx.PURCHASE;
-		final Properties ctx = pricingAware.getCtx();
 
 		final I_C_BPartner bpartner = pricingAware.getC_BPartner();
 		Check.assumeNotNull(bpartner, "bpartner not null"); // shall not happen
-		final int bpartnerId = bpartner.getC_BPartner_ID();
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
 		final I_M_Product product = pricingAware.getM_Product();
 		final I_C_UOM uom = pricingAware.getC_UOM();
-		final Timestamp date = pricingAware.getDate();
+		final LocalDate date = TimeUtil.asLocalDate(pricingAware.getDate());
 
 		// Pricing system
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-		final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemId(ctx, bpartnerId, soTrx, ITrx.TRXNAME_ThreadInherited);
+		final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemIdInTrx(bpartnerId, soTrx);
 		if (pricingSystemId == null)
 		{
 			// no term and no pricing system means that we can't figure out the price
@@ -123,16 +127,16 @@ public class PMMPricingBL implements IPMMPricingBL
 		{
 			throw new AdempiereException("@Missing@ @" + org.compiere.model.I_C_BPartner_Location.COLUMNNAME_IsShipTo + "@");
 		}
-		final int countryId = shipToLocations.get(0).getC_Location().getC_Country_ID();
+		final CountryId countryId = CountryId.ofRepoId(shipToLocations.get(0).getC_Location().getC_Country_ID());
 
 		//
 		// Fetch price from pricing engine
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final BigDecimal qty = pricingAware.getQty();
-		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(product.getM_Product_ID(), bpartnerId, uom.getC_UOM_ID(), qty, soTrx.toBoolean());
+		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(product.getM_Product_ID(), bpartnerId.getRepoId(), uom.getC_UOM_ID(), qty, soTrx.toBoolean());
 		pricingCtx.setPricingSystemId(pricingSystemId);
 		pricingCtx.setPriceDate(date);
-		pricingCtx.setC_Country_ID(countryId);
+		pricingCtx.setCountryId(countryId);
 		pricingCtx.setReferencedObject(pricingAware.getWrappedModel()); // important for ASI pricing
 
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingCtx);
@@ -143,7 +147,7 @@ public class PMMPricingBL implements IPMMPricingBL
 
 		// these will be "empty" results, if the price was not calculated
 		logger.trace("Updating {} from {}", pricingAware, pricingResult);
-		pricingAware.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingResult.getPricingSystemId()));
+		pricingAware.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingResult.getPricingSystemId()));
 		pricingAware.setM_PriceList_ID(PriceListId.getRepoId(pricingResult.getPriceListId()));
 		pricingAware.setCurrencyId(pricingResult.getCurrencyId());
 		pricingAware.setPrice(pricingResult.getPriceStd());
@@ -178,17 +182,25 @@ public class PMMPricingBL implements IPMMPricingBL
 			return false;
 		}
 
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(flatrateTerm.getC_Currency_ID());
+		final CurrencyPrecision currencyPrecision = currencyId != null
+				? Services.get(ICurrencyDAO.class).getStdPrecision(currencyId)
+				: CurrencyPrecision.TWO;
+
+		final UomId flatrateTermUomId = UomId.ofRepoIdOrNull(flatrateTerm.getC_UOM_ID());
+		final I_C_UOM flatrateTermUom = Services.get(IUOMDAO.class).getById(flatrateTermUomId);
+
 		//
 		// Convert the price
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final BigDecimal price = uomConversionBL.convertPrice(
 				productId,
 				flatrateAmtPerUOM,
-				flatrateTerm.getC_UOM(),  								// this is the flatrateAmt's UOM
+				flatrateTermUom, // this is the flatrateAmt's UOM
 				uom,  													// this is the qtyReportEvent's UOM
-				flatrateTerm.getC_Currency().getStdPrecision());
+				currencyPrecision.toInt());
 
-		pricingAware.setCurrencyId(CurrencyId.ofRepoIdOrNull(flatrateTerm.getC_Currency_ID()));
+		pricingAware.setCurrencyId(currencyId);
 		pricingAware.setPrice(price);
 		return true;
 	}

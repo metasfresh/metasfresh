@@ -79,7 +79,9 @@ public class ModelClassGenerator
 
 		// Save
 		if (!directory.endsWith(File.separator))
+		{
 			directory += File.separator;
+		}
 
 		writeToFile(sb, directory + tableName + ".java");
 	}
@@ -291,7 +293,9 @@ public class ModelClassGenerator
 
 		String defaultValue = columnInfo.getDefaultValue();
 		if (defaultValue == null)
+		{
 			defaultValue = "";
+		}
 
 		// int fieldLength = columnInfo.getFieldLength();
 		// if (DisplayType.isLOB(displayType)) // No length check for LOBs
@@ -300,13 +304,17 @@ public class ModelClassGenerator
 		// Set ********
 		String setValue = "\t\tset_Value";
 		if (columnInfo.isEncrypted())
+		{
 			setValue = "\t\tset_ValueE";
+		}
 		// Handle isUpdateable
 		if (!columnInfo.isUpdateable())
 		{
 			setValue = "\t\tset_ValueNoCheck";
 			if (columnInfo.isEncrypted())
+			{
 				setValue = "\t\tset_ValueNoCheckE";
+			}
 		}
 
 		StringBuilder sb = new StringBuilder();
@@ -318,28 +326,27 @@ public class ModelClassGenerator
 			String fieldName = ModelInterfaceGenerator.getFieldName(columnName);
 			String referenceClassName = ModelInterfaceGenerator.getReferenceClassName(columnInfo);
 			//
-			if (fieldName != null && referenceClassName != null)
+			if (fieldName != null
+					&& referenceClassName != null
+					&& ModelInterfaceGenerator.isGenerateModelGetterOrSetterForReferencedClassName(referenceClassName))
 			{
+				//
+				// Model Getter
 				sb.append(NL)
-						.append("\t@Override").append(NL) // metas
-						.append("\tpublic " + referenceClassName + " get").append(fieldName).append("() throws RuntimeException").append(NL)
+						.append("\t@Override").append(NL)
+						.append("\tpublic " + referenceClassName + " get").append(fieldName).append("()").append(NL)
 						.append("\t{").append(NL)
-						// .append("\t\treturn ("+referenceClassName+")MTable.get(getCtx(), "+referenceClassName+".Table_Name)").append(NL)
-						// .append("\t\t\t.getPO(get"+columnName+"(), get_TrxName());")
-						.append("\t\treturn get_ValueAsPO(COLUMNNAME_" + columnName + ", " + referenceClassName + ".class);").append(NL) // metas: new model getter
-						/**/
+						.append("\t\treturn get_ValueAsPO(COLUMNNAME_" + columnName + ", " + referenceClassName + ".class);").append(NL)
 						.append("\t}").append(NL);
 
-				// metas: begin: model setter
+				//
+				// Model Setter
 				sb.append(NL)
-						.append("\t@Override").append(NL) // metas
+						.append("\t@Override").append(NL)
 						.append("\tpublic void set" + fieldName + "(" + referenceClassName + " " + fieldName + ")").append(NL)
 						.append("\t{").append(NL)
 						.append("\t\tset_ValueFromPO(COLUMNNAME_" + columnName + ", " + referenceClassName + ".class, " + fieldName + ");").append(NL)
 						.append("\t}").append(NL);
-				// metas: end
-				// Add imports:
-				// addImportClass(clazz);
 			}
 		}
 
@@ -405,7 +412,9 @@ public class ModelClassGenerator
 		}
 		// Boolean
 		else if (clazz.equals(Boolean.class))
+		{
 			sb.append(setValue).append(" (").append("COLUMNNAME_").append(columnName).append(", Boolean.valueOf(").append(columnName).append("));").append(NL);
+		}
 		else
 		{
 			sb.append(setValue).append(" (").append("COLUMNNAME_").append(columnName).append(", ")
@@ -424,9 +433,13 @@ public class ModelClassGenerator
 			else if (clazz.equals(Boolean.class))
 			{
 				if (defaultValue.indexOf('Y') != -1)
+				{
 					mandatory.append(true);
+				}
 				else
+				{
 					mandatory.append("false");
+				}
 			}
 			else if (clazz.equals(BigDecimal.class))
 			{
@@ -456,7 +469,9 @@ public class ModelClassGenerator
 		// Get ********
 		String getValue = "get_Value";
 		if (columnInfo.isEncrypted())
+		{
 			getValue = "get_ValueE";
+		}
 
 		sb.append("\t@Override").append(NL); // metas
 		sb.append("\tpublic ").append(dataType);
@@ -464,9 +479,13 @@ public class ModelClassGenerator
 		{
 			sb.append(" is");
 			if (columnName.toLowerCase().startsWith("is"))
+			{
 				sb.append(columnName.substring(2));
+			}
 			else
+			{
 				sb.append(columnName);
+			}
 		}
 		else
 		{
@@ -571,7 +590,9 @@ public class ModelClassGenerator
 
 		String method = "get" + columnName + "()";
 		if (displayType != DisplayType.String)
+		{
 			method = "String.valueOf(" + method + ")";
+		}
 
 		StringBuilder sb = new StringBuilder(NL)
 				.append("    /** Get Record ID/ColumnName").append(NL)
@@ -630,7 +651,9 @@ public class ModelClassGenerator
 					// fw.write(NL);
 				}
 				else
+				{
 					fw.write(c);
+				}
 			}
 			fw.flush();
 			fw.close();
@@ -646,7 +669,7 @@ public class ModelClassGenerator
 	}
 
 	/** Import classes */
-	private Collection<String> s_importClasses = new TreeSet<String>();
+	private Collection<String> s_importClasses = new TreeSet<>();
 
 	/**
 	 * Add class name to class import list
@@ -658,11 +681,15 @@ public class ModelClassGenerator
 		if (className == null
 				|| (className.startsWith("java.lang.") && !className.startsWith("java.lang.reflect."))
 				|| className.startsWith(packageName + "."))
+		{
 			return;
+		}
 		for (String name : s_importClasses)
 		{
 			if (className.equals(name))
+			{
 				return;
+			}
 		}
 		s_importClasses.add(className);
 	}
@@ -679,7 +706,9 @@ public class ModelClassGenerator
 			cl = cl.getComponentType();
 		}
 		if (cl.isPrimitive())
+		{
 			return;
+		}
 		addImportClass(cl.getCanonicalName());
 	}
 

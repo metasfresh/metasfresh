@@ -2,8 +2,12 @@ package de.metas.impexp.excel;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.TimeUtil;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -41,29 +45,36 @@ import lombok.Value;
 @Value
 public final class CellValue
 {
-	public static final CellValue ofDate(final java.util.Date date)
+	public static CellValue ofDate(final Object dateObj)
 	{
-		return new CellValue(CellValueType.Date, date);
+		if (dateObj != null && !TimeUtil.isDateOrTimeObject(dateObj))
+		{
+			throw new AdempiereException("Invalid date value: " + dateObj + " (" + dateObj.getClass() + ")");
+		}
+
+		return new CellValue(CellValueType.Date, dateObj);
 	}
 
-	public static final CellValue ofNumber(final Number number)
+	public static CellValue ofNumber(final Number number)
 	{
 		return new CellValue(CellValueType.Number, number);
 	}
 
-	public static final CellValue ofBoolean(final boolean bool)
+	public static CellValue ofBoolean(final boolean bool)
 	{
 		return new CellValue(CellValueType.Boolean, bool);
 	}
 
-	public static final CellValue ofString(final String string)
+	public static CellValue ofString(final String string)
 	{
 		return new CellValue(CellValueType.String, string);
 	}
 
 	@NonNull
 	private CellValueType type;
+
 	@NonNull
+	@Getter(AccessLevel.NONE)
 	private Object valueObj;
 
 	public boolean isDate()
@@ -73,7 +84,7 @@ public final class CellValue
 
 	public java.util.Date dateValue()
 	{
-		return (java.util.Date)valueObj;
+		return TimeUtil.asDate(valueObj);
 	}
 
 	public boolean isNumber()

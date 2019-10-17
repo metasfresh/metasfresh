@@ -8,8 +8,9 @@ import lombok.NonNull;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Column;
-import org.junit.Before;
-import org.junit.Test;
+import org.compiere.model.I_Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -36,7 +37,7 @@ import org.junit.Test;
 public class StringLikeFilterTest
 {
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -63,22 +64,33 @@ public class StringLikeFilterTest
 
 		assertThat(accepted).isTrue();
 	}
-	
+
 	@Test
 	public void toSql()
 	{
 		final StringLikeFilter<Object> substringFilter = new StringLikeFilter<>(I_AD_Column.COLUMNNAME_Name, "My%Str_ng", true);
-		
+
 		final String filterSql = substringFilter.getSql();
-		
+
 		assertThat(filterSql).isEqualTo("Name  ILIKE  '%My%Str_ng%'");
 	}
-	
+
 	private I_AD_Column createColumn(@NonNull final String columnValue)
 	{
 		final I_AD_Column column = newInstance(I_AD_Column.class);
 		column.setName(columnValue);
 		save(column);
 		return column;
+	}
+
+	@Test
+	public void test_equals()
+	{
+		final StringLikeFilter<I_Test> filter1 = new StringLikeFilter<>(I_AD_Column.COLUMNNAME_Name, "MySubString", true);
+		final StringLikeFilter<I_Test> filter2 = new StringLikeFilter<>(I_AD_Column.COLUMNNAME_Name, "MySubString", true);
+		assertThat(filter1).isEqualTo(filter2);
+
+		filter1.getSql(); // trigget sql build
+		assertThat(filter1).isEqualTo(filter2);
 	}
 }

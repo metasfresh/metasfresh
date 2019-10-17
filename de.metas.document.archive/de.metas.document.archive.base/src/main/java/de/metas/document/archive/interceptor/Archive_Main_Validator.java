@@ -49,6 +49,7 @@ import de.metas.document.archive.process.ExportArchivePDF;
 import de.metas.document.archive.spi.impl.DocOutboundArchiveEventListener;
 import de.metas.document.archive.spi.impl.RemoteArchiveStorage;
 import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.util.Services;
 
@@ -160,8 +161,8 @@ public class Archive_Main_Validator implements ModelValidator
 		// Services
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
-		final int processId = adProcessDAO.retriveProcessIdByClassIfUnique(ExportArchivePDF.class);
-		if (processId <= 0)
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClassIfUnique(ExportArchivePDF.class);
+		if (processId == null)
 		{
 			final AdempiereException ex = new AdempiereException("No AD_Process_ID found for " + ExportArchivePDF.class);
 			Archive_Main_Validator.logger.error(ex.getLocalizedMessage(), ex);

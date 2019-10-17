@@ -60,7 +60,7 @@ public final class Check
 	 *
 	 * @param clazz
 	 */
-	public static void setDefaultExClass(final Class<? extends RuntimeException> clazz)
+	public static void setDefaultExClass(@NonNull final Class<? extends RuntimeException> clazz)
 	{
 		defaultExClazz = clazz;
 	}
@@ -77,9 +77,10 @@ public final class Check
 	}
 
 	/**
-	 * If an exception is thrown and a message was set with this method, then that message plus a line-break is prepended to the exception message.
-	 *
-	 * @param exceptionHeaderMessage
+	 * If an exception is thrown
+	 * <li>and the exception class does not implement {@link ExceptionWithOwnHeaderMessage}
+	 * <li>and a message was set with this method,
+	 * <li>then that message plus a line-break is prepended to the exception message.
 	 */
 	public static void setExceptionHeaderMessage(final String exceptionHeaderMessage)
 	{
@@ -96,10 +97,17 @@ public final class Check
 		Check.logger = logger;
 	}
 
+	public static RuntimeException mkEx(final String msg)
+	{
+		return mkEx(defaultExClazz, msg);
+	}
+
 	private static RuntimeException mkEx(final Class<? extends RuntimeException> exClazz, final String msg)
 	{
+		final boolean exceptionHasItsOwnHeaderMessage = ExceptionWithOwnHeaderMessage.class.isAssignableFrom(exClazz);
+
 		final StringBuilder msgToUse = new StringBuilder();
-		if (!Check.isEmpty(exceptionHeaderMessage))
+		if (!exceptionHasItsOwnHeaderMessage && !Check.isEmpty(exceptionHeaderMessage))
 		{
 			msgToUse.append(exceptionHeaderMessage);
 			msgToUse.append("\n\n");
@@ -118,11 +126,15 @@ public final class Check
 		}
 	}
 
+	public interface ExceptionWithOwnHeaderMessage
+	{
+	}
+
 	private static RuntimeException throwOrLogEx(final Class<? extends RuntimeException> exClazz, final String msg)
 	{
 		final RuntimeException ex = mkEx(exClazz, msg);
 
-		Loggables.get().addLog("{}; Exception: {}", msg, ex);
+		Loggables.addLog("{}; Exception: {}", msg, ex);
 
 		if (throwException || logger == null)
 		{
@@ -149,6 +161,11 @@ public final class Check
 	public static void assume(final boolean cond, final String errMsg, final Object... params)
 	{
 		assume(cond, defaultExClazz, errMsg, params);
+	}
+
+	public static <T> void assumeEquals(final T obj1, final T obj2, final String objectName)
+	{
+		assume(Objects.equals(obj1, obj2), "assumed same {} but they were different: {}, {}", objectName, obj1, obj2);
 	}
 
 	/**
@@ -215,8 +232,6 @@ public final class Check
 	 *
 	 * If <code>obj</code> is <code>null</code>, then an exception will be thrown.
 	 *
-	 * @param obj
-	 * @param interfaceClass
 	 * @param objectName user readable object name (i.e. variable name)
 	 */
 	public static void assumeInstanceOf(final Object obj, final Class<?> interfaceClass, final String objectName)
@@ -307,12 +322,11 @@ public final class Check
 	}
 
 	/**
-	 * Like {@link #assumeNotEmpty(String, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
-	 *
-	 * @param str
-	 * @param exceptionClass
-	 * @param assumptionMessage
-	 * @param params
+	 * Like {@link #assumeNotEmpty(String, String, Object...)},
+	 * but throws an instance of the given <code>exceptionClass</code>
+	 * instead of the one which was set in {@link #setDefaultExClass(Class)}.
+	 * <p>
+	 * Also see {@link ExceptionWithOwnHeaderMessage}
 	 */
 	public static String assumeNotEmpty(final String str, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
@@ -595,6 +609,12 @@ public final class Check
 		};
 	}
 
+	public static RuntimeException newException(final String errMsg, final Object... params)
+	{
+		final String errMsgFormated = StringUtils.formatMessage(errMsg, params);
+		return mkEx(defaultExClazz, errMsgFormated);
+	}
+
 	public static boolean isEmpty(@Nullable final Object value)
 	{
 		if (value == null)
@@ -696,7 +716,7 @@ public final class Check
 	 * @deprecated: as of java-8, there is {@link Objects#equals(Object, Object)}. Please use that instead.
 	 */
 	@Deprecated
-	public static final boolean equals(final Object a, final Object b)
+	public static boolean equals(final Object a, final Object b)
 	{
 		if (a == b || a != null && b != null && a.equals(b))
 		{

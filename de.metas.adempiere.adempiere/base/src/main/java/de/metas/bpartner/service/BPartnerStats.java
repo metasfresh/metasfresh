@@ -4,11 +4,15 @@ import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
 
-import org.compiere.model.X_C_BPartner_Stats;
-import org.compiere.util.Util;
+import javax.annotation.Nullable;
 
+import org.compiere.model.X_C_BPartner_Stats;
+
+import de.metas.bpartner.BPartnerId;
 import de.metas.util.Check;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -36,36 +40,32 @@ import lombok.Value;
 @Value
 public class BPartnerStats
 {
-	int recordId;
+	int repoId;
 
-	int bpartnerId;
+	BPartnerId bpartnerId;
 
 	BigDecimal openItems;
-
 	BigDecimal actualLifeTimeValue;
-
 	BigDecimal soCreditUsed;
-
 	String soCreditStatus;
 
 	@Builder
 	public BPartnerStats(
-			final int recordId,
-			final int bpartnerId,
-			final BigDecimal openItems,
-			final BigDecimal actualLifeTimeValue,
-			final BigDecimal soCreditUsed,
-			final String soCreditStatus)
+			final int repoId,
+			@NonNull final BPartnerId bpartnerId,
+			@Nullable final BigDecimal openItems,
+			@Nullable final BigDecimal actualLifeTimeValue,
+			@Nullable final BigDecimal soCreditUsed,
+			@Nullable final String soCreditStatus)
 	{
-		Check.assume(recordId > 0, "Given parameter recordId is > 0");
-		this.recordId = recordId;
-		Check.assume(bpartnerId > 0, "Given parameter bpartnerId is > 0");
-		this.bpartnerId = bpartnerId;
+		Check.assume(repoId > 0, "Given parameter repoId is > 0");
 
-		this.openItems = Util.coalesce(openItems, ZERO);
-		this.actualLifeTimeValue = Util.coalesce(actualLifeTimeValue, ZERO);
-		this.soCreditUsed = Util.coalesce(soCreditUsed, ZERO);
-		this.soCreditStatus = Util.coalesce(soCreditStatus, X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck);
+		this.repoId = repoId;
+		this.bpartnerId = bpartnerId;
+		this.openItems = CoalesceUtil.coalesce(openItems, ZERO);
+		this.actualLifeTimeValue = CoalesceUtil.coalesce(actualLifeTimeValue, ZERO);
+		this.soCreditUsed = CoalesceUtil.coalesce(soCreditUsed, ZERO);
+		this.soCreditStatus = CoalesceUtil.coalesce(soCreditStatus, X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck);
 	}
 
 	public BigDecimal getSOCreditUsed()

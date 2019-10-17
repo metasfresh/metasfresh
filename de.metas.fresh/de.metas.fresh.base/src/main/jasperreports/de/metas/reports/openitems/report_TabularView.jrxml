@@ -121,7 +121,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{total_currency}]]></textFieldExpression>
 				</textField>
@@ -134,7 +134,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{paid_currency}]]></textFieldExpression>
 				</textField>
@@ -147,7 +147,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{open_currency}]]></textFieldExpression>
 				</textField>
@@ -160,7 +160,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{totalsum} + " " + $F{iso_code}]]></textFieldExpression>
 				</textField>
@@ -173,7 +173,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
 				</textField>
@@ -186,7 +186,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{total_currency_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
@@ -199,7 +199,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{open_currency_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
@@ -212,7 +212,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{main_currency}]]></textFieldExpression>
 				</textField>
@@ -236,7 +236,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{open_bpartner}]]></textFieldExpression>
 				</textField>
@@ -249,7 +249,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{total_bpartner}]]></textFieldExpression>
 				</textField>
@@ -262,7 +262,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 				</textField>
@@ -275,7 +275,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
 				</textField>
@@ -288,7 +288,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{paid_bpartner}]]></textFieldExpression>
 				</textField>
@@ -301,7 +301,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{sum}]]></textFieldExpression>
 				</textField>
@@ -314,7 +314,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
 				</textField>
@@ -327,7 +327,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{total_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
@@ -340,7 +340,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{open_bpartner_convert}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 				</textField>
@@ -353,7 +353,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{main_currency}]]></textFieldExpression>
 				</textField>
@@ -623,7 +623,7 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="14" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="14" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{headline}]]></textFieldExpression>
 			</textField>
@@ -699,21 +699,21 @@ ORDER BY
 			<textField>
 				<reportElement x="0" y="0" width="37" height="14" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
-					<font size="10" isBold="true"/>
+					<font size="10" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="37" y="0" width="178" height="14" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
-					<font size="10" isBold="true"/>
+					<font size="10" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="37" y="14" width="178" height="14" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
-					<font size="10" isBold="true"/>
+					<font size="10" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>

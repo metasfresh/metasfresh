@@ -39,9 +39,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.user.api.IUserBL;
-import org.adempiere.user.api.IUserDAO;
-import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.grid.ed.RichTextEditor;
 import org.compiere.grid.ed.VLetterAttachment;
@@ -66,13 +63,17 @@ import org.slf4j.Logger;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMail;
+import de.metas.email.EMailAddress;
 import de.metas.email.EMailSentStatus;
+import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.logging.LogManager;
+import de.metas.user.api.IUserBL;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -112,41 +113,30 @@ public class EMailDialog
 	 */
 	public EMailDialog(final Dialog owner,
 			final String title,
-			final I_AD_User from,
+			final UserEMailConfig fromUserEmailConfig,
 			final String to,
 			final String subject,
 			final String message,
 			final File attachment)
 	{
 		super(owner, title, true);
-		commonInit(from, to, subject, message, attachment, null); // boilerPlate
+		commonInit(fromUserEmailConfig, to, subject, message, attachment, null); // boilerPlate
 	}	// EmailDialog
 
-	/**
-	 * EMail Dialog
-	 *
-	 * @param owner calling window
-	 * @param title title
-	 * @param from from
-	 * @param to to
-	 * @param subject subject
-	 * @param message message
-	 * @param attachment optional attachment
-	 */
 	public EMailDialog(final Frame owner,
 			final String title,
-			final I_AD_User from,
+			final UserEMailConfig fromUserEmailConfig,
 			final String to,
 			final String subject,
 			final String message,
 			final File attachment)
 	{
-		this(owner, title, from, to, subject, message, attachment, null, null); // textPreset, archive
+		this(owner, title, fromUserEmailConfig, to, subject, message, attachment, null, null); // textPreset, archive
 	}	// EmailDialog
 
-	public EMailDialog(final Frame owner,
+	private EMailDialog(final Frame owner,
 			final String title,
-			final I_AD_User from,
+			final UserEMailConfig fromUserEmailConfig,
 			final String to,
 			final String subject,
 			final String message,
@@ -158,7 +148,7 @@ public class EMailDialog
 
 		this.archive = archive;
 
-		commonInit(from, to, subject, message, attachment, textPreset);
+		commonInit(fromUserEmailConfig, to, subject, message, attachment, textPreset);
 	}	// EmailDialog
 
 	/**
@@ -170,7 +160,8 @@ public class EMailDialog
 	 * @param message message
 	 * @param attachment optional attachment
 	 */
-	private void commonInit(final I_AD_User from,
+	private void commonInit(
+			final UserEMailConfig fromUserEmailConfig,
 			final String to,
 			final String subject,
 			final String message,
@@ -203,7 +194,7 @@ public class EMailDialog
 		{
 			log.error("EMailDialog", ex);
 		}
-		set(from, to, subject, message);
+		set(fromUserEmailConfig, to, subject, message);
 		setAttachment(attachment);
 
 		// metas adding default bcc and text preset
@@ -217,7 +208,7 @@ public class EMailDialog
 	/** Client */
 	private MClient m_client = null;
 	/** Sender */
-	private I_AD_User m_from = null;
+	private UserEMailConfig fromUserEmailConfig = null;
 	/** Primary Recipient */
 	private I_AD_User m_user = null;
 	/** Cc Recipient */
@@ -287,40 +278,28 @@ public class EMailDialog
 		// metas: new list box to select text snippet
 		lBoilerPlate.setText(msgBL.translate(ctx, I_AD_BoilerPlate.COLUMNNAME_AD_BoilerPlate_ID) + ":");
 		fBoilerPlate = new VLookup(I_AD_BoilerPlate.COLUMNNAME_AD_BoilerPlate_ID, false, false, true, MADBoilerPlate.getAllLookup(getWindowNo()));
-		fBoilerPlate.addActionListener(new ActionListener()
-		{
-			@Override
-			public void actionPerformed(final ActionEvent e)
+		fBoilerPlate.addActionListener(e -> {
+			final Integer id = (Integer)fBoilerPlate.getValue();
+			if (id == null)
 			{
-				final Integer id = (Integer)fBoilerPlate.getValue();
-				if (id == null)
-				{
-					return;
-				}
-				final MADBoilerPlate boilerPlate = MADBoilerPlate.get(ctx, id);
-
-				//
-				// Set subject from boiler plate
-				// if (Check.isEmpty(getSubject(), true))
-				{
-					final String subject = MADBoilerPlate.parseText(ctx, boilerPlate.getSubject(), true, attributes, ITrx.TRXNAME_None);
-					setSubject(subject);
-				}
-				setMessage(boilerPlate.getTextSnippetParsed(attributes));
+				return;
 			}
+			final MADBoilerPlate boilerPlate = MADBoilerPlate.get(ctx, id);
+
+			//
+			// Set subject from boiler plate
+			// if (Check.isEmpty(getSubject(), true))
+			{
+				final String subject = MADBoilerPlate.parseText(ctx, boilerPlate.getSubject(), true, attributes, ITrx.TRXNAME_None);
+				setSubject(subject);
+			}
+			setMessage(boilerPlate.getTextSnippetParsed(attributes));
 		});
 
 		fMessage = new RichTextEditor(attributes); // metas
 
 		fResolveVariables = new CCheckBox(msgBL.getMsg(ctx, "de.metas.letter.ResolveVariables"), fMessage.isResolveVariables());
-		fResolveVariables.addActionListener(new ActionListener()
-		{
-			@Override
-			public void actionPerformed(final ActionEvent e)
-			{
-				fMessage.setResolveVariables(fResolveVariables.isSelected());
-			}
-		});
+		fResolveVariables.addActionListener(e -> fMessage.setResolveVariables(fResolveVariables.isSelected()));
 
 		lLetter.setText(msgBL.translate(ctx, "de.metas.letters.AttachedLetter") + ":");
 
@@ -387,10 +366,10 @@ public class EMailDialog
 	/**
 	 * Set all properties
 	 */
-	public void set(final I_AD_User from, final String to, final String subject, final String message)
+	private void set(final UserEMailConfig fromUserEmailConfig, final String to, final String subject, final String message)
 	{
 		// Content
-		setFrom(from);
+		setFrom(fromUserEmailConfig);
 		setTo(to);
 		setSubject(subject);
 		setMessage(message);
@@ -437,36 +416,36 @@ public class EMailDialog
 	/**
 	 * Set Sender
 	 */
-	public void setFrom(final I_AD_User newFrom)
+	private void setFrom(final UserEMailConfig fromUserEmailConfig)
 	{
-		m_from = newFrom;
+		this.fromUserEmailConfig = fromUserEmailConfig;
 
 		final IUserBL userBL = Services.get(IUserBL.class);
 
-		if (newFrom == null)
+		if (fromUserEmailConfig == null)
 		{
 			confirmPanel.getOKButton().setEnabled(false);
 			fFrom.setText("**No user**");
 		}
 
-		final ITranslatableString errmsg = userBL.checkCanSendEMail(newFrom);
+		final ITranslatableString errmsg = userBL.checkCanSendEMail(fromUserEmailConfig);
 		if (errmsg != null)
 		{
 			confirmPanel.getOKButton().setEnabled(false);
-			fFrom.setText("** " + errmsg.translate(Env.getAD_Language(Env.getCtx())) + " **");
+			fFrom.setText("** " + errmsg.translate(Env.getAD_Language()) + " **");
 		}
 		else
 		{
-			fFrom.setText(m_from.getEMail());
+			fFrom.setText(EMailAddress.toStringOrNull(fromUserEmailConfig.getEmail()));
 		}
 	}	// setFrom
 
 	/**
 	 * Get Sender
 	 */
-	public I_AD_User getFrom()
+	private UserEMailConfig getFromUserEMailConfig()
 	{
-		return m_from;
+		return fromUserEmailConfig;
 	}	// getFrom
 
 	/**
@@ -579,14 +558,19 @@ public class EMailDialog
 		confirmPanel.getOKButton().setEnabled(false);
 
 		final StringTokenizer st = new StringTokenizer(getTo(), " ,;", false);
-		final String to = st.nextToken();
-		email = m_client.createEMail(getFrom(), to, getSubject(), getMessage(), true);
+		final EMailAddress to = EMailAddress.ofString(st.nextToken());
+		email = m_client.createEMail(
+				getFromUserEMailConfig(), 
+				to, 
+				getSubject(), 
+				getMessage(), 
+				true);
 		String status = "Check Setup";
 		if (email != null)
 		{
 			while (st.hasMoreTokens())
 			{
-				email.addTo(st.nextToken());
+				email.addTo(EMailAddress.ofString(st.nextToken()));
 			}
 			// cc
 			final StringTokenizer stcc = new StringTokenizer(getCc(), " ,;", false);
@@ -595,7 +579,7 @@ public class EMailDialog
 				final String cc = stcc.nextToken();
 				if (cc != null && cc.length() > 0)
 				{
-					email.addCc(cc);
+					email.addCc(EMailAddress.ofString(cc));
 				}
 			}
 			addBcc(email); // metas
@@ -690,7 +674,8 @@ public class EMailDialog
 	private final CLabel lLetter = new CLabel();
 	private final VLetterAttachment fLetter = new VLetterAttachment(this);
 
-	public EMailDialog(final Frame owner, final String title, final I_AD_User from,
+	public EMailDialog(final Frame owner, final String title, 
+			final UserEMailConfig fromUserEmailConfig,
 			final String to, final String subject, final String message,
 			final File attachment,
 			final MADBoilerPlate textPreset, final I_AD_Archive archive,
@@ -703,22 +688,19 @@ public class EMailDialog
 		// this.fMessage.setAttributes(attributes);
 		m_AD_Table_ID = AD_Table_ID;
 		m_Record_ID = Record_ID;
-		commonInit(from, to, subject, message, attachment, textPreset);
+		commonInit(fromUserEmailConfig, to, subject, message, attachment, textPreset);
 	}	// EmailDialog
 
 	private void updateDocExchange(final String status)
 	{
 		if (archive == null)
 		{
-			final Properties ctx = Env.getCtx();
-			final IContextAware context = new PlainContextAware(ctx);
-
 			if (m_AD_Table_ID <= 0 || m_Record_ID <= 0)
 			{
 				return;
 			}
 			final Object model = new TableRecordReference(m_AD_Table_ID, m_Record_ID)
-					.getModel(context);
+					.getModel(PlainContextAware.newOutOfTrx());
 
 			archive = Services.get(IArchiveDAO.class).retrievePDFArchiveForModel(model, I_AD_Archive.class);
 		}
@@ -727,7 +709,16 @@ public class EMailDialog
 			return;
 		}
 		final String action = "eMail";
-		Services.get(IArchiveEventManager.class).fireEmailSent(archive, action, getFrom(), getFrom().getEMailUser(), getTo(), getCc(), getBcc(), status);
+		final UserEMailConfig fromUserEMailConfig = getFromUserEMailConfig();
+		Services.get(IArchiveEventManager.class).fireEmailSent(
+				archive, 
+				action, 
+				fromUserEMailConfig, 
+				fromUserEMailConfig != null ? fromUserEMailConfig.getEmail() : null, 
+				EMailAddress.ofNullableString(getTo()), 
+				EMailAddress.ofNullableString(getCc()), 
+				EMailAddress.ofNullableString(getBcc()), 
+				status);
 	}
 
 	/**
@@ -768,7 +759,7 @@ public class EMailDialog
 			final String bcc = stBcc.nextToken();
 			if (bcc != null && bcc.length() > 0)
 			{
-				email.addBcc(bcc);
+				email.addBcc(EMailAddress.ofString(bcc));
 			}
 		}
 	}

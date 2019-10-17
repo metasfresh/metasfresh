@@ -13,17 +13,15 @@ package de.metas.fresh.invoice.migrateMatchInv.process;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -50,8 +48,13 @@ import de.metas.invoice.IMatchInvDAO;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UomId;
 import de.metas.util.IProcessor;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Helper class used by the processes which are creating/adjusting {@link I_M_MatchInv} records.
@@ -188,8 +191,8 @@ import de.metas.util.Services;
 					final I_M_InOutLine directInoutLine = il.getM_InOutLine();
 					inoutLines.add(0, directInoutLine);
 					logger.warn("Direct link was not found in IC-IOL associations. Adding now."
-							+"\n C_InvoiceLine: "+il
-							+"\n M_InOutLine: "+directInoutLine);
+							+ "\n C_InvoiceLine: " + il
+							+ "\n M_InOutLine: " + directInoutLine);
 				}
 			}
 		}
@@ -226,9 +229,12 @@ import de.metas.util.Services;
 				.list(I_C_InvoiceLine.class);
 	}
 
-	public BigDecimal retrieveQtyNotMatched(final I_C_InvoiceLine il)
+	public StockQtyAndUOMQty retrieveQtyNotMatched(@NonNull final I_C_InvoiceLine il)
 	{
-		BigDecimal qtyInvoiced = il.getQtyInvoiced();
+		StockQtyAndUOMQty qtyInvoiced = StockQtyAndUOMQtys
+				.create(
+						il.getQtyInvoiced(), ProductId.ofRepoId(il.getM_Product_ID()),
+						il.getQtyEntered(), UomId.ofRepoId(il.getC_UOM_ID()));
 
 		// Negate the qtyInvoiced if this is an CreditMemo
 		final I_C_Invoice invoice = il.getC_Invoice();
@@ -237,14 +243,17 @@ import de.metas.util.Services;
 			qtyInvoiced = qtyInvoiced.negate();
 		}
 
-		final BigDecimal qtyMatched = matchInvDAO.retrieveQtyMatched(il);
-		final BigDecimal qtyNotMatched = qtyInvoiced.subtract(qtyMatched);
+		final StockQtyAndUOMQty qtyMatched = matchInvDAO.retrieveQtyMatched(il);
+		final StockQtyAndUOMQty qtyNotMatched = qtyInvoiced.subtract(qtyMatched);
 		return qtyNotMatched;
 	}
 
-	public BigDecimal retrieveQtyNotMatched(final I_M_InOutLine iol)
+	public StockQtyAndUOMQty retrieveQtyNotMatched(@NonNull final I_M_InOutLine iol)
 	{
-		BigDecimal qtyReceived = iol.getMovementQty();
+		StockQtyAndUOMQty qtyReceived = StockQtyAndUOMQtys
+				.create(
+						iol.getMovementQty(), ProductId.ofRepoId(iol.getM_Product_ID()),
+						iol.getQtyDeliveredCatch(), UomId.ofRepoId(iol.getCatch_UOM_ID()));
 
 		// Negate the qtyReceived if this is an material return,
 		// because we want to have the qtyReceived as an absolute value.
@@ -256,20 +265,29 @@ import de.metas.util.Services;
 			qtyReceived = qtyReceived.negate();
 		}
 
-		final BigDecimal qtyMatched = matchInvDAO.retrieveQtyInvoiced(iol);
-		final BigDecimal qtyNotMatched = qtyReceived.subtract(qtyMatched);
+		final StockQtyAndUOMQty qtyMatched = matchInvDAO.retrieveQtysInvoiced(
+				iol,
+				qtyReceived.toZero()/*initialValue*/);
+		final StockQtyAndUOMQty qtyNotMatched = StockQtyAndUOMQtys.subtract(qtyReceived, qtyMatched);
 		return qtyNotMatched;
 	}
 
-	public I_M_MatchInv createMatchInv(final I_C_InvoiceLine il, final I_M_InOutLine iol, final BigDecimal qtyMatched)
+	public I_M_MatchInv createMatchInv(
+			@NonNull final I_C_InvoiceLine il,
+			@NonNull final I_M_InOutLine iol,
+			@NonNull final StockQtyAndUOMQty qtysMatched)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(il);
 		final I_M_MatchInv matchInv = InterfaceWrapperHelper.create(ctx, I_M_MatchInv.class, ITrx.TRXNAME_ThreadInherited);
+
 		matchInv.setAD_Org_ID(il.getAD_Org_ID());
 		matchInv.setC_InvoiceLine(il);
 		matchInv.setM_InOutLine(iol);
 
-		matchInv.setQty(qtyMatched);
+		matchInv.setQty(qtysMatched.getStockQty().toBigDecimal());
+		matchInv.setQtyInUOM(qtysMatched.getUOMQtyOpt().get().toBigDecimal());
+		matchInv.setC_UOM_ID(qtysMatched.getUOMQtyOpt().get().getUomId().getRepoId());
+
 		matchInv.setM_Product_ID(iol.getM_Product_ID());
 		matchInv.setM_AttributeSetInstance_ID(iol.getM_AttributeSetInstance_ID());
 
@@ -343,7 +361,7 @@ import de.metas.util.Services;
 			incrementCounterAndGet(COUNTER_ALL);
 
 			// now do the actual work, in a dedicated transaction
-			trxManager.run(new TrxRunnable()
+			trxManager.runInNewTrx(new TrxRunnable()
 			{
 				@Override
 				public void run(final String localTrxName) throws Exception

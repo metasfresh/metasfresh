@@ -24,6 +24,7 @@ package de.metas.inoutcandidate.api;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -87,7 +88,7 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 	 * @param sched
 	 * @return
 	 */
-	Timestamp getDeliveryDate(I_M_ShipmentSchedule sched);
+	ZonedDateTime getDeliveryDate(I_M_ShipmentSchedule sched);
 
 	/**
 	 * Get the preparation date effective based on PreparationDate and PreparationDate_Override.

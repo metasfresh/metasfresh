@@ -25,25 +25,32 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.PeriodClosedException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.service.IOrgDAO;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.api.impl.AcctSchemaPeriodControl;
 import de.metas.cache.CCache;
+import de.metas.calendar.CalendarId;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.IPeriodBL;
 import de.metas.calendar.IPeriodDAO;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 
 /**
  *  Calendar Period Model
@@ -77,16 +84,22 @@ public class MPeriod extends X_C_Period
 	public static MPeriod get (Properties ctx, int C_Period_ID)
 	{
 		if (C_Period_ID <= 0)
+		{
 			return null;
+		}
 		//
 		Integer key = new Integer(C_Period_ID);
 		MPeriod retValue = s_cache.get (key);
 		if (retValue != null)
+		{
 			return retValue;
+		}
 		//
 		retValue = new MPeriod (ctx, C_Period_ID, null);
 		if (retValue.get_ID () != 0)
+		{
 			s_cache.put (key, retValue);
+		}
 		return retValue;
 	} 	//	get
 
@@ -143,8 +156,10 @@ public class MPeriod extends X_C_Period
 			if (period.getC_Calendar_ID() == C_Calendar_ID
 					&& calendarBL.isStandardPeriod(period)
 					&& periodBL.isInPeriod(period, DateAcct) 
-					&& period.getAD_Client_ID() == AD_Client_ID)  // globalqss - CarlosRuiz - Fix [ 1820810 ] Wrong Period Assigned to Fact_Acct
+					&& period.getAD_Client_ID() == AD_Client_ID)
+			{
 				return period;
+			}
 		}
 		
 		//	Get it from DB
@@ -187,8 +202,10 @@ public class MPeriod extends X_C_Period
 			rs = null; pstmt = null;
 		}
 		if (retValue == null)
+		{
 			s_log.info("No Standard Period for " + DateAcct 
 				+ " (AD_Client_ID=" + AD_Client_ID + ")");
+		}
 		return retValue;
 	}
 
@@ -204,7 +221,9 @@ public class MPeriod extends X_C_Period
 	{
 		MPeriod period = get (ctx, DateAcct);
 		if (period == null)
+		{
 			return 0;
+		}
 		return period.getC_Period_ID();
 	}	//	getC_Period_ID
 	
@@ -219,7 +238,9 @@ public class MPeriod extends X_C_Period
 	{
 		MPeriod period = get (ctx, DateAcct, AD_Org_ID);
 		if (period == null)
+		{
 			return 0;
+		}
 		return period.getC_Period_ID();
 	}	//	getC_Period_ID
 
@@ -265,8 +286,10 @@ public class MPeriod extends X_C_Period
 		}
 		boolean open = period.isOpen(DocBaseType, DateAcct, AD_Org_ID);
 		if (!open)
+		{
 			s_log.warn(period.getName()
 				+ ": Not open for " + DocBaseType + " (" + DateAcct + ")");
+		}
 		return open;
 	}	//	isOpen
 
@@ -316,8 +339,10 @@ public class MPeriod extends X_C_Period
 			pstmt.setString (3, "Y");
 			pstmt.setString (4, "S");
 			rs = pstmt.executeQuery();
-			if (rs.next())	//	first only
+			if (rs.next())
+			{
 				retValue = new MPeriod(ctx, rs, null);
+			}
 		}
 		catch (SQLException e)
 		{
@@ -437,13 +462,14 @@ public class MPeriod extends X_C_Period
 		{
 			DB.getConstraints().addAllowedTrxNamePrefix("POSave").incMaxTrx(1);
 		
-			// MAcctSchema as = MClient.get(getCtx(), getAD_Client_ID()).getAcctSchema();
-			final I_C_AcctSchema as = Services.get(IAcctSchemaDAO.class).retrieveAcctSchema(getCtx(), getAD_Client_ID(), ad_Org_ID);
-			if (as != null && as.isAutoPeriodControl())
+			final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
+			final AcctSchema as = acctSchemasRepo.getByCliendAndOrg(ClientId.ofRepoId(getAD_Client_ID()), OrgId.ofRepoId(ad_Org_ID));
+			final AcctSchemaPeriodControl periodControl = as.getPeriodControl();
+			if (periodControl.isAutomaticPeriodControl())
 			{
-				Timestamp today = TimeUtil.trunc(new Timestamp (System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
-				Timestamp first = TimeUtil.addDays(today, - as.getPeriod_OpenHistory()); 
-				Timestamp last = TimeUtil.addDays(today, as.getPeriod_OpenFuture());
+				Timestamp today = SystemTime.asDayTimestamp();
+				Timestamp first = TimeUtil.addDays(today, - periodControl.getOpenDaysInPast()); 
+				Timestamp last = TimeUtil.addDays(today, periodControl.getOpenDaysInFuture());
 				Timestamp date1, date2;
 				if (dateAcct != null)
 				{
@@ -469,8 +495,7 @@ public class MPeriod extends X_C_Period
 				//	We are OK
 				if (Services.get(IPeriodBL.class).isInPeriod(this, today))
 				{
-					as.setC_Period_ID(getC_Period_ID());
-					InterfaceWrapperHelper.save(as);
+					acctSchemasRepo.changeAcctSchemaAutomaticPeriodId(as.getId(), getC_Period_ID());
 				}
 				return true;
 			}
@@ -509,15 +534,23 @@ public class MPeriod extends X_C_Period
 		//	Truncate Dates
 		Timestamp date = getStartDate(); 
 		if (date != null)
+		{
 			setStartDate(TimeUtil.getDay(date));
+		}
 		else
+		{
 			return false;
+		}
 		//
 		date = getEndDate();
 		if (date != null)
+		{
 			setEndDate(TimeUtil.getDay(date));
+		}
 		else
+		{
 			setEndDate(TimeUtil.getMonthLastDay(getStartDate()));
+		}
 		
 		if (getEndDate().before(getStartDate()))
 		{
@@ -661,9 +694,13 @@ public class MPeriod extends X_C_Period
 		{
 			MYear year = (MYear) getC_Year();
 			if (year != null)
+			{
 				m_C_Calendar_ID = year.getC_Calendar_ID();
+			}
 			else
+			{
 				log.error("@NotFound@ C_Year_ID=" + getC_Year_ID());
+			}
 		}
 		return m_C_Calendar_ID;
 	}   //  getC_Calendar_ID
@@ -674,13 +711,14 @@ public class MPeriod extends X_C_Period
 	 * @param AD_Org_ID Organization
 	 * @return
 	 */
-    public static int getC_Calendar_ID(final Properties ctx, final int AD_Org_ID)
+    public static int getC_Calendar_ID(final Properties ctx, final int orgRepoId)
     {	
         int C_Calendar_ID = 0;
-        if (AD_Org_ID > 0)
+        final OrgId orgId = OrgId.ofRepoIdOrAny(orgRepoId);
+        if (orgId.isRegular())
         {
-            I_AD_OrgInfo info = Services.get(IOrgDAO.class).retrieveOrgInfo(ctx, AD_Org_ID, ITrx.TRXNAME_None);
-            C_Calendar_ID = info.getC_Calendar_ID();
+            OrgInfo info = Services.get(IOrgDAO.class).getOrgInfoById(orgId);
+            C_Calendar_ID = CalendarId.toRepoId(info.getCalendarId());
         }
         
         if (C_Calendar_ID <= 0)

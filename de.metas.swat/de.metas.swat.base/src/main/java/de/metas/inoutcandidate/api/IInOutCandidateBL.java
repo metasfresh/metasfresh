@@ -2,7 +2,7 @@ package de.metas.inoutcandidate.api;
 
 import org.compiere.model.I_M_InOut;
 
-import de.metas.inoutcandidate.spi.impl.IQtyAndQuality;
+import de.metas.inoutcandidate.spi.impl.ReceiptQty;
 import de.metas.util.ISingletonService;
 
 /**
@@ -16,6 +16,6 @@ public interface IInOutCandidateBL extends ISingletonService
 	 */
 	InOutGenerateResult createEmptyInOutGenerateResult(boolean storeInouts);
 
-	IQtyAndQuality getQtyAndQuality(final org.compiere.model.I_M_InOutLine inoutLine);
+	ReceiptQty getQtyAndQuality(final org.compiere.model.I_M_InOutLine inoutLine);
 
 }

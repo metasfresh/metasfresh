@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,18 +24,18 @@ package de.metas.invoicecandidate.api;
 
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.Properties;
+import java.util.Set;
 
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.process.PInstanceId;
-import de.metas.util.ILoggable;
 
 /**
  * Helper interface to mass-enqueue {@link I_C_Invoice_Candidate}s to be invoiced.
- * 
+ *
  * @author tsa
  *
  */
@@ -48,26 +48,21 @@ public interface IInvoiceCandidateEnqueuer
 
 	/**
 	 * Enqueue {@link I_C_Invoice_Candidate}s in given selection.
-	 * 
+	 *
 	 * @param pinstanceId
 	 * @return enqueueing result
 	 */
 	IInvoiceCandidateEnqueueResult enqueueSelection(final PInstanceId pinstanceId);
 
-	IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(Collection<Integer> invoiceCandidateIds);
+	IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(Set<InvoiceCandidateId> invoiceCandidateIds);
 
 	/**
 	 * Context/transaction name to be used when enqueueing.
-	 * 
+	 *
 	 * @param ctx
 	 * @param trxName
 	 */
-	IInvoiceCandidateEnqueuer setContext(final Properties ctx, final String trxName);
-
-	/**
-	 * Sets logger to be used to log warnings.
-	 */
-	IInvoiceCandidateEnqueuer setLoggable(final ILoggable loggable);
+	IInvoiceCandidateEnqueuer setContext(final Properties ctx);
 
 	/**
 	 * @param failIfNothingEnqueued true if enqueueing shall fail if nothing was enqueued
@@ -76,25 +71,25 @@ public interface IInvoiceCandidateEnqueuer
 
 	/**
 	 * Set to <code>true</code> if you want the enqueuer to make sure that the invoice candidates that will be enqueued shall not be changed.
-	 * 
+	 *
 	 * By default, if you are not setting a particular value the {@link #SYSCONFIG_FailOnChanges} (default {@link #DEFAULT_FailOnChanges}) will be used.
-	 * 
+	 *
 	 * @param checkNoChanges
 	 */
 	IInvoiceCandidateEnqueuer setFailOnChanges(boolean failOnChanges);
 
 	/**
 	 * Sets invoicing parameters to be used.
-	 * 
+	 *
 	 * @param invoicingParams
 	 */
 	IInvoiceCandidateEnqueuer setInvoicingParams(IInvoicingParams invoicingParams);
 
 	/**
 	 * Sets the total net amount to invoice checksum.
-	 * 
+	 *
 	 * If the amount is not null and "FailOnChanges" is set then this checksum will be enforced on enqueued invoice candidates.
-	 * 
+	 *
 	 * @param totalNetAmtToInvoiceChecksum
 	 */
 	IInvoiceCandidateEnqueuer setTotalNetAmtToInvoiceChecksum(BigDecimal totalNetAmtToInvoiceChecksum);

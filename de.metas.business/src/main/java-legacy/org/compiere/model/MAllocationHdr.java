@@ -30,18 +30,18 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import de.metas.acct.api.IFactAcctDAO;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
@@ -198,9 +198,9 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 			setDateTrx(new Timestamp(System.currentTimeMillis()));
 			setDateAcct(getDateTrx());
 			setDocAction(DOCACTION_Complete);	// CO
-			setDocStatus(DOCSTATUS_Drafted);	// DR
+			setDocStatus(DocStatus.Drafted.getCode());	// DR
 			// setC_Currency_ID (0);
-			setApprovalAmt(Env.ZERO);
+			setApprovalAmt(BigDecimal.ZERO);
 			setIsApproved(false);
 			setIsManual(false);
 			//
@@ -475,7 +475,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 // @formatter:on
 		// Add up Amounts & validate
 		lines = getLines(true);
-		BigDecimal approval = Env.ZERO;
+		BigDecimal approval = BigDecimal.ZERO;
 		for (final MAllocationLine line : lines)
 		{
 			approval = approval.add(line.getWriteOffAmt()).add(line.getDiscountAmt());
@@ -598,8 +598,6 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 	@Override
 	public boolean voidIt()
 	{
-		log.info(toString());
-
 		// Before Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
 		if (m_processMsg != null)
@@ -610,20 +608,13 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		// metas: tsa: begin: 2181
 		// boolean retValue = reverseIt();
 		// metas: tsa: changed
-		if (DOCSTATUS_Closed.equals(getDocStatus())
-				|| DOCSTATUS_Reversed.equals(getDocStatus())
-				|| DOCSTATUS_Voided.equals(getDocStatus()))
+		final DocStatus docStatus = DocStatus.ofCode(getDocStatus());
+		if(docStatus.isCompletedOrClosedReversedOrVoided())
 		{
-			m_processMsg = "Document Closed: " + getDocStatus();
-			setDocAction(DOCACTION_None);
-			return false;
+			throw new AdempiereException("Document Closed: " + docStatus);
 		}
 		// Not Processed
-		else if (DOCSTATUS_Drafted.equals(getDocStatus())
-				|| DOCSTATUS_Invalid.equals(getDocStatus())
-				|| DOCSTATUS_InProgress.equals(getDocStatus())
-				|| DOCSTATUS_Approved.equals(getDocStatus())
-				|| DOCSTATUS_NotApproved.equals(getDocStatus()))
+		else if(docStatus.isNotProcessed())
 		{
 			voidIt0();
 		}
@@ -893,7 +884,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		// Set Inactive
 		setIsActive(false);
 		setDocumentNo(getDocumentNo() + "^");
-		setDocStatus(DOCSTATUS_Reversed);	// for direct calls
+		setDocStatus(DocStatus.Reversed.getCode());	// for direct calls
 		if (!save() || isActive())
 		{
 			throw new IllegalStateException("Cannot de-activate allocation");
@@ -944,10 +935,8 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 	 */
 	public boolean isComplete()
 	{
-		final String ds = getDocStatus();
-		return DOCSTATUS_Completed.equals(ds)
-				|| DOCSTATUS_Closed.equals(ds)
-				|| DOCSTATUS_Reversed.equals(ds);
+		final DocStatus docStatus = DocStatus.ofCode(getDocStatus());
+		return docStatus.isCompletedOrClosedOrReversed();
 	}	// isComplete
 
 	// metas: begin
@@ -971,7 +960,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		reversal.setDocumentNo(""); // let it generate a new document#
 		reversal.setProcessing(false);
 		reversal.setProcessed(false);
-		reversal.setDocStatus(DOCSTATUS_Drafted);
+		reversal.setDocStatus(DocStatus.Drafted.getCode());
 		reversal.setDocAction(DOCACTION_Complete);
 		reversal.setPosted(false);
 		reversal.setReversal_ID(getC_AllocationHdr_ID());
@@ -1029,11 +1018,11 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		{
 			throw new AdempiereException(reversal.getProcessMsg());
 		}
-		reversal.setDocStatus(DOCSTATUS_Reversed);
+		reversal.setDocStatus(DocStatus.Reversed.getCode());
 		reversal.setDocAction(DOCACTION_None);
 		InterfaceWrapperHelper.save(reversal);
 
-		setDocStatus(DOCSTATUS_Reversed);
+		setDocStatus(DocStatus.Reversed.getCode());
 		setDocAction(DOCACTION_None);
 	}
 	// metas: end

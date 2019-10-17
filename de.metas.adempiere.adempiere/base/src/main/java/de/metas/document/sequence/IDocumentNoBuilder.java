@@ -3,6 +3,11 @@
  */
 package de.metas.document.sequence;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
+
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.sequence.impl.IPreliminaryDocumentNoBuilder;
@@ -22,13 +27,15 @@ public interface IDocumentNoBuilder
 	 */
 	String build() throws DocumentNoBuilderException;
 
-	IDocumentNoBuilder setAD_Client_ID(int adClientId);
+	IDocumentNoBuilder setClientId(ClientId clientId);
 
 	IDocumentNoBuilder setDocumentSequenceInfo(DocumentSequenceInfo documentSeqInfo);
 
-	IDocumentNoBuilder setDocumentSequenceInfoBySequenceId(int AD_Sequence_ID);
+	IDocumentNoBuilder setDocumentSequenceInfoBySequenceId(final DocSequenceId sequenceId);
 
 	IDocumentNoBuilder setFailOnError(boolean failOnError);
+
+	IDocumentNoBuilder setEvaluationContext(Evaluatee context);
 
 	/**
 	 * Sets the document/model for which we are building the DocumentNo.
@@ -36,7 +43,11 @@ public interface IDocumentNoBuilder
 	 *
 	 * @param documentModel document/model or null
 	 */
-	IDocumentNoBuilder setDocumentModel(Object documentModel);
+	@Deprecated
+	default IDocumentNoBuilder setDocumentModel(Object documentModel)
+	{
+		return setEvaluationContext(documentModel != null ? InterfaceWrapperHelper.getEvaluatee(documentModel) : Evaluatees.empty());
+	}
 
 	/**
 	 * Explicitly set which is the sequence number to be used.

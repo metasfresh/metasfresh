@@ -9,12 +9,17 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -55,37 +60,43 @@ public class AssignableInvoiceCandidateRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 
-		assignableInvoiceCandidateRepository = new AssignableInvoiceCandidateRepository(new AssignableInvoiceCandidateFactory());
+		assignableInvoiceCandidateRepository = new AssignableInvoiceCandidateRepository(AssignableInvoiceCandidateFactory.newForUnitTesting());
 
-		refundTestTools = new RefundTestTools();
+		refundTestTools = RefundTestTools.newInstance();
 	}
 
 	@Test
 	public void getById_assignableInvoiceCandidate()
 	{
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+
 		final I_C_Invoice_Candidate assignableCandidateRecord = createAssignableCandidateRecord(refundTestTools);
 
 		// invoke the method under test
 		final AssignableInvoiceCandidate assignableCandidate = assignableInvoiceCandidateRepository.getById(InvoiceCandidateId.ofRepoId(assignableCandidateRecord.getC_Invoice_Candidate_ID()));
 
-		assertThat(assignableCandidate.getQuantity().getAsBigDecimal()).isEqualByComparingTo("15");
-		assertThat(assignableCandidate.getQuantity().getUOMId()).isEqualTo(assignableCandidateRecord.getM_Product().getC_UOM_ID());
-		assertThat(assignableCandidate.getBpartnerId().getRepoId()).isEqualTo(20);
-		assertThat(assignableCandidate.getMoney().getValue()).isEqualTo(TWENTY);
-		assertThat(assignableCandidate.getMoney().getCurrencyId()).isEqualTo(refundTestTools.getCurrency().getId());
+		assertThat(assignableCandidate.getQuantity().toBigDecimal()).isEqualByComparingTo("15");
+
+		final I_M_Product product = productDAO.getById(ProductId.ofRepoId(assignableCandidateRecord.getM_Product_ID()));
+		assertThat(assignableCandidate.getQuantity().getUomId().getRepoId()).isEqualTo(product.getC_UOM_ID());
+		assertThat(assignableCandidate.getBpartnerLocationId().getBpartnerId().getRepoId()).isEqualTo(refundTestTools.billBPartnerLocationId.getBpartnerId().getRepoId());
+		assertThat(assignableCandidate.getMoney().toBigDecimal()).isEqualTo(TWENTY);
+		assertThat(assignableCandidate.getMoney().getCurrencyId()).isEqualTo(refundTestTools.getCurrencyId());
 		assertThat(assignableCandidate.getInvoiceableFrom()).isEqualTo(NOW);
 	}
 
 	public static I_C_Invoice_Candidate createAssignableCandidateRecord(
 			@NonNull final RefundTestTools refundTestTools)
 	{
+		final BPartnerLocationId billBPartnerAndLocationId = refundTestTools.billBPartnerLocationId;
 		final I_C_Invoice_Candidate assignableCandidateRecord = newInstance(I_C_Invoice_Candidate.class);
 		assignableCandidateRecord.setIsSOTrx(true);
-		assignableCandidateRecord.setBill_BPartner_ID(20);
+		assignableCandidateRecord.setBill_BPartner_ID(billBPartnerAndLocationId.getBpartnerId().getRepoId());
+		assignableCandidateRecord.setBill_Location_ID(billBPartnerAndLocationId.getRepoId());
 		assignableCandidateRecord.setDateToInvoice(TimeUtil.asTimestamp(NOW));
 		assignableCandidateRecord.setNetAmtToInvoice(TWENTY);
-		assignableCandidateRecord.setC_Currency(refundTestTools.getCurrencyRecord());
-		assignableCandidateRecord.setM_Product(refundTestTools.getProductRecord());
+		assignableCandidateRecord.setC_Currency_ID(refundTestTools.getCurrencyId().getRepoId());
+		assignableCandidateRecord.setM_Product_ID(refundTestTools.getProductRecord().getM_Product_ID());
 		assignableCandidateRecord.setQtyInvoiced(TEN);
 		assignableCandidateRecord.setQtyToInvoice(FIVE);
 		saveRecord(assignableCandidateRecord);

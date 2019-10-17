@@ -30,11 +30,13 @@ import java.util.List;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -57,9 +59,19 @@ public class ContractsDAO implements IContractsDAO
 			@NonNull String typeConditions,
 			final int limit)
 	{
+		return createTermWithMissingCandidateQueryBuilder(typeConditions, false /* ignoreDateFilters */ )
+				.orderBy().addColumn(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID).endOrderBy()
+				.setLimit(limit)
+				.create()
+				.list(I_C_Flatrate_Term.class);
+	}
+
+	@Override
+	public IQueryBuilder<I_C_Flatrate_Term> createTermWithMissingCandidateQueryBuilder(@NonNull String typeConditions, final boolean ignoreDateFilter)
+	{
 		final Timestamp now = SystemTime.asTimestamp();
 
-		return Services.get(IQueryBL.class)
+		final IQueryBuilder<I_C_Flatrate_Term> termWithMissingCandidateQueryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DocStatus, IDocument.STATUS_Completed)
@@ -67,37 +79,37 @@ public class ContractsDAO implements IContractsDAO
 
 				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.COLUMN_C_Flatrate_Conditions_ID, flatrateConditionsThatRequireInvoicing())
 
-				.addNotInSubQueryFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID, I_C_Invoice_Candidate.COLUMN_Record_ID, invoiceCandidatesThatReferenceTerms())
+				.addNotInSubQueryFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID, I_C_Invoice_Candidate.COLUMN_Record_ID, invoiceCandidatesThatReferenceTerms());
 
-				.filter(relevantTermDateAfterTimestamp(now))
+		if (!ignoreDateFilter)
+		{
+			termWithMissingCandidateQueryBuilder.filter(relevantTermDateBeforeTimestamp(now));
+		}
 
-				.orderBy().addColumn(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID).endOrderBy()
-				.setLimit(limit)
-				.create()
-				.list();
+		return termWithMissingCandidateQueryBuilder;
 	}
 
-	private ICompositeQueryFilter<I_C_Flatrate_Term> relevantTermDateAfterTimestamp(final Timestamp timestamp)
+	private ICompositeQueryFilter<I_C_Flatrate_Term> relevantTermDateBeforeTimestamp(final Timestamp timestamp)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final ICompositeQueryFilter<I_C_Flatrate_Term> termHasStartDateAfterTimestamp = queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
+		final ICompositeQueryFilter<I_C_Flatrate_Term> termHasStartDateBeforeTimestamp = queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.addCompareFilter(I_C_Flatrate_Term.COLUMN_StartDate, Operator.LESS_OR_EQUAL, timestamp);
 
-		final IQuery<I_C_Flatrate_Term> noticeDateAfterTimestamp = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+		final IQuery<I_C_Flatrate_Term> noticeDateBeforeTimestamp = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.addCompareFilter(I_C_Flatrate_Term.COLUMN_NoticeDate, Operator.LESS_OR_EQUAL, timestamp)
 				.create();
 
-		final ICompositeQueryFilter<I_C_Flatrate_Term> preceedingTermHasNoticeDateAfterTimestamp = queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
+		final ICompositeQueryFilter<I_C_Flatrate_Term> preceedingTermHasNoticeDateBeforeTimestamp = queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
-				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID, I_C_Flatrate_Term.COLUMN_C_FlatrateTerm_Next_ID, noticeDateAfterTimestamp);
+				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID, I_C_Flatrate_Term.COLUMN_C_FlatrateTerm_Next_ID, noticeDateBeforeTimestamp);
 
 		return queryBL.createCompositeQueryFilter(I_C_Flatrate_Term.class)
 				.setJoinOr()
-				.addFilter(termHasStartDateAfterTimestamp)
-				.addFilter(preceedingTermHasNoticeDateAfterTimestamp);
+				.addFilter(termHasStartDateBeforeTimestamp)
+				.addFilter(preceedingTermHasNoticeDateBeforeTimestamp);
 	}
 
 	private IQuery<I_C_Flatrate_Conditions> flatrateConditionsThatRequireInvoicing()
@@ -153,18 +165,31 @@ public class ContractsDAO implements IContractsDAO
 		final SubscriptionProgressQuery currentTermQuery = SubscriptionProgressQuery.term(currentTerm).build();
 		return subscriptionDAO.retrieveSubscriptionProgresses(currentTermQuery);
 	}
-	
+
 	@Cached(cacheName = I_C_Flatrate_Term.Table_Name + "#by#OrderId")
 	@Override
-	public List<I_C_Flatrate_Term> retrieveFlatrateTerms(@NonNull final OrderId orderId)
+	public List<I_C_Flatrate_Term> retrieveFlatrateTermsForOrderIdLatestFirst(@NonNull final OrderId orderId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_OrderLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderId)
 				.andCollectChildren(I_C_Flatrate_Term.COLUMN_C_OrderLine_Term_ID, I_C_Flatrate_Term.class)
+				.orderByDescending(I_C_Flatrate_Term.COLUMN_EndDate)
 				.create()
 				.list();
 	}
-	
+
+	@Cached(cacheName = I_C_Flatrate_Term.Table_Name + "#by#BPartnerId")
+	@Override
+	public I_C_Flatrate_Term retrieveLatestFlatrateTermForBPartnerId(@NonNull final BPartnerId bpartnerId)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bpartnerId.getRepoId())
+				.orderByDescending(I_C_Flatrate_Term.COLUMNNAME_MasterEndDate)
+				.create()
+				.first();
+	}
 }

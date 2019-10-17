@@ -31,9 +31,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-
 import org.adempiere.warehouse.validationrule.FilterWarehouseByDocTypeValidationRule;
-
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 
@@ -49,7 +47,11 @@ public class M_ReceiptSchedule
 	@Init
 	public void init()
 	{
-		Services.get(IValidationRuleFactory.class).registerValidationRuleException(FilterWarehouseByDocTypeValidationRule.instance, I_M_ReceiptSchedule.Table_Name, I_M_ReceiptSchedule.COLUMNNAME_M_Warehouse_Dest_ID);
+		Services.get(IValidationRuleFactory.class).registerValidationRuleException(
+				FilterWarehouseByDocTypeValidationRule.instance,
+				I_M_ReceiptSchedule.Table_Name,
+				I_M_ReceiptSchedule.COLUMNNAME_M_Warehouse_Dest_ID,
+				"Registered by " + this.getClass().getName());
 
 	}
 

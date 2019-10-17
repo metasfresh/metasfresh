@@ -1,5 +1,7 @@
 package de.metas.contracts.subscription.invoicecandidatehandler;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.contracts
@@ -27,11 +29,10 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidateHandler;
@@ -44,9 +45,14 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
+import de.metas.organization.OrgId;
+import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificInvoiceCandidateHandler
@@ -57,6 +63,16 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 		return Services.get(IContractsDAO.class)
 				.retrieveSubscriptionTermsWithMissingCandidates(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription, limit)
 				.iterator();
+	}
+
+	@Override
+	public boolean isMissingInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)
+	{
+		return Services.get(IContractsDAO.class)
+				.createTermWithMissingCandidateQueryBuilder(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription, true /* ignoreDateFilters */)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, flatrateTerm.getC_Flatrate_Term_ID())
+				.create()
+				.match();
 	}
 
 	@Override
@@ -73,7 +89,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 		// 05265
 		ic.setIsSOTrx(isSOTrx);
 
-		final int taxCategoryId = term.getC_TaxCategory_ID();
+		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
 
 		final BigDecimal qty = Services.get(IContractsDAO.class).retrieveSubscriptionProgressQtyForTerm(term);
 		ic.setQtyOrdered(qty);
@@ -86,7 +102,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 				ic.getDateOrdered(), // shipDate
 				OrgId.ofRepoId(term.getAD_Org_ID()),
 				(WarehouseId)null,
-				Util.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID()), // ship location id
+				CoalesceUtil.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID()), // ship location id
 				isSOTrx);
 		ic.setC_Tax_ID(taxId);
 	}
@@ -97,7 +113,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(ic);
 		return PriceAndTax.builder()
 				.priceActual(term.getPriceActual())
-				.priceUOMId(term.getC_UOM_ID()) // 07090: when setting a priceActual, we also need to specify a PriceUOM
+				.priceUOMId(UomId.ofRepoId(term.getC_UOM_ID())) // 07090: when setting a priceActual, we also need to specify a PriceUOM
 				.build();
 	}
 
@@ -107,15 +123,22 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 		return X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription;
 	}
 
+	/**
+	 * Set the quantity from the term.
+	 */
 	@Override
-	public BigDecimal calculateQtyOrdered(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
+	public Quantity calculateQtyEntered(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(invoiceCandidateRecord);
-		return term.getPlannedQtyPerUnit(); // Set the quantity from the term.
+		final UomId uomId = HandlerTools.retrieveUomId(icRecord);
+
+		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(icRecord);
+		return new Quantity(
+				term.getPlannedQtyPerUnit(),
+				loadOutOfTrx(uomId, I_C_UOM.class));
 	}
 
 	@Override
-	public Consumer<I_C_Invoice_Candidate> getSetInvoiceScheduleImplementation(@NonNull final Consumer<I_C_Invoice_Candidate> defaultImplementation)
+	public Consumer<I_C_Invoice_Candidate> getInvoiceScheduleSetterFunction(@NonNull final Consumer<I_C_Invoice_Candidate> defaultImplementation)
 	{
 		return defaultImplementation;
 	}

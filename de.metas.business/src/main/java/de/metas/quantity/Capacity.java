@@ -25,10 +25,10 @@ package de.metas.quantity;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
@@ -131,7 +131,7 @@ public class Capacity implements CapacityInterface
 	 * @return capacity
 	 */
 	@Override
-	public BigDecimal getCapacityQty()
+	public BigDecimal toBigDecimal()
 	{
 		Check.assume(!isInfiniteCapacity(), "Cannot retrieve capacity Qty if it's infinite for {}", this);
 		return capacity;
@@ -175,7 +175,7 @@ public class Capacity implements CapacityInterface
 
 		final BigDecimal qtyUsedConv = Services.get(IUOMConversionBL.class)
 				.convertQty(getProductId(),
-						quantity.getAsBigDecimal(),
+						quantity.toBigDecimal(),
 						quantity.getUOM(),
 						uom);
 

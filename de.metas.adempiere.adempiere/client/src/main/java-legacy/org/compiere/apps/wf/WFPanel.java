@@ -32,9 +32,10 @@ import java.util.Properties;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 
-import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AMenu;
@@ -42,8 +43,10 @@ import org.compiere.apps.AMenuStartItem;
 import org.compiere.apps.AWindow;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
+import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTable;
+import org.compiere.model.X_AD_Workflow;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CPanel;
@@ -57,6 +60,8 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -65,14 +70,14 @@ import de.metas.util.Services;
  *
  * @author Jorg Janke
  * @version $Id: WFPanel.java,v 1.2 2006/07/30 00:51:28 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, www.arhipac.ro <li>FR [ 2048081 ] Mf. Workflow editor should display only mf. workflows <li>BF [ 2844102 ] Workfow Editor is displaying manufacturing routings too
  *         https://sourceforge.net/tracker/?func=detail&aid=2844102&group_id=176962&atid=879332
  */
 public class WFPanel extends CPanel
 		implements PropertyChangeListener, ActionListener, FormPanel
 {
-	
+
 	private static final long serialVersionUID = 4478193785606693055L;
 
 	/**
@@ -97,7 +102,7 @@ public class WFPanel extends CPanel
 
 	/** Workflow WhereClause : General, Document Process, Document Value */
 	private static final String WORKFLOW_WhereClause = "WorkflowType IN ("
-			+ DB.TO_STRING(MWorkflow.WORKFLOWTYPE_General)
+			+ DB.TO_STRING(X_AD_Workflow.WORKFLOWTYPE_General)
 			+ "," + DB.TO_STRING(MWorkflow.WORKFLOWTYPE_DocumentProcess)
 			+ "," + DB.TO_STRING(MWorkflow.WORKFLOWTYPE_DocumentValue)
 			+ ")";
@@ -113,7 +118,7 @@ public class WFPanel extends CPanel
 
 	/**
 	 * Create Workflow Panel
-	 * 
+	 *
 	 * @param menu menu
 	 */
 	public WFPanel(AMenu menu)
@@ -123,7 +128,7 @@ public class WFPanel extends CPanel
 
 	/**
 	 * Create Workflow Panel
-	 * 
+	 *
 	 * @param menu menu
 	 */
 	public WFPanel(AMenu menu, String wfWhereClause, int wfWindow_ID)
@@ -136,7 +141,7 @@ public class WFPanel extends CPanel
 		m_menu = menu;
 		m_readWrite = (menu == null);
 		m_WF_whereClause = wfWhereClause;
-		m_WF_Window_ID = wfWindow_ID;
+		m_WF_Window_ID = AdWindowId.ofRepoIdOrNull(wfWindow_ID);
 		log.info("RW=" + m_readWrite);
 		try
 		{
@@ -150,11 +155,11 @@ public class WFPanel extends CPanel
 
 	/**
 	 * Menu.
-	 * 
+	 *
 	 * NOTE: atm is needed only for {@link AMenuStartItem} which needs it to update the progress bar.
 	 */
 	private AMenu m_menu = null;
-	
+
 	public AMenu getAMenu()
 	{
 		return m_menu;
@@ -177,7 +182,7 @@ public class WFPanel extends CPanel
 	/** Workflows List Where Clause */
 	private String m_WF_whereClause = null;
 	/** Workflow Window ID */
-	private int m_WF_Window_ID = -1;
+	private AdWindowId m_WF_Window_ID;
 
 	/** Logger */
 	private static Logger log = LogManager.getLogger(WFPanel.class);
@@ -200,7 +205,7 @@ public class WFPanel extends CPanel
 
 	/**
 	 * Static Init
-	 * 
+	 *
 	 * <pre>
 	 * 		centerScrollPane
 	 * 			centerPanel
@@ -208,7 +213,7 @@ public class WFPanel extends CPanel
 	 * 			infoScrollPane
 	 * 			buttonPanel
 	 * </pre>
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	private void jbInit() throws Exception
@@ -241,13 +246,13 @@ public class WFPanel extends CPanel
 		this.add(southPanel, BorderLayout.SOUTH);
 		southPanel.add(infoScrollPane, BorderLayout.CENTER);
 		southPanel.add(wfPanel, BorderLayout.SOUTH);
-		
+
 
 	}	// jbInit
 
 	/**
 	 * Initialize Panel for FormPanel
-	 * 
+	 *
 	 * @param WindowNo window
 	 * @param frame frame
 	 * @see org.compiere.apps.form.FormPanel#init(int, FormFrame)
@@ -278,14 +283,16 @@ public class WFPanel extends CPanel
 
 	/**
 	 * Dispose
-	 * 
+	 *
 	 * @see org.compiere.apps.form.FormPanel#dispose()
 	 */
 	@Override
 	public void dispose()
 	{
 		if (m_frame != null)
+		{
 			m_frame.dispose();
+		}
 		m_frame = null;
 	}	// dispose
 
@@ -298,7 +305,7 @@ public class WFPanel extends CPanel
 				"SELECT AD_Workflow_ID, Name FROM AD_Workflow "
 						+ (!Check.isEmpty(m_WF_whereClause, true) ? " WHERE " + m_WF_whereClause : "")
 						+ " ORDER BY 2",
-				"AD_Workflow", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);	// all
+				"AD_Workflow", IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);	// all
 		KeyNamePair[] pp = DB.getKeyNamePairs(sql, true);
 		//
 		workflow = new CComboBox<>(pp);
@@ -318,20 +325,22 @@ public class WFPanel extends CPanel
 
 	/**************************************************************************
 	 * Load Workflow & Nodes
-	 * 
+	 *
 	 * @param readWrite if true, you can move nodes
 	 */
 	private void load(boolean readWrite)
 	{
 		KeyNamePair pp = workflow.getSelectedItem();
 		if (pp == null)
+		{
 			return;
+		}
 		load(pp.getKey(), readWrite);
 	}	// load
 
 	/**
 	 * Load Workflow & Nodes
-	 * 
+	 *
 	 * @param AD_Workflow_ID ID
 	 * @param readWrite if true nodes can be moved
 	 */
@@ -339,37 +348,47 @@ public class WFPanel extends CPanel
 	{
 		log.debug("RW=" + readWrite + " - AD_Workflow_ID=" + AD_Workflow_ID);
 		if (AD_Workflow_ID <= 0)
+		{
 			return;
+		}
 		int AD_Client_ID = Env.getAD_Client_ID(Env.getCtx());
 		// Get Workflow
 		m_wf = new MWorkflow(Env.getCtx(), AD_Workflow_ID, null);
 		centerPanel.removeAll();
 		centerPanel.setReadWrite(readWrite);
 		if (readWrite)
+		{
 			centerPanel.setWorkflow(m_wf);
+		}
 		// Add Nodes for Paint
 		MWFNode[] nodes = m_wf.getNodes(true, AD_Client_ID);
-		for (int i = 0; i < nodes.length; i++)
+		for (MWFNode node : nodes)
 		{
-			WFNode wfn = new WFNode(nodes[i]);
+			WFNode wfn = new WFNode(node);
 			wfn.addPropertyChangeListener(WFNode.PROPERTY_SELECTED, this);
 			boolean rw = readWrite 		// in editor mode & owned
-					&& (AD_Client_ID == nodes[i].getAD_Client_ID());
+					&& (AD_Client_ID == node.getAD_Client_ID());
 			centerPanel.add(wfn, rw);
 			// Add Lines
-			MWFNodeNext[] nexts = nodes[i].getTransitions(AD_Client_ID);
-			for (int j = 0; j < nexts.length; j++)
-				centerPanel.add(new WFLine(nexts[j]), false);
+			MWFNodeNext[] nexts = node.getTransitions(AD_Client_ID);
+			for (MWFNodeNext next : nexts)
+			{
+				centerPanel.add(new WFLine(next), false);
+			}
 		}
 		// Info Text
 		StringBuffer msg = new StringBuffer("<HTML>");
 		msg.append("<H2>").append(m_wf.getName(true)).append("</H2>");
 		String s = m_wf.getDescription(true);
 		if (s != null && s.length() > 0)
+		{
 			msg.append("<B>").append(s).append("</B>");
+		}
 		s = m_wf.getHelp(true);
 		if (s != null && s.length() > 0)
+		{
 			msg.append("<BR>").append(s);
+		}
 		msg.append("</HTML>");
 		infoTextPane.setText(msg.toString());
 		infoTextPane.setCaretPosition(0);
@@ -383,7 +402,7 @@ public class WFPanel extends CPanel
 
 	/**
 	 * Property Change Listener
-	 * 
+	 *
 	 * @param e event
 	 * @see java.beans.PropertyChangeListener#propertyChange(PropertyChangeEvent)
 	 */
@@ -391,12 +410,14 @@ public class WFPanel extends CPanel
 	public void propertyChange(PropertyChangeEvent e)
 	{
 		if (e.getNewValue() == Boolean.TRUE)
+		{
 			start((WFNode)e.getSource());
+		}
 	}	// propertyChange
 
 	/**
 	 * Action Listener
-	 * 
+	 *
 	 * @param e event
 	 * @see java.awt.event.ActionListener#actionPerformed(ActionEvent)
 	 */
@@ -414,24 +435,36 @@ public class WFPanel extends CPanel
 			final int AD_Client_ID = Env.getAD_Client_ID(Env.getCtx());
 			// Editing
 			if (e.getSource() == bZoom)
+			{
 				zoom();
+			}
 			else if (e.getSource() == bIgnore)
+			{
 				load(m_wf.getAD_Workflow_ID(), true);
+			}
 			else if (e.getSource() == workflow)
+			{
 				load(true);
+			}
 			else if (e.getSource() == bSaveLayout)
 			{
 				if (m_wf.getAD_Client_ID() == AD_Client_ID)
-					m_wf.save();
-				MWFNode[] nodes = m_wf.getNodes(false, AD_Client_ID);
-				for (int i = 0; i < nodes.length; i++)
 				{
-					if (nodes[i].getAD_Client_ID() == AD_Client_ID)
-						nodes[i].save();
+					m_wf.save();
+				}
+				MWFNode[] nodes = m_wf.getNodes(false, AD_Client_ID);
+				for (MWFNode node : nodes)
+				{
+					if (node.getAD_Client_ID() == AD_Client_ID)
+					{
+						node.save();
+					}
 				}
 			}
 			else if (e.getSource() == bResetLayout)
+			{
 				resetLayout();
+			}
 			else if (e.getSource() == wfStartNode)
 			{
 				if (isSimpleWorkflowWindow && m_activeNode != null)
@@ -449,7 +482,7 @@ public class WFPanel extends CPanel
 
 	/**************************************************************************
 	 * Start Node
-	 * 
+	 *
 	 * @param node node
 	 */
 	private void start(WFNode node)
@@ -461,10 +494,14 @@ public class WFPanel extends CPanel
 		msg.append("<H2>").append(model.getName(true)).append("</H2>");
 		String s = model.getDescription(true);
 		if (s != null && s.length() > 0)
+		{
 			msg.append("<B>").append(s).append("</B>");
+		}
 		s = model.getHelp(true);
 		if (s != null && s.length() > 0)
+		{
 			msg.append("<BR>").append(s);
+		}
 		msg.append("</HTML>");
 		infoTextPane.setText(msg.toString());
 		infoTextPane.setCaretPosition(0);
@@ -475,13 +512,15 @@ public class WFPanel extends CPanel
 
 	/**
 	 * Start Node
-	 * 
+	 *
 	 * @param AD_WF_Node_ID node id
 	 */
 	public void start(int AD_WF_Node_ID)
 	{
 		if (AD_WF_Node_ID == 0)
+		{
 			return;
+		}
 		//
 		for (int i = 0; i < centerPanel.getComponentCount(); i++)
 		{
@@ -517,21 +556,25 @@ public class WFPanel extends CPanel
 	 */
 	private void zoom()
 	{
-		if (m_WF_Window_ID <= 0)
+		if (m_WF_Window_ID == null)
 		{
-			m_WF_Window_ID = MTable.get(m_ctx, MWorkflow.Table_ID).getAD_Window_ID();
+			m_WF_Window_ID = AdWindowId.ofRepoIdOrNull(MTable.get(m_ctx, InterfaceWrapperHelper.getTableId(I_AD_Workflow.class)).getAD_Window_ID());
 		}
-		if (m_WF_Window_ID <= 0)
+		if (m_WF_Window_ID == null)
 		{
 			throw new AdempiereException("@NotFound@ @AD_Window_ID@");
 		}
 
 		MQuery query = null;
 		if (m_wf != null)
+		{
 			query = MQuery.getEqualQuery("AD_Workflow_ID", m_wf.getAD_Workflow_ID());
+		}
 		AWindow frame = new AWindow();
 		if (!frame.initWindow(m_WF_Window_ID, query))
+		{
 			return;
+		}
 		AEnv.addToWindowManager(frame);
 		AEnv.showCenterScreen(frame);
 		frame = null;
@@ -539,7 +582,7 @@ public class WFPanel extends CPanel
 
 	/**
 	 * String Representation
-	 * 
+	 *
 	 * @return info
 	 */
 	@Override
@@ -547,7 +590,9 @@ public class WFPanel extends CPanel
 	{
 		final StringBuilder sb = new StringBuilder("WFPanel[");
 		if (m_wf != null)
+		{
 			sb.append(m_wf.getAD_Workflow_ID());
+		}
 		sb.append("]");
 		return sb.toString();
 	}	// toString

@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                        *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
 
@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
@@ -45,13 +44,20 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.adempiere.model.I_AD_User;
+import de.metas.acct.api.IFactAcctDAO;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.ICostingService;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
@@ -61,8 +67,15 @@ import de.metas.inout.IInOutDAO;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.materialtransaction.IMTransactionDAO;
 import de.metas.order.DeliveryRule;
+import de.metas.order.IMatchPOBL;
+import de.metas.order.IMatchPODAO;
+import de.metas.order.IOrderDAO;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -570,8 +583,6 @@ public class MInOut extends X_M_InOut implements IDocument
 	private MInOutLine[] m_lines = null;
 	/** Confirmations */
 	private MInOutConfirm[] m_confirms = null;
-	/** BPartner */
-	private MBPartner m_partner = null;
 
 	/**
 	 * Get Document Status
@@ -670,7 +681,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 * @param requery refresh from db
 	 * @return lines
 	 */
-	public MInOutLine[] getLines(final boolean requery)
+	private MInOutLine[] getLines(final boolean requery)
 	{
 		if (m_lines != null && !requery)
 		{
@@ -730,8 +741,8 @@ public class MInOut extends X_M_InOut implements IDocument
 		{
 			return 0;
 		}
-		final MInOutLine[] fromLines = otherShipment.getLines();
 		int count = 0;
+		final MInOutLine[] fromLines = otherShipment.getLines();
 		for (final MInOutLine fromLine : fromLines)
 		{
 			final MInOutLine line = new MInOutLine(this);
@@ -857,25 +868,11 @@ public class MInOut extends X_M_InOut implements IDocument
 	} // setProcessed
 
 	/**
-	 * Get BPartner
-	 *
-	 * @return partner
-	 */
-	public MBPartner getBPartner()
-	{
-		if (m_partner == null)
-		{
-			m_partner = new MBPartner(getCtx(), getC_BPartner_ID(), get_TrxName());
-		}
-		return m_partner;
-	} // getPartner
-
-	/**
 	 * Set Document Type
 	 *
 	 * @param DocBaseType doc type MDocType.DOCBASETYPE_
 	 */
-	public void setC_DocType_ID(final String DocBaseType)
+	private void setC_DocType_ID(final String DocBaseType)
 	{
 		final String sql = "SELECT C_DocType_ID FROM C_DocType "
 				+ "WHERE AD_Client_ID=? AND DocBaseType=?"
@@ -899,7 +896,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	/**
 	 * Set Default C_DocType_ID. Based on SO flag
 	 */
-	public void setC_DocType_ID()
+	private void setC_DocType_ID()
 	{
 		if (isSOTrx())
 		{
@@ -916,7 +913,7 @@ public class MInOut extends X_M_InOut implements IDocument
 	 *
 	 * @param bp business partner
 	 */
-	public void setBPartner(final MBPartner bp)
+	public void setBPartner(final I_C_BPartner bp)
 	{
 		if (bp == null)
 		{
@@ -926,10 +923,11 @@ public class MInOut extends X_M_InOut implements IDocument
 		setC_BPartner_ID(bp.getC_BPartner_ID());
 
 		// Set Locations
-		final MBPartnerLocation[] locs = bp.getLocations(false);
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+		final List<I_C_BPartner_Location> locs = bpartnersRepo.retrieveBPartnerLocations(bp);
 		if (locs != null)
 		{
-			for (final MBPartnerLocation loc : locs)
+			for (final I_C_BPartner_Location loc : locs)
 			{
 				if (loc.isShipTo())
 				{
@@ -937,18 +935,18 @@ public class MInOut extends X_M_InOut implements IDocument
 				}
 			}
 			// set to first if not set
-			if (getC_BPartner_Location_ID() == 0 && locs.length > 0)
+			if (getC_BPartner_Location_ID() == 0 && !locs.isEmpty())
 			{
-				setC_BPartner_Location_ID(locs[0].getC_BPartner_Location_ID());
+				setC_BPartner_Location_ID(locs.get(0).getC_BPartner_Location_ID());
 			}
 		}
-		if (getC_BPartner_Location_ID() == 0)
+		if (getC_BPartner_Location_ID() <= 0)
 		{
 			log.error("Has no To Address: {}", bp);
 		}
 
 		// Set Contact
-		final List<I_AD_User> contacts = bp.getContacts(false);
+		final List<I_AD_User> contacts = bpartnersRepo.retrieveContacts(bp);
 		if (contacts != null && contacts.size() > 0)
 		{
 			setAD_User_ID(contacts.get(0).getAD_User_ID());
@@ -1091,7 +1089,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		// return false;
 		// }
 
-		if (isSOTrx() && getM_RMA_ID() != 0)
+		if (isSOTrx() && getM_RMA_ID() > 0)
 		{
 			// Set Document and Movement type for this Receipt
 			final MRMA rma = new MRMA(getCtx(), getM_RMA_ID(), get_TrxName());
@@ -1205,7 +1203,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		checkCreditLimit();
 
 		// Lines
-		final MInOutLine[] lines = getLines(true);
+		final MInOutLine[] lines = getLines();
 		if (lines == null || lines.length == 0)
 		{
 			m_processMsg = "@NoLines@";
@@ -1224,11 +1222,11 @@ public class MInOut extends X_M_InOut implements IDocument
 				Weight = Weight.add(product.getWeight().multiply(line.getMovementQty()));
 			}
 			//
-			if (line.getM_AttributeSetInstance_ID() != 0)
+			if (line.getM_AttributeSetInstance_ID() > 0)
 			{
 				continue;
 			}
-			if (product != null && product.isASIMandatory(isSOTrx()))
+			if (Services.get(IProductBL.class).isASIMandatory(product, isSOTrx()))
 			{
 				throw new ProductASIMandatoryException(this, product, line.getLine());
 			}
@@ -1254,7 +1252,6 @@ public class MInOut extends X_M_InOut implements IDocument
 		}
 		return IDocument.STATUS_InProgress;
 	} // prepareIt
-
 
 	private void checkCreditLimit()
 	{
@@ -1287,7 +1284,8 @@ public class MInOut extends X_M_InOut implements IDocument
 					+ ", @SO_CreditLimit@=" + creditLimit);
 		}
 
-		final BigDecimal notInvoicedAmt = MBPartner.getNotInvoicedAmt(getC_BPartner_ID());
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(getC_BPartner_ID());
+		final BigDecimal notInvoicedAmt = Services.get(IOrderDAO.class).getNotInvoicedAmt(bpartnerId);
 
 		final CalculateSOCreditStatusRequest request = CalculateSOCreditStatusRequest.builder()
 				.stat(stats)
@@ -1320,8 +1318,9 @@ public class MInOut extends X_M_InOut implements IDocument
 		final I_C_Order order = getC_Order();
 		final boolean checkCreditOnPrepayOorder = Services.get(ISysConfigBL.class).getBooleanValue("CHECK_CREDIT_ON_PREPAY_ORDER", true, getAD_Client_ID(), getAD_Org_ID());
 		// ignore -- don't validate Prepay Orders depending on sysconfig parameter
-		return (!(order != null && order.getC_Order_ID() > 0
-				&& MDocType.DOCSUBTYPE_PrepayOrder.equals(order.getC_DocType().getDocSubType())
+		return (!(order != null
+				&& order.getC_Order_ID() > 0
+				&& Services.get(IDocTypeBL.class).isPrepay(DocTypeId.ofRepoId(order.getC_DocType_ID()))
 				&& !checkCreditOnPrepayOorder));
 	}
 
@@ -1670,11 +1669,11 @@ public class MInOut extends X_M_InOut implements IDocument
 					{
 						log.debug("PO Matching");
 						// Ship - PO
-						final MMatchPO po = MMatchPO.create(null, sLine, getMovementDate(), qtyMoved);
-						InterfaceWrapperHelper.save(po, get_TrxName());
+						Services.get(IMatchPOBL.class).create(null, sLine, getMovementDate(), qtyMoved);
 
 						// Update PO with ASI
-						if (oLine != null && oLine.getM_AttributeSetInstance_ID() == 0
+						if (oLine != null
+								&& oLine.getM_AttributeSetInstance_ID() <= 0
 								&& sLine.getMovementQty().compareTo(oLine.getQtyOrdered()) == 0)  // just if full match [
 						// 1876965 ]
 						{
@@ -1691,8 +1690,7 @@ public class MInOut extends X_M_InOut implements IDocument
 							// Invoice is created before Shipment
 							log.debug("PO(Inv) Matching");
 							// Ship - Invoice
-							final MMatchPO po = MMatchPO.create(iLine, sLine, getMovementDate(), qtyMoved);
-							InterfaceWrapperHelper.save(po, get_TrxName());
+							final I_M_MatchPO po = Services.get(IMatchPOBL.class).create(iLine, sLine, getMovementDate(), qtyMoved);
 
 							// Update PO with ASI
 							oLine = new MOrderLine(getCtx(), po.getC_OrderLine_ID(), get_TrxName());
@@ -2156,15 +2154,16 @@ public class MInOut extends X_M_InOut implements IDocument
 			return null;
 		}
 		// Business Partner needs to be linked to Org
-		final MBPartner bp = new MBPartner(getCtx(), getC_BPartner_ID(), get_TrxName());
-		final int counterAD_Org_ID = bp.getAD_OrgBP_ID_Int();
-		if (counterAD_Org_ID == 0)
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+		final I_C_BPartner bp = bpartnersRepo.getById(getC_BPartner_ID());
+		final OrgId counterAD_Org_ID = OrgId.ofRepoIdOrAny(bp.getAD_OrgBP_ID());
+		if (counterAD_Org_ID.isAny())
 		{
 			return null;
 		}
 
-		final MBPartner counterBP = new MBPartner(getCtx(), counterC_BPartner_ID, null);
-		final I_AD_OrgInfo counterOrgInfo = MOrgInfo.get(getCtx(), counterAD_Org_ID, null);
+		final I_C_BPartner counterBP = bpartnersRepo.getById(counterC_BPartner_ID);
+		final OrgInfo counterOrgInfo = Services.get(IOrgDAO.class).getOrgInfoById(counterAD_Org_ID);
 		log.debug("Counter BP={}", counterBP);
 
 		// Document Type
@@ -2195,8 +2194,8 @@ public class MInOut extends X_M_InOut implements IDocument
 				C_DocTypeTarget_ID, !isSOTrx(), true, get_TrxName(), true);
 
 		//
-		counter.setAD_Org_ID(counterAD_Org_ID);
-		counter.setM_Warehouse_ID(counterOrgInfo.getM_Warehouse_ID());
+		counter.setAD_Org_ID(counterAD_Org_ID.getRepoId());
+		counter.setM_Warehouse_ID(WarehouseId.toRepoId(counterOrgInfo.getWarehouseId()));
 		//
 		counter.setBPartner(counterBP);
 
@@ -2223,8 +2222,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		final boolean inTrx = MovementType.charAt(1) == '+'; // V+ Vendor Receipt
 
 		// Update copied lines
-		final MInOutLine[] counterLines = counter.getLines();
-		for (final MInOutLine counterLine : counterLines)
+		for (final MInOutLine counterLine : counter.getLines())
 		{
 			counterLine.setClientOrg(counter);
 			counterLine.setM_Warehouse_ID(counter.getM_Warehouse_ID());
@@ -2280,8 +2278,7 @@ public class MInOut extends X_M_InOut implements IDocument
 				|| DOCSTATUS_NotApproved.equals(getDocStatus()))
 		{
 			// Set lines to 0
-			final MInOutLine[] lines = getLines();
-			for (final MInOutLine line : lines)
+			for (final MInOutLine line : getLines())
 			{
 				final BigDecimal old = line.getMovementQty();
 				if (old.signum() != 0)
@@ -2466,7 +2463,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			return; // nothing to do
 		}
 
-		for (final I_M_MatchPO matchPO : MMatchPO.getInOut(getCtx(), getM_InOut_ID(), get_TrxName()))
+		for (final I_M_MatchPO matchPO : Services.get(IMatchPODAO.class).getByReceiptId(getM_InOut_ID()))
 		{
 			if (matchPO.getC_InvoiceLine_ID() <= 0)
 			{
@@ -2475,42 +2472,18 @@ public class MInOut extends X_M_InOut implements IDocument
 			}
 			else
 			{
-				matchPO.setM_InOutLine(null);
+				matchPO.setM_InOutLine_ID(-1);
 				InterfaceWrapperHelper.save(matchPO);
 			}
 		}
 	}
 
-	/**
-	 * Reverse Accrual - none
-	 *
-	 * @return false
-	 */
 	@Override
 	public boolean reverseAccrualIt()
 	{
-		// Before reverseAccrual
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
+		throw new UnsupportedOperationException();
+	}
 
-		// After reverseAccrual
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REVERSEACCRUAL);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
-
-		return false;
-	} // reverseAccrualIt
-
-	/**
-	 * Re-activate
-	 *
-	 * @return false
-	 */
 	@Override
 	public boolean reActivateIt()
 	{
@@ -2555,9 +2528,10 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		//
 		// For all lines
-		for (final I_M_InOutLine inoutLine : getLines(true))
+		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
+		for (final I_M_InOutLine inoutLine : getLines())
 		{
-			final I_M_Product product = inoutLine.getM_Product();
+
 			final BigDecimal movementQty = inoutLine.getMovementQty();
 
 			// RMA
@@ -2577,7 +2551,9 @@ public class MInOut extends X_M_InOut implements IDocument
 			final List<I_C_InvoiceLine> existingInvoiceLines = Services.get(IInvoiceDAO.class).retrieveLines(inoutLine);
 			for (final I_C_InvoiceLine existingInvoiceLine : existingInvoiceLines)
 			{
-				if (!Services.get(IDocumentBL.class).isDocumentStatusOneOf(existingInvoiceLine.getC_Invoice(), IDocument.STATUS_Reversed, IDocument.STATUS_Voided))
+				final I_C_Invoice existingInvoice = existingInvoiceLine.getC_Invoice();
+				final DocStatus existingInvoiceDocStatus = DocStatus.ofCode(existingInvoice.getDocStatus());
+				if(!existingInvoiceDocStatus.isReversedOrVoided())
 				{
 					foundInvoice = true;
 				}
@@ -2590,8 +2566,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			// TODO: check if there are more places where to look and check if the inout line was already invoiced
 
 			// Delete material allocations
-			final MInOutLineMA mas[] = MInOutLineMA.get(getCtx(), inoutLine.getM_InOutLine_ID(), get_TrxName());
-			for (final I_M_InOutLineMA ma : mas)
+			for (final MInOutLineMA ma : MInOutLineMA.get(getCtx(), inoutLine.getM_InOutLine_ID(), get_TrxName()))
 			{
 				InterfaceWrapperHelper.delete(ma);
 			}
@@ -2603,15 +2578,14 @@ public class MInOut extends X_M_InOut implements IDocument
 			}
 
 			// Delete M_CostDetails
-			for (final I_M_CostDetail costDetail : MCostDetail.retrieveForInOutLine(inoutLine))
-			{
-				MCostDetail.reverseAndDelete(costDetail);
-			}
+			costDetailService.voidAndDeleteForDocument(CostingDocumentRef.ofShipmentLineId(inoutLine.getM_InOutLine_ID()));
+
+			final ProductId productId = ProductId.ofRepoIdOrNull(inoutLine.getM_Product_ID());
 
 			// Update Order Line
 			final I_C_OrderLine orderLine = inoutLine.getC_OrderLine();
 			if (isSOTrx() // task 09266: the order lines for PO-inouts are handeled in the MatchPO business logic
-					&& product != null && orderLine != null && orderLine.getC_OrderLine_ID() > 0)
+					&& productId != null && orderLine != null && orderLine.getC_OrderLine_ID() > 0)
 			{
 				// task 09358: get rid of this; instead, update qtyReserved at one central place
 				// orderLine.setQtyReserved(orderLine.getQtyReserved().add(movementQty));

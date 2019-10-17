@@ -42,7 +42,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
-import de.metas.handlingunits.shipmentschedule.async.ShipmentScheduleWithHUComparator;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUComparator;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -218,7 +218,7 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 			// Log if there were no candidates created for current HU.
 			if (candidatesForHU.isEmpty())
 			{
-				Loggables.get().addLog("No eligible {} records found for hu {}",
+				Loggables.addLog("No eligible {} records found for hu {}",
 						de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.Table_Name,
 						handlingUnitsBL.getDisplayName(hu));
 			}

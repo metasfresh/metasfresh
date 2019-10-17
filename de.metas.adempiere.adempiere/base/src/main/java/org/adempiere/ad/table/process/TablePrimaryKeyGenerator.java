@@ -1,13 +1,24 @@
 package org.adempiere.ad.table.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
@@ -15,20 +26,26 @@ import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_Window;
+import org.compiere.model.MSequence;
 import org.compiere.model.M_Element;
 import org.compiere.model.POInfo;
 import org.compiere.model.X_AD_Column;
 import org.compiere.process.AD_Tab_CreateFields;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
+
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.cache.CacheMgt;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -54,36 +71,52 @@ import de.metas.util.Services;
 
 class TablePrimaryKeyGenerator
 {
+	public static TablePrimaryKeyGenerator newInstance()
+	{
+		return new TablePrimaryKeyGenerator();
+	}
+
 	// services
 	private static final Logger logger = LogManager.getLogger(TablePrimaryKeyGenerator.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private final Properties ctx;
-	private Set<String> resultTableNames = new LinkedHashSet<>();
+	private boolean migrateDataUsingIDServer = true;
+	private final Set<String> resultTableNames = new LinkedHashSet<>();
 
-	public TablePrimaryKeyGenerator(final Properties ctx)
+	private TablePrimaryKeyGenerator()
 	{
-		this.ctx = ctx;
 	}
 
-	public void generateForTable(final I_AD_Table adTable)
+	public TablePrimaryKeyGenerator migrateDataUsingIDServer(final boolean migrateDataUsingIDServer)
+	{
+		this.migrateDataUsingIDServer = migrateDataUsingIDServer;
+		return this;
+	}
+
+	private boolean isMigrateDataUsingIDServer()
+	{
+		return migrateDataUsingIDServer;
+	}
+
+	public TablePrimaryKeyGenerator generateForTable(final I_AD_Table adTable)
 	{
 		if (adTable.isView())
 		{
 			addLog("Skip {} because it's view", adTable.getTableName());
-			return;
+			return this;
 		}
 
 		if (hasColumnPK(adTable))
 		{
 			addLog("Skip {} because it already has PK", adTable.getTableName());
-			return;
+			return this;
 		}
 
+		//
 		// Create the primary key
 		final I_AD_Column columnPK = createColumnPK(adTable);
-		createColumnPK_DDL(columnPK);
+		createColumnPK_DDL(adTable.getAD_Table_ID(), adTable.getTableName(), columnPK.getColumnName());
 
 		// Add the primary key column to all tabs
 		addToTabs(columnPK);
@@ -95,30 +128,41 @@ class TablePrimaryKeyGenerator
 		cacheMgt.reset(POInfo.CACHE_PREFIX);
 
 		resultTableNames.add(adTable.getTableName());
+
+		return this;
 	}
 
-	public void generateForTablesIfPossible(final Iterable<I_AD_Table> adTables)
+	public TablePrimaryKeyGenerator generateForTablesIfPossible(final Iterable<I_AD_Table> adTables)
 	{
 		for (final I_AD_Table adTable : adTables)
 		{
-			trxManager.run(new TrxRunnableAdapter()
-			{
-
-				@Override
-				public void run(final String localTrxName) throws Exception
-				{
-					generateForTable(adTable);
-				}
-
-				@Override
-				public boolean doCatch(final Throwable ex) throws Throwable
-				{
-					logger.warn("Failed generating PK for {}", adTable, ex);
-					addLog("@Error@ Generating for {}: {}", adTable.getTableName(), ex.getLocalizedMessage());
-					return ROLLBACK;
-				}
-			});
+			generateForTableIfPossible(adTable);
 		}
+
+		return this;
+	}
+
+	private TablePrimaryKeyGenerator generateForTableIfPossible(final I_AD_Table adTable)
+	{
+		trxManager.runInNewTrx(new TrxRunnableAdapter()
+		{
+
+			@Override
+			public void run(final String localTrxName)
+			{
+				generateForTable(adTable);
+			}
+
+			@Override
+			public boolean doCatch(final Throwable ex)
+			{
+				logger.warn("Failed generating PK for {}", adTable, ex);
+				addLog("@Error@ Generating for {}: {}", adTable.getTableName(), ex.getLocalizedMessage());
+				return ROLLBACK;
+			}
+		});
+
+		return this;
 	}
 
 	public String getSummary()
@@ -126,34 +170,42 @@ class TablePrimaryKeyGenerator
 		return "Generated primary keys for " + resultTableNames.size() + " table(s): " + resultTableNames;
 	}
 
-	private Properties getCtx()
-	{
-		return ctx;
-	}
-
 	private void addLog(final String msg, final Object... msgParameters)
 	{
-		Loggables.get().addLog(msg, msgParameters);
+		Loggables.addLog(msg, msgParameters);
 	}
 
 	private final boolean hasColumnPK(final I_AD_Table table)
 	{
 		return queryBL
-				.createQueryBuilder(I_AD_Column.class, getCtx(), ITrx.TRXNAME_ThreadInherited)
+				.createQueryBuilder(I_AD_Column.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Column.COLUMN_AD_Table_ID, table.getAD_Table_ID())
 				.addEqualsFilter(I_AD_Column.COLUMN_IsKey, true)
-				.create().match();
+				.create()
+				.match();
+	}
+
+	private List<String> getParentColumnNames(final int adTableId)
+	{
+		return queryBL
+				.createQueryBuilder(I_AD_Column.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Column.COLUMN_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_AD_Column.COLUMN_IsParent, true)
+				.create()
+				.listDistinct(I_AD_Column.COLUMNNAME_ColumnName, String.class);
 	}
 
 	private final I_AD_Column createColumnPK(final I_AD_Table table)
 	{
-		final I_AD_Column columnPK = InterfaceWrapperHelper.create(getCtx(), I_AD_Column.class, ITrx.TRXNAME_ThreadInherited);
+		final I_AD_Column columnPK = InterfaceWrapperHelper.newInstance(I_AD_Column.class);
 		columnPK.setAD_Org_ID(0);
 		columnPK.setAD_Table(table);
 		columnPK.setEntityType(table.getEntityType());
 
-		final I_AD_Element adElement = getCreateAD_Element(table);
-		final String elementColumnName = adElement.getColumnName ();
+		final I_AD_Element adElement = getOrCreateKeyColumnNameElement(table);
+		final String elementColumnName = adElement.getColumnName();
 		Check.assumeNotNull(elementColumnName, "The element {} does not have a column name set", adElement);
 
 		columnPK.setAD_Element(adElement);
@@ -187,19 +239,20 @@ class TablePrimaryKeyGenerator
 		// columnPK.setColumnSQL(null);
 		columnPK.setIsAllowLogging(true);
 
-		InterfaceWrapperHelper.save(columnPK);
+		saveRecord(columnPK);
 		addLog("@Created@ @AD_Column_ID@ " + table.getTableName() + "." + columnPK.getColumnName());
 
 		return columnPK;
 	}
 
-	private final I_AD_Element getCreateAD_Element(final I_AD_Table table)
+	private final I_AD_Element getOrCreateKeyColumnNameElement(final I_AD_Table table)
 	{
-		final String columnName = table.getTableName() + "_ID";
+		final String keyColumnName = table.getTableName() + "_ID";
 
 		//
 		// Check existing
-		final I_AD_Element existingElement = M_Element.get(getCtx(), columnName);
+		final Properties ctx = Env.getCtx();
+		final I_AD_Element existingElement = M_Element.get(ctx, keyColumnName);
 		if (existingElement != null)
 		{
 			return existingElement;
@@ -207,8 +260,8 @@ class TablePrimaryKeyGenerator
 
 		//
 		// Create new
-		final I_AD_Element element = new M_Element(getCtx(), columnName, table.getEntityType(), ITrx.TRXNAME_ThreadInherited);
-		element.setColumnName(columnName);
+		final I_AD_Element element = new M_Element(ctx, keyColumnName, table.getEntityType(), ITrx.TRXNAME_ThreadInherited);
+		element.setColumnName(keyColumnName);
 		element.setName(table.getName());
 		element.setPrintName(table.getName());
 		element.setEntityType(table.getEntityType());
@@ -217,25 +270,127 @@ class TablePrimaryKeyGenerator
 		return element;
 	}
 
-	private void createColumnPK_DDL(final I_AD_Column columnPK)
+	private void createColumnPK_DDL(final int adTableId, final String tableName, final String pkColumnName)
 	{
+		//
+		// Fetch the rows to migrate using ID server
+		// NOTE: we are doing this ahead, before starting to alter the table
+		final List<Map<String, Object>> rowsToMigrateUsingIDServer = retrieveRowsToMigrateUsingIDServer(adTableId, tableName, pkColumnName);
+
 		// Create/update the DB sequence
-		final String tableName = columnPK.getAD_Table().getTableName();
 		DB.createTableSequence(tableName);
 
-		// Create the DB column
-		final String pkColumnName = columnPK.getColumnName();
-		final String sqlDefaultValue = DB.TO_TABLESEQUENCE_NEXTVAL(tableName);
-		executeDDL("ALTER TABLE " + tableName + " ADD COLUMN " + pkColumnName + " numeric(10,0) NOT NULL DEFAULT " + sqlDefaultValue);
+		//
+		// Create the DB column (nullable, no default value)
+		executeDDL("ALTER TABLE " + tableName + " ADD COLUMN " + pkColumnName + " numeric(10,0)");
 
+		//
+		// Migrate column's value using ID server
+		rowsToMigrateUsingIDServer.forEach(row -> updateRowPKFromIDServer(tableName, pkColumnName, row));
+		addLog("Migrated {} rows using ID server", rowsToMigrateUsingIDServer.size());
+
+		//
+		// Set default value
+		// Make it not null
+		executeDDL("ALTER TABLE " + tableName + " ALTER COLUMN " + pkColumnName + " SET DEFAULT " + DB.TO_TABLESEQUENCE_NEXTVAL(tableName));
+		executeDDL("ALTER TABLE " + tableName + " ALTER COLUMN " + pkColumnName + " SET NOT NULL");
+
+		//
 		// Delete the previous PK, if any
 		final String pkName = (tableName + "_pkey").toLowerCase();
 		final String pkNameAlt = (tableName + "_key").toLowerCase(); // some tables also have this PK name
 		executeDDL("ALTER TABLE " + tableName + " DROP CONSTRAINT IF EXISTS " + pkName);
 		executeDDL("ALTER TABLE " + tableName + " DROP CONSTRAINT IF EXISTS " + pkNameAlt);
 
+		//
 		// Create the new PK
 		executeDDL("ALTER TABLE " + tableName + " ADD CONSTRAINT " + pkName + " PRIMARY KEY (" + pkColumnName + ")");
+	}
+
+	private List<Map<String, Object>> retrieveRowsToMigrateUsingIDServer(final int adTableId, final String tableName, final String pkColumnName)
+	{
+		if (!isMigrateDataUsingIDServer())
+		{
+			return ImmutableList.of();
+		}
+
+		final List<String> parentColumnNames = getParentColumnNames(adTableId);
+		if (parentColumnNames.isEmpty())
+		{
+			addLog("Skip migrating " + tableName + "  because it has no parent column names defined");
+			return ImmutableList.of();
+		}
+
+		final List<Map<String, Object>> rows = retrieveMaps(tableName, parentColumnNames);
+		return rows;
+	}
+
+	private static List<Map<String, Object>> retrieveMaps(@NonNull final String tableName, @NonNull final List<String> columnNames)
+	{
+		Check.assumeNotEmpty(columnNames, "columnNames is not empty");
+
+		final String sqlColumnNames = Joiner.on(", ").join(columnNames);
+		final String sql = "SELECT " + sqlColumnNames + " FROM " + tableName
+				+ " ORDER BY " + sqlColumnNames;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+			rs = pstmt.executeQuery();
+
+			final List<Map<String, Object>> rows = new ArrayList<>();
+			while (rs.next())
+			{
+				final Map<String, Object> row = retrieveMap(rs, columnNames);
+				rows.add(row);
+			}
+
+			return rows;
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex, sql);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
+	}
+
+	private static Map<String, Object> retrieveMap(final ResultSet rs, final List<String> columnNames) throws SQLException
+	{
+		final Map<String, Object> map = new HashMap<>();
+		for (final String columnName : columnNames)
+		{
+			final Object value = rs.getObject(columnName);
+			map.put(columnName, value);
+		}
+		return map;
+	}
+
+	private static void updateRowPKFromIDServer(final String tableName, final String pkColumnName, Map<String, Object> whereClause)
+	{
+		final int id = MSequence.getNextProjectID_HTTP(tableName);
+		if (id <= 0)
+		{
+			throw new AdempiereException("Failed retrieving ID for " + tableName + " from ID server");
+		}
+
+		final StringBuilder sql = new StringBuilder();
+
+		sql.append("UPDATE " + tableName + " SET " + pkColumnName + "=" + id);
+
+		sql.append(" WHERE 1=1");
+		for (Map.Entry<String, Object> e : whereClause.entrySet())
+		{
+			final String columnName = e.getKey();
+			final Object value = e.getValue();
+
+			sql.append(" AND " + columnName + "=" + DB.TO_SQL(value));
+		}
+
+		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private final void executeDDL(final String sql)

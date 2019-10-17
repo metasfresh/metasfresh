@@ -85,7 +85,7 @@ public class PlainProductStorage extends AbstractProductStorage
 	protected void beforeMarkingStalled()
 	{
 		// we are just saving current qty as next qtyInitialO
-		qtyInitial = getQty().getAsBigDecimal();
+		qtyInitial = getQty().toBigDecimal();
 	}
 
 }

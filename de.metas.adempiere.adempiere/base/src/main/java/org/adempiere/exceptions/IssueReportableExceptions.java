@@ -13,17 +13,20 @@ package org.adempiere.exceptions;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import javax.annotation.Nullable;
+
+import de.metas.error.AdIssueId;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /**
  * Utility methods for working with {@link IIssueReportableAware} exceptions.
@@ -31,6 +34,7 @@ import javax.annotation.Nullable;
  * @author tsa
  *
  */
+@UtilityClass
 public final class IssueReportableExceptions
 {
 	/**
@@ -39,11 +43,10 @@ public final class IssueReportableExceptions
 	 * @param exception
 	 * @param adIssueId
 	 */
-	public static void markReportedIfPossible(@Nullable final Throwable exception, final int adIssueId)
+	public static void markReportedIfPossible(@NonNull final Throwable exception, @NonNull final AdIssueId adIssueId)
 	{
 		// NOTE: we are marking as reported all the causes downline because mainly all of those exceptions were reported in one shot.
 		Throwable currentEx = exception;
-
 		while (currentEx != null)
 		{
 			if (currentEx instanceof IIssueReportableAware)
@@ -85,8 +88,23 @@ public final class IssueReportableExceptions
 		return false;
 	}
 
-	private IssueReportableExceptions()
+	public static AdIssueId getAdIssueIdOrNull(@NonNull final Throwable exception)
 	{
-		super();
+		if (exception instanceof IIssueReportableAware)
+		{
+			final IIssueReportableAware issueReportable = (IIssueReportableAware)exception;
+			if (issueReportable.isIssueReported())
+			{
+				return issueReportable.getAdIssueId();
+			}
+			else
+			{
+				return null;
+			}
+		}
+		else
+		{
+			return null;
+		}
 	}
 }

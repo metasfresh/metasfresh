@@ -11,7 +11,6 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
-import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
 import lombok.NonNull;
@@ -55,19 +54,16 @@ public abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends Abstract
 
 	protected final void handleReceiptScheduleEvent(@NonNull final AbstractReceiptScheduleEvent event)
 	{
-		final MaterialDescriptor materialDescriptor = event.getMaterialDescriptor();
-
 		final CandidateBuilder candidateBuilder = createCandidateBuilder(event);
 
 		final PurchaseDetailBuilder purchaseDetailBuilder = PurchaseDetail.builder()
-				.plannedQty(event.getMaterialDescriptor().getQuantity())
+				.qty(event.getMaterialDescriptor().getQuantity())
 				.receiptScheduleRepoId(event.getReceiptScheduleId())
 				.advised(Flag.FALSE_DONT_UPDATE);
 
 		final PurchaseDetail purchaseDetail = updatePurchaseDetailBuilderFromEvent(purchaseDetailBuilder, event).build();
 
 		final Candidate supplyCandidate = candidateBuilder
-				.materialDescriptor(materialDescriptor)
 				.businessCaseDetail(purchaseDetail)
 				.build();
 
@@ -77,10 +73,14 @@ public abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends Abstract
 	private CandidateBuilder createCandidateBuilder(@NonNull final AbstractReceiptScheduleEvent event)
 	{
 		final CandidatesQuery query = createCandidatesQuery(event);
-		final Candidate existingCandidteOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
-		if (existingCandidteOrNull != null)
+		final Candidate existingCandidateOrNull = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
+		if (existingCandidateOrNull != null)
 		{
-			return existingCandidteOrNull.toBuilder();
+			final MaterialDescriptor materialDescriptor = event.getMaterialDescriptor();
+			final CandidateBuilder builder = existingCandidateOrNull
+					.toBuilder()
+					.materialDescriptor(materialDescriptor);
+			return builder;
 		}
 
 		return createInitialBuilder(event);
@@ -90,12 +90,10 @@ public abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends Abstract
 
 	private final CandidateBuilder createInitialBuilder(@NonNull final AbstractReceiptScheduleEvent event)
 	{
-		final EventDescriptor eventDescriptor = event.getEventDescriptor();
-
 		return Candidate.builder()
-				.clientId(eventDescriptor.getClientId())
-				.orgId(eventDescriptor.getOrgId())
+				.clientAndOrgId(event.getEventDescriptor().getClientAndOrgId())
 				.type(CandidateType.SUPPLY)
+				.materialDescriptor(event.getMaterialDescriptor())
 				.businessCase(CandidateBusinessCase.PURCHASE);
 	}
 

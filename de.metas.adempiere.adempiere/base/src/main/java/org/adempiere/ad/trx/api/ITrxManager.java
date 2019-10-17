@@ -49,12 +49,6 @@ public interface ITrxManager extends ISingletonService
 {
 	/**
 	 *
-	 * @return array of current active transactions
-	 */
-	ITrx[] getActiveTransactions();
-
-	/**
-	 *
 	 * @return list of current active transactions
 	 */
 	List<ITrx> getActiveTransactionsList();
@@ -186,12 +180,7 @@ public interface ITrxManager extends ISingletonService
 	 */
 	String createTrxName(String prefix, boolean createTrx);
 
-	<T> T call(Callable<T> callable);
-
-	default void run(final Runnable runnable)
-	{
-		runInNewTrx(runnable);
-	}
+	<T> T callInNewTrx(Callable<T> callable);
 
 	void runInNewTrx(Runnable runnable);
 
@@ -202,18 +191,13 @@ public interface ITrxManager extends ISingletonService
 	 */
 	void runInNewTrx(TrxRunnable runnable);
 
-	default void run(final TrxRunnable runnable)
-	{
-		runInNewTrx(runnable);
-	};
-
 	/**
 	 * Same as calling {@link #call(String, TrxRunnable)} with trxName=null
 	 *
 	 * @return callable's return value
 	 * @see #call(String, TrxRunnable)
 	 */
-	<T> T call(TrxCallable<T> callable);
+	<T> T callInNewTrx(TrxCallable<T> callable);
 
 	/**
 	 * Executes the runnable object. Same as calling {@link #run(String, boolean, TrxRunnable)} with manageTrx = false. This means that it uses the trx with the the given trxName, creates a savepoint
@@ -227,6 +211,11 @@ public interface ITrxManager extends ISingletonService
 	void run(String trxName, TrxRunnable r);
 
 	void run(String trxName, Runnable runnable);
+
+	default void runInThreadInheritedTrx(final TrxRunnable runnable)
+	{
+		run(ITrx.TRXNAME_ThreadInherited, runnable);
+	}
 
 	default void runInThreadInheritedTrx(final Runnable runnable)
 	{
@@ -253,6 +242,7 @@ public interface ITrxManager extends ISingletonService
 	/**
 	 * @see #call(String, boolean, TrxCallable)
 	 */
+	@Deprecated
 	void run(String trxName, boolean manageTrx, TrxRunnable r);
 
 	/**
@@ -286,6 +276,7 @@ public interface ITrxManager extends ISingletonService
 	 * @param callable
 	 * @return callable's return value
 	 */
+	@Deprecated
 	<T> T call(String trxName, boolean manageTrx, TrxCallable<T> callable);
 
 	/**
@@ -296,6 +287,7 @@ public interface ITrxManager extends ISingletonService
 	 * @param runnable
 	 *
 	 */
+	@Deprecated
 	void run(String trxName, ITrxRunConfig cfg, TrxRunnable runnable);
 
 	/**
@@ -306,6 +298,7 @@ public interface ITrxManager extends ISingletonService
 	 * @param runnable
 	 * @return callable's return value
 	 */
+	@Deprecated
 	<T> T call(String trxName, ITrxRunConfig cfg, TrxCallable<T> callable);
 
 	/**
@@ -314,6 +307,9 @@ public interface ITrxManager extends ISingletonService
 	 * @param r runnable
 	 */
 	void runOutOfTransaction(TrxRunnable r);
+
+	/** Run after current transaction is committed. If no transaction, the code is executed right away. */
+	void runAfterCommit(final Runnable runnable);
 
 	/**
 	 * Commit transaction for given <code>trxName</code>.
@@ -521,7 +517,7 @@ public interface ITrxManager extends ISingletonService
 	 * @param onTrxMissingPolicy
 	 * @return current thread's trx
 	 */
-	public String getThreadInheritedTrxName(final OnTrxMissingPolicy onTrxMissingPolicy);
+	String getThreadInheritedTrxName(final OnTrxMissingPolicy onTrxMissingPolicy);
 
 	/**
 	 * Gets current Thread's transaction.

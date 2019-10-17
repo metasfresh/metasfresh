@@ -2,6 +2,8 @@ package de.metas.process.ui;
 
 import java.util.List;
 
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -13,10 +15,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_AD_Form;
+import de.metas.process.AdProcessId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor;
+import de.metas.process.SelectionSize;
 
 public class AProcessModelTest
 {
@@ -65,7 +69,13 @@ public class AProcessModelTest
 		preconditionsContext = new IProcessPreconditionsContext()
 		{
 			@Override
-			public int getAD_Window_ID()
+			public AdWindowId getAdWindowId()
+			{
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public AdTabId getAdTabId()
 			{
 				throw new UnsupportedOperationException();
 			}
@@ -87,7 +97,7 @@ public class AProcessModelTest
 			{
 				throw new UnsupportedOperationException();
 			}
-			
+
 			@Override
 			public int getSingleSelectedRecordId()
 			{
@@ -95,7 +105,7 @@ public class AProcessModelTest
 			}
 
 			@Override
-			public int getSelectionSize()
+			public SelectionSize getSelectionSize()
 			{
 				throw new UnsupportedOperationException();
 			}
@@ -208,7 +218,7 @@ public class AProcessModelTest
 		InterfaceWrapperHelper.save(process);
 
 		return RelatedProcessDescriptor.builder()
-				.processId(process.getAD_Process_ID())
+				.processId(AdProcessId.ofRepoId(process.getAD_Process_ID()))
 				.build();
 	}
 
@@ -228,7 +238,7 @@ public class AProcessModelTest
 		InterfaceWrapperHelper.save(process);
 
 		return RelatedProcessDescriptor.builder()
-				.processId(process.getAD_Process_ID())
+				.processId(AdProcessId.ofRepoId(process.getAD_Process_ID()))
 				.build();
 	}
 

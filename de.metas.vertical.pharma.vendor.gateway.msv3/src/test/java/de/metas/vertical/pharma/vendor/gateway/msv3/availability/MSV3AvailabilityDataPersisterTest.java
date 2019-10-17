@@ -3,13 +3,13 @@ package de.metas.vertical.pharma.vendor.gateway.msv3.availability;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.AvailabilityType;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityResponse;

@@ -40,14 +40,18 @@ import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingListener;
 import de.metas.materialtracking.MTLinkRequest;
+import de.metas.materialtracking.MTLinkRequest.IfModelAlreadyLinked;
 import de.metas.materialtracking.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderLineId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 
 /**
@@ -109,19 +113,19 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 			if (I_C_Order.Table_Name.equals(getTableName()))
 			{
 				p_C_Order_ID = getRecord_ID();
-				p_Line = params.getParameterAsInt(PARA_Line);
+				p_Line = params.getParameterAsInt(PARA_Line, 0);
 			}
 			else
 			{
-				p_C_Order_ID = params.getParameterAsInt(PARA_C_Order_ID);
-				p_Line = params.getParameterAsInt(PARA_Line);
+				p_C_Order_ID = params.getParameterAsInt(PARA_C_Order_ID, -1);
+				p_Line = params.getParameterAsInt(PARA_Line, 0);
 			}
 
 			final I_C_Order order = InterfaceWrapperHelper.create(getCtx(), p_C_Order_ID, I_C_Order.class, getTrxName());
 			orderLine = orderDAO.retrieveOrderLine(order, p_Line, I_C_OrderLine.class);
 		}
 
-		p_Material_Tracking_ID = params.getParameterAsInt(PARA_M_Material_Tracking_ID);
+		p_Material_Tracking_ID = params.getParameterAsInt(PARA_M_Material_Tracking_ID, -1);
 	}
 
 	@Override
@@ -134,11 +138,17 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 	private void doIt0()
 	{
 		final I_M_Material_Tracking materialTracking = InterfaceWrapperHelper.create(getCtx(), p_Material_Tracking_ID, I_M_Material_Tracking.class, getTrxName());
-		if (materialTracking.getM_Product_ID() != orderLine.getM_Product_ID())
+		final ProductId orderLineProductId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final ProductId materialTrackingProductId = ProductId.ofRepoId(materialTracking.getM_Product_ID());
+		if (!ProductId.equals(materialTrackingProductId, orderLineProductId))
 		{
-			final String msg = "@C_OrderLine_ID@ @M_Product_ID@ (" + orderLine.getM_Product().getValue() + ") "
+			final IProductBL productBL = Services.get(IProductBL.class);
+			final String orderLineOroductName = productBL.getProductValueAndName(orderLineProductId);
+			final String materialTrackingProductName = productBL.getProductValueAndName(materialTrackingProductId);
+			
+			final String msg = "@C_OrderLine_ID@ @M_Product_ID@ (" + orderLineOroductName + ") "
 					+ "<> "
-					+ "@M_Material_Tracking@ @M_Product_ID@ (" + materialTracking.getM_Product().getValue() + ")";
+					+ "@M_Material_Tracking@ @M_Product_ID@ (" + materialTrackingProductName + ")";
 			final String msgTrl = msgBL.parseTranslation(getCtx(), msg);
 			throw new AdempiereException(msgTrl);
 		}
@@ -149,8 +159,10 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 			createUpdateASIAndLink(orderLine, materialTracking);
 			addLog(msgBL.parseTranslation(getCtx(), "@Processed@: @C_OrderLine_ID@ @Line@ " + p_Line));
 
+			final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
+
 			final List<I_C_Invoice_Candidate> icsToDelete = InterfaceWrapperHelper.createList(
-					invoiceCandDAO.retrieveInvoiceCandidatesForOrderLine(orderLine),
+					invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId),
 					I_C_Invoice_Candidate.class);
 			deleteOrUpdate(icsToDelete, materialTracking);
 		}
@@ -241,15 +253,16 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 
 		materialTrackingBL.linkModelToMaterialTracking(
 				MTLinkRequest.builder()
-						.setModel(documentLine)
-						.setMaterialTracking(materialTracking)
+						.model(documentLine)
+						.materialTrackingRecord(materialTracking)
 
 						// pass the process parameters on. They contain HU specific infos which this class and module doesn't know or care about, but which are required to
 						// happen when this process runs. Search for references to this process class name in the HU module to find out specifics.
-						.setParams(getParameterAsIParams())
+						.params(getParameterAsIParams())
 
 						// unlink from another material tracking if necessary
-						.setAssumeNotAlreadyAssigned(false)
+						.ifModelAlreadyLinked(IfModelAlreadyLinked.UNLINK_FROM_PREVIOUS)
+
 						.build());
 	}
 

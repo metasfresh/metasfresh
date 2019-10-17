@@ -8,18 +8,18 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IOrgDAO;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
@@ -31,7 +31,7 @@ import de.metas.payment.esr.model.I_ESR_PostFinanceUserNumber;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -115,9 +115,9 @@ public class ESRDataLoaderUtil
 
 		importLine.setESRReferenceNumber(esrReferenceNumberToMatch);
 
-		final IESRImportDAO esrImportPA = Services.get(IESRImportDAO.class);
-		final I_C_ReferenceNo_Doc esrReferenceNumberDocument = esrImportPA
-				.retrieveESRInvoiceReferenceNumberDocument(Env.getCtx(), esrReferenceNumberToMatch);
+		final IESRImportDAO esrImportDAO = Services.get(IESRImportDAO.class);
+		final I_C_ReferenceNo_Doc esrReferenceNumberDocument = esrImportDAO
+				.retrieveESRInvoiceReferenceNumberDocument(OrgId.ofRepoIdOrAny(importLine.getAD_Org_ID()), esrReferenceNumberToMatch);
 
 		if (esrReferenceNumberDocument == null)
 		{
@@ -460,7 +460,7 @@ public class ESRDataLoaderUtil
 
 		final StringBuilder sb = new StringBuilder();
 		sb.append(renderenNoComponents[0]);
-		sb.append(Util.lpadZero(renderenNoComponents[1], 6, "middle section of " + renderedPostAccountNo));
+		sb.append(StringUtils.lpadZero(renderenNoComponents[1], 6, "middle section of " + renderedPostAccountNo));
 		sb.append(renderenNoComponents[2]);
 
 		return sb.toString();

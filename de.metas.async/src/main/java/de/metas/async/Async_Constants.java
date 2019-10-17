@@ -38,7 +38,6 @@ public final class Async_Constants
 	/**
 	 * If a package has been skipped by a {@link IWorkpackageProcessor}, then this constant is the default timeout before that work package is once again returned by
 	 * {@link #retrieveAndLockNextWorkPackage(Properties, int, int)}.
-	 *
 	 */
 	public static final int DEFAULT_RETRY_TIMEOUT_MILLIS = 5000;
 

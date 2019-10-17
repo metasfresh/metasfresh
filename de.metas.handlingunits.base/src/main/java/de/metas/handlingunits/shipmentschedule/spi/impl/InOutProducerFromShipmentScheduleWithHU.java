@@ -23,6 +23,8 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
  */
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -42,6 +44,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -67,7 +70,6 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.shipping.model.I_M_ShipperTransportation;
-import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -130,10 +132,8 @@ public class InOutProducerFromShipmentScheduleWithHU
 	 */
 	private final Set<HuId> tuIdsAlreadyAssignedToShipmentLine = new HashSet<>();
 
-	public InOutProducerFromShipmentScheduleWithHU(final InOutGenerateResult result)
+	public InOutProducerFromShipmentScheduleWithHU(@NonNull final InOutGenerateResult result)
 	{
-		super();
-
 		this.result = result;
 
 		shipmentScheduleKeyBuilder = shipmentScheduleBL.mkShipmentHeaderAggregationKeyBuilder();
@@ -141,7 +141,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	}
 
 	@Override
-	public InOutGenerateResult createShipments(final List<ShipmentScheduleWithHU> candidates)
+	public InOutGenerateResult createShipments(@NonNull final List<ShipmentScheduleWithHU> candidates)
 	{
 		final InOutUserNotificationsProducer shipmentGeneratedNotifications = InOutUserNotificationsProducer.newInstance();
 
@@ -200,10 +200,8 @@ public class InOutProducerFromShipmentScheduleWithHU
 	}
 
 	@Override
-	public boolean isSameChunk(final ShipmentScheduleWithHU item)
+	public boolean isSameChunk(@NonNull final ShipmentScheduleWithHU item)
 	{
-		Check.assumeNotNull(item, "Param item' is not null");
-
 		//
 		// If there is no last item (i.e. this is the first item), consider it as a new chunk
 		if (lastItem == null)
@@ -236,7 +234,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = candidate.getM_ShipmentSchedule();
 
-		final Timestamp shipmentDate = calculateShipmentDate(shipmentSchedule, shipmentDateToday);
+		final LocalDate shipmentDate = calculateShipmentDate(shipmentSchedule, shipmentDateToday);
 
 		//
 		// Search for existing shipment to consolidate on
@@ -255,28 +253,26 @@ public class InOutProducerFromShipmentScheduleWithHU
 	}
 
 	@VisibleForTesting
-	static Timestamp calculateShipmentDate(final @NonNull I_M_ShipmentSchedule schedule, final boolean isShipmentDateToday)
+	static LocalDate calculateShipmentDate(final @NonNull I_M_ShipmentSchedule schedule, final boolean isShipmentDateToday)
 	{
-		final Timestamp today = SystemTime.asDayTimestamp();
-
+		final LocalDate today = SystemTime.asLocalDate();
 		if (isShipmentDateToday)
 		{
 			return today;
 		}
 
-		final Timestamp deliveryDateEffective = Services.get(IShipmentScheduleEffectiveBL.class).getDeliveryDate(schedule);
-
+		final ZonedDateTime deliveryDateEffective = Services.get(IShipmentScheduleEffectiveBL.class).getDeliveryDate(schedule);
 		if (deliveryDateEffective == null)
 		{
 			return today;
 		}
 
-		if (deliveryDateEffective.before(today))
+		if (deliveryDateEffective.toLocalDate().isBefore(today))
 		{
 			return today;
 		}
 
-		return deliveryDateEffective;
+		return deliveryDateEffective.toLocalDate();
 	}
 
 	/**
@@ -286,7 +282,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	 * @param movementDate
 	 * @return shipment
 	 */
-	private I_M_InOut createShipmentHeader(final ShipmentScheduleWithHU candidate, final Timestamp movementDate)
+	private I_M_InOut createShipmentHeader(final ShipmentScheduleWithHU candidate, final LocalDate dateDoc)
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = candidate.getM_ShipmentSchedule();
 
@@ -320,6 +316,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		//
 		// Document Dates
 		{
+			final Timestamp movementDate = TimeUtil.asTimestamp(dateDoc);
 			shipment.setMovementDate(movementDate);
 			shipment.setDateAcct(movementDate);
 		}
@@ -449,11 +446,11 @@ public class InOutProducerFromShipmentScheduleWithHU
 				// save the shipment schedule using current transaction
 				InterfaceWrapperHelper.save(shipmentSchedule, processorCtx.getTrxName());
 			}
-			Loggables.get().addLog("Shipment {0} was created;\nShipmentScheduleWithHUs: {1}", currentShipment, currentCandidates);
+			Loggables.addLog("Shipment {0} was created;\nShipmentScheduleWithHUs: {1}", currentShipment, currentCandidates);
 		}
 		else
 		{
-			Loggables.get().addLog("Shipment {0} would be empty, so deleting it again", currentShipment);
+			Loggables.addLog("Shipment {0} would be empty, so deleting it again", currentShipment);
 			InterfaceWrapperHelper.delete(currentShipment);
 		}
 
@@ -506,27 +503,30 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private void updateShipmentDate(@NonNull final I_M_InOut shipment, @NonNull final ShipmentScheduleWithHU candidate)
 	{
 		final I_M_ShipmentSchedule schedule = candidate.getM_ShipmentSchedule();
-		final Timestamp candidateShipmentDate = calculateShipmentDate(schedule, shipmentDateToday);
+		final LocalDate candidateShipmentDate = calculateShipmentDate(schedule, shipmentDateToday);
 
 		// the shipment was created before but wasn't yet completed;
 		if (isShipmentDeliveryDateBetterThanMovementDate(shipment, candidateShipmentDate))
 		{
-			shipment.setMovementDate(candidateShipmentDate);
-			shipment.setDateAcct(candidateShipmentDate);
+			final Timestamp candidateShipmentDateTS = TimeUtil.asTimestamp(candidateShipmentDate);
+			shipment.setMovementDate(candidateShipmentDateTS);
+			shipment.setDateAcct(candidateShipmentDateTS);
 
 			InterfaceWrapperHelper.save(shipment);
 		}
 	}
 
 	@VisibleForTesting
-	static boolean isShipmentDeliveryDateBetterThanMovementDate(final @NonNull I_M_InOut shipment, final @NonNull Timestamp shipmentDeliveryDate)
+	static boolean isShipmentDeliveryDateBetterThanMovementDate(
+			final @NonNull I_M_InOut shipment,
+			final @NonNull LocalDate shipmentDeliveryDate)
 	{
-		final Timestamp today = SystemTime.asDayTimestamp();
-		final Timestamp movementDate = shipment.getMovementDate();
+		final LocalDate today = SystemTime.asLocalDate();
+		final LocalDate movementDate = TimeUtil.asLocalDate(shipment.getMovementDate());
 
-		final boolean isCandidateInThePast = shipmentDeliveryDate.before(today);
-		final boolean isMovementDateInThePast = movementDate.before(today);
-		final boolean isCandidateSoonerThanMovementDate = movementDate.after(shipmentDeliveryDate);
+		final boolean isCandidateInThePast = shipmentDeliveryDate.isBefore(today);
+		final boolean isMovementDateInThePast = movementDate.isBefore(today);
+		final boolean isCandidateSoonerThanMovementDate = movementDate.isAfter(shipmentDeliveryDate);
 
 		if (isCandidateInThePast)
 		{
@@ -557,18 +557,15 @@ public class InOutProducerFromShipmentScheduleWithHU
 			// => currentShipmentLineBuilder = null;
 		}
 
-		final boolean isManualPackingMaterial = candidate.isCreateManualPackingMaterial();
-
 		//
 		// If we don't have an active shipment line builder
 		// then create one
 		if (currentShipmentLineBuilder == null)
 		{
 			currentShipmentLineBuilder = new ShipmentLineBuilder(currentShipment);
-			currentShipmentLineBuilder.setManualPackingMaterial(isManualPackingMaterial);
+			currentShipmentLineBuilder.setManualPackingMaterial(candidate.isAdviseManualPackingMaterial());
 			currentShipmentLineBuilder.setQtyTypeToUse(candidate.getQtyTypeToUse());
 			currentShipmentLineBuilder.setAlreadyAssignedTUIds(tuIdsAlreadyAssignedToShipmentLine);
-
 		}
 
 		//

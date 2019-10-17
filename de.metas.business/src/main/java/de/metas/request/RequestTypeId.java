@@ -1,6 +1,10 @@
 package de.metas.request;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 /*
@@ -26,8 +30,9 @@ import lombok.Value;
  */
 
 @Value
-public class RequestTypeId
+public class RequestTypeId implements RepoIdAware
 {
+	@JsonCreator
 	public static RequestTypeId ofRepoId(final int repoId)
 	{
 		return new RequestTypeId(repoId);
@@ -47,6 +52,13 @@ public class RequestTypeId
 
 	private RequestTypeId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "M_RequestType_ID");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

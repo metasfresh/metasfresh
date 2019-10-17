@@ -62,7 +62,7 @@ public class PlainDunningDAO extends AbstractDunningDAO
 	}
 
 	@Override
-	public List<I_C_Dunning> retrieveDunnings(Properties ctx)
+	public List<I_C_Dunning> retrieveDunnings()
 	{
 		return lookupMap.getRecords(I_C_Dunning.class);
 	}

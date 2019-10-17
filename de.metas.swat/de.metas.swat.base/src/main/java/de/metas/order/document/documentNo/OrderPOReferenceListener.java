@@ -1,11 +1,14 @@
 package de.metas.order.document.documentNo;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 
 import de.metas.document.sequence.spi.IDocumentNoAware;
 import de.metas.document.sequence.spi.IDocumentNoListener;
+import de.metas.order.IOrderBL;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 
 /*
@@ -36,7 +39,7 @@ public class OrderPOReferenceListener implements IDocumentNoListener
 
 	private OrderPOReferenceListener()
 	{
-	};
+	}
 
 	@Override
 	public String getTableName()
@@ -73,7 +76,7 @@ public class OrderPOReferenceListener implements IDocumentNoListener
 			return; // there is no documentNo to work with
 		}
 
-		final de.metas.order.model.I_C_BPartner bpartner = InterfaceWrapperHelper.create(order.getC_BPartner(), de.metas.order.model.I_C_BPartner.class);
+		final I_C_BPartner bpartner = Services.get(IOrderBL.class).getBPartner(order);
 		if (!bpartner.isCreateDefaultPOReference())
 		{
 			return; // the BPartner doesn't want us to set it

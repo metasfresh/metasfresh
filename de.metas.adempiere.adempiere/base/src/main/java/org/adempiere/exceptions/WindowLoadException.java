@@ -1,5 +1,7 @@
 package org.adempiere.exceptions;
 
+import org.adempiere.ad.element.api.AdWindowId;
+
 import de.metas.util.Check;
 
 /**
@@ -13,19 +15,15 @@ import de.metas.util.Check;
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/08508_NPE_when_opening_Warenbewegung_-_%C3%9Cbersicht_with_role_Handel_%28109844897323%29
  */
+@SuppressWarnings("serial")
 public class WindowLoadException extends AdempiereException
 {
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -5396156685197179469L;
-
-	public WindowLoadException(final String message, final String roleName, final String windowName, final int adWindowId)
+	public WindowLoadException(final String message, final String roleName, final String windowName, final AdWindowId adWindowId)
 	{
 		super(buildMsg(message, roleName, windowName, adWindowId));
 	}
 
-	private static String buildMsg(final String message, final String roleName, final String windowName, final int adWindowId)
+	private static String buildMsg(final String message, final String roleName, final String windowName, final AdWindowId adWindowId)
 	{
 		final StringBuilder messageFinal = new StringBuilder("@AccessTableNoView@");
 		if (!Check.isEmpty(message, true))

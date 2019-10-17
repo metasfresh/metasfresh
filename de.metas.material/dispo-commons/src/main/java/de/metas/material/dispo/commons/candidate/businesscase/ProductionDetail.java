@@ -4,8 +4,9 @@ import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
-import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
+import de.metas.product.ResourceId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -46,26 +47,7 @@ public class ProductionDetail implements BusinessCaseDetail
 		return (ProductionDetail)businessCaseDetail;
 	}
 
-	public static ProductionDetail forProductionDetailRecord(
-			@NonNull final I_MD_Candidate_Prod_Detail productionDetailRecord)
-	{
-		final ProductionDetail productionDetail = ProductionDetail.builder()
-				.advised(Flag.of(productionDetailRecord.isAdvised()))
-				.pickDirectlyIfFeasible(Flag.of(productionDetailRecord.isPickDirectlyIfFeasible()))
-				.description(productionDetailRecord.getDescription())
-				.plantId(productionDetailRecord.getPP_Plant_ID())
-				.productBomLineId(productionDetailRecord.getPP_Product_BOMLine_ID())
-				.productPlanningId(productionDetailRecord.getPP_Product_Planning_ID())
-				.ppOrderId(productionDetailRecord.getPP_Order_ID())
-				.ppOrderLineId(productionDetailRecord.getPP_Order_BOMLine_ID())
-				.ppOrderDocStatus(productionDetailRecord.getPP_Order_DocStatus())
-				.plannedQty(productionDetailRecord.getPlannedQty())
-				.build();
-
-		return productionDetail;
-	}
-
-	int plantId;
+	ResourceId plantId;
 
 	int productPlanningId;
 
@@ -75,7 +57,7 @@ public class ProductionDetail implements BusinessCaseDetail
 
 	int ppOrderId;
 
-	String ppOrderDocStatus;
+	DocStatus ppOrderDocStatus;
 
 	int ppOrderLineId;
 
@@ -83,29 +65,29 @@ public class ProductionDetail implements BusinessCaseDetail
 
 	Flag pickDirectlyIfFeasible;
 
-	BigDecimal plannedQty;
+	BigDecimal qty;
 
 	@Builder(toBuilder = true)
 	private ProductionDetail(
-			final int plantId,
+			final ResourceId plantId,
 			final int productPlanningId,
 			final int productBomLineId,
 			final String description,
 			final int ppOrderId,
-			final String ppOrderDocStatus,
+			final DocStatus ppOrderDocStatus,
 			final int ppOrderLineId,
 			@NonNull final Flag advised,
 			@NonNull final Flag pickDirectlyIfFeasible,
-			@NonNull final BigDecimal plannedQty)
+			@NonNull final BigDecimal qty)
 	{
 		this.advised = advised;
 		this.pickDirectlyIfFeasible = pickDirectlyIfFeasible;
 
 		final boolean detailIsAboutPPOrderHeader = productBomLineId <= 0;
-		if (Flag.TRUE.equals(advised) && detailIsAboutPPOrderHeader)
+		if (advised.isTrue() && detailIsAboutPPOrderHeader)
 		{
 			// plantId needs to be available when using this productionDetail to request a ppOrder being created
-			Check.errorIf(plantId <= 0, "Parameter plantId needs to be >= 0 for and advised PPOrder 'Header' productionDetail");
+			Check.errorIf(plantId == null, "Parameter plantId needs to set for and advised PPOrder 'Header' productionDetail");
 		}
 
 		this.plantId = plantId;
@@ -116,12 +98,22 @@ public class ProductionDetail implements BusinessCaseDetail
 		this.ppOrderId = ppOrderId;
 		this.ppOrderDocStatus = ppOrderDocStatus;
 		this.ppOrderLineId = ppOrderLineId;
-		this.plannedQty = plannedQty;
+		this.qty = qty;
 	}
 
 	@Override
 	public CandidateBusinessCase getCandidateBusinessCase()
 	{
 		return CandidateBusinessCase.PRODUCTION;
+	}
+
+	public boolean isFinishedGoodsCandidate()
+	{
+		return getPpOrderLineId() <= 0;
+	}
+
+	public boolean isBOMLine()
+	{
+		return getPpOrderLineId() > 0;
 	}
 }

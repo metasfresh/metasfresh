@@ -40,11 +40,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.TaxNoExemptFoundException;
-import org.adempiere.exceptions.TaxNotFoundException;
-import org.adempiere.location.CountryId;
-import org.adempiere.location.LocationId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.IQuery;
@@ -61,13 +57,19 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.service.ICountryAreaBL;
-import de.metas.adempiere.service.ICountryDAO;
-import de.metas.adempiere.service.ILocationDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryAreaBL;
+import de.metas.location.ICountryDAO;
+import de.metas.location.ILocationDAO;
+import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxNotFoundException;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -88,7 +90,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	@Override
 	public int getTax(final Properties ctx,
 			final Object model,
-			final int taxCategoryId,
+			final TaxCategoryId taxCategoryId,
 			final int productId,
 			@NonNull final Timestamp shipDate,
 			@NonNull final OrgId orgId,
@@ -96,7 +98,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			final int shipC_BPartner_Location_ID,
 			final boolean isSOTrx)
 	{
-		if (taxCategoryId > 0)
+		if (taxCategoryId != null)
 		{
 			final CountryId countryFromId;
 			if (warehouseId != null)
@@ -167,7 +169,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			final OrgId orgId,
 			@NonNull final I_C_BPartner_Location bpLocTo,
 			@NonNull final Timestamp date,
-			final int taxCategoryId,
+			final TaxCategoryId taxCategoryId,
 			final boolean isSOTrx,
 			final boolean throwEx)
 	{
@@ -266,7 +268,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	}
 
 	private int getGermanTax(final Properties ctx,
-			final int productId,
+			final ProductId productId,
 			final int chargeId,
 			final Timestamp billDate,
 			final Timestamp shipDate,
@@ -368,7 +370,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			sql += " AND t.IsToEULocation = 'N' ";
 		}
 		// product or charge
-		if (productId != 0)
+		if (productId != null)
 		{
 			sql += " AND t.C_TaxCategory_ID = pp.C_TaxCategory_ID AND pp.M_Product_ID = ? ";
 		}
@@ -390,15 +392,15 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		ResultSet rs = null;
 
 		// metas start: rc: 03083: get the retrieved C_TaxCategory
-		int taxCategoryID = 0;
+		TaxCategoryId taxCategoryId = null;
 		// metas end: rc: 03083
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			pstmt.setTimestamp(1, billDate);
-			if (productId != 0)
+			if (productId != null)
 			{
-				pstmt.setInt(2, productId);
+				pstmt.setInt(2, productId.getRepoId());
 			}
 			else
 			{
@@ -409,13 +411,13 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			if (rs.next())
 			{
 				taxId = rs.getInt(1);
-				taxCategoryID = rs.getInt(4);
+				taxCategoryId = TaxCategoryId.ofRepoId(rs.getInt(4));
 			}
 		}
 		catch (final SQLException e)
 		{
 			log.error("getGermanTax - error: ", e);
-			throw new DBException(e, sql, new Object[] { billDate, productId != 0 ? productId : chargeId });
+			throw new DBException(e, sql, new Object[] { billDate, productId != null ? productId : chargeId });
 		}
 		finally
 		{
@@ -426,7 +428,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		{
 			throw TaxNotFoundException.builder()
 					.productId(productId).chargeId(chargeId)
-					.taxCategoryId(taxCategoryID)
+					.taxCategoryId(taxCategoryId)
 					.isSOTrx(isSOTrx)
 					.shipDate(shipDate)
 					.shipFromC_Location_ID(0)
@@ -460,7 +462,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		{
 			return getGermanTax(
 					ctx,
-					M_Product_ID,
+					ProductId.ofRepoIdOrNull(M_Product_ID),
 					C_Charge_ID,
 					billDate,
 					shipDate,
@@ -573,18 +575,18 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	}
 
 	@Override
-	public int retrieveRegularTaxCategoryId()
+	public TaxCategoryId retrieveRegularTaxCategoryId()
 	{
-		final int taxCategoryId = Services.get(IQueryBL.class)
+		final TaxCategoryId taxCategoryId = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_TaxCategory.class)
 				.addEqualsFilter(I_C_TaxCategory.COLUMN_VATType, X_C_TaxCategory.VATTYPE_RegularVAT)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.orderBy(I_C_TaxCategory.COLUMN_Name)
 				.create()
-				.firstId();
+				.firstId(TaxCategoryId::ofRepoIdOrNull);
 
-		if (taxCategoryId <= 0)
+		if (taxCategoryId == null)
 		{
 			throw new AdempiereException("No tax category found for Regular VATType");
 		}

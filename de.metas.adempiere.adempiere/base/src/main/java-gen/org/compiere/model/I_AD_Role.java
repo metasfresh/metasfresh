@@ -710,6 +710,29 @@ public interface I_AD_Role
     public static final String COLUMNNAME_IsAllowLoginDateOverride = "IsAllowLoginDateOverride";
 
 	/**
+	 * Set IsAttachmentDeletionAllowed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsAttachmentDeletionAllowed (boolean IsAttachmentDeletionAllowed);
+
+	/**
+	 * Get IsAttachmentDeletionAllowed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isAttachmentDeletionAllowed();
+
+    /** Column definition for IsAttachmentDeletionAllowed */
+    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_IsAttachmentDeletionAllowed = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "IsAttachmentDeletionAllowed", null);
+    /** Column name IsAttachmentDeletionAllowed */
+    public static final String COLUMNNAME_IsAttachmentDeletionAllowed = "IsAttachmentDeletionAllowed";
+
+	/**
 	 * Set Skip role login page.
 	 * Skip role login page and take the defaults
 	 *
@@ -1105,7 +1128,6 @@ public interface I_AD_Role
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -1115,7 +1137,6 @@ public interface I_AD_Role
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true

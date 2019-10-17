@@ -2,7 +2,6 @@ package de.metas.i18n.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -34,12 +33,12 @@ public class LanguageDAO implements ILanguageDAO
 			+ " FROM " + I_AD_Language.Table_Name
 			+ " WHERE " + I_AD_Language.COLUMNNAME_IsBaseLanguage + "=?";
 
-	/**	Add						*/
-	public static String	MAINTENANCEMODE_Add = "A";
-	/** Delete					*/
-	public static String	MAINTENANCEMODE_Delete = "D";
-	/** Re-Create				*/
-	public static String	MAINTENANCEMODE_ReCreate = "R";
+	/** Add */
+	public static String MAINTENANCEMODE_Add = "A";
+	/** Delete */
+	public static String MAINTENANCEMODE_Delete = "D";
+	/** Re-Create */
+	public static String MAINTENANCEMODE_ReCreate = "R";
 
 	@Override
 	@Cached(cacheName = I_AD_Language.Table_Name, expireMinutes = Cached.EXPIREMINUTES_Never)
@@ -75,7 +74,7 @@ public class LanguageDAO implements ILanguageDAO
 	{
 		// IMPORTANT: because this method is called right after database connection is established
 		// we cannot use the Query API which is requiring MLanguage.getBaseLanguage() to be set
-		
+
 		// metas: 03362: Load BaseLanguage only if we have database connection.
 		// Could happen, if we invoke this method in early steps of initialization/startup to not have database connection yet
 		if (!DB.isConnected())
@@ -90,10 +89,10 @@ public class LanguageDAO implements ILanguageDAO
 	}
 
 	@Override
-	public I_AD_Language retrieveByAD_Language(final Properties ctx, final String adLanguage)
+	public I_AD_Language retrieveByAD_Language(final String adLanguage)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Language.class, ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_AD_Language.class)
 				.addEqualsFilter(I_AD_Language.COLUMNNAME_AD_Language, adLanguage)
 				.create()
 				.firstOnly(I_AD_Language.class);
@@ -110,32 +109,27 @@ public class LanguageDAO implements ILanguageDAO
 				.create()
 				.listDistinct(I_AD_Table.COLUMNNAME_TableName, String.class);
 	}
-	
+
 	@Override
 	public void maintainTranslations(@NonNull final I_AD_Language language, @NonNull final String maintenanceMode)
 	{
 		logger.info("Mode={},  language={}", maintenanceMode, language);
-		
-		if (language.isBaseLanguage())
-		{
-			throw new AdempiereException("Base Language has no Translations: " + language);
-		}
-		
+
 		int deleteNo = 0;
 		int insertNo = 0;
-		
-		//	Delete
+
+		// Delete
 		if (MAINTENANCEMODE_Delete.equals(maintenanceMode)
-			|| MAINTENANCEMODE_ReCreate.equals(maintenanceMode))
+				|| MAINTENANCEMODE_ReCreate.equals(maintenanceMode))
 		{
 			deleteNo = removeTranslations(language);
 		}
-		
-		//	Add
+
+		// Add
 		if (MAINTENANCEMODE_Add.equals(maintenanceMode)
-			|| MAINTENANCEMODE_ReCreate.equals(maintenanceMode))
+				|| MAINTENANCEMODE_ReCreate.equals(maintenanceMode))
 		{
-			if (language.isActive() && language.isSystemLanguage())
+			if (language.isActive() && (language.isSystemLanguage() || language.isBaseLanguage()))
 			{
 				insertNo = addMissingTranslations(language);
 			}
@@ -144,8 +138,8 @@ public class LanguageDAO implements ILanguageDAO
 				throw new AdempiereException("Language not active System Language: " + language);
 			}
 		}
-		
-		//	Delete
+
+		// Delete
 		if (MAINTENANCEMODE_Delete.equals(maintenanceMode))
 		{
 			if (language.isSystemLanguage())
@@ -154,8 +148,8 @@ public class LanguageDAO implements ILanguageDAO
 				InterfaceWrapperHelper.save(language);
 			}
 		}
-		
-		Loggables.get().addLog("@Deleted@=" + deleteNo + " - @Inserted@=" + insertNo);
+
+		Loggables.addLog("@Deleted@=" + deleteNo + " - @Inserted@=" + insertNo);
 	}
 
 	@Override
@@ -167,12 +161,6 @@ public class LanguageDAO implements ILanguageDAO
 		final List<Throwable> errorCauses = new ArrayList<>();
 		for (final String adLanguage : languages.getAD_Languages())
 		{
-			// Skip base language
-			if(languages.isBaseLanguage(adLanguage))
-			{
-				continue;
-			}
-
 			try
 			{
 				addRemoveLanguageTranslations(adLanguage, true);

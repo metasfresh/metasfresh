@@ -1,5 +1,6 @@
 package de.metas.ordercandidate.api;
 
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -33,17 +34,17 @@ public class OLCandProcessorDescriptor
 	private final int id;
 	private final OLCandOrderDefaults defaults;
 	private final OLCandAggregation aggregationInfo;
-	private final int userInChangeId;
+	private final UserId userInChangeId;
 
 	@Builder
 	private OLCandProcessorDescriptor(
 			final int id,
 			@NonNull final OLCandOrderDefaults defaults,
 			@NonNull final OLCandAggregation aggregationInfo,
-			final int userInChangeId)
+			@NonNull final UserId userInChangeId)
 	{
 		Check.assume(id > 0, "id > 0");
-		Check.assume(userInChangeId > 0, "userInChangeId > 0");
+		Check.assume(userInChangeId.isRegularUser(), "userInChangeId shall be a regular user but it was {}", userInChangeId);
 
 		this.id = id;
 		this.defaults = defaults;

@@ -30,12 +30,14 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.order.model.I_C_OrderLine;
@@ -47,8 +49,12 @@ import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -78,7 +84,8 @@ public class C_OrderLine
 			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 			final BigDecimal qtyEntered = ol.getQtyEntered();
 
-			final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(Env.getCtx(), productId, ol.getC_UOM(), qtyEntered);
+			final I_C_UOM uom = Services.get(IUOMDAO.class).getById(ol.getC_UOM_ID());
+			final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(productId, uom, qtyEntered);
 			ol.setQtyOrdered(qtyOrdered);
 
 			Services.get(IOrderLineBL.class).updatePrices(OrderLinePriceUpdateRequest.builder()
@@ -130,7 +137,8 @@ public class C_OrderLine
 			pricingSysytemId = PricingSystemId.ofRepoIdOrNull(order.getM_PricingSystem_ID());
 		}
 
-		final I_C_BPartner_Location bpLocation = ol.getC_BPartner_Location();
+		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(ol.getC_BPartner_ID(), ol.getC_BPartner_Location_ID());
+		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpLocationId);
 
 		final Timestamp date = order.getDateOrdered();
 
@@ -139,17 +147,17 @@ public class C_OrderLine
 		final int numberOfRuns = subscriptionBL.computeNumberOfRuns(flatrateConditions.getC_Flatrate_Transition(), date);
 
 		final Properties ctx = Env.getCtx();
+		final ProductId productId = ProductId.ofRepoIdOrNull(ol.getM_Product_ID());
+		final ProductAndCategoryId productAndCategoryId = Services.get(IProductDAO.class).retrieveProductAndCategoryIdByProductId(productId);
 		final I_C_Flatrate_Matching matching = subscriptionBL.retrieveMatching(
 				ctx,
 				ol.getC_Flatrate_Conditions_ID(),
-				ol.getM_Product(),
+				productAndCategoryId,
 				ITrx.TRXNAME_None);
 
-		
-		final ProductId productId = ProductId.ofRepoIdOrNull(ol.getM_Product_ID());
 		final Quantity qtyEntered = orderLineBL.getQtyEntered(ol);
 		final Quantity qtyEnteredInProductUOM = uomConversionBL.convertToProductUOM(qtyEntered, productId);
-		
+
 		final Quantity qtyPerRun;
 		if (matching != null && matching.getQtyPerDelivery().signum() > 0)
 		{
@@ -166,9 +174,9 @@ public class C_OrderLine
 
 		// qty ordered needs to be set because it will be used to compute the
 		// line's NetLineAmount in MOrderLine.beforeSave()
-		ol.setQtyOrdered(priceQty.getAsBigDecimal());
+		ol.setQtyOrdered(priceQty.toBigDecimal());
 
-		ol.setQtyEnteredInPriceUOM(priceQty.getAsBigDecimal());
+		ol.setQtyEnteredInPriceUOM(priceQty.toBigDecimal());
 
 		// now compute the new prices
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()

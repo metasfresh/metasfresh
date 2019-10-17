@@ -1,7 +1,7 @@
 package de.metas.order.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 
 import java.util.Collection;
 
@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -38,19 +39,22 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.document.engine.DocStatus;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.user.UserId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -62,7 +66,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	{
 		return InterfaceWrapperHelper.load(orderId.getRepoId(), I_C_Order.class);
 	}
-	
+
 	@Override
 	public <T extends I_C_Order> T getById(
 			@NonNull final OrderId orderId,
@@ -84,7 +88,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
-	public <T extends I_C_OrderLine> T getOrderLineById(@NonNull final OrderLineId orderLineId, @NonNull final Class<T> modelClass)
+	public <T extends org.compiere.model.I_C_OrderLine> T getOrderLineById(@NonNull final OrderLineId orderLineId, @NonNull final Class<T> modelClass)
 	{
 		return InterfaceWrapperHelper.load(orderLineId.getRepoId(), modelClass);
 	}
@@ -113,17 +117,21 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 			@NonNull final I_C_Order order,
 			@NonNull final Class<T> clazz)
 	{
+		final OrderId orderId = OrderId.ofRepoIdOrNull(order.getC_Order_ID());
+		if(orderId == null)
+		{
+			return ImmutableList.of();
+		}
+
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 		final String trxName = InterfaceWrapperHelper.getTrxName(order);
-		final int orderId = order.getC_Order_ID();
 		final List<T> orderLines = retrieveOrderLines(ctx, orderId, trxName, clazz);
-
 		orderLines.forEach(orderLine -> orderLine.setC_Order(order));
 		return orderLines;
 	}
 
 	@Override
-	public List<I_C_OrderLine> retrieveOrderLines(final int orderId)
+	public List<I_C_OrderLine> retrieveOrderLines(final OrderId orderId)
 	{
 		return retrieveOrderLines(Env.getCtx(), orderId, ITrx.TRXNAME_ThreadInherited, I_C_OrderLine.class);
 	}
@@ -132,7 +140,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	// @Cached(cacheName = I_C_OrderLine.Table_Name + "#via#" + I_C_OrderLine.COLUMNNAME_C_Order_ID)
 	public <T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(
 			@CacheCtx final Properties ctx,
-			final int orderId,
+			@NonNull final OrderId orderId,
 			@CacheTrx final String trxName,
 			@NonNull final Class<T> clazz)
 	{
@@ -176,7 +184,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Order.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpartnerId)
-				.addInArrayOrAllFilter(I_C_Order.COLUMNNAME_DocStatus, X_C_Order.DOCSTATUS_Completed, X_C_Order.DOCSTATUS_Closed)
+				.addInArrayOrAllFilter(I_C_Order.COLUMNNAME_DocStatus, DocStatus.Completed, DocStatus.Closed)
 				.create()
 				.match();
 	}
@@ -207,21 +215,23 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
-	public Set<Integer> retriveOrderCreatedByUserIds(@NonNull final Collection<Integer> orderIds)
+	public Set<UserId> retriveOrderCreatedByUserIds(@NonNull final Collection<Integer> orderIds)
 	{
 		if (orderIds.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
 
-		final List<Integer> userIds = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Order.class)
 				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderIds)
 				.create()
-				.listDistinct(I_C_Order.COLUMNNAME_CreatedBy, Integer.class);
-		return ImmutableSet.copyOf(userIds);
+				.listDistinct(I_C_Order.COLUMNNAME_CreatedBy, Integer.class)
+				.stream()
+				.map(UserId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
-	
+
 	@Override
 	public List<I_C_Order> getByIds(final Collection<OrderId> orderIds)
 	{
@@ -229,8 +239,37 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
-	public <T extends I_C_Order>  List<T> getByIds(Collection<OrderId> orderIds, Class<T> clazz)
+	public <T extends I_C_Order> List<T> getByIds(Collection<OrderId> orderIds, Class<T> clazz)
 	{
-		return loadByRepoIdAwaresOutOfTrx(orderIds, clazz);
+		return loadByRepoIdAwares(ImmutableSet.copyOf(orderIds), clazz);
+	}
+
+	@Override
+	public Stream<OrderId> streamOrderIdsByBPartnerId(@NonNull final BPartnerId bpartnerId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Order.class)
+				.addEqualsFilter(I_C_Order.COLUMN_C_BPartner_ID, bpartnerId)
+				.create()
+				.listIds(OrderId::ofRepoId)
+				.stream();
+	}
+
+	@Override
+	public void delete(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		InterfaceWrapperHelper.delete(orderLine);
+	}
+
+	@Override
+	public void save(@NonNull final org.compiere.model.I_C_Order order)
+	{
+		InterfaceWrapperHelper.save(order);
+	}
+
+	@Override
+	public void save(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		InterfaceWrapperHelper.save(orderLine);
 	}
 }

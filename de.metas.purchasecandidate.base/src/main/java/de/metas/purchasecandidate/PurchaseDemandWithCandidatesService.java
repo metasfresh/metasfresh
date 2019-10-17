@@ -1,7 +1,7 @@
 package de.metas.purchasecandidate;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -17,9 +17,6 @@ import java.util.TreeSet;
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.OrgId;
-import org.adempiere.uom.api.IUOMDAO;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
@@ -34,12 +31,15 @@ import com.google.common.collect.ListMultimap;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.order.OrderAndLineId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidatesGroup.PurchaseCandidatesGroupBuilder;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoRequest;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoService;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -181,7 +181,8 @@ public class PurchaseDemandWithCandidatesService
 	{
 		Quantity qtyToPurchase = null;
 		Quantity purchasedQty = null;
-		LocalDateTime purchaseDatePromised = null;
+		ZonedDateTime purchaseDatePromised = null;
+		Duration reminderTime = null;
 
 		final Set<PurchaseCandidateId> purchaseCandidateIds = new LinkedHashSet<>();
 
@@ -195,6 +196,7 @@ public class PurchaseDemandWithCandidatesService
 			qtyToPurchase = Quantity.addNullables(qtyToPurchase, candidate.getQtyToPurchase());
 			purchasedQty = Quantity.addNullables(purchasedQty, candidate.getPurchasedQty());
 			purchaseDatePromised = TimeUtil.min(purchaseDatePromised, candidate.getPurchaseDatePromised());
+			reminderTime = TimeUtil.max(reminderTime, candidate.getReminderTime());
 
 			if (candidate.getId() != null)
 			{
@@ -240,6 +242,7 @@ public class PurchaseDemandWithCandidatesService
 				.purchasedQty(purchasedQty)
 				//
 				.purchaseDatePromised(purchaseDatePromised)
+				.reminderTime(reminderTime)
 				//
 				.profitInfoOrNull(profitInfo)
 				//
@@ -326,7 +329,7 @@ public class PurchaseDemandWithCandidatesService
 				purchaseDemand, vendorProductInfo);
 
 		final WarehouseId warehouseId = getPurchaseWarehouseId(purchaseDemand);
-		final LocalDateTime salesPreparationDate = purchaseDemand.getSalesPreparationDate();
+		final ZonedDateTime salesPreparationDate = purchaseDemand.getSalesPreparationDate();
 
 		//
 		// PurchaseDatePromised and ReminderTime
@@ -335,7 +338,7 @@ public class PurchaseDemandWithCandidatesService
 				vendorId,
 				salesPreparationDate.toLocalDate())
 				.orElse(null);
-		final LocalDateTime purchaseDatePromised = calculatePurchaseDatePromised(salesPreparationDate, bpPurchaseSchedule);
+		final ZonedDateTime purchaseDatePromised = calculatePurchaseDatePromised(salesPreparationDate, bpPurchaseSchedule);
 		final Duration reminderTime = bpPurchaseSchedule != null ? bpPurchaseSchedule.getReminderTime() : null;
 
 		//
@@ -380,13 +383,13 @@ public class PurchaseDemandWithCandidatesService
 		return PurchaseCandidatesGroup.of(purchaseDemand.getId(), purchaseCandidate, vendorProductInfo);
 	}
 
-	private LocalDateTime calculatePurchaseDatePromised(
-			@NonNull final LocalDateTime salesDatePromised,
+	private ZonedDateTime calculatePurchaseDatePromised(
+			@NonNull final ZonedDateTime salesDatePromised,
 			@Nullable final BPPurchaseSchedule bpPurchaseSchedule)
 	{
 		if (bpPurchaseSchedule != null)
 		{
-			final LocalDateTime purchaseDatePromised = bpPurchaseScheduleService.calculatePurchaseDatePromised(salesDatePromised, bpPurchaseSchedule).orElse(null);
+			final ZonedDateTime purchaseDatePromised = bpPurchaseScheduleService.calculatePurchaseDatePromised(salesDatePromised, bpPurchaseSchedule).orElse(null);
 			if (purchaseDatePromised != null)
 			{
 				return purchaseDatePromised;

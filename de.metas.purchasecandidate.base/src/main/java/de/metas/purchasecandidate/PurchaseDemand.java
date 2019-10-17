@@ -1,16 +1,16 @@
 package de.metas.purchasecandidate;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderAndLineId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -70,7 +70,7 @@ public class PurchaseDemand
 	CurrencyId currencyIdOrNull;
 
 	@NonNull
-	LocalDateTime salesPreparationDate;
+	ZonedDateTime salesPreparationDate;
 
 	@Nullable
 	OrderAndLineId salesOrderAndLineIdOrNull;

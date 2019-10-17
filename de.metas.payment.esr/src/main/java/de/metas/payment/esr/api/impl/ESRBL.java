@@ -3,24 +3,20 @@ package de.metas.payment.esr.api.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import lombok.NonNull;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.MOrg;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 /*
  * #%L
@@ -46,8 +42,6 @@ import org.compiere.util.Util;
 
 import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
@@ -58,12 +52,14 @@ import de.metas.payment.esr.api.IBPBankAccountBL;
 import de.metas.payment.esr.api.IESRBL;
 import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.api.IESRImportBL;
+import de.metas.payment.esr.api.InvoiceReferenceNo;
+import de.metas.payment.esr.api.InvoiceReferenceNos;
 import de.metas.payment.esr.document.refid.spi.impl.InvoiceReferenceNoGenerator;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import de.metas.util.StringUtils.TruncateAt;
+import lombok.NonNull;
 
 public class ESRBL implements IESRBL
 {
@@ -112,24 +108,25 @@ public class ESRBL implements IESRBL
 			return;
 		}
 
-		final I_C_BP_BankAccount bankAccount = retrieveEsrBankAccount(invoiceRecord);
+		final I_C_BP_BankAccount bankAccountRecord = retrieveEsrBankAccount(invoiceRecord);
 
-		final String invoiceReferenceNoStr = createInvoiceReferenceString(invoiceRecord, bankAccount);
+		final InvoiceReferenceNo invoiceReferenceString = InvoiceReferenceNos.createFor(invoiceRecord, bankAccountRecord);
 
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final BigDecimal openInvoiceAmount = invoiceDAO.retrieveOpenAmt(invoiceRecord);
 
-		final String renderedCodeStr = createRenderedCodeString(invoiceReferenceNoStr, openInvoiceAmount, bankAccount);
+		final String renderedCodeStr = createRenderedCodeString(invoiceReferenceString, openInvoiceAmount, bankAccountRecord);
 
-		final I_C_Payment_Request paymentRequestRecord = newInstance(I_C_Payment_Request.class);
-		paymentRequestRecord.setReference(invoiceReferenceNoStr);
+		// create payment request with invoiceRecord's Client and Org
+		final I_C_Payment_Request paymentRequestRecord = newInstance(I_C_Payment_Request.class, invoiceRecord);
+		paymentRequestRecord.setReference(invoiceReferenceString.asString());
 		paymentRequestRecord.setFullPaymentString(renderedCodeStr);
-		paymentRequestRecord.setC_BP_BankAccount(bankAccount);
+		paymentRequestRecord.setC_BP_BankAccount(bankAccountRecord);
 		paymentRequestRecord.setC_Invoice(invoiceRecord);
 		paymentRequestRecord.setAmount(openInvoiceAmount);
 		saveRecord(paymentRequestRecord);
 
-		linkEsrStringsToInvoiceRecord(invoiceReferenceNoStr, renderedCodeStr, invoiceRecord);
+		linkEsrStringsToInvoiceRecord(invoiceReferenceString, renderedCodeStr, invoiceRecord);
 	}
 
 	private I_C_BP_BankAccount retrieveEsrBankAccount(@NonNull final I_C_Invoice invoiceRecord)
@@ -147,51 +144,6 @@ public class ESRBL implements IESRBL
 	}
 
 	/**
-	 * Creates following invoice reference number: <br/>
-	 * <code>AAAAAA OOO BBBBBBBB NNNNNNNNN C</code><br/>
-	 * where:
-	 * <ul>
-	 * <li>AAAAAA - Organization's ESR account number (6 characters)
-	 * <li>OOO - Organization code (3 characters)
-	 * <li>BBBBBBBB - Business Partner's code (8 characters)
-	 * <li>NNNNNNNNN - Invoice Document Number (9 characters)
-	 * <li>C - ESR checksum digit (1 character); see {@link IESRImportBL#calculateESRCheckDigit(String)}
-	 * <li>NOTE: generated code is 27 characters long
-	 * <li>NOTE: generated reference number contains NO space; in this description spaces were added for readability
-	 * </ul>
-	 *
-	 * @author tsa
-	 * @task http://dewiki908/mediawiki/index.php/02553:_ESR_Zahlschein_Verarbeitung_%282012030810000028%29#Suggestion_for_Invoice_reference_numbers
-	 */
-	@VisibleForTesting
-	String createInvoiceReferenceString(
-			@NonNull final I_C_Invoice invoiceRecord,
-			@NonNull final I_C_BP_BankAccount bankAccount)
-	{
-		final IESRImportBL esrImportBL = Services.get(IESRImportBL.class);
-
-		final StringBuilder sb = new StringBuilder();
-
-		final IBPBankAccountBL bpBankAccountBL = Services.get(IBPBankAccountBL.class);
-		sb.append(Util.rpadZero(bpBankAccountBL.retrieveBankAccountNo(bankAccount), 7, "BankAccountNo"));
-
-		final I_AD_Org org = invoiceRecord.getAD_Org();
-		sb.append(Util.lpadZero(StringUtils.trunc(org.getValue(), 3, TruncateAt.STRING_START), 3, "organization"));
-
-		final I_C_BPartner bPartner = invoiceRecord.getC_BPartner();
-		final String bpartnerValue = Util.getDigits(bPartner.getValue()); // we can only use the digits
-		sb.append(Util.lpadZero(bpartnerValue, 8, "business partner"));
-
-		final String documentNo = invoiceRecord.getDocumentNo();
-		sb.append(Util.lpadZero(documentNo, 8, "invoice document no"));
-
-		final int checkDigit = esrImportBL.calculateESRCheckDigit(sb.toString());
-		sb.append(checkDigit);
-
-		return sb.toString();
-	}
-
-	/**
 	 * Creates ESR Rendered code:<br/>
 	 * <code>01SSSSSSSSSSC&gt;IIIIIIIIIIIIIIIIIIIIIIIIIII+ AAAAAA&gt;</code><br/>
 	 * where:
@@ -201,12 +153,9 @@ public class ESRBL implements IESRBL
 	 * <li>IIIIIIIIIIIIIIIIIIIIIIIIIII - invoice reference number, see {@link InvoiceReferenceNoGenerator}
 	 * <li>AAAAAA - Organization's ESR account number
 	 * </ul>
-	 *
-	 * @author rc
-	 * @task http://dewiki908/mediawiki/index.php/03720_Provide_DB-Columns_for_ESR-Note_%282012121810000046%29
 	 */
 	private String createRenderedCodeString(
-			@NonNull final String invoiceReferenceNoStr,
+			@NonNull final InvoiceReferenceNo invoiceReferenceString,
 			@NonNull final BigDecimal openInvoiceAmount,
 			@NonNull final I_C_BP_BankAccount bankAccount)
 	{
@@ -220,7 +169,7 @@ public class ESRBL implements IESRBL
 				.multiply(Env.ONEHUNDRED)
 				.setScale(0, RoundingMode.HALF_UP)
 				.toString();
-		amountStr = Util.lpadZero(amountStr, 10, "Open amount");
+		amountStr = StringUtils.lpadZero(amountStr, 10, "Open amount");
 
 		renderedCodeStr.append(amountStr);
 
@@ -231,7 +180,7 @@ public class ESRBL implements IESRBL
 
 		final IBPBankAccountBL bankAccountBL = Services.get(IBPBankAccountBL.class);
 
-		renderedCodeStr.append(invoiceReferenceNoStr);
+		renderedCodeStr.append(invoiceReferenceString.asString());
 		renderedCodeStr.append("+ ");
 		renderedCodeStr.append(bankAccountBL.retrieveESRAccountNo(bankAccount));
 		renderedCodeStr.append(">");
@@ -240,18 +189,19 @@ public class ESRBL implements IESRBL
 	}
 
 	private void linkEsrStringsToInvoiceRecord(
-			@NonNull final String invoiceReferenceNoStr,
+			@NonNull final InvoiceReferenceNo invoiceReferenceString,
 			@NonNull final String renderedCodeStr,
 			@NonNull final I_C_Invoice invoiceRecord)
 	{
-		final IReferenceNoDAO referenceNoDAO = Services.get(IReferenceNoDAO.class);
+		final IContextAware contextAware = InterfaceWrapperHelper.getContextAware(invoiceRecord);
 
-		final I_C_ReferenceNo_Type invoiceReferenceNoType = referenceNoDAO.retrieveRefNoTypeByName(Env.getCtx(), ESRConstants.DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber);
-		final I_C_ReferenceNo invoiceReferenceNo = referenceNoDAO.getCreateReferenceNo(Env.getCtx(), invoiceReferenceNoType, invoiceReferenceNoStr, ITrx.TRXNAME_ThreadInherited);
+		final IReferenceNoDAO referenceNoDAO = Services.get(IReferenceNoDAO.class);
+		final I_C_ReferenceNo_Type invoiceReferenceNoType = referenceNoDAO.retrieveRefNoTypeByName(ESRConstants.DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber);
+		final I_C_ReferenceNo invoiceReferenceNo = referenceNoDAO.getCreateReferenceNo(invoiceReferenceNoType, invoiceReferenceString.asString(), contextAware);
 		referenceNoDAO.getCreateReferenceNoDoc(invoiceReferenceNo, TableRecordReference.of(invoiceRecord));
 
-		final I_C_ReferenceNo_Type renderedCodeReferenceNoType = referenceNoDAO.retrieveRefNoTypeByName(Env.getCtx(), ESRConstants.DOCUMENT_REFID_ReferenceNo_Type_ReferenceNumber);
-		final I_C_ReferenceNo renderedCodeReferenceNo = referenceNoDAO.getCreateReferenceNo(Env.getCtx(), renderedCodeReferenceNoType, renderedCodeStr, ITrx.TRXNAME_ThreadInherited);
+		final I_C_ReferenceNo_Type renderedCodeReferenceNoType = referenceNoDAO.retrieveRefNoTypeByName(ESRConstants.DOCUMENT_REFID_ReferenceNo_Type_ReferenceNumber);
+		final I_C_ReferenceNo renderedCodeReferenceNo = referenceNoDAO.getCreateReferenceNo(renderedCodeReferenceNoType, renderedCodeStr, contextAware);
 		referenceNoDAO.getCreateReferenceNoDoc(renderedCodeReferenceNo, TableRecordReference.of(invoiceRecord));
 	}
 }

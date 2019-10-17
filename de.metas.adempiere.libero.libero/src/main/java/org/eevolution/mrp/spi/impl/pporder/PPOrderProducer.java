@@ -1,31 +1,37 @@
 
 package org.eevolution.mrp.spi.impl.pporder;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static de.metas.document.engine.IDocument.ACTION_Complete;
+import static de.metas.document.engine.IDocument.STATUS_Completed;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.Properties;
+import java.time.Instant;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IOrgDAO;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_M_Product;
+import org.adempiere.service.ClientId;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.model.X_PP_Order;
 import org.springframework.stereotype.Service;
 
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -53,21 +59,25 @@ import lombok.NonNull;
 @Service
 public class PPOrderProducer
 {
-	public I_PP_Order createPPOrder(
-			@NonNull final PPOrder ppOrderPojo,
-			@NonNull final Date dateOrdered)
-	{
-		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	private final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
+	private final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
+	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 
-		final I_PP_Product_Planning productPlanning = InterfaceWrapperHelper
-				.create(Env.getCtx(), ppOrderPojo.getProductPlanningId(), I_PP_Product_Planning.class, ITrx.TRXNAME_None);
+	public I_PP_Order createPPOrder(
+			@NonNull final PPOrder ppOrder,
+			@NonNull final Instant dateOrdered)
+	{
+		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(ppOrder.getProductPlanningId());
 
 		//
 		// Create PP Order
 		final I_PP_Order ppOrderRecord = InterfaceWrapperHelper.newInstance(I_PP_Order.class);
-		PPOrderPojoConverter.ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.setValue(ppOrderRecord, ppOrderPojo.getMaterialDispoGroupId());
+		PPOrderPojoConverter.setMaterialDispoGroupId(ppOrderRecord, ppOrder.getMaterialDispoGroupId());
 
-		ppOrderRecord.setPP_Product_Planning(productPlanning);
+		ppOrderRecord.setPP_Product_Planning_ID(productPlanning.getPP_Product_Planning_ID());
 
 		ppOrderRecord.setMRP_Generated(true);
 		ppOrderRecord.setMRP_AllowCleanup(true);
@@ -75,50 +85,48 @@ public class PPOrderProducer
 
 		//
 		// Planning dimension
-		ppOrderRecord.setAD_Org_ID(ppOrderPojo.getOrgId());
-		ppOrderRecord.setS_Resource_ID(ppOrderPojo.getPlantId());
-		ppOrderRecord.setM_Warehouse_ID(ppOrderPojo.getWarehouseId());
+		ppOrderRecord.setAD_Org_ID(ppOrder.getOrgId().getRepoId());
+		ppOrderRecord.setS_Resource_ID(ppOrder.getPlantId().getRepoId());
+		ppOrderRecord.setM_Warehouse_ID(ppOrder.getWarehouseId().getRepoId());
 		ppOrderRecord.setPlanner_ID(productPlanning.getPlanner_ID());
 
 		//
 		// Document Type & Status
-		final int docTypeId = getC_DocType_ID(ppOrderPojo.getOrgId());
+		final DocTypeId docTypeId = getDocTypeId(ppOrder.getOrgId());
 
-		ppOrderRecord.setC_DocTypeTarget_ID(docTypeId);
-		ppOrderRecord.setC_DocType_ID(docTypeId);
+		ppOrderRecord.setC_DocTypeTarget_ID(docTypeId.getRepoId());
+		ppOrderRecord.setC_DocType_ID(docTypeId.getRepoId());
 		ppOrderRecord.setDocStatus(X_PP_Order.DOCSTATUS_Drafted);
 		ppOrderRecord.setDocAction(X_PP_Order.DOCACTION_Complete);
 
 		//
 		// Product, ASI, UOM
-		final ProductDescriptor productDescriptor = ppOrderPojo.getProductDescriptor();
+		final ProductDescriptor productDescriptor = ppOrder.getProductDescriptor();
 		ppOrderRecord.setM_Product_ID(productDescriptor.getProductId());
 		ppOrderRecord.setM_AttributeSetInstance_ID(productDescriptor.getAttributeSetInstanceId());
 
-
 		//
 		// BOM & Workflow
-		ppOrderRecord.setPP_Product_BOM(productPlanning.getPP_Product_BOM());
-		ppOrderRecord.setAD_Workflow(productPlanning.getAD_Workflow());
+		ppOrderRecord.setPP_Product_BOM_ID(productPlanning.getPP_Product_BOM_ID());
+		ppOrderRecord.setAD_Workflow_ID(productPlanning.getAD_Workflow_ID());
 
 		//
 		// Dates
-		ppOrderRecord.setDateOrdered(new Timestamp(dateOrdered.getTime()));
+		ppOrderRecord.setDateOrdered(TimeUtil.asTimestamp(dateOrdered));
 
-		final Timestamp dateFinishSchedule = new Timestamp(ppOrderPojo.getDatePromised().getTime());
+		final Timestamp dateFinishSchedule = TimeUtil.asTimestamp(ppOrder.getDatePromised());
 		ppOrderRecord.setDatePromised(dateFinishSchedule);
 		ppOrderRecord.setDateFinishSchedule(dateFinishSchedule);
 		ppOrderRecord.setPreparationDate(dateFinishSchedule);
 
-		final Timestamp dateStartSchedule = new Timestamp(ppOrderPojo.getDateStartSchedule().getTime());
+		final Timestamp dateStartSchedule = TimeUtil.asTimestamp(ppOrder.getDateStartSchedule());
 		ppOrderRecord.setDateStartSchedule(dateStartSchedule);
 
-
 		// Qtys
-		ppOrderBL.setQtyOrdered(ppOrderRecord, ppOrderPojo.getQtyRequired());
+		ppOrderBL.setQtyOrdered(ppOrderRecord, ppOrder.getQtyRequired());
 
-		ppOrderBL.setQtyEntered(ppOrderRecord, ppOrderPojo.getQtyRequired());
-		ppOrderRecord.setC_UOM_ID(load(productDescriptor.getProductId(), I_M_Product.class).getC_UOM_ID());
+		ppOrderBL.setQtyEntered(ppOrderRecord, ppOrder.getQtyRequired());
+		ppOrderRecord.setC_UOM_ID(productBL.getStockUOMId(productDescriptor.getProductId()).getRepoId());
 
 		// QtyBatchSize : do not set it, let the MO to take it from workflow
 		ppOrderRecord.setYield(BigDecimal.ZERO);
@@ -128,12 +136,12 @@ public class PPOrderProducer
 
 		//
 		// Inherit values from MRP demand
-		ppOrderRecord.setC_OrderLine_ID(ppOrderPojo.getOrderLineId());
-		if (ppOrderPojo.getBPartnerId() > 0)
+		ppOrderRecord.setC_OrderLine_ID(ppOrder.getOrderLineId());
+		if (ppOrder.getBpartnerId() != null)
 		{
-			ppOrderRecord.setC_BPartner_ID(ppOrderPojo.getBPartnerId());
+			ppOrderRecord.setC_BPartner_ID(ppOrder.getBpartnerId().getRepoId());
 		}
-		else if (ppOrderPojo.getOrderLineId() > 0)
+		else if (ppOrder.getOrderLineId() > 0)
 		{
 			ppOrderRecord.setC_BPartner_ID(ppOrderRecord.getC_OrderLine().getC_BPartner_ID());
 		}
@@ -141,19 +149,34 @@ public class PPOrderProducer
 		//
 		// Save the manufacturing order
 		// I_PP_Order_BOM and I_PP_Order_BOMLines are created via a model interceptor
-		InterfaceWrapperHelper.save(ppOrderRecord);
+		ppOrdersRepo.save(ppOrderRecord);
 
+		Loggables.addLog(
+				"Created ppOrder; PP_Order_ID={}; DocumentNo={}",
+				ppOrderRecord.getPP_Order_ID(), ppOrderRecord.getDocumentNo());
+
+		//
+		// Complete if requested
+		if (productPlanning.isDocComplete())
+		{
+			Services.get(IDocumentBL.class).processEx(ppOrderRecord, ACTION_Complete, STATUS_Completed);
+			Loggables.addLog(
+					"Completed ppOrder; PP_Order_ID={}; DocumentNo={}",
+					ppOrderRecord.getPP_Order_ID(), ppOrderRecord.getDocumentNo());
+		}
+
+		//
 		return ppOrderRecord;
 	}
 
-	private int getC_DocType_ID(final int orgId)
+	private DocTypeId getDocTypeId(final OrgId orgId)
 	{
-		final Properties ctx = Env.getCtx();
+		final ClientId clientId = orgsRepo.getClientIdByOrgId(orgId);
 
-		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-		final I_AD_Org org = orgDAO.retrieveOrg(ctx, orgId);
-
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-		return docTypeDAO.getDocTypeId(ctx, X_C_DocType.DOCBASETYPE_ManufacturingOrder, org.getAD_Client_ID(), orgId, ITrx.TRXNAME_None);
+		return docTypesRepo.getDocTypeId(DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_ManufacturingOrder)
+				.adClientId(clientId.getRepoId())
+				.adOrgId(orgId.getRepoId())
+				.build());
 	}
 }

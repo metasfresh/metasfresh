@@ -27,9 +27,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
-import org.adempiere.user.api.IUserDAO;
 import org.compiere.Adempiere;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.SupportInfo;
@@ -38,8 +36,10 @@ import org.compiere.util.Trace;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.swing.SwingAskDialogBuilder;
+import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -78,7 +78,9 @@ public final class ADialog
 		//
 		Window parent = SwingUtils.getParentWindow(c);
 		if (parent == null)
+		{
 			parent = Env.getWindow(WindowNo);
+		}
 		//
 		if (showDialog  && parent != null)
 		{
@@ -120,13 +122,19 @@ public final class ADialog
 		final Properties ctx = Env.getCtx();
 		final StringBuilder out = new StringBuilder();
 		if(!Check.isEmpty(AD_Message, true))
+		{
 			out.append(Services.get(IMsgBL.class).getMsg(ctx, AD_Message));
+		}
 		if(!Check.isEmpty(msg, true))
+		{
 			out.append("\n").append(msg);
+		}
 		//
 		Window parent = SwingUtils.getParentWindow(c);
 		if (parent == null)
+		{
 			parent = Env.getWindow(WindowNo);
+		}
 		//
 		if (showDialog && parent != null)
 		{
@@ -181,13 +189,19 @@ public final class ADialog
 		Properties ctx = Env.getCtx();
 		StringBuilder out = new StringBuilder();
 		if (AD_Message != null && !AD_Message.equals(""))
+		{
 			out.append(Services.get(IMsgBL.class).getMsg(ctx, AD_Message));
+		}
 		if (msg != null && msg.length() > 0)
+		{
 			out.append("\n").append(msg);
+		}
 		//
 		Window parent = SwingUtils.getParentWindow(c);
 		if (parent == null)
+		{
 			parent = Env.getWindow(WindowNo);
+		}
 		//
 		if (showDialog  && parent != null)
 		{
@@ -239,18 +253,26 @@ public final class ADialog
 	{
 		log.info("{} - {}", AD_Message, msg);
 		if (LogManager.isLevelFinest())
+		{
 			Trace.printStack();
+		}
 		
 		final Properties ctx = Env.getCtx();
 		final StringBuilder out = new StringBuilder();
 		if(!Check.isEmpty(AD_Message, true))
+		{
 			out.append(Services.get(IMsgBL.class).getMsg(ctx, AD_Message));
+		}
 		if(!Check.isEmpty(msg, true))
+		{
 			out.append("\n").append(msg);
+		}
 		//
 		Window parent = SwingUtils.getParentWindow(c);
 		if (parent == null)
+		{
 			parent = Env.getWindow(WindowNo);
+		}
 		//
 		if (showDialog && parent != null)
 		{
@@ -331,9 +353,8 @@ public final class ADialog
 	 */
 	public static void createSupportEMail(final Dialog owner, final String subject, final String message)
 	{
-		log.info("ADialog.createSupportEMail");
-		String to = Adempiere.getSupportEMail();
-		I_AD_User from = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
+		final String to = Adempiere.getSupportEMail();
+		final UserEMailConfig fromUserEmailConfig = getFromUserEmailConfig();
 		//
 		StringBuilder myMessage = new StringBuilder(message);
 		myMessage.append("\n");
@@ -343,7 +364,11 @@ public final class ADialog
 
 		new EMailDialog(owner,
 			Services.get(IMsgBL.class).getMsg(Env.getCtx(), "EMailSupport"),
-			from, to, "Support: " + subject, myMessage.toString(), null);
+			fromUserEmailConfig, 
+			to, 
+			"Support: " + subject, 
+			myMessage.toString(), 
+			null);
 	}	//	createEmail
 
 	/**
@@ -354,9 +379,9 @@ public final class ADialog
 	 */
 	public static void createSupportEMail(final Frame owner, final String subject, final String message)
 	{
-		log.info("ADialog.createSupportEMail");
 		String to = Adempiere.getSupportEMail();
-		I_AD_User from = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
+		final UserEMailConfig fromUserEmailConfig = getFromUserEmailConfig();
+		
 		//
 		StringBuilder myMessage = new StringBuilder(message);
 		myMessage.append("\n");
@@ -366,8 +391,17 @@ public final class ADialog
 
 		new EMailDialog(owner,
 			Services.get(IMsgBL.class).getMsg(Env.getCtx(), "EMailSupport"),
-			from, to, "Support: " + subject, myMessage.toString(), null);
+			fromUserEmailConfig,
+			to, 
+			"Support: " + subject, 
+			myMessage.toString(), 
+			null);
 	}	//	createEmail
+
+	private static UserEMailConfig getFromUserEmailConfig()
+	{
+		return Services.get(IUserBL.class).getEmailConfigById(Env.getLoggedUserId());
+	}
 
 	
 	/**************************************************************************

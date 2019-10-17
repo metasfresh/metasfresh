@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.acct;
 
@@ -25,17 +25,24 @@ import java.util.Set;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Cash;
 import org.compiere.model.I_C_CashLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
-import org.compiere.model.MAllocationLine;
 import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyConversionContext;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -45,22 +52,11 @@ import de.metas.util.Services;
  * @author Jorg Janke
  * @version $Id: DocLine_Allocation.java,v 1.2 2006/07/30 00:53:33 jjanke Exp $
  */
-class DocLine_Allocation extends DocLine
+class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 {
-	static DocLine_Allocation cast(final DocLine docLine)
+	public DocLine_Allocation(final I_C_AllocationLine line, final Doc_AllocationHdr doc)
 	{
-		return (DocLine_Allocation)docLine;
-	}	
-	
-	/**
-	 * DocLine_Allocation
-	 *
-	 * @param line allocation line
-	 * @param doc header
-	 */
-	public DocLine_Allocation(final MAllocationLine line, final Doc doc)
-	{
-		super(line, doc);
+		super(InterfaceWrapperHelper.getPO(line), doc);
 
 		//
 		// Invoice
@@ -112,17 +108,17 @@ class DocLine_Allocation extends DocLine
 
 	private final int m_C_Invoice_ID;
 	private final I_C_Invoice invoice;
-	private ICurrencyConversionContext invoiceCurrencyConversionCtx;
+	private CurrencyConversionContext invoiceCurrencyConversionCtx;
 	private final boolean creditMemoInvoice;
 	private final Boolean soTrxInvoice;
 
 	private final int m_Counter_AllocationLine_ID;
 	private DocLine_Allocation counterDocLine;
-	private final Set<Integer> salesPurchaseInvoiceAlreadyCompensated_AcctSchemaIds = new HashSet<>();
+	private final Set<AcctSchemaId> salesPurchaseInvoiceAlreadyCompensated_AcctSchemaIds = new HashSet<>();
 
 	private final int m_C_Payment_ID;
 	private final I_C_Payment payment;
-	private ICurrencyConversionContext paymentCurrencyConversionCtx;
+	private CurrencyConversionContext paymentCurrencyConversionCtx;
 	private final Boolean paymentReceipt;
 
 	private final int m_C_CashLine_ID;
@@ -268,10 +264,10 @@ class DocLine_Allocation extends DocLine
 	}
 
 	/** @return true if this is a sales/purchase compensation line which was not already compensated */
-	public boolean isSalesPurchaseInvoiceToCompensate(final MAcctSchema as)
+	public boolean isSalesPurchaseInvoiceToCompensate(final AcctSchemaId acctSchemaId)
 	{
 		// Check if it was already compensated
-		if (salesPurchaseInvoiceAlreadyCompensated_AcctSchemaIds.contains(as.getC_AcctSchema_ID()))
+		if (salesPurchaseInvoiceAlreadyCompensated_AcctSchemaIds.contains(acctSchemaId))
 		{
 			return false;
 		}
@@ -315,9 +311,9 @@ class DocLine_Allocation extends DocLine
 		return true;
 	}
 
-	public void markAsSalesPurchaseInvoiceCompensated(final MAcctSchema as)
+	public void markAsSalesPurchaseInvoiceCompensated(final AcctSchema as)
 	{
-		final boolean added = salesPurchaseInvoiceAlreadyCompensated_AcctSchemaIds.add(as.getC_AcctSchema_ID());
+		final boolean added = salesPurchaseInvoiceAlreadyCompensated_AcctSchemaIds.add(as.getId());
 		Check.assume(added, "Line should not be already compensated: {}", this);
 	}
 
@@ -371,29 +367,29 @@ class DocLine_Allocation extends DocLine
 		return invoice == null ? -1 : invoice.getC_Currency_ID();
 	}	// getInvoiceC_Currency_ID
 
-	public int getInvoiceOrg_ID()
+	public OrgId getInvoiceOrgId()
 	{
 		final I_C_Invoice invoice = getC_Invoice();
 		if (invoice != null)
 		{
-			return invoice.getAD_Org_ID();
+			return OrgId.ofRepoId(invoice.getAD_Org_ID());
 		}
 
-		return getAD_Org_ID();
+		return getOrgId();
 	}
 
-	public int getInvoiceBPartner_ID()
+	public BPartnerId getInvoiceBPartnerId()
 	{
 		final I_C_Invoice invoice = getC_Invoice();
 		if (invoice != null)
 		{
-			return invoice.getC_BPartner_ID();
+			return BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
 		}
 
-		return getC_BPartner_ID();
+		return getBPartnerId();
 	}
 
-	public MAccount getPaymentAcct(final MAcctSchema as)
+	public MAccount getPaymentAcct(final AcctSchema as)
 	{
 		final I_C_Payment payment = getC_Payment();
 		if (payment != null)
@@ -413,7 +409,7 @@ class DocLine_Allocation extends DocLine
 
 		throw getDoc().newPostingException()
 				.setDocLine(this)
-				.setC_AcctSchema(as)
+				.setAcctSchema(as)
 				.setDetailMessage("No payment account found because there is not payment or cash line");
 	}
 
@@ -424,9 +420,9 @@ class DocLine_Allocation extends DocLine
 	 * @param C_Payment_ID payment
 	 * @return acct
 	 */
-	private MAccount getPaymentAcct(final MAcctSchema as, final int C_Payment_ID)
+	private MAccount getPaymentAcct(final AcctSchema as, final int C_Payment_ID)
 	{
-		final Doc doc = getDoc();
+		final Doc_AllocationHdr doc = getDoc();
 		doc.setC_BP_BankAccount_ID(0);
 		// Doc.ACCTTYPE_UnallocatedCash (AR) or C_Prepayment
 		// or Doc.ACCTTYPE_PaymentSelect (AP) or V_Prepayment
@@ -480,7 +476,7 @@ class DocLine_Allocation extends DocLine
 			// log.error("NONE for C_Payment_ID=" + C_Payment_ID);
 			throw doc.newPostingException()
 					.setDocLine(this)
-					.setC_AcctSchema(as)
+					.setAcctSchema(as)
 					.setDetailMessage("No payment account found for " + C_Payment_ID);
 		}
 		return doc.getAccount(accountType, as);
@@ -493,25 +489,24 @@ class DocLine_Allocation extends DocLine
 	 * @param C_CashLine_ID
 	 * @return acct
 	 */
-	private final MAccount getCashAcct(final MAcctSchema as, final int C_CashLine_ID)
+	private final MAccount getCashAcct(final AcctSchema as, final int C_CashLine_ID)
 	{
-		final Doc doc = getDoc();
+		final Doc_AllocationHdr doc = getDoc();
 		final String sql = "SELECT c.C_CashBook_ID "
 				+ "FROM C_Cash c, C_CashLine cl "
 				+ "WHERE c.C_Cash_ID=cl.C_Cash_ID AND cl.C_CashLine_ID=?";
 		doc.setC_CashBook_ID(DB.getSQLValue(ITrx.TRXNAME_ThreadInherited, sql, C_CashLine_ID));
 		if (doc.getC_CashBook_ID() <= 0)
 		{
-			log.error("NONE for C_CashLine_ID=" + C_CashLine_ID);
 			throw doc.newPostingException()
 					.setDocLine(this)
-					.setC_AcctSchema(as)
+					.setAcctSchema(as)
 					.setDetailMessage("No cashbook account found for C_CashLine_ID=" + C_CashLine_ID);
 		}
 		return doc.getAccount(Doc.ACCTTYPE_CashTransfer, as);
 	}	// getCashAcct
 
-	public final ICurrencyConversionContext getInvoiceCurrencyConversionCtx()
+	public final CurrencyConversionContext getInvoiceCurrencyConversionCtx()
 	{
 		if (invoiceCurrencyConversionCtx == null)
 		{
@@ -519,15 +514,15 @@ class DocLine_Allocation extends DocLine
 			Check.assumeNotNull(invoice, "invoice not null");
 			final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 			invoiceCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
-					invoice.getDateAcct(),
-					invoice.getC_ConversionType_ID(),
-					invoice.getAD_Client_ID(),
-					invoice.getAD_Org_ID());
+					TimeUtil.asLocalDate(invoice.getDateAcct()),
+					CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
+					ClientId.ofRepoId(invoice.getAD_Client_ID()),
+					OrgId.ofRepoId(invoice.getAD_Org_ID()));
 		}
 		return invoiceCurrencyConversionCtx;
 	}
 
-	public final ICurrencyConversionContext getPaymentCurrencyConversionCtx()
+	public final CurrencyConversionContext getPaymentCurrencyConversionCtx()
 	{
 		if (paymentCurrencyConversionCtx == null)
 		{
@@ -538,19 +533,19 @@ class DocLine_Allocation extends DocLine
 			if (payment != null)
 			{
 				paymentCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
-						payment.getDateAcct(),
-						payment.getC_ConversionType_ID(),
-						payment.getAD_Client_ID(),
-						payment.getAD_Org_ID());
+						TimeUtil.asLocalDate(payment.getDateAcct()),
+						CurrencyConversionTypeId.ofRepoIdOrNull(payment.getC_ConversionType_ID()),
+						ClientId.ofRepoId(payment.getAD_Client_ID()),
+						OrgId.ofRepoId(payment.getAD_Org_ID()));
 			}
 			else if (cashLine != null)
 			{
 				final I_C_Cash cashJournal = cashLine.getC_Cash();
 				paymentCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
-						cashJournal.getDateAcct(),
-						-1, // C_ConversionType_ID - default
-						cashLine.getAD_Client_ID(),
-						cashLine.getAD_Org_ID());
+						TimeUtil.asLocalDate(cashJournal.getDateAcct()),
+						(CurrencyConversionTypeId)null, // C_ConversionType_ID - default
+						ClientId.ofRepoId(cashLine.getAD_Client_ID()),
+						OrgId.ofRepoId(cashLine.getAD_Org_ID()));
 			}
 			else
 			{
@@ -565,32 +560,32 @@ class DocLine_Allocation extends DocLine
 		return getC_Payment() != null || getC_CashLine() != null;
 	}
 
-	public final int getPaymentOrg_ID()
+	public final OrgId getPaymentOrgId()
 	{
 		final I_C_Payment payment = getC_Payment();
 		if (payment != null)
 		{
-			return payment.getAD_Org_ID();
+			return OrgId.ofRepoId(payment.getAD_Org_ID());
 		}
 
 		final I_C_CashLine cashLine = getC_CashLine();
 		if (cashLine != null)
 		{
-			return cashLine.getAD_Org_ID();
+			return OrgId.ofRepoId(cashLine.getAD_Org_ID());
 		}
 
-		return getAD_Org_ID();
+		return getOrgId();
 	}
 
-	public final int getPaymentBPartner_ID()
+	public final BPartnerId getPaymentBPartnerId()
 	{
 		final I_C_Payment payment = getC_Payment();
 		if (payment != null)
 		{
-			return payment.getC_BPartner_ID();
+			return BPartnerId.ofRepoId(payment.getC_BPartner_ID());
 		}
 
-		return getC_BPartner_ID();
+		return getBPartnerId();
 	}
 
 	public boolean isPaymentReceipt()

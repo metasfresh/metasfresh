@@ -67,10 +67,14 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	@Override
 	public void setAD_PrintColor_ID (int AD_PrintColor_ID)
 	{
-		if (AD_PrintColor_ID < 1) 
+		if (AD_PrintColor_ID < 1)
+		{
 			set_Value (COLUMNNAME_AD_PrintColor_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_AD_PrintColor_ID, Integer.valueOf(AD_PrintColor_ID));
+		}
 	}
 
 	/** Get Druck - Farbe.
@@ -81,7 +85,9 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PrintColor_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -92,10 +98,14 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	@Override
 	public void setC_BP_Group_ID (int C_BP_Group_ID)
 	{
-		if (C_BP_Group_ID < 1) 
+		if (C_BP_Group_ID < 1)
+		{
 			set_ValueNoCheck (COLUMNNAME_C_BP_Group_ID, null);
-		else 
+		}
+		else
+		{
 			set_ValueNoCheck (COLUMNNAME_C_BP_Group_ID, Integer.valueOf(C_BP_Group_ID));
+		}
 	}
 
 	/** Get Geschäftspartnergruppe.
@@ -106,7 +116,9 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Group_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -129,10 +141,14 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	@Override
 	public void setC_Dunning_ID (int C_Dunning_ID)
 	{
-		if (C_Dunning_ID < 1) 
+		if (C_Dunning_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_Dunning_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_Dunning_ID, Integer.valueOf(C_Dunning_ID));
+		}
 	}
 
 	/** Get Mahnung.
@@ -143,7 +159,9 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Dunning_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -165,7 +183,9 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CreditWatchPercent);
 		if (bd == null)
-			 return BigDecimal.ZERO;
+		{
+			return BigDecimal.ZERO;
+		}
 		return bd;
 	}
 
@@ -204,8 +224,10 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 		Object oo = get_Value(COLUMNNAME_IsConfidentialInfo);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -230,8 +252,10 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 		Object oo = get_Value(COLUMNNAME_IsCustomer);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -256,8 +280,10 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 		Object oo = get_Value(COLUMNNAME_IsDefault);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -282,10 +308,14 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	@Override
 	public void setM_DiscountSchema_ID (int M_DiscountSchema_ID)
 	{
-		if (M_DiscountSchema_ID < 1) 
+		if (M_DiscountSchema_ID < 1)
+		{
 			set_Value (COLUMNNAME_M_DiscountSchema_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_M_DiscountSchema_ID, Integer.valueOf(M_DiscountSchema_ID));
+		}
 	}
 
 	/** Get Rabatt Schema.
@@ -296,7 +326,9 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_DiscountSchema_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -305,10 +337,14 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	@Override
 	public void setM_FreightCost_ID (int M_FreightCost_ID)
 	{
-		if (M_FreightCost_ID < 1) 
+		if (M_FreightCost_ID < 1)
+		{
 			set_Value (COLUMNNAME_M_FreightCost_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_M_FreightCost_ID, Integer.valueOf(M_FreightCost_ID));
+		}
 	}
 
 	/** Get Frachtkostenpauschale.
@@ -318,7 +354,9 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_FreightCost_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -341,10 +379,14 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	@Override
 	public void setM_PriceList_ID (int M_PriceList_ID)
 	{
-		if (M_PriceList_ID < 1) 
+		if (M_PriceList_ID < 1)
+		{
 			set_Value (COLUMNNAME_M_PriceList_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_M_PriceList_ID, Integer.valueOf(M_PriceList_ID));
+		}
 	}
 
 	/** Get Preisliste.
@@ -355,7 +397,9 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_PriceList_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -378,10 +422,14 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	@Override
 	public void setM_PricingSystem_ID (int M_PricingSystem_ID)
 	{
-		if (M_PricingSystem_ID < 1) 
+		if (M_PricingSystem_ID < 1)
+		{
 			set_Value (COLUMNNAME_M_PricingSystem_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_M_PricingSystem_ID, Integer.valueOf(M_PricingSystem_ID));
+		}
 	}
 
 	/** Get Preissystem.
@@ -392,7 +440,9 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_PricingSystem_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -441,25 +491,25 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
-	/** 
-	 * PaymentRule AD_Reference_ID=195
-	 * Reference name: _Payment Rule
-	 */
-	public static final int PAYMENTRULE_AD_Reference_ID=195;
-	/** Cash = B */
-	public static final String PAYMENTRULE_Cash = "B";
-	/** CreditCard = K */
-	public static final String PAYMENTRULE_CreditCard = "K";
-	/** DirectDeposit = T */
-	public static final String PAYMENTRULE_DirectDeposit = "T";
-	/** Check = S */
-	public static final String PAYMENTRULE_Check = "S";
-	/** OnCredit = P */
-	public static final String PAYMENTRULE_OnCredit = "P";
-	/** DirectDebit = D */
-	public static final String PAYMENTRULE_DirectDebit = "D";
-	/** Mixed = M */
-	public static final String PAYMENTRULE_Mixed = "M";
+//	/** 
+//	 * PaymentRule AD_Reference_ID=195
+//	 * Reference name: _Payment Rule
+//	 */
+//	public static final int PAYMENTRULE_AD_Reference_ID=195;
+//	/** Cash = B */
+//	public static final String PAYMENTRULE_Cash = "B";
+//	/** CreditCard = K */
+//	public static final String PAYMENTRULE_CreditCard = "K";
+//	/** DirectDeposit = T */
+//	public static final String PAYMENTRULE_DirectDeposit = "T";
+//	/** Check = S */
+//	public static final String PAYMENTRULE_Check = "S";
+//	/** OnCredit = P */
+//	public static final String PAYMENTRULE_OnCredit = "P";
+//	/** DirectDebit = D */
+//	public static final String PAYMENTRULE_DirectDebit = "D";
+//	/** Mixed = M */
+//	public static final String PAYMENTRULE_Mixed = "M";
 	/** Set Zahlungsweise.
 		@param PaymentRule 
 		Wie die Rechnung bezahlt wird
@@ -499,10 +549,14 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	@Override
 	public void setPO_DiscountSchema_ID (int PO_DiscountSchema_ID)
 	{
-		if (PO_DiscountSchema_ID < 1) 
+		if (PO_DiscountSchema_ID < 1)
+		{
 			set_Value (COLUMNNAME_PO_DiscountSchema_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_PO_DiscountSchema_ID, Integer.valueOf(PO_DiscountSchema_ID));
+		}
 	}
 
 	/** Get Einkauf Rabatt Schema.
@@ -513,7 +567,9 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_PO_DiscountSchema_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -536,10 +592,14 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	@Override
 	public void setPO_PriceList_ID (int PO_PriceList_ID)
 	{
-		if (PO_PriceList_ID < 1) 
+		if (PO_PriceList_ID < 1)
+		{
 			set_Value (COLUMNNAME_PO_PriceList_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_PO_PriceList_ID, Integer.valueOf(PO_PriceList_ID));
+		}
 	}
 
 	/** Get Einkaufspreisliste.
@@ -550,7 +610,9 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_PO_PriceList_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -571,10 +633,14 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	@Override
 	public void setPO_PricingSystem_ID (int PO_PricingSystem_ID)
 	{
-		if (PO_PricingSystem_ID < 1) 
+		if (PO_PricingSystem_ID < 1)
+		{
 			set_Value (COLUMNNAME_PO_PricingSystem_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_PO_PricingSystem_ID, Integer.valueOf(PO_PricingSystem_ID));
+		}
 	}
 
 	/** Get Einkaufspreissystem.
@@ -584,7 +650,9 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_PO_PricingSystem_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -606,7 +674,9 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceMatchTolerance);
 		if (bd == null)
-			 return BigDecimal.ZERO;
+		{
+			return BigDecimal.ZERO;
+		}
 		return bd;
 	}
 

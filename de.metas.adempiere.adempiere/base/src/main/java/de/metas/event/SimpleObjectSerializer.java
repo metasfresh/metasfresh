@@ -5,8 +5,8 @@ import java.io.IOException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import de.metas.JsonObjectMapperHolder;
 
 /*
  * #%L
@@ -33,10 +33,12 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 /**
  * Simple json serializer/deserializer that can be used when a whole object is to be send as an {@link Event}'s property.<br>
  * See the {@code metasfresh-material-event} module for usage examples.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
+ * @deprecated Please use {@code de.metas.util.JSONObjectMapper} instead.
  */
+@Deprecated
 public class SimpleObjectSerializer
 {
 	private static final SimpleObjectSerializer INSTANCE = new SimpleObjectSerializer();
@@ -45,10 +47,8 @@ public class SimpleObjectSerializer
 
 	private SimpleObjectSerializer()
 	{
-		objectMapper = new ObjectMapper();
+		objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		objectMapper.registerModule(new JavaTimeModule());
-		objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 	}
 
 	public static SimpleObjectSerializer get()

@@ -48,6 +48,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AppsAction;
 import org.compiere.apps.ConfirmPanel;
@@ -57,8 +58,8 @@ import org.compiere.swing.CButton;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
 import org.compiere.util.Env;
-import org.compiere.util.Trx;
-import org.compiere.util.TrxRunnable;
+
+import de.metas.util.Services;
 
 public class VCreateFromDialog extends CDialog implements ActionListener, TableModelListener
 {
@@ -129,15 +130,10 @@ public class VCreateFromDialog extends CDialog implements ActionListener, TableM
 		{
 			try
 			{
-				Trx.run(new TrxRunnable()
-				{
-					@Override
-					public void run(String trxName)
+				Services.get(ITrxManager.class).runInNewTrx(trxName -> {
+					if (save(trxName))
 					{
-						if (save(trxName))
-						{
-							dispose();
-						}
+						dispose();
 					}
 				});
 			}
@@ -172,7 +168,9 @@ public class VCreateFromDialog extends CDialog implements ActionListener, TableM
 		TableModel model = dataTable.getModel();
 		int rows = model.getRowCount();	
 		if (rows == 0)
+		{
 			return false;
+		}
 				
 		return createFrom.save(dataTable, trxName);
 	}
@@ -185,7 +183,9 @@ public class VCreateFromDialog extends CDialog implements ActionListener, TableM
 		{
 			type = e.getType();
 			if (type != TableModelEvent.UPDATE)
+			{
 				return;
+			}
 		}
 		info();
 		dataTable.repaint();
@@ -199,7 +199,9 @@ public class VCreateFromDialog extends CDialog implements ActionListener, TableM
 		for (int i = 0; i < rows; i++)
 		{
 			if (((Boolean)model.getValueAt(i, 0)).booleanValue())
+			{
 				count++;
+			}
 		}
 		setStatusLine(count, null);
 		

@@ -1,27 +1,30 @@
 package de.metas.dunning.process;
 
-import lombok.NonNull;
-
 import java.util.List;
 
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import ch.qos.logback.classic.Level;
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.dunning.DunningDocId;
 import de.metas.dunning.invoice.DunningService;
+import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
 import de.metas.report.ExecuteReportStrategy;
 import de.metas.report.ExecuteReportStrategyUtil;
 import de.metas.report.ExecuteReportStrategyUtil.PdfDataProvider;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -47,6 +50,8 @@ import de.metas.util.Services;
 
 public class C_DunningDoc_JasperWithInvoicePDFsStrategy implements ExecuteReportStrategy
 {
+	private static final Logger logger = LogManager.getLogger(C_DunningDoc_JasperWithInvoicePDFsStrategy.class);
+
 	private final transient IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 	private final transient IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 	private final transient int dunningDocJasperProcessId;
@@ -63,13 +68,20 @@ public class C_DunningDoc_JasperWithInvoicePDFsStrategy implements ExecuteReport
 	{
 		final DunningDocId dunningDocId = DunningDocId.ofRepoId(processInfo.getRecord_ID());
 
-		final byte[] dunningDocPdfData = ExecuteReportStrategyUtil.executeJasperProcess(dunningDocJasperProcessId, processInfo);
+		final byte[] dunningDocData = ExecuteReportStrategyUtil.executeJasperProcess(dunningDocJasperProcessId, processInfo, outputType);
 
-		final DunningService dunningService = Adempiere.getBean(DunningService.class);
+		final boolean isPDF = OutputType.PDF.equals(outputType);
+		if (!isPDF)
+		{
+			Loggables.withLogger(logger, Level.WARN).addLog("Concatenating additional PDF-Data is not supported with outputType={}; returning only the jasper data itself.", outputType);
+			return new ExecuteReportResult(outputType, dunningDocData);
+		}
+
+		final DunningService dunningService = SpringContextHolder.instance.getBean(DunningService.class);
 		final List<I_C_Invoice> dunnedInvoices = dunningService.retrieveDunnedInvoices(dunningDocId);
 
 		final List<PdfDataProvider> additionalDataItemsToAttach = retrieveAdditionalDataItems(dunnedInvoices);
-		final byte[] data = ExecuteReportStrategyUtil.concatenate(dunningDocPdfData, additionalDataItemsToAttach);
+		final byte[] data = ExecuteReportStrategyUtil.concatenatePDF(dunningDocData, additionalDataItemsToAttach);
 
 		return new ExecuteReportResult(outputType, data);
 	}

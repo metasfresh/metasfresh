@@ -69,11 +69,8 @@ import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-import de.metas.util.ILoggable;
-import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -399,23 +396,6 @@ public abstract class AbstractTrxManager implements ITrxManager
 	}
 
 	@Override
-	public ITrx[] getActiveTransactions()
-	{
-		trxName2trxLock.lock();
-		try
-		{
-			final Collection<ITrx> collections = trxName2trx.values();
-			final ITrx[] trxs = new ITrx[collections.size()];
-			collections.toArray(trxs);
-			return trxs;
-		}
-		finally
-		{
-			trxName2trxLock.unlock();
-		}
-	}
-
-	@Override
 	public List<ITrx> getActiveTransactionsList()
 	{
 		trxName2trxLock.lock();
@@ -470,17 +450,17 @@ public abstract class AbstractTrxManager implements ITrxManager
 	}	// createTrxName
 
 	@Override
-	public <T> T call(final Callable<T> callable)
+	public <T> T callInNewTrx(final Callable<T> callable)
 	{
 		final TrxCallable<T> trxCallable = TrxCallableWrappers.wrapIfNeeded(callable);
-		return call(trxCallable);
+		return callInNewTrx(trxCallable);
 	}
 
 	@Override
 	public void runInNewTrx(final Runnable runnable)
 	{
 		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(runnable);
-		call(callable);
+		callInNewTrx(callable);
 	}
 
 	/**
@@ -490,11 +470,11 @@ public abstract class AbstractTrxManager implements ITrxManager
 	public void runInNewTrx(final TrxRunnable runnable)
 	{
 		final TrxCallable<Void> callable = TrxCallableWrappers.wrapIfNeeded(runnable);
-		call(callable);
+		callInNewTrx(callable);
 	}
 
 	@Override
-	public <T> T call(final TrxCallable<T> callable)
+	public <T> T callInNewTrx(final TrxCallable<T> callable)
 	{
 		return call(ITrx.TRXNAME_None, callable);
 	}
@@ -796,8 +776,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		// we catch Throwable and not only Exceptions because java.lang.AssertionError is not an Exception
 		catch (final Throwable runException)
 		{
-			final ILoggable loggable = Loggables.get().withLogger(logger, Level.WARN);
-			loggable.addLog("AbstractTrxManager.call0 - caught {} with message={}", runException.getClass(), runException.getMessage());
+			logger.warn("AbstractTrxManager.call0 - caught {} with message={}", runException.getClass(), runException.getMessage());
 
 			// Call custom exception handler to advice us what to do
 			exceptionToThrow = runException;
@@ -828,7 +807,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 				{
 					if (savepoint == null)
 					{
-						loggable.addLog("AbstractTrxManager.call0 - savePoint==null, so probably a problem happend when we tried to create the savepoint; trxRunConfig={}", cfg);
+						logger.warn("AbstractTrxManager.call0 - savePoint==null, so probably a problem happend when we tried to create the savepoint; trxRunConfig={}", cfg);
 					}
 					else
 					{
@@ -983,6 +962,13 @@ public abstract class AbstractTrxManager implements ITrxManager
 				setThreadInheritedTrxName(trxNameBackup);
 			}
 		}
+	}
+
+	@Override
+	public void runAfterCommit(@NonNull final Runnable runnable)
+	{
+		getCurrentTrxListenerManagerOrAutoCommit()
+				.runAfterCommit(runnable);
 	}
 
 	@Override

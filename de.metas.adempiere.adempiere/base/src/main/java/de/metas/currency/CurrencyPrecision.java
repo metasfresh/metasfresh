@@ -1,0 +1,112 @@
+package de.metas.currency;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import de.metas.util.Check;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2018 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+@EqualsAndHashCode
+public final class CurrencyPrecision
+{
+	@JsonCreator
+	public static CurrencyPrecision ofInt(final int precision)
+	{
+		if (precision >= 0 && precision < cachedValues.length)
+		{
+			return cachedValues[precision];
+		}
+		else
+		{
+			return new CurrencyPrecision(precision);
+		}
+	}
+
+	public static final CurrencyPrecision ZERO = new CurrencyPrecision(0);
+	public static final CurrencyPrecision TWO = new CurrencyPrecision(2);
+
+	private static final CurrencyPrecision[] cachedValues = new CurrencyPrecision[] {
+			ZERO,
+			new CurrencyPrecision(1),
+			TWO,
+			new CurrencyPrecision(3),
+			new CurrencyPrecision(4),
+			new CurrencyPrecision(5),
+			new CurrencyPrecision(6),
+			new CurrencyPrecision(7),
+			new CurrencyPrecision(8),
+			new CurrencyPrecision(9),
+			new CurrencyPrecision(10),
+			new CurrencyPrecision(11),
+			new CurrencyPrecision(12),
+	};
+
+	private final int precision;
+
+	private CurrencyPrecision(final int precision)
+	{
+		Check.assumeGreaterOrEqualToZero(precision, "precision");
+		this.precision = precision;
+	}
+
+	@Override
+	@Deprecated
+	public String toString()
+	{
+		return String.valueOf(precision);
+	}
+
+	@JsonValue
+	public int toInt()
+	{
+		return precision;
+	}
+
+	public BigDecimal roundIfNeeded(@NonNull final BigDecimal amt)
+	{
+		if (amt.scale() > precision)
+		{
+			return amt.setScale(precision, getRoundingMode());
+		}
+		else
+		{
+			return amt;
+		}
+	}
+
+	public BigDecimal round(@NonNull final BigDecimal amt)
+	{
+		return amt.setScale(precision, getRoundingMode());
+	}
+
+	public RoundingMode getRoundingMode()
+	{
+		return RoundingMode.HALF_UP;
+	}
+}

@@ -23,13 +23,15 @@ package de.metas.pricing;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 
 /**
  * A {@link IPricingContext} which also have setters.
@@ -44,7 +46,7 @@ public interface IEditablePricingContext extends IPricingContext
 	 * @param referencedObject
 	 */
 	IEditablePricingContext setReferencedObject(final Object referencedObject);
-	
+
 	IEditablePricingContext setSOTrx(final SOTrx soTrx);
 
 	IEditablePricingContext setQty(final BigDecimal qty);
@@ -53,9 +55,9 @@ public interface IEditablePricingContext extends IPricingContext
 
 	IEditablePricingContext setCurrencyId(CurrencyId currencyId);
 
-	IEditablePricingContext setC_UOM_ID(final int uomId);
+	IEditablePricingContext setUomId(final UomId uomId);
 
-	IEditablePricingContext setPriceDate(final Timestamp priceDate);
+	IEditablePricingContext setPriceDate(final LocalDate priceDate);
 
 	IEditablePricingContext setPricingSystemId(PricingSystemId pricingSystemId);
 
@@ -67,8 +69,6 @@ public interface IEditablePricingContext extends IPricingContext
 
 	/**
 	 * Set this to <code>true</code> to indicate to the pricing engine that discounts shall <b>not</b> be computed and applied to the result.
-	 *
-	 * @param disallowDiscount
 	 */
 	IEditablePricingContext setDisallowDiscount(boolean disallowDiscount);
 
@@ -93,18 +93,13 @@ public interface IEditablePricingContext extends IPricingContext
 	/**
 	 * See {@link IPricingContext#isManualPrice()}.
 	 *
-	 * @param isManualPrice
+	 * @param manualPriceEnabled
 	 */
-	IEditablePricingContext setManualPrice(boolean isManualPrice);
+	IEditablePricingContext setManualPriceEnabled(boolean manualPriceEnabled);
 
-	/**
-	 * When setting this and {@link #setM_PricingSystem_ID(int)}, no <code>M_PriceList_ID</code> or <code>M_PriceListVersion_ID</code> needs to be set.
-	 *
-	 * @param c_Country_ID
-	 */
-	IEditablePricingContext setC_Country_ID(int c_Country_ID);
+	IEditablePricingContext setCountryId(CountryId countryId);
 
-	IEditablePricingContext setFailIfNotCalculated(boolean failIfNotCalculated);
+	IEditablePricingContext setFailIfNotCalculated();
 
 	IEditablePricingContext setSkipCheckingPriceListSOTrxFlag(boolean skipCheckingPriceListSOTrxFlag);
 }

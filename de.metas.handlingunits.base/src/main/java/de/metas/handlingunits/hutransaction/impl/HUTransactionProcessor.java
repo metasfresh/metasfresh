@@ -119,8 +119,8 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 		trxLine.setM_HU_Trx_Hdr(trxHdr);
 		trxLine.setDateTrx(TimeUtil.asTimestamp(trxLineCandidate.getDate()));
 		trxLine.setM_Product_ID(trxLineCandidate.getProductId().getRepoId());
-		trxLine.setQty(trxLineCandidate.getQuantity().getAsBigDecimal());
-		trxLine.setC_UOM(trxLineCandidate.getQuantity().getUOM());
+		trxLine.setQty(trxLineCandidate.getQuantity().toBigDecimal());
+		trxLine.setC_UOM_ID(trxLineCandidate.getQuantity().getUOMId());
 		trxLine.setM_HU(hu);
 		trxLine.setM_HU_Item(huItem);
 
@@ -217,7 +217,7 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 			final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
 			final IHUItemStorage itemStorage = storageFactory.getStorage(vhuItem);
 			final ProductId productId = ProductId.ofRepoId(trxLine.getM_Product_ID());
-			itemStorage.addQty(productId, trxLine.getQty(), trxLine.getC_UOM());
+			itemStorage.addQty(productId, trxLine.getQty(), IHUTrxBL.extractUOMOrNull(trxLine));
 		}
 
 		trxLine.setProcessed(true);

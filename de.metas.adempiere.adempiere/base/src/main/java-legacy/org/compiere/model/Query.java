@@ -42,7 +42,7 @@ public class Query extends TypedSqlQuery<Object>
 	public Query(Properties ctx, MTable table, String whereClause, String trxName)
 	{
 		super(ctx,
-				Object.class, // modelClass 
+				Object.class, // modelClass
 				table == null ? null : table.getTableName(), // NOTE: an exception will be thrown if tableName is null
 				whereClause,
 				trxName);
@@ -101,19 +101,6 @@ public class Query extends TypedSqlQuery<Object>
 	public List<Object> list() throws DBException
 	{
 		return super.list();
-	}
-
-	@Override
-	public <ET> List<ET> list(Class<ET> clazz) throws DBException
-	{
-		final List<ET> result = super.list(clazz);
-		return result;
-	}
-
-	@Override
-	public Query setApplyAccessFilterRW(boolean RW)
-	{
-		return (Query)super.setApplyAccessFilterRW(RW);
 	}
 
 	@Override

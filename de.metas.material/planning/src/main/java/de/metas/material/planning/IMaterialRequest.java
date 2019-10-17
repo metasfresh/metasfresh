@@ -1,6 +1,6 @@
 package de.metas.material.planning;
 
-import java.util.Date;
+import java.time.Instant;
 
 import de.metas.material.planning.event.SupplyRequiredHandler;
 import de.metas.quantity.Quantity;
@@ -24,7 +24,7 @@ public interface IMaterialRequest
 	Quantity getQtyToSupply();
 
 	/** @return demand date; i.e. the date when quantity to supply is really needed */
-	Date getDemandDate();
+	Instant getDemandDate();
 
 	/**
 	 * @return C_BPartner_ID or -1

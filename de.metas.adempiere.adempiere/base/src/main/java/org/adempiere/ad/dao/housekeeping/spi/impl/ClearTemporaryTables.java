@@ -1,8 +1,5 @@
 package org.adempiere.ad.dao.housekeeping.spi.impl;
 
-import org.adempiere.ad.dao.model.I_T_Query_Selection;
-import org.adempiere.ad.dao.model.I_T_Query_Selection_ToDelete;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,12 +10,12 @@ import org.adempiere.ad.dao.model.I_T_Query_Selection_ToDelete;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,15 +27,18 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import de.metas.dao.selection.model.I_T_Query_Selection;
+import de.metas.dao.selection.model.I_T_Query_Selection_ToDelete;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
+import lombok.NonNull;
 
 /**
  * Clears several temporary tables.
- * 
- * @author ts
- * 
  */
+// not registering this one for because is might lead to problems if a swing-client is running while the server is starting up.
+// TODO: evaluate if this is still valid
+// @Component
 public class ClearTemporaryTables implements IStartupHouseKeepingTask
 {
 	private static final Logger logger = LogManager.getLogger(ClearTemporaryTables.class);
@@ -53,16 +53,16 @@ public class ClearTemporaryTables implements IStartupHouseKeepingTask
 		truncateTable(I_T_Query_Selection_ToDelete.Table_Name);
 	}
 
-	private void truncateTable(final String tableName)
+	private void truncateTable(@NonNull final String tableName)
 	{
 		try
 		{
-			final int no = DB.executeUpdateEx("DELETE FROM " + tableName, ITrx.TRXNAME_None);
-			Loggables.get().addLog("Deleted {} '{}' records", no, tableName);
+			DB.executeUpdateEx("TRUNCATE TABLE " + tableName, ITrx.TRXNAME_None);
+			Loggables.addLog("Truncated table {}", tableName);
 		}
 		catch (final Exception ex)
 		{
-			logger.warn("Failed clearing {}", tableName, ex);
+			logger.warn("Failed truncating {}", tableName, ex);
 		}
 	}
 

@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.acct;
 
@@ -20,14 +20,15 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCharge;
-import org.compiere.util.Env;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.payment.TenderType;
 import de.metas.util.Services;
 
 /**
@@ -41,47 +42,33 @@ import de.metas.util.Services;
  * @author Jorg Janke
  * @version $Id: Doc_Payment.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
  */
-public class Doc_Payment extends Doc
+public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 {
 	// services
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	/**
-	 * Constructor
-	 * 
-	 * @param ass accounting schemata
-	 * @param rs record
-	 * @param trxName trx
-	 */
-	public Doc_Payment(final IDocBuilder docBuilder)
+	public Doc_Payment(final AcctDocContext ctx)
 	{
-		super(docBuilder);
-	}	// Doc_Payment
+		super(ctx);
+	}
 
 	/** Tender Type */
-	private String m_TenderType = null;
+	private TenderType _tenderType;
 	/** Prepayment */
 	private boolean m_Prepayment = false;
 
-	/**
-	 * Load Specific Document Details
-	 * 
-	 * @return error message or null
-	 */
 	@Override
-	protected String loadDocumentDetails()
+	protected void loadDocumentDetails()
 	{
 		final I_C_Payment pay = getModel(I_C_Payment.class);
 		setDateDoc(pay.getDateTrx());
 		setC_BP_BankAccount_ID(pay.getC_BP_BankAccount_ID());
-		m_TenderType = pay.getTenderType();
+		_tenderType = TenderType.ofCode(pay.getTenderType());
 		m_Prepayment = pay.isPrepayment();
 
 		// Amount
 		setAmount(Doc.AMTTYPE_Gross, pay.getPayAmt());
-
-		return null;
-	}   // loadDocumentDetails
+	}
 
 	/**************************************************************************
 	 * Get Source Currency Balance - always zero
@@ -91,9 +78,7 @@ public class Doc_Payment extends Doc
 	@Override
 	public BigDecimal getBalance()
 	{
-		BigDecimal retValue = Env.ZERO;
-		// log.info( toString() + " Balance=" + retValue);
-		return retValue;
+		return BigDecimal.ZERO;
 	}   // getBalance
 
 	/**
@@ -117,16 +102,16 @@ public class Doc_Payment extends Doc
 	 * @return Fact
 	 */
 	@Override
-	public ArrayList<Fact> createFacts(final MAcctSchema as)
+	public ArrayList<Fact> createFacts(final AcctSchema as)
 	{
 		// create Fact Header
-		final Fact fact = new Fact(this, as, Fact.POST_Actual);
+		final Fact fact = new Fact(this, as, PostingType.Actual);
 		final int AD_Org_ID = getBank_Org_ID();		// Bank Account Org
 
 		// Cash Transfer
-		if ("X".equals(getTenderType()) && !isCashAsPayment())
+		if (getTenderType().isCash() && !isCashAsPayment())
 		{
-			final ArrayList<Fact> facts = new ArrayList<Fact>();
+			final ArrayList<Fact> facts = new ArrayList<>();
 			facts.add(fact);
 			return facts;
 		}
@@ -136,49 +121,69 @@ public class Doc_Payment extends Doc
 		{
 			// Asset (DR)
 			FactLine fl = fact.createLine(null, getBankAccount(as),
-					getC_Currency_ID(), getAmount(), null);
+					getCurrencyId(), getAmount(), null);
 			if (fl != null && AD_Org_ID != 0)
+			{
 				fl.setAD_Org_ID(AD_Org_ID);
+			}
 			//
 			MAccount acct = null;
 			if (getC_Charge_ID() != 0)
-				acct = MCharge.getAccount(getC_Charge_ID(), as, getAmount());
+			{
+				acct = MCharge.getAccount(getC_Charge_ID(), as.getId(), getAmount());
+			}
 			else if (isPrepayment())
+			{
 				acct = getAccount(Doc.ACCTTYPE_C_Prepayment, as);
+			}
 			else
+			{
 				acct = getAccount(Doc.ACCTTYPE_UnallocatedCash, as);
+			}
 			fl = fact.createLine(null, acct,
-					getC_Currency_ID(), null, getAmount());
+					getCurrencyId(), null, getAmount());
 			if (fl != null && AD_Org_ID != 0
-					&& getC_Charge_ID() == 0)		// don't overwrite charge
+					&& getC_Charge_ID() == 0)
+			{
 				fl.setAD_Org_ID(AD_Org_ID);
+			}
 		}
 		// APP
 		else if (DOCTYPE_APPayment.equals(documentType))
 		{
 			MAccount acct = null;
 			if (getC_Charge_ID() != 0)
-				acct = MCharge.getAccount(getC_Charge_ID(), as, getAmount());
+			{
+				acct = MCharge.getAccount(getC_Charge_ID(), as.getId(), getAmount());
+			}
 			else if (isPrepayment())
+			{
 				acct = getAccount(Doc.ACCTTYPE_V_Prepayment, as);
+			}
 			else
+			{
 				acct = getAccount(Doc.ACCTTYPE_PaymentSelect, as);
+			}
 			FactLine fl = fact.createLine(null, acct,
-					getC_Currency_ID(), getAmount(), null);
+					getCurrencyId(), getAmount(), null);
 			if (fl != null && AD_Org_ID != 0
-					&& getC_Charge_ID() == 0)		// don't overwrite charge
+					&& getC_Charge_ID() == 0)
+			{
 				fl.setAD_Org_ID(AD_Org_ID);
+			}
 
 			// Asset (CR)
 			fl = fact.createLine(null, getBankAccount(as),
-					getC_Currency_ID(), null, getAmount());
+					getCurrencyId(), null, getAmount());
 			if (fl != null && AD_Org_ID != 0)
+			{
 				fl.setAD_Org_ID(AD_Org_ID);
+			}
 		}
 		else
 		{
 			throw newPostingException()
-					.setC_AcctSchema(as)
+					.setAcctSchema(as)
 					.setFact(fact)
 					.setPostingStatus(PostingStatus.Error)
 					.setDetailMessage("DocumentType unknown: " + documentType);
@@ -186,7 +191,7 @@ public class Doc_Payment extends Doc
 		}
 
 		//
-		final ArrayList<Fact> facts = new ArrayList<Fact>();
+		final ArrayList<Fact> facts = new ArrayList<>();
 		facts.add(fact);
 		return facts;
 	}   // createFact
@@ -212,9 +217,9 @@ public class Doc_Payment extends Doc
 		return sysConfigBL.getBooleanValue("CASH_AS_PAYMENT", defaultValue);
 	}
 
-	private String getTenderType()
+	private TenderType getTenderType()
 	{
-		return m_TenderType;
+		return _tenderType;
 	}
 
 	private final boolean isPrepayment()
@@ -228,7 +233,7 @@ public class Doc_Payment extends Doc
 	 * @param as accounting schema
 	 * @return bank in transit account ({@link Doc#ACCTTYPE_BankInTransit})
 	 */
-	private MAccount getBankAccount(final I_C_AcctSchema as)
+	private MAccount getBankAccount(final AcctSchema as)
 	{
 		return getAccount(Doc.ACCTTYPE_BankInTransit, as);
 	}

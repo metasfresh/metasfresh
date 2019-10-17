@@ -15,6 +15,8 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
@@ -23,6 +25,7 @@ import org.compiere.model.X_M_Transaction;
 import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
@@ -129,7 +132,7 @@ public class MultiCustomerHUReturnsInOutProducer
 			InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_ThreadInherited);
 			final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
 
-			final int warehouseId = hu.getM_Locator().getM_Warehouse_ID();
+			final WarehouseId warehouseId = IHandlingUnitsBL.extractWarehouseId(hu);
 
 			//
 			// Find out the HU assignments to original vendor material receipt
@@ -184,7 +187,7 @@ public class MultiCustomerHUReturnsInOutProducer
 					continue;
 				}
 
-				final int bpartnerId = inout.getC_BPartner_ID();
+				final BPartnerId bpartnerId = BPartnerId.ofRepoId(inout.getC_BPartner_ID());
 
 				final I_C_Order order = inout.getC_Order();
 				// Add the HU to the right producer
@@ -231,17 +234,17 @@ public class MultiCustomerHUReturnsInOutProducer
 	/**
 	 * Create customer return producer, set the details and use it to create the customer return inout.
 	 *
-	 * @param partnerId
+	 * @param bpartnerId
 	 * @param hus
 	 * @return
 	 */
-	private CustomerReturnsInOutProducer createCustomerReturnInOutProducer(final int partnerId, final int warehouseId, final I_C_Order originOrder)
+	private CustomerReturnsInOutProducer createCustomerReturnInOutProducer(final BPartnerId bpartnerId, final WarehouseId warehouseId, final I_C_Order originOrder)
 	{
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 		final Properties ctx = Env.getCtx();
-		final I_C_BPartner partner = InterfaceWrapperHelper.loadOutOfTrx(partnerId, I_C_BPartner.class);
-		final I_C_BPartner_Location shipFromLocation = bpartnerDAO.retrieveShipToLocation(ctx, partnerId, ITrx.TRXNAME_None);
-		final I_M_Warehouse warehouse = InterfaceWrapperHelper.loadOutOfTrx(warehouseId, I_M_Warehouse.class);
+		final I_C_BPartner partner = bpartnerDAO.getById(bpartnerId);
+		final I_C_BPartner_Location shipFromLocation = bpartnerDAO.retrieveShipToLocation(ctx, bpartnerId.getRepoId(), ITrx.TRXNAME_None);
+		final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(warehouseId);
 
 		final CustomerReturnsInOutProducer producer = CustomerReturnsInOutProducer.newInstance();
 		producer.setC_BPartner(partner);

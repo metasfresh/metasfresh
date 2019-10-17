@@ -32,8 +32,6 @@ public interface I_AD_OrgInfo
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_AD_Client>(I_AD_OrgInfo.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -59,14 +57,33 @@ public interface I_AD_OrgInfo
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_AD_Org>(I_AD_OrgInfo.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set AD_OrgInfo_ID.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_OrgInfo_ID (int AD_OrgInfo_ID);
+
+	/**
+	 * Get AD_OrgInfo_ID.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_OrgInfo_ID();
+
+    /** Column definition for AD_OrgInfo_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_OrgInfo, Object> COLUMN_AD_OrgInfo_ID = new org.adempiere.model.ModelColumn<I_AD_OrgInfo, Object>(I_AD_OrgInfo.class, "AD_OrgInfo_ID", null);
+    /** Column name AD_OrgInfo_ID */
+    public static final String COLUMNNAME_AD_OrgInfo_ID = "AD_OrgInfo_ID";
 
 	/**
 	 * Set Organization Type.
@@ -96,6 +113,35 @@ public interface I_AD_OrgInfo
     public static final org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_AD_OrgType> COLUMN_AD_OrgType_ID = new org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_AD_OrgType>(I_AD_OrgInfo.class, "AD_OrgType_ID", org.compiere.model.I_AD_OrgType.class);
     /** Column name AD_OrgType_ID */
     public static final String COLUMNNAME_AD_OrgType_ID = "AD_OrgType_ID";
+
+	/**
+	 * Set Workflow - Verantwortlicher.
+	 * Verantwortlicher für die Ausführung des Workflow
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_WF_Responsible_ID (int AD_WF_Responsible_ID);
+
+	/**
+	 * Get Workflow - Verantwortlicher.
+	 * Verantwortlicher für die Ausführung des Workflow
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_WF_Responsible_ID();
+
+	public org.compiere.model.I_AD_WF_Responsible getAD_WF_Responsible();
+
+	public void setAD_WF_Responsible(org.compiere.model.I_AD_WF_Responsible AD_WF_Responsible);
+
+    /** Column definition for AD_WF_Responsible_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_AD_WF_Responsible> COLUMN_AD_WF_Responsible_ID = new org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_AD_WF_Responsible>(I_AD_OrgInfo.class, "AD_WF_Responsible_ID", org.compiere.model.I_AD_WF_Responsible.class);
+    /** Column name AD_WF_Responsible_ID */
+    public static final String COLUMNNAME_AD_WF_Responsible_ID = "AD_WF_Responsible_ID";
 
 	/**
 	 * Set Kalender.
@@ -205,39 +251,10 @@ public interface I_AD_OrgInfo
 	 */
 	public int getDropShip_Warehouse_ID();
 
-	public org.compiere.model.I_M_Warehouse getDropShip_Warehouse();
-
-	public void setDropShip_Warehouse(org.compiere.model.I_M_Warehouse DropShip_Warehouse);
-
     /** Column definition for DropShip_Warehouse_ID */
     public static final org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_M_Warehouse> COLUMN_DropShip_Warehouse_ID = new org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_M_Warehouse>(I_AD_OrgInfo.class, "DropShip_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
     /** Column name DropShip_Warehouse_ID */
     public static final String COLUMNNAME_DropShip_Warehouse_ID = "DropShip_Warehouse_ID";
-
-	/**
-	 * Set D-U-N-S.
-	 * Dun & Bradstreet Number
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setDUNS (java.lang.String DUNS);
-
-	/**
-	 * Get D-U-N-S.
-	 * Dun & Bradstreet Number
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getDUNS();
-
-    /** Column definition for DUNS */
-    public static final org.adempiere.model.ModelColumn<I_AD_OrgInfo, Object> COLUMN_DUNS = new org.adempiere.model.ModelColumn<I_AD_OrgInfo, Object>(I_AD_OrgInfo.class, "DUNS", null);
-    /** Column name DUNS */
-    public static final String COLUMNNAME_DUNS = "DUNS";
 
 	/**
 	 * Set Aktiv.
@@ -292,6 +309,31 @@ public interface I_AD_OrgInfo
     public static final String COLUMNNAME_Logo_ID = "Logo_ID";
 
 	/**
+	 * Set Preissystem.
+	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_PricingSystem_ID (int M_PricingSystem_ID);
+
+	/**
+	 * Get Preissystem.
+	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_PricingSystem_ID();
+
+    /** Column definition for M_PricingSystem_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_M_PricingSystem> COLUMN_M_PricingSystem_ID = new org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_M_PricingSystem>(I_AD_OrgInfo.class, "M_PricingSystem_ID", org.compiere.model.I_M_PricingSystem.class);
+    /** Column name M_PricingSystem_ID */
+    public static final String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
+
+	/**
 	 * Set Lager.
 	 * Storage Warehouse and Service Point
 	 *
@@ -310,10 +352,6 @@ public interface I_AD_OrgInfo
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Warehouse_ID();
-
-	public org.compiere.model.I_M_Warehouse getM_Warehouse();
-
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
 
     /** Column definition for M_Warehouse_ID */
     public static final org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_M_Warehouse>(I_AD_OrgInfo.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
@@ -340,14 +378,58 @@ public interface I_AD_OrgInfo
 	 */
 	public int getM_WarehousePO_ID();
 
-	public org.compiere.model.I_M_Warehouse getM_WarehousePO();
-
-	public void setM_WarehousePO(org.compiere.model.I_M_Warehouse M_WarehousePO);
-
     /** Column definition for M_WarehousePO_ID */
     public static final org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_M_Warehouse> COLUMN_M_WarehousePO_ID = new org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_M_Warehouse>(I_AD_OrgInfo.class, "M_WarehousePO_ID", org.compiere.model.I_M_Warehouse.class);
     /** Column name M_WarehousePO_ID */
     public static final String COLUMNNAME_M_WarehousePO_ID = "M_WarehousePO_ID";
+
+	/**
+	 * Set Org BPartner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setOrg_BPartner_ID (int Org_BPartner_ID);
+
+	/**
+	 * Get Org BPartner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getOrg_BPartner_ID();
+
+    /** Column definition for Org_BPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_C_BPartner> COLUMN_Org_BPartner_ID = new org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_C_BPartner>(I_AD_OrgInfo.class, "Org_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name Org_BPartner_ID */
+    public static final String COLUMNNAME_Org_BPartner_ID = "Org_BPartner_ID";
+
+	/**
+	 * Set OrgBP_Location_ID.
+	 * Default BP Location linked to the org.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setOrgBP_Location_ID (int OrgBP_Location_ID);
+
+	/**
+	 * Get OrgBP_Location_ID.
+	 * Default BP Location linked to the org.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getOrgBP_Location_ID();
+
+    /** Column definition for OrgBP_Location_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_C_BPartner_Location> COLUMN_OrgBP_Location_ID = new org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_C_BPartner_Location>(I_AD_OrgInfo.class, "OrgBP_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
+    /** Column name OrgBP_Location_ID */
+    public static final String COLUMNNAME_OrgBP_Location_ID = "OrgBP_Location_ID";
 
 	/**
 	 * Set Übergeordnete Organisation.
@@ -369,10 +451,6 @@ public interface I_AD_OrgInfo
 	 */
 	public int getParent_Org_ID();
 
-	public org.compiere.model.I_AD_Org getParent_Org();
-
-	public void setParent_Org(org.compiere.model.I_AD_Org Parent_Org);
-
     /** Column definition for Parent_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_AD_Org> COLUMN_Parent_Org_ID = new org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_AD_Org>(I_AD_OrgInfo.class, "Parent_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name Parent_Org_ID */
@@ -383,7 +461,7 @@ public interface I_AD_OrgInfo
 	 * This message will be displayed at the bottom of a receipt when doing a sales or purchase
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setReceiptFooterMsg (java.lang.String ReceiptFooterMsg);
@@ -393,7 +471,7 @@ public interface I_AD_OrgInfo
 	 * This message will be displayed at the bottom of a receipt when doing a sales or purchase
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getReceiptFooterMsg();
@@ -408,7 +486,7 @@ public interface I_AD_OrgInfo
 	 * Präfix, der (Jasper-)Berichten und Belegen vorangestellt wird, wenn diese Abgerufen werden
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setReportPrefix (java.lang.String ReportPrefix);
@@ -418,7 +496,7 @@ public interface I_AD_OrgInfo
 	 * Präfix, der (Jasper-)Berichten und Belegen vorangestellt wird, wenn diese Abgerufen werden
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getReportPrefix();
@@ -427,6 +505,29 @@ public interface I_AD_OrgInfo
     public static final org.adempiere.model.ModelColumn<I_AD_OrgInfo, Object> COLUMN_ReportPrefix = new org.adempiere.model.ModelColumn<I_AD_OrgInfo, Object>(I_AD_OrgInfo.class, "ReportPrefix", null);
     /** Column name ReportPrefix */
     public static final String COLUMNNAME_ReportPrefix = "ReportPrefix";
+
+	/**
+	 * Set Speichung Kreditkartendaten.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setStoreCreditCardData (java.lang.String StoreCreditCardData);
+
+	/**
+	 * Get Speichung Kreditkartendaten.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getStoreCreditCardData();
+
+    /** Column definition for StoreCreditCardData */
+    public static final org.adempiere.model.ModelColumn<I_AD_OrgInfo, Object> COLUMN_StoreCreditCardData = new org.adempiere.model.ModelColumn<I_AD_OrgInfo, Object>(I_AD_OrgInfo.class, "StoreCreditCardData", null);
+    /** Column name StoreCreditCardData */
+    public static final String COLUMNNAME_StoreCreditCardData = "StoreCreditCardData";
 
 	/**
 	 * Set Vorgesetzter.
@@ -448,39 +549,33 @@ public interface I_AD_OrgInfo
 	 */
 	public int getSupervisor_ID();
 
-	public org.compiere.model.I_AD_User getSupervisor();
-
-	public void setSupervisor(org.compiere.model.I_AD_User Supervisor);
-
     /** Column definition for Supervisor_ID */
     public static final org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_AD_User> COLUMN_Supervisor_ID = new org.adempiere.model.ModelColumn<I_AD_OrgInfo, org.compiere.model.I_AD_User>(I_AD_OrgInfo.class, "Supervisor_ID", org.compiere.model.I_AD_User.class);
     /** Column name Supervisor_ID */
     public static final String COLUMNNAME_Supervisor_ID = "Supervisor_ID";
 
 	/**
-	 * Set Steuer-ID.
-	 * Tax Identification
+	 * Set Time Zone.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setTaxID (java.lang.String TaxID);
+	public void setTimeZone (java.lang.String TimeZone);
 
 	/**
-	 * Get Steuer-ID.
-	 * Tax Identification
+	 * Get Time Zone.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getTaxID();
+	public java.lang.String getTimeZone();
 
-    /** Column definition for TaxID */
-    public static final org.adempiere.model.ModelColumn<I_AD_OrgInfo, Object> COLUMN_TaxID = new org.adempiere.model.ModelColumn<I_AD_OrgInfo, Object>(I_AD_OrgInfo.class, "TaxID", null);
-    /** Column name TaxID */
-    public static final String COLUMNNAME_TaxID = "TaxID";
+    /** Column definition for TimeZone */
+    public static final org.adempiere.model.ModelColumn<I_AD_OrgInfo, Object> COLUMN_TimeZone = new org.adempiere.model.ModelColumn<I_AD_OrgInfo, Object>(I_AD_OrgInfo.class, "TimeZone", null);
+    /** Column name TimeZone */
+    public static final String COLUMNNAME_TimeZone = "TimeZone";
 
 	/**
 	 * Set Bank for transfers.

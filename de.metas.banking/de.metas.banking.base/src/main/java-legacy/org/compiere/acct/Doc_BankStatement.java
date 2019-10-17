@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.acct;
 
@@ -23,14 +23,20 @@ import java.util.List;
 import org.compiere.acct.Fact.FactLineBuilder;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
-import org.compiere.model.MBankStatement;
-import org.compiere.model.MBankStatementLine;
-import org.compiere.util.Env;
-import org.compiere.util.Util;
 
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.PostingType;
+import de.metas.acct.doc.AcctDocContext;
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
+import de.metas.banking.model.I_C_BankStatement;
+import de.metas.banking.model.I_C_BankStatementLine;
+import de.metas.banking.service.IBankStatementDAO;
+import de.metas.bpartner.BPartnerId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 
 /**
  * Post Bank Statement Documents.
@@ -44,33 +50,22 @@ import de.metas.util.Check;
  * @version $Id: Doc_Bank.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
  *
  *          FR [ 1840016 ] Avoid usage of clearing accounts - subject to C_AcctSchema.IsPostIfClearingEqual Avoid posting if both accounts BankAsset and BankInTransit are equal
- * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com <li>FR [ 2520591 ] Support multiples calendar for Org
+ * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
+ *         <li>FR [ 2520591 ] Support multiples calendar for Org
  * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  *
  */
-public class Doc_BankStatement extends Doc
+public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 {
-	/**
-	 * Constructor
-	 *
-	 * @param ass accounting schemata
-	 * @param rs record
-	 * @param trxName trx
-	 */
-	public Doc_BankStatement(final IDocBuilder docBuilder)
+	public Doc_BankStatement(final AcctDocContext ctx)
 	{
-		super(docBuilder, DOCTYPE_BankStatement);
-	}	// Doc_Bank
+		super(ctx, DOCTYPE_BankStatement);
+	}
 
-	/**
-	 * Load Specific Document Details
-	 *
-	 * @return error message or null
-	 */
 	@Override
-	protected String loadDocumentDetails()
+	protected void loadDocumentDetails()
 	{
-		final MBankStatement bs = (MBankStatement)getPO();
+		final I_C_BankStatement bs = getModel(I_C_BankStatement.class);
 		setDateDoc(bs.getStatementDate());
 		setDateAcct(bs.getStatementDate());	// Overwritten on Line Level
 		setC_BP_BankAccount_ID(bs.getC_BP_BankAccount_ID());
@@ -80,17 +75,15 @@ public class Doc_BankStatement extends Doc
 
 		// Set Bank Account Info (Currency)
 		final I_C_BP_BankAccount ba = getC_BP_BankAccount(); // shall not be null
-		setC_Currency_ID(ba.getC_Currency_ID());
+		setC_Currency_ID(CurrencyId.ofRepoId(ba.getC_Currency_ID()));
 
-		// Contained Objects
-		p_lines = loadLines(bs);
-		return null;
-	}   // loadDocumentDetails
+		setDocLines(loadLines(bs));
+	}
 
-	private DocLine[] loadLines(final MBankStatement bs)
+	private List<DocLine_BankStatement> loadLines(final I_C_BankStatement bs)
 	{
-		final List<DocLine> docLines = new ArrayList<>();
-		for (final MBankStatementLine line : bs.getLines(false))
+		final List<DocLine_BankStatement> docLines = new ArrayList<>();
+		for (final I_C_BankStatementLine line : Services.get(IBankStatementDAO.class).retrieveLines(bs, I_C_BankStatementLine.class))
 		{
 			final DocLine_BankStatement docLine = new DocLine_BankStatement(line, this);
 
@@ -103,7 +96,7 @@ public class Doc_BankStatement extends Doc
 			docLines.add(docLine);
 		}
 
-		return docLines.toArray(new DocLine[docLines.size()]);
+		return docLines;
 	}
 
 	@Override
@@ -115,9 +108,9 @@ public class Doc_BankStatement extends Doc
 		retValue = retValue.add(getAmount(Doc.AMTTYPE_Gross));
 
 		// minus Lines
-		for (int i = 0; i < p_lines.length; i++)
+		for (DocLine_BankStatement line : getDocLines())
 		{
-			final BigDecimal lineBalance = ((DocLine_BankStatement)p_lines[i]).getStmtAmt();
+			final BigDecimal lineBalance = line.getStmtAmt();
 			retValue = retValue.subtract(lineBalance);
 		}
 
@@ -138,16 +131,15 @@ public class Doc_BankStatement extends Doc
 	 * @return Fact
 	 */
 	@Override
-	public List<Fact> createFacts(final MAcctSchema as)
+	public List<Fact> createFacts(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, Fact.POST_Actual);
-		final int bankOrgId = getBank_Org_ID();	// Bank Account Organization
+		final Fact fact = new Fact(this, as, PostingType.Actual);
+		final OrgId bankOrgId = getBankOrgId();	// Bank Account Organization
 
 		// Lines
-		for (int i = 0; i < p_lines.length; i++)
+		for (DocLine_BankStatement line : getDocLines())
 		{
-			final DocLine_BankStatement line = (DocLine_BankStatement)p_lines[i];
-			final int C_BPartner_ID = line.getC_BPartner_ID();
+			final BPartnerId bpartnerId = line.getBPartnerId();
 
 			//
 			// BankAsset DR CR (Statement)
@@ -155,9 +147,9 @@ public class Doc_BankStatement extends Doc
 					.setDocLine(line)
 					.setAccount(getAccount(Doc.ACCTTYPE_BankAsset, as))
 					.setAmtSourceDrOrCr(line.getStmtAmt())
-					.setC_Currency_ID(line.getC_Currency_ID())
-					.setAD_Org_ID_IfValid(bankOrgId)
-					.setC_BPartner_ID_IfValid(C_BPartner_ID)
+					.setCurrencyId(line.getCurrencyId())
+					.orgIdIfValid(bankOrgId)
+					.bpartnerIdIfNotNull(bpartnerId)
 					.buildAndAdd();
 
 			//
@@ -183,9 +175,9 @@ public class Doc_BankStatement extends Doc
 				final FactLineBuilder flBuilder = fact.createLine()
 						.setDocLine(line)
 						.setAccount(acct_Charge)
-						.setC_Currency_ID(line.getC_Currency_ID())
-						.setAD_Org_ID_IfValid(bankOrgId)
-						.setC_BPartner_ID_IfValid(C_BPartner_ID);
+						.setCurrencyId(line.getCurrencyId())
+						.orgIdIfValid(bankOrgId)
+						.bpartnerIdIfNotNull(bpartnerId);
 				if (chargeAmt.signum() > 0)
 				{
 					flBuilder.setAmtSource(null, chargeAmt.negate());
@@ -205,9 +197,9 @@ public class Doc_BankStatement extends Doc
 			{
 				final FactLineBuilder flBuilder = fact.createLine()
 						.setDocLine(line)
-						.setC_Currency_ID(line.getC_Currency_ID())
-						.setAD_Org_ID_IfValid(bankOrgId)
-						.setC_BPartner_ID_IfValid(C_BPartner_ID);
+						.setCurrencyId(line.getCurrencyId())
+						.orgIdIfValid(bankOrgId)
+						.bpartnerIdIfNotNull(bpartnerId);
 
 				if (interestAmt.signum() >= 0)
 				{
@@ -260,15 +252,15 @@ public class Doc_BankStatement extends Doc
 		// We are using the currency conversion for bank transfers (e.g. Spot) and not the default one which could be different (e.g. Company conversion type).
 		//
 
-		final MAcctSchema as = fact.getAcctSchema();
-		final int bankOrgId = getBank_Org_ID();	// Bank Account Org
+		final AcctSchema as = fact.getAcctSchema();
+		final OrgId bankOrgId = getBankOrgId();	// Bank Account Org
 		final FactLineBuilder factLine_BankTransfer_Builder = fact.createLine()
 				.setDocLine(line)
 				.setAccount(getAccount(Doc.ACCTTYPE_BankInTransit, as))
-				.setC_Currency_ID(line.getC_Currency_ID())
+				.setCurrencyId(line.getCurrencyId())
 				.setCurrencyConversionCtx(line.getBankTransferCurrencyConversionCtx())
-				.setAD_Org_ID(bankOrgId > 0 ? bankOrgId : line.getAD_Org_ID()) // bank org, line org
-				.setC_BPartner_ID_IfValid(line.getC_BPartner_ID());
+				.orgId(bankOrgId.isRegular() ? bankOrgId : line.getOrgId()) // bank org, line org
+				.bpartnerIdIfNotNull(line.getBPartnerId());
 
 		final FactLine factLine_BankTransfer;
 		final BigDecimal amtAcct_BankAsset;
@@ -323,7 +315,7 @@ public class Doc_BankStatement extends Doc
 		// and the currency gain/loss is booked in accounting currency.
 		setIsMultiCurrency(true);
 
-		final MAcctSchema as = fact.getAcctSchema();
+		final AcctSchema as = fact.getAcctSchema();
 		final MAccount account;
 		final BigDecimal amtSourceDr;
 		final BigDecimal amtSourceCr;
@@ -367,7 +359,7 @@ public class Doc_BankStatement extends Doc
 		fact.createLine()
 				.setDocLine(line)
 				.setAccount(account)
-				.setC_Currency_ID(as.getC_Currency_ID())
+				.setCurrencyId(as.getCurrencyId())
 				.setAmtSource(amtSourceDr, amtSourceCr)
 				.buildAndAdd();
 	}
@@ -380,10 +372,10 @@ public class Doc_BankStatement extends Doc
 	 */
 	private final void createFacts_Payments(final Fact fact, final DocLine_BankStatement line)
 	{
-		final MAcctSchema as = fact.getAcctSchema();
+		final AcctSchema as = fact.getAcctSchema();
 		final MAccount acct_BankInTransit = getAccount(Doc.ACCTTYPE_BankInTransit, as);
-		final int bankOrgId = getBank_Org_ID();	// Bank Account Org
-		final int C_BPartner_ID = line.getC_BPartner_ID();
+		final OrgId bankOrgId = getBankOrgId();	// Bank Account Org
+		final BPartnerId bpartnerId = line.getBPartnerId();
 
 		final List<I_C_BankStatementLine_Ref> lineReferences = line.getReferences();
 		if (lineReferences.isEmpty())
@@ -392,24 +384,24 @@ public class Doc_BankStatement extends Doc
 					.setDocLine(line)
 					.setAccount(acct_BankInTransit)
 					.setAmtSourceDrOrCr(line.getTrxAmt().negate())
-					.setC_Currency_ID(line.getC_Currency_ID())
-					.setAD_Org_ID(bankOrgId > 0 ? bankOrgId : line.getPaymentOrg_ID()) // bank org, payment org
-					.setC_BPartner_ID_IfValid(C_BPartner_ID)
+					.setCurrencyId(line.getCurrencyId())
+					.orgId(bankOrgId.isRegular() ? bankOrgId : line.getPaymentOrgId()) // bank org, payment org
+					.bpartnerIdIfNotNull(bpartnerId)
 					.buildAndAdd();
 		}
 		else
 		{
 			for (final I_C_BankStatementLine_Ref lineRef : lineReferences)
 			{
+				final BPartnerId lineRefBPartnerId = BPartnerId.ofRepoIdOrNull(lineRef.getC_BPartner_ID());
 				fact.createLine()
 						.setDocLine(line)
 						.setSubLine_ID(lineRef.getC_BankStatementLine_Ref_ID())
 						.setAccount(acct_BankInTransit)
 						.setAmtSourceDrOrCr(lineRef.getTrxAmt().negate())
-						.setC_Currency_ID(lineRef.getC_Currency_ID())
-						.setAD_Org_ID(bankOrgId > 0 ? bankOrgId : line.getPaymentOrg_ID(lineRef.getC_Payment())) // bank org, payment org
-						.setC_BPartner_ID_IfValid(
-								Util.firstGreaterThanZero(lineRef.getC_BPartner_ID(), C_BPartner_ID)) // if the lineref has a C_BPartner, then use it
+						.setCurrencyId(CurrencyId.ofRepoId(lineRef.getC_Currency_ID()))
+						.orgId(bankOrgId.isRegular() ? bankOrgId : line.getPaymentOrgId(lineRef.getC_Payment())) // bank org, payment org
+						.bpartnerIdIfNotNull(CoalesceUtil.coalesce(lineRefBPartnerId, bpartnerId)) // if the lineref has a C_BPartner, then use it
 						.buildAndAdd();
 			}
 		}
@@ -419,16 +411,16 @@ public class Doc_BankStatement extends Doc
 	/**
 	 * Get AD_Org_ID from Bank Account
 	 *
-	 * @return AD_Org_ID or {@link Env#CTXVALUE_AD_Org_ID_System}
+	 * @return org or {@link OrgId#ANY}
 	 */
-	private final int getBank_Org_ID()
+	private final OrgId getBankOrgId()
 	{
 		final I_C_BP_BankAccount bpBankAccount = getC_BP_BankAccount();
 		if (bpBankAccount == null)
 		{
-			return Env.CTXVALUE_AD_Org_ID_System;
+			return OrgId.ANY;
 		}
-		return bpBankAccount.getAD_Org_ID();
+		return OrgId.ofRepoIdOrAny(bpBankAccount.getAD_Org_ID());
 	}
 
 }   // Doc_Bank

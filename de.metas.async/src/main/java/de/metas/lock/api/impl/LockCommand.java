@@ -23,7 +23,6 @@ package de.metas.lock.api.impl;
  */
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.concurrent.Future;
 
@@ -32,8 +31,10 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.concurrent.CloseableReentrantLock;
 import org.adempiere.util.concurrent.FutureValue;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ObjectUtils;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
@@ -274,7 +275,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public final Iterator<ITableRecordReference> getRecordsToLockIterator()
+	public final Iterator<TableRecordReference> getRecordsToLockIterator()
 	{
 		return _recordsToLock.getRecordsIterator();
 	}
@@ -294,9 +295,9 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public ILockCommand addRecord(ITableRecordReference record)
+	public ILockCommand addRecord(@NonNull final TableRecordReference record)
 	{
-		_recordsToLock.addRecords(Collections.singleton(record));
+		_recordsToLock.addRecords(ImmutableSet.of(record));
 		return this;
 	}
 }

@@ -156,7 +156,7 @@ public class SubscriptionService
 		if (sps.isEmpty())
 		{
 			final IMsgBL msgBL = Services.get(IMsgBL.class);
-			Loggables.get().addLog(msgBL.getMsg(Env.getCtx(), MSG_NO_SPS_AFTER_DATE_1P, new Object[] { pauseFrom }));
+			Loggables.addLog(msgBL.getMsg(Env.getCtx(), MSG_NO_SPS_AFTER_DATE_1P, new Object[] { pauseFrom }));
 		}
 		return sps;
 	}

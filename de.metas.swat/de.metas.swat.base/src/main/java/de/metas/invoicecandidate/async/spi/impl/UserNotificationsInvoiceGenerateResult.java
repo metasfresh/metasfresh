@@ -5,6 +5,7 @@ import org.adempiere.invoice.event.InvoiceUserNotificationsProducer;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
 import de.metas.invoicecandidate.api.impl.ForwardingInvoiceGenerateResult;
+import de.metas.user.UserId;
 
 /**
  * {@link ForwardingInvoiceGenerateResult} implementation which is also creating and sending user notifications via {@link InvoiceUserNotificationsProducer}.
@@ -16,7 +17,7 @@ public class UserNotificationsInvoiceGenerateResult extends ForwardingInvoiceGen
 {
 	private final InvoiceUserNotificationsProducer invoiceGeneratedEventBus = InvoiceUserNotificationsProducer.newInstance();
 
-	private int recipientUserId = -1;
+	private UserId recipientUserId;
 
 	public UserNotificationsInvoiceGenerateResult(final IInvoiceGenerateResult delegate)
 	{
@@ -26,7 +27,7 @@ public class UserNotificationsInvoiceGenerateResult extends ForwardingInvoiceGen
 	/**
 	 * Sets the user which shall be notified
 	 */
-	public UserNotificationsInvoiceGenerateResult setNotificationRecipientUserId(final int recipientUserId)
+	public UserNotificationsInvoiceGenerateResult setNotificationRecipientUserId(final UserId recipientUserId)
 	{
 		this.recipientUserId = recipientUserId;
 		return this;

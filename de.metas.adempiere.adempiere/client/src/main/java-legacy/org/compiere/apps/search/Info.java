@@ -60,9 +60,9 @@ import javax.swing.WindowConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.service.IADInfoWindowDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.ui.DefaultTableColorProvider;
@@ -71,7 +71,6 @@ import org.adempiere.images.Images;
 import org.adempiere.model.IWindowNoAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.user.api.IUserSortPrefDAO;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
@@ -107,6 +106,9 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.user.api.IUserSortPrefDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -300,7 +302,7 @@ public abstract class Info extends Component
 	/** Cancel pressed - need to differentiate between OK - Cancel - Exit */
 	private boolean m_cancel = false;
 	/** Result IDs */
-	private final ArrayList<Integer> m_results = new ArrayList<Integer>(3);
+	private final ArrayList<Integer> m_results = new ArrayList<>(3);
 
 	/** Layout of Grid */
 	protected Info_Column[] p_layout;
@@ -314,9 +316,9 @@ public abstract class Info extends Component
 	/** Loading success indicator */
 	protected boolean p_loadedOK = false;
 	/** SO Zoom Window */
-	private int m_SO_Window_ID = -1;
+	private AdWindowId m_SO_Window_ID = null;
 	/** PO Zoom Window */
-	private int m_PO_Window_ID = -1;
+	private AdWindowId m_PO_Window_ID = null;
 
 	/** Worker */
 	private Worker m_worker = null;
@@ -780,7 +782,7 @@ public abstract class Info extends Component
 		final Evaluatee evalCtx = Evaluatees.ofCtx(getCtx(), getWindowNo(), false); // onlyWindow=false
 		String countSql = sqlExpression.evaluate(evalCtx, true); // ignoreUnparsable=true
 
-		countSql = Env.getUserRolePermissions().addAccessSQL(countSql, getTableName(), IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+		countSql = Env.getUserRolePermissions().addAccessSQL(countSql, getTableName(), IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ);
 		log.trace(countSql);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -865,9 +867,9 @@ public abstract class Info extends Component
 		final Properties ctx = getCtx();
 
 		final InfoWindowGridRowBuilders builders = new InfoWindowGridRowBuilders();
-		for (int columnIndex = 0; columnIndex < p_layout.length; columnIndex++)
+		for (Info_Column element : p_layout)
 		{
-			final IInfoColumnController columnController = p_layout[columnIndex].getColumnController();
+			final IInfoColumnController columnController = element.getColumnController();
 			if (columnController != null)
 			{
 				columnController.save(ctx, p_WindowNo, builders);
@@ -935,7 +937,7 @@ public abstract class Info extends Component
 	 */
 	protected ArrayList<Integer> getSelectedRowKeys()
 	{
-		final ArrayList<Integer> selectedDataList = new ArrayList<Integer>();
+		final ArrayList<Integer> selectedDataList = new ArrayList<>();
 
 		if (m_keyColumnIndex == -1)
 		{
@@ -1065,15 +1067,15 @@ public abstract class Info extends Component
 		}
 
 		// Add elements
-		for (int i = 0; i < keys.length; i++)
+		for (Object key : keys)
 		{
 			if (getKeyColumn().endsWith("_ID"))
 			{
-				sb.append(keys[i].toString()).append(",");
+				sb.append(key.toString()).append(",");
 			}
 			else
 			{
-				sb.append("'").append(keys[i].toString()).append("',");
+				sb.append("'").append(key.toString()).append("',");
 			}
 		}
 
@@ -1157,14 +1159,14 @@ public abstract class Info extends Component
 	/**
 	 * Zoom to target
 	 *
-	 * @param AD_Window_ID window id
+	 * @param adWindowId window id
 	 * @param zoomQuery zoom query
 	 */
-	protected void zoom(final int AD_Window_ID, final MQuery zoomQuery)
+	protected void zoom(final AdWindowId adWindowId, final MQuery zoomQuery)
 	{
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		final AWindow frame = new AWindow();
-		if (!frame.initWindow(AD_Window_ID, zoomQuery))
+		if (!frame.initWindow(adWindowId, zoomQuery))
 		{
 			return;
 		}
@@ -1469,13 +1471,13 @@ public abstract class Info extends Component
 	 * @param isSOTrx sales trx
 	 * @return AD_Window_ID
 	 */
-	protected int getAD_Window_ID(final String tableName, final boolean isSOTrx)
+	protected AdWindowId getAD_Window_ID(final String tableName, final boolean isSOTrx)
 	{
-		if (!isSOTrx && m_PO_Window_ID > 0)
+		if (!isSOTrx && m_PO_Window_ID != null)
 		{
 			return m_PO_Window_ID;
 		}
-		if (m_SO_Window_ID > 0)
+		if (m_SO_Window_ID != null)
 		{
 			return m_SO_Window_ID;
 		}
@@ -1490,8 +1492,8 @@ public abstract class Info extends Component
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				m_SO_Window_ID = rs.getInt(1);
-				m_PO_Window_ID = rs.getInt(2);
+				m_SO_Window_ID = AdWindowId.ofRepoIdOrNull(rs.getInt(1));
+				m_PO_Window_ID = AdWindowId.ofRepoIdOrNull(rs.getInt(2));
 			}
 		}
 		catch (final Exception e)
@@ -1505,7 +1507,7 @@ public abstract class Info extends Component
 			pstmt = null;
 		}
 		//
-		if (!isSOTrx && m_PO_Window_ID > 0)
+		if (!isSOTrx && m_PO_Window_ID != null)
 		{
 			return m_PO_Window_ID;
 		}
@@ -1733,7 +1735,7 @@ public abstract class Info extends Component
 			}
 			sql.append(m_sqlOrder);
 			String dataSql = msgBL.parseTranslation(ctx, sql.toString()); // Variables
-			dataSql = Env.getUserRolePermissions().addAccessSQL(dataSql, getTableName(), IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+			dataSql = Env.getUserRolePermissions().addAccessSQL(dataSql, getTableName(), IUserRolePermissions.SQL_FULLYQUALIFIED, Access.READ);
 			log.trace(dataSql);
 
 			//
@@ -1985,7 +1987,7 @@ public abstract class Info extends Component
 		}
 
 		// index of sort-column to sort direction. Note that it is a linked map, so the order of the sort column indexes is also stored in it.
-		final LinkedHashMap<Integer, Boolean> initialSortIndexes2Direction = new LinkedHashMap<Integer, Boolean>();
+		final LinkedHashMap<Integer, Boolean> initialSortIndexes2Direction = new LinkedHashMap<>();
 
 		//
 		// fresh 08329: If in conference mode, then retrieve conference sort preferences, and not the user's

@@ -218,6 +218,7 @@ public class TrxItemProcessorExecutorTest
 				.setExpectedResult(resultExpected)
 				.setRunInTrx(true)
 				.setUseTrxSavepoints(false)
+				.setOnItemErrorPolicy(OnItemErrorPolicy.CancelChunkAndRollBack)
 				.assertExpected();
 
 		assertAllItemsProcessed(items);
@@ -460,6 +461,7 @@ public class TrxItemProcessorExecutorTest
 				.setExpectedResult(resultExpected)
 				.setRunInTrx(true)
 				.setUseTrxSavepoints(true)
+				.setOnItemErrorPolicy(OnItemErrorPolicy.CancelChunkAndRollBack)
 				.assertExpected();
 
 		assertAllItemsProcessed(items);

@@ -3,14 +3,11 @@ package de.metas.payment.esr.invoice_gateway;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Location;
-import org.compiere.util.Util;
 import org.springframework.stereotype.Component;
 
 import de.metas.banking.model.I_C_Payment_Request;
@@ -18,10 +15,13 @@ import de.metas.invoice_gateway.spi.esr.ESRPaymentInfoProvider;
 import de.metas.invoice_gateway.spi.esr.model.ESRPaymentInfo;
 import de.metas.invoice_gateway.spi.model.AddressInfo;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
-import de.metas.invoice_gateway.spi.model.InvoiceToExport;
+import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
+import de.metas.payment.esr.ESRStringUtil;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_C_Bank;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -55,7 +55,7 @@ public class ESRInfoProviderImpl implements ESRPaymentInfoProvider
 
 		final I_C_BPartner bpartnerRecord = loadOutOfTrx(invoiceWithoutEsrInfo.getBiller().getId(), I_C_BPartner.class);
 
-		final String companyName = Util.coalesce(bpartnerRecord.getCompanyName(), bpartnerRecord.getName());
+		final String companyName = CoalesceUtil.coalesce(bpartnerRecord.getCompanyName(), bpartnerRecord.getName());
 
 		final I_C_Payment_Request paymentRequestRecord = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Payment_Request.class)
@@ -78,7 +78,7 @@ public class ESRInfoProviderImpl implements ESRPaymentInfoProvider
 		final I_C_Bank esrBank = create(esrBankAccount.getC_Bank(), I_C_Bank.class);
 
 		final ESRPaymentInfo esrPaymentInfo = ESRPaymentInfo.builder()
-				.referenceNumber(paymentRequestRecord.getReference())
+				.referenceNumber(ESRStringUtil.formatReferenceNumber(paymentRequestRecord.getReference()))
 				.codingLine(paymentRequestRecord.getFullPaymentString())
 				.companyName(companyName)
 				.addressInfo(createAddressInfo(esrBank))

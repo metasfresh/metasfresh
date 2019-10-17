@@ -12,7 +12,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.user.UserRepository;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.junit.Before;
@@ -29,7 +28,9 @@ import de.metas.inoutcandidate.api.impl.ShipmentScheduleTestBase.ProductSpec;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleTestBase.ShipmentScheduleSpec;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleTestBase.StockSpec;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleTestBase.TestSetupSpec;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleTestBase.UomSpec;
 import de.metas.order.DeliveryRule;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 
 /*
@@ -58,7 +59,7 @@ public class ShipmentScheduleBL_generateTest
 {
 
 	private static final BigDecimal THREE = new BigDecimal("3");
-	private static final BigDecimal FOUR = new BigDecimal("4");;
+	private static final BigDecimal FOUR = new BigDecimal("4");
 
 	private ShipmentScheduleBL shipmentScheduleBL;
 
@@ -79,10 +80,11 @@ public class ShipmentScheduleBL_generateTest
 	@Test
 	public void generate_emptyStock_force()
 	{
-
-		final ProductSpec nonStockedProduct = ProductSpec.builder().value("prod1").stocked(false).build();
+		final UomSpec uom = UomSpec.builder().name("stockUom").build();
+		final ProductSpec nonStockedProduct = ProductSpec.builder().value("prod1").uomValue("stockUom").stocked(false).build();
 
 		final TestSetupSpec spec = TestSetupSpec.builder()
+				.uom(uom)
 				.product(nonStockedProduct)
 				.order(OrderSpec.builder().value("order1").build())
 				.orderLine(OrderLineSpec.builder().value("ol11").product("prod1").order("order1").qtyOrdered(TEN).build())
@@ -101,8 +103,9 @@ public class ShipmentScheduleBL_generateTest
 	@Test
 	public void generate_emptyStock_availability()
 	{
-		final ProductSpec nonStockedProduct = ProductSpec.builder().value("prod1").stocked(false).build();
-		final TestSetupSpec spec = specOneScheduleAvailabilityWithoutStock(nonStockedProduct);
+		final UomSpec uom = UomSpec.builder().name("stockUom").build();
+		final ProductSpec nonStockedProduct = ProductSpec.builder().value("prod1").uomValue("stockUom").stocked(false).build();
+		final TestSetupSpec spec = specOneScheduleAvailabilityWithoutStock(uom, nonStockedProduct);
 
 		final ShipmentSchedulesDuringUpdate result1 = setupAndInvoke(spec);
 		assertOneResultWithQtyToDeliver(result1, TEN); // not stocked;
@@ -130,8 +133,9 @@ public class ShipmentScheduleBL_generateTest
 
 	private void generate_emptyStock_availability_nonitem_performTestWithProductType(final String productType)
 	{
-		final ProductSpec nonStockedProduct = ProductSpec.builder().value("prod1").stocked(false).productType(productType).build();
-		final TestSetupSpec spec = specOneScheduleAvailabilityWithoutStock(nonStockedProduct);
+		final UomSpec uom = UomSpec.builder().name("stockUom").build();
+		final ProductSpec nonStockedProduct = ProductSpec.builder().value("prod1").uomValue("stockUom").stocked(false).productType(productType).build();
+		final TestSetupSpec spec = specOneScheduleAvailabilityWithoutStock(uom, nonStockedProduct);
 
 		final ShipmentSchedulesDuringUpdate result1 = setupAndInvoke(spec);
 		assertOneResultWithQtyToDeliver(result1, TEN); // not stocked;
@@ -142,9 +146,12 @@ public class ShipmentScheduleBL_generateTest
 		assertOneResultWithQtyToDeliver(result2, TEN); // treated as not stocked, because it's not an item;
 	}
 
-	private TestSetupSpec specOneScheduleAvailabilityWithoutStock(final ProductSpec nonStockedProduct)
+	private TestSetupSpec specOneScheduleAvailabilityWithoutStock(
+			@NonNull final UomSpec uom,
+			@NonNull final ProductSpec nonStockedProduct)
 	{
 		return TestSetupSpec.builder()
+				.uom(uom)
 				.product(nonStockedProduct)
 				.order(OrderSpec.builder().value("order1").build())
 				.orderLine(OrderLineSpec.builder().value("ol11").product("prod1").order("order1").qtyOrdered(TEN).build())
@@ -155,9 +162,11 @@ public class ShipmentScheduleBL_generateTest
 	@Test
 	public void generate_partialStock_availability()
 	{
-		final ProductSpec nonStockedProduct = ProductSpec.builder().value("prod1").stocked(false).build();
+		final UomSpec uom = UomSpec.builder().name("stockUom").build();
+		final ProductSpec nonStockedProduct = ProductSpec.builder().value("prod1").uomValue("stockUom").stocked(false).build();
 
 		final TestSetupSpec spec = TestSetupSpec.builder()
+				.uom(uom)
 				.product(nonStockedProduct)
 				.stock(StockSpec.builder().product("prod1").qtyStock(ONE).build())
 				.stock(StockSpec.builder().product("prod1").qtyStock(THREE).build())

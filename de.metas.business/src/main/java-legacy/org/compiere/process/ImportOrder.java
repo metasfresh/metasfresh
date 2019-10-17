@@ -25,6 +25,10 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Tax;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MLocation;
@@ -35,8 +39,10 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.tax.api.ITaxDAO;
 import de.metas.util.Services;
 
 /**
@@ -47,6 +53,8 @@ import de.metas.util.Services;
  */
 public class ImportOrder extends JavaProcess
 {
+	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+	
 	/**	Client to be imported to		*/
 	private int				m_AD_Client_ID = 0;
 	/**	Organization to be imported to		*/
@@ -67,22 +75,34 @@ public class ImportOrder extends JavaProcess
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
-		for (int i = 0; i < para.length; i++)
+		for (ProcessInfoParameter element : para)
 		{
-			String name = para[i].getParameterName();
+			String name = element.getParameterName();
 			if (name.equals("AD_Client_ID"))
-				m_AD_Client_ID = ((BigDecimal)para[i].getParameter()).intValue();
+			{
+				m_AD_Client_ID = ((BigDecimal)element.getParameter()).intValue();
+			}
 			else if (name.equals("AD_Org_ID"))
-				m_AD_Org_ID = ((BigDecimal)para[i].getParameter()).intValue();
+			{
+				m_AD_Org_ID = ((BigDecimal)element.getParameter()).intValue();
+			}
 			else if (name.equals("DeleteOldImported"))
-				m_deleteOldImported = "Y".equals(para[i].getParameter());
+			{
+				m_deleteOldImported = "Y".equals(element.getParameter());
+			}
 			else if (name.equals("DocAction"))
-				m_docAction = (String)para[i].getParameter();
+			{
+				m_docAction = (String)element.getParameter();
+			}
 			else
+			{
 				log.error("Unknown Parameter: " + name);
+			}
 		}
 		if (m_DateValue == null)
+		{
 			m_DateValue = new Timestamp (System.currentTimeMillis());
+		}
 	}	//	prepare
 
 
@@ -131,7 +151,9 @@ public class ImportOrder extends JavaProcess
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
+		{
 			log.warn("Invalid Org=" + no);
+		}
 
 		//	Document Type - PO - SO
 		sql = new StringBuffer ("UPDATE I_Order o "	//	PO Document Type Name
@@ -159,7 +181,9 @@ public class ImportOrder extends JavaProcess
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
+		{
 			log.warn("Invalid DocTypeName=" + no);
+		}
 		//	DocType Default
 		sql = new StringBuffer ("UPDATE I_Order o "	//	Default PO
 			  + "SET C_DocType_ID=(SELECT MAX(C_DocType_ID) FROM C_DocType d WHERE d.IsDefault='Y'"
@@ -185,7 +209,9 @@ public class ImportOrder extends JavaProcess
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
+		{
 			log.warn("No DocType=" + no);
+		}
 
 		//	Set IsSOTrx
 		sql = new StringBuffer ("UPDATE I_Order o SET IsSOTrx='Y' "
@@ -233,7 +259,9 @@ public class ImportOrder extends JavaProcess
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
+		{
 			log.warn("No PriceList=" + no);
+		}
 
 		//	Payment Term
 		sql = new StringBuffer ("UPDATE I_Order o "
@@ -255,7 +283,9 @@ public class ImportOrder extends JavaProcess
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
+		{
 			log.warn("No PaymentTerm=" + no);
+		}
 
 		//	Warehouse
 		sql = new StringBuffer ("UPDATE I_Order o "
@@ -264,7 +294,9 @@ public class ImportOrder extends JavaProcess
 			  + "WHERE M_Warehouse_ID IS NULL AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());	//	Warehouse for Org
 		if (no != 0)
+		{
 			log.debug("Set Warehouse=" + no);
+		}
 		sql = new StringBuffer ("UPDATE I_Order o "
 			  + "SET M_Warehouse_ID=(SELECT M_Warehouse_ID FROM M_Warehouse w"
 			  + " WHERE o.AD_Client_ID=w.AD_Client_ID) "
@@ -273,7 +305,9 @@ public class ImportOrder extends JavaProcess
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
+		{
 			log.debug("Set Only Client Warehouse=" + no);
+		}
 		//
 		sql = new StringBuffer ("UPDATE I_Order "
 			  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Warehouse, ' "
@@ -281,7 +315,9 @@ public class ImportOrder extends JavaProcess
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
+		{
 			log.warn("No Warehouse=" + no);
+		}
 
 		//	BP from EMail
 		sql = new StringBuffer ("UPDATE I_Order o "
@@ -377,7 +413,9 @@ public class ImportOrder extends JavaProcess
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
+		{
 			log.warn("No BP Location=" + no);
+		}
 
 		//	Set Country
 		/**
@@ -403,7 +441,9 @@ public class ImportOrder extends JavaProcess
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
+		{
 			log.warn("Invalid Country=" + no);
+		}
 
 		//	Set Region
 		sql = new StringBuffer ("UPDATE I_Order o "
@@ -432,7 +472,9 @@ public class ImportOrder extends JavaProcess
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
+		{
 			log.warn("Invalid Region=" + no);
+		}
 
 		//	Product
 		sql = new StringBuffer ("UPDATE I_Order o "
@@ -462,7 +504,9 @@ public class ImportOrder extends JavaProcess
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
+		{
 			log.warn("Invalid Product=" + no);
+		}
 
 		//	Charge
 		sql = new StringBuffer ("UPDATE I_Order o "
@@ -477,16 +521,20 @@ public class ImportOrder extends JavaProcess
 				  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
+		 {
 			log.warn("Invalid Charge=" + no);
 		//
-		
+		}
+
 		sql = new StringBuffer ("UPDATE I_Order "
 				  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Product and Charge, ' "
 				  + "WHERE M_Product_ID IS NOT NULL AND C_Charge_ID IS NOT NULL "
 				  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
+		{
 			log.warn("Invalid Product and Charge exclusive=" + no);
+		}
 
 		//	Tax
 		sql = new StringBuffer ("UPDATE I_Order o "
@@ -502,10 +550,12 @@ public class ImportOrder extends JavaProcess
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
+		{
 			log.warn("Invalid Tax=" + no);
+		}
 
 		commitEx();
-		
+
 		//	-- New BPartner ---------------------------------------------------
 
 		//	Go through Order Records w/o C_BPartner_ID
@@ -521,50 +571,64 @@ public class ImportOrder extends JavaProcess
 				if (imp.getBPartnerValue () == null)
 				{
 					if (imp.getEMail () != null)
+					{
 						imp.setBPartnerValue (imp.getEMail ());
+					}
 					else if (imp.getName () != null)
+					{
 						imp.setBPartnerValue (imp.getName ());
+					}
 					else
+					{
 						continue;
+					}
 				}
 				if (imp.getName () == null)
 				{
 					if (imp.getContactName () != null)
+					{
 						imp.setName (imp.getContactName ());
+					}
 					else
+					{
 						imp.setName (imp.getBPartnerValue ());
+					}
 				}
 				//	BPartner
-				MBPartner bp = MBPartner.get (getCtx(), imp.getBPartnerValue());
+				I_C_BPartner bp = MBPartner.get (getCtx(), imp.getBPartnerValue());
 				if (bp == null)
 				{
-					bp = new MBPartner (getCtx (), -1, get_TrxName());
-					bp.setClientOrg (imp.getAD_Client_ID (), imp.getAD_Org_ID ());
-					bp.setValue (imp.getBPartnerValue ());
+					bp = MBPartner.newFromTemplate();
+					bp.setAD_Org_ID(imp.getAD_Org_ID());
+					bp.setValue (imp.getBPartnerValue());
 					bp.setName (imp.getName ());
-					if (!bp.save ())
-						continue;
+					bpartnersRepo.save(bp);
 				}
 				imp.setC_BPartner_ID (bp.getC_BPartner_ID ());
-				
+
 				//	BP Location
-				MBPartnerLocation bpl = null; 
-				MBPartnerLocation[] bpls = bp.getLocations(true);
-				for (int i = 0; bpl == null && i < bpls.length; i++)
+				I_C_BPartner_Location bpl = null;
+				List<I_C_BPartner_Location> bpls = bpartnersRepo.retrieveBPartnerLocations(bp);
+				for (int i = 0; bpl == null && i < bpls.size(); i++)
 				{
-					if (imp.getC_BPartner_Location_ID() == bpls[i].getC_BPartner_Location_ID())
-						bpl = bpls[i];
-					//	Same Location ID
-					else if (imp.getC_Location_ID() == bpls[i].getC_Location_ID())
-						bpl = bpls[i];
-					//	Same Location Info
+					if (imp.getC_BPartner_Location_ID() == bpls.get(i).getC_BPartner_Location_ID())
+					{
+						bpl = bpls.get(i);
+					}
+					else if (imp.getC_Location_ID() == bpls.get(i).getC_Location_ID())
+					{
+						bpl = bpls.get(i);
+					}
 					else if (imp.getC_Location_ID() == 0)
 					{
-						MLocation loc = bpl.getLocation(false);
-						if (loc.equals(imp.getC_Country_ID(), imp.getC_Region_ID(), 
-								imp.getPostal(), "", imp.getCity(), 
+						final I_C_Location loc = bpl.getC_Location();
+						if (MLocation.equals(loc,
+								imp.getC_Country_ID(), imp.getC_Region_ID(),
+								imp.getPostal(), "", imp.getCity(),
 								imp.getAddress1(), imp.getAddress2()))
-							bpl = bpls[i];
+						{
+							bpl = bpls.get(i);
+						}
 					}
 				}
 				if (bpl == null)
@@ -576,31 +640,34 @@ public class ImportOrder extends JavaProcess
 					loc.setCity (imp.getCity ());
 					loc.setPostal (imp.getPostal ());
 					if (imp.getC_Region_ID () != 0)
+					{
 						loc.setC_Region_ID (imp.getC_Region_ID ());
+					}
 					loc.setC_Country_ID (imp.getC_Country_ID ());
 					if (!loc.save ())
+					{
 						continue;
+					}
 					//
 					bpl = new MBPartnerLocation (bp);
 					bpl.setC_Location_ID (imp.getC_Location_ID ());
-					if (!bpl.save ())
-						continue;
+					bpartnersRepo.save(bpl);
 				}
 				imp.setC_Location_ID (bpl.getC_Location_ID ());
 				imp.setBillTo_ID (bpl.getC_BPartner_Location_ID ());
 				imp.setC_BPartner_Location_ID (bpl.getC_BPartner_Location_ID ());
-				
+
 				//	User/Contact
-				if (imp.getContactName () != null 
-					|| imp.getEMail () != null 
+				if (imp.getContactName () != null
+					|| imp.getEMail () != null
 					|| imp.getPhone () != null)
 				{
-					List<de.metas.adempiere.model.I_AD_User> users = bp.getContacts(true);
+					List<I_AD_User> users = bpartnersRepo.retrieveContacts(bp);
 					I_AD_User user = null;
 					for (int i = 0; user == null && i < users.size();  i++)
 					{
 						String name = users.get(i).getName();
-						if (name.equals(imp.getContactName()) 
+						if (name.equals(imp.getContactName())
 							|| name.equals(imp.getName()))
 						{
 							user = users.get(i);
@@ -611,9 +678,13 @@ public class ImportOrder extends JavaProcess
 					{
 						user = Services.get(IBPartnerBL.class).createDraftContact(bp);
 						if (imp.getContactName () == null)
+						{
 							user.setName (imp.getName ());
+						}
 						else
+						{
 							user.setName (imp.getContactName ());
+						}
 						user.setEMail (imp.getEMail ());
 						user.setPhone (imp.getPhone ());
 						InterfaceWrapperHelper.save(user);
@@ -635,10 +706,12 @@ public class ImportOrder extends JavaProcess
 			  + " AND I_IsImported<>'Y'").append (clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
+		{
 			log.warn("No BPartner=" + no);
+		}
 
 		commitEx();
-		
+
 		//	-- New Orders -----------------------------------------------------
 
 		int noInsert = 0;
@@ -665,11 +738,13 @@ public class ImportOrder extends JavaProcess
 				X_I_Order imp = new X_I_Order (getCtx (), rs, get_TrxName());
 				String cmpDocumentNo = imp.getDocumentNo();
 				if (cmpDocumentNo == null)
+				{
 					cmpDocumentNo = "";
+				}
 				//	New Order
-				if (oldC_BPartner_ID != imp.getC_BPartner_ID() 
+				if (oldC_BPartner_ID != imp.getC_BPartner_ID()
 					|| oldC_BPartner_Location_ID != imp.getC_BPartner_Location_ID()
-					|| oldBillTo_ID != imp.getBillTo_ID() 
+					|| oldBillTo_ID != imp.getBillTo_ID()
 					|| !oldDocumentNo.equals(cmpDocumentNo))
 				{
 					if (order != null)
@@ -686,33 +761,45 @@ public class ImportOrder extends JavaProcess
 					oldBillTo_ID = imp.getBillTo_ID();
 					oldDocumentNo = imp.getDocumentNo();
 					if (oldDocumentNo == null)
+					{
 						oldDocumentNo = "";
+					}
 					//
 					order = new MOrder (getCtx(), 0, get_TrxName());
 					order.setClientOrg (imp.getAD_Client_ID(), imp.getAD_Org_ID());
 					order.setC_DocTypeTarget_ID(imp.getC_DocType_ID());
 					order.setIsSOTrx(imp.isSOTrx());
 					if (imp.getDocumentNo() != null)
+					{
 						order.setDocumentNo(imp.getDocumentNo());
+					}
 					//	Ship Partner
 					order.setC_BPartner_ID(imp.getC_BPartner_ID());
 					order.setC_BPartner_Location_ID(imp.getC_BPartner_Location_ID());
 					if (imp.getAD_User_ID() != 0)
+					{
 						order.setAD_User_ID(imp.getAD_User_ID());
+					}
 					//	Bill Partner
 					order.setBill_BPartner_ID(imp.getC_BPartner_ID());
 					order.setBill_Location_ID(imp.getBillTo_ID());
 					//
 					if (imp.getDescription() != null)
+					{
 						order.setDescription(imp.getDescription());
+					}
 					order.setC_PaymentTerm_ID(imp.getC_PaymentTerm_ID());
 					order.setM_PriceList_ID(imp.getM_PriceList_ID());
 					order.setM_Warehouse_ID(imp.getM_Warehouse_ID());
 					if (imp.getM_Shipper_ID() != 0)
+					{
 						order.setM_Shipper_ID(imp.getM_Shipper_ID());
+					}
 					//	SalesRep from Import or the person running the import
 					if (imp.getSalesRep_ID() != 0)
+					{
 						order.setSalesRep_ID(imp.getSalesRep_ID());
+					}
 					// Default Sales Rep
 					// NOTE: we shall not set the SalesRep from context if is not set.
 					// This is not a mandatory field, so leave it like it is.
@@ -720,18 +807,30 @@ public class ImportOrder extends JavaProcess
 					// order.setSalesRep_ID(getAD_User_ID());
 					//
 					if (imp.getAD_OrgTrx_ID() != 0)
+					{
 						order.setAD_OrgTrx_ID(imp.getAD_OrgTrx_ID());
+					}
 					if (imp.getC_Activity_ID() != 0)
+					{
 						order.setC_Activity_ID(imp.getC_Activity_ID());
+					}
 					if (imp.getC_Campaign_ID() != 0)
+					{
 						order.setC_Campaign_ID(imp.getC_Campaign_ID());
+					}
 					if (imp.getC_Project_ID() != 0)
+					{
 						order.setC_Project_ID(imp.getC_Project_ID());
+					}
 					//
 					if (imp.getDateOrdered() != null)
+					{
 						order.setDateOrdered(imp.getDateOrdered());
+					}
 					if (imp.getDateAcct() != null)
+					{
 						order.setDateAcct(imp.getDateAcct());
+					}
 					//
 					order.save();
 					noInsert++;
@@ -743,28 +842,41 @@ public class ImportOrder extends JavaProcess
 				line.setLine(lineNo);
 				lineNo += 10;
 				if (imp.getM_Product_ID() != 0)
+				{
 					line.setM_Product_ID(imp.getM_Product_ID(), true);
+				}
 				if (imp.getC_Charge_ID() != 0)
+				{
 					line.setC_Charge_ID(imp.getC_Charge_ID());
+				}
 				line.setQty(imp.getQtyOrdered());
 				line.setPrice();
 				if (imp.getPriceActual().compareTo(Env.ZERO) != 0)
+				{
 					line.setPrice(imp.getPriceActual());
+				}
 				if (imp.getC_Tax_ID() != 0)
+				{
 					line.setC_Tax_ID(imp.getC_Tax_ID());
+				}
 				else
 				{
 					line.setTax();
 					imp.setC_Tax_ID(line.getC_Tax_ID());
 				}
-				
+
 				// 05129
-				line.setC_TaxCategory_ID(line.getC_Tax().getC_TaxCategory_ID());
-				
+				final I_C_Tax tax = Services.get(ITaxDAO.class).getTaxById(line.getC_Tax_ID());
+				line.setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
+
 				if (imp.getFreightAmt() != null)
+				{
 					line.setFreightAmt(imp.getFreightAmt());
+				}
 				if (imp.getLineDescription() != null)
+				{
 					line.setDescription(imp.getLineDescription());
+				}
 				// metas: handle the case that line can't be saved
 				if (!line.save()) {
 					continue;
@@ -778,7 +890,7 @@ public class ImportOrder extends JavaProcess
 					noInsertLine++;
 					commitEx(); // metas
 				}
-				
+
 			}
 			if (order != null)
 			{

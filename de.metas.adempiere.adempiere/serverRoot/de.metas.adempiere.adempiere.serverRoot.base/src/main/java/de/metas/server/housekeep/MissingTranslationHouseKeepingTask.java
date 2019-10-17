@@ -1,6 +1,7 @@
 package de.metas.server.housekeep;
 
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
+import org.springframework.stereotype.Component;
 
 import de.metas.i18n.ILanguageDAO;
 import de.metas.util.Services;
@@ -27,6 +28,7 @@ import de.metas.util.Services;
  * #L%
  */
 
+@Component
 public class MissingTranslationHouseKeepingTask implements IStartupHouseKeepingTask
 {
 

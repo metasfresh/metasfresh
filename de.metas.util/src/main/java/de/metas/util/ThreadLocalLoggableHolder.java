@@ -30,7 +30,7 @@ import org.adempiere.util.lang.IAutoCloseable;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class ThreadLocalLoggableHolder
+final class ThreadLocalLoggableHolder
 {
 	/**
 	 * Temporary set the current thread level loggable to given one.
@@ -69,7 +69,7 @@ public final class ThreadLocalLoggableHolder
 	 */
 	/* package */ ILoggable getLoggable()
 	{
-		return getLoggableOr(Loggables.getNullLoggable());
+		return getLoggableOr(Loggables.nop());
 	}
 
 	/** @return current thread's {@link ILoggable} instance or <code>defaultLoggable</code> if there was no thread level {@link ILoggable} */

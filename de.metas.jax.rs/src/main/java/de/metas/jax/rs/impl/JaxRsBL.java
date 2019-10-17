@@ -274,7 +274,7 @@ public class JaxRsBL implements IJaxRsBL
 							? X_AD_JAXRS_Endpoint.ENDPOINTTYPE_Client
 							: X_AD_JAXRS_Endpoint.ENDPOINTTYPE_Server);
 					InterfaceWrapperHelper.save(newEp);
-					Loggables.get().addLog(
+					Loggables.addLog(
 							"Created new AD_JAXRS_Endpoint record {} for AD_JavaClass {} (class {})",
 							newEp, epClass, epClass.getClassname());
 				}
@@ -283,7 +283,7 @@ public class JaxRsBL implements IJaxRsBL
 					// activate
 					existingEp.setIsActive(true);
 					InterfaceWrapperHelper.save(existingEp);
-					Loggables.get().addLog(
+					Loggables.addLog(
 							"Reactived AD_JAXRS_Endpoint record {} for AD_JavaClass {} (class {})",
 							existingEp, epClass, epClass.getClassname());
 				}
@@ -294,7 +294,7 @@ public class JaxRsBL implements IJaxRsBL
 				{
 					existingEp.setIsActive(false);
 					InterfaceWrapperHelper.save(existingEp);
-					Loggables.get().addLog(
+					Loggables.addLog(
 							"Deactived AD_JAXRS_Endpoint record {} for inactive AD_JavaClass {} (class {})",
 							existingEp, epClass, epClass.getClassname());
 				}
@@ -306,7 +306,7 @@ public class JaxRsBL implements IJaxRsBL
 			// deactivate the stale ones
 			staleEp.setIsActive(false);
 			InterfaceWrapperHelper.save(staleEp);
-			Loggables.get().addLog(
+			Loggables.addLog(
 					"Deactived AD_JAXRS_Endpoint record {}",
 					staleEp);
 		}

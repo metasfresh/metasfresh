@@ -31,16 +31,14 @@ public abstract class AbstractScriptFactory implements IScriptFactory
 {
 	protected final IScript createScript(final String projectName, final IFileRef fileRef)
 	{
-		final String moduleName = null; // not used
-
 		final LocalScript script;
 		if (fileRef.isVirtual())
 		{
-			script = new LocalScript(projectName, moduleName, fileRef.getFileName(), fileRef.getInputStream());
+			script = new LocalScript(projectName, fileRef.getFileName(), fileRef.getInputStream());
 		}
 		else
 		{
-			script = new LocalScript(projectName, moduleName, fileRef.getFile());
+			script = new LocalScript(projectName, fileRef.getFile());
 		}
 
 		return script;

@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.acct.model;
 
@@ -30,7 +14,7 @@ public class X_C_VAT_Code extends org.compiere.model.PO implements I_C_VAT_Code,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1858532940L;
+	private static final long serialVersionUID = 390507226L;
 
     /** Standard Constructor */
     public X_C_VAT_Code (Properties ctx, int C_VAT_Code_ID, String trxName)
@@ -62,7 +46,7 @@ public class X_C_VAT_Code extends org.compiere.model.PO implements I_C_VAT_Code,
     }
 
 	@Override
-	public org.compiere.model.I_C_AcctSchema getC_AcctSchema() throws RuntimeException
+	public org.compiere.model.I_C_AcctSchema getC_AcctSchema()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
 	}
@@ -96,18 +80,6 @@ public class X_C_VAT_Code extends org.compiere.model.PO implements I_C_VAT_Code,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Tax getC_Tax() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Tax_ID, org.compiere.model.I_C_Tax.class);
-	}
-
-	@Override
-	public void setC_Tax(org.compiere.model.I_C_Tax C_Tax)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Tax_ID, org.compiere.model.I_C_Tax.class, C_Tax);
 	}
 
 	/** Set Steuer.

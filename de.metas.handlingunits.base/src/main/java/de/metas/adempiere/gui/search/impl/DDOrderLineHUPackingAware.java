@@ -13,30 +13,24 @@ package de.metas.adempiere.gui.search.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Properties;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.handlingunits.model.I_DD_OrderLine;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -69,12 +63,6 @@ public class DDOrderLineHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public I_M_Product getM_Product()
-	{
-		return ddOrderLine.getM_Product();
-	}
-
-	@Override
 	public void setM_Product_ID(final int productId)
 	{
 		ddOrderLine.setM_Product_ID(productId);
@@ -87,9 +75,9 @@ public class DDOrderLineHUPackingAware implements IHUPackingAware
 	{
 		ddOrderLine.setQtyEntered(qty);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(ddOrderLine);
 		final ProductId productId = ProductId.ofRepoIdOrNull(getM_Product_ID());
-		final BigDecimal qtyOrdered = Services.get(IUOMConversionBL.class).convertToProductUOM(ctx, productId, getC_UOM(), qty);
+		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(getC_UOM_ID());
+		final BigDecimal qtyOrdered = Services.get(IUOMConversionBL.class).convertToProductUOM(productId, uom, qty);
 		ddOrderLine.setQtyOrdered(qtyOrdered);
 
 		values.setQty(qty);
@@ -102,17 +90,17 @@ public class DDOrderLineHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
+	public int getM_HU_PI_Item_Product_ID()
 	{
-		return ddOrderLine.getM_HU_PI_Item_Product();
+		return ddOrderLine.getM_HU_PI_Item_Product_ID();
 	}
 
 	@Override
-	public void setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product huPiItemProduct)
+	public void setM_HU_PI_Item_Product_ID(final int huPiItemProductId)
 	{
-		ddOrderLine.setM_HU_PI_Item_Product(huPiItemProduct);
+		ddOrderLine.setM_HU_PI_Item_Product_ID(huPiItemProductId);
 
-		values.setM_HU_PI_Item_Product(huPiItemProduct);
+		values.setM_HU_PI_Item_Product_ID(huPiItemProductId);
 	}
 
 	@Override
@@ -130,21 +118,21 @@ public class DDOrderLineHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public I_C_UOM getC_UOM()
+	public int getC_UOM_ID()
 	{
-		return ddOrderLine.getC_UOM();
+		return ddOrderLine.getC_UOM_ID();
 	}
 
 	@Override
-	public void setC_UOM(final I_C_UOM uom)
+	public void setC_UOM_ID(final int uomId)
 	{
-		values.setC_UOM(uom);
+		values.setC_UOM_ID(uomId);
 
 		// NOTE: uom is mandatory
 		// we assume orderLine's UOM is correct
-		if (uom != null)
+		if (uomId > 0)
 		{
-			ddOrderLine.setC_UOM(uom);
+			ddOrderLine.setC_UOM_ID(uomId);
 		}
 	}
 
@@ -162,25 +150,6 @@ public class DDOrderLineHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public void setDateOrdered(final Timestamp dateOrdered)
-	{
-		ddOrderLine.setDateOrdered(dateOrdered);
-		values.setDateOrdered(dateOrdered);
-	}
-
-	@Override
-	public Timestamp getDateOrdered()
-	{
-		return ddOrderLine.getDateOrdered();
-	}
-
-	@Override
-	public int getM_HU_PI_Item_Product_ID()
-	{
-		return ddOrderLine.getM_HU_PI_Item_Product_ID();
-	}
-
-	@Override
 	public boolean isInDispute()
 	{
 		// order line has no IsInDispute flag
@@ -194,14 +163,14 @@ public class DDOrderLineHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public void setC_BPartner(final I_C_BPartner partner)
+	public void setC_BPartner_ID(final int partnerId)
 	{
 		// nothing
 	}
 
 	@Override
-	public I_C_BPartner getC_BPartner()
+	public int getC_BPartner_ID()
 	{
-		return ddOrderLine.getDD_Order().getC_BPartner();
+		return ddOrderLine.getDD_Order().getC_BPartner_ID();
 	}
 }

@@ -5,10 +5,10 @@ import java.util.Map;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.text.MapFormat;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.StringUtils;
 
 /*
  * #%L
@@ -67,11 +67,11 @@ public abstract class EventMessageFormatTemplate extends MapFormat
 				return "?";
 			}
 		}
-		
+
 		// Default/fallback
 		return super.formatObject(obj);
 	}
-	
+
 	private static final ITableRecordReference extractTableRecordReferenceOrNull(final Object obj)
 	{
 		if(obj == null)
@@ -105,7 +105,7 @@ public abstract class EventMessageFormatTemplate extends MapFormat
 			return "";
 		}
 
-		return Util.maskHTML(text);
+		return StringUtils.maskHTML(text);
 	}
 
 }

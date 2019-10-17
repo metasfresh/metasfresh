@@ -1,5 +1,7 @@
 package de.metas.handlingunits.pporder.api;
 
+import java.time.LocalDate;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -23,7 +25,6 @@ package de.metas.handlingunits.pporder.api;
  */
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -33,6 +34,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.material.planning.pporder.PPOrderId;
 
 /**
  * Issues given HUs to configured Order BOM Lines.
@@ -44,45 +46,41 @@ public interface IHUPPOrderIssueProducer
 {
 	/**
 	 * Issue given <code>HUs</code> to configured {@link I_PP_Order_BOMLine}s.
+	 * 
+	 * If order's planning status is {@link PPOrderPlanningStatus#COMPLETE}
+	 * then the candidates will be processed (so cost collectors will be generated).
 	 *
 	 * @param hus
-	 * @return generated manufacturing order issue cost collectors
+	 * @return generated candidates
 	 */
-	List<I_PP_Order_Qty> createDraftIssues(Collection<I_M_HU> hus);
+	List<I_PP_Order_Qty> createIssues(Collection<I_M_HU> hus);
 
 	/**
-	 * Convenient way of calling {@link #createDraftIssues(Collection)}.
-	 *
-	 * @param hu
-	 * @return generated manufacturing order issue cost collectors
+	 * Convenient way of calling {@link #createIssues(Collection)}.
 	 */
-	default List<I_PP_Order_Qty> createDraftIssue(final I_M_HU hu)
+	default List<I_PP_Order_Qty> createIssue(final I_M_HU hu)
 	{
-		return createDraftIssues(ImmutableSet.of(hu));
+		return createIssues(ImmutableSet.of(hu));
 	}
 
 	void reverseDraftIssue(final I_PP_Order_Qty candidate);
 
+	IHUPPOrderIssueProducer setOrderId(PPOrderId ppOrderId);
+
+	
 	/**
 	 * Sets movement date to be used in generated underlying {@link I_PP_Cost_Collector}s.
 	 *
 	 * @param movementDate may be {@code null} in which case, the current time is used.
 	 */
-	IHUPPOrderIssueProducer setMovementDate(final Date movementDate);
+	IHUPPOrderIssueProducer setMovementDate(final LocalDate movementDate);
 
 	/**
 	 * Sets manufacturing order BOM Lines which needs to be considered when issuing.
 	 *
-	 * @param targetOrderBOMLines may not be {@code null} and need to contain lines that match the products of the HUs we give as parameters to {@link #createDraftIssues(Collection)}.
+	 * @param targetOrderBOMLines may not be {@code null} and need to contain lines that match the products of the HUs we give as parameters to {@link #createIssues(Collection)}.
 	 */
 	IHUPPOrderIssueProducer setTargetOrderBOMLines(final List<I_PP_Order_BOMLine> targetOrderBOMLines);
-
-	/**
-	 * Sets all issue BOM lines of given manufacturing order, when issuing.
-	 *
-	 * @param ppOrder
-	 */
-	IHUPPOrderIssueProducer setTargetOrderBOMLinesByPPOrderId(int ppOrderId);
 
 	/**
 	 * Convenient way of calling {@link #setTargetOrderBOMLines(List)} with one bom line.
@@ -90,4 +88,6 @@ public interface IHUPPOrderIssueProducer
 	 * @param targetOrderBOMLine
 	 */
 	IHUPPOrderIssueProducer setTargetOrderBOMLine(I_PP_Order_BOMLine targetOrderBOMLine);
+	
+	IHUPPOrderIssueProducer considerIssueMethodForQtyToIssueCalculation(boolean considerIssueMethodForQtyToIssueCalculation);
 }

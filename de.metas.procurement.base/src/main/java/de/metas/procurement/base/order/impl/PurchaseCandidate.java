@@ -3,11 +3,8 @@ package de.metas.procurement.base.order.impl;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 
@@ -44,7 +41,7 @@ import de.metas.util.Services;
 
 public final class PurchaseCandidate
 {
-	public static final PurchaseCandidate of(final I_PMM_PurchaseCandidate candidateModel)
+	public static PurchaseCandidate of(final I_PMM_PurchaseCandidate candidateModel)
 	{
 		return new PurchaseCandidate(candidateModel);
 	}
@@ -67,12 +64,7 @@ public final class PurchaseCandidate
 		return model.getM_Warehouse_ID();
 	}
 
-	public I_C_BPartner getC_BPartner()
-	{
-		return model.getC_BPartner();
-	}
-
-	private int getC_BPartner_ID()
+	public int getC_BPartner_ID()
 	{
 		return model.getC_BPartner_ID();
 	}
@@ -103,32 +95,17 @@ public final class PurchaseCandidate
 		return MoreObjects.firstNonNull(price, BigDecimal.ZERO);
 	}
 
-	public I_M_Product getM_Product()
-	{
-		return model.getM_Product();
-	}
-
-	private final int getM_Product_ID()
+	public int getM_Product_ID()
 	{
 		return model.getM_Product_ID();
 	}
 
-	public I_M_AttributeSetInstance getM_AttributeSetInstance()
+	public AttributeSetInstanceId getAttributeSetInstanceId()
 	{
-		return model.getM_AttributeSetInstance();
+		return AttributeSetInstanceId.ofRepoIdOrNone(model.getM_AttributeSetInstance_ID());
 	}
 
-	public int getM_AttributeSetInstance_ID()
-	{
-		return model.getM_AttributeSetInstance_ID() > 0 ? model.getM_AttributeSetInstance_ID() : 0;
-	}
-
-	public I_C_UOM getC_UOM()
-	{
-		return model.getC_UOM();
-	}
-
-	private int getC_UOM_ID()
+	public int getC_UOM_ID()
 	{
 		return model.getC_UOM_ID();
 	}
@@ -163,7 +140,7 @@ public final class PurchaseCandidate
 		return TimeUtil.trunc(model.getDatePromised(), TimeUtil.TRUNC_DAY);
 	}
 
-	public final Object getHeaderAggregationKey()
+	public Object getHeaderAggregationKey()
 	{
 		// the pricelist is no aggregation criterion, because
 		// the orderline's price is manually set, i.e. the pricing system is not invoked
@@ -183,11 +160,11 @@ public final class PurchaseCandidate
 	 * 
 	 * @return
 	 */
-	public final Object getLineAggregationKey()
+	public Object getLineAggregationKey()
 	{
 		return Util.mkKey(
 				getM_Product_ID(),
-				getM_AttributeSetInstance_ID(),
+				getAttributeSetInstanceId().getRepoId(),
 				getC_UOM_ID(),
 				getM_HU_PI_Item_Product_ID(),
 				getPrice());

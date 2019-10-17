@@ -77,91 +77,91 @@
 			<textField>
 				<reportElement uuid="d83013db-3843-4165-a17b-77f36fc61558" x="37" y="0" width="76" height="13"/>
 				<textElement markup="none">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{month}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="113" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month1}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="147" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month2}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="181" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month3}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="215" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month4}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="249" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month5}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="283" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month6}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="317" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month7}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="351" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month8}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="385" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month9}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="419" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month10}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="453" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month11}]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM/yy">
 				<reportElement uuid="cb558087-ced6-4a2b-9c87-6d7765cf843e" x="487" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{month12}]]></textFieldExpression>
 			</textField>
@@ -365,7 +365,7 @@
 			<textField isStretchWithOverflow="true">
 				<reportElement uuid="db1227d4-e834-4c10-9987-d542e378299d" x="37" y="77" width="133" height="26"/>
 				<textElement markup="none">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{note}]]></textFieldExpression>
 			</textField>
@@ -379,7 +379,7 @@
 			<textField pattern="MM/yy">
 				<reportElement uuid="9817b1d0-9e46-4320-bf96-6306d6615895" x="522" y="0" width="35" height="13"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{total}]]></textFieldExpression>
 			</textField>

@@ -1,11 +1,12 @@
 package de.metas.handlingunits;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -36,7 +37,18 @@ public class HUPIItemProductId implements RepoIdAware
 	@JsonCreator
 	public static HUPIItemProductId ofRepoId(final int repoId)
 	{
-		return new HUPIItemProductId(repoId);
+		if (repoId == VIRTUAL_HU.repoId)
+		{
+			return VIRTUAL_HU;
+		}
+		else if (repoId == TEMPLATE_HU.repoId)
+		{
+			return TEMPLATE_HU;
+		}
+		else
+		{
+			return new HUPIItemProductId(repoId);
+		}
 	}
 
 	public static HUPIItemProductId ofRepoIdOrNull(final int repoId)
@@ -48,6 +60,9 @@ public class HUPIItemProductId implements RepoIdAware
 	{
 		return id != null ? id.getRepoId() : -1;
 	}
+
+	public static final HUPIItemProductId TEMPLATE_HU = new HUPIItemProductId(100);
+	public static final HUPIItemProductId VIRTUAL_HU = new HUPIItemProductId(101);
 
 	int repoId;
 
@@ -62,4 +77,20 @@ public class HUPIItemProductId implements RepoIdAware
 	{
 		return repoId;
 	}
+
+	public static boolean equals(final HUPIItemProductId id1, final HUPIItemProductId id2)
+	{
+		return Objects.equals(id1, id2);
+	}
+
+	public boolean isVirtualHU()
+	{
+		return isVirtualHU(repoId);
+	}
+
+	public static boolean isVirtualHU(final int repoId)
+	{
+		return repoId == VIRTUAL_HU.repoId;
+	}
+
 }

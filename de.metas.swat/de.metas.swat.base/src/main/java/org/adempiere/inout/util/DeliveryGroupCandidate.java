@@ -54,7 +54,7 @@ public class DeliveryGroupCandidate
 	 * A more generic replacement for orderId..needed at least for deliveryRule complete-order
 	 */
 	@NonNull
-	private final Integer groupId;
+	private final DeliveryGroupCandidateGroupId groupId;
 
 	@NonNull
 	private final String bPartnerAddress;
@@ -76,17 +76,17 @@ public class DeliveryGroupCandidate
 		lines.add(line);
 		return line;
 	}
-	
+
 	public boolean hasLines()
 	{
 		return !lines.isEmpty();
 	}
-	
+
 	public Iterable<DeliveryLineCandidate> getLines()
 	{
 		return lines;
 	}
-	
+
 	public void removeLine(@NonNull final DeliveryLineCandidate line)
 	{
 		lines.remove(line);

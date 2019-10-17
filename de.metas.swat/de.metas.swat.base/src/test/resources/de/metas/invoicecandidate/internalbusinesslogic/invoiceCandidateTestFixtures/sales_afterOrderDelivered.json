@@ -1,0 +1,69 @@
+{
+  "id" : 10,
+  "soTrx" : "SALES",
+  "productId" : 300000,
+  "uomId" : 110000,
+  "orderedData" : {
+    "qty" : {
+      "qty" : "60",
+      "uomId" : 110000
+    },
+    "qtyInStockUom" : {
+      "qty" : "15",
+      "uomId" : 100000
+    }
+  },
+  "deliveredData" : {
+    "shipmentData" : {
+      "productId" : 300000,
+      "qtyInStockUom" : {
+        "qty" : "10",
+        "uomId" : 100000
+      },
+      "qtyNominal" : {
+        "qty" : "40",
+        "uomId" : 110000
+      },
+      "qtyCatch" : {
+        "qty" : "43",
+        "uomId" : 110000
+      },
+      "shippedQtyItems" : [ {
+        "qtyInStockUom" : {
+          "qty" : "10",
+          "uomId" : 100000
+        },
+        "qtyNominal" : {
+          "qty" : "40",
+          "uomId" : 110000
+        },
+        "qtyCatch" : {
+          "qty" : "43",
+          "uomId" : 110000
+        },
+        "qtyOverride" : null
+      } ]
+    }
+  },
+  "invoicedData" : {
+    "qtys" : {
+      "productId" : 300000,
+      "stockQty" : {
+        "qty" : "0",
+        "uomId" : 100000
+      },
+      "uomQty" : {
+        "qty" : "0",
+        "uomId" : 110000
+      }
+    },
+    "netAmount" : {
+      "value" : 0,
+      "currencyId" : 200000
+    }
+  },
+  "invoicableQtyBasedOn" : "CatchWeight",
+  "invoiceRule" : "AfterOrderDelivered",
+  "qualityDiscountOverride" : null,
+  "qtyToInvoiceOverrideInStockUom" : null
+}

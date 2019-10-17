@@ -29,10 +29,13 @@ import java.util.function.Consumer;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.OrgId;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Forecast;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
@@ -45,9 +48,11 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -98,7 +103,12 @@ public class HUOrderBL implements IHUOrderBL
 			if (isProductChanged(olPO, columnName) || isBPartnerChanged(olPO, columnName))
 			{
 				final boolean allowInfiniteCapacity = true;
-				pip = hupiItemProductDAO.retrieveMaterialItemProduct(productId, olPO.getC_BPartner(), olPO.getDateOrdered(), huUnitType, allowInfiniteCapacity);
+				pip = hupiItemProductDAO.retrieveMaterialItemProduct(
+						productId, 
+						extractBPartnerOrNull(olPO), 
+						olPO.getDateOrdered(), 
+						huUnitType, 
+						allowInfiniteCapacity);
 			}
 			// use the existing pip
 			else if (ol.getM_HU_PI_Item_Product_ID() > 0 && (isQtyChanged(olPO, columnName) || isM_HU_PI_Item_ProductChanged(olPO, columnName)))
@@ -140,7 +150,8 @@ public class HUOrderBL implements IHUOrderBL
 			BigDecimal qtyCap = BigDecimal.ZERO;
 			if (!Services.get(IHUCapacityBL.class).isInfiniteCapacity(pip))
 			{
-				qtyCap = Services.get(IHUCapacityBL.class).getCapacity(pip, productId, pip.getC_UOM()).getCapacityQty();
+				final I_C_UOM uom = IHUPIItemProductBL.extractUOMOrNull(pip);
+				qtyCap = Services.get(IHUCapacityBL.class).getCapacity(pip, productId, uom).toBigDecimal();
 				Check.assume(qtyCap.signum() != 0, "Zero capacity for M_HU_PI_Item_Product {}", pip.getM_HU_PI_Item_Product_ID());
 			}
 			final String description = pip.getDescription();
@@ -157,10 +168,20 @@ public class HUOrderBL implements IHUOrderBL
 			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
 					.orderLine(ol)
 					.resultUOM(ResultUOM.PRICE_UOM_IF_ORDERLINE_IS_NEW)
+
+					// since the price and thus netAmt might have changed, we also need to revalidate the discounts
 					.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(false)
 					.updateLineNetAmt(true)
 					.build());
 		}
+	}
+	
+	private I_C_BPartner extractBPartnerOrNull(@NonNull final I_C_OrderLine orderLine)
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(orderLine.getC_BPartner_ID());
+		return bpartnerId != null
+				? Services.get(IBPartnerDAO.class).getById(bpartnerId, I_C_BPartner.class)
+				: null;
 	}
 
 	private I_M_HU_PI_Item_Product getOrderLinePIIPForNewOrderLine(
@@ -241,7 +262,7 @@ public class HUOrderBL implements IHUOrderBL
 			{
 				newPIIP = hupiItemProductDAO.retrieveMaterialItemProduct(
 						ProductId.ofRepoId(ol.getM_Product_ID()),
-						ol.getC_BPartner(),
+						extractBPartnerOrNull(ol),
 						ol.getDateOrdered(),
 						huUnitType,
 						allowInfiniteCapacity,
@@ -268,7 +289,7 @@ public class HUOrderBL implements IHUOrderBL
 		{
 			newPIIP = hupiItemProductDAO.retrieveMaterialItemProduct(
 					ProductId.ofRepoIdOrNull(ol.getM_Product_ID()),
-					ol.getC_BPartner(),
+					extractBPartnerOrNull(ol),
 					ol.getDateOrdered(),
 					huUnitType,
 					allowInfiniteCapacity);
@@ -464,7 +485,8 @@ public class HUOrderBL implements IHUOrderBL
 
 		Check.assumeNotNull(order, "Order cannot be null");
 
-		if (order.getC_BPartner() == null || order.getDateOrdered() == null)
+		final I_C_BPartner bpartner = Services.get(IOrderBL.class).getBPartnerOrNull(order);
+		if (bpartner == null || order.getDateOrdered() == null)
 		{
 			// in case order's C_BPartner_ID or DateOrdered are null
 			// (i.e. when we just hit New to create a new order), there is no point to search for M_HU_PI_Item_Product record.
@@ -496,7 +518,7 @@ public class HUOrderBL implements IHUOrderBL
 
 		//
 		// Try fetching best matching PIP
-		final I_M_HU_PI_Item_Product pip = hupiItemProductDAO.retrieveMaterialItemProduct(productId, order.getC_BPartner(), order.getDateOrdered(),
+		final I_M_HU_PI_Item_Product pip = hupiItemProductDAO.retrieveMaterialItemProduct(productId, bpartner, order.getDateOrdered(),
 				X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit,
 				true); // allowInfiniteCapacity = true
 

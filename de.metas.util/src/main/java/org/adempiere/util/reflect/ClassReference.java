@@ -5,6 +5,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.base.MoreObjects;
 
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.util
@@ -36,23 +39,34 @@ import com.google.common.base.MoreObjects;
  *
  * @param <T>
  */
+@EqualsAndHashCode(of = "classname")
 public final class ClassReference<T>
 {
-	public static final <T> ClassReference<T> of(final Class<T> clazz)
+	public static final <T> ClassReference<T> of(@NonNull final Class<T> clazz)
 	{
 		return new ClassReference<>(clazz);
+	}
+
+	public static final <T> ClassReference<T> ofClassname(@NonNull final String classname)
+	{
+		try
+		{
+			final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+			@SuppressWarnings("unchecked")
+			final Class<T> clazz = (Class<T>)classLoader.loadClass(classname);
+			return new ClassReference<>(clazz);
+		}
+		catch (final Exception ex)
+		{
+			throw new IllegalArgumentException("Cannot load " + classname, ex);
+		}
 	}
 
 	private final String classname;
 	private final transient AtomicReference<WeakReference<Class<T>>> clazzRef;
 
-	private ClassReference(final Class<T> clazz)
+	private ClassReference(@NonNull final Class<T> clazz)
 	{
-		if (clazz == null)
-		{
-			throw new NullPointerException("clazz is null");
-		}
-
 		this.classname = clazz.getName();
 		this.clazzRef = new AtomicReference<>(new WeakReference<>(clazz));
 	}

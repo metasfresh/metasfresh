@@ -76,7 +76,7 @@ WHERE
 			<staticText>
 				<reportElement uuid="647c19f3-05cf-427c-ad2c-a1c01becc0b0" key="textField-1" x="321" y="4" width="240" height="19"/>
 				<textElement markup="none">
-					<font size="14" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="14" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Steuererklärung]]></text>
 			</staticText>

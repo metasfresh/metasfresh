@@ -65,7 +65,7 @@ public class OrderTest
 
 		final I_C_Order order = createOrder(partner1);
 
-		order.setC_DocTypeTarget(docType1);
+		order.setC_DocTypeTarget_ID(docType1.getC_DocType_ID());
 		save(order);
 
 		assertTrue(descriptionDocType1.equals(order.getDescription()));
@@ -117,7 +117,7 @@ public class OrderTest
 	private I_C_Order createOrder(final I_C_BPartner partner)
 	{
 		final I_C_Order order = newInstance(I_C_Order.class);
-		order.setC_BPartner(partner);
+		order.setC_BPartner_ID(partner.getC_BPartner_ID());
 
 		save(order);
 

@@ -13,12 +13,12 @@ import java.util.Properties;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,7 +34,6 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.MProduct;
 import org.compiere.model.MStorage;
 import org.compiere.model.MUOM;
-import org.compiere.model.MUOMConversion;
 import org.compiere.util.Env;
 import org.eevolution.api.IDDOrderLineBL;
 import org.eevolution.model.I_DD_OrderLine;
@@ -44,6 +43,8 @@ import org.slf4j.Logger;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.uom.LegacyUOMConversionUtils;
 import de.metas.util.Services;
 
 @Callout(I_DD_OrderLine.class)
@@ -55,10 +56,10 @@ public class DD_OrderLine
 
 	/**
 	 * Calls {@link IDDOrderLineBL#setUOMInDDOrderLine(I_DD_OrderLine)}.
-	 * 
+	 *
 	 * @param ddOrderLine
 	 * @param field
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/08583_Erfassung_Packvorschrift_in_DD_Order_ist_crap_%28108882381939%29
 	 *       ("UOM In manual DD_OrderLine shall always be the uom of the product ( as talked with Mark) ")
 	 */
@@ -110,7 +111,7 @@ public class DD_OrderLine
 				ddOrderLine.setQtyEntered(QtyEntered);
 			}
 
-			QtyOrdered = MUOMConversion.convertToProductUOM(ctx, M_Product_ID, C_UOM_To_ID, QtyEntered);
+			QtyOrdered = LegacyUOMConversionUtils.convertToProductUOM(ctx, M_Product_ID, C_UOM_To_ID, QtyEntered);
 			if (QtyOrdered == null)
 				QtyOrdered = QtyEntered;
 			final boolean conversion = QtyEntered.compareTo(QtyOrdered) != 0;
@@ -129,7 +130,7 @@ public class DD_OrderLine
 				QtyEntered = QtyEntered1;
 				ddOrderLine.setQtyEntered(QtyEntered);
 			}
-			QtyOrdered = MUOMConversion.convertToProductUOM(ctx, M_Product_ID, C_UOM_To_ID, QtyEntered);
+			QtyOrdered = LegacyUOMConversionUtils.convertToProductUOM(ctx, M_Product_ID, C_UOM_To_ID, QtyEntered);
 			if (QtyOrdered == null)
 				QtyOrdered = QtyEntered;
 			boolean conversion = QtyEntered.compareTo(QtyOrdered) != 0;
@@ -150,7 +151,7 @@ public class DD_OrderLine
 				QtyOrdered = QtyOrdered1;
 				ddOrderLine.setQtyOrdered(QtyOrdered);
 			}
-			QtyEntered = MUOMConversion.convertFromProductUOM(ctx, M_Product_ID, C_UOM_To_ID, QtyOrdered);
+			QtyEntered = LegacyUOMConversionUtils.convertFromProductUOM(ctx, M_Product_ID, C_UOM_To_ID, QtyOrdered);
 			if (QtyEntered == null)
 				QtyEntered = QtyOrdered;
 			final boolean conversion = QtyOrdered.compareTo(QtyEntered) != 0;
@@ -166,40 +167,37 @@ public class DD_OrderLine
 		// Storage
 		if (M_Product_ID > 0
 				&& QtyOrdered.signum() > 0		// no negative (returns)
-				&& ddOrderLine.getDD_Order().isSOTrx())
+				&& ddOrderLine.getDD_Order().isSOTrx()
+				&& Services.get(IProductBL.class).isStocked(ProductId.ofRepoIdOrNull(M_Product_ID)))
 		{
-			MProduct product = MProduct.get(ctx, M_Product_ID);
-			if (Services.get(IProductBL.class).isStocked(product))
-			{
-				final int M_Locator_ID = ddOrderLine.getM_Locator_ID();
-				int M_AttributeSetInstance_ID = ddOrderLine.getM_AttributeSetInstance_ID();
-				final WarehouseId warehouseId = Services.get(IWarehouseDAO.class).getWarehouseIdByLocatorRepoId(M_Locator_ID);
+			final int M_Locator_ID = ddOrderLine.getM_Locator_ID();
+			int M_AttributeSetInstance_ID = ddOrderLine.getM_AttributeSetInstance_ID();
+			final WarehouseId warehouseId = Services.get(IWarehouseDAO.class).getWarehouseIdByLocatorRepoId(M_Locator_ID);
 
-				BigDecimal qtyAvailable = MStorage.getQtyAvailable(warehouseId.getRepoId(), 0, M_Product_ID, M_AttributeSetInstance_ID, ITrx.TRXNAME_None);
-				if (qtyAvailable == null)
-					qtyAvailable = BigDecimal.ZERO;
-				if (qtyAvailable.signum() == 0)
+			BigDecimal qtyAvailable = MStorage.getQtyAvailable(warehouseId.getRepoId(), 0, M_Product_ID, M_AttributeSetInstance_ID, ITrx.TRXNAME_None);
+			if (qtyAvailable == null)
+				qtyAvailable = BigDecimal.ZERO;
+			if (qtyAvailable.signum() == 0)
+			{
+				field.fireDataStatusEEvent("NoQtyAvailable", "0", false);
+			}
+			else if (qtyAvailable.compareTo(QtyOrdered) < 0)
+			{
+				field.fireDataStatusEEvent("InsufficientQtyAvailable", qtyAvailable.toString(), false);
+			}
+			else
+			{
+				final int DD_OrderLine_ID = ddOrderLine.getDD_OrderLine_ID();
+				BigDecimal qtyNotReserved = MDDOrderLine.getNotReserved(ctx,
+						M_Locator_ID, M_Product_ID, M_AttributeSetInstance_ID,
+						DD_OrderLine_ID);
+				if (qtyNotReserved == null)
+					qtyNotReserved = BigDecimal.ZERO;
+				final BigDecimal total = qtyAvailable.subtract(qtyNotReserved);
+				if (total.compareTo(QtyOrdered) < 0)
 				{
-					field.fireDataStatusEEvent("NoQtyAvailable", "0", false);
-				}
-				else if (qtyAvailable.compareTo(QtyOrdered) < 0)
-				{
-					field.fireDataStatusEEvent("InsufficientQtyAvailable", qtyAvailable.toString(), false);
-				}
-				else
-				{
-					final int DD_OrderLine_ID = ddOrderLine.getDD_OrderLine_ID();
-					BigDecimal qtyNotReserved = MDDOrderLine.getNotReserved(ctx,
-							M_Locator_ID, M_Product_ID, M_AttributeSetInstance_ID,
-							DD_OrderLine_ID);
-					if (qtyNotReserved == null)
-						qtyNotReserved = BigDecimal.ZERO;
-					final BigDecimal total = qtyAvailable.subtract(qtyNotReserved);
-					if (total.compareTo(QtyOrdered) < 0)
-					{
-						final String info = Msg.parseTranslation(ctx, "@QtyAvailable@=" + qtyAvailable + "  -  @QtyNotReserved@=" + qtyNotReserved + "  =  " + total);
-						field.fireDataStatusEEvent("InsufficientQtyAvailable", info, false);
-					}
+					final String info = Msg.parseTranslation(ctx, "@QtyAvailable@=" + qtyAvailable + "  -  @QtyNotReserved@=" + qtyNotReserved + "  =  " + total);
+					field.fireDataStatusEEvent("InsufficientQtyAvailable", info, false);
 				}
 			}
 		}

@@ -49,7 +49,6 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Test;
-
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
@@ -71,6 +70,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.api.HUShippingFacade;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
@@ -88,14 +88,11 @@ import lombok.NonNull;
  * HU Shipment Process:
  * <ul>
  * <li>picking: TUs are created
- * <li>aggregation: TUs are moved to LUs. But this is not necesary.
+ * <li>aggregation: TUs are moved to LUs. But this is not necessary.
  * <li>shipper transportation: add aggregated HUs shipper transportation document
  * <li>generate shipment
  * <li>shipper transportation: make sure M_Packages are updated correctly after shipment
- * <li>
  * </ul>
- *
- * @author tsa
  *
  */
 public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractHUTest
@@ -234,7 +231,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		final I_M_IolCandHandler handlerRecord = ((ShipmentScheduleHandlerBL)shipmentScheduleHandlerBL)
 				.retrieveHandlerRecordOrNull(OrderLineShipmentScheduleHandler.class.getName());
 		assertThat(handlerRecord).isNotNull(); // should have been registered by super.initialize();
-		
+
 		//
 		// Create doctype
 		final I_C_DocType docType = newInstanceOutOfTrx(I_C_DocType.class);
@@ -384,6 +381,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		// Test Generate Shipment from HUs
 		final HUShippingFacade huShippingFacade = HUShippingFacade.builder()
 				.hus(afterAggregation_HUs)
+				.invoiceMode(BillAssociatedInvoiceCandidates.NO) // NO because there were no invoice candidates and in this case will fail
 				.build();
 
 		//
@@ -424,7 +422,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 				.assertExpected_ShipmentScheduleWithHUs("after split IShipmentScheduleWithHU candidates", candidatesSorted);
 
 		final InOutGeneratedNotificationChecker notificationsChecker = InOutGeneratedNotificationChecker.createAndSubscribe();
-		
+
 		//
 		// Make sure the current user is configured to receive notifications
 		final I_AD_User user = newInstance(I_AD_User.class);
@@ -488,9 +486,9 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		else
 		{
 			order = newInstance(I_C_Order.class, helper.getContextProvider());
-			order.setC_BPartner(bpartner);
-			order.setC_BPartner_Location(bpartnerLocation);
-			order.setM_Warehouse(warehouse);
+			order.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+			order.setC_BPartner_Location_ID(bpartnerLocation.getC_BPartner_Location_ID());
+			order.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 			save(order);
 
 			lastOrder = order;
@@ -500,21 +498,21 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		// See http://dewiki908/mediawiki/index.php/05565_Introduce_M_ShipmentSchedule.C_UOM_ID_%28107483088069%29
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class, helper.getContextProvider());
 		orderLine.setC_Order(order);
-		orderLine.setM_Product(product);
-		orderLine.setC_UOM(productUOM);
+		orderLine.setM_Product_ID(product.getM_Product_ID());
+		orderLine.setC_UOM_ID(productUOM.getC_UOM_ID());
 		orderLine.setQtyOrdered(qtyOrdered);
 		save(orderLine);
 
 		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class, helper.getContextProvider());
 		// BPartner
-		shipmentSchedule.setC_BPartner(bpartner);
-		shipmentSchedule.setC_BPartner_Location(bpartnerLocation);
+		shipmentSchedule.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		shipmentSchedule.setC_BPartner_Location_ID(bpartnerLocation.getC_BPartner_Location_ID());
 		// Product/UOM and Qty
-		shipmentSchedule.setM_Product(product);
-		shipmentSchedule.setC_UOM(productUOM);
+		shipmentSchedule.setM_Product_ID(product.getM_Product_ID());
+		shipmentSchedule.setC_UOM_ID(productUOM.getC_UOM_ID());
 		shipmentSchedule.setQtyOrdered_Calculated(qtyOrdered);
 		// Warehouse
-		shipmentSchedule.setM_Warehouse(warehouse);
+		shipmentSchedule.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 
 		// Order line link
 		shipmentSchedule.setC_Order(order);

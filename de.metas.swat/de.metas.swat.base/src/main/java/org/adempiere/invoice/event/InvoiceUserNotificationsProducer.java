@@ -1,5 +1,7 @@
 package org.adempiere.invoice.event;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
@@ -35,8 +37,10 @@ import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * {@link IEventBus} wrapper implementation tailored for sending events about generated invoices.
@@ -69,7 +73,9 @@ public class InvoiceUserNotificationsProducer
 	 *
 	 * @param inouts
 	 */
-	public InvoiceUserNotificationsProducer notifyGenerated(final I_C_Invoice invoice, final int recipientUserId)
+	public InvoiceUserNotificationsProducer notifyGenerated(
+			@Nullable final I_C_Invoice invoice,
+			@Nullable final UserId recipientUserId)
 	{
 		if (invoice == null)
 		{
@@ -88,7 +94,9 @@ public class InvoiceUserNotificationsProducer
 		return this;
 	}
 
-	private final UserNotificationRequest createInvoiceGeneratedEvent(final I_C_Invoice invoice, final int recipientUserId)
+	private final UserNotificationRequest createInvoiceGeneratedEvent(
+			@NonNull final I_C_Invoice invoice,
+			@Nullable final UserId recipientUserId)
 	{
 		Check.assumeNotNull(invoice, "invoice not null");
 
@@ -99,7 +107,7 @@ public class InvoiceUserNotificationsProducer
 		final TableRecordReference invoiceRef = TableRecordReference.of(invoice);
 
 		return newUserNotificationRequest()
-				.recipientUserId(recipientUserId <= 0 ? invoice.getCreatedBy() : recipientUserId)
+				.recipientUserId(recipientUserId != null ? recipientUserId : UserId.ofRepoId(invoice.getCreatedBy()))
 				.contentADMessage(MSG_Event_InvoiceGenerated)
 				.contentADMessageParam(invoiceRef)
 				.contentADMessageParam(bpValue)

@@ -1,32 +1,8 @@
 package org.adempiere.mmovement.api.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import java.util.HashMap;
+import java.util.Map;
 
-
-import java.util.Properties;
-
-import org.adempiere.acct.api.IAcctSchemaDAO;
-import org.adempiere.acct.api.impl.AcctSchemaDAO;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -34,7 +10,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_MovementLine;
@@ -44,6 +19,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.acct.AcctSchemaTestHelper;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.product.IProductActivityProvider;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Services;
 
 public class MovementBLTest
@@ -52,13 +32,18 @@ public class MovementBLTest
 	private MovementBL movementBL;
 
 	private IContextAware context;
-	private I_C_AcctSchema acctSchema;
+	private AcctSchemaId acctSchemaId;
+
+	private Map<ProductId, ActivityId> productActivities;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		this.context = PlainContextAware.newOutOfTrx();
+		context = PlainContextAware.newOutOfTrx();
+
+		final IProductActivityProvider productActivityProvider = (clientId, orgId, productId) -> productActivities.get(productId);
+		Services.registerService(IProductActivityProvider.class, productActivityProvider);
 
 		//
 		// Service under test
@@ -66,18 +51,10 @@ public class MovementBLTest
 
 		//
 		// Master data
-		this.acctSchema = InterfaceWrapperHelper.newInstance(I_C_AcctSchema.class, context);
-		InterfaceWrapperHelper.save(acctSchema);
-
-		// Mock accounting schema retrieval
-		Services.registerService(IAcctSchemaDAO.class, new AcctSchemaDAO()
-		{
-			@Override
-			public I_C_AcctSchema retrieveAcctSchema(final Properties ctx, final int ad_Client_ID, final int ad_Org_ID)
-			{
-				return acctSchema;
-			}
-		});
+		productActivities = new HashMap<>();
+		// acctSchemaId = AcctSchemaTestHelper.newAcctSchema().build();
+		acctSchemaId = AcctSchemaId.ofRepoId(1);
+		AcctSchemaTestHelper.registerAcctSchemaDAOWhichAlwaysProvides(acctSchemaId);
 	}
 
 	/**
@@ -88,7 +65,7 @@ public class MovementBLTest
 	{
 		final I_C_Activity productActivity = createActivity();
 
-		I_M_Product product = createProduct(productActivity);
+		final I_M_Product product = createProduct(productActivity);
 
 		final I_C_Activity activityFrom = createActivity();
 		final I_M_Locator locatorFrom = createLocator(activityFrom);
@@ -113,7 +90,7 @@ public class MovementBLTest
 	{
 		final I_C_Activity productActivity = createActivity();
 		final I_M_Product product = createProduct(productActivity);
-		final I_M_Locator locatorFrom  =createLocator(null);
+		final I_M_Locator locatorFrom = createLocator(null);
 		final I_M_Locator locatorTo = createLocator(null);
 		final I_M_MovementLine movementLine = createMovementLine(product, locatorFrom, locatorTo);
 
@@ -144,11 +121,16 @@ public class MovementBLTest
 
 	private I_M_Product createProduct(final I_C_Activity activity)
 	{
+		final ActivityId activityId = activity != null ? ActivityId.ofRepoId(activity.getC_Activity_ID()) : null;
+
 		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class, context);
 		InterfaceWrapperHelper.save(product);
 
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+		productActivities.put(productId, activityId);
+
 		final I_M_Product_Acct productAcct = InterfaceWrapperHelper.newInstance(I_M_Product_Acct.class, context);
-		productAcct.setC_AcctSchema(acctSchema);
+		productAcct.setC_AcctSchema_ID(acctSchemaId.getRepoId());
 		productAcct.setM_Product(product);
 		productAcct.setC_Activity(activity);
 		InterfaceWrapperHelper.save(productAcct);
@@ -156,7 +138,7 @@ public class MovementBLTest
 		return product;
 	}
 
-	private I_M_MovementLine createMovementLine(final I_M_Product product, final I_M_Locator locatorFrom,  final I_M_Locator locatorTo)
+	private I_M_MovementLine createMovementLine(final I_M_Product product, final I_M_Locator locatorFrom, final I_M_Locator locatorTo)
 	{
 		final I_AD_Org org = InterfaceWrapperHelper.newInstance(I_AD_Org.class, context);
 		InterfaceWrapperHelper.save(org);

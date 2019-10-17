@@ -21,18 +21,19 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
+
+import de.metas.util.Check;
 
 /**
  *	Payroll Concept for HRayroll Module
- *	
+ *
  *  @author Oscar Gómez Islas
  *  @author Teo Sarca, www.arhipac.ro
  */
 public class MHRMovement extends X_HR_Movement
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 6705848510397126140L;
 
@@ -57,7 +58,7 @@ public class MHRMovement extends X_HR_Movement
 	{
 		super(ctx, rs, trxName);
 	}
-	
+
 	public MHRMovement (MHRProcess proc, I_HR_Concept concept)
 	{
 		this(proc.getCtx(), 0, proc.get_TrxName());
@@ -68,27 +69,27 @@ public class MHRMovement extends X_HR_Movement
 		this.setHR_Concept_ID(concept.getHR_Concept_ID());
 		this.setColumnType(concept.getColumnType());
 	}
-	
+
 	public void addAmount(BigDecimal amount)
 	{
 		setAmount(getAmount().add(amount == null ? Env.ZERO : amount));
 	}
-	
+
 	public void addQty(BigDecimal qty)
 	{
 		setQty(getAmount().add(qty == null ? Env.ZERO : qty));
 	}
-	
+
 	/**
-	 * @return true if all movement values (Amount, Qty, Text) are empty 
+	 * @return true if all movement values (Amount, Qty, Text) are empty
 	 */
 	public boolean isEmpty()
 	{
 		return getQty().signum() == 0
 				&& getAmount().signum() == 0
-				&& Util.isEmpty(getTextMsg());		
+				&& Check.isEmpty(getTextMsg());
 	}
-	
+
 	/**
 	 * According to the concept type, it's saved in the column specified for the purpose
 	 * @param columnType column type (see MHRConcept.COLUMNTYPE_*)
@@ -99,16 +100,16 @@ public class MHRMovement extends X_HR_Movement
 		final String columnType = getColumnType();
 		if (MHRConcept.COLUMNTYPE_Quantity.equals(columnType))
 		{
-			BigDecimal qty = new BigDecimal(value.toString()); 
+			BigDecimal qty = new BigDecimal(value.toString());
 			setQty(qty);
 			setAmount(Env.ZERO);
-		} 
+		}
 		else if(MHRConcept.COLUMNTYPE_Amount.equals(columnType))
 		{
-			BigDecimal amount = new BigDecimal(value.toString());	
+			BigDecimal amount = new BigDecimal(value.toString());
 			setAmount(amount);
 			setQty(Env.ZERO);
-		} 
+		}
 		else if(MHRConcept.COLUMNTYPE_Text.equals(columnType))
 		{
 			setTextMsg(value.toString().trim());
@@ -121,13 +122,13 @@ public class MHRMovement extends X_HR_Movement
 			}
 			else
 			{
-				setServiceDate(Timestamp.valueOf(value.toString().trim().substring(0, 10)+ " 00:00:00.0"));	
+				setServiceDate(Timestamp.valueOf(value.toString().trim().substring(0, 10)+ " 00:00:00.0"));
 			}
 		}
 		else
 		{
 			throw new AdempiereException("@NotSupported@ @ColumnType@ - "+columnType);
 		}
-		
+
 	}
 }	//	HRMovement

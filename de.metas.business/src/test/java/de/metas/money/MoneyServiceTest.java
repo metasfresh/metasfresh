@@ -1,14 +1,14 @@
 package de.metas.money;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_Currency;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.util.lang.Percent;
 
 /*
@@ -37,7 +37,7 @@ public class MoneyServiceTest
 {
 	private MoneyService moneyService;
 
-	private Currency currency;
+	// private Currency currency;
 
 	private Money zeroEuro;
 
@@ -47,6 +47,8 @@ public class MoneyServiceTest
 
 	private Money twoHundredEuro;
 
+	private CurrencyId currencyId;
+
 	@Before
 	public void init()
 	{
@@ -55,11 +57,8 @@ public class MoneyServiceTest
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
 		moneyService = new MoneyService(currencyRepository);
 
-		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
-		saveRecord(currencyRecord);
-
-		final CurrencyId currencyId = CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
-		currency = currencyRepository.getById(currencyId);
+		currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
+		// Currency currency = currencyRepository.getById(currencyId);
 
 		zeroEuro = Money.of(0, currencyId);
 		seventyEuro = Money.of(70, currencyId);
@@ -72,8 +71,8 @@ public class MoneyServiceTest
 	{
 		final Money result = moneyService.percentage(Percent.of(80), twoHundredEuro);
 
-		assertThat(result.getCurrencyId()).isEqualTo(currency.getId());
-		assertThat(result.getValue()).isEqualByComparingTo("160");
+		assertThat(result.getCurrencyId()).isEqualTo(currencyId);
+		assertThat(result.toBigDecimal()).isEqualByComparingTo("160");
 	}
 
 	@Test
@@ -81,9 +80,19 @@ public class MoneyServiceTest
 	{
 		final Money result = moneyService.percentage(Percent.of(0), twoHundredEuro);
 
-		assertThat(result.getCurrencyId()).isEqualTo(currency.getId());
+		assertThat(result.getCurrencyId()).isEqualTo(currencyId);
 		assertThat(result).isEqualTo(zeroEuro);
 		assertThat(result.isZero()).isTrue();
+	}
+
+	/** This test shall work because we set the currency precision to >= 1. */
+	@Test
+	public void percentage_real_world_example()
+	{
+		final Money result = moneyService.percentage(Percent.of(10), Money.of(14, currencyId));
+
+		assertThat(result.getCurrencyId()).isEqualTo(currencyId);
+		assertThat(result.toBigDecimal()).isEqualByComparingTo("1.4");
 	}
 
 	@Test

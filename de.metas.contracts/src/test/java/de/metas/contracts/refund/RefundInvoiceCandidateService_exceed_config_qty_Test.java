@@ -16,17 +16,15 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.contracts.refund.RefundContract.RefundContractBuilder;
+import de.metas.currency.CurrencyRepository;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
-import de.metas.invoice.InvoiceScheduleRepository;
-import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.quantity.Quantity;
@@ -74,39 +72,17 @@ public class RefundInvoiceCandidateService_exceed_config_qty_Test
 	{
 		AdempiereTestHelper.get().init();
 
-		refundTestTools = new RefundTestTools(); // this also makes sure we have the ILCandHandler and C_DocType needed to create a new refund candidate
+		refundTestTools = RefundTestTools.newInstance(); // this also makes sure we have the ILCandHandler and C_DocType needed to create a new refund candidate
 
-		refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
-		RefundContractRepository refundContractRepository = new RefundContractRepository(refundConfigRepository);
+		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = RefundInvoiceCandidateRepository.createInstanceForUnitTesting();
 
-		final AssignmentAggregateService assignmentAggregateService = new AssignmentAggregateService(refundConfigRepository);
+		refundConfigRepository = refundInvoiceCandidateRepository.getRefundContractRepository().getRefundConfigRepository();
 
-		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, assignmentAggregateService);
-
-		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(
-				refundContractRepository,
-				refundInvoiceCandidateFactory);
-		//
-		// invoiceCandidateRepository = new InvoiceCandidateRepository(
-		// new AssignmentToRefundCandidateRepository(refundInvoiceCandidateRepository),
-		// refundContractRepository);
-		//
 		final MoneyService moneyService = new MoneyService(new CurrencyRepository());
-		//
-		//
+
 		refundInvoiceCandidateService = new RefundInvoiceCandidateService(
 				refundInvoiceCandidateRepository,
-				refundInvoiceCandidateFactory,
-				moneyService,
-				assignmentAggregateService);
-		//
-		// final InvoiceScheduleRepository invoiceScheduleRepository = new InvoiceScheduleRepository();
-		//
-		// invoiceScheduleRepository.save(InvoiceSchedule
-		// .builder()
-		// .frequency(Frequency.DAILY)
-		// .build());
-
+				moneyService);
 	}
 
 	@Test
@@ -115,7 +91,7 @@ public class RefundInvoiceCandidateService_exceed_config_qty_Test
 		final RefundInvoiceCandidate refundCandidate = prepareRefundCandidateAndConfigs(RefundMode.APPLY_TO_EXCEEDING_QTY);
 
 		final AssignableInvoiceCandidate assignableCandidate = refundTestTools.createAssignableCandidateStandlone(TWENTY);
-		assertThat(assignableCandidate.getQuantity().getAsBigDecimal()).isEqualByComparingTo(TWENTY);// guard
+		assertThat(assignableCandidate.getQuantity().toBigDecimal()).isEqualByComparingTo(TWENTY);// guard
 
 		final RefundConfig refundConfig = extractSingleConfig(refundCandidate);
 
@@ -133,15 +109,15 @@ public class RefundInvoiceCandidateService_exceed_config_qty_Test
 		final RefundInvoiceCandidate refundCandidate = prepareRefundCandidateAndConfigs(RefundMode.APPLY_TO_ALL_QTIES);
 
 		final AssignableInvoiceCandidate assignableCandidate = refundTestTools.createAssignableCandidateStandlone(TWENTY);
-		assertThat(assignableCandidate.getQuantity().getAsBigDecimal()).isEqualByComparingTo(TWENTY);// guard
+		assertThat(assignableCandidate.getQuantity().toBigDecimal()).isEqualByComparingTo(TWENTY);// guard
 
 		final RefundConfig refundConfig = extractSingleConfig(refundCandidate);
 
 		// invoke the method under test
 		final Throwable e = catchThrowable(() -> refundInvoiceCandidateService.addAssignableMoney(refundCandidate, refundConfig, assignableCandidate));
 		assertThat(e).isNull();
-//		assertThat(e).isInstanceOf(AdempiereException.class);
-//		assertThat(e).hasMessageContaining("together they exceed the quantity for candidateToUpdate's refund config");
+		// assertThat(e).isInstanceOf(AdempiereException.class);
+		// assertThat(e).hasMessageContaining("together they exceed the quantity for candidateToUpdate's refund config");
 	}
 
 	private RefundInvoiceCandidate prepareRefundCandidateAndConfigs(final RefundMode refundMode)
@@ -171,9 +147,10 @@ public class RefundInvoiceCandidateService_exceed_config_qty_Test
 
 		final RefundInvoiceCandidate refundCandidate = RefundInvoiceCandidate.builder()
 				.assignedQuantity(Quantity.of(FIVE, refundTestTools.getUomRecord()))
-				.bpartnerId(BPartnerId.ofRepoId(10))
+				.bpartnerId(RefundTestTools.BPARTNER_ID)
+				.bpartnerLocationId(refundTestTools.billBPartnerLocationId)
 				.invoiceableFrom(NOW)
-				.money(Money.of(ONE, refundTestTools.getCurrency().getId()))
+				.money(Money.of(ONE, refundTestTools.getCurrencyId()))
 				.refundConfigs(ImmutableList.of(refundContract.getRefundConfig(FIVE)))
 				.refundContract(refundContract)
 				.build();

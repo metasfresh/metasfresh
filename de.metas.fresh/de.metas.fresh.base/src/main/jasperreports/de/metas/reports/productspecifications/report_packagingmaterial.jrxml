@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_packagingmaterial" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/productspecifications/report" uuid="d337e18a-4953-4f43-8409-fe9b871ee4b5">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="2.593742460100013"/>
+	<property name="ireport.x" value="343"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="erptest.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="RECORD_ID" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[0]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[SELECT distinct
+  v.componentName           as BOMProduct,
+  ispackagingmaterial,
+m_product_ID
+FROM "de.metas.fresh".product_specifications_v v
+WHERE m_product_ID = $P{RECORD_ID} and ispackagingmaterial ='Y'
+ORDER BY componentName;]]>
+	</queryString>
+	<field name="bomproduct" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bomproduct"/>
+	</field>
+	<field name="ispackagingmaterial" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="ispackagingmaterial"/>
+	</field>
+	<field name="m_product_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="m_product_id"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="19" splitType="Stretch">
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="5" width="180" height="14" uuid="c58e81c9-237f-4152-9114-98b1c96b0be3"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Detail_3}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<detail>
+		<band height="14">
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="0" y="2" width="136" height="12" uuid="12ebebf1-22ce-4f6e-9277-b0f9ab06e0f6"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{PackagingMaterial}+":"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="136" y="2" width="455" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="8411332e-a884-4413-9983-9958387ee1b9"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{bomproduct}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

@@ -7,14 +7,14 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Properties;
-import java.util.function.Function;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
-import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_Element;
+import org.compiere.model.I_AD_Language;
 import org.compiere.model.PO;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -27,6 +27,7 @@ import de.metas.i18n.IModelTranslation;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.ModelTranslation;
 import de.metas.i18n.impl.NullModelTranslation;
+import de.metas.i18n.impl.NullModelTranslationMap;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -65,13 +66,29 @@ public class POTrlRepository
 	public static final transient POTrlRepository instance = new POTrlRepository();
 
 	private static final Logger logger = LogManager.getLogger(POTrlRepository.class);
+	private IClientDAO clientsRepo; // lazy
 
+	private static final String TRL_TABLE_SUFFIX = "_Trl";
 	private static final String DYNATTR_TrlUpdateMode_UpdateIdenticalTrls = PO.class.getName() + ".TrlUpdateMode.UpdateIdenticalTrls";
-
 	private static final String COLUMNNAME_AD_Language = "AD_Language";
 
 	private POTrlRepository()
 	{
+	}
+
+	private IClientDAO clientsRepo()
+	{
+		IClientDAO clientsRepo = this.clientsRepo;
+		if (clientsRepo == null)
+		{
+			clientsRepo = this.clientsRepo = Services.get(IClientDAO.class);
+		}
+		return clientsRepo;
+	}
+
+	public static String toTrlTableName(final String tableName)
+	{
+		return tableName + TRL_TABLE_SUFFIX;
 	}
 
 	public final POTrlInfo createPOTrlInfo(final String tableName, final String keyColumnName, final List<String> translatedColumnNames)
@@ -125,11 +142,29 @@ public class POTrlRepository
 		final String keyColumn = trlInfo.getKeyColumnName();
 		final StringBuilder sql = new StringBuilder("INSERT INTO ").append(tableName).append("_Trl (AD_Language,").append(keyColumn).append(", ").append(iColumns)
 				.append(" IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) ")
-				.append("SELECT l.AD_Language,t.").append(keyColumn).append(", ").append(sColumns)
+				.append("SELECT l.").append(I_AD_Language.COLUMNNAME_AD_Language).append(", t.").append(keyColumn).append(", ").append(sColumns)
 				.append(" 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy ")
 				.append("FROM AD_Language l, ").append(tableName).append(" t ")
-				.append("WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.").append(keyColumn).append("=").append(recordId)
-				.append(" AND NOT EXISTS (SELECT 1 FROM ").append(tableName).append("_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.").append(keyColumn).append("=t.").append(keyColumn).append(")");
+				.append("WHERE l."
+						+ I_AD_Language.COLUMNNAME_IsActive
+						+ "='Y'");
+
+		// This will change in #4672
+		if (I_AD_Element.Table_Name.equals(tableName))
+		{
+			sql.append("AND (l." + I_AD_Language.COLUMNNAME_IsSystemLanguage + "='Y' OR l." + I_AD_Language.COLUMNNAME_IsBaseLanguage + "='Y')");
+		}
+		else
+		{
+			sql.append("AND (l." + I_AD_Language.COLUMNNAME_IsSystemLanguage + "='Y' AND l." + I_AD_Language.COLUMNNAME_IsBaseLanguage + "='N')");
+		}
+
+		sql.append(" AND t.")
+				.append(keyColumn).append("=").append(recordId)
+				.append(" AND NOT EXISTS (SELECT 1 FROM ").append(tableName).append("_Trl tt WHERE tt.AD_Language=l."
+						+ I_AD_Language.COLUMNNAME_AD_Language
+						+ " AND tt.")
+				.append(keyColumn).append("=t.").append(keyColumn).append(")");
 		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Inserted {} translation records for {}", no, this);
 		return no > 0;
@@ -163,29 +198,6 @@ public class POTrlRepository
 			return true; // OK
 		}
 
-		final Function<Object, String> toSqlValueConverter = value -> {
-			if (value == null)
-			{
-				return "NULL";
-			}
-			else if (value instanceof String)
-			{
-				return DB.TO_STRING((String)value);
-			}
-			else if (value instanceof Boolean)
-			{
-				return DB.TO_BOOLEAN((Boolean)value);
-			}
-			else if (value instanceof Timestamp)
-			{
-				return DB.TO_DATE((Timestamp)value);
-			}
-			else
-			{
-				return DB.TO_STRING(value.toString());
-			}
-		};
-
 		//
 		// Build the SQL to update all "TableName_Trl" records
 		// NOTE: don't use parameterized SQLs because we need to log this command to migration scripts
@@ -197,13 +209,12 @@ public class POTrlRepository
 		//
 		// If AutoUpdateTrl then copy the changed fields from record to each translation.
 		// Also flag all as IsTranslated='Y'.
-		if (isAutoUpdateTrl(po.getCtx(), tableName))
+		final ClientId clientId = ClientId.ofRepoId(po.getAD_Client_ID());
+		if (isAutoUpdateTrl(clientId, tableName))
 		{
 			for (final String columnName : trlInfo.getTranslatedColumnNames())
 			{
-				final Object value = po.get_Value(columnName);
-				final String sqlValue = toSqlValueConverter.apply(value);
-
+				final String sqlValue = convertValueToSql(po.get_Value(columnName));
 				sqlSet.append(columnName).append("=").append(sqlValue).append(", ");
 			}
 
@@ -222,11 +233,8 @@ public class POTrlRepository
 		{
 			for (final String columnName : trlInfo.getTranslatedColumnNames())
 			{
-				final Object value = po.get_Value(columnName);
-				final String sqlValue = toSqlValueConverter.apply(value);
-
-				final Object valueOld = po.get_ValueOld(columnName);
-				final String sqlValueOld = toSqlValueConverter.apply(valueOld);
+				final String sqlValue = convertValueToSql(po.get_Value(columnName));
+				final String sqlValueOld = convertValueToSql(po.get_ValueOld(columnName));
 
 				sqlSet.append(columnName).append("=")
 						.append("(CASE WHEN " + columnName + " IS NOT DISTINCT FROM " + sqlValueOld
@@ -257,6 +265,30 @@ public class POTrlRepository
 		return updatedCount >= 0;
 	}
 
+	private static String convertValueToSql(final Object value)
+	{
+		if (value == null)
+		{
+			return "NULL";
+		}
+		else if (value instanceof String)
+		{
+			return DB.TO_STRING((String)value);
+		}
+		else if (value instanceof Boolean)
+		{
+			return DB.TO_BOOLEAN((Boolean)value);
+		}
+		else if (value instanceof Timestamp)
+		{
+			return DB.TO_DATE((Timestamp)value);
+		}
+		else
+		{
+			return DB.TO_STRING(value.toString());
+		}
+	}
+
 	/**
 	 * Particularly updates the translatable column for a given recordId and adLanguage.
 	 *
@@ -284,31 +316,23 @@ public class POTrlRepository
 	}
 
 	/**
-	 * Update Trl Tables automatically?
-	 *
-	 * @param TableName table name
 	 * @return true if all translations shall be updated from base record
 	 */
-	private boolean isAutoUpdateTrl(final Properties ctx, final String TableName)
+	private boolean isAutoUpdateTrl(final ClientId adClientId, final String tableName)
 	{
-		final I_AD_Client adClient = Services.get(IClientDAO.class).retriveClient(ctx);
-		if (adClient.isMultiLingualDocument())
+		if (tableName == null)
 		{
 			return false;
 		}
 
-		if (TableName == null)
-		{
-			return false;
-		}
 		// Not Multi-Lingual Documents - only Doc Related
-		if (TableName.startsWith("AD") && adClient.getAD_Client_ID() == IClientDAO.SYSTEM_CLIENT_ID)
+		if (adClientId.isSystem() && tableName.startsWith("AD_"))
 		{
 			return false;
 		}
 
-		return true;
-	}	// isMultiLingualDocument
+		return clientsRepo().isMultilingualDocumentsEnabled(adClientId);
+	}
 
 	/**
 	 * Delete Translation Records
@@ -325,14 +349,24 @@ public class POTrlRepository
 		final String tableName = trlInfo.getTableName();
 		final String keyColumn = trlInfo.getKeyColumnName();
 		final StringBuilder sql = new StringBuilder("DELETE FROM  ").append(tableName).append("_Trl WHERE ").append(keyColumn).append("=").append(recordId);
-		final int no = DB.executeUpdate(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Deleted {} translation records for {}/{}", no, trlInfo, recordId);
 		return no >= 0;
 	}
 
-	public IModelTranslationMap retrieveAll(final POTrlInfo trlInfo, final int recordId)
+	public IModelTranslationMap retrieveAll(@NonNull final POTrlInfo trlInfo, final int recordId)
 	{
-		return POModelTranslationMap.of(trlInfo, recordId);
+		if (!trlInfo.isTranslated())
+		{
+			return NullModelTranslationMap.instance;
+		}
+
+		final ImmutableMap<String, IModelTranslation> trlsByLanguage = POTrlRepository.instance.retriveAllById(trlInfo, recordId);
+
+		return POModelTranslationMap.builder()
+				.recordId(recordId)
+				.trlsByLanguage(trlsByLanguage)
+				.build();
 	}
 
 	public IModelTranslation retriveByLanguage(final POTrlInfo trlInfo, final int recordId, final String AD_Language)
@@ -396,7 +430,7 @@ public class POTrlRepository
 		return ModelTranslation.of(adLanguage, trlMap);
 	}
 
-	public Map<String, IModelTranslation> retriveAllById(final POTrlInfo trlInfo, final int recordId)
+	public ImmutableMap<String, IModelTranslation> retriveAllById(final POTrlInfo trlInfo, final int recordId)
 	{
 		final String sql = trlInfo.getSqlSelectTrlById().get();
 		if (sql == null)
@@ -469,7 +503,7 @@ public class POTrlRepository
 		final StringBuilder sql = new StringBuilder("SELECT ")
 				.append(sqlColumns)
 				.append(", ").append(COLUMNNAME_AD_Language)
-				.append(" FROM ").append(tableName).append("_Trl")
+				.append(" FROM ").append(toTrlTableName(tableName))
 				.append(" WHERE ")
 				.append(keyColumnName).append("=?");
 

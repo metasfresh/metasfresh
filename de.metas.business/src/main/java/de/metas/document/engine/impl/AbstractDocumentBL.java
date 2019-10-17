@@ -22,7 +22,7 @@ import org.adempiere.ad.trx.api.TrxCallable;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.X_C_Order;
@@ -35,6 +35,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentHandlerProvider;
 import de.metas.document.engine.DocumentTableFields;
@@ -66,14 +67,14 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 
 	private static final Map<String, DocumentHandlerProvider> retrieveDocActionHandlerProvidersIndexedByTableName()
 	{
-		if (Adempiere.getSpringApplicationContext() == null)
+		if (!SpringContextHolder.instance.isApplicationContextSet())
 		{
 			// here we support the case of a unit test that
 			// * doesn't care about DocumentHandlerProviders
 			// * and does not want to do the @SpringBootTest dance
 			return ImmutableMap.of();
 		}
-		final Map<String, DocumentHandlerProvider> providersByTableName = Adempiere.getBeansOfType(DocumentHandlerProvider.class)
+		final Map<String, DocumentHandlerProvider> providersByTableName = SpringContextHolder.instance.getBeansOfType(DocumentHandlerProvider.class)
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(DocumentHandlerProvider::getHandledTableName, Function.identity()));
 		logger.debug("Retrieved providers: {}", providersByTableName);
@@ -189,24 +190,18 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			documents.put(documentId, document);
 		}
 
-		trxManager.run(new TrxRunnable()
-		{
-
-			@Override
-			public void run(final String localTrxName) throws Exception
+		trxManager.runInNewTrx((TrxRunnable)localTrxName -> {
+			for (final T document : documents.values())
 			{
-				for (final T document : documents.values())
+				final String trxNameOld = InterfaceWrapperHelper.getTrxName(document);
+				try
 				{
-					final String trxNameOld = InterfaceWrapperHelper.getTrxName(document);
-					try
-					{
-						InterfaceWrapperHelper.setTrxName(document, localTrxName);
-						processEx(document, docAction, expectedDocStatus);
-					}
-					finally
-					{
-						InterfaceWrapperHelper.setTrxName(document, trxNameOld);
-					}
+					InterfaceWrapperHelper.setTrxName(document, localTrxName);
+					processEx(document, docAction, expectedDocStatus);
+				}
+				finally
+				{
+					InterfaceWrapperHelper.setTrxName(document, trxNameOld);
 				}
 			}
 		});
@@ -271,49 +266,29 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	@Override
 	public boolean issDocumentDraftedOrInProgress(final Object document)
 	{
-		return isDocumentStatusOneOf(document,
-				IDocument.STATUS_Drafted,
-				IDocument.STATUS_InProgress);
+		final DocStatus docStatus = getDocStatusOrNull(document);
+		return docStatus != null && docStatus.isDraftedOrInProgress();
 	}
 
 	@Override
 	public boolean isDocumentCompleted(final Object document)
 	{
-		return isDocumentStatusOneOf(document,
-				IDocument.STATUS_Completed);
+		final DocStatus docStatus = getDocStatusOrNull(document);
+		return docStatus != null && docStatus.isCompleted();
 	}
 
 	@Override
 	public boolean isDocumentClosed(final Object document)
 	{
-		return isDocumentStatusOneOf(document,
-				IDocument.STATUS_Closed);
+		final DocStatus docStatus = getDocStatusOrNull(document);
+		return docStatus != null && docStatus.isClosed();
 	}
 
 	@Override
 	public boolean isDocumentCompletedOrClosed(final Object document)
 	{
-		return isDocumentStatusOneOf(document,
-				IDocument.STATUS_Completed,
-				IDocument.STATUS_Closed);
-	}
-
-	@Override
-	public boolean issDocumentCompletedOrClosedOrReversed(final Object document)
-	{
-		final IDocument doc = getDocument(document);
-		final String docStatus = doc.getDocStatus();
-
-		return isStatusCompletedOrClosedOrReversed(docStatus);
-	}
-
-	@Override
-	public boolean isStatusCompletedOrClosedOrReversed(final String docStatus)
-	{
-		return isStatusStrOneOf(docStatus,
-				IDocument.STATUS_Completed,
-				IDocument.STATUS_Closed,
-				IDocument.STATUS_Reversed);
+		final DocStatus docStatus = getDocStatusOrNull(document);
+		return docStatus != null && docStatus.isCompletedOrClosed();
 	}
 
 	@Override
@@ -321,15 +296,25 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	{
 		final IDocument doc = getDocument(document);
 		final String docStatus = doc.getDocStatus();
-		return isStatusStrOneOf(docStatus,
-				IDocument.STATUS_Reversed,
-				IDocument.STATUS_Voided);
+		if (docStatus == null)
+		{
+			return false;
+		}
+
+		return DocStatus.ofCode(docStatus).isReversedOrVoided();
 	}
 
 	@Override
 	public String getDocStatusOrNull(final Properties ctx_NOTUSED, final int adTableId, final int recordId)
 	{
 		return retrieveString(adTableId, recordId, DocumentTableFields.COLUMNNAME_DocStatus);
+	}
+
+	private DocStatus getDocStatusOrNull(final Object document)
+	{
+		final IDocument doc = getDocument(document);
+		final DocStatus docStatus = DocStatus.ofNullableCode(doc.getDocStatus());
+		return docStatus;
 	}
 
 	@Override
@@ -412,27 +397,6 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
 		final String trxName = InterfaceWrapperHelper.getTrxName(model);
 		return InterfaceWrapperHelper.create(ctx, docTypeId, I_C_DocType.class, trxName);
-	}
-
-	@Override
-	public boolean isDocumentStatusOneOf(@NonNull final Object document, @NonNull final String... docStatusesToCheckFor)
-	{
-		final IDocument doc = getDocument(document);
-		final String docStatus = doc.getDocStatus();
-		return isStatusStrOneOf(docStatus, docStatusesToCheckFor);
-	}
-
-	@Override
-	public boolean isStatusStrOneOf(final String docStatus, final String... docStatusesToCheckFor)
-	{
-		for (final String currentDocStatus : docStatusesToCheckFor)
-		{
-			if (currentDocStatus.equals(docStatus))
-			{
-				return true;
-			}
-		}
-		return false;
 	}
 
 	protected final LocalDate getDocumentDate(final Object model)

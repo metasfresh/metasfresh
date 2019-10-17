@@ -1,5 +1,6 @@
 package de.metas.process;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 
 import de.metas.util.Services;
@@ -30,15 +31,15 @@ public class AD_Window_CopyWindow extends JavaProcess
 {
 	private static final String PARAM_Source_AD_Window_ID = "AD_Window_ID";
 	@Param(parameterName = PARAM_Source_AD_Window_ID, mandatory = true)
-	private int sourceWindowId;
+	private AdWindowId sourceWindowId;
 
 	private final IADWindowDAO windowDAO = Services.get(IADWindowDAO.class);
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-
-		windowDAO.copyWindow(getProcessInfo().getRecord_ID(), sourceWindowId);
+		final AdWindowId targetWindowId = AdWindowId.ofRepoId(getProcessInfo().getRecord_ID());
+		windowDAO.copyWindow(targetWindowId, sourceWindowId);
 
 		return MSG_OK;
 	}

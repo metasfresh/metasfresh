@@ -36,14 +36,13 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Table;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-
-import org.compiere.util.Util;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 class MigrationStepHandler implements IXMLHandler<I_AD_MigrationStep>
 {
@@ -140,10 +139,10 @@ class MigrationStepHandler implements IXMLHandler<I_AD_MigrationStep>
 		step.setStepType(stepNode.getAttribute(NODE_StepType));
 		step.setStatusCode(X_AD_MigrationStep.STATUSCODE_Unapplied);
 
-		final Node commentNode = (Element)stepNode.getElementsByTagName(NODE_Comments).item(0);
+		final Node commentNode = stepNode.getElementsByTagName(NODE_Comments).item(0);
 		if (commentNode != null)
 		{
-			step.setComments(Util.getElementText(commentNode));
+			step.setComments(MigrationHandler.getElementText(commentNode));
 		}
 
 		if (X_AD_MigrationStep.STEPTYPE_ApplicationDictionary.equals(step.getStepType()))
@@ -184,12 +183,12 @@ class MigrationStepHandler implements IXMLHandler<I_AD_MigrationStep>
 			final Node sqlNode = stepNode.getElementsByTagName(NODE_SQLStatement).item(0);
 			if (sqlNode != null)
 			{
-				step.setSQLStatement(Util.getElementText(sqlNode));
+				step.setSQLStatement(MigrationHandler.getElementText(sqlNode));
 			}
 			final Node rollbackNode = stepNode.getElementsByTagName(NODE_RollbackStatement).item(0);
 			if (rollbackNode != null)
 			{
-				step.setRollbackStatement(Util.getElementText(rollbackNode));
+				step.setRollbackStatement(MigrationHandler.getElementText(rollbackNode));
 			}
 		}
 		else

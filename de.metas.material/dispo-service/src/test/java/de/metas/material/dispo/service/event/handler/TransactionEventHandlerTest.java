@@ -1,8 +1,7 @@
 package de.metas.material.dispo.service.event.handler;
 
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
-import static de.metas.material.event.EventTestHelper.CLIENT_ID;
-import static de.metas.material.event.EventTestHelper.ORG_ID;
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static java.math.BigDecimal.ZERO;
@@ -11,7 +10,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
 
@@ -25,7 +25,6 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -51,24 +50,21 @@ import mockit.Mocked;
 
 public class TransactionEventHandlerTest
 {
-
-	private static final BigDecimal TWENTY_THREE = new BigDecimal("23");
-
-	@Mocked
-	private PostMaterialEventService postMaterialEventService;
-
 	@Test
 	public void createOneOrTwoCandidatesWithChangedTransactionDetailAndQuantity()
 	{
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of());
 		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
 
-		final TransactionEventHandler transactionEventHandler = new TransactionEventHandler(candidateChangeHandler, candidateRepository, postMaterialEventService);
+		final TransactionEventHandler transactionEventHandler = new TransactionEventHandler(
+				candidateChangeHandler,
+				candidateRepository,
+				Mockito.mock(PostMaterialEventService.class));
 
 		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 				.productDescriptor(createProductDescriptor())
 				.warehouseId(WAREHOUSE_ID)
-				.quantity(TWENTY_THREE)
+				.quantity(new BigDecimal("23"))
 				.date(AFTER_NOW)
 				.build();
 
@@ -76,13 +72,19 @@ public class TransactionEventHandlerTest
 				.id(CandidateId.ofRepoId(100))
 				.parentId(CandidateId.ofRepoId(200))
 				.type(CandidateType.SUPPLY)
-				.clientId(CLIENT_ID)
-				.orgId(ORG_ID)
+				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescriptor)
 				.businessCase(CandidateBusinessCase.PURCHASE)
 				.build();
 
-		final TransactionDetail transactionDetail = TransactionDetail.forCandidateOrQuery(TWENTY_THREE, AttributesKey.ofAttributeValueIds(10), 20, 30);
+		final TransactionDetail transactionDetail = TransactionDetail.builder()
+				.quantity(new BigDecimal("23"))
+				.storageAttributesKey(AttributesKey.ofAttributeValueIds(10))
+				.attributeSetInstanceId(20)
+				.transactionId(30)
+				.transactionDate(AFTER_NOW)
+				.complete(true)
+				.build();
 
 		// invoke the method under test
 		final List<Candidate> result = transactionEventHandler.createOneOrTwoCandidatesWithChangedTransactionDetailAndQuantity(candidate, transactionDetail);
@@ -94,6 +96,6 @@ public class TransactionEventHandlerTest
 
 		assertThat(result.get(0).getId()).isEqualTo(CandidateId.NULL);
 		assertThat(result.get(0).getParentId()).isEqualTo(CandidateId.NULL);
-		assertThat(result.get(0).getQuantity()).isEqualByComparingTo(TWENTY_THREE);
+		assertThat(result.get(0).getQuantity()).isEqualByComparingTo("23");
 	}
 }

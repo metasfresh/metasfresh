@@ -57,6 +57,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.images.Images;
+import org.adempiere.service.ClientId;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.APanel;
 import org.compiere.model.GridTabVO;
@@ -74,6 +75,7 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -768,7 +770,7 @@ public class VSortTab extends CPanel implements APanelTab
 		final AtomicBoolean ok = new AtomicBoolean(true);
 		final StringBuffer info = new StringBuffer();
 		Services.get(ITrxManager.class)
-				.run(new TrxRunnableAdapter()
+				.runInNewTrx(new TrxRunnableAdapter()
 				{
 					@Override
 					public void run(String localTrxName) throws Exception
@@ -877,23 +879,28 @@ public class VSortTab extends CPanel implements APanelTab
 		 *
 		 */
 		private static final long serialVersionUID = 5399675004361331697L;
-		private int		m_key;
-		private int		m_AD_Client_ID;
-		private int		m_AD_Org_ID;
+		private final int m_key;
+		private final ClientId clientId;
+		private final OrgId orgId;
 		/** Initial seq number */
-		private int		m_sortNo;
+		private int m_sortNo;
 		/** Initial selection flag */
 		private boolean m_isYes;
-		private boolean	m_updateable;
+		private final boolean m_updateable;
 
 		public ListItem(int key, String name, int sortNo, boolean isYes, int AD_Client_ID, int AD_Org_ID) {
-			super(name);
+			super(name, null/* description */);
 			this.m_key = key;
-			this.m_AD_Client_ID = AD_Client_ID;
-			this.m_AD_Org_ID = AD_Org_ID;
+			this.clientId = ClientId.ofRepoId(AD_Client_ID);
+			this.orgId = OrgId.ofRepoId(AD_Org_ID);
 			this.m_sortNo = sortNo;
 			this.m_isYes = isYes;
-			this.m_updateable = Env.getUserRolePermissions().canUpdate(m_AD_Client_ID, m_AD_Org_ID, gridTabVO.getAD_Table_ID(), m_key, false);
+			this.m_updateable = Env.getUserRolePermissions().canUpdate(
+					clientId, 
+					orgId, 
+					gridTabVO.getAD_Table_ID(), 
+					m_key,
+					false);
 		}
 		public int getKey() {
 			return m_key;
@@ -909,12 +916,6 @@ public class VSortTab extends CPanel implements APanelTab
 		}
 		public boolean isYes() {
 			return m_isYes;
-		}
-		public int getAD_Client_ID() {
-			return m_AD_Client_ID;
-		}
-		public int getAD_Org_ID() {
-			return m_AD_Org_ID;
 		}
 		public boolean isUpdateable() {
 			return m_updateable;
@@ -932,13 +933,13 @@ public class VSortTab extends CPanel implements APanelTab
 		{
 			if (obj instanceof ListItem)
 			{
-				ListItem li = (ListItem)obj;
+				final ListItem li = (ListItem)obj;
 				return
 					li.getKey() == m_key
 					&& li.getName() != null
 					&& li.getName().equals(getName())
-					&& li.getAD_Client_ID() == m_AD_Client_ID
-					&& li.getAD_Org_ID() == m_AD_Org_ID;
+					&& ClientId.equals(li.clientId, this.clientId)
+					&& OrgId.equals(li.orgId, this.orgId);
 			}
 			return false;
 		}	//	equals

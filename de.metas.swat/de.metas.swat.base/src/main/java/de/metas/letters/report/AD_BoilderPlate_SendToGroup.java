@@ -43,6 +43,7 @@ import org.compiere.util.Env;
 
 import de.metas.callcenter.model.MRGroupProspect;
 import de.metas.email.EMail;
+import de.metas.email.EMailAddress;
 import de.metas.email.EMailSentStatus;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
@@ -73,7 +74,9 @@ public class AD_BoilderPlate_SendToGroup extends JavaProcess
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)
-				;			
+			{
+				
+			}
 			else if (X_R_Group.COLUMNNAME_R_Group_ID.equals(name))
 			{
 				p_R_Group_ID = para.getParameterAsInt();
@@ -91,10 +94,14 @@ public class AD_BoilderPlate_SendToGroup extends JavaProcess
 	{
 		MGroup group = MGroup.get(getCtx(), p_R_Group_ID);
 		if (group == null)
+		{
 			throw new FillMandatoryException("R_Group_ID");
+		}
 		int AD_BoilerPlate_ID = group.get_ValueAsInt(MADBoilerPlate.COLUMNNAME_AD_BoilerPlate_ID);
 		if (AD_BoilerPlate_ID <= 0)
+		{
 			throw new FillMandatoryException(MADBoilerPlate.COLUMNNAME_AD_BoilerPlate_ID);
+		}
 		final MADBoilerPlate text = MADBoilerPlate.get(getCtx(), AD_BoilerPlate_ID);
 		
 		int count_ok = 0;
@@ -133,7 +140,9 @@ public class AD_BoilderPlate_SendToGroup extends JavaProcess
 			addLog(prospect.toString()+": Error: "+e.getLocalizedMessage());
 			ok = false;
 			if (LogManager.isLevelFine())
+			{
 				e.printStackTrace();
+			}
 		}
 		return ok;
 	}
@@ -161,10 +170,11 @@ public class AD_BoilderPlate_SendToGroup extends JavaProcess
 			{
 				String message = text.getTextSnippetParsed(attributes);
 				//
-				StringTokenizer st = new StringTokenizer(toEmail, " ,;", false);
-				String to = st.nextToken();
-				MClient client = MClient.get(getCtx(), getAD_Client_ID());
-				EMail email = client.createEMail(to,
+				final StringTokenizer st = new StringTokenizer(toEmail, " ,;", false);
+				final EMailAddress to = EMailAddress.ofString(st.nextToken());
+				final MClient client = MClient.get(getCtx(), getAD_Client_ID());
+				EMail email = client.createEMail(
+						to,
 						text.getName(),
 						message,
 						true);
@@ -172,13 +182,17 @@ public class AD_BoilderPlate_SendToGroup extends JavaProcess
 				if (email != null)
 				{
 					while (st.hasMoreTokens())
-						email.addTo(st.nextToken());
+					{
+						email.addTo(EMailAddress.ofString(st.nextToken()));
+					}
 					final EMailSentStatus emailSentStatus = email.send();
 					statusMessage = emailSentStatus.getSentMsg();
 					
 					//
 					if (from != null)
+					{
 						new MUserMail(Env.getCtx(), from.getAD_User_ID(), email, emailSentStatus).save();
+					}
 					if (emailSentStatus.isSentOK())
 					{
 						//ADialog.info(0, this, "MessageSent");

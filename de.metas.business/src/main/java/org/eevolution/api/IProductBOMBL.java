@@ -30,7 +30,9 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
+import de.metas.util.lang.Percent;
 
 public interface IProductBOMBL extends ISingletonService
 {
@@ -47,7 +49,7 @@ public interface IProductBOMBL extends ISingletonService
 	 * @param productId
 	 * @return low level code (LLC)
 	 */
-	int calculateProductLowestLevel(int productId);
+	int calculateProductLowestLevel(ProductId productId);
 
 	IProductLowLevelUpdater updateProductLowLevels();
 
@@ -55,10 +57,10 @@ public interface IProductBOMBL extends ISingletonService
 	 * Calculates Qty + Scrap
 	 *
 	 * @param qty qty (without scrap)
-	 * @param qtyScrap scrap percent (between 0..100)
+	 * @param scrapPercent scrap percent (between 0..100)
 	 * @return qty * (1 + qtyScrap/100)
 	 */
-	BigDecimal calculateQtyWithScrap(BigDecimal qty, BigDecimal qtyScrap);
+	BigDecimal calculateQtyWithScrap(BigDecimal qty, Percent scrapPercent);
 
 	/**
 	 * Checks if a BOMLine which is a <code>X_PP_Product_BOMLine.COMPONENTTYPE_Variant</code> has a valid VariantGroup<br>
@@ -84,4 +86,10 @@ public interface IProductBOMBL extends ISingletonService
 	BigDecimal getQtyMultiplier(I_PP_Product_BOMLine productBomLine, ProductId endProductId);
 
 	String getBOMDescriptionForProductId(ProductId productId);
+
+	Quantity getQtyIncludingScrap(I_PP_Product_BOMLine bomLine);
+
+	Quantity getQtyExcludingScrap(I_PP_Product_BOMLine bomLine);
+
+	Percent getCoProductCostDistributionPercent(I_PP_Product_BOMLine bomLine);
 }

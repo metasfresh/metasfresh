@@ -1,12 +1,11 @@
 package org.eevolution.model.validator;
 
 import org.adempiere.ad.modelvalidator.DocTimingType;
-import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 import org.eevolution.model.I_PP_Order;
 
@@ -30,49 +29,56 @@ import lombok.NonNull;
 @Interceptor(I_PP_Order.class)
 public class PP_Order_PostMaterialEvent
 {
+	private final PPOrderPojoConverter ppOrderConverter;
+	private final PostMaterialEventService materialEventService;
+
+	public PP_Order_PostMaterialEvent(
+			@NonNull final PPOrderPojoConverter ppOrderConverter,
+			@NonNull final PostMaterialEventService materialEventService)
+	{
+		this.ppOrderConverter = ppOrderConverter;
+		this.materialEventService = materialEventService;
+	}
 
 	@ModelChange(//
 			timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void postMaterialEvent_newPPOrder(
-			@NonNull final I_PP_Order ppOrder,
+			@NonNull final I_PP_Order ppOrderRecord,
 			@NonNull final ModelChangeType type)
 	{
-		final boolean newPPOrder = type.isNew() || ModelChangeUtil.isJustActivated(ppOrder);
+		final boolean newPPOrder = type.isNew() || ModelChangeUtil.isJustActivated(ppOrderRecord);
 		if (!newPPOrder)
 		{
 			return;
 		}
 
-		final PPOrderPojoConverter pojoSupplier = Adempiere.getBean(PPOrderPojoConverter.class);
-		final PPOrder ppOrderPojo = pojoSupplier.asPPOrderPojo(ppOrder);
+		final PPOrder ppOrderPojo = ppOrderConverter.toPPOrder(ppOrderRecord);
 
 		final PPOrderCreatedEvent ppOrderCreatedEvent = PPOrderCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(ppOrder))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrderRecord.getAD_Client_ID(), ppOrderRecord.getAD_Org_ID()))
 				.ppOrder(ppOrderPojo)
 				.build();
 
-		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
 		materialEventService.postEventAfterNextCommit(ppOrderCreatedEvent);
 	}
 
 	@ModelChange(//
 			timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
 	public void fireMaterialEvent_deletedPPOrder(
-			@NonNull final I_PP_Order ppOrder,
+			@NonNull final I_PP_Order ppOrderRecord,
 			@NonNull final ModelChangeType type)
 	{
-		final boolean deletedPPOrder = type.isDelete() || ModelChangeUtil.isJustDeactivated(ppOrder);
+		final boolean deletedPPOrder = type.isDelete() || ModelChangeUtil.isJustDeactivated(ppOrderRecord);
 		if (!deletedPPOrder)
 		{
 			return;
 		}
 
 		final PPOrderDeletedEvent event = PPOrderDeletedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(ppOrder))
-				.ppOrderId(ppOrder.getPP_Order_ID())
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrderRecord.getAD_Client_ID(), ppOrderRecord.getAD_Org_ID()))
+				.ppOrderId(ppOrderRecord.getPP_Order_ID())
 				.build();
 
-		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
 		materialEventService.postEventAfterNextCommit(event);
 	}
 
@@ -88,10 +94,9 @@ public class PP_Order_PostMaterialEvent
 			@NonNull final DocTimingType type)
 	{
 		final PPOrderChangedEvent changeEvent = PPOrderChangedEventFactory
-				.newWithPPOrderBeforeChange(ppOrderRecord)
+				.newWithPPOrderBeforeChange(ppOrderConverter, ppOrderRecord)
 				.inspectPPOrderAfterChange();
 
-		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
 		materialEventService.postEventAfterNextCommit(changeEvent);
 	}
 }

@@ -1,0 +1,3 @@
+CREATE TABLE Temp_AD_Element_17102018_4663
+AS 
+SELECT * FROM AD_Element;

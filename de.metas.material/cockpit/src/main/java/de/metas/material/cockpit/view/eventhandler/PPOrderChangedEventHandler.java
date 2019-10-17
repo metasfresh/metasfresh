@@ -1,6 +1,8 @@
 package de.metas.material.cockpit.view.eventhandler;
 
 import java.math.BigDecimal;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
+import de.metas.material.cockpit.CockpitConstants;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
@@ -65,12 +68,13 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 	{
 		final List<PPOrderLine> newPPOrderLines = ppOrderChangedEvent.getNewPPOrderLines();
 
-		final ImmutableList.Builder<UpdateMainDataRequest> requests = ImmutableList.builder();
+		final List<UpdateMainDataRequest> requests = new ArrayList<>();
 		for (final PPOrderLine newPPOrderLine : newPPOrderLines)
 		{
 			final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
 					.productDescriptor(newPPOrderLine.getProductDescriptor())
-					.date(TimeUtil.getDay(newPPOrderLine.getIssueOrReceiveDate()))
+					// .date(TimeUtil.getDay(newPPOrderLine.getIssueOrReceiveDate()))
+					.date(TimeUtil.getDay(newPPOrderLine.getIssueOrReceiveDate(), CockpitConstants.TIME_ZONE))
 					.build();
 
 			final BigDecimal qtyRequiredForProduction = //
@@ -89,7 +93,7 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 		{
 			final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
 					.productDescriptor(deletedPPOrderLine.getProductDescriptor())
-					.date(TimeUtil.getDay(deletedPPOrderLine.getIssueOrReceiveDate()))
+					.date(deletedPPOrderLine.getIssueOrReceiveDate().truncatedTo(ChronoUnit.DAYS))
 					.build();
 
 			final BigDecimal qtyRequiredForProduction = //
@@ -104,8 +108,7 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 			requests.add(request);
 		}
 
-		final List<ChangedPPOrderLineDescriptor> changedPPOrderLines = ppOrderChangedEvent.getPpOrderLineChanges();
-		for (final ChangedPPOrderLineDescriptor changedPPOrderLine : changedPPOrderLines)
+		for (final ChangedPPOrderLineDescriptor changedPPOrderLine : ppOrderChangedEvent.getPpOrderLineChanges())
 		{
 			final BigDecimal qtyDelta = changedPPOrderLine.computeOpenQtyDelta();
 			if (qtyDelta.signum() == 0)
@@ -115,7 +118,7 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 
 			final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
 					.productDescriptor(changedPPOrderLine.getProductDescriptor())
-					.date(TimeUtil.getDay(changedPPOrderLine.getIssueOrReceiveDate()))
+					.date(TimeUtil.getDay(changedPPOrderLine.getIssueOrReceiveDate(), CockpitConstants.TIME_ZONE))
 					.build();
 
 			final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
@@ -125,7 +128,7 @@ public class PPOrderChangedEventHandler implements MaterialEventHandler<PPOrderC
 			requests.add(request);
 		}
 
-		requests.build()
-				.forEach(request -> dataUpdateRequestHandler.handleDataUpdateRequest(request));
+		requests.forEach(dataUpdateRequestHandler::handleDataUpdateRequest);
 	}
+
 }

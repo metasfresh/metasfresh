@@ -26,7 +26,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  */
 
 import java.util.Properties;
+import java.util.function.Function;
 
+import org.adempiere.ad.dao.impl.POJOQuery;
 import org.adempiere.ad.persistence.cache.AbstractModelListCacheLocal;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -46,7 +48,12 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Util;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+
 import ch.qos.logback.classic.Level;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.cache.CacheMgt;
@@ -56,7 +63,12 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.UnitTestServiceNamePolicy;
+import de.metas.util.lang.UIDStringUtil;
 import de.metas.util.time.SystemTime;
+import io.github.jsonSnapshot.SnapshotConfig;
+import io.github.jsonSnapshot.SnapshotMatcher;
+import io.github.jsonSnapshot.SnapshotMatchingStrategy;
+import io.github.jsonSnapshot.matchingstrategy.JSONAssertMatchingStrategy;
 
 /**
  * Helper to be used in order to setup ANY test which depends on ADempiere.
@@ -69,6 +81,22 @@ public class AdempiereTestHelper
 	private static final AdempiereTestHelper instance = new AdempiereTestHelper();
 
 	public static final String AD_LANGUAGE = "de_DE";
+
+	/** This config makes sure that the snapshot files end up in {@code src/test/resource/} so they make it into the test jars */
+	public static final SnapshotConfig SNAPSHOT_CONFIG = new SnapshotConfig()
+	{
+		@Override
+		public String getFilePath()
+		{
+			return "src/test/resources/";
+		}
+
+		@Override
+		public SnapshotMatchingStrategy getSnapshotMatchingStrategy()
+		{
+			return JSONAssertMatchingStrategy.INSTANCE_STRICT;
+		}
+	};
 
 	public static AdempiereTestHelper get()
 	{
@@ -113,6 +141,8 @@ public class AdempiereTestHelper
 		// Make sure staticInit was called
 		staticInit();
 
+		POJOQuery.clear_UUID_TO_PAGE();
+
 		// Make sure database is clean
 		POJOLookupMap.resetAll();
 
@@ -143,8 +173,9 @@ public class AdempiereTestHelper
 		Language.setBaseLanguage(() -> AD_LANGUAGE);
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, AD_LANGUAGE);
 
-		// Reset System Time
-		SystemTime.setTimeSource(null);
+		// Reset System Time and random UUID
+		SystemTime.resetTimeSource();
+		UIDStringUtil.reset();
 
 		// Caching
 		AbstractModelListCacheLocal.DEBUG = true;
@@ -152,6 +183,9 @@ public class AdempiereTestHelper
 
 		// Logging
 		LogManager.setLevel(Level.WARN);
+
+		// JSON
+		JsonObjectMapperHolder.resetSharedJsonObjectMapper();
 
 		createSystemRecords();
 	}
@@ -198,5 +232,26 @@ public class AdempiereTestHelper
 		final I_M_AttributeSetInstance noAsi = newInstance(I_M_AttributeSetInstance.class);
 		noAsi.setM_AttributeSetInstance_ID(0);
 		save(noAsi);
+	}
+
+	/**
+	 * Create JSON serialization function to be used by {@link SnapshotMatcher#start(SnapshotConfig, Function)}.
+	 * 
+	 * The function is using our {@link JsonObjectMapperHolder#newJsonObjectMapper()} with a pretty printer.
+	 */
+	public static Function<Object, String> createSnapshotJsonFunction()
+	{
+		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+		final ObjectWriter writerWithDefaultPrettyPrinter = jsonObjectMapper.writerWithDefaultPrettyPrinter();
+		return object -> {
+			try
+			{
+				return writerWithDefaultPrettyPrinter.writeValueAsString(object);
+			}
+			catch (JsonProcessingException e)
+			{
+				throw AdempiereException.wrapIfNeeded(e);
+			}
+		};
 	}
 }

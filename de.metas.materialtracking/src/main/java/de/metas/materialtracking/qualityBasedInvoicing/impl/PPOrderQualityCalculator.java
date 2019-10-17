@@ -29,8 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -49,9 +47,13 @@ import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionOrder;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Calculates and updates Quality related fields of a {@link I_PP_Order} (and it's BOM Lines).
@@ -84,7 +86,7 @@ public class PPOrderQualityCalculator
 				continue;
 			}
 
-			Loggables.get().addLog("Processing PP_Order {0}", qiOrder.getPP_Order());
+			Loggables.addLog("Processing PP_Order {0}", qiOrder.getPP_Order());
 
 			//
 			// Update QM_QtyDeliveredPercOfRaw
@@ -167,22 +169,24 @@ public class PPOrderQualityCalculator
 	}
 
 	/**
-	 *
-	 * @param materialTracking
-	 * @param product
-	 * @param uomTo
 	 * @return quantity received (in <code>uomTo</code>) from linked material receipt lines
 	 */
-	private final BigDecimal retrieveQtyReceived(final I_M_Material_Tracking materialTracking, final I_M_Product product, final I_C_UOM uomTo)
+	private final BigDecimal retrieveQtyReceived(
+			@NonNull final I_M_Material_Tracking materialTracking,
+			@NonNull final I_M_Product product,
+			@NonNull final I_C_UOM uomTo)
 	{
 		// Services
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
 		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 		Check.assumeNotNull(product, "product not null");
 		final int receivedProductId = product.getM_Product_ID();
-		final I_C_UOM productUOM = product.getC_UOM();
+
+		final I_C_UOM productUOM = uomDAO.getById(product.getC_UOM_ID());
+
 		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(receivedProductId);
 
 		BigDecimal qtyReceivedTotal = BigDecimal.ZERO;
@@ -241,9 +245,8 @@ public class PPOrderQualityCalculator
 		}
 	}
 
-	/* package */void updateQM_QtyDeliveredPercOfRaw(final IQualityInspectionOrder qiOrder)
+	/* package */void updateQM_QtyDeliveredPercOfRaw(@NonNull final IQualityInspectionOrder qiOrder)
 	{
-		Check.assumeNotNull(qiOrder, "qiOrder not null");
 		final IProductionMaterial rawProductionMaterial = qiOrder.getRawProductionMaterial();
 		final BigDecimal rawQty = rawProductionMaterial.getQty();
 		final I_C_UOM rawQtyUOM = rawProductionMaterial.getC_UOM();
@@ -319,8 +322,8 @@ public class PPOrderQualityCalculator
 				previousQtyDeliveredAvg = getQtyDeliveredAvg(previousProductionMaterial, qtyDelivered.getUOM());
 			}
 
-			final Quantity qtyDeliveredAvg = qtyDelivered.weightedAverage(previousQtyDeliveredAvg.getAsBigDecimal(), previousInspectionNumber);
-			productionMaterial.setQM_QtyDeliveredAvg(qtyDeliveredAvg.getAsBigDecimal());
+			final Quantity qtyDeliveredAvg = qtyDelivered.weightedAverage(previousQtyDeliveredAvg.toBigDecimal(), previousInspectionNumber);
+			productionMaterial.setQM_QtyDeliveredAvg(qtyDeliveredAvg.toBigDecimal());
 
 			save(productionMaterial);
 		}

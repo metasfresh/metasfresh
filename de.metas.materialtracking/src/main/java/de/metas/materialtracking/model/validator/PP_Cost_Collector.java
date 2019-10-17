@@ -30,12 +30,13 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPCostCollectorDAO;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
-import de.metas.materialtracking.MTLinkRequest;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.spi.impl.listeners.PPCostCollectorMaterialTrackingListener;
 import de.metas.util.Services;
@@ -50,34 +51,7 @@ public class PP_Cost_Collector
 		materialTrackingBL.addModelTrackingListener(I_PP_Cost_Collector.Table_Name, PPCostCollectorMaterialTrackingListener.instance);
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
-	public void linkToMaterialTracking(final I_PP_Cost_Collector ppCostCollector)
-	{
-		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
-
-		// don't link reversals, because their original CC will also be unlinked
-		if (ppCostCollectorBL.isReversal(ppCostCollector))
-		{
-			return;
-		}
-
-		// Applies only on issue collectors
-		if (!ppCostCollectorBL.isMaterialIssue(ppCostCollector, false))
-		{
-			return;
-		}
-
-		// Applies only on those orders which are linked to a material tracking
-		final I_M_Material_Tracking materialTracking = Services.get(IMaterialTrackingDAO.class).retrieveMaterialTrackingForModel(ppCostCollector.getPP_Order());
-		if (materialTracking == null)
-		{
-			return;
-		}
-
-		// create a M_Material_Tracking_Ref
-		linkCostCollector(ppCostCollector, materialTracking);
-	}
-
+	// note that the linking part is explicitly done in HUPPOrderMaterialTrackingBL
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_VOID,
 			ModelValidator.TIMING_AFTER_REACTIVATE,
 			ModelValidator.TIMING_AFTER_REVERSEACCRUAL,
@@ -86,27 +60,29 @@ public class PP_Cost_Collector
 	{
 		final IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);
 		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
+		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
+		final IPPCostCollectorDAO ppCostCollectorDAO = Services.get(IPPCostCollectorDAO.class);
 
 		// Applies only on issue collectors
-		if (!ppCostCollectorBL.isMaterialIssue(ppCostCollector, false))
+		if (!ppCostCollectorBL.isAnyComponentIssue(ppCostCollector))
 		{
 			return;
 		}
 
 		// Applies only on those Quality Inspection orders which are linked to a material tracking
-		final I_M_Material_Tracking materialTracking = Services.get(IMaterialTrackingDAO.class).retrieveMaterialTrackingForModel(ppCostCollector);
-		if (materialTracking == null)
+		final List<I_M_Material_Tracking> materialTrackings = materialTrackingDAO.retrieveMaterialTrackingsForModel(ppCostCollector);
+		if (materialTrackings.isEmpty())
 		{
 			return;
 		}
 
 		// unlink
-		materialTrackingBL.unlinkModelFromMaterialTracking(ppCostCollector);
+		materialTrackingBL.unlinkModelFromMaterialTrackings(ppCostCollector);
 
 		// also unlink the ppOrder, if this was the last costCollector
-		final I_PP_Order ppOrder = ppCostCollector.getPP_Order();
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppCostCollector.getPP_Order_ID());
 		boolean anyCCLeft = false;
-		final List<I_PP_Cost_Collector> costCollectors = Services.get(IPPCostCollectorDAO.class).retrieveNotReversedForOrder(ppOrder);
+		final List<I_PP_Cost_Collector> costCollectors = Services.get(IPPCostCollectorDAO.class).getCompletedOrClosedByOrderId(ppOrderId);
 
 		for (final I_PP_Cost_Collector cc : costCollectors)
 		{
@@ -114,7 +90,7 @@ public class PP_Cost_Collector
 			{
 				continue;
 			}
-			if (ppCostCollectorBL.isMaterialIssue(cc, false))
+			if (ppCostCollectorBL.isAnyComponentIssue(cc))
 			{
 				anyCCLeft = true;
 				break;
@@ -122,18 +98,8 @@ public class PP_Cost_Collector
 		}
 		if (!anyCCLeft)
 		{
-			materialTrackingBL.unlinkModelFromMaterialTracking(ppOrder);
+			final I_PP_Order ppOrder = Services.get(IPPOrderDAO.class).getById(ppOrderId);
+			materialTrackingBL.unlinkModelFromMaterialTrackings(ppOrder);
 		}
 	}
-
-	private void linkCostCollector(final I_PP_Cost_Collector ppCostCollector, final I_M_Material_Tracking materialTracking)
-	{
-		final IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);
-		materialTrackingBL.linkModelToMaterialTracking(
-				MTLinkRequest.builder()
-						.setModel(ppCostCollector)
-						.setMaterialTracking(materialTracking)
-						.build());
 	}
-
-}

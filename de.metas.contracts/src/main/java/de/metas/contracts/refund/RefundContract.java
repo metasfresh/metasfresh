@@ -1,5 +1,7 @@
 package de.metas.contracts.refund;
 
+import static de.metas.util.collections.CollectionUtils.extractSingleElement;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -13,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.invoice.InvoiceSchedule;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -74,11 +77,12 @@ public class RefundContract
 		this.refundConfigs = RefundConfigs.sortByMinQtyDesc(refundConfigs);
 	}
 
-	public RefundConfig getRefundConfig(@NonNull final BigDecimal qty)
+	public RefundConfig getRefundConfig(@NonNull final BigDecimal qtyInStockUom)
 	{
+
 		return refundConfigs
 				.stream()
-				.filter(config -> config.getMinQty().compareTo(qty) <= 0)
+				.filter(config -> config.getMinQty().compareTo(qtyInStockUom) <= 0)
 				.findFirst()
 				.orElse(null);
 	}
@@ -118,6 +122,35 @@ public class RefundContract
 				.stream()
 				.filter(RefundConfig::isUseInProfitCalculation)
 				.findFirst();
+	}
+
+	/**
+	 * With this instance's {@code StartDate} as basis, the method returns the first date that is
+	 * after or at the given {@code currentDate} and that is aligned with this instance's invoice schedule.
+	 */
+	public NextInvoiceDate computeNextInvoiceDate(@NonNull final LocalDate currentDate)
+	{
+		final InvoiceSchedule invoiceSchedule = extractSingleElement(refundConfigs, RefundConfig::getInvoiceSchedule);
+
+		LocalDate date = invoiceSchedule.calculateNextDateToInvoice(startDate);
+		while (date.isBefore(currentDate))
+		{
+			final LocalDate nextDate = invoiceSchedule.calculateNextDateToInvoice(date);
+
+			Check.assume(nextDate.isAfter(date), // make sure not to get stuck in an endless loop
+					"For the given date={}, invoiceSchedule.calculateNextDateToInvoice needs to return a nextDate that is later; nextDate={}",
+					date, nextDate);
+
+			date = nextDate;
+		}
+		return new NextInvoiceDate(invoiceSchedule, date);
+	}
+
+	@Value
+	public static class NextInvoiceDate
+	{
+		InvoiceSchedule invoiceSchedule;
+		LocalDate dateToInvoice;
 	}
 
 }

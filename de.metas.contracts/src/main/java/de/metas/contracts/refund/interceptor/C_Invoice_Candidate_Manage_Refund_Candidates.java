@@ -17,6 +17,8 @@ import de.metas.contracts.refund.CandidateAssignmentService;
 import de.metas.contracts.refund.RefundInvoiceCandidate;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidateService;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
@@ -46,7 +48,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@Component("de.metas.contracts.refund.interceptor.C_Invoice_Candidate")
+@Component
 @Interceptor(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate_Manage_Refund_Candidates
 {
@@ -76,14 +78,14 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 			timings = ModelValidator.TYPE_AFTER_CHANGE, //
 			ifColumnsChanged = {
 					I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice,
-					I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Effective,
+					I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Override,
 					I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice,
 					I_C_Invoice_Candidate.COLUMNNAME_NetAmtInvoiced })
 	public void associateWithRefundCandidate(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
 		if (!Services.get(IInvoiceCandBL.class).isUpdateProcessInProgress())
 		{
-			return; // we one want one part to manage refund invoice candidate to avoid locking problems and other race conditions
+			return; // only the update process shall manage refund invoice candidates, to avoid locking problems and other race conditions
 		}
 
 		final Timestamp invoicableFromDate = getValueOverrideOrValue(invoiceCandidateRecord, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
@@ -93,12 +95,12 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 		}
 		if (refundInvoiceCandidateService.isRefundInvoiceCandidateRecord(invoiceCandidateRecord))
 		{
-			return;
+			return; // it's already associated
 		}
 		associateDuringUpdateProcess0(invoiceCandidateRecord);
 	}
 
-	private void associateDuringUpdateProcess0(final I_C_Invoice_Candidate invoiceCandidateRecord)
+	private void associateDuringUpdateProcess0(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
 		try
 		{
@@ -108,24 +110,32 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 		catch (final RuntimeException e)
 		{
 			// allow the "normal ICs" to be updated, even if something is wrong with the "refund-ICs"
-			Loggables
-					.get()
-					.withLogger(logger, Level.WARN)
-					.addLog("associateDuringUpdateProcess0 - Caught an exception; please check the async workpackage log; e={}", e.toString());
+			final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(e);
+			Loggables.withLogger(logger, Level.WARN)
+					.addLog("associateDuringUpdateProcess0 - Caught an exception withe processing C_Invoice_Candidate_ID={}; "
+							+ "please check the async workpackage log; AD_Issue_ID={}; e={}",
+							invoiceCandidateRecord.getC_Invoice_Candidate_ID(), issueId, e.toString());
+
 		}
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void deleteAssignment(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
+	public void deleteAssignment(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		if (refundInvoiceCandidateService.isRefundInvoiceCandidateRecord(invoiceCandidateRecord))
+		if (refundInvoiceCandidateService.isRefundInvoiceCandidateRecord(icRecord))
 		{
-			final RefundInvoiceCandidate refundCandidate = refundInvoiceCandidateRepository.ofRecord(invoiceCandidateRecord);
+			final RefundInvoiceCandidate refundCandidate = refundInvoiceCandidateRepository.ofRecord(icRecord);
 			invoiceCandidateAssignmentService.removeAllAssignments(refundCandidate);
 		}
 		else
 		{
-			final AssignableInvoiceCandidate assignableCandidate = assignableInvoiceCandidateRepository.ofRecord(invoiceCandidateRecord);
+			final Timestamp invoicableFromDate = getValueOverrideOrValue(icRecord, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
+			if (invoicableFromDate == null)
+			{
+				return; // this IC was not yet once validated; it's certainly no assigned, and we can't create an AssignableInvoiceCandidate from it, because invoicableFromDate may not be null
+			}
+
+			final AssignableInvoiceCandidate assignableCandidate = assignableInvoiceCandidateRepository.ofRecord(icRecord);
 			if (assignableCandidate.isAssigned())
 			{
 				invoiceCandidateAssignmentService.unassignCandidate(assignableCandidate);

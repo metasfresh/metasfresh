@@ -444,7 +444,7 @@ public class SwingPackingTerminalPanel implements ITerminalPanel, ITerminalBaseP
 		if (pickingSlotCapacity != null
 				&& !pickingSlotCapacity.isInfiniteCapacity())
 		{
-			final BigDecimal qtyCapacity = pickingSlotCapacity.getCapacityQty();
+			final BigDecimal qtyCapacity = pickingSlotCapacity.toBigDecimal();
 			return qtyCapacity.min(qtyUnallocated); // qtyCapacity, but if it's bigger then our qty to allocate, then qty to allocate would be smart to set
 		}
 

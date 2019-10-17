@@ -2,21 +2,24 @@ package de.metas.order;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+import java.time.ZonedDateTime;
+
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 import org.springframework.stereotype.Repository;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -52,17 +55,20 @@ public class OrderLineRepository
 
 	public OrderLine ofRecord(@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		final int warehouseRepoId = Util.firstGreaterThanZeroSupplier(
+		final int warehouseRepoId = CoalesceUtil.firstGreaterThanZeroSupplier(
 				() -> orderLineRecord.getM_Warehouse_ID(),
 				() -> orderLineRecord.getC_Order().getM_Warehouse_ID());
 
-		final int bPartnerRepoId = Util.firstGreaterThanZeroSupplier(
+		final int bPartnerRepoId = CoalesceUtil.firstGreaterThanZeroSupplier(
 				() -> orderLineRecord.getC_BPartner_ID(),
 				() -> orderLineRecord.getC_Order().getC_BPartner_ID());
 
-		final int paymentTermId = Util.firstGreaterThanZeroSupplier(
-				() -> orderLineRecord.getC_PaymentTerm_Override_ID(),
-				() -> orderLineRecord.getC_Order().getC_PaymentTerm_ID());
+		final PaymentTermId paymentTermId = Services.get(IOrderLineBL.class).getPaymentTermId(orderLineRecord);
+
+		final ZonedDateTime datePromised = CoalesceUtil.firstValidValue(
+				date -> date != null,
+				() -> TimeUtil.asZonedDateTime(orderLineRecord.getDatePromised()),
+				() -> TimeUtil.asZonedDateTime(orderLineRecord.getC_Order().getDatePromised()));
 
 		return OrderLine.builder()
 				.id(OrderLineId.ofRepoIdOrNull(orderLineRecord.getC_OrderLine_ID()))
@@ -70,31 +76,27 @@ public class OrderLineRepository
 				.orgId(OrgId.ofRepoId(orderLineRecord.getAD_Org_ID()))
 				.line(orderLineRecord.getLine())
 				.bPartnerId(BPartnerId.ofRepoId(bPartnerRepoId))
-				.datePromised(TimeUtil.asLocalDateTime(orderLineRecord.getDatePromised()))
+				.datePromised(datePromised)
 				.productId(ProductId.ofRepoId(orderLineRecord.getM_Product_ID()))
-				.priceActual(moneyOfRecordsPriceActual(orderLineRecord))
-				.orderedQty(quantityOfRecordsQtyEntered(orderLineRecord))
+				.priceActual(extractPriceActual(orderLineRecord))
+				.orderedQty(extractQtyEntered(orderLineRecord))
 				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(orderLineRecord.getM_AttributeSetInstance_ID()))
 				.warehouseId(WarehouseId.ofRepoId(warehouseRepoId))
-				.PaymentTermId(PaymentTermId.ofRepoId(paymentTermId))
+				.paymentTermId(paymentTermId)
 				.soTrx(SOTrx.ofBoolean(orderLineRecord.getC_Order().isSOTrx()))
 				.build();
 	}
 
-	private Money moneyOfRecordsPriceActual(@NonNull final I_C_OrderLine orderLineRecord)
+	private Money extractPriceActual(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		// note that C_OrderLine.C_Currency_ID is mandatory, so there won't be an NPE
 		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLineRecord.getC_Currency_ID());
 
-		return Money.of(
-				orderLineRecord.getPriceActual(),
-				currencyId);
+		return Money.of(orderLineRecord.getPriceActual(), currencyId);
 	}
 
-	private Quantity quantityOfRecordsQtyEntered(@NonNull final I_C_OrderLine orderLineRecord)
+	private Quantity extractQtyEntered(@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		return Quantity.of(
-				orderLineRecord.getQtyEntered(),
-				orderLineRecord.getC_UOM());
+		return Services.get(IOrderLineBL.class).getQtyEntered(orderLineRecord);
 	}
 }

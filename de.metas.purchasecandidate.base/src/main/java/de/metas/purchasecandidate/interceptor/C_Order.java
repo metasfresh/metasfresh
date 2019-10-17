@@ -36,7 +36,7 @@ import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrd
  * #L%
  */
 @Interceptor(I_C_Order.class)
-@Component("de.metas.purchasecandidate.interceptor.C_Order")
+@Component
 public class C_Order
 {
 	@Autowired
@@ -50,8 +50,8 @@ public class C_Order
 			return;
 		}
 
-		final OrderId salesOrderid = OrderId.ofRepoId(order.getC_Order_ID());
-		final Set<PurchaseCandidateId> purchaseCandidateIds = purchaseCandidateRepo.retrieveManualPurchaseCandidateIdsBySalesOrderIdFilterQtyToPurchase(salesOrderid);
+		final OrderId salesOrderId = OrderId.ofRepoId(order.getC_Order_ID());
+		final Set<PurchaseCandidateId> purchaseCandidateIds = purchaseCandidateRepo.retrieveManualPurchaseCandidateIdsBySalesOrderIdFilterQtyToPurchase(salesOrderId);
 		if (purchaseCandidateIds.isEmpty())
 		{
 			return;

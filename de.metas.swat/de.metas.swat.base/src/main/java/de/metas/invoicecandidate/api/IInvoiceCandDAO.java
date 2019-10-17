@@ -21,9 +21,9 @@ package de.metas.invoicecandidate.api;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -32,32 +32,36 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceSchedule;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.aggregation.model.I_C_Aggregation;
+import de.metas.bpartner.BPartnerId;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InventoryLine;
 import de.metas.invoicecandidate.model.I_M_ProductGroup;
+import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 
 public interface IInvoiceCandDAO extends ISingletonService
 {
 	/**
-f	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#COLUMNNAME_HeaderAggregationKey}
+	 * f * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#COLUMNNAME_HeaderAggregationKey}
+	 *
 	 * @see #retrieveInvoiceCandidates(IQueryBuilder)
 	 */
 	Iterator<I_C_Invoice_Candidate> retrieveIcForSelection(Properties ctx, PInstanceId pinstanceId, String trxName);
@@ -98,13 +102,11 @@ f	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#
 
 	List<I_C_InvoiceLine> retrieveIlForIc(I_C_Invoice_Candidate invoiceCand);
 
-	List<I_C_Invoice_Line_Alloc> retrieveIlaForIc(I_C_Invoice_Candidate invoiceCand);
+	List<I_C_Invoice_Line_Alloc> retrieveIlaForIc(InvoiceCandidateId invoiceCandidateId);
 
 	List<I_C_Invoice_Line_Alloc> retrieveIlaForIl(I_C_InvoiceLine il);
 
 	I_C_Invoice_Line_Alloc retrieveIlaForIcAndIl(I_C_Invoice_Candidate invoiceCand, org.compiere.model.I_C_InvoiceLine invoiceLine);
-
-	List<I_C_Invoice_Candidate> retrieveForBillPartner(I_C_BPartner bpartner);
 
 	/**
 	 * Loads those invoice candidates
@@ -175,12 +177,7 @@ f	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#
 	 */
 	void invalidateCandsForHeaderAggregationKey(Properties ctx, String headerAggregationKey, String trxName);
 
-	/**
-	 * Invalidates all ICs that have the given <code>Bill_BPartner_ID</code> and have their effective invoice rule set to <code>KundenintervallNachLieferung</code>.
-	 *
-	 * @param bpartner
-	 */
-	void invalidateCandsForBPartnerInvoiceRule(I_C_BPartner bpartner);
+	void invalidateCandsForBPartnerInvoiceRule(BPartnerId bpartnerId);
 
 	/**
 	 * Invalidates all ICs that have the given <code>Bill_BPartner_ID</code>.
@@ -206,15 +203,18 @@ f	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#
 	 *
 	 * @param dateInvoiced new value to be set.
 	 * @param selectionId id of the <code>T_Selection</code> containing the candidates that shall be updated.
+	 * @param updateOnlyIfNull if true then the DateInvoiced column will be updated only if is null
 	 */
-	void updateDateInvoiced(Timestamp dateInvoiced, PInstanceId selectionId);
+	void updateDateInvoiced(LocalDate dateInvoiced, PInstanceId selectionId, boolean updateOnlyIfNull);
 
 	/**
-	 * Similar to {@link #updateDateInvoiced(Timestamp, int, String)}, but updates the <code>DateAcct</code> column.
+	 * Similar to {@link #updateDateInvoiced(Timestamp, PInstanceId, boolean)}, but updates the <code>DateAcct</code> column.
 	 *
 	 * @task 08437
 	 */
-	void updateDateAcct(Timestamp dateAcct, PInstanceId selectionId);
+	void updateDateAcct(LocalDate dateAcct, PInstanceId selectionId);
+
+	void updateNullDateAcctFromDateInvoiced(PInstanceId selectionId);
 
 	/**
 	 * Similar to {@link #updateDateInvoiced(Timestamp, int, String)}, but updates the <code>POReference</code> column.
@@ -230,25 +230,13 @@ f	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#
 	void updateMissingPaymentTermIds(PInstanceId selectionId);
 
 	/**
-	 * Mass-update a given invoice candidate column.
-	 *
-	 * If there were any changes, those invoice candidates will be invalidated.
-	 *
-	 * @param invoiceCandidateColumnName {@link I_C_Invoice_Candidate}'s column to update
-	 * @param value value to set (you can also use {@link ModelColumnNameValue})
-	 * @param updateOnlyIfNull if true then it will update only if column value is null (not set)
-	 * @param selectionId invoice candidates selection (AD_PInstance_ID)
-	 */
-	<ValueType> void updateColumnForSelection(String invoiceCandidateColumnName, ValueType value, boolean updateOnlyIfNull, PInstanceId selectionId);
-
-	/**
 	 * Gets the sum of all {@link I_C_Invoice_Candidate#COLUMNNAME_NetAmtToInvoice} values of the invoice candidates that have the given bPartner and are invoiceable before or at the given date. The
 	 * amounts are converted to the currency which is set in the accounting schema of the bPartner's clients AD_ClientInfo.
 	 *
 	 */
 	BigDecimal retrieveInvoicableAmount(I_C_BPartner billBPartner, Timestamp date);
 
-	BigDecimal retrieveInvoicableAmount(Properties ctx, IInvoiceCandidateQuery query, int targetCurrencyId, int adClientId, int adOrgId, String amountColumnName, String trxName);
+	BigDecimal retrieveInvoicableAmount(Properties ctx, IInvoiceCandidateQuery query, CurrencyId targetCurrencyId, int adClientId, int adOrgId, String amountColumnName, String trxName);
 
 	/**
 	 * Creates a new {@link IInvoiceCandidateQuery} instance
@@ -272,6 +260,12 @@ f	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#
 	<T extends org.compiere.model.I_C_Invoice> Map<Integer, T> retrieveInvoices(Properties ctx, String tableName, int recordId, Class<T> clazz, boolean onlyUnpaid, String trxName);
 
 	/**
+	 * @deprecated please use {@link #retrieveICIOLAssociationsExclRE(InvoiceCandidateId)}
+	 */
+	@Deprecated
+	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(I_C_Invoice_Candidate invoiceCandidate);
+
+	/**
 	 * Returns the list of {@link I_C_InvoiceCandidate_InOutLine}s that
 	 * <ul>
 	 * <li>belong to the given {@code invoiceCandidate}</li>
@@ -279,12 +273,9 @@ f	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#
 	 * <li>belong to an {@code M_InOut} record that is active and completed or closed (i.e. <b>not</b> reversed)</li>
 	 * </ul>
 	 *
-	 * @param invoiceCandidate
-	 * @return
-	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/1566
 	 */
-	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(I_C_Invoice_Candidate invoiceCandidate);
+	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(InvoiceCandidateId invoiceCandidateId);
 
 	/**
 	 *
@@ -315,7 +306,7 @@ f	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#
 	 */
 	IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInOutLineQuery(I_M_InOutLine inoutLine);
 
-	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderLine(I_C_OrderLine orderLine);
+	List<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForOrderLineId(OrderLineId orderLineId);
 
 	/**
 	 * Return the active <code>M_InOutLine</code>s for the given invoice candidate.
@@ -357,6 +348,8 @@ f	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#
 	 * @param invoiceCandidate
 	 */
 	void save(I_C_Invoice_Candidate invoiceCandidate);
+
+	void saveAll(Collection<I_C_Invoice_Candidate> invoiceCandidates);
 
 	/**
 	 * Return all invoice candidates that have Processed='N'
@@ -427,4 +420,10 @@ f	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#
 	IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInventoryLineQuery(I_M_InventoryLine inventoryLine);
 
 	Set<String> retrieveOrderDocumentNosForIncompleteGroupsFromSelection(PInstanceId pinstanceId);
+
+	InvoiceCandidateId getFirstInvoiceableInvoiceCandId(OrderId orderId);
+
+	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
+
+	I_C_Invoice_Candidate getById(InvoiceCandidateId invoiceCandId);
 }

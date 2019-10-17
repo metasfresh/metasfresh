@@ -10,8 +10,11 @@ import org.compiere.model.I_C_Order;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.event.DocumentUserNotificationsProducer;
+import de.metas.order.IOrderBL;
 import de.metas.procurement.base.ProcurementConstants;
+import de.metas.user.UserId;
 import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -62,7 +65,7 @@ public class OrdersCollector implements IOrdersCollector
 			.eventAD_MessageParamsExtractor(OrdersCollector::extractUserNotificationADMessageParams)
 			.build();
 
-	private int defaultNotificationRecipientId = -1;
+	private UserId defaultNotificationRecipientId;
 
 	private OrdersCollector()
 	{
@@ -70,7 +73,7 @@ public class OrdersCollector implements IOrdersCollector
 
 	private static List<Object> extractUserNotificationADMessageParams(final I_C_Order order)
 	{
-		final I_C_BPartner bpartner = order.getC_BPartner();
+		final I_C_BPartner bpartner = Services.get(IOrderBL.class).getBPartner(order);
 		return ImmutableList.builder()
 				.add(TableRecordReference.of(order))
 				.add(bpartner.getValue())
@@ -78,7 +81,7 @@ public class OrdersCollector implements IOrdersCollector
 				.build();
 	}
 
-	public void setDefaultNotificationRecipientId(final int defaultNotificationRecipientId)
+	public void setDefaultNotificationRecipientId(final UserId defaultNotificationRecipientId)
 	{
 		this.defaultNotificationRecipientId = defaultNotificationRecipientId;
 	}
@@ -86,7 +89,7 @@ public class OrdersCollector implements IOrdersCollector
 	@Override
 	public void add(final I_C_Order order)
 	{
-		Loggables.get().addLog("@Created@ " + order.getDocumentNo());
+		Loggables.addLog("@Created@ " + order.getDocumentNo());
 
 		orderGeneratedNotifier.notify(order, defaultNotificationRecipientId);
 

@@ -15,6 +15,7 @@ import de.metas.event.Type;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -85,7 +86,7 @@ public class MovementUserNotificationsProducer
 
 	private final UserNotificationRequest createUserNotification(@NonNull final I_M_Movement movement)
 	{
-		final int recipientUserId = getNotificationRecipientUserId(movement);
+		final UserId recipientUserId = getNotificationRecipientUserId(movement);
 		final TableRecordReference movementRef = TableRecordReference.of(movement);
 		return newUserNotificationRequest()
 				.recipientUserId(recipientUserId)
@@ -101,7 +102,7 @@ public class MovementUserNotificationsProducer
 				.topic(USER_NOTIFICATIONS_TOPIC);
 	}
 
-	private final int getNotificationRecipientUserId(final I_M_Movement movement)
+	private final UserId getNotificationRecipientUserId(final I_M_Movement movement)
 	{
 		//
 		// In case of reversal i think we shall notify the current user too
@@ -110,16 +111,16 @@ public class MovementUserNotificationsProducer
 			final int currentUserId = Env.getAD_User_ID(Env.getCtx()); // current/triggering user
 			if (currentUserId > 0)
 			{
-				return currentUserId;
+				return UserId.ofRepoId(currentUserId);
 			}
 
-			return movement.getUpdatedBy(); // last updated
+			return UserId.ofRepoId(movement.getUpdatedBy()); // last updated
 		}
 		//
 		// Fallback: notify only the creator
 		else
 		{
-			return movement.getCreatedBy();
+			return UserId.ofRepoId(movement.getCreatedBy());
 		}
 	}
 

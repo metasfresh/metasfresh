@@ -15,13 +15,14 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 
 public class BPartnerCreditLimit_RequestApproval extends JavaProcess implements IProcessPrecondition
 {
 	private static final String PARAM_ApprovedBy_ID = I_C_BPartner_CreditLimit.COLUMNNAME_ApprovedBy_ID;
 	@Param(parameterName = PARAM_ApprovedBy_ID, mandatory = true)
-	private int approvedByUserId;
+	private int approvedByUserRepoId = -1;
 
 	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.remote("de.metas.bpartner.UserNotifications.CreditLimit");
 
@@ -47,7 +48,8 @@ public class BPartnerCreditLimit_RequestApproval extends JavaProcess implements 
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		if (approvedByUserId <= 0)
+		final UserId approvedByUserId = UserId.ofRepoIdOrNull(approvedByUserRepoId);
+		if (approvedByUserId == null)
 		{
 			throw new FillMandatoryException(PARAM_ApprovedBy_ID);
 		}

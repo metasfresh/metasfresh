@@ -37,6 +37,7 @@ import org.compiere.util.Env;
 
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /* package */class TrxItemExecutorBuilder<IT, RT> implements ITrxItemExecutorBuilder<IT, RT>
 {
@@ -52,17 +53,14 @@ import de.metas.util.Services;
 	private ITrxItemProcessor<IT, RT> _processor;
 	private ITrxItemExceptionHandler _exceptionHandler = ITrxItemProcessorExecutor.DEFAULT_ExceptionHandler;
 
-	private boolean _useTrxSavepoints =  ITrxItemProcessorExecutor.DEFAULT_UseTrxSavepoints;
+	private boolean _useTrxSavepoints = ITrxItemProcessorExecutor.DEFAULT_UseTrxSavepoints;
 
 	private Integer itemsPerBatch = null;
 
 	private OnItemErrorPolicy _onItemErrorPolicy = ITrxItemProcessorExecutor.DEFAULT_OnItemErrorPolicy; // #302
 
-	public TrxItemExecutorBuilder(final TrxItemProcessorExecutorService executorService)
+	public TrxItemExecutorBuilder(@NonNull final TrxItemProcessorExecutorService executorService)
 	{
-		super();
-
-		Check.assumeNotNull(executorService, "executorService not null");
 		this.executorService = executorService;
 	}
 
@@ -87,7 +85,7 @@ import de.metas.util.Services;
 		final ITrxItemChunkProcessor<IT, RT> processor = createProcessor();
 
 		// Create and configure the executor
-		final TrxItemChunkProcessorExecutor<IT, RT> executor = new TrxItemChunkProcessorExecutor<IT, RT>(processorCtx,
+		final TrxItemChunkProcessorExecutor<IT, RT> executor = new TrxItemChunkProcessorExecutor<>(processorCtx,
 				processor,
 				getExceptionHandler(),
 				_onItemErrorPolicy,
@@ -160,9 +158,8 @@ import de.metas.util.Services;
 	}
 
 	@Override
-	public TrxItemExecutorBuilder<IT, RT> setExceptionHandler(final ITrxItemExceptionHandler exceptionHandler)
+	public TrxItemExecutorBuilder<IT, RT> setExceptionHandler(@NonNull final ITrxItemExceptionHandler exceptionHandler)
 	{
-		Check.assumeNotNull(exceptionHandler, "exceptionHandler not null");
 		this._exceptionHandler = exceptionHandler;
 		return this;
 	}
@@ -173,7 +170,7 @@ import de.metas.util.Services;
 	}
 
 	@Override
-	public ITrxItemExecutorBuilder<IT, RT> setOnItemErrorPolicy(OnItemErrorPolicy onItemErrorPolicy)
+	public ITrxItemExecutorBuilder<IT, RT> setOnItemErrorPolicy(@NonNull final OnItemErrorPolicy onItemErrorPolicy)
 	{
 		this._onItemErrorPolicy = onItemErrorPolicy;
 		return this;

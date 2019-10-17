@@ -1,10 +1,12 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config;
 
+import javax.annotation.Nullable;
+
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlVersion;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlVersion;
 
 /*
  * #%L
@@ -33,5 +35,14 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlVersio
 public class ExportConfig
 {
 	@NonNull
-	XmlVersion exportXmlVersion;
+	XmlVersion xmlVersion;
+
+	@NonNull
+	XmlMode mode;
+
+	@Nullable
+	String fromEAN;
+
+	@Nullable
+	String viaEAN;
 }

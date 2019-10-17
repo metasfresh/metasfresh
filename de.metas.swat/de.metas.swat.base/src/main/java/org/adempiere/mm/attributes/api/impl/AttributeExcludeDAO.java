@@ -1,5 +1,7 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -24,17 +26,17 @@ package org.adempiere.mm.attributes.api.impl;
 
 
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeExcludeDAO;
 import org.adempiere.model.I_M_AttributeSetExcludeLine;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Column;
-import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetExclude;
 
+import de.metas.lang.SOTrx;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class AttributeExcludeDAO implements IAttributeExcludeDAO
 {
@@ -56,26 +58,28 @@ public class AttributeExcludeDAO implements IAttributeExcludeDAO
 	}
 
 	@Override
-	public I_M_AttributeSetExclude retrieveAttributeSetExclude(I_M_AttributeSet attributeSet, int columnId, boolean isSOTrx)
+	public I_M_AttributeSetExclude retrieveAttributeSetExclude(
+			@NonNull final AttributeSetId attributeSetId, 
+			final int columnId, 
+			@NonNull final SOTrx soTrx)
 	{
 		if (columnId <= 0)
 		{
 			return null;
 		}
 		
-		final Properties ctx = InterfaceWrapperHelper.getCtx(attributeSet);
-		final String trxName = InterfaceWrapperHelper.getTrxName(attributeSet);
-		final I_AD_Column column = InterfaceWrapperHelper.create(ctx, columnId, I_AD_Column.class, trxName);
+		final I_AD_Column column = loadOutOfTrx(columnId, I_AD_Column.class);
 		// guard against null, when column was not found
 		if (column == null)
 		{
 			return null;
 		}
-
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_AttributeSetExclude.class, attributeSet)
-				.addEqualsFilter(I_M_AttributeSetExclude.COLUMNNAME_AD_Table_ID, column.getAD_Table_ID())
-				.addEqualsFilter(I_M_AttributeSetExclude.COLUMNNAME_IsSOTrx, isSOTrx)
-				.addEqualsFilter(I_M_AttributeSetExclude.COLUMNNAME_M_AttributeSet_ID, attributeSet.getM_AttributeSet_ID())
+		final int adTableId = column.getAD_Table_ID();
+		
+		return Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_M_AttributeSetExclude.class)
+				.addEqualsFilter(I_M_AttributeSetExclude.COLUMNNAME_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_M_AttributeSetExclude.COLUMNNAME_IsSOTrx, soTrx.toBoolean())
+				.addEqualsFilter(I_M_AttributeSetExclude.COLUMNNAME_M_AttributeSet_ID, attributeSetId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstOnly(I_M_AttributeSetExclude.class);

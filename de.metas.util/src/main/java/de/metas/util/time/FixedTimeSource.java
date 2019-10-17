@@ -50,7 +50,7 @@ public class FixedTimeSource implements TimeSource
 	{
 		return MoreObjects.toStringHelper(this)
 				.add("millis", millis)
-				.add("date", Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDateTime())
+				.add("date", Instant.ofEpochMilli(millis))
 				.toString();
 	}
 

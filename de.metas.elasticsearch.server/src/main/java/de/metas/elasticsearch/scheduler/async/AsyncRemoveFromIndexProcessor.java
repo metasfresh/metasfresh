@@ -7,6 +7,7 @@ import org.adempiere.exceptions.AdempiereException;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.elasticsearch.IESSystem;
 import de.metas.elasticsearch.config.ESModelIndexerId;
 import de.metas.elasticsearch.indexer.IESIndexerResult;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
@@ -45,6 +46,12 @@ public class AsyncRemoveFromIndexProcessor extends WorkpackageProcessorAdapter
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
+		final IESSystem esSystem = Services.get(IESSystem.class);
+		if (!esSystem.isEnabled())
+		{
+			throw new AdempiereException("Skip processing because Elasticsearch feature is disabled.");
+		}
+
 		final ESModelIndexerId modelIndexerId = ESModelIndexerId.fromJson(getParameters().getParameterAsString(PARAMETERNAME_ModelIndexerId));
 
 		// NOTE: we assume all queue elements are about the same table
@@ -64,7 +71,7 @@ public class AsyncRemoveFromIndexProcessor extends WorkpackageProcessorAdapter
 			final IESModelIndexer modelIndexer = esModelIndexersRegistry.getModelIndexerById(modelIndexerId);
 
 			final IESIndexerResult result = modelIndexer.removeFromIndexByIds(idsToRemove);
-			Loggables.get().addLog(result.getSummary());
+			Loggables.addLog(result.getSummary());
 			result.throwExceptionIfAnyFailure();
 
 			return Result.SUCCESS;

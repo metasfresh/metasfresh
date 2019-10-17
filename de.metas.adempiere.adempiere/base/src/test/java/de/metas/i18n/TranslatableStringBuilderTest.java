@@ -37,7 +37,7 @@ public class TranslatableStringBuilderTest
 				.append("c")
 				.build();
 
-		final ITranslatableString expected = ImmutableTranslatableString.constant("abc");
+		final ITranslatableString expected = TranslatableStrings.constant("abc");
 		assertThat(actual).isEqualTo(expected);
 	}
 
@@ -51,9 +51,9 @@ public class TranslatableStringBuilderTest
 				.append(66)
 				.build();
 
-		final ITranslatableString expected = ITranslatableString.compose("",
-				ImmutableTranslatableString.constant("abc"),
-				NumberTranslatableString.of(66));
+		final ITranslatableString expected = TranslatableStrings.join("",
+				TranslatableStrings.constant("abc"),
+				TranslatableStrings.number(66));
 
 		assertThat(actual).isEqualTo(expected);
 	}

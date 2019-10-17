@@ -1,9 +1,8 @@
 package de.metas.handlingunits.client.terminal.editor.model.impl;
 
-import org.compiere.util.Util;
-
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 
 /**
  * Will do pretty much the same as the ordinary {@link HUKeyNameBuilder}, but it's supposed to display more relevant information to the user (i.e to what IFCO this VPI belongs to).
@@ -31,7 +30,7 @@ import de.metas.util.Check;
 			//
 			// Use just the HU's value; do not display the full HU to the user to preserve much-needed space on the key
 			final String displayName = parent.getValue(); // handlingUnitsBL.getDisplayName(parent);
-			htmlPartHUDisplayName = Util.maskHTML(displayName);
+			htmlPartHUDisplayName = StringUtils.maskHTML(displayName);
 		}
 		return htmlPartHUDisplayName;
 	}

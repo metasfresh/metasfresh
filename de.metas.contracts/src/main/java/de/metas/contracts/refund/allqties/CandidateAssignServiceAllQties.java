@@ -14,14 +14,17 @@ import de.metas.contracts.refund.AssignmentToRefundCandidateRepository;
 import de.metas.contracts.refund.CandidateAssignmentService.UpdateAssignmentResult;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
-import de.metas.contracts.refund.allqties.refundconfigchange.RefundConfigChangeService;
 import de.metas.contracts.refund.RefundConfigs;
 import de.metas.contracts.refund.RefundContract;
 import de.metas.contracts.refund.RefundInvoiceCandidate;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidateService;
+import de.metas.contracts.refund.allqties.refundconfigchange.RefundConfigChangeService;
+import de.metas.currency.CurrencyRepository;
+import de.metas.money.MoneyService;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
+import lombok.Getter;
 import lombok.NonNull;
 
 /*
@@ -50,8 +53,39 @@ public class CandidateAssignServiceAllQties
 {
 	private final RefundConfigChangeService refundConfigChangeService;
 	private final RefundInvoiceCandidateService refundInvoiceCandidateService;
+
+	@VisibleForTesting
+	@Getter
 	private final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository;
+
+	@VisibleForTesting
+	@Getter
 	private final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
+
+	@VisibleForTesting
+	public static CandidateAssignServiceAllQties createInstanceForUnitTesting()
+	{
+		final MoneyService moneyService = new MoneyService(new CurrencyRepository());
+
+		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = RefundInvoiceCandidateRepository.createInstanceForUnitTesting();
+
+		final RefundInvoiceCandidateService refundInvoiceCandidateService = new RefundInvoiceCandidateService(
+				refundInvoiceCandidateRepository,
+				moneyService);
+
+		final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository = new AssignmentToRefundCandidateRepository(refundInvoiceCandidateRepository);
+
+		final RefundConfigChangeService refundConfigChangeService = new RefundConfigChangeService(
+				assignmentToRefundCandidateRepository,
+				moneyService,
+				refundInvoiceCandidateService);
+
+		return new CandidateAssignServiceAllQties(
+				refundConfigChangeService,
+				refundInvoiceCandidateService,
+				assignmentToRefundCandidateRepository,
+				refundInvoiceCandidateRepository);
+	}
 
 	public CandidateAssignServiceAllQties(
 			@NonNull final RefundConfigChangeService refundConfigChangeService,
@@ -67,7 +101,7 @@ public class CandidateAssignServiceAllQties
 
 	public UpdateAssignmentResult updateAssignment(
 			@NonNull final AssignableInvoiceCandidate assignableCandidate,
-			@NonNull final RefundInvoiceCandidate refundCandidateToAssign,
+			@NonNull final RefundInvoiceCandidate refundCandidateToAssignTo,
 			@NonNull final RefundContract refundContract)
 	{
 		Check.errorUnless(RefundMode.APPLY_TO_ALL_QTIES.equals(refundContract.extractRefundMode()),
@@ -77,13 +111,13 @@ public class CandidateAssignServiceAllQties
 
 		//
 		// first part: only assign to the smallest refund config (with minQty=0).
-		final RefundConfig refundConfig = RefundConfigs.smallestMinQty(refundCandidateToAssign.getRefundConfigs());
-		Check.assume(refundConfig.getMinQty().signum() == 0, "The first refundConfig from sortedConfigs needs to have minQty=0");
+		final RefundConfig refundConfig = RefundConfigs.smallestMinQty(refundCandidateToAssignTo.getRefundConfigs());
+		Check.assume(refundConfig.getMinQty().signum() == 0, "The first refundConfig of refundCandidateToAssignTo needs to have minQty=0; actual minQty={}; refundConfig={}", refundConfig.getMinQty(), refundConfig);
 
 		final AssignCandidatesRequest assignCandidatesRequest = AssignCandidatesRequest
 				.builder()
 				.assignableInvoiceCandidate(assignableCandidateWithoutRefundInvoiceCandidates)
-				.refundInvoiceCandidate(refundCandidateToAssign)
+				.refundInvoiceCandidate(refundCandidateToAssignTo)
 				.refundConfig(refundConfig)
 				.build();
 
@@ -95,30 +129,31 @@ public class CandidateAssignServiceAllQties
 		// the assignableInvoiceCandidate of our assignCandidatesRequest had no assignments, so the result has exactly one assignment.
 		final AssignmentToRefundCandidate createdAssignment = singleElement(createdAssignments);
 
-		final RefundInvoiceCandidate refundCandidateAfterAssignment = createdAssignment.getRefundInvoiceCandidate();
+		final RefundInvoiceCandidate refundCandidateWithAsignedMoneyAndQty = createdAssignment.getRefundInvoiceCandidate();
 
 		//
-		// second part: now see if the biggest applicable refund config changed. if yes, add or removed assignments for the respective configs that now apply as well or don't apply anymore
-		final List<RefundConfig> relevantConfigsAfterAssignment = refundContract.getRefundConfigsToApplyForQuantity(refundCandidateAfterAssignment.getAssignedQuantity().getAsBigDecimal());
+		// second part: now see if the biggest applicable refund config changed.
+		// if it did change, then add or remove assignments for the respective configs that now apply as well or don't apply anymore
+		final List<RefundConfig> relevantConfigsAfterAssignment = refundContract.getRefundConfigsToApplyForQuantity(refundCandidateWithAsignedMoneyAndQty.getAssignedQuantity().toBigDecimal());
 
 		final RefundConfig newRefundConfig = RefundConfigs.largestMinQty(relevantConfigsAfterAssignment);
 
 		final boolean configHasChanged = !refundConfig.equals(newRefundConfig);
 		if (configHasChanged)
 		{
-			refundConfigChangeService.createOrDeleteAdditionalAssignments(refundCandidateAfterAssignment, refundConfig, newRefundConfig);
+			refundConfigChangeService.createOrDeleteAdditionalAssignments(refundCandidateWithAsignedMoneyAndQty, refundConfig, newRefundConfig);
 		}
 
 		final AssignableInvoiceCandidate resultCandidate = assignableCandidate
 				.toBuilder()
 				.clearAssignmentsToRefundCandidates() // need to reload the assignments
-				.assignmentsToRefundCandidates(assignmentToRefundCandidateRepository.getAssignmentsToRefundCandidate(assignableCandidate))
+				.assignmentsToRefundCandidates(assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(assignableCandidate.getId()))
 				.build();
-		return UpdateAssignmentResult.updateDone(resultCandidate, ImmutableList.of());
+		return UpdateAssignmentResult.updateDone(resultCandidate, ImmutableList.of()/* additionalChangedCandidates */);
 	}
 
 	/**
-	 * @return the assignable candidate with its new additional assignment, and the quantity that is still left to be assigned.
+	 * @return the assignable candidate with its new additional assignment.
 	 */
 	@VisibleForTesting
 	AssignableInvoiceCandidate assignCandidate(

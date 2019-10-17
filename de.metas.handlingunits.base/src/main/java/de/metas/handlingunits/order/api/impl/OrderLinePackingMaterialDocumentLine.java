@@ -13,25 +13,25 @@ package de.metas.handlingunits.order.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
-import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
+import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.impl.AbstractPackingMaterialDocumentLine;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -58,6 +58,11 @@ import lombok.NonNull;
 		return ProductId.ofRepoId(orderLine.getM_Product_ID());
 	}
 
+	private I_C_UOM getUOM()
+	{
+		return Services.get(IUOMDAO.class).getById(orderLine.getC_UOM_ID());
+	}
+
 	/**
 	 * @returns QtyOrdered of the wrapped order line
 	 */
@@ -77,11 +82,8 @@ import lombok.NonNull;
 	{
 		orderLine.setQtyOrdered(qty);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-
-		final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(
-				ctx, getProductId(), orderLine.getC_UOM(), qty);
+		final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(getProductId(), getUOM(), qty);
 
 		orderLine.setQtyEntered(qtyEntered);
 	}

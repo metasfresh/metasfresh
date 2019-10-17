@@ -4,21 +4,13 @@ import java.util.Arrays;
 
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.X_M_Attribute;
 import org.junit.Assert;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
 import de.metas.handlingunits.model.I_M_HU;
@@ -26,7 +18,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
-import de.metas.shipper.gateway.commons.ShipperGatewayServicesRegistry;
 import de.metas.util.Services;
 
 /*
@@ -57,11 +48,6 @@ import de.metas.util.Services;
  * @author metas-dev <dev@metasfresh.com>
  * @task FRESH-578 #275
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {
-		StartupListener.class,
-		ShutdownListener.class,
-		ShipperGatewayServicesRegistry.class})
 public abstract class HUShipmentProcess_AttributesAggregation_Base extends AbstractHUShipmentProcessIntegrationTest
 {
 	private ShipmentScheduleQtyPickedExpectations afterPick_ShipmentScheduleQtyPickedExpectations = null;
@@ -84,8 +70,6 @@ public abstract class HUShipmentProcess_AttributesAggregation_Base extends Abstr
 		// only set to trace if there are problems to debug
 		// LogManager.setLoggerLevel(LogManager.getLogger("de.metas.handlingunits.shipmentschedule"), Level.TRACE);
 		// LogManager.setLoggerLevel(LogManager.getLogger(de.metas.handlingunits.attribute.impl.HUTransactionAttributeBuilder.class), Level.TRACE);
-
-		attribute = new AttributesTestHelper().createM_Attribute("Discriminator", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 	}
 
 	@Override

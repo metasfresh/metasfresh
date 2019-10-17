@@ -1,12 +1,15 @@
 package de.metas.handlingunits.inout.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.math.BigDecimal;
 
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Locator;
 
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.impl.AbstractDocumentLUTUConfigurationHandler;
@@ -17,6 +20,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -79,7 +83,7 @@ public class CustomerReturnLUTUConfigurationHandler
 
 		final I_M_HU_PI_Item_Product tuPIItemProduct = getM_HU_PI_Item_Product(documentLine);
 		final ProductId cuProductId = ProductId.ofRepoIdOrNull(documentLine.getM_Product_ID());
-		final I_C_UOM cuUOM = documentLine.getC_UOM();
+		final I_C_UOM cuUOM = loadOutOfTrx(documentLine.getC_UOM_ID(), I_C_UOM.class);
 
 		final I_C_BPartner bpartner = documentLine.getM_InOut().getC_BPartner();
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuFactory.createLUTUConfiguration(
@@ -99,25 +103,21 @@ public class CustomerReturnLUTUConfigurationHandler
 	}
 
 	@Override
-	public void updateLUTUConfigurationFromPPOrder(final I_M_HU_LUTU_Configuration lutuConfiguration, final I_M_InOutLine documentLine)
+	public void updateLUTUConfigurationFromPPOrder(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration, @NonNull final I_M_InOutLine documentLine)
 	{
-		// TODO
-		Check.assumeNotNull(lutuConfiguration, "lutuConfiguration not null");
-		Check.assumeNotNull(documentLine, "documentLine not null");
-
 		final I_M_InOut customerReturn = documentLine.getM_InOut();
 		//
 		// Set BPartner / Location to be used
 		final I_C_BPartner bpartner = customerReturn.getC_BPartner();
 		final int bpartnerLocationId = customerReturn.getC_BPartner_Location_ID();
-		lutuConfiguration.setC_BPartner(bpartner);
+		lutuConfiguration.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
 		lutuConfiguration.setC_BPartner_Location_ID(bpartnerLocationId);
 
 		//
 		// Set Locator
-		// TODO fix this mess
-		final I_M_Locator locator = Services.get(IWarehouseBL.class).getDefaultLocator(customerReturn.getM_Warehouse());
-		lutuConfiguration.setM_Locator(locator);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(customerReturn.getM_Warehouse_ID());
+		final LocatorId locatorId = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
+		lutuConfiguration.setM_Locator_ID(locatorId.getRepoId());
 
 		//
 		// Set HUStatus=Planning because receipt schedules are always about planning

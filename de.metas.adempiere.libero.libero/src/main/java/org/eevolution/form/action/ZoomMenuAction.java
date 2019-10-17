@@ -44,10 +44,7 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.compiere.apps.AEnv;
-import org.compiere.apps.AWindow;
-import org.compiere.model.MQuery;
 import org.compiere.model.PO;
-import org.eevolution.model.wrapper.AbstractPOWrapper;
 
 
 /**
@@ -69,21 +66,8 @@ public class ZoomMenuAction extends PopupAction {
 	public static final String COMMAND = "zoom";
 	
 	protected Object target;
-	protected int tableID;
-	protected String tableName;
-	
-	/**
-	 * Constructs a new Instance with static zoom target, determined by . The properties are used to determine the
-	 * zoom target. 
-	 */
-	public ZoomMenuAction(int tableID, String tableName) {
-		
-		super(COMMAND);
-		setActionCommand(COMMAND);
-		
-		this.tableID = tableID;
-		this.tableName = tableName;
-	}
+//	protected int tableID;
+//	protected String tableName;
 	
 	/**
 	 * Constructs a new Instance with a overgiven target. E.g. use your JTree as target object. The nodes 
@@ -173,10 +157,6 @@ public class ZoomMenuAction extends PopupAction {
 			
 			po = (PO)tn.getUserObject();
 		}
-		else if(tn.getUserObject() instanceof AbstractPOWrapper) {
-			
-			po = ((AbstractPOWrapper)tn.getUserObject()).get();
-		}
 		else {
 			
 			return -1;
@@ -194,28 +174,13 @@ public class ZoomMenuAction extends PopupAction {
 			
 			po = (PO)tn.getUserObject();
 		}
-		else if(tn.getUserObject() instanceof AbstractPOWrapper) {
-			
-			po = ((AbstractPOWrapper)tn.getUserObject()).get();
-		}
 		
 		return po == null ? -1 : po.get_ID();
 	}
 	
 	private void zoom() {
 		
-		String tablename = tableName;
-		int tableid = tableID;
-		
-		MQuery query = new MQuery(tablename);
-
-		AWindow window = new AWindow();
-		if (window.initWindow(tableid, query)) {
-		
-			AEnv.showCenterScreen(window);
-		}
-
-		window = null;
+		throw new UnsupportedOperationException("not implemented");
 	}
 }
 

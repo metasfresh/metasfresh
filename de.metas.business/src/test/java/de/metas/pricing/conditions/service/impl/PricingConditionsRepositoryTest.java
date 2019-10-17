@@ -21,9 +21,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.payment.paymentterm.PaymentTermService;
-import de.metas.pricing.conditions.PriceOverride;
-import de.metas.pricing.conditions.PriceOverrideType;
+import de.metas.pricing.conditions.PriceSpecification;
+import de.metas.pricing.conditions.PriceSpecificationType;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakMatchCriteria;
 import de.metas.product.ProductCategoryId;
@@ -113,9 +115,9 @@ public class PricingConditionsRepositoryTest
 		// invoke the method under test
 		final PricingConditionsBreak result = PricingConditionsRepository.toPricingConditionsBreak(schemaBreakRecord);
 
-		final PriceOverride priceOverride = result.getPriceOverride();
-		assertThat(priceOverride.getType()).isEqualTo(PriceOverrideType.FIXED_PRICE);
-		assertThat(priceOverride.getFixedPrice().getValue()).isEqualByComparingTo(TEN);
+		final PriceSpecification priceSpecification = result.getPriceSpecification();
+		assertThat(priceSpecification.getType()).isEqualTo(PriceSpecificationType.FIXED_PRICE);
+		assertThat(priceSpecification.getFixedPrice()).isEqualTo(Money.of(TEN, CurrencyId.ofRepoId(10)));
 	}
 
 	/** Tests with a schemaBreakRecord that has *no* base price (neither "fixed" nor "pricing-system") */
@@ -129,7 +131,7 @@ public class PricingConditionsRepositoryTest
 		// invoke the method under test
 		final PricingConditionsBreak result = PricingConditionsRepository.toPricingConditionsBreak(schemaBreakRecord);
 
-		assertThat(result.getPriceOverride().getType()).isEqualTo(PriceOverrideType.NONE);
+		assertThat(result.getPriceSpecification().getType()).isEqualTo(PriceSpecificationType.NONE);
 	}
 
 	private I_M_DiscountSchemaBreak createDiscountSchemaBreakRecord()
@@ -139,7 +141,7 @@ public class PricingConditionsRepositoryTest
 
 		schemaBreakRecord.setPriceBase(X_M_DiscountSchemaBreak.PRICEBASE_Fixed);
 		schemaBreakRecord.setC_Currency_ID(10);
-		schemaBreakRecord.setPriceStd(TEN);
+		schemaBreakRecord.setPriceStdFixed(TEN);
 		return schemaBreakRecord;
 	}
 }

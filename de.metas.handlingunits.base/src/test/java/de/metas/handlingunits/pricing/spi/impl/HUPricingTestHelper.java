@@ -1,13 +1,15 @@
 package de.metas.handlingunits.pricing.spi.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.contracts.pricing.ContractDiscount;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.pricing.service.impl.PricingTestHelper;
 
@@ -37,7 +39,7 @@ public class HUPricingTestHelper extends PricingTestHelper
 {
 	public final I_M_HU_PI_Item_Product defaultPIItemProduct1;
 	public final I_M_HU_PI_Item_Product defaultPIItemProduct2;
-	
+
 	static
 	{
 		de.metas.handlingunits.model.validator.Main.setupPricing();
@@ -52,33 +54,29 @@ public class HUPricingTestHelper extends PricingTestHelper
 	@Override
 	protected List<String> getPricingRuleClassnamesToRegister()
 	{
-		return ImmutableList.copyOf(new String[] {
-				"de.metas.handlingunits.pricing.spi.impl.HUPricing" //
-				, "de.metas.pricing.attributebased.impl.AttributePricing" //
-				, "de.metas.adempiere.pricing.spi.impl.rules.ProductScalePrice" //
-				// , "org.adempiere.pricing.spi.impl.rules.PriceListVersionVB" //
-				, "org.adempiere.pricing.spi.impl.rules.PriceListVersion" //
-				// , "org.adempiere.pricing.spi.impl.rules.PriceListVB" //
-				// , "org.adempiere.pricing.spi.impl.rules.PriceList" //
-				// , "org.adempiere.pricing.spi.impl.rules.BasePriceListVB" //
-				// , "org.adempiere.pricing.spi.impl.rules.BasePriceList" //
-				, "org.adempiere.pricing.spi.impl.rules.Discount" //
-				// , "de.metas.procurement.base.pricing.spi.impl.ProcurementFlatrateRule" //
-				, "de.metas.flatrate.pricing.spi.impl.ContractDiscount" //
-		});
+		return ImmutableList.of(
+				HUPricing.class.getName(),
+				de.metas.pricing.attributebased.impl.AttributePricing.class.getName(),
+				de.metas.adempiere.pricing.spi.impl.rules.ProductScalePrice.class.getName(),
+				de.metas.pricing.rules.PriceListVersion.class.getName(),
+				de.metas.pricing.rules.Discount.class.getName(),
+				ContractDiscount.class.getName());
 	}
-	
+
 	@Override
 	public HUProductPriceBuilder newProductPriceBuilder()
 	{
-		return new HUProductPriceBuilder(getDefaultPriceListVerion(), getDefaultProduct());
+		return new HUProductPriceBuilder(getDefaultPriceListVerion(), getDefaultProduct())
+				.setTaxCategoryId(getTaxCategoryId());
 	}
 
 	private I_M_HU_PI_Item_Product createM_HU_PI_Item_Product(final String name)
 	{
-		final I_M_HU_PI_Item_Product piip = InterfaceWrapperHelper.create(Env.getCtx(), I_M_HU_PI_Item_Product.class, ITrx.TRXNAME_None);
+		final I_M_Product product = getDefaultProduct();
+		
+		final I_M_HU_PI_Item_Product piip = newInstanceOutOfTrx(I_M_HU_PI_Item_Product.class);
 		piip.setName(name);
-		piip.setM_Product(getDefaultProduct());
+		piip.setM_Product_ID(product != null ? product.getM_Product_ID() : -1);
 		InterfaceWrapperHelper.save(piip);
 		return piip;
 	}

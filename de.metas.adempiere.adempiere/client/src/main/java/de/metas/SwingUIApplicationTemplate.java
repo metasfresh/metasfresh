@@ -21,7 +21,10 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.event.EventListener;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.swing.SwingClientUI;
@@ -74,6 +77,7 @@ public abstract class SwingUIApplicationTemplate
 					.web(false)
 					.profiles(Profiles.PROFILE_SwingUI)
 					.properties(CConnection.get().createRabbitmqSpringProperties())
+					.beanNameGenerator(new MetasfreshBeanNameGenerator())
 					.run(args);
 		}
 		catch (final Exception ex)
@@ -116,6 +120,13 @@ public abstract class SwingUIApplicationTemplate
 		// Focus Traversal
 		KeyboardFocusManager.setCurrentKeyboardFocusManager(AKeyboardFocusManager.get());
 		Services.registerService(IClientUI.class, new SwingClientUI());
+	}
+
+	@Bean
+	@Primary
+	public ObjectMapper jsonObjectMapper()
+	{
+		return JsonObjectMapperHolder.sharedJsonObjectMapper();
 	}
 
 	@Bean(Adempiere.BEAN_NAME)

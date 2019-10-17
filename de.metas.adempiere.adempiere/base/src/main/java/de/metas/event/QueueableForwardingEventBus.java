@@ -31,25 +31,20 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-
-import de.metas.util.Services;
-
 import org.adempiere.ad.trx.api.ITrxManager;
 
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
  * An {@link IEventBus} wrapper implementation which can be asked to collect posted events and send them all together when {@link #flush()} is called.
- *
- * @author tsa
- *
  */
 public class QueueableForwardingEventBus extends ForwardingEventBus
 {
 	private boolean queuing = false;
 	private final List<Event> queuedEvents = new ArrayList<>();
 
-	protected QueueableForwardingEventBus(final IEventBus delegate)
+	protected QueueableForwardingEventBus(@NonNull final IEventBus delegate)
 	{
 		super(delegate);
 	}

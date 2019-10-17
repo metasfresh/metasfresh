@@ -50,6 +50,14 @@
 			two versions might clash in ait modules -->
 		<metasfresh.cxf.version>3.1.6</metasfresh.cxf.version>
 
+		<jackson.version>2.9.9</jackson.version>
+
+		<!-- jackson-dataformat-xml:2.9.9 has two different version in its dependency tree -->
+		<woodstox.stax2-api.version>4.1</woodstox.stax2-api.version>
+		
+		<!-- woodstox is in the dependency tree of both cxf-core and jackson-dataformat-xml -->
+		<woodstox.version>5.1.0</woodstox.version>
+		
 		<license.name>gpl_v2</license.name>
 
 		<acceptance.reports.dir>target/acceptance-reports</acceptance.reports.dir>
@@ -79,6 +87,8 @@
 
 		<module>de.metas.business</module>
 
+		<module>de.metas.business.rest-api</module>
+		<module>de.metas.business.rest-api-impl</module>
 
 		<module>de.metas.jax.rs</module>
 
@@ -89,12 +99,15 @@
 		<module>de.metas.device.scales</module>
 
 		<module>de.metas.dimension</module> <!-- task 08681 -->
-		
+
 		<module>de.metas.document.archive.api</module>
 		<module>de.metas.document.archive</module>
 
 		<module>de.metas.document.refid</module>
 		<module>de.metas.dunning</module>
+
+		<module>de.metas.dunning_gateway.api</module>
+		<module>de.metas.dunning_gateway.spi</module>
 
 		<module>de.metas.dlm</module>
 
@@ -108,6 +121,7 @@
 
 		<module>de.metas.invoice_gateway.api</module>
 		<module>de.metas.invoice_gateway.spi</module>
+
 		<module>de.metas.inbound.mail</module>
 
 		<module>de.metas.fresh</module>
@@ -121,13 +135,10 @@
 		<module>de.metas.handlingunits.base</module>
 		<module>de.metas.handlingunits.client</module>
 
-		<module>de.metas.order.rest-api</module>
-		
-		<module>de.metas.ordercandidate.rest-api</module>
-		<module>de.metas.ordercandidate.rest-api-impl</module>
-
 		<module>de.metas.payment.esr</module>
 		<module>de.metas.payment.sepa</module>
+		<module>de.metas.payment.paypal</module>
+
 		<module>de.metas.printing</module>
 
 		<module>de.metas.printing.rest-api-impl</module>
@@ -154,7 +165,7 @@
 		<!-- commented out because we don't include it in any distribution 
 		<module>../de.metas.shipper.gateway.dpd-legacy</module> 
 		-->
-		
+
 		<module>de.metas.ui.web.base</module>
 
 		<module>de.metas.util</module>
@@ -164,6 +175,8 @@
 
 		<module>de.metas.datev</module>
 
+		<module>de.metas.vertical.creditscore</module>
+
 		<module>de.metas.vertical.pharma</module>
 		<module>de.metas.vertical.pharma.msv3.commons</module>
 		<module>de.metas.vertical.pharma.msv3.schema.v1</module>
@@ -171,17 +184,31 @@
 		<module>de.metas.vertical.pharma.msv3.server</module>
 		<module>de.metas.vertical.pharma.msv3.server-peer</module>
 		<module>de.metas.vertical.pharma.msv3.server-peer-metasfresh</module>
-		<module>de.metas.vertical.pharma.vendor.gateway.msv3</module>		
+		<module>de.metas.vertical.pharma.vendor.gateway.msv3</module>
+
+		<module>de.metas.vertical.pharma.securpharm</module>
 
 		<module>vertical-healthcare_ch</module>
 
-
-	</modules>
-
-
+    </modules>
 
 	<dependencyManagement>
 		<dependencies>
+
+			<dependency>
+				<groupId>org.postgresql</groupId>
+				<artifactId>postgresql</artifactId>
+				<version>42.2.5</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.fasterxml.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
+				<version>${jackson.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			
 			<!-- Import dependency management from Spring Boot -->
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
@@ -223,6 +250,11 @@
 			<dependency>
 				<groupId>org.apache.poi</groupId>
 				<artifactId>poi</artifactId>
+				<version>${poi.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.poi</groupId>
+				<artifactId>poi-ooxml</artifactId>
 				<version>${poi.version}</version>
 			</dependency>
 			<dependency>
@@ -669,46 +701,6 @@
 	</build>
 
 	<profiles>
-		<profile>
-			<!-- If there is a sql directory, then this profile will activate and 
-				zip up the migration SQL files in that directory. Note the property "migration-sql-basedir" 
-				needs to be defined in that case -->
-			<id>postgres</id>
-			<activation>
-				<file>
-					<exists>src/main/sql/postgresql/system</exists>
-				</file>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>maven-assembly-plugin</artifactId>
-						<dependencies>
-							<dependency>
-								<groupId>de.metas</groupId>
-								<artifactId>metasfresh-assemblies</artifactId>
-								<!-- version>${metasfresh.assembly.descriptor.version}</version -->
-								<version>[1.0.0,10.0.0]</version>
-							</dependency>
-						</dependencies>
-						<executions>
-							<execution>
-								<id>make-postgresql-assembly</id> <!-- this is used for inheritance merges -->
-								<phase>package</phase> <!-- bind to the packaging phase -->
-								<goals>
-									<goal>single</goal>
-								</goals>
-								<configuration>
-									<descriptorRefs>
-										<descriptorRef>migration_postgresql_system</descriptorRef>
-									</descriptorRefs>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
 
 		<!-- If there is a "webapp" directory, this profile will activate and put 
 			the content into a zip file this was (and still is in some legacy projects!) 

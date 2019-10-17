@@ -5,40 +5,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.util.HashMap;
 import java.util.Map;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Properties;
 import java.util.function.Predicate;
 
-import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.PO;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.freighcost.api.IFreightCostBL;
-import de.metas.util.Services;
+import de.metas.order.OrderFreightCostsService;
 import de.metas.util.collections.CompositePredicate;
 
 public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
@@ -56,16 +31,16 @@ public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 
 		//
 		// Exclude freight cost products
-		final Properties ctx = InterfaceWrapperHelper.getCtx(po);
-		if (Services.get(IFreightCostBL.class).isFreightCostProduct(ctx, orderLine.getM_Product_ID(), ITrx.TRXNAME_None))
+		final OrderFreightCostsService ordersFreightCostService = Adempiere.getBean(OrderFreightCostsService.class);
+		if (ordersFreightCostService.isFreightCostOrderLine(orderLine))
 		{
-			return ;
+			return;
 		}
 
 		// Check if we shall skip this record
 		if (!isCopyRecord(orderLine))
 		{
-			return ;
+			return;
 		}
 
 		// delegate to super
@@ -107,6 +82,7 @@ public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 		final I_C_Order_CompensationGroup orderCompensationGroupNew = newInstance(I_C_Order_CompensationGroup.class);
 		InterfaceWrapperHelper.copyValues(orderCompensationGroup, orderCompensationGroupNew);
 		orderCompensationGroupNew.setC_Order_ID(toOrderId);
+		orderCompensationGroupNew.setPP_Product_BOM_ID(-1); // don't copy the Quotation BOM; another one has to be created
 		InterfaceWrapperHelper.save(orderCompensationGroupNew);
 		return orderCompensationGroupNew.getC_Order_CompensationGroup_ID();
 	}

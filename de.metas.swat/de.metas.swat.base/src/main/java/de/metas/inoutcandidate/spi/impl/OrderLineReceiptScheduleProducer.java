@@ -43,7 +43,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.model.I_PP_Product_Planning;
@@ -62,9 +61,11 @@ import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 
 /**
  *
@@ -135,8 +136,16 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		//
 		// Dates
 		{
-			receiptSchedule.setDateOrdered(line.getDateOrdered());
-			receiptSchedule.setMovementDate(line.getDatePromised());
+
+			final Timestamp dateOrdered = CoalesceUtil.coalesceSuppliers(
+					() -> line.getDateOrdered(),
+					() -> line.getC_Order().getDateOrdered());
+			receiptSchedule.setDateOrdered(dateOrdered);
+
+			final Timestamp datePromised = CoalesceUtil.coalesceSuppliers(
+					() -> line.getDatePromised(),
+					() -> line.getC_Order().getDatePromised());
+			receiptSchedule.setMovementDate(datePromised);
 		}
 
 		//
@@ -188,7 +197,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			// Destination Warehouse
 
 			final I_M_Warehouse warehouseDest = getWarehouseDest(ctx, line);
-			receiptSchedule.setM_Warehouse_Dest(warehouseDest);
+			receiptSchedule.setM_Warehouse_Dest_ID(warehouseDest == null ? 0 : warehouseDest.getM_Warehouse_ID());
 		}
 
 		//
@@ -237,14 +246,14 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
-		final int productId = orderLine.getM_Product_ID();
-		final int orgId = orderLine.getAD_Org_ID();
-		final int asiId = orderLine.getM_AttributeSetInstance_ID();
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final OrgId orgId = OrgId.ofRepoId(orderLine.getAD_Org_ID());
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
 
 		final ProductPlanningQuery query = ProductPlanningQuery.builder()
 				.orgId(orgId)
-				.productId(ProductId.ofRepoId(productId))
-				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(asiId))
+				.productId(productId)
+				.attributeSetInstanceId(asiId)
 				// no warehouse, no plant
 				.build();
 		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(query);
@@ -346,9 +355,6 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 	}
 
 	/**
-	 * @param ctx
-	 * @param line
-	 * @param trxName
 	 * @return destination warehouse for given order line or <code>null</code>
 	 */
 	private I_M_Warehouse getWarehouseDest(final Properties ctx, final org.compiere.model.I_C_OrderLine line)
@@ -397,20 +403,23 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 	 */
 	private int retrieveReceiptDocTypeId(final org.compiere.model.I_C_OrderLine orderLine)
 	{
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
 		final I_C_Order order = orderLine.getC_Order();
 
 		//
 		// Get Document Type from order
-		I_C_DocType docType = order.getC_DocType();
-		if (docType == null || docType.getC_DocType_ID() <= 0)
+		DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID());
+		if (docTypeId == null)
 		{
-			docType = order.getC_DocTypeTarget();
+			docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
 		}
 
 		//
 		// If document type is set, get it's C_DocTypeShipment_ID (if any)
-		if (docType != null)
+		if (docTypeId != null)
 		{
+			final I_C_DocType docType = docTypeDAO.getById(docTypeId);
 			final int receiptDocTypeId = docType.getC_DocTypeShipment_ID();
 			if (receiptDocTypeId > 0)
 			{
@@ -420,7 +429,6 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 		//
 		// Fallback: get standard Material Receipt document type
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		final DocTypeQuery query = DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
 				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
@@ -433,7 +441,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 	/** Wraps {@link I_C_OrderLine} as {@link IReceiptScheduleWarehouseDestProvider.IContext} */
 	private static final class OrderLineWarehouseDestProviderContext implements IReceiptScheduleWarehouseDestProvider.IContext
 	{
-		public static final OrderLineWarehouseDestProviderContext of(final Properties ctx, final org.compiere.model.I_C_OrderLine orderLine)
+		public static OrderLineWarehouseDestProviderContext of(final Properties ctx, final org.compiere.model.I_C_OrderLine orderLine)
 		{
 			return new OrderLineWarehouseDestProviderContext(ctx, orderLine);
 		}
@@ -470,12 +478,6 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		public int getAD_Org_ID()
 		{
 			return orderLine.getAD_Org_ID();
-		}
-
-		@Override
-		public I_M_Product getM_Product()
-		{
-			return orderLine.getM_Product();
 		}
 
 		@Override

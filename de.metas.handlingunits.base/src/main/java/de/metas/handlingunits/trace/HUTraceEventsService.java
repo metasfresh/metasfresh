@@ -9,13 +9,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
-import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.CostCollectorType;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +36,8 @@ import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.logging.LogManager;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -103,8 +104,7 @@ public class HUTraceEventsService
 	 *
 	 * @param costCollector
 	 */
-	public void createAndAddFor(
-			@NonNull final I_PP_Cost_Collector costCollector)
+	public void createAndAddFor(@NonNull final I_PP_Cost_Collector costCollector)
 	{
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
 				.ppCostCollectorId(costCollector.getPP_Cost_Collector_ID())
@@ -113,8 +113,9 @@ public class HUTraceEventsService
 				.docStatus(costCollector.getDocStatus())
 				.eventTime(costCollector.getMovementDate().toInstant());
 
-		final IPPCostCollectorBL costCollectorBL = Services.get(IPPCostCollectorBL.class);
-		if (costCollectorBL.isMaterialIssue(costCollector, true))
+		final CostCollectorType costCollectorType = CostCollectorType.ofCode(costCollector.getCostCollectorType());
+		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(costCollector.getPP_Order_BOMLine_ID());
+		if (costCollectorType.isAnyComponentIssueOrCoProduct(orderBOMLineId))
 		{
 			builder.type(HUTraceType.PRODUCTION_ISSUE);
 		}
@@ -202,15 +203,21 @@ public class HUTraceEventsService
 		final List<I_M_HU> vhus;
 		if (shipmentScheduleQtyPicked.getVHU_ID() > 0)
 		{
-			vhus = ImmutableList.of(shipmentScheduleQtyPicked.getVHU());
+			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+			final HuId vhuId = HuId.ofRepoId(shipmentScheduleQtyPicked.getVHU_ID());
+			final I_M_HU vhu = handlingUnitsBL.getById(vhuId);
+			vhus = ImmutableList.of(vhu);
 		}
 		else if (shipmentScheduleQtyPicked.getM_TU_HU_ID() > 0)
 		{
-			vhus = huAccessService.retrieveVhus(shipmentScheduleQtyPicked.getM_TU_HU());
+			final HuId tuHUId = HuId.ofRepoId(shipmentScheduleQtyPicked.getM_TU_HU_ID());
+			vhus = huAccessService.retrieveVhus(tuHUId);
 		}
 		else if (shipmentScheduleQtyPicked.getM_LU_HU_ID() > 0)
 		{
-			vhus = huAccessService.retrieveVhus(shipmentScheduleQtyPicked.getM_LU_HU());
+			final HuId luHUId = HuId.ofRepoId(shipmentScheduleQtyPicked.getM_LU_HU_ID());
+			vhus = huAccessService.retrieveVhus(luHUId);
 		}
 		else
 		{
@@ -261,7 +268,8 @@ public class HUTraceEventsService
 			}
 			else if (huTrxLine.getM_HU_ID() > 0)
 			{
-				return huAccessService.retrieveVhus(huTrxLine.getM_HU());
+				final HuId huId = HuId.ofRepoId(huTrxLine.getM_HU_ID());
+				return huAccessService.retrieveVhus(huId);
 			}
 			else
 			{
@@ -303,7 +311,7 @@ public class HUTraceEventsService
 						.vhuId(HuId.ofRepoId(vhu.getM_HU_ID()))
 						.topLevelHuId(HuId.ofRepoId(vhuTopLevelHuId))
 						.productId(productAndQty.get().getLeft())
-						.qty(productAndQty.get().getRight().getAsBigDecimal())
+						.qty(productAndQty.get().getRight().toBigDecimal())
 						.vhuStatus(trxLine.getHUStatus()); // we use the trx line's status here, because when creating traces for "old" HUs, the line's HUStatus is as it was at the time
 
 				final I_M_HU_Trx_Line sourceTrxLine = trxLine.getParent_HU_Trx_Line();
@@ -341,7 +349,7 @@ public class HUTraceEventsService
 							.vhuId(HuId.ofRepoId(sourceVhu.getM_HU_ID()))
 							.topLevelHuId(HuId.ofRepoId(sourceVhuTopLevelHuId))
 							.vhuSourceId(null)
-							.qty(productAndQty.get().getRight().getAsBigDecimal().negate())
+							.qty(productAndQty.get().getRight().toBigDecimal().negate())
 							.build();
 
 					// add the source before the destination because I think it's nicer if it has the lower ID
@@ -442,11 +450,11 @@ public class HUTraceEventsService
 					.vhuStatus(vhu.getHUStatus())
 					.productId(productAndQty.get().getLeft())
 					.topLevelHuId(oldTopLevelHuId)
-					.qty(productAndQty.get().getRight().getAsBigDecimal().negate());
+					.qty(productAndQty.get().getRight().toBigDecimal().negate());
 			huTraceRepository.addEvent(builder.build());
 
 			builder.topLevelHuId(newTopLevelHuId)
-					.qty(productAndQty.get().getRight().getAsBigDecimal());
+					.qty(productAndQty.get().getRight().toBigDecimal());
 			huTraceRepository.addEvent(builder.build());
 		}
 	}
@@ -463,6 +471,7 @@ public class HUTraceEventsService
 			@NonNull final HUTraceEventBuilder builder,
 			@NonNull final List<?> models)
 	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 		for (final Object model : models)
@@ -486,19 +495,24 @@ public class HUTraceEventsService
 				final List<I_M_HU> vhus;
 				if (huAssignment.getVHU_ID() > 0)
 				{
-					vhus = ImmutableList.of(huAssignment.getVHU());
+					final HuId vhuId = HuId.ofRepoId(huAssignment.getVHU_ID());
+					final I_M_HU vhu = handlingUnitsBL.getById(vhuId);
+					vhus = ImmutableList.of(vhu);
 				}
 				else if (huAssignment.getM_TU_HU_ID() > 0)
 				{
-					vhus = huAccessService.retrieveVhus(huAssignment.getM_TU_HU());
+					final HuId tuHUId = HuId.ofRepoId(huAssignment.getM_TU_HU_ID());
+					vhus = huAccessService.retrieveVhus(tuHUId);
 				}
 				else if (huAssignment.getM_LU_HU_ID() > 0)
 				{
-					vhus = huAccessService.retrieveVhus(huAssignment.getM_LU_HU());
+					final HuId luHUId = HuId.ofRepoId(huAssignment.getM_LU_HU_ID());
+					vhus = huAccessService.retrieveVhus(luHUId);
 				}
 				else
 				{
-					vhus = huAccessService.retrieveVhus(huAssignment.getM_HU());
+					final HuId huId = HuId.ofRepoId(huAssignment.getM_HU_ID());
+					vhus = huAccessService.retrieveVhus(huId);
 				}
 
 				for (final I_M_HU vhu : vhus)
@@ -522,6 +536,6 @@ public class HUTraceEventsService
 		return builder
 				.vhuId(HuId.ofRepoId(vhu.getM_HU_ID()))
 				.productId(productAndQty.get().getLeft())
-				.qty(productAndQty.get().getRight().getAsBigDecimal());
+				.qty(productAndQty.get().getRight().toBigDecimal());
 	}
 }

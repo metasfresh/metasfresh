@@ -2,6 +2,7 @@ package de.metas.process.processtools;
 
 import org.adempiere.exceptions.FillMandatoryException;
 
+import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
@@ -40,13 +41,14 @@ public class AD_Process_Para_CopyFrom extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		if (p_From_Process_ID <= 0)
+		final AdProcessId fromProcessId = AdProcessId.ofRepoIdOrNull(p_From_Process_ID);
+		if (fromProcessId == null)
 		{
 			throw new FillMandatoryException(PARAM_From_Process_ID);
 		}
 
-		final int targetProcessId = getRecord_ID();
-		adProcessDAO.copyProcessParameters(targetProcessId, p_From_Process_ID);
+		final AdProcessId targetProcessId = AdProcessId.ofRepoId(getRecord_ID());
+		adProcessDAO.copyProcessParameters(targetProcessId, fromProcessId);
 
 		return MSG_OK;
 	}

@@ -25,7 +25,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
  */
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -55,8 +54,9 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
@@ -205,7 +205,8 @@ public class M_ShipmentSchedule
 				.addWarehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
 				.build();
 
-		Services.get(IShipmentSchedulePA.class).invalidate(ImmutableList.of(storageSegment));
+		final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
+		invalidSchedulesRepo.invalidateStorageSegments(ImmutableList.of(storageSegment));
 	}
 
 	/**
@@ -234,13 +235,11 @@ public class M_ShipmentSchedule
 			return;
 		}
 
-		final String trxName = InterfaceWrapperHelper.getTrxName(schedule);
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
 
-		Services.get(IShipmentSchedulePA.class).invalidate( // 08746: make sure that at any rate, the sched itself is invalidated
-				Collections.singletonList(schedule),
-				trxName);
-		Services.get(IShipmentScheduleInvalidateBL.class).invalidateSegmentForShipmentSchedule(schedule);
-
+		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
+		invalidSchedulesService.invalidateShipmentSchedule(shipmentScheduleId); // 08746: make sure that at any rate, the sched itself is invalidated
+		invalidSchedulesService.invalidateSegmentForShipmentSchedule(schedule);
 	}
 
 	@ModelChange( //
@@ -260,10 +259,8 @@ public class M_ShipmentSchedule
 		headerAggregationKeys.add(scheduleOld.getHeaderAggregationKey());
 		headerAggregationKeys.add(schedule.getHeaderAggregationKey());
 
-		final String trxName = InterfaceWrapperHelper.getTrxName(schedule);
-
-		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-		shipmentSchedulePA.invalidateForHeaderAggregationKeys(headerAggregationKeys, trxName);
+		final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
+		invalidSchedulesRepo.invalidateForHeaderAggregationKeys(headerAggregationKeys);
 	}
 
 	/**
@@ -327,7 +324,7 @@ public class M_ShipmentSchedule
 		final MOrder orderPO = LegacyAdapters.convertToPO(order);
 		final MOrderLine orderLinePO = LegacyAdapters.convertToPO(orderLine);
 
-		orderPO.reserveStock(MDocType.get(orderPO.getCtx(), order.getC_DocType_ID()), new MOrderLine[] { orderLinePO });
+		orderPO.reserveStock(MDocType.get(orderPO.getCtx(), order.getC_DocType_ID()), ImmutableList.of(orderLinePO));
 
 		InterfaceWrapperHelper.save(orderLine);
 	}

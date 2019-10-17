@@ -1,5 +1,7 @@
 package de.metas.handlingunits.empties.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.util.List;
 import java.util.Properties;
 
@@ -9,6 +11,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
@@ -97,7 +100,7 @@ public class HUEmptiesService implements IHUEmptiesService
 	{
 		return EmptiesMovementProducer.newInstance();
 	}
-	
+
 	@Override
 	public void generateMovementFromEmptiesInout(final I_M_InOut emptiesInOut)
 	{
@@ -107,7 +110,10 @@ public class HUEmptiesService implements IHUEmptiesService
 		// Fetch shipment/receipt lines and convert them to packing material line candidates.
 		final List<HUPackingMaterialDocumentLineCandidate> lines = Services.get(IInOutDAO.class).retrieveLines(emptiesInOut, I_M_InOutLine.class)
 				.stream()
-				.map(line -> HUPackingMaterialDocumentLineCandidate.of(line.getM_Locator(), line.getM_Product(), line.getMovementQty().intValueExact()))
+				.map(line -> HUPackingMaterialDocumentLineCandidate.of(
+						loadOutOfTrx(line.getM_Locator_ID(), I_M_Locator.class),
+						loadOutOfTrx(line.getM_Product_ID(), I_M_Product.class),
+						line.getMovementQty().intValueExact()))
 				.collect(GuavaCollectors.toImmutableList());
 
 		//
@@ -127,12 +133,12 @@ public class HUEmptiesService implements IHUEmptiesService
 		{
 			return false;
 		}
-		
+
 		final String docSubType = docType.getDocSubType();
 		return X_C_DocType.DOCSUBTYPE_Leergutanlieferung.equals(docSubType)
 				|| X_C_DocType.DOCSUBTYPE_Leergutausgabe.equals(docSubType);
 	}
-	
+
 	@Override
 	public IReturnsInOutProducer newReturnsInOutProducer(final Properties ctx)
 	{

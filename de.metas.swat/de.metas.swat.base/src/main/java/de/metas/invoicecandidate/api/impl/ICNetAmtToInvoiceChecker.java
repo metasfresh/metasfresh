@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,17 +32,20 @@ import org.adempiere.util.lang.IAggregator;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
-import de.metas.util.NullLoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Checker used to make sure we are enqueueing and invoicing exactly the same amount that user seen on screen.
- * 
+ *
  * NOTE: when calculating the total net amount to invoice checksum we don't care about currency, we use the sum of {@link I_C_Invoice_Candidate#getNetAmtToInvoice()} as a checksum exclusivelly.
  *
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/08610_Make_sure_there_are_no_changes_in_enqueued_invoice_candidates_%28105439431951%29
  */
+@ToString
 /* package */class ICNetAmtToInvoiceChecker implements IAggregator<BigDecimal, I_C_Invoice_Candidate>
 {
 	/** Process/Workpackage parameter name */
@@ -51,7 +54,6 @@ import de.metas.util.Services;
 	private static final String SYSCONFIG_FailIfNetAmtToInvoiceChecksumNotMatch = "de.metas.invoicecandidate.api.impl.ICNetAmtToInvoiceChecker.FailIfNetAmtToInvoiceChecksumNotMatch";
 
 	// Parameters
-	private ILoggable logger = NullLoggable.instance;
 	private BigDecimal _netAmtToInvoiceExpected = null;
 
 	// Status
@@ -79,18 +81,11 @@ import de.metas.util.Services;
 		return _netAmtToInvoice;
 	}
 
-	public ICNetAmtToInvoiceChecker setLoggable(final ILoggable logger)
-	{
-		Check.assumeNotNull(logger, "logger not null");
-		this.logger = logger;
-		return this;
-	}
-
 	/**
 	 * Asserts aggregated net amount to invoice equals with given expected value (if set).
-	 * 
+	 *
 	 * The expected amount is set using {@link #setNetAmtToInvoiceExpected(BigDecimal)}.
-	 * 
+	 *
 	 * @see #assertExpectedNetAmtToInvoice(BigDecimal)
 	 */
 	public void assertExpectedNetAmtToInvoiceIfSet()
@@ -105,15 +100,14 @@ import de.metas.util.Services;
 
 	/**
 	 * Asserts aggregated net amount to invoice equals with given expected value.
-	 * 
+	 *
 	 * If it's not equal, an error message will be logged to configured logger (see {@link #setLoggable(ILoggable)}).
-	 * 
+	 *
 	 * @param netAmtToInvoiceExpected
 	 * @throws AdempiereException if the checksums are not equal and {@link #isFailIfNetAmtToInvoiceChecksumNotMatch()}.
 	 */
-	public void assertExpectedNetAmtToInvoice(final BigDecimal netAmtToInvoiceExpected)
+	public void assertExpectedNetAmtToInvoice(@NonNull final BigDecimal netAmtToInvoiceExpected)
 	{
-		Check.assumeNotNull(netAmtToInvoiceExpected, "netAmtToInvoiceExpected not null");
 		Check.assume(netAmtToInvoiceExpected.signum() != 0, "netAmtToInvoiceExpected != 0");
 
 		final BigDecimal netAmtToInvoiceActual = getValue();
@@ -124,7 +118,7 @@ import de.metas.util.Services;
 					+ "\n Expected: " + netAmtToInvoiceExpected
 					+ "\n Actual: " + netAmtToInvoiceActual
 					+ "\n Invoice candidates count: " + _countInvoiceCandidates;
-			logger.addLog(errmsg);
+			Loggables.addLog(errmsg);
 			if (isFailIfNetAmtToInvoiceChecksumNotMatch())
 			{
 				throw new AdempiereException(errmsg);

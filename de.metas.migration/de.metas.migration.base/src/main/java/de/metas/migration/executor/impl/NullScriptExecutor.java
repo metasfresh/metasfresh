@@ -47,4 +47,9 @@ public class NullScriptExecutor implements IScriptExecutor
 		// do nothing
 	}
 
+	@Override
+	public void executeAfterScripts()
+	{
+		// do nothing
+	}
 }

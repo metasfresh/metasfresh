@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.db;
 
+import static de.metas.util.Check.isEmpty;
+
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -24,6 +26,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.annotation.Nullable;
 import javax.naming.CommunicationException;
 import javax.sql.DataSource;
 import javax.swing.JOptionPane;
@@ -100,31 +103,13 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	private static final CConnection createInstance()
 	{
-		CConnection cc = null;
-		//
-		// First, try to create the connection from properties, if any
-		final String attributes = Ini.getProperty(Ini.P_CONNECTION);
-		if (!Check.isEmpty(attributes))
-		{
-			cc = new CConnection();
-			try
-			{
-				cc.setAttributes(attributes);
-				cc.testDatabaseIfNeeded();
-			}
-			catch (Exception e)
-			{
-				cc = null;
-				log.error("Failed loading the connection from attributes: {}", attributes, e);
-			}
-		}
+		CConnection cc = createFromIniIfOK();
 
 		//
 		// Ask user to provide the configuration if not already configured
-		while (cc == null || !cc.isDatabaseOK())
+		while (cc == null || !connectionIsOK(cc))
 		{
 			cc = createInstance_FromUI(cc);
-			cc.testDatabaseIfNeeded();
 		}
 		Check.assumeNotNull(cc, "cc not null"); // shall never happen
 
@@ -137,6 +122,41 @@ public final class CConnection implements Serializable, Cloneable
 		// Return the newly created connection
 		log.debug("Created: {}", cc);
 		return cc;
+	}
+
+	private static CConnection createFromIniIfOK()
+	{
+		// First, try to create the connection from properties, if any
+		final String attributes = Ini.getProperty(Ini.P_CONNECTION);
+		final boolean iniFileHasAttributes = !Check.isEmpty(attributes);
+		if (!iniFileHasAttributes)
+		{
+			return null;
+		}
+
+		final CConnection cc = new CConnection();
+		try
+		{
+			cc.setAttributes(attributes);
+			cc.testDatabaseIfNeeded();
+
+			return cc.isDatabaseOK() ? cc :null;
+		}
+		catch (Exception e)
+		{
+			log.error("Failed loading the connection from attributes: {}", attributes, e);
+			return null;
+		}
+	}
+
+	private static boolean connectionIsOK(@Nullable final CConnection cc)
+	{
+		if (cc == null)
+		{
+			return false;
+		}
+		cc.testDatabaseIfNeeded();
+		return cc.isDatabaseOK();
 	}
 
 	/**
@@ -346,7 +366,7 @@ public final class CConnection implements Serializable, Cloneable
 	 */
 	public boolean isAppsServerOK(boolean tryContactAgain)
 	{
-		if (Ini.isClient() && !tryContactAgain && m_appServerWasQueried)
+		if (Ini.isSwingClient() && !tryContactAgain && m_appServerWasQueried)
 		{
 			return m_okApps; // return the info that we already have
 		}
@@ -1012,7 +1032,7 @@ public final class CConnection implements Serializable, Cloneable
 			System.err.println("Environment Error - Check Adempiere.properties - " + ee);
 			ee.printStackTrace();
 
-			if (Ini.isClient())
+			if (Ini.isSwingClient())
 			{
 				if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(null, "There is a configuration error:\n" + ee
 						+ "\nDo you want to reset the saved configuration?",

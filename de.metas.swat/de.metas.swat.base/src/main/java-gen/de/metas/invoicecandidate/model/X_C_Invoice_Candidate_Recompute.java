@@ -14,7 +14,7 @@ public class X_C_Invoice_Candidate_Recompute extends org.compiere.model.PO imple
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1804681662L;
+	private static final long serialVersionUID = -357688194L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate_Recompute (Properties ctx, int C_Invoice_Candidate_Recompute_ID, String trxName)
@@ -42,7 +42,7 @@ public class X_C_Invoice_Candidate_Recompute extends org.compiere.model.PO imple
     }
 
 	@Override
-	public org.compiere.model.I_AD_PInstance getAD_PInstance() throws RuntimeException
+	public org.compiere.model.I_AD_PInstance getAD_PInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_PInstance_ID, org.compiere.model.I_AD_PInstance.class);
 	}
@@ -79,7 +79,7 @@ public class X_C_Invoice_Candidate_Recompute extends org.compiere.model.PO imple
 	}
 
 	@Override
-	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Candidate() throws RuntimeException
+	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Candidate()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_Candidate_ID, de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
 	}

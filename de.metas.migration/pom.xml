@@ -20,7 +20,6 @@
 	<modules>
 		<module>de.metas.migration.base</module>
 		<module>de.metas.migration.cli</module>
-		<module>de.metas.migration.maven-plugin</module>
 	</modules>
 
 	<dependencyManagement>

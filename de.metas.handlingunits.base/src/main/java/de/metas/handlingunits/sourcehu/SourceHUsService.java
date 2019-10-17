@@ -76,14 +76,14 @@ public class SourceHUsService
 
 	public List<I_M_HU> retrieveParentHusThatAreSourceHUs(@NonNull final List<I_M_HU> vhus)
 	{
-		final ISourceHuDAO sourceHuDAO = Services.get(ISourceHuDAO.class);
+		final ISourceHuDAO sourceHusRepo = Services.get(ISourceHuDAO.class);
 
 		final TreeSet<I_M_HU> sourceHUs = new TreeSet<>(Comparator.comparing(I_M_HU::getM_HU_ID));
 
 		// this filter's real job is to collect those HUs that are flagged as "source"
 		// FIXME: avoid using filters in such a way...
 		final Predicate<I_M_HU> filter = hu -> {
-			if (sourceHuDAO.isSourceHu(HuId.ofRepoId(hu.getM_HU_ID())))
+			if (sourceHusRepo.isSourceHu(HuId.ofRepoId(hu.getM_HU_ID())))
 			{
 				sourceHUs.add(hu);
 			}
@@ -237,7 +237,7 @@ public class SourceHUsService
 					.map(IProductStorage::getProductId)
 					.collect(ImmutableSet.toImmutableSet());
 
-			final WarehouseId warehouseId = WarehouseId.ofRepoId(hu.getM_Locator().getM_Warehouse_ID());
+			final WarehouseId warehouseId = IHandlingUnitsBL.extractWarehouseId(hu);
 			return new MatchingSourceHusQuery(productIds, warehouseId);
 		}
 	}

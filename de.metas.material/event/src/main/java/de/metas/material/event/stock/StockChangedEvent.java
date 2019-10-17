@@ -1,7 +1,13 @@
 package de.metas.material.event.stock;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
+import org.adempiere.warehouse.WarehouseId;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.MaterialEvent;
@@ -34,29 +40,43 @@ import lombok.Value;
  */
 
 @Value
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class StockChangedEvent implements MaterialEvent
 {
 	public static final String TYPE = "StockChangedEvent";
 
 	EventDescriptor eventDescriptor;
 	ProductDescriptor productDescriptor;
-	int warehouseId;
+	WarehouseId warehouseId;
+
+	/** may be negative if a storage attribute is changed! */
 	BigDecimal qtyOnHand;
+
 	BigDecimal qtyOnHandOld;
 
+	/** optional; might be used by some handlers; if null then "now" is assumed. */
+	Instant changeDate;
+
+	StockChangeDetails stockChangeDetails;
+
+	@JsonCreator
 	@Builder
 	public StockChangedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("productDescriptor") final ProductDescriptor productDescriptor,
-			@JsonProperty("warehouseId") final int warehouseId,
+			@JsonProperty("warehouseId") final WarehouseId warehouseId,
 			@JsonProperty("qtyOnHand") final BigDecimal qtyOnHand,
-			@JsonProperty("qtyOnHandOld") final BigDecimal qtyOnHandOld)
+			@JsonProperty("qtyOnHandOld") final BigDecimal qtyOnHandOld,
+			@JsonProperty("changeDate") final Instant changeDate,
+			@JsonProperty("stockChangeDetails") final StockChangeDetails stockChangeDetails)
 	{
 		this.eventDescriptor = eventDescriptor;
 		this.productDescriptor = productDescriptor;
 		this.warehouseId = warehouseId;
 		this.qtyOnHand = qtyOnHand;
 		this.qtyOnHandOld = qtyOnHandOld;
+		this.changeDate = changeDate;
+		this.stockChangeDetails = stockChangeDetails;
 	}
 
 	public void validate()
@@ -65,11 +85,33 @@ public class StockChangedEvent implements MaterialEvent
 		Check.errorIf(productDescriptor == null, "productDescriptor may not be null; this={}", this);
 		Check.errorIf(qtyOnHand == null, "qtyOnHand may not be null; this={}", this);
 		Check.errorIf(qtyOnHandOld == null, "qtyOnHandOld may not be null; this={}", this);
-		Check.errorIf(warehouseId <= 0, "warehouseId needs to be > 0; this={}", this);
+		Check.errorIf(warehouseId == null, "warehouseId needs to set; this={}", this);
+		Check.errorIf(stockChangeDetails == null, "stockChangeDetails may not be null; this={}", this);
+		Check.errorIf(stockChangeDetails.getStockId() <= 0, "stockChangeDetails.stockId may not be null; this={}", this);
 	}
 
 	public int getProductId()
 	{
 		return productDescriptor.getProductId();
+	}
+
+	@Value
+	public static class StockChangeDetails
+	{
+		ResetStockPInstanceId resetStockPInstanceId;
+		int transactionId;
+		int stockId;
+
+		@JsonCreator
+		@Builder
+		public StockChangeDetails(
+				@JsonProperty("resetStockPInstanceId") final ResetStockPInstanceId resetStockPInstanceId,
+				@JsonProperty("transactionId") final int transactionId,
+				@JsonProperty("stockId") final int stockId)
+		{
+			this.resetStockPInstanceId = resetStockPInstanceId;
+			this.transactionId = transactionId;
+			this.stockId = stockId;
+		}
 	}
 }

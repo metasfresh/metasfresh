@@ -23,21 +23,17 @@ package de.metas.adempiere.gui.search.impl;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_C_OrderLine;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -58,12 +54,6 @@ public class InOutLineHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public I_M_Product getM_Product()
-	{
-		return inoutLine.getM_Product();
-	}
-
-	@Override
 	public void setM_Product_ID(final int productId)
 	{
 		inoutLine.setM_Product_ID(productId);
@@ -74,9 +64,9 @@ public class InOutLineHUPackingAware implements IHUPackingAware
 	{
 		inoutLine.setQtyEntered(qty);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(inoutLine);
 		final ProductId productId = ProductId.ofRepoIdOrNull(getM_Product_ID());
-		final BigDecimal movementQty = Services.get(IUOMConversionBL.class).convertToProductUOM(ctx, productId, getC_UOM(), qty);
+		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(getC_UOM_ID());
+		final BigDecimal movementQty = Services.get(IUOMConversionBL.class).convertToProductUOM(productId, uom, qty);
 		inoutLine.setMovementQty(movementQty);
 	}
 
@@ -89,18 +79,6 @@ public class InOutLineHUPackingAware implements IHUPackingAware
 	@Override
 	public int getM_HU_PI_Item_Product_ID()
 	{
-		if (inoutLine.isManualPackingMaterial())
-		{
-			return inoutLine.getM_HU_PI_Item_Product_ID();
-		}
-
-		final I_C_OrderLine orderline = InterfaceWrapperHelper.create(inoutLine.getC_OrderLine(), I_C_OrderLine.class);
-		return orderline.getM_HU_PI_Item_Product_ID();
-	}
-
-	@Override
-	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
-	{
 		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 
 		final org.compiere.model.I_M_InOut inOut = inoutLine.getM_InOut();
@@ -110,18 +88,18 @@ public class InOutLineHUPackingAware implements IHUPackingAware
 
 		if (inoutLine.isManualPackingMaterial() || isCustomerReturnInOutLine)
 		{
-			return inoutLine.getM_HU_PI_Item_Product();
+			return inoutLine.getM_HU_PI_Item_Product_ID();
 		}
 
 		final I_C_OrderLine orderline = InterfaceWrapperHelper.create(inoutLine.getC_OrderLine(), I_C_OrderLine.class);
 
-		return orderline == null ? null : orderline.getM_HU_PI_Item_Product();
+		return orderline == null ? -1 : orderline.getM_HU_PI_Item_Product_ID();
 	}
 
 	@Override
-	public void setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product huPiItemProduct)
+	public void setM_HU_PI_Item_Product_ID(final int huPiItemProductId)
 	{
-		values.setM_HU_PI_Item_Product(huPiItemProduct);
+		values.setM_HU_PI_Item_Product_ID(huPiItemProductId);
 	}
 
 	@Override
@@ -137,18 +115,18 @@ public class InOutLineHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public I_C_UOM getC_UOM()
+	public int getC_UOM_ID()
 	{
-		return inoutLine.getC_UOM();
+		return inoutLine.getC_UOM_ID();
 	}
 
 	@Override
-	public void setC_UOM(final I_C_UOM uom)
+	public void setC_UOM_ID(final int uomId)
 	{
 		// we assume inoutLine's UOM is correct
-		if (uom != null)
+		if (uomId > 0)
 		{
-			inoutLine.setC_UOM_ID(uom.getC_UOM_ID());
+			inoutLine.setC_UOM_ID(uomId);
 		}
 	}
 
@@ -165,27 +143,15 @@ public class InOutLineHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
-	public I_C_BPartner getC_BPartner()
+	public int getC_BPartner_ID()
 	{
-		return values.getC_BPartner();
+		return values.getC_BPartner_ID();
 	}
 
 	@Override
-	public void setC_BPartner(final I_C_BPartner partner)
+	public void setC_BPartner_ID(final int partnerId)
 	{
-		values.setC_BPartner(partner);
-	}
-
-	@Override
-	public void setDateOrdered(final Timestamp dateOrdered)
-	{
-		values.setDateOrdered(dateOrdered);
-	}
-
-	@Override
-	public Timestamp getDateOrdered()
-	{
-		return values.getDateOrdered();
+		values.setC_BPartner_ID(partnerId);
 	}
 
 	@Override

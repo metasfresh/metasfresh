@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.acct.model;
 
 
@@ -77,8 +61,6 @@ public interface I_Fact_Acct_ActivityChangeRequest_Source_v
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_Fact_Acct_ActivityChangeRequest_Source_v, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct_ActivityChangeRequest_Source_v, org.compiere.model.I_AD_Client>(I_Fact_Acct_ActivityChangeRequest_Source_v.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -103,10 +85,6 @@ public interface I_Fact_Acct_ActivityChangeRequest_Source_v
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_Fact_Acct_ActivityChangeRequest_Source_v, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct_ActivityChangeRequest_Source_v, org.compiere.model.I_AD_Org>(I_Fact_Acct_ActivityChangeRequest_Source_v.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
@@ -320,10 +298,6 @@ public interface I_Fact_Acct_ActivityChangeRequest_Source_v
 	 */
 	public int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
     /** Column definition for C_BPartner_ID */
     public static final org.adempiere.model.ModelColumn<I_Fact_Acct_ActivityChangeRequest_Source_v, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct_ActivityChangeRequest_Source_v, org.compiere.model.I_C_BPartner>(I_Fact_Acct_ActivityChangeRequest_Source_v.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
@@ -349,10 +323,6 @@ public interface I_Fact_Acct_ActivityChangeRequest_Source_v
 	 */
 	public int getC_Currency_ID();
 
-	public org.compiere.model.I_C_Currency getC_Currency();
-
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
-
     /** Column definition for C_Currency_ID */
     public static final org.adempiere.model.ModelColumn<I_Fact_Acct_ActivityChangeRequest_Source_v, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct_ActivityChangeRequest_Source_v, org.compiere.model.I_C_Currency>(I_Fact_Acct_ActivityChangeRequest_Source_v.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
     /** Column name C_Currency_ID */
@@ -377,10 +347,6 @@ public interface I_Fact_Acct_ActivityChangeRequest_Source_v
 	 * <br>Virtual Column: false
 	 */
 	public int getC_DocType_ID();
-
-	public org.compiere.model.I_C_DocType getC_DocType();
-
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
 
     /** Column definition for C_DocType_ID */
     public static final org.adempiere.model.ModelColumn<I_Fact_Acct_ActivityChangeRequest_Source_v, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct_ActivityChangeRequest_Source_v, org.compiere.model.I_C_DocType>(I_Fact_Acct_ActivityChangeRequest_Source_v.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
@@ -417,6 +383,31 @@ public interface I_Fact_Acct_ActivityChangeRequest_Source_v
     public static final String COLUMNNAME_C_Period_ID = "C_Period_ID";
 
 	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_Fact_Acct_ActivityChangeRequest_Source_v, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct_ActivityChangeRequest_Source_v, org.compiere.model.I_C_UOM>(I_Fact_Acct_ActivityChangeRequest_Source_v.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -445,35 +436,6 @@ public interface I_Fact_Acct_ActivityChangeRequest_Source_v
     public static final org.adempiere.model.ModelColumn<I_Fact_Acct_ActivityChangeRequest_Source_v, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_Fact_Acct_ActivityChangeRequest_Source_v, org.compiere.model.I_AD_User>(I_Fact_Acct_ActivityChangeRequest_Source_v.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_Fact_Acct_ActivityChangeRequest_Source_v, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct_ActivityChangeRequest_Source_v, org.compiere.model.I_C_UOM>(I_Fact_Acct_ActivityChangeRequest_Source_v.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Buchungsdatum.
@@ -549,8 +511,7 @@ public interface I_Fact_Acct_ActivityChangeRequest_Source_v
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Document BaseType.
-	 * Logical type of document
+	 * Set Dokument Basis Typ.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -559,8 +520,7 @@ public interface I_Fact_Acct_ActivityChangeRequest_Source_v
 	public void setDocBaseType (java.lang.String DocBaseType);
 
 	/**
-	 * Get Document BaseType.
-	 * Logical type of document
+	 * Get Dokument Basis Typ.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -574,7 +534,7 @@ public interface I_Fact_Acct_ActivityChangeRequest_Source_v
     public static final String COLUMNNAME_DocBaseType = "DocBaseType";
 
 	/**
-	 * Set Beleg Nr..
+	 * Set Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -584,7 +544,7 @@ public interface I_Fact_Acct_ActivityChangeRequest_Source_v
 	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Beleg Nr..
+	 * Get Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -692,10 +652,6 @@ public interface I_Fact_Acct_ActivityChangeRequest_Source_v
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Product_ID();
-
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
 
     /** Column definition for M_Product_ID */
     public static final org.adempiere.model.ModelColumn<I_Fact_Acct_ActivityChangeRequest_Source_v, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_Fact_Acct_ActivityChangeRequest_Source_v, org.compiere.model.I_M_Product>(I_Fact_Acct_ActivityChangeRequest_Source_v.class, "M_Product_ID", org.compiere.model.I_M_Product.class);

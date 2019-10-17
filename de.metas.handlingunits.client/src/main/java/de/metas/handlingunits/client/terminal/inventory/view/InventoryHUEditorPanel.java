@@ -10,12 +10,12 @@ package de.metas.handlingunits.client.terminal.inventory.view;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_Warehouse;
 
@@ -117,7 +118,7 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 	}
 
 	@Override
-	protected final void onDialogOkAfterSave(final ITerminalDialog dialog)
+	protected void onDialogOkAfterSave(final ITerminalDialog dialog)
 	{
 		// nothing
 	}
@@ -127,7 +128,7 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 	 *
 	 * @task http://dewiki908/mediawiki/index.php/08205_HU_Pos_Inventory_move_Button_%28105838505937%29
 	 */
-	private final void doDirectMoveToWarehouse()
+	private void doDirectMoveToWarehouse()
 	{
 		final boolean exceptionIfNull = false;
 		//
@@ -183,7 +184,7 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 
 		//
 		// create our list of HUs to pass to the API service
-		final List<I_M_HU> hus = new ArrayList<I_M_HU>();
+		final List<I_M_HU> hus = new ArrayList<>();
 		for (final HUKey huKey : huKeys)
 		{
 			final I_M_HU hu = huKey.getM_HU();
@@ -192,10 +193,10 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 			// guard: verify the the HU's current warehouse matches the selected warehouseFrom
 			if (warehouseFrom != null)
 			{
-				final int huWarehouseID = hu.getM_Locator().getM_Warehouse_ID();
-				Check.errorUnless(huWarehouseID == warehouseFrom.getM_Warehouse_ID(),
-						"The selected HU {} has a M_Locator {} with M_Warehouse_ID {} which is != the M_Warehouse_ID {} of warehouse {}",
-						hu, hu.getM_Locator(), huWarehouseID, warehouseFrom.getM_Warehouse_ID(), warehouseFrom);
+				final WarehouseId huWarehouseId = IHandlingUnitsBL.extractWarehouseId(hu);
+				Check.errorUnless(huWarehouseId.getRepoId() == warehouseFrom.getM_Warehouse_ID(),
+						"The selected HU {} has M_Warehouse_ID {} which is != the M_Warehouse_ID {} of warehouse {}",
+						hu, huWarehouseId, warehouseFrom.getM_Warehouse_ID(), warehouseFrom);
 			}
 		}
 

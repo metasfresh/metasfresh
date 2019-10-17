@@ -40,10 +40,12 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.compiere.model.I_C_OrderLine;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import ch.qos.logback.classic.Level;
 import de.metas.cache.CCache;
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IDeliverRequest;
@@ -56,8 +58,8 @@ import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer.OnMissingC
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /**
@@ -134,7 +136,6 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 				.addColumn(I_M_IolCandHandler.Table_Name)
 				.endOrderBy()
 				.create()
-				.setApplyAccessFilter(true)
 				.firstOnly(I_M_IolCandHandler.class);
 	}
 
@@ -168,7 +169,7 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 					() -> retrieveHandlerRecordOrNull(handler.getClass().getName()));
 
 			final Iterator<? extends Object> missingCandidateModels = handler.retrieveModelsWithMissingCandidates(ctx, trxName);
-			while(missingCandidateModels.hasNext())
+			while (missingCandidateModels.hasNext())
 			{
 				final Object model = missingCandidateModels.next();
 				final List<ModelWithoutShipmentScheduleVetoer> vetoListeners = new ArrayList<>();
@@ -176,9 +177,10 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 				for (final ModelWithoutShipmentScheduleVetoer l : tableName2Listeners.get(tableName))
 				{
 					final OnMissingCandidate listenerResult = l.foundModelWithoutInOutCandidate(model);
-					if (listenerResult == ModelWithoutShipmentScheduleVetoer.OnMissingCandidate.I_VETO)
+					if (listenerResult == OnMissingCandidate.I_VETO)
 					{
-						logger.debug("IInOutCandHandlerListener " + l + " doesn't want us to create a shipment schedule");
+						Loggables.withLogger(logger, Level.DEBUG)
+								.addLog("IInOutCandHandlerListener {} doesn't want us to create a shipment schedule", l);
 						vetoListeners.add(l);
 					}
 				}
@@ -257,9 +259,9 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 	}
 
 	@Override
-	public IDeliverRequest createDeliverRequest(@NonNull final I_M_ShipmentSchedule sched)
+	public IDeliverRequest createDeliverRequest(@NonNull final I_M_ShipmentSchedule sched, final I_C_OrderLine salesOrderLine)
 	{
-		return getHandlerFor(sched).createDeliverRequest(sched);
+		return getHandlerFor(sched).createDeliverRequest(sched, salesOrderLine);
 	}
 
 	@Override

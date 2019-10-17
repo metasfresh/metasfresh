@@ -1,6 +1,16 @@
 package de.metas.ordercandidate.api;
 
+import org.adempiere.warehouse.WarehouseId;
+
+import de.metas.document.DocTypeId;
+import de.metas.freighcost.FreightCostRule;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceRule;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.Value;
 
@@ -31,18 +41,18 @@ import lombok.Value;
 public class OLCandOrderDefaults
 {
 	public static final OLCandOrderDefaults NULL = builder().build();
-	
-	private final int docTypeTargetId;
-	
-	private final String deliveryRule;
-	private final String deliveryViaRule;
-	private final int shipperId;
-	private final int warehouseId;
-	private final String freightCostRule;
 
-	private final String paymentRule;
-	private final int paymentTermId;
+	private final DocTypeId docTypeTargetId;
 
-	private final String invoiceRule;
+	private final DeliveryRule deliveryRule;
+	private final DeliveryViaRule deliveryViaRule;
+	private final ShipperId shipperId;
+	private final WarehouseId warehouseId;
+	private final FreightCostRule freightCostRule;
+
+	private final PaymentRule paymentRule;
+	private final PaymentTermId paymentTermId;
+
+	private final InvoiceRule invoiceRule;
 	private final PricingSystemId pricingSystemId;
 }

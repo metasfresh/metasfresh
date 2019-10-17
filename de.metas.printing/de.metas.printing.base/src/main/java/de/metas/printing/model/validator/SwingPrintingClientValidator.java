@@ -60,7 +60,7 @@ public class SwingPrintingClientValidator extends AbstractModuleInterceptor
 			return false;
 		}
 		
-		return Ini.isClient() && clientStartupIssue == null;
+		return Ini.isSwingClient() && clientStartupIssue == null;
 	}
 
 	@Override

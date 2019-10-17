@@ -13,11 +13,11 @@ package de.metas.edi.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -30,12 +30,14 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.OrgId;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.report.jasper.JasperConstants;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_C_BPartner;
@@ -47,16 +49,22 @@ import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_SSCC;
 import de.metas.handlingunits.IHUAssignmentDAO;
+import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.inout.IInOutDAO;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
+import de.metas.organization.OrgId;
 import de.metas.process.ProcessInfo;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
-import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -115,6 +123,10 @@ public class DesadvBL implements IDesadvBL
 		}
 
 		final IBPartnerProductDAO bPartnerProductDAO = Services.get(IBPartnerProductDAO.class);
+		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final org.compiere.model.I_C_BPartner buyerBPartner = Services.get(IBPartnerDAO.class).getById(order.getC_BPartner_ID());
 
 		final I_EDI_DesadvLine newDesadvLine = InterfaceWrapperHelper.newInstance(I_EDI_DesadvLine.class, order);
 		newDesadvLine.setEDI_Desadv(desadv);
@@ -129,7 +141,7 @@ public class DesadvBL implements IDesadvBL
 		if (orderLineItemCapacity.signum() <= 0)
 		{
 			// task 09776
-			final I_C_BPartner bpartner = InterfaceWrapperHelper.create(desadv.getC_BPartner(), I_C_BPartner.class);
+			final I_C_BPartner bpartner = InterfaceWrapperHelper.create(desadv.getC_BPartner_ID(), I_C_BPartner.class);
 			lineItemCapacity = bpartner.getEdiDESADVDefaultItemCapacity();
 		}
 		else
@@ -139,21 +151,24 @@ public class DesadvBL implements IDesadvBL
 		newDesadvLine.setQtyItemCapacity(lineItemCapacity);
 
 		newDesadvLine.setMovementQty(BigDecimal.ZERO);
-		newDesadvLine.setM_Product_ID(orderLine.getM_Product_ID());
+		newDesadvLine.setM_Product_ID(productId.getRepoId());
 
 		newDesadvLine.setProductDescription(orderLine.getProductDescription());
 
-		final I_C_BPartner_Product bPartnerProduct = InterfaceWrapperHelper.create(
-				bPartnerProductDAO.retrieveBPartnerProductAssociation(order.getC_BPartner(), orderLine.getM_Product(), OrgId.ofRepoId(orderLine.getM_Product().getAD_Org_ID())),
-				I_C_BPartner_Product.class);
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
 
+		//
+		// set infos from C_BPartner_Product
+		final I_C_BPartner_Product bPartnerProduct = bPartnerProductDAO.retrieveBPartnerProductAssociation(buyerBPartner, product, orgId);
 		// don't throw an error for missing bPartnerProduct; it might prevent users from creating shipments
 		// instead, just don't set the values and let the user fix it in the DESADV window later on
 		// Check.assumeNotNull(bPartnerProduct, "there is a C_BPartner_Product for C_BPArtner {} and M_Product {}", inOut.getC_BPartner(), inOutLine.getM_Product());
 		if (bPartnerProduct != null)
 		{
 			newDesadvLine.setProductNo(bPartnerProduct.getProductNo());
-			newDesadvLine.setUPC(bPartnerProduct.getUPC());
+			newDesadvLine.setUPC_CU(bPartnerProduct.getUPC());
+			newDesadvLine.setEAN_CU(bPartnerProduct.getEAN_CU());
 
 			if (Check.isEmpty(newDesadvLine.getProductDescription(), true))
 			{
@@ -166,10 +181,25 @@ public class DesadvBL implements IDesadvBL
 				newDesadvLine.setProductDescription(bPartnerProduct.getProductName());
 			}
 		}
+
 		if (Check.isEmpty(newDesadvLine.getProductDescription(), true))
 		{
 			// fallback for product description
-			newDesadvLine.setProductDescription(orderLine.getM_Product().getName());
+			newDesadvLine.setProductDescription(product.getName());
+		}
+
+		//
+		// set infos from M_HU_PI_Item_Product
+		final I_M_HU_PI_Item_Product materialItemProduct = hupiItemProductDAO.retrieveMaterialItemProduct(
+				productId,
+				buyerBPartner,
+				order.getDateOrdered(),
+				X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit, true/* allowInfiniteCapacity */);
+		if (materialItemProduct != null)
+		{
+			newDesadvLine.setGTIN(materialItemProduct.getGTIN());
+			newDesadvLine.setUPC_TU(materialItemProduct.getUPC_TU());
+			newDesadvLine.setEAN_TU(materialItemProduct.getEAN_TU());
 		}
 
 		newDesadvLine.setIsSubsequentDeliveryPlanned(false); // the default
@@ -180,19 +210,18 @@ public class DesadvBL implements IDesadvBL
 
 	/**
 	 * Sets the given line's <code>MovementQty</code> and <code>QtyDeliveredInUOM</code>.
-	 *
-	 * @param desadvLine
-	 * @param newMovementQty
 	 */
 	private void setQty(final I_EDI_DesadvLine desadvLine, final BigDecimal newMovementQty)
 	{
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(desadvLine);
 		final ProductId productId = ProductId.ofRepoId(desadvLine.getM_Product_ID());
 
 		desadvLine.setMovementQty(newMovementQty);
-		desadvLine.setQtyDeliveredInUOM(uomConversionBL.convertFromProductUOM(ctx, productId, desadvLine.getC_UOM(), newMovementQty));
+		desadvLine.setQtyDeliveredInUOM(uomConversionBL.convertFromProductUOM(
+				productId,
+				UomId.ofRepoId(desadvLine.getC_UOM_ID()),
+				newMovementQty));
 	}
 
 	private I_EDI_Desadv retrieveOrCreateDesadv(final I_C_Order order)
@@ -206,14 +235,16 @@ public class DesadvBL implements IDesadvBL
 			desadv = InterfaceWrapperHelper.newInstance(I_EDI_Desadv.class, order);
 
 			desadv.setPOReference(order.getPOReference());
-			desadv.setC_BPartner(orderBL.getShipToPartner(order));
-			desadv.setC_BPartner_Location(orderBL.getShipToLocation(order));
+
+			final BPartnerLocationId shipToBPLocationId = orderBL.getShipToLocationId(order);
+			desadv.setC_BPartner_ID(shipToBPLocationId.getBpartnerId().getRepoId());
+			desadv.setC_BPartner_Location_ID(shipToBPLocationId.getRepoId());
 
 			desadv.setDateOrdered(order.getDateOrdered());
 			desadv.setMovementDate(order.getDatePromised());
 			desadv.setC_Currency_ID(order.getC_Currency_ID());
 			desadv.setHandOver_Location_ID(order.getHandOver_Location_ID());
-			desadv.setBill_Location(orderBL.getBillToLocation(order));
+			desadv.setBill_Location_ID(BPartnerLocationId.toRepoId(orderBL.getBillToLocationIdOrNull(order)));
 			InterfaceWrapperHelper.save(desadv);
 		}
 		return desadv;
@@ -276,7 +307,7 @@ public class DesadvBL implements IDesadvBL
 			if (topLevelHUs.size() == 1)
 			{
 				final I_M_HU hu = topLevelHUs.get(0);
-				desadvLine.setM_HU(hu);
+				desadvLine.setM_HU_ID(hu.getM_HU_ID());
 
 				final AttributeId sscc18AttributeId = sscc18CodeDAO.retrieveSSCC18AttributeId();
 

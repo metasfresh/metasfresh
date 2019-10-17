@@ -1,6 +1,7 @@
 package org.adempiere.mm.attributes.api.impl;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 
 import org.adempiere.mm.attributes.AttributeId;
@@ -10,6 +11,7 @@ import org.adempiere.util.test.ErrorMessage;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.util.TimeUtil;
 import org.junit.Assert;
 
 import de.metas.util.Services;
@@ -27,11 +29,11 @@ import de.metas.util.Services;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -86,12 +88,14 @@ public class AttributeInstanceExpectation<ParentExpectationType> extends Abstrac
 
 		if (attribute != null)
 		{
-			assertModelEquals(messageToUse.expect("M_Attribute_ID"), attribute, attributeInstance.getM_Attribute());
+			assertEquals(messageToUse.expect("M_Attribute_ID"), attribute.getM_Attribute_ID(), attributeInstance.getM_Attribute_ID());
 		}
 		if (attributeKey != null)
 		{
-			final I_M_Attribute attributeActual = attributeInstance.getM_Attribute();
-			assertNotNull(messageToUse.expect("M_Attribute_ID not null"), attributeActual);
+			final AttributeId attributeActualId = AttributeId.ofRepoIdOrNull(attributeInstance.getM_Attribute_ID());
+			assertNotNull(messageToUse.expect("M_Attribute_ID not null"), attributeActualId);
+			
+			final I_M_Attribute attributeActual = Services.get(IAttributeDAO.class).getAttributeById(attributeActualId);
 			assertEquals(messageToUse.expect("M_Attribute.Value"), attributeKey, attributeActual.getValue());
 		}
 		if (valueStringSet)
@@ -151,6 +155,11 @@ public class AttributeInstanceExpectation<ParentExpectationType> extends Abstrac
 		this.valueDate = valueDate;
 		this.valueDateSet = true;
 		return this;
+	}
+
+	public AttributeInstanceExpectation<ParentExpectationType> valueDate(final LocalDate valueDate)
+	{
+		return valueDate(TimeUtil.asDate(valueDate));
 	}
 
 	public final I_M_Attribute getAttributeNotNull()

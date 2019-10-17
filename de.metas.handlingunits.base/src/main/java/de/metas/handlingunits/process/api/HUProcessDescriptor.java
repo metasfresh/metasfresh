@@ -3,11 +3,11 @@ package de.metas.handlingunits.process.api;
 import java.util.Collection;
 import java.util.Set;
 
-import org.compiere.util.Util;
-
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.process.AdProcessId;
 import de.metas.util.Check;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -40,7 +40,7 @@ import lombok.Value;
 @Value
 public class HUProcessDescriptor
 {
-	int processId;
+	AdProcessId processId;
 	String internalName;
 
 	boolean provideAsUserAction;
@@ -52,21 +52,20 @@ public class HUProcessDescriptor
 
 	@Builder
 	private HUProcessDescriptor(
-			final int processId,
+			@NonNull final AdProcessId processId,
 			@NonNull final String internalName,
 			final Boolean provideAsUserAction,
 			final Boolean acceptOnlyTopLevelHUs,
 			@Singular final Set<String> acceptHUUnitTypes)
 	{
-		Check.assume(processId > 0, "processId > 0");
 		Check.assumeNotEmpty(acceptHUUnitTypes, "acceptHUUnitTypes is not empty");
 
 		this.processId = processId;
 		this.internalName = Check.assumeNotEmpty(internalName, "internalName is not empty");
 		this.acceptHUUnitTypes = ImmutableSet.copyOf(acceptHUUnitTypes);
 
-		this.provideAsUserAction = Util.coalesce(provideAsUserAction, true);
-		this.acceptOnlyTopLevelHUs = Util.coalesce(acceptOnlyTopLevelHUs, false);
+		this.provideAsUserAction = CoalesceUtil.coalesce(provideAsUserAction, true);
+		this.acceptOnlyTopLevelHUs = CoalesceUtil.coalesce(acceptOnlyTopLevelHUs, false);
 	}
 
 	public boolean appliesToHUUnitType(@NonNull final String huUnitType)

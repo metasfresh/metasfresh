@@ -1,15 +1,17 @@
 package de.metas.order.compensationGroup;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
+import de.metas.currency.CurrencyPrecision;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.uom.UomId;
 
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -64,8 +66,11 @@ public final class GroupCompensationLine
 	/** Base amount for percentage calculation */
 	@Getter
 	private BigDecimal baseAmt;
+
+	/** Might be {@code null} for {@link GroupCompensationAmtType#Percent}*/
 	@Getter
-	private BigDecimal qty;
+	private BigDecimal qtyEntered;
+
 	@Getter
 	private BigDecimal price;
 	@Getter
@@ -84,7 +89,7 @@ public final class GroupCompensationLine
 			@NonNull final GroupCompensationAmtType amtType,
 			final Percent percentage,
 			final BigDecimal baseAmt,
-			final BigDecimal qty,
+			final BigDecimal qtyEntered,
 			final BigDecimal price,
 			final BigDecimal lineNetAmt,
 			final GroupTemplateLineId groupTemplateLineId)
@@ -106,17 +111,17 @@ public final class GroupCompensationLine
 			Check.assumeNotNull(percentage, "Parameter percentage is not null");
 
 			this.percentage = percentage;
-			this.qty = qty;
+			this.qtyEntered = qtyEntered;
 			this.price = price;
 			this.lineNetAmt = lineNetAmt;
 		}
 		else if (amtType == GroupCompensationAmtType.PriceAndQty)
 		{
-			Check.assumeNotNull(qty, "Parameter qty is not null");
+			Check.assumeNotNull(qtyEntered, "Parameter qty is not null");
 			Check.assumeNotNull(price, "Parameter price is not null");
 
 			this.percentage = null;
-			this.qty = qty;
+			this.qtyEntered = qtyEntered;
 			this.price = price;
 			this.lineNetAmt = lineNetAmt;
 		}
@@ -136,16 +141,22 @@ public final class GroupCompensationLine
 		this.baseAmt = baseAmt;
 	}
 
-	void setPriceAndQty(@NonNull final BigDecimal price, @NonNull final BigDecimal qty, final int precision)
+	void setPriceAndQty(
+			@NonNull final BigDecimal price,
+			@NonNull final Quantity qtyEntered,
+			@NonNull final CurrencyPrecision amountPrecision)
 	{
-		this.price = price;
-		this.qty = qty;
+		Check.assumeEquals(qtyEntered.getUomId(), this.uomId, "Param qtyEntered needs to have UomId={}; qtyEntered={}", this.uomId, qtyEntered);
 
-		this.lineNetAmt = price.multiply(qty);
-		if (lineNetAmt.scale() > precision)
-		{
-			lineNetAmt = lineNetAmt.setScale(precision, RoundingMode.HALF_UP);
-		}
+		this.price = price;
+		this.qtyEntered = qtyEntered.toBigDecimal();
+
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
+		final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(qtyEntered, getProductId());
+
+		this.lineNetAmt = price.multiply(qtyInProductUOM.toBigDecimal());
+		this.lineNetAmt = amountPrecision.roundIfNeeded(this.lineNetAmt);
 	}
 
 	public boolean isGeneratedLine()

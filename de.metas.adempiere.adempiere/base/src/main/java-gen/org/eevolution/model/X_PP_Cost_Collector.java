@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.eevolution.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for PP_Cost_Collector
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -40074057L;
+	private static final long serialVersionUID = -2031666214L;
 
     /** Standard Constructor */
     public X_PP_Cost_Collector (Properties ctx, int PP_Cost_Collector_ID, String trxName)
@@ -40,20 +23,16 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
       super (ctx, PP_Cost_Collector_ID, trxName);
       /** if (PP_Cost_Collector_ID == 0)
         {
-			setC_DocType_ID (0);
-// 0
+			setC_DocType_ID (0); // 0
 			setC_DocTypeTarget_ID (0);
 			setCostCollectorType (null);
-			setDateAcct (new Timestamp( System.currentTimeMillis() ));
-// @#Date@
+			setDateAcct (new Timestamp( System.currentTimeMillis() )); // @#Date@
 			setM_Locator_ID (0);
 			setM_Product_ID (0);
 			setM_Warehouse_ID (0);
-			setMovementDate (new Timestamp( System.currentTimeMillis() ));
-// @#Date@
-			setMovementQty (Env.ZERO);
-// 0
-			setPosted (false);
+			setMovementDate (new Timestamp( System.currentTimeMillis() )); // @#Date@
+			setMovementQty (BigDecimal.ZERO); // 0
+			setPosted (false); // N
 			setPP_Cost_Collector_ID (0);
 			setPP_Order_ID (0);
 			setProcessed (false);
@@ -74,14 +53,6 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
     {
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuilder sb = new StringBuilder ("X_PP_Cost_Collector[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	@Override
@@ -140,7 +111,7 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	@Override
 	public void setAD_User_ID (int AD_User_ID)
 	{
-		if (AD_User_ID < 1) 
+		if (AD_User_ID < 0) 
 			set_Value (COLUMNNAME_AD_User_ID, null);
 		else 
 			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
@@ -487,6 +458,8 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	public static final String DOCACTION_Unlock = "XL";
 	/** WaitComplete = WC */
 	public static final String DOCACTION_WaitComplete = "WC";
+	/** UnClose = UC */
+	public static final String DOCACTION_UnClose = "UC";
 	/** Set Belegverarbeitung.
 		@param DocAction 
 		The targeted status of the document
@@ -516,10 +489,10 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	public static final String DOCSTATUS_Drafted = "DR";
 	/** Completed = CO */
 	public static final String DOCSTATUS_Completed = "CO";
-	/** Genehmigt = AP */
-	public static final String DOCSTATUS_Genehmigt = "AP";
-	/** Nicht genehmigt = NA */
-	public static final String DOCSTATUS_NichtGenehmigt = "NA";
+	/** Approved = AP */
+	public static final String DOCSTATUS_Approved = "AP";
+	/** NotApproved = NA */
+	public static final String DOCSTATUS_NotApproved = "NA";
 	/** Voided = VO */
 	public static final String DOCSTATUS_Voided = "VO";
 	/** Invalid = IN */
@@ -528,14 +501,14 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	public static final String DOCSTATUS_Reversed = "RE";
 	/** Closed = CL */
 	public static final String DOCSTATUS_Closed = "CL";
-	/** Unbekannt = ?? */
-	public static final String DOCSTATUS_Unbekannt = "??";
+	/** Unknown = ?? */
+	public static final String DOCSTATUS_Unknown = "??";
 	/** InProgress = IP */
 	public static final String DOCSTATUS_InProgress = "IP";
-	/** Warten auf Zahlung = WP */
-	public static final String DOCSTATUS_WartenAufZahlung = "WP";
-	/** Warten auf Bestätigung = WC */
-	public static final String DOCSTATUS_WartenAufBestaetigung = "WC";
+	/** WaitingPayment = WP */
+	public static final String DOCSTATUS_WaitingPayment = "WP";
+	/** WaitingConfirmation = WC */
+	public static final String DOCSTATUS_WaitingConfirmation = "WC";
 	/** Set Belegstatus.
 		@param DocStatus 
 		The current status of the document
@@ -556,7 +529,7 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Beleg Nr..
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
@@ -566,7 +539,7 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Beleg Nr..
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
 	@Override
@@ -590,7 +563,7 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DurationReal);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -652,9 +625,9 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Ausprägung Merkmals-Satz.
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Product Attribute Set Instance
+		Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
@@ -665,8 +638,8 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Ausprägung Merkmals-Satz.
-		@return Product Attribute Set Instance
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public int getM_AttributeSetInstance_ID () 
@@ -788,9 +761,9 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 		return ii.intValue();
 	}
 
-	/** Set Bewegungs-Datum.
+	/** Set Bewegungsdatum.
 		@param MovementDate 
-		Date a product was moved in or out of inventory
+		Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	  */
 	@Override
 	public void setMovementDate (java.sql.Timestamp MovementDate)
@@ -798,8 +771,8 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 		set_Value (COLUMNNAME_MovementDate, MovementDate);
 	}
 
-	/** Get Bewegungs-Datum.
-		@return Date a product was moved in or out of inventory
+	/** Get Bewegungsdatum.
+		@return Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	  */
 	@Override
 	public java.sql.Timestamp getMovementDate () 
@@ -825,7 +798,7 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MovementQty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1016,40 +989,6 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 		return ii.intValue();
 	}
 
-	@Override
-	public org.eevolution.model.I_PP_Order_Workflow getPP_Order_Workflow() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_PP_Order_Workflow_ID, org.eevolution.model.I_PP_Order_Workflow.class);
-	}
-
-	@Override
-	public void setPP_Order_Workflow(org.eevolution.model.I_PP_Order_Workflow PP_Order_Workflow)
-	{
-		set_ValueFromPO(COLUMNNAME_PP_Order_Workflow_ID, org.eevolution.model.I_PP_Order_Workflow.class, PP_Order_Workflow);
-	}
-
-	/** Set Manufacturing Order Workflow.
-		@param PP_Order_Workflow_ID Manufacturing Order Workflow	  */
-	@Override
-	public void setPP_Order_Workflow_ID (int PP_Order_Workflow_ID)
-	{
-		if (PP_Order_Workflow_ID < 1) 
-			set_Value (COLUMNNAME_PP_Order_Workflow_ID, null);
-		else 
-			set_Value (COLUMNNAME_PP_Order_Workflow_ID, Integer.valueOf(PP_Order_Workflow_ID));
-	}
-
-	/** Get Manufacturing Order Workflow.
-		@return Manufacturing Order Workflow	  */
-	@Override
-	public int getPP_Order_Workflow_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_Workflow_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set Verarbeitet.
 		@param Processed 
 		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
@@ -1114,7 +1053,7 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyReject);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1210,7 +1149,7 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ScrappedQty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1229,7 +1168,7 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_SetupTimeReal);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

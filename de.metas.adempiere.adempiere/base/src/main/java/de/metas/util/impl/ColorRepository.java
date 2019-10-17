@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
+import de.metas.util.ColorId;
 import de.metas.util.IColorRepository;
 import de.metas.util.MFColor;
 import de.metas.util.MFColorType;
@@ -32,12 +33,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -49,7 +50,7 @@ public class ColorRepository implements IColorRepository
 	private static final Logger logger = LogManager.getLogger(ColorRepository.class);
 
 	private static final CCache<Integer, MFColor> colorValuesById = CCache.<Integer, MFColor> newCache(I_AD_Color.Table_Name, 20, CCache.EXPIREMINUTES_Never);
-	private static final CCache<String, Integer> colorIdByName = CCache.<String, Integer> newCache(I_AD_Color.Table_Name + "#by#Name", 10, CCache.EXPIREMINUTES_Never);
+	private static final CCache<String, ColorId> colorIdByName = CCache.<String, ColorId> newCache(I_AD_Color.Table_Name + "#by#Name", 10, CCache.EXPIREMINUTES_Never);
 
 	@Override
 	public MFColor getColorById(final int adColorId)
@@ -128,7 +129,7 @@ public class ColorRepository implements IColorRepository
 	}
 
 	@Override
-	public int saveFlatColorAndReturnId(@NonNull String flatColorHexString)
+	public ColorId saveFlatColorAndReturnId(@NonNull String flatColorHexString)
 	{
 		final Color flatColor = MFColor.ofFlatColorHexString(flatColorHexString).getFlatColor();
 		final I_AD_Color existingColorRecord = Services.get(IQueryBL.class)
@@ -145,7 +146,7 @@ public class ColorRepository implements IColorRepository
 				.first();
 		if (existingColorRecord != null)
 		{
-			return existingColorRecord.getAD_Color_ID();
+			return ColorId.ofRepoId(existingColorRecord.getAD_Color_ID());
 		}
 
 		final I_AD_Color newColorRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_AD_Color.class);
@@ -161,26 +162,27 @@ public class ColorRepository implements IColorRepository
 		//
 		InterfaceWrapperHelper.save(newColorRecord);
 
-		return newColorRecord.getAD_Color_ID();
+		return ColorId.ofRepoId(newColorRecord.getAD_Color_ID());
 	}
 
-	
+
 
 	@Override
-	public int getColorIdByName(final String colorName)
+	public ColorId getColorIdByName(final String colorName)
 	{
 		return colorIdByName.getOrLoad(colorName, () -> retrieveColorIdByName(colorName));
 	}
 
-	private int retrieveColorIdByName(final String colorName)
+	private ColorId retrieveColorIdByName(final String colorName)
 	{
-		return Services.get(IQueryBL.class)
+		final int colorRepoId = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Color.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClientOrSystem()
 				.addEqualsFilter(I_AD_Color.COLUMNNAME_Name, colorName)
 				.create()
 				.firstIdOnly();
+		return ColorId.ofRepoIdOrNull(colorRepoId);
 	}
 
 }

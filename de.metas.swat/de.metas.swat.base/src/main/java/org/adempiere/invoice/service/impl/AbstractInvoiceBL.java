@@ -1,5 +1,7 @@
 package org.adempiere.invoice.service.impl;
 
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -24,6 +26,7 @@ package org.adempiere.invoice.service.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -44,7 +47,6 @@ import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_DocType;
@@ -57,7 +59,6 @@ import org.compiere.model.I_M_RMA;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_C_Invoice;
 import org.compiere.model.X_C_Tax;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -71,6 +72,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.ICopyHandlerBL;
@@ -78,6 +80,7 @@ import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IModelTranslationMap;
@@ -91,14 +94,26 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
+import de.metas.payment.PaymentRule;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -106,7 +121,6 @@ import lombok.NonNull;
  * Implements those methods that are DB decoupled
  *
  * @author ts
- *
  */
 public abstract class AbstractInvoiceBL implements IInvoiceBL
 {
@@ -191,12 +205,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			final Timestamp dateDoc,
 			final int C_DocTypeTarget_ID,
 			final boolean isSOTrx,
-			final boolean counter,
+			final boolean isCounterpart,
 			final boolean setOrderRef,
-			final boolean setInvoiceRef,
-			final boolean copyLines)
+			final boolean isSetLineInvoiceRef,
+			final boolean isCopyLines)
 	{
-		return copyFrom(from, dateDoc, C_DocTypeTarget_ID, isSOTrx, counter, setOrderRef, setInvoiceRef, copyLines, AbstractInvoiceBL.defaultDocCopyHandler);
+		return copyFrom(from, dateDoc, C_DocTypeTarget_ID, isSOTrx, isCounterpart, setOrderRef, isSetLineInvoiceRef, isCopyLines, AbstractInvoiceBL.defaultDocCopyHandler);
 	}
 
 	private final org.compiere.model.I_C_Invoice copyFrom(
@@ -204,10 +218,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			final Timestamp dateDoc,
 			final int C_DocTypeTarget_ID,
 			final boolean isSOTrx,
-			final boolean counter,
+			final boolean isCounterpart,
 			final boolean setOrderRef,
-			final boolean setInvoiceRef,
-			final boolean copyLines,
+			final boolean isSetLineInvoiceRef,
+			final boolean isCopyLines,
 			final IDocCopyHandler<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_InvoiceLine> additionalDocCopyHandler)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(from);
@@ -265,7 +279,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			to.setC_Order_ID(0);
 		}
 
-		if (counter)
+		if (isCounterpart)
 		{
 			to.setRef_Invoice_ID(from.getC_Invoice_ID());
 			from.setRef_Invoice_ID(to.getC_Invoice_ID());
@@ -275,7 +289,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			to.setRef_Invoice_ID(0);
 		}
 
-		if (counter)
+		if (isCounterpart)
 		{
 			// Try to find Order link
 			if (from.getC_Order_ID() != 0)
@@ -310,7 +324,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		// Lines
-		if (copyLines && copyLinesFrom(from, to, counter, setOrderRef, setInvoiceRef, additionalDocLineCopyHandler) == 0)
+		if (isCopyLines && copyLinesFrom(from, to, isCounterpart, setOrderRef, isSetLineInvoiceRef, additionalDocLineCopyHandler) == 0)
 		{
 			throw new IllegalStateException("Could not create Invoice Lines");
 		}
@@ -404,7 +418,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			{
 				invoice.setIsPaid(test);
 			}
-			log.debug("Paid=" + test + " (" + alloc + "=" + total + ")");
+
+			log.debug("IsPaid={} (allocated={}, invoiceGrandTotal={})", test, alloc, total);
 		}
 
 		return change;
@@ -440,39 +455,40 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final I_C_Invoice createInvoiceFromOrder(final org.compiere.model.I_C_Order order,
-			final int C_DocTypeTarget_ID,
-			final Timestamp dateInvoiced,
-			final Timestamp dateAcct)
+	public final I_C_Invoice createInvoiceFromOrder(
+			final org.compiere.model.I_C_Order order,
+			final DocTypeId docTypeTargetId,
+			final LocalDate dateInvoiced,
+			final LocalDate dateAcct)
 	{
 		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class, order);
 		invoice.setAD_Org_ID(order.getAD_Org_ID());
 		setFromOrder(invoice, order);	// set base settings
 
 		//
-		int docTypeId = C_DocTypeTarget_ID;
-		if (docTypeId <= 0)
+		DocTypeId docTypeId = docTypeTargetId;
+		if (docTypeId == null)
 		{
-			final I_C_DocType odt = order.getC_DocType();
+			final I_C_DocType odt = Services.get(IOrderBL.class).getDocTypeOrNull(order);
 			if (odt != null)
 			{
-				docTypeId = odt.getC_DocTypeInvoice_ID();
-				if (docTypeId <= 0)
+				docTypeId = DocTypeId.ofRepoIdOrNull(odt.getC_DocTypeInvoice_ID());
+				if (docTypeId == null)
 				{
 					throw new AdempiereException("@NotFound@ @C_DocTypeInvoice_ID@ - @C_DocType_ID@:" + odt.getName());
 				}
 			}
 		}
 
-		setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId);
+		setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId.getRepoId());
 		if (dateInvoiced != null)
 		{
-			invoice.setDateInvoiced(dateInvoiced);
+			invoice.setDateInvoiced(TimeUtil.asTimestamp(dateInvoiced));
 		}
 
 		if (dateAcct != null)
 		{
-			invoice.setDateAcct(dateAcct); // task 08437
+			invoice.setDateAcct(TimeUtil.asTimestamp(dateAcct)); // task 08437
 		}
 		else
 		{
@@ -620,7 +636,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return;
 		}
 
-		final String adLanguage = Util.coalesce(invoice.getC_BPartner().getAD_Language(), Env.getAD_Language());
+		final String adLanguage = CoalesceUtil.coalesce(invoice.getC_BPartner().getAD_Language(), Env.getAD_Language());
 
 		final IModelTranslationMap docTypeTrl = InterfaceWrapperHelper.getModelTranslationMap(docType);
 		final ITranslatableString description = docTypeTrl.getColumnTrl(I_C_DocType.COLUMNNAME_Description, docType.getDescription());
@@ -832,103 +848,93 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		Check.assume(invoiceLineId2inOutId.size() == lines.size(), "Every line's id has been added to map '" + invoiceLineId2inOutId + "'");
 
 		// create Comparator
-		final Comparator<I_C_InvoiceLine> cmp = new Comparator<I_C_InvoiceLine>()
-		{
-			@Override
-			public int compare(final I_C_InvoiceLine line1, final I_C_InvoiceLine line2)
+		final Comparator<I_C_InvoiceLine> cmp = (line1, line2) -> {
+			// InOut_ID
+			final int InOut_ID1 = invoiceLineId2inOutId.get(line1.getC_InvoiceLine_ID());
+			final int InOut_ID2 = invoiceLineId2inOutId.get(line2.getC_InvoiceLine_ID());
+
+			if (InOut_ID1 > InOut_ID2)
 			{
-				// InOut_ID
-				final int InOut_ID1 = invoiceLineId2inOutId.get(line1.getC_InvoiceLine_ID());
-				final int InOut_ID2 = invoiceLineId2inOutId.get(line2.getC_InvoiceLine_ID());
-
-				if (InOut_ID1 > InOut_ID2)
-				{
-					return 1;
-				}
-				if (InOut_ID1 < InOut_ID2)
-				{
-					return -1;
-				}
-
-				// Freight cost
-				final boolean fc1 = line1.isFreightCostLine();
-				final boolean fc2 = line2.isFreightCostLine();
-
-				if (fc1 && !fc2)
-				{
-					return 1;
-				}
-				if (!fc1 && fc2)
-				{
-					return -1;
-				}
-
-				// LineNo
-				final int line1No = line1.getLine();
-				final int line2No = line2.getLine();
-
-				if (line1No > line2No)
-				{
-					return 1;
-				}
-				if (line1No < line2No)
-				{
-					return -1;
-				}
-
-				return 0;
+				return 1;
 			}
+			if (InOut_ID1 < InOut_ID2)
+			{
+				return -1;
+			}
+
+			// Freight cost
+			final boolean fc1 = line1.isFreightCostLine();
+			final boolean fc2 = line2.isFreightCostLine();
+
+			if (fc1 && !fc2)
+			{
+				return 1;
+			}
+			if (!fc1 && fc2)
+			{
+				return -1;
+			}
+
+			// LineNo
+			final int line1No = line1.getLine();
+			final int line2No = line2.getLine();
+
+			if (line1No > line2No)
+			{
+				return 1;
+			}
+			if (line1No < line2No)
+			{
+				return -1;
+			}
+
+			return 0;
 		};
 		return cmp;
 	}
 
 	private final Comparator<I_C_InvoiceLine> getShipmentLineOrderComparator(final List<I_C_InvoiceLine> lines)
 	{
-		final Comparator<I_C_InvoiceLine> comparator = new Comparator<I_C_InvoiceLine>()
-		{
-			@Override
-			public int compare(final I_C_InvoiceLine line1, final I_C_InvoiceLine line2)
+		final Comparator<I_C_InvoiceLine> comparator = (line1, line2) -> {
+
+			final I_M_InOutLine iol1 = line1.getM_InOutLine();
+			final I_M_InOutLine iol2 = line2.getM_InOutLine();
+			if (Util.same(line1.getM_InOutLine_ID(), line2.getM_InOutLine_ID()))
 			{
-
-				final I_M_InOutLine iol1 = line1.getM_InOutLine();
-				final I_M_InOutLine iol2 = line2.getM_InOutLine();
-				if (Util.same(line1.getM_InOutLine_ID(), line2.getM_InOutLine_ID()))
-				{
-					return line1.getLine() - line2.getLine(); // keep IL order
-				}
-				else if (line1.getM_InOutLine_ID() <= 0 || iol1 == null)
-				{
-					return 1; // second line not null, put it first
-				}
-				else if (line2.getM_InOutLine_ID() <= 0 || iol2 == null)
-				{
-					return -1; // first line not null, put it first
-				}
-
-				final I_C_OrderLine ol1 = iol1.getC_OrderLine();
-				final I_C_OrderLine ol2 = iol2.getC_OrderLine();
-				if (Util.same(ol1, ol2))
-				{
-					return iol1.getLine() - iol2.getLine(); // keep IOL order
-				}
-				else if (ol1 == null)
-				{
-					return 1; // second line not null, put it first
-				}
-				else if (ol2 == null)
-				{
-					return -1; // first line not null, put it first
-				}
-
-				final I_C_Order o1 = InterfaceWrapperHelper.create(ol1.getC_Order(), I_C_Order.class);
-				final I_C_Order o2 = InterfaceWrapperHelper.create(ol2.getC_Order(), I_C_Order.class);
-				if (o1.getC_Order_ID() != o2.getC_Order_ID())
-				{
-					return o1.getC_Order_ID() - o2.getC_Order_ID(); // first orders go first
-				}
-
-				return ol1.getLine() - ol2.getLine(); // keep OL order
+				return line1.getLine() - line2.getLine(); // keep IL order
 			}
+			else if (line1.getM_InOutLine_ID() <= 0 || iol1 == null)
+			{
+				return 1; // second line not null, put it first
+			}
+			else if (line2.getM_InOutLine_ID() <= 0 || iol2 == null)
+			{
+				return -1; // first line not null, put it first
+			}
+
+			final I_C_OrderLine ol1 = iol1.getC_OrderLine();
+			final I_C_OrderLine ol2 = iol2.getC_OrderLine();
+			if (Util.same(ol1, ol2))
+			{
+				return iol1.getLine() - iol2.getLine(); // keep IOL order
+			}
+			else if (ol1 == null)
+			{
+				return 1; // second line not null, put it first
+			}
+			else if (ol2 == null)
+			{
+				return -1; // first line not null, put it first
+			}
+
+			final I_C_Order o1 = InterfaceWrapperHelper.create(ol1.getC_Order(), I_C_Order.class);
+			final I_C_Order o2 = InterfaceWrapperHelper.create(ol2.getC_Order(), I_C_Order.class);
+			if (o1.getC_Order_ID() != o2.getC_Order_ID())
+			{
+				return o1.getC_Order_ID() - o2.getC_Order_ID(); // first orders go first
+			}
+
+			return ol1.getLine() - ol2.getLine(); // keep OL order
 		};
 		return comparator;
 	}
@@ -951,48 +957,46 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final void setQtys(final I_C_InvoiceLine invoiceLine, final BigDecimal qtyInvoiced)
+	public final void setQtys(@NonNull final I_C_InvoiceLine invoiceLine, @NonNull final StockQtyAndUOMQty qtysInvoiced)
 	{
 		// for now we are lenient, because i'm not sure because strict doesn't break stuff
 		// Check.assume(invoiceLine.getM_Product_ID() > 0, "invoiceLine {} has M_Product_ID > 0", invoiceLine);
 		// Check.assume(invoiceLine.getC_UOM_ID() > 0, "invoiceLine {} has C_UOM_ID > 0", invoiceLine);
 		// Check.assume(invoiceLine.getPrice_UOM_ID() > 0, "invoiceLine {} has Price_UOM_ID > 0", invoiceLine);
 
-		invoiceLine.setQtyInvoiced(qtyInvoiced);
+		final Quantity stockQty = qtysInvoiced.getStockQty();
+		invoiceLine.setQtyInvoiced(stockQty.toBigDecimal());
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoiceLine);
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		final ProductId productId = ProductId.ofRepoIdOrNull(invoiceLine.getM_Product_ID());
 
-		boolean fallback = false;
-		if (invoiceLine.getM_Product_ID() <= 0)
-		{
-			fallback = true;
-		}
-
-		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
-		// if (product.getC_UOM_ID() < 0)
-		// {
-		// fallback = true;
-		// }
-
+		final boolean fallback = productId == null;
 		if (fallback)
 		{
-			invoiceLine.setQtyEntered(qtyInvoiced);
-			invoiceLine.setQtyInvoicedInPriceUOM(qtyInvoiced);
+			// without a product, we have no internal UOM, so we can't do any conversions
+			invoiceLine.setQtyEntered(stockQty.toBigDecimal());
+			invoiceLine.setQtyInvoicedInPriceUOM(stockQty.toBigDecimal());
 			return;
 		}
 
-		if (invoiceLine.getC_UOM_ID() <= 0)
+		if (qtysInvoiced.getUOMQtyOpt().isPresent())
 		{
-			invoiceLine.setQtyEntered(qtyInvoiced);
+			final Quantity uomQty = qtysInvoiced.getUOMQtyOpt().get();
+
+			invoiceLine.setC_UOM_ID(uomQty.getUomId().getRepoId());
+			invoiceLine.setQtyEntered(uomQty.toBigDecimal());
 		}
 		else
 		{
-			final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(ctx, productId, invoiceLine.getC_UOM(), qtyInvoiced);
+			final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(productId, invoiceLine.getC_UOM(), stockQty.toBigDecimal());
 			invoiceLine.setQtyEntered(qtyEntered);
 		}
 
-		final BigDecimal qtyInvoicedInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, productId, invoiceLine.getPrice_UOM(), qtyInvoiced);
+		final BigDecimal qtyInvoicedInPriceUOM = uomConversionBL.convertQty(
+				UOMConversionContext.of(productId),
+				invoiceLine.getQtyEntered(),
+				UomId.ofRepoId(invoiceLine.getC_UOM_ID()),
+				UomId.ofRepoId(firstGreaterThanZero(invoiceLine.getPrice_UOM_ID(), invoiceLine.getC_UOM_ID())));
 		invoiceLine.setQtyInvoicedInPriceUOM(qtyInvoicedInPriceUOM);
 	}
 
@@ -1014,7 +1018,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoiceLine);
 		final I_C_Tax invoiceTax = InterfaceWrapperHelper.create(ctx, invoiceLine.getC_Tax_ID(), I_C_Tax.class, trxName);
 		final boolean isTaxIncluded = isTaxIncluded(invoiceLine);
-		final int taxPrecision = getPrecision(invoiceLine);
+		final CurrencyPrecision taxPrecision = getAmountPrecision(invoiceLine);
 
 		// ts: note: our taxes are always on document, so currently the following if-block doesn't apply to us
 		final boolean documentLevel = invoiceTax != null // guard against NPE
@@ -1048,8 +1052,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				log.debug("stdTax rate is " + stdTax.getRate());
 				log.debug("invoiceTax rate is " + invoiceTax.getRate());
 
-				taxThisAmt = taxThisAmt.add(taxBL.calculateTax(invoiceTax, lineNetAmt, isTaxIncluded, taxPrecision));
-				taxStdAmt = taxThisAmt.add(taxBL.calculateTax(stdTax, lineNetAmt, isTaxIncluded, taxPrecision));
+				taxThisAmt = taxThisAmt.add(taxBL.calculateTax(invoiceTax, lineNetAmt, isTaxIncluded, taxPrecision.toInt()));
+				taxStdAmt = taxThisAmt.add(taxBL.calculateTax(stdTax, lineNetAmt, isTaxIncluded, taxPrecision.toInt()));
 
 				lineNetAmt = lineNetAmt.subtract(taxStdAmt).add(taxThisAmt);
 
@@ -1058,10 +1062,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			}
 		}
 
-		if (lineNetAmt.scale() > taxPrecision)
-		{
-			lineNetAmt = lineNetAmt.setScale(taxPrecision, BigDecimal.ROUND_HALF_UP);
-		}
+		lineNetAmt = taxPrecision.roundIfNeeded(lineNetAmt);
 
 		invoiceLine.setLineNetAmt(lineNetAmt);
 
@@ -1086,8 +1087,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		//
 		final boolean isTaxIncluded = isTaxIncluded(invoiceLine);
 		final BigDecimal lineNetAmt = invoiceLine.getLineNetAmt();
-		final int taxPrecision = getPrecision(invoiceLine);
-		final BigDecimal TaxAmt = Services.get(ITaxBL.class).calculateTax(tax, lineNetAmt, isTaxIncluded, taxPrecision);
+		final CurrencyPrecision taxPrecision = getTaxPrecision(invoiceLine);
+		final BigDecimal TaxAmt = Services.get(ITaxBL.class).calculateTax(tax, lineNetAmt, isTaxIncluded, taxPrecision.toInt());
 		if (isTaxIncluded)
 		{
 			invoiceLine.setLineTotalAmt(lineNetAmt);
@@ -1239,21 +1240,56 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final boolean isComplete(final org.compiere.model.I_C_Invoice invoice)
 	{
-		final String docStatus = invoice.getDocStatus();
-		return Services.get(IDocumentBL.class).isStatusCompletedOrClosedOrReversed(docStatus);
+		final DocStatus docStatus = DocStatus.ofCode(invoice.getDocStatus());
+		return docStatus.isCompletedOrClosedOrReversed();
 	}
 
 	@Override
-	public final int getPrecision(final org.compiere.model.I_C_Invoice invoice)
+	public final CurrencyPrecision getPricePrecision(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
-		return invoice.getC_Currency().getStdPrecision();
+		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(invoice.getM_PriceList_ID());
+		return priceListId != null
+				? Services.get(IPriceListBL.class).getPricePrecision(priceListId)
+				: CurrencyPrecision.ZERO;
 	}
 
 	@Override
-	public final int getPrecision(final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	public final CurrencyPrecision getPricePrecision(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
 		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
-		return getPrecision(invoice);
+		return getPricePrecision(invoice);
+	}
+
+	@Override
+	public final CurrencyPrecision getAmountPrecision(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(invoice.getM_PriceList_ID());
+		return priceListId != null
+				? Services.get(IPriceListBL.class).getAmountPrecision(priceListId)
+				: CurrencyPrecision.ZERO;
+	}
+
+	@Override
+	public final CurrencyPrecision getAmountPrecision(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	{
+		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
+		return getAmountPrecision(invoice);
+	}
+
+	@Override
+	public final CurrencyPrecision getTaxPrecision(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(invoice.getM_PriceList_ID());
+		return priceListId != null
+				? Services.get(IPriceListBL.class).getTaxPrecision(priceListId)
+				: CurrencyPrecision.ZERO;
+	}
+
+	@Override
+	public final CurrencyPrecision getTaxPrecision(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	{
+		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
+		return getTaxPrecision(invoice);
 	}
 
 	@Override
@@ -1367,21 +1403,22 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final int getTaxCategory(final I_C_InvoiceLine invoiceLine)
+	public final TaxCategoryId getTaxCategoryId(final I_C_InvoiceLine invoiceLine)
 	{
 		// In case we have a charge, use the tax category from charge
 		if (invoiceLine.getC_Charge_ID() > 0)
 		{
-			return invoiceLine.getC_Charge().getC_TaxCategory_ID();
+			return TaxCategoryId.ofRepoId(invoiceLine.getC_Charge().getC_TaxCategory_ID());
 		}
 
 		final IPricingContext pricingCtx = Services.get(IInvoiceLineBL.class).createPricingContext(invoiceLine);
 		final IPricingResult pricingResult = Services.get(IPricingBL.class).calculatePrice(pricingCtx);
 		if (!pricingResult.isCalculated())
 		{
-			return -1;
+			return null;
 		}
-		return pricingResult.getC_TaxCategory_ID();
+
+		return pricingResult.getTaxCategoryId();
 	}
 
 	@Override
@@ -1420,12 +1457,16 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			{
 				final I_M_InOutLine inoutLine = matchInv.getM_InOutLine();
 
+				final StockQtyAndUOMQty qtyToMatchExact = StockQtyAndUOMQtys.create(
+						matchInv.getQty().negate(), ProductId.ofRepoId(inoutLine.getM_Product_ID()),
+						matchInv.getQtyInUOM().negate(), UomId.ofRepoId(matchInv.getC_UOM_ID()));
+
 				matchInvBL.createMatchInvBuilder()
 						.setContext(reversalLine)
 						.setC_InvoiceLine(reversalLine)
 						.setM_InOutLine(inoutLine)
 						.setDateTrx(reversalInvoice.getDateInvoiced())
-						.setQtyToMatchExact(matchInv.getQty().negate())
+						.setQtyToMatchExact(qtyToMatchExact)
 						.build();
 			}
 		}
@@ -1465,9 +1506,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public String getDefaultPaymentRule()
+	public PaymentRule getDefaultPaymentRule()
 	{
-		return Services.get(ISysConfigBL.class).getValue(SYSCONFIG_C_Invoice_PaymentRule, X_C_Invoice.PAYMENTRULE_OnCredit);
+		final ISysConfigBL sysconfigs = Services.get(ISysConfigBL.class);
+		return sysconfigs.getReferenceListAware(SYSCONFIG_C_Invoice_PaymentRule, PaymentRule.OnCredit, PaymentRule.class);
 	}
 
 	@Override

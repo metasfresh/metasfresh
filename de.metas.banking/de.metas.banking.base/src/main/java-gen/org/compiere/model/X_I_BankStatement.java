@@ -1,27 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-
-import org.compiere.util.Env;
 
 /** Generated Model for I_BankStatement
  *  @author Adempiere (generated) 
@@ -33,7 +15,7 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1402885753L;
+	private static final long serialVersionUID = -1871926945L;
 
     /** Standard Constructor */
     public X_I_BankStatement (Properties ctx, int I_BankStatement_ID, String trxName)
@@ -52,29 +34,13 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 2 - Client 
-      */
-    @Override
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
     @Override
     protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuilder sb = new StringBuilder ("X_I_BankStatement[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	/** Set Bank Account No.
@@ -94,6 +60,22 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	public java.lang.String getBankAccountNo () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_BankAccountNo);
+	}
+
+	/** Set Name Rechnungspartner.
+		@param Bill_BPartner_Name Name Rechnungspartner	  */
+	@Override
+	public void setBill_BPartner_Name (java.lang.String Bill_BPartner_Name)
+	{
+		set_Value (COLUMNNAME_Bill_BPartner_Name, Bill_BPartner_Name);
+	}
+
+	/** Get Name Rechnungspartner.
+		@return Name Rechnungspartner	  */
+	@Override
+	public java.lang.String getBill_BPartner_Name () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Bill_BPartner_Name);
 	}
 
 	/** Set Geschäftspartner-Schlüssel.
@@ -116,7 +98,7 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	}
 
 	@Override
-	public org.compiere.model.I_C_BankStatement getC_BankStatement() throws RuntimeException
+	public org.compiere.model.I_C_BankStatement getC_BankStatement()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BankStatement_ID, org.compiere.model.I_C_BankStatement.class);
 	}
@@ -153,7 +135,7 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	}
 
 	@Override
-	public org.compiere.model.I_C_BankStatementLine getC_BankStatementLine() throws RuntimeException
+	public org.compiere.model.I_C_BankStatementLine getC_BankStatementLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BankStatementLine_ID, org.compiere.model.I_C_BankStatementLine.class);
 	}
@@ -190,44 +172,7 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	}
 
 	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Identifies a Business Partner
-	  */
-	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
-	{
-		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
-	}
-
-	/** Get Geschäftspartner.
-		@return Identifies a Business Partner
-	  */
-	@Override
-	public int getC_BPartner_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount() throws RuntimeException
+	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class);
 	}
@@ -264,7 +209,69 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	}
 
 	@Override
-	public org.compiere.model.I_C_Charge getC_Charge() throws RuntimeException
+	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccountTo()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BP_BankAccountTo_ID, org.compiere.model.I_C_BP_BankAccount.class);
+	}
+
+	@Override
+	public void setC_BP_BankAccountTo(org.compiere.model.I_C_BP_BankAccount C_BP_BankAccountTo)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BP_BankAccountTo_ID, org.compiere.model.I_C_BP_BankAccount.class, C_BP_BankAccountTo);
+	}
+
+	/** Set Cashbook/Bank account To.
+		@param C_BP_BankAccountTo_ID 
+		Cashbook/Bank account To
+	  */
+	@Override
+	public void setC_BP_BankAccountTo_ID (int C_BP_BankAccountTo_ID)
+	{
+		if (C_BP_BankAccountTo_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_BankAccountTo_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_BankAccountTo_ID, Integer.valueOf(C_BP_BankAccountTo_ID));
+	}
+
+	/** Get Cashbook/Bank account To.
+		@return Cashbook/Bank account To
+	  */
+	@Override
+	public int getC_BP_BankAccountTo_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_BankAccountTo_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Geschäftspartner.
+		@param C_BPartner_ID 
+		Identifies a Business Partner
+	  */
+	@Override
+	public void setC_BPartner_ID (int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+	}
+
+	/** Get Geschäftspartner.
+		@return Identifies a Business Partner
+	  */
+	@Override
+	public int getC_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Charge getC_Charge()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Charge_ID, org.compiere.model.I_C_Charge.class);
 	}
@@ -300,18 +307,6 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
-	}
-
-	@Override
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
-	}
-
 	/** Set Währung.
 		@param C_Currency_ID 
 		The Currency for this record
@@ -337,46 +332,8 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 		return ii.intValue();
 	}
 
-	/** Set Gebühr.
-		@param ChargeAmt Gebühr	  */
 	@Override
-	public void setChargeAmt (java.math.BigDecimal ChargeAmt)
-	{
-		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
-	}
-
-	/** Get Gebühr.
-		@return Gebühr	  */
-	@Override
-	public java.math.BigDecimal getChargeAmt () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ChargeAmt);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set Gebühren-Bezeichnung.
-		@param ChargeName 
-		Name of the Charge
-	  */
-	@Override
-	public void setChargeName (java.lang.String ChargeName)
-	{
-		set_Value (COLUMNNAME_ChargeName, ChargeName);
-	}
-
-	/** Get Gebühren-Bezeichnung.
-		@return Name of the Charge
-	  */
-	@Override
-	public java.lang.String getChargeName () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ChargeName);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Invoice getC_Invoice() throws RuntimeException
+	public org.compiere.model.I_C_Invoice getC_Invoice()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
 	}
@@ -413,7 +370,7 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	}
 
 	@Override
-	public org.compiere.model.I_C_Payment getC_Payment() throws RuntimeException
+	public org.compiere.model.I_C_Payment getC_Payment()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Payment_ID, org.compiere.model.I_C_Payment.class);
 	}
@@ -447,6 +404,44 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Gebühr.
+		@param ChargeAmt Gebühr	  */
+	@Override
+	public void setChargeAmt (java.math.BigDecimal ChargeAmt)
+	{
+		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
+	}
+
+	/** Get Gebühr.
+		@return Gebühr	  */
+	@Override
+	public java.math.BigDecimal getChargeAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ChargeAmt);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Gebühren-Bezeichnung.
+		@param ChargeName 
+		Name of the Charge
+	  */
+	@Override
+	public void setChargeName (java.lang.String ChargeName)
+	{
+		set_Value (COLUMNNAME_ChargeName, ChargeName);
+	}
+
+	/** Get Gebühren-Bezeichnung.
+		@return Name of the Charge
+	  */
+	@Override
+	public java.lang.String getChargeName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ChargeName);
 	}
 
 	/** Set Zahlung erstellen.
@@ -518,7 +513,7 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_EftAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -820,6 +815,41 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 		return false;
 	}
 
+	/** Set IBAN.
+		@param IBAN 
+		International Bank Account Number
+	  */
+	@Override
+	public void setIBAN (java.lang.String IBAN)
+	{
+		set_Value (COLUMNNAME_IBAN, IBAN);
+	}
+
+	/** Get IBAN.
+		@return International Bank Account Number
+	  */
+	@Override
+	public java.lang.String getIBAN () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_IBAN);
+	}
+
+	/** Set IBAN_To.
+		@param IBAN_To IBAN_To	  */
+	@Override
+	public void setIBAN_To (java.lang.String IBAN_To)
+	{
+		set_Value (COLUMNNAME_IBAN_To, IBAN_To);
+	}
+
+	/** Get IBAN_To.
+		@return IBAN_To	  */
+	@Override
+	public java.lang.String getIBAN_To () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_IBAN_To);
+	}
+
 	/** Set Interest Amount.
 		@param InterestAmt 
 		Interest Amount
@@ -838,7 +868,7 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_InterestAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -983,9 +1013,7 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -993,8 +1021,7 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{
@@ -1126,9 +1153,9 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_StatementDate);
 	}
 
-	/** Set Datum Auszugs-Position.
+	/** Set Valuta Datum.
 		@param StatementLineDate 
-		Date of the Statement Line
+		Valuta Datum
 	  */
 	@Override
 	public void setStatementLineDate (java.sql.Timestamp StatementLineDate)
@@ -1136,8 +1163,8 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 		set_Value (COLUMNNAME_StatementLineDate, StatementLineDate);
 	}
 
-	/** Get Datum Auszugs-Position.
-		@return Date of the Statement Line
+	/** Get Valuta Datum.
+		@return Valuta Datum
 	  */
 	@Override
 	public java.sql.Timestamp getStatementLineDate () 
@@ -1163,7 +1190,7 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_StmtAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1185,7 +1212,7 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TrxAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1194,18 +1221,18 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	 * Reference name: C_Payment Trx Type
 	 */
 	public static final int TRXTYPE_AD_Reference_ID=215;
-	/** Verkauf = S */
-	public static final String TRXTYPE_Verkauf = "S";
-	/** Delayed Capture = D */
+	/** Sales = S */
+	public static final String TRXTYPE_Sales = "S";
+	/** DelayedCapture = D */
 	public static final String TRXTYPE_DelayedCapture = "D";
-	/** Kredit (Zahlung) = C */
-	public static final String TRXTYPE_KreditZahlung = "C";
-	/** Voice Authorization = F */
+	/** CreditPayment = C */
+	public static final String TRXTYPE_CreditPayment = "C";
+	/** VoiceAuthorization = F */
 	public static final String TRXTYPE_VoiceAuthorization = "F";
-	/** Autorisierung = A */
-	public static final String TRXTYPE_Autorisierung = "A";
-	/** Löschen = V */
-	public static final String TRXTYPE_Loeschen = "V";
+	/** Authorization = A */
+	public static final String TRXTYPE_Authorization = "A";
+	/** Void = V */
+	public static final String TRXTYPE_Void = "V";
 	/** Rückzahlung = R */
 	public static final String TRXTYPE_Rueckzahlung = "R";
 	/** Set Transaction Type.

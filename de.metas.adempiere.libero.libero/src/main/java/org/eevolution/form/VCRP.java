@@ -46,8 +46,10 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.DayOfWeek;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Hashtable;
@@ -63,6 +65,7 @@ import org.compiere.apps.search.InfoBuilder;
 import org.compiere.grid.ed.VDate;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_S_Resource;
 import org.compiere.model.MColumn;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
@@ -75,6 +78,7 @@ import org.compiere.swing.CPanel;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.eevolution.form.crp.CRPDatasetFactory;
 import org.eevolution.form.crp.CRPModel;
 import org.jfree.chart.ChartFactory;
@@ -88,6 +92,9 @@ import org.slf4j.Logger;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IResourceProductService;
+import de.metas.material.planning.ResourceType;
+import de.metas.material.planning.ResourceTypeId;
+import de.metas.product.ResourceId;
 import de.metas.uom.UOMUtil;
 import de.metas.util.Services;
 
@@ -529,8 +536,15 @@ implements FormPanel, ActionListener
 	     return dataset;
  	}
 // End 	
-	
-	public CategoryDataset createDataset(Timestamp start ,MResource r)
+
+	private ResourceType getResourceType(final I_S_Resource r)
+	{
+		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
+		final ResourceTypeId resourceTypeId = ResourceTypeId.ofRepoId(r.getS_ResourceType_ID());
+		return resourceProductService.getResourceTypeById(resourceTypeId);
+	}
+
+	public CategoryDataset createDataset(Timestamp start, MResource r)
  	{
 		 //System.out.println("Create new data set");
 		 GregorianCalendar gc1 = new GregorianCalendar();
@@ -547,12 +561,12 @@ implements FormPanel, ActionListener
  		 System.out.println("\n Nameload :"+nameload);
  		 String namesummary = Msg.translate(Env.getCtx(), "Summary");
  		 System.out.println("\n Namesummary :"+namesummary);
-		 MResourceType t = MResourceType.get(Env.getCtx(),r.getS_ResourceType_ID());
-		 System.out.println("\n Resourcetype "+t);
+		 ResourceType resourceType = getResourceType(r);
+		 System.out.println("\n Resourcetype "+resourceType);
 		 int days = 1;
 		 
 		 final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
-	     long hours = resourceProductService.getTimeSlotHoursForResourceType(t);
+	     long hours = resourceType.getTimeSlotInHours();
 		 
 		 DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 		 
@@ -580,16 +594,17 @@ implements FormPanel, ActionListener
  		 		String day = new String(new Integer (date.getDate()).toString()); 
                                 System.out.println("r.getS_Resource_ID()" + r.getS_Resource_ID());
                                 System.out.println("Date:"  +  date);
- 		 		long HoursLoad = getLoad(r,date).longValue();
+ 		 		long HoursLoad = getLoad(r,date).toHours();
  		 		Long Hours = new Long(hours); 
- 		 		System.out.println("Summary "+ summary);
-                                System.out.println("Hours Load "+ HoursLoad);
+				System.out.println("Summary "+ summary);
+				System.out.println("Hours Load "+ HoursLoad);
  		 		
+				
  		 		switch(gc1.get(Calendar.DAY_OF_WEEK))
 				{
 					case Calendar.SUNDAY:
 						days ++; 
-						if (t.isOnSunday())
+						if (resourceType.isDayAvailable(DayOfWeek.SUNDAY))
 						{	//System.out.println("si Sunday");			 		 										 		 			 		
 							 //Msg.translate(Env.getCtx(), "OnSunday");
 							dataset.addValue(hours, namecapacity, day );
@@ -613,7 +628,7 @@ implements FormPanel, ActionListener
 						}					
 					case Calendar.MONDAY:
 						days ++; 
-						if (t.isOnMonday())
+						if (resourceType.isDayAvailable(DayOfWeek.MONDAY))
 						{		//System.out.println("si Monday");			 		 										 		 			 		
 								//String day = Msg.translate(Env.getCtx(), "OnMonday") ;
 								dataset.addValue(hours, namecapacity, day );
@@ -638,7 +653,7 @@ implements FormPanel, ActionListener
 						}
 					case Calendar.TUESDAY:
 						days ++; 
-						if (t.isOnTuesday())
+						if (resourceType.isDayAvailable(DayOfWeek.TUESDAY))
 						{	//System.out.println("si TuesDay");			 		 										 		 			 		
 							//String day = Msg.translate(Env.getCtx(), "OnTuesday");							
 							dataset.addValue(hours, namecapacity, day );				
@@ -663,7 +678,7 @@ implements FormPanel, ActionListener
 						}
 					case Calendar.WEDNESDAY:
 						days ++; 
-						if (t.isOnWednesday())
+						if (resourceType.isDayAvailable(DayOfWeek.WEDNESDAY))
 						{				 		 										 		 			 		
 							//String day = Msg.translate(Env.getCtx(), "OnWednesday");
 							dataset.addValue(hours, namecapacity, day);			
@@ -688,7 +703,7 @@ implements FormPanel, ActionListener
 						}
 					case Calendar.THURSDAY:
 						days ++; 
-						if (t.isOnThursday())
+						if (resourceType.isDayAvailable(DayOfWeek.THURSDAY))
 						{				 		 										 		 			 		
 							//String day = Msg.translate(Env.getCtx(), "OnThursday");							
 							dataset.addValue(hours, namecapacity, day);				
@@ -713,7 +728,7 @@ implements FormPanel, ActionListener
 						}						
 					case Calendar.FRIDAY:
 						days ++; 
-						if (t.isOnFriday())
+						if (resourceType.isDayAvailable(DayOfWeek.FRIDAY))
 						{				 		 										 		 			 		
 							//String day = Msg.translate(Env.getCtx(), "OnFriday");
 							dataset.addValue(hours, namecapacity, day);
@@ -738,7 +753,7 @@ implements FormPanel, ActionListener
 						}
 					case Calendar.SATURDAY:
 						days ++; 
-						if (t.isOnSaturday())	
+						if (resourceType.isDayAvailable(DayOfWeek.SATURDAY))
 						{				 		 										 		 			 		
 							//String day = Msg.translate(Env.getCtx(), "OnSaturday");
 							dataset.addValue(hours, namecapacity, day);
@@ -766,10 +781,12 @@ implements FormPanel, ActionListener
  		return dataset;
  	}
 	
-	private BigDecimal getLoad(MResource r, Timestamp start)
+	private Duration getLoad(MResource resource, Timestamp startTS)
  	{
-		model = CRPDatasetFactory.get(start, start, r);
-		return model.calculateLoad(start, r, null);
+		ResourceId resourceId = resource != null ? ResourceId.ofRepoId(resource.getS_Resource_ID()) : null;
+		final LocalDateTime start = TimeUtil.asLocalDateTime(startTS);
+		model = CRPDatasetFactory.get(start, start, resourceId);
+		return model.calculateLoad(start, resourceId);
 		
  	}
 	

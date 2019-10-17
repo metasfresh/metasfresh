@@ -59,12 +59,11 @@ final class RelationTypeOLCandSource implements OLCandSource
 		this.orderDefaults = orderDefaults;
 		this.relationTypeInternalName = mkRelationTypeInternalNameForOLCandProcessorId(olCandProcessorId);
 	}
-	
+
 	private static String mkRelationTypeInternalNameForOLCandProcessorId(final int olCandProcessorId)
 	{
 		return I_C_OLCandProcessor.Table_Name + "_" + olCandProcessorId + "<=>" + I_C_OLCand.Table_Name;
 	}
-
 
 	@Override
 	public String toString()
@@ -80,21 +79,21 @@ final class RelationTypeOLCandSource implements OLCandSource
 	{
 		// FIXME: get rid of it
 		final PO processorPO = InterfaceWrapperHelper.getPO(InterfaceWrapperHelper.loadOutOfTrx(olCandProcessorId, I_C_OLCandProcessor.class));
-		
+
 		return RelationTypeZoomProvidersFactory.instance
 				.getZoomProviderBySourceTableNameAndInternalName(I_C_OLCand.Table_Name, relationTypeInternalName)
 				.retrieveDestinations(Env.getCtx(), processorPO, I_C_OLCand.class, ITrx.TRXNAME_ThreadInherited)
 				.stream()
-				.map(this::toOLCand);
+				.map(record -> toOLCand(record));
 	}
 
-	private OLCand toOLCand(final I_C_OLCand candidatePO)
+	private OLCand toOLCand(final I_C_OLCand record)
 	{
-		final PricingSystemId pricingSystemId = olCandBL.getPricingSystemId(candidatePO, orderDefaults);
+		final PricingSystemId pricingSystemId = olCandBL.getPricingSystemId(record, orderDefaults);
 		return OLCand.builder()
-				.candidate(candidatePO)
-				.pricingSystemId(pricingSystemId)
 				.olCandEffectiveValuesBL(olCandEffectiveValuesBL)
+				.candidate(record)
+				.pricingSystemId(pricingSystemId)
 				.build();
 	}
 }

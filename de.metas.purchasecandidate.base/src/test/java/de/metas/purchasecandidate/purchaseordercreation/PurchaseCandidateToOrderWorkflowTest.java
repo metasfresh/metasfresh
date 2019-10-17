@@ -7,30 +7,27 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerId;
-import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.OrderAndLineId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidate.PurchaseCandidateBuilder;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
@@ -38,6 +35,7 @@ import de.metas.purchasecandidate.purchaseordercreation.localorder.PurchaseOrder
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvoker;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvokerFactory;
+import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.quantity.Quantity;
 import de.metas.util.time.SystemTime;
@@ -67,8 +65,6 @@ import mockit.Verifications;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, ProfitPriceActualFactory.class })
 public class PurchaseCandidateToOrderWorkflowTest
 {
 	private static final String SOMETHING_WENT_WRONG = "something went wrong";
@@ -76,9 +72,7 @@ public class PurchaseCandidateToOrderWorkflowTest
 	@Injectable
 	VendorGatewayInvokerFactory vendorGatewayInvokerFactory;
 
-	@Mocked
-	VendorGatewayInvoker vendorGatewayInvoker;
-
+	private int nextPurchaseCandidateId = 1000000;
 	@Mocked
 	PurchaseCandidateRepository purchaseCandidateRepo;
 
@@ -96,13 +90,14 @@ public class PurchaseCandidateToOrderWorkflowTest
 		AdempiereTestHelper.get().init();
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Org_ID, 5);
 
-		this.EACH = createUOM("Ea");
-		this.ONE = Quantity.of(BigDecimal.ONE, EACH);
+		EACH = createUOM("Ea");
+		ONE = Quantity.of(BigDecimal.ONE, EACH);
 
 		workflowUnderTest = PurchaseCandidateToOrderWorkflow.builder()
 				.purchaseCandidateRepo(purchaseCandidateRepo)
 				.vendorGatewayInvokerFactory(vendorGatewayInvokerFactory)
-				.purchaseOrderFromItemsAggregator(purchaseOrderFromItemsAggregator).build();
+				.purchaseOrderFromItemsAggregator(purchaseOrderFromItemsAggregator)
+				.build();
 	}
 
 	private I_C_UOM createUOM(final String name)
@@ -117,8 +112,8 @@ public class PurchaseCandidateToOrderWorkflowTest
 	@Test
 	public void executeForPurchaseCandidates_prevent_duplicates()
 	{
-		final PurchaseCandidate candidate1 = createPurchaseCandidate(10, 20);
-		final PurchaseCandidate candidate2 = createPurchaseCandidate(10, 30);
+		final PurchaseCandidate candidate1 = preparePurchaseCandidate().build();
+		final PurchaseCandidate candidate2 = preparePurchaseCandidate().id(candidate1.getId()).build();
 		final ImmutableList<PurchaseCandidate> purchaseCandidates = ImmutableList.of(candidate1, candidate2);
 
 		assertThatThrownBy(() -> workflowUnderTest.executeForPurchaseCandidates(purchaseCandidates))
@@ -128,16 +123,14 @@ public class PurchaseCandidateToOrderWorkflowTest
 	@Test
 	public void executeForPurchaseCandidates()
 	{
-		final PurchaseCandidate candidate1 = createPurchaseCandidate(10, 20);
-		final PurchaseCandidate candidate2 = createPurchaseCandidate(11, 20);
+		final BPartnerId vendorId = BPartnerId.ofRepoId(20);
+
+		final PurchaseCandidate candidate1 = preparePurchaseCandidate().vendorId(vendorId).build();
+		final PurchaseCandidate candidate2 = preparePurchaseCandidate().vendorId(vendorId).build();
 
 		final ImmutableList<PurchaseCandidate> purchaseCandidates = ImmutableList.of(candidate1, candidate2);
 
-		// @formatter:off
-		new Expectations()
-		{{
-			vendorGatewayInvokerFactory.createForVendorId(BPartnerId.ofRepoId(20)); result = NullVendorGatewayInvoker.INSTANCE;
-		}};	// @formatter:on
+		useVendorGatewayInvoker(vendorId, NullVendorGatewayInvoker.INSTANCE);
 
 		// invoke the method under test
 		workflowUnderTest.executeForPurchaseCandidates(purchaseCandidates);
@@ -168,8 +161,8 @@ public class PurchaseCandidateToOrderWorkflowTest
 	@Test
 	public void executeForPurchaseCandidates_prevent_multiple_vendorIds()
 	{
-		final PurchaseCandidate candidate1 = createPurchaseCandidate(10, 20);
-		final PurchaseCandidate candidate2 = createPurchaseCandidate(11, 30);
+		final PurchaseCandidate candidate1 = preparePurchaseCandidate().vendorId(BPartnerId.ofRepoId(20)).build();
+		final PurchaseCandidate candidate2 = preparePurchaseCandidate().vendorId(BPartnerId.ofRepoId(30)).build();
 
 		final ImmutableList<PurchaseCandidate> purchaseCandidates = ImmutableList.of(candidate1, candidate2);
 
@@ -179,22 +172,29 @@ public class PurchaseCandidateToOrderWorkflowTest
 	}
 
 	@Test
-	public void executeForPurchaseCandidates_exception()
+	public void executeForPurchaseCandidates_VendorGatewayException()
 	{
-		final PurchaseCandidate candidate1 = createPurchaseCandidate(10, 20);
-		final PurchaseCandidate candidate2 = createPurchaseCandidate(11, 20);
+		final BPartnerId vendorId = BPartnerId.ofRepoId(20);
+
+		final PurchaseCandidate candidate1 = preparePurchaseCandidate().vendorId(vendorId).build();
+		final PurchaseCandidate candidate2 = preparePurchaseCandidate().vendorId(vendorId).build();
 
 		final ImmutableList<PurchaseCandidate> purchaseCandidates = ImmutableList.of(candidate1, candidate2);
 
-		// @formatter:off
-		new Expectations()
-		{{
-			vendorGatewayInvokerFactory.createForVendorId(BPartnerId.ofRepoId(20)); result = vendorGatewayInvoker;
+		useVendorGatewayInvoker(vendorId, new VendorGatewayInvoker()
+		{
+			@Override
+			public List<PurchaseItem> placeRemotePurchaseOrder(final Collection<PurchaseCandidate> purchaseCandidates)
+			{
+				throw new RuntimeException(SOMETHING_WENT_WRONG);
+			}
 
-			vendorGatewayInvoker.placeRemotePurchaseOrder(purchaseCandidates);
-			result = new RuntimeException(SOMETHING_WENT_WRONG);
-
-		}};	// @formatter:on
+			@Override
+			public void updateRemoteLineReferences(final Collection<PurchaseOrderItem> purchaseOrderItem)
+			{
+				throw new UnsupportedOperationException();
+			}
+		});
 
 		// invoke the method under test
 		assertThatThrownBy(() -> workflowUnderTest.executeForPurchaseCandidates(purchaseCandidates))
@@ -214,6 +214,20 @@ public class PurchaseCandidateToOrderWorkflowTest
 		});
 	}
 
+	@Test
+	public void executeForPurchaseCandidates_not_sorted()
+	{
+		final ImmutableList<PurchaseCandidate> purchaseCandidates = ImmutableList.of(
+				preparePurchaseCandidate().warehouseId(WarehouseId.ofRepoId(1)).build(),
+				preparePurchaseCandidate().warehouseId(WarehouseId.ofRepoId(2)).build(),
+				preparePurchaseCandidate().warehouseId(WarehouseId.ofRepoId(1)).build(),
+				preparePurchaseCandidate().warehouseId(WarehouseId.ofRepoId(2)).build());
+
+		useVendorGatewayInvoker(purchaseCandidates.get(0).getVendorId(), NullVendorGatewayInvoker.INSTANCE);
+
+		workflowUnderTest.executeForPurchaseCandidates(purchaseCandidates);
+	}
+
 	@SuppressWarnings("unchecked")
 	private void assertThatNoCandidateWasAddedToOrderAggregator()
 	{
@@ -224,26 +238,31 @@ public class PurchaseCandidateToOrderWorkflowTest
 		}};	// @formatter:on
 	}
 
-	public PurchaseCandidate createPurchaseCandidate(
-			final int purchaseCandidateId,
-			final int vendorId)
+	private PurchaseCandidateBuilder preparePurchaseCandidate()
 	{
-		final ProductId productId = ProductId.ofRepoId(5);
 		return PurchaseCandidate.builder()
-				.id(PurchaseCandidateId.ofRepoIdOrNull(purchaseCandidateId))
+				.id(PurchaseCandidateId.ofRepoId(nextPurchaseCandidateId++))
 				.groupReference(DemandGroupReference.EMPTY)
 				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(1, 2))
 				.orgId(OrgId.ofRepoId(3))
 				.warehouseId(WarehouseId.ofRepoId(4))
-				.vendorId(BPartnerId.ofRepoId(vendorId))
+				.vendorId(BPartnerId.ofRepoId(20))
 				.productId(ProductId.ofRepoId(5))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(6))
-				.vendorProductNo(String.valueOf(productId.getRepoId()))
+				.vendorProductNo("5")
 				.profitInfoOrNull(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.qtyToPurchase(ONE)
-				.purchaseDatePromised(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
+				.purchaseDatePromised(SystemTime.asZonedDateTime().truncatedTo(ChronoUnit.DAYS))
 				.processed(false)
-				.locked(false)
-				.build();
+				.locked(false);
+	}
+
+	private void useVendorGatewayInvoker(final BPartnerId vendorId, final VendorGatewayInvoker vendorGatewayInvoker)
+	{
+		// @formatter:off
+		new Expectations()
+		{{
+			vendorGatewayInvokerFactory.createForVendorId(vendorId); result = vendorGatewayInvoker;
+		}};	// @formatter:on
 	}
 }

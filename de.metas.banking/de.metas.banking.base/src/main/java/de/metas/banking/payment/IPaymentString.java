@@ -63,12 +63,6 @@ public interface IPaymentString
 
 	Timestamp getAccountDate();
 
-	String getOrgValue();
-
-	String getBPValue();
-
-	String getDocumentNo();
-
 	/**
 	 *
 	 * @return the original, raw and unparsed payment string this instance is based on.

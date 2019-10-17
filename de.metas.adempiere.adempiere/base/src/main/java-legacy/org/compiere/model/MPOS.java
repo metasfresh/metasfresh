@@ -92,10 +92,6 @@ public class MPOS extends X_C_POS
 		super(ctx, rs, trxName);
 	}	//	MPOS
 	
-	/**	Cash Business Partner			*/
-	private MBPartner	m_template = null;
-	
-	
 	
 	/**
 	 * 	Before Save
@@ -123,24 +119,6 @@ public class MPOS extends X_C_POS
 		}
 		return true;
 	}	//	beforeSave
-
-	
-	/**
-	 * 	Get default Cash BPartner
-	 *	@return BPartner
-	 */
-	public MBPartner getBPartner()
-	{
-		if (m_template == null)
-		{
-			if (getC_BPartnerCashTrx_ID() == 0)
-				m_template = MBPartner.getBPartnerCashTrx (getCtx(), getAD_Client_ID());
-			else
-				m_template = new MBPartner(getCtx(), getC_BPartnerCashTrx_ID(), get_TrxName());
-			log.debug("getBPartner - " + m_template);
-		}
-		return m_template;
-	}	//	getBPartner
 
 	@Override
 	public String toString() {

@@ -24,22 +24,34 @@ package de.metas.invoicecandidate.modelvalidator;
 
 import java.util.List;
 
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.OrderLineId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
-@Validator(I_M_InOutLine.class)
+@Interceptor(I_M_InOutLine.class)
+@Component
 public class M_InOutLine
 {
+	private final InvoiceCandidateRecordService invoiceCandidateRecordService;
+
+	public M_InOutLine(@NonNull final InvoiceCandidateRecordService invoiceCandidateRecordService)
+	{
+		this.invoiceCandidateRecordService = invoiceCandidateRecordService;
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void deleteC_InvoiceCandidate_InOutLines(final I_M_InOutLine inOutLine)
 	{
@@ -87,35 +99,35 @@ public class M_InOutLine
 
 		//
 		// Get Order Line
-		if (inOutLine.getC_OrderLine_ID() <= 0)
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(inOutLine.getC_OrderLine_ID());
+		if (orderLineId == null)
 		{
 			return; // nothing to do
 		}
-		final org.compiere.model.I_C_OrderLine orderLine = inOutLine.getC_OrderLine();
 
 		//
 		// Iterate all invoice candidates linked to our order line
 		// * create link between invoice candidate and our inout line
-		for (final I_C_Invoice_Candidate ic : invoiceCandDAO.retrieveInvoiceCandidatesForOrderLine(orderLine))
+		for (final I_C_Invoice_Candidate icRecord : invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId))
 		{
 			final I_C_InvoiceCandidate_InOutLine iciol = InterfaceWrapperHelper.newInstance(I_C_InvoiceCandidate_InOutLine.class, inOutLine);
-			iciol.setAD_Org_ID(inOutLine.getAD_Org_ID());
-			iciol.setM_InOutLine(inOutLine);
-			iciol.setC_Invoice_Candidate(ic);
+			iciol.setC_Invoice_Candidate(icRecord);
+			invoiceCandBL.updateICIOLAssociationFromIOL(iciol, inOutLine);
 
 			// TODO: QtyInvoiced shall be set! It's not so critical, atm is used on on Sales side (check call hierarchy of getQtyInvoiced())
 			// NOTE: when we will set it, because there can be more then one IC for one inoutLine we need to calculate this Qtys proportionally.
 
-			InterfaceWrapperHelper.save(iciol);
-
 			//
-			// Calculate qualityDiscountPercent taken from inoutLines (06502)
-			invoiceCandBL.updateQtyWithIssues(ic);
-			InterfaceWrapperHelper.save(ic);
+			// (also) calculate qualityDiscountPercent taken from inoutLines (06502)
+			final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
+			invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
+
+			InterfaceWrapperHelper.saveRecord(icRecord);
 		}
 
 		// invalidate the candidates related to the inOutLine's order line..i'm not 100% if it's necessary, but we might need to e.g. update the
 		// QtyDelivered or QtyPicked or whatever...
-		Services.get(IInvoiceCandidateHandlerBL.class).invalidateCandidatesFor(orderLine);
+		// final I_C_OrderLine orderLine = Services.get(IOrderDAO.class).getOrderLineById(orderLineId);
+		// Services.get(IInvoiceCandidateHandlerBL.class).invalidateCandidatesFor(orderLine);
 	}
 }

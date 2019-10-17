@@ -1,26 +1,31 @@
 package de.metas.purchasecandidate;
 
-import java.time.LocalDateTime;
+import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.order.OrderAndLineId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -82,6 +87,7 @@ public class PurchaseCandidatesGroup
 				.purchasedQty(purchaseCandidate.getPurchasedQty())
 				//
 				.purchaseDatePromised(purchaseCandidate.getPurchaseDatePromised())
+				.reminderTime(purchaseCandidate.getReminderTime())
 				//
 				.profitInfoOrNull(purchaseCandidate.getProfitInfoOrNull())
 				//
@@ -128,7 +134,9 @@ public class PurchaseCandidatesGroup
 	Quantity purchasedQty;
 
 	@NonNull
-	LocalDateTime purchaseDatePromised;
+	ZonedDateTime purchaseDatePromised;
+	@Nullable
+	Duration reminderTime;
 
 	@Nullable
 	PurchaseProfitInfo profitInfoOrNull;
@@ -142,6 +150,11 @@ public class PurchaseCandidatesGroup
 	ImmutableSet<OrderAndLineId> salesOrderAndLineIds;
 
 	boolean readonly;
+
+	@Getter(AccessLevel.PACKAGE)
+	@Default
+	@VisibleForTesting
+	boolean allowPOAggregation = true;
 
 	public PurchaseCandidateId getSinglePurchaseCandidateIdOrNull()
 	{
@@ -184,6 +197,21 @@ public class PurchaseCandidatesGroup
 
 	public boolean isAggregatePOs()
 	{
+		if (!isAllowPOAggregation())
+		{
+			return false;
+		}
+
 		return getVendorProductInfo().isAggregatePOs();
+	}
+
+	public PurchaseCandidatesGroup allowingPOAggregation(final boolean allowPOAggregation)
+	{
+		if (this.isAllowPOAggregation() == allowPOAggregation)
+		{
+			return this;
+		}
+
+		return toBuilder().allowPOAggregation(allowPOAggregation).build();
 	}
 }

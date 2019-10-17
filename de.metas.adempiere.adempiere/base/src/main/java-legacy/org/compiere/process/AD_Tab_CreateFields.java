@@ -73,6 +73,11 @@ public class AD_Tab_CreateFields extends JavaProcess
 	{
 		final I_AD_Tab adTab = getRecord(I_AD_Tab.class);
 
+		if (adTab.getTemplate_Tab_ID() > 0)
+		{
+			throw new AdempiereException("Not allowed when using a template tab");
+		}
+
 		//
 		int count = 0;
 		for (final I_AD_Column adColumn : retrieveColumns(adTab))
@@ -132,11 +137,10 @@ public class AD_Tab_CreateFields extends JavaProcess
 
 		//
 		// Exclude standard columns
-		if(!createStandardFields)
+		if (!createStandardFields)
 		{
 			queryBuilder.addNotInArrayFilter(I_AD_Column.COLUMN_ColumnName, COLUMNNAMES_Standard);
 		}
-
 
 		queryBuilder.orderBy()
 				.addColumn(I_AD_Column.COLUMNNAME_AD_Column_ID);
@@ -170,6 +174,11 @@ public class AD_Tab_CreateFields extends JavaProcess
 		{
 			field.setIsDisplayed(false);
 			field.setIsDisplayedGrid(false);
+		}
+		
+		if("AD_Client_ID".equals(adColumn.getColumnName()))
+		{
+			field.setIsReadOnly(true);
 		}
 
 		InterfaceWrapperHelper.save(field);

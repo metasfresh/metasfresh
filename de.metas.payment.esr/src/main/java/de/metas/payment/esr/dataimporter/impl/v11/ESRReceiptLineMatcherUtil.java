@@ -9,7 +9,6 @@ import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -80,7 +79,7 @@ public class ESRReceiptLineMatcherUtil
 		}
 		catch (NumberFormatException e)
 		{
-			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_CTRL_AMT, new Object[]
+			Loggables.addLog(Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_CTRL_AMT, new Object[]
 				{ ctrlAmtStr }));
 			return null;
 		}
@@ -102,8 +101,7 @@ public class ESRReceiptLineMatcherUtil
 		}
 		catch (NumberFormatException e)
 		{
-			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_CTRL_QTY, new Object[]
-				{ trxQtysStr }));
+			Loggables.addLog(Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_CTRL_QTY, new Object[] { trxQtysStr }));
 			return null;
 		}
 	}

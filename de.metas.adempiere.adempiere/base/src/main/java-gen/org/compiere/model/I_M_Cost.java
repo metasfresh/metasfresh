@@ -98,6 +98,64 @@ public interface I_M_Cost
     public static final String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
 
 	/**
+	 * Set Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Currency_ID();
+
+	public org.compiere.model.I_C_Currency getC_Currency();
+
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
+
+    /** Column definition for C_Currency_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Cost, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_M_Cost, org.compiere.model.I_C_Currency>(I_M_Cost.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+	public org.compiere.model.I_C_UOM getC_UOM();
+
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Cost, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_Cost, org.compiere.model.I_C_UOM>(I_M_Cost.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Set Kostenrechnungsmethode.
 	 * Indicates how Costs will be calculated
 	 *

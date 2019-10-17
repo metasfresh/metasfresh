@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.adempiere.model;
 
@@ -13,12 +13,12 @@ package org.adempiere.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -83,7 +83,7 @@ public class IniDefaultsValidator implements ModelValidator
 	@Override
 	public String login(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
 	{
-		if (!Ini.isClient())
+		if (!Ini.isSwingClient())
 			return null;
 		//
 		// UI
@@ -111,7 +111,7 @@ public class IniDefaultsValidator implements ModelValidator
 					String sTheme = theme.getValue();
 					if (sTheme != null && sTheme.length() > 0 && !sTheme.equals(themeClass))
 					{
-						ValueNamePair plaf = new ValueNamePair(
+						ValueNamePair plaf = ValueNamePair.of(
 								UIManager.getLookAndFeel().getClass().getName(),
 								UIManager.getLookAndFeel().getName());
 						AdempierePLAF.setPLAF(plaf, theme, true);

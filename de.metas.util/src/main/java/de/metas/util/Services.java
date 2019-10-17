@@ -33,7 +33,6 @@ import javax.management.MBeanServer;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
-import org.adempiere.util.exceptions.ServicesException;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.proxy.IServiceInterceptor;
 import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
@@ -47,6 +46,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 
+import de.metas.util.exceptions.ServicesException;
 import lombok.NonNull;
 
 /**

@@ -29,16 +29,14 @@ import java.util.HashMap;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.swing.table.DefaultTableModel;
 
-import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
 import org.adempiere.ad.table.ComposedRecordId;
 import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.ad.table.RecordChangeLogRepository;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.user.UserId;
-import org.adempiere.user.api.IUserDAO;
 import org.compiere.Adempiere;
 import org.compiere.grid.VTable;
 import org.compiere.model.MTable;
@@ -53,6 +51,9 @@ import org.compiere.util.TimeUtil;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
+import de.metas.security.permissions.UserPreferenceLevelConstraint;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -198,7 +199,7 @@ public class RecordInfo extends CDialog
 		row.add(convertToDisplayValue(logEntry.getValueNew(), logEntry.getDisplayType())); // NewValue
 		row.add(convertToDisplayValue(logEntry.getValueOld(), logEntry.getDisplayType())); // OldValue
 		row.add(getUserName(logEntry.getChangedByUserId())); // UpdatedBy
-		row.add(convertToDateTimeString(logEntry.getChangedTimestamp())); // Updated
+		row.add(convertToDateTimeString(TimeUtil.asZonedDateTime(logEntry.getChangedTimestamp()))); // Updated
 		row.add(logEntry.getColumnName()); // ColumnName
 		return row;
 	}
@@ -260,7 +261,7 @@ public class RecordInfo extends CDialog
 		//
 		// Created / Created By
 		final UserId createdBy = changeLog.getCreatedByUserId();
-		final ZonedDateTime createdTS = changeLog.getCreatedTimestamp();
+		final ZonedDateTime createdTS = TimeUtil.asZonedDateTime(changeLog.getCreatedTimestamp());
 		info.append(" ")
 				.append(msgBL.translate(Env.getCtx(), "CreatedBy"))
 				.append(": ").append(getUserName(createdBy))
@@ -271,7 +272,7 @@ public class RecordInfo extends CDialog
 		if (changeLog.hasChanges())
 		{
 			final UserId lastChangedBy = changeLog.getLastChangedByUserId();
-			final ZonedDateTime lastChangedTS = changeLog.getLastChangedTimestamp();
+			final ZonedDateTime lastChangedTS = TimeUtil.asZonedDateTime(changeLog.getLastChangedTimestamp());
 			info.append(" ")
 					.append(msgBL.translate(Env.getCtx(), "UpdatedBy"))
 					.append(": ").append(getUserName(lastChangedBy))
@@ -286,7 +287,7 @@ public class RecordInfo extends CDialog
 		return info.toString();
 	}
 
-	private final String getUserName(final UserId userId)
+	private final String getUserName(@Nullable final UserId userId)
 	{
 		if (userId == null)
 		{

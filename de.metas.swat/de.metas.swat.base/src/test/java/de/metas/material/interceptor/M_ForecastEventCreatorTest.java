@@ -3,6 +3,7 @@ package de.metas.material.interceptor;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.compiere.util.TimeUtil.asInstant;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -18,16 +19,13 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
+import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
@@ -54,22 +52,23 @@ import de.metas.material.event.forecast.ForecastLine;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class,
-		ShutdownListener.class,
-		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
 public class M_ForecastEventCreatorTest
 {
-	private static final int BPARTNER_ID_OF_FORECAST = 50;
-	private static final int BPARTNER_ID_OF_FIRST_FORECAST_LINE = 51;
+	private static final BPartnerId BPARTNER_ID_OF_FORECAST = BPartnerId.ofRepoId(50);
+	private static final BPartnerId BPARTNER_ID_OF_FIRST_FORECAST_LINE = BPartnerId.ofRepoId(51);
 
 	@Rule
 	public final AdempiereTestWatcher watcher = new AdempiereTestWatcher();
+
+	private M_ForecastEventCreator forecastEventCreator;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		final ModelProductDescriptorExtractor productDescriptorFactory = new ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory();
+		forecastEventCreator = new M_ForecastEventCreator(productDescriptorFactory);
 	}
 
 	@Test
@@ -77,43 +76,43 @@ public class M_ForecastEventCreatorTest
 	{
 		final I_M_Forecast forecastModel = newInstance(I_M_Forecast.class);
 		forecastModel.setDocStatus(IDocument.STATUS_NotApproved); //
-		forecastModel.setC_BPartner_ID(BPARTNER_ID_OF_FORECAST);
+		forecastModel.setC_BPartner_ID(BPARTNER_ID_OF_FORECAST.getRepoId());
 		save(forecastModel);
 
-		final I_M_ForecastLine forecastLine1;
+		final I_M_ForecastLine forecastLineRecord1;
 		{
 			final I_M_Warehouse warehouse1 = newInstance(I_M_Warehouse.class);
 			save(warehouse1);
 			final I_M_Product product1 = newInstance(I_M_Product.class);
 			save(product1);
 
-			forecastLine1 = newInstance(I_M_ForecastLine.class);
-			forecastLine1.setM_Forecast(forecastModel);
-			forecastLine1.setC_BPartner_ID(BPARTNER_ID_OF_FIRST_FORECAST_LINE);
-			forecastLine1.setDatePromised(TimeUtil.parseTimestamp("2017-10-21"));
-			forecastLine1.setQty(new BigDecimal("21"));
-			forecastLine1.setM_Product(product1);
-			forecastLine1.setM_Warehouse(warehouse1);
-			save(forecastLine1);
+			forecastLineRecord1 = newInstance(I_M_ForecastLine.class);
+			forecastLineRecord1.setM_Forecast(forecastModel);
+			forecastLineRecord1.setC_BPartner_ID(BPARTNER_ID_OF_FIRST_FORECAST_LINE.getRepoId());
+			forecastLineRecord1.setDatePromised(TimeUtil.parseTimestamp("2017-10-21"));
+			forecastLineRecord1.setQty(new BigDecimal("21"));
+			forecastLineRecord1.setM_Product(product1);
+			forecastLineRecord1.setM_Warehouse(warehouse1);
+			save(forecastLineRecord1);
 		}
 
-		final I_M_ForecastLine forecastLine2;
+		final I_M_ForecastLine forecastLineRecord2;
 		{
 			final I_M_Warehouse warehouse2 = newInstance(I_M_Warehouse.class);
 			save(warehouse2);
 			final I_M_Product product2 = newInstance(I_M_Product.class);
 			save(product2);
-			forecastLine2 = newInstance(I_M_ForecastLine.class);
-			forecastLine2.setM_Forecast(forecastModel);
-			forecastLine2.setDatePromised(TimeUtil.parseTimestamp("2017-10-22"));
-			forecastLine2.setQty(new BigDecimal("22"));
-			forecastLine2.setM_Product(product2);
-			forecastLine2.setM_Warehouse(warehouse2);
-			save(forecastLine2);
+			forecastLineRecord2 = newInstance(I_M_ForecastLine.class);
+			forecastLineRecord2.setM_Forecast(forecastModel);
+			forecastLineRecord2.setDatePromised(TimeUtil.parseTimestamp("2017-10-22"));
+			forecastLineRecord2.setQty(new BigDecimal("22"));
+			forecastLineRecord2.setM_Product(product2);
+			forecastLineRecord2.setM_Warehouse(warehouse2);
+			save(forecastLineRecord2);
 		}
 
-		final ForecastCreatedEvent result = M_ForecastEventCreator.createEventWithLinesAndTiming(
-				ImmutableList.of(forecastLine1, forecastLine2),
+		final ForecastCreatedEvent result = forecastEventCreator.createEventWithLinesAndTiming(
+				ImmutableList.of(forecastLineRecord1, forecastLineRecord2),
 				DocTimingType.AFTER_COMPLETE);
 		assertThat(result).isNotNull();
 
@@ -126,12 +125,12 @@ public class M_ForecastEventCreatorTest
 		assertThat(forecastLines).hasSize(2);
 
 		assertThat(forecastLines).anySatisfy(forecastLine -> {
-			verifyEventPojoIsInSyncWithRecord(forecastLine, forecastLine1);
+			verifyEventPojoIsInSyncWithRecord(forecastLine, forecastLineRecord1);
 			assertThat(forecastLine.getMaterialDescriptor().getCustomerId()).isEqualTo(BPARTNER_ID_OF_FIRST_FORECAST_LINE);
 		});
 
 		assertThat(forecastLines).anySatisfy(forecastLine -> {
-			verifyEventPojoIsInSyncWithRecord(forecastLine, forecastLine2);
+			verifyEventPojoIsInSyncWithRecord(forecastLine, forecastLineRecord2);
 			assertThat(forecastLine.getMaterialDescriptor().getCustomerId())
 					.as("The 2nd focrecastLine has no own C_BPartner_ID, the header's ID shall be inherited")
 					.isEqualTo(BPARTNER_ID_OF_FORECAST);
@@ -146,10 +145,10 @@ public class M_ForecastEventCreatorTest
 		assertThat(forecastLineEventPojo.getForecastLineId()).isEqualTo(forecastLineRecord.getM_ForecastLine_ID());
 		final MaterialDescriptor materialDescriptor = forecastLineEventPojo.getMaterialDescriptor();
 
-		assertThat(materialDescriptor.getDate()).isEqualTo(forecastLineRecord.getDatePromised());
+		assertThat(materialDescriptor.getDate()).isEqualTo(asInstant(forecastLineRecord.getDatePromised()));
 		assertThat(materialDescriptor.getProductId()).isEqualTo(forecastLineRecord.getM_Product_ID());
 		assertThat(materialDescriptor.getQuantity()).isEqualTo(forecastLineRecord.getQty());
-		assertThat(materialDescriptor.getWarehouseId()).isEqualTo(forecastLineRecord.getM_Warehouse_ID());
+		assertThat(materialDescriptor.getWarehouseId().getRepoId()).isEqualTo(forecastLineRecord.getM_Warehouse_ID());
 	}
 
 }

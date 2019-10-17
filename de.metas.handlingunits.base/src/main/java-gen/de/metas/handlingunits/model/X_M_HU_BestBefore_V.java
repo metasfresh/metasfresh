@@ -14,7 +14,7 @@ public class X_M_HU_BestBefore_V extends org.compiere.model.PO implements I_M_HU
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1583365673L;
+	private static final long serialVersionUID = -1296080015L;
 
     /** Standard Constructor */
     public X_M_HU_BestBefore_V (Properties ctx, int M_HU_BestBefore_V_ID, String trxName)
@@ -110,8 +110,8 @@ public class X_M_HU_BestBefore_V extends org.compiere.model.PO implements I_M_HU
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_HU_ExpiredWarnDate);
 	}
 
-	/** Set Handling Units.
-		@param M_HU_ID Handling Units	  */
+	/** Set Handling Unit.
+		@param M_HU_ID Handling Unit	  */
 	@Override
 	public void setM_HU_ID (int M_HU_ID)
 	{
@@ -121,8 +121,8 @@ public class X_M_HU_BestBefore_V extends org.compiere.model.PO implements I_M_HU
 			set_ValueNoCheck (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
 	}
 
-	/** Get Handling Units.
-		@return Handling Units	  */
+	/** Get Handling Unit.
+		@return Handling Unit	  */
 	@Override
 	public int getM_HU_ID () 
 	{

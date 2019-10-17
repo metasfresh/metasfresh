@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,16 +33,24 @@ import static org.junit.Assert.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import de.metas.StartupListener;
+import de.metas.currency.CurrencyRepository;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.MoneyService;
 
 /**
  * @see AbstractDoubleReceiptQtyOverride
- * @author ts
- *
  */
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, /* ShutdownListener.class,*/ MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
 public class TestDoubleShipmentsInvoiceJustOnePartial extends AbstractDoubleReceiptQtyOverride
 {
 	@Override
@@ -61,7 +69,7 @@ public class TestDoubleShipmentsInvoiceJustOnePartial extends AbstractDoubleRece
 
 		final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol111);
 		assertNotNull("Missing IInvoiceLineRW for iol111=" + iol111, il1);
-		assertThat(il1.getQtyToInvoice(), comparesEqualTo(config_GetQtyToInvoice_Override()));
+		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(config_GetQtyToInvoice_Override()));
 
 		final IInvoiceLineRW il2 = getSingleForInOutLine(invoiceLines1, iol121);
 		assertNull("Unexpected IInvoiceLineRW for iol121=" + iol121, il2);

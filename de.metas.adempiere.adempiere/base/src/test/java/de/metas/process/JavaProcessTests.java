@@ -1,5 +1,8 @@
 package de.metas.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.impl.PlainTrxManager;
@@ -7,6 +10,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.I_AD_Process;
+import org.compiere.model.X_AD_Process;
 import org.compiere.util.Env;
 import org.junit.After;
 import org.junit.Assert;
@@ -15,6 +20,7 @@ import org.junit.Test;
 
 import de.metas.process.JavaProcess.ProcessCanceledException;
 import de.metas.process.impl.ADPInstanceDAO;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 
 /**
@@ -163,6 +169,7 @@ public class JavaProcessTests
 			{
 				final I_AD_PInstance pinstance = retrieveAD_PInstance();
 				final int resultExpected = result.isError() ? ADPInstanceDAO.RESULT_ERROR : ADPInstanceDAO.RESULT_OK;
+				Assert.assertEquals("Invalid AD_PInstance.AD_User_ID", loggedUserId.getRepoId(), pinstance.getAD_User_ID());
 				Assert.assertEquals("Invalid AD_PInstance.Result", resultExpected, pinstance.getResult());
 				Assert.assertEquals("Invalid AD_PInstance.ErrorMsg/Summary", result.getSummary(), pinstance.getErrorMsg());
 				Assert.assertEquals("Invalid AD_PInstance.Processing", false, pinstance.isProcessing());
@@ -207,6 +214,7 @@ public class JavaProcessTests
 		}
 	}
 
+	private static UserId loggedUserId = UserId.ofRepoId(1234567);
 	private PlainTrxManager trxManager;
 
 	@Before
@@ -220,6 +228,8 @@ public class JavaProcessTests
 		trxManager = (PlainTrxManager)Services.get(ITrxManager.class);
 		trxManager.setFailCommitIfTrxNotStarted(false);
 		trxManager.setFailRollbackIfTrxNotStarted(false);
+
+		Env.setLoggedUserId(Env.getCtx(), loggedUserId);
 	}
 
 	@After
@@ -231,11 +241,11 @@ public class JavaProcessTests
 
 	private <T extends JavaProcess> ProcessInfo createProcessInfo(final Class<T> processClass)
 	{
+		final IADPInstanceDAO pinstancesRepo = Services.get(IADPInstanceDAO.class);
+
 		// Create the AD_PInstance record
-		final int AD_Process_ID = 0; // N/A
-		final int AD_Table_ID = 0;
-		final int recordId = 0;
-		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(AD_Process_ID, AD_Table_ID, recordId);
+		final AdProcessId adProcessId = createProcess(processClass);
+		final I_AD_PInstance pinstance = pinstancesRepo.createAD_PInstance(adProcessId);
 
 		//
 		// Create ProcessInfo descriptor
@@ -243,9 +253,21 @@ public class JavaProcessTests
 				.setCtx(Env.getCtx())
 				.setAD_PInstance(pinstance)
 				.setTitle("Test")
-				.setClassname(processClass == null ? null : processClass.getName())
+				// .setClassname(processClass == null ? null : processClass.getName())
 				.build();
 		return pi;
+	}
+
+	private AdProcessId createProcess(final Class<?> processClass)
+	{
+		final I_AD_Process adProcess = newInstanceOutOfTrx(I_AD_Process.class);
+		adProcess.setValue(processClass.getSimpleName());
+		adProcess.setName(processClass.getSimpleName());
+		adProcess.setType(X_AD_Process.TYPE_Java);
+		adProcess.setClassname(processClass.getName());
+		saveRecord(adProcess);
+
+		return AdProcessId.ofRepoId(adProcess.getAD_Process_ID());
 	}
 
 	private ProcessExecutionResult startProcess(final JavaProcess process, final ProcessInfo pi, final ITrx trx)

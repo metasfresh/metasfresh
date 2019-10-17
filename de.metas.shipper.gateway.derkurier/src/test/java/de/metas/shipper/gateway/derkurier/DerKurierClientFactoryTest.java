@@ -6,6 +6,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import java.time.LocalTime;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
@@ -13,6 +14,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.shipper.gateway.derkurier.misc.Converters;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderService;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
@@ -20,6 +23,7 @@ import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
 import de.metas.shipper.gateway.derkurier.misc.ParcelNumberGenerator;
 import de.metas.shipper.gateway.derkurier.restapi.models.Routing;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -56,6 +60,9 @@ public class DerKurierClientFactoryTest
 		final DerKurierShipperConfigRepository derKurierShipperConfigRepository = new DerKurierShipperConfigRepository();
 
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+
+		final IDocumentNoBuilderFactory documentNoBuilderFactory = new DocumentNoBuilderFactory(Optional.empty());
+		Services.registerService(IDocumentNoBuilderFactory.class, documentNoBuilderFactory);
 
 		final DerKurierClientFactory derKurierClientFactory = new DerKurierClientFactory(
 				derKurierShipperConfigRepository,

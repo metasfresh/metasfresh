@@ -6,6 +6,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.util.StringUtils;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -30,35 +32,6 @@ import org.junit.Test;
 
 public class UtilTest
 {
-	@Test
-	public void test_coalesce3()
-	{
-		final Object o1 = new Object();
-		final Object o2 = new Object();
-		final Object o3 = new Object();
-		test_coalesce3(o1, o1, o2, o3);
-		test_coalesce3(o1, null, o1, o2);
-		test_coalesce3(o1, null, null, o1);
-		test_coalesce3(null, null, null, null);
-	}
-
-	public <T> void test_coalesce3(final T expected, final T value1, final T value2, final T value3)
-	{
-		{
-			final T actual = Util.coalesce(value1, value2, value3);
-			Assert.assertSame(expected, actual);
-		}
-		{
-			final Object actual = Util.coalesce(new Object[] { value1, value2, value3 });
-			Assert.assertSame(expected, actual);
-		}
-	}
-
-	@Test
-	public void coalesceIntIds()
-	{
-		assertThat(Util.firstGreaterThanZero(0, 3, 1)).isEqualTo(3);
-	}
 
 	@Test
 	public void test_clearAmp()
@@ -83,7 +56,7 @@ public class UtilTest
 		final String emptyString = "";
 		final String zeroString = "0000000000";
 
-		assertThat(Util.lpadZero(emptyString, 10, "This Is An Empty String")).isEqualTo(zeroString);
+		assertThat(StringUtils.lpadZero(emptyString, 10, "This Is An Empty String")).isEqualTo(zeroString);
 	}
 
 	@Test(expected = AdempiereException.class)
@@ -91,7 +64,7 @@ public class UtilTest
 	{
 		final String value = "123456789";
 
-		Util.lpadZero(value, 2, "This Is An Empty String");
+		StringUtils.lpadZero(value, 2, "This Is An Empty String");
 
 	}
 
@@ -101,7 +74,7 @@ public class UtilTest
 		final String value = "123";
 		final String zeroString = "000123";
 
-		assertThat(Util.lpadZero(value, 6, "This Is An Empty String")).isEqualTo(zeroString);
+		assertThat(StringUtils.lpadZero(value, 6, "This Is An Empty String")).isEqualTo(zeroString);
 	}
 
 	@Test
@@ -110,7 +83,7 @@ public class UtilTest
 		final String emptyString = "";
 		final String zeroString = "0000000000";
 
-		assertThat(Util.rpadZero(emptyString, 10, "This Is An Empty String")).isEqualTo(zeroString);
+		assertThat(StringUtils.rpadZero(emptyString, 10, "This Is An Empty String")).isEqualTo(zeroString);
 	}
 
 	@Test(expected = AdempiereException.class)
@@ -118,7 +91,7 @@ public class UtilTest
 	{
 		final String value = "123456789";
 
-		Util.rpadZero(value, 2, "This Is An Empty String");
+		StringUtils.rpadZero(value, 2, "This Is An Empty String");
 
 	}
 
@@ -128,7 +101,7 @@ public class UtilTest
 		final String value = "123";
 		final String zeroString = "123000";
 
-		assertThat(Util.rpadZero(value, 6, "This Is An Empty String")).isEqualTo(zeroString);
+		assertThat(StringUtils.rpadZero(value, 6, "This Is An Empty String")).isEqualTo(zeroString);
 	}
 
 	@Test
@@ -154,7 +127,7 @@ public class UtilTest
 
 		// 2 minimums, 1 greater
 		assertThat(Util.getMinimumOfThree(minimumNumber, minimumNumber, mediumNumber)).isEqualTo(minimumNumber);
-		
+
 	}
 
 }

@@ -12,26 +12,41 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.user.UserRepository;
 import org.assertj.core.api.Condition;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_InOut;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import com.jgoodies.common.base.Objects;
+
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
+import de.metas.currency.CurrencyRepository;
 import de.metas.document.engine.IDocument;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
+import de.metas.money.MoneyService;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -57,6 +72,9 @@ import de.metas.util.time.SystemTime;
  * #L%
  */
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
+@DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
 public class M_InOutLine_HandlerTest
 {
 	private static final BigDecimal TWO = new BigDecimal(2);
@@ -68,8 +86,9 @@ public class M_InOutLine_HandlerTest
 
 	private I_M_InOutLine packagingInOutLine;
 	private I_M_InOut inout;
-	private I_C_PaymentTerm paymentTermA;
-	private I_C_PaymentTerm paymentTermB;
+	private PaymentTermId orderPaymentTermId;
+	private PaymentTermId paymentTermA;
+	private PaymentTermId paymentTermB;
 	private M_InOutLine_Handler inOutLineHandlerUnderTest;
 
 	@Before
@@ -94,29 +113,40 @@ public class M_InOutLine_HandlerTest
 		inout.setMovementDate(SystemTime.asTimestamp());
 		save(inout);
 
+		final I_C_UOM packagingProductUom = newInstance(I_C_UOM.class);
+		save(packagingProductUom);
+
 		final I_M_Product packagingProduct = newInstance(I_M_Product.class);
+		packagingProduct.setC_UOM_ID(packagingProductUom.getC_UOM_ID());
 		save(packagingProduct);
+
+		final I_C_UOM packagingUom = newInstance(I_C_UOM.class);
+		save(packagingUom);
 
 		packagingInOutLine = newInstance(I_M_InOutLine.class);
 		packagingInOutLine.setM_InOut(inout);
-		packagingInOutLine.setM_Product(packagingProduct);
+		packagingInOutLine.setM_Product_ID(packagingProduct.getM_Product_ID());
+		packagingInOutLine.setC_UOM_ID(packagingUom.getC_UOM_ID());
 		packagingInOutLine.setIsPackagingMaterial(true);
 		packagingInOutLine.setMovementQty(TEN);
 		save(packagingInOutLine);
 
-		paymentTermA = newInstance(I_C_PaymentTerm.class);
-		paymentTermA.setName("paymentTermA");
-		save(paymentTermA);
-		POJOWrapper.setInstanceName(paymentTermA, "paymentTermA");
-
-		paymentTermB = newInstance(I_C_PaymentTerm.class);
-		paymentTermB.setName("paymentTermB");
-		save(paymentTermB);
-		POJOWrapper.setInstanceName(paymentTermB, "paymentTermB");
+		orderPaymentTermId = createPaymentTerm("orderPaymentTerm");
+		paymentTermA = createPaymentTerm("paymentTermA");
+		paymentTermB = createPaymentTerm("paymentTermB");
 
 		inOutLineHandlerUnderTest = new M_InOutLine_Handler();
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+	}
+
+	private PaymentTermId createPaymentTerm(final String name)
+	{
+		final I_C_PaymentTerm paymentTerm = newInstance(I_C_PaymentTerm.class);
+		paymentTerm.setName(name);
+		save(paymentTerm);
+		POJOWrapper.setInstanceName(paymentTerm, name);
+		return PaymentTermId.ofRepoId(paymentTerm.getC_PaymentTerm_ID());
 	}
 
 	@Test
@@ -124,9 +154,9 @@ public class M_InOutLine_HandlerTest
 	{
 		final I_M_InOutLine materialInOutLine = createMaterialInOutLine(paymentTermA);
 
-		final int paymentTermId = M_InOutLine_Handler.extractPaymentTermIdViaOrderLine(materialInOutLine);
+		final PaymentTermId paymentTermId = M_InOutLine_Handler.extractPaymentTermIdViaOrderLineOrNull(materialInOutLine);
 
-		assertThat(paymentTermId).isEqualTo(paymentTermA.getC_PaymentTerm_ID());
+		assertThat(paymentTermId).isEqualTo(paymentTermA);
 	}
 
 	@Test
@@ -134,9 +164,9 @@ public class M_InOutLine_HandlerTest
 	{
 		final I_M_InOutLine materialInOutLine = createMaterialInOutLine(null);
 
-		final int paymentTermId = M_InOutLine_Handler.extractPaymentTermIdViaOrderLine(materialInOutLine);
+		final PaymentTermId paymentTermId = M_InOutLine_Handler.extractPaymentTermIdViaOrderLineOrNull(materialInOutLine);
 
-		assertThat(paymentTermId).isLessThanOrEqualTo(0);
+		assertThat(paymentTermId).isLessThanOrEqualTo(orderPaymentTermId);
 	}
 
 	@Test
@@ -144,9 +174,8 @@ public class M_InOutLine_HandlerTest
 	{
 		createMaterialInOutLine(paymentTermA);
 
-		final int paymentTermId = M_InOutLine_Handler.extractPaymentTermId(packagingInOutLine);
-
-		assertThat(paymentTermId).isEqualTo(paymentTermA.getC_PaymentTerm_ID());
+		final PaymentTermId paymentTermId = M_InOutLine_Handler.extractPaymentTermIdOrNull(packagingInOutLine);
+		assertThat(paymentTermId).isEqualTo(paymentTermA);
 	}
 
 	/**
@@ -160,20 +189,8 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermB);
 		createMaterialInOutLine(paymentTermA);
 
-		final int paymentTermId = M_InOutLine_Handler.extractPaymentTermId(packagingInOutLine);
-		assertThat(paymentTermId).isEqualTo(paymentTermB.getC_PaymentTerm_ID());
-	}
-
-	@Test
-	public void extractPaymentTermId_from_packagingInOutLine_with_two_materialInOutLines_butno_paymentTerm()
-	{
-		createMaterialInOutLine(null);
-		createMaterialInOutLine(null);
-
-		createUnrelatedMaterialInOutLine(paymentTermA, TEN);
-
-		final int paymentTermId = M_InOutLine_Handler.extractPaymentTermId(packagingInOutLine);
-		assertThat(paymentTermId).isEqualTo(paymentTermA.getC_PaymentTerm_ID());
+		final PaymentTermId paymentTermId = M_InOutLine_Handler.extractPaymentTermIdOrNull(packagingInOutLine);
+		assertThat(paymentTermId).isEqualTo(paymentTermB);
 	}
 
 	@Test
@@ -182,6 +199,7 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermA, TEN.add(FIVE));
 
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
@@ -202,6 +220,7 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermA, ONE);
 
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
@@ -219,30 +238,11 @@ public class M_InOutLine_HandlerTest
 	public void createCandidatesForInOutLine_one_packagingInOutLine()
 	{
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
 		assertThat(ic.isPackagingMaterial()).isTrue();
-		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN);
-
-		// make sure that on later updates, the qty remains the same
-		inOutLineHandlerUnderTest.setOrderedData(ic);
-		inOutLineHandlerUnderTest.setDeliveredData(ic);
-		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN);
-	}
-
-	@Test
-	public void createCandidatesForInOutLine_two_materialInOutLines_one_without_paymentterm()
-	{
-		createMaterialInOutLine(null, FIVE);
-		createMaterialInOutLine(paymentTermB, SIX);
-
-		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
-
-		assertThat(result).hasSize(1);
-		final I_C_Invoice_Candidate ic = result.get(0);
-		assertThat(ic.isPackagingMaterial()).isTrue();
-		assertThat(ic).has(invoiceCandidateWithTerm(paymentTermB));
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN);
 
 		// make sure that on later updates, the qty remains the same
@@ -258,11 +258,12 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(null, SIX);
 
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
 		assertThat(ic.isPackagingMaterial()).isTrue();
-		assertThat(ic).has(invoiceCandidateWithTerm(null));
+		assertThat(ic).has(invoiceCandidateWithTerm(orderPaymentTermId));
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN);
 
 		// make sure that on later updates, the qty remains the same
@@ -278,11 +279,12 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(null, ONE);
 
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
 		assertThat(ic.isPackagingMaterial()).isTrue();
-		assertThat(ic).has(invoiceCandidateWithTerm(null));
+		assertThat(ic).has(invoiceCandidateWithTerm(orderPaymentTermId));
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN);
 
 		// make sure that on later updates, the qty remains the same
@@ -298,6 +300,7 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermB, SIX);
 
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		createCandidatesForInOutLine_two_materialInOutLine_different_payment_terms_assertInvariants(result);
 
@@ -338,6 +341,7 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermB, SIX);
 
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		createCandidatesForInOutLine_two_materialInOutLine_different_payment_terms_1st_materialIOL_has_largeQtyEnteredTU_assertInvariants(result);
 
@@ -370,6 +374,8 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermB, FOUR);
 
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
+
 		createCandidatesForInOutLine_two_materialInOutLine_different_payment_terms_both_have_smallQtyEnteredTU_assertInvariants(result);
 
 		// make sure that on later updates, the qty remains the same
@@ -409,6 +415,8 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermA, TEN.add(ONE));
 
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
+
 		createCandidatesForInOutLine_two_materialInOutLine_different_payment_terms_2nd_materialIOL_has_largeQtyEnteredTU_assertInvariants(result);
 
 		// make sure that on later updates, the qty remains the same
@@ -450,6 +458,8 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermB, SIX);
 
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
+
 		createCandidatesForInOutLine_two_materialInOutLine_different_payment_terms_customerReturn_assertInvariants(result);
 
 		// make sure that on later updates, the qty remains the same
@@ -488,8 +498,8 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermA, FIVE);
 		createMaterialInOutLine(paymentTermA, TEN);
 
-		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest
-				.createCandidatesForInOutLine(packagingInOutLine);
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
@@ -513,8 +523,8 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermA, FIVE);
 		createMaterialInOutLine(paymentTermA, TEN);
 
-		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest
-				.createCandidatesForInOutLine(packagingInOutLine);
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
@@ -535,8 +545,8 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermA, ONE);
 		createMaterialInOutLine(paymentTermA, ONE);
 
-		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest
-				.createCandidatesForInOutLine(packagingInOutLine);
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
@@ -560,8 +570,8 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermA, ONE);
 		createMaterialInOutLine(paymentTermA, ONE);
 
-		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest
-				.createCandidatesForInOutLine(packagingInOutLine);
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
@@ -585,12 +595,12 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(null, FIVE);
 		createMaterialInOutLine(null, TEN);
 
-		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest
-				.createCandidatesForInOutLine(packagingInOutLine);
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
-		assertThat(ic).has(invoiceCandidateWithTerm(null));
+		assertThat(ic).has(invoiceCandidateWithTerm(orderPaymentTermId));
 		assertThat(ic.isPackagingMaterial()).isTrue();
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN.negate()); // packagingInOutLine only has movementQty=10 so the IC's value can't be higher
 
@@ -598,6 +608,7 @@ public class M_InOutLine_HandlerTest
 		inOutLineHandlerUnderTest.setDeliveredData(ic);
 
 		assertThat(ic.isPackagingMaterial()).isTrue();
+		assertThat(ic.getQtyOrdered()).isEqualByComparingTo(TEN.negate());
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN.negate()); // packagingInOutLine only has movementQty=10 so the IC's value can't be higher
 	}
 
@@ -609,6 +620,8 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermA, TEN.add(ONE));
 
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
+
 		createCandidatesForInOutLine_three_materialInOutLine_different_payment_terms_3rd_materialIOL_has_largeQtyEnteredTU_assertInvariants(result);
 
 		// make sure that on later updates, the qty remains the same
@@ -648,6 +661,8 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermA, SIX);
 
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
+
 		createCandidatesForInOutLine_three_materialInOutLine_different_payment_terms_3rd_materialIOL_exceeds_movementQty_assertInvariants(result);
 
 		// make sure that on later updates, the qty remains the same
@@ -679,20 +694,21 @@ public class M_InOutLine_HandlerTest
 				});
 	}
 
-	private I_M_InOutLine createMaterialInOutLine(@Nullable final I_C_PaymentTerm paymentTerm)
+	private I_M_InOutLine createMaterialInOutLine(@Nullable final PaymentTermId paymentTermId)
 	{
 		return createMaterialInOutLine(
-				paymentTerm,
+				paymentTermId,
 				TEN// qtyEnteredTU
 		);
 	}
 
+	// create material inOutLine and link if to the test's packing inOutLine
 	private I_M_InOutLine createMaterialInOutLine(
-			@Nullable final I_C_PaymentTerm paymentTerm,
+			@Nullable final PaymentTermId paymentTermId,
 			@Nullable final BigDecimal qtyEnteredTU)
 	{
 		final I_M_InOutLine unrelatedMaterialInOutLine = createUnrelatedMaterialInOutLine(
-				paymentTerm,
+				paymentTermId,
 				qtyEnteredTU);
 		unrelatedMaterialInOutLine.setM_PackingMaterial_InOutLine(packagingInOutLine);
 		save(unrelatedMaterialInOutLine);
@@ -701,25 +717,26 @@ public class M_InOutLine_HandlerTest
 	}
 
 	private I_M_InOutLine createUnrelatedMaterialInOutLine(
-			@Nullable final I_C_PaymentTerm paymentTerm,
+			@Nullable final PaymentTermId paymentTermId,
 			@Nullable final BigDecimal qtyEnteredTU)
 	{
 		final I_M_Product materialProduct = newInstance(I_M_Product.class);
 		save(materialProduct);
 
 		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_PaymentTerm_ID(orderPaymentTermId.getRepoId());
 		save(order);
 
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
 		orderLine.setC_Order(order);
-		orderLine.setC_PaymentTerm_Override(paymentTerm);
+		orderLine.setC_PaymentTerm_Override_ID(PaymentTermId.toRepoId(paymentTermId));
 		save(orderLine);
 
 		final I_M_InOutLine materialInOutLine = newInstance(I_M_InOutLine.class);
 		materialInOutLine.setIsActive(true);
 		materialInOutLine.setM_InOut(inout);
 		materialInOutLine.setC_OrderLine(orderLine);
-		materialInOutLine.setM_Product(materialProduct);
+		materialInOutLine.setM_Product_ID(materialProduct.getM_Product_ID());
 		materialInOutLine.setQtyEnteredTU(qtyEnteredTU);
 		materialInOutLine.setIsPackagingMaterial(false);
 		save(materialInOutLine);
@@ -727,23 +744,17 @@ public class M_InOutLine_HandlerTest
 		return materialInOutLine;
 	}
 
-	private Condition<I_C_Invoice_Candidate> invoiceCandidateWithTerm(
-			@Nullable final I_C_PaymentTerm term)
+	private Condition<I_C_Invoice_Candidate> invoiceCandidateWithTerm(@Nullable final PaymentTermId termId)
 	{
-		final String description = term == null
-				? "C_PaymentTerm_ID=0"
-				: "C_PaymentTerm_ID=" + term.getC_PaymentTerm_ID() + " (" + term.getName() + ")";
+		final String description = termId == null ? "C_PaymentTerm_ID=0" : termId.toString();
 
 		return new Condition<I_C_Invoice_Candidate>(description)
 		{
 			@Override
-			public boolean matches(I_C_Invoice_Candidate value)
+			public boolean matches(final I_C_Invoice_Candidate ic)
 			{
-				if (term == null)
-				{
-					return value.getC_PaymentTerm_ID() <= 0;
-				}
-				return value.getC_PaymentTerm_ID() == term.getC_PaymentTerm_ID();
+				final PaymentTermId icPaymentTermId = PaymentTermId.ofRepoId(ic.getC_PaymentTerm_ID());
+				return Objects.equals(icPaymentTermId, termId);
 			}
 		};
 	}

@@ -1,0 +1,20 @@
+-- 2019-03-19T15:31:03.509
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsReadOnly='N',Updated=TO_TIMESTAMP('2019-03-19 15:31:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=562551
+;
+
+-- 2019-03-19T17:04:32.261
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2019-03-19 17:04:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=562517
+;
+
+-- 2019-03-19T17:04:47.990
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2019-03-19 17:04:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=562534
+;
+
+-- 2019-03-19T17:05:24.819
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsReadOnly='N',Updated=TO_TIMESTAMP('2019-03-19 17:05:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=563107
+;
+

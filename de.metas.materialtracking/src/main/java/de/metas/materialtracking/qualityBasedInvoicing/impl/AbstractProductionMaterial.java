@@ -24,12 +24,11 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
 
 import java.math.BigDecimal;
 
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.UOMConversionContext;
 import org.compiere.model.I_C_UOM;
 
-import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterial;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -70,7 +69,7 @@ import de.metas.util.Services;
 	@Override
 	public boolean isByProduct()
 	{
-		return PPOrderUtil.isByProduct(getComponentType());
+		return getComponentType().isByProduct();
 	}
 
 }

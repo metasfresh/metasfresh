@@ -51,6 +51,8 @@ import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -59,6 +61,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 
@@ -191,9 +194,9 @@ public class HUPIItemProductDAOTest
 
 	private void test_retrieveMaterialItemProduct_product_bpartner_date(
 			final I_M_HU_PI_Item_Product expected,
-			final ProductId productId, 
-			final I_C_BPartner bpartner, 
-			final Date date, 
+			final ProductId productId,
+			final I_C_BPartner bpartner,
+			final Date date,
 			final String huUnitType)
 	{
 		final boolean allowInfiniteCapacity = true;
@@ -285,7 +288,7 @@ public class HUPIItemProductDAOTest
 		final I_M_HU_PI_Item huPiItem = createMaterialM_HU_PI_Item(huUnitType);
 		piItemProduct.setM_HU_PI_Item(huPiItem);
 
-		piItemProduct.setC_BPartner(bpartner);
+		piItemProduct.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
 		piItemProduct.setValidFrom(validFrom);
 
 		InterfaceWrapperHelper.save(piItemProduct);
@@ -299,22 +302,31 @@ public class HUPIItemProductDAOTest
 	private String toString(final I_M_HU_PI_Item_Product piItemProduct)
 	{
 		final StringBuilder sb = new StringBuilder();
-		if (piItemProduct.getC_BPartner_ID() > 0)
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(piItemProduct.getC_BPartner_ID());
+		if (bpartnerId != null)
 		{
 			if (sb.length() > 0)
 			{
 				sb.append(", ");
 			}
-			sb.append("BP=").append(piItemProduct.getC_BPartner().getValue());
+
+			final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
+			sb.append("BP=").append(bpartner.getValue());
 		}
-		if (piItemProduct.getM_Product_ID() > 0)
+
+		final ProductId productId = ProductId.ofRepoIdOrNull(piItemProduct.getM_Product_ID());
+		if (productId != null)
 		{
 			if (sb.length() > 0)
 			{
 				sb.append(", ");
 			}
-			sb.append("Product=").append(piItemProduct.getM_Product().getValue());
+
+			final String productValue = Services.get(IProductDAO.class).retrieveProductValueByProductId(productId);
+			sb.append("Product=").append(productValue);
 		}
+
 		if (piItemProduct.isAllowAnyProduct())
 		{
 			if (sb.length() > 0)

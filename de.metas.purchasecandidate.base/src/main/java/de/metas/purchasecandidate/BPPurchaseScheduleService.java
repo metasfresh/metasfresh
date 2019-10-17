@@ -1,7 +1,7 @@
 package de.metas.purchasecandidate;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -12,9 +12,9 @@ import de.metas.util.Services;
 import de.metas.util.calendar.IBusinessDayMatcher;
 import de.metas.util.calendar.NullBusinessDayMatcher;
 import de.metas.util.time.generator.BusinessDayShifter;
+import de.metas.util.time.generator.BusinessDayShifter.OnNonBussinessDay;
 import de.metas.util.time.generator.DateSequenceGenerator;
 import de.metas.util.time.generator.IDateShifter;
-import de.metas.util.time.generator.BusinessDayShifter.OnNonBussinessDay;
 import lombok.NonNull;
 
 /*
@@ -54,7 +54,9 @@ public class BPPurchaseScheduleService
 		return bpPurchaseScheduleRepo.getByBPartnerIdAndValidFrom(bpartnerId, date);
 	}
 
-	public Optional<LocalDateTime> calculatePurchaseDatePromised(@NonNull final LocalDateTime salesPreparationDate, @NonNull final BPPurchaseSchedule schedule)
+	public Optional<ZonedDateTime> calculatePurchaseDatePromised(
+			@NonNull final ZonedDateTime salesPreparationDate,
+			@NonNull final BPPurchaseSchedule schedule)
 	{
 		final IBusinessDayMatcher businessDayMatcher;
 		if (schedule.getNonBusinessDaysCalendarId() != null)
@@ -72,7 +74,7 @@ public class BPPurchaseScheduleService
 				.onNonBussinessDay(OnNonBussinessDay.MoveToClosestBusinessDay)
 				.build();
 
-		final Optional<LocalDate> purchaseDatePromised = DateSequenceGenerator.builder()
+		final Optional<LocalDate> purchaseDayPromised = DateSequenceGenerator.builder()
 				.dateFrom(LocalDate.MIN)
 				.dateTo(LocalDate.MAX)
 				.shifter(dateShifter)
@@ -81,6 +83,7 @@ public class BPPurchaseScheduleService
 				.calculatePrevious(salesPreparationDate.toLocalDate());
 
 		// TODO: make sure that after applying the time, our date is BEFORE sales preparation time!
-		return purchaseDatePromised.map(schedule::applyTimeTo);
+		return purchaseDayPromised
+				.map(day -> schedule.applyTimeTo(day).atZone(salesPreparationDate.getZone()));
 	}
 }

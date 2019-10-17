@@ -26,6 +26,7 @@ package de.metas.document.refid.api;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 
 import de.metas.document.refid.model.I_C_ReferenceNo;
@@ -38,31 +39,23 @@ import de.metas.util.ISingletonService;
 public interface IReferenceNoDAO extends ISingletonService
 {
 	/**
-	 *
-	 * @param ctx
 	 * @return all active {@link I_C_ReferenceNo_Type}s for all Tenants
 	 */
-	List<I_C_ReferenceNo_Type> retrieveReferenceNoTypes(Properties ctx);
+	List<I_C_ReferenceNo_Type> retrieveReferenceNoTypes();
 
 	/**
-	 *
-	 * @param ctx
-	 * @param clazz
 	 * @return the active {@link I_C_ReferenceNo_Type}s for all Tenants that have the name of the given <code>clazz</code>
 	 */
 	I_C_ReferenceNo_Type retrieveRefNoTypeByClass(Properties ctx, Class<? extends IReferenceNoGenerator> clazz);
 
 	/**
-	 *
-	 * @param ctx
-	 * @param typeName
 	 * @return the active {@link I_C_ReferenceNo_Type}s for all Tenants with the given <code>typeName</code>
 	 */
-	I_C_ReferenceNo_Type retrieveRefNoTypeByName(Properties ctx, String typeName);
+	I_C_ReferenceNo_Type retrieveRefNoTypeByName(String typeName);
 
 	List<I_C_ReferenceNo_Type_Table> retrieveTableAssignments(I_C_ReferenceNo_Type type);
 
-	I_C_ReferenceNo getCreateReferenceNo(Properties ctx, I_C_ReferenceNo_Type type, String referenceNo, String trxName);
+	I_C_ReferenceNo getCreateReferenceNo(I_C_ReferenceNo_Type type, String referenceNo, IContextAware ctxAware);
 
 	/**
 	 * Creates and saves an {@link I_C_ReferenceNo_Doc} record to link the given <code>referenceNo</code> with the PO specified by the given <code>referencedModel</code>. If such a
@@ -75,18 +68,11 @@ public interface IReferenceNoDAO extends ISingletonService
 	/**
 	 * Retrieve all document assignments for given tableId/recordId
 	 *
-	 * @param ctx
 	 * @param referenceNoTypeId optional; if not specified, assignments for all types will be returned
-	 * @param tableId
-	 * @param recordId
-	 * @param trxName
-	 * @return assignments
 	 */
-	List<I_C_ReferenceNo_Doc> retrieveDocAssignments(Properties ctx, int referenceNoTypeId, int tableId, int recordId, String trxName);
+	List<I_C_ReferenceNo_Doc> retrieveAllDocAssignments(Properties ctx, int referenceNoTypeId, int tableId, int recordId, String trxName);
 
-	List<I_C_ReferenceNo_Doc> retrieveAllDocAssignments(I_C_ReferenceNo referenceNo);
-
-	void removeDocAssignments(List<I_C_ReferenceNo_Doc> docAssignments);
+	List<I_C_ReferenceNo_Doc> retrieveDocAssignments(I_C_ReferenceNo referenceNo);
 
 	/**
 	 * Retrieves all <code>C_ReferenceNo</code> records that have the given <code>type</code> and are associated with the given doc/model object via <code>C_ReferenceNo_Doc</code>. Note that one

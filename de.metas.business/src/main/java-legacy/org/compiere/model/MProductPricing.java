@@ -19,8 +19,10 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
@@ -29,6 +31,8 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 
@@ -69,9 +73,10 @@ public class MProductPricing
 	 * 
 	 * @return true if calculated
 	 */
-	public boolean calculatePrice()
+	public boolean recalculatePrice()
 	{
-		return calculatePrice(true);
+		final boolean recalculate = true;
+		return calculatePrice(recalculate);
 	}	// calculatePrice
 
 	private boolean calculatePrice(boolean recalculate)
@@ -145,35 +150,15 @@ public class MProductPricing
 	}
 
 	/**
-	 * Get Price Date
-	 * 
-	 * @return date
-	 */
-	public Timestamp getPriceDate()
-	{
-		return pricingCtx.getPriceDate();
-	}	// getPriceDate
-
-	/**
 	 * Set Price Date
 	 * 
 	 * @param priceDate date
 	 */
 	public void setPriceDate(Timestamp priceDate)
 	{
-		pricingCtx.setPriceDate(priceDate);
+		pricingCtx.setPriceDate(TimeUtil.asLocalDate(priceDate));
 		resetResult();
 	}	// setPriceDate
-
-	/**
-	 * Get Precision
-	 * 
-	 * @return precision - -1 = no rounding
-	 */
-	public int getPrecision()
-	{
-		return result.getPrecision();
-	}	// getPrecision
 
 	/**
 	 * Round
@@ -183,11 +168,10 @@ public class MProductPricing
 	 */
 	private BigDecimal round(BigDecimal bd)
 	{
-		final int precision = result.getPrecision();
-		if (precision != IPricingResult.NO_PRECISION	// -1 = no rounding
-				&& bd.scale() > precision)
+		final CurrencyPrecision precision = result.getPrecision();
+		if (precision != null)
 		{
-			return bd.setScale(precision, BigDecimal.ROUND_HALF_UP);
+			return precision.roundIfNeeded(bd);
 		}
 		return bd;
 	}	// round
@@ -200,7 +184,7 @@ public class MProductPricing
 	public int getC_UOM_ID()
 	{
 		calculatePrice(false);
-		return result.getPrice_UOM_ID();
+		return UomId.toRepoId(result.getPriceUomId());
 	}
 
 	/**
@@ -244,7 +228,7 @@ public class MProductPricing
 	public boolean isEnforcePriceLimit()
 	{
 		calculatePrice(false);
-		return result.isEnforcePriceLimit();
+		return result.getEnforcePriceLimit().isTrue();
 	}	// isEnforcePriceLimit
 
 	/**
@@ -277,7 +261,7 @@ public class MProductPricing
 	public BigDecimal mkPriceStdMinusDiscount()
 	{
 		calculatePrice(false);
-		return result.getDiscount().subtractFromBase(result.getPriceStd(), result.getPrecision());
+		return result.getDiscount().subtractFromBase(result.getPriceStd(), result.getPrecision().toInt());
 	}
 
 	@Override
@@ -294,11 +278,6 @@ public class MProductPricing
 		pricingCtx.setConvertPriceToContextUOM(convertPriceToContextUOM);
 	}
 
-	public Object getReferencedObject()
-	{
-		return pricingCtx.getReferencedObject();
-	}
-
 	public void setReferencedObject(Object referencedObject)
 	{
 		pricingCtx.setReferencedObject(referencedObject);
@@ -307,17 +286,17 @@ public class MProductPricing
 
 	public int getC_TaxCategory_ID()
 	{
-		return result.getC_TaxCategory_ID();
+		return TaxCategoryId.toRepoId(result.getTaxCategoryId());
 	}
 	
 	public boolean isManualPrice()
 	{
-		return pricingCtx.isManualPrice();
+		return pricingCtx.getManualPriceEnabled().isTrue();
 	}
 
 	public void setManualPrice(boolean manualPrice)
 	{
-		pricingCtx.setManualPrice(manualPrice);
+		pricingCtx.setManualPriceEnabled(manualPrice);
 	}
 	
 	public void throwProductNotOnPriceListException()

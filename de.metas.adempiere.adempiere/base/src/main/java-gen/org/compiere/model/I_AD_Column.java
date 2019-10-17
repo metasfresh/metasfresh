@@ -648,6 +648,31 @@ public interface I_AD_Column
     public static final String COLUMNNAME_IsAlwaysUpdateable = "IsAlwaysUpdateable";
 
 	/**
+	 * Set Validierungsregel automatisch anwenden.
+	 * If a validation rule (AD_Val_Rule_ID) is set and a new record is created where the column is empty, then apply the validation rule and insert the first result into the new record.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsAutoApplyValidationRule (boolean IsAutoApplyValidationRule);
+
+	/**
+	 * Get Validierungsregel automatisch anwenden.
+	 * If a validation rule (AD_Val_Rule_ID) is set and a new record is created where the column is empty, then apply the validation rule and insert the first result into the new record.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isAutoApplyValidationRule();
+
+    /** Column definition for IsAutoApplyValidationRule */
+    public static final org.adempiere.model.ModelColumn<I_AD_Column, Object> COLUMN_IsAutoApplyValidationRule = new org.adempiere.model.ModelColumn<I_AD_Column, Object>(I_AD_Column.class, "IsAutoApplyValidationRule", null);
+    /** Column name IsAutoApplyValidationRule */
+    public static final String COLUMNNAME_IsAutoApplyValidationRule = "IsAutoApplyValidationRule";
+
+	/**
 	 * Set Autocomplete.
 	 * Automatic completion for textfields
 	 *
@@ -1123,7 +1148,7 @@ public interface I_AD_Column
 	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setName (java.lang.String Name);
@@ -1133,7 +1158,7 @@ public interface I_AD_Column
 	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getName();

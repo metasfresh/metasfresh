@@ -16,7 +16,6 @@ import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_BankStatement;
-import org.compiere.model.X_C_Payment;
 import org.compiere.util.Env;
 
 import de.metas.banking.bankstatement.match.api.IPaymentBatchFactory;
@@ -31,6 +30,7 @@ import de.metas.banking.bankstatement.match.service.IBankStatementMatchDAO;
 import de.metas.banking.bankstatement.match.spi.IPaymentBatch;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankingBPBankAccountDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -225,7 +225,7 @@ public class BankStatementMatchDAO implements IBankStatementMatchDAO
 				.createQueryBuilder(I_C_Payment.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReconciled, false)
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_Processed, true)
-				.addInArrayOrAllFilter(I_C_Payment.COLUMNNAME_DocStatus, X_C_Payment.DOCSTATUS_Completed, X_C_Payment.DOCSTATUS_Closed);
+				.addInArrayFilter(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.completedOrClosedStatuses());
 
 		// Bank Account
 		if (query.getC_BP_BankAccount_ID() > 0)

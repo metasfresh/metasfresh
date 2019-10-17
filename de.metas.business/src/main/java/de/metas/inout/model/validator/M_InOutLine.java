@@ -41,7 +41,7 @@ import de.metas.util.Services;
  * @task http://dewiki908/mediawiki/index.php/09548_Avoid_FK-constraint_violation_when_a_packaging-iol-is_deleted_%28106784154474%29
  */
 @Interceptor(I_M_InOutLine.class)
-@Component("de.metas.inout.model.validator.M_InOutLine")
+@Component
 public class M_InOutLine
 {
 	/**

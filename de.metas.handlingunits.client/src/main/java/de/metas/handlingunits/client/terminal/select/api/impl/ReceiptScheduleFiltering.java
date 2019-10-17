@@ -3,6 +3,8 @@
  */
 package de.metas.handlingunits.client.terminal.select.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.handlingunits.client
@@ -41,6 +43,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_Product;
@@ -53,6 +56,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -155,14 +159,16 @@ public class ReceiptScheduleFiltering extends AbstractFiltering
 				.addColumn(de.metas.inoutcandidate.model.I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID);
 
 		final List<I_M_ReceiptSchedule> schedules = queryBuilder.create()
-				.setApplyAccessFilterRW(true)
+				.setRequiredAccess(Access.WRITE)
 				.list(I_M_ReceiptSchedule.class)
 				.stream()
 
-		// task 07074: exclude lines with products that have type != item (fixes this comment when i migrated to lambda)
-				.filter(rs -> X_M_Product.PRODUCTTYPE_Item.equals(rs.getM_Product().getProductType()))
+				// task 07074: exclude lines with products that have type != item (fixes this comment when i migrated to lambda)
+				.filter(rs -> X_M_Product.PRODUCTTYPE_Item.equals(
+						loadOutOfTrx(rs.getM_Product_ID(), I_M_Product.class)
+								.getProductType()))
 
-		.collect(Collectors.toList());
+				.collect(Collectors.toList());
 
 		return createTableRows(schedules);
 	}

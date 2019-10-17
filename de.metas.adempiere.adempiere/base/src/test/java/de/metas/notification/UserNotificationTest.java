@@ -3,6 +3,7 @@ package de.metas.notification;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.time.Instant;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -11,6 +12,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.metas.JsonObjectMapperHolder;
 import de.metas.event.Event;
 
 /*
@@ -44,8 +46,7 @@ public class UserNotificationTest
 	{
 		AdempiereTestHelper.get().init();
 
-		jsonMapper = new ObjectMapper();
-		jsonMapper.findAndRegisterModules();
+		jsonMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 	}
 
 	@Test
@@ -53,7 +54,7 @@ public class UserNotificationTest
 	{
 		testSerializeDeserialize(UserNotification.builder()
 				.id(123)
-				.timestamp(456)
+				.timestamp(Instant.now())
 				.important(true)
 				.read(true)
 				.recipientUserId(111)
@@ -72,7 +73,7 @@ public class UserNotificationTest
 	{
 		testSerializeDeserialize(UserNotification.builder()
 				.id(123)
-				.timestamp(456)
+				.timestamp(Instant.now())
 				.important(true)
 				.read(true)
 				.recipientUserId(111)

@@ -28,6 +28,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -43,6 +44,7 @@ public class DocumentProcessingException extends AdempiereException
 	public DocumentProcessingException(final IDocument document, final String docAction, final Throwable cause)
 	{
 		super(buildMsg((String)null, document, docAction, cause), cause);
+		putParametetersFrom(cause);
 	}
 
 	public DocumentProcessingException(final IDocument document, final String docAction)
@@ -57,7 +59,7 @@ public class DocumentProcessingException extends AdempiereException
 
 	private static final ITranslatableString buildMsg(final String message, final Object documentObj, final String docAction, final Throwable cause)
 	{
-		final TranslatableStringBuilder msg = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder msg = TranslatableStrings.builder();
 		if (Check.isEmpty(message, true))
 		{
 			msg.append("Error Processing Document");

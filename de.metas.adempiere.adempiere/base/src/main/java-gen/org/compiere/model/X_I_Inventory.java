@@ -15,7 +15,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1320550584L;
+	private static final long serialVersionUID = 1328292846L;
 
     /** Standard Constructor */
     public X_I_Inventory (Properties ctx, int I_Inventory_ID, String trxName)
@@ -43,6 +43,43 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public org.compiere.model.I_AD_Issue getAD_Issue()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class);
+	}
+
+	@Override
+	public void setAD_Issue(org.compiere.model.I_AD_Issue AD_Issue)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class, AD_Issue);
+	}
+
+	/** Set System-Problem.
+		@param AD_Issue_ID 
+		Automatically created or manually entered System Issue
+	  */
+	@Override
+	public void setAD_Issue_ID (int AD_Issue_ID)
+	{
+		if (AD_Issue_ID < 1) 
+			set_Value (COLUMNNAME_AD_Issue_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Issue_ID, Integer.valueOf(AD_Issue_ID));
+	}
+
+	/** Get System-Problem.
+		@return Automatically created or manually entered System Issue
+	  */
+	@Override
+	public int getAD_Issue_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Issue_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	/** Set Datum der letzten Inventur.
 		@param DateLastInventory 
@@ -96,6 +133,38 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set Externe Datensatz-Kopf-ID.
+		@param ExternalHeaderId Externe Datensatz-Kopf-ID	  */
+	@Override
+	public void setExternalHeaderId (java.lang.String ExternalHeaderId)
+	{
+		set_Value (COLUMNNAME_ExternalHeaderId, ExternalHeaderId);
+	}
+
+	/** Get Externe Datensatz-Kopf-ID.
+		@return Externe Datensatz-Kopf-ID	  */
+	@Override
+	public java.lang.String getExternalHeaderId () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExternalHeaderId);
+	}
+
+	/** Set Externe Datensatz-Zeilen-ID.
+		@param ExternalLineId Externe Datensatz-Zeilen-ID	  */
+	@Override
+	public void setExternalLineId (java.lang.String ExternalLineId)
+	{
+		set_Value (COLUMNNAME_ExternalLineId, ExternalLineId);
+	}
+
+	/** Get Externe Datensatz-Zeilen-ID.
+		@return Externe Datensatz-Zeilen-ID	  */
+	@Override
+	public java.lang.String getExternalLineId () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExternalLineId);
 	}
 
 	/** Set Best Before Date.
@@ -184,6 +253,25 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 		return false;
 	}
 
+	/** Set Inventurdatum.
+		@param InventoryDate 
+		Datum zu dem die Inventur gilt, d.h. Belegedatum des Inventurbelegs
+	  */
+	@Override
+	public void setInventoryDate (java.sql.Timestamp InventoryDate)
+	{
+		set_Value (COLUMNNAME_InventoryDate, InventoryDate);
+	}
+
+	/** Get Inventurdatum.
+		@return Datum zu dem die Inventur gilt, d.h. Belegedatum des Inventurbelegs
+	  */
+	@Override
+	public java.sql.Timestamp getInventoryDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_InventoryDate);
+	}
+
 	/** Set Lot Blocked.
 		@param IsLotBlocked Lot Blocked	  */
 	@Override
@@ -246,7 +334,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	@Override
-	public org.compiere.model.I_M_Inventory getM_Inventory() throws RuntimeException
+	public org.compiere.model.I_M_Inventory getM_Inventory()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Inventory_ID, org.compiere.model.I_M_Inventory.class);
 	}
@@ -283,7 +371,7 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	}
 
 	@Override
-	public org.compiere.model.I_M_InventoryLine getM_InventoryLine() throws RuntimeException
+	public org.compiere.model.I_M_InventoryLine getM_InventoryLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_InventoryLine_ID, org.compiere.model.I_M_InventoryLine.class);
 	}
@@ -319,18 +407,6 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Locator getM_Locator() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class);
-	}
-
-	@Override
-	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class, M_Locator);
-	}
-
 	/** Set Lagerort.
 		@param M_Locator_ID 
 		Warehouse Locator
@@ -354,18 +430,6 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.
@@ -393,18 +457,6 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
-	}
-
-	@Override
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse);
-	}
-
 	/** Set Lager.
 		@param M_Warehouse_ID 
 		Storage Warehouse and Service Point
@@ -428,25 +480,6 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Bewegungsdatum.
-		@param MovementDate 
-		Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	  */
-	@Override
-	public void setMovementDate (java.sql.Timestamp MovementDate)
-	{
-		set_Value (COLUMNNAME_MovementDate, MovementDate);
-	}
-
-	/** Get Bewegungsdatum.
-		@return Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	  */
-	@Override
-	public java.sql.Timestamp getMovementDate () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_MovementDate);
 	}
 
 	/** Set Verarbeitet.
@@ -498,23 +531,48 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 		return false;
 	}
 
-	/** Set Internal Use Qty.
-		@param QtyInternalUse 
-		Internal Use Quantity removed from Inventory
+	/** Set Produktschlüssel.
+		@param ProductValue 
+		Can be:
+	* The exact product value
+	* The product id
+	* Part of the product value, using this pattern val-%
 	  */
 	@Override
-	public void setQtyInternalUse (java.math.BigDecimal QtyInternalUse)
+	public void setProductValue (java.lang.String ProductValue)
 	{
-		set_Value (COLUMNNAME_QtyInternalUse, QtyInternalUse);
+		set_Value (COLUMNNAME_ProductValue, ProductValue);
 	}
 
-	/** Get Internal Use Qty.
-		@return Internal Use Quantity removed from Inventory
+	/** Get Produktschlüssel.
+		@return Can be:
+	* The exact product value
+	* The product id
+	* Part of the product value, using this pattern val-%
 	  */
 	@Override
-	public java.math.BigDecimal getQtyInternalUse () 
+	public java.lang.String getProductValue () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInternalUse);
+		return (java.lang.String)get_Value(COLUMNNAME_ProductValue);
+	}
+
+	/** Set Zählmenge.
+		@param QtyCount 
+		Gezählte Menge
+	  */
+	@Override
+	public void setQtyCount (java.math.BigDecimal QtyCount)
+	{
+		set_Value (COLUMNNAME_QtyCount, QtyCount);
+	}
+
+	/** Get Zählmenge.
+		@return Gezählte Menge
+	  */
+	@Override
+	public java.math.BigDecimal getQtyCount () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyCount);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
@@ -537,18 +595,6 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 	public java.lang.String getSerNo () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_SerNo);
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner getSubProducer_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_SubProducer_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setSubProducer_BPartner(org.compiere.model.I_C_BPartner SubProducer_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_SubProducer_BPartner_ID, org.compiere.model.I_C_BPartner.class, SubProducer_BPartner);
 	}
 
 	/** Set Unterlieferanten.
@@ -630,23 +676,23 @@ public class X_I_Inventory extends org.compiere.model.PO implements I_I_Inventor
 		return (java.lang.String)get_Value(COLUMNNAME_UPC);
 	}
 
-	/** Set Suchschlüssel.
-		@param Value 
-		Search key for the record in the format required - must be unique
+	/** Set Warehouse Locator Identifier.
+		@param WarehouseLocatorIdentifier 
+		Text that contains identifier of warehouse. locator and dimensions
 	  */
 	@Override
-	public void setValue (java.lang.String Value)
+	public void setWarehouseLocatorIdentifier (java.lang.String WarehouseLocatorIdentifier)
 	{
-		set_Value (COLUMNNAME_Value, Value);
+		set_Value (COLUMNNAME_WarehouseLocatorIdentifier, WarehouseLocatorIdentifier);
 	}
 
-	/** Get Suchschlüssel.
-		@return Search key for the record in the format required - must be unique
+	/** Get Warehouse Locator Identifier.
+		@return Text that contains identifier of warehouse. locator and dimensions
 	  */
 	@Override
-	public java.lang.String getValue () 
+	public java.lang.String getWarehouseLocatorIdentifier () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Value);
+		return (java.lang.String)get_Value(COLUMNNAME_WarehouseLocatorIdentifier);
 	}
 
 	/** Set Lager-Schlüssel.

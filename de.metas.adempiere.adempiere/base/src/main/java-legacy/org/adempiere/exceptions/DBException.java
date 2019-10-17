@@ -22,13 +22,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import org.adempiere.util.exceptions.IExceptionWrapper;
 import org.compiere.util.DB;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.exceptions.IExceptionWrapper;
 
 /**
  * This RuntimeException is used to pass SQLException up the chain of calling methods to determine what to do where needed.
@@ -277,7 +278,7 @@ public class DBException extends AdempiereException
 	@Override
 	protected ITranslatableString buildMessage()
 	{
-		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder message = TranslatableStrings.builder();
 
 		message.append(super.buildMessage());
 

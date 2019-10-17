@@ -13,12 +13,15 @@ import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -28,6 +31,8 @@ import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -87,7 +92,8 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(ctx, productId, orderLine.getPrice_UOM(), orderLine.getQtyReserved());
+		final I_C_UOM priceUOM = Services.get(IUOMDAO.class).getById(orderLine.getPrice_UOM_ID());
+		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(productId, priceUOM, orderLine.getQtyReserved());
 		newSched.setLineNetAmt(qtyReservedInPriceUOM.multiply(orderLine.getPriceActual()));
 
 		final String groupingOrderLineLabel = DB
@@ -140,6 +146,8 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		shipmentSchedule.setAD_User_ID(orderLine.getAD_User_ID());
 
 		shipmentSchedule.setAD_Org_ID(orderLine.getAD_Org_ID());
+		
+		shipmentSchedule.setShipmentAllocation_BestBefore_Policy(orderLine.getShipmentAllocation_BestBefore_Policy());
 	}
 
 	private static void updateShipmentScheduleFromOrder(
@@ -151,8 +159,10 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		shipmentSchedule.setDeliveryRule(order.getDeliveryRule());
 		shipmentSchedule.setDeliveryViaRule(order.getDeliveryViaRule());
 
-		shipmentSchedule.setC_DocType_ID(order.getC_DocType_ID());
-		shipmentSchedule.setDocSubType(order.getC_DocType().getDocSubType());
+		final DocTypeId orderDocTypeId = DocTypeId.ofRepoId(order.getC_DocType_ID());
+		final DocBaseAndSubType orderDocBaseTypeAndSubType = Services.get(IDocTypeDAO.class).getDocBaseAndSubTypeById(orderDocTypeId);
+		shipmentSchedule.setC_DocType_ID(orderDocTypeId.getRepoId());
+		shipmentSchedule.setDocSubType(orderDocBaseTypeAndSubType.getDocSubType());
 	}
 
 	/**
@@ -233,8 +243,8 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	 * </ul>
 	 */
 	@Override
-	public IDeliverRequest createDeliverRequest(final I_M_ShipmentSchedule sched)
+	public IDeliverRequest createDeliverRequest(@NonNull final I_M_ShipmentSchedule sched, @NonNull final org.compiere.model.I_C_OrderLine salesOrderLine)
 	{
-		return () -> sched.getC_OrderLine().getQtyOrdered();
+		return salesOrderLine::getQtyOrdered;
 	}
 }

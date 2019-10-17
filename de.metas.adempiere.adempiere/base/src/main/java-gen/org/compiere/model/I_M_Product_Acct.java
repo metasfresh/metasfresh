@@ -78,9 +78,9 @@ public interface I_M_Product_Acct
 	  */
 	public int getC_AcctSchema_ID();
 
-	public org.compiere.model.I_C_AcctSchema getC_AcctSchema() throws RuntimeException;
-
-	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema);
+//	public org.compiere.model.I_C_AcctSchema getC_AcctSchema() throws RuntimeException;
+//
+//	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema);
 
     /** Column name C_Activity_ID */
     public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";

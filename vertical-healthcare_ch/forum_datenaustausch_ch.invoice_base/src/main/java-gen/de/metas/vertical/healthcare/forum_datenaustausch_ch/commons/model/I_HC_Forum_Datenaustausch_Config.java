@@ -69,33 +69,33 @@ public interface I_HC_Forum_Datenaustausch_Config
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Set Rechnungspartner.
+	 * Geschäftspartner für die Rechnungsstellung
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
+	public void setBill_BPartner_ID (int Bill_BPartner_ID);
 
 	/**
-	 * Get Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Get Rechnungspartner.
+	 * Geschäftspartner für die Rechnungsstellung
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_ID();
+	public int getBill_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
+	public org.compiere.model.I_C_BPartner getBill_BPartner();
 
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
+	public void setBill_BPartner(org.compiere.model.I_C_BPartner Bill_BPartner);
 
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, org.compiere.model.I_C_BPartner>(I_HC_Forum_Datenaustausch_Config.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+    /** Column definition for Bill_BPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, org.compiere.model.I_C_BPartner> COLUMN_Bill_BPartner_ID = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, org.compiere.model.I_C_BPartner>(I_HC_Forum_Datenaustausch_Config.class, "Bill_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name Bill_BPartner_ID */
+    public static final String COLUMNNAME_Bill_BPartner_ID = "Bill_BPartner_ID";
 
 	/**
 	 * Get Erstellt.
@@ -151,13 +151,36 @@ public interface I_HC_Forum_Datenaustausch_Config
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Modus der Exportdateien.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setExportedXmlMode (java.lang.String ExportedXmlMode);
+
+	/**
+	 * Get Modus der Exportdateien.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getExportedXmlMode();
+
+    /** Column definition for ExportedXmlMode */
+    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_ExportedXmlMode = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object>(I_HC_Forum_Datenaustausch_Config.class, "ExportedXmlMode", null);
+    /** Column name ExportedXmlMode */
+    public static final String COLUMNNAME_ExportedXmlMode = "ExportedXmlMode";
+
+	/**
 	 * Set Export XML Version.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setExportXmlVersion (java.lang.String ExportXmlVersion);
+	public void setExportedXmlVersion (java.lang.String ExportedXmlVersion);
 
 	/**
 	 * Get Export XML Version.
@@ -166,12 +189,37 @@ public interface I_HC_Forum_Datenaustausch_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getExportXmlVersion();
+	public java.lang.String getExportedXmlVersion();
 
-    /** Column definition for ExportXmlVersion */
-    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_ExportXmlVersion = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object>(I_HC_Forum_Datenaustausch_Config.class, "ExportXmlVersion", null);
-    /** Column name ExportXmlVersion */
-    public static final String COLUMNNAME_ExportXmlVersion = "ExportXmlVersion";
+    /** Column definition for ExportedXmlVersion */
+    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_ExportedXmlVersion = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object>(I_HC_Forum_Datenaustausch_Config.class, "ExportedXmlVersion", null);
+    /** Column name ExportedXmlVersion */
+    public static final String COLUMNNAME_ExportedXmlVersion = "ExportedXmlVersion";
+
+	/**
+	 * Set Absender EAN.
+	 * Falls angegeben ersetzt dieser Wert den Wert des request/processing/transport from Attributes in der exportierten XML-Datei
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setFrom_EAN (java.lang.String From_EAN);
+
+	/**
+	 * Get Absender EAN.
+	 * Falls angegeben ersetzt dieser Wert den Wert des request/processing/transport from Attributes in der exportierten XML-Datei
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getFrom_EAN();
+
+    /** Column definition for From_EAN */
+    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_From_EAN = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object>(I_HC_Forum_Datenaustausch_Config.class, "From_EAN", null);
+    /** Column name From_EAN */
+    public static final String COLUMNNAME_From_EAN = "From_EAN";
 
 	/**
 	 * Set forum-datenaustausch.ch config.
@@ -275,4 +323,29 @@ public interface I_HC_Forum_Datenaustausch_Config
     public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, org.compiere.model.I_AD_User>(I_HC_Forum_Datenaustausch_Config.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Via EAN.
+	 * Dieser Wert wird bei request/processing/transport/via in die exportierten XML-Datei eingefügt. Evtl. vorhandene "via" Knoten werden entfernt.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setVia_EAN (java.lang.String Via_EAN);
+
+	/**
+	 * Get Via EAN.
+	 * Dieser Wert wird bei request/processing/transport/via in die exportierten XML-Datei eingefügt. Evtl. vorhandene "via" Knoten werden entfernt.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getVia_EAN();
+
+    /** Column definition for Via_EAN */
+    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_Via_EAN = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object>(I_HC_Forum_Datenaustausch_Config.class, "Via_EAN", null);
+    /** Column name Via_EAN */
+    public static final String COLUMNNAME_Via_EAN = "Via_EAN";
 }

@@ -2,17 +2,15 @@ package de.metas.process;
 
 import java.util.function.Supplier;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Process;
-import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -158,7 +156,7 @@ public class ProcessPreconditionChecker
 
 	public ProcessPreconditionChecker setProcess(final RelatedProcessDescriptor relatedProcess)
 	{
-		final I_AD_Process adProcess = InterfaceWrapperHelper.create(Env.getCtx(), relatedProcess.getProcessId(), I_AD_Process.class, ITrx.TRXNAME_None);
+		final I_AD_Process adProcess = Services.get(IADProcessDAO.class).getById(relatedProcess.getProcessId());
 
 		_processClass = null;
 		_preconditionsClass = null;
@@ -232,7 +230,7 @@ public class ProcessPreconditionChecker
 		}
 		catch (final ClassNotFoundException ex)
 		{
-			if (isServerProcess && Ini.isClient())
+			if (isServerProcess && Ini.isSwingClient())
 			{
 				// it might be that the class is available only on server
 				// so, for now, we consider the preconditions are applicable.

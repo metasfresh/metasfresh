@@ -27,14 +27,28 @@ import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Iterator;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_C_UOM;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
+
+import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
 /**
@@ -50,16 +64,26 @@ import lombok.NonNull;
  * @author tsa
  *
  */
+@JsonDeserialize(using = Quantitys.QuantityDeserializer.class)
+@JsonSerialize(using = Quantitys.QuantitySerializer.class)
 public final class Quantity implements Comparable<Quantity>
 {
-	public static final Quantity of(final BigDecimal qty, final I_C_UOM uom)
+	/** To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#create(BigDecimal, UomId)}. */
+	public static Quantity of(@NonNull final String qty, @NonNull final I_C_UOM uomRecord)
 	{
-		return new Quantity(qty, uom);
+		return of(new BigDecimal(qty), uomRecord);
 	}
 
-	public static final Quantity of(final int qty, final I_C_UOM uom)
+	/** To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#create(BigDecimal, UomId)}. */
+	public static Quantity of(@NonNull final BigDecimal qty, @NonNull final I_C_UOM uomRecord)
 	{
-		return of(BigDecimal.valueOf(qty), uom);
+		return new Quantity(qty, uomRecord);
+	}
+
+	/** To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#create(BigDecimal, UomId)}. */
+	public static Quantity of(final int qty, @NonNull final I_C_UOM uomRecord)
+	{
+		return of(BigDecimal.valueOf(qty), uomRecord);
 	}
 
 	public static boolean isInfinite(final BigDecimal qty)
@@ -96,31 +120,52 @@ public final class Quantity implements Comparable<Quantity>
 		return addNullables(quantity, augentQuantity);
 	}
 
-	public static BigDecimal asBigDecimal(@Nullable final Quantity quantity)
+	public static BigDecimal toBigDecimal(@Nullable final Quantity quantity)
 	{
 		if (quantity == null)
 		{
 			return ZERO;
 		}
-		return quantity.getAsBigDecimal();
+		return quantity.toBigDecimal();
+	}
+
+	public static UomId getCommonUomIdOfAll(@NonNull final Quantity... quantities)
+	{
+		Check.assumeNotEmpty(quantities, "The given quantities may not be empty");
+
+		final Iterator<Quantity> quantitiesIterator = Stream.of(quantities)
+				.filter(Predicates.notNull())
+				.iterator();
+		final ImmutableListMultimap<UomId, Quantity> uomIds2qties = Multimaps.index(quantitiesIterator, Quantity::getUomId);
+		if (uomIds2qties.isEmpty())
+		{
+			throw new AdempiereException("The given quantities may not be empty");
+		}
+
+		final ImmutableSet<UomId> uomIds = uomIds2qties.keySet();
+		Check.errorIf(uomIds.size() > 1,
+				"at least two quantity instances have different uoms: {}", uomIds2qties);
+
+		return CollectionUtils.singleElement(uomIds.asList());
 	}
 
 	public static final BigDecimal QTY_INFINITE = BigDecimal.valueOf(Long.MAX_VALUE); // NOTE: we need a new instance to make sure it's unique
 
 	// NOTE to dev: all fields shall be final because this is a immutable object. Please keep that logic if u are adding more fields
 	private final BigDecimal qty;
+
+	@JsonIgnore // TODO: better map to the uom' X12DE355 code or similar
 	private final I_C_UOM uom;
 
 	private final BigDecimal sourceQty;
+
+	@JsonIgnore // TODO: better map to the uom' X12DE355 code or similar
 	private final I_C_UOM sourceUom;
 
 	/**
 	 * Constructs a quantity object without source quantity/uom. More preciselly, source quantity/uom will be set so same values as quantity/uom.
-	 *
-	 * @param qty
-	 * @param uom
 	 */
-	public Quantity(final BigDecimal qty, final I_C_UOM uom)
+	public Quantity(@NonNull final BigDecimal qty, @NonNull final I_C_UOM uom)
 	{
 		this(qty, uom, qty, uom);
 	}
@@ -140,7 +185,15 @@ public final class Quantity implements Comparable<Quantity>
 	@Override
 	public String toString()
 	{
-		return qty + " " + uom.getUOMSymbol() + " (source: " + sourceQty + " " + sourceUom.getUOMSymbol() + ")";
+		if (uom.getC_UOM_ID() == sourceUom.getC_UOM_ID()
+				&& qty.compareTo(sourceQty) == 0)
+		{
+			return qty + " " + uom.getUOMSymbol();
+		}
+		else
+		{
+			return qty + " " + uom.getUOMSymbol() + " (source: " + sourceQty + " " + sourceUom.getUOMSymbol() + ")";
+		}
 	}
 
 	@Override
@@ -158,7 +211,9 @@ public final class Quantity implements Comparable<Quantity>
 	public boolean equals(Object obj)
 	{
 		if (this == obj)
+		{
 			return true;
+		}
 
 		final Quantity other = EqualsBuilder.getOther(this, obj);
 		if (other == null)
@@ -231,31 +286,18 @@ public final class Quantity implements Comparable<Quantity>
 	/**
 	 * @return Quantity value; never return null
 	 */
-	public BigDecimal getAsBigDecimal()
+	public BigDecimal toBigDecimal()
 	{
 		return qty;
 	}
 
 	/**
-	 * @deprecated Please use {@link #getAsBigDecimal()}
+	 * @deprecated Please use {@link #toBigDecimal()}
 	 */
 	@Deprecated
 	public BigDecimal getQty()
 	{
-		return getAsBigDecimal();
-	}
-
-	/**
-	 * @param qty
-	 * @return a new {@link Quantity} object
-	 */
-	public Quantity setQty(final BigDecimal qty)
-	{
-		if (this.qty == qty)
-		{
-			return this;
-		}
-		return new Quantity(qty, this.uom, this.sourceQty, this.sourceUom);
+		return toBigDecimal();
 	}
 
 	/**
@@ -279,9 +321,15 @@ public final class Quantity implements Comparable<Quantity>
 	/**
 	 * @return quantity's C_UOM_ID
 	 */
+	@Deprecated
 	public int getUOMId()
 	{
 		return uom.getC_UOM_ID();
+	}
+
+	public UomId getUomId()
+	{
+		return UomId.ofRepoId(uom.getC_UOM_ID());
 	}
 
 	public String getUOMSymbol()
@@ -290,39 +338,11 @@ public final class Quantity implements Comparable<Quantity>
 	}
 
 	/**
-	 *
-	 * @param uom
-	 * @return a new {@link Quantity} object
-	 */
-	public Quantity setUOM(final I_C_UOM uom)
-	{
-		if (this.uom == uom)
-		{
-			return this;
-		}
-		return new Quantity(this.qty, uom, this.sourceQty, this.sourceUom);
-	}
-
-	/**
 	 * @return source quantity; never null
 	 */
 	public BigDecimal getSourceQty()
 	{
 		return sourceQty;
-	}
-
-	/**
-	 *
-	 * @param sourceQty
-	 * @return a new {@link Quantity} object
-	 */
-	public Quantity setSourceQty(final BigDecimal sourceQty)
-	{
-		if (this.sourceQty == sourceQty)
-		{
-			return this;
-		}
-		return new Quantity(this.qty, this.uom, sourceQty, this.sourceUom);
 	}
 
 	/**
@@ -337,30 +357,23 @@ public final class Quantity implements Comparable<Quantity>
 	/**
 	 * @return source quatity's C_UOM_ID
 	 */
-	public final int getSource_UOM_ID()
+	@Deprecated
+	public int getSource_UOM_ID()
 	{
 		return sourceUom.getC_UOM_ID();
 	}
 
-	/**
-	 *
-	 * @param sourceUom
-	 * @return a new {@link Quantity} object
-	 */
-	public Quantity setSourceUOM(final I_C_UOM sourceUom)
+	public UomId getSourceUomId()
 	{
-		if (this.sourceUom == sourceUom)
-		{
-			return this;
-		}
-		return new Quantity(this.qty, this.uom, this.sourceQty, sourceUom);
+		return UomId.ofRepoId(sourceUom.getC_UOM_ID());
 	}
 
 	/**
-	 * @param uom
+	 * If you don't have a {@link I_C_UOM} record, but an {@link UomId}, consider using {@link Quantitys#createZero(UomId)}.
+	 *
 	 * @return ZERO quantity (using given UOM)
 	 */
-	public static final Quantity zero(final I_C_UOM uom)
+	public static Quantity zero(final I_C_UOM uom)
 	{
 		return new Quantity(ZERO, uom, ZERO, uom);
 	}
@@ -378,6 +391,15 @@ public final class Quantity implements Comparable<Quantity>
 		return new Quantity(ZERO, uom, ZERO, sourceUom);
 	}
 
+	public Quantity toOne()
+	{
+		if (ONE.compareTo(qty) == 0)
+		{
+			return this;
+		}
+		return new Quantity(ONE, uom);
+	}
+
 	public Quantity toZeroIfNegative()
 	{
 		return qty.signum() >= 0 ? this : toZero();
@@ -387,7 +409,7 @@ public final class Quantity implements Comparable<Quantity>
 	 * @param uom
 	 * @return infinite quantity (using given UOM)
 	 */
-	public static final Quantity infinite(final I_C_UOM uom)
+	public static Quantity infinite(final I_C_UOM uom)
 	{
 		return new Quantity(QTY_INFINITE, uom, QTY_INFINITE, uom);
 	}
@@ -406,23 +428,25 @@ public final class Quantity implements Comparable<Quantity>
 
 	public Quantity negate()
 	{
-		return setQty(getQty().negate())
-				.setSourceQty(getSourceQty().negate());
-	}
-
-	/**
-	 *
-	 * @param condition
-	 * @return negated quantity if <code>condition</code> is true; else return this
-	 */
-	public Quantity negateIf(final boolean condition)
-	{
-		if (!condition)
+		if (isZero())
 		{
 			return this;
 		}
 
-		return negate();
+		return new Quantity(qty.negate(), uom, sourceQty.negate(), sourceUom);
+	}
+
+	/**
+	 * @return negated quantity if <code>condition</code> is true; else return this
+	 */
+	public Quantity negateIf(final boolean condition)
+	{
+		return condition ? negate() : this;
+	}
+
+	public Quantity negateIfNot(final boolean condition)
+	{
+		return !condition ? negate() : this;
 	}
 
 	/**
@@ -430,13 +454,10 @@ public final class Quantity implements Comparable<Quantity>
 	 *
 	 * i.e. Current Weighted Avg = (<code>previousAverage</code> * <code>previousAverageWeight</code> + this quantity) / (<code>previousAverageWeight</code> + 1)
 	 *
-	 * @param previousAverage
-	 * @param previousAverageWeight
 	 * @return weighted average
 	 */
-	public Quantity weightedAverage(final BigDecimal previousAverage, final int previousAverageWeight)
+	public Quantity weightedAverage(@NonNull final BigDecimal previousAverage, final int previousAverageWeight)
 	{
-		Check.assumeNotNull(previousAverage, "previousAverage not null");
 		Check.assume(previousAverageWeight >= 0, "previousAverageWeight >= 0");
 
 		final BigDecimal previousAverageWeightBD = BigDecimal.valueOf(previousAverageWeight);
@@ -461,7 +482,26 @@ public final class Quantity implements Comparable<Quantity>
 	 */
 	public Quantity switchToSource()
 	{
-		return new Quantity(getSourceQty(), getSourceUOM(), getQty(), getUOM());
+		return new Quantity(getSourceQty(), getSourceUOM(), toBigDecimal(), getUOM());
+	}
+
+	/**
+	 * Interchange the Qty/UOM with source Qty/UOM if the source is more precise.
+	 * Source is considered more precise if it's numeric value is bigger.
+	 *
+	 * This method is usually used before persisting to database where we want to persist the most precise amount,
+	 * because else, when we will load it back we won't get the same figures.
+	 */
+	public Quantity switchToSourceIfMorePrecise()
+	{
+		if (getSourceQty().compareTo(toBigDecimal()) > 0)
+		{
+			return switchToSource();
+		}
+		else
+		{
+			return this;
+		}
 	}
 
 	/**
@@ -471,7 +511,7 @@ public final class Quantity implements Comparable<Quantity>
 	 */
 	public int signum()
 	{
-		return getAsBigDecimal().signum();
+		return toBigDecimal().signum();
 	}
 
 	/**
@@ -486,12 +526,19 @@ public final class Quantity implements Comparable<Quantity>
 		return signum() == 0;
 	}
 
+	public boolean isOne()
+	{
+		return ONE.compareTo(qty) == 0;
+	}
+
 	/**
 	 * Adds given quantity and returns the result.
+	 * Assumes that the UOMs are equal.
 	 *
-	 * @param qtyToAdd
-	 * @return new {@link Quantity}
+	 * Note: {@link Quantitys#add(de.metas.uom.UOMConversionContext, Quantity, Quantity)} adds by converting quantities between UOMs
+	 *
 	 * @throws QuantitiesUOMNotMatchingExpection if this quantity and qtyToAdd are not UOM compatible
+	 *             To add instances with different UOMs, use {@link Quantitys#add(de.metas.uom.UOMConversionContext, Quantity, Quantity)}.
 	 */
 	public Quantity add(@NonNull final Quantity qtyToAdd)
 	{
@@ -507,7 +554,7 @@ public final class Quantity implements Comparable<Quantity>
 		final int qtyToAdd_sourceUomId = qtyToAdd.getSource_UOM_ID();
 		if (uomId == qtyToAdd_uomId)
 		{
-			qtyToAdd_Value = qtyToAdd.getAsBigDecimal();
+			qtyToAdd_Value = qtyToAdd.toBigDecimal();
 		}
 		else if (uomId == qtyToAdd_sourceUomId)
 		{
@@ -528,7 +575,7 @@ public final class Quantity implements Comparable<Quantity>
 		}
 		else if (sourceUomId == qtyToAdd_uomId)
 		{
-			qtyToAdd_SourceValue = qtyToAdd.getAsBigDecimal();
+			qtyToAdd_SourceValue = qtyToAdd.toBigDecimal();
 		}
 		else
 		{
@@ -538,7 +585,7 @@ public final class Quantity implements Comparable<Quantity>
 
 		//
 		// Compute new Quantity's values
-		final BigDecimal qtyNew_Value = this.getAsBigDecimal().add(qtyToAdd_Value);
+		final BigDecimal qtyNew_Value = this.toBigDecimal().add(qtyToAdd_Value);
 		final I_C_UOM qtyNew_UOM = this.getUOM();
 		final BigDecimal qtyNew_SourceValue;
 		final I_C_UOM qtyNew_SourceUOM;
@@ -567,6 +614,20 @@ public final class Quantity implements Comparable<Quantity>
 		return add(of(qtyToAdd, uom));
 	}
 
+	public Quantity add(@NonNull final Percent percent)
+	{
+		if (percent.isZero())
+		{
+			return this;
+		}
+
+		return new Quantity(
+				percent.addToBase(this.qty, this.uom.getStdPrecision()),
+				this.uom,
+				percent.addToBase(this.sourceQty, this.sourceUom.getStdPrecision()),
+				this.sourceUom);
+	}
+
 	public Quantity subtract(@NonNull final Quantity qtyToSubtract)
 	{
 		if (qtyToSubtract.isZero())
@@ -591,8 +652,7 @@ public final class Quantity implements Comparable<Quantity>
 	 */
 	public Quantity min(@NonNull final Quantity qtyToCompare)
 	{
-		final Quantity diff = this.subtract(qtyToCompare);
-		if (diff.signum() <= 0)
+		if (this.compareTo(qtyToCompare) <= 0)
 		{
 			return this;
 		}
@@ -607,8 +667,7 @@ public final class Quantity implements Comparable<Quantity>
 	 */
 	public Quantity max(@NonNull final Quantity qtyToCompare)
 	{
-		final Quantity diff = this.subtract(qtyToCompare);
-		if (diff.signum() >= 0)
+		if (this.compareTo(qtyToCompare) >= 0)
 		{
 			return this;
 		}
@@ -623,6 +682,29 @@ public final class Quantity implements Comparable<Quantity>
 	{
 		final Quantity diff = this.subtract(quantity);
 		return diff.signum();
+	}
+
+	public Quantity divide(@NonNull final BigDecimal divisor)
+	{
+		if (BigDecimal.ONE.compareTo(divisor) == 0)
+		{
+			return this;
+		}
+
+		return new Quantity(
+				qty.divide(divisor, uom.getStdPrecision(), RoundingMode.HALF_UP),
+				uom,
+				sourceQty.divide(divisor, sourceUom.getStdPrecision(), RoundingMode.HALF_UP),
+				sourceUom);
+	}
+
+	public Quantity divide(final BigDecimal divisor, final int scale, final RoundingMode roundingMode)
+	{
+		return new Quantity(
+				qty.divide(divisor, scale, roundingMode),
+				uom,
+				sourceQty.divide(divisor, scale, roundingMode),
+				sourceUom);
 	}
 
 	public Quantity multiply(final int multiplicand)

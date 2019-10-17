@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
@@ -35,6 +36,7 @@ import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.IProductDAO;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -157,12 +159,15 @@ public class RemoveQtyFromHUCommand
 	 */
 	private IAllocationRequest createAllocationRequest(@NonNull final PickingCandidate candidate)
 	{
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 		final IMutableHUContext huContext = huContextFactory.createMutableHUContextForProcessing();
+
+		final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
 
 		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
 				.setHUContext(huContext)
 				.setProduct(product)
-				.setQuantity(Quantity.of(qtyCU, product.getC_UOM()))
+				.setQuantity(Quantity.of(qtyCU, uom))
 				.setDateAsToday()
 				.setFromReferencedTableRecord(pickingCandidateRepository.toTableRecordReference(candidate)) // the m_hu_trx_Line coming out of this will reference the picking candidate
 				.setForceQtyAllocation(true)

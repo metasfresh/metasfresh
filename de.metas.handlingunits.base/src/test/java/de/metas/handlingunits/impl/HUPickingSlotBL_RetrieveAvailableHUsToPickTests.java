@@ -4,8 +4,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import lombok.Value;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -48,6 +46,7 @@ import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
 import de.metas.storage.spi.hu.impl.HUStorageRecord;
 import de.metas.util.Services;
+import lombok.Value;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Mocked;
@@ -73,7 +72,6 @@ import mockit.Mocked;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-// @RunWith(Theories.class)
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, PickingCandidateRepository.class })
 public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
@@ -451,8 +449,10 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		saveRecord(bpartner);
 
 		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
-		shipmentSchedule.setM_Warehouse(warehouse);
+		shipmentSchedule.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 		shipmentSchedule.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		shipmentSchedule.setM_Product_ID(20); // since we are mocking the result, the actual ID doesn't really matter right now
+
 		saveRecord(shipmentSchedule);
 
 		// @formatter:off

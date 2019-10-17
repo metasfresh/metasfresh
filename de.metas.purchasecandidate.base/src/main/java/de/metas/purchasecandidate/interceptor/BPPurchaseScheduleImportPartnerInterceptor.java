@@ -7,8 +7,6 @@ import java.time.DayOfWeek;
 import java.time.Duration;
 import java.util.Optional;
 
-import org.adempiere.impexp.IImportInterceptor;
-import org.adempiere.impexp.IImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
@@ -17,6 +15,8 @@ import org.compiere.model.I_I_BPartner;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.IImportProcess;
 import de.metas.purchasecandidate.BPPurchaseSchedule;
 import de.metas.purchasecandidate.BPPurchaseScheduleRepository;
 import de.metas.util.time.SystemTime;

@@ -36,11 +36,8 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Locator;
@@ -50,15 +47,18 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_Order;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.ProductId;
@@ -82,6 +82,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final transient IDDOrderDAO ddOrdersRepo = Services.get(IDDOrderDAO.class);
 
 	//
 	// Parameters
@@ -137,7 +138,6 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 						attributeSetInstance.getM_AttributeSetInstance_ID());
 
 				candidate = new RawMaterialsReturnDDOrderLineCandidate(
-						getCtx(),
 						attributeSetIinstanceAware,
 						storageRecord.getLocator());
 				key2candidate.put(key, candidate);
@@ -232,8 +232,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		final Timestamp dateOrdered = candidate.getDateOrdered();
 		final int shipperId = candidate.getDD_NetworkDistributionLine().getM_Shipper_ID();
 		final OrgId orgId = candidate.getOrgId();
-		final I_C_BPartner orgBPartner = candidate.getOrgBPartner();
-		final I_C_BPartner_Location orgBPLocation = candidate.getOrgBPLocation();
+		final BPartnerLocationId orgBPLocationId = candidate.getOrgBPLocationId();
 		final int salesRepId = candidate.getPlanner_ID();
 		final WarehouseId warehouseInTrasitId = candidate.getInTransitWarehouseId();
 		final I_S_Resource rawMaterialsPlant = candidate.getRawMaterialsPlant();
@@ -241,8 +240,8 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		final I_DD_Order ddOrder = InterfaceWrapperHelper.newInstance(I_DD_Order.class, context);
 		ddOrder.setAD_Org_ID(orgId.getRepoId());
 		ddOrder.setPP_Plant(rawMaterialsPlant);
-		ddOrder.setC_BPartner(orgBPartner);
-		ddOrder.setC_BPartner_Location(orgBPLocation);
+		ddOrder.setC_BPartner_ID(orgBPLocationId != null ? orgBPLocationId.getBpartnerId().getRepoId() : -1);
+		ddOrder.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(orgBPLocationId));
 		ddOrder.setSalesRep_ID(salesRepId);
 
 		final DocTypeQuery query = DocTypeQuery.builder()
@@ -261,7 +260,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		ddOrder.setIsInDispute(false);
 		ddOrder.setIsInTransit(false);
 
-		InterfaceWrapperHelper.save(ddOrder);
+		ddOrdersRepo.save(ddOrder);
 		return ddOrder;
 	}
 
@@ -312,6 +311,6 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		ddOrderline.setDD_AllowPush(networkLine.isDD_AllowPush());
 		ddOrderline.setIsKeepTargetPlant(networkLine.isKeepTargetPlant());
 
-		InterfaceWrapperHelper.save(ddOrderline);
-	};
+		ddOrdersRepo.save(ddOrderline);
+	}
 }

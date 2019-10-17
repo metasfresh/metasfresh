@@ -100,7 +100,7 @@ public class ProcessHUsAndPickingCandidateCommand
 				.addAll(pickingCandidatesByPickFromHUId.keySet())
 				.addAll(additionalPickFromHuIds)
 				.build();
-		
+
 		this.allowOverDelivery = allowOverDelivery;
 	}
 
@@ -199,7 +199,7 @@ public class ProcessHUsAndPickingCandidateCommand
 	{
 		final ImmutableList<PickingCandidate> pickingCandidates = ImmutableList.copyOf(getPickingCandidatesIndexedByHUId().values());
 
-		pickingCandidates.forEach(pickingCandidate -> pickingCandidate.changeStatusToProcessed(pickingCandidate.getPickFromHuId()));
+		pickingCandidates.forEach(PickingCandidate::changeStatusToProcessed);
 		pickingCandidateRepository.saveAll(pickingCandidates);
 
 		return pickingCandidates;

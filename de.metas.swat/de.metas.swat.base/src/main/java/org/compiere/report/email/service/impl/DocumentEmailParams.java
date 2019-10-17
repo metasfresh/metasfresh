@@ -1,5 +1,7 @@
 package org.compiere.report.email.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -25,8 +27,6 @@ package org.compiere.report.email.service.impl;
 import java.util.ArrayList;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.user.api.IUserDAO;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -43,6 +43,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.Msg;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.process.ProcessInfo;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 
 /**
@@ -75,8 +76,8 @@ public final class DocumentEmailParams implements IEmailParameters
 
 		final int tableId = pi.getTable_ID();
 		final boolean isOrder = I_C_Order.Table_ID == tableId;
-		final boolean isInOut = I_M_InOut.Table_ID == tableId;
-		final boolean isInvoice = InterfaceWrapperHelper.getTableId(I_C_Invoice.class) == tableId;
+		final boolean isInOut = getTableId(I_M_InOut.class) == tableId;
+		final boolean isInvoice = getTableId(I_C_Invoice.class) == tableId;
 
 		if (!isOrder && !isInOut && !isInvoice)
 		{

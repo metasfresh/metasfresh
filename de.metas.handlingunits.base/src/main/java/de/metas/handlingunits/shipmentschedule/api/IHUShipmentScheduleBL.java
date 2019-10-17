@@ -1,12 +1,13 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -14,7 +15,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.ISingletonService;
 
 public interface IHUShipmentScheduleBL extends ISingletonService
@@ -25,33 +26,26 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	 * Also update the given <code>hu</code>'s (and therefore its childrens') <code>C_BPartner_ID</code> and <code>C_BPartner_Location_ID</code> to the given <code>sched</code>'s effective values.<br>
 	 * And finally update the given {@code tuOrVHU}'s status to "Picked".
 	 *
-	 * @param sched
-	 * @param qtyPicked
 	 * @param tuOrVHU TU or VirtualHU to link on
 	 * @return qtyPicked record for this addition
 	 */
-	void addQtyPicked(I_M_ShipmentSchedule sched, Quantity qtyPicked, I_M_HU tuOrVHU);
+	ShipmentScheduleWithHU addQtyPicked(I_M_ShipmentSchedule sched, StockQtyAndUOMQty qtyPicked, I_M_HU tuOrVHU, IHUContext huContext);
 
-	void addQtyPickedAndUpdateHU(ShipmentScheduleId shipmentScheduleId, Quantity qtyPicked, HuId tuOrVHUId);
+	ShipmentScheduleWithHU addQtyPickedAndUpdateHU(ShipmentScheduleId shipmentScheduleId, StockQtyAndUOMQty qtyPicked, HuId tuOrVHUId, IHUContext huContext);
 
 	/**
 	 * Creates a producer which will create shipments ({@link I_M_InOut}) from {@link IShipmentScheduleWithHU}s.
-	 *
-	 * @return producer
 	 */
 	IInOutProducerFromShipmentScheduleWithHU createInOutProducerFromShipmentSchedule();
 
 	/**
-	 * @param candidate
 	 * @param movementDate shipment's movement date (used to filter only if we have an consolidation period set)
 	 * @return shipment which is still open for the shipment schedule (first) and it's HU specifications (shipper transportation) or null if none is found
 	 */
-	I_M_InOut getOpenShipmentOrNull(ShipmentScheduleWithHU candidate, Date movementDate);
+	I_M_InOut getOpenShipmentOrNull(ShipmentScheduleWithHU candidate, LocalDate movementDate);
 
 	/**
 	 * Update all allocations from given TU and call {@link I_M_ShipmentSchedule_QtyPicked#setM_LU_HU(I_M_HU)} by setting the current TU's LU.
-	 *
-	 * @param tuHU
 	 */
 	void updateAllocationLUForTU(I_M_HU tuHU);
 
@@ -60,9 +54,6 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	 * Also updates the given <code>tuHU</code> 's (and therefore its childrens') <code>C_BPartner_ID</code> and <code>C_BPartner_Location_ID</code> to <code>null</code>.<br>
 	 * If there is no assignment, then the method just returns.
 	 *
-	 * @param shipmentSchedule
-	 * @param tuHU
-	 * @param trxName
 	 * @throws AdempiereException if the Qty of the existing active {@link I_M_ShipmentSchedule_QtyPicked} records sums up to a number greater than zero.
 	 */
 	void unallocateTU(I_M_ShipmentSchedule shipmentSchedule, I_M_HU tuHU, String trxName);
@@ -77,7 +68,6 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	 *
 	 * If no PI item product was found, null will be returned.
 	 *
-	 * @param shipmentSchedule
 	 * @return PI item product or null.
 	 */
 	HUPIItemProductId getPackingMaterialId(I_M_ShipmentSchedule shipmentSchedule);
@@ -102,15 +92,11 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	 * Set QtyTU and M_HU_PI_Item_Product values based on override: If override not null, set it in the effective.<br>
 	 * Otherwise, replace effective with original values.<br>
 	 * Also, set the correct packing description based on the current value of M_HU_PI_Item_Product
-	 *
-	 * @param shipmentSchedule
 	 */
 	void updateEffectiveValues(I_M_ShipmentSchedule shipmentSchedule);
 
 	/**
 	 * Initialize the qtys and HU PI Item product in shipment schedule
-	 *
-	 * @param shipmentSchedule
 	 */
 	void updateHURelatedValuesFromOrderLine(I_M_ShipmentSchedule shipmentSchedule);
 }

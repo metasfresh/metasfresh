@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.OptionalInt;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_AD_SysConfig;
 import org.junit.Before;
@@ -28,6 +27,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.handlingunits.trace.interceptor.HUTraceModuleInterceptor;
 import de.metas.handlingunits.trace.repository.RetrieveDbRecordsUtil;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 

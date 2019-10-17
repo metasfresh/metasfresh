@@ -61,7 +61,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.jmx.JMXPOJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
-import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
@@ -76,6 +75,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.CacheMgt;
+import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.exception.MonitoringException;
 import de.metas.process.IADPInstanceDAO;
@@ -117,7 +117,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		}
 	}
 
-	public static final POJOLookupMap getInMemoryDatabaseForModel(final Class<?> modelClass)
+	public static POJOLookupMap getInMemoryDatabaseForModel(final Class<?> modelClass)
 	{
 		final POJOLookupMap database = get();
 		if (database == null)
@@ -133,7 +133,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		return database;
 	}
 
-	public static final POJOLookupMap getInMemoryDatabaseForTableName(final String tableName)
+	public static POJOLookupMap getInMemoryDatabaseForTableName(final String tableName)
 	{
 		final POJOLookupMap database = get();
 		if (database == null)
@@ -382,7 +382,6 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		final String trxName = wrapper.getTrxName();
 		runInTrx(trxName, new TrxRunnable2()
 		{
-
 			@Override
 			public void run(String localTrxName) throws Exception
 			{
@@ -432,7 +431,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		});
 	}
 
-	private final void runInTrx(final String trxName, final TrxRunnable runnable)
+	private void runInTrx(final String trxName, final TrxRunnable runnable)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		if (trxManager.isNull(trxName))
@@ -850,7 +849,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		interceptor.initialize(this, client);
 	}
 
-	private final void fireModelChanged(final Object model, final ModelChangeType changeType)
+	private void fireModelChanged(final Object model, final ModelChangeType changeType)
 	{
 		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
 		final CompositeModelInterceptor interceptors = tableName2interceptors.get(tableName);
@@ -873,7 +872,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		}
 	}
 
-	public final void fireDocumentChange(final Object doc, final DocTimingType timing)
+	public void fireDocumentChange(final Object doc, final DocTimingType timing)
 	{
 		final String tableName = InterfaceWrapperHelper.getModelTableName(doc);
 		final CompositeModelInterceptor interceptors = tableName2interceptors.get(tableName);
@@ -944,7 +943,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 	private ObjectName jmxName = null;
 
-	private final void registerJMX()
+	private void registerJMX()
 	{
 		final MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 		final JMXPOJOLookupMap jmxBean = new JMXPOJOLookupMap(this);
@@ -992,7 +991,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		this.jmxName = name;
 	}
 
-	private final void unregisterJMX()
+	private void unregisterJMX()
 	{
 		if (jmxName == null)
 		{
@@ -1029,7 +1028,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		appliesExcludeTablePrefixes.add(tablenamePrefix);
 	}
 
-	public final boolean appliesToTableName(final String tableName)
+	public boolean appliesToTableName(final String tableName)
 	{
 		//
 		// Check excludes
@@ -1062,7 +1061,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		return false;
 	}
 
-	public final boolean appliesToModelClass(final Class<?> modelClass)
+	public boolean appliesToModelClass(final Class<?> modelClass)
 	{
 		final String tableName = InterfaceWrapperHelper.getTableNameOrNull(modelClass);
 		if (tableName == null)
@@ -1091,13 +1090,9 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		}
 	}
 
-	private I_AD_PInstance createSelectionPInstance()
+	private PInstanceId createSelectionPInstanceId()
 	{
-		final int adProcessId = 0; // N/A
-		final int adTableId = 0;
-		final int recordId = 0;
-		final I_AD_PInstance adPInstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(adProcessId, adTableId, recordId);
-		return adPInstance;
+		return Services.get(IADPInstanceDAO.class).createSelectionId();
 	}
 
 	public PInstanceId createSelection(final Collection<Integer> selection)
@@ -1107,26 +1102,26 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		return selectionId;
 	}
 
-	public <T> I_AD_PInstance createSelectionFromModels(@SuppressWarnings("unchecked") T... models)
+	public <T> PInstanceId createSelectionFromModels(@SuppressWarnings("unchecked") T... models)
 	{
-		final I_AD_PInstance adPInstance = createSelectionPInstance();
+		final PInstanceId adPInstanceId = createSelectionPInstanceId();
 
 		if (models != null)
 		{
-			createSelectionFromModelsCollection(adPInstance, Arrays.asList(models));
+			createSelectionFromModelsCollection(adPInstanceId, Arrays.asList(models));
 		}
 
-		return adPInstance;
+		return adPInstanceId;
 	}
 
-	public <T> I_AD_PInstance createSelectionFromModelsCollection(Collection<T> models)
+	public <T> PInstanceId createSelectionFromModelsCollection(Collection<T> models)
 	{
-		final I_AD_PInstance adPInstance = createSelectionPInstance();
-		createSelectionFromModelsCollection(adPInstance, models);
-		return adPInstance;
+		final PInstanceId adPInstanceId = createSelectionPInstanceId();
+		createSelectionFromModelsCollection(adPInstanceId, models);
+		return adPInstanceId;
 	}
 
-	public <T> void createSelectionFromModelsCollection(final I_AD_PInstance adPInstance, final Collection<T> models)
+	public <T> void createSelectionFromModelsCollection(final PInstanceId selectionId, final Collection<T> models)
 	{
 		if (models == null || models.isEmpty())
 		{
@@ -1140,7 +1135,6 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 			selection.add(modelId);
 		}
 
-		final PInstanceId selectionId = PInstanceId.ofRepoId(adPInstance.getAD_PInstance_ID());
 		createSelection(selectionId, selection);
 	}
 

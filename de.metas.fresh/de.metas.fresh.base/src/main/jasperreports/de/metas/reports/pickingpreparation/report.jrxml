@@ -80,7 +80,7 @@ ORDER BY
 			<staticText>
 				<reportElement x="159" y="0" width="41" height="13" uuid="aeb737f5-4103-44f2-862e-e1fd2a66c6bb"/>
 				<textElement>
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Menge]]></text>
 			</staticText>
@@ -94,7 +94,7 @@ ORDER BY
 			<staticText>
 				<reportElement x="275" y="0" width="64" height="13" uuid="efd5ca02-2369-4455-a460-ff4d400e7707"/>
 				<textElement textAlignment="Center" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Gestell-Nr.:]]></text>
 			</staticText>
@@ -122,7 +122,7 @@ ORDER BY
 			<textField>
 				<reportElement x="159" y="0" width="41" height="13" uuid="3e4babb9-badf-41e4-bc0e-31ba8cc44217"/>
 				<textElement>
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qty}]]></textFieldExpression>
 			</textField>
@@ -136,7 +136,7 @@ ORDER BY
 			<textField>
 				<reportElement x="275" y="0" width="64" height="13" uuid="0776d627-641e-4056-b333-798fe67ba673"/>
 				<textElement textAlignment="Center">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{pickingslot}]]></textFieldExpression>
 			</textField>

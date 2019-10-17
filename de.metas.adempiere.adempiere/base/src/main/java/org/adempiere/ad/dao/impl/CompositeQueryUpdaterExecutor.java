@@ -10,12 +10,12 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,7 +29,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.compiere.model.IQuery;
 
-import de.metas.util.Check;
+import lombok.NonNull;
 
 /* package */class CompositeQueryUpdaterExecutor<T>
 		extends CompositeQueryUpdater<T>
@@ -38,11 +38,8 @@ import de.metas.util.Check;
 	private final IQuery<T> query;
 	private boolean executeDirectly = true;
 
-	public CompositeQueryUpdaterExecutor(final IQuery<T> query)
+	public CompositeQueryUpdaterExecutor(@NonNull final IQuery<T> query)
 	{
-		super(query == null ? null : query.getModelClass());
-
-		Check.assumeNotNull(query, "query not null");
 		this.query = query;
 	}
 

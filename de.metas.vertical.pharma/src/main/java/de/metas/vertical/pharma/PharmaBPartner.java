@@ -36,6 +36,9 @@ public class PharmaBPartner
 	@NonNull
 	String name;
 
-	boolean hasAtLeastOnePermission;
+	boolean hasAtLeastOneCustomerPermission;
 	PharmaShipmentPermission shipmentPermission;
+
+	boolean hasAtLeastOneVendorPermission;
+	PharmaReceiptPermission receiptPermission;
 }

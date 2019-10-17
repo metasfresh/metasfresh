@@ -10,6 +10,9 @@ import de.metas.pricing.IPricingResult;
  * 
  * To be used by the system, an implementation of this interface needs to have its own {@link I_C_PricingRule} record.
  * 
+ * NOTE to developer: The system is creating a new instance each time a price calculation is required,
+ * so it's safe to have private fields.
+ * 
  * @author tsa
  * 
  */

@@ -46,6 +46,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 
 /**
  * @author tsa
@@ -622,7 +623,7 @@ public abstract class TerminalKeyPanel implements ITerminalKeyPanel
 			final String tooltipText;
 			if (!Check.isEmpty(debugInfo, true))
 			{
-				tooltipText = "<html><pre>" + Util.maskHTML(debugInfo) + "</pre></html>";
+				tooltipText = "<html><pre>" + StringUtils.maskHTML(debugInfo) + "</pre></html>";
 			}
 			else
 			{

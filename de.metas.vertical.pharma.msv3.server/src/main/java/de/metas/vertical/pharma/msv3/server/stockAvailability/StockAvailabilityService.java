@@ -3,6 +3,8 @@ package de.metas.vertical.pharma.msv3.server.stockAvailability;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.transaction.Transactional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,7 @@ import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilit
 import de.metas.vertical.pharma.msv3.protocol.types.BPartnerId;
 import de.metas.vertical.pharma.msv3.protocol.types.PZN;
 import de.metas.vertical.pharma.msv3.protocol.types.Quantity;
+import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3EventVersion;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExclude;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3ProductExcludesUpdateEvent;
 import de.metas.vertical.pharma.msv3.server.peer.protocol.MSV3StockAvailability;
@@ -120,33 +123,37 @@ public class StockAvailabilityService
 
 	public Optional<Quantity> getQtyAvailable(@NonNull final PZN pzn, @NonNull final BPartnerId bpartner)
 	{
-		if (productExcludeRepo.existsByPznAndBpartnerId(pzn.getValueAsLong(), bpartner.getBpartnerId()))
+		if (productExcludeRepo.existsByPznAndMfBpartnerId(pzn.getValueAsLong(), bpartner.getBpartnerId()))
 		{
 			return Optional.empty();
 		}
 
-		final JpaStockAvailability jpaStockAvailability = stockAvailabilityRepo.findByPzn(pzn.getValueAsLong());
+		final JpaStockAvailability jpaStockAvailability = stockAvailabilityRepo.findByMfPzn(pzn.getValueAsLong());
 		if (jpaStockAvailability == null)
 		{
 			return Optional.empty();
 		}
 
-		final Quantity qty = Quantity.of(jpaStockAvailability.getQty());
+		final Quantity qty = Quantity.of(jpaStockAvailability.getMfQty());
 		return Optional.of(qty);
 	}
 
+	@Transactional
 	public void handleEvent(@NonNull final MSV3StockAvailabilityUpdatedEvent event)
 	{
-		final String syncToken = event.getId();
+		final String mfSyncToken = event.getId();
+		final MSV3EventVersion mfEventVersion = event.getEventVersion();
 
 		//
 		// Update
 		{
 			final AtomicInteger countUpdated = new AtomicInteger();
-			event.getItems().forEach(eventItem -> {
-				updateStockAvailability(eventItem, syncToken);
+
+			for (final MSV3StockAvailability eventItem : event.getItems())
+			{
+				updateStockAvailability(eventItem, mfSyncToken, mfEventVersion);
 				countUpdated.incrementAndGet();
-			});
+			}
 			logger.debug("Updated {} stock availability records", countUpdated);
 		}
 
@@ -154,33 +161,50 @@ public class StockAvailabilityService
 		// Delete
 		if (event.isDeleteAllOtherItems())
 		{
-			final long countDeleted = stockAvailabilityRepo.deleteInBatchBySyncTokenNot(syncToken);
+			final long countDeleted = stockAvailabilityRepo
+					.deleteInBatchByMfSyncTokenNotAndMfEventVersionLessThan(
+							mfSyncToken,
+							mfEventVersion.getAsInt());
 			logger.debug("Deleted {} stock availability records", countDeleted);
 		}
 
 	}
 
-	private void updateStockAvailability(@NonNull final MSV3StockAvailability request, final String syncToken)
+	private void updateStockAvailability(
+			@NonNull final MSV3StockAvailability request,
+			final String mfSyncToken,
+			@NonNull final MSV3EventVersion mfEventVersion)
 	{
 		if (request.isDelete())
 		{
-			stockAvailabilityRepo.deleteInBatchByPzn(request.getPzn());
+			stockAvailabilityRepo
+					.deleteInBatchByMfPznAndMfEventVersionLessThan(
+							request.getPzn(),
+							mfEventVersion.getAsInt());
 		}
 		else
 		{
-			JpaStockAvailability jpaStockAvailability = stockAvailabilityRepo.findByPzn(request.getPzn());
+			JpaStockAvailability jpaStockAvailability = stockAvailabilityRepo.findByMfPzn(request.getPzn());
 			if (jpaStockAvailability == null)
 			{
 				jpaStockAvailability = new JpaStockAvailability();
-				jpaStockAvailability.setPzn(request.getPzn());
+				jpaStockAvailability.setMfPzn(request.getPzn());
+			}
+			else if (jpaStockAvailability.getMfEventVersion() > mfEventVersion.getAsInt())
+			{
+				logger.debug("Discard request with mfEventVersion={} because our local record has mfEventVersion={}; request={}",
+						mfEventVersion, jpaStockAvailability.getMfEventVersion(), request);
+				return;
 			}
 
-			jpaStockAvailability.setQty(request.getQty());
-			jpaStockAvailability.setSyncToken(syncToken);
+			jpaStockAvailability.setMfEventVersion(mfEventVersion.getAsInt());
+			jpaStockAvailability.setMfQty(request.getQty());
+			jpaStockAvailability.setMfSyncToken(mfSyncToken);
 			stockAvailabilityRepo.save(jpaStockAvailability);
 		}
 	}
 
+	@Transactional
 	public void handleEvent(@NonNull final MSV3ProductExcludesUpdateEvent event)
 	{
 		final String syncToken = event.getId();
@@ -209,16 +233,16 @@ public class StockAvailabilityService
 	{
 		if (request.isDelete())
 		{
-			productExcludeRepo.deleteInBatchByPznAndBpartnerId(request.getPzn().getValueAsLong(), request.getBpartnerId());
+			productExcludeRepo.deleteInBatchByPznAndMfBpartnerId(request.getPzn().getValueAsLong(), request.getBpartnerId());
 		}
 		else
 		{
-			JpaProductExclude jpaProductExclude = productExcludeRepo.findByPznAndBpartnerId(request.getPzn().getValueAsLong(), request.getBpartnerId());
+			JpaProductExclude jpaProductExclude = productExcludeRepo.findByPznAndMfBpartnerId(request.getPzn().getValueAsLong(), request.getBpartnerId());
 			if (jpaProductExclude == null)
 			{
 				jpaProductExclude = new JpaProductExclude();
 				jpaProductExclude.setPzn(request.getPzn().getValueAsLong());
-				jpaProductExclude.setBpartnerId(request.getBpartnerId());
+				jpaProductExclude.setMfBpartnerId(request.getBpartnerId());
 			}
 
 			jpaProductExclude.setSyncToken(syncToken);

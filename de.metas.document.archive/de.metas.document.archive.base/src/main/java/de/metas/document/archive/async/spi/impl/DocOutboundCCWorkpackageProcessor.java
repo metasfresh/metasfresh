@@ -48,7 +48,7 @@ import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
 import de.metas.util.Check;
 import de.metas.util.FileUtils;
 import de.metas.util.Services;
-import de.metas.util.StreamUtils;
+import de.metas.util.IOStreamUtils;
 
 public class DocOutboundCCWorkpackageProcessor implements IWorkpackageProcessor
 {
@@ -136,7 +136,7 @@ public class DocOutboundCCWorkpackageProcessor implements IWorkpackageProcessor
 
 			final int bufferSize = 1024 * 4;
 			final OutputStream outBuffer = new BufferedOutputStream(out, bufferSize);
-			StreamUtils.copy(outBuffer, data);
+			IOStreamUtils.copy(outBuffer, data);
 		}
 		catch (final FileNotFoundException e)
 		{
@@ -148,7 +148,7 @@ public class DocOutboundCCWorkpackageProcessor implements IWorkpackageProcessor
 		}
 		finally
 		{
-			StreamUtils.close(out, data);
+			IOStreamUtils.close(out, data);
 		}
 	}
 }

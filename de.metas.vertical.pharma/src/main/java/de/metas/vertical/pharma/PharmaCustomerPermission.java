@@ -1,5 +1,8 @@
 package de.metas.vertical.pharma;
 
+import de.metas.vertical.pharma.model.I_C_BPartner;
+import lombok.Getter;
+
 /*
  * #%L
  * metasfresh-pharma
@@ -24,9 +27,19 @@ package de.metas.vertical.pharma;
 
 public enum PharmaCustomerPermission
 {
-	PHARMA_AGENT, //
-	PHARMACIE, //
-	PHARMA_MANUFACTURER, //
-	PHARMA_WHOLESALE, //
-	VETERINARY_PHARMACY, //
+	PHARMA_AGENT(I_C_BPartner.COLUMNNAME_IsPharmaAgentPermission), //
+	PHARMACIE(I_C_BPartner.COLUMNNAME_IsPharmaciePermission), //
+	PHARMA_MANUFACTURER(I_C_BPartner.COLUMNNAME_IsPharmaManufacturerPermission), //
+	PHARMA_WHOLESALE(I_C_BPartner.COLUMNNAME_IsPharmaWholesalePermission), //
+	VETERINARY_PHARMACY(I_C_BPartner.COLUMNNAME_IsVeterinaryPharmacyPermission), //
+	PHARMA_NARCOTICS(I_C_BPartner.COLUMNNAME_IsPharmaCustomerNarcoticsPermission) //
+	;
+
+	@Getter
+	private final String displayNameAdMessage;
+
+	PharmaCustomerPermission(final String displayNameAdMessage)
+	{
+		this.displayNameAdMessage = displayNameAdMessage;
+	}
 }

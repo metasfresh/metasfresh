@@ -32,8 +32,6 @@ public interface I_PP_Order
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_AD_Client>(I_PP_Order.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -59,10 +57,6 @@ public interface I_PP_Order
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_AD_Org>(I_PP_Order.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
@@ -87,10 +81,6 @@ public interface I_PP_Order
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_OrgTrx_ID();
-
-	public org.compiere.model.I_AD_Org getAD_OrgTrx();
-
-	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx);
 
     /** Column definition for AD_OrgTrx_ID */
     public static final org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_AD_Org> COLUMN_AD_OrgTrx_ID = new org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_AD_Org>(I_PP_Order.class, "AD_OrgTrx_ID", org.compiere.model.I_AD_Org.class);
@@ -127,7 +117,7 @@ public interface I_PP_Order
     public static final String COLUMNNAME_AD_Workflow_ID = "AD_Workflow_ID";
 
 	/**
-	 * Set Quantity Assay.
+	 * Set Mengen Probe.
 	 * Indicated the Quantity Assay to use into Quality Order
 	 *
 	 * <br>Type: Quantity
@@ -137,7 +127,7 @@ public interface I_PP_Order
 	public void setAssay (java.math.BigDecimal Assay);
 
 	/**
-	 * Get Quantity Assay.
+	 * Get Mengen Probe.
 	 * Indicated the Quantity Assay to use into Quality Order
 	 *
 	 * <br>Type: Quantity
@@ -200,10 +190,6 @@ public interface I_PP_Order
 	 */
 	public int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
     /** Column definition for C_BPartner_ID */
     public static final org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_C_BPartner>(I_PP_Order.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
@@ -258,10 +244,6 @@ public interface I_PP_Order
 	 */
 	public int getC_DocType_ID();
 
-	public org.compiere.model.I_C_DocType getC_DocType();
-
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
-
     /** Column definition for C_DocType_ID */
     public static final org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_C_DocType>(I_PP_Order.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
     /** Column name C_DocType_ID */
@@ -286,10 +268,6 @@ public interface I_PP_Order
 	 * <br>Virtual Column: false
 	 */
 	public int getC_DocTypeTarget_ID();
-
-	public org.compiere.model.I_C_DocType getC_DocTypeTarget();
-
-	public void setC_DocTypeTarget(org.compiere.model.I_C_DocType C_DocTypeTarget);
 
     /** Column definition for C_DocTypeTarget_ID */
     public static final org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_C_DocType> COLUMN_C_DocTypeTarget_ID = new org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_C_DocType>(I_PP_Order.class, "C_DocTypeTarget_ID", org.compiere.model.I_C_DocType.class);
@@ -409,10 +387,6 @@ public interface I_PP_Order
 	 */
 	public int getC_Project_ID();
 
-	public org.compiere.model.I_C_Project getC_Project();
-
-	public void setC_Project(org.compiere.model.I_C_Project C_Project);
-
     /** Column definition for C_Project_ID */
     public static final org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_C_Project> COLUMN_C_Project_ID = new org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_C_Project>(I_PP_Order.class, "C_Project_ID", org.compiere.model.I_C_Project.class);
     /** Column name C_Project_ID */
@@ -437,10 +411,6 @@ public interface I_PP_Order
 	 * <br>Virtual Column: false
 	 */
 	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
 
     /** Column definition for C_UOM_ID */
     public static final org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_C_UOM>(I_PP_Order.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
@@ -768,7 +738,7 @@ public interface I_PP_Order
     public static final String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
-	 * Set Beleg Nr..
+	 * Set Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -778,7 +748,7 @@ public interface I_PP_Order
 	public void setDocumentNo (java.lang.String DocumentNo);
 
 	/**
-	 * Get Beleg Nr..
+	 * Get Nr..
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
@@ -1085,10 +1055,6 @@ public interface I_PP_Order
 	 */
 	public int getM_Locator_ID();
 
-	public org.compiere.model.I_M_Locator getM_Locator();
-
-	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator);
-
     /** Column definition for M_Locator_ID */
     public static final org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_M_Locator>(I_PP_Order.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);
     /** Column name M_Locator_ID */
@@ -1114,10 +1080,6 @@ public interface I_PP_Order
 	 */
 	public int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
-
     /** Column definition for M_Product_ID */
     public static final org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_M_Product>(I_PP_Order.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
@@ -1142,10 +1104,6 @@ public interface I_PP_Order
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Warehouse_ID();
-
-	public org.compiere.model.I_M_Warehouse getM_Warehouse();
-
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
 
     /** Column definition for M_Warehouse_ID */
     public static final org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_M_Warehouse>(I_PP_Order.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
@@ -1267,10 +1225,6 @@ public interface I_PP_Order
 	 * <br>Virtual Column: false
 	 */
 	public int getPlanner_ID();
-
-	public org.compiere.model.I_AD_User getPlanner();
-
-	public void setPlanner(org.compiere.model.I_AD_User Planner);
 
     /** Column definition for Planner_ID */
     public static final org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_AD_User> COLUMN_Planner_ID = new org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_AD_User>(I_PP_Order.class, "Planner_ID", org.compiere.model.I_AD_User.class);
@@ -1620,8 +1574,8 @@ public interface I_PP_Order
     public static final String COLUMNNAME_QtyEntered = "QtyEntered";
 
 	/**
-	 * Set Bestellte Menge.
-	 * Ordered Quantity
+	 * Set Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1630,8 +1584,8 @@ public interface I_PP_Order
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
 
 	/**
-	 * Get Bestellte Menge.
-	 * Ordered Quantity
+	 * Get Bestellt/ Beauftragt.
+	 * Bestellt/ Beauftragt
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1668,8 +1622,8 @@ public interface I_PP_Order
     public static final String COLUMNNAME_QtyReject = "QtyReject";
 
 	/**
-	 * Set Reservierte Menge.
-	 * Reserved Quantity
+	 * Set Offen.
+	 * Offene Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1678,8 +1632,8 @@ public interface I_PP_Order
 	public void setQtyReserved (java.math.BigDecimal QtyReserved);
 
 	/**
-	 * Get Reservierte Menge.
-	 * Reserved Quantity
+	 * Get Offen.
+	 * Offene Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false

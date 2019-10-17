@@ -1,14 +1,15 @@
 package de.metas.material.event;
 
-import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
-import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
-import org.junit.Test;
+import org.adempiere.warehouse.WarehouseId;
+import org.junit.jupiter.api.Test;
 
 import de.metas.material.event.commons.MaterialDescriptor;
 
@@ -36,25 +37,26 @@ import de.metas.material.event.commons.MaterialDescriptor;
 
 public class MaterialDescriptorTest
 {
-
-	@Test(expected = RuntimeException.class)
+	@Test
 	public void builderForCandidate_fail()
 	{
-		MaterialDescriptor.builder().build();
+		assertThatThrownBy(() -> MaterialDescriptor.builder().build())
+				.isInstanceOf(RuntimeException.class);
 	}
 
 	@Test
 	public void builderForCandidate_succeed()
 	{
 		final MaterialDescriptor result = MaterialDescriptor.builder()
-				.date(NOW)
+				.date(Instant.parse("2019-10-11T12:13:14.15Z"))
 				.productDescriptor(createProductDescriptor())
-				.quantity(BigDecimal.TEN)
-				.warehouseId(WAREHOUSE_ID)
+				.quantity(new BigDecimal("10"))
+				.warehouseId(WarehouseId.ofRepoId(1))
 				.build();
+
 		assertThat(result.getQuantity()).isEqualByComparingTo("10");
 		assertThat(result.getProductId()).isEqualTo(PRODUCT_ID);
-		assertThat(result.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
-		assertThat(result.getDate()).isEqualTo(NOW);
+		assertThat(result.getWarehouseId()).isEqualTo(WarehouseId.ofRepoId(1));
+		assertThat(result.getDate()).isEqualTo("2019-10-11T12:13:14.15Z");
 	}
 }

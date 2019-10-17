@@ -1,5 +1,7 @@
 package de.metas.order.impl;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -30,15 +32,19 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.Query;
-import org.compiere.model.X_C_Order;
+import org.compiere.util.DB;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
+import de.metas.order.DeliveryViaRule;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class OrderDAO extends AbstractOrderDAO
 {
@@ -76,7 +82,7 @@ public class OrderDAO extends AbstractOrderDAO
 						// purchase order with BP/relations or whatever.
 						// .addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpLoc.getC_BPartner_ID())
 
-						.addEqualsFilter(I_C_Order.COLUMNNAME_DeliveryViaRule, X_C_Order.DELIVERYVIARULE_Pickup)
+						.addEqualsFilter(I_C_Order.COLUMNNAME_DeliveryViaRule, DeliveryViaRule.Pickup)
 
 						.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_Location_ID, bpLoc.getC_BPartner_Location_ID())
 						
@@ -90,5 +96,17 @@ public class OrderDAO extends AbstractOrderDAO
 						.addOnlyActiveRecordsFilter();
 
 		return queryBuilder.create().list();
+	}
+	
+	@Override
+	public BigDecimal getNotInvoicedAmt(@NonNull final BPartnerId bpartnerId)
+	{
+		final String sql = "SELECT COALESCE(SUM(COALESCE("
+				+ "currencyBase((ol.QtyDelivered-ol.QtyInvoiced)*ol.PriceActual,o.C_Currency_ID,o.DateOrdered, o.AD_Client_ID,o.AD_Org_ID) ,0)),0) "
+				+ "FROM C_OrderLine ol"
+				+ " INNER JOIN C_Order o ON (ol.C_Order_ID=o.C_Order_ID) "
+				+ "WHERE o.IsSOTrx='Y' AND Bill_BPartner_ID=?";
+		
+		return DB.getSQLValueBDEx(ITrx.TRXNAME_None, sql, bpartnerId);
 	}
 }

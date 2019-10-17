@@ -36,6 +36,7 @@ import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.LegacyAdapters;
@@ -206,6 +207,20 @@ public class MTable extends X_AD_Table
 					return e.getKey();
 				}
 			}
+			
+			//
+			I_AD_Table adTable = POJOLookupMap.get().lookup("AD_Table", AD_Table_ID);
+			if(adTable != null)
+			{
+				String tableName = adTable.getTableName();
+				if(Check.isEmpty(tableName, true))
+				{
+					throw new AdempiereException("No TableName set for "+adTable);
+				}
+				return tableName;
+			}
+			
+			//
 			throw new AdempiereException("No TableName found for AD_Table_ID=" + AD_Table_ID);
 		}
 
@@ -395,7 +410,9 @@ public class MTable extends X_AD_Table
 	protected boolean beforeSave(boolean newRecord)
 	{
 		if (isView() && isDeleteable())
+		{
 			setIsDeleteable(false);
+		}
 		//
 		return true;
 	}	// beforeSave

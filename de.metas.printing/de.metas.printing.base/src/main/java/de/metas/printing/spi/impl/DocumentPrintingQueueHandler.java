@@ -1,29 +1,6 @@
 package de.metas.printing.spi.impl;
 
-/*
- * #%L
- * de.metas.printing.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -33,6 +10,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_InOut;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_C_Invoice;
@@ -191,17 +169,17 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		// currently, don't use M_InOut.MovementDate because it might be a different date and the user want's to filter by
 		final List<I_M_ShipmentSchedule> schedules = schedAllocDAO.retrieveSchedulesForInOut(inout);
 
-		Timestamp deliveryDateToset = computeMaxDeliveryDateFromScheds(schedules);
+		final ZonedDateTime deliveryDateToset = computeMaxDeliveryDateFromScheds(schedules);
 		if (deliveryDateToset != null)
 		{
-			queueItem.setDeliveryDate(deliveryDateToset);
+			queueItem.setDeliveryDate(TimeUtil.asTimestamp(deliveryDateToset));
 		}
 
 		logger.debug("Setting columns of C_Printing_Queue {} from M_InOut {}: [C_BPartner_ID={}, C_BPartner_Location_ID={}, DeliveryDate={}]",
 				new Object[] { queueItem, inout, inout.getC_BPartner_ID(), inout.getC_BPartner_Location_ID(), deliveryDateToset });
 	}
 
-	private Timestamp computeMaxDeliveryDateFromScheds(final List<I_M_ShipmentSchedule> schedules)
+	private ZonedDateTime computeMaxDeliveryDateFromScheds(final List<I_M_ShipmentSchedule> schedules)
 	{
 		// Services
 		final IShipmentScheduleEffectiveBL schedEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
@@ -212,11 +190,11 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		}
 
 		// iterate all scheds and return the maximum
-		Timestamp maxDeliveryDate = schedEffectiveBL.getDeliveryDate(schedules.get(0));
+		ZonedDateTime maxDeliveryDate = schedEffectiveBL.getDeliveryDate(schedules.get(0));
 		for (int i = 1; i < schedules.size(); i++)
 		{
-			final Timestamp currentDate = schedEffectiveBL.getDeliveryDate(schedules.get(i));
-			if (currentDate.after(maxDeliveryDate))
+			final ZonedDateTime currentDate = schedEffectiveBL.getDeliveryDate(schedules.get(i));
+			if (currentDate.isAfter(maxDeliveryDate))
 			{
 				maxDeliveryDate = currentDate;
 			}

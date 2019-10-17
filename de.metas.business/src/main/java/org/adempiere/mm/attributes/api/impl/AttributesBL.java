@@ -10,12 +10,12 @@ package org.adempiere.mm.attributes.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,52 +27,71 @@ import java.math.RoundingMode;
 import java.util.Date;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.AttributeAction;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
+import org.adempiere.mm.attributes.spi.IAttributeValueHandler;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProviderFactory;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValuesProvider;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Attribute;
-import org.compiere.model.X_M_AttributeValue;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.javaclasses.IJavaClassBL;
 import de.metas.javaclasses.IJavaClassDAO;
 import de.metas.javaclasses.model.I_AD_JavaClass;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
-import de.metas.purchasing.api.IBPartnerProductDAO;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 public class AttributesBL implements IAttributesBL
 {
-	public static final String SYSCONFIG_AttributeAction = "de.metas.swat.AttributeAction";
+	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+	private final ISysConfigBL sysConfigs = Services.get(ISysConfigBL.class);
+	private final IJavaClassDAO javaClassDAO = Services.get(IJavaClassDAO.class);
+	private final IJavaClassBL javaClassBL = Services.get(IJavaClassBL.class);
+	private final IProductBL productsService = Services.get(IProductBL.class);
+	private final IBPartnerProductDAO bpartnerProductDAO = Services.get(IBPartnerProductDAO.class);
+
+	@VisibleForTesting
+	static final String SYSCONFIG_AttributeAction = "de.metas.swat.AttributeAction";
 	private static final String MSG_NoAttributeGenerator = "de.metas.swat.Attribute.generatorError";
 
 	private static final MathContext DEFAULT_MATHCONTEXT = new MathContext(2, RoundingMode.HALF_UP);
 
 	@Override
+	public I_M_Attribute getAttributeById(@NonNull final AttributeId attributeId)
+	{
+		return attributesRepo.getAttributeById(attributeId);
+	}
+
+	@Override
 	public AttributeAction getAttributeAction(final Properties ctx)
 	{
-		final String attributeActionCode = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_AttributeAction, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
+		final String attributeActionCode = sysConfigs.getValue(SYSCONFIG_AttributeAction, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 		if (Check.isEmpty(attributeActionCode, true))
 		{
 			return AttributeAction.Ignore;
@@ -93,33 +112,15 @@ public class AttributesBL implements IAttributesBL
 	}
 
 	@Override
-	public IAttributeValueGenerator getAttributeValueGeneratorOrNull(final org.compiere.model.I_M_Attribute attributeParam)
-	{
-		Check.assumeNotNull(attributeParam, "attributeParam not null");
-
-		final I_M_Attribute attribute = InterfaceWrapperHelper.create(attributeParam, I_M_Attribute.class);
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(attribute);
-		final I_AD_JavaClass javaClassDef = Services.get(IJavaClassDAO.class).retriveJavaClassOrNull(ctx, attribute.getAD_JavaClass_ID());
-		if (javaClassDef == null)
-		{
-			return null;
-		}
-
-		final IAttributeValueGenerator generator = Services.get(IJavaClassBL.class).newInstance(javaClassDef);
-		return generator;
-	}
-
-	@Override
 	public IAttributeValuesProvider createAttributeValuesProvider(final org.compiere.model.I_M_Attribute attribute)
 	{
-		final IAttributeValueGenerator attributeHandler = getAttributeValueGeneratorOrNull(attribute);
+		final IAttributeValueHandler attributeHandler = getAttributeValueHandlerOrNull(attribute);
 
 		//
 		// First try: check if attributeHandler is implementing IAttributeValuesProvider and return it if that's the case
 		if (attributeHandler instanceof IAttributeValuesProviderFactory)
 		{
-			IAttributeValuesProviderFactory factory = (IAttributeValuesProviderFactory)attributeHandler;
+			final IAttributeValuesProviderFactory factory = (IAttributeValuesProviderFactory)attributeHandler;
 			return factory.createAttributeValuesProvider(attribute);
 		}
 		//
@@ -134,6 +135,32 @@ public class AttributesBL implements IAttributesBL
 		{
 			return null;
 		}
+	}
+
+	@Override
+	public IAttributeValueGenerator getAttributeValueGeneratorOrNull(@NonNull final org.compiere.model.I_M_Attribute attributeParam)
+	{
+		final IAttributeValueHandler handler = getAttributeValueHandlerOrNull(attributeParam);
+		if (handler instanceof IAttributeValueGenerator)
+		{
+			return (IAttributeValueGenerator)handler;
+		}
+		return null;
+	}
+
+	private IAttributeValueHandler getAttributeValueHandlerOrNull(final org.compiere.model.I_M_Attribute attributeRecord)
+	{
+		final I_M_Attribute attribute = InterfaceWrapperHelper.create(attributeRecord, I_M_Attribute.class);
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(attribute);
+		final I_AD_JavaClass javaClassDef = javaClassDAO.retriveJavaClassOrNull(ctx, attribute.getAD_JavaClass_ID());
+		if (javaClassDef == null)
+		{
+			return null;
+		}
+
+		final IAttributeValueHandler handler = javaClassBL.newInstance(javaClassDef);
+		return handler;
 	}
 
 	@Override
@@ -157,11 +184,11 @@ public class AttributesBL implements IAttributesBL
 
 		//
 		// Check Attribute Set
-		final AttributeSetId attributeSetId = Services.get(IProductBL.class).getAttributeSetId(productId);
+		final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
 
 		//
 		// Get M_Attribute
-		final org.compiere.model.I_M_Attribute attribute = Services.get(IAttributeDAO.class).retrieveAttribute(attributeSetId, attributeId);
+		final org.compiere.model.I_M_Attribute attribute = attributesRepo.retrieveAttribute(attributeSetId, attributeId);
 		if (attribute == null)
 		{
 			// The product's attribute set doesn't contain the needed attribute. Do nothing.
@@ -169,32 +196,6 @@ public class AttributesBL implements IAttributesBL
 		}
 
 		return InterfaceWrapperHelper.create(attribute, I_M_Attribute.class);
-	}
-
-	@Override
-	public boolean isSameTrx(final I_M_AttributeValue attributeValue, final boolean isSOTrx)
-	{
-		final boolean attributeSOTrx;
-		final String attributeTrx = attributeValue.getAvailableTrx();
-		if (attributeTrx == null)
-		{
-			// always accept, return right away
-			return true;
-		}
-		else if (X_M_AttributeValue.AVAILABLETRX_SO.equals(attributeTrx))
-		{
-			attributeSOTrx = true;
-		}
-		else if (X_M_AttributeValue.AVAILABLETRX_PO.equals(attributeTrx))
-		{
-			attributeSOTrx = false;
-		}
-		else
-		{
-			throw new AdempiereException("@NotSupported@ @AvailableTrx@: " + attributeTrx);
-		}
-
-		return attributeSOTrx == isSOTrx;
 	}
 
 	@Override
@@ -223,11 +224,11 @@ public class AttributesBL implements IAttributesBL
 			final BPartnerId vendorBPartnerId,
 			@NonNull final Date dateReceipt)
 	{
-		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+		final I_M_Product product = productsService.getById(productId);
 		final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
 		//
 		// Get Best-Before days
-		final I_C_BPartner_Product bpartnerProduct = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(ctx, vendorBPartnerId, productId, orgId);
+		final I_C_BPartner_Product bpartnerProduct = bpartnerProductDAO.retrieveBPartnerProductAssociation(ctx, vendorBPartnerId, productId, orgId);
 		if (bpartnerProduct == null)
 		{
 			// no BPartner-Product association defined, so we cannot fetch the bestBeforeDays
@@ -246,4 +247,24 @@ public class AttributesBL implements IAttributesBL
 		return bestBeforeDate;
 	}
 
+	@Override
+	public int getNumberDisplayType(@NonNull final I_M_Attribute attribute)
+	{
+		return attribute.getC_UOM_ID() == IUOMDAO.C_UOM_ID_Each
+				? DisplayType.Integer
+				: DisplayType.Number;
+	}
+
+	@Override
+	public boolean isStorageRelevant(@NonNull final AttributeId attributeId)
+	{
+		final I_M_Attribute attribute = getAttributeById(attributeId);
+		return attribute.isStorageRelevant();
+	}
+
+	@Override
+	public AttributeListValue retrieveAttributeValueOrNull(@NonNull final AttributeId attributeId, @Nullable final String value)
+	{
+		return attributesRepo.retrieveAttributeValueOrNull(attributeId, value);
+	}
 }

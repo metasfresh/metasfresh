@@ -1,7 +1,10 @@
 package de.metas.handlingunits.inout.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Transaction;
 
@@ -23,8 +26,8 @@ import de.metas.util.Services;
 	public MInOutLineHUDocumentLine(final org.compiere.model.I_M_InOutLine ioLine, final I_M_Transaction mtrx)
 	{
 		super(
-				new MTransactionProductStorage(mtrx, ioLine.getC_UOM()) // storage
-				, mtrx // referencedModel
+				new MTransactionProductStorage(mtrx, loadOutOfTrx(ioLine.getC_UOM_ID(), I_C_UOM.class)), // storage
+				mtrx // referencedModel
 		);
 
 		Check.assumeNotNull(ioLine, "ioLine not null");

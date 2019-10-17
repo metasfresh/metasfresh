@@ -19,15 +19,15 @@ package org.compiere.print;
 import java.awt.Color;
 import java.awt.SystemColor;
 import java.util.Properties;
-import org.slf4j.Logger;
-
-import de.metas.cache.CCache;
-import de.metas.logging.LogManager;
 
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_PrintColor;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
+import de.metas.util.StringUtils;
 
 /**
  *	AD_PrintColor Print Color Model
@@ -39,7 +39,7 @@ public class MPrintColor extends X_AD_PrintColor
 {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 8352503254165120016L;
 
@@ -94,7 +94,7 @@ public class MPrintColor extends X_AD_PrintColor
 	//	if (AD_PrintColor_ID == 0)
 	//		return new MPrintColor (ctx, 0);
 		Integer key = new Integer(AD_PrintColor_ID);
-		MPrintColor pc = (MPrintColor)s_colors.get(key);
+		MPrintColor pc = s_colors.get(key);
 		if (pc == null)
 		{
 			pc = new MPrintColor (ctx, AD_PrintColor_ID, null);
@@ -125,8 +125,8 @@ public class MPrintColor extends X_AD_PrintColor
 		}
 		return null;
 	}	//	get
-	
-	
+
+
 	/**************************************************************************
 	 *	Constructor
 	 *  @param ctx context
@@ -190,16 +190,17 @@ public class MPrintColor extends X_AD_PrintColor
 	{
 		Color color = getColor();
 		StringBuffer sb = new StringBuffer();
-		sb.append(Util.toHex((byte)color.getRed()))
-			.append(Util.toHex((byte)color.getGreen()))
-			.append(Util.toHex((byte)color.getBlue()));
+		sb.append(StringUtils.toHex((byte)color.getRed()))
+			.append(StringUtils.toHex((byte)color.getGreen()))
+			.append(StringUtils.toHex((byte)color.getBlue()));
 		return sb.toString();
 	}	//	getRRGGBB
-	
+
 	/**
 	 * 	String Representation
 	 * 	@return info
 	 */
+	@Override
 	public String toString()
 	{
 		StringBuffer sb = new StringBuffer("MPrintColor[");
@@ -210,8 +211,8 @@ public class MPrintColor extends X_AD_PrintColor
 			.append("]");
 		return sb.toString();
 	}	//	toString
-	
-	
+
+
 	/**************************************************************************
 	 * 	Create Standard Colors
 	 * 	@param args args
@@ -253,5 +254,5 @@ public class MPrintColor extends X_AD_PrintColor
 			System.out.println(IDs[i] + ": " + pc + " = " + pc.getColor() + ", RGB=" + pc.getColor().getRGB());
 		}
 	}	//	main
-	
+
 }	//	MPrintColor

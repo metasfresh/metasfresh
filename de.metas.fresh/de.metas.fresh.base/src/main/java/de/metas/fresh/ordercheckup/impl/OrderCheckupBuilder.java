@@ -10,37 +10,38 @@ package de.metas.fresh.ordercheckup.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_User;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_S_Resource;
 
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
 import de.metas.fresh.ordercheckup.OrderCheckupBarcode;
+import de.metas.product.ResourceId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 
 /**
  * {@link I_C_Order_MFGWarehouse_Report} builder.
- * 
+ *
  * @author tsa
  *
  */
@@ -54,19 +55,18 @@ public class OrderCheckupBuilder
 	private boolean _built = false;
 	private String _documentType = null;
 	private I_C_Order _order;
-	private I_M_Warehouse _warehouse;
-	private I_S_Resource _plant;
-	private I_AD_User _reponsibleUser;
+	private WarehouseId _warehouseId;
+	private ResourceId _plantId;
+	private UserId _reponsibleUserId;
 	private final List<I_C_OrderLine> _orderLines = new ArrayList<>();
 
 	private OrderCheckupBuilder()
 	{
-		super();
 	}
 
 	/**
 	 * Builds the {@link I_C_Order_MFGWarehouse_Report}.
-	 * 
+	 *
 	 * If there were no {@link I_C_OrderLine}s added, no report will be created.
 	 */
 	public void build()
@@ -89,9 +89,9 @@ public class OrderCheckupBuilder
 		report.setDocumentType(getDocumentType());
 		report.setC_Order(order);
 		report.setC_BPartner_ID(order.getC_BPartner_ID());
-		report.setM_Warehouse(getM_Warehouse());
-		report.setPP_Plant(getPP_Plant());
-		report.setAD_User_Responsible(getReponsibleUser());
+		report.setM_Warehouse_ID(WarehouseId.toRepoId(getWarehouseId()));
+		report.setPP_Plant_ID(ResourceId.toRepoId(getPlantId()));
+		report.setAD_User_Responsible_ID(UserId.toRepoId(getReponsibleUserId()));
 		report.setProcessed(false); // we will set it to true when we are done with the lines
 		InterfaceWrapperHelper.save(report);
 
@@ -107,7 +107,7 @@ public class OrderCheckupBuilder
 			reportLine.setBarcode(OrderCheckupBarcode.ofC_OrderLine_ID(reportLine.getC_OrderLine_ID()).toBarcodeString());
 			InterfaceWrapperHelper.save(reportLine);
 		}
-		
+
 		//
 		// Mark the report as processed
 		// NOTE we do this only at the end because this is the moment where doc outbound shall react and create/print the PDF report.
@@ -156,45 +156,45 @@ public class OrderCheckupBuilder
 		return _orderLines;
 	}
 
-	public OrderCheckupBuilder setM_Warehouse(I_M_Warehouse warehouse)
+	public OrderCheckupBuilder setWarehouseId(@Nullable final WarehouseId warehouseId)
 	{
-		this._warehouse = warehouse;
+		this._warehouseId = warehouseId;
 		return this;
 	}
 
-	private I_M_Warehouse getM_Warehouse()
+	private WarehouseId getWarehouseId()
 	{
-		return _warehouse;
+		return _warehouseId;
 	}
 
-	public OrderCheckupBuilder setPP_Plant(I_S_Resource plant)
+	public OrderCheckupBuilder setPlantId(ResourceId plantId)
 	{
-		this._plant = plant;
+		this._plantId = plantId;
 		return this;
 	}
 
-	private I_S_Resource getPP_Plant()
+	private ResourceId getPlantId()
 	{
-		return _plant;
+		return _plantId;
 	}
 
-	public OrderCheckupBuilder setReponsibleUser(I_AD_User reponsibleUser)
+	public OrderCheckupBuilder setReponsibleUserId(UserId reponsibleUserId)
 	{
-		this._reponsibleUser = reponsibleUser;
+		this._reponsibleUserId = reponsibleUserId;
 		return this;
 	}
 
-	private I_AD_User getReponsibleUser()
+	private UserId getReponsibleUserId()
 	{
-		return _reponsibleUser;
+		return _reponsibleUserId;
 	}
-	
+
 	public OrderCheckupBuilder setDocumentType(String documentType)
 	{
 		this._documentType = documentType;
 		return this;
 	}
-	
+
 	private String getDocumentType()
 	{
 		Check.assumeNotEmpty(_documentType, "documentType not empty");

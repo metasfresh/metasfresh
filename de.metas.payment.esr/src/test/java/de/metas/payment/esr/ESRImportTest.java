@@ -41,11 +41,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.util.test.RepeatRule;
@@ -61,10 +59,11 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_C_Currency;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.calendar.IPeriodBL;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.refid.api.IReferenceNoDAO;
@@ -74,6 +73,8 @@ import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.lock.api.ILockManager;
+import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.esr.actionhandler.impl.MoneyTransferedBackESRActionHandler;
@@ -123,7 +124,7 @@ public class ESRImportTest extends ESRTestBase
 		final String invDocNo = "654321";
 		final String ESR_Rendered_AccountNo = "01-067789-3";
 
-		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef, refNo, ESR_Rendered_AccountNo, partnerValue, "50", false);
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef, /* refNo, */ ESR_Rendered_AccountNo, partnerValue, "50", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		esrImportBL.process(esrImport);
@@ -195,12 +196,7 @@ public class ESRImportTest extends ESRTestBase
 		InterfaceWrapperHelper.save(account);
 
 		// currency
-		final I_C_Currency currencyEUR = InterfaceWrapperHelper.newInstance(I_C_Currency.class, contextProvider);
-		currencyEUR.setISO_Code("EUR");
-		currencyEUR.setStdPrecision(2);
-		currencyEUR.setIsEuro(true);
-		InterfaceWrapperHelper.save(currencyEUR);
-		POJOWrapper.enableStrictValues(currencyEUR);
+		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		// doc type
 		final I_C_DocType type = InterfaceWrapperHelper.newInstance(I_C_DocType.class, contextProvider);
@@ -216,14 +212,17 @@ public class ESRImportTest extends ESRTestBase
 		inv.setDocumentNo("654321");
 		inv.setAD_Org_ID(org.getAD_Org_ID());
 		inv.setC_DocType_ID(type.getC_DocType_ID());
-		inv.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		inv.setC_Currency_ID(currencyEUR.getRepoId());
 		inv.setProcessed(true);
 		inv.setIsSOTrx(true);
 		InterfaceWrapperHelper.save(inv);
 
+		final String esrLineText = "01201067789300000001060012345600654321400000025009072  030014040914041014041100001006800000000000090                          ";
+		final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
+
 		// reference no
 		final I_C_ReferenceNo referenceNo = InterfaceWrapperHelper.newInstance(I_C_ReferenceNo.class, contextProvider);
-		referenceNo.setReferenceNo("300000001060012345600654321");
+		referenceNo.setReferenceNo(completeRef);
 		referenceNo.setC_ReferenceNo_Type(refNoType);
 		referenceNo.setIsManual(true);
 		InterfaceWrapperHelper.save(referenceNo);
@@ -234,8 +233,6 @@ public class ESRImportTest extends ESRTestBase
 		esrReferenceNumberDocument.setRecord_ID(inv.getC_Invoice_ID());
 		esrReferenceNumberDocument.setC_ReferenceNo(referenceNo);
 		InterfaceWrapperHelper.save(esrReferenceNumberDocument);
-
-		final String esrLineText = "01201067789300000001060012345600654321400000025009072  030014040914041014041100001006800000000000090                          ";
 
 		final I_ESR_Import esrImport = createImport();
 
@@ -316,12 +313,13 @@ public class ESRImportTest extends ESRTestBase
 
 		final String grandTotal = "50";
 		final String esrLineText = "01201067789300000001060012345600654321400000050009072  030014040914041014041100001006800000000000090                          ";
+		final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
 		final String refNo = "300000001060012345600654321";
 		final String partnerValue = "123456";
 		final String invDocNo = "654321";
 		final String ESR_Rendered_AccountNo = "01-067789-3";
 
-		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, true, esrLineText, refNo, ESR_Rendered_AccountNo, partnerValue, "50", true);
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, true, completeRef, /* esrLineText, refNo, */ ESR_Rendered_AccountNo, partnerValue, "50", true);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		// start processing
@@ -419,12 +417,13 @@ public class ESRImportTest extends ESRTestBase
 
 		final String grandTotal = "50";
 		final String esrLineText = "01201067789300000001060012345600654321400000025009072  030014040914041014041100001006800000000000090                          ";
+		final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
 		final String refNo = "300000001060012345600654321";
 		final String partnerValue = "123456";
 		final String invDocNo = "654321";
 		final String ESR_Rendered_AccountNo = "01-067789-3";
 
-		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, esrLineText, refNo, ESR_Rendered_AccountNo, partnerValue, "25", false);
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef, /* esrLineText, refNo, */ ESR_Rendered_AccountNo, partnerValue, "25", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		// start processing
@@ -499,12 +498,13 @@ public class ESRImportTest extends ESRTestBase
 	{
 		final String grandTotal = "50";
 		final String esrLineText = "01201067789300000001060012345600654321400000070009072  030014040914041014041100001006800000000000090                          ";
+		final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
 		final String refNo = "300000001060012345600654321";
 		final String partnerValue = "123456";
 		final String invDocNo = "654321";
 		final String ESR_Rendered_AccountNo = "01-067789-3";
 
-		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, esrLineText, refNo, ESR_Rendered_AccountNo, partnerValue, "70", false);
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef, /* esrLineText, refNo, */ ESR_Rendered_AccountNo, partnerValue, "70", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		// start processing
@@ -576,12 +576,13 @@ public class ESRImportTest extends ESRTestBase
 	{
 		final String grandTotal = "50";
 		final String esrLineText = "01201067789300000001060012345600654321400000070009072  030014040914041014041100001006800000000000090                          ";
+		final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
 		final String refNo = "300000001060012345600654321";
 		final String partnerValue = "123456";
 		final String invDocNo = "654321";
 		final String ESR_Rendered_AccountNo = "01-067789-3";
 
-		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, esrLineText, refNo, ESR_Rendered_AccountNo, partnerValue, "70", false);
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef, /* esrLineText, refNo, */ ESR_Rendered_AccountNo, partnerValue, "70", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		// start processing
@@ -672,12 +673,7 @@ public class ESRImportTest extends ESRTestBase
 		InterfaceWrapperHelper.save(refNoType);
 
 		// currency
-		final I_C_Currency currencyEUR = InterfaceWrapperHelper.newInstance(I_C_Currency.class, contextProvider);
-		currencyEUR.setISO_Code("EUR");
-		currencyEUR.setStdPrecision(2);
-		currencyEUR.setIsEuro(true);
-		InterfaceWrapperHelper.save(currencyEUR);
-		POJOWrapper.enableStrictValues(currencyEUR);
+		CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		// bank account
 		final I_C_BP_BankAccount account = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class, contextProvider);
@@ -685,7 +681,7 @@ public class ESRImportTest extends ESRTestBase
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo("01-067789-3");
-		account.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		account.setC_Currency_ID(currencyEUR.getRepoId());
 		InterfaceWrapperHelper.save(account);
 
 		// esr line
@@ -738,7 +734,7 @@ public class ESRImportTest extends ESRTestBase
 		inv.setDocumentNo("654321");
 		inv.setAD_Org_ID(org.getAD_Org_ID());
 		inv.setC_DocType_ID(type.getC_DocType_ID());
-		inv.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		inv.setC_Currency_ID(currencyEUR.getRepoId());
 		inv.setIsSOTrx(true);
 		inv.setProcessed(true);
 		InterfaceWrapperHelper.save(inv);
@@ -814,12 +810,7 @@ public class ESRImportTest extends ESRTestBase
 		esrImport.setAD_Org_ID(org.getAD_Org_ID());
 
 		// currency
-		final I_C_Currency currencyEUR = InterfaceWrapperHelper.newInstance(I_C_Currency.class, contextProvider);
-		currencyEUR.setISO_Code("EUR");
-		currencyEUR.setStdPrecision(2);
-		currencyEUR.setIsEuro(true);
-		InterfaceWrapperHelper.save(currencyEUR);
-		POJOWrapper.enableStrictValues(currencyEUR);
+		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		// bank account
 		final I_C_BP_BankAccount account = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class, contextProvider);
@@ -827,7 +818,7 @@ public class ESRImportTest extends ESRTestBase
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo("01-067789-3");
-		account.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		account.setC_Currency_ID(currencyEUR.getRepoId());
 		InterfaceWrapperHelper.save(account);
 
 		esrImport.setC_BP_BankAccount(account);
@@ -877,7 +868,7 @@ public class ESRImportTest extends ESRTestBase
 		inv.setDocumentNo("654321");
 		inv.setAD_Org_ID(org.getAD_Org_ID());
 		inv.setC_DocType_ID(type.getC_DocType_ID());
-		inv.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		inv.setC_Currency_ID(currencyEUR.getRepoId());
 		inv.setIsSOTrx(true);
 		inv.setProcessed(true);
 		InterfaceWrapperHelper.save(inv);
@@ -951,12 +942,7 @@ public class ESRImportTest extends ESRTestBase
 		esrImport.setAD_Org_ID(org.getAD_Org_ID());
 
 		// currency
-		final I_C_Currency currencyEUR = InterfaceWrapperHelper.newInstance(I_C_Currency.class, contextProvider);
-		currencyEUR.setISO_Code("EUR");
-		currencyEUR.setStdPrecision(2);
-		currencyEUR.setIsEuro(true);
-		InterfaceWrapperHelper.save(currencyEUR);
-		POJOWrapper.enableStrictValues(currencyEUR);
+		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		// bank account
 		final I_C_BP_BankAccount account = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class, contextProvider);
@@ -964,7 +950,7 @@ public class ESRImportTest extends ESRTestBase
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo("01-067789-3");
-		account.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		account.setC_Currency_ID(currencyEUR.getRepoId());
 		InterfaceWrapperHelper.save(account);
 
 		esrImport.setC_BP_BankAccount(account);
@@ -1051,23 +1037,16 @@ public class ESRImportTest extends ESRTestBase
 
 		final String grandTotal = "50";
 		final String esrLineText = "01201067789300000001060012345600654321400000050009072  030014040914041014041100001006800000000000090                          ";
+		final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
 		final String refNo = "300000001060012345600654321";
 		final String partnerValue = "123456";
 		final String invDocNo = "654321";
 		final String ESR_Rendered_AccountNo = "01-067789-3";
 
-		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, esrLineText, refNo, ESR_Rendered_AccountNo, partnerValue, "50", false);
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef, /* esrLineText, refNo, */ ESR_Rendered_AccountNo, partnerValue, "50", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
-		final Runnable runnable = new Runnable()
-		{
-
-			@Override
-			public void run()
-			{
-				esrImportBL.process(esrImport);
-			}
-		};
+		final Runnable runnable = () -> esrImportBL.process(esrImport);
 
 		final List<Thread> threadsRunning = new ArrayList<>();
 		for (int threadNo = 1; threadNo <= 5; threadNo++)
@@ -1162,12 +1141,7 @@ public class ESRImportTest extends ESRTestBase
 		InterfaceWrapperHelper.save(account);
 
 		// currency
-		final I_C_Currency currencyEUR = InterfaceWrapperHelper.newInstance(I_C_Currency.class, contextProvider);
-		currencyEUR.setISO_Code("EUR");
-		currencyEUR.setStdPrecision(2);
-		currencyEUR.setIsEuro(true);
-		InterfaceWrapperHelper.save(currencyEUR);
-		POJOWrapper.enableStrictValues(currencyEUR);
+		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		// doc type
 		final I_C_DocType type = InterfaceWrapperHelper.newInstance(I_C_DocType.class, contextProvider);
@@ -1183,7 +1157,7 @@ public class ESRImportTest extends ESRTestBase
 		inv.setDocumentNo(invDocNo);
 		inv.setAD_Org_ID(org.getAD_Org_ID());
 		inv.setC_DocType_ID(type.getC_DocType_ID());
-		inv.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		inv.setC_Currency_ID(currencyEUR.getRepoId());
 		inv.setIsPaid(false);
 		inv.setIsSOTrx(true);
 		InterfaceWrapperHelper.save(inv);
@@ -1282,12 +1256,7 @@ public class ESRImportTest extends ESRTestBase
 		InterfaceWrapperHelper.save(account);
 
 		// currency
-		final I_C_Currency currencyEUR = InterfaceWrapperHelper.newInstance(I_C_Currency.class, contextProvider);
-		currencyEUR.setISO_Code("EUR");
-		currencyEUR.setStdPrecision(2);
-		currencyEUR.setIsEuro(true);
-		InterfaceWrapperHelper.save(currencyEUR);
-		POJOWrapper.enableStrictValues(currencyEUR);
+		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		// doc type
 		final I_C_DocType type = InterfaceWrapperHelper.newInstance(I_C_DocType.class, contextProvider);
@@ -1303,7 +1272,7 @@ public class ESRImportTest extends ESRTestBase
 		inv.setDocumentNo(invDocNo);
 		inv.setAD_Org_ID(org.getAD_Org_ID());
 		inv.setC_DocType_ID(type.getC_DocType_ID());
-		inv.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		inv.setC_Currency_ID(currencyEUR.getRepoId());
 		inv.setIsPaid(false);
 		inv.setIsSOTrx(true);
 		InterfaceWrapperHelper.save(inv);
@@ -1404,12 +1373,7 @@ public class ESRImportTest extends ESRTestBase
 		InterfaceWrapperHelper.save(account);
 
 		// currency
-		final I_C_Currency currencyEUR = InterfaceWrapperHelper.newInstance(I_C_Currency.class, contextProvider);
-		currencyEUR.setISO_Code("EUR");
-		currencyEUR.setStdPrecision(2);
-		currencyEUR.setIsEuro(true);
-		InterfaceWrapperHelper.save(currencyEUR);
-		POJOWrapper.enableStrictValues(currencyEUR);
+		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		// doc type
 		final I_C_DocType type = InterfaceWrapperHelper.newInstance(I_C_DocType.class, contextProvider);
@@ -1424,7 +1388,7 @@ public class ESRImportTest extends ESRTestBase
 		inv.setC_BPartner_ID(partner.getC_BPartner_ID());
 		inv.setDocumentNo(invDocNo);
 		inv.setC_DocType_ID(type.getC_DocType_ID());
-		inv.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		inv.setC_Currency_ID(currencyEUR.getRepoId());
 		inv.setIsPaid(false);
 		inv.setIsSOTrx(true);
 		InterfaceWrapperHelper.save(inv);
@@ -1512,12 +1476,7 @@ public class ESRImportTest extends ESRTestBase
 		InterfaceWrapperHelper.save(account);
 
 		// currency
-		final I_C_Currency currencyEUR = InterfaceWrapperHelper.newInstance(I_C_Currency.class, contextProvider);
-		currencyEUR.setISO_Code("EUR");
-		currencyEUR.setStdPrecision(2);
-		currencyEUR.setIsEuro(true);
-		InterfaceWrapperHelper.save(currencyEUR);
-		POJOWrapper.enableStrictValues(currencyEUR);
+		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		// doc type
 		final I_C_DocType type = InterfaceWrapperHelper.newInstance(I_C_DocType.class, contextProvider);
@@ -1533,7 +1492,7 @@ public class ESRImportTest extends ESRTestBase
 		inv.setDocumentNo("654321");
 		inv.setAD_Org_ID(org.getAD_Org_ID());
 		inv.setC_DocType_ID(type.getC_DocType_ID());
-		inv.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		inv.setC_Currency_ID(currencyEUR.getRepoId());
 		inv.setProcessed(true);
 		inv.setIsSOTrx(true);
 		inv.setIsPaid(true);
@@ -1598,7 +1557,6 @@ public class ESRImportTest extends ESRTestBase
 		InterfaceWrapperHelper.save(esrImportLine3);
 		// esrBL.process(esrImport, trxRunConfig);
 		esrImportBL.complete(esrImport, "test");
-
 
 		InterfaceWrapperHelper.refresh(esrImportLine3, true);
 		assertThat(esrImportLine3.isProcessed(), is(true));

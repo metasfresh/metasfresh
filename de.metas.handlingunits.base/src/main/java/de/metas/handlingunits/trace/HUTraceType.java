@@ -71,4 +71,15 @@ public enum HUTraceType
 	 * Used for records/events related zo changes in the parent HU relation.
 	 */
 	TRANSFORM_PARENT
+	;
+	
+	public static HUTraceType ofCode(final String code)
+	{
+		return valueOf(code);
+	}
+	
+	public String getCode()
+	{
+		return name();
+	}
 }

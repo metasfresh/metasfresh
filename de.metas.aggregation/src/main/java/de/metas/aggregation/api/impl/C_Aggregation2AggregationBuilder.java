@@ -1,29 +1,5 @@
 package de.metas.aggregation.api.impl;
 
-/*
- * #%L
- * de.metas.aggregation
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,11 +13,14 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Column;
 
-import de.metas.aggregation.api.IAggregation;
-import de.metas.aggregation.api.IAggregationAttribute;
-import de.metas.aggregation.api.IAggregationDAO;
-import de.metas.aggregation.api.IAggregationItem;
-import de.metas.aggregation.api.IAggregationItem.Type;
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.aggregation.api.Aggregation;
+import de.metas.aggregation.api.AggregationAttribute;
+import de.metas.aggregation.api.AggregationId;
+import de.metas.aggregation.api.AggregationItem;
+import de.metas.aggregation.api.AggregationItem.Type;
+import de.metas.aggregation.api.AggregationItemId;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.aggregation.model.I_C_AggregationItem;
 import de.metas.aggregation.model.I_C_Aggregation_Attribute;
@@ -49,9 +28,10 @@ import de.metas.aggregation.model.X_C_AggregationItem;
 import de.metas.aggregation.model.X_C_Aggregation_Attribute;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
- * Creates {@link IAggregation} from {@link I_C_Aggregation} structure.
+ * Creates {@link Aggregation} from {@link I_C_Aggregation} structure.
  *
  * @author tsa
  *
@@ -59,8 +39,8 @@ import de.metas.util.Services;
 /* package */class C_Aggregation2AggregationBuilder
 {
 	// services
-	private final transient IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
-	private final transient IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
+	private final IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
+	private final AggregationDAO aggregationDAO;
 
 	//
 	// Parameters
@@ -71,14 +51,19 @@ import de.metas.util.Services;
 	// Status
 	private final Set<Integer> seenAggregationIds = new HashSet<>();
 
-	public IAggregation build()
+	C_Aggregation2AggregationBuilder(
+			@NonNull final AggregationDAO aggregationDAO)
+	{
+		this.aggregationDAO = aggregationDAO;
+	}
+
+	public Aggregation build()
 	{
 		return createAggregation(getRootAggregation());
 	}
 
-	public C_Aggregation2AggregationBuilder setC_Aggregation(final I_C_Aggregation aggregation)
+	public C_Aggregation2AggregationBuilder setC_Aggregation(@NonNull final I_C_Aggregation aggregation)
 	{
-		Check.assumeNotNull(aggregation, "aggregation not null");
 		_rootAggregation = aggregation;
 		_tableName = getRootAggregation().getAD_Table().getTableName();
 		return this;
@@ -96,7 +81,7 @@ import de.metas.util.Services;
 		return _tableName;
 	}
 
-	private final IAggregation createAggregation(final I_C_Aggregation aggregationDef)
+	private final Aggregation createAggregation(final I_C_Aggregation aggregationDef)
 	{
 		Check.assumeNotNull(aggregationDef, "aggregationDef not null");
 
@@ -109,19 +94,28 @@ import de.metas.util.Services;
 		final String tableName = aggregationDef.getAD_Table().getTableName();
 		final List<I_C_AggregationItem> aggregationItemsDef = aggregationDAO.retrieveAllItems(aggregationDef);
 
-		final LinkedHashMap<String, IAggregationItem> aggregationItems = createAggregationItems(aggregationItemsDef);
+		final LinkedHashMap<AggregationItemId, AggregationItem> aggregationItems = createAggregationItems(aggregationItemsDef);
+		if (aggregationItems.isEmpty())
+		{
+			throw new AdempiereException("Invalid aggregation " + aggregationDef.getName() + ". It shall have at least one item.")
+					.setParameter("aggregation", aggregationDef)
+					.setParameter("tableName", tableName);
+		}
 
 		//
 		// Create and return the aggregation
-		final IAggregation aggregation = new Aggregation(tableName, aggregationItems.values(), aggregationDef.getC_Aggregation_ID());
-		return aggregation;
+		return Aggregation.builder()
+				.id(AggregationId.ofRepoId(aggregationDef.getC_Aggregation_ID()))
+				.tableName(tableName)
+				.items(aggregationItems.values())
+				.build();
 	}
 
-	private final LinkedHashMap<String, IAggregationItem> createAggregationItems(final List<I_C_AggregationItem> aggregationItemsDef)
+	private final LinkedHashMap<AggregationItemId, AggregationItem> createAggregationItems(final List<I_C_AggregationItem> aggregationItemsDef)
 	{
 		//
 		// Create aggregation items
-		final LinkedHashMap<String, IAggregationItem> aggregationItemsAll = new LinkedHashMap<>(aggregationItemsDef.size());
+		final LinkedHashMap<AggregationItemId, AggregationItem> aggregationItemsAll = new LinkedHashMap<>(aggregationItemsDef.size());
 		for (final I_C_AggregationItem aggregationItemDef : aggregationItemsDef)
 		{
 			// Skip inactive items
@@ -131,11 +125,11 @@ import de.metas.util.Services;
 			}
 
 			final String itemType = aggregationItemDef.getType();
-			final Map<String, IAggregationItem> aggregationItems;
+			final Map<AggregationItemId, AggregationItem> aggregationItems;
 			if (X_C_AggregationItem.TYPE_Column.equals(itemType))
 			{
-				final IAggregationItem aggregationItem = createAggregationItem_TypeColumn(aggregationItemDef);
-				aggregationItems = aggregationItem == null ? null : Collections.singletonMap(aggregationItem.getId(), aggregationItem);
+				final AggregationItem aggregationItem = createAggregationItem_TypeColumn(aggregationItemDef);
+				aggregationItems = aggregationItem == null ? null : ImmutableMap.of(aggregationItem.getId(), aggregationItem);
 			}
 			else if (X_C_AggregationItem.TYPE_IncludedAggregation.equals(itemType))
 			{
@@ -159,7 +153,7 @@ import de.metas.util.Services;
 		return aggregationItemsAll;
 	}
 
-	private final IAggregationItem createAggregationItem_TypeColumn(final I_C_AggregationItem aggregationItemDef)
+	private final AggregationItem createAggregationItem_TypeColumn(final I_C_AggregationItem aggregationItemDef)
 	{
 		// Skip items with inactive records (because those are not present in model, for sure)
 		final I_AD_Column column = aggregationItemDef.getAD_Column();
@@ -179,14 +173,14 @@ import de.metas.util.Services;
 		final String columnName = column.getColumnName();
 		final int displayType = column.getAD_Reference_ID();
 		final ILogicExpression includeLogic = getLogicExpression(aggregationItemDef);
-		final IAggregationItem aggregationItem = new AggregationItem(
-				aggregationItemDef.getC_AggregationItem_ID() // aggregationId
-				, Type.ModelColumn
-				, columnName
-				, displayType
-				, (IAggregationAttribute)null // attribute
-				, includeLogic);
-		return aggregationItem;
+		return AggregationItem.builder()
+				.id(AggregationItemId.ofRepoId(aggregationItemDef.getC_AggregationItem_ID()))
+				.type(Type.ModelColumn)
+				.columnName(columnName)
+				.displayType(displayType)
+				.attribute((AggregationAttribute)null)
+				.includeLogic(includeLogic)
+				.build();
 	}
 
 	private ILogicExpression getLogicExpression(final I_C_AggregationItem aggregationItemDef)
@@ -204,7 +198,7 @@ import de.metas.util.Services;
 		return includeLogic;
 	}
 
-	private LinkedHashMap<String, IAggregationItem> createAggregationItem_TypeIncludedAggregation(final I_C_AggregationItem aggregationItemDef)
+	private LinkedHashMap<AggregationItemId, AggregationItem> createAggregationItem_TypeIncludedAggregation(final I_C_AggregationItem aggregationItemDef)
 	{
 		final I_C_Aggregation includedAggregationDef = aggregationItemDef.getIncluded_Aggregation();
 		if (includedAggregationDef == null)
@@ -229,11 +223,10 @@ import de.metas.util.Services;
 		}
 
 		final List<I_C_AggregationItem> includedAggregationItemsDef = aggregationDAO.retrieveAllItems(includedAggregationDef);
-		final LinkedHashMap<String, IAggregationItem> includedAggregationItems = createAggregationItems(includedAggregationItemsDef);
-		return includedAggregationItems;
+		return createAggregationItems(includedAggregationItemsDef);
 	}
 
-	private Map<String, IAggregationItem> createAggregationItem_TypeAttribute(final I_C_AggregationItem aggregationItemDef)
+	private Map<AggregationItemId, AggregationItem> createAggregationItem_TypeAttribute(final I_C_AggregationItem aggregationItemDef)
 	{
 		final I_C_Aggregation_Attribute attributeDef = aggregationItemDef.getC_Aggregation_Attribute();
 		if (attributeDef == null || attributeDef.getC_Aggregation_Attribute_ID() <= 0)
@@ -248,11 +241,11 @@ import de.metas.util.Services;
 		}
 
 		final String attributeType = attributeDef.getType();
-		final IAggregationAttribute aggregationAttribute;
+		final AggregationAttribute aggregationAttribute;
 		if (X_C_Aggregation_Attribute.TYPE_Attribute.equals(attributeType))
 		{
 			final String attributeName = attributeDef.getCode();
-			aggregationAttribute = new AggregationAttribute_Attribute(attributeName);
+			aggregationAttribute = new AggregationAttribute(attributeName);
 		}
 		else
 		{
@@ -265,14 +258,15 @@ import de.metas.util.Services;
 		//
 		// Create aggregation item
 		final ILogicExpression includeLogic = getLogicExpression(aggregationItemDef);
-		final IAggregationItem aggregationItem = new AggregationItem(
-				aggregationItemDef.getC_AggregationItem_ID() // aggregationId
-				, Type.Attribute
-				, null // columnName
-				, -1 // displayType
-				, aggregationAttribute // attribute
-				, includeLogic);
-		return Collections.singletonMap(aggregationItem.getId(), aggregationItem);
+		final AggregationItem aggregationItem = AggregationItem.builder()
+				.id(AggregationItemId.ofRepoId(aggregationItemDef.getC_AggregationItem_ID()))
+				.type(Type.Attribute)
+				.columnName(null)
+				.displayType(-1)
+				.attribute(aggregationAttribute)
+				.includeLogic(includeLogic)
+				.build();
+		return ImmutableMap.of(aggregationItem.getId(), aggregationItem);
 	}
 
 	/**

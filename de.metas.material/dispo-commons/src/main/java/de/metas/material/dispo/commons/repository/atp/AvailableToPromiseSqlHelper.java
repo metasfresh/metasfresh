@@ -1,26 +1,29 @@
 package de.metas.material.dispo.commons.repository.atp;
 
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-
 import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
-import org.compiere.db.Database;
 import org.compiere.model.IQuery;
+import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 
-import de.metas.material.commons.AttributesKeyQueryHelper;
+import de.metas.material.commons.attributes.AttributesKeyPattern;
+import de.metas.material.commons.attributes.AttributesKeyQueryHelper;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -47,7 +50,6 @@ import de.metas.util.Services;
 @UtilityClass
 /* package */ final class AvailableToPromiseSqlHelper
 {
-	@VisibleForTesting
 	public IQuery<I_MD_Candidate_ATP_QueryResult> createDBQueryForStockQuery(@NonNull final AvailableToPromiseQuery query)
 	{
 		final IQueryBuilder<I_MD_Candidate_ATP_QueryResult> queryBuilder = createDBQueryForStockQueryBuilder(query);
@@ -61,7 +63,7 @@ import de.metas.util.Services;
 			Check.assume(dbQuery instanceof TypedSqlQuery, "If we are not in unit test mode, then our query has to be an sql query; query={}", dbQuery);
 			final TypedSqlQuery<I_MD_Candidate_ATP_QueryResult> sqlDbQuery = (TypedSqlQuery<I_MD_Candidate_ATP_QueryResult>)dbQuery;
 
-			final String dateString = Database.TO_DATE(TimeUtil.asTimestamp(query.getDate()), false);
+			final String dateString = DB.TO_DATE(query.getDate());
 			sqlDbQuery.setSqlFrom("de_metas_material.retrieve_atp_at_date(" + dateString + ")");
 		}
 
@@ -83,7 +85,7 @@ import de.metas.util.Services;
 		}
 
 		// Warehouse
-		final Set<Integer> warehouseIds = query.getWarehouseIds();
+		final Set<WarehouseId> warehouseIds = query.getWarehouseIds();
 		if (!warehouseIds.isEmpty())
 		{
 			queryBuilder.addInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_M_Warehouse_ID, warehouseIds);
@@ -97,26 +99,30 @@ import de.metas.util.Services;
 		}
 
 		// BPartner
-		final int bpartnerId = query.getBpartnerId();
-		if (bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_ANY)
+		final BPartnerClassifier bpartner = query.getBpartner();
+		if (bpartner.isAny())
 		{
 			// nothing to filter
 		}
-		else if (bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_NONE)
+		else if (bpartner.isNone())
 		{
-			queryBuilder.addEqualsFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_C_BPartner_Customer_ID, null);
+			queryBuilder.addEqualsFilter(I_MD_Candidate_ATP_QueryResult.COLUMNNAME_C_BPartner_Customer_ID, null);
 		}
-		else
+		else // specific
 		{
-			queryBuilder.addInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMN_C_BPartner_Customer_ID, bpartnerId, null);
+			queryBuilder.addInArrayFilter(I_MD_Candidate_ATP_QueryResult.COLUMNNAME_C_BPartner_Customer_ID, bpartner.getBpartnerId(), null);
 		}
 
 		//
 		// Storage Attributes Key
-		final AttributesKeyQueryHelper<I_MD_Candidate_ATP_QueryResult>//
-		helper = AttributesKeyQueryHelper.createFor(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey);
+		final ImmutableList<AttributesKeyPattern> storageAttributesKeyPatterns = query.getStorageAttributesKeyPatterns();
+		if(!storageAttributesKeyPatterns.isEmpty())
+		{
+			final AttributesKeyQueryHelper<I_MD_Candidate_ATP_QueryResult> helper = AttributesKeyQueryHelper.createFor(I_MD_Candidate_ATP_QueryResult.COLUMN_StorageAttributesKey);
+			final IQueryFilter<I_MD_Candidate_ATP_QueryResult> attributesFilter = helper.createFilter(storageAttributesKeyPatterns);
+			queryBuilder.filter(attributesFilter);
+		}
 
-		queryBuilder.filter(helper.createORFilterForStorageAttributesKeys(query.getStorageAttributesKeys()));
 		return queryBuilder;
 	}
 
@@ -125,7 +131,4 @@ import de.metas.util.Services;
 		final boolean isRealSqlQuery = !Adempiere.isUnitTestMode();
 		return isRealSqlQuery;
 	}
-
-
-
 }

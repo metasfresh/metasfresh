@@ -3,16 +3,17 @@ package de.metas.acct.process;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Properties;
 
-import org.adempiere.acct.api.IDocFactory;
-import org.adempiere.acct.api.IDocMetaInfo;
-import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
-import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.util.DB;
 
+import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
+import de.metas.acct.doc.AcctDocRegistry;
+import de.metas.acct.api.IPostingService;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
@@ -41,30 +42,28 @@ import de.metas.util.Services;
 
 public class Documents_EnqueueNotPosted extends JavaProcess
 {
-	private final transient IDocFactory docFactory = Services.get(IDocFactory.class);
+	private final transient AcctDocRegistry docFactory = Adempiere.getBean(AcctDocRegistry.class);
 	private final transient IPostingService postingService = Services.get(IPostingService.class);
 
 	@Override
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		for (final IDocMetaInfo docMetaInfo : docFactory.getDocMetaInfoList())
+		for (final String docTableName : docFactory.getDocTableNames())
 		{
-			enqueueDocuments(docMetaInfo);
+			enqueueDocuments(docTableName);
 		}
 
 		return MSG_OK;
 	}
 
-	private void enqueueDocuments(final IDocMetaInfo docMetaInfo)
+	private void enqueueDocuments(final String docTableName)
 	{
-		final int adTableId = docMetaInfo.getAD_Table_ID();
-		final String tableName = docMetaInfo.getTableName();
-		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
+		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(docTableName);
 
 		final String sql = new StringBuilder("")
 				.append("SELECT ").append(keyColumnName)
-				.append(" FROM ").append(tableName)
+				.append(" FROM ").append(docTableName)
 				.append(" WHERE AD_Client_ID=").append(getAD_Client_ID())
 				.append(" AND Processed='Y' AND Posted='N' AND IsActive='Y'")
 				.append(" ORDER BY Created")
@@ -82,24 +81,24 @@ public class Documents_EnqueueNotPosted extends JavaProcess
 			{
 				final int recordId = rs.getInt(keyColumnName);
 
-				enqueueDocument(adTableId, recordId);
+				enqueueDocument(docTableName, recordId);
 				countEnqueued++;
 			}
 
 			if (countEnqueued > 0)
 			{
-				addLog("{}: enqueued {} documents", tableName, countEnqueued);
+				addLog("{}: enqueued {} documents", docTableName, countEnqueued);
 			}
 		}
 		catch (final SQLException ex)
 		{
-			addLog("{}: failed fetching IDs. Check log.", tableName);
+			addLog("{}: failed fetching IDs. Check log.", docTableName);
 			log.warn("Failed fetching IDs: \n SQL={} \n Params={}", sql, ex);
 		}
 		catch (final Exception ex)
 		{
-			addLog("{}: error: {}. Check log.", tableName, ex.getLocalizedMessage());
-			log.warn("Error while processing {}", tableName, ex);
+			addLog("{}: error: {}. Check log.", docTableName, ex.getLocalizedMessage());
+			log.warn("Error while processing {}", docTableName, ex);
 		}
 		finally
 		{
@@ -107,17 +106,12 @@ public class Documents_EnqueueNotPosted extends JavaProcess
 		}
 	}
 
-	private void enqueueDocument(final int adTableId, final int recordId)
+	private void enqueueDocument(final String tableName, final int recordId)
 	{
-		final Properties ctx = getCtx();
-		final String trxName = getTrxName();
-		final int adClientId = getAD_Client_ID();
-
 		postingService.newPostingRequest()
 				// Post it in same context and transaction as the process
-				.setContext(ctx, trxName)
-				.setAD_Client_ID(adClientId)
-				.setDocument(adTableId, recordId) // the document to be posted
+				.setClientId(ClientId.ofRepoId(getAD_Client_ID()))
+				.setDocumentRef(TableRecordReference.of(tableName, recordId)) // the document to be posted
 				.setFailOnError(false) // don't fail because we don't want to fail the main document posting because one of it's depending documents are failing
 				.setPostImmediate(PostImmediate.No) // no, just enqueue it
 				.setForce(false) // don't force it

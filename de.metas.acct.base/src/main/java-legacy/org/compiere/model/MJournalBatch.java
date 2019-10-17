@@ -29,7 +29,6 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.document.engine.IDocument;
@@ -112,8 +111,8 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 			setPostingType (POSTINGTYPE_Actual);
 			setDocAction (DOCACTION_Complete);
 			setDocStatus (DOCSTATUS_Drafted);
-			setTotalCr (Env.ZERO);
-			setTotalDr (Env.ZERO);
+			setTotalCr (BigDecimal.ZERO);
+			setTotalDr (BigDecimal.ZERO);
 			setProcessed (false);
 			setProcessing (false);
 			setIsApproved(false);
@@ -246,8 +245,8 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 			toJournal.setDateAcct(getDateAcct());
 			toJournal.setDocStatus(MJournal.DOCSTATUS_Drafted);
 			toJournal.setDocAction(MJournal.DOCACTION_Complete);
-			toJournal.setTotalCr(Env.ZERO);
-			toJournal.setTotalDr(Env.ZERO);
+			toJournal.setTotalCr(BigDecimal.ZERO);
+			toJournal.setTotalDr(BigDecimal.ZERO);
 			toJournal.setIsApproved(false);
 			toJournal.setIsPrinted(false);
 			toJournal.setPosted(false);
@@ -327,12 +326,11 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 			m_processMsg = "@NoLines@";
 			return IDocument.STATUS_Invalid;
 		}
-
-		BigDecimal TotalDr = Env.ZERO;
-		BigDecimal TotalCr = Env.ZERO;
-		for (MJournal journal2 : journals)
+		
+		BigDecimal TotalDr = BigDecimal.ZERO;
+		BigDecimal TotalCr = BigDecimal.ZERO;		
+		for (final MJournal journal : journals)
 		{
-			MJournal journal = journal2;
 			if (!journal.isActive())
 				continue;
 			//	Prepare if not closed
@@ -362,7 +360,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		setTotalCr(TotalCr);
 
 		//	Control Amount
-		if (Env.ZERO.compareTo(getControlAmt()) != 0
+		if (BigDecimal.ZERO.compareTo(getControlAmt()) != 0
 			&& getControlAmt().compareTo(getTotalDr()) != 0)
 		{
 			m_processMsg = "@ControlAmtError@";
@@ -429,11 +427,10 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 
 		//	Add up Amounts & complete them
 		MJournal[] journals = getJournals(true);
-		BigDecimal TotalDr = Env.ZERO;
-		BigDecimal TotalCr = Env.ZERO;
-		for (MJournal journal2 : journals)
+		BigDecimal TotalDr = BigDecimal.ZERO;
+		BigDecimal TotalCr = BigDecimal.ZERO;		
+		for (final MJournal journal : journals)
 		{
-			MJournal journal = journal2;
 			if (!journal.isActive())
 			{
 				journal.setProcessed(true);

@@ -38,6 +38,7 @@ import de.metas.handlingunits.model.I_M_HU_Item_Storage;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -70,7 +71,7 @@ public class HUItemStorageExpectation<ParentExpectationType> extends AbstractHUE
 		}
 		if (_uom != null)
 		{
-			assertModelEquals(prefix + "UOM", _uom, storage.getC_UOM());
+			assertModelEquals(prefix + "UOM", _uom, Services.get(IUOMDAO.class).getById(storage.getC_UOM_ID()));
 		}
 
 		//

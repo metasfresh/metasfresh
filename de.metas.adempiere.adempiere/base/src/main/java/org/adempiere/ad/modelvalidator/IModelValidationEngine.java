@@ -1,7 +1,5 @@
 package org.adempiere.ad.modelvalidator;
 
-import org.adempiere.impexp.IImportInterceptor;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -26,6 +24,8 @@ import org.adempiere.impexp.IImportInterceptor;
 
 
 import org.compiere.model.I_AD_Client;
+
+import de.metas.impexp.processing.IImportInterceptor;
 
 /**
  * Model Validation Engine

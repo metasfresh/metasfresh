@@ -14,13 +14,12 @@
 package org.compiere.util;
 
 /**
- * Defines an object that can be ran into an transaction, 
- * using {@link Trx#run(TrxRunnable)} or {@link Trx#run(String, TrxRunnable)} methods.
+ * Defines an object that can be ran into an transaction. 
  * 
  * @author Teo Sarca, http://www.arhipac.ro
  */
 @FunctionalInterface
 public interface TrxRunnable
 {
-	public void run(String localTrxName) throws Exception;
+	void run(String localTrxName) throws Exception;
 }

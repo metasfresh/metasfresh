@@ -22,15 +22,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.MLocator;
 import org.compiere.model.MMovement;
 import org.compiere.model.MMovementLine;
-import org.compiere.model.MRefList;
 import org.compiere.model.MStorage;
+import org.compiere.model.X_M_Movement;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.IStorageBL;
@@ -181,9 +183,15 @@ public class StorageCleanup extends JavaProcess
 		mh.processIt(MMovement.ACTION_Complete);
 		mh.save();
 
-		addLog(0, null, new BigDecimal(lines), "@M_Movement_ID@ " + mh.getDocumentNo() + " ("
-			+ MRefList.get(getCtx(), MMovement.DOCSTATUS_AD_Reference_ID,
-				mh.getDocStatus(), get_TrxName()) + ")");
+		final ITranslatableString docStatus = Services.get(IADReferenceDAO.class)
+				.retrieveListNameTranslatableString(
+						X_M_Movement.DOCSTATUS_AD_Reference_ID,
+						mh.getDocStatus());
+
+		addLog(0,
+				null,
+				new BigDecimal(lines),
+				"@M_Movement_ID@ " + mh.getDocumentNo() + " (" + docStatus.translate(Env.getAD_Language()) + ")");
 
 		eliminateReservation(target);
 		return lines;
@@ -279,7 +287,7 @@ public class StorageCleanup extends JavaProcess
 			DB.close(rs, pstmt);
 			rs = null; pstmt = null;
 		}
-		
+
 		return retValue;
 	}	//	getDefault
 

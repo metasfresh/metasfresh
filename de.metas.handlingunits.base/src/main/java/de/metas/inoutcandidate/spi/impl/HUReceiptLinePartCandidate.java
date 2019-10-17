@@ -10,12 +10,12 @@ package de.metas.inoutcandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -54,7 +54,7 @@ import de.metas.util.Check;
 	 * Keep the M_QualityNote linked to the candidate
 	 */
 	private I_M_QualityNote _qualityNote = null;
-	private IQtyAndQuality _qtyAndQuality = null;
+	private ReceiptQty _qtyAndQuality = null;
 	private BigDecimal _qty = BigDecimal.ZERO;
 	private int _subProducerBPartnerId = -1;
 	private Object _attributeStorageAggregationKey = null;
@@ -148,7 +148,7 @@ import de.metas.util.Check;
 		//
 		// Qty & Quality
 		final BigDecimal qualityDiscountPercent = attributes.getQualityDiscountPercent();
-		final MutableQtyAndQuality qtyAndQuality = new MutableQtyAndQuality();
+		final ReceiptQty qtyAndQuality = new ReceiptQty();
 		I_M_QualityNote qualityNote = null;
 		qtyAndQuality.addQtyAndQualityDiscountPercent(_qty, qualityDiscountPercent);
 
@@ -186,7 +186,7 @@ import de.metas.util.Check;
 	/**
 	 * @return qty & quality; never returns null
 	 */
-	public final IQtyAndQuality getQtyAndQuality()
+	public final ReceiptQty getQtyAndQuality()
 	{
 		updateIfStale();
 		return _qtyAndQuality;
@@ -206,7 +206,7 @@ import de.metas.util.Check;
 
 	/**
 	 * Get the quality note linked with the part candidate
-	 * 
+	 *
 	 * @return
 	 */
 	public I_M_QualityNote getQualityNote()

@@ -31,6 +31,8 @@ import java.util.Properties;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -45,21 +47,23 @@ import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.ad.model.util.Model2IdFunction;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.process.PInstanceId;
+import de.metas.security.permissions.Access;
+import de.metas.util.collections.IteratorUtils;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Getter;
 import lombok.NonNull;
 
 public interface IQuery<T>
 {
-
 	/**
 	 * If this instance is used to get an iterator, then this option tells how many rows the iterator shall load at a time.
 	 *
@@ -71,6 +75,11 @@ public interface IQuery<T>
 	 * Boolean value to specify what type of iteration shall be used, when no one is specified explicitly
 	 */
 	String OPTION_GuaranteedIteratorRequired = "GuaranteedIteratorRequired";
+
+	/**
+	 * If set to {@code true}, then returned records can't be saved or deleted.
+	 */
+	String OPTION_ReturnReadOnlyRecords = "ReturnReadOnlyRecords";
 
 	/**
 	 * Default value for {@link #OPTION_GuaranteedIteratorRequired}.
@@ -109,11 +118,8 @@ public interface IQuery<T>
 	<ET extends T> List<ET> list(Class<ET> clazz) throws DBException;
 
 	/**
-	 * Same as {@link #list(Class)} but returns an {@link ImmutableList}.
-	 *
-	 * @param clazz
-	 * @return {@link ImmutableList}
-	 * @throws DBException
+	 * Same as {@link #list(Class)} returns an {@link ImmutableList}. Note: you can update or delete the included records.
+	 * If you want read-only records, see {@link #OPTION_ReturnReadOnlyRecords}.
 	 */
 	default <ET extends T> ImmutableList<ET> listImmutable(Class<ET> clazz) throws DBException
 	{
@@ -241,10 +247,18 @@ public interface IQuery<T>
 	 * be considered.
 	 *
 	 * @param clazz model interface class
-	 * @return iterator
-	 * @throws DBException
 	 */
 	<ET extends T> Iterator<ET> iterate(Class<ET> clazz) throws DBException;
+
+	default <ID extends RepoIdAware> Iterator<ID> iterateIds(@NonNull final IntFunction<ID> idMapper) throws DBException
+	{
+		// TODO: implement an efficient solution and not this workaround
+		final Iterator<T> modelIterator = iterate(getModelClass());
+		final Function<T, ID> mapper = model -> idMapper.apply(InterfaceWrapperHelper.getId(model));
+		return IteratorUtils.map(modelIterator, mapper);
+	}
+
+	<ET extends T> QueryResultPage<ET> paginate(Class<ET> clazz, int pageSize) throws DBException;
 
 	/**
 	 * Only records that are in T_Selection with AD_PInstance_ID.
@@ -280,10 +294,10 @@ public interface IQuery<T>
 		FIRST(null, true);
 
 		@Getter
-		private final String sqlFunction;
+		private String sqlFunction;
 
 		@Getter
-		private final boolean useOrderByClause;
+		private boolean useOrderByClause;
 
 		private Aggregate(final String sqlFunction, final boolean useOrderByClause)
 		{
@@ -296,7 +310,7 @@ public interface IQuery<T>
 		{
 			return sqlFunction;
 		}
-	};
+	}
 
 	/**
 	 * Aggregate given expression on this criteria
@@ -322,24 +336,7 @@ public interface IQuery<T>
 		return aggregate(columnName, Aggregate.MAX, Integer.class);
 	}
 
-	/**
-	 * Turn on/off the data access filter.
-	 *
-	 * i.e. accept only those records on which current role has access to. If you want to accept only those records on which current role has read-write access you might want to use
-	 * {@link #setApplyAccessFilterRW(boolean)}.
-	 *
-	 * @param flag <code>true</code> if it shall enforced
-	 */
-	IQuery<T> setApplyAccessFilter(boolean flag);
-
-	/**
-	 * Apply read-write access filter to all resulting records.
-	 *
-	 * Please note that this method will turn on security filter anyway. If you want to turn this off again, use {@link #setApplyAccessFilter(boolean)}.
-	 *
-	 * @param RW true if read-write access is required, false if read-only access is sufficient
-	 */
-	IQuery<T> setApplyAccessFilterRW(boolean RW);
+	IQuery<T> setRequiredAccess(@Nullable Access access);
 
 	/**
 	 * Filter by context AD_Client_ID
@@ -569,6 +566,13 @@ public interface IQuery<T>
 	default Stream<T> iterateAndStream() throws DBException
 	{
 		final Iterator<T> iterator = iterate(getModelClass());
+		final boolean parallel = false;
+		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), parallel);
+	}
+
+	default <ID extends RepoIdAware> Stream<ID> iterateAndStreamIds(@NonNull final IntFunction<ID> idMapper) throws DBException
+	{
+		final Iterator<ID> iterator = iterateIds(idMapper);
 		final boolean parallel = false;
 		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), parallel);
 	}

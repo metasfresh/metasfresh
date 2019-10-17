@@ -30,6 +30,7 @@ import org.compiere.swing.table.ColumnInfo;
 import org.compiere.swing.table.TableInfo;
 
 import de.metas.banking.payment.paymentallocation.service.IPayableDocument;
+import de.metas.currency.CurrencyCode;
 
 /**
  * Invoice Row
@@ -72,7 +73,8 @@ public interface IInvoiceRow extends IAllocableDocRow
 
 	String PROPERTY_DocumentCurrency = "DocumentCurrency";
 	@ColumnInfo(columnName = PROPERTY_DocumentCurrency, seqNo = 60)
-	String getCurrencyISOCode();
+	String getCurrencyISOCodeAsString();
+	CurrencyCode getCurrencyISOCode();
 
 	@ColumnInfo(columnName = "OriginalAmt", seqNo = 70)
 	BigDecimal getGrandTotal();

@@ -10,12 +10,12 @@ package de.metas.handlingunits.storage.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,9 +29,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
 
-import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
@@ -69,11 +67,12 @@ public class HUStorageDAO extends AbstractHUStorageDAO
 	@Override
 	public I_M_HU_Storage retrieveStorage(final I_M_HU hu, @NonNull final ProductId productId)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Storage.class, hu)
-				.filter(new EqualsQueryFilter<I_M_HU_Storage>(I_M_HU_Storage.COLUMNNAME_M_HU_ID, hu.getM_HU_ID()))
-				.filter(new EqualsQueryFilter<I_M_HU_Storage>(I_M_HU_Storage.COLUMNNAME_M_Product_ID, productId))
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU_Storage.class, hu)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_Storage.COLUMN_M_HU_ID, hu.getM_HU_ID())
+				.addEqualsFilter(I_M_HU_Storage.COLUMN_M_Product_ID, productId)
 				.create()
-				.setOnlyActiveRecords(true)
 				.firstOnly(I_M_HU_Storage.class);
 	}
 
@@ -100,7 +99,7 @@ public class HUStorageDAO extends AbstractHUStorageDAO
 		}
 
 		return huStorages;
-	};
+	}
 
 	@Override
 	public I_M_HU_Item_Storage retrieveItemStorage(final I_M_HU_Item huItem, @NonNull final ProductId productId)
@@ -147,17 +146,5 @@ public class HUStorageDAO extends AbstractHUStorageDAO
 	public void save(final I_M_HU_Item item)
 	{
 		InterfaceWrapperHelper.save(item);
-	}
-
-	@Override
-	public I_C_UOM getC_UOM(final I_M_HU_Storage storage)
-	{
-		if (storage.getC_UOM_ID() <= 0)
-		{
-			// shall not happen
-			throw new HUException("Storage " + storage + " has not UOM set");
-		}
-
-		return storage.getC_UOM();
 	}
 }

@@ -1,6 +1,5 @@
 package de.metas.contracts.invoicecandidate;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.function.Consumer;
@@ -8,6 +7,7 @@ import java.util.function.Consumer;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
+import de.metas.quantity.Quantity;
 
 /*
  * #%L
@@ -39,11 +39,13 @@ public interface ConditionTypeSpecificInvoiceCandidateHandler
 
 	void setSpecificInvoiceCandidateValues(I_C_Invoice_Candidate ic, I_C_Flatrate_Term term);
 
-	BigDecimal calculateQtyOrdered(I_C_Invoice_Candidate invoiceCandidateRecord);
+	Quantity calculateQtyEntered(I_C_Invoice_Candidate invoiceCandidateRecord);
 
 	Timestamp calculateDateOrdered(I_C_Invoice_Candidate invoiceCandidateRecord);
 
 	PriceAndTax calculatePriceAndTax(I_C_Invoice_Candidate invoiceCandidateRecord);
 
-	Consumer<I_C_Invoice_Candidate> getSetInvoiceScheduleImplementation(Consumer<I_C_Invoice_Candidate> defaultImplementation);
+	Consumer<I_C_Invoice_Candidate> getInvoiceScheduleSetterFunction(Consumer<I_C_Invoice_Candidate> defaultImplementation);
+
+	boolean isMissingInvoiceCandidate(I_C_Flatrate_Term flatrateTerm);
 }

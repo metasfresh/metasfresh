@@ -26,10 +26,13 @@ import java.lang.ref.WeakReference;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
+import javax.annotation.Nullable;
+
 import org.compiere.Adempiere;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.eventbus.SubscriberExceptionContext;
 import com.google.common.eventbus.SubscriberExceptionHandler;
@@ -39,11 +42,15 @@ import de.metas.event.EventBusConstants;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventListener;
 import de.metas.event.Type;
-import de.metas.event.log.EventLogSystemBusTools;
+import de.metas.event.log.EventLogEntryCollector;
+import de.metas.event.log.EventLogService;
 import de.metas.event.log.EventLogUserService;
-import de.metas.event.log.impl.EventLogEntryCollector;
 import de.metas.util.Check;
+import de.metas.util.JSONObjectMapper;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 final class EventBus implements IEventBus
 {
@@ -62,24 +69,33 @@ final class EventBus implements IEventBus
 		}
 	};
 
-	private final String name;
+	private static final String PROP_Body = "body";
+	private static final JSONObjectMapper<Object> sharedJsonSerializer = JSONObjectMapper.forClass(Object.class);
+
+	@Getter
+	private final String topicName;
 	private com.google.common.eventbus.EventBus eventBus;
 
+	@Getter
 	private boolean destroyed = false;
 
 	/**
 	 * The default type is local, unless the factory makes this event bus "remote" by registering some sort of forwarder-subscriber.
 	 */
+	@Getter
 	private Type type = Type.LOCAL;
 
 	private final ExecutorService executorOrNull;
 
+	/**
+	 * @param executor if not null, the system creates an {@link AsyncEventBus}; also, it shuts down this executor on {@link #destroy()}
+	 */
 	public EventBus(
-			final String topicName,
-			final ExecutorService executor)
+			@NonNull final String topicName,
+			@Nullable final ExecutorService executor)
 	{
 		this.executorOrNull = executor;
-		this.name = Check.assumeNotEmpty(topicName, "name not empty");
+		this.topicName = Check.assumeNotEmpty(topicName, "name not empty");
 
 		if (executor == null)
 		{
@@ -96,32 +112,18 @@ final class EventBus implements IEventBus
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("name", name)
+				.add("topicName", topicName)
 				.add("type", type)
 				.add("destroyed", destroyed ? Boolean.TRUE : null)
 				.toString();
 	}
 
-	@Override
-	public final String getName()
-	{
-		return name;
-	}
-
 	/**
 	 * To be invoked only by the factory.
-	 *
-	 * @param type
 	 */
 	/* package */void setTypeRemote()
 	{
 		this.type = Type.REMOTE;
-	}
-
-	@Override
-	public Type getType()
-	{
-		return type;
 	}
 
 	void destroy()
@@ -137,14 +139,12 @@ final class EventBus implements IEventBus
 	}
 
 	@Override
-	public void subscribe(final IEventListener listener)
+	public void subscribe(@NonNull final IEventListener listener)
 	{
 		// Do nothing if destroyed
 		if (destroyed)
 		{
-			logger.warn("Attempt to register a listener to a destroyed bus. Ignored."
-					+ "\n Bus: " + this
-					+ "\n Listener: " + listener);
+			logger.warn("Attempt to register a listener to a destroyed bus. Ignored. \n Bus: {} \n Listener: {}", this, listener);
 			return;
 		}
 
@@ -156,19 +156,23 @@ final class EventBus implements IEventBus
 	@Override
 	public void subscribe(@NonNull Consumer<Event> eventConsumer)
 	{
-		final IEventListener eventListener = (eventBus, event) -> eventConsumer.accept(event);
-		subscribe(eventListener);
+		final IEventListener listener = (eventBus, event) -> eventConsumer.accept(event);
+		subscribe(listener);
 	}
 
 	@Override
-	public void subscribeWeak(final IEventListener listener)
+	public <T> void subscribeOn(@NonNull final Class<T> type, @NonNull final Consumer<T> eventConsumer)
+	{
+		subscribe(new TypedConsumerAsEventListener<>(type, eventConsumer));
+	}
+
+	@Override
+	public void subscribeWeak(@NonNull final IEventListener listener)
 	{
 		// Do nothing if destroyed
 		if (destroyed)
 		{
-			logger.warn("Attempt to register a listener to a destroyed bus. Ignored."
-					+ "\n Bus: " + this
-					+ "\n Listener: " + listener);
+			logger.warn("Attempt to register a listener to a destroyed bus. Ignored. \n Bus: {} \n Listener: {}", this, listener);
 			return;
 		}
 
@@ -178,43 +182,75 @@ final class EventBus implements IEventBus
 	}
 
 	@Override
+	public void postObject(@NonNull final Object obj)
+	{
+		final String json = sharedJsonSerializer.writeValueAsString(obj);
+		postEvent(Event.builder()
+				.putProperty(PROP_Body, json)
+				.shallBeLogged()
+				.build());
+	}
+
+	@Override
 	public void postEvent(@NonNull final Event event)
 	{
 		// Do nothing if destroyed
 		if (destroyed)
 		{
-			logger.warn("Attempt to post an event to a destroyed bus. Ignored."
-					+ "\n Bus: " + this
-					+ "\n Event: " + event);
+			logger.warn("Attempt to post an event to a destroyed bus. Ignored. \n Bus: {} \n Event: {}", this, event);
 			return;
 		}
 
-		logger.debug("{} - Posting event: {}", this, event);
-		eventBus.post(event);
-	}
+		final Event eventToPost;
 
-	@Override
-	public boolean isDestroyed()
-	{
-		return destroyed;
-	}
-
-	public class GuavaEventListenerAdapter
-	{
-		private final IEventListener eventListener;
-
-		GuavaEventListenerAdapter(@NonNull final IEventListener eventListener)
+		// as long as we have just one common event-log-DB, we store events only on the machine they were created on, in order to avoid duplicates.
+		if (event.isShallBeLogged() && event.isLocalEvent())
 		{
-			this.eventListener = eventListener;
+			eventToPost = event.withStatusWasLogged();
+
+			final EventLogService eventLogService = Adempiere.getBean(EventLogService.class);
+			eventLogService.saveEvent(eventToPost, this);
+		}
+		else
+		{
+			eventToPost = event;
+		}
+
+		logger.debug("{} - Posting event: {}", this, event);
+		eventBus.post(eventToPost);
+	}
+
+	private static class TypedConsumerAsEventListener<T> implements IEventListener
+	{
+		@NonNull
+		private final Consumer<T> eventConsumer;
+		@NonNull
+		private final JSONObjectMapper<T> jsonDeserializer;
+
+		public TypedConsumerAsEventListener(
+				@NonNull final Class<T> eventBodyType,
+				@NonNull final Consumer<T> eventConsumer)
+		{
+			this.jsonDeserializer = JSONObjectMapper.forClass(eventBodyType);
+			this.eventConsumer = eventConsumer;
 		}
 
 		@Override
-		public String toString()
+		public void onEvent(final IEventBus eventBus, final Event event)
 		{
-			return MoreObjects.toStringHelper(this)
-					.addValue(eventListener)
-					.toString();
+			final String json = event.getPropertyAsString(PROP_Body);
+			final T obj = jsonDeserializer.readValue(json);
+			eventConsumer.accept(obj);
 		}
+
+	}
+
+	@AllArgsConstructor
+	@ToString
+	private class GuavaEventListenerAdapter
+	{
+		@NonNull
+		private final IEventListener eventListener;
 
 		@Subscribe
 		public void onEvent(@NonNull final Event event)
@@ -223,21 +259,15 @@ final class EventBus implements IEventBus
 		}
 	}
 
-	public class WeakGuavaEventListenerAdapter
+	@ToString
+	private class WeakGuavaEventListenerAdapter
 	{
+		@NonNull
 		private final WeakReference<IEventListener> eventListenerRef;
 
-		WeakGuavaEventListenerAdapter(@NonNull final IEventListener eventListener)
+		private WeakGuavaEventListenerAdapter(@NonNull final IEventListener eventListener)
 		{
 			eventListenerRef = new WeakReference<>(eventListener);
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.addValue(eventListenerRef)
-					.toString();
 		}
 
 		@Subscribe
@@ -262,19 +292,32 @@ final class EventBus implements IEventBus
 			@NonNull final IEventListener eventListener,
 			@NonNull final Event event)
 	{
-		// even if the event(-data) is not stored, we allow all listeners/handlers to add log entries.
-		final EventLogEntryCollector collector = EventLogSystemBusTools.provideEventLogEntryCollectorForCurrentThread(event);
+		if (event.isWasLogged())
+		{
+			invokeEventListenerWithLogging(eventListener, event);
+		}
+		else
+		{
+			eventListener.onEvent(this, event);
+		}
+	}
+
+	private void invokeEventListenerWithLogging(
+			@NonNull final IEventListener eventListener,
+			@NonNull final Event event)
+	{
+		final EventLogEntryCollector collector = EventLogEntryCollector.createThreadLocalForEvent(event);
 		try
 		{
 			eventListener.onEvent(this, event);
 		}
-		catch (final RuntimeException e)
+		catch (final RuntimeException ex)
 		{
 			if (!Adempiere.isUnitTestMode())
 			{
 				final EventLogUserService eventLogUserService = Adempiere.getBean(EventLogUserService.class);
 				eventLogUserService
-						.newErrorLogEntry(eventListener.getClass(), e)
+						.newErrorLogEntry(eventListener.getClass(), ex)
 						.createAndStore();
 			}
 		}

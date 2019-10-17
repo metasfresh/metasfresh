@@ -23,14 +23,14 @@ package de.metas.pricing.service.impl;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.Month;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_Test;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,6 +43,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 
 public class PricingContextTest
@@ -62,7 +63,7 @@ public class PricingContextTest
 		final PricingContext pricingCtx = new PricingContext();
 
 		int nextId = 1;
-		final Timestamp priceDate = TimeUtil.getDay(2015, 2, 3, 4, 5, 6);
+		final LocalDate priceDate = LocalDate.of(2015, Month.FEBRUARY, 3);
 
 		final String trxName = Services.get(ITrxManager.class).createTrxName("MyTrxName1", true);
 		final I_Test referencedObject = InterfaceWrapperHelper.create(Env.getCtx(), I_Test.class, trxName);
@@ -70,14 +71,14 @@ public class PricingContextTest
 
 		pricingCtx.setBPartnerId(BPartnerId.ofRepoId(nextId++));
 		pricingCtx.setCurrencyId(CurrencyId.ofRepoId(nextId++));
-		pricingCtx.setC_UOM_ID(nextId++);
+		pricingCtx.setUomId(UomId.ofRepoId(nextId++));
 		pricingCtx.setConvertPriceToContextUOM(true);
 		pricingCtx.setDisallowDiscount(true);
 		pricingCtx.setPricingSystemId(PricingSystemId.ofRepoId(nextId++));
 		pricingCtx.setPriceListId(PriceListId.ofRepoId(nextId++));
 		pricingCtx.setPriceListVersionId(PriceListVersionId.ofRepoId(nextId++));
 		pricingCtx.setProductId(ProductId.ofRepoId(nextId++));
-		pricingCtx.setManualPrice(true);
+		pricingCtx.setManualPriceEnabled(true);
 		pricingCtx.setPriceDate(priceDate);
 		pricingCtx.setProperty("PropertyName1", "Value1");
 		pricingCtx.setProperty("PropertyName2", "Value2");

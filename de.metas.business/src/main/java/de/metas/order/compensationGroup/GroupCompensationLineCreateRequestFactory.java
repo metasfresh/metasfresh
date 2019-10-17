@@ -2,11 +2,9 @@ package de.metas.order.compensationGroup;
 
 import java.math.BigDecimal;
 
-import org.adempiere.uom.UomId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_OrderLine;
-import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
 import de.metas.pricing.IEditablePricingContext;
@@ -16,9 +14,10 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.Percent;
-
 import lombok.NonNull;
 
 /*
@@ -31,12 +30,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -54,7 +53,7 @@ public class GroupCompensationLineCreateRequestFactory
 
 		final ProductId productId = templateLine.getProductId();
 		final I_M_Product product = productsRepo.getById(productId);
-		final I_C_UOM uom = productBL.getStockingUOM(product);
+		final I_C_UOM uom = productBL.getStockUOM(product);
 
 		final GroupCompensationType type = extractGroupCompensationType(product);
 		final GroupCompensationAmtType amtType = extractGroupCompensationAmtType(product);
@@ -71,7 +70,7 @@ public class GroupCompensationLineCreateRequestFactory
 				.type(type)
 				.amtType(amtType)
 				.percentage(percentage)
-				.qty(BigDecimal.ZERO)
+				.qtyEntered(BigDecimal.ZERO)
 				.price(BigDecimal.ZERO)
 				.groupTemplateLineId(templateLine.getId())
 				.build();
@@ -79,12 +78,12 @@ public class GroupCompensationLineCreateRequestFactory
 
 	private static final GroupCompensationType extractGroupCompensationType(final I_M_Product product)
 	{
-		return GroupCompensationType.ofAD_Ref_List_Value(Util.coalesce(product.getGroupCompensationType(), X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount));
+		return GroupCompensationType.ofAD_Ref_List_Value(CoalesceUtil.coalesce(product.getGroupCompensationType(), X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount));
 	}
 
 	private static final GroupCompensationAmtType extractGroupCompensationAmtType(final I_M_Product product)
 	{
-		return GroupCompensationAmtType.ofAD_Ref_List_Value(Util.coalesce(product.getGroupCompensationAmtType(), X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent));
+		return GroupCompensationAmtType.ofAD_Ref_List_Value(CoalesceUtil.coalesce(product.getGroupCompensationAmtType(), X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent));
 	}
 
 	private Percent calculateDefaultDiscountPercentage(final GroupTemplateLine templateLine, final Group group)

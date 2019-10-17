@@ -33,8 +33,8 @@ import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.aggregation.api.AbstractAggregationKeyBuilder;
-import de.metas.aggregation.api.IAggregationKey;
-import de.metas.aggregation.api.impl.AggregationKey;
+import de.metas.aggregation.api.AggregationId;
+import de.metas.aggregation.api.AggregationKey;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /**
@@ -67,17 +67,17 @@ public class MaterialTrackingICHeaderAggregationKeyBuilder_OLD extends AbstractA
 	}
 
 	@Override
-	public IAggregationKey buildAggregationKey(I_C_Invoice_Candidate model)
+	public AggregationKey buildAggregationKey(I_C_Invoice_Candidate model)
 	{
 		final List<Object> keyValues = extractKeyValues(model);
 		final ArrayKey key = Util.mkKey(keyValues.toArray());
-		final int aggregationId = -1;
+		final AggregationId aggregationId = null;
 		return new AggregationKey(key, aggregationId);
 	}
 
 	private final List<Object> extractKeyValues(final I_C_Invoice_Candidate ic)
 	{
-		final List<Object> values = new ArrayList<Object>();
+		final List<Object> values = new ArrayList<>();
 
 		final de.metas.materialtracking.model.I_C_Invoice_Candidate icExt = InterfaceWrapperHelper.create(ic, de.metas.materialtracking.model.I_C_Invoice_Candidate.class);
 

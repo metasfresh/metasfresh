@@ -1,7 +1,6 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.vertical.pharma.msv3.server.model;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -15,7 +14,7 @@ public class X_MSV3_Server extends org.compiere.model.PO implements I_MSV3_Serve
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -871631164L;
+	private static final long serialVersionUID = -402153235L;
 
     /** Standard Constructor */
     public X_MSV3_Server (Properties ctx, int MSV3_Server_ID, String trxName)
@@ -23,9 +22,9 @@ public class X_MSV3_Server extends org.compiere.model.PO implements I_MSV3_Serve
       super (ctx, MSV3_Server_ID, trxName);
       /** if (MSV3_Server_ID == 0)
         {
-			setFixedQtyAvailableToPromise (BigDecimal.ZERO);
-			setM_Warehouse_PickingGroup_ID (0);
+			setFixedQtyAvailableToPromise (0); // 0
 			setMSV3_Server_ID (0);
+			setM_Warehouse_PickingGroup_ID (0);
         } */
     }
 
@@ -47,51 +46,17 @@ public class X_MSV3_Server extends org.compiere.model.PO implements I_MSV3_Serve
 	/** Set Konst. Zusagbar (ATP) Wert.
 		@param FixedQtyAvailableToPromise Konst. Zusagbar (ATP) Wert	  */
 	@Override
-	public void setFixedQtyAvailableToPromise (java.math.BigDecimal FixedQtyAvailableToPromise)
+	public void setFixedQtyAvailableToPromise (int FixedQtyAvailableToPromise)
 	{
-		set_Value (COLUMNNAME_FixedQtyAvailableToPromise, FixedQtyAvailableToPromise);
+		set_Value (COLUMNNAME_FixedQtyAvailableToPromise, Integer.valueOf(FixedQtyAvailableToPromise));
 	}
 
 	/** Get Konst. Zusagbar (ATP) Wert.
 		@return Konst. Zusagbar (ATP) Wert	  */
 	@Override
-	public java.math.BigDecimal getFixedQtyAvailableToPromise () 
+	public int getFixedQtyAvailableToPromise () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FixedQtyAvailableToPromise);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	@Override
-	public org.compiere.model.I_M_Warehouse_PickingGroup getM_Warehouse_PickingGroup() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Warehouse_PickingGroup_ID, org.compiere.model.I_M_Warehouse_PickingGroup.class);
-	}
-
-	@Override
-	public void setM_Warehouse_PickingGroup(org.compiere.model.I_M_Warehouse_PickingGroup M_Warehouse_PickingGroup)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Warehouse_PickingGroup_ID, org.compiere.model.I_M_Warehouse_PickingGroup.class, M_Warehouse_PickingGroup);
-	}
-
-	/** Set Warehouse Picking Group.
-		@param M_Warehouse_PickingGroup_ID Warehouse Picking Group	  */
-	@Override
-	public void setM_Warehouse_PickingGroup_ID (int M_Warehouse_PickingGroup_ID)
-	{
-		if (M_Warehouse_PickingGroup_ID < 1) 
-			set_Value (COLUMNNAME_M_Warehouse_PickingGroup_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Warehouse_PickingGroup_ID, Integer.valueOf(M_Warehouse_PickingGroup_ID));
-	}
-
-	/** Get Warehouse Picking Group.
-		@return Warehouse Picking Group	  */
-	@Override
-	public int getM_Warehouse_PickingGroup_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_PickingGroup_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_FixedQtyAvailableToPromise);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -114,6 +79,40 @@ public class X_MSV3_Server extends org.compiere.model.PO implements I_MSV3_Serve
 	public int getMSV3_Server_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_MSV3_Server_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_Warehouse_PickingGroup getM_Warehouse_PickingGroup() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Warehouse_PickingGroup_ID, org.compiere.model.I_M_Warehouse_PickingGroup.class);
+	}
+
+	@Override
+	public void setM_Warehouse_PickingGroup(org.compiere.model.I_M_Warehouse_PickingGroup M_Warehouse_PickingGroup)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Warehouse_PickingGroup_ID, org.compiere.model.I_M_Warehouse_PickingGroup.class, M_Warehouse_PickingGroup);
+	}
+
+	/** Set Kommissionier-Lagergruppe .
+		@param M_Warehouse_PickingGroup_ID Kommissionier-Lagergruppe 	  */
+	@Override
+	public void setM_Warehouse_PickingGroup_ID (int M_Warehouse_PickingGroup_ID)
+	{
+		if (M_Warehouse_PickingGroup_ID < 1) 
+			set_Value (COLUMNNAME_M_Warehouse_PickingGroup_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Warehouse_PickingGroup_ID, Integer.valueOf(M_Warehouse_PickingGroup_ID));
+	}
+
+	/** Get Kommissionier-Lagergruppe .
+		@return Kommissionier-Lagergruppe 	  */
+	@Override
+	public int getM_Warehouse_PickingGroup_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_PickingGroup_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

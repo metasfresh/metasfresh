@@ -6,7 +6,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.vendor.gateway.api.availability.TrackingId;
 import groovy.transform.EqualsAndHashCode;
 import lombok.Getter;
@@ -48,7 +48,7 @@ public class AvailabilityException extends AdempiereException
 
 	public AvailabilityException(@NonNull final List<ErrorItem> errorItems)
 	{
-		super(ImmutableTranslatableString.empty());
+		super(TranslatableStrings.empty());
 		this.errorItems = ImmutableList.copyOf(errorItems);
 	}
 

@@ -32,10 +32,6 @@ public interface I_DIM_Dimension_Spec
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_DIM_Dimension_Spec, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_DIM_Dimension_Spec, org.compiere.model.I_AD_Client>(I_DIM_Dimension_Spec.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -43,7 +39,7 @@ public interface I_DIM_Dimension_Spec
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -53,18 +49,12 @@ public interface I_DIM_Dimension_Spec
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_DIM_Dimension_Spec, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_DIM_Dimension_Spec, org.compiere.model.I_AD_Org>(I_DIM_Dimension_Spec.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -93,8 +83,6 @@ public interface I_DIM_Dimension_Spec
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_DIM_Dimension_Spec, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_DIM_Dimension_Spec, org.compiere.model.I_AD_User>(I_DIM_Dimension_Spec.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -298,7 +286,6 @@ public interface I_DIM_Dimension_Spec
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -308,7 +295,6 @@ public interface I_DIM_Dimension_Spec
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -346,8 +332,6 @@ public interface I_DIM_Dimension_Spec
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_DIM_Dimension_Spec, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_DIM_Dimension_Spec, org.compiere.model.I_AD_User>(I_DIM_Dimension_Spec.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

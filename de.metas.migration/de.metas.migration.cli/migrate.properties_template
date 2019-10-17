@@ -1,6 +1,14 @@
 #
 # you can copy this file to migration.properties and edit its properties to match your local DB
 #
+#example: local k8s via docker-for-desktop
+#METASFRESH_DB_SERVER=localhost
+#METASFRESH_DB_PORT=30040
+
+#example: remote DB via SSL-tunnel
+#METASFRESH_DB_SERVER=localhost
+#METASFRESH_DB_PORT=5678
+
 METASFRESH_DB_SERVER=<DBMS hostname> # e.g. localhost
 METASFRESH_DB_PORT=<DBMS hostname> # e.g. 5432
 METASFRESH_DB_NAME=<DB name> # e.g. metasfresh

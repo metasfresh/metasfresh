@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
 
@@ -20,32 +20,34 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
 
-import de.metas.cache.CCache;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.apps.graph.GraphColumn;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.service.ClientId;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import de.metas.cache.CCache;
+import de.metas.organization.OrgId;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
+import de.metas.util.Services;
+
 /**
- * 	Performance Measure
- *	
- *  @author Jorg Janke
- *  @version $Id: MMeasure.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
+ * Performance Measure
+ * 
+ * @author Jorg Janke
+ * @version $Id: MMeasure.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
  * 
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
- * 			<li>BF [ 1887674 ] Deadlock when try to modify PA Goal's Measure Target
+ *         <li>BF [ 1887674 ] Deadlock when try to modify PA Goal's Measure Target
  */
 public class MMeasure extends X_PA_Measure
 {
@@ -55,48 +57,50 @@ public class MMeasure extends X_PA_Measure
 	private static final long serialVersionUID = 6274990637485210675L;
 
 	/**
-	 * 	Get MMeasure from Cache
-	 *	@param ctx context
-	 *	@param PA_Measure_ID id
-	 *	@return MMeasure
+	 * Get MMeasure from Cache
+	 * 
+	 * @param ctx context
+	 * @param PA_Measure_ID id
+	 * @return MMeasure
 	 */
-	public static MMeasure get (Properties ctx, int PA_Measure_ID)
+	public static MMeasure get(Properties ctx, int PA_Measure_ID)
 	{
-		Integer key = new Integer (PA_Measure_ID);
-		MMeasure retValue = s_cache.get (key);
+		Integer key = new Integer(PA_Measure_ID);
+		MMeasure retValue = s_cache.get(key);
 		if (retValue != null)
 			return retValue;
-		retValue = new MMeasure (ctx, PA_Measure_ID, null);
+		retValue = new MMeasure(ctx, PA_Measure_ID, null);
 		if (retValue.get_ID() != 0)
-			s_cache.put (key, retValue);
+			s_cache.put(key, retValue);
 		return retValue;
-	} //	get
+	} // get
 
-	/**	Cache						*/
-	private static CCache<Integer, MMeasure> s_cache 
-		= new CCache<Integer, MMeasure> ("PA_Measure", 10);
-	
-	/**
-	 * 	Standard Constructor
-	 *	@param ctx context
-	 *	@param PA_Measure_ID id
-	 *	@param trxName trx
-	 */
-	public MMeasure (Properties ctx, int PA_Measure_ID, String trxName)
-	{
-		super (ctx, PA_Measure_ID, trxName);
-	}	//	MMeasure
+	/** Cache */
+	private static CCache<Integer, MMeasure> s_cache = new CCache<Integer, MMeasure>("PA_Measure", 10);
 
 	/**
-	 * 	Load Constructor
-	 *	@param ctx context
-	 *	@param rs result set
-	 *	@param trxName trx
+	 * Standard Constructor
+	 * 
+	 * @param ctx context
+	 * @param PA_Measure_ID id
+	 * @param trxName trx
 	 */
-	public MMeasure (Properties ctx, ResultSet rs, String trxName)
+	public MMeasure(Properties ctx, int PA_Measure_ID, String trxName)
 	{
-		super (ctx, rs, trxName);
-	}	//	MMeasure
+		super(ctx, PA_Measure_ID, trxName);
+	}	// MMeasure
+
+	/**
+	 * Load Constructor
+	 * 
+	 * @param ctx context
+	 * @param rs result set
+	 * @param trxName trx
+	 */
+	public MMeasure(Properties ctx, ResultSet rs, String trxName)
+	{
+		super(ctx, rs, trxName);
+	}	// MMeasure
 
 	public ArrayList<GraphColumn> getGraphColumnList(MGoal goal)
 	{
@@ -111,18 +115,19 @@ public class MMeasure extends X_PA_Measure
 			ResultSet rs = null;
 			try
 			{
-				pstmt = DB.prepareStatement (sql, null);
-				rs = pstmt.executeQuery ();
+				pstmt = DB.prepareStatement(sql, null);
+				rs = pstmt.executeQuery();
 				ArrayList<Timestamp> dataList = new ArrayList<Timestamp>();
-				while (rs.next ())
+				while (rs.next())
 				{
 					BigDecimal data = rs.getBigDecimal(1);
 					Timestamp date = rs.getTimestamp(2);
 					GraphColumn bgc = new GraphColumn(mc, data);
-					bgc.setLabel(date, goal.getMeasureDisplay()); //TODO copy order-loop to other measures
-					int pos=0;
-					for (int i = 0; i <  dataList.size(); i++)
-						if (dataList.get(i).before(date)) pos++;
+					bgc.setLabel(date, goal.getMeasureDisplay()); // TODO copy order-loop to other measures
+					int pos = 0;
+					for (int i = 0; i < dataList.size(); i++)
+						if (dataList.get(i).before(date))
+							pos++;
 					dataList.add(date); // list of dates
 					list.add(pos, bgc);
 				}
@@ -134,7 +139,8 @@ public class MMeasure extends X_PA_Measure
 			finally
 			{
 				DB.close(rs, pstmt);
-				rs = null; pstmt = null;
+				rs = null;
+				pstmt = null;
 			}
 		}
 		else if (MMeasure.MEASURETYPE_Achievements.equals(getMeasureType()))
@@ -149,7 +155,7 @@ public class MMeasure extends X_PA_Measure
 					list.add(bgc);
 				}
 			}
-			else	//	MMeasure.MEASUREDATATYPE_QtyAmountInTime
+			else	// MMeasure.MEASUREDATATYPE_QtyAmountInTime
 			{
 				String MeasureDisplay = goal.getMeasureDisplay();
 				String trunc = "D";
@@ -161,21 +167,21 @@ public class MMeasure extends X_PA_Measure
 					trunc = "MM";
 				else if (MGoal.MEASUREDISPLAY_Week.equals(MeasureDisplay))
 					trunc = "W";
-				//	else if (MGoal.MEASUREDISPLAY_Day.equals(MeasureDisplay))
-				//		trunc = "D";
+				// else if (MGoal.MEASUREDISPLAY_Day.equals(MeasureDisplay))
+				// trunc = "D";
 				trunc = "TRUNC(DateDoc,'" + trunc + "')";
-				StringBuffer sql = new StringBuffer ("SELECT SUM(ManualActual), ")
-				.append(trunc).append(" FROM PA_Achievement WHERE PA_Measure_ID=? AND IsAchieved='Y' ")
-				.append("GROUP BY ").append(trunc)
-				.append(" ORDER BY ").append(trunc);
+				StringBuffer sql = new StringBuffer("SELECT SUM(ManualActual), ")
+						.append(trunc).append(" FROM PA_Achievement WHERE PA_Measure_ID=? AND IsAchieved='Y' ")
+						.append("GROUP BY ").append(trunc)
+						.append(" ORDER BY ").append(trunc);
 				PreparedStatement pstmt = null;
 				ResultSet rs = null;
 				try
 				{
-					pstmt = DB.prepareStatement (sql.toString(), null);
+					pstmt = DB.prepareStatement(sql.toString(), null);
 					pstmt.setInt(1, getPA_Measure_ID());
-					rs = pstmt.executeQuery ();
-					while (rs.next ())
+					rs = pstmt.executeQuery();
+					while (rs.next())
 					{
 						BigDecimal data = rs.getBigDecimal(1);
 						Timestamp date = rs.getTimestamp(2);
@@ -191,12 +197,13 @@ public class MMeasure extends X_PA_Measure
 				finally
 				{
 					DB.close(rs, pstmt);
-					rs = null; pstmt = null;
+					rs = null;
+					pstmt = null;
 				}
-			}	//	Achievement in time
-		}	//	Achievement
+			}	// Achievement in time
+		}	// Achievement
 
-		//	Request
+		// Request
 		else if (MMeasure.MEASURETYPE_Request.equals(getMeasureType()))
 		{
 			MRequestType rt = MRequestType.get(Env.getCtx(), getR_RequestType_ID());
@@ -208,9 +215,9 @@ public class MMeasure extends X_PA_Measure
 			ResultSet rs = null;
 			try
 			{
-				pstmt = DB.prepareStatement (sql, null);
-				rs = pstmt.executeQuery ();
-				while (rs.next ())
+				pstmt = DB.prepareStatement(sql, null);
+				rs = pstmt.executeQuery();
+				while (rs.next())
 				{
 					BigDecimal data = rs.getBigDecimal(1);
 					int R_Status_ID = rs.getInt(3);
@@ -235,11 +242,12 @@ public class MMeasure extends X_PA_Measure
 			finally
 			{
 				DB.close(rs, pstmt);
-				rs = null; pstmt = null;
+				rs = null;
+				pstmt = null;
 			}
-		}	//	Request
+		}	// Request
 
-		//	Project
+		// Project
 		else if (MMeasure.MEASURETYPE_Project.equals(getMeasureType()))
 		{
 			MProjectType pt = MProjectType.get(Env.getCtx(), getC_ProjectType_ID());
@@ -251,9 +259,9 @@ public class MMeasure extends X_PA_Measure
 			ResultSet rs = null;
 			try
 			{
-				pstmt = DB.prepareStatement (sql, null);
-				rs = pstmt.executeQuery ();
-				while (rs.next ())
+				pstmt = DB.prepareStatement(sql, null);
+				rs = pstmt.executeQuery();
+				while (rs.next())
 				{
 					BigDecimal data = rs.getBigDecimal(1);
 					Timestamp date = rs.getTimestamp(2);
@@ -270,80 +278,85 @@ public class MMeasure extends X_PA_Measure
 			finally
 			{
 				DB.close(rs, pstmt);
-				rs = null; pstmt = null;
+				rs = null;
+				pstmt = null;
 			}
-		}	//	Project
+		}	// Project
 
 		return list;
 	}
 
 	/**
-	 * 	String Representation
-	 *	@return info
+	 * String Representation
+	 * 
+	 * @return info
 	 */
 	@Override
-	public String toString ()
+	public String toString()
 	{
-		StringBuffer sb = new StringBuffer ("MMeasure[");
-		sb.append (get_ID()).append ("-").append (getName()).append ("]");
-		return sb.toString ();
-	}	//	toString
-	
+		StringBuffer sb = new StringBuffer("MMeasure[");
+		sb.append(get_ID()).append("-").append(getName()).append("]");
+		return sb.toString();
+	}	// toString
+
 	/**
-	 * 	Before Save
-	 *	@param newRecord new
-	 *	@return true
+	 * Before Save
+	 * 
+	 * @param newRecord new
+	 * @return true
 	 */
 	@Override
-	protected boolean beforeSave (boolean newRecord)
+	protected boolean beforeSave(boolean newRecord)
 	{
 		if (MEASURETYPE_Calculated.equals(getMeasureType())
-			&& getPA_MeasureCalc_ID() <= 0)
+				&& getPA_MeasureCalc_ID() <= 0)
 		{
 			throw new FillMandatoryException("PA_MeasureCalc_ID");
 		}
 		else if (MEASURETYPE_Ratio.equals(getMeasureType())
-			&& getPA_Ratio_ID() <= 0)
+				&& getPA_Ratio_ID() <= 0)
 		{
 			throw new FillMandatoryException("PA_Ratio_ID");
 		}
 		else if (MEASURETYPE_UserDefined.equals(getMeasureType())
-			&& (getCalculationClass() == null || getCalculationClass().length()==0))
+				&& (getCalculationClass() == null || getCalculationClass().length() == 0))
 		{
 			throw new FillMandatoryException("CalculationClass");
 		}
 		else if (MEASURETYPE_Request.equals(getMeasureType())
-			&& getR_RequestType_ID() <= 0)
+				&& getR_RequestType_ID() <= 0)
 		{
 			throw new FillMandatoryException("R_RequestType_ID");
 		}
 		else if (MEASURETYPE_Project.equals(getMeasureType())
-			&& getC_ProjectType_ID() <= 0)
+				&& getC_ProjectType_ID() <= 0)
 		{
 			throw new FillMandatoryException("C_ProjectType_ID");
 		}
 		return true;
-	}	//	beforeSave
-	
+	}	// beforeSave
+
 	/**
-	 * 	After Save
-	 *	@param newRecord new
-	 *	@param success success
-	 *	@return succes
+	 * After Save
+	 * 
+	 * @param newRecord new
+	 * @param success success
+	 * @return succes
 	 */
 	@Override
-	protected boolean afterSave (boolean newRecord, boolean success)
+	protected boolean afterSave(boolean newRecord, boolean success)
 	{
-		//	Update Goals with Manual Measure
+		// Update Goals with Manual Measure
 		if (success && MEASURETYPE_Manual.equals(getMeasureType()))
 			updateManualGoals();
-		
+
 		return success;
-	}	//	afterSave
-	
+	}	// afterSave
+
 	/**
-	 * 	Update/save Goals
-	 * 	@return true if updated
+	 * Update/save Goals
+	 * 
+	 * @return true if updated
 	 */
 	public boolean updateGoals()
 	{
@@ -362,24 +375,25 @@ public class MMeasure extends X_PA_Measure
 				return updateRequests();
 			else if (MEASURETYPE_Project.equals(mt))
 				return updateProjects();
-			//	Projects
+			// Projects
 		}
 		catch (Exception e)
 		{
 			log.error("MeasureType=" + mt, e);
 		}
 		return false;
-	}	//	updateGoals
-	
+	}	// updateGoals
+
 	/**
-	 * 	Update/save Manual Goals
-	 * 	@return true if updated
+	 * Update/save Manual Goals
+	 * 
+	 * @return true if updated
 	 */
 	private boolean updateManualGoals()
 	{
 		if (!MEASURETYPE_Manual.equals(getMeasureType()))
 			return false;
-		MGoal[] goals = MGoal.getMeasureGoals (getCtx(), getPA_Measure_ID());
+		MGoal[] goals = MGoal.getMeasureGoals(getCtx(), getPA_Measure_ID());
 		for (int i = 0; i < goals.length; i++)
 		{
 			MGoal goal = goals[i];
@@ -387,18 +401,19 @@ public class MMeasure extends X_PA_Measure
 			goal.save(get_TrxName());
 		}
 		return true;
-	}	//	updateManualGoals
-	
+	}	// updateManualGoals
+
 	/**
-	 * 	Update/save Goals with Achievement
-	 * 	@return true if updated
+	 * Update/save Goals with Achievement
+	 * 
+	 * @return true if updated
 	 */
 	private boolean updateAchievementGoals()
 	{
 		if (!MEASURETYPE_Achievements.equals(getMeasureType()))
 			return false;
 		Timestamp today = new Timestamp(System.currentTimeMillis());
-		MGoal[] goals = MGoal.getMeasureGoals (getCtx(), getPA_Measure_ID());
+		MGoal[] goals = MGoal.getMeasureGoals(getCtx(), getPA_Measure_ID());
 		for (int i = 0; i < goals.length; i++)
 		{
 			MGoal goal = goals[i];
@@ -412,7 +427,7 @@ public class MMeasure extends X_PA_Measure
 				trunc = TimeUtil.TRUNC_MONTH;
 			else if (MGoal.MEASUREDISPLAY_Week.equals(MeasureScope))
 				trunc = TimeUtil.TRUNC_WEEK;
-			Timestamp compare = TimeUtil.trunc(today, trunc); 
+			Timestamp compare = TimeUtil.trunc(today, trunc);
 			//
 			MAchievement[] achievements = MAchievement.getOfMeasure(getCtx(), getPA_Measure_ID());
 			BigDecimal ManualActual = Env.ZERO;
@@ -430,21 +445,22 @@ public class MMeasure extends X_PA_Measure
 			goal.save(get_TrxName());
 		}
 		return true;
-	}	//	updateAchievementGoals
+	}	// updateAchievementGoals
 
 	/**
-	 * 	Update/save Goals with Calculation
-	 * 	@return true if updated
+	 * Update/save Goals with Calculation
+	 * 
+	 * @return true if updated
 	 */
 	private boolean updateCalculatedGoals()
 	{
 		if (!MEASURETYPE_Calculated.equals(getMeasureType()))
 			return false;
-		MGoal[] goals = MGoal.getMeasureGoals (getCtx(), getPA_Measure_ID());
+		MGoal[] goals = MGoal.getMeasureGoals(getCtx(), getPA_Measure_ID());
 		for (int i = 0; i < goals.length; i++)
 		{
 			MGoal goal = goals[i];
-			//	Find Role
+			// Find Role
 			final IUserRolePermissions role = getEffectiveRolePermissions(goal);
 			//
 			MMeasureCalc mc = MMeasureCalc.get(getCtx(), getPA_MeasureCalc_ID());
@@ -453,10 +469,10 @@ public class MMeasure extends X_PA_Measure
 				log.error("Not found PA_MeasureCalc_ID=" + getPA_MeasureCalc_ID());
 				return false;
 			}
-			String sql = mc.getSqlPI(goal.getRestrictions(false), 
-				goal.getMeasureScope(), getMeasureDataType(), null, role);
-			BigDecimal ManualActual = DB.getSQLValueBD(null, sql, new Object[]{});
-			//	SQL may return no rows or null
+			String sql = mc.getSqlPI(goal.getRestrictions(false),
+					goal.getMeasureScope(), getMeasureDataType(), null, role);
+			BigDecimal ManualActual = DB.getSQLValueBD(null, sql, new Object[] {});
+			// SQL may return no rows or null
 			if (ManualActual == null)
 			{
 				ManualActual = Env.ZERO;
@@ -466,40 +482,42 @@ public class MMeasure extends X_PA_Measure
 			goal.save(get_TrxName());
 		}
 		return true;
-	}	//	updateCalculatedGoals
-	
+	}	// updateCalculatedGoals
+
 	/**
-	 * 	Update/save Goals with Ratios
-	 * 	@return true if updated
+	 * Update/save Goals with Ratios
+	 * 
+	 * @return true if updated
 	 */
 	private boolean updateRatios()
 	{
 		if (!MEASURETYPE_Ratio.equals(getMeasureType()))
 			return false;
 		return false;
-	}		//	updateRatios
-	
+	}		// updateRatios
+
 	/**
-	 * 	Update/save Goals with Requests
-	 * 	@return true if updated
+	 * Update/save Goals with Requests
+	 * 
+	 * @return true if updated
 	 */
 	private boolean updateRequests()
 	{
 		if (!MEASURETYPE_Request.equals(getMeasureType())
-			|| getR_RequestType_ID() == 0)
+				|| getR_RequestType_ID() == 0)
 			return false;
-		MGoal[] goals = MGoal.getMeasureGoals (getCtx(), getPA_Measure_ID());
+		MGoal[] goals = MGoal.getMeasureGoals(getCtx(), getPA_Measure_ID());
 		for (int i = 0; i < goals.length; i++)
 		{
 			MGoal goal = goals[i];
-			//	Find Role
+			// Find Role
 			final IUserRolePermissions role = getEffectiveRolePermissions(goal);
 			//
 			MRequestType rt = MRequestType.get(getCtx(), getR_RequestType_ID());
-			String sql = rt.getSqlPI(goal.getRestrictions(false), 
-				goal.getMeasureScope(), getMeasureDataType(), null, role);
-			BigDecimal ManualActual = DB.getSQLValueBD(null, sql, new Object[]{});
-			//	SQL may return no rows or null
+			String sql = rt.getSqlPI(goal.getRestrictions(false),
+					goal.getMeasureScope(), getMeasureDataType(), null, role);
+			BigDecimal ManualActual = DB.getSQLValueBD(null, sql, new Object[] {});
+			// SQL may return no rows or null
 			if (ManualActual == null)
 			{
 				ManualActual = Env.ZERO;
@@ -509,29 +527,30 @@ public class MMeasure extends X_PA_Measure
 			goal.save(get_TrxName());
 		}
 		return true;
-	}		//	updateRequests
+	}		// updateRequests
 
 	/**
-	 * 	Update/save Goals with Projects
-	 * 	@return true if updated
+	 * Update/save Goals with Projects
+	 * 
+	 * @return true if updated
 	 */
 	private boolean updateProjects()
 	{
 		if (!MEASURETYPE_Project.equals(getMeasureType())
-			|| getC_ProjectType_ID() == 0)
+				|| getC_ProjectType_ID() == 0)
 			return false;
-		MGoal[] goals = MGoal.getMeasureGoals (getCtx(), getPA_Measure_ID());
+		MGoal[] goals = MGoal.getMeasureGoals(getCtx(), getPA_Measure_ID());
 		for (int i = 0; i < goals.length; i++)
 		{
 			MGoal goal = goals[i];
-			//	Find Role
+			// Find Role
 			final IUserRolePermissions role = getEffectiveRolePermissions(goal);
 			//
 			MProjectType pt = MProjectType.get(getCtx(), getC_ProjectType_ID());
-			String sql = pt.getSqlPI(goal.getRestrictions(false), 
-				goal.getMeasureScope(), getMeasureDataType(), null, role);		
-			BigDecimal ManualActual = DB.getSQLValueBD(null, sql, new Object[]{});
-			//	SQL may return no rows or null
+			String sql = pt.getSqlPI(goal.getRestrictions(false),
+					goal.getMeasureScope(), getMeasureDataType(), null, role);
+			BigDecimal ManualActual = DB.getSQLValueBD(null, sql, new Object[] {});
+			// SQL may return no rows or null
 			if (ManualActual == null)
 			{
 				ManualActual = Env.ZERO;
@@ -541,30 +560,35 @@ public class MMeasure extends X_PA_Measure
 			goal.save(get_TrxName());
 		}
 		return true;
-	}	//	updateProjects
+	}	// updateProjects
 
 	private final IUserRolePermissions getEffectiveRolePermissions(final I_PA_Goal goal)
 	{
-		final int goalRoleId = goal.getAD_Role_ID();
-		final int goalUserId = goal.getAD_User_ID();
+		final RoleId goalRoleId = goal.getAD_Role_ID() > 0 ? RoleId.ofRepoId(goal.getAD_Role_ID()) : null;
+		final UserId goalUserId = goal.getAD_User_ID() > 0 ? UserId.ofRepoId(goal.getAD_User_ID()) : null;
 		final Properties ctx = getCtx();
-		final int contextUserId = Env.getAD_User_ID(ctx);
-		final int contextClientId = Env.getAD_Client_ID(ctx);
-		final Date contextDate = Env.getDate(ctx);
+		final UserId contextUserId = Env.getLoggedUserId(ctx);
+		final ClientId contextClientId = Env.getClientId(ctx);
+		final LocalDate contextDate = TimeUtil.asLocalDate(Env.getDate(ctx));
 
 		IUserRolePermissions role = null;
-		if (goalRoleId > 0)
+		if (goalRoleId != null)
 		{
-			role = Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(
+			role = Services.get(IUserRolePermissionsDAO.class).getUserRolePermissions(
 					goalRoleId,
-					goalUserId > 0 ? goalUserId : contextUserId,
+					goalUserId != null ? goalUserId : contextUserId,
 					contextClientId,
 					contextDate);
 		}
-		else if (goalUserId > 0)
+		else if (goalUserId != null)
 		{
 			final List<IUserRolePermissions> roles = Services.get(IUserRolePermissionsDAO.class)
-					.retrieveUserRolesPermissionsForUserWithOrgAccess(getCtx(), goalUserId, getAD_Org_ID());
+					.retrieveUserRolesPermissionsForUserWithOrgAccess(
+							Env.getClientId(), 
+							OrgId.ofRepoId(getAD_Org_ID()),
+							goalUserId,
+							Env.getLocalDate()
+							);
 			if (!roles.isEmpty())
 			{
 				role = roles.get(0);
@@ -579,4 +603,4 @@ public class MMeasure extends X_PA_Measure
 
 		return role;
 	}
-}	//	MMeasure
+}	// MMeasure

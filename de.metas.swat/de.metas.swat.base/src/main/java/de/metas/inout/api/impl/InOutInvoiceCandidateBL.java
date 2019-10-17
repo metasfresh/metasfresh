@@ -28,8 +28,7 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOutLine;
 
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.api.IInOutInvoiceCandidateBL;
 import de.metas.inout.model.I_M_InOut;
@@ -37,26 +36,23 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class InOutInvoiceCandidateBL implements IInOutInvoiceCandidateBL
 {
 
 	@Override
-	public boolean isApproveInOutForInvoicing(I_M_InOut inOut)
+	public boolean isApproveInOutForInvoicing(@NonNull final I_M_InOut inOut)
 	{
-		Check.assumeNotNull(inOut, "Inout shall not be null");
-
 		boolean isAllowToInvoice = false;
-
-		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 		if (inOut.isInOutApprovedForInvoicing())
 		{
 			isAllowToInvoice = true;
 		}
 
-		if (docActionBL.isStatusStrOneOf(inOut.getDocStatus(),
-				IDocument.STATUS_Completed, IDocument.STATUS_Closed))
+		final DocStatus inoutDocStatus = DocStatus.ofCode(inOut.getDocStatus());
+		if(inoutDocStatus.isCompletedOrClosed())
 		{
 			isAllowToInvoice = true;
 		}

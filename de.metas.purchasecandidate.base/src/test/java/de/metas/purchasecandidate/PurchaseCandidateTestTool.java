@@ -3,7 +3,6 @@ package de.metas.purchasecandidate;
 import java.time.temporal.ChronoUnit;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.bpartner.BPartnerId;
@@ -12,6 +11,7 @@ import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.quantity.Quantity;
@@ -66,7 +66,7 @@ public final class PurchaseCandidateTestTool
 				.profitInfoOrNull(createPurchaseProfitInfo())
 				.vendorId(BPartnerId.ofRepoId(7))
 				.qtyToPurchase(qtyToPurchase)
-				.purchaseDatePromised(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
+				.purchaseDatePromised(SystemTime.asZonedDateTime().truncatedTo(ChronoUnit.DAYS))
 				.processed(false)
 				.locked(false)
 				.build();

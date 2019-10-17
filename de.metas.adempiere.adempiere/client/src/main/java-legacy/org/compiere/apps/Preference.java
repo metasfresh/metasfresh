@@ -46,14 +46,11 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.MetalTheme;
 
-import org.adempiere.acct.api.IPostingService;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLogger;
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.PLAFEditorPanel;
 import org.adempiere.plaf.UIDefaultsEditorDialog;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.user.UserId;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.grid.ed.VDate;
@@ -74,8 +71,11 @@ import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
+import de.metas.acct.api.IPostingService;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 
 /**
@@ -88,7 +88,7 @@ import de.metas.util.Services;
  *
  * @author Jorg Janke
  * @version $Id: Preference.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
- * 
+ *
  * @author Low Heng Sin
  * @version 2006-11-27
  */
@@ -96,7 +96,7 @@ public final class Preference extends CDialog
 		implements ActionListener, ListSelectionListener
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -8923143271736597338L;
 
@@ -176,7 +176,7 @@ public final class Preference extends CDialog
 
 	/**
 	 * Standard Constructor
-	 * 
+	 *
 	 * @param frame frame
 	 * @param WindowNo window
 	 */
@@ -201,10 +201,10 @@ public final class Preference extends CDialog
 		statusBar.setStatusDB("");
 		AEnv.positionCenterWindow(frame, this);
 	}	// Preference
-	
+
 	/**
 	 * Static Init.
-	 * 
+	 *
 	 * <pre>
 	 *  - panel
 	 *      - tabPane
@@ -221,7 +221,7 @@ public final class Preference extends CDialog
 	 * 					- errorTable
 	 *      - southPanel
 	 * </pre>
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	private void jbInit() throws Exception
@@ -393,7 +393,7 @@ public final class Preference extends CDialog
 		charsetPanel.add(fCharset);
 		customizePane.add(charsetPanel, new GridBagConstraints(0, 6, 1, 1, 1.0, 0.0
 				, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(2, 0, 2, 0), 0, 0));
-		
+
 		// gh #975: also add additional settings that were registered via addSettingsPanel()
 		// for now, the panels are just added one by one, below each other
 		for (int i = 0; i < additionalSettingsPanels.size(); i++)
@@ -454,7 +454,7 @@ public final class Preference extends CDialog
 
 	/**
 	 * List Selection Listener - show info in header/detail fields
-	 * 
+	 *
 	 * @param e evant
 	 */
 	@Override
@@ -481,7 +481,7 @@ public final class Preference extends CDialog
 
 	/**
 	 * ActionListener
-	 * 
+	 *
 	 * @param e event
 	 */
 	@Override
@@ -630,7 +630,7 @@ public final class Preference extends CDialog
 		final String[] context = Env.getEntireContext(Env.getCtx());
 		Arrays.sort(context);
 		infoList.setListData(context);
-		
+
 		// gh #975: also apply on-load consumers that where added via addSettingsPanel()
 		additionalSettingsPanels.forEach(p -> {
 			final Consumer<Preference> onLoad = p.getRight().getLeft();
@@ -740,7 +740,7 @@ public final class Preference extends CDialog
 					String sTheme = theme.getValue();
 					if (sTheme != null && sTheme.length() > 0 && !sTheme.equals(themeClass))
 					{
-						ValueNamePair plaf = new ValueNamePair(
+						ValueNamePair plaf = ValueNamePair.of(
 								UIManager.getLookAndFeel().getClass().getName(),
 								UIManager.getLookAndFeel().getName());
 						AdempierePLAF.setPLAF(plaf, theme, true);
@@ -755,18 +755,18 @@ public final class Preference extends CDialog
 			final Consumer<Preference> onSave = p.getRight().getRight();
 			onSave.accept(this);
 		});
-		
+
 		Ini.saveProperties();
 		dispose();
 	}	// cmd_save
 
 	/**
-	 * 
+	 *
 	 * @param panel
 	 * @param onLoad will be applied then this instance is loaded. Should contain code to load initial values into the given {@code panel}.
 	 * @param onSave will be applied when this instance is stored, right before {@link Ini#saveProperties()} is invoked.
 	 *            Should contain code to persist the values of the given {@code panel}.
-	 *            
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/975
 	 */
 	public static void addSettingsPanel(final CPanel panel,

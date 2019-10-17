@@ -41,7 +41,7 @@ import lombok.NonNull;
  */
 
 @Interceptor(I_C_BPartner_Product.class)
-@Component("de.metas.vertical.pharma.msv3.server.peer.metasfresh.interceptor.C_BPartner_Product")
+@Component
 public class C_BPartner_Product
 {
 

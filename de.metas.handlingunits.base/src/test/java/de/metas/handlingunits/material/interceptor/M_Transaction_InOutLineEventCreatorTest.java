@@ -6,6 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
+import static org.compiere.util.TimeUtil.asInstant;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -15,7 +16,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_InOut;
@@ -27,15 +27,11 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Transaction;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.business.BusinessTestHelper;
+import de.metas.inout.InOutAndLineId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.AttributesKey;
@@ -69,13 +65,9 @@ import mockit.Expectations;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
-		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class })
 public class M_Transaction_InOutLineEventCreatorTest
 {
-
-	private static final BigDecimal SEVEN = new BigDecimal("7");;
+	private static final BigDecimal SEVEN = new BigDecimal("7");
 	private static final BigDecimal THREE = new BigDecimal("3");
 	private static final BigDecimal TWO = new BigDecimal("2");
 	private static final BigDecimal MINUS_ONE = new BigDecimal("-1");
@@ -90,8 +82,10 @@ public class M_Transaction_InOutLineEventCreatorTest
 	private I_M_Product product;
 	private Timestamp movementDate;
 	private I_M_InOutLine inoutLine;
+	private InOutAndLineId inoutLineId;
 
 	private TransactionDescriptorFactory transactionDescriptorFactory;
+	private M_Transaction_TransactionEventCreator mtransactionEventCreator;
 
 	@Before
 	public void init()
@@ -111,11 +105,14 @@ public class M_Transaction_InOutLineEventCreatorTest
 		save(inout);
 
 		inoutLine = newInstance(I_M_InOutLine.class);
-		inoutLine.setM_Product(product);
+		inoutLine.setM_Product_ID(product.getM_Product_ID());
 		inoutLine.setM_InOut(inout);
 		save(inoutLine);
 
+		inoutLineId = InOutAndLineId.ofRepoId(inoutLine.getM_InOut_ID(), inoutLine.getM_InOutLine_ID());
+
 		transactionDescriptorFactory = new TransactionDescriptorFactory();
+		mtransactionEventCreator = new M_Transaction_TransactionEventCreator();
 	}
 
 	@Test
@@ -126,7 +123,7 @@ public class M_Transaction_InOutLineEventCreatorTest
 		setupSingleHuDescriptor(SEVEN);
 
 		// invoke the method under test
-		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
+		final List<MaterialEvent> events = mtransactionEventCreator
 				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
 		assertThat(events).hasSize(1);
 
@@ -152,7 +149,7 @@ public class M_Transaction_InOutLineEventCreatorTest
 		setupSingleHuDescriptor(SEVEN);
 
 		// invoke the method under test
-		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
+		final List<MaterialEvent> events = mtransactionEventCreator
 				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
 
 		assertThat(events).hasSize(1);
@@ -183,7 +180,7 @@ public class M_Transaction_InOutLineEventCreatorTest
 
 		//
 		// invoke the method under test
-		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
+		final List<MaterialEvent> events = mtransactionEventCreator
 				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
 
 		assertThat(events).hasSize(1);
@@ -212,11 +209,11 @@ public class M_Transaction_InOutLineEventCreatorTest
 				.build();
 
 		// @formatter:off
-		final M_Transaction_HuDescriptor huDescriptorCreator = M_Transaction_HuDescriptor.INSTANCE;
+		final M_Transaction_HuDescriptor huDescriptorCreator = new M_Transaction_HuDescriptor();
 		new Expectations(M_Transaction_HuDescriptor.class)
 		{{
 			// partial mocking - we only want to mock this one method
-			huDescriptorCreator.createHuDescriptorsForInOutLine(inoutLine, false);
+			huDescriptorCreator.createHuDescriptorsForInOutLine(inoutLineId, false);
 			result = ImmutableList.of(huDescriptor);
 		}}; // @formatter:on
 	}
@@ -250,7 +247,7 @@ public class M_Transaction_InOutLineEventCreatorTest
 		setupSingleHuDescriptor(SEVEN);
 
 		// invoke the method under test
-		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
+		final List<MaterialEvent> events = mtransactionEventCreator
 				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
 
 		assertThat(events).hasSize(1);
@@ -277,7 +274,7 @@ public class M_Transaction_InOutLineEventCreatorTest
 		setupSingleHuDescriptor(SEVEN);
 
 		// invoke the method under test
-		final List<MaterialEvent> events = M_Transaction_TransactionEventCreator.INSTANCE
+		final List<MaterialEvent> events = mtransactionEventCreator
 				.createEventsForTransaction(transactionDescriptorFactory.ofRecord(transaction), false);
 		assertThat(events).hasSize(1);
 
@@ -311,9 +308,9 @@ public class M_Transaction_InOutLineEventCreatorTest
 	{
 		assertThat(result).isNotNull();
 		assertThat(result.getTransactionId()).isEqualTo(transaction.getM_Transaction_ID());
-		assertThat(result.getMaterialDescriptor().getWarehouseId()).isEqualTo(wh.getM_Warehouse_ID());
+		assertThat(result.getMaterialDescriptor().getWarehouseId().getRepoId()).isEqualTo(wh.getM_Warehouse_ID());
 		assertThat(result.getMaterialDescriptor().getProductId()).isEqualTo(product.getM_Product_ID());
-		assertThat(result.getMaterialDescriptor().getDate()).isEqualTo(movementDate);
+		assertThat(result.getMaterialDescriptor().getDate()).isEqualTo(asInstant(movementDate));
 	}
 
 	@Test
@@ -341,11 +338,11 @@ public class M_Transaction_InOutLineEventCreatorTest
 
 		//
 		// invoke the method under test
-		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
-		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.createMaterialDescriptors(
-				transactionDescriptor,
-				0, // bPartnerId
-				ImmutableList.of(huDescriptor1, huDescriptor2));
+		final M_Transaction_HuDescriptor huDescriptorCreator = new M_Transaction_HuDescriptor();
+		final Map<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptors = huDescriptorCreator.newMaterialDescriptors()
+				.transaction(transactionDescriptor)
+				.huDescriptors(ImmutableList.of(huDescriptor1, huDescriptor2))
+				.build();
 
 		final Set<Entry<MaterialDescriptor, Collection<HUDescriptor>>> entrySet = materialDescriptors.entrySet();
 		assertThat(entrySet).hasSize(2);
@@ -395,11 +392,11 @@ public class M_Transaction_InOutLineEventCreatorTest
 		final TransactionDescriptor transactionDescriptor = transactionDescriptorFactory.ofRecord(transaction);
 
 		// invoke the method under test
-		final Map<MaterialDescriptor, Collection<HUDescriptor>> //
-		materialDescriptors = M_Transaction_HuDescriptor.INSTANCE.createMaterialDescriptors(
-						transactionDescriptor,
-						0, // bpartnerId
-						ImmutableList.of(huDescriptor1, huDescriptor2));
+		final M_Transaction_HuDescriptor huDescriptorCreator = new M_Transaction_HuDescriptor();
+		final Map<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptors = huDescriptorCreator.newMaterialDescriptors()
+				.transaction(transactionDescriptor)
+				.huDescriptors(ImmutableList.of(huDescriptor1, huDescriptor2))
+				.build();
 
 		final Set<Entry<MaterialDescriptor, Collection<HUDescriptor>>> entrySet = materialDescriptors.entrySet();
 		assertThat(entrySet).hasSize(1);

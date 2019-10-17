@@ -13,15 +13,14 @@ package de.metas.aggregation.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -40,7 +39,7 @@ import org.adempiere.util.proxy.Cached;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.aggregation.api.IAggregation;
+import de.metas.aggregation.api.Aggregation;
 import de.metas.aggregation.api.IAggregationDAO;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.aggregation.model.I_C_AggregationItem;
@@ -52,7 +51,11 @@ import de.metas.util.Services;
 public class AggregationDAO implements IAggregationDAO
 {
 	@Override
-	public <ModelType> IAggregation retrieveDefaultAggregationOrNull(final Properties ctx, final Class<ModelType> modelClass, final Boolean isSOTrx, final String aggregationUsageLevel)
+	public <ModelType> Aggregation retrieveDefaultAggregationOrNull(
+			final Properties ctx,
+			final Class<ModelType> modelClass,
+			final Boolean isSOTrx,
+			final String aggregationUsageLevel)
 	{
 		final int tableId = InterfaceWrapperHelper.getTableId(modelClass);
 		return retrieveDefaultAggregationOrNull(ctx, tableId, isSOTrx, aggregationUsageLevel);
@@ -60,7 +63,11 @@ public class AggregationDAO implements IAggregationDAO
 
 	@Cached(cacheName = I_C_Aggregation.Table_Name + "#AD_Table_ID#IsDefault=true", expireMinutes = 0)
 	// public to make sure it's cached
-	public <ModelType> IAggregation retrieveDefaultAggregationOrNull(@CacheCtx final Properties ctx, final int tableId, final Boolean isSOTrx, final String aggregationUsageLevel)
+	public <ModelType> Aggregation retrieveDefaultAggregationOrNull(
+			@CacheCtx final Properties ctx,
+			final int tableId,
+			final Boolean isSOTrx,
+			final String aggregationUsageLevel)
 	{
 		//
 		// Get first matching C_Aggregation_ID
@@ -74,7 +81,7 @@ public class AggregationDAO implements IAggregationDAO
 
 		//
 		// Load and return the aggregation
-		final IAggregation aggregation = retrieveAggregation(ctx, aggregationId);
+		final Aggregation aggregation = retrieveAggregation(ctx, aggregationId);
 		return aggregation;
 	}
 
@@ -145,8 +152,7 @@ public class AggregationDAO implements IAggregationDAO
 		return queryBuilder;
 	}
 
-	@Override
-	public List<I_C_AggregationItem> retrieveAllItems(final I_C_Aggregation aggregation)
+	List<I_C_AggregationItem> retrieveAllItems(final I_C_Aggregation aggregation)
 	{
 		return retrieveAllItemsQuery(aggregation)
 				.create()
@@ -155,7 +161,7 @@ public class AggregationDAO implements IAggregationDAO
 
 	@Override
 	@Cached(cacheName = I_C_Aggregation.Table_Name + "#IAggregation", expireMinutes = 0)
-	public IAggregation retrieveAggregation(@CacheCtx final Properties ctx, final int aggregationId)
+	public Aggregation retrieveAggregation(@CacheCtx final Properties ctx, final int aggregationId)
 	{
 		//
 		// Load aggregation definition
@@ -166,7 +172,7 @@ public class AggregationDAO implements IAggregationDAO
 			throw new AdempiereException("@NotFound@ @C_Aggregation_ID@ (ID=" + aggregationId + ")");
 		}
 
-		return new C_Aggregation2AggregationBuilder()
+		return new C_Aggregation2AggregationBuilder(this)
 				.setC_Aggregation(aggregationDef)
 				.build();
 	}

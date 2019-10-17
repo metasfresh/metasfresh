@@ -8,11 +8,11 @@ import org.adempiere.ad.trx.api.TrxCallable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Ini;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.money.CurrencyId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
@@ -84,7 +84,7 @@ public class C_Flatrate_Term_Create_ProcurementContract
 	private I_AD_User p_AD_User_Incharge;
 
 	@Param(mandatory = true, parameterName = "C_Currency_ID")
-	private I_C_Currency p_C_Currency;
+	private CurrencyId p_CurrencyId;
 
 	@Param(mandatory = true, parameterName = "IsComplete")
 	private boolean p_isComplete;
@@ -97,7 +97,7 @@ public class C_Flatrate_Term_Create_ProcurementContract
 
 		// TODO check out and cleanup those different methods
 		final int adWindowId = getProcessInfo().getAD_Window_ID();
-		if (adWindowId > 0 && !Ini.isClient())
+		if (adWindowId > 0 && !Ini.isSwingClient())
 		{
 			// this works for the webui
 			getResult().setRecordToOpen(TableRecordReference.of(term), adWindowId, OpenTarget.SingleDocument);
@@ -124,7 +124,7 @@ public class C_Flatrate_Term_Create_ProcurementContract
 					.setPMM_Product(p_PMM_Product)
 					.setC_UOM(p_C_UOM)
 					.setAD_User_InCharge(p_AD_User_Incharge)
-					.setC_Currency(p_C_Currency)
+					.setCurrencyId(p_CurrencyId)
 					.setComplete(p_isComplete) // complete if flag on true, do not complete otherwise
 					.build();
 			return term;

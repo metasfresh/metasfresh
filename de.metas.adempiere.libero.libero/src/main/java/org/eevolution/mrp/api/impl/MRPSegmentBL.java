@@ -34,20 +34,20 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.service.IOrgDAO;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.eevolution.api.IResourceDAO;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.mrp.api.IMRPSegmentBL;
 
 import de.metas.material.planning.IMRPSegment;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.organization.IOrgDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

@@ -3,11 +3,18 @@ package de.metas.material.event.commons;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Month;
 
-import org.junit.Test;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeValueId;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
+
+import de.metas.JsonObjectMapperHolder;
 
 /*
  * #%L
@@ -33,12 +40,19 @@ import com.google.common.collect.ImmutableSet;
 
 public class AttributesKeyTest
 {
+	private static final String delim = AttributesKey.ATTRIBUTES_KEY_DELIMITER;
+
 	@Test
 	public void testSerializeDeserialize() throws IOException
 	{
-		ObjectMapper jsonObjectMapper = new ObjectMapper();
+		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
-		final AttributesKey attributesKey = AttributesKey.ofAttributeValueIds(2, 4, 3, 1);
+		final AttributesKey attributesKey = AttributesKey.ofParts(
+				AttributesKeyPart.OTHER,
+				AttributesKeyPart.ofAttributeValueId(AttributeValueId.ofRepoId(1)),
+				AttributesKeyPart.ofStringAttribute(AttributeId.ofRepoId(2), "stringValue"),
+				AttributesKeyPart.ofNumberAttribute(AttributeId.ofRepoId(3), new BigDecimal("12.345")),
+				AttributesKeyPart.ofDateAttribute(AttributeId.ofRepoId(4), LocalDate.of(2019, Month.SEPTEMBER, 21)));
 		final String attributesKeyStr = attributesKey.getAsString();
 
 		// serialize
@@ -50,14 +64,11 @@ public class AttributesKeyTest
 		final AttributesKey attributesKeyDeserialized = jsonObjectMapper.readValue(json, AttributesKey.class);
 		assertThat(attributesKeyDeserialized).isEqualTo(attributesKey);
 		assertThat(attributesKeyDeserialized.getAsString()).isEqualTo(attributesKeyStr);
-		assertThat(attributesKeyDeserialized.getAttributeValueIds()).isEqualTo(ImmutableSet.of(1, 2, 3, 4));
 	}
 
 	@Test
 	public void ofString()
 	{
-		final String delim = AttributesKey.ATTRIBUTES_KEY_DELIMITER;
-
 		final String keyStr = "3" + delim + "1" + delim + "2";
 		final String keyNormStr = "1" + delim + "2" + delim + "3";
 		assertThat(AttributesKey.ofString(keyStr).getAsString()).isEqualTo(keyNormStr);
@@ -72,10 +83,32 @@ public class AttributesKeyTest
 	@Test
 	public void ofAttributeValueIds()
 	{
-		final AttributesKey attributesKey = AttributesKey.ofAttributeValueIds(2, 4, 3, 1);
-		final AttributesKey attributesKey2 = AttributesKey.ofAttributeValueIds(1, 4, 3, 2);
+		final AttributesKey attributesKey = AttributesKey.ofString("2" + delim + "4" + delim + "3" + delim + "1");
+		final AttributesKey attributesKey2 = AttributesKey.ofString("1" + delim + "4" + delim + "3" + delim + "2");
 
 		assertThat(attributesKey).isEqualTo(attributesKey2);
+		assertThat(attributesKey.getParts()).isEqualTo(ImmutableSet.of(
+				AttributesKeyPart.ofInteger(1),
+				AttributesKeyPart.ofInteger(2),
+				AttributesKeyPart.ofInteger(3),
+				AttributesKeyPart.ofInteger(4)));
 	}
 
+	@Test
+	public void testNormalization()
+	{
+		AttributeId attributeId1 = AttributeId.ofRepoId(10);
+		AttributeId attributeId2 = AttributeId.ofRepoId(20);
+		AttributeValueId attributeValueId1 = AttributeValueId.ofRepoId(1);
+		AttributeValueId attributeValueId2 = AttributeValueId.ofRepoId(2);
+
+		final AttributesKey key = AttributesKey.ofParts(
+				AttributesKeyPart.ofStringAttribute(attributeId1, "value1"),
+				AttributesKeyPart.ofAttributeValueId(attributeValueId1),
+				AttributesKeyPart.ofStringAttribute(attributeId2, "value2"),
+				AttributesKeyPart.ofAttributeValueId(attributeValueId2),
+				AttributesKeyPart.OTHER);
+
+		assertThat(key.getAsString()).isEqualTo("-1001" + delim + "1" + delim + "2" + delim + "10=value1" + delim + "20=value2");
+	}
 }

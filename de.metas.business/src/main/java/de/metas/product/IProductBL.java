@@ -23,26 +23,34 @@ package de.metas.product;
  */
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.mm.attributes.AttributeSetId;
-import org.adempiere.uom.UomId;
-import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.uom.UOMPrecision;
+import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
 public interface IProductBL extends ISingletonService
 {
-	int getUOMPrecision(I_M_Product product);
+	I_M_Product getById(ProductId productId);
+	
+	UOMPrecision getUOMPrecision(I_M_Product product);
 
-	int getUOMPrecision(int productId);
+	UOMPrecision getUOMPrecision(ProductId productId);
 
 	String getMMPolicy(I_M_Product product);
+
+	String getMMPolicy(int productId);
 
 	/**
 	 * @param product
@@ -70,13 +78,13 @@ public interface IProductBL extends ISingletonService
 	 */
 	boolean isStocked(I_M_Product product);
 
-	boolean isStocked(int productId);
+	boolean isStocked(ProductId productId);
 
 	boolean isDiverse(ProductId productId);
 
 	/**
 	 * If the product has an Attribute Set take it from there; If not, take it from the product category of the product
-	 * 
+	 *
 	 * @return {@link AttributeSetId}; never returns null
 	 */
 	AttributeSetId getAttributeSetId(I_M_Product product);
@@ -94,52 +102,35 @@ public interface IProductBL extends ISingletonService
 	}
 
 	/**
-	 * If the product has an Attribute Set take it from there; If not, take it from the product category of the product
-	 *
-	 * @param product
-	 * @return
+	 * @return product/product category's attribute set or null
 	 */
-	I_M_AttributeSet getM_AttributeSet(I_M_Product product);
+	I_M_AttributeSet getAttributeSetOrNull(ProductId productId);
 
 	I_M_AttributeSetInstance getCreateASI(Properties ctx, int M_AttributeSetInstance_ID, int M_Product_ID);
 
-	/**
-	 * Get Product Costing Level
-	 *
-	 * @param as accounting schema
-	 * @return product costing level
-	 */
-	String getCostingLevel(I_M_Product product, I_C_AcctSchema as);
-
-	/**
-	 * Get Product Costing Method
-	 *
-	 * @param C_AcctSchema_ID accounting schema ID
-	 * @return product costing method
-	 */
-	String getCostingMethod(I_M_Product product, I_C_AcctSchema as);
+	/** @return UOM used in material storage; never return null; */
+	I_C_UOM getStockUOM(I_M_Product product);
 
 	/** @return UOM used in material storage; never return null; */
-	I_C_UOM getStockingUOM(I_M_Product product);
+	I_C_UOM getStockUOM(int productId);
 
 	/** @return UOM used in material storage; never return null; */
-	I_C_UOM getStockingUOM(int productId);
-
-	/** @return UOM used in material storage; never return null; */
-	default I_C_UOM getStockingUOM(@NonNull final ProductId productId)
+	default I_C_UOM getStockUOM(@NonNull final ProductId productId)
 	{
-		return getStockingUOM(productId.getRepoId());
+		return getStockUOM(productId.getRepoId());
 	}
 
-	default UomId getStockingUOMId(@NonNull final ProductId productId)
+	default UomId getStockUOMId(@NonNull final ProductId productId)
 	{
-		return getStockingUOMId(productId.getRepoId());
+		return getStockUOMId(productId.getRepoId());
 	}
 
-	default UomId getStockingUOMId(final int productId)
+	default UomId getStockUOMId(final int productId)
 	{
-		return UomId.ofRepoId(getStockingUOM(productId).getC_UOM_ID());
+		return UomId.ofRepoId(getStockUOM(productId).getC_UOM_ID());
 	}
+
+	Optional<UomId> getCatchUOMId(ProductId productId);
 
 	/**
 	 * Gets product standard Weight in <code>uomTo</code>.
@@ -161,6 +152,17 @@ public interface IProductBL extends ISingletonService
 	boolean isTradingProduct(I_M_Product product);
 
 	/**
+	 * Check if ASI is mandatory
+	 *
+	 * @param product
+	 * @param isSOTrx is outgoing trx?
+	 * @return true if ASI is mandatory, false otherwise
+	 */
+	boolean isASIMandatory(I_M_Product product, boolean isSOTrx);
+
+	boolean isASIMandatory(ProductId productId, boolean isSOTrx);
+
+	/**
 	 * Has the Product Instance Attribute
 	 *
 	 * @return true if instance attributes
@@ -179,6 +181,9 @@ public interface IProductBL extends ISingletonService
 
 	String getProductValue(ProductId productId);
 
+	ImmutableMap<ProductId, String> getProductValues(Set<ProductId> productIds);
+
 	String getProductName(ProductId productId);
 
+	boolean isFreightCostProduct(ProductId productId);
 }

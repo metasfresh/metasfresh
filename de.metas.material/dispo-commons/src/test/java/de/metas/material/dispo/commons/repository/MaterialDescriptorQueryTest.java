@@ -9,11 +9,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
+import de.metas.material.dispo.commons.repository.atp.BPartnerClassifier;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
-import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.DateOperator;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 
@@ -41,15 +40,6 @@ import de.metas.material.event.commons.MaterialDescriptor;
 
 public class MaterialDescriptorQueryTest
 {
-
-	@Test(expected = RuntimeException.class)
-	public void build_when_dateOperatorAndNoDate_then_exception()
-	{
-		MaterialDescriptorQuery.builder()
-				.dateOperator(DateOperator.AT)
-				.build();
-	}
-
 	@Test
 	public void withoutQuantity()
 	{
@@ -61,13 +51,19 @@ public class MaterialDescriptorQueryTest
 				.warehouseId(WAREHOUSE_ID)
 				.build();
 
-		final MaterialDescriptorQuery result = MaterialDescriptorQuery.forDescriptor(materialDescr);
+		final MaterialDescriptorQuery result = MaterialDescriptorQuery.forDescriptor(
+				materialDescr,
+				DateAndSeqNo.atTimeNoSeqNo(materialDescr.getDate()));
 
 		assertThat(result.getProductId()).isEqualTo(PRODUCT_ID);
 		assertThat(result.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
-		assertThat(result.getCustomerId()).isEqualTo(BPARTNER_ID);
-		assertThat(result.getDateOperator()).isEqualTo(DateOperator.AT);
-		assertThat(result.getDate()).isEqualTo(NOW);
+		assertThat(result.getCustomer()).isEqualTo(BPartnerClassifier.specific(BPARTNER_ID));
+		assertThat(result.getTimeRangeStart()).isNull();
+		assertThat(result.getTimeRangeEnd()).isNull();
+
+		assertThat(result.getAtTime()).isNotNull();
+		assertThat(result.getAtTime().getDate()).isEqualTo(NOW);
+		assertThat(result.getAtTime().getOperator()).isNull();
 	}
 
 	@Test
@@ -78,7 +74,8 @@ public class MaterialDescriptorQueryTest
 		assertThat(result.getProductId()).isLessThanOrEqualTo(0);
 		assertThat(result.getStorageAttributesKey())
 				.isSameAs(AttributesKey.ALL);
-		assertThat(result.getCustomerId()).isSameAs(AvailableToPromiseQuery.BPARTNER_ID_ANY);
+		assertThat(result.getCustomer())
+				.isSameAs(BPartnerClassifier.any());
 	}
 
 }

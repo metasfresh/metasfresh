@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.acct;
 
@@ -29,14 +29,10 @@ import java.util.Properties;
 
 import javax.swing.JComboBox;
 
-import org.adempiere.acct.api.IAcctSchemaBL;
-import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.I_C_AcctSchema;
-import org.compiere.model.I_C_AcctSchema_Element;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_Fact_Acct;
-import org.compiere.model.MAcctSchema;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupFactory.LanguageInfo;
 import org.compiere.model.MRefList;
@@ -49,14 +45,20 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaElement;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import de.metas.logging.LogManager;
 
 /**
  * Account Viewer State - maintains State information for the Account Viewer
@@ -64,7 +66,9 @@ import de.metas.logging.LogManager;
  * @author Jorg Janke
  * @version $Id: AcctViewerData.java,v 1.3 2006/08/10 01:00:27 jjanke Exp $
  * 
- * @author Teo Sarca, SC ARHIPAC SERVICE SRL <li>BF [ 1748449 ] Info Account - Posting Type is not translated <li>BF [ 1778373 ] AcctViewer: data is not sorted proper
+ * @author Teo Sarca, SC ARHIPAC SERVICE SRL
+ *         <li>BF [ 1748449 ] Info Account - Posting Type is not translated
+ *         <li>BF [ 1778373 ] AcctViewer: data is not sorted proper
  */
 class AcctViewerData
 {
@@ -72,7 +76,6 @@ class AcctViewerData
 
 	// Services
 	private final transient IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
-	private final transient IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 	private final transient IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
@@ -86,8 +89,6 @@ class AcctViewerData
 	 */
 	public AcctViewerData(final Properties ctx, final int windowNo, final int ad_Client_ID, final int ad_Org_ID, final int ad_Table_ID)
 	{
-		super();
-
 		this.WindowNo = windowNo;
 
 		int adClientIdToSet = ad_Client_ID;
@@ -99,25 +100,24 @@ class AcctViewerData
 		{
 			adClientIdToSet = Env.getContextAsInt(Env.getCtx(), "AD_Client_ID");
 		}
-		this.AD_Client_ID = adClientIdToSet;
+		this.AD_Client_ID = ClientId.ofRepoId(adClientIdToSet);
 
 		this.AD_Table_ID = ad_Table_ID;
 
 		//
-		this.acctSchemas = MAcctSchema.getClientAcctSchema(ctx, AD_Client_ID);
-
-		final I_C_AcctSchema acctSchemaDefault = acctSchemaDAO.retrieveAcctSchema(ctx, AD_Client_ID, ad_Org_ID);
-		setC_AcctSchema(acctSchemaDefault);
+		final List<AcctSchema> acctSchemasList = acctSchemaDAO.getAllByClient(AD_Client_ID);
+		this.acctSchemas = Maps.uniqueIndex(acctSchemasList, AcctSchema::getId);
+		this.acctSchema = acctSchemaDAO.getByCliendAndOrg(AD_Client_ID, OrgId.ofRepoIdOrNull(ad_Org_ID));
 	}   // AcctViewerData
 
 	/** Window */
 	private final int WindowNo;
 	/** Client */
-	private final int AD_Client_ID;
+	private final ClientId AD_Client_ID;
 	/** All Acct Schema */
-	private final MAcctSchema[] acctSchemas;
+	private final ImmutableMap<AcctSchemaId, AcctSchema> acctSchemas;
 	/** This Acct Schema */
-	private I_C_AcctSchema _acctSchema = null;
+	private AcctSchema acctSchema;
 
 	// Selection Info
 	/** Document Query */
@@ -153,12 +153,12 @@ class AcctViewerData
 	boolean displayDocumentInfo = false;
 	/** Display Account Ending Balance */
 	boolean displayEndingBalance = true;
-	
+
 	/**
 	 * task 09243: flag to tell if the void/reversed docs are to be displayed or not
 	 */
 	boolean displayVoidDocuments = true;
-	
+
 	//
 	String sortBy1 = "";
 	String sortBy2 = "";
@@ -184,8 +184,7 @@ class AcctViewerData
 	 */
 	public void dispose()
 	{
-		// acctSchemas = null;
-		_acctSchema = null;
+		acctSchema = null;
 		//
 		_whereInfo.clear();
 		_whereInfo = null;
@@ -195,18 +194,18 @@ class AcctViewerData
 
 	/**************************************************************************
 	 * Fill Accounting Schema
-	 * 
+	 *
 	 * @param cb JComboBox to be filled
 	 */
 	protected void fillAcctSchema(JComboBox<KeyNamePair> cb)
 	{
-		final I_C_AcctSchema acctSchemaDefault = getC_AcctSchema();
+		final AcctSchema defaultAcctSchema = getAcctSchema();
 
-		for (int i = 0; i < acctSchemas.length; i++)
+		for (final AcctSchema as : acctSchemas.values())
 		{
-			final KeyNamePair item = new KeyNamePair(acctSchemas[i].getC_AcctSchema_ID(), acctSchemas[i].getName());
+			final KeyNamePair item = KeyNamePair.of(as.getId(), as.getName());
 			cb.addItem(item);
-			if (acctSchemaDefault != null && acctSchemas[i].getC_AcctSchema_ID() == acctSchemaDefault.getC_AcctSchema_ID())
+			if (defaultAcctSchema != null && as.getId().equals(defaultAcctSchema.getId()))
 			{
 				cb.setSelectedItem(item);
 			}
@@ -215,7 +214,7 @@ class AcctViewerData
 
 	/**
 	 * Fill Posting Type
-	 * 
+	 *
 	 * @param cb JComboBox to be filled
 	 */
 	protected void fillPostingType(JComboBox<ValueNamePair> cb)
@@ -253,7 +252,7 @@ class AcctViewerData
 				String tableName = rs.getString(2);
 				String name = msgBL.translate(Env.getCtx(), tableName + "_ID");
 				//
-				final ValueNamePair pp = new ValueNamePair(tableName, name);
+				final ValueNamePair pp = ValueNamePair.of(tableName, name);
 				cb.addItem(pp);
 				_tableInfo.put(tableName, new Integer(id));
 				if (id == AD_Table_ID)
@@ -295,7 +294,7 @@ class AcctViewerData
 		try
 		{
 			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, AD_Client_ID);
+			pstmt.setInt(1, AD_Client_ID.getRepoId());
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
@@ -357,7 +356,7 @@ class AcctViewerData
 
 	/**************************************************************************
 	 * /** Create Query and submit
-	 * 
+	 *
 	 * @return Report Model
 	 */
 	protected RModel query()
@@ -366,10 +365,10 @@ class AcctViewerData
 		final StringBuilder whereClause = new StringBuilder();
 
 		// Add Accounting Schema
-		final int acctSchemaId = getC_AcctSchema_ID();
-		if (acctSchemaId > 0)
+		final AcctSchema acctSchema = getAcctSchema();
+		if (acctSchema != null)
 		{
-			whereClause.append(RModel.TABLE_ALIAS).append(".C_AcctSchema_ID=").append(acctSchemaId);
+			whereClause.append(RModel.TABLE_ALIAS).append(".C_AcctSchema_ID=").append(acctSchema.getId().getRepoId());
 		}
 
 		// Posting Type Selected
@@ -425,13 +424,13 @@ class AcctViewerData
 			// Add Account_ID between Account_ID and AccountTo_ID
 			appendAccountWhereClause(whereClause);
 		}
-		
-		if(!isDisplayVoidDocuments())
+
+		if (!isDisplayVoidDocuments())
 		{
-			whereClause.append( "AND ").append(RModel.TABLE_ALIAS).append(".DocStatus NOT IN (")
-			.append("'").append(X_Fact_Acct.DOCSTATUS_Reversed).append("',")
-			.append("'").append(X_Fact_Acct.DOCSTATUS_Closed).append("',")
-			.append("'").append(X_Fact_Acct.DOCSTATUS_Voided).append("')");
+			whereClause.append("AND ").append(RModel.TABLE_ALIAS).append(".DocStatus NOT IN (")
+					.append("'").append(X_Fact_Acct.DOCSTATUS_Reversed).append("',")
+					.append("'").append(X_Fact_Acct.DOCSTATUS_Closed).append("',")
+					.append("'").append(X_Fact_Acct.DOCSTATUS_Voided).append("')");
 		}
 
 		RModel rm = getRModel();
@@ -552,7 +551,7 @@ class AcctViewerData
 
 	/**
 	 * Create Report Model (Columns)
-	 * 
+	 *
 	 * @return Report Model
 	 */
 	private RModel getRModel()
@@ -595,9 +594,9 @@ class AcctViewerData
 			rm.addColumn(new RColumn(ctx, "AmtSourceCr", DisplayType.Amount));
 			rm.addColumn(new RColumn(ctx, "Rate", DisplayType.Amount,
 					"COALESCE("
-					+I_Fact_Acct.COLUMNNAME_CurrencyRate
-					+ ", (CASE WHEN (AmtSourceDr + AmtSourceCr) = 0 THEN 0 ELSE (AmtAcctDr + AmtAcctCr) / (AmtSourceDr + AmtSourceCr) END)" // backward compatibility
-					+ ")"));
+							+ I_Fact_Acct.COLUMNNAME_CurrencyRate
+							+ ", (CASE WHEN (AmtSourceDr + AmtSourceCr) = 0 THEN 0 ELSE (AmtAcctDr + AmtAcctCr) / (AmtSourceDr + AmtSourceCr) END)" // backward compatibility
+							+ ")"));
 		}
 		// Remaining Keys
 		for (int i = max; i < keys.size(); i++)
@@ -638,7 +637,7 @@ class AcctViewerData
 					RModel.TABLE_ALIAS + ".PostingType",
 					X_Fact_Acct.POSTINGTYPE_AD_Reference_ID,
 					null));
-		
+
 		// task 09243: add docstatus
 		rm.addColumn(new RColumn(ctx, "DocStatus", DisplayType.String));
 		return rm;
@@ -646,7 +645,7 @@ class AcctViewerData
 
 	/**
 	 * Create the key columns in sequence
-	 * 
+	 *
 	 * @return List of Key Columns
 	 */
 	private ArrayList<String> createKeyColumns()
@@ -675,30 +674,33 @@ class AcctViewerData
 		}
 
 		// Add Account Segments
-
-		final I_C_AcctSchema acctSchema = getC_AcctSchema();
-		final List<I_C_AcctSchema_Element> elements = acctSchemaDAO.retrieveSchemaElements(acctSchema);
-		for (final I_C_AcctSchema_Element ase : elements)
+		final AcctSchema acctSchema = getAcctSchema();
+		if(acctSchema != null)
 		{
-			if (m_leadingColumns == 0 && columns.contains("AD_Org_ID") && columns.contains(COLUMNNAME_Account_ID))
-				m_leadingColumns = columns.size();
-			//
-
-			final String columnName = acctSchemaBL.getColumnName(ase);
-			if (columnName.startsWith("UserElement"))
+			for (final AcctSchemaElement ase : acctSchema.getSchemaElements())
 			{
-				if (columnName.indexOf('1') != -1)
+				if (m_leadingColumns == 0 && columns.contains("AD_Org_ID") && columns.contains(COLUMNNAME_Account_ID))
 				{
-					m_ref1 = acctSchemaBL.getDisplayColumnName(ase);
+					m_leadingColumns = columns.size();
 				}
-				else
+				//
+	
+				final String columnName = ase.getColumnName();
+				if (columnName.startsWith("UserElement"))
 				{
-					m_ref2 = acctSchemaBL.getDisplayColumnName(ase);
+					if (columnName.indexOf('1') != -1)
+					{
+						m_ref1 = ase.getDisplayColumnName();
+					}
+					else
+					{
+						m_ref2 = ase.getDisplayColumnName();
+					}
 				}
-			}
-			if (!columns.contains(columnName))
-			{
-				columns.add(columnName);
+				if (!columns.contains(columnName))
+				{
+					columns.add(columnName);
+				}
 			}
 		}
 
@@ -764,43 +766,26 @@ class AcctViewerData
 
 	public int getAD_Client_ID()
 	{
-		return AD_Client_ID;
+		return AD_Client_ID.getRepoId();
 	}
 
-	public void setC_AcctSchema(final KeyNamePair acctSchemaKNP)
+	public void setAcctSchema(final KeyNamePair acctSchemaKNP)
 	{
 		if (acctSchemaKNP == null || acctSchemaKNP.getKey() <= 0)
 		{
-			this._acctSchema = null;
+			this.acctSchema = null;
 		}
 		else
 		{
-			final int acctSchemaId = acctSchemaKNP.getKey();
-			this._acctSchema = MAcctSchema.get(Env.getCtx(), acctSchemaId);
-			log.info(this._acctSchema.toString());
+			final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(acctSchemaKNP.getKey());
+			acctSchema = acctSchemas.get(acctSchemaId);
+			log.info("{}", this.acctSchema);
 		}
 	}
 
-	public void setC_AcctSchema(final I_C_AcctSchema acctSchema)
+	public AcctSchema getAcctSchema()
 	{
-		this._acctSchema = acctSchema;
-	}
-
-	public I_C_AcctSchema getC_AcctSchema()
-	{
-		return this._acctSchema;
-	}
-
-	public int getC_AcctSchema_ID()
-	{
-		if (this._acctSchema == null)
-		{
-			return 0;
-		}
-		else
-		{
-			return this._acctSchema.getC_AcctSchema_ID();
-		}
+		return acctSchema;
 	}
 
 	public int getAD_Table_ID()
@@ -943,9 +928,9 @@ class AcctViewerData
 	public void setDisplayVoidDocuments(boolean isDisplayVoidDocuments)
 	{
 		this.displayVoidDocuments = isDisplayVoidDocuments;
-		
+
 	}
-	
+
 	public boolean isDisplayVoidDocuments()
 	{
 		return displayVoidDocuments;

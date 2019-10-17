@@ -29,27 +29,32 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
-import javax.annotation.concurrent.Immutable;
-
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ISerialNoBL;
+import org.adempiere.mm.attributes.api.SerialNoContext;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.eevolution.api.IPPCostCollectorDAO;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.IDimensionspecDAO;
+import de.metas.document.sequence.DocSequenceId;
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
@@ -61,20 +66,25 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_PP_Order_ProductAttribute;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.logging.LogManager;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
 import lombok.ToString;
+import lombok.Value;
 
 public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 {
 	private static final transient Logger logger = LogManager.getLogger(PPOrderProductAttributeBL.class);
 
 	@Override
-	public void updateHUAttributes(final Collection<I_M_HU> husToUpdate, final int fromPPOrderId)
+	public void updateHUAttributes(final Collection<I_M_HU> husToUpdate, @NonNull final PPOrderId fromPPOrderId)
 	{
-		final I_PP_Order fromPPOrder = InterfaceWrapperHelper.load(fromPPOrderId, I_PP_Order.class);
-		Preconditions.checkNotNull(fromPPOrder, "fromPPOrder not found found ID=%s", fromPPOrderId);
-
 		// Skip it if there are no HUs to update
 		if (husToUpdate.isEmpty())
 		{
@@ -85,19 +95,29 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 
 		//
 		// Fetch PP_Order's attributes that shall be propagated to HUs
+		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
+		final I_PP_Order fromPPOrder = ppOrdersRepo.getById(fromPPOrderId);
 		final AttributesMap attributesMap = getAttributesMap(fromPPOrder);
-		if (attributesMap.isEmpty())
+		logger.trace("Using {}", attributesMap);
+
+		//
+		// SerialNo info (if any)
+		final Optional<SerialNoContext> serialNoContext = extractSerialNoContext(fromPPOrder);
+		logger.trace("Using {}", serialNoContext);
+
+		//
+		// Stop here if there is nothing to do
+		if (attributesMap.isEmpty() && !serialNoContext.isPresent())
 		{
-			logger.trace("Skip updating because there were no attributes");
+			logger.trace("Skip updating because there is nothing to update from");
 			return;
 		}
-		logger.trace("Using {}", attributesMap);
 
 		//
 		// Update the attributes of given HUs
 		final Set<Integer> huIdsUpdated = new HashSet<>();
 		husToUpdate.forEach(hu -> {
-			updateHUAttributesFromAttributesMap(hu, attributesMap);
+			updateHUAttributesFromAttributesMap(hu, attributesMap, serialNoContext);
 			huIdsUpdated.add(hu.getM_HU_ID());
 		});
 
@@ -105,9 +125,9 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		// Make sure the HUs of the already existing receipt are also updated.
 		// TODO: consider doing this when some new PP_Order_ProductAttributes where added/changed
 		{
-			final Collection<I_M_HU> husAlreadyReceived = getAllReceivedHUs(fromPPOrder, huIdsUpdated); // exclude those which were already updated above
+			final Collection<I_M_HU> husAlreadyReceived = getAllReceivedHUs(fromPPOrderId, huIdsUpdated); // exclude those which were already updated above
 			husAlreadyReceived.forEach(hu -> {
-				updateHUAttributesFromAttributesMap(hu, attributesMap);
+				updateHUAttributesFromAttributesMap(hu, attributesMap, serialNoContext);
 				huIdsUpdated.add(hu.getM_HU_ID());
 			});
 		}
@@ -156,6 +176,30 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		return attributesMap;
 	}
 
+	private Optional<SerialNoContext> extractSerialNoContext(final I_PP_Order ppOrder)
+	{
+		final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
+		final IProductDAO productsRepo = Services.get(IProductDAO.class);
+
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+		final DocSequenceId serialNoSequenceId = orderBOMBL.getSerialNoSequenceId(ppOrderId).orElse(null);
+		if (serialNoSequenceId == null)
+		{
+			return Optional.empty();
+		}
+
+		final ProductId finishedGoodsProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
+		final String finishedGoodsProductValue = productsRepo.retrieveProductValueByProductId(finishedGoodsProductId);
+
+		final SerialNoContext serialNoContext = SerialNoContext.builder()
+				.sequenceId(serialNoSequenceId)
+				.clientId(ClientId.ofRepoId(ppOrder.getAD_Client_ID()))
+				.productNo(finishedGoodsProductValue)
+				.build();
+
+		return Optional.of(serialNoContext);
+	}
+
 	/** @return M_Attribute_IDs to be transferred from PP_Order to HUs */
 	private static Set<Integer> getAttributeIdsToBeTransferred()
 	{
@@ -172,13 +216,13 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 
 	private static Set<Integer> extractPPOrderASIAttributeIds(final I_PP_Order ppOrder)
 	{
-		final int asiId = ppOrder.getM_AttributeSetInstance_ID();
-		if (asiId <= 0)
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(ppOrder.getM_AttributeSetInstance_ID());
+		if (asiId.isNone())
 		{
 			return ImmutableSet.of();
 		}
 
-		final I_M_AttributeSetInstance ppOrderASI = InterfaceWrapperHelper.load(asiId, I_M_AttributeSetInstance.class);
+		final I_M_AttributeSetInstance ppOrderASI = Services.get(IAttributeDAO.class).getAttributeSetInstanceById(asiId);
 		if (ppOrderASI == null)
 		{
 			return ImmutableSet.of();
@@ -200,16 +244,16 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		return attributesSetInPPOrder;
 	}
 
-	private static final Collection<I_M_HU> getAllReceivedHUs(final I_PP_Order ppOrder, final Set<Integer> excludeHUIds)
+	private static final Collection<I_M_HU> getAllReceivedHUs(final PPOrderId ppOrderId, final Set<Integer> excludeHUIds)
 	{
 		final IPPCostCollectorDAO ppCostCollectorDAO = Services.get(IPPCostCollectorDAO.class);
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 		final Map<Integer, I_M_HU> receivedHUs = new HashMap<>();
-		final List<I_PP_Cost_Collector> existingReceipts = ppCostCollectorDAO.retrieveExistingReceiptCostCollector(ppOrder);
+		final List<I_PP_Cost_Collector> existingReceipts = ppCostCollectorDAO.getReceiptsByOrderId(ppOrderId);
 		for (final I_PP_Cost_Collector receiptCollector : existingReceipts)
 		{
 			// Need assignments to take the created HUs
-			final List<I_M_HU_Assignment> assignments = huAssignmentDAO.retrieveHUAssignmentsForModel(receiptCollector);
+			final List<I_M_HU_Assignment> assignments = huAssignmentDAO.retrieveTopLevelHUAssignmentsForModel(receiptCollector);
 			for (final I_M_HU_Assignment assignment : assignments)
 			{
 				final int huId = assignment.getM_HU_ID();
@@ -233,30 +277,65 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 	 * @param hu
 	 * @param from
 	 */
-	private static void updateHUAttributesFromAttributesMap(final I_M_HU hu, final AttributesMap from)
+	private static void updateHUAttributesFromAttributesMap(
+			final I_M_HU hu,
+			final AttributesMap from,
+			final Optional<SerialNoContext> serialNoContext)
 	{
-		if (from.isEmpty())
+		// Stop here if there is nothing to do
+		if (from.isEmpty() && !serialNoContext.isPresent())
 		{
 			return;
 		}
 
-		final List<I_M_HU_Attribute> existingHUAttributes = Services.get(IHUAttributesDAO.class).retrieveAttributesOrdered(hu).getHuAttributes();
-		for (final I_M_HU_Attribute huAttribute : existingHUAttributes)
+		// services
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		final ISerialNoBL serialNoBL = Services.get(ISerialNoBL.class);
+		final IHUAttributesDAO huAttributesRepo = Services.get(IHUAttributesDAO.class);
+
+		final AttributeId serialNoAttributeId = serialNoContext.isPresent()
+				? attributesRepo.retrieveAttributeIdByValue(AttributeConstants.ATTR_SerialNo)
+				: null;
+
+		final List<I_M_HU_Attribute> existingHUAttributes = huAttributesRepo.retrieveAttributesOrdered(hu).getHuAttributes();
+		for (final I_M_HU_Attribute existingHUAttribute : existingHUAttributes)
 		{
-			final int attributeId = huAttribute.getM_Attribute_ID();
-			final AttributeWithValue attributeWithValue = from.getByAttributeId(attributeId);
-			if (attributeWithValue == null)
+			final AttributeId attributeId = AttributeId.ofRepoId(existingHUAttribute.getM_Attribute_ID());
+
+			//
+			// SerialNo
+			if (serialNoAttributeId != null
+					&& serialNoAttributeId.equals(attributeId)
+					&& serialNoContext.isPresent()
+					&& Check.isEmpty(existingHUAttribute.getValue(), true))
 			{
-				// the attribute was not used in PPOrder. Nothing to modify
-				continue;
+				final String serialNo = serialNoBL.getAndIncrementSerialNo(serialNoContext.get()).orElse(null);
+				if (serialNo != null)
+				{
+					existingHUAttribute.setValue(serialNo);
+					existingHUAttribute.setValueNumber(null);
+					huAttributesRepo.save(existingHUAttribute);
+					logger.trace("Updated SerialNo {}/{} to {}", hu, existingHUAttribute, serialNo);
+
+					// IMPORTANT: If we have a configured SerialNo we shall use it.
+					// In this case we shall ignore the SerialNo which was collected from issued HUs.
+					continue;
+				}
 			}
 
-			// TODO: shall we skip it if attribute is null and isTransferIfNull=false
+			//
+			// Update HU attribute from order's collected attribute
+			if (from.getByAttributeId(attributeId) != null)
+			{
+				final AttributeWithValue attributeWithValue = from.getByAttributeId(attributeId);
 
-			huAttribute.setValue(attributeWithValue.getValueString());
-			huAttribute.setValueNumber(attributeWithValue.getValueNumber());
-			InterfaceWrapperHelper.save(huAttribute);
-			logger.trace("Updated {}/{} from {}", hu, huAttribute, attributeWithValue);
+				// TODO: shall we skip it if attribute is null and isTransferIfNull=false
+
+				existingHUAttribute.setValue(attributeWithValue.getValueString());
+				existingHUAttribute.setValueNumber(attributeWithValue.getValueNumber());
+				huAttributesRepo.save(existingHUAttribute);
+				logger.trace("Updated {}/{} from {}", hu, existingHUAttribute, attributeWithValue);
+			}
 		}
 	}
 
@@ -266,23 +345,17 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 	}
 
 	@VisibleForTesting
+	@ToString
 	static class AttributesMap
 	{
-		/** {@link AttributeWithValue} indexed by M_Attribute_ID */
-		private final Map<Integer, AttributeWithValue> map = new HashMap<>();
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this).addValue(map).toString();
-		}
+		private final Map<AttributeId, AttributeWithValue> map = new HashMap<>();
 
 		public boolean isEmpty()
 		{
 			return map.isEmpty();
 		}
 
-		public AttributeWithValue getByAttributeId(final int attributeId)
+		public AttributeWithValue getByAttributeId(final AttributeId attributeId)
 		{
 			return map.get(attributeId);
 		}
@@ -311,41 +384,49 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 
 		private static final AttributeWithValue createAttributeWithValue(final I_PP_Order_ProductAttribute ppOrderAttribute)
 		{
-			final de.metas.handlingunits.model.I_M_Attribute attribute = InterfaceWrapperHelper.loadOutOfTrx(ppOrderAttribute.getM_Attribute_ID(), de.metas.handlingunits.model.I_M_Attribute.class);
+			final AttributeId attributeId = AttributeId.ofRepoId(ppOrderAttribute.getM_Attribute_ID());
 			final String valueString = ppOrderAttribute.getValue();
 			final BigDecimal valueNumber = getValueNumberOrNull(ppOrderAttribute);
 
-			final AttributeWithValue attributeWithValue = AttributeWithValue.newInstance(attribute, valueString, valueNumber);
-			return attributeWithValue;
+			final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+			final de.metas.handlingunits.model.I_M_Attribute attribute = attributesRepo.getAttributeById(attributeId, de.metas.handlingunits.model.I_M_Attribute.class);
+
+			return AttributeWithValue.newInstance(attribute, valueString, valueNumber);
 		}
 
 	}
 
-	@Immutable
 	@VisibleForTesting
-	@ToString
+	@Value
 	static final class AttributeWithValue
 	{
 		private static AttributeWithValue newInstance(final de.metas.handlingunits.model.I_M_Attribute attribute, final String valueString, final BigDecimal valueNumber)
 		{
-			final int attributeId = attribute.getM_Attribute_ID();
+			final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
 			final boolean transferWhenNull = attribute.isTransferWhenNull();
 			final boolean stickWithNullValue = false;
 			return new AttributeWithValue(attributeId, transferWhenNull, stickWithNullValue, valueString, valueNumber);
 		}
 
-		private final int attributeId;
+		private final AttributeId attributeId;
+		@Getter(AccessLevel.PRIVATE)
 		private final boolean transferWhenNull; // task #810
 
 		private final String valueString;
 		private final BigDecimal valueNumber;
+
+		/**
+		 * true if {@link #isNullValue()} and this shall be preserved while merging attributes (usually because there was some error in incompatibility in attribute values)
+		 */
+		@Getter(AccessLevel.PRIVATE)
 		private final boolean stickWithNullValue;
 
-		private AttributeWithValue( //
-				final int attributeId, final boolean transferWhenNull //
-				, final boolean stickWithNullValue //
-				, final String valueString, final BigDecimal valueNumber //
-		)
+		private AttributeWithValue(
+				final AttributeId attributeId,
+				final boolean transferWhenNull,
+				final boolean stickWithNullValue,
+				final String valueString,
+				final BigDecimal valueNumber)
 		{
 			this.attributeId = attributeId;
 			this.transferWhenNull = transferWhenNull;
@@ -376,38 +457,12 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 			return new AttributeWithValue(attributeId, transferWhenNull, stickWithNullValue, valueString, valueNumber);
 		}
 
-		public int getAttributeId()
-		{
-			return attributeId;
-		}
-
-		public String getValueString()
-		{
-			return valueString;
-		}
-
-		public BigDecimal getValueNumber()
-		{
-			return valueNumber;
-		}
-
 		/**
 		 * @return true if value(string) and valueNumber are null
 		 */
 		private boolean isNullValue()
 		{
 			return valueNumber == null && valueString == null;
-		}
-
-		/** @return if {@link #isNullValue()} and this shall be preserved while merging attributes (usually because there was some error in incompatibility in attribute values) */
-		private boolean isStickWithNullValue()
-		{
-			return stickWithNullValue;
-		}
-
-		private boolean isTransferWhenNull()
-		{
-			return transferWhenNull;
 		}
 
 		/** @return true if this attribute and <code>other</code> have the values equal */
@@ -461,8 +516,8 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		private AttributeWithValue combineToNew(final AttributeWithValue from)
 		{
 			// Make sure the "from" is compatible with this attribute (shall not happen)
-			Preconditions.checkArgument(getAttributeId() == from.getAttributeId(), "attributeId is not compatible: this=%s, from=%s", this, from);
-			Preconditions.checkArgument(isTransferWhenNull() == from.isTransferWhenNull(), "IsTransferWhenNull flag does not match:: this=%s, from=%s", this, from);
+			Check.assumeEquals(getAttributeId(), from.getAttributeId(), "attributeId shall match: this={}, from={}", this, from);
+			Check.assumeEquals(isTransferWhenNull(), from.isTransferWhenNull(), "IsTransferWhenNull flag shall match: this={}, from={}", this, from);
 
 			// If this is a sticky attribute then don't combine it but return it as is
 			if (isStickWithNullValue())

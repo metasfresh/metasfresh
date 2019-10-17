@@ -37,9 +37,9 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Process;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -51,14 +51,18 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.report.jasper.server.MetasJRXlsExporter;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.report.engine.AbstractReportEngine;
 import de.metas.report.engine.ReportContext;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
 import de.metas.util.Services;
+import lombok.NonNull;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JRParameter;
@@ -66,6 +70,7 @@ import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
+import net.sf.jasperreports.engine.query.JsonQLQueryExecuterFactory;
 import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.export.XlsReportConfiguration;
 
@@ -80,6 +85,7 @@ public class JasperEngine extends AbstractReportEngine
 	private static final String PARAM_RECORD_ID = "RECORD_ID";
 	private static final String PARAM_AD_PINSTANCE_ID = "AD_PINSTANCE_ID";
 	private static final String PARAM_BARCODE_URL = "barcodeURL";
+	private static final String PARAM_SQL_VALUE = "SQL_VALUE";
 
 	private static final String JRPROPERTY_ReportPath = JasperEngine.class.getName() + ".ReportPath";
 
@@ -91,17 +97,19 @@ public class JasperEngine extends AbstractReportEngine
 	private static final String PARAM_OUTPUTTYPE = "OUTPUTTYPE";
 
 	// services
+	private final JsonDataSourceService jsonDSService = SpringContextHolder.instance.getBean(JsonDataSourceService.class);
+
 	private final transient Logger log = LogManager.getLogger(getClass());
 
 	@Override
-	public void report(final ReportContext reportContext, final OutputStream out)
+	public void report(@NonNull final ReportContext reportContext, @NonNull final OutputStream out)
 	{
 		try
 		{
 			final JasperPrint jasperPrint = createJasperPrint(reportContext);
 			createOutput(out, jasperPrint, reportContext.getOutputType());
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
@@ -130,42 +138,54 @@ public class JasperEngine extends AbstractReportEngine
 		final Map<String, Object> jrParameters = createJRParameters(reportContext);
 		final JasperReport jasperReport = createJasperReport(ctx, reportContext.getAD_Process_ID(), jrParameters, jasperLoader);
 
-		Connection conn = null;
-		try
+		// JSON Data source
+		if (jsonDSService.isJasperJSONReport(reportContext))
 		{
-			//
-			// Create jasper's JDBC connection
-			conn = getConnection();
-			final String sqlQueryInfo = "jasper main report=" + jasperReport.getProperty(JRPROPERTY_ReportPath)
-					+ ", AD_PInstance_ID=" + reportContext.getPinstanceId();
-
-			final String securityWhereClause;
-			if (reportContext.isApplySecuritySettings())
-			{
-				final IUserRolePermissions userRolePermissions = reportContext.getUserRolePermissions();
-				final String tableName = reportContext.getTableNameOrNull();
-				securityWhereClause = userRolePermissions.getOrgWhere(tableName, false);
-			}
-			else
-			{
-				securityWhereClause = null;
-			}
-
-			final JasperJdbcConnection jasperConn = new JasperJdbcConnection(conn, sqlQueryInfo, securityWhereClause);
-
 			//
 			// Fill the report
-			final JasperPrint jasperPrint = ADJasperFiller.getInstance().fillReport(jasperReport, jrParameters, jasperConn, jasperLoader);
+			final JasperPrint jasperPrint = ADJasperFiller.getInstance().fillReport(jasperReport, jrParameters, jasperLoader);
 			return jasperPrint;
 		}
-		finally
+		else
 		{
-			DB.close(conn);
-			conn = null;
+			Connection conn = null;
+			try
+			{
+
+				//
+				// Create jasper's JDBC connection
+				conn = getConnection();
+				final String sqlQueryInfo = "jasper main report=" + jasperReport.getProperty(JRPROPERTY_ReportPath)
+				+ ", AD_PInstance_ID=" + reportContext.getPinstanceId();
+
+				final String securityWhereClause;
+				if (reportContext.isApplySecuritySettings())
+				{
+					final IUserRolePermissions userRolePermissions = reportContext.getUserRolePermissions();
+					final String tableName = reportContext.getTableNameOrNull();
+					securityWhereClause = userRolePermissions.getOrgWhere(tableName, Access.READ);
+				}
+				else
+				{
+					securityWhereClause = null;
+				}
+
+				final JasperJdbcConnection jasperConn = new JasperJdbcConnection(conn, sqlQueryInfo, securityWhereClause);
+
+				//
+				// Fill the report
+				final JasperPrint jasperPrint = ADJasperFiller.getInstance().fillReport(jasperReport, jrParameters, jasperConn, jasperLoader);
+				return jasperPrint;
+			}
+			finally
+			{
+				DB.close(conn);
+				conn = null;
+			}
 		}
 	}
 
-	private final JasperReport createJasperReport(final Properties ctx, final int adProcessId, final Map<String, Object> jrParameters, final ClassLoader jasperLoader) throws JRException
+	private final JasperReport createJasperReport(final Properties ctx, final AdProcessId adProcessId, final Map<String, Object> jrParameters, final ClassLoader jasperLoader) throws JRException
 	{
 		final String reportPath = getReportPath(adProcessId, jrParameters);
 		final InputStream jasperInputStream;
@@ -210,7 +230,7 @@ public class JasperEngine extends AbstractReportEngine
 		return jasperReport;
 	}
 
-	private final Map<String, Object> createJRParameters(final ReportContext reportContext)
+	private final Map<String, Object> createJRParameters(final ReportContext reportContext) throws JRException
 	{
 		final Properties ctx = reportContext.getCtx();
 		final PInstanceId pinstanceId = reportContext.getPinstanceId();
@@ -248,6 +268,22 @@ public class JasperEngine extends AbstractReportEngine
 			jrParameters.put(PARAM_BARCODE_URL, barcodeURL);
 		}
 
+		if (jsonDSService.isJasperJSONReport(reportContext))
+		{
+			final String sql_value = jsonDSService.retrieveJsonSqlValue(reportContext);
+			if (sql_value != null)
+			{
+				jrParameters.put(PARAM_SQL_VALUE, sql_value);
+			}
+
+			//
+			// We must provide the json as parameter input stream
+			// See  https://stackoverflow.com/questions/33300592/how-to-fill-report-using-json-datasource-without-getting-null-values/33301039
+			// See http://jasperreports.sourceforge.net/sample.reference/jsondatasource/
+			final InputStream is = jsonDSService.getInputStream(reportContext);
+			jrParameters.put(JsonQLQueryExecuterFactory.JSON_INPUT_STREAM, is);
+		}
+
 		return jrParameters;
 	}
 
@@ -260,7 +296,7 @@ public class JasperEngine extends AbstractReportEngine
 	 */
 	private final Language getParam_Language(final Map<String, Object> jrParameters)
 	{
-		Object langParam = jrParameters.get(PARAM_REPORT_LANGUAGE);
+		final Object langParam = jrParameters.get(PARAM_REPORT_LANGUAGE);
 		Language currLang = null;
 		if (langParam instanceof String)
 		{
@@ -306,7 +342,7 @@ public class JasperEngine extends AbstractReportEngine
 		return outputType;
 	}
 
-	private final String getReportPath(final int adProcessId, final Map<String, Object> jrParameters) throws JRException
+	private final String getReportPath(final AdProcessId adProcessId, final Map<String, Object> jrParameters) throws JRException
 	{
 		final I_AD_Process process = Services.get(IADProcessDAO.class).getById(adProcessId);
 		final String reportPath = process.getJasperReport();
@@ -457,7 +493,7 @@ public class JasperEngine extends AbstractReportEngine
 			jrParameters.put(JRParameter.REPORT_RESOURCE_BUNDLE, resourceBundle);
 			return true;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			log.warn("Failed loading resource bundle for base name: " + resourceBundleName + ", " + locale + ". Skipping", e);
 		}
@@ -468,16 +504,18 @@ public class JasperEngine extends AbstractReportEngine
 	private void createOutput(final OutputStream out, final JasperPrint jasperPrint, OutputType outputType) throws JRException, IOException
 	{
 		if (outputType == null)
+		{
 			outputType = DEFAULT_OutputType;
+		}
 
 		if (OutputType.PDF == outputType)
 		{
-			byte[] data = JasperExportManager.exportReportToPdf(jasperPrint);
+			final byte[] data = JasperExportManager.exportReportToPdf(jasperPrint);
 			out.write(data);
 		}
 		else if (OutputType.HTML == outputType)
 		{
-			File file = File.createTempFile("JasperPrint", ".html");
+			final File file = File.createTempFile("JasperPrint", ".html");
 			JasperExportManager.exportReportToHtmlFile(jasperPrint, file.getAbsolutePath());
 			// TODO: handle image links
 

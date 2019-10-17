@@ -3,12 +3,11 @@ package de.metas.purchasecandidate.purchaseordercreation.remoteorder;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.adempiere.service.OrgId;
-import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.vendor.gateway.api.VendorGatewayRegistry;
 import de.metas.vendor.gateway.api.VendorGatewayService;
@@ -39,6 +38,13 @@ import lombok.NonNull;
 @Service
 public class VendorGatewayInvokerFactory
 {
+	private final VendorGatewayRegistry vendorGatewayRegistry;
+
+	public VendorGatewayInvokerFactory(@NonNull final VendorGatewayRegistry vendorGatewayRegistry)
+	{
+		this.vendorGatewayRegistry = vendorGatewayRegistry;
+	}
+
 	public VendorGatewayInvoker createForVendorId(@NonNull final BPartnerId vendorId)
 	{
 		final OrgId orgId = OrgId.ofRepoIdOrNull(Env.getAD_Org_ID(Env.getCtx()));
@@ -46,7 +52,6 @@ public class VendorGatewayInvokerFactory
 				"Missing AD_Org_ID in the current ctx; ctx={}",
 				(Supplier<Object[]>)() -> Env.getEntireContext(Env.getCtx()));
 
-		final VendorGatewayRegistry vendorGatewayRegistry = Adempiere.getBean(VendorGatewayRegistry.class);
 		final Optional<VendorGatewayService> vendorGatewayService = vendorGatewayRegistry
 				.getSingleVendorGatewayService(vendorId.getRepoId());
 

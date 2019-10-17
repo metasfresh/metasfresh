@@ -76,7 +76,7 @@ public class HULockBL implements IHULockBL
 		}
 		else if ("C".equalsIgnoreCase(value))
 		{
-			return Ini.isClient();
+			return Ini.isSwingClient();
 		}
 		return false; // we don't know what to do with the value; play it safe and return false.
 	}

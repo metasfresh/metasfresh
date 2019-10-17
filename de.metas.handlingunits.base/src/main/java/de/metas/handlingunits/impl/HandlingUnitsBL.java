@@ -22,9 +22,12 @@ import org.compiere.model.I_M_Transaction;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -53,6 +56,7 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
 import de.metas.logging.LogManager;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -62,6 +66,20 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	private static final transient Logger logger = LogManager.getLogger(HandlingUnitsBL.class);
 
 	private final IHUStorageFactory storageFactory = new DefaultHUStorageFactory();
+
+	@Override
+	public I_M_HU getById(@NonNull final HuId huId)
+	{
+		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
+		return handlingUnitsRepo.getById(huId);
+	}
+
+	@Override
+	public List<I_M_HU> getByIds(@NonNull final Collection<HuId> huIds)
+	{
+		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
+		return handlingUnitsRepo.getByIds(huIds);
+	}
 
 	@Override
 	public IHUStorageFactory getStorageFactory()
@@ -100,8 +118,11 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public I_C_UOM getHandlingUOM(final I_M_Product product)
 	{
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
 		// FIXME: not sure that is correct
-		return product.getC_UOM();
+		return uomDAO.getById(product.getC_UOM_ID());
+
 	}
 
 	@Override
@@ -272,13 +293,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return false;
 		}
 
-		final I_M_HU_PI_Version piVersion = getPIVersion(hu);
-		if (piVersion == null)
-		{
-			return false;
-		}
-
-		return HuPackingInstructionsId.isVirtualRepoId(piVersion.getM_HU_PI_ID());
+		final HuPackingInstructionsVersionId piVersionId = HuPackingInstructionsVersionId.ofRepoId(hu.getM_HU_PI_Version_ID());
+		return piVersionId.isVirtual();
 	}
 
 	@Override
@@ -300,13 +316,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return true;
 		}
 
-		final int piItemId = piItem.getM_HU_PI_Item_ID();
-		if (piItemId == Services.get(IHandlingUnitsDAO.class).getPackingItemTemplate_HU_PI_Item_ID())
-		{
-			return true;
-		}
-
-		return false;
+		return HuPackingInstructionsItemId.isTemplateRepoId(piItem.getM_HU_PI_Item_ID());
 	}
 
 	@Override
@@ -424,13 +434,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return false;
 		}
 
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		if (huItem.getM_HU_PI_Item_ID() == handlingUnitsDAO.getVirtual_HU_PI_Item_ID())
-		{
-			return true;
-		}
-
-		return false;
+		return HuPackingInstructionsItemId.isVirtualRepoId(huItem.getM_HU_PI_Item_ID());
 	}
 
 	@Override
@@ -767,5 +771,71 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 		final I_M_HU_PI included_HU_PI = parentPIItem.getIncluded_HU_PI();
 		return included_HU_PI;
+	}
+
+	@Override
+	public Set<HuId> getVHUIds(@NonNull final HuId huId)
+	{
+		final List<I_M_HU> vhus = getVHUs(huId);
+		return extractHuIds(vhus);
+	}
+
+	private static ImmutableSet<HuId> extractHuIds(final Collection<I_M_HU> hus)
+	{
+		return hus.stream()
+				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public Set<HuId> getVHUIds(@NonNull final Set<HuId> huIds)
+	{
+		if (huIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final List<I_M_HU> allVHUs = new ArrayList<>();
+		for (final I_M_HU hu : getByIds(huIds))
+		{
+			List<I_M_HU> vhus = getVHUs(hu);
+			allVHUs.addAll(vhus);
+		}
+
+		return extractHuIds(allVHUs);
+	}
+
+	@Override
+	public List<I_M_HU> getVHUs(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = getById(huId);
+		return getVHUs(hu);
+	}
+
+	@Override
+	public List<I_M_HU> getVHUs(@NonNull final I_M_HU hu)
+	{
+		if (isVirtual(hu))
+		{
+			return ImmutableList.of(hu);
+		}
+
+		final List<I_M_HU> vhus = new ArrayList<>();
+		new HUIterator()
+				.setEnableStorageIteration(false)
+				.setListener(new HUIteratorListenerAdapter()
+				{
+					@Override
+					public Result afterHU(final I_M_HU currentHu)
+					{
+						if (isVirtual(currentHu))
+						{
+							vhus.add(currentHu);
+						}
+						return Result.CONTINUE;
+					}
+				}).iterate(hu);
+
+		return vhus;
 	}
 }

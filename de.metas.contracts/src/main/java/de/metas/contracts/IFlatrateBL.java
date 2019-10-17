@@ -42,6 +42,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.process.PInstanceId;
+import de.metas.product.ProductAndCategoryId;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Getter;
@@ -178,7 +179,7 @@ public interface IFlatrateBL extends ISingletonService
 			I_C_Flatrate_Conditions conditions,
 			Timestamp startDate,
 			I_AD_User userInCharge,
-			I_M_Product product,
+			ProductAndCategoryId productAndCategoryId,
 			boolean completeIt);
 
 	/**

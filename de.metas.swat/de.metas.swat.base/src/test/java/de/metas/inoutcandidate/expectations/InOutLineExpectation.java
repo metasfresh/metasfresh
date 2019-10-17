@@ -1,5 +1,7 @@
 package de.metas.inoutcandidate.expectations;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -23,6 +25,7 @@ package de.metas.inoutcandidate.expectations;
  */
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -41,15 +44,17 @@ import org.compiere.model.I_M_Product;
 
 import de.metas.document.engine.IDocument;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 public class InOutLineExpectation<ParentExpectationType> extends AbstractExpectation<ParentExpectationType>
 {
-	private I_M_Product product = null;
 	private String asiDescription = null;
 	private boolean asiDescriptionSet = false;
-	private BigDecimal qtyEntered = null;
-	private BigDecimal movementQty = null;
+	private StockQtyAndUOMQty qtys = null;
+
 	private BigDecimal qualityDiscountPercent;
 	private boolean qualityDiscountPercentSet;
 	private String qualityNote;
@@ -70,12 +75,9 @@ public class InOutLineExpectation<ParentExpectationType> extends AbstractExpecta
 		ErrorMessage message = newErrorMessage()
 				.addContextInfo(inoutLine);
 
-		final I_M_Product expectedProduct = getM_Product();
-		if (expectedProduct != null)
-		{
-			final I_M_Product actualProduct = inoutLine.getM_Product();
-			assertModelEquals(message.expect("Invalid product"), expectedProduct, actualProduct);
-		}
+		final I_M_Product expectedProduct = loadOutOfTrx(qtys.getProductId(), I_M_Product.class);
+		final I_M_Product actualProduct = loadOutOfTrx(inoutLine.getM_Product_ID(), I_M_Product.class);
+		assertModelEquals(message.expect("Invalid product"), expectedProduct, actualProduct);
 
 		if (asiDescriptionSet)
 		{
@@ -101,17 +103,11 @@ public class InOutLineExpectation<ParentExpectationType> extends AbstractExpecta
 			}
 		}
 
-		final BigDecimal expectedMovementQty = getMovementQty();
-		if (expectedMovementQty != null)
-		{
-			final BigDecimal actualMovementQty = inoutLine.getMovementQty();
-			assertEquals(message.expect("movement qty"), expectedMovementQty, actualMovementQty);
-		}
+		final BigDecimal expectedMovementQty = qtys.getStockQty().toBigDecimal();
+		final BigDecimal actualMovementQty = inoutLine.getMovementQty();
+		assertEquals(message.expect("movement qty"), expectedMovementQty, actualMovementQty);
 
-		if (qtyEntered != null)
-		{
-			assertEquals(message.expect("QtyEntered"), qtyEntered, inoutLine.getQtyEntered());
-		}
+		assertEquals(message.expect("QtyEntered"), qtys.getUOMQtyNotNull().toBigDecimal(), inoutLine.getQtyEntered());
 
 		if (qualityDiscountPercentSet)
 		{
@@ -166,12 +162,11 @@ public class InOutLineExpectation<ParentExpectationType> extends AbstractExpecta
 	@OverridingMethodsMustInvokeSuper
 	protected void populateModel(final I_M_InOutLine inoutLine)
 	{
-		if (product != null)
-		{
-			inoutLine.setM_Product_ID(product.getM_Product_ID());
-		}
-		inoutLine.setQtyEntered(qtyEntered);
-		inoutLine.setMovementQty(movementQty);
+		inoutLine.setM_Product_ID(qtys.getProductId().getRepoId());
+		inoutLine.setQtyEntered(qtys.getUOMQtyNotNull().toBigDecimal());
+		inoutLine.setC_UOM_ID(qtys.getUOMQtyNotNull().getUomId().getRepoId());
+		inoutLine.setMovementQty(qtys.getStockQty().toBigDecimal());
+
 		if (inDispute != null)
 		{
 			inoutLine.setIsInDispute(inDispute);
@@ -180,15 +175,9 @@ public class InOutLineExpectation<ParentExpectationType> extends AbstractExpecta
 		inoutLine.setQualityNote(qualityNote);
 	}
 
-	public final InOutLineExpectation<ParentExpectationType> product(final I_M_Product product)
+	public ProductId getProductId()
 	{
-		this.product = product;
-		return this;
-	}
-
-	public I_M_Product getM_Product()
-	{
-		return product;
+		return qtys.getProductId();
 	}
 
 	public final InOutLineExpectation<ParentExpectationType> asiDescription(final String asiDescription)
@@ -208,30 +197,9 @@ public class InOutLineExpectation<ParentExpectationType> extends AbstractExpecta
 		return asiDescription;
 	}
 
-	public final InOutLineExpectation<ParentExpectationType> movementQty(final String movementQtyStr)
+	public InOutLineExpectation<ParentExpectationType> qtys(@NonNull final StockQtyAndUOMQty qtys)
 	{
-		return movementQty(new BigDecimal(movementQtyStr));
-	}
-
-	public final InOutLineExpectation<ParentExpectationType> movementQty(final int movementQty)
-	{
-		return movementQty(new BigDecimal(movementQty));
-	}
-
-	public final InOutLineExpectation<ParentExpectationType> movementQty(final BigDecimal movementQty)
-	{
-		this.movementQty = movementQty;
-		return this;
-	}
-
-	public BigDecimal getMovementQty()
-	{
-		return movementQty;
-	}
-
-	public InOutLineExpectation<ParentExpectationType> qtyEntered(final BigDecimal qtyEntered)
-	{
-		this.qtyEntered = qtyEntered;
+		this.qtys = qtys;
 		return this;
 	}
 
@@ -296,6 +264,12 @@ public class InOutLineExpectation<ParentExpectationType> extends AbstractExpecta
 	}
 
 	public InOutLineExpectation<ParentExpectationType> attribute(final I_M_Attribute attribute, final Date valueDate)
+	{
+		newAttributeExpectation().attribute(attribute).valueDate(valueDate);
+		return this;
+	}
+
+	public InOutLineExpectation<ParentExpectationType> attribute(final I_M_Attribute attribute, final LocalDate valueDate)
 	{
 		newAttributeExpectation().attribute(attribute).valueDate(valueDate);
 		return this;

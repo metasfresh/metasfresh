@@ -16,20 +16,22 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Properties;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.callout.M_Attribute;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -48,6 +50,7 @@ import org.junit.Ignore;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Base context and helpers for {@link M_Attribute}s related tests.
@@ -110,25 +113,37 @@ public class AttributesTestHelper
 		return attribute;
 	}
 
-	public I_M_AttributeValue createM_AttributeValue(
-			final I_M_Attribute attribute,
-			final String value)
+	public AttributeListValue createM_AttributeValue(
+			@NonNull final I_M_Attribute attribute,
+			@Nullable final String value)
 	{
-		final I_M_AttributeValue attributeValue = InterfaceWrapperHelper.newInstance(I_M_AttributeValue.class, context);
-		attributeValue.setM_Attribute(attribute);
-		attributeValue.setValue(value);
-		attributeValue.setName("Name_" + value);
-		save(attributeValue);
-		return attributeValue;
+		return createM_AttributeValue(attribute, null, value);
+	}
+
+	public AttributeListValue createM_AttributeValue(
+			@NonNull final I_M_Attribute attribute,
+			@Nullable final Integer valueRepoId,
+			@Nullable final String value)
+	{
+		final I_M_AttributeValue record = InterfaceWrapperHelper.newInstance(I_M_AttributeValue.class, context);
+		record.setM_Attribute(attribute);
+		record.setValue(value);
+		record.setName("Name_" + value);
+		if (valueRepoId != null)
+		{
+			record.setM_AttributeValue_ID(valueRepoId);
+		}
+		save(record);
+		return AttributeDAO.toAttributeListValue(record);
 	}
 
 	public I_M_AttributeValue_Mapping createM_AttributeValue_Mapping(
-			final I_M_AttributeValue attributeValue,
-			final I_M_AttributeValue attributeValueTo)
+			final AttributeListValue attributeValue,
+			final AttributeListValue attributeValueTo)
 	{
 		final I_M_AttributeValue_Mapping attributeValueMapping = InterfaceWrapperHelper.newInstance(I_M_AttributeValue_Mapping.class, context);
-		attributeValueMapping.setM_AttributeValue(attributeValue);
-		attributeValueMapping.setM_AttributeValue_To(attributeValueTo);
+		attributeValueMapping.setM_AttributeValue_ID(attributeValue.getId().getRepoId());
+		attributeValueMapping.setM_AttributeValue_To_ID(attributeValueTo.getId().getRepoId());
 		save(attributeValueMapping);
 		return attributeValueMapping;
 	}
@@ -155,7 +170,7 @@ public class AttributesTestHelper
 		return javaClassTypeDef;
 	}
 
-	public void createAD_Ref_List_Items(final int adReferenceId, final String ...values)
+	public void createAD_Ref_List_Items(final int adReferenceId, final String... values)
 	{
 		for (final String value : values)
 		{

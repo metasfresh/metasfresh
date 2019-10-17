@@ -56,16 +56,7 @@ public interface IDocument
 	String STATUS_WaitingPayment = "WP";
 	String STATUS_WaitingConfirmation = "WC";
 
-	/**
-	 * Constant value for the DocDtatus column. Note that we don't call it {@code COLUMNNAME_DocStatus} to avoid a compiler error saying
-	 *
-	 * <pre>
-	 * reference to COLUMNNAME_DocStatus is ambiguous
-	 * </pre>
-	 *
-	 * in (legacy) sub classes of this class.
-	 */
-	String DocStatus = "DocStatus";
+	String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
 	 * Constant value for the Reversal_ID column. Note that we don't call it {@code COLUMNNAME_Reversal_ID} to avoid a compiler error saying

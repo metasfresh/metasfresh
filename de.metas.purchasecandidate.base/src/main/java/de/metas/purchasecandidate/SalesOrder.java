@@ -1,6 +1,6 @@
 package de.metas.purchasecandidate;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import lombok.NonNull;
 import lombok.Value;
@@ -31,5 +31,5 @@ import lombok.Value;
 public class SalesOrder
 {
 	@NonNull
-	LocalDateTime preparationDate;
+	ZonedDateTime preparationDate;
 }

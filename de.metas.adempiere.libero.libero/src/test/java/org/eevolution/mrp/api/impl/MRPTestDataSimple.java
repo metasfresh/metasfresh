@@ -2,8 +2,6 @@ package org.eevolution.mrp.api.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_UOM;
@@ -11,14 +9,13 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.compiere.model.X_S_Resource;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.X_PP_Product_Planning;
 
 import de.metas.product.ProductId;
 import de.metas.util.Check;
-import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Simple MRP master data definition.
@@ -68,10 +65,8 @@ public class MRPTestDataSimple
 	 */
 	public I_DD_NetworkDistribution ddNetwork;
 
-	public MRPTestDataSimple(final MRPTestHelper helper)
+	public MRPTestDataSimple(@NonNull final MRPTestHelper helper)
 	{
-		super();
-		Check.assumeNotNull(helper, "helper not null");
 		this.helper = helper;
 
 		//
@@ -102,24 +97,19 @@ public class MRPTestDataSimple
 	{
 		this.adOrg01 = helper.adOrg01;
 
-		this.plant01 = helper.createResource("Plant01", X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant, helper.resourceType_Plants);
-		this.warehouse_plant01 = helper.createWarehouse("Plant01_Warehouse01", adOrg01);
-		this.warehouse_plant01_locatorId = getDefaultLocatorId(warehouse_plant01);
+		this.plant01 = helper.plant01;
+		this.warehouse_plant01 = helper.warehouse_plant01;
+		this.warehouse_plant01_locatorId = helper.warehouse_plant01_locatorId;
 
-		this.plant02 = helper.createResource("Plant02", X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant, helper.resourceType_Plants);
-		this.warehouse_plant02 = helper.createWarehouse("Plant02_Warehouse01", adOrg01);
+		this.plant02 = helper.plant02;
+		this.warehouse_plant02 = helper.warehouse_plant02;
 
-		this.warehouse_picking01 = helper.createWarehouse("Picking_Warehouse01", adOrg01);
+		this.warehouse_picking01 = helper.warehouse_picking01;
 
 		// Raw Materials Warehouses
 		// NOTE: we are adding them last because of MRP bug regarding how warehouses are iterated and DRP
-		this.warehouse_rawMaterials01 = helper.createWarehouse("RawMaterials_Warehouse01", adOrg01);
-		this.warehouse_rawMaterials01_locatorId = getDefaultLocatorId(warehouse_rawMaterials01);
-	}
-
-	private static LocatorId getDefaultLocatorId(final I_M_Warehouse warehouse)
-	{
-		return Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
+		this.warehouse_rawMaterials01 = helper.warehouse_rawMaterials01;
+		this.warehouse_rawMaterials01_locatorId = helper.warehouse_rawMaterials01_locatorId;
 	}
 
 	private final void createProductsAndBOMs()
@@ -135,12 +125,12 @@ public class MRPTestDataSimple
 				.product(pSalad_2xTomato_1xOnion)
 				.uom(uomEach)
 				.newBOMLine()
-					.product(pTomato).uom(pTomato.getC_UOM())
+					.product(pTomato).uom(uomKg)
 					.setIsQtyPercentage(false)
 					.setQtyBOM(2)
 					.endLine()
 				.newBOMLine()
-					.product(pOnion).uom(pOnion.getC_UOM())
+					.product(pOnion).uom(uomKg)
 					.setIsQtyPercentage(false)
 					.setQtyBOM(1)
 					.endLine()

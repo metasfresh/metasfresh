@@ -13,15 +13,14 @@ package de.metas.contracts.invoicecandidate;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -109,7 +108,7 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 
 		final I_C_Flatrate_DataEntry dataEntry = flatrateDB.retrieveDataEntryOrNull(ic);
-		Check.assume(dataEntry != null, ic + " is referenced by a C_Flatrate_DataEntry record");
+		Check.assumeNotNull(dataEntry, "Param 'ic' needs to be referenced by a C_Flatrate_DataEntry record; ic={}", ic);
 
 		return dataEntry.getC_Flatrate_Term().getAD_User_InCharge_ID();
 	}
@@ -146,17 +145,13 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 	{
 		// note: we can assume that #setQtyOrdered() was already called
 		ic.setQtyDelivered(ic.getQtyOrdered()); // when changing this, make sure to threat ProductType.Service specially
+		ic.setQtyDeliveredInUOM(ic.getQtyEntered());
+
 		ic.setDeliveryDate(ic.getDateOrdered());
 	}
 
 	@Override
 	public void setBPartnerData(final I_C_Invoice_Candidate ic)
-	{
-		// nothing to do
-	}
-
-	@Override
-	public void setC_UOM_ID(final I_C_Invoice_Candidate ic)
 	{
 		// nothing to do
 	}

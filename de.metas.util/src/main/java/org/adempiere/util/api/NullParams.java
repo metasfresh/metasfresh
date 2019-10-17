@@ -24,6 +24,7 @@ package org.adempiere.util.api;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -60,9 +61,9 @@ import java.util.Collections;
 	}
 
 	@Override
-	public int getParameterAsInt(final String parameterName)
+	public int getParameterAsInt(final String parameterName, final int defaultValue)
 	{
-		return 0;
+		return defaultValue;
 	}
 
 	@Override
@@ -73,6 +74,12 @@ import java.util.Collections;
 
 	@Override
 	public Timestamp getParameterAsTimestamp(final String parameterName)
+	{
+		return null;
+	}
+
+	@Override
+	public LocalDate getParameterAsLocalDate(final String parameterName)
 	{
 		return null;
 	}
@@ -90,5 +97,11 @@ import java.util.Collections;
 	public Collection<String> getParameterNames()
 	{
 		return Collections.emptyList();
+	}
+
+	@Override
+	public <T extends Enum<T>> T getParameterAsEnum(final String parameterName, final Class<T> enumType, final T defaultValueWhenNull)
+	{
+		return defaultValueWhenNull;
 	}
 }

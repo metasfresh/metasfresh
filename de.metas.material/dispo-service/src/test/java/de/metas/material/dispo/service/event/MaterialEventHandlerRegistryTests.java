@@ -1,25 +1,25 @@
 package de.metas.material.dispo.service.event;
 
-import static de.metas.material.event.EventTestHelper.CLIENT_ID;
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.ORG_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.adempiere.warehouse.WarehouseId;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
 
@@ -56,10 +56,6 @@ import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
-import mockit.Delegate;
-import mockit.Expectations;
-import mockit.Mocked;
-import mockit.Verifications;
 
 /*
  * #%L
@@ -89,31 +85,27 @@ import mockit.Verifications;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@ExtendWith(AdempiereTestWatcher.class)
 public class MaterialEventHandlerRegistryTests
 {
-	/** Watches the current tests and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
-	public static final int fromWarehouseId = 10;
-	public static final int intermediateWarehouseId = 20;
-	public static final int toWarehouseId = 30;
+	public static final WarehouseId fromWarehouseId = WarehouseId.ofRepoId(10);
+	public static final WarehouseId intermediateWarehouseId = WarehouseId.ofRepoId(20);
+	public static final WarehouseId toWarehouseId = WarehouseId.ofRepoId(30);
 
 	private MaterialEventHandlerRegistry materialEventListener;
 
-	@Mocked
 	private PostMaterialEventService postMaterialEventService;
-
-	@Mocked
 	private EventLogUserService eventLogUserService;
-
-	@Mocked
 	private AvailableToPromiseRepository availableToPromiseRepository;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
+		eventLogUserService = Mockito.spy(EventLogUserService.class);
+		availableToPromiseRepository = Mockito.mock(AvailableToPromiseRepository.class);
 
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepositoryRetrieval);
@@ -132,13 +124,8 @@ public class MaterialEventHandlerRegistryTests
 						availableToPromiseRepository,
 						stockCandidateService),
 				new SupplyCandidateHandler(
-						candidateRepositoryRetrieval,
 						candidateRepositoryCommands,
 						stockCandidateService)));
-
-		final RequestMaterialOrderService candidateService = new RequestMaterialOrderService(
-				candidateRepositoryRetrieval,
-				postMaterialEventService);
 
 		final DDOrderAdvisedHandler distributionAdvisedEventHandler = new DDOrderAdvisedHandler(
 				candidateRepositoryRetrieval,
@@ -150,7 +137,7 @@ public class MaterialEventHandlerRegistryTests
 		final PPOrderAdvisedHandler ppOrderAdvisedHandler = new PPOrderAdvisedHandler(
 				candidateChangeHandler,
 				candidateRepositoryRetrieval,
-				candidateService);
+				postMaterialEventService);
 
 		final ForecastCreatedHandler forecastCreatedEventHandler = new ForecastCreatedHandler(candidateChangeHandler);
 
@@ -179,22 +166,15 @@ public class MaterialEventHandlerRegistryTests
 	/**
 	 * For these tests, {@link EventLogUserService} shall not do any actual logging.
 	 */
-	@SuppressWarnings("rawtypes")
 	private void setupEventLogUserServiceOnlyInvokesHandler()
 	{
-		// @formatter:off
-		new Expectations()
-		{{
-			eventLogUserService.invokeHandlerAndLog((InvokeHandlerandLogRequest)any);
-			result = new Delegate()
-			{
-				@SuppressWarnings("unused")
-				void delegateMethod(final InvokeHandlerandLogRequest request)
-				{
-					request.getInvokaction().run();
-				}
-			};
-		}};	// @formatter:on
+		Mockito.doAnswer(invocation -> {
+			final InvokeHandlerandLogRequest request = (InvokeHandlerandLogRequest)invocation.getArguments()[0];
+			request.getInvokaction().run();
+			return null; // void
+		})
+				.when(eventLogUserService)
+				.invokeHandlerAndLog(Mockito.any());
 	}
 
 	@Test
@@ -203,37 +183,30 @@ public class MaterialEventHandlerRegistryTests
 		final ShipmentScheduleCreatedEvent shipmentScheduleEvent = ShipmentScheduleCreatedHandlerTests.createShipmentScheduleTestEvent();
 		final MaterialDescriptor orderedMaterial = shipmentScheduleEvent.getMaterialDescriptor();
 
-		final Date shipmentScheduleEventTime = orderedMaterial.getDate();
+		final Instant shipmentScheduleEventTime = orderedMaterial.getDate();
 
 		// Whenever asked, (by DemandCandidateHandler, in this case), we say that we need more.
 		// This is required to make the DemandCandidateHandler fire a supplyRequiredEvent.
-		new Expectations(CandidateRepositoryRetrieval.class)
-		{{
-			availableToPromiseRepository.retrieveAvailableStockQtySum((AvailableToPromiseMultiQuery)any); minTimes = 0;
-			result = new BigDecimal("-10");
-		}}; // @formatter:on
+		Mockito.when(availableToPromiseRepository.retrieveAvailableStockQtySum(Mockito.any(AvailableToPromiseMultiQuery.class)))
+				.thenReturn(new BigDecimal("-10"));
 
 		materialEventListener.onEvent(shipmentScheduleEvent);
 
 		// guard - we expect one for the shipment-schedule demand, two for the distribution demand + supply and 2 stocks (one of them shared between shipment-demand and distr-supply)
 		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(2);
 
-		final Mutable<SupplyRequiredDescriptor> supplyRequiredDescriptor = new Mutable<>();
-		// @formatter:off
-		new Verifications()
-		{{
-			MaterialEvent event;
-			postMaterialEventService.postEventAfterNextCommit(event = withCapture());
-			assertThat(event).isInstanceOf(SupplyRequiredEvent.class);
-			supplyRequiredDescriptor.setValue(((SupplyRequiredEvent)event).getSupplyRequiredDescriptor());
-		}};	// @formatter:on
+		final ArgumentCaptor<MaterialEvent> eventCaptor = ArgumentCaptor.forClass(MaterialEvent.class);
+		Mockito.verify(postMaterialEventService)
+				.postEventAfterNextCommit(eventCaptor.capture());
+		final SupplyRequiredEvent event = (SupplyRequiredEvent)eventCaptor.getValue();
+		final SupplyRequiredDescriptor supplyRequiredDescriptor = event.getSupplyRequiredDescriptor();
 
 		// create a distributionAdvisedEvent event which matches the shipmentscheduleEvent that we processed in testShipmentScheduleEvent()
 		final DDOrderAdvisedEvent ddOrderAdvisedEvent = DDOrderAdvisedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.fromWarehouseId(fromWarehouseId)
 				.toWarehouseId(toWarehouseId)
-				.supplyRequiredDescriptor(supplyRequiredDescriptor.getValue())
+				.supplyRequiredDescriptor(supplyRequiredDescriptor)
 				.ddOrder(DDOrder.builder()
 						.orgId(ORG_ID)
 						.plantId(800)
@@ -242,7 +215,7 @@ public class MaterialEventHandlerRegistryTests
 						.datePromised(shipmentScheduleEventTime)
 						.line(DDOrderLine.builder()
 								.productDescriptor(orderedMaterial)
-								.bPartnerId(orderedMaterial.getCustomerId())
+								.bPartnerId(orderedMaterial.getCustomerId().getRepoId())
 								.qty(BigDecimal.TEN)
 								.durationDays(0)
 								.networkDistributionLineId(900)
@@ -266,13 +239,17 @@ public class MaterialEventHandlerRegistryTests
 		final I_MD_Candidate toWarehouseStock = DispoTestUtils.filter(CandidateType.STOCK, fromWarehouseId).get(0);
 
 		final List<I_MD_Candidate> allRecordsBySeqNo = DispoTestUtils.sortBySeqNo(DispoTestUtils.retrieveAllRecords());
-		assertThat(allRecordsBySeqNo).containsExactly(
+		assertThat(allRecordsBySeqNo).containsOnly(
 				toWarehouseDemand,
 				toWarehouseDemandStock,
 				toWarehouseSupplyStock,
 				toWarehouseSupply,
 				fromWarehouseDemand,
 				toWarehouseStock);
+		assertThat(allRecordsBySeqNo).containsSubsequence(
+				toWarehouseDemand,
+				toWarehouseSupply,
+				fromWarehouseDemand);
 
 		assertThat(toWarehouseDemand.getQty()).isEqualByComparingTo("10");
 		assertThat(toWarehouseDemandStock.getQty()).isEqualByComparingTo("-10");
@@ -283,19 +260,19 @@ public class MaterialEventHandlerRegistryTests
 	}
 
 	@Test
-	@Ignore("You can extend on this one when starting with https://github.com/metasfresh/metasfresh/issues/2684")
+	@Disabled("You can extend on this one when starting with https://github.com/metasfresh/metasfresh/issues/2684")
 	public void testShipmentScheduleEvent_then_Shipment()
 	{
 		final ShipmentScheduleCreatedEvent shipmentScheduleEvent = ShipmentScheduleCreatedHandlerTests.createShipmentScheduleTestEvent();
 
 		final MaterialDescriptor orderedMaterial = shipmentScheduleEvent.getMaterialDescriptor();
-		final Date shipmentScheduleEventTime = orderedMaterial.getDate();
-		final Timestamp twoHoursAfterShipmentSched = TimeUtil.addHours(shipmentScheduleEventTime, 2);
+		final Instant shipmentScheduleEventTime = orderedMaterial.getDate();
+		final Instant twoHoursAfterShipmentSched = shipmentScheduleEventTime.plus(2, ChronoUnit.HOURS);
 
 		materialEventListener.onEvent(shipmentScheduleEvent);
 
 		final TransactionCreatedEvent transactionEvent = TransactionCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.materialDescriptor(orderedMaterial.withDate(twoHoursAfterShipmentSched))
 				.build();
 

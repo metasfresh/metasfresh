@@ -4,6 +4,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 
 /**
  * 
@@ -48,7 +49,7 @@ public class ReplicationException extends AdempiereException
 	@Override
 	protected ITranslatableString buildMessage()
 	{
-		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder message = TranslatableStrings.builder();
 		
 		message.appendADMessage(adMessage);
 		

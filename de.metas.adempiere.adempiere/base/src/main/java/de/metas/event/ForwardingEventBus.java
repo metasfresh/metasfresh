@@ -33,9 +33,9 @@ abstract class ForwardingEventBus implements IEventBus
 	}
 
 	@Override
-	public String getName()
+	public String getTopicName()
 	{
-		return delegate().getName();
+		return delegate().getTopicName();
 	}
 
 	@Override
@@ -49,7 +49,7 @@ abstract class ForwardingEventBus implements IEventBus
 	{
 		delegate().subscribe(listener);
 	}
-	
+
 	@Override
 	public void subscribe(final Consumer<Event> eventConsumer)
 	{
@@ -57,6 +57,13 @@ abstract class ForwardingEventBus implements IEventBus
 	}
 
 	@Override
+	public <T> void subscribeOn(final Class<T> type, final Consumer<T> eventConsumer)
+	{
+		delegate().subscribeOn(type, eventConsumer);
+	}
+
+	@Override
+	@Deprecated
 	public void subscribeWeak(final IEventListener listener)
 	{
 		delegate().subscribeWeak(listener);
@@ -66,6 +73,12 @@ abstract class ForwardingEventBus implements IEventBus
 	public void postEvent(final Event event)
 	{
 		delegate().postEvent(event);
+	}
+
+	@Override
+	public void postObject(final Object obj)
+	{
+		delegate().postObject(obj);
 	}
 
 	@Override

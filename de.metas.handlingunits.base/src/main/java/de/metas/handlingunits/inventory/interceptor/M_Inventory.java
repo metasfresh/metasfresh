@@ -4,50 +4,26 @@ import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.mmovement.api.IMovementDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_M_Inventory;
+import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.IDocumentBL;
-import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.allocation.IAllocationDestination;
-import de.metas.handlingunits.allocation.IAllocationRequest;
-import de.metas.handlingunits.allocation.IAllocationSource;
-import de.metas.handlingunits.allocation.IHUContextProcessor;
-import de.metas.handlingunits.allocation.IHUContextProcessorExecutor;
-import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
-import de.metas.handlingunits.allocation.impl.AllocationUtils;
-import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
-import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
-import de.metas.handlingunits.allocation.impl.HULoader;
-import de.metas.handlingunits.allocation.impl.HUProducerDestination;
-import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
-import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
-import de.metas.handlingunits.attribute.strategy.impl.HUAttributeTransferRequestBuilder;
 import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.inventory.IHUInventoryBL;
-import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.inventory.InventoryLineRecordService;
+import de.metas.handlingunits.inventory.tabcallout.M_InventoryLineTabCallout;
 import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.handlingunits.model.I_M_InventoryLine;
-import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
-import de.metas.handlingunits.storage.IHUStorage;
-import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.handlingunits.storage.impl.PlainProductStorage;
-import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.IInventoryDAO;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
+import de.metas.inventory.InventoryId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -74,176 +50,40 @@ import lombok.NonNull;
  * #L%
  */
 @Interceptor(I_M_Inventory.class)
+@Component
 public class M_Inventory
 {
+	private InventoryLineRecordService inventoryLineRecordService;
+
+	public M_Inventory(@NonNull final InventoryLineRecordService inventoryRecordHUService)
+	{
+		this.inventoryLineRecordService = inventoryRecordHUService;
+
+		Services.get(ITabCalloutFactory.class).registerTabCalloutForTable(
+				I_M_InventoryLine.Table_Name,
+				M_InventoryLineTabCallout.class);
+	}
+
+	@ModelChange( //
+			timings = ModelValidator.TYPE_BEFORE_CHANGE, //
+			ifColumnsChanged = I_M_Inventory.COLUMNNAME_C_DocType_ID)
+	public void updateLineHUAggregationType(@NonNull final I_M_Inventory inventoryRecord)
+	{
+		// don't allow change if there are lines with diverting HU-aggregation types, because we don't want to switch the HUAggragationType of existing lines
+		inventoryLineRecordService.updateHUAggregationTypeIfAllowed(inventoryRecord);
+	}
+
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
-	public void beforeComplete(final I_M_Inventory inventory)
+	public void beforeComplete(final I_M_Inventory inventoryRecord)
 	{
-		final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
-		final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
+		final IHUInventoryBL huInventoryBL = Services.get(IHUInventoryBL.class);
 
-		for (final I_M_InventoryLine inventoryLine : inventoryDAO.retrieveLinesForInventoryId(inventory.getM_Inventory_ID(), I_M_InventoryLine.class))
+		if (huInventoryBL.isMaterialDisposal(inventoryRecord))
 		{
-			final Quantity qtyDiff = inventoryBL.getMovementQty(inventoryLine);
-			if (qtyDiff.signum() == 0)
-			{
-				continue;
-			}
-			else if (qtyDiff.signum() > 0)
-			{
-				addQtyDiffToHU(inventoryLine);
-			}
-			else // qtyDiff < 0
-			{
-				subtractQtyDiffFromHU(inventoryLine);
-			}
-
-			final I_M_HU hu = InterfaceWrapperHelper.load(inventoryLine.getM_HU_ID(), I_M_HU.class);
-			transferAttributesToHU(inventoryLine, hu);
-			InterfaceWrapperHelper.save(hu);
-		}
-	}
-
-	private final void transferAttributesToHU(
-			@NonNull final I_M_InventoryLine inventoryLine,
-			@NonNull final I_M_HU hu)
-	{
-		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-		final IHUContextProcessorExecutor executor = huTrxBL.createHUContextProcessorExecutor();
-
-		executor.run((IHUContextProcessor)huContext -> {
-			final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
-			final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
-
-			//
-			// Transfer ASI attributes from inventory line to our HU
-			final IAttributeStorage asiAttributeStorageFrom = attributeStorageFactory.getAttributeStorageIfHandled(inventoryLine);
-			if (asiAttributeStorageFrom == null)
-			{
-				return IHUContextProcessor.NULL_RESULT; // can't transfer from nothing
-			}
-			final IAttributeStorage huAttributeStorageTo = attributeStorageFactory.getAttributeStorage(hu);
-
-			final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
-			final IHUStorage huStorageFrom = storageFactory.getStorage(hu);
-
-			final IHUAttributeTransferRequest request = new HUAttributeTransferRequestBuilder(huContext)
-					.setProductId(ProductId.ofRepoId(inventoryLine.getM_Product_ID()))
-					.setQty(Services.get(IInventoryBL.class).getMovementQty(inventoryLine).getAsBigDecimal())
-					.setUOM(inventoryLine.getC_UOM())
-					.setAttributeStorageFrom(asiAttributeStorageFrom)
-					.setAttributeStorageTo(huAttributeStorageTo)
-					.setHUStorageFrom(huStorageFrom)
-					.create();
-
-			trxAttributesBuilder.transferAttributes(request);
-
-			return IHUContextProcessor.NULL_RESULT; // we don't care
-		});
-	}
-
-	private void addQtyDiffToHU(final I_M_InventoryLine inventoryLine)
-	{
-		final Quantity qtyDiff = Services.get(IInventoryBL.class).getMovementQty(inventoryLine);
-
-		final IAllocationSource source = createInventoryLineAllocationSourceOrDestination(inventoryLine);
-		final IAllocationDestination huDestination = createHUAllocationDestination(inventoryLine);
-
-		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
-				.setHUContext(Services.get(IHUContextFactory.class).createMutableHUContext())
-				.setDateAsToday()
-				.setProduct(inventoryLine.getM_Product())
-				.setQuantity(qtyDiff)
-				.setFromReferencedModel(inventoryLine)
-				.setForceQtyAllocation(true)
-				.create();
-
-		HULoader.of(source, huDestination)
-				.load(request);
-
-		if (inventoryLine.getM_HU_ID() <= 0)
-		{
-			inventoryLine.setM_HU_ID(extractSingleCreatedHUId(huDestination));
-			InterfaceWrapperHelper.save(inventoryLine);
-		}
-	}
-
-	private void subtractQtyDiffFromHU(final I_M_InventoryLine inventoryLine)
-	{
-		final int huId = inventoryLine.getM_HU_ID();
-		if (huId <= 0)
-		{
-			throw new FillMandatoryException(I_M_InventoryLine.COLUMNNAME_M_HU_ID)
-					.setParameter(I_M_InventoryLine.COLUMNNAME_Line, inventoryLine.getLine())
-					.appendParametersToMessage();
+			return; // nothing to do
 		}
 
-		final Quantity qtyDiff = Services.get(IInventoryBL.class).getMovementQty(inventoryLine).negate();
-
-		final IAllocationSource source = HUListAllocationSourceDestination.ofHUId(huId);
-		final IAllocationDestination destination = createInventoryLineAllocationSourceOrDestination(inventoryLine);
-
-		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
-				.setHUContext(Services.get(IHUContextFactory.class).createMutableHUContext())
-				.setDateAsToday()
-				.setProduct(inventoryLine.getM_Product())
-				.setQuantity(qtyDiff)
-				.setFromReferencedModel(inventoryLine)
-				.setForceQtyAllocation(true)
-				.create();
-
-		HULoader.of(source, destination)
-				.load(request);
-	}
-
-	private GenericAllocationSourceDestination createInventoryLineAllocationSourceOrDestination(final I_M_InventoryLine inventoryLine)
-	{
-		final ProductId productId = ProductId.ofRepoId(inventoryLine.getM_Product_ID());
-		final Quantity qtyDiff = Services.get(IInventoryBL.class).getMovementQty(inventoryLine);
-		final PlainProductStorage productStorage = new PlainProductStorage(productId, qtyDiff.getUOM(), qtyDiff.getAsBigDecimal());
-		return new GenericAllocationSourceDestination(productStorage, inventoryLine);
-	}
-
-	private IAllocationDestination createHUAllocationDestination(final I_M_InventoryLine inventoryLine)
-	{
-		if (inventoryLine.getM_HU_ID() > 0)
-		{
-			return HUListAllocationSourceDestination.ofHUId(inventoryLine.getM_HU_ID());
-		}
-		// TODO handle: else if(inventoryLine.getM_HU_PI_Item_Product_ID() > 0)
-		else
-		{
-			final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-			final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(inventoryLine.getM_Locator_ID());
-
-			return HUProducerDestination.ofVirtualPI()
-					.setHUStatus(X_M_HU.HUSTATUS_Active)
-					.setLocatorId(locatorId);
-		}
-	}
-
-	private int extractSingleCreatedHUId(final IAllocationDestination huDestination)
-	{
-		if (huDestination instanceof IHUProducerAllocationDestination)
-		{
-			final List<I_M_HU> createdHUs = ((IHUProducerAllocationDestination)huDestination).getCreatedHUs();
-			if (createdHUs.isEmpty())
-			{
-				throw new HUException("No HU was created by " + huDestination);
-			}
-			else if (createdHUs.size() > 1)
-			{
-				throw new HUException("Only one HU expected to be created by " + huDestination);
-			}
-			else
-			{
-				return createdHUs.get(0).getM_HU_ID();
-			}
-		}
-		else
-		{
-			throw new HUException("No HU was created by " + huDestination);
-		}
+		inventoryLineRecordService.syncToHUs(inventoryRecord);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
@@ -263,10 +103,12 @@ public class M_Inventory
 			throw new HUException("@NotFound@ @Snapshot_UUID@ (" + inventory + ")");
 		}
 
+		final InventoryId inventoryId = InventoryId.ofRepoId(inventory.getM_Inventory_ID());
+
 		//
 		// restore HUs from snapshots
 		{
-			final List<Integer> topLevelHUIds = inventoryDAO.retrieveLinesForInventoryId(inventory.getM_Inventory_ID(), I_M_InventoryLine.class)
+			final List<Integer> topLevelHUIds = inventoryDAO.retrieveLinesForInventoryId(inventoryId, I_M_InventoryLine.class)
 					.stream()
 					.map(I_M_InventoryLine::getM_HU_ID)
 					.collect(ImmutableList.toImmutableList());
@@ -285,7 +127,7 @@ public class M_Inventory
 		{
 			final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 			Services.get(IMovementDAO.class)
-					.retrieveMovementsForInventoryQuery(inventory.getM_Inventory_ID())
+					.retrieveMovementsForInventoryQuery(inventoryId)
 					.addEqualsFilter(I_M_Inventory.COLUMNNAME_DocStatus, X_M_Inventory.DOCSTATUS_Completed)
 					.create()
 					.stream()

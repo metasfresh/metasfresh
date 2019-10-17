@@ -11,6 +11,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
+import de.metas.storage.spi.hu.IHUStorageBL;
 import de.metas.util.Check;
 
 /* package */abstract class AbstractHUStorageDAO implements IHUStorageDAO
@@ -39,7 +40,7 @@ import de.metas.util.Check;
 
 		if (storages.size() == 1)
 		{
-			return getC_UOM(storages.get(0));
+			return IHUStorageBL.extractUOM(storages.get(0));
 		}
 
 		I_C_UOM foundUOM = null;
@@ -49,7 +50,7 @@ import de.metas.util.Check;
 		{
 			//
 			// Retrieve storage UOM
-			final I_C_UOM storageUOM = getC_UOM(storage);
+			final I_C_UOM storageUOM = IHUStorageBL.extractUOM(storage);
 			final String storageUOMType = storageUOM.getUOMType();
 
 			if (foundUOM == null)

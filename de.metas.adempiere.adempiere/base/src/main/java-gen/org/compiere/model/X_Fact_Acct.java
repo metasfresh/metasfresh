@@ -280,17 +280,17 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 		return bd;
 	}
 
-	@Override
-	public org.compiere.model.I_C_AcctSchema getC_AcctSchema() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
-	}
-
-	@Override
-	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema)
-	{
-		set_ValueFromPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class, C_AcctSchema);
-	}
+//	@Override
+//	public org.compiere.model.I_C_AcctSchema getC_AcctSchema() throws RuntimeException
+//	{
+//		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
+//	}
+//
+//	@Override
+//	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema)
+//	{
+//		set_ValueFromPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class, C_AcctSchema);
+//	}
 
 	/** Set Buchführungs-Schema.
 		@param C_AcctSchema_ID 
@@ -428,17 +428,17 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
-	}
-
-	@Override
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
-	}
+//	@Override
+//	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
+//	{
+//		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
+//	}
+//
+//	@Override
+//	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
+//	{
+//		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
+//	}
 
 	/** Set Währung.
 		@param C_Currency_ID 
@@ -1344,12 +1344,12 @@ public class X_Fact_Acct extends org.compiere.model.PO implements I_Fact_Acct, o
 	public static final String POSTINGTYPE_Budget = "B";
 	/** Commitment = E */
 	public static final String POSTINGTYPE_Commitment = "E";
-	/** Statistical = S */
-	public static final String POSTINGTYPE_Statistical = "S";
+//	/** Statistical = S */
+//	public static final String POSTINGTYPE_Statistical = "S";
 	/** Reservation = R */
 	public static final String POSTINGTYPE_Reservation = "R";
-	/** Actual Year End = Y */
-	public static final String POSTINGTYPE_ActualYearEnd = "Y";
+//	/** Actual Year End = Y */
+//	public static final String POSTINGTYPE_ActualYearEnd = "Y";
 	/** Set Buchungsart.
 		@param PostingType 
 		The type of posted amount for the transaction

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.adempiere.service.impl;
 
@@ -13,12 +13,12 @@ package de.metas.adempiere.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,12 +34,8 @@ import java.util.Properties;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-
 import org.compiere.util.DB;
-import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.model.ITableColumnPath;
 import de.metas.adempiere.model.ITableColumnPathElement;
@@ -48,19 +44,17 @@ import de.metas.adempiere.model.TableColumnPathElement;
 import de.metas.adempiere.model.TableColumnPathException;
 import de.metas.adempiere.service.IAppDictionaryBL;
 import de.metas.adempiere.service.ITableColumnPathBL;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * @author tsa
- * 
+ *
  */
 public class TableColumnPathBL implements ITableColumnPathBL
 {
-	private static final Logger log = LogManager.getLogger(TableColumnPathBL.class);
-
-	public TableColumnPathBL()
-	{
-		super();
-	}
+	private static final Logger logger = LogManager.getLogger(TableColumnPathBL.class);
 
 	@Override
 	public Object getValueByPath(Properties ctx, String tableName, int id, String pathStr)
@@ -101,7 +95,7 @@ public class TableColumnPathBL implements ITableColumnPathBL
 			}
 
 			String columnSQL = null;
-			;
+			
 			if (column.isVirtualColumn())
 			{
 				columnSQL = column.getColumnSQL();
@@ -119,7 +113,9 @@ public class TableColumnPathBL implements ITableColumnPathBL
 
 		MColumn valueColumn = parentTable.getColumn(valueColumnName);
 		if (valueColumn == null)
+		{
 			throw new TableColumnPathException(pathStr, "Value column " + valueColumnName + " not found in table " + parentTable.getTableName());
+		}
 		path.setValueColumnName(parentTable.getTableName(), valueColumn.getColumnName(), valueColumn.getAD_Reference_ID());
 
 		return path;
@@ -129,17 +125,19 @@ public class TableColumnPathBL implements ITableColumnPathBL
 	{
 		StringBuffer sqlFROM = new StringBuffer();
 		sqlFROM.append("FROM ").append(path.getKeyTableName());
-		for (ITableColumnPathElement e : path.getElements())
+		for (final ITableColumnPathElement e : path.getElements())
 		{
 			String parentColumnSQL = e.getParentColumnSQL();
-			if (Util.isEmpty(parentColumnSQL))
+			if (Check.isEmpty(parentColumnSQL))
 			{
 				parentColumnSQL = e.getParentTableName() + "." + e.getParentColumnName();
 			}
 			else
 			{
 				if (!parentColumnSQL.startsWith("("))
+				{
 					parentColumnSQL = "( " + parentColumnSQL + " )";
+				}
 			}
 
 			sqlFROM.append("\nINNER JOIN ").append(e.getTableName()).append(" ON (")
@@ -162,7 +160,9 @@ public class TableColumnPathBL implements ITableColumnPathBL
 	{
 		String[] keyColumns = table.getKeyColumns();
 		if (keyColumns == null || keyColumns.length != 1)
+		{
 			throw new TableColumnPathException(null, "Table " + table.getTableName() + " should have one and only one key column");
+		}
 		String keyColumn = keyColumns[0];
 		return keyColumn;
 	}
@@ -178,9 +178,13 @@ public class TableColumnPathBL implements ITableColumnPathBL
 			DB.setParameters(pstmt, params);
 			rs = pstmt.executeQuery();
 			if (rs.next())
+			{
 				retValue = rs.getObject(1);
+			}
 			else
-				log.info("No Value " + sql);
+			{
+				logger.info("No Value " + sql);
+			}
 		}
 		catch (SQLException e)
 		{

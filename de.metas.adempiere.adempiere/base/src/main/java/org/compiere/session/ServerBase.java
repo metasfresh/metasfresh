@@ -2,12 +2,14 @@ package org.compiere.session;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.compiere.Adempiere;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
+import de.metas.email.MailService;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;
@@ -77,6 +79,8 @@ public class ServerBase implements IServerService
 	@Override
 	public EMailSentStatus sendEMail(final EMail email)
 	{
+		final MailService mailService = Adempiere.getBean(MailService.class);
+		email.setDebugMailToAddress(mailService.getDebugMailToAddressOrNull());
 		return email.send();
 	}
 }

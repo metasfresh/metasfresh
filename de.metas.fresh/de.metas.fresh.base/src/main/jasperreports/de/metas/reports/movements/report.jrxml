@@ -72,14 +72,14 @@
 				<textField>
 					<reportElement x="65" y="0" width="158" height="10" uuid="d0cd08c8-9674-4b3d-93be-8fbeb8bd6b85"/>
 					<textElement>
-						<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="7" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{activity_to}!=null ? $F{activity_to} : "-"]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="0" y="0" width="65" height="10" uuid="d0cd08c8-9674-4b3d-93be-8fbeb8bd6b85"/>
 					<textElement>
-						<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="7" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{activityTo}]]></textFieldExpression>
 				</textField>
@@ -90,14 +90,14 @@
 				<textField>
 					<reportElement x="263" y="0" width="70" height="10" uuid="d273fc46-3041-40d3-af29-e25df68fc72e"/>
 					<textElement textAlignment="Right" markup="none">
-						<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="7" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{totalSum}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00">
 					<reportElement x="333" y="0" width="64" height="10" uuid="2abbe6cc-4182-4e74-a8e5-5bdbf7baa8fd"/>
 					<textElement textAlignment="Right">
-						<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="7" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{totalsum}]]></textFieldExpression>
 				</textField>
@@ -114,14 +114,14 @@
 				<textField>
 					<reportElement x="263" y="0" width="70" height="10" uuid="d273fc46-3041-40d3-af29-e25df68fc72e"/>
 					<textElement textAlignment="Right" markup="none">
-						<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="7" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{subtotal}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="activity_from_group" pattern="#,##0.00">
 					<reportElement x="333" y="0" width="64" height="10" uuid="0954dd42-4849-4f7d-a8df-572a5725bd95"/>
 					<textElement textAlignment="Right">
-						<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="7" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{subtotal}]]></textFieldExpression>
 				</textField>
@@ -250,7 +250,7 @@ $R{activityTo} + " "+ $F{param_activity_to_value} + " " + $F{param_activity_to_n
 			<textField>
 				<reportElement x="0" y="0" width="253" height="20" uuid="7a58ffea-3a70-4428-9ca5-816d4323e1a4"/>
 				<textElement markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
 			</textField>
@@ -261,56 +261,56 @@ $R{activityTo} + " "+ $F{param_activity_to_value} + " " + $F{param_activity_to_n
 			<textField>
 				<reportElement x="0" y="0" width="49" height="10" uuid="cab7d19e-5727-473c-856d-f295f227f7ca"/>
 				<textElement>
-					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="7" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{productNo}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="50" y="0" width="131" height="10" uuid="2e39084f-72a5-4afb-85a1-c091702b923a"/>
 				<textElement>
-					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="7" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{productName}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="181" y="0" width="32" height="10" uuid="484a8689-a2ae-4d59-8652-cf3b65a6de9a"/>
 				<textElement>
-					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="7" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{uom}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="212" y="0" width="40" height="10" uuid="6f4f9ee4-2dd1-4523-8977-92891df0cd81"/>
 				<textElement>
-					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="7" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="252" y="0" width="81" height="10" uuid="6f4f9ee4-2dd1-4523-8977-92891df0cd81"/>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="7" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{costprice}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="333" y="0" width="64" height="10" uuid="6f4f9ee4-2dd1-4523-8977-92891df0cd81"/>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="7" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{total}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="466" y="0" width="89" height="10" uuid="6f4f9ee4-2dd1-4523-8977-92891df0cd81"/>
 				<textElement textAlignment="Center">
-					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="7" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{account}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="397" y="0" width="69" height="10" uuid="6f4f9ee4-2dd1-4523-8977-92891df0cd81"/>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="7" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{activityFromCol}]]></textFieldExpression>
 			</textField>

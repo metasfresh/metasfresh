@@ -1,8 +1,10 @@
 package de.metas.material.event.stockestimate;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -36,6 +38,7 @@ import lombok.ToString;
 
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class StockEstimateDeletedEvent extends AbstractStockEstimateEvent
 {
 	public static final String TYPE = "StockCountDeletedEvent";
@@ -45,7 +48,7 @@ public class StockEstimateDeletedEvent extends AbstractStockEstimateEvent
 	public StockEstimateDeletedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
 			@JsonProperty("productDescriptor") final ProductDescriptor productDescriptor,
-			@JsonProperty("date") final Date date,
+			@JsonProperty("date") final Instant date,
 			@JsonProperty("plantId") final int plantId,
 			@JsonProperty("quantity") final BigDecimal quantity)
 	{

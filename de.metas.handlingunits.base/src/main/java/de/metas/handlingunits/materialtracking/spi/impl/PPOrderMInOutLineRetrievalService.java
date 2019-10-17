@@ -12,7 +12,6 @@ import org.adempiere.ad.model.util.ModelByIdComparator;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
-import org.eevolution.model.I_PP_Order;
 
 import com.google.common.collect.ImmutableList;
 
@@ -21,6 +20,7 @@ import de.metas.handlingunits.IHUAssignmentDAO.HuAssignment;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 import de.metas.util.Loggables;
@@ -67,7 +67,7 @@ public class PPOrderMInOutLineRetrievalService implements IPPOrderMInOutLineRetr
 		if (huAssignmentsForModel.isEmpty())
 		{
 			// fallback
-			huAssignmentsForModel = huAssignmentDAO.retrieveHUAssignmentPojosForModel(issueCostCollector);
+			huAssignmentsForModel = huAssignmentDAO.retrieveLowLevelHUAssignmentsForModel(issueCostCollector);
 		}
 
 		for (final HuAssignment huAssignment : huAssignmentsForModel)
@@ -91,7 +91,7 @@ public class PPOrderMInOutLineRetrievalService implements IPPOrderMInOutLineRetr
 	}
 
 	@Override
-	public Map<Integer, BigDecimal> retrieveIolAndQty(final I_PP_Order ppOrder)
+	public Map<Integer, BigDecimal> retrieveIolAndQty(final PPOrderId ppOrderId)
 	{
 		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 		final IPPCostCollectorDAO ppCostCollectorDAO = Services.get(IPPCostCollectorDAO.class);
@@ -100,16 +100,15 @@ public class PPOrderMInOutLineRetrievalService implements IPPOrderMInOutLineRetr
 
 		final Map<Integer, BigDecimal> iolMap = new HashMap<>();
 
-		final List<I_PP_Cost_Collector> costCollectors = ppCostCollectorDAO.retrieveForOrder(ppOrder);
-
+		final List<I_PP_Cost_Collector> costCollectors = ppCostCollectorDAO.getByOrderId(ppOrderId);
 		for (final I_PP_Cost_Collector costCollector : costCollectors)
 		{
-			if (!ppCostCollectorBL.isMaterialIssue(costCollector, true))
+			if (!ppCostCollectorBL.isAnyComponentIssueOrCoProduct(costCollector))
 			{
 				continue;
 			}
 
-			final List<I_M_HU_Assignment> huAssignmentsForModel = huAssignmentDAO.retrieveHUAssignmentsForModel(costCollector);
+			final List<I_M_HU_Assignment> huAssignmentsForModel = huAssignmentDAO.retrieveTopLevelHUAssignmentsForModel(costCollector);
 
 			final Map<Integer, I_M_InOutLine> id2iol = new HashMap<>();
 
@@ -136,7 +135,7 @@ public class PPOrderMInOutLineRetrievalService implements IPPOrderMInOutLineRetr
 
 			if (qtyToAllocate.signum() > 0)
 			{
-				Loggables.get().addLog("PROBLEM: PP_Cost_Collector {0} of PP_Order {1} has a remaining unallocated qty of {2}!", costCollector, ppOrder, qtyToAllocate);
+				Loggables.addLog("PROBLEM: PP_Cost_Collector {0} of PP_Order {1} has a remaining unallocated qty of {2}!", costCollector, ppOrderId, qtyToAllocate);
 			}
 		}
 

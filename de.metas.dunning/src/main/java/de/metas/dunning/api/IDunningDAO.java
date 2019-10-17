@@ -34,6 +34,7 @@ import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 
 public interface IDunningDAO extends ISingletonService
@@ -54,7 +55,7 @@ public interface IDunningDAO extends ISingletonService
 	 */
 	void save(Object model);
 
-	List<I_C_Dunning> retrieveDunnings(Properties ctx);
+	List<I_C_Dunning> retrieveDunnings();
 
 	/**
 	 * Retrieves the assigned {@link I_C_Dunning} of given business partner.
@@ -73,12 +74,10 @@ public interface IDunningDAO extends ISingletonService
 
 	/**
 	 * Retrieves default dunning for given organization.
-	 *
-	 * @param ctx
-	 * @param adOrgId
+     *
 	 * @return {@link I_C_Dunning}
 	 */
-	I_C_Dunning retrieveDunningByOrg(final Properties ctx, final int adOrgId);
+	I_C_Dunning retrieveDunningByOrg(OrgId orgId);
 
 	/**
 	 * Retrieve the active dunning-levels of the given <code>dunning</code>, orderd by their <code>DaysAfterDue</code> value.

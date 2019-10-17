@@ -88,7 +88,7 @@ WHERE
 			<textField>
 				<reportElement key="textField-6" x="37" y="127" width="136" height="13" forecolor="#000000" uuid="b3e3d434-4737-49c4-8677-c8f6fffae346"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
 			</textField>

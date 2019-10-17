@@ -40,7 +40,7 @@ public class HUPackingAwareCopy
 	private final IHUPackingAware from;
 	private boolean overridePartner = true;
 
-	public static enum ASICopyMode
+	public enum ASICopyMode
 	{
 		Clone, CopyID
 	}
@@ -57,9 +57,9 @@ public class HUPackingAwareCopy
 		to.setM_Product_ID(from.getM_Product_ID());
 		copyASI(to);
 
-		to.setC_UOM(from.getC_UOM());
+		to.setC_UOM_ID(from.getC_UOM_ID());
 		to.setQty(from.getQty());
-		to.setM_HU_PI_Item_Product(from.getM_HU_PI_Item_Product());
+		to.setM_HU_PI_Item_Product_ID(from.getM_HU_PI_Item_Product_ID());
 		to.setQtyTU(from.getQtyTU());
 
 		copyBPartner(to);
@@ -93,9 +93,9 @@ public class HUPackingAwareCopy
 	{
 		// 08276
 		// do not modify the partner in the orderline if it was already set
-		if (to.getC_BPartner() == null || overridePartner)
+		if (to.getC_BPartner_ID() <= 0 || overridePartner)
 		{
-			to.setC_BPartner(from.getC_BPartner());
+			to.setC_BPartner_ID(from.getC_BPartner_ID());
 		}
 	}
 

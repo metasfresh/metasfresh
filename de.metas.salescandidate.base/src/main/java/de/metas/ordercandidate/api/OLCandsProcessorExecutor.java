@@ -1,9 +1,7 @@
 package de.metas.ordercandidate.api;
 
-import lombok.Builder;
-import lombok.NonNull;
-
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -11,10 +9,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.ArrayKeyBuilder;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -26,16 +22,19 @@ import com.google.common.collect.ListMultimap;
 
 import ch.qos.logback.classic.Level;
 import de.metas.impex.api.IInputDataSourceDAO;
-import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.logging.LogManager;
 import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.api.OLCandAggregationColumn.Granularity;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
 import de.metas.ordercandidate.spi.IOLCandListener;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
+import lombok.Builder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -59,6 +58,9 @@ import de.metas.util.Services;
  * #L%
  */
 
+/**
+ * Processes sales order candidates and produces sales orders
+ */
 public class OLCandsProcessorExecutor
 {
 	private static final Logger logger = LogManager.getLogger(OLCandsProcessorExecutor.class);
@@ -68,10 +70,11 @@ public class OLCandsProcessorExecutor
 	private final IOLCandGroupingProvider groupingValuesProviders;
 
 	private final int olCandProcessorId;
-	private final int userInChargeId;
+	private final UserId userInChargeId;
 	private final OLCandAggregation aggregationInfo;
 	private final OLCandOrderDefaults orderDefaults;
 	private final int processorDataDestinationId;
+	private final LocalDate defaultDateDoc = SystemTime.asLocalDate();
 
 	private final OLCandSource candidatesSource;
 
@@ -86,17 +89,13 @@ public class OLCandsProcessorExecutor
 		this.olCandListeners = olCandListeners;
 		this.aggregationInfo = processorDescriptor.getAggregationInfo();
 		this.groupingValuesProviders = groupingValuesProviders;
-		this.loggable = Loggables.get().withLogger(logger, Level.INFO);
+		this.loggable = Loggables.withLogger(logger, Level.INFO);
 
 		this.olCandProcessorId = processorDescriptor.getId();
 		this.userInChargeId = processorDescriptor.getUserInChangeId();
 
-		final I_AD_InputDataSource dataDest = Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(
-				Env.getCtx(),
-				OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME,
-				true, // throwEx
-				ITrx.TRXNAME_None);
-		this.processorDataDestinationId = dataDest.getAD_InputDataSource_ID();
+		final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
+		this.processorDataDestinationId = inputDataSourceDAO.retrieveInputDataSourceId(OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME);
 
 		this.candidatesSource = candidatesSource;
 	}
@@ -111,6 +110,7 @@ public class OLCandsProcessorExecutor
 		// Get the ol-candidates to process
 		final List<OLCand> candidates = candidatesSource.streamOLCands()
 				.filter(this::isEligibleOrLog)
+				.map(this::prepareOLCandBeforeProcessing)
 				.sorted(aggregationInfo.getOrderingComparator())
 				.collect(ImmutableList.toImmutableList());
 		loggable.addLog("Processing {} order line candidates", candidates.size());
@@ -186,6 +186,16 @@ public class OLCandsProcessorExecutor
 		Check.assume(processedIds.size() == candidates.size(), "All candidates have been processed");
 	}
 
+	private OLCand prepareOLCandBeforeProcessing(final OLCand candidate)
+	{
+		if (candidate.getDateDoc() == null)
+		{
+			candidate.setDateDoc(defaultDateDoc);
+		}
+
+		return candidate;
+	}
+
 	private OLCandOrderFactory newOrderFactory()
 	{
 		return OLCandOrderFactory.builder()
@@ -212,6 +222,7 @@ public class OLCandsProcessorExecutor
 				|| !Objects.equals(previousCandidate.getBillBPartnerInfo(), candidate.getBillBPartnerInfo())
 				//
 				// task 06269: note that for now we set DatePromised only in the header, so different DatePromised values result in different orders, and all ols have the same DatePromised
+				|| !Objects.equals(previousCandidate.getDateDoc(), candidate.getDateDoc())
 				|| !Objects.equals(previousCandidate.getDatePromised(), candidate.getDatePromised())
 				|| !Objects.equals(previousCandidate.getHandOverBPartnerInfo(), candidate.getHandOverBPartnerInfo())
 				|| !Objects.equals(previousCandidate.getDropShipBPartnerInfo(), candidate.getDropShipBPartnerInfo())

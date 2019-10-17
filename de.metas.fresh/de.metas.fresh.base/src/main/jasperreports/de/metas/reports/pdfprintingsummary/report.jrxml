@@ -42,14 +42,14 @@ order by a.Name]]>
 			<textField>
 				<reportElement uuid="64f8c545-5abb-4657-82c8-112add8a1f07" x="0" y="0" width="589" height="13"/>
 				<textElement>
-					<font size="10" isBold="true"/>
+					<font size="10" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{Title}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement uuid="01fb9a8a-56ba-45bf-ab4b-887b936e0ada" x="0" y="12" width="589" height="11"/>
 				<textElement>
-					<font size="8" isBold="true"/>
+					<font size="8" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{printername}]]></textFieldExpression>
 			</textField>
@@ -102,21 +102,21 @@ order by a.Name]]>
 			<staticText>
 				<reportElement uuid="8c1db13b-7f4f-43a8-9d8e-10b6165b2b60" x="0" y="0" width="50" height="11"/>
 				<textElement>
-					<font size="8" isBold="true"/>
+					<font size="8" fontName="Arial" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Art]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="c6cff21e-e0b7-414c-8e93-b90b985aa036" x="88" y="0" width="107" height="11"/>
 				<textElement>
-					<font size="8" isBold="true"/>
+					<font size="8" fontName="Arial" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Name]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="b91bf953-4c1a-431c-8305-c8600e7664ac" x="50" y="0" width="38" height="11"/>
 				<textElement>
-					<font size="8" isBold="true"/>
+					<font size="8" fontName="Arial" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Nummer]]></text>
 			</staticText>

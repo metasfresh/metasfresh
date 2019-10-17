@@ -1,25 +1,27 @@
 /**
- * 
+ *
  */
 package de.metas.fresh.product.process;
 
-import java.io.ByteArrayOutputStream;
-import java.time.format.DateTimeFormatter;
-import java.util.Properties;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.apache.poi.ss.usermodel.Font;
+import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
-import de.metas.adempiere.form.IClientUI;
-import de.metas.data.export.api.IExportDataSource;
-import de.metas.data.export.api.IExporter;
-import de.metas.data.export.api.IExporterFactory;
-import de.metas.data.export.api.impl.CSVWriter;
-import de.metas.data.export.api.impl.JdbcExporterBuilder;
-import de.metas.i18n.IMsgBL;
+import de.metas.impexp.excel.ArrayExcelExporter;
+import de.metas.impexp.excel.service.ExcelExporterService;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.IProductDAO;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -31,12 +33,12 @@ import de.metas.util.time.SystemTime;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -47,81 +49,88 @@ import de.metas.util.time.SystemTime;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class ExportProductSpecifications extends JavaProcess
+public class ExportProductSpecifications extends JavaProcess implements IProcessPrecondition
 {
 
 	private final static String tableName = "\"de.metas.fresh\".product_specifications_v";
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	final ExcelExporterService excelExporterService = Adempiere.getBean(ExcelExporterService.class);
 
 	@Override
 	protected String doIt() throws Exception
 	{
-		final IExportDataSource dataSource = createDataSource();
-		final Properties config = new Properties();
-		config.setProperty(CSVWriter.CONFIG_Encoding, "Cp1252");
-		final IExporter csvExporter = Services.get(IExporterFactory.class).createExporter(IExporterFactory.MIMETYPE_CSV, dataSource, config);
-		final ByteArrayOutputStream out = new ByteArrayOutputStream();
-		csvExporter.export(out);
 
-		final boolean backEndOrSwing = Ini.getRunMode() == RunMode.BACKEND || Ini.isClient();
+		final List<List<Object>> data = excelExporterService.getDataFromSQL(getSql());
+		final File tempFile = ArrayExcelExporter.builder()
+				.ctx(getCtx())
+				.data(data)
+				.columnHeaders(getColumnHeaders())
+				.build()
+				.setFontCharset(Font.ANSI_CHARSET)
+				.exportToTempFile();
+
+		final boolean backEndOrSwing = Ini.getRunMode() == RunMode.BACKEND || Ini.isSwingClient();
 
 		if (backEndOrSwing)
 		{
-			Services.get(IClientUI.class).download(out.toByteArray(), // data
-					"text/csv", // content type
-					buildFilename()); // filename
+			Env.startBrowser(tempFile.toURI().toString());
 		}
 		else
 		{
-			getResult().setReportData(
-					out.toByteArray(), // data
-					buildFilename(), // filename
-					"text/csv"); // content type
+			getResult().setReportData(tempFile);
 		}
 
 		return MSG_OK;
 	}
 
-	public IExportDataSource createDataSource()
+	private String getSql()
 	{
-		final JdbcExporterBuilder builder = new JdbcExporterBuilder(tableName);
 
-		builder.addWhereClause("1=1", new Object[] {});
-		builder.addOrderBy("productValue");
+		final I_M_Product product = Services.get(IProductDAO.class).getById(getRecord_ID());
 
-		builder.addField(msgBL.translate(getCtx(), "ProductName"), "productName");
-		builder.addField(msgBL.translate(getCtx(), "CustomerLabelName"), "CustomerLabelName");
-		builder.addField(msgBL.translate(getCtx(), "Additional_produktinfos"), "additional_produktinfos");
-		builder.addField(msgBL.translate(getCtx(), "ProductValue"), "productValue");
-		builder.addField(msgBL.translate(getCtx(), "UPC"), "UPC");
-		builder.addField(msgBL.translate(getCtx(), "NetWeight"), "weight");
-		builder.addField(msgBL.translate(getCtx(), "Country"), "country");
-		builder.addField(msgBL.translate(getCtx(), "IsPackagingMaterial"), "piName");
-		builder.addField(msgBL.translate(getCtx(), "NumberOfEvents"), "piQty");
-		builder.addField(msgBL.translate(getCtx(), "ShelfLifeDays"), "guaranteedaysmin");
-		builder.addField(msgBL.translate(getCtx(), "Warehouse_temperature"), "warehouse_temperature");
-		builder.addField(msgBL.translate(getCtx(), "ProductDescription"), "productDecription");
-		builder.addField(msgBL.translate(getCtx(), "M_BOMProduct_ID"), "componentName");
-		builder.addField(msgBL.translate(getCtx(), "Ingredients"), "componentIngredients");
-		builder.addField(msgBL.translate(getCtx(), "QtyBatch"), "qtybatch");
-		builder.addField(msgBL.translate(getCtx(), "Allergen"), "allergen");
-		builder.addField(msgBL.translate(getCtx(), "M_Product_Nutrition_ID"), "nutritionName");
-		builder.addField(msgBL.translate(getCtx(), "NutritionQty"), "nutritionqty");
+		final StringBuffer sb = new StringBuffer();
+		sb.append("SELECT productName, CustomerLabelName, additional_produktinfos, productValue, UPC, weight, country, guaranteedaysmin, ")
+				.append("warehouse_temperature, productDecription, componentName,  IsPackagingMaterial,componentIngredients, qtybatch, ")
+				.append("allergen, nutritionName, nutritionqty FROM ")
+				.append(tableName)
+				.append(" WHERE ")
+				.append(tableName).append(".productValue = '").append(product.getValue()).append("'")
+				.append(" ORDER BY productValue ");
 
-		return builder.createDataSource();
+		return sb.toString();
 	}
 
-	private String buildFilename()
+	private List<String> getColumnHeaders()
 	{
-		final StringBuilder filename = new StringBuilder("ProductSpecificationd");
-		filename.append("_");
+		final List<String> columnHeaders = new ArrayList<>();
+		columnHeaders.add("ProductName");
+		columnHeaders.add("CustomerLabelName");
+		columnHeaders.add("Additional_produktinfos");
+		columnHeaders.add("ProductValue");
+		columnHeaders.add("UPC");
+		columnHeaders.add("NetWeight");
+		columnHeaders.add("Country");
+		columnHeaders.add("ShelfLifeDays");
+		columnHeaders.add("Warehouse_temperature");
+		columnHeaders.add("ProductDescription");
+		columnHeaders.add("M_BOMProduct_ID");
+		columnHeaders.add("IsPackagingMaterial");
+		columnHeaders.add("Ingredients");
+		columnHeaders.add("QtyBatch");
+		columnHeaders.add("Allergen");
+		columnHeaders.add("M_Product_Nutrition_ID");
+		columnHeaders.add("NutritionQty");
 
-		final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-		filename.append(dateFormatter.format(SystemTime.asLocalDate()));
-
-		filename.append(".").append("csv");
-
-		return filename.toString();
+		return columnHeaders;
 	}
 
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	{
+		if(!context.isSingleSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
 }

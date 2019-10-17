@@ -15,7 +15,7 @@ public class X_MD_Stock extends org.compiere.model.PO implements I_MD_Stock, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 701123555L;
+	private static final long serialVersionUID = -1157173521L;
 
     /** Standard Constructor */
     public X_MD_Stock (Properties ctx, int MD_Stock_ID, String trxName)
@@ -61,8 +61,8 @@ public class X_MD_Stock extends org.compiere.model.PO implements I_MD_Stock, org
 		return (java.lang.String)get_Value(COLUMNNAME_AttributesKey);
 	}
 
-	/** Set Betand.
-		@param MD_Stock_ID Betand	  */
+	/** Set Bestand.
+		@param MD_Stock_ID Bestand	  */
 	@Override
 	public void setMD_Stock_ID (int MD_Stock_ID)
 	{
@@ -72,8 +72,8 @@ public class X_MD_Stock extends org.compiere.model.PO implements I_MD_Stock, org
 			set_ValueNoCheck (COLUMNNAME_MD_Stock_ID, Integer.valueOf(MD_Stock_ID));
 	}
 
-	/** Get Betand.
-		@return Betand	  */
+	/** Get Bestand.
+		@return Bestand	  */
 	@Override
 	public int getMD_Stock_ID () 
 	{

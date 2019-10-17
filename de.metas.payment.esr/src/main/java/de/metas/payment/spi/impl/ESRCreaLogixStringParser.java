@@ -163,14 +163,12 @@ public final class ESRCreaLogixStringParser extends AbstractESRPaymentStringPars
 			final String missingZeros = StringUtils.repeat("0", 27-referenceNumberLength);
 			referenceNumber = missingZeros + referenceNumber; //  see #4392
 		}
-		
+
 
 		final Timestamp paymentDate = null;
 		final Timestamp accountDate = null;
 
 		final String orgValue = null; // esrReferenceNoComplete.substring(7, 10);
-		final String bpValue = null; // removeLeftZeros(esrReferenceNoComplete.substring(10, 18));
-		final String documentNo = null; // removeLeftZeros(esrReferenceNoComplete.substring(18, 26));
 
 		final IPaymentString paymentString = new PaymentString(collectedErrors,
 				paymentTextOriginal, // FRESH-318
@@ -180,9 +178,7 @@ public final class ESRCreaLogixStringParser extends AbstractESRPaymentStringPars
 				referenceNumber,
 				paymentDate,
 				accountDate,
-				orgValue,
-				bpValue,
-				documentNo);
+				orgValue);
 
 		final IPaymentStringDataProvider dataProvider = new ESRPaymentStringDataProvider(paymentString);
 		paymentString.setDataProvider(dataProvider);

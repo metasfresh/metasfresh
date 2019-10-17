@@ -1,18 +1,16 @@
 package de.metas.bpartner.impexp;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.impexp.IImportInterceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.user.api.IUserBL;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.ModelValidationEngine;
-import org.slf4j.Logger;
 
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.logging.LogManager;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.impexp.BPartnersCache.BPartner;
+import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -47,9 +45,7 @@ import lombok.NonNull;
 	}
 
 	// services
-	private static final Logger logger = LogManager.getLogger(BPartnerContactImportHelper.class);
-	private final transient IUserBL userBL = Services.get(IUserBL.class);
-
+	private final IUserBL userBL = Services.get(IUserBL.class);
 	private BPartnerImportProcess process;
 
 	private BPartnerContactImportHelper()
@@ -62,69 +58,79 @@ import lombok.NonNull;
 		return this;
 	}
 
-	public I_AD_User importRecord(final I_I_BPartner importRecord)
+	public void importRecord(@NonNull final BPartnerImportContext context)
 	{
-		final I_C_BPartner bpartner = importRecord.getC_BPartner();
-		final I_C_BPartner_Location bpartnerLocation = importRecord.getC_BPartner_Location();
+		final I_I_BPartner importRecord = context.getCurrentImportRecord();
 		final String importContactName = userBL.buildContactName(importRecord.getFirstname(), importRecord.getLastname());
 
-		I_AD_User user = importRecord.getAD_User();
-		if (user != null)
+		final BPartner bpartner = context.getCurrentBPartner();
+
+		final BPartnerContactId existingContactId = context.getCurrentBPartnerContactIdOrNull();
+		I_AD_User contact = existingContactId != null
+				? bpartner.getContactById(existingContactId).orElse(null)
+				: null;
+
+		//
+		// Existing contact
+		if (contact != null)
 		{
-			if (user.getC_BPartner_ID() <= 0)
+			if (contact.getC_BPartner_ID() <= 0)
 			{
-				user.setC_BPartner(bpartner);
+				contact.setC_BPartner_ID(bpartner.getIdOrNull().getRepoId());
 			}
-			else if (user.getC_BPartner_ID() != bpartner.getC_BPartner_ID())
+			else if (contact.getC_BPartner_ID() != bpartner.getIdOrNull().getRepoId())
 			{
 				throw new AdempiereException("BP of User <> BP");
 			}
-			if (importRecord.getC_Greeting_ID() != 0)
-			{
-				user.setC_Greeting_ID(importRecord.getC_Greeting_ID());
-			}
-			if (importRecord.getC_Job_ID() > 0)
-			{
-				user.setC_Job_ID(importRecord.getC_Job_ID());
-			}
-			user.setName(Check.isEmpty(importContactName, true) ? importRecord.getEMail() : importContactName);
-			updateWithAvailableImportRecordFields(importRecord, user);
 
-			if (bpartnerLocation != null)
-			{
-				user.setC_BPartner_Location(bpartnerLocation);
-			}
-
-			ModelValidationEngine.get().fireImportValidate(process, importRecord, user, IImportInterceptor.TIMING_AFTER_IMPORT);
-			InterfaceWrapperHelper.save(user);
-		}
-		else 	// New Contact
-		if (!Check.isEmpty(importContactName, true)
-				|| !Check.isEmpty(importRecord.getEMail(), true))
-		{
-			user = Services.get(IBPartnerBL.class).createDraftContact(bpartner);
 			if (importRecord.getC_Greeting_ID() > 0)
 			{
-				user.setC_Greeting_ID(importRecord.getC_Greeting_ID());
+				contact.setC_Greeting_ID(importRecord.getC_Greeting_ID());
 			}
 			if (importRecord.getC_Job_ID() > 0)
 			{
-				user.setC_Job_ID(importRecord.getC_Job_ID());
+				contact.setC_Job_ID(importRecord.getC_Job_ID());
 			}
-			user.setName(Check.isEmpty(importContactName, true) ? importRecord.getEMail() : importContactName);
-			updateWithImportRecordFields(importRecord, user);
-			if (bpartnerLocation != null)
-			{
-				user.setC_BPartner_Location_ID(bpartnerLocation.getC_BPartner_Location_ID());
-			}
-			ModelValidationEngine.get().fireImportValidate(process, importRecord, user, IImportInterceptor.TIMING_AFTER_IMPORT);
-			InterfaceWrapperHelper.save(user);
-			logger.trace("Insert BP Contact - {}", user);
+			contact.setName(Check.isEmpty(importContactName, true) ? importRecord.getEMail() : importContactName);
+			updateWithAvailableImportRecordFields(importRecord, contact);
+		}
+		//
+		// New Contact
+		else if (!Check.isEmpty(importContactName, true)
+				|| !Check.isEmpty(importRecord.getEMail(), true))
+		{
+			contact = InterfaceWrapperHelper.newInstance(I_AD_User.class);
+			contact.setAD_Org_ID(bpartner.getOrgId());
+			contact.setC_BPartner_ID(bpartner.getIdOrNull().getRepoId());
 
-			importRecord.setAD_User(user);
+			if (importRecord.getC_Greeting_ID() > 0)
+			{
+				contact.setC_Greeting_ID(importRecord.getC_Greeting_ID());
+			}
+			if (importRecord.getC_Job_ID() > 0)
+			{
+				contact.setC_Job_ID(importRecord.getC_Job_ID());
+			}
+			contact.setName(Check.isEmpty(importContactName, true) ? importRecord.getEMail() : importContactName);
+
+			updateWithImportRecordFields(importRecord, contact);
 		}
 
-		return user;
+		//
+		//
+		if (contact != null)
+		{
+			final BPartnerLocationId bpLocationId = context.getCurrentBPartnerLocationIdOrNull();
+			if (bpLocationId != null)
+			{
+				contact.setC_BPartner_Location_ID(bpLocationId.getRepoId());
+			}
+
+			ModelValidationEngine.get().fireImportValidate(process, importRecord, contact, IImportInterceptor.TIMING_AFTER_IMPORT);
+
+			final BPartnerContactId contactId = bpartner.addAndSaveContact(contact);
+			context.setCurrentBPartnerContactId(contactId);
+		}
 	}
 
 	/**
@@ -135,6 +141,7 @@ import lombok.NonNull;
 	 */
 	private static void updateWithImportRecordFields(final I_I_BPartner importRecord, final I_AD_User user)
 	{
+		user.setExternalId(importRecord.getAD_User_ExternalId());
 		user.setFirstname(importRecord.getFirstname());
 		user.setLastname(importRecord.getLastname());
 
@@ -163,6 +170,11 @@ import lombok.NonNull;
 		user.setFirstname(importRecord.getFirstname());
 		user.setLastname(importRecord.getLastname());
 
+		final String userExternalId = importRecord.getAD_User_ExternalId();
+		if (userExternalId != null)
+		{
+			user.setExternalId(userExternalId);
+		}
 		if (importRecord.getTitle() != null)
 		{
 			user.setTitle(importRecord.getTitle());

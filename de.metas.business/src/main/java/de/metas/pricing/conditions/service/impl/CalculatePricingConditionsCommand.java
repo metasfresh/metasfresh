@@ -14,21 +14,21 @@ import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.conditions.PriceOverride;
-import de.metas.pricing.conditions.PriceOverrideType;
+import de.metas.pricing.conditions.PriceSpecification;
+import de.metas.pricing.conditions.PriceSpecificationType;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsDiscountType;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.CalculatePricingConditionsRequest;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
+import de.metas.pricing.conditions.service.PricingConditionsErrorCode;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.conditions.service.PricingConditionsResult.PricingConditionsResultBuilder;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-
 import lombok.NonNull;
 
 /*
@@ -152,45 +152,60 @@ import lombok.NonNull;
 				.pricingConditionsBreak(breakToApply)
 				.paymentTermId(breakToApply.getDerivedPaymentTermIdOrNull());
 
-		computePriceForPricingConditionsBreak(result, breakToApply.getPriceOverride());
+		computePriceForPricingConditionsBreak(result, breakToApply.getPriceSpecification());
 		computeDiscountForPricingConditionsBreak(result, breakToApply);
 
 		return Optional.of(result.build());
 	}
 
 	private void computePriceForPricingConditionsBreak(
-			final PricingConditionsResultBuilder result,
-			@NonNull final PriceOverride priceOverride)
+			@NonNull final PricingConditionsResultBuilder result,
+			@NonNull final PriceSpecification priceOverride)
 	{
-		final PriceOverrideType priceOverrideType = priceOverride.getType();
-		if (priceOverrideType == PriceOverrideType.NONE)
+		final PriceSpecificationType priceOverrideType = priceOverride.getType();
+		if (priceOverrideType == PriceSpecificationType.NONE)
 		{
 			// nothing
 		}
-		else if (priceOverrideType == PriceOverrideType.BASE_PRICING_SYSTEM)
+		else if (priceOverrideType == PriceSpecificationType.BASE_PRICING_SYSTEM)
 		{
 			final PricingSystemId basePricingSystemId = priceOverride.getBasePricingSystemId();
 
 			final IPricingResult productPrices = computePricesForBasePricingSystem(basePricingSystemId);
+
 			final CurrencyId currencyId = productPrices.getCurrencyId();
 			final BigDecimal priceStd = productPrices.getPriceStd();
 			final BigDecimal priceList = productPrices.getPriceList();
 			final BigDecimal priceLimit = productPrices.getPriceLimit();
 
-			final BigDecimal priceStdAddAmt = priceOverride.getBasePriceAddAmt();
-
 			result.currencyId(currencyId);
 			result.basePricingSystemId(basePricingSystemId);
 			result.priceListOverride(priceList);
 			result.priceLimitOverride(priceLimit);
-			result.priceStdOverride(priceStd.add(priceStdAddAmt));
+
+			//
+			// Add surcharge amount to standard price
+			final Money pricingSystemSurcharge = priceOverride.getPricingSystemSurcharge();
+			if (pricingSystemSurcharge != null && pricingSystemSurcharge.signum() != 0)
+			{
+				if (!CurrencyId.equals(pricingSystemSurcharge.getCurrencyId(), currencyId))
+				{
+					throw new AdempiereException("Surcharge's currency is not matching base price's currency. ")
+							.appendParametersToMessage()
+							.setParameter(PricingConditionsErrorCode.SurchargeCurrencyNotMatchingPriceListCurrency)
+							.setParameter("price", Money.of(priceStd, currencyId))
+							.setParameter("surcharge", pricingSystemSurcharge);
+				}
+
+				final BigDecimal priceStdOverride = priceStd.add(pricingSystemSurcharge.toBigDecimal());
+				result.priceStdOverride(priceStdOverride);
+			}
 		}
-		else if (priceOverrideType == PriceOverrideType.FIXED_PRICE)
+		else if (priceOverrideType == PriceSpecificationType.FIXED_PRICE)
 		{
 			final Money fixedPrice = priceOverride.getFixedPrice();
-
-			result.currencyId(fixedPrice.getCurrencyId());
-			result.priceStdOverride(fixedPrice.getValue());
+			result.currencyId(fixedPrice != null ? fixedPrice.getCurrencyId() : null);
+			result.priceStdOverride(fixedPrice != null ? fixedPrice.toBigDecimal() : null);
 		}
 		else
 		{
@@ -218,7 +233,7 @@ import lombok.NonNull;
 		newPricingCtx.setPriceListVersionId(null); // will be recomputed
 		newPricingCtx.setSkipCheckingPriceListSOTrxFlag(true);
 		newPricingCtx.setDisallowDiscount(true);
-		newPricingCtx.setFailIfNotCalculated(true);
+		newPricingCtx.setFailIfNotCalculated();
 
 		return newPricingCtx;
 	}

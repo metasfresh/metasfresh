@@ -232,7 +232,7 @@ public class BucketTest
 
 		// Validate Quantity Value and UOM
 		Assert.assertThat("Invalid Added Qty: " + capacity,
-				qtyAdded.getAsBigDecimal(),
+				qtyAdded.toBigDecimal(),
 				Matchers.comparesEqualTo(new BigDecimal(qtyAddedExpectedStr)));
 		Assert.assertEquals("Invalid Added UOM: ", uom, qtyAdded.getUOM());
 
@@ -249,7 +249,7 @@ public class BucketTest
 		final Quantity qtyRemoved = capacity.removeQty(qtyToRemove);
 
 		// Validate Quantity Value and UOM
-		assertThat(qtyRemoved.getAsBigDecimal()).as("Invalid Removed Qty: " + capacity).isEqualByComparingTo(qtyRemovedExpectedStr);
+		assertThat(qtyRemoved.toBigDecimal()).as("Invalid Removed Qty: " + capacity).isEqualByComparingTo(qtyRemovedExpectedStr);
 
 		// Validate Quantity Value and UOM
 		Assert.assertEquals("Invalid Removed Source UOM: ", capacity.getC_UOM(), qtyRemoved.getSourceUOM());

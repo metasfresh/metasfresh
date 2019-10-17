@@ -53,7 +53,7 @@ group by o.ad_org_id,o.name,l.address1,l.city,l.postal]]>
 			<staticText>
 				<reportElement x="0" y="4" width="240" height="19" uuid="1ae80e34-096f-4ffe-9d85-2f16a507ce38"/>
 				<textElement>
-					<font size="14" isBold="true"/>
+					<font size="14" fontName="Arial" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Verkaufte Artikel]]></text>
 			</staticText>

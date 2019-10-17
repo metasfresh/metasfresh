@@ -1,5 +1,7 @@
 package de.metas.inoutcandidate.spi.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -10,12 +12,12 @@ package de.metas.inoutcandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -63,7 +65,7 @@ import de.metas.util.Check;
 	//
 	// Aggregated values
 	private boolean _stale = true;
-	private IQtyAndQuality _qtyAndQuality = null;
+	private ReceiptQty _qtyAndQuality = null;
 	private List<I_M_ReceiptSchedule_Alloc> _receiptScheduleAllocs = null;
 
 	public HUReceiptLineCandidate(final I_M_ReceiptSchedule receiptSchedule)
@@ -85,7 +87,7 @@ import de.metas.util.Check;
 	/**
 	 * Merges the given {@code candidate} with one of the previously added candidates if one matches match, or adds the given {@code candidate} as a new one.
 	 * Calls {@link #canAdd(HUReceiptLinePartCandidate)} to find out if the candidate can be added or not.
-	 * 
+	 *
 	 * @param candidate
 	 * @return {@code true} if the candidate could be added.
 	 */
@@ -194,7 +196,7 @@ import de.metas.util.Check;
 		// * Compute qty and QtyWithIssues
 		// * Collect quality notices
 		// * Collect receipt schedule allocations
-		final MutableQtyAndQuality qtyAndQuality = new MutableQtyAndQuality();
+		final ReceiptQty qtyAndQuality = new ReceiptQty();
 		final List<I_M_ReceiptSchedule_Alloc> receiptScheduleAllocs = new ArrayList<I_M_ReceiptSchedule_Alloc>();
 		for (final HUReceiptLinePartCandidate receiptLinePart : receiptLinePartCandidates)
 		{
@@ -204,7 +206,7 @@ import de.metas.util.Check;
 				_qualityNote = receiptLinePart.getQualityNote();
 			}
 
-			final IQtyAndQuality partQtyAndQuality = receiptLinePart.getQtyAndQuality();
+			final ReceiptQty partQtyAndQuality = receiptLinePart.getQtyAndQuality();
 			if (partQtyAndQuality.isZero())
 			{
 				// skip receipt line parts where Qty is ZERO
@@ -246,10 +248,10 @@ import de.metas.util.Check;
 
 	public I_C_UOM getC_UOM()
 	{
-		return getM_ReceiptSchedule().getC_UOM();
+		return loadOutOfTrx(getM_ReceiptSchedule().getC_UOM_ID(), I_C_UOM.class);
 	}
 
-	public IQtyAndQuality getQtyAndQuality()
+	public ReceiptQty getQtyAndQuality()
 	{
 		updateIfStale();
 		return _qtyAndQuality;

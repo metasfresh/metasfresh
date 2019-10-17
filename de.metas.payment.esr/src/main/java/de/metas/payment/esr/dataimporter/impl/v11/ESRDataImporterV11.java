@@ -18,11 +18,11 @@ import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.ESRStatement.ESRStatementBuilder;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
+import de.metas.payment.esr.dataimporter.IESRDataImporter;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.PlainStringLoggable;
 import de.metas.util.Services;
-import de.metas.payment.esr.dataimporter.IESRDataImporter;
 import lombok.NonNull;
 
 /*
@@ -122,7 +122,7 @@ public class ESRDataImporterV11 implements IESRDataImporter
 
 			if (controlLineCount < 1)
 			{
-				Loggables.get().addLog("No control lines found");
+				Loggables.addLog("No control lines found");
 			}
 
 			return builder
@@ -139,7 +139,7 @@ public class ESRDataImporterV11 implements IESRDataImporter
 	{
 		final ESRTransactionBuilder esrTransactionBuilder = ESRTransaction.builder();
 
-		final PlainStringLoggable errorsLoggable = new PlainStringLoggable();
+		final PlainStringLoggable errorsLoggable = Loggables.newPlainStringLoggable();
 		try (final IAutoCloseable tmpLoggable = Loggables.temporarySetLoggable(errorsLoggable))
 		{
 			final String esrTrxType = ESRTransactionLineMatcherUtil.extractEsrTrxType(currentTextLine);

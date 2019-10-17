@@ -13,6 +13,7 @@ import de.metas.material.event.pporder.PPOrderAdvisedEvent;
 import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 
 /*
@@ -74,6 +75,7 @@ public class PPOrderAdvisedEventCreator
 				.directlyCreatePPOrder(productPlanning.isCreatePlan())
 				.directlyPickSupply(productPlanning.isPickDirectlyIfFeasible())
 				.build();
+		Loggables.addLog("Created PPOrderAdvisedEvent");
 
 		return ImmutableList.of(event);
 	}

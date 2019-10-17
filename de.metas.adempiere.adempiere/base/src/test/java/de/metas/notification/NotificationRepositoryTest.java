@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Message;
@@ -18,6 +19,7 @@ import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.impl.NotificationRepository;
+import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
 
 /*
@@ -63,7 +65,7 @@ public class NotificationRepositoryTest
 
 		final UserNotification notificationSaved = notificationRepo.save(UserNotificationRequest.builder()
 				.topic(Topic.builder().name("topic1").type(Type.REMOTE).build())
-				.recipientUserId(123)
+				.recipientUserId(UserId.ofRepoId(123))
 				.important(true)
 				//
 				.subjectPlain("subjectPlain")
@@ -81,11 +83,11 @@ public class NotificationRepositoryTest
 				.targetAction(TargetRecordAction.builder()
 						.record(TableRecordReference.of("MyTable", 111))
 						.recordDisplayText("targetRecordDisplayText")
-						.adWindowId(444)
+						.adWindowId(AdWindowId.optionalOfRepoId(444))
 						.build())
 				.build());
 
-		final List<UserNotification> userNotifications = notificationRepo.getByUserId(123, Integer.MAX_VALUE);
+		final List<UserNotification> userNotifications = notificationRepo.getByUserId(UserId.ofRepoId(123), Integer.MAX_VALUE);
 		final UserNotification userNotification = CollectionUtils.singleElement(userNotifications);
 		assertThat(userNotification).isEqualTo(notificationSaved);
 	}

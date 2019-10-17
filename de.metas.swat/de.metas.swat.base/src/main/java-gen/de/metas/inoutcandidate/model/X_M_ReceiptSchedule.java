@@ -15,7 +15,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1071216943L;
+	private static final long serialVersionUID = 1121045839L;
 
     /** Standard Constructor */
     public X_M_ReceiptSchedule (Properties ctx, int M_ReceiptSchedule_ID, String trxName)
@@ -53,18 +53,6 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
-	}
-
-	@Override
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
-	}
-
 	/** Set DB-Tabelle.
 		@param AD_Table_ID 
 		Database Table information
@@ -90,18 +78,6 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User(org.compiere.model.I_AD_User AD_User)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
-	}
-
 	/** Set Ansprechpartner.
 		@param AD_User_ID 
 		User within the system - Internal or Business Partner Contact
@@ -125,18 +101,6 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_AD_User getAD_User_Override() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_Override_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User_Override(org.compiere.model.I_AD_User AD_User_Override)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_Override_ID, org.compiere.model.I_AD_User.class, AD_User_Override);
 	}
 
 	/** Set Ansprechpartner abw..
@@ -193,18 +157,6 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		return (java.lang.String)get_Value(COLUMNNAME_BPartnerAddress_Override);
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner_Location getC_BP_Location_Override() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BP_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setC_BP_Location_Override(org.compiere.model.I_C_BPartner_Location C_BP_Location_Override)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BP_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class, C_BP_Location_Override);
-	}
-
 	/** Set Standort abw..
 		@param C_BP_Location_Override_ID 
 		Identifiziert die (Liefer-) Adresse des Geschäftspartners
@@ -228,18 +180,6 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
 	}
 
 	/** Set Geschäftspartner.
@@ -267,18 +207,6 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class, C_BPartner_Location);
-	}
-
 	/** Set Standort.
 		@param C_BPartner_Location_ID 
 		Identifiziert die (Liefer-) Adresse des Geschäftspartners
@@ -304,18 +232,6 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner_Override() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_Override_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner_Override(org.compiere.model.I_C_BPartner C_BPartner_Override)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_Override_ID, org.compiere.model.I_C_BPartner.class, C_BPartner_Override);
-	}
-
 	/** Set Geschäftspartner abw..
 		@param C_BPartner_Override_ID 
 		Bezeichnet einen Geschäftspartner
@@ -339,18 +255,6 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class);
-	}
-
-	@Override
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType)
-	{
-		set_ValueFromPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class, C_DocType);
 	}
 
 	/** Set Belegart.
@@ -379,7 +283,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public org.compiere.model.I_C_Order getC_Order() throws RuntimeException
+	public org.compiere.model.I_C_Order getC_Order()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
 	}
@@ -416,7 +320,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public org.compiere.model.I_C_OrderLine getC_OrderLine() throws RuntimeException
+	public org.compiere.model.I_C_OrderLine getC_OrderLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class);
 	}
@@ -450,18 +354,6 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
 	}
 
 	/** Set Maßeinheit.
@@ -508,25 +400,25 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateOrdered);
 	}
 
-//	/** 
-//	 * DeliveryRule AD_Reference_ID=151
-//	 * Reference name: C_Order DeliveryRule
-//	 */
-//	public static final int DELIVERYRULE_AD_Reference_ID=151;
-//	/** AfterReceipt = R */
-//	public static final String DELIVERYRULE_AfterReceipt = "R";
-//	/** Availability = A */
-//	public static final String DELIVERYRULE_Availability = "A";
-//	/** CompleteLine = L */
-//	public static final String DELIVERYRULE_CompleteLine = "L";
-//	/** CompleteOrder = O */
-//	public static final String DELIVERYRULE_CompleteOrder = "O";
-//	/** Force = F */
-//	public static final String DELIVERYRULE_Force = "F";
-//	/** Manual = M */
-//	public static final String DELIVERYRULE_Manual = "M";
-//	/** MitNaechsterAbolieferung = S */
-//	public static final String DELIVERYRULE_MitNaechsterAbolieferung = "S";
+	/** 
+	 * DeliveryRule AD_Reference_ID=151
+	 * Reference name: C_Order DeliveryRule
+	 */
+	public static final int DELIVERYRULE_AD_Reference_ID=151;
+	/** AfterReceipt = R */
+	public static final String DELIVERYRULE_AfterReceipt = "R";
+	/** Availability = A */
+	public static final String DELIVERYRULE_Availability = "A";
+	/** CompleteLine = L */
+	public static final String DELIVERYRULE_CompleteLine = "L";
+	/** CompleteOrder = O */
+	public static final String DELIVERYRULE_CompleteOrder = "O";
+	/** Force = F */
+	public static final String DELIVERYRULE_Force = "F";
+	/** Manual = M */
+	public static final String DELIVERYRULE_Manual = "M";
+	/** MitNaechsterAbolieferung = S */
+	public static final String DELIVERYRULE_MitNaechsterAbolieferung = "S";
 	/** Set Lieferart.
 		@param DeliveryRule 
 		Definiert die zeitliche Steuerung von Lieferungen
@@ -703,7 +595,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
@@ -740,7 +632,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
-	public de.metas.inoutcandidate.model.I_M_IolCandHandler getM_IolCandHandler() throws RuntimeException
+	public de.metas.inoutcandidate.model.I_M_IolCandHandler getM_IolCandHandler()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_IolCandHandler_ID, de.metas.inoutcandidate.model.I_M_IolCandHandler.class);
 	}
@@ -771,18 +663,6 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.
@@ -832,18 +712,6 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Warehouse getM_Warehouse_Dest() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Warehouse_Dest_ID, org.compiere.model.I_M_Warehouse.class);
-	}
-
-	@Override
-	public void setM_Warehouse_Dest(org.compiere.model.I_M_Warehouse M_Warehouse_Dest)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Warehouse_Dest_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse_Dest);
-	}
-
 	/** Set Ziel-Lager.
 		@param M_Warehouse_Dest_ID Ziel-Lager	  */
 	@Override
@@ -864,18 +732,6 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
-	}
-
-	@Override
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse);
 	}
 
 	/** Set Lager.
@@ -901,18 +757,6 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Warehouse getM_Warehouse_Override() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Warehouse_Override_ID, org.compiere.model.I_M_Warehouse.class);
-	}
-
-	@Override
-	public void setM_Warehouse_Override(org.compiere.model.I_M_Warehouse M_Warehouse_Override)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Warehouse_Override_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse_Override);
 	}
 
 	/** Set Lager abw..

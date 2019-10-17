@@ -3,8 +3,9 @@ package de.metas.inout.api;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.AttributeId;
-import org.compiere.model.I_M_AttributeValue;
+import org.adempiere.mm.attributes.AttributeListValue;
 
+import de.metas.inout.QualityNoteId;
 import de.metas.inout.model.I_M_QualityNote;
 import de.metas.util.ISingletonService;
 
@@ -32,6 +33,7 @@ import de.metas.util.ISingletonService;
 
 public interface IQualityNoteDAO extends ISingletonService
 {
+	I_M_QualityNote getById(QualityNoteId qualityNoteId);
 
 	/**
 	 * 
@@ -53,7 +55,7 @@ public interface IQualityNoteDAO extends ISingletonService
 	 * @param qualityNote
 	 * @return the qualityNote attribute value that fits the qualityNote entry if found, null otherwise
 	 */
-	I_M_AttributeValue retrieveAttribueValueForQualityNote(I_M_QualityNote qualityNote);
+	AttributeListValue retrieveAttribueValueForQualityNote(I_M_QualityNote qualityNote);
 
 	/**
 	 * Delete the M_Attribute value that fits the given QualityNote

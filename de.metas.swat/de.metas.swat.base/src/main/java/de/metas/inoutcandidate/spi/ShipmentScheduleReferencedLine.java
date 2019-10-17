@@ -1,8 +1,9 @@
 package de.metas.inoutcandidate.spi;
 
-import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -46,11 +47,11 @@ import lombok.Value;
 public class ShipmentScheduleReferencedLine
 {
 	@NonNull
-	Integer groupId;
+	TableRecordReference recordRef;
 
-	Timestamp deliveryDate;
+	ZonedDateTime deliveryDate;
 
-	Timestamp preparationDate;
+	ZonedDateTime preparationDate;
 
 	@NonNull
 	Optional<ShipperId> shipperId;

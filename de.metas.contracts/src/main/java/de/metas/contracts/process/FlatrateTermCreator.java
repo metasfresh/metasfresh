@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_User;
@@ -21,6 +22,7 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductAndCategoryId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -79,7 +81,7 @@ public class FlatrateTermCreator
 		for (final I_C_BPartner partner : bPartners)
 		{
 			// create each term in its own transaction
-			trxManager.run(new TrxRunnableAdapter()
+			trxManager.runInNewTrx(new TrxRunnableAdapter()
 			{
 				@Override
 				public void run(final String localTrxName)
@@ -90,15 +92,17 @@ public class FlatrateTermCreator
 				@Override
 				public boolean doCatch(Throwable ex)
 				{
-					Loggables.get().addLog("@Error@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName() + ": " + ex.getLocalizedMessage());
+					Loggables.addLog("@Error@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName() + ": " + ex.getLocalizedMessage());
 					logger.warn("Failed creating contract for {}", partner, ex);
-					return true; // rollback
+					throw AdempiereException
+						.wrapIfNeeded(ex)
+						.markUserNotified();
 				}
 
 				@Override
 				public void doFinally()
 				{
-					Loggables.get().addLog("@Created@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName());
+					Loggables.addLog("@Processed@ @C_BPartner_ID@:" + partner.getValue() + "_" + partner.getName());
 				}
 			});
 		}
@@ -120,7 +124,7 @@ public class FlatrateTermCreator
 					conditions,
 					startDate,
 					userInCharge,
-					product,
+					ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID()),
 					false /* completeIt=false */
 			);
 

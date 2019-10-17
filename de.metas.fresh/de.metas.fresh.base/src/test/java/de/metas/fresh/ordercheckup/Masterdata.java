@@ -10,12 +10,12 @@ package de.metas.fresh.ordercheckup;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,7 +42,7 @@ public class Masterdata
 	Masterdata(final OrderCheckupTestHelper helper)
 	{
 		super();
-		this.helper = helper; 
+		this.helper = helper;
 		this.plant01 = new Plant("plant01");
 		this.plant02 = new Plant("plant02");
 	}
@@ -79,7 +79,7 @@ public class Masterdata
 			Assert.assertEquals("Responsible", responsibleUser.getAD_User_ID(), report.getAD_User_Responsible_ID());
 			Assert.assertEquals("Processed", true, report.isProcessed());
 			Assert.assertEquals("Active", true, report.isActive());
-			
+
 			helper.assertReportHasOrderLines(report, expectedOrderLines);
 		}
 
@@ -97,10 +97,10 @@ public class Masterdata
 				this.name = Plant.this.name + "_" + name;
 				responsibleUser = helper.createAD_User(this.name);
 
-				warehouse = helper.createWarehouse(this.name, responsibleUser, plant);
+				warehouse = helper.createWarehouse(this.name, plant);
 
-				product01 = helper.createProduct(this.name + "_product01", warehouse);
-				product02 = helper.createProduct(this.name + "_product02", warehouse);
+				product01 = helper.createProduct(this.name + "_product01", warehouse, responsibleUser);
+				product02 = helper.createProduct(this.name + "_product02", warehouse, responsibleUser);
 			}
 
 			public I_C_Order_MFGWarehouse_Report retrieveWarehouseReport()

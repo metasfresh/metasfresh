@@ -1,38 +1,18 @@
 package de.metas.invoicecandidate.api.impl;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_DocType;
-import org.compiere.util.TimeUtil;
 
+import de.metas.money.CurrencyId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
@@ -52,9 +32,8 @@ public class InvoiceHeaderImplBuilder
 
 	private final Set<String> POReferences = new HashSet<>();
 
-	private Timestamp _today;
-	private Timestamp _dateInvoiced;
-	private Timestamp _dateAcct;
+	private LocalDate _dateInvoiced;
+	private LocalDate _dateAcct;
 
 	private int AD_Org_ID;
 
@@ -101,7 +80,7 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setIsSOTrx(isSOTrx());
 
 		// Pricing and currency
-		invoiceHeader.setC_Currency_ID(getC_Currency_ID());
+		invoiceHeader.setCurrencyId(CurrencyId.ofRepoId(getC_Currency_ID()));
 		invoiceHeader.setM_PriceList_ID(getM_PriceList_ID());
 
 		// Tax
@@ -128,16 +107,6 @@ public class InvoiceHeaderImplBuilder
 		return invoiceHeader;
 	}
 
-	public void setToday(final Timestamp today)
-	{
-		this._today = today;
-	}
-
-	public final Timestamp getToday()
-	{
-		return _today;
-	}
-
 	public I_C_DocType getC_DocTypeInvoice()
 	{
 		return docTypeInvoice;
@@ -158,22 +127,18 @@ public class InvoiceHeaderImplBuilder
 		normalizeAndAddIfNotNull(POReferences, poReference);
 	}
 
-	public Timestamp getDateInvoiced()
+	public LocalDate getDateInvoiced()
 	{
-		if (_dateInvoiced == null)
-		{
-			return getToday();
-		}
+		Check.assumeNotNull(_dateInvoiced, "Parameter _dateInvoiced is not null");
 		return _dateInvoiced;
 	}
 
-	public void setDateInvoiced(final Timestamp dateInvoiced)
+	public void setDateInvoiced(@Nullable final LocalDate dateInvoiced)
 	{
-		final Timestamp dateInvoicedNorm = dateInvoiced == null ? null : TimeUtil.trunc(dateInvoiced, TimeUtil.TRUNC_DAY);
-		this._dateInvoiced = checkOverride("DateInvoiced", this._dateInvoiced, dateInvoicedNorm);
+		this._dateInvoiced = checkOverride("DateInvoiced", this._dateInvoiced, dateInvoiced);
 	}
 
-	public Timestamp getDateAcct()
+	public LocalDate getDateAcct()
 	{
 		// 08469 (mark): use DateInvoiced if DateAcct is not specified
 		if (_dateAcct == null)
@@ -184,10 +149,9 @@ public class InvoiceHeaderImplBuilder
 		return _dateAcct;
 	}
 
-	public void setDateAcct(final Timestamp dateAcct)
+	public void setDateAcct(@Nullable final LocalDate dateAcct)
 	{
-		final Timestamp dateAcctNorm = dateAcct == null ? null : TimeUtil.trunc(dateAcct, TimeUtil.TRUNC_DAY);
-		_dateAcct = checkOverride("DateAcct", this._dateAcct, dateAcctNorm);
+		_dateAcct = checkOverride("DateAcct", this._dateAcct, dateAcct);
 	}
 
 	public int getAD_Org_ID()
@@ -355,20 +319,20 @@ public class InvoiceHeaderImplBuilder
 		{
 			return valueNew;
 		}
-
-		if (valueNew == null)
+		else if (valueNew == null)
 		{
 			return value;
 		}
-
-		if (value.equals(valueNew))
+		else if (value.equals(valueNew))
 		{
 			return value;
 		}
-
-		throw new AdempiereException("Overriding field " + name + " not allowed"
-				+ "\n Current value: " + value
-				+ "\n New value: " + valueNew);
+		else
+		{
+			throw new AdempiereException("Overriding field " + name + " not allowed"
+					+ "\n Current value: " + value
+					+ "\n New value: " + valueNew);
+		}
 	}
 
 	private static final int checkOverrideID(final String name, final int id, final int idNew)
@@ -377,20 +341,20 @@ public class InvoiceHeaderImplBuilder
 		{
 			return idNew <= 0 ? -1 : idNew;
 		}
-
-		if (idNew <= 0)
+		else if (idNew <= 0)
 		{
 			return id <= 0 ? -1 : id;
 		}
-
-		if (id == idNew)
+		else if (id == idNew)
 		{
 			return id;
 		}
-
-		throw new AdempiereException("Overriding field " + name + " not allowed"
-				+ "\n Current value: " + id
-				+ "\n New value: " + idNew);
+		else
+		{
+			throw new AdempiereException("Overriding field " + name + " not allowed"
+					+ "\n Current value: " + id
+					+ "\n New value: " + idNew);
+		}
 	}
 
 	private static final <T> T checkOverrideModel(final String name, final T model, final T modelNew)

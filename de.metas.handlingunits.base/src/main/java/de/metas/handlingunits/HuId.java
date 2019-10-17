@@ -4,12 +4,13 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -37,6 +38,7 @@ import lombok.Value;
 @Value
 public class HuId implements RepoIdAware
 {
+	@JsonCreator
 	public static HuId ofRepoId(final int repoId)
 	{
 		return new HuId(repoId);
@@ -77,6 +79,13 @@ public class HuId implements RepoIdAware
 	private HuId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "M_HU_ID");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 
 	public static boolean equals(final HuId o1, final HuId o2)

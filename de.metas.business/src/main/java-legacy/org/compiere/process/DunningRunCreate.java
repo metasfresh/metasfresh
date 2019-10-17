@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import org.compiere.model.MBPartner;
 import org.compiere.model.MDunningLevel;
 import org.compiere.model.MDunningRun;
 import org.compiere.model.MDunningRunEntry;
@@ -30,10 +29,13 @@ import org.compiere.model.MPayment;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.exceptions.BPartnerNoAddressException;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 
 /**
@@ -324,7 +326,7 @@ public class DunningRunCreate extends JavaProcess
 		catch (BPartnerNoAddressException e)
 		{
 			final String msg = "@Skip@ @C_Invoice_ID@ " + MInvoice.get(getCtx(), C_Invoice_ID).getDocumentInfo()
-				+ ", @C_BPartner_ID@ " + MBPartner.get(getCtx(), C_BPartner_ID).getName()
+				+ ", @C_BPartner_ID@ " + Services.get(IBPartnerBL.class).getBPartnerName(BPartnerId.ofRepoIdOrNull(C_BPartner_ID))
 				+ " @No@ @IsActive@ @C_BPartner_Location_ID@";
 			final ProcessExecutionResult processResult = getResult();
 			processResult.addLog(processResult.getPinstanceId(), null, null, msg);
@@ -446,7 +448,7 @@ public class DunningRunCreate extends JavaProcess
 		} catch (BPartnerNoAddressException e) {
 			MPayment payment = new MPayment(getCtx(), C_Payment_ID, null);
 			String msg = "@Skip@ @C_Payment_ID@ " + payment.getDocumentInfo()
-				+ ", @C_BPartner_ID@ " + MBPartner.get(getCtx(), C_BPartner_ID).getName()
+				+ ", @C_BPartner_ID@ " + Services.get(IBPartnerBL.class).getBPartnerName(BPartnerId.ofRepoIdOrNull(C_BPartner_ID))
 				+ " @No@ @IsActive@ @C_BPartner_Location_ID@";
 			final ProcessExecutionResult processResult = getResult();
 			processResult.addLog(processResult.getPinstanceId(), null, null, msg);

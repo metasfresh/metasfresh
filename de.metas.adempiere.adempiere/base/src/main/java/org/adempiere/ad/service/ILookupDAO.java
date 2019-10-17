@@ -10,12 +10,12 @@ package org.adempiere.ad.service;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,6 +24,7 @@ package org.adempiere.ad.service;
 
 import java.util.List;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.compiere.model.ILookupDisplayColumn;
@@ -37,9 +38,9 @@ import de.metas.util.collections.BlindIterator;
 
 /**
  * Field Lookup DAO methods
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public interface ILookupDAO extends ISingletonService
 {
@@ -52,7 +53,7 @@ public interface ILookupDAO extends ISingletonService
 		int getAD_Reference_Value_ID();
 
 		String getColumnName();
-		
+
 		String getTableName();
 	}
 
@@ -61,20 +62,19 @@ public interface ILookupDAO extends ISingletonService
 	 */
 	interface ITableRefInfo
 	{
-		String getName();
-		
+		/** Tell the log reader what to fix when a problem regarding a sloppy table reference is logged. */
+		String getIdentifier();
+
 		String getTableName();
 
 		String getKeyColumn();
 
 		/**
-		 * 
 		 * @return actual ColumnName to be displayed or null
 		 */
 		String getDisplayColumn();
 
 		/**
-		 * 
 		 * @return actual ColumnName SQL to be displayed or null
 		 */
 		String getDisplayColumnSQL();
@@ -87,66 +87,62 @@ public interface ILookupDAO extends ISingletonService
 
 		boolean isValueDisplayed();
 
-		int getZoomSO_Window_ID();
+		AdWindowId getZoomSO_Window_ID();
 
-		int getZoomAD_Window_ID_Override();
+		AdWindowId getZoomAD_Window_ID_Override();
 
-		int getZoomPO_Window_ID();
+		AdWindowId getZoomPO_Window_ID();
 
 		boolean isAutoComplete();
 
 		/**
 		 * Check if the keyColumn ends with "_ID"
-		 * 
-		 * @return
 		 */
 		boolean isNumericKey();
-
 	}
 
 	interface ILookupDisplayInfo
 	{
 		boolean isTranslated();
 
-		int getZoomWindowPO();
+		AdWindowId getZoomWindowPO();
 
-		int getZoomWindow();
+		AdWindowId getZoomWindow();
 
 		List<ILookupDisplayColumn> getLookupDisplayColumns();
 	}
 
 	/**
 	 * Contains a set of {@link ValueNamePair} or {@link KeyNamePair} elements.
-	 * 
+	 *
 	 * @author tsa
-	 * 
+	 *
 	 */
 	public interface INamePairIterator extends BlindIterator<NamePair>, AutoCloseable
 	{
 		/**
-		 * 
+		 *
 		 * @return true if this iterator is valid
 		 */
 		boolean isValid();
 
 		/**
 		 * Gets validation key of data in loaded context.
-		 * 
+		 *
 		 * @return
 		 */
 		Object getValidationKey();
 
-		@Override
-		public NamePair next();
+		@Override NamePair next();
 
 		/**
-		 * 
+		 *
 		 * @return true if last value was active
 		 */
 		boolean wasActive();
 
 		/**
-		 * 
+		 *
 		 * @return true if underlying elements are of type{@link KeyNamePair}; if false then elements are of type {@link ValueNamePair}
 		 */
 		boolean isNumericKey();
@@ -159,7 +155,7 @@ public interface ILookupDAO extends ISingletonService
 
 	/**
 	 * Same as {@link #retrieveTableRefInfoOrNull(int)} but in case the {@link ITableRefInfo} was not found, an warning is logged
-	 * 
+	 *
 	 * @param AD_Reference_Value_ID
 	 * @return table reference info or <code>null</code> if not found
 	 */
@@ -172,7 +168,7 @@ public interface ILookupDAO extends ISingletonService
 	boolean isTableReference(int AD_Reference_Value_ID);
 
 	ITableRefInfo retrieveTableDirectRefInfo(String columnName);
-	
+
 	ITableRefInfo retrieveAccountTableRefInfo();
 
 	ILookupDisplayInfo retrieveLookupDisplayInfo(ITableRefInfo tableRefInfo);
@@ -181,7 +177,7 @@ public interface ILookupDAO extends ISingletonService
 
 	/**
 	 * Retrieves all elements of <code>lookupInfo</code> in given <code>validationCtx</code> context
-	 * 
+	 *
 	 * @param validationCtx
 	 * @param lookupInfo
 	 */
@@ -189,7 +185,7 @@ public interface ILookupDAO extends ISingletonService
 
 	/**
 	 * Retrieves all elements of <code>lookupInfo</code> in given <code>validationCtx</code> context
-	 * 
+	 *
 	 * @param validationCtx
 	 * @param lookupInfo
 	 * @param additionalValidationRule optional additional validation rule to be applied on top of lookupInfo's validation rule
@@ -198,7 +194,7 @@ public interface ILookupDAO extends ISingletonService
 
 	/**
 	 * Directly retrieves a data element identified by <code>key</code>.
-	 * 
+	 *
 	 * @param validationCtx
 	 * @param lookupInfo
 	 * @param key
@@ -208,7 +204,7 @@ public interface ILookupDAO extends ISingletonService
 
 	/**
 	 * Creates a validation key to be used when checking if data is valid in a given context
-	 * 
+	 *
 	 * @param validationCtx
 	 * @param lookupInfo
 	 * @return
@@ -217,7 +213,7 @@ public interface ILookupDAO extends ISingletonService
 
 	/**
 	 * Retrieve TableRefInfo or null
-	 * 
+	 *
 	 * @param AD_Reference_ID
 	 * @return
 	 */

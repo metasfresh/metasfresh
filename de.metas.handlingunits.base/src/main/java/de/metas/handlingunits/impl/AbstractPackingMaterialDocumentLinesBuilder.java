@@ -42,7 +42,6 @@ import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -89,10 +88,8 @@ public abstract class AbstractPackingMaterialDocumentLinesBuilder implements IPa
 	 *
 	 * @param line packing material document line
 	 */
-	protected final void addPackingMaterialDocumentLine(final IPackingMaterialDocumentLine line)
+	protected final void addPackingMaterialDocumentLine(@NonNull final IPackingMaterialDocumentLine line)
 	{
-		Check.assumeNotNull(line, "line not null");
-
 		final ArrayKey pmKey = createPackingMaterialKey(line.getProductId());
 		final IPackingMaterialDocumentLine lineExisting = packingMaterialKey2packingMaterialLine.put(pmKey, line);
 		if (lineExisting != null)

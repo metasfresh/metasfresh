@@ -32,8 +32,6 @@ public interface I_C_Invoice_Candidate
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_AD_Client>(I_C_Invoice_Candidate.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -58,10 +56,6 @@ public interface I_C_Invoice_Candidate
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Note_ID();
-
-	public org.compiere.model.I_AD_Note getAD_Note();
-
-	public void setAD_Note(org.compiere.model.I_AD_Note AD_Note);
 
     /** Column definition for AD_Note_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_AD_Note> COLUMN_AD_Note_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_AD_Note>(I_C_Invoice_Candidate.class, "AD_Note_ID", org.compiere.model.I_AD_Note.class);
@@ -88,10 +82,6 @@ public interface I_C_Invoice_Candidate
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_AD_Org>(I_C_Invoice_Candidate.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
@@ -117,10 +107,6 @@ public interface I_C_Invoice_Candidate
 	 */
 	public int getAD_Table_ID();
 
-	public org.compiere.model.I_AD_Table getAD_Table();
-
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
-
     /** Column definition for AD_Table_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_AD_Table>(I_C_Invoice_Candidate.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
     /** Column name AD_Table_ID */
@@ -145,10 +131,6 @@ public interface I_C_Invoice_Candidate
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_User_InCharge_ID();
-
-	public org.compiere.model.I_AD_User getAD_User_InCharge();
-
-	public void setAD_User_InCharge(org.compiere.model.I_AD_User AD_User_InCharge);
 
     /** Column definition for AD_User_InCharge_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_AD_User> COLUMN_AD_User_InCharge_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_AD_User>(I_C_Invoice_Candidate.class, "AD_User_InCharge_ID", org.compiere.model.I_AD_User.class);
@@ -180,7 +162,7 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Set Rechnungspartner.
-	 * Geschäftspartners für die Rechnungsstellung
+	 * Geschäftspartner für die Rechnungsstellung
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -190,17 +172,13 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Get Rechnungspartner.
-	 * Geschäftspartners für die Rechnungsstellung
+	 * Geschäftspartner für die Rechnungsstellung
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getBill_BPartner_ID();
-
-	public org.compiere.model.I_C_BPartner getBill_BPartner();
-
-	public void setBill_BPartner(org.compiere.model.I_C_BPartner Bill_BPartner);
 
     /** Column definition for Bill_BPartner_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_BPartner> COLUMN_Bill_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_BPartner>(I_C_Invoice_Candidate.class, "Bill_BPartner_ID", org.compiere.model.I_C_BPartner.class);
@@ -254,10 +232,6 @@ public interface I_C_Invoice_Candidate
 	 */
 	public int getBill_Location_ID();
 
-	public org.compiere.model.I_C_BPartner_Location getBill_Location();
-
-	public void setBill_Location(org.compiere.model.I_C_BPartner_Location Bill_Location);
-
     /** Column definition for Bill_Location_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_BPartner_Location> COLUMN_Bill_Location_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_BPartner_Location>(I_C_Invoice_Candidate.class, "Bill_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name Bill_Location_ID */
@@ -282,10 +256,6 @@ public interface I_C_Invoice_Candidate
 	 * <br>Virtual Column: false
 	 */
 	public int getBill_Location_Override_ID();
-
-	public org.compiere.model.I_C_BPartner_Location getBill_Location_Override();
-
-	public void setBill_Location_Override(org.compiere.model.I_C_BPartner_Location Bill_Location_Override);
 
     /** Column definition for Bill_Location_Override_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_BPartner_Location> COLUMN_Bill_Location_Override_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_BPartner_Location>(I_C_Invoice_Candidate.class, "Bill_Location_Override_ID", org.compiere.model.I_C_BPartner_Location.class);
@@ -312,10 +282,6 @@ public interface I_C_Invoice_Candidate
 	 */
 	public int getBill_User_ID();
 
-	public org.compiere.model.I_AD_User getBill_User();
-
-	public void setBill_User(org.compiere.model.I_AD_User Bill_User);
-
     /** Column definition for Bill_User_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_AD_User> COLUMN_Bill_User_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_AD_User>(I_C_Invoice_Candidate.class, "Bill_User_ID", org.compiere.model.I_AD_User.class);
     /** Column name Bill_User_ID */
@@ -338,10 +304,6 @@ public interface I_C_Invoice_Candidate
 	 * <br>Virtual Column: false
 	 */
 	public int getBill_User_ID_Override_ID();
-
-	public org.compiere.model.I_AD_User getBill_User_ID_Override();
-
-	public void setBill_User_ID_Override(org.compiere.model.I_AD_User Bill_User_ID_Override);
 
     /** Column definition for Bill_User_ID_Override_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_AD_User> COLUMN_Bill_User_ID_Override_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_AD_User>(I_C_Invoice_Candidate.class, "Bill_User_ID_Override_ID", org.compiere.model.I_AD_User.class);
@@ -368,10 +330,6 @@ public interface I_C_Invoice_Candidate
 	 */
 	public int getC_Activity_ID();
 
-	public org.compiere.model.I_C_Activity getC_Activity();
-
-	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity);
-
     /** Column definition for C_Activity_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Activity> COLUMN_C_Activity_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Activity>(I_C_Invoice_Candidate.class, "C_Activity_ID", org.compiere.model.I_C_Activity.class);
     /** Column name C_Activity_ID */
@@ -396,10 +354,6 @@ public interface I_C_Invoice_Candidate
 	 * <br>Virtual Column: false
 	 */
 	public int getC_Charge_ID();
-
-	public org.compiere.model.I_C_Charge getC_Charge();
-
-	public void setC_Charge(org.compiere.model.I_C_Charge C_Charge);
 
     /** Column definition for C_Charge_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Charge> COLUMN_C_Charge_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Charge>(I_C_Invoice_Candidate.class, "C_Charge_ID", org.compiere.model.I_C_Charge.class);
@@ -426,10 +380,6 @@ public interface I_C_Invoice_Candidate
 	 */
 	public int getC_ConversionType_ID();
 
-	public org.compiere.model.I_C_ConversionType getC_ConversionType();
-
-	public void setC_ConversionType(org.compiere.model.I_C_ConversionType C_ConversionType);
-
     /** Column definition for C_ConversionType_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_ConversionType> COLUMN_C_ConversionType_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_ConversionType>(I_C_Invoice_Candidate.class, "C_ConversionType_ID", org.compiere.model.I_C_ConversionType.class);
     /** Column name C_ConversionType_ID */
@@ -455,10 +405,6 @@ public interface I_C_Invoice_Candidate
 	 */
 	public int getC_Currency_ID();
 
-	public org.compiere.model.I_C_Currency getC_Currency();
-
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
-
     /** Column definition for C_Currency_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Currency>(I_C_Invoice_Candidate.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
     /** Column name C_Currency_ID */
@@ -483,10 +429,6 @@ public interface I_C_Invoice_Candidate
 	 * <br>Virtual Column: false
 	 */
 	public int getC_DocTypeInvoice_ID();
-
-	public org.compiere.model.I_C_DocType getC_DocTypeInvoice();
-
-	public void setC_DocTypeInvoice(org.compiere.model.I_C_DocType C_DocTypeInvoice);
 
     /** Column definition for C_DocTypeInvoice_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_DocType> COLUMN_C_DocTypeInvoice_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_DocType>(I_C_Invoice_Candidate.class, "C_DocTypeInvoice_ID", org.compiere.model.I_C_DocType.class);
@@ -706,12 +648,6 @@ public interface I_C_Invoice_Candidate
 	@Deprecated
 	public int getC_Order_BPartner();
 
-	@Deprecated
-	public org.compiere.model.I_C_BPartner getC_Order_BPart();
-
-	@Deprecated
-	public void setC_Order_BPart(org.compiere.model.I_C_BPartner C_Order_BPart);
-
     /** Column definition for C_Order_BPartner */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_BPartner> COLUMN_C_Order_BPartner = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_BPartner>(I_C_Invoice_Candidate.class, "C_Order_BPartner", org.compiere.model.I_C_BPartner.class);
     /** Column name C_Order_BPartner */
@@ -822,11 +758,6 @@ public interface I_C_Invoice_Candidate
 	 */
 	public int getC_PaymentTerm_Effective_ID();
 
-	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm_Effective();
-
-	@Deprecated
-	public void setC_PaymentTerm_Effective(org.compiere.model.I_C_PaymentTerm C_PaymentTerm_Effective);
-
     /** Column definition for C_PaymentTerm_Effective_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_PaymentTerm> COLUMN_C_PaymentTerm_Effective_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_PaymentTerm>(I_C_Invoice_Candidate.class, "C_PaymentTerm_Effective_ID", org.compiere.model.I_C_PaymentTerm.class);
     /** Column name C_PaymentTerm_Effective_ID */
@@ -851,10 +782,6 @@ public interface I_C_Invoice_Candidate
 	 * <br>Virtual Column: false
 	 */
 	public int getC_PaymentTerm_ID();
-
-	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm();
-
-	public void setC_PaymentTerm(org.compiere.model.I_C_PaymentTerm C_PaymentTerm);
 
     /** Column definition for C_PaymentTerm_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_PaymentTerm> COLUMN_C_PaymentTerm_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_PaymentTerm>(I_C_Invoice_Candidate.class, "C_PaymentTerm_ID", org.compiere.model.I_C_PaymentTerm.class);
@@ -881,14 +808,110 @@ public interface I_C_Invoice_Candidate
 	 */
 	public int getC_PaymentTerm_Override_ID();
 
-	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm_Override();
-
-	public void setC_PaymentTerm_Override(org.compiere.model.I_C_PaymentTerm C_PaymentTerm_Override);
-
     /** Column definition for C_PaymentTerm_Override_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_PaymentTerm> COLUMN_C_PaymentTerm_Override_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_PaymentTerm>(I_C_Invoice_Candidate.class, "C_PaymentTerm_Override_ID", org.compiere.model.I_C_PaymentTerm.class);
     /** Column name C_PaymentTerm_Override_ID */
     public static final String COLUMNNAME_C_PaymentTerm_Override_ID = "C_PaymentTerm_Override_ID";
+
+	/**
+	 * Set Steuer eff..
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setC_Tax_Effective_ID (int C_Tax_Effective_ID);
+
+	/**
+	 * Get Steuer eff..
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public int getC_Tax_Effective_ID();
+
+    /** Column definition for C_Tax_Effective_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Tax> COLUMN_C_Tax_Effective_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Tax>(I_C_Invoice_Candidate.class, "C_Tax_Effective_ID", org.compiere.model.I_C_Tax.class);
+    /** Column name C_Tax_Effective_ID */
+    public static final String COLUMNNAME_C_Tax_Effective_ID = "C_Tax_Effective_ID";
+
+	/**
+	 * Set Steuer.
+	 * Steuerart
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Tax_ID (int C_Tax_ID);
+
+	/**
+	 * Get Steuer.
+	 * Steuerart
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Tax_ID();
+
+    /** Column definition for C_Tax_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Tax> COLUMN_C_Tax_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Tax>(I_C_Invoice_Candidate.class, "C_Tax_ID", org.compiere.model.I_C_Tax.class);
+    /** Column name C_Tax_ID */
+    public static final String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
+
+	/**
+	 * Set Steuer abw..
+	 * Abweichender Steuersatz
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Tax_Override_ID (int C_Tax_Override_ID);
+
+	/**
+	 * Get Steuer abw..
+	 * Abweichender Steuersatz
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Tax_Override_ID();
+
+    /** Column definition for C_Tax_Override_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Tax> COLUMN_C_Tax_Override_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Tax>(I_C_Invoice_Candidate.class, "C_Tax_Override_ID", org.compiere.model.I_C_Tax.class);
+    /** Column name C_Tax_Override_ID */
+    public static final String COLUMNNAME_C_Tax_Override_ID = "C_Tax_Override_ID";
+
+	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_UOM>(I_C_Invoice_Candidate.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Get Erstellt.
@@ -919,123 +942,6 @@ public interface I_C_Invoice_Candidate
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_AD_User>(I_C_Invoice_Candidate.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Steuer eff..
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setC_Tax_Effective_ID (int C_Tax_Effective_ID);
-
-	/**
-	 * Get Steuer eff..
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public int getC_Tax_Effective_ID();
-
-	public org.compiere.model.I_C_Tax getC_Tax_Effective();
-
-	@Deprecated
-	public void setC_Tax_Effective(org.compiere.model.I_C_Tax C_Tax_Effective);
-
-    /** Column definition for C_Tax_Effective_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Tax> COLUMN_C_Tax_Effective_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Tax>(I_C_Invoice_Candidate.class, "C_Tax_Effective_ID", org.compiere.model.I_C_Tax.class);
-    /** Column name C_Tax_Effective_ID */
-    public static final String COLUMNNAME_C_Tax_Effective_ID = "C_Tax_Effective_ID";
-
-	/**
-	 * Set Steuer.
-	 * Steuerart
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_Tax_ID (int C_Tax_ID);
-
-	/**
-	 * Get Steuer.
-	 * Steuerart
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_Tax_ID();
-
-	public org.compiere.model.I_C_Tax getC_Tax();
-
-	public void setC_Tax(org.compiere.model.I_C_Tax C_Tax);
-
-    /** Column definition for C_Tax_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Tax> COLUMN_C_Tax_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Tax>(I_C_Invoice_Candidate.class, "C_Tax_ID", org.compiere.model.I_C_Tax.class);
-    /** Column name C_Tax_ID */
-    public static final String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
-
-	/**
-	 * Set Steuer abw..
-	 * Abweichender Steuersatz
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_Tax_Override_ID (int C_Tax_Override_ID);
-
-	/**
-	 * Get Steuer abw..
-	 * Abweichender Steuersatz
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_Tax_Override_ID();
-
-	public org.compiere.model.I_C_Tax getC_Tax_Override();
-
-	public void setC_Tax_Override(org.compiere.model.I_C_Tax C_Tax_Override);
-
-    /** Column definition for C_Tax_Override_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Tax> COLUMN_C_Tax_Override_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Tax>(I_C_Invoice_Candidate.class, "C_Tax_Override_ID", org.compiere.model.I_C_Tax.class);
-    /** Column name C_Tax_Override_ID */
-    public static final String COLUMNNAME_C_Tax_Override_ID = "C_Tax_Override_ID";
-
-	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_UOM>(I_C_Invoice_Candidate.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Buchungsdatum.
@@ -1426,10 +1332,6 @@ public interface I_C_Invoice_Candidate
 	 */
 	public int getFirst_Ship_BPLocation_ID();
 
-	public org.compiere.model.I_C_BPartner_Location getFirst_Ship_BPLocation();
-
-	public void setFirst_Ship_BPLocation(org.compiere.model.I_C_BPartner_Location First_Ship_BPLocation);
-
     /** Column definition for First_Ship_BPLocation_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_BPartner_Location> COLUMN_First_Ship_BPLocation_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_BPartner_Location>(I_C_Invoice_Candidate.class, "First_Ship_BPLocation_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name First_Ship_BPLocation_ID */
@@ -1553,6 +1455,29 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_HeaderAggregationKey = "HeaderAggregationKey";
 
 	/**
+	 * Set Kopf-Aggregationsmerkmal (vorgegeben).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setHeaderAggregationKey_Calc (java.lang.String HeaderAggregationKey_Calc);
+
+	/**
+	 * Get Kopf-Aggregationsmerkmal (vorgegeben).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getHeaderAggregationKey_Calc();
+
+    /** Column definition for HeaderAggregationKey_Calc */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_HeaderAggregationKey_Calc = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "HeaderAggregationKey_Calc", null);
+    /** Column name HeaderAggregationKey_Calc */
+    public static final String COLUMNNAME_HeaderAggregationKey_Calc = "HeaderAggregationKey_Calc";
+
+	/**
 	 * Set Header aggregation builder.
 	 *
 	 * <br>Type: Search
@@ -1576,27 +1501,29 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_HeaderAggregationKeyBuilder_ID = "HeaderAggregationKeyBuilder_ID";
 
 	/**
-	 * Set Kopf-Aggregationsmerkmal (vorgegeben).
+	 * Set Abr. Menge basiert auf.
+	 * Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Type: List
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setHeaderAggregationKey_Calc (java.lang.String HeaderAggregationKey_Calc);
+	public void setInvoicableQtyBasedOn (java.lang.String InvoicableQtyBasedOn);
 
 	/**
-	 * Get Kopf-Aggregationsmerkmal (vorgegeben).
+	 * Get Abr. Menge basiert auf.
+	 * Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Type: List
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getHeaderAggregationKey_Calc();
+	public java.lang.String getInvoicableQtyBasedOn();
 
-    /** Column definition for HeaderAggregationKey_Calc */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_HeaderAggregationKey_Calc = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "HeaderAggregationKey_Calc", null);
-    /** Column name HeaderAggregationKey_Calc */
-    public static final String COLUMNNAME_HeaderAggregationKey_Calc = "HeaderAggregationKey_Calc";
+    /** Column definition for InvoicableQtyBasedOn */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_InvoicableQtyBasedOn = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "InvoicableQtyBasedOn", null);
+    /** Column name InvoicableQtyBasedOn */
+    public static final String COLUMNNAME_InvoicableQtyBasedOn = "InvoicableQtyBasedOn";
 
 	/**
 	 * Set Rechnungsstellung.
@@ -1774,6 +1701,29 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_IsError = "IsError";
 
 	/**
+	 * Set IsFreightCost.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsFreightCost (boolean IsFreightCost);
+
+	/**
+	 * Get IsFreightCost.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isFreightCost();
+
+    /** Column definition for IsFreightCost */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsFreightCost = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "IsFreightCost", null);
+    /** Column name IsFreightCost */
+    public static final String COLUMNNAME_IsFreightCost = "IsFreightCost";
+
+	/**
 	 * Set Group Compensation Line.
 	 *
 	 * <br>Type: YesNo
@@ -1797,8 +1747,7 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_IsGroupCompensationLine = "IsGroupCompensationLine";
 
 	/**
-	 * Set In Dispute.
-	 * Document is in dispute
+	 * Set Strittig.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -1807,8 +1756,7 @@ public interface I_C_Invoice_Candidate
 	public void setIsInDispute (boolean IsInDispute);
 
 	/**
-	 * Get In Dispute.
-	 * Document is in dispute
+	 * Get Strittig.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -2122,29 +2070,6 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_LineAggregationKey = "LineAggregationKey";
 
 	/**
-	 * Set Line aggregation builder.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setLineAggregationKeyBuilder_ID (int LineAggregationKeyBuilder_ID);
-
-	/**
-	 * Get Line aggregation builder.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getLineAggregationKeyBuilder_ID();
-
-    /** Column definition for LineAggregationKeyBuilder_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_LineAggregationKeyBuilder_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "LineAggregationKeyBuilder_ID", null);
-    /** Column name LineAggregationKeyBuilder_ID */
-    public static final String COLUMNNAME_LineAggregationKeyBuilder_ID = "LineAggregationKeyBuilder_ID";
-
-	/**
 	 * Set Aggregations-Zusatz.
 	 * Optionale Möglichkeit, einzelne Rechnungskandidaten aus einer gemeinsamen Aggregations-Gruppe herauszulösen.
 	 *
@@ -2168,6 +2093,29 @@ public interface I_C_Invoice_Candidate
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_LineAggregationKey_Suffix = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "LineAggregationKey_Suffix", null);
     /** Column name LineAggregationKey_Suffix */
     public static final String COLUMNNAME_LineAggregationKey_Suffix = "LineAggregationKey_Suffix";
+
+	/**
+	 * Set Line aggregation builder.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLineAggregationKeyBuilder_ID (int LineAggregationKeyBuilder_ID);
+
+	/**
+	 * Get Line aggregation builder.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getLineAggregationKeyBuilder_ID();
+
+    /** Column definition for LineAggregationKeyBuilder_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_LineAggregationKeyBuilder_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "LineAggregationKeyBuilder_ID", null);
+    /** Column name LineAggregationKeyBuilder_ID */
+    public static final String COLUMNNAME_LineAggregationKeyBuilder_ID = "LineAggregationKeyBuilder_ID";
 
 	/**
 	 * Set Zeilennetto.
@@ -2243,10 +2191,6 @@ public interface I_C_Invoice_Candidate
 	 */
 	public int getM_PriceList_Version_ID();
 
-	public org.compiere.model.I_M_PriceList_Version getM_PriceList_Version();
-
-	public void setM_PriceList_Version(org.compiere.model.I_M_PriceList_Version M_PriceList_Version);
-
     /** Column definition for M_PriceList_Version_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_M_PriceList_Version> COLUMN_M_PriceList_Version_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_M_PriceList_Version>(I_C_Invoice_Candidate.class, "M_PriceList_Version_ID", org.compiere.model.I_M_PriceList_Version.class);
     /** Column name M_PriceList_Version_ID */
@@ -2271,10 +2215,6 @@ public interface I_C_Invoice_Candidate
 	 * <br>Virtual Column: false
 	 */
 	public int getM_PricingSystem_ID();
-
-	public org.compiere.model.I_M_PricingSystem getM_PricingSystem();
-
-	public void setM_PricingSystem(org.compiere.model.I_M_PricingSystem M_PricingSystem);
 
     /** Column definition for M_PricingSystem_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_M_PricingSystem> COLUMN_M_PricingSystem_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_M_PricingSystem>(I_C_Invoice_Candidate.class, "M_PricingSystem_ID", org.compiere.model.I_M_PricingSystem.class);
@@ -2305,12 +2245,6 @@ public interface I_C_Invoice_Candidate
 	@Deprecated
 	public int getM_Product_Category_ID();
 
-	@Deprecated
-	public org.compiere.model.I_M_Product_Category getM_Product_Category();
-
-	@Deprecated
-	public void setM_Product_Category(org.compiere.model.I_M_Product_Category M_Product_Category);
-
     /** Column definition for M_Product_Category_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_M_Product_Category> COLUMN_M_Product_Category_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_M_Product_Category>(I_C_Invoice_Candidate.class, "M_Product_Category_ID", org.compiere.model.I_M_Product_Category.class);
     /** Column name M_Product_Category_ID */
@@ -2336,17 +2270,13 @@ public interface I_C_Invoice_Candidate
 	 */
 	public int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
-
     /** Column definition for M_Product_ID */
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_M_Product>(I_C_Invoice_Candidate.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Berechneter Betrag.
+	 * Set Abgerechneter Betrag.
 	 * Bezeichnet den Netto-Geldbetrag, der für diesen Rechnungskandidaten bereits in Rechnung gestellt wurde
 	 *
 	 * <br>Type: Amount
@@ -2356,7 +2286,7 @@ public interface I_C_Invoice_Candidate
 	public void setNetAmtInvoiced (java.math.BigDecimal NetAmtInvoiced);
 
 	/**
-	 * Get Berechneter Betrag.
+	 * Get Abgerechneter Betrag.
 	 * Bezeichnet den Netto-Geldbetrag, der für diesen Rechnungskandidaten bereits in Rechnung gestellt wurde
 	 *
 	 * <br>Type: Amount
@@ -2371,7 +2301,7 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_NetAmtInvoiced = "NetAmtInvoiced";
 
 	/**
-	 * Set zu berechn. Betrag.
+	 * Set Abzurechnender Betrag.
 	 * Bezeichnet den netto-Geldbetrag, der für den jeweiligen Rechnungskandidaten aktuell bei einem Rechnungslauf in Rechnung gestellt würde.
 	 *
 	 * <br>Type: Amount
@@ -2381,7 +2311,7 @@ public interface I_C_Invoice_Candidate
 	public void setNetAmtToInvoice (java.math.BigDecimal NetAmtToInvoice);
 
 	/**
-	 * Get zu berechn. Betrag.
+	 * Get Abzurechnender Betrag.
 	 * Bezeichnet den netto-Geldbetrag, der für den jeweiligen Rechnungskandidaten aktuell bei einem Rechnungslauf in Rechnung gestellt würde.
 	 *
 	 * <br>Type: Amount
@@ -2444,6 +2374,52 @@ public interface I_C_Invoice_Candidate
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_POReference = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "POReference", null);
     /** Column name POReference */
     public static final String COLUMNNAME_POReference = "POReference";
+
+	/**
+	 * Set Vorbelegtes Rechnungsdatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPresetDateInvoiced (java.sql.Timestamp PresetDateInvoiced);
+
+	/**
+	 * Get Vorbelegtes Rechnungsdatum.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getPresetDateInvoiced();
+
+    /** Column definition for PresetDateInvoiced */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_PresetDateInvoiced = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "PresetDateInvoiced", null);
+    /** Column name PresetDateInvoiced */
+    public static final String COLUMNNAME_PresetDateInvoiced = "PresetDateInvoiced";
+
+	/**
+	 * Set Preiseinheit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPrice_UOM_ID (int Price_UOM_ID);
+
+	/**
+	 * Get Preiseinheit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPrice_UOM_ID();
+
+    /** Column definition for Price_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_UOM> COLUMN_Price_UOM_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_UOM>(I_C_Invoice_Candidate.class, "Price_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name Price_UOM_ID */
+    public static final String COLUMNNAME_Price_UOM_ID = "Price_UOM_ID";
 
 	/**
 	 * Set Einzelpreis.
@@ -2565,33 +2541,6 @@ public interface I_C_Invoice_Candidate
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_PriceEntered_Override = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "PriceEntered_Override", null);
     /** Column name PriceEntered_Override */
     public static final String COLUMNNAME_PriceEntered_Override = "PriceEntered_Override";
-
-	/**
-	 * Set Preiseinheit.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setPrice_UOM_ID (int Price_UOM_ID);
-
-	/**
-	 * Get Preiseinheit.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getPrice_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getPrice_UOM();
-
-	public void setPrice_UOM(org.compiere.model.I_C_UOM Price_UOM);
-
-    /** Column definition for Price_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_UOM> COLUMN_Price_UOM_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_UOM>(I_C_Invoice_Candidate.class, "Price_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name Price_UOM_ID */
-    public static final String COLUMNNAME_Price_UOM_ID = "Price_UOM_ID";
 
 	/**
 	 * Set Priority.
@@ -2771,8 +2720,58 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_QtyDelivered = "QtyDelivered";
 
 	/**
+	 * Set Liefermenge.
+	 * Liefermenge in der Maßeinheit der jeweiligen Zeile (kann von der Maßeinheit des betreffenden Produktes abweichen)
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyDeliveredInUOM (java.math.BigDecimal QtyDeliveredInUOM);
+
+	/**
+	 * Get Liefermenge.
+	 * Liefermenge in der Maßeinheit der jeweiligen Zeile (kann von der Maßeinheit des betreffenden Produktes abweichen)
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyDeliveredInUOM();
+
+    /** Column definition for QtyDeliveredInUOM */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyDeliveredInUOM = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QtyDeliveredInUOM", null);
+    /** Column name QtyDeliveredInUOM */
+    public static final String COLUMNNAME_QtyDeliveredInUOM = "QtyDeliveredInUOM";
+
+	/**
+	 * Set Menge.
+	 * Die Eingegebene Menge basiert auf der gewählten Mengeneinheit
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyEntered (java.math.BigDecimal QtyEntered);
+
+	/**
+	 * Get Menge.
+	 * Die Eingegebene Menge basiert auf der gewählten Mengeneinheit
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyEntered();
+
+    /** Column definition for QtyEntered */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyEntered = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QtyEntered", null);
+    /** Column name QtyEntered */
+    public static final String COLUMNNAME_QtyEntered = "QtyEntered";
+
+	/**
 	 * Set Berechn. Menge.
-	 * Menge, die bereits in Rechnung gestellt wurde
+	 * Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -2782,7 +2781,7 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Get Berechn. Menge.
-	 * Menge, die bereits in Rechnung gestellt wurde
+	 * Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -2794,6 +2793,29 @@ public interface I_C_Invoice_Candidate
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyInvoiced = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QtyInvoiced", null);
     /** Column name QtyInvoiced */
     public static final String COLUMNNAME_QtyInvoiced = "QtyInvoiced";
+
+	/**
+	 * Set Abgerechnet.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyInvoicedInUOM (java.math.BigDecimal QtyInvoicedInUOM);
+
+	/**
+	 * Get Abgerechnet.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyInvoicedInUOM();
+
+    /** Column definition for QtyInvoicedInUOM */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyInvoicedInUOM = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QtyInvoicedInUOM", null);
+    /** Column name QtyInvoicedInUOM */
+    public static final String COLUMNNAME_QtyInvoicedInUOM = "QtyInvoicedInUOM";
 
 	/**
 	 * Set Bestellt/ Beauftragt.
@@ -2844,7 +2866,7 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_QtyOrderedOverUnder = "QtyOrderedOverUnder";
 
 	/**
-	 * Set Zu berechn. Menge eff..
+	 * Set Abzurechnen eff. (Lagereinheit).
 	 * Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde
 	 *
 	 * <br>Type: Quantity
@@ -2854,7 +2876,7 @@ public interface I_C_Invoice_Candidate
 	public void setQtyToInvoice (java.math.BigDecimal QtyToInvoice);
 
 	/**
-	 * Get Zu berechn. Menge eff..
+	 * Get Abzurechnen eff. (Lagereinheit).
 	 * Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde
 	 *
 	 * <br>Type: Quantity
@@ -2867,54 +2889,6 @@ public interface I_C_Invoice_Candidate
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoice = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QtyToInvoice", null);
     /** Column name QtyToInvoice */
     public static final String COLUMNNAME_QtyToInvoice = "QtyToInvoice";
-
-	/**
-	 * Set Zu berechn. Menge vor Qualitätsabzug.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setQtyToInvoiceBeforeDiscount (java.math.BigDecimal QtyToInvoiceBeforeDiscount);
-
-	/**
-	 * Get Zu berechn. Menge vor Qualitätsabzug.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getQtyToInvoiceBeforeDiscount();
-
-    /** Column definition for QtyToInvoiceBeforeDiscount */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoiceBeforeDiscount = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QtyToInvoiceBeforeDiscount", null);
-    /** Column name QtyToInvoiceBeforeDiscount */
-    public static final String COLUMNNAME_QtyToInvoiceBeforeDiscount = "QtyToInvoiceBeforeDiscount";
-
-	/**
-	 * Set Zu berechn. Menge In Preiseinheit.
-	 * Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde, umgerechnet in die Einheit auf die sich der Preis bezieht.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setQtyToInvoiceInPriceUOM (java.math.BigDecimal QtyToInvoiceInPriceUOM);
-
-	/**
-	 * Get Zu berechn. Menge In Preiseinheit.
-	 * Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde, umgerechnet in die Einheit auf die sich der Preis bezieht.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getQtyToInvoiceInPriceUOM();
-
-    /** Column definition for QtyToInvoiceInPriceUOM */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoiceInPriceUOM = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QtyToInvoiceInPriceUOM", null);
-    /** Column name QtyToInvoiceInPriceUOM */
-    public static final String COLUMNNAME_QtyToInvoiceInPriceUOM = "QtyToInvoiceInPriceUOM";
 
 	/**
 	 * Set Zu berechn. Menge abw..
@@ -2965,6 +2939,100 @@ public interface I_C_Invoice_Candidate
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoice_OverrideFulfilled = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QtyToInvoice_OverrideFulfilled", null);
     /** Column name QtyToInvoice_OverrideFulfilled */
     public static final String COLUMNNAME_QtyToInvoice_OverrideFulfilled = "QtyToInvoice_OverrideFulfilled";
+
+	/**
+	 * Set Zu berechn. Menge vor Qualitätsabzug.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyToInvoiceBeforeDiscount (java.math.BigDecimal QtyToInvoiceBeforeDiscount);
+
+	/**
+	 * Get Zu berechn. Menge vor Qualitätsabzug.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyToInvoiceBeforeDiscount();
+
+    /** Column definition for QtyToInvoiceBeforeDiscount */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoiceBeforeDiscount = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QtyToInvoiceBeforeDiscount", null);
+    /** Column name QtyToInvoiceBeforeDiscount */
+    public static final String COLUMNNAME_QtyToInvoiceBeforeDiscount = "QtyToInvoiceBeforeDiscount";
+
+	/**
+	 * Set Zu berechn. Menge In Preiseinheit.
+	 * Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde, umgerechnet in die Einheit auf die sich der Preis bezieht.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyToInvoiceInPriceUOM (java.math.BigDecimal QtyToInvoiceInPriceUOM);
+
+	/**
+	 * Get Zu berechn. Menge In Preiseinheit.
+	 * Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde, umgerechnet in die Einheit auf die sich der Preis bezieht.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyToInvoiceInPriceUOM();
+
+    /** Column definition for QtyToInvoiceInPriceUOM */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoiceInPriceUOM = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QtyToInvoiceInPriceUOM", null);
+    /** Column name QtyToInvoiceInPriceUOM */
+    public static final String COLUMNNAME_QtyToInvoiceInPriceUOM = "QtyToInvoiceInPriceUOM";
+
+	/**
+	 * Set Abzurechnen eff..
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyToInvoiceInUOM (java.math.BigDecimal QtyToInvoiceInUOM);
+
+	/**
+	 * Get Abzurechnen eff..
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyToInvoiceInUOM();
+
+    /** Column definition for QtyToInvoiceInUOM */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoiceInUOM = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QtyToInvoiceInUOM", null);
+    /** Column name QtyToInvoiceInUOM */
+    public static final String COLUMNNAME_QtyToInvoiceInUOM = "QtyToInvoiceInUOM";
+
+	/**
+	 * Set Abzurechnen.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyToInvoiceInUOM_Calc (java.math.BigDecimal QtyToInvoiceInUOM_Calc);
+
+	/**
+	 * Get Abzurechnen.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyToInvoiceInUOM_Calc();
+
+    /** Column definition for QtyToInvoiceInUOM_Calc */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoiceInUOM_Calc = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QtyToInvoiceInUOM_Calc", null);
+    /** Column name QtyToInvoiceInUOM_Calc */
+    public static final String COLUMNNAME_QtyToInvoiceInUOM_Calc = "QtyToInvoiceInUOM_Calc";
 
 	/**
 	 * Set Minderwertige Menge.
@@ -3040,7 +3108,7 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_QualityDiscountPercent = "QualityDiscountPercent";
 
 	/**
-	 * Set Qualitätsabzug % Eff..
+	 * Set Qualitätsabzug % eff..
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -3051,7 +3119,7 @@ public interface I_C_Invoice_Candidate
 	public void setQualityDiscountPercent_Effective (java.math.BigDecimal QualityDiscountPercent_Effective);
 
 	/**
-	 * Get Qualitätsabzug % Eff..
+	 * Get Qualitätsabzug % eff..
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -3205,6 +3273,33 @@ public interface I_C_Invoice_Candidate
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_SplitAmt = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "SplitAmt", null);
     /** Column name SplitAmt */
     public static final String COLUMNNAME_SplitAmt = "SplitAmt";
+
+	/**
+	 * Set Lagereinheit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setStockingUOM_ID (int StockingUOM_ID);
+
+	/**
+	 * Get Lagereinheit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public int getStockingUOM_ID();
+
+    /** Column definition for StockingUOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_UOM> COLUMN_StockingUOM_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_UOM>(I_C_Invoice_Candidate.class, "StockingUOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name StockingUOM_ID */
+    public static final String COLUMNNAME_StockingUOM_ID = "StockingUOM_ID";
 
 	/**
 	 * Set Total des Auftrags.

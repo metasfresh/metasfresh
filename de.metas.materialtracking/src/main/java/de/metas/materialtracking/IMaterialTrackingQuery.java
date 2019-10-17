@@ -76,4 +76,8 @@ public interface IMaterialTrackingQuery
 	IMaterialTrackingQuery setLot(String lot);
 
 	String getLot();
+
+	IMaterialTrackingQuery setReturnReadOnlyRecords(boolean returnReadOnlyRecords);
+
+	boolean isReturnReadOnlyRecords();
 }

@@ -1,0 +1,23 @@
+
+
+CREATE TABLE BKP_I_User_March11
+AS
+SELECT * FROM I_User;
+
+
+
+CREATE TABLE BKP_AD_User_March11
+AS
+SELECT * FROM I_User;
+
+
+
+
+CREATE TABLE BPK_C_BPartner_March11
+AS
+SELECT * FROM C_BPartner;
+
+CREATE TABLE BKP_I_BPartner_March11
+AS
+SELECT * FROM I_BPartner;
+

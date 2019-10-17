@@ -13,22 +13,24 @@ package de.metas.handlingunits.test.misc.builders;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.util.Env;
 
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.strategy.IAttributeAggregationStrategy;
 import de.metas.handlingunits.attribute.strategy.IAttributeSplitterStrategy;
@@ -43,8 +45,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Builder which eases the way {@link I_M_HU_PI_Attribute}s are created. <i>See constructor implementation(s) for initial parameter values.</i>
@@ -53,7 +55,17 @@ import de.metas.util.Services;
  */
 public class HUPIAttributeBuilder
 {
-	private final I_M_Attribute attribute;
+	public static HUPIAttributeBuilder newInstance(@NonNull final AttributeId attributeId)
+	{
+		return new HUPIAttributeBuilder(attributeId);
+	}
+
+	public static HUPIAttributeBuilder newInstance(@NonNull final I_M_Attribute attribute)
+	{
+		return new HUPIAttributeBuilder(attribute);
+	}
+
+	private final AttributeId attributeId;
 
 	private I_M_HU_PI_Version huPIVersion;
 	private String propagationType;
@@ -62,15 +74,20 @@ public class HUPIAttributeBuilder
 	private Class<? extends IAttributeAggregationStrategy> aggregationStrategyClass;
 	private Class<? extends IHUAttributeTransferStrategy> transferStrategyClass;
 
-	private boolean isInstanceAttribute;
-	private boolean isMandatory;
-	private Boolean useInASI;
+	private boolean isInstanceAttribute = true;
+	private boolean isMandatory = false;
+	private Boolean useInASI = false;
 
-	public HUPIAttributeBuilder(final I_M_Attribute attribute)
+	private HUPIAttributeBuilder(final I_M_Attribute attribute)
 	{
-		super();
+		this(AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
+		setInstanceAttribute(attribute.isInstanceAttribute());
+		setMandatory(attribute.isMandatory());
+	}
 
-		this.attribute = attribute;
+	private HUPIAttributeBuilder(@NonNull final AttributeId attributeId)
+	{
+		this.attributeId = attributeId;
 
 		huPIVersion = null;
 		propagationType = X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation;
@@ -78,9 +95,6 @@ public class HUPIAttributeBuilder
 		splitterStrategyClass = NullSplitterStrategy.class;
 		aggregationStrategyClass = NullAggregationStrategy.class;
 		transferStrategyClass = SkipHUAttributeTransferStrategy.class;
-
-		isInstanceAttribute = attribute.isInstanceAttribute();
-		isMandatory = attribute.isMandatory();
 	}
 
 	public HUPIAttributeBuilder setM_HU_PI(final I_M_HU_PI huPI)
@@ -92,6 +106,12 @@ public class HUPIAttributeBuilder
 	public HUPIAttributeBuilder setM_HU_PI_Version(final I_M_HU_PI_Version huPIVersion)
 	{
 		this.huPIVersion = huPIVersion;
+		return this;
+	}
+
+	public HUPIAttributeBuilder setM_HU_PI_Version(final HuPackingInstructionsVersionId versionId)
+	{
+		huPIVersion = Services.get(IHandlingUnitsDAO.class).retrievePIVersionById(versionId);
 		return this;
 	}
 
@@ -130,17 +150,22 @@ public class HUPIAttributeBuilder
 		this.isMandatory = isMandatory;
 		return this;
 	}
-	
+
 	public HUPIAttributeBuilder setUseInASI(final boolean useInASI)
 	{
 		this.useInASI = useInASI;
 		return this;
 	}
 
+	public I_M_HU_PI_Attribute create()
+	{
+		return create(Env.getCtx());
+	}
+
 	public I_M_HU_PI_Attribute create(final Properties ctx)
 	{
 		final I_M_HU_PI_Attribute huPIAttr = InterfaceWrapperHelper.create(ctx, I_M_HU_PI_Attribute.class, ITrx.TRXNAME_None);
-		huPIAttr.setM_Attribute_ID(attribute.getM_Attribute_ID());
+		huPIAttr.setM_Attribute_ID(attributeId.getRepoId());
 
 		huPIAttr.setM_HU_PI_Version_ID(huPIVersion.getM_HU_PI_Version_ID());
 
@@ -148,7 +173,7 @@ public class HUPIAttributeBuilder
 
 		huPIAttr.setIsInstanceAttribute(isInstanceAttribute);
 		huPIAttr.setIsMandatory(isMandatory);
-		if(useInASI != null)
+		if (useInASI != null)
 		{
 			huPIAttr.setUseInASI(useInASI);
 		}
@@ -164,10 +189,8 @@ public class HUPIAttributeBuilder
 		return huPIAttr;
 	}
 
-	private I_AD_JavaClass createADJavaClassFromClass(final Properties ctx, final Class<? extends IAttributeStrategy> strategyClass)
+	private I_AD_JavaClass createADJavaClassFromClass(final Properties ctx, @NonNull final Class<? extends IAttributeStrategy> strategyClass)
 	{
-		Check.assumeNotNull(strategyClass, "strategyClass not null");
-
 		final I_AD_JavaClass_Type strategyJavaClassType = InterfaceWrapperHelper.create(ctx, I_AD_JavaClass_Type.class, ITrx.TRXNAME_None);
 		strategyJavaClassType.setClassname(strategyClass.getSuperclass().getName());
 		InterfaceWrapperHelper.save(strategyJavaClassType);

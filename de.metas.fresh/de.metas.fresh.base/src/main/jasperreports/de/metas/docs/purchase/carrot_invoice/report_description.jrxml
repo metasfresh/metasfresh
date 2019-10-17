@@ -186,7 +186,7 @@ WHERE
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
 			</textField>
@@ -214,7 +214,7 @@ WHERE
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{printname}]]></textFieldExpression>
 			</textField>
@@ -253,7 +253,7 @@ WHERE
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{ShipmentDate}]]></textFieldExpression>
 			</textField>
@@ -266,7 +266,7 @@ WHERE
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Shipment}]]></textFieldExpression>
 			</textField>
@@ -305,7 +305,7 @@ WHERE
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Parcell}]]></textFieldExpression>
 			</textField>
@@ -318,7 +318,7 @@ WHERE
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{LotNo}]]></textFieldExpression>
 			</textField>
@@ -357,7 +357,7 @@ WHERE
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{QualityInspection}]]></textFieldExpression>
 			</textField>

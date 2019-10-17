@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.db;
 
@@ -50,11 +50,11 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 
 /**
- *  Connection Dialog.
+ * Connection Dialog.
  *
- *  @author     Jorg Janke
- *  @author     Marek Mosiewicz<marek.mosiewicz@jotel.com.pl> - support for RMI over HTTP
- *  @version    $Id: CConnectionDialog.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
+ * @author Jorg Janke
+ * @author Marek Mosiewicz<marek.mosiewicz@jotel.com.pl> - support for RMI over HTTP
+ * @version $Id: CConnectionDialog.java,v 1.2 2006/07/30 00:55:13 jjanke Exp $
  */
 public class CConnectionDialog extends CDialog implements ActionListener
 {
@@ -75,26 +75,26 @@ public class CConnectionDialog extends CDialog implements ActionListener
 			setConnection(cc);
 			AdempierePLAF.showCenterScreen(this);
 		}
-		catch(Exception ex)
+		catch (Exception ex)
 		{
 			log.error("", ex);
 			showError("Error", ex);
 			dispose();
 			return;
 		}
-	}   //  CConnection
+	}   // CConnection
 
-	/** Resources							*/
+	/** Resources */
 	private static final transient ResourceBundle res = ResourceBundle.getBundle(DBRes.class.getName());
 
-	/** Connection							*/
-	private CConnection 	m_cc = null;
-	private CConnection 	m_ccResult = null;
-	private boolean 		m_updating = false;
+	/** Connection */
+	private CConnection m_cc = null;
+	private CConnection m_ccResult = null;
+	private boolean m_updating = false;
 	// private boolean m_saved = false;
 
-	/**	Logger	*/
-	private static Logger	log	= LogManager.getLogger(CConnectionDialog.class);
+	/** Logger */
+	private static Logger log = LogManager.getLogger(CConnectionDialog.class);
 
 	private CPanel mainPanel = new CPanel();
 	private BorderLayout mainLayout = new BorderLayout();
@@ -122,7 +122,7 @@ public class CConnectionDialog extends CDialog implements ActionListener
 	private CLabel appsPortLabel = new CLabel();
 	private CTextField appsPortField = new CTextField();
 	private CButton bTestApps = new CButton();
-	//private CCheckBox cbOverwrite = new CCheckBox();
+	// private CCheckBox cbOverwrite = new CCheckBox();
 	private CLabel dbUidLabel = new CLabel();
 	private CTextField dbUidField = new CTextField();
 	private JPasswordField dbPwdField = new JPasswordField();
@@ -130,8 +130,9 @@ public class CConnectionDialog extends CDialog implements ActionListener
 	private boolean isCancel = true;
 
 	/**
-	 *  Static Layout
-	 *  @throws Exception
+	 * Static Layout
+	 *
+	 * @throws Exception
 	 */
 	private void jbInit() throws Exception
 	{
@@ -161,65 +162,46 @@ public class CConnectionDialog extends CDialog implements ActionListener
 		appsPortField.setColumns(10);
 		bTestApps.setText(res.getString("TestApps"));
 		bTestApps.setHorizontalAlignment(JLabel.LEFT);
-		//cbOverwrite.setText(res.getString("Overwrite"));
+		// cbOverwrite.setText(res.getString("Overwrite"));
 		dbUidLabel.setText(res.getString("DBUidPwd"));
 		dbUidField.setColumns(10);
 		this.getContentPane().add(mainPanel, BorderLayout.CENTER);
 		mainPanel.add(centerPanel, BorderLayout.CENTER);
-		mainPanel.add(southPanel,  BorderLayout.SOUTH);
+		mainPanel.add(southPanel, BorderLayout.SOUTH);
 		southPanel.add(bCancel, null);
 		southPanel.add(bOK, null);
 		//
-		centerPanel.add(nameLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0
-			,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(12, 12, 5, 5), 0, 0));
-		centerPanel.add(nameField,  new GridBagConstraints(1, 0, 2, 1, 0.0, 0.0
-			,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(12, 0, 5, 12), 0, 0));
-		centerPanel.add(appsHostLabel, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0
-			,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 12, 5, 5), 0, 0));
-		centerPanel.add(appsHostField, new GridBagConstraints(1, 1, 2, 1, 0.0, 0.0
-			,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 5, 12), 0, 0));
+		centerPanel.add(nameLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(12, 12, 5, 5), 0, 0));
+		centerPanel.add(nameField, new GridBagConstraints(1, 0, 2, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(12, 0, 5, 12), 0, 0));
+		centerPanel.add(appsHostLabel, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 12, 5, 5), 0, 0));
+		centerPanel.add(appsHostField, new GridBagConstraints(1, 1, 2, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 5, 12), 0, 0));
 
-		centerPanel.add(appsPortLabel, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0
-			,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 12, 5, 5), 0, 0));
-		centerPanel.add(appsPortField, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0
-			,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+		centerPanel.add(appsPortLabel, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 12, 5, 5), 0, 0));
+		centerPanel.add(appsPortField, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 		//
-		centerPanel.add(bTestApps, new GridBagConstraints(1, 3, 1, 1, 0.0, 0.0
-			,GridBagConstraints.SOUTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 12, 0), 0, 0));
-		//centerPanel.add(cbOverwrite, new GridBagConstraints(2, 4, 1, 1, 0.0, 0.0
-			//,GridBagConstraints.WEST, GridBagConstraints.VERTICAL, new Insets(0, 5, 0, 12), 0, 0));
-		//	DB
-		centerPanel.add(dbTypeLabel, new GridBagConstraints(0, 4, 1, 1, 0.0, 0.0
-			,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 12, 5, 5), 0, 0));
-		centerPanel.add(dbTypeField, new GridBagConstraints(1, 4, 1, 1, 0.0, 0.0
-			,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 5, 0), 0, 0));
+		centerPanel.add(bTestApps, new GridBagConstraints(1, 3, 1, 1, 0.0, 0.0, GridBagConstraints.SOUTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 12, 0), 0, 0));
+		// centerPanel.add(cbOverwrite, new GridBagConstraints(2, 4, 1, 1, 0.0, 0.0
+		// ,GridBagConstraints.WEST, GridBagConstraints.VERTICAL, new Insets(0, 5, 0, 12), 0, 0));
+		// DB
+		centerPanel.add(dbTypeLabel, new GridBagConstraints(0, 4, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 12, 5, 5), 0, 0));
+		centerPanel.add(dbTypeField, new GridBagConstraints(1, 4, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 5, 0), 0, 0));
 
-		centerPanel.add(hostLabel, new GridBagConstraints(0, 5, 1, 1, 0.0, 0.0
-			,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 12, 5, 5), 0, 0));
-		centerPanel.add(hostField,  new GridBagConstraints(1, 5, 2, 1, 0.0, 0.0
-			,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 5, 12), 0, 0));
-		centerPanel.add(portLabel, new GridBagConstraints(0, 6, 1, 1, 0.0, 0.0
-			,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 12, 5, 5), 0, 0));
-		centerPanel.add(dbPortField, new GridBagConstraints(1, 6, 1, 1, 0.0, 0.0
-			,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 0), 0, 0));
-		centerPanel.add(sidLabel,  new GridBagConstraints(0, 7, 1, 1, 0.0, 0.0
-			,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 12, 5, 5), 0, 0));
-		centerPanel.add(sidField,   new GridBagConstraints(1, 7, 2, 1, 0.0, 0.0
-			,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 12), 0, 0));
-		centerPanel.add(dbUidLabel, new GridBagConstraints(0, 8, 1, 1, 0.0, 0.0
-			,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 12, 5, 5), 0, 0));
-		centerPanel.add(dbUidField, new GridBagConstraints(1, 8, 1, 1, 0.0, 0.0
-			,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 0), 0, 0));
-		centerPanel.add(dbPwdField, new GridBagConstraints(2, 8, 1, 1, 1.0, 0.0
-			,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 5, 5, 12), 0, 0));
+		centerPanel.add(hostLabel, new GridBagConstraints(0, 5, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 12, 5, 5), 0, 0));
+		centerPanel.add(hostField, new GridBagConstraints(1, 5, 2, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 5, 12), 0, 0));
+		centerPanel.add(portLabel, new GridBagConstraints(0, 6, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 12, 5, 5), 0, 0));
+		centerPanel.add(dbPortField, new GridBagConstraints(1, 6, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 0), 0, 0));
+		centerPanel.add(sidLabel, new GridBagConstraints(0, 7, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 12, 5, 5), 0, 0));
+		centerPanel.add(sidField, new GridBagConstraints(1, 7, 2, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 12), 0, 0));
+		centerPanel.add(dbUidLabel, new GridBagConstraints(0, 8, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 12, 5, 5), 0, 0));
+		centerPanel.add(dbUidField, new GridBagConstraints(1, 8, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 0), 0, 0));
+		centerPanel.add(dbPwdField, new GridBagConstraints(2, 8, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 5, 5, 12), 0, 0));
 
-		centerPanel.add(bTestDB,  new GridBagConstraints(1, 12, 1, 1, 0.0, 0.0
-			,GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 12, 0), 0, 0));
+		centerPanel.add(bTestDB, new GridBagConstraints(1, 12, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 12, 0), 0, 0));
 		//
 		nameField.addActionListener(this);
 		appsHostField.addActionListener(this);
 		appsPortField.addActionListener(this);
-		//cbOverwrite.addActionListener(this);
+		// cbOverwrite.addActionListener(this);
 		bTestApps.addActionListener(this);
 		//
 		dbTypeField.addActionListener(this);
@@ -231,8 +213,8 @@ public class CConnectionDialog extends CDialog implements ActionListener
 		bOK.addActionListener(this);
 		bCancel.addActionListener(this);
 
-		//	Server
-		if (!Ini.isClient())
+		// Server
+		if (!Ini.isSwingClient())
 		{
 			appsHostLabel.setVisible(false);
 			appsHostField.setVisible(false);
@@ -240,35 +222,39 @@ public class CConnectionDialog extends CDialog implements ActionListener
 			appsPortField.setVisible(false);
 			bTestApps.setVisible(false);
 		}
-	}   //  jbInit
+	}   // jbInit
 
 	/**
-	 *  Set Busy - lock UI
-	 *  @param busy busy
+	 * Set Busy - lock UI
+	 *
+	 * @param busy busy
 	 */
-	private void setBusy (boolean busy)
+	private void setBusy(boolean busy)
 	{
 		if (busy)
 			this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		else
 			this.setCursor(Cursor.getDefaultCursor());
 		m_updating = busy;
-	}   //  setBusy
+	}   // setBusy
 
 	/**
-	 *  Set Connection
-	 *  @param cc
+	 * Set Connection
+	 *
+	 * @param cc
 	 */
-	public void setConnection (final CConnection cc)
+	public void setConnection(final CConnection cc)
 	{
 		Check.assumeNotNull(cc, "cc not null");
 		m_cc = cc;
 
-		//	Should copy values
+		// Should copy values
 		try
 		{
 			m_ccResult = (CConnection)m_cc.clone();
-		} catch (CloneNotSupportedException e) {
+		}
+		catch (CloneNotSupportedException e)
+		{
 			// should not happen
 			e.printStackTrace();
 		}
@@ -280,23 +266,25 @@ public class CConnectionDialog extends CDialog implements ActionListener
 		}
 		else
 		{
-			m_cc.setType(m_cc.getType());   //  sets defaults
+			m_cc.setType(m_cc.getType());   // sets defaults
 		}
 		updateInfo();
-	}   //  setConnection
+	}   // setConnection
 
 	/**
-	 *  Get Connection
-	 *  @return CConnection
+	 * Get Connection
+	 *
+	 * @return CConnection
 	 */
 	public CConnection getConnection()
 	{
 		return m_ccResult;
-	}   //  getConnection;
+	}   // getConnection;
 
 	/**
-	 *  ActionListener
-	 *  @param event event
+	 * ActionListener
+	 *
+	 * @param event event
 	 */
 	@Override
 	public void actionPerformed(final ActionEvent event)
@@ -324,12 +312,12 @@ public class CConnectionDialog extends CDialog implements ActionListener
 
 			// Make sure the database connection is OK.
 			// Else, there is no point to continue because it will fail a bit later.
-			if(!m_cc.isDatabaseOK())
+			if (!m_cc.isDatabaseOK())
 			{
 				cmd_testDB();
 				updateInfo(); // update the UI fields from "m_cc"
 			}
-			if(!m_cc.isDatabaseOK())
+			if (!m_cc.isDatabaseOK())
 			{
 				// NOTE: we assume an error popup was already displayed to user.
 				return;
@@ -352,14 +340,13 @@ public class CConnectionDialog extends CDialog implements ActionListener
 				return;
 		}
 
-
 		updateCConnection();
 		//
 		if (src == bTestApps)
 		{
 			cmd_testApps();
 		}
-		//  Database Selection Changed
+		// Database Selection Changed
 		else if (src == dbTypeField)
 		{
 			m_cc.setType(dbTypeField.getSelectedItem());
@@ -371,20 +358,20 @@ public class CConnectionDialog extends CDialog implements ActionListener
 			cmd_testDB();
 		}
 
-		//  Name
+		// Name
 		if (src == nameField)
 		{
 			m_cc.setName(nameField.getText());
 		}
 
 		updateInfo();
-	}   //  actionPerformed
+	}   // actionPerformed
 
 	private void updateCConnection()
 	{
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 		{
-			//hengsin: avoid unnecessary requery of application server status
+			// hengsin: avoid unnecessary requery of application server status
 			if (!appsHostField.getText().equals(m_cc.getAppsHost()))
 			{
 				m_cc.setAppsHost(appsHostField.getText());
@@ -410,7 +397,7 @@ public class CConnectionDialog extends CDialog implements ActionListener
 	}
 
 	/**
-	 *  Update Fields from Connection
+	 * Update Fields from Connection
 	 */
 	private void updateInfo()
 	{
@@ -419,37 +406,45 @@ public class CConnectionDialog extends CDialog implements ActionListener
 		{
 			nameField.setText(m_cc.getName());
 
-			appsHostField.setReadWrite(true);
-			appsHostField.setText(m_cc.getAppsHost());
+			final boolean dbSettingsWritable;
+			if (Ini.isSwingClient())
+			{
+				appsHostField.setReadWrite(true);
+				appsHostField.setText(m_cc.getAppsHost());
 
-			appsPortField.setReadWrite(true);
-			appsPortField.setText(String.valueOf(m_cc.getAppsPort()));
+				appsPortField.setReadWrite(true);
+				appsPortField.setText(String.valueOf(m_cc.getAppsPort()));
 
-			bTestApps.setReadWrite(true);
-			bTestApps.setIcon(getStatusIcon(m_cc.isAppsServerOK(false)));
-			// bTestApps.setToolTipText(m_cc.getRmiUri());
+				bTestApps.setReadWrite(true);
+				bTestApps.setIcon(getStatusIcon(m_cc.isAppsServerOK(false)));
+				// bTestApps.setToolTipText(m_cc.getRmiUri());
 
-			// cbOverwrite.setVisible(m_cc.isAppsServerOK(false));
-			boolean rw = !m_cc.isAppsServerOK(false);
+				// cbOverwrite.setVisible(m_cc.isAppsServerOK(false));
+				dbSettingsWritable = !m_cc.isAppsServerOK(false);
+			}
+			else
+			{
+				dbSettingsWritable = true;
+			}
 			//
-			dbTypeLabel.setReadWrite(rw);
-			dbTypeField.setReadWrite(rw);
+			dbTypeLabel.setReadWrite(dbSettingsWritable);
+			dbTypeField.setReadWrite(dbSettingsWritable);
 			dbTypeField.setSelectedItem(m_cc.getType());
 			//
-			hostLabel.setReadWrite(rw);
-			hostField.setReadWrite(rw);
+			hostLabel.setReadWrite(dbSettingsWritable);
+			hostField.setReadWrite(dbSettingsWritable);
 			hostField.setText(m_cc.getDbHost());
-			portLabel.setReadWrite(rw);
-			dbPortField.setReadWrite(rw);
+			portLabel.setReadWrite(dbSettingsWritable);
+			dbPortField.setReadWrite(dbSettingsWritable);
 			dbPortField.setText(String.valueOf(m_cc.getDbPort()));
-			sidLabel.setReadWrite(rw);
-			sidField.setReadWrite(rw);
+			sidLabel.setReadWrite(dbSettingsWritable);
+			sidField.setReadWrite(dbSettingsWritable);
 			sidField.setText(m_cc.getDbName());
 			//
-			dbUidLabel.setReadWrite(rw);
-			dbUidField.setReadWrite(rw);
+			dbUidLabel.setReadWrite(dbSettingsWritable);
+			dbUidField.setReadWrite(dbSettingsWritable);
 			dbUidField.setText(m_cc.getDbUid());
-			dbPwdField.setEditable(rw);
+			dbPwdField.setEditable(dbSettingsWritable);
 			dbPwdField.setText(m_cc.getDbPwd());
 
 			//
@@ -460,20 +455,21 @@ public class CConnectionDialog extends CDialog implements ActionListener
 		{
 			m_updating = false;
 		}
-	}   //  updateInfo
+	}   // updateInfo
 
 	/**
-	 *  Get Status Icon - ok or not
-	 *  @param ok ok
-	 *  @return Icon
+	 * Get Status Icon - ok or not
+	 *
+	 * @param ok ok
+	 * @return Icon
 	 */
-	private Icon getStatusIcon (boolean ok)
+	private Icon getStatusIcon(boolean ok)
 	{
 		if (ok)
 			return bOK.getIcon();
 		else
 			return bCancel.getIcon();
-	}   //  getStatusIcon
+	}   // getStatusIcon
 
 	private void showError(final String title, final Object messageObj)
 	{
@@ -504,17 +500,17 @@ public class CConnectionDialog extends CDialog implements ActionListener
 		{
 			setBusy(false);
 		}
-	}   //  cmd_testDB
+	}   // cmd_testDB
 
 	/**
-	 *  Test Application connection
+	 * Test Application connection
 	 */
 	private void cmd_testApps()
 	{
 		setBusy(true);
 		try
 		{
-			if(!m_cc.isAppsServerOK(true))
+			if (!m_cc.isAppsServerOK(true))
 			{
 				return;
 			}
@@ -528,10 +524,11 @@ public class CConnectionDialog extends CDialog implements ActionListener
 		{
 			setBusy(false);
 		}
-	}   //  cmd_testApps
+	}   // cmd_testApps
 
-	public boolean isCancel() {
+	public boolean isCancel()
+	{
 		return isCancel;
 	}
 
-}   //  CConnectionDialog
+}   // CConnectionDialog

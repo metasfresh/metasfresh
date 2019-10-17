@@ -9,14 +9,15 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.procurement.base.IPMMProductDAO;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -28,12 +29,12 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -92,12 +93,12 @@ public class PMMProductDAO implements IPMMProductDAO
 	}
 
 	@Override
-	public List<I_PMM_Product> retrieveByBPartner(final I_C_BPartner bpartner)
+	public List<I_PMM_Product> retrieveByBPartner(@NonNull final BPartnerId bpartnerId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		return queryBL.createQueryBuilder(I_PMM_Product.class, bpartner)
+		return queryBL.createQueryBuilder(I_PMM_Product.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_PMM_Product.COLUMN_C_BPartner_ID, bpartner.getC_BPartner_ID())
+				.addEqualsFilter(I_PMM_Product.COLUMN_C_BPartner_ID, bpartnerId)
 				.create()
 				.list();
 	}

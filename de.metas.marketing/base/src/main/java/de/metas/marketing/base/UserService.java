@@ -4,14 +4,14 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.user.User;
-import org.adempiere.user.User.UserBuilder;
-import org.adempiere.user.UserId;
-import org.adempiere.user.UserRepository;
 import org.springframework.stereotype.Service;
 
 import de.metas.i18n.Language;
 import de.metas.marketing.base.model.ContactPerson;
+import de.metas.user.User;
+import de.metas.user.UserId;
+import de.metas.user.UserRepository;
+import de.metas.user.User.UserBuilder;
 import de.metas.util.Check;
 import lombok.NonNull;
 
@@ -58,7 +58,7 @@ public class UserService
 			return; // no user to update the email
 		}
 
-		final User user = userRepo.getById(userId);
+		final User user = userRepo.getByIdInTrx(userId);
 
 		final boolean updateUserMail = isFitForUpdate(user.getEmailAddress(), oldContactPersonMail);
 		final boolean updateUserLanguage = isFitForUpdate(user.getUserLanguage(), oldContactPersonLanguage);

@@ -1,6 +1,6 @@
 package de.metas.event.log.process;
 
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 import com.google.common.collect.ImmutableList;
 
@@ -9,6 +9,7 @@ import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.event.log.EventLogId;
 import de.metas.event.log.EventLogService;
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
@@ -43,7 +44,7 @@ import de.metas.util.Services;
 public class AD_EventLog_Entry_RepostEvent extends JavaProcess
 {
 	private final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
-	private final EventLogService eventLogService = Adempiere.getBean(EventLogService.class);
+	private final EventLogService eventLogService = SpringContextHolder.instance.getBean(EventLogService.class);
 
 	@Override
 	protected String doIt() throws Exception
@@ -62,7 +63,9 @@ public class AD_EventLog_Entry_RepostEvent extends JavaProcess
 		}
 
 		final ImmutableList<String> handlerToIgnore = ImmutableList.of(eventLogEntryRecord.getClassname());
-		final Event event = eventLogService.loadEventForReposting(eventLogRecord, handlerToIgnore);
+		final Event event = eventLogService.loadEventForReposting(
+				EventLogId.ofRepoId(eventLogRecord.getAD_EventLog_ID()),
+				handlerToIgnore);
 
 		eventBus.postEvent(event);
 

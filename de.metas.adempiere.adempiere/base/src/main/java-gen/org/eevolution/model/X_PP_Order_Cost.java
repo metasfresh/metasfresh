@@ -1,38 +1,21 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.eevolution.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.model.*;
-import org.compiere.util.Env;
 
 /** Generated Model for PP_Order_Cost
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_PP_Order_Cost extends org.compiere.model.PO implements I_PP_Order_Cost, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = 181610332L;
 
     /** Standard Constructor */
     public X_PP_Order_Cost (Properties ctx, int PP_Order_Cost_ID, String trxName)
@@ -43,6 +26,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 			setC_AcctSchema_ID (0);
 			setM_CostType_ID (0);
 			setM_Product_ID (0);
+			setPostCalculationAmt (BigDecimal.ZERO); // 0
 			setPP_Order_Cost_ID (0);
 			setPP_Order_ID (0);
         } */
@@ -54,65 +38,32 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 3 - Client - Org 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_PP_Order_Cost[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
-	public I_AD_Workflow getAD_Workflow() throws RuntimeException
-    {
-		return (I_AD_Workflow)MTable.get(getCtx(), I_AD_Workflow.Table_Name)
-			.getPO(getAD_Workflow_ID(), get_TrxName());	}
-
-	/** Set Workflow.
-		@param AD_Workflow_ID 
-		Workflow or combination of tasks
-	  */
-	public void setAD_Workflow_ID (int AD_Workflow_ID)
+	@Override
+	public org.compiere.model.I_C_AcctSchema getC_AcctSchema() throws RuntimeException
 	{
-		if (AD_Workflow_ID < 1) 
-			set_Value (COLUMNNAME_AD_Workflow_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_Workflow_ID, Integer.valueOf(AD_Workflow_ID));
+		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
 	}
 
-	/** Get Workflow.
-		@return Workflow or combination of tasks
-	  */
-	public int getAD_Workflow_ID () 
+	@Override
+	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema)
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Workflow_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		set_ValueFromPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class, C_AcctSchema);
 	}
 
-	public I_C_AcctSchema getC_AcctSchema() throws RuntimeException
-    {
-		return (I_C_AcctSchema)MTable.get(getCtx(), I_C_AcctSchema.Table_Name)
-			.getPO(getC_AcctSchema_ID(), get_TrxName());	}
-
-	/** Set Accounting Schema.
+	/** Set Buchführungs-Schema.
 		@param C_AcctSchema_ID 
 		Rules for accounting
 	  */
+	@Override
 	public void setC_AcctSchema_ID (int C_AcctSchema_ID)
 	{
 		if (C_AcctSchema_ID < 1) 
@@ -121,9 +72,10 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 			set_Value (COLUMNNAME_C_AcctSchema_ID, Integer.valueOf(C_AcctSchema_ID));
 	}
 
-	/** Get Accounting Schema.
+	/** Get Buchführungs-Schema.
 		@return Rules for accounting
 	  */
+	@Override
 	public int getC_AcctSchema_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_AcctSchema_ID);
@@ -132,135 +84,88 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 		return ii.intValue();
 	}
 
-	/** CostingMethod AD_Reference_ID=122 */
-	public static final int COSTINGMETHOD_AD_Reference_ID=122;
-	/** Standard Costing = S */
-	public static final String COSTINGMETHOD_StandardCosting = "S";
-	/** Average PO = A */
-	public static final String COSTINGMETHOD_AveragePO = "A";
-	/** Lifo = L */
-	public static final String COSTINGMETHOD_Lifo = "L";
-	/** Fifo = F */
-	public static final String COSTINGMETHOD_Fifo = "F";
-	/** Last PO Price = p */
-	public static final String COSTINGMETHOD_LastPOPrice = "p";
-	/** Average Invoice = I */
-	public static final String COSTINGMETHOD_AverageInvoice = "I";
-	/** Last Invoice = i */
-	public static final String COSTINGMETHOD_LastInvoice = "i";
-	/** User Defined = U */
-	public static final String COSTINGMETHOD_UserDefined = "U";
-	/** _ = x */
-	public static final String COSTINGMETHOD__ = "x";
-	/** Set Costing Method.
-		@param CostingMethod 
-		Indicates how Costs will be calculated
-	  */
-	public void setCostingMethod (String CostingMethod)
+	/** Set Cost Distribution Percent.
+		@param CostDistributionPercent Cost Distribution Percent	  */
+	@Override
+	public void setCostDistributionPercent (java.math.BigDecimal CostDistributionPercent)
 	{
-
-		set_ValueNoCheck (COLUMNNAME_CostingMethod, CostingMethod);
+		set_Value (COLUMNNAME_CostDistributionPercent, CostDistributionPercent);
 	}
 
-	/** Get Costing Method.
-		@return Indicates how Costs will be calculated
-	  */
-	public String getCostingMethod () 
+	/** Get Cost Distribution Percent.
+		@return Cost Distribution Percent	  */
+	@Override
+	public java.math.BigDecimal getCostDistributionPercent () 
 	{
-		return (String)get_Value(COLUMNNAME_CostingMethod);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CostDistributionPercent);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
-	/** Set Accumulated Amt.
+	/** Set Betrag Kumuliert.
 		@param CumulatedAmt 
-		Total Amount
+		Betrag Kumuliert
 	  */
-	public void setCumulatedAmt (BigDecimal CumulatedAmt)
+	@Override
+	public void setCumulatedAmt (java.math.BigDecimal CumulatedAmt)
 	{
 		set_ValueNoCheck (COLUMNNAME_CumulatedAmt, CumulatedAmt);
 	}
 
-	/** Get Accumulated Amt.
-		@return Total Amount
+	/** Get Betrag Kumuliert.
+		@return Betrag Kumuliert
 	  */
-	public BigDecimal getCumulatedAmt () 
+	@Override
+	public java.math.BigDecimal getCumulatedAmt () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CumulatedAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Cumulated Amt Post.
-		@param CumulatedAmtPost Cumulated Amt Post	  */
-	public void setCumulatedAmtPost (BigDecimal CumulatedAmtPost)
-	{
-		set_ValueNoCheck (COLUMNNAME_CumulatedAmtPost, CumulatedAmtPost);
-	}
-
-	/** Get Cumulated Amt Post.
-		@return Cumulated Amt Post	  */
-	public BigDecimal getCumulatedAmtPost () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CumulatedAmtPost);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set Accumulated Qty.
+	/** Set Menge Kumuliert.
 		@param CumulatedQty 
-		Total Quantity
+		Menge Kumuliert
 	  */
-	public void setCumulatedQty (BigDecimal CumulatedQty)
+	@Override
+	public void setCumulatedQty (java.math.BigDecimal CumulatedQty)
 	{
 		set_ValueNoCheck (COLUMNNAME_CumulatedQty, CumulatedQty);
 	}
 
-	/** Get Accumulated Qty.
-		@return Total Quantity
+	/** Get Menge Kumuliert.
+		@return Menge Kumuliert
 	  */
-	public BigDecimal getCumulatedQty () 
+	@Override
+	public java.math.BigDecimal getCumulatedQty () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CumulatedQty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Cumulated Qty Post.
-		@param CumulatedQtyPost Cumulated Qty Post	  */
-	public void setCumulatedQtyPost (BigDecimal CumulatedQtyPost)
-	{
-		set_ValueNoCheck (COLUMNNAME_CumulatedQtyPost, CumulatedQtyPost);
-	}
-
-	/** Get Cumulated Qty Post.
-		@return Cumulated Qty Post	  */
-	public BigDecimal getCumulatedQtyPost () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CumulatedQtyPost);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
-	/** Set Current Cost Price.
+	/** Set Kostenpreis aktuell.
 		@param CurrentCostPrice 
-		The currently used cost price
+		Der gegenwärtig verwendete Kostenpreis
 	  */
-	public void setCurrentCostPrice (BigDecimal CurrentCostPrice)
+	@Override
+	public void setCurrentCostPrice (java.math.BigDecimal CurrentCostPrice)
 	{
 		set_ValueNoCheck (COLUMNNAME_CurrentCostPrice, CurrentCostPrice);
 	}
 
-	/** Get Current Cost Price.
-		@return The currently used cost price
+	/** Get Kostenpreis aktuell.
+		@return Der gegenwärtig verwendete Kostenpreis
 	  */
-	public BigDecimal getCurrentCostPrice () 
+	@Override
+	public java.math.BigDecimal getCurrentCostPrice () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CurrentCostPrice);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -268,7 +173,8 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 		@param CurrentCostPriceLL 
 		Current Price Lower Level Is the sum of the costs of the components of this product manufactured for this level.
 	  */
-	public void setCurrentCostPriceLL (BigDecimal CurrentCostPriceLL)
+	@Override
+	public void setCurrentCostPriceLL (java.math.BigDecimal CurrentCostPriceLL)
 	{
 		set_ValueNoCheck (COLUMNNAME_CurrentCostPriceLL, CurrentCostPriceLL);
 	}
@@ -276,43 +182,32 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 	/** Get Current Cost Price Lower Level.
 		@return Current Price Lower Level Is the sum of the costs of the components of this product manufactured for this level.
 	  */
-	public BigDecimal getCurrentCostPriceLL () 
+	@Override
+	public java.math.BigDecimal getCurrentCostPriceLL () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CurrentCostPriceLL);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Current Quantity.
-		@param CurrentQty 
-		Current Quantity
-	  */
-	public void setCurrentQty (BigDecimal CurrentQty)
+	@Override
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
 	{
-		set_Value (COLUMNNAME_CurrentQty, CurrentQty);
+		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
 
-	/** Get Current Quantity.
-		@return Current Quantity
-	  */
-	public BigDecimal getCurrentQty () 
+	@Override
+	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CurrentQty);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
+		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	public I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
-    {
-		return (I_M_AttributeSetInstance)MTable.get(getCtx(), I_M_AttributeSetInstance.Table_Name)
-			.getPO(getM_AttributeSetInstance_ID(), get_TrxName());	}
-
-	/** Set Attribute Set Instance.
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Product Attribute Set Instance
+		Merkmals Ausprägungen zum Produkt
 	  */
+	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
 	{
 		if (M_AttributeSetInstance_ID < 0) 
@@ -321,9 +216,10 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Attribute Set Instance.
-		@return Product Attribute Set Instance
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
+	@Override
 	public int getM_AttributeSetInstance_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
@@ -332,15 +228,23 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_M_CostElement getM_CostElement() throws RuntimeException
-    {
-		return (I_M_CostElement)MTable.get(getCtx(), I_M_CostElement.Table_Name)
-			.getPO(getM_CostElement_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_CostElement getM_CostElement() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class);
+	}
 
-	/** Set Cost Element.
+	@Override
+	public void setM_CostElement(org.compiere.model.I_M_CostElement M_CostElement)
+	{
+		set_ValueFromPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class, M_CostElement);
+	}
+
+	/** Set Kostenart.
 		@param M_CostElement_ID 
 		Product Cost Element
 	  */
+	@Override
 	public void setM_CostElement_ID (int M_CostElement_ID)
 	{
 		if (M_CostElement_ID < 1) 
@@ -349,9 +253,10 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_M_CostElement_ID, Integer.valueOf(M_CostElement_ID));
 	}
 
-	/** Get Cost Element.
+	/** Get Kostenart.
 		@return Product Cost Element
 	  */
+	@Override
 	public int getM_CostElement_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_CostElement_ID);
@@ -360,15 +265,23 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_M_CostType getM_CostType() throws RuntimeException
-    {
-		return (I_M_CostType)MTable.get(getCtx(), I_M_CostType.Table_Name)
-			.getPO(getM_CostType_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_CostType getM_CostType() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_CostType_ID, org.compiere.model.I_M_CostType.class);
+	}
 
-	/** Set Cost Type.
+	@Override
+	public void setM_CostType(org.compiere.model.I_M_CostType M_CostType)
+	{
+		set_ValueFromPO(COLUMNNAME_M_CostType_ID, org.compiere.model.I_M_CostType.class, M_CostType);
+	}
+
+	/** Set Kostenkategorie.
 		@param M_CostType_ID 
 		Type of Cost (e.g. Current, Plan, Future)
 	  */
+	@Override
 	public void setM_CostType_ID (int M_CostType_ID)
 	{
 		if (M_CostType_ID < 1) 
@@ -377,9 +290,10 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 			set_Value (COLUMNNAME_M_CostType_ID, Integer.valueOf(M_CostType_ID));
 	}
 
-	/** Get Cost Type.
+	/** Get Kostenkategorie.
 		@return Type of Cost (e.g. Current, Plan, Future)
 	  */
+	@Override
 	public int getM_CostType_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_CostType_ID);
@@ -388,15 +302,23 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 		return ii.intValue();
 	}
 
-	public I_M_Product getM_Product() throws RuntimeException
-    {
-		return (I_M_Product)MTable.get(getCtx(), I_M_Product.Table_Name)
-			.getPO(getM_Product_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+	}
 
-	/** Set Product.
+	@Override
+	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+	}
+
+	/** Set Produkt.
 		@param M_Product_ID 
-		Product, Service, Item
+		Produkt, Leistung, Artikel
 	  */
+	@Override
 	public void setM_Product_ID (int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
@@ -405,9 +327,10 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
 	}
 
-	/** Get Product.
-		@return Product, Service, Item
+	/** Get Produkt.
+		@return Produkt, Leistung, Artikel
 	  */
+	@Override
 	public int getM_Product_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
@@ -416,8 +339,28 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 		return ii.intValue();
 	}
 
+	/** Set Post Calculation Amount.
+		@param PostCalculationAmt Post Calculation Amount	  */
+	@Override
+	public void setPostCalculationAmt (java.math.BigDecimal PostCalculationAmt)
+	{
+		set_Value (COLUMNNAME_PostCalculationAmt, PostCalculationAmt);
+	}
+
+	/** Get Post Calculation Amount.
+		@return Post Calculation Amount	  */
+	@Override
+	public java.math.BigDecimal getPostCalculationAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PostCalculationAmt);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** Set Manufacturing Order Cost.
 		@param PP_Order_Cost_ID Manufacturing Order Cost	  */
+	@Override
 	public void setPP_Order_Cost_ID (int PP_Order_Cost_ID)
 	{
 		if (PP_Order_Cost_ID < 1) 
@@ -428,6 +371,7 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 
 	/** Get Manufacturing Order Cost.
 		@return Manufacturing Order Cost	  */
+	@Override
 	public int getPP_Order_Cost_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_Cost_ID);
@@ -436,13 +380,53 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 		return ii.intValue();
 	}
 
-	public org.eevolution.model.I_PP_Order getPP_Order() throws RuntimeException
-    {
-		return (org.eevolution.model.I_PP_Order)MTable.get(getCtx(), org.eevolution.model.I_PP_Order.Table_Name)
-			.getPO(getPP_Order_ID(), get_TrxName());	}
+	/** 
+	 * PP_Order_Cost_TrxType AD_Reference_ID=540941
+	 * Reference name: PP_Order_Cost_TrxType
+	 */
+	public static final int PP_ORDER_COST_TRXTYPE_AD_Reference_ID=540941;
+	/** MainProduct = MR */
+	public static final String PP_ORDER_COST_TRXTYPE_MainProduct = "MR";
+	/** MaterialIssue = MI */
+	public static final String PP_ORDER_COST_TRXTYPE_MaterialIssue = "MI";
+	/** ResourceUtilization = RU */
+	public static final String PP_ORDER_COST_TRXTYPE_ResourceUtilization = "RU";
+	/** ByProduct = BY */
+	public static final String PP_ORDER_COST_TRXTYPE_ByProduct = "BY";
+	/** CoProduct = CO */
+	public static final String PP_ORDER_COST_TRXTYPE_CoProduct = "CO";
+	/** Set Transaction Type.
+		@param PP_Order_Cost_TrxType Transaction Type	  */
+	@Override
+	public void setPP_Order_Cost_TrxType (java.lang.String PP_Order_Cost_TrxType)
+	{
 
-	/** Set Manufacturing Order.
-		@param PP_Order_ID Manufacturing Order	  */
+		set_Value (COLUMNNAME_PP_Order_Cost_TrxType, PP_Order_Cost_TrxType);
+	}
+
+	/** Get Transaction Type.
+		@return Transaction Type	  */
+	@Override
+	public java.lang.String getPP_Order_Cost_TrxType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PP_Order_Cost_TrxType);
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_Order getPP_Order() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class);
+	}
+
+	@Override
+	public void setPP_Order(org.eevolution.model.I_PP_Order PP_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class, PP_Order);
+	}
+
+	/** Set Produktionsauftrag.
+		@param PP_Order_ID Produktionsauftrag	  */
+	@Override
 	public void setPP_Order_ID (int PP_Order_ID)
 	{
 		if (PP_Order_ID < 1) 
@@ -451,8 +435,9 @@ public class X_PP_Order_Cost extends PO implements I_PP_Order_Cost, I_Persistent
 			set_ValueNoCheck (COLUMNNAME_PP_Order_ID, Integer.valueOf(PP_Order_ID));
 	}
 
-	/** Get Manufacturing Order.
-		@return Manufacturing Order	  */
+	/** Get Produktionsauftrag.
+		@return Produktionsauftrag	  */
+	@Override
 	public int getPP_Order_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_ID);

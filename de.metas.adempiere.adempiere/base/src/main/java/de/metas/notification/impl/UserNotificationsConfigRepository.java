@@ -5,7 +5,7 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.user.api.IUserDAO;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_NotificationGroup;
 import org.compiere.model.I_AD_User_NotificationGroup;
 import org.compiere.model.X_AD_User_NotificationGroup;
@@ -17,12 +17,16 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
+import de.metas.email.EMailAddress;
 import de.metas.notification.INotificationGroupNameRepository;
 import de.metas.notification.IUserNotificationsConfigRepository;
 import de.metas.notification.NotificationGroupName;
 import de.metas.notification.NotificationType;
 import de.metas.notification.UserNotificationsConfig;
 import de.metas.notification.UserNotificationsGroup;
+import de.metas.organization.OrgId;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -50,7 +54,7 @@ import de.metas.util.Services;
 
 public class UserNotificationsConfigRepository implements IUserNotificationsConfigRepository
 {
-	private final CCache<Integer, UserNotificationsConfig> userNotificationsConfigsByUserId = CCache.<Integer, UserNotificationsConfig> builder()
+	private final CCache<UserId, UserNotificationsConfig> userNotificationsConfigsByUserId = CCache.<UserId, UserNotificationsConfig> builder()
 			.tableName(I_AD_User_NotificationGroup.Table_Name)
 			.initialCapacity(100)
 			.cacheMapType(CacheMapType.LRU)
@@ -59,17 +63,15 @@ public class UserNotificationsConfigRepository implements IUserNotificationsConf
 			.build();
 
 	@Override
-	public UserNotificationsConfig getByUserId(final int adUserId)
+	public UserNotificationsConfig getByUserId(final UserId adUserId)
 	{
-		return userNotificationsConfigsByUserId.getOrLoad(adUserId, () -> retrieveUserNotificationsConfig(adUserId));
+		return userNotificationsConfigsByUserId.getOrLoad(adUserId, this::retrieveUserNotificationsConfig);
 	}
 
-	private UserNotificationsConfig retrieveUserNotificationsConfig(final int adUserId)
+	private UserNotificationsConfig retrieveUserNotificationsConfig(final UserId adUserId)
 	{
-		Check.assumeGreaterOrEqualToZero(adUserId, "adUserId");
-
-		final I_AD_User user = Services.get(IUserDAO.class).retrieveUser(adUserId);
-		final int userInChargeId = user.getAD_User_InCharge_ID();
+		final I_AD_User user = Services.get(IUserDAO.class).getById(adUserId);
+		final UserId userInChargeId = UserId.ofRepoIdOrNull(user.getAD_User_InCharge_ID());
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final List<UserNotificationsGroup> userNotificationGroups = queryBL.createQueryBuilderOutOfTrx(I_AD_User_NotificationGroup.class)
@@ -86,13 +88,13 @@ public class UserNotificationsConfigRepository implements IUserNotificationsConf
 				.build();
 
 		return UserNotificationsConfig.builder()
-				.userId(user.getAD_User_ID())
+				.userId(UserId.ofRepoId(user.getAD_User_ID()))
 				.userADLanguage(user.getAD_Language())
-				.adClientId(user.getAD_Client_ID())
-				.adOrgId(user.getAD_Org_ID())
+				.clientId(ClientId.ofRepoId(user.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoId(user.getAD_Org_ID()))
 				.userNotificationGroups(userNotificationGroups)
 				.defaults(defaults)
-				.email(user.getEMail())
+				.email(EMailAddress.ofNullableString(user.getEMail()))
 				.userInChargeId(userInChargeId)
 				.build();
 	}

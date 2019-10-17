@@ -3,12 +3,11 @@ package de.metas.material.dispo.commons.interceptor;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.Adempiere;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
 
@@ -16,17 +15,21 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.material.commons.attributes.AttributesKeyPatterns;
 import de.metas.material.dispo.commons.model.I_C_OrderLine;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery.AvailableToPromiseMultiQueryBuilder;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResult;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResultGroup;
-import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery.AvailableToPromiseMultiQueryBuilder;
+import de.metas.material.dispo.commons.repository.atp.BPartnerClassifier;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -52,27 +55,40 @@ import lombok.Value;
  * #L%
  */
 
-public class OrderAvailableToPromiseTool
+final class OrderAvailableToPromiseTool
 {
-	public static void updateOrderLineRecords(@NonNull final I_C_Order orderRecord)
+	private final AvailableToPromiseRepository stockRepository;
+	private final ModelProductDescriptorExtractor productDescriptorFactory;
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@Builder
+	private OrderAvailableToPromiseTool(
+			@NonNull final AvailableToPromiseRepository stockRepository,
+			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
+	{
+		this.stockRepository = stockRepository;
+		this.productDescriptorFactory = productDescriptorFactory;
+	}
+
+	public void updateOrderLineRecords(@NonNull final I_C_Order orderRecord)
 	{
 		// we use the date at which the order needs to be ready for shipping
-		final LocalDateTime preparationDate = TimeUtil.asLocalDateTime(orderRecord.getPreparationDate());
+		final ZonedDateTime preparationDate = TimeUtil.asZonedDateTime(orderRecord.getPreparationDate());
 
-		final List<I_C_OrderLine> orderLineRecords = Services.get(IQueryBL.class)
+		final List<I_C_OrderLine> orderLineRecords = queryBL
 				.createQueryBuilder(I_C_OrderLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID())
 				.create()
 				.list();
 
-		if(orderLineRecords.isEmpty())
+		if (orderLineRecords.isEmpty())
 		{
 			return; // nothing to update
 		}
 
 		final ImmutableListMultimap<OrderLineKey, I_C_OrderLine> //
-		keys2orderLines = Multimaps.index(orderLineRecords, OrderLineKey::forOrderLineRecord);
+		keys2orderLines = Multimaps.index(orderLineRecords, this::createOrderKeyForOrderLineRecord);
 
 		final AvailableToPromiseMultiQueryBuilder multiQueryBuilder = AvailableToPromiseMultiQuery.builder();
 
@@ -83,7 +99,6 @@ public class OrderAvailableToPromiseTool
 			multiQueryBuilder.query(query);
 		}
 
-		final AvailableToPromiseRepository stockRepository = Adempiere.getBean(AvailableToPromiseRepository.class);
 		final AvailableToPromiseResult result = stockRepository.retrieveAvailableStock(multiQueryBuilder.build());
 
 		for (final AvailableToPromiseResultGroup resultGroup : result.getResultGroups())
@@ -97,9 +112,9 @@ public class OrderAvailableToPromiseTool
 		}
 	}
 
-	public static void resetQtyAvailableToPromise(@NonNull final I_C_Order orderRecord)
+	public void resetQtyAvailableToPromise(@NonNull final I_C_Order orderRecord)
 	{
-		final Stream<I_C_OrderLine> orderLineRecords = Services.get(IQueryBL.class)
+		final Stream<I_C_OrderLine> orderLineRecords = queryBL
 				.createQueryBuilder(I_C_OrderLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderRecord.getC_Order_ID())
@@ -113,33 +128,44 @@ public class OrderAvailableToPromiseTool
 		});
 	}
 
-	public static void updateOrderLineRecordAndDoNotSave(@NonNull final I_C_OrderLine orderLineRecord)
+	public void updateOrderLineRecordAndDoNotSave(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		// we use the date at which the order needs to be ready for shipping
-		final LocalDateTime preparationDate = TimeUtil.asLocalDateTime(orderLineRecord.getC_Order().getPreparationDate());
+		final ZonedDateTime preparationDate = TimeUtil.asZonedDateTime(orderLineRecord.getC_Order().getPreparationDate());
 
-		final OrderLineKey orderLineKey = OrderLineKey.forOrderLineRecord(orderLineRecord);
+		final OrderLineKey orderLineKey = createOrderKeyForOrderLineRecord(orderLineRecord);
 
 		final AvailableToPromiseQuery query = createSingleQuery(preparationDate, orderLineKey);
 
-		final AvailableToPromiseRepository stockRepository = Adempiere.getBean(AvailableToPromiseRepository.class);
 		final BigDecimal result = stockRepository.retrieveAvailableStockQtySum(query);
 
 		orderLineRecord.setQty_AvailableToPromise(result);
 	}
 
 	private static AvailableToPromiseQuery createSingleQuery(
-			@NonNull final LocalDateTime preparationDate,
+			@NonNull final ZonedDateTime preparationDate,
 			@NonNull final OrderLineKey orderLineKey)
 	{
 		final AvailableToPromiseQuery query = AvailableToPromiseQuery
 				.builder()
 				.productId(orderLineKey.getProductId())
-				.storageAttributesKey(orderLineKey.getAttributesKey())
-				.bpartnerId(orderLineKey.getBpartnerId())
+				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(orderLineKey.getAttributesKey()))
+				.bpartner(orderLineKey.getBpartner())
 				.date(preparationDate)
 				.build();
 		return query;
+	}
+
+	private OrderLineKey createOrderKeyForOrderLineRecord(@NonNull final I_C_OrderLine orderLineRecord)
+	{
+		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(orderLineRecord, AttributesKey.ALL);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(orderLineRecord.getC_BPartner_ID()); // this column is mandatory and always > 0
+
+		return new OrderLineKey(
+				productDescriptor.getProductId(),
+				productDescriptor.getStorageAttributesKey(),
+				BPartnerClassifier.specific(bpartnerId));
 	}
 
 	@Value
@@ -147,36 +173,24 @@ public class OrderAvailableToPromiseTool
 	{
 		int productId;
 		AttributesKey attributesKey;
-		int bpartnerId;
-
-		private static OrderLineKey forOrderLineRecord(@NonNull final I_C_OrderLine orderLineRecord)
-		{
-			final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
-			final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(orderLineRecord, AttributesKey.ALL);
-
-			return new OrderLineKey(
-					productDescriptor.getProductId(),
-					productDescriptor.getStorageAttributesKey(),
-					orderLineRecord.getC_BPartner_ID() // this column is mandatory and always > 0.
-			);
-		}
+		BPartnerClassifier bpartner;
 
 		private static OrderLineKey forResultGroup(@NonNull final AvailableToPromiseResultGroup resultGroup)
 		{
 			return new OrderLineKey(
 					resultGroup.getProductId(),
 					resultGroup.getStorageAttributesKey(),
-					resultGroup.getBpartnerId());
+					resultGroup.getBpartner());
 		}
 
 		private OrderLineKey(
 				final int productId,
 				@NonNull final AttributesKey attributesKey,
-				final int bpartnerId)
+				@NonNull final BPartnerClassifier bpartner)
 		{
 			this.productId = productId;
 			this.attributesKey = attributesKey;
-			this.bpartnerId = bpartnerId;
+			this.bpartner = bpartner;
 		}
 	}
 }

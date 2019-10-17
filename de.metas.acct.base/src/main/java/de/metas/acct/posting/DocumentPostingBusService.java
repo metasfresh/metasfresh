@@ -46,11 +46,11 @@ import lombok.NonNull;
  */
 
 @Service
-@DependsOn(Adempiere.BEAN_NAME)
+@DependsOn(Adempiere.BEAN_NAME) // needs database
 public class DocumentPostingBusService
 {
 	private static final Topic TOPIC = Topic.remote("de.metas.acct.handler.DocumentPostRequest");
-	public static final String PROPERTY_DocumentPostRequest = "DocumentPostRequest";
+	private static final String PROPERTY_DocumentPostRequest = "DocumentPostRequest";
 
 	// services
 	private static final Logger logger = LogManager.getLogger(DocumentPostingBusService.class);
@@ -63,31 +63,26 @@ public class DocumentPostingBusService
 	{
 		this.eventBusFactory = eventBusFactory;
 		this.eventLogUserService = eventLogUserService;
-
-	}
-
-	private IEventBus getEventBus()
-	{
-		final IEventBus eventBus = eventBusFactory.getEventBus(TOPIC);
-		return eventBus;
 	}
 
 	public void postRequest(@NonNull final DocumentPostRequest request)
 	{
 		final Event event = createEventFromRequest(request);
 		getEventBus().postEvent(event);
+	}
 
+	private IEventBus getEventBus()
+	{
+		return eventBusFactory.getEventBus(TOPIC);
 	}
 
 	private Event createEventFromRequest(final DocumentPostRequest request)
 	{
 		final String requestStr = SimpleObjectSerializer.get().serialize(request);
 
-		final Event.Builder metasfreshEventBuilder = Event.builder()
-				.putProperty(PROPERTY_DocumentPostRequest, requestStr);
-
-		return eventLogUserService
-				.addEventLogAdvise(metasfreshEventBuilder, true)
+		return Event.builder()
+				.putProperty(PROPERTY_DocumentPostRequest, requestStr)
+				.shallBeLogged()
 				.build();
 	}
 
@@ -162,7 +157,7 @@ public class DocumentPostingBusService
 		private Properties createCtx(final DocumentPostRequest request)
 		{
 			final Properties ctx = Env.newTemporaryCtx();
-			Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, request.getAdClientId());
+			Env.setClientId(ctx, request.getClientId());
 			return ctx;
 		}
 	}

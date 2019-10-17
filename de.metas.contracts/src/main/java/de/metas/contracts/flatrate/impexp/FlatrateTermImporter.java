@@ -3,20 +3,17 @@
  */
 package de.metas.contracts.flatrate.impexp;
 
-import lombok.NonNull;
-
 import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -25,8 +22,14 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IPricingResult;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -81,7 +84,8 @@ import de.metas.util.time.SystemTime;
 
 	public I_C_Flatrate_Term importRecord(final I_I_Flatrate_Term importRecord)
 	{
-		final I_M_Product product = importRecord.getM_Product();
+		final ProductId productId = ProductId.ofRepoId(importRecord.getM_Product_ID());
+		final ProductAndCategoryId productAndCategoryId = Services.get(IProductDAO.class).retrieveProductAndCategoryIdByProductId(productId);
 
 		final I_C_Flatrate_Term contract = flatrateBL.createTerm(
 				PlainContextAware.newWithThreadInheritedTrx(),
@@ -89,7 +93,7 @@ import de.metas.util.time.SystemTime;
 				importRecord.getC_Flatrate_Conditions(),
 				importRecord.getStartDate(),
 				(I_AD_User)null, // userInCharge
-				product,
+				productAndCategoryId,
 				false // completeIt
 		);
 		if (contract == null)
@@ -101,8 +105,8 @@ import de.metas.util.time.SystemTime;
 		setDropShipBPartner(importRecord, contract);
 		setDropShipUser(contract, getCtx());
 		setDropShipLocation(contract, getCtx());
-		contract.setM_Product(product);
-		setUOM(contract, product);
+		contract.setM_Product_ID(productId.getRepoId());
+		setUOM(contract, productId);
 		contract.setPriceActual(importRecord.getPrice());
 		setPlannedQtyPerUnit(importRecord, contract);
 		setEndDate(importRecord, contract);
@@ -168,10 +172,10 @@ import de.metas.util.time.SystemTime;
 	}
 
 
-	private void setUOM(@NonNull final I_C_Flatrate_Term contract, @NonNull final I_M_Product product)
+	private void setUOM(@NonNull final I_C_Flatrate_Term contract, @NonNull final ProductId productId)
 	{
-		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(product);
-		contract.setC_UOM(uom);
+		final UomId uomId = Services.get(IProductBL.class).getStockUOMId(productId);
+		contract.setC_UOM_ID(uomId.getRepoId());
 	}
 
 	private void setPlannedQtyPerUnit(@NonNull final I_I_Flatrate_Term importRecord, @NonNull final I_C_Flatrate_Term contract)
@@ -229,17 +233,17 @@ import de.metas.util.time.SystemTime;
 	private void setTaxCategoryAndIsTaxIncluded(@NonNull final I_C_Flatrate_Term newTerm)
 	{
 		final IPricingResult pricingResult = calculateFlatrateTermPrice(newTerm);
-		newTerm.setC_TaxCategory_ID(pricingResult.getC_TaxCategory_ID());
+		newTerm.setC_TaxCategory_ID(TaxCategoryId.toRepoId(pricingResult.getTaxCategoryId()));
 		newTerm.setIsTaxIncluded(pricingResult.isTaxIncluded());
 	}
 
 	private IPricingResult calculateFlatrateTermPrice(@NonNull final I_C_Flatrate_Term newTerm)
 	{
 		return FlatrateTermPricing.builder()
-				.termRelatedProduct(newTerm.getM_Product())
+				.termRelatedProductId(ProductId.ofRepoId(newTerm.getM_Product_ID()))
 				.qty(newTerm.getPlannedQtyPerUnit())
 				.term(newTerm)
-				.priceDate(newTerm.getStartDate())
+				.priceDate(TimeUtil.asLocalDate(newTerm.getStartDate()))
 				.build()
 				.computeOrThrowEx();
 	}

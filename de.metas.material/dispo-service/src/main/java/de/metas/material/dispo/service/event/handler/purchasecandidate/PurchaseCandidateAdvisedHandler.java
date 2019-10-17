@@ -11,7 +11,6 @@ import de.metas.Profiles;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
-import de.metas.material.dispo.commons.candidate.CandidateStatus;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
@@ -93,7 +92,7 @@ public final class PurchaseCandidateAdvisedHandler
 				.getMaterialDescriptor();
 
 		final PurchaseDetail purchaseDetail = PurchaseDetail.builder()
-				.plannedQty(materialDescriptor.getQuantity())
+				.qty(materialDescriptor.getQuantity())
 				.vendorRepoId(event.getVendorId())
 				.purchaseCandidateRepoId(-1)
 				.productPlanningRepoId(event.getProductPlanningId())
@@ -103,9 +102,8 @@ public final class PurchaseCandidateAdvisedHandler
 		final Candidate supplyCandidate = Candidate.builder()
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PURCHASE)
-				.clientId(event.getEventDescriptor().getClientId())
-				.orgId(event.getEventDescriptor().getOrgId())
-				.status(CandidateStatus.doc_planned)
+				.clientAndOrgId(event.getEventDescriptor().getClientAndOrgId())
+				//.status(CandidateStatus.doc_planned)
 				.materialDescriptor(materialDescriptor)
 				.businessCaseDetail(purchaseDetail)
 				.additionalDemandDetail(demandDetail)
@@ -114,7 +112,7 @@ public final class PurchaseCandidateAdvisedHandler
 		final Candidate createdCandidate = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
 		if (event.isDirectlyCreatePurchaseCandidate())
 		{
-			requestMaterialOrderService.requestMaterialOrder(createdCandidate.getGroupId());
+			requestMaterialOrderService.requestMaterialOrderForCandidates(createdCandidate.getGroupId());
 		}
 	}
 }

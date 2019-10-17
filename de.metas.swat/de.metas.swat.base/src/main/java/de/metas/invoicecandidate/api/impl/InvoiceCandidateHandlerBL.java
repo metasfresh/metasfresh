@@ -134,7 +134,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	@Override
 	public void createMissingCandidates(@NonNull final List<I_C_ILCandHandler> handlerRecords)
 	{
-		Services.get(ITrxManager.class).run(trxName -> createInvoiceCandidates(handlerRecords, InvoiceCandidateHandlerBL.NO_MODEL));
+		Services.get(ITrxManager.class).runInNewTrx(() -> createInvoiceCandidates(handlerRecords, InvoiceCandidateHandlerBL.NO_MODEL));
 	}
 
 	@Override
@@ -289,7 +289,13 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			//
 			// Create the initial request and then ask the handler to expand it to proper models to be used.
 			final Object model = models.next();
+			if (!invoiceCandiateHandler.isMissingInvoiceCandidate(model))
+			{
+				continue;
+			}
+
 			final InvoiceCandidateGenerateRequest requestInitial = InvoiceCandidateGenerateRequest.of(invoiceCandiateHandler, model);
+
 			final List<InvoiceCandidateGenerateRequest> requests = invoiceCandiateHandler.expandRequest(requestInitial);
 
 			//
@@ -319,7 +325,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 				{
 					final String msg = "Caught {} while trying to create candidate for request={} with requestInitial={}";
 
-					Loggables.get().addLog(msg, e.getClass(), request, requestInitial);
+					Loggables.addLog(msg, e.getClass(), request, requestInitial);
 					logger.error(msg, e.getClass(), request, requestInitial, e);
 				}
 			}
@@ -520,16 +526,9 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	}
 
 	@Override
-	public void setInvoiceSchedule(@NonNull final I_C_Invoice_Candidate ic)
+	public void setInvoiceScheduleAndDateToInvoice(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
-		handler.setInvoiceSchedule(ic);
-	}
-
-	@Override
-	public void setC_UOM_ID(@NonNull final I_C_Invoice_Candidate ic)
-	{
-		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
-		handler.setC_UOM_ID(ic);
+		handler.setInvoiceScheduleAndDateToInvoice(ic);
 	}
 }

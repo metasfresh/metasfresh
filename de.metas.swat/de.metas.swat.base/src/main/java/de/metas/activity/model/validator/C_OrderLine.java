@@ -26,11 +26,11 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.ModelValidator;
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
-import de.metas.product.acct.api.IProductAcctDAO;
 import de.metas.util.Services;
 
 @Validator(I_C_OrderLine.class)

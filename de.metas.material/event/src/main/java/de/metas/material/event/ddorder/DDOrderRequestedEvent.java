@@ -1,6 +1,6 @@
 package de.metas.material.event.ddorder;
 
-import java.util.Date;
+import java.time.Instant;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -21,7 +21,7 @@ public class DDOrderRequestedEvent implements MaterialEvent
 	EventDescriptor eventDescriptor;
 
 	@NonNull
-	Date dateOrdered;
+	Instant dateOrdered;
 
 	@NonNull
 	DDOrder ddOrder;
@@ -30,7 +30,7 @@ public class DDOrderRequestedEvent implements MaterialEvent
 	@Builder
 	private DDOrderRequestedEvent(
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
-			@JsonProperty("dateOrdered") @NonNull final Date dateOrdered,
+			@JsonProperty("dateOrdered") @NonNull final Instant dateOrdered,
 			@JsonProperty("ddOrder") @NonNull final DDOrder ddOrder)
 	{
 		this.eventDescriptor = eventDescriptor;
@@ -47,7 +47,7 @@ public class DDOrderRequestedEvent implements MaterialEvent
 				"The given ddOrderRequestedEvent'd ddOrder may not yet have an ID; ddOrder={}", ddOrder);
 
 		// we need the DDOrder's MaterialDispoGroupId to map the ddOrder its respective candidates after it was created.
-		Check.errorIf(ddOrder.getMaterialDispoGroupId() <= 0, "The ddOrder of a DDOrderRequestedEvent needs to have a group id");
+		Check.errorIf(ddOrder.getMaterialDispoGroupId() == null, "The ddOrder of a DDOrderRequestedEvent needs to have a group id");
 	}
 
 }

@@ -29,11 +29,16 @@ import java.util.Map;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList_Version;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.limit.PriceLimitRuleResult;
+import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
 
@@ -41,11 +46,13 @@ public interface IOrderLineBL extends ISingletonService
 {
 
 	// task 08002
-	public static final String DYNATTR_DoNotRecalculatePrices = IOrderLineBL.class.getName() + "#DoNotRecalcualtePrices";
+	String DYNATTR_DoNotRecalculatePrices = IOrderLineBL.class.getName() + "#DoNotRecalcualtePrices";
 
 	Quantity getQtyEntered(org.compiere.model.I_C_OrderLine orderLine);
 
 	Quantity getQtyOrdered(OrderAndLineId orderAndLineId);
+
+	Quantity getQtyOrdered(I_C_OrderLine orderLine);
 
 	Quantity getQtyToDeliver(OrderAndLineId orderAndLineId);
 
@@ -84,7 +91,7 @@ public interface IOrderLineBL extends ISingletonService
 	 * @param orderLine
 	 * @param optional, if <code>>= 0</code> then the result will be rounded to this precision. Otherwise the precision of the order's price list will be used.
 	 */
-	void updatePriceActual(I_C_OrderLine orderLine, int precision);
+	void updatePriceActual(I_C_OrderLine orderLine, CurrencyPrecision precision);
 
 	/**
 	 * Utility method to subtract the given <code>discount</code> (in percent!) from the given <code>priceEntered</code> and return the result.
@@ -119,7 +126,7 @@ public interface IOrderLineBL extends ISingletonService
 	 *
 	 * @throws ProductNotOnPriceListException if the product's pricing info could not be retrieved.
 	 */
-	int getC_TaxCategory_ID(org.compiere.model.I_C_OrderLine orderLine);
+	TaxCategoryId getTaxCategoryId(org.compiere.model.I_C_OrderLine orderLine);
 
 	void updatePrices(org.compiere.model.I_C_OrderLine orderLine);
 
@@ -138,7 +145,7 @@ public interface IOrderLineBL extends ISingletonService
 	 * @param M_Product_ID
 	 * @param setUomFromProduct
 	 */
-	void setM_Product_ID(I_C_OrderLine orderLine, int M_Product_ID, boolean setUomFromProduct);
+	void setProductId(org.compiere.model.I_C_OrderLine orderLine, ProductId productId, boolean setUomFromProduct);
 
 	/**
 	 * Gets the corresponding pricelist version for the order line. If it is not set in the order line then fallback to order with:
@@ -193,13 +200,11 @@ public interface IOrderLineBL extends ISingletonService
 	 */
 	boolean isTaxIncluded(org.compiere.model.I_C_OrderLine orderLine);
 
-	/**
-	 * Calls {@link IOrderBL#getPrecision(org.compiere.model.I_C_Order)} for the given <code>orderLine</code>'s <code>C_Order</code>.
-	 *
-	 * @param orderLine
-	 * @return
-	 */
-	int getPrecision(org.compiere.model.I_C_OrderLine orderLine);
+	CurrencyPrecision getPricePrecision(org.compiere.model.I_C_OrderLine orderLine);
+
+	CurrencyPrecision getAmountPrecision(org.compiere.model.I_C_OrderLine orderLine);
+
+	CurrencyPrecision getTaxPrecision(org.compiere.model.I_C_OrderLine orderLine);
 
 	/**
 	 * Copy the details from the original order line into the new order line of the counter document
@@ -220,9 +225,13 @@ public interface IOrderLineBL extends ISingletonService
 	 */
 	boolean isAllowedCounterLineCopy(org.compiere.model.I_C_OrderLine fromLine);
 
-	int getC_PaymentTerm_ID(org.compiere.model.I_C_OrderLine orderLine);
+	ProductPrice getCostPrice(org.compiere.model.I_C_OrderLine orderLine);
+
+	PaymentTermId getPaymentTermId(org.compiere.model.I_C_OrderLine orderLine);
 
 	Map<OrderAndLineId, Quantity> getQtyToDeliver(Collection<OrderAndLineId> orderAndLineIds);
 
 	void updateProductDescriptionFromProductBOMIfConfigured(org.compiere.model.I_C_OrderLine orderLine);
+
+	void updateProductDocumentNote(I_C_OrderLine orderLine);
 }

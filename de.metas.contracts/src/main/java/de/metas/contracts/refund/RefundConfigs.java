@@ -6,10 +6,17 @@ import static de.metas.util.collections.CollectionUtils.hasDifferentValues;
 import java.util.Comparator;
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import com.google.common.collect.ImmutableList;
 
 import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -38,6 +45,11 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class RefundConfigs
 {
+	private static final String MSG_REFUND_CONFIG_SAME_REFUND_INVOICE_TYPE = "de.metas.constracts.refund.C_Flatrate_RefundConfig_SameRefundInvoiceType";
+	private static final String MSG_REFUND_CONFIG_SAME_INVOICE_SCHEDULE = "de.metas.constracts.refund.C_Flatrate_RefundConfig_SameInvoiceSchedule";
+	private static final String MSG_REFUND_CONFIG_SAME_REFUND_MODE = "de.metas.constracts.refund.C_Flatrate_RefundConfig_SameRefundMode";
+	private static final String MSG_REFUND_CONFIG_SAME_REFUND_BASE = "de.metas.constracts.refund.C_Flatrate_RefundConfig_SameRefundBase";
+
 	public ImmutableList<RefundConfig> sortByMinQtyAsc(@NonNull final List<RefundConfig> refundConfigs)
 	{
 		// we need to look at the lowest minQty first, in order to "fill" it; only the "biggest" config is does not have the next config's minQty as ceiling
@@ -85,28 +97,56 @@ public class RefundConfigs
 		return refundMode;
 	}
 
+	public ProductId extractProductId(@NonNull final List<RefundConfig> refundConfigs)
+	{
+		final ProductId productId = extractSingleElement(
+				refundConfigs,
+				RefundConfig::getProductId);
+		return productId;
+	}
+
 	public void assertValid(@NonNull final List<RefundConfig> refundConfigs)
 	{
 		Check.assumeNotEmpty(refundConfigs, "refundConfigs");
-		Check.errorIf(
-				hasDifferentValues(refundConfigs, RefundConfig::getRefundMode),
-				"The given refundConfigs need to all have the same RefundMode; refundConfigs={}", refundConfigs);
-		Check.errorIf(
-				hasDifferentValues(refundConfigs, RefundConfig::getRefundBase),
-				"The given refundConfigs need to all have the same RefundBase; refundConfigs={}", refundConfigs);
+
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+		if (hasDifferentValues(refundConfigs, RefundConfig::getRefundBase))
+		{
+			Loggables.addLog("The given refundConfigs need to all have the same RefundBase; refundConfigs={}", refundConfigs);
+
+			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_REFUND_CONFIG_SAME_REFUND_BASE);
+			throw new AdempiereException(msg).markAsUserValidationError();
+		}
+		if (hasDifferentValues(refundConfigs, RefundConfig::getRefundMode))
+		{
+			Loggables.addLog("The given refundConfigs need to all have the same RefundMode; refundConfigs={}", refundConfigs);
+
+			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_REFUND_CONFIG_SAME_REFUND_MODE);
+			throw new AdempiereException(msg).markAsUserValidationError();
+		}
 
 		if (RefundMode.APPLY_TO_ALL_QTIES.equals(extractRefundMode(refundConfigs)))
 		{
-			// we have one IC with different configs, so they need to have the consistent settings
-			Check.errorIf(
-					hasDifferentValues(refundConfigs, RefundConfig::getInvoiceSchedule),
-					"Because refundMode={}, all the given refundConfigs need to all have the same invoiceSchedule; refundConfigs={}",
-					RefundMode.APPLY_TO_ALL_QTIES, refundConfigs);
+			// we have one IC with different configs, so those configs need to have the consistent settings
+			if (hasDifferentValues(refundConfigs, RefundConfig::getInvoiceSchedule))
+			{
+				Loggables.addLog(
+						"Because refundMode={}, all the given refundConfigs need to all have the same invoiceSchedule; refundConfigs={}",
+						RefundMode.APPLY_TO_ALL_QTIES, refundConfigs);
 
-			Check.errorIf(
-					hasDifferentValues(refundConfigs, RefundConfig::getRefundInvoiceType),
-					"Because refundMode={}, all the given refundConfigs need to all have the same refundInvoiceType; refundConfigs={}",
-					RefundMode.APPLY_TO_ALL_QTIES, refundConfigs);
+				final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_REFUND_CONFIG_SAME_INVOICE_SCHEDULE);
+				throw new AdempiereException(msg).markAsUserValidationError();
+			}
+			if (hasDifferentValues(refundConfigs, RefundConfig::getRefundInvoiceType))
+			{
+				Loggables.addLog(
+						"Because refundMode={}, all the given refundConfigs need to all have the same refundInvoiceType; refundConfigs={}",
+						RefundMode.APPLY_TO_ALL_QTIES, refundConfigs);
+
+				final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_REFUND_CONFIG_SAME_REFUND_INVOICE_TYPE);
+				throw new AdempiereException(msg).markAsUserValidationError();
+			}
 		}
 	}
 }

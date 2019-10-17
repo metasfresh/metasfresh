@@ -2,6 +2,8 @@ package de.metas.handlingunits.pricing.spi.impl;
 
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.dao.impl.NotEqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -9,6 +11,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
 import org.slf4j.Logger;
 
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.interfaces.I_M_HU_PI_Item_Product_Aware;
 import de.metas.logging.LogManager;
@@ -19,12 +22,14 @@ import de.metas.pricing.service.ProductPriceQuery;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.pricing.service.ProductPriceQuery.ProductPriceQueryMatcher;
 import de.metas.pricing.service.ProductPrices;
+import de.metas.product.ProductId;
+import lombok.NonNull;
 
 /**
  * Note that we invoke {@link AttributePricing#registerDefaultMatcher(IProductPriceQueryMatcher)} with {@link #HUPIItemProductMatcher_None} (in a model interceptor)
  * to make sure that our super class will ignore those product price records that have a {@code M_HU_PI_Item_Product_ID} set.<br>
  * That way this class can reuse a lot of stuff like the {@link #applies(IPricingContext, IPricingResult)} method from its superclass.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -38,7 +43,7 @@ public class HUPricing extends AttributePricing
 	/**
 	 * Matches any product price with a not-null M_HU_PI_Item_Product_ID.
 	 */
-	private static final IProductPriceQueryMatcher HUPIItemProductMatcher_Any = ProductPriceQueryMatcher.of(HUPIItemProductMatcher_NAME, new NotEqualsQueryFilter<>(I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID, null));
+	private static final IProductPriceQueryMatcher HUPIItemProductMatcher_Any = ProductPriceQueryMatcher.of(HUPIItemProductMatcher_NAME, NotEqualsQueryFilter.of(I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID, null));
 
 	@Override
 	protected Optional<I_M_ProductPrice> findMatchingProductPrice(final IPricingContext pricingCtx)
@@ -60,25 +65,45 @@ public class HUPricing extends AttributePricing
 		// task 09051: don't leave yet, because there might be a product price with just a M_HU_PI_Item_Product and no other attribute values and stuff to match
 
 		// Get the price list version, if any.
-		final I_M_PriceList_Version plv = pricingCtx.getM_PriceList_Version();
-		if (plv == null)
+		final I_M_PriceList_Version ctxPriceListVersion = pricingCtx.getM_PriceList_Version();
+		if (ctxPriceListVersion == null)
 		{
 			logger.debug("No price list version found: {}", pricingCtx);
 			return Optional.empty();
 		}
 
 		//
-		// Get the product price attribute which matches our Product, ASI, PriceListVersion and M_HU_PI_Item_Product_ID.
-		final int huPIItemProductId = getM_HU_PI_Item_Product_ID(pricingCtx);
-		if (huPIItemProductId <= 0)
+		// Get the product price attribute which matches our Product, ASI, PriceListVersion and packing material.
+		final HUPIItemProductId packingMaterialId = getPackingMaterialId(pricingCtx);
+		if (packingMaterialId == null)
 		{
-			logger.debug("No M_HU_PI_Item_Product_ID found: {}", pricingCtx);
+			logger.debug("No packing material found: {}", pricingCtx);
 			return Optional.empty();
 		}
 
+		final ProductId productId = pricingCtx.getProductId();
+		final I_M_ProductPrice productPrice = ProductPrices.iterateAllPriceListVersionsAndFindProductPrice(
+				ctxPriceListVersion,
+				priceListVersion -> findMatchingProductPriceOrNull(priceListVersion, productId, attributeSetInstance, packingMaterialId));
+
+		if (productPrice == null)
+		{
+			logger.debug("No product attribute pricing found: {}", pricingCtx);
+			return Optional.empty(); // no matching
+		}
+
+		return Optional.of(productPrice);
+	}
+
+	private static I_M_ProductPrice findMatchingProductPriceOrNull(
+			@NonNull final I_M_PriceList_Version plv,
+			@NonNull final ProductId productId,
+			@Nullable final I_M_AttributeSetInstance attributeSetInstance,
+			@Nullable final HUPIItemProductId packingMaterialId)
+	{
 		final ProductPriceQuery productPriceQuery = ProductPrices.newQuery(plv)
-				.setProductId(pricingCtx.getProductId())
-				.matching(createHUPIItemProductMatcher(huPIItemProductId));
+				.setProductId(productId)
+				.matching(createHUPIItemProductMatcher(packingMaterialId));
 
 		// Match attributes if we have attributes.
 		if (attributeSetInstance == null || attributeSetInstance.getM_AttributeSetInstance_ID() <= 0)
@@ -90,14 +115,7 @@ public class HUPricing extends AttributePricing
 			productPriceQuery.matchingAttributes(attributeSetInstance);
 		}
 
-		final I_M_ProductPrice productPrice = productPriceQuery.firstMatching(I_M_ProductPrice.class);
-		if (productPrice == null)
-		{
-			logger.debug("No product attribute pricing found: {}", pricingCtx);
-			return Optional.empty(); // no matching
-		}
-
-		return Optional.of(productPrice);
+		return productPriceQuery.firstMatching(I_M_ProductPrice.class);
 	}
 
 	/**
@@ -108,7 +126,7 @@ public class HUPricing extends AttributePricing
 	 * <li>there is a proper UOM-conversion for QtyEntered => QtyEnteredInPriceUOM</li>
 	 * <li>LineNetAmt is computed from QtyEnteredInPriceUOM x PriceActual</li>
 	 * </ul>
-	 * 
+	 *
 	 * @task 08147
 	 */
 	@Override
@@ -127,59 +145,70 @@ public class HUPricing extends AttributePricing
 	{
 		//
 		// Get the price list version, if any
-		final I_M_PriceList_Version plv = pricingCtx.getM_PriceList_Version();
-		if (plv == null)
+		final I_M_PriceList_Version ctxPriceListVersion = pricingCtx.getM_PriceList_Version();
+		if (ctxPriceListVersion == null)
 		{
 			return null;
 		}
 
 		//
 		// Get the default product price attribute, if any
-		final boolean strictDefault = true; // backward compatible
-		final I_M_ProductPrice defaultPrice = ProductPrices.newQuery(plv)
-				.setProductId(pricingCtx.getProductId())
-				.onlyAttributePricing()
-				.matching(HUPIItemProductMatcher_Any)
-				.retrieveDefault(strictDefault, I_M_ProductPrice.class);
+		final I_M_ProductPrice defaultPrice = ProductPrices.iterateAllPriceListVersionsAndFindProductPrice(
+				ctxPriceListVersion,
+				priceListVersion -> ProductPrices.newQuery(priceListVersion)
+						.setProductId(pricingCtx.getProductId())
+						.onlyAttributePricing()
+						.onlyValidPrices(true)
+						.matching(HUPIItemProductMatcher_Any)
+						.retrieveStrictDefault(I_M_ProductPrice.class));
 		if (defaultPrice == null)
 		{
 			return null;
 		}
 
 		//
-		// Make sure the default product price attribute is matching our pricing context M_HU_PI_Item_Product_ID,
-		// or it has no M_HU_PI_Item_Product_ID set.
-		final int ctxPIItemProductId = getM_HU_PI_Item_Product_ID(pricingCtx);
-		if (ctxPIItemProductId <= 0)
+		// Make sure the default product price attribute is matching our pricing context packing material,
+		// or it has no packing material set.
+		if (!isProductPriceMatchingContextPackingMaterial(defaultPrice, pricingCtx))
 		{
-			// We don't have a M_HU_PI_Item_Product_ID on the pricing context.
-			// Return the default price. It's M_HU_PI_Item_Product_ID will be used, e.g. in the C_OrderLine or C_OLCand which this invocation is about
-			return defaultPrice;
+			return null;
 		}
 
-		final int productPrice_HUPIItemProductId = defaultPrice.getM_HU_PI_Item_Product_ID();
-		if (productPrice_HUPIItemProductId == ctxPIItemProductId)
-		{
-			return defaultPrice;
-		}
-
-		return null;
+		return defaultPrice;
 	}
 
-	private int getM_HU_PI_Item_Product_ID(final IPricingContext pricingCtx)
+	/**
+	 * @return true if product prices is matching the packing material from pricing context
+	 *         or the pricing context does not have a packing material set
+	 */
+	private boolean isProductPriceMatchingContextPackingMaterial(final I_M_ProductPrice productPrice, final IPricingContext pricingCtx)
+	{
+		final HUPIItemProductId ctxPackingMaterialId = getPackingMaterialId(pricingCtx);
+		if (ctxPackingMaterialId == null)
+		{
+			// We don't have a packing material in pricing context.
+			// => Accept the packing material from product price
+			return true;
+		}
+
+		final HUPIItemProductId productPricePackingMaterialId = HUPIItemProductId.ofRepoIdOrNull(productPrice.getM_HU_PI_Item_Product_ID());
+		return HUPIItemProductId.equals(productPricePackingMaterialId, ctxPackingMaterialId);
+	}
+
+	private HUPIItemProductId getPackingMaterialId(final IPricingContext pricingCtx)
 	{
 		final Object referencedObj = pricingCtx.getReferencedObject();
-
-		if (null == referencedObj)
+		if (referencedObj == null)
 		{
-			return -1;
+			return null;
 		}
 
 		//
 		// check if we have an piip-aware
 		if (referencedObj instanceof I_M_HU_PI_Item_Product_Aware)
 		{
-			return ((I_M_HU_PI_Item_Product_Aware)referencedObj).getM_HU_PI_Item_Product_ID();
+			final int packingMaterialRepoId = ((I_M_HU_PI_Item_Product_Aware)referencedObj).getM_HU_PI_Item_Product_ID();
+			return HUPIItemProductId.ofRepoIdOrNull(packingMaterialRepoId);
 		}
 
 		//
@@ -187,22 +216,21 @@ public class HUPricing extends AttributePricing
 		if (InterfaceWrapperHelper.hasModelColumnName(referencedObj, I_M_HU_PI_Item_Product_Aware.COLUMNNAME_M_HU_PI_Item_Product_ID))
 		{
 			final Integer valueOverrideOrValue = InterfaceWrapperHelper.getValueOverrideOrValue(referencedObj, I_M_HU_PI_Item_Product_Aware.COLUMNNAME_M_HU_PI_Item_Product_ID);
-			return valueOverrideOrValue == null ? 0 : valueOverrideOrValue.intValue();
+			return valueOverrideOrValue == null ? null : HUPIItemProductId.ofRepoIdOrNull(valueOverrideOrValue.intValue());
 		}
 
-		return -1;
+		return null;
 	}
 
-	public static IProductPriceQueryMatcher createHUPIItemProductMatcher(final int huPIItemProductId)
+	public static IProductPriceQueryMatcher createHUPIItemProductMatcher(final HUPIItemProductId packingMaterialId)
 	{
-		if (huPIItemProductId <= 0)
+		if (packingMaterialId == null)
 		{
 			return HUPIItemProductMatcher_None;
 		}
 		else
 		{
-			return ProductPriceQueryMatcher.of(HUPIItemProductMatcher_NAME, EqualsQueryFilter.of(I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID, huPIItemProductId));
+			return ProductPriceQueryMatcher.of(HUPIItemProductMatcher_NAME, EqualsQueryFilter.of(I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID, packingMaterialId));
 		}
-
 	}
 }

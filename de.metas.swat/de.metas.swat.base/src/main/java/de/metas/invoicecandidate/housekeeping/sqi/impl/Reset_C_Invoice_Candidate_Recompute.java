@@ -3,6 +3,7 @@ package de.metas.invoicecandidate.housekeeping.sqi.impl;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
+import org.springframework.stereotype.Component;
 
 import de.metas.util.Loggables;
 
@@ -34,12 +35,13 @@ import de.metas.util.Loggables;
  *
  * @task https://github.com/metasfresh/metasfresh/issues/251
  */
+@Component
 public class Reset_C_Invoice_Candidate_Recompute implements IStartupHouseKeepingTask
 {
 	@Override
 	public void executeTask()
 	{
 		final int no = DB.getSQLValue(ITrx.TRXNAME_None, "select de_metas_invoicecandidate.Reset_C_Invoice_Candidate_Recompute();");
-		Loggables.get().addLog("Cleaned up " + no + " stale C_Invoice_Candidate_Recompute records");
+		Loggables.addLog("Cleaned up " + no + " stale C_Invoice_Candidate_Recompute records");
 	}
 }

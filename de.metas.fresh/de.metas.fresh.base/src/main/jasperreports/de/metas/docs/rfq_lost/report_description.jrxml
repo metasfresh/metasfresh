@@ -42,7 +42,7 @@
 			<textField>
 				<reportElement key="textField-6" x="37" y="190" width="137" height="13" forecolor="#000000" uuid="09ec774b-e26e-40a0-8143-f09a53cb9b0a"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{notice}]]></textFieldExpression>
 			</textField>
@@ -55,7 +55,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
 			</textField>
@@ -126,7 +126,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{registration_period}]]></textFieldExpression>
 			</textField>
@@ -154,7 +154,7 @@
 			<textField>
 				<reportElement key="textField-6" x="37" y="133" width="140" height="13" forecolor="#000000" uuid="40f62978-7fe7-4276-937d-730b49709fdc"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{cancellation}]]></textFieldExpression>
 			</textField>

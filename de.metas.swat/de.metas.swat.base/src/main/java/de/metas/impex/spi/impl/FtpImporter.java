@@ -10,12 +10,12 @@ package de.metas.impex.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,21 +32,21 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Util;
 import org.ftp4che.FTPConnection;
 import org.ftp4che.FTPConnectionFactory;
 import org.ftp4che.exception.ConfigurationException;
 import org.ftp4che.exception.FtpIOException;
 import org.ftp4che.exception.FtpWorkflowException;
 import org.ftp4che.util.ftpfile.FTPFile;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.util.Parameter;
 import de.metas.impex.api.IInboundProcessorBL;
 import de.metas.impex.exception.ConfigException;
 import de.metas.impex.spi.IImportConnector;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 public class FtpImporter extends BaseConnector implements IImportConnector
 {
@@ -102,7 +102,7 @@ public class FtpImporter extends BaseConnector implements IImportConnector
 		final String semFileCont = getValue(SEMAPHORE_FILE_CONTENT);
 
 		pt.setProperty("connection.host", host);
-		if (!Util.isEmpty(port))
+		if (!Check.isEmpty(port))
 		{
 			pt.setProperty("connection.port", port);
 		}
@@ -145,7 +145,7 @@ public class FtpImporter extends BaseConnector implements IImportConnector
 					continue;
 				}
 
-				if (!Util.isEmpty(semFileExt))
+				if (!Check.isEmpty(semFileExt))
 				{
 
 					downloadWithSemaphoreFile(localFolder, deleteRemoteFiles,

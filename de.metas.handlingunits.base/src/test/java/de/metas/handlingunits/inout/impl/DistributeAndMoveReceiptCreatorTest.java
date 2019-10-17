@@ -11,14 +11,17 @@ import org.compiere.model.I_M_Warehouse;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptCreator.Result;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.X_M_ReceiptSchedule;
+import de.metas.product.IProductActivityProvider;
 import de.metas.product.LotNumberQuarantineRepository;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -53,6 +56,8 @@ public class DistributeAndMoveReceiptCreatorTest
 	{
 		AdempiereTestHelper.get().init();
 
+		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
+
 		distributeAndMoveReceiptCreator = new DistributeAndMoveReceiptCreator(new LotNumberQuarantineRepository());
 	}
 
@@ -75,12 +80,12 @@ public class DistributeAndMoveReceiptCreatorTest
 
 		final I_M_InOutLine receiptLineRecord = newInstance(I_M_InOutLine.class);
 		receiptLineRecord.setM_InOut(receiptRecord);
-		receiptLineRecord.setM_Locator(receiptLineLocator);
+		receiptLineRecord.setM_Locator_ID(receiptLineLocator.getM_Locator_ID());
 		receiptLineRecord.setM_Product_ID(productId.getRepoId());
 		saveRecord(receiptLineRecord);
 
 		final I_M_ReceiptSchedule receiptSchedule = newInstance(I_M_ReceiptSchedule.class);
-		receiptSchedule.setM_Warehouse_Dest(destWarehouse);
+		receiptSchedule.setM_Warehouse_Dest_ID(destWarehouse.getM_Warehouse_ID());
 		receiptSchedule.setOnMaterialReceiptWithDestWarehouse(X_M_ReceiptSchedule.ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateMovement);
 		saveRecord(receiptSchedule);
 

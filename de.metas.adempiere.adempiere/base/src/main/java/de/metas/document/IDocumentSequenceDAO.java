@@ -4,6 +4,7 @@ import java.util.Date;
 
 import org.compiere.model.I_C_DocType;
 
+import de.metas.document.sequence.DocSequenceId;
 import de.metas.util.ISingletonService;
 
 /**
@@ -16,7 +17,14 @@ public interface IDocumentSequenceDAO extends ISingletonService
 {
 	DocumentSequenceInfo retriveDocumentSequenceInfo(String sequenceName, int adClientId, int adOrgId);
 
-	DocumentSequenceInfo retriveDocumentSequenceInfo(int adSequenceId);
+	DocumentSequenceInfo retriveDocumentSequenceInfo(DocSequenceId sequenceId);
+
+	@Deprecated
+	default DocumentSequenceInfo retriveDocumentSequenceInfo(int adSequenceRepoId)
+	{
+		final DocSequenceId adSequenceId = DocSequenceId.ofRepoIdOrNull(adSequenceRepoId);
+		return adSequenceId != null ? retriveDocumentSequenceInfo(adSequenceId) : null;
+	}
 
 	String retrieveDocumentNoByYear(int AD_Sequence_ID, Date date);
 

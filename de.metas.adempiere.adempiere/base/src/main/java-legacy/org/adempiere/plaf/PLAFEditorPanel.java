@@ -50,7 +50,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.plaf.metal.MetalTheme;
 
-import org.adempiere.user.UserId;
 import org.compiere.plaf.PlafRes;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CCheckBox;
@@ -65,6 +64,7 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 
 /**

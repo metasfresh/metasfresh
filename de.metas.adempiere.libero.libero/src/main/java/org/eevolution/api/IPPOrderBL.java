@@ -13,24 +13,24 @@ package org.eevolution.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.compiere.model.I_C_OrderLine;
 import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_Workflow;
 
 import de.metas.document.IDocTypeDAO;
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 
 public interface IPPOrderBL extends ISingletonService
@@ -57,19 +57,27 @@ public interface IPPOrderBL extends ISingletonService
 	 */
 	void updateQtyBatchs(I_PP_Order order, boolean override);
 
-	void orderStock(I_PP_Order ppOrder);
-
 	/**
 	 * @return true if ANY work was delivered for this MO (i.e. Stock Issue, Stock Receipt, Activity Control Report)
 	 */
-	boolean isDelivered(I_PP_Order ppOrder);
+	boolean isSomethingProcessed(I_PP_Order ppOrder);
+
+	Quantity getQtyOrdered(I_PP_Order ppOrder);
 
 	/**
 	 * Gets Open Qty (i.e. how much we still need to receive).
 	 *
-	 * @return Open Qty (Ordered - Delivered - Scrap)
+	 * @return Open Qty (Ordered - Received - Scrap)
 	 */
-	BigDecimal getQtyOpen(I_PP_Order ppOrder);
+	Quantity getQtyOpen(I_PP_Order ppOrder);
+
+	Quantity getQtyReceived(I_PP_Order ppOrder);
+
+	Quantity getQtyReceived(PPOrderId ppOrderId);
+
+	Quantity getQtyScrapped(I_PP_Order ppOrder);
+
+	Quantity getQtyRejected(I_PP_Order ppOrder);
 
 	/**
 	 * Gets the "direct" order line.
@@ -89,18 +97,6 @@ public interface IPPOrderBL extends ISingletonService
 	void updateBOMOrderLinesWarehouseAndLocator(I_PP_Order ppOrder);
 
 	/**
-	 * Sets a dynamic (memory-only) attribute for the given record, which can later be validated by other methods of this service.
-	 *
-	 * @param ppOrder
-	 * @param forceQtyReservation
-	 * @see org.adempiere.model.InterfaceWrapperHelper#setDynAttribute(Object, String, Object)
-	 * @see #orderStock(I_PP_Order)
-	 */
-	void setForceQtyReservation(I_PP_Order ppOrder, boolean forceQtyReservation);
-
-	I_PP_Order_Workflow getPP_Order_Workflow(I_PP_Order ppOrder);
-
-	/**
 	 * Sets manufacturing order's document type(s).
 	 *
 	 * @param ppOrder
@@ -118,4 +114,12 @@ public interface IPPOrderBL extends ISingletonService
 	void closeQtyOrdered(I_PP_Order ppOrder);
 
 	void uncloseQtyOrdered(I_PP_Order ppOrder);
+
+	void changeScheduling(PPOrderScheduleChangeRequest request);
+
+	void createOrderRouting(I_PP_Order ppOrder);
+
+	void closeAllActivities(PPOrderId orderId);
+
+	void voidOrderRouting(PPOrderId orderId);
 }

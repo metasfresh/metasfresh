@@ -13,15 +13,14 @@ package de.metas.handlingunits.maintenance.process;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -32,7 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.db.util.AbstractPreparedStatementBlindIterator;
@@ -44,6 +42,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable2;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderBL;
@@ -54,6 +53,7 @@ import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.model.X_PP_Order;
 
+import de.metas.acct.api.IFactAcctDAO;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.engine.IDocument;
@@ -66,6 +66,7 @@ import de.metas.handlingunits.movement.api.impl.HUMovementBuilder;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.process.JavaProcess;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -120,7 +121,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 
 	private void process(final HUToProcess huToProcess)
 	{
-		trxManager.run(new TrxRunnable2()
+		trxManager.runInNewTrx(new TrxRunnable2()
 		{
 
 			@Override
@@ -178,7 +179,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 
 		//
 		// If HU is already in target warehouse then there is nothing to move
-		final I_M_Locator huLocator = hu.getM_Locator();
+		final I_M_Locator huLocator = IHandlingUnitsBL.extractLocator(hu);
 		if (huLocator.getM_Warehouse_ID() == destinationWarehouse.getM_Warehouse_ID())
 		{
 			return;
@@ -236,7 +237,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 		// Planning dimension
 		order.setAD_Org_ID(adOrgId);
 		order.setS_Resource(plant);
-		order.setM_Warehouse(warehouse);
+		order.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 
 		//
 		// Document Type & Status
@@ -249,7 +250,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 		// Product, ASI, UOM
 		order.setM_Product_ID(productBOM.getM_Product_ID());
 		order.setM_AttributeSetInstance_ID(productBOM.getM_AttributeSetInstance_ID());
-		order.setC_UOM(productBOM.getC_UOM());
+		order.setC_UOM_ID(productBOM.getC_UOM_ID());
 
 		//
 		// BOM & Workflow
@@ -275,7 +276,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 
 		//
 		// Misc
-		order.setC_OrderLine(null);
+		order.setC_OrderLine_ID(-1);
 		order.setC_BPartner_ID(hu.getC_BPartner_ID());
 		order.setDescription(huToProcess.getReference());
 
@@ -294,15 +295,16 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 	{
 		final I_PP_Order ppOrder = huToProcess.getPP_Order();
 		Check.assumeNotNull(ppOrder, "ppOrder not null");
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
 
 		final I_M_HU hu = huToProcess.getM_HU();
 		final I_M_Product rawProduct = huToProcess.getRaw_Product();
 		final I_PP_Order_BOMLine ppOrderBOMLine = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, rawProduct);
 
 		huPPOrderBL.createIssueProducer()
-				.setMovementDate(ppOrder.getDatePromised())
 				.setTargetOrderBOMLine(ppOrderBOMLine)
-				.createDraftIssue(hu);
+				.setMovementDate(TimeUtil.asLocalDate(ppOrder.getDatePromised()))
+				.createIssue(hu);
 
 		if (!handlingUnitsBL.isDestroyedRefreshFirst(hu))
 		{
@@ -321,7 +323,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 		//
 		// Mark all cost collectors as closed.
 		// Delete the accountings for them.
-		final List<I_PP_Cost_Collector> costCollectors = ppCostCollectorDAO.retrieveForOrder(ppOrder);
+		final List<I_PP_Cost_Collector> costCollectors = ppCostCollectorDAO.getByOrderId(ppOrderId);
 
 		for (final I_PP_Cost_Collector cc : costCollectors)
 		{

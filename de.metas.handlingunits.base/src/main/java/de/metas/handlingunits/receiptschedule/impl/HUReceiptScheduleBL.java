@@ -57,6 +57,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
@@ -78,7 +79,6 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
-import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
@@ -105,6 +105,7 @@ import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.spi.impl.InOutProducerFromReceiptScheduleHU;
 import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -169,26 +170,16 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			return;
 		}
 
-		Services.get(ITrxManager.class).run(trxName, new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				final IContextAware context = Services.get(ITrxManager.class).createThreadContextAware(allocs.get(0));
-				final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(context);
+		Services.get(ITrxManager.class).run(trxName, (TrxRunnable)localTrxName -> {
+			final IContextAware context = Services.get(ITrxManager.class).createThreadContextAware(allocs.get(0));
+			final IHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(context);
 
-				Services.get(IHUTrxBL.class)
-						.createHUContextProcessorExecutor(huContext)
-						.run(new IHUContextProcessor()
-						{
-							@Override
-							public IMutableAllocationResult process(final IHUContext huContext)
-							{
-								destroyHandlingUnits(huContext, allocs);
-								return NULL_RESULT;
-							}
-						});
-			}
+			Services.get(IHUTrxBL.class)
+					.createHUContextProcessorExecutor(huContext)
+					.run((IHUContextProcessor)huContext1 -> {
+						destroyHandlingUnits(huContext1, allocs);
+						return IHUContextProcessor.NULL_RESULT;
+					});
 		});
 	}
 
@@ -338,7 +329,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 
 	private void validateHuIds(Set<HuId> huIds)
 	{
-		final IHUToReceiveValidator huToReceiveValidator = CompositeHUToReceiveValidator.of(Adempiere.getBeansOfType(IHUToReceiveValidator.class));
+		final IHUToReceiveValidator huToReceiveValidator = CompositeHUToReceiveValidator.of(SpringContextHolder.instance.getBeansOfType(IHUToReceiveValidator.class));
 
 		for (final HuId huId : huIds)
 		{
@@ -422,7 +413,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			final List<I_M_InOutLine> inoutLines = inOutDAO.retrieveLines(inout);
 			for (final I_M_InOutLine inoutLine : inoutLines)
 			{
-				final List<I_M_HU_Assignment> huAssignments = huAssignmentDAO.retrieveHUAssignmentsForModel(inoutLine);
+				final List<I_M_HU_Assignment> huAssignments = huAssignmentDAO.retrieveTopLevelHUAssignmentsForModel(inoutLine);
 				for (final I_M_HU_Assignment huAssignment : huAssignments)
 				{
 					final int huId = huAssignment.getM_HU_ID();
@@ -473,8 +464,8 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			return;
 		}
 
-		final int adProcessId = huReportService.retrievePrintReceiptLabelProcessId();
-		if (adProcessId <= 0)
+		final AdProcessId adProcessId = huReportService.retrievePrintReceiptLabelProcessIdOrNull();
+		if (adProcessId == null)
 		{
 			logger.debug("No process configured via SysConfig {}; nothing to do", HUReportService.SYSCONFIG_RECEIPT_LABEL_PROCESS_ID);
 			return;

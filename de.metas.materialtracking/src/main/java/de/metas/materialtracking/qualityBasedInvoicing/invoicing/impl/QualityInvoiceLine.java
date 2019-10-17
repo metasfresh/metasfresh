@@ -33,7 +33,9 @@ import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoice
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.IQualityInvoiceLineGroup;
 import de.metas.pricing.IPricingResult;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 public class QualityInvoiceLine implements IQualityInvoiceLine
 {
@@ -122,25 +124,15 @@ public class QualityInvoiceLine implements IQualityInvoiceLine
 	}
 
 	@Override
-	public BigDecimal getQty()
+	public Quantity getQty()
 	{
-		return qty;
+		return Quantity.of(qty, uom);
 	}
 
-	public void setQty(final BigDecimal qty)
+	public void setQty(@NonNull final Quantity qty)
 	{
-		this.qty = qty;
-	}
-
-	@Override
-	public I_C_UOM getC_UOM()
-	{
-		return uom;
-	}
-
-	public void setC_UOM(final I_C_UOM uom)
-	{
-		this.uom = uom;
+		this.qty = qty.toBigDecimal();
+		this.uom = qty.getUOM();
 	}
 
 	@Override

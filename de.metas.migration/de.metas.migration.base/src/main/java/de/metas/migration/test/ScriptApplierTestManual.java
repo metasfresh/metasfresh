@@ -13,11 +13,11 @@ package de.metas.migration.test;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -35,6 +35,7 @@ import de.metas.migration.impl.SQLDatabase;
 import de.metas.migration.scanner.IFileRef;
 import de.metas.migration.scanner.IScriptScanner;
 import de.metas.migration.scanner.IScriptScannerFactory;
+import de.metas.migration.scanner.impl.DefaultScriptFactory;
 import de.metas.migration.scanner.impl.FileRef;
 import de.metas.migration.scanner.impl.ScriptScannerFactory;
 import de.metas.migration.scanner.impl.ScriptScannerProviderWrapper;
@@ -52,14 +53,19 @@ public class ScriptApplierTestManual
 		// scriptExecutorFactory.registerScriptExecutorClass(IScriptExecutorFactory.TYPE_ANY, IScriptExecutorFactory.TYPE_ANY, NullScriptExecutor.class);
 
 		final IScriptScannerFactory scriptScannerFactory = new ScriptScannerFactory();
+		scriptScannerFactory.setScriptFactory(new DefaultScriptFactory("test"));
 		scriptScannerFactory.registerScriptScannerClassesFor(scriptExecutorFactory);
 
-		final IFileRef rootFileRef = new FileRef(new File("c:\\tmp\\testScripts"));
+		final IFileRef rootFileRef = new FileRef(new File("d:\\tmp\\testScripts"));
 		final IScriptScanner scriptScanner = scriptScannerFactory.createScriptScanner(rootFileRef);
+		if (scriptScanner == null)
+		{
+			throw new RuntimeException("No script scanner created for " + rootFileRef);
+		}
 
 		final IScriptsProvider scriptsProvider = new ScriptScannerProviderWrapper(scriptScanner);
 
-		final IDatabase database = new SQLDatabase("postgresql", "127.0.0.1", "5432", "fresh", "adempiere", "adempiere");
+		final IDatabase database = new SQLDatabase("postgresql", "127.0.0.1", "5432", "metasfresh", "metasfresh", "metasfresh");
 		System.out.println("Database: " + database);
 		final IScriptsApplier scriptsApplier = new ScriptsApplier(database);
 

@@ -29,8 +29,6 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.UOMConversionContext;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ObjectUtils;
 
@@ -60,6 +58,8 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -390,7 +390,7 @@ public class HULoader
 				trxs.add(unloadTrxPartial);
 				trxs.add(loadTrx);
 
-				final BigDecimal unloadTrxPartial_Qty = unloadTrxPartial.getQuantity().getAsBigDecimal().negate();
+				final BigDecimal unloadTrxPartial_Qty = unloadTrxPartial.getQuantity().toBigDecimal().negate();
 				qtyUnloaded = qtyUnloaded.add(unloadTrxPartial_Qty);
 			}
 

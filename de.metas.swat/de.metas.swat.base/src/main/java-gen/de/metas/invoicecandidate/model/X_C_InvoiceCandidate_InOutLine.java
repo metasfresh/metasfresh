@@ -15,7 +15,7 @@ public class X_C_InvoiceCandidate_InOutLine extends org.compiere.model.PO implem
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 355385319L;
+	private static final long serialVersionUID = 394758368L;
 
     /** Standard Constructor */
     public X_C_InvoiceCandidate_InOutLine (Properties ctx, int C_InvoiceCandidate_InOutLine_ID, String trxName)
@@ -44,7 +44,7 @@ public class X_C_InvoiceCandidate_InOutLine extends org.compiere.model.PO implem
     }
 
 	@Override
-	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Candidate() throws RuntimeException
+	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Candidate()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_Candidate_ID, de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
 	}
@@ -99,6 +99,31 @@ public class X_C_InvoiceCandidate_InOutLine extends org.compiere.model.PO implem
 		return ii.intValue();
 	}
 
+	/** Set Maßeinheit.
+		@param C_UOM_ID 
+		Maßeinheit
+	  */
+	@Override
+	public void setC_UOM_ID (int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+	}
+
+	/** Get Maßeinheit.
+		@return Maßeinheit
+	  */
+	@Override
+	public int getC_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Lieferung/ Wareneingang freigeben.
 		@param IsInOutApprovedForInvoicing Lieferung/ Wareneingang freigeben	  */
 	@Override
@@ -122,7 +147,7 @@ public class X_C_InvoiceCandidate_InOutLine extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public org.compiere.model.I_M_InOutLine getM_InOutLine() throws RuntimeException
+	public org.compiere.model.I_M_InOutLine getM_InOutLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class);
 	}
@@ -165,7 +190,8 @@ public class X_C_InvoiceCandidate_InOutLine extends org.compiere.model.PO implem
 	@Override
 	public void setQtyDelivered (java.math.BigDecimal QtyDelivered)
 	{
-		throw new IllegalArgumentException ("QtyDelivered is virtual column");	}
+		set_ValueNoCheck (COLUMNNAME_QtyDelivered, QtyDelivered);
+	}
 
 	/** Get Gelieferte Menge.
 		@return Gelieferte Menge
@@ -179,9 +205,69 @@ public class X_C_InvoiceCandidate_InOutLine extends org.compiere.model.PO implem
 		return bd;
 	}
 
+	/** Set Geliefert Catch.
+		@param QtyDeliveredInUOM_Catch 
+		Tatsächlich gelieferte Menge
+	  */
+	@Override
+	public void setQtyDeliveredInUOM_Catch (java.math.BigDecimal QtyDeliveredInUOM_Catch)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyDeliveredInUOM_Catch, QtyDeliveredInUOM_Catch);
+	}
+
+	/** Get Geliefert Catch.
+		@return Tatsächlich gelieferte Menge
+	  */
+	@Override
+	public java.math.BigDecimal getQtyDeliveredInUOM_Catch () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDeliveredInUOM_Catch);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Geliefert Nominal.
+		@param QtyDeliveredInUOM_Nominal Geliefert Nominal	  */
+	@Override
+	public void setQtyDeliveredInUOM_Nominal (java.math.BigDecimal QtyDeliveredInUOM_Nominal)
+	{
+		set_Value (COLUMNNAME_QtyDeliveredInUOM_Nominal, QtyDeliveredInUOM_Nominal);
+	}
+
+	/** Get Geliefert Nominal.
+		@return Geliefert Nominal	  */
+	@Override
+	public java.math.BigDecimal getQtyDeliveredInUOM_Nominal () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDeliveredInUOM_Nominal);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Geliefert abw..
+		@param QtyDeliveredInUOM_Override Geliefert abw.	  */
+	@Override
+	public void setQtyDeliveredInUOM_Override (java.math.BigDecimal QtyDeliveredInUOM_Override)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyDeliveredInUOM_Override, QtyDeliveredInUOM_Override);
+	}
+
+	/** Get Geliefert abw..
+		@return Geliefert abw.	  */
+	@Override
+	public java.math.BigDecimal getQtyDeliveredInUOM_Override () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDeliveredInUOM_Override);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** Set Berechn. Menge.
 		@param QtyInvoiced 
-		Menge, die bereits in Rechnung gestellt wurde
+		Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
 	  */
 	@Override
 	public void setQtyInvoiced (java.math.BigDecimal QtyInvoiced)
@@ -190,7 +276,7 @@ public class X_C_InvoiceCandidate_InOutLine extends org.compiere.model.PO implem
 	}
 
 	/** Get Berechn. Menge.
-		@return Menge, die bereits in Rechnung gestellt wurde
+		@return Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
 	  */
 	@Override
 	public java.math.BigDecimal getQtyInvoiced () 

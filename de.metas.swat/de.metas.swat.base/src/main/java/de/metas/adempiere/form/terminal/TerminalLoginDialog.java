@@ -27,8 +27,6 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.user.api.IUserBL;
-import org.adempiere.user.api.IUserDAO;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -36,6 +34,8 @@ import org.compiere.util.KeyNamePair;
 import de.metas.adempiere.form.terminal.ITerminalTextField.KeyboardDisplayMode;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.model.I_C_POSKey;
+import de.metas.user.api.IUserBL;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.hash.HashableString;

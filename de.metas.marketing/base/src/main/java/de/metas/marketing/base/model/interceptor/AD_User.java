@@ -6,8 +6,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.user.User;
-import org.adempiere.user.UserRepository;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -18,9 +17,9 @@ import de.metas.marketing.base.CampaignService;
 import de.metas.marketing.base.ContactPersonService;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
-import de.metas.marketing.base.model.I_AD_User;
+import de.metas.user.User;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -45,7 +44,7 @@ import lombok.NonNull;
  * #L%
  */
 @Interceptor(I_AD_User.class)
-@Component("de.metas.marketing.base.model.interceptor.AD_User")
+@Component
 public class AD_User
 {
 
@@ -67,7 +66,7 @@ public class AD_User
 		this.campaignService = campaignService;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_AD_User.COLUMNNAME_IsNewsletter })
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE}, ifColumnsChanged = { I_AD_User.COLUMNNAME_IsNewsletter })
 	public void onChangeNewsletter(final I_AD_User userRecord)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);

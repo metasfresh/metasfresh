@@ -26,17 +26,13 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
-import org.slf4j.Logger;
-
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.apps.wf.WFActivityModel;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
@@ -59,14 +55,17 @@ import org.compiere.swing.CScrollPane;
 import org.compiere.swing.CTextArea;
 import org.compiere.swing.CTextField;
 import org.compiere.swing.CTextPane;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.compiere.util.ValueNamePair;
 import org.compiere.wf.MWFActivity;
 import org.compiere.wf.MWFNode;
+import org.slf4j.Logger;
+
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /**
  * WorkFlow Activities Panel
@@ -279,6 +278,7 @@ public class WFActivity extends CPanel
 	 * @param frame frame
 	 * @see org.compiere.apps.form.FormPanel#init(int, FormFrame)
 	 */
+	@Override
 	public void init(int WindowNo, FormFrame frame)
 	{
 		m_WindowNo = WindowNo;
@@ -305,10 +305,13 @@ public class WFActivity extends CPanel
 	 * 
 	 * @see org.compiere.apps.form.FormPanel#dispose()
 	 */
+	@Override
 	public void dispose()
 	{
 		if (m_frame != null)
+		{
 			m_frame.dispose();
+		}
 		m_frame = null;
 	}	// dispose
 	
@@ -365,7 +368,9 @@ public class WFActivity extends CPanel
 		m_activity = resetDisplay(index);
 		//
 		if (m_activity == null)
+		{
 			return;
+		}
 
 		// Display Activity
 		fNode.setText(m_activity.getNodeName());
@@ -379,7 +384,9 @@ public class WFActivity extends CPanel
 		if (MWFNode.ACTION_UserChoice.equals(node.getAction()))
 		{
 			if (m_column == null)
+			{
 				m_column = node.getColumn();
+			}
 			if (m_column != null && m_column.get_ID() != 0)
 			{
 				int dt = m_column.getAD_Reference_ID();
@@ -415,7 +422,9 @@ public class WFActivity extends CPanel
 		 * else if (MWFNode.ACTION_UserWorkbench.equals(node.getAction())) log.error("Workflow Action not implemented yet");
 		 */
 		else
+		{
 			log.error("Unknown Node Action: " + node.getAction());
+		}
 
 		statusBar.setStatusDB((index + 1) + "/" + m_activities.length);
 		statusBar.setStatusLine(msgBL.getMsg(Env.getCtx(), "WFActivities"));
@@ -444,7 +453,9 @@ public class WFActivity extends CPanel
 		if (m_activities.length > 0)
 		{
 			if (selIndex >= 0 && selIndex < m_activities.length)
+			{
 				m_activity = m_activities[selIndex];
+			}
 		}
 		// Nothing to show
 		if (m_activity == null)
@@ -464,11 +475,14 @@ public class WFActivity extends CPanel
 	 * 
 	 * @param e event
 	 */
+	@Override
 	public void valueChanged(ListSelectionEvent e)
 	{
 		int index = selTable.getSelectedRow();
 		if (index >= 0)
+		{
 			display(index);
+		}
 	}	// valueChanged
 
 	/**
@@ -477,16 +491,23 @@ public class WFActivity extends CPanel
 	 * @param e event
 	 * @see java.awt.event.ActionListener#actionPerformed(ActionEvent)
 	 */
+	@Override
 	public void actionPerformed(ActionEvent e)
 	{
 		this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		//
 		if (e.getSource() == bZoom)
+		{
 			cmd_zoom();
+		}
 		else if (e.getSource() == bOK)
+		{
 			cmd_OK();
+		}
 		else if (e.getSource() == fAnswerButton)
+		{
 			cmd_button();
+		}
 		//
 		this.setCursor(Cursor.getDefaultCursor());
 	}	// actionPerformed
@@ -498,7 +519,9 @@ public class WFActivity extends CPanel
 	{
 		log.info("Activity=" + m_activity);
 		if (m_activity == null)
+		{
 			return;
+		}
 		AEnv.zoom(m_activity.getAD_Table_ID(), m_activity.getRecord_ID());
 	}	// cmd_zoom
 
@@ -509,12 +532,14 @@ public class WFActivity extends CPanel
 	{
 		log.info("Activity=" + m_activity);
 		if (m_activity == null)
+		{
 			return;
+		}
 		//
 		MWFNode node = m_activity.getNode();
 		if (MWFNode.ACTION_UserWindow.equals(node.getAction()))
 		{
-			int AD_Window_ID = node.getAD_Window_ID();		// Explicit Window
+			AdWindowId AD_Window_ID = AdWindowId.ofRepoId(node.getAD_Window_ID());		// Explicit Window
 			String ColumnName = m_activity.getPO().get_TableName() + "_ID";
 			int Record_ID = m_activity.getRecord_ID();
 			MQuery query = MQuery.getEqualQuery(ColumnName, Record_ID);
@@ -524,7 +549,9 @@ public class WFActivity extends CPanel
 					+ " - " + query + " (IsSOTrx=" + IsSOTrx + ")");
 			AWindow frame = new AWindow();
 			if (!frame.initWindow(AD_Window_ID, query))
+			{
 				return;
+			}
 			AEnv.addToWindowManager(frame);
 			AEnv.showCenterScreen(frame);
 			frame = null;
@@ -551,7 +578,9 @@ public class WFActivity extends CPanel
 		 * }
 		 */
 		else
+		{
 			log.error("No User Action:" + node.getAction());
+		}
 	}	// cmd_button
 
 	/**
@@ -561,7 +590,9 @@ public class WFActivity extends CPanel
 	{
 		log.info("Activity=" + m_activity);
 		if (m_activity == null)
+		{
 			return;
+		}
 		int AD_User_ID = Env.getAD_User_ID(Env.getCtx());
 		String textMsg = fTextMsg.getText();
 		//
@@ -596,7 +627,9 @@ public class WFActivity extends CPanel
 		else if (MWFNode.ACTION_UserChoice.equals(node.getAction()))
 		{
 			if (m_column == null)
+			{
 				m_column = node.getColumn();
+			}
 			// Do we have an answer?
 			int dt = m_column.getAD_Reference_ID();
 			String value = fAnswerText.getText();

@@ -26,20 +26,15 @@ import java.util.Map;
  */
 
 import java.util.Properties;
-import java.util.Set;
 
 import org.compiere.util.Env;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.Msg;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
-import de.metas.util.Services;
 
 /**
  *
@@ -120,7 +115,7 @@ public class MsgBL implements IMsgBL
 	{
 		if (Check.isEmpty(text, true))
 		{
-			return ImmutableTranslatableString.constant(text);
+			return TranslatableStrings.constant(text);
 		}
 		return new ADElementOrADMessageTranslatableString(text);
 	}
@@ -148,10 +143,10 @@ public class MsgBL implements IMsgBL
 	{
 		if (text == null || text.isEmpty())
 		{
-			return ImmutableTranslatableString.empty();
+			return TranslatableStrings.empty();
 		}
 
-		final TranslatableStringBuilder builder = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder builder = TranslatableStrings.builder();
 
 		String inStr = text;
 		int idx = inStr.indexOf('@');
@@ -194,91 +189,6 @@ public class MsgBL implements IMsgBL
 	public void cacheReset()
 	{
 		Msg.cacheReset();
-	}
-
-	@lombok.EqualsAndHashCode
-	private static final class ADMessageTranslatableString implements ITranslatableString
-	{
-		private final String adMessage;
-		private final List<Object> msgParameters;
-
-		private ADMessageTranslatableString(final String adMessage, final Object... msgParameters)
-		{
-			this.adMessage = adMessage;
-			if (msgParameters == null || msgParameters.length == 0)
-			{
-				this.msgParameters = ImmutableList.of();
-			}
-			else
-			{
-				this.msgParameters = ImmutableList.copyOf(msgParameters);
-			}
-		}
-
-		@Override
-		public String toString()
-		{
-			return adMessage;
-		}
-
-		@Override
-		public String translate(final String adLanguage)
-		{
-			return Msg.getMsg(adLanguage, adMessage, msgParameters.toArray());
-		}
-
-		@Override
-		public String getDefaultValue()
-		{
-			return "@" + adMessage + "@";
-		}
-
-		@Override
-		public Set<String> getAD_Languages()
-		{
-			return Services.get(ILanguageBL.class).getAvailableLanguages().getAD_Languages();
-		}
-	}
-
-	/**
-	 * Wraps a given <code>text</code> and will call {@link Msg#translate(Properties, String, boolean)}.
-	 *
-	 * @author metas-dev <dev@metasfresh.com>
-	 */
-	@lombok.EqualsAndHashCode
-	private static final class ADElementOrADMessageTranslatableString implements ITranslatableString
-	{
-		private final String text;
-
-		private ADElementOrADMessageTranslatableString(final String text)
-		{
-			this.text = text;
-		}
-
-		@Override
-		public String toString()
-		{
-			return text;
-		}
-
-		@Override
-		public String translate(final String adLanguage)
-		{
-			final boolean isSOTrx = true;
-			return Msg.translate(adLanguage, isSOTrx, text);
-		}
-
-		@Override
-		public String getDefaultValue()
-		{
-			return "@" + text + "@";
-		}
-
-		@Override
-		public Set<String> getAD_Languages()
-		{
-			return Services.get(ILanguageBL.class).getAvailableLanguages().getAD_Languages();
-		}
 	}
 
 }

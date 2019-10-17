@@ -19,7 +19,13 @@ package org.eevolution.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.model.*;
+
+import org.compiere.model.I_AD_PrintFormat;
+import org.compiere.model.I_C_Charge;
+import org.compiere.model.I_Persistent;
+import org.compiere.model.MTable;
+import org.compiere.model.PO;
+import org.compiere.model.POInfo;
 import org.compiere.util.KeyNamePair;
 
 /** Generated Model for HR_Payroll
@@ -55,25 +61,29 @@ public class X_HR_Payroll extends PO implements I_HR_Payroll, I_Persistent
     /** AccessLevel
       * @return 3 - Client - Org 
       */
-    protected int get_AccessLevel()
+    @Override
+	protected int get_AccessLevel()
     {
       return accessLevel.intValue();
     }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+	protected POInfo initPO (Properties ctx)
     {
       POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
       return poi;
     }
 
-    public String toString()
+    @Override
+	public String toString()
     {
       StringBuffer sb = new StringBuffer ("X_HR_Payroll[")
         .append(get_ID()).append("]");
       return sb.toString();
     }
 
+	@Override
 	public I_AD_PrintFormat getAD_PrintFormat() throws RuntimeException
     {
 		return (I_AD_PrintFormat)MTable.get(getCtx(), I_AD_PrintFormat.Table_Name)
@@ -83,25 +93,34 @@ public class X_HR_Payroll extends PO implements I_HR_Payroll, I_Persistent
 		@param AD_PrintFormat_ID 
 		Data Print Format
 	  */
+	@Override
 	public void setAD_PrintFormat_ID (int AD_PrintFormat_ID)
 	{
-		if (AD_PrintFormat_ID < 1) 
+		if (AD_PrintFormat_ID < 1)
+		{
 			set_Value (COLUMNNAME_AD_PrintFormat_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_AD_PrintFormat_ID, Integer.valueOf(AD_PrintFormat_ID));
+		}
 	}
 
 	/** Get Print Format.
 		@return Data Print Format
 	  */
+	@Override
 	public int getAD_PrintFormat_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PrintFormat_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
+	@Override
 	public I_C_Charge getC_Charge() throws RuntimeException
     {
 		return (I_C_Charge)MTable.get(getCtx(), I_C_Charge.Table_Name)
@@ -111,22 +130,30 @@ public class X_HR_Payroll extends PO implements I_HR_Payroll, I_Persistent
 		@param C_Charge_ID 
 		Additional document charges
 	  */
+	@Override
 	public void setC_Charge_ID (int C_Charge_ID)
 	{
-		if (C_Charge_ID < 1) 
+		if (C_Charge_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_Charge_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_Charge_ID, Integer.valueOf(C_Charge_ID));
+		}
 	}
 
 	/** Get Charge.
 		@return Additional document charges
 	  */
+	@Override
 	public int getC_Charge_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Charge_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -134,6 +161,7 @@ public class X_HR_Payroll extends PO implements I_HR_Payroll, I_Persistent
 		@param Description 
 		Optional short description of the record
 	  */
+	@Override
 	public void setDescription (String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
@@ -142,11 +170,13 @@ public class X_HR_Payroll extends PO implements I_HR_Payroll, I_Persistent
 	/** Get Description.
 		@return Optional short description of the record
 	  */
+	@Override
 	public String getDescription () 
 	{
 		return (String)get_Value(COLUMNNAME_Description);
 	}
 
+	@Override
 	public org.eevolution.model.I_HR_Contract getHR_Contract() throws RuntimeException
     {
 		return (org.eevolution.model.I_HR_Contract)MTable.get(getCtx(), org.eevolution.model.I_HR_Contract.Table_Name)
@@ -154,41 +184,57 @@ public class X_HR_Payroll extends PO implements I_HR_Payroll, I_Persistent
 
 	/** Set Payroll Contract.
 		@param HR_Contract_ID Payroll Contract	  */
+	@Override
 	public void setHR_Contract_ID (int HR_Contract_ID)
 	{
-		if (HR_Contract_ID < 1) 
+		if (HR_Contract_ID < 1)
+		{
 			set_Value (COLUMNNAME_HR_Contract_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_HR_Contract_ID, Integer.valueOf(HR_Contract_ID));
+		}
 	}
 
 	/** Get Payroll Contract.
 		@return Payroll Contract	  */
+	@Override
 	public int getHR_Contract_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_HR_Contract_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
 	/** Set Payroll.
 		@param HR_Payroll_ID Payroll	  */
+	@Override
 	public void setHR_Payroll_ID (int HR_Payroll_ID)
 	{
-		if (HR_Payroll_ID < 1) 
+		if (HR_Payroll_ID < 1)
+		{
 			set_ValueNoCheck (COLUMNNAME_HR_Payroll_ID, null);
-		else 
+		}
+		else
+		{
 			set_ValueNoCheck (COLUMNNAME_HR_Payroll_ID, Integer.valueOf(HR_Payroll_ID));
+		}
 	}
 
 	/** Get Payroll.
 		@return Payroll	  */
+	@Override
 	public int getHR_Payroll_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_HR_Payroll_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -196,6 +242,7 @@ public class X_HR_Payroll extends PO implements I_HR_Payroll, I_Persistent
 		@param Name 
 		Alphanumeric identifier of the entity
 	  */
+	@Override
 	public void setName (String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
@@ -204,6 +251,7 @@ public class X_HR_Payroll extends PO implements I_HR_Payroll, I_Persistent
 	/** Get Name.
 		@return Alphanumeric identifier of the entity
 	  */
+	@Override
 	public String getName () 
 	{
 		return (String)get_Value(COLUMNNAME_Name);
@@ -217,24 +265,25 @@ public class X_HR_Payroll extends PO implements I_HR_Payroll, I_Persistent
         return new KeyNamePair(get_ID(), getName());
     }
 
-	/** PaymentRule AD_Reference_ID=214 */
-	public static final int PAYMENTRULE_AD_Reference_ID=214;
-	/** Credit Card = C */
-	public static final String PAYMENTRULE_CreditCard = "C";
-	/** Check = K */
-	public static final String PAYMENTRULE_Check = "K";
-	/** Direct Deposit = A */
-	public static final String PAYMENTRULE_DirectDeposit = "A";
-	/** Direct Debit = D */
-	public static final String PAYMENTRULE_DirectDebit = "D";
-	/** Account = T */
-	public static final String PAYMENTRULE_Account = "T";
-	/** Cash = X */
-	public static final String PAYMENTRULE_Cash = "X";
+//	/** PaymentRule AD_Reference_ID=214 */
+//	public static final int PAYMENTRULE_AD_Reference_ID=214;
+//	/** Credit Card = C */
+//	public static final String PAYMENTRULE_CreditCard = "C";
+//	/** Check = K */
+//	public static final String PAYMENTRULE_Check = "K";
+//	/** Direct Deposit = A */
+//	public static final String PAYMENTRULE_DirectDeposit = "A";
+//	/** Direct Debit = D */
+//	public static final String PAYMENTRULE_DirectDebit = "D";
+//	/** Account = T */
+//	public static final String PAYMENTRULE_Account = "T";
+//	/** Cash = X */
+//	public static final String PAYMENTRULE_Cash = "X";
 	/** Set Payment Rule.
 		@param PaymentRule 
 		How you pay the invoice
 	  */
+	@Override
 	public void setPaymentRule (String PaymentRule)
 	{
 
@@ -244,6 +293,7 @@ public class X_HR_Payroll extends PO implements I_HR_Payroll, I_Persistent
 	/** Get Payment Rule.
 		@return How you pay the invoice
 	  */
+	@Override
 	public String getPaymentRule () 
 	{
 		return (String)get_Value(COLUMNNAME_PaymentRule);
@@ -253,6 +303,7 @@ public class X_HR_Payroll extends PO implements I_HR_Payroll, I_Persistent
 		@param Processed 
 		The document has been processed
 	  */
+	@Override
 	public void setProcessed (boolean Processed)
 	{
 		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
@@ -261,13 +312,16 @@ public class X_HR_Payroll extends PO implements I_HR_Payroll, I_Persistent
 	/** Get Processed.
 		@return The document has been processed
 	  */
+	@Override
 	public boolean isProcessed () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -275,6 +329,7 @@ public class X_HR_Payroll extends PO implements I_HR_Payroll, I_Persistent
 
 	/** Set Process Now.
 		@param Processing Process Now	  */
+	@Override
 	public void setProcessing (boolean Processing)
 	{
 		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
@@ -282,13 +337,16 @@ public class X_HR_Payroll extends PO implements I_HR_Payroll, I_Persistent
 
 	/** Get Process Now.
 		@return Process Now	  */
+	@Override
 	public boolean isProcessing () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processing);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -298,6 +356,7 @@ public class X_HR_Payroll extends PO implements I_HR_Payroll, I_Persistent
 		@param Value 
 		Search key for the record in the format required - must be unique
 	  */
+	@Override
 	public void setValue (String Value)
 	{
 		set_Value (COLUMNNAME_Value, Value);
@@ -306,6 +365,7 @@ public class X_HR_Payroll extends PO implements I_HR_Payroll, I_Persistent
 	/** Get Search Key.
 		@return Search key for the record in the format required - must be unique
 	  */
+	@Override
 	public String getValue () 
 	{
 		return (String)get_Value(COLUMNNAME_Value);

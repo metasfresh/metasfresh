@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.acct.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for Fact_Acct_ActivityChangeRequest_Source_v
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_Fact_Acct_ActivityChangeRequest_Source_v extends org.compiere.mod
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 791023786L;
+	private static final long serialVersionUID = 1033708249L;
 
     /** Standard Constructor */
     public X_Fact_Acct_ActivityChangeRequest_Source_v (Properties ctx, int Fact_Acct_ActivityChangeRequest_Source_v_ID, String trxName)
@@ -59,7 +42,7 @@ public class X_Fact_Acct_ActivityChangeRequest_Source_v extends org.compiere.mod
     }
 
 	@Override
-	public org.compiere.model.I_C_ElementValue getAccount() throws RuntimeException
+	public org.compiere.model.I_C_ElementValue getAccount()
 	{
 		return get_ValueAsPO(COLUMNNAME_Account_ID, org.compiere.model.I_C_ElementValue.class);
 	}
@@ -96,7 +79,7 @@ public class X_Fact_Acct_ActivityChangeRequest_Source_v extends org.compiere.mod
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
+	public org.compiere.model.I_AD_Table getAD_Table()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
 	}
@@ -150,7 +133,7 @@ public class X_Fact_Acct_ActivityChangeRequest_Source_v extends org.compiere.mod
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctCr);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -172,7 +155,7 @@ public class X_Fact_Acct_ActivityChangeRequest_Source_v extends org.compiere.mod
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctDr);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -194,7 +177,7 @@ public class X_Fact_Acct_ActivityChangeRequest_Source_v extends org.compiere.mod
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtSourceCr);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -218,12 +201,12 @@ public class X_Fact_Acct_ActivityChangeRequest_Source_v extends org.compiere.mod
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtSourceDr);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
 	@Override
-	public org.compiere.model.I_C_AcctSchema getC_AcctSchema() throws RuntimeException
+	public org.compiere.model.I_C_AcctSchema getC_AcctSchema()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
 	}
@@ -260,7 +243,7 @@ public class X_Fact_Acct_ActivityChangeRequest_Source_v extends org.compiere.mod
 	}
 
 	@Override
-	public org.compiere.model.I_C_Activity getC_Activity() throws RuntimeException
+	public org.compiere.model.I_C_Activity getC_Activity()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class);
 	}
@@ -296,18 +279,6 @@ public class X_Fact_Acct_ActivityChangeRequest_Source_v extends org.compiere.mod
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
 		Bezeichnet einen Geschäftspartner
@@ -333,18 +304,6 @@ public class X_Fact_Acct_ActivityChangeRequest_Source_v extends org.compiere.mod
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
-	}
-
-	@Override
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
-	}
-
 	/** Set Währung.
 		@param C_Currency_ID 
 		Die Währung für diesen Eintrag
@@ -368,18 +327,6 @@ public class X_Fact_Acct_ActivityChangeRequest_Source_v extends org.compiere.mod
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class);
-	}
-
-	@Override
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType)
-	{
-		set_ValueFromPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class, C_DocType);
 	}
 
 	/** Set Belegart.
@@ -408,7 +355,7 @@ public class X_Fact_Acct_ActivityChangeRequest_Source_v extends org.compiere.mod
 	}
 
 	@Override
-	public org.compiere.model.I_C_Period getC_Period() throws RuntimeException
+	public org.compiere.model.I_C_Period getC_Period()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Period_ID, org.compiere.model.I_C_Period.class);
 	}
@@ -442,18 +389,6 @@ public class X_Fact_Acct_ActivityChangeRequest_Source_v extends org.compiere.mod
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
 	}
 
 	/** Set Maßeinheit.
@@ -535,26 +470,23 @@ public class X_Fact_Acct_ActivityChangeRequest_Source_v extends org.compiere.mod
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** Set Document BaseType.
-		@param DocBaseType 
-		Logical type of document
-	  */
+	/** Set Dokument Basis Typ.
+		@param DocBaseType Dokument Basis Typ	  */
 	@Override
 	public void setDocBaseType (java.lang.String DocBaseType)
 	{
 		set_ValueNoCheck (COLUMNNAME_DocBaseType, DocBaseType);
 	}
 
-	/** Get Document BaseType.
-		@return Logical type of document
-	  */
+	/** Get Dokument Basis Typ.
+		@return Dokument Basis Typ	  */
 	@Override
 	public java.lang.String getDocBaseType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocBaseType);
 	}
 
-	/** Set Beleg Nr..
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
@@ -564,7 +496,7 @@ public class X_Fact_Acct_ActivityChangeRequest_Source_v extends org.compiere.mod
 		set_ValueNoCheck (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Beleg Nr..
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
 	@Override
@@ -574,7 +506,7 @@ public class X_Fact_Acct_ActivityChangeRequest_Source_v extends org.compiere.mod
 	}
 
 	@Override
-	public org.compiere.model.I_Fact_Acct getFact_Acct() throws RuntimeException
+	public org.compiere.model.I_Fact_Acct getFact_Acct()
 	{
 		return get_ValueAsPO(COLUMNNAME_Fact_Acct_ID, org.compiere.model.I_Fact_Acct.class);
 	}
@@ -655,18 +587,6 @@ public class X_Fact_Acct_ActivityChangeRequest_Source_v extends org.compiere.mod
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
-	}
-
 	/** Set Produkt.
 		@param M_Product_ID 
 		Produkt, Leistung, Artikel
@@ -707,6 +627,8 @@ public class X_Fact_Acct_ActivityChangeRequest_Source_v extends org.compiere.mod
 	public static final String POSTINGTYPE_Statistical = "S";
 	/** Reservation = R */
 	public static final String POSTINGTYPE_Reservation = "R";
+	/** Actual Year End = Y */
+	public static final String POSTINGTYPE_ActualYearEnd = "Y";
 	/** Set Buchungsart.
 		@param PostingType 
 		Die Art des gebuchten Betrages dieser Transaktion
@@ -745,7 +667,7 @@ public class X_Fact_Acct_ActivityChangeRequest_Source_v extends org.compiere.mod
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

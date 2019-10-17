@@ -1,11 +1,14 @@
 package de.metas.contracts.refund;
 
 import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import org.compiere.model.I_C_UOM;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -55,6 +58,8 @@ public class RefundContractTest
 
 	private RefundConfig refundConfig2;
 
+	private I_C_UOM uomRecord;
+
 	@Before
 	public void init()
 	{
@@ -87,6 +92,9 @@ public class RefundContractTest
 				.refundConfig(refundConfig2)
 				.refundConfig(refundConfig1)
 				.build();
+
+		uomRecord = newInstance(I_C_UOM.class);
+		saveRecord(uomRecord);
 	}
 
 	@Test

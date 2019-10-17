@@ -37,7 +37,7 @@ public class RefundContractQuery
 			@NonNull final AssignableInvoiceCandidate invoiceCandidate)
 	{
 		return new RefundContractQuery(
-				invoiceCandidate.getBpartnerId(),
+				invoiceCandidate.getBpartnerLocationId().getBpartnerId(),
 				invoiceCandidate.getProductId(),
 				invoiceCandidate.getInvoiceableFrom());
 	}

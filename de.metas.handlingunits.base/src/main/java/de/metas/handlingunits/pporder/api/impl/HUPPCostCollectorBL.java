@@ -28,7 +28,7 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.eevolution.api.IPPCostCollectorBL;
-import org.eevolution.api.IReceiptCostCollectorCandidate;
+import org.eevolution.api.ReceiptCostCollectorCandidate;
 
 import com.google.common.collect.ImmutableList;
 
@@ -48,7 +48,7 @@ public class HUPPCostCollectorBL implements IHUPPCostCollectorBL
 {
 	@Override
 	public I_PP_Cost_Collector createReceipt(
-			@NonNull final IReceiptCostCollectorCandidate candidate,
+			@NonNull final ReceiptCostCollectorCandidate candidate,
 			@NonNull final I_M_HU hu)
 	{
 		// services

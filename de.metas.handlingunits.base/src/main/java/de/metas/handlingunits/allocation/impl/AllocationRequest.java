@@ -107,7 +107,7 @@ import de.metas.util.Check;
 	@Override
 	public BigDecimal getQty()
 	{
-		return quantity.getAsBigDecimal();
+		return quantity.toBigDecimal();
 	}
 
 	@Override

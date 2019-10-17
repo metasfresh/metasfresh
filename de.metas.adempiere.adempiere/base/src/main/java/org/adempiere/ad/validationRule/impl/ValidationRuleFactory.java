@@ -8,6 +8,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleDAO;
@@ -31,6 +33,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class ValidationRuleFactory implements IValidationRuleFactory
 {
@@ -57,11 +60,13 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 	}
 
 	@Override
-	public void registerValidationRuleException(final IValidationRule rule, final String ctxTableName, final String ctxColumnName)
+	public void registerValidationRuleException(
+			@NonNull final IValidationRule rule,
+			@NonNull final String ctxTableName,
+			@NonNull final String ctxColumnName,
+			@Nullable final String help)
 	{
-		Check.assume(rule != null, "rule not null");
-
-		rule.registerException(ctxTableName, ctxColumnName);
+		rule.registerException(ctxTableName, ctxColumnName, help);
 	}
 
 	@Override

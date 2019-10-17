@@ -21,6 +21,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Properties;
+
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.exceptions.DBException;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
 import de.metas.cache.CCache;
@@ -28,17 +34,12 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.ValueNamePair;
-
 /**
  *  Reference List Value
  *
  *  @author Jorg Janke
  *  @version $Id: MRefList.java,v 1.3 2006/07/30 00:58:18 jjanke Exp $
- *  
+ *
  *  @author Teo Sarca, www.arhipac.ro
  *  		<li>BF [ 1748449 ] Info Account - Posting Type is not translated
  *  		<li>FR [ 2694043 ] Query. first/firstOnly usage best practice
@@ -46,25 +47,9 @@ import org.compiere.util.ValueNamePair;
 public class MRefList extends X_AD_Ref_List
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -6948532574960232289L;
-
-
-	/**
-	 * 	Get Reference List 
-	 *	@param ctx context
-	 *	@param AD_Reference_ID reference
-	 *	@param Value value
-	 *	@param trxName transaction
-	 *	@return List or null
-	 */
-	public static MRefList get (Properties ctx, int AD_Reference_ID, String Value, String trxName)
-	{
-		return new Query(ctx, Table_Name, "AD_Reference_ID=? AND Value=?", trxName)
-					.setParameters(new Object[]{AD_Reference_ID, Value})
-					.firstOnly();
-	}	//	get
 
 	/**
 	 * Get Reference List Value Name (cached)
@@ -72,7 +57,7 @@ public class MRefList extends X_AD_Ref_List
 	 * @param AD_Reference_ID reference
 	 * @param Value value
 	 * @return List or ""
-	 * 
+	 *
 	 * @deprecated Please use {@link IADReferenceDAO#retrieveListNameTrl(Properties, int, String)}
 	 */
 	@Deprecated
@@ -83,10 +68,7 @@ public class MRefList extends X_AD_Ref_List
 
 	/**
 	 * Get Reference List Value Description (cached)
-	 * @param ctx context
 	 * @param ListName reference
-	 * @param Value value
-	 * @return List or null
 	 */
 	public static String getListDescription (Properties ctx, String ListName, String Value)
 	{
@@ -99,9 +81,9 @@ public class MRefList extends X_AD_Ref_List
 		boolean isBaseLanguage = Env.isBaseLanguage(AD_Language, "AD_Ref_List");
 		String sql = isBaseLanguage ?
 			"SELECT a.Description FROM AD_Ref_List a, AD_Reference b"
-			+ " WHERE b.Name=? AND a.Value=?" 
+			+ " WHERE b.Name=? AND a.Value=?"
 			+ " AND a.AD_Reference_ID = b.AD_Reference_ID"
-			: 				
+			:
 			"SELECT t.Description FROM AD_Reference r"
 			+" INNER JOIN AD_Ref_List rl ON (r.AD_Reference_ID=rl.AD_Reference_ID)"
 			+" INNER JOIN AD_Ref_List_Trl t ON (t.AD_Ref_List_ID=rl.AD_Ref_List_ID)"
@@ -112,7 +94,7 @@ public class MRefList extends X_AD_Ref_List
 		{
 			pstmt = DB.prepareStatement (sql,null);
 			pstmt.setString (1, ListName);
-			pstmt.setString(2, Value);			
+			pstmt.setString(2, Value);
 			if (!isBaseLanguage)
 				pstmt.setString(3, AD_Language);
 			rs = pstmt.executeQuery ();
@@ -142,7 +124,7 @@ public class MRefList extends X_AD_Ref_List
 		//
 		return retValue;
 	}	//	getListDescription
-	
+
 	/**
 	 * Get Reference List (translated)
 	 * @param ctx context
@@ -155,18 +137,24 @@ public class MRefList extends X_AD_Ref_List
 		String ad_language = Env.getAD_Language(ctx);
 		boolean isBaseLanguage = Env.isBaseLanguage(ad_language, "AD_Ref_List");
 		String sql = isBaseLanguage ?
-			"SELECT Value, Name FROM AD_Ref_List WHERE AD_Reference_ID=? AND IsActive='Y' ORDER BY Name"
+			"SELECT Value, Name, Description FROM AD_Ref_List WHERE AD_Reference_ID=? AND IsActive='Y' ORDER BY Name"
 			:
-			"SELECT r.Value, t.Name FROM AD_Ref_List_Trl t"
+			"SELECT r.Value, t.Name, t.Description FROM AD_Ref_List_Trl t"
 			+ " INNER JOIN AD_Ref_List r ON (r.AD_Ref_List_ID=t.AD_Ref_List_ID)"
-			+ " WHERE r.AD_Reference_ID=? AND t.AD_Language=? AND r.IsActive='Y'"
+			+ " WHERE r.AD_Reference_ID=?"
+			+ "   AND t.AD_Language=?"
+			+ "   AND r.IsActive='Y'"
+			+ "   AND t.IsActive='Y'"
+			+ "   AND t.IsTranslated='Y'"
 			+ " ORDER BY t.Name"
 		;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		ArrayList<ValueNamePair> list = new ArrayList<ValueNamePair>();
+		final ArrayList<ValueNamePair> list = new ArrayList<ValueNamePair>();
 		if (optional)
-			list.add(new ValueNamePair("", ""));
+		{
+			list.add(ValueNamePair.EMPTY);
+		}
 		try
 		{
 			pstmt = DB.prepareStatement(sql, null);
@@ -175,14 +163,16 @@ public class MRefList extends X_AD_Ref_List
 				pstmt.setString(2, ad_language);
 			rs = pstmt.executeQuery();
 			while (rs.next())
-				list.add(new ValueNamePair(rs.getString(1), rs.getString(2)));
+			{
+				list.add(ValueNamePair.of(rs.getString(1), rs.getString(2), rs.getString(3)));
+			}
 			rs.close();
 			pstmt.close();
 			pstmt = null;
 		}
 		catch (SQLException e)
 		{
-			s_log.error(sql, e);
+			throw DBException.wrapIfNeeded(e);
 		}
 		finally
 		{
@@ -191,7 +181,7 @@ public class MRefList extends X_AD_Ref_List
 		}
 		ValueNamePair[] retValue = new ValueNamePair[list.size()];
 		list.toArray(retValue);
-		return retValue;		
+		return retValue;
 	}	//	getList
 
 
@@ -235,6 +225,7 @@ public class MRefList extends X_AD_Ref_List
 	 *	String Representation
 	 * 	@return Name
 	 */
+	@Override
 	public String toString()
 	{
 		return getName();
@@ -249,10 +240,10 @@ public class MRefList extends X_AD_Ref_List
 			setValueName(getName());
 		}
 		// metas: 02827: end
-		
+
 		return true;
 	}
 
 
-	
+
 }	//	MRef_List

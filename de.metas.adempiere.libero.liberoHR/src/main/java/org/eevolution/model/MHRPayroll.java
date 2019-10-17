@@ -21,29 +21,29 @@ import java.util.Properties;
 import org.compiere.model.MCalendar;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import de.metas.cache.CCache;
+import de.metas.util.Check;
 
 /**
  *	Payroll for HRayroll Module
- *	
+ *
  *  @author Oscar Gómez Islas
  *  @version $Id: HRPayroll.java,v 1.0 2005/10/05 ogomezi
- *  
+ *
  *  @author Cristina Ghita, www.arhipac.ro
  */
 public class MHRPayroll extends X_HR_Payroll
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -1407037967021019961L;
 	/** Cache */
 	private static CCache<Integer, MHRPayroll> s_cache = new CCache<Integer, MHRPayroll>(Table_Name, 10);
 	/** Cache */
 	private static CCache<String, MHRPayroll> s_cacheValue = new CCache<String, MHRPayroll>(Table_Name+"_Value", 10);
-	
+
 	/**
 	 * Get Payroll by Value
 	 * @param ctx
@@ -52,11 +52,11 @@ public class MHRPayroll extends X_HR_Payroll
 	 */
 	public static MHRPayroll forValue(Properties ctx, String value)
 	{
-		if (Util.isEmpty(value, true))
+		if (Check.isEmpty(value, true))
 		{
 			return null;
 		}
-		
+
 		int AD_Client_ID = Env.getAD_Client_ID(ctx);
 		final String key = AD_Client_ID+"#"+value;
 		MHRPayroll payroll = s_cacheValue.get(key);
@@ -64,8 +64,8 @@ public class MHRPayroll extends X_HR_Payroll
 		{
 			return payroll;
 		}
-		
-		final String whereClause = COLUMNNAME_Value+"=? AND AD_Client_ID IN (?,?)"; 
+
+		final String whereClause = COLUMNNAME_Value+"=? AND AD_Client_ID IN (?,?)";
 		payroll = new Query(ctx, Table_Name, whereClause, null)
 							.setParameters(new Object[]{value, 0, AD_Client_ID})
 							.setOnlyActiveRecords(true)
@@ -78,7 +78,7 @@ public class MHRPayroll extends X_HR_Payroll
 		}
 		return payroll;
 	}
-	
+
 	/**
 	 * Get Payroll by ID
 	 * @param ctx
@@ -105,7 +105,7 @@ public class MHRPayroll extends X_HR_Payroll
 		}
 		return payroll;
 	}
-	
+
 	/**
 	 * 	Standard Constructor
 	 *	@param ctx context
@@ -117,7 +117,7 @@ public class MHRPayroll extends X_HR_Payroll
 		if (HR_Payroll_ID == 0)
 		{
 			setProcessing (false);	// N
-		}		
+		}
 	}	//	HRPayroll
 
 	/**
@@ -129,7 +129,7 @@ public class MHRPayroll extends X_HR_Payroll
 	{
 		super(ctx, rs, trxName);
 	}
-	
+
 	/**
 	 * 	Parent Constructor
 	 *	@param parent parent

@@ -1,5 +1,7 @@
 package de.metas.material.cockpit.stock;
 
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -43,14 +45,22 @@ public class StockDataAggregateQuery
 	Set<WarehouseId> warehouseIds;
 	ImmutableSet<StockDataQueryOrderBy> orderBys;
 
+	/**
+	 * If iterating, this is the batch-size that we will advice the data layer to use.
+	 * Default = 500.
+	 */
+	int iteratorBatchSize;
+
 	@Builder
 	private StockDataAggregateQuery(
 			@NonNull @Singular final ImmutableSet<ProductCategoryId> productCategoryIds,
 			@NonNull @Singular final Set<WarehouseId> warehouseIds,
-			@NonNull @Singular final ImmutableSet<StockDataQueryOrderBy> orderBys)
+			@NonNull @Singular final ImmutableSet<StockDataQueryOrderBy> orderBys,
+			final int iteratorBatchSize)
 	{
 		this.productCategoryIds = productCategoryIds;
 		this.warehouseIds = Collections.unmodifiableSet(new HashSet<>(warehouseIds)); // we shall accept warehouseId=null
 		this.orderBys = orderBys;
+		this.iteratorBatchSize = firstGreaterThanZero(iteratorBatchSize, 500);
 	}
 }

@@ -31,13 +31,13 @@ import static org.junit.Assert.assertThat;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -57,10 +57,11 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
-import de.metas.adempiere.model.I_C_Currency;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.C_AllocationHdr_ProcessInterceptor;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
@@ -68,7 +69,10 @@ import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.interfaces.I_C_DocType;
+import de.metas.money.CurrencyId;
 import de.metas.payment.api.C_Payment_ProcessInterceptor;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
@@ -116,6 +120,9 @@ public class ESRTestBase
 
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 		esrImportBL = new ESRImportBL(attachmentEntryService);
+
+		final IDocumentNoBuilderFactory documentNoBuilderFactory = new DocumentNoBuilderFactory(Optional.empty());
+		Services.registerService(IDocumentNoBuilderFactory.class, documentNoBuilderFactory);
 
 		// register processors
 		final PlainDocumentBL docActionBL = (PlainDocumentBL)Services.get(IDocumentBL.class);
@@ -249,13 +256,12 @@ public class ESRTestBase
 			@NonNull final String invAmount,
 			final boolean invPaid,
 			@NonNull final String fullRefNo,
-			@NonNull final String refNo,
 			@NonNull final String ESR_RenderedAccountNo,
 			@NonNull final String partnerValue,
 			@NonNull final String payAmt,
 			final boolean createAllocation)
 	{
-		return setupESR_ImportLine(invDocNo, invAmount, invPaid, fullRefNo, refNo, ESR_RenderedAccountNo, partnerValue, payAmt, createAllocation, false);
+		return setupESR_ImportLine(invDocNo, invAmount, invPaid, fullRefNo, ESR_RenderedAccountNo, partnerValue, payAmt, createAllocation, false);
 	}
 
 	protected I_ESR_ImportLine setupESR_ImportLine(
@@ -263,7 +269,6 @@ public class ESRTestBase
 			@NonNull final String invAmount,
 			final boolean invPaid,
 			@NonNull final String fullRefNo,
-			@NonNull final String refNo,
 			@NonNull final String ESR_RenderedAccountNo,
 			@NonNull final String partnerValue,
 			@NonNull final String payAmt,
@@ -291,12 +296,7 @@ public class ESRTestBase
 		save(refNoType);
 
 		// currency
-		final I_C_Currency currencyEUR = newInstance(I_C_Currency.class, contextProvider);
-		currencyEUR.setISO_Code("EUR");
-		currencyEUR.setStdPrecision(2);
-		currencyEUR.setIsEuro(true);
-		save(currencyEUR);
-		POJOWrapper.enableStrictValues(currencyEUR);
+		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		// bank account
 		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class, contextProvider);
@@ -304,7 +304,7 @@ public class ESRTestBase
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo(ESR_RenderedAccountNo);
-		account.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		account.setC_Currency_ID(currencyEUR.getRepoId());
 		save(account);
 
 		// doc type
@@ -327,7 +327,7 @@ public class ESRTestBase
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
 		invoice.setDocumentNo(invDocNo);
 		invoice.setC_DocType_ID(type.getC_DocType_ID());
-		invoice.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		invoice.setC_Currency_ID(currencyEUR.getRepoId());
 		invoice.setIsPaid(invPaid);
 		invoice.setIsSOTrx(true);
 		invoice.setProcessed(true);
@@ -335,7 +335,7 @@ public class ESRTestBase
 
 		// reference no
 		final I_C_ReferenceNo referenceNo = newInstance(I_C_ReferenceNo.class, contextProvider);
-		referenceNo.setReferenceNo(refNo);
+		referenceNo.setReferenceNo(fullRefNo);
 		referenceNo.setC_ReferenceNo_Type(refNoType);
 		referenceNo.setIsManual(true);
 		if (differentInvoiceOrg)
@@ -375,7 +375,7 @@ public class ESRTestBase
 		if (createAllocation)
 		{
 			final I_C_AllocationHdr allocHdr = newInstance(I_C_AllocationHdr.class, contextProvider);
-			allocHdr.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+			allocHdr.setC_Currency_ID(currencyEUR.getRepoId());
 			save(allocHdr);
 
 			final I_C_AllocationLine allocAmt = newInstance(I_C_AllocationLine.class, contextProvider);

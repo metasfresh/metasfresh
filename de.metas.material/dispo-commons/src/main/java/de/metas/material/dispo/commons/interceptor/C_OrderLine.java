@@ -6,6 +6,9 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.material.dispo.commons.model.I_C_OrderLine;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
+import de.metas.material.event.ModelProductDescriptorExtractor;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -27,11 +30,23 @@ import de.metas.material.dispo.commons.model.I_C_OrderLine;
  * #L%
  */
 @Interceptor(I_C_OrderLine.class)
-@Component("de.metas.material.dispo.commons.interceptor.C_OrderLine")
+@Component
 public class C_OrderLine
 {
+	private final OrderAvailableToPromiseTool orderAvailableToPromiseTool;
+
+	public C_OrderLine(
+			@NonNull final AvailableToPromiseRepository stockRepository,
+			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
+	{
+		orderAvailableToPromiseTool = OrderAvailableToPromiseTool.builder()
+				.stockRepository(stockRepository)
+				.productDescriptorFactory(productDescriptorFactory)
+				.build();
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
-			I_C_OrderLine.COLUMNNAME_M_Product_ID, I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID})
+			I_C_OrderLine.COLUMNNAME_M_Product_ID, I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID })
 	public void updateSalesOrderLineQtyATP(final I_C_OrderLine orderLineRecord)
 	{
 		if (!orderLineRecord.getC_Order().isSOTrx() || orderLineRecord.isProcessed())
@@ -39,6 +54,6 @@ public class C_OrderLine
 			return;
 		}
 
-		OrderAvailableToPromiseTool.updateOrderLineRecordAndDoNotSave(orderLineRecord);
+		orderAvailableToPromiseTool.updateOrderLineRecordAndDoNotSave(orderLineRecord);
 	}
 }

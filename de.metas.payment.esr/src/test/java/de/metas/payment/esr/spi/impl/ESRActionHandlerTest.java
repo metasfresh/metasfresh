@@ -13,12 +13,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -40,7 +40,6 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.junit.Test;
@@ -57,16 +56,13 @@ import de.metas.util.Services;
 
 public class ESRActionHandlerTest extends ESRTestBase
 {
-
-	protected I_C_Currency currencyEUR;
-
 	/**
 	 * Tests that this action basically does nothing
 	 */
 	@Test
 	public void testDunningESRAction()
 	{
-		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine("000120686", "10", false, "000000010501536417000120686", "536417000120686", "01-059931-0", "15364170", "40", false);
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine("000120686", "10", false, "000000010501536417000120686", /*"536417000120686",*/ "01-059931-0", "15364170", "40", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		esrImportBL.evaluateLine(esrImportLine.getESR_Import(), esrImportLine);
@@ -95,7 +91,7 @@ public class ESRActionHandlerTest extends ESRTestBase
 	@Test
 	public void testUnableToAssignAction()
 	{
-		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine("000120686", "10", false, "000000010501536417000120686", "536417000120686", "01-059931-0", "15364170", "40", false);
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine("000120686", "10", false, "000000010501536417000120686", /*"536417000120686",*/ "01-059931-0", "15364170", "40", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		esrImportBL.evaluateLine(esrImportLine.getESR_Import(), esrImportLine);
@@ -126,8 +122,7 @@ public class ESRActionHandlerTest extends ESRTestBase
 				"000120686", /* invoice doc number */
 				"10" /* invoice grandtotal */,
 				false, /* isInvoicePaid */
-				"000000010501536417000120686", /* complete ESR reference */
-				"536417000120686", /* invoice reference */
+				"000000010501536417000120686", /* complete ESR reference incl check digit*/
 				"01-059931-0", /* ESR account number */
 				"15364170",
 				"40", /* esr transaction amount */
@@ -187,10 +182,10 @@ public class ESRActionHandlerTest extends ESRTestBase
 	@Test
 	public void testWriteoffESRAction()
 	{
-		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine("000120686", "10", false, "000000010501536417000120686", "536417000120686", "01-059931-0", "15364170", "40", false);
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine("000120686", "10", false, "000000010501536417000120686", "01-059931-0", "15364170", "40", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
-		final I_C_Invoice invoice = POJOLookupMap.get().getRecords(I_C_Invoice.class).get(0);
+		final I_C_Invoice invoice = getC_Invoice();
 		invoice.setGrandTotal(new BigDecimal(50.0));
 		invoice.setIsSOTrx(true);
 		invoice.setProcessed(true);

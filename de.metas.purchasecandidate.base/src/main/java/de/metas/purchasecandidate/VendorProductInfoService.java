@@ -7,10 +7,8 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
-import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -19,6 +17,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.organization.OrgId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
@@ -26,11 +26,10 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductId;
-import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.Percent;
-
 import lombok.NonNull;
 
 /*
@@ -91,7 +90,7 @@ public class VendorProductInfoService
 				.filter(VendorProductInfo::isDefaultVendor)
 				.findFirst()
 				.orElseGet(() -> {
-					Loggables.get().addLog("No vendorProductInfo was flagged as default; return the first one: {}", vendorProductInfos.get(0));
+					Loggables.addLog("No vendorProductInfo was flagged as default; return the first one: {}", vendorProductInfos.get(0));
 					return vendorProductInfos.get(0);
 				});
 		return Optional.of(defaultOrFirst);
@@ -159,12 +158,12 @@ public class VendorProductInfoService
 		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(pricingConditionsId);
 
 		final ProductId productId = product.getProductId();
-		final String vendorProductNo = Util.coalesceSuppliers(
+		final String vendorProductNo = CoalesceUtil.coalesceSuppliers(
 				() -> bpartnerProductRecord != null ? bpartnerProductRecord.getVendorProductNo() : null,
 				() -> bpartnerProductRecord != null ? bpartnerProductRecord.getProductNo() : null,
 				() -> productBL.getProductValue(productId));
 
-		final String vendorProductName = Util.coalesceSuppliers(
+		final String vendorProductName = CoalesceUtil.coalesceSuppliers(
 				() -> bpartnerProductRecord != null ? bpartnerProductRecord.getProductName() : null,
 				() -> productBL.getProductName(productId));
 

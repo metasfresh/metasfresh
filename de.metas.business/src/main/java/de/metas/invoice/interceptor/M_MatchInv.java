@@ -36,7 +36,7 @@ import de.metas.invoice.model.I_M_MatchInv;
  *
  */
 @Interceptor(I_M_MatchInv.class)
-@Component("de.metas.invoice.interceptor.M_MatchInv")
+@Component
 public class M_MatchInv
 {
 	/**

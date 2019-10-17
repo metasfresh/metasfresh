@@ -1,15 +1,17 @@
 package de.metas.pricing.limit;
 
 import java.math.BigDecimal;
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Stream;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.location.CountryId;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -50,29 +52,85 @@ public class CompositePriceLimitRule implements IPriceLimitRule
 	{
 		final BigDecimal priceActual = context.getPriceActual();
 
-		final List<PriceLimitRuleResult> results = enforcers.stream()
-				.map(enforcer -> enforcer.compute(context))
-				.collect(ImmutableList.toImmutableList());
+		//
+		// Check each enforcer
+		PriceLimitRuleResult applicableResultWithMaxPriceLimit = null;
+		final ArrayList<PriceLimitRuleResult> notApplicableResults = new ArrayList<>();
+		for (final IPriceLimitRule enforcer : enforcers)
+		{
+			final PriceLimitRuleResult result = enforcer.compute(context);
+			final BooleanWithReason applicable = result.checkApplicableAndBelowPriceLimit(priceActual);
+			if (applicable.isTrue())
+			{
+				if (applicableResultWithMaxPriceLimit == null)
+				{
+					applicableResultWithMaxPriceLimit = result;
+				}
+				else if (applicableResultWithMaxPriceLimit.getPriceLimit().compareTo(result.getPriceLimit()) < 0)
+				{
+					applicableResultWithMaxPriceLimit = result;
+				}
+				else
+				{
+					// keep current applicableResultWithMaxPriceLimit
+				}
+			}
+			else
+			{
+				notApplicableResults.add(result);
+			}
+		}
 
-		final PriceLimitRuleResult defaultResult = computeDefault(context);
-		return Stream.concat(results.stream(), Stream.of(defaultResult))
-				.filter(result -> result.isBelowPriceLimit(priceActual))
-				.max(Comparator.comparing(PriceLimitRuleResult::getPriceLimit))
-				.orElseGet(() -> PriceLimitRuleResult.notApplicable("no price limit enforcement"));
+		//
+		// Case: we have a applicable limit:
+		if (applicableResultWithMaxPriceLimit != null)
+		{
+			return applicableResultWithMaxPriceLimit;
+		}
+		//
+		// Case: we don't have an applicable limit but we have a limit from price list
+		else if (context.getPriceLimit().signum() != 0)
+		{
+			return PriceLimitRuleResult.priceLimit(context.getPriceLimit(), "pricing PriceLimit (context/default)");
+		}
+		//
+		// Case: found nothing applicable
+		else
+		{
+			if (notApplicableResults.isEmpty())
+			{
+				return PriceLimitRuleResult.notApplicable("default PriceLimit=0 is not eligible");
+			}
+			else
+			{
+				return mergeNotApplicableResults(notApplicableResults);
+			}
+
+		}
 	}
 
-	private PriceLimitRuleResult computeDefault(final PriceLimitRuleContext context)
+	private static PriceLimitRuleResult mergeNotApplicableResults(final List<PriceLimitRuleResult> notApplicableResults)
 	{
-		final BigDecimal priceLimit = context.getPriceLimit();
-		if (priceLimit.signum() == 0)
+		if (notApplicableResults.size() == 1)
 		{
-			return PriceLimitRuleResult.notApplicable("default PriceLimit=0 is not eligible");
+			return notApplicableResults.get(0);
 		}
-		return PriceLimitRuleResult.priceLimit(priceLimit, "pricing PriceLimit (default)");
+
+		final TranslatableStringBuilder builder = TranslatableStrings.builder();
+		for (final PriceLimitRuleResult notApplicableResult : notApplicableResults)
+		{
+			if (!builder.isEmpty())
+			{
+				builder.append("; ");
+			}
+			builder.append(notApplicableResult.getNotApplicableReason());
+		}
+
+		return PriceLimitRuleResult.notApplicable(builder.build());
 	}
 
 	@Override
-	public Set<Integer> getPriceCountryIds()
+	public Set<CountryId> getPriceCountryIds()
 	{
 		return enforcers.stream()
 				.flatMap(enforcer -> enforcer.getPriceCountryIds().stream())

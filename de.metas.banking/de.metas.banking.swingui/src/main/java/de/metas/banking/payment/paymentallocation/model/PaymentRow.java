@@ -13,11 +13,11 @@ package de.metas.banking.payment.paymentallocation.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -25,23 +25,25 @@ package de.metas.banking.payment.paymentallocation.model;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_C_Currency;
-import org.compiere.util.Env;
 
 import de.metas.banking.payment.paymentallocation.service.IPaymentDocument;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.util.Services;
 
 public final class PaymentRow extends AbstractAllocableDocRow implements IPaymentRow
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
 
-	public static final IPaymentRow castOrNull(final IAllocableDocRow row)
+	public static IPaymentRow castOrNull(final IAllocableDocRow row)
 	{
 		return row instanceof IPaymentRow ? (IPaymentRow)row : null;
 	}
@@ -54,7 +56,7 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 	private final Date paymentDate;
 	// task 09643
 	private final Date dateAcct;
-	private final String currencyISOCode;
+	private final CurrencyCode currencyISOCode;
 	private final BigDecimal payAmt;
 	private final BigDecimal payAmtConv;
 	private final BigDecimal openAmtConv;
@@ -133,7 +135,7 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 	{
 		return paymentDate;
 	}
-	
+
 	@Override
 	public Date getDateAcct()
 	{
@@ -141,7 +143,12 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 	}
 
 	@Override
-	public String getCurrencyISOCode()
+	public String getCurrencyISOCodeAsString()
+	{
+		return currencyISOCode != null ? currencyISOCode.toThreeLetterCode() : null;
+	}
+	
+	public CurrencyCode getCurrencyISOCode()
 	{
 		return currencyISOCode;
 	}
@@ -209,7 +216,7 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 	}
 
 	@Override
-	public final boolean isCreditMemo()
+	public boolean isCreditMemo()
 	{
 		// a payment is never a credit memo
 		return false;
@@ -218,13 +225,15 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 	@Override
 	public IPaymentDocument copyAsPaymentDocument()
 	{
-		final IPaymentRow paymentRow = this;
-		final I_C_Currency currency = Services.get(ICurrencyDAO.class).retrieveCurrencyByISOCode(Env.getCtx(), paymentRow.getCurrencyISOCode());
+		final PaymentRow paymentRow = this;
+		
+		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
+		final Currency currency = currenciesRepo.getByCurrencyCode(paymentRow.getCurrencyISOCode());
 
 		return PaymentDocument.builder()
 				.setC_BPartner_ID(paymentRow.getC_BPartner_ID())
 				.setReference(org.compiere.model.I_C_Payment.Table_Name, paymentRow.getC_Payment_ID())
-				.setC_Currency_ID(currency.getC_Currency_ID())
+				.setC_Currency_ID(currency.getId().getRepoId())
 				.setOpenAmt(paymentRow.getOpenAmtConv_APAdjusted())
 				.setIsSOTrx(paymentRow.isCustomerDocument())
 				.setDocumentNo(paymentRow.getDocumentNo())
@@ -243,7 +252,6 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 	public void setDiscountAmt(BigDecimal discountAmt)
 	{
 		this.discountAmt = notNullOrZero(discountAmt);
-		;
 	}
 
 	@Override
@@ -303,7 +311,7 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 		setAppliedAmt_As_OpenAmt_Minus_DiscountAmt();
 	}
 
-	private final void setAppliedAmt_As_OpenAmt_Minus_DiscountAmt()
+	private void setAppliedAmt_As_OpenAmt_Minus_DiscountAmt()
 	{
 		final BigDecimal openAmt = getOpenAmtConv();
 		final BigDecimal discount = getDiscountAmt();
@@ -381,7 +389,7 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 		private Date paymentDate;
 		// task 09643
 		private Date dateAcct;
-		private String currencyISOCode;
+		private CurrencyCode currencyISOCode;
 		private BigDecimal payAmt;
 		private BigDecimal payAmtConv;
 		private BigDecimal openAmtConv;
@@ -439,7 +447,7 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 			return this;
 		}
 
-		public Builder setCurrencyISOCode(final String currencyISOCode)
+		public Builder setCurrencyISOCode(@Nullable final CurrencyCode currencyISOCode)
 		{
 			this.currencyISOCode = currencyISOCode;
 			return this;

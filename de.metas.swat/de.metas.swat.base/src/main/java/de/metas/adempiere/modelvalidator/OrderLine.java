@@ -1,48 +1,22 @@
 package de.metas.adempiere.modelvalidator;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MFreightCost;
+import org.compiere.Adempiere;
 import org.compiere.model.MClient;
 import org.compiere.model.MOrder;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import org.slf4j.Logger;
 
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.freighcost.FreightCostRule;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.logging.LogManager;
-import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderFreightCostsService;
 import de.metas.order.impl.OrderLineBL;
+import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
@@ -53,9 +27,6 @@ import de.metas.util.Services;
 @Deprecated
 public class OrderLine implements ModelValidator
 {
-
-	private static final Logger logger = LogManager.getLogger(OrderLine.class);
-
 	private int ad_Client_ID = -1;
 
 	@Override
@@ -113,25 +84,22 @@ public class OrderLine implements ModelValidator
 		final MOrder orderPO = (MOrder)ol.getC_Order();
 
 		final String dontUpdateOrder = Env.getContext(po.getCtx(), OrderFastInput.OL_DONT_UPDATE_ORDER + orderPO.get_ID());
-		if (Util.isEmpty(dontUpdateOrder) || !"Y".equals(dontUpdateOrder))
+		if (Check.isEmpty(dontUpdateOrder) || !"Y".equals(dontUpdateOrder))
 		{
 			final boolean newOrDelete = type == TYPE_AFTER_NEW || type == TYPE_AFTER_DELETE;
-			final boolean linesAmtChanged = po.is_ValueChanged(I_C_OrderLine.COLUMNNAME_LineNetAmt);
-			final boolean notFixPrice = !X_C_Order.FREIGHTCOSTRULE_FixPrice.equals(orderPO.getFreightCostRule());
+			final boolean lineNetAmtChanged = po.is_ValueChanged(I_C_OrderLine.COLUMNNAME_LineNetAmt);
+			
+			final FreightCostRule freightCostRule = FreightCostRule.ofCode(orderPO.getFreightCostRule());
+			
 			final boolean isCopy = InterfaceWrapperHelper.isCopy(po); // metas: cg: task US215
-			if (!isCopy && (linesAmtChanged || notFixPrice || newOrDelete))
+			if (!isCopy && (lineNetAmtChanged || freightCostRule.isNotFixPrice() || newOrDelete))
 			{
-				if (MFreightCost.retriveFor(po.getCtx(), ol.getM_Product_ID(), po.get_TrxName()).isEmpty())
+				final OrderFreightCostsService orderFreightCostsService = Adempiere.getBean(OrderFreightCostsService.class);
+				if (orderFreightCostsService.isFreightCostOrderLine(ol))
 				{
-					// this ol is not a freight cost order line
-
 					final I_C_Order order = InterfaceWrapperHelper.create(orderPO, I_C_Order.class);
-
-					final IOrderBL orderBL = Services.get(IOrderBL.class);
-					if (orderBL.updateFreightAmt(po.getCtx(), order, po.get_TrxName()))
-					{
-						orderPO.saveEx();
-					}
+					orderFreightCostsService.updateFreightAmt(order);
+					orderPO.saveEx();
 				}
 			}
 		}

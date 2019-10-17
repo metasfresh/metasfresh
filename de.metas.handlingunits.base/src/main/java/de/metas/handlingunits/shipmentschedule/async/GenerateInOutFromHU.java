@@ -115,17 +115,16 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 		final List<I_M_HU> hus = retrieveItems(I_M_HU.class);
 		if (hus.isEmpty())
 		{
-			Loggables.get().addLog("No HUs found");
+			Loggables.addLog("No HUs found");
 			return Result.SUCCESS;
 		}
 
 		final IParams parameters = getParameters();
 
-		final int addToShipperTransportationId = parameters.getParameterAsInt(PARAMETERNAME_AddToShipperTransportationId);
+		final int addToShipperTransportationId = parameters.getParameterAsInt(PARAMETERNAME_AddToShipperTransportationId, -1);
 		final boolean completeShipments = parameters.getParameterAsBool(PARAMETERNAME_IsCompleteShipments);
 		final BillAssociatedInvoiceCandidates invoiceMode = parameters.getParameterAsEnum(PARAMETERNAME_InvoiceMode, BillAssociatedInvoiceCandidates.class, BillAssociatedInvoiceCandidates.NO);
 		HUShippingFacade.builder()
-				.loggable(Loggables.get())
 				.hus(hus)
 				.addToShipperTransportationId(addToShipperTransportationId)
 				.completeShipments(completeShipments)

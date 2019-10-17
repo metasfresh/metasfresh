@@ -20,17 +20,16 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -39,21 +38,33 @@ import org.slf4j.Logger;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
+import de.metas.payment.PaymentTrxType;
+import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 /**
  * Payment Model. - retrieve and create payments for invoice
@@ -132,14 +143,13 @@ public final class MPayment extends X_C_Payment
 	public MPayment(final Properties ctx, final int C_Payment_ID, final String trxName)
 	{
 		super(ctx, C_Payment_ID, trxName);
-		// New
-		if (C_Payment_ID == 0)
+		if (is_new())
 		{
 			setDocAction(DOCACTION_Complete);
-			setDocStatus(DOCSTATUS_Drafted);
-			setTrxType(TRXTYPE_Sales);
+			setDocStatus(DocStatus.Drafted.getCode());
+			setTrxType(PaymentTrxType.Sales.getCode());
 			//
-			setR_AvsAddr(R_AVSZIP_Unavailable);
+			setR_AvsAddr(R_AVSADDR_Unavailable);
 			setR_AvsZip(R_AVSZIP_Unavailable);
 			//
 			setIsReceipt(true);
@@ -163,7 +173,7 @@ public final class MPayment extends X_C_Payment
 			//
 			setDateTrx(new Timestamp(System.currentTimeMillis()));
 			setDateAcct(getDateTrx());
-			setTenderType(TENDERTYPE_Check);
+			setTenderType(TenderType.Check.getCode());
 		}
 	}   // MPayment
 
@@ -180,12 +190,12 @@ public final class MPayment extends X_C_Payment
 	}	// MPayment
 
 	/** Logger */
-	private static Logger s_log = LogManager.getLogger(MPayment.class);
-	/** Error Message */
-	private String m_errorMessage = null;
+	private static final Logger s_log = LogManager.getLogger(MPayment.class);
+//	/** Error Message */
+//	private String m_errorMessage = null;
 
 	/** Reversal Indicator */
-	public static String REVERSE_INDICATOR = "^";
+	private static final String REVERSE_INDICATOR = "^";
 
 	/**
 	 * Is Cashbook Transfer Trx
@@ -197,224 +207,6 @@ public final class MPayment extends X_C_Payment
 		return Services.get(IPaymentBL.class).isCashTrx(this);
 	}	// isCashTrx
 
-	/**************************************************************************
-	 * Set Credit Card. Need to set PatmentProcessor after Amount/Currency Set
-	 *
-	 * @param TrxType Transaction Type see TRX_
-	 * @param creditCardType CC type
-	 * @param creditCardNumber CC number
-	 * @param creditCardVV CC verification
-	 * @param creditCardExpMM CC Exp MM
-	 * @param creditCardExpYY CC Exp YY
-	 * @return true if valid
-	 */
-	public boolean setCreditCard(final String TrxType, final String creditCardType, final String creditCardNumber,
-			final String creditCardVV, final int creditCardExpMM, final int creditCardExpYY)
-	{
-		setTenderType(TENDERTYPE_CreditCard);
-		setTrxType(TrxType);
-		//
-		setCreditCardType(creditCardType);
-		setCreditCardNumber(creditCardNumber);
-		setCreditCardVV(creditCardVV);
-		setCreditCardExpMM(creditCardExpMM);
-		setCreditCardExpYY(creditCardExpYY);
-		//
-		int check = MPaymentValidate.validateCreditCardNumber(creditCardNumber, creditCardType).length()
-				+ MPaymentValidate.validateCreditCardExp(creditCardExpMM, creditCardExpYY).length();
-		if (creditCardVV.length() > 0)
-		{
-			check += MPaymentValidate.validateCreditCardVV(creditCardVV, creditCardType).length();
-		}
-		return check == 0;
-	}   // setCreditCard
-
-	/**
-	 * Set Credit Card - Exp. Need to set PatmentProcessor after Amount/Currency Set
-	 *
-	 * @param TrxType Transaction Type see TRX_
-	 * @param creditCardType CC type
-	 * @param creditCardNumber CC number
-	 * @param creditCardVV CC verification
-	 * @param creditCardExp CC Exp
-	 * @return true if valid
-	 */
-	public boolean setCreditCard(final String TrxType, final String creditCardType, final String creditCardNumber,
-			final String creditCardVV, final String creditCardExp)
-	{
-		return setCreditCard(TrxType, creditCardType, creditCardNumber,
-				creditCardVV, MPaymentValidate.getCreditCardExpMM(creditCardExp),
-				MPaymentValidate.getCreditCardExpYY(creditCardExp));
-	}   // setCreditCard
-
-
-	/**
-	 * Set ACH BankAccount Info
-	 *
-	 * @param C_BP_BankAccount_ID bank account
-	 * @param isReceipt true if receipt
-	 * @param tenderType - Direct Debit or Direct Deposit
-	 * @param routingNo routing
-	 * @param accountNo account
-	 * @return true if valid
-	 */
-	public boolean setBankACH(final int C_BP_BankAccount_ID, final boolean isReceipt, final String tenderType,
-			final String routingNo, final String accountNo)
-	{
-		setTenderType(tenderType);
-		setIsReceipt(isReceipt);
-		//
-		if (C_BP_BankAccount_ID > 0
-				&& (routingNo == null || routingNo.length() == 0 || accountNo == null || accountNo.length() == 0))
-		{
-			setBankAccountDetails(C_BP_BankAccount_ID);
-		}
-		else
-		{
-			setC_BP_BankAccount_ID(C_BP_BankAccount_ID);
-			setRoutingNo(routingNo);
-			setAccountNo(accountNo);
-		}
-		setCheckNo("");
-		//
-		final int check = MPaymentValidate.validateRoutingNo(routingNo).length()
-				+ MPaymentValidate.validateAccountNo(accountNo).length();
-		return check == 0;
-	}   // setBankACH
-
-	/**
-	 * Set Cash BankAccount Info
-	 *
-	 * @param C_BP_BankAccount_ID bank account
-	 * @param isReceipt true if receipt
-	 * @param tenderType - Cash (Payment)
-	 * @return true if valid
-	 */
-	public boolean setBankCash(final int C_BP_BankAccount_ID, final boolean isReceipt, final String tenderType)
-	{
-		setTenderType(tenderType);
-		setIsReceipt(isReceipt);
-		//
-		if (C_BP_BankAccount_ID > 0)
-		{
-			setBankAccountDetails(C_BP_BankAccount_ID);
-		}
-		else
-		{
-			setC_BP_BankAccount_ID(C_BP_BankAccount_ID);
-		}
-		//
-		return true;
-	}   // setBankCash
-
-	/**
-	 * Set Check BankAccount Info
-	 *
-	 * @param C_BP_BankAccount_ID bank account
-	 * @param isReceipt true if receipt
-	 * @param checkNo check no
-	 * @return true if valid
-	 */
-	public boolean setBankCheck(final int C_BP_BankAccount_ID, final boolean isReceipt, final String checkNo)
-	{
-		return setBankCheck(C_BP_BankAccount_ID, isReceipt, null, null, checkNo);
-	}	// setBankCheck
-
-	/**
-	 * Set Check BankAccount Info
-	 *
-	 * @param C_BP_BankAccount_ID bank account
-	 * @param isReceipt true if receipt
-	 * @param routingNo routing no
-	 * @param accountNo account no
-	 * @param checkNo chack no
-	 * @return true if valid
-	 */
-	public boolean setBankCheck(final int C_BP_BankAccount_ID, final boolean isReceipt,
-			final String routingNo, final String accountNo, final String checkNo)
-	{
-		setTenderType(TENDERTYPE_Check);
-		setIsReceipt(isReceipt);
-		//
-		if (C_BP_BankAccount_ID > 0
-				&& (routingNo == null || routingNo.length() == 0
-						|| accountNo == null || accountNo.length() == 0))
-		{
-			setBankAccountDetails(C_BP_BankAccount_ID);
-		}
-		else
-		{
-			setC_BP_BankAccount_ID(C_BP_BankAccount_ID);
-			setRoutingNo(routingNo);
-			setAccountNo(accountNo);
-		}
-		setCheckNo(checkNo);
-		//
-		final int check = MPaymentValidate.validateRoutingNo(routingNo).length()
-				+ MPaymentValidate.validateAccountNo(accountNo).length()
-				+ MPaymentValidate.validateCheckNo(checkNo).length();
-		return check == 0;       // no error message
-	}   // setBankCheck
-
-	/**
-	 * Set Bank Account Details. Look up Routing No & Bank Acct No
-	 *
-	 * @param C_BP_BankAccount_ID bank account
-	 */
-	public void setBankAccountDetails(final int C_BP_BankAccount_ID)
-	{
-		if (C_BP_BankAccount_ID == 0)
-		{
-			return;
-		}
-		setC_BP_BankAccount_ID(C_BP_BankAccount_ID);
-		//
-		final String sql = "SELECT b.RoutingNo, ba.AccountNo "
-				+ "FROM C_BP_BankAccount ba"
-				+ " INNER JOIN C_Bank b ON (ba.C_Bank_ID=b.C_Bank_ID) "
-				+ "WHERE C_BP_BankAccount_ID=?";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, get_TrxName());
-			pstmt.setInt(1, C_BP_BankAccount_ID);
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				setRoutingNo(rs.getString(1));
-				setAccountNo(rs.getString(2));
-			}
-		}
-		catch (final SQLException e)
-		{
-			log.error(sql, e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-	}	// setBankAccountDetails
-
-	public void setAccountAddress(final String name, final String street,
-			final String city, final String state, final String zip, final String country)
-	{
-		setA_Name(name);
-		setA_Street(street);
-		setA_City(city);
-		setA_State(state);
-		setA_Zip(zip);
-		setA_Country(country);
-	}   // setAccountAddress
-
-	/**
-	 * Before Save
-	 *
-	 * @param newRecord new
-	 * @return save
-	 */
 	@Override
 	protected boolean beforeSave(final boolean newRecord)
 	{
@@ -425,7 +217,7 @@ public final class MPayment extends X_C_Payment
 			final MBank bank = MBank.get(getCtx(), ba.getC_Bank_ID());
 			if (bank.isCashBank())
 			{
-				setTenderType(TENDERTYPE_Cash);
+				setTenderType(TenderType.Cash.getCode());
 			}
 		}
 		// metas: tsa: us025b: end
@@ -461,11 +253,11 @@ public final class MPayment extends X_C_Payment
 		{
 			if (getC_Invoice_ID() != 0)
 			{
-				;
+				
 			}
 			else if (getC_Order_ID() != 0)
 			{
-				;
+				
 			}
 			else
 			{
@@ -540,6 +332,7 @@ public final class MPayment extends X_C_Payment
 	 *
 	 * @return amount, never <code>null</code>, even if there are no allocations
 	 */
+	@Deprecated
 	public BigDecimal getAllocatedAmt()
 	{
 		return Services.get(IPaymentDAO.class).getAllocatedAmt(this);
@@ -550,6 +343,7 @@ public final class MPayment extends X_C_Payment
 	 *
 	 * @return true if updated
 	 */
+	@Deprecated
 	public boolean testAllocation()
 	{
 		return Services.get(IPaymentBL.class).testAllocation(this);
@@ -564,7 +358,6 @@ public final class MPayment extends X_C_Payment
 	 */
 	public static void setIsAllocated(final Properties ctx, final int C_BPartner_ID, final String trxName)
 	{
-		int counter = 0;
 		String sql = "SELECT * FROM C_Payment "
 				+ "WHERE IsAllocated='N' AND DocStatus IN ('CO','CL')";
 		if (C_BPartner_ID > 1)
@@ -590,10 +383,7 @@ public final class MPayment extends X_C_Payment
 				final MPayment pay = new MPayment(ctx, rs, trxName);
 				if (pay.testAllocation())
 				{
-					if (pay.save())
-					{
-						counter++;
-					}
+					pay.saveEx();
 				}
 			}
 		}
@@ -607,28 +397,7 @@ public final class MPayment extends X_C_Payment
 			rs = null;
 			pstmt = null;
 		}
-		s_log.info("#" + counter);
 	}	// setIsAllocated
-
-	/**************************************************************************
-	 * Set Error Message
-	 *
-	 * @param errorMessage error message
-	 */
-	public void setErrorMessage(final String errorMessage)
-	{
-		m_errorMessage = errorMessage;
-	}	// setErrorMessage
-
-	/**
-	 * Get Error Message
-	 *
-	 * @return error message
-	 */
-	public String getErrorMessage()
-	{
-		return m_errorMessage;
-	}	// getErrorMessage
 
 	/**************************************************************************
 	 * Credit Card Number
@@ -672,7 +441,7 @@ public final class MPayment extends X_C_Payment
 	{
 		if (CreditCardExpMM < 1 || CreditCardExpMM > 12)
 		{
-			;
+			
 		}
 		else
 		{
@@ -799,10 +568,12 @@ public final class MPayment extends X_C_Payment
 	private void setDocumentNo()
 	{
 		// Cash Transfer
-		if ("X".equals(getTenderType()))
+		final TenderType tenderType = TenderType.ofCode(getTenderType());
+		if (tenderType.isCash())
 		{
 			return;
 		}
+		
 		// Current Document No
 		String documentNo = getDocumentNo();
 		// Existing reversal
@@ -825,7 +596,7 @@ public final class MPayment extends X_C_Payment
 		documentNo = "";
 		// globalqss - read configuration to assign credit card or check number number for Payments
 		// Credit Card
-		if (TENDERTYPE_CreditCard.equals(getTenderType()))
+		if (tenderType.isCreditCard())
 		{
 			if ( Services.get(ISysConfigBL.class).getBooleanValue("PAYMENT_OVERWRITE_DOCUMENTNO_WITH_CREDIT_CARD", true, getAD_Client_ID()))
 			{
@@ -836,7 +607,7 @@ public final class MPayment extends X_C_Payment
 			}
 		}
 		// Own Check No
-		else if (TENDERTYPE_Check.equals(getTenderType())
+		else if (tenderType.isCheck()
 				&& !isReceipt()
 				&& getCheckNo() != null && getCheckNo().length() > 0)
 		{
@@ -846,7 +617,7 @@ public final class MPayment extends X_C_Payment
 			}
 		}
 		// Customer Check: Routing: Account #Check
-		else if (TENDERTYPE_Check.equals(getTenderType())
+		else if (tenderType.isCheck()
 				&& isReceipt())
 		{
 			if ( Services.get(ISysConfigBL.class).getBooleanValue("PAYMENT_OVERWRITE_DOCUMENTNO_WITH_CHECK_ON_RECEIPT", true, getAD_Client_ID()))
@@ -914,13 +685,24 @@ public final class MPayment extends X_C_Payment
 	/**
 	 * Set Payment Amount
 	 *
-	 * @param C_Currency_ID currency
+	 * @param C_Currency_ID currency (optional)
 	 * @param payAmt amount
+	 * @deprecated Will be deleted because it's used only by legacy API
 	 */
-	public void setAmount(final int C_Currency_ID, final BigDecimal payAmt)
+	@Deprecated
+	public void setAmount(final int currencyId, final BigDecimal payAmt)
 	{
-		final int currencyId =  C_Currency_ID == 0 ? Services.get(ICurrencyBL.class).getBaseCurrency(getCtx(), getAD_Client_ID(), getAD_Org_ID()).getC_Currency_ID() : C_Currency_ID;
-		setC_Currency_ID(currencyId);
+		final CurrencyId currencyIdEffective;
+		if(currencyId > 0)
+		{
+			currencyIdEffective = CurrencyId.ofRepoId(currencyId);
+		}
+		else
+		{
+			currencyIdEffective = Services.get(ICurrencyBL.class).getBaseCurrencyId(ClientId.ofRepoId(getAD_Client_ID()), OrgId.ofRepoId(getAD_Org_ID()));
+		}
+		
+		setC_Currency_ID(currencyIdEffective.getRepoId());
 		setPayAmt(payAmt);
 	}   // setAmount
 
@@ -955,7 +737,6 @@ public final class MPayment extends X_C_Payment
 	public void setOverUnderAmt(final BigDecimal OverUnderAmt)
 	{
 		super.setOverUnderAmt(OverUnderAmt == null ? BigDecimal.ZERO : OverUnderAmt);
-		setIsOverUnderPayment(getOverUnderAmt().compareTo(BigDecimal.ZERO) != 0);
 	}	// setOverUnderAmt
 
 	/**
@@ -970,174 +751,26 @@ public final class MPayment extends X_C_Payment
 	}	// setTaxAmt
 
 	/**
-	 * Set Info from BP Bank Account
-	 *
-	 * @param ba BP bank account
-	 */
-	public void setBP_BankAccount(final MBPBankAccount ba)
-	{
-		log.debug("" + ba);
-		if (ba == null)
-		{
-			return;
-		}
-		setC_BPartner_ID(ba.getC_BPartner_ID());
-		setAccountAddress(ba.getA_Name(), ba.getA_Street(), ba.getA_City(),
-				ba.getA_State(), ba.getA_Zip(), ba.getA_Country());
-		setA_EMail(ba.getA_EMail());
-		setA_Ident_DL(ba.getA_Ident_DL());
-		setA_Ident_SSN(ba.getA_Ident_SSN());
-		// CC
-		if (ba.getCreditCardType() != null)
-		{
-			setCreditCardType(ba.getCreditCardType());
-		}
-		if (ba.getCreditCardNumber() != null)
-		{
-			setCreditCardNumber(ba.getCreditCardNumber());
-		}
-		if (ba.getCreditCardExpMM() != 0)
-		{
-			setCreditCardExpMM(ba.getCreditCardExpMM());
-		}
-		if (ba.getCreditCardExpYY() != 0)
-		{
-			setCreditCardExpYY(ba.getCreditCardExpYY());
-		}
-		if (ba.getCreditCardVV() != null)
-		{
-			setCreditCardVV(ba.getCreditCardVV());
-		}
-		// Bank
-		if (ba.getAccountNo() != null)
-		{
-			setAccountNo(ba.getAccountNo());
-		}
-		if (ba.getRoutingNo() != null)
-		{
-			setRoutingNo(ba.getRoutingNo());
-		}
-	}	// setBP_BankAccount
-
-	/**
-	 * Save Info from BP Bank Account
-	 *
-	 * @param ba BP bank account
-	 * @return true if saved
-	 */
-	public boolean saveToBP_BankAccount(final MBPBankAccount ba)
-	{
-		if (ba == null)
-		{
-			return false;
-		}
-		ba.setA_Name(getA_Name());
-		ba.setA_Street(getA_Street());
-		ba.setA_City(getA_City());
-		ba.setA_State(getA_State());
-		ba.setA_Zip(getA_Zip());
-		ba.setA_Country(getA_Country());
-		ba.setA_EMail(getA_EMail());
-		ba.setA_Ident_DL(getA_Ident_DL());
-		ba.setA_Ident_SSN(getA_Ident_SSN());
-		// CC
-		ba.setCreditCardType(getCreditCardType());
-		ba.setCreditCardNumber(getCreditCardNumber());
-		ba.setCreditCardExpMM(getCreditCardExpMM());
-		ba.setCreditCardExpYY(getCreditCardExpYY());
-		ba.setCreditCardVV(getCreditCardVV());
-		// Bank
-		if (getAccountNo() != null)
-		{
-			ba.setAccountNo(getAccountNo());
-		}
-		if (getRoutingNo() != null)
-		{
-			ba.setRoutingNo(getRoutingNo());
-		}
-		// Trx
-		ba.setR_AvsAddr(getR_AvsAddr());
-		ba.setR_AvsZip(getR_AvsZip());
-		//
-		final boolean ok = ba.save(get_TrxName());
-		log.debug("saveToBP_BankAccount - " + ba);
-		return ok;
-	}	// setBP_BankAccount
-
-	/**
 	 * Set Doc Type bases on IsReceipt
 	 */
 	private void setC_DocType_ID()
 	{
-		setC_DocType_ID(isReceipt());
+		setIsReceiptAndUpdateDocType(isReceipt());
 	}	// setC_DocType_ID
 
-	/**
-	 * Set Doc Type
-	 *
-	 * @param isReceipt is receipt
-	 */
-	public void setC_DocType_ID(final boolean isReceipt)
+	@Deprecated
+	public void setIsReceiptAndUpdateDocType(final boolean isReceipt)
 	{
 		setIsReceipt(isReceipt);
-		final String sql = "SELECT C_DocType_ID FROM C_DocType WHERE AD_Client_ID=? AND DocBaseType=?"
-				// metas: added IsActive='Y'
-				// metas: begin: first return doctypes from current Org
-				+ " ORDER BY IsDefault DESC, "
-				+ " CASE "
-				+ "   WHEN AD_Org_ID = ? THEN 0 "
-				+ "   ELSE 1 "
-				+ " END ";
-		// metas: end
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, get_TrxName());
-			pstmt.setInt(1, getAD_Client_ID());
-			if (isReceipt)
-			{
-				pstmt.setString(2, X_C_DocType.DOCBASETYPE_ARReceipt);
-			}
-			else
-			{
-				pstmt.setString(2, X_C_DocType.DOCBASETYPE_APPayment);
-			}
-			pstmt.setInt(3, getAD_Org_ID()); // metas
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				setC_DocType_ID(rs.getInt(1));
-			}
-			else
-			{
-				log.warn("setDocType - NOT found - isReceipt=" + isReceipt);
-			}
-		}
-		catch (final SQLException e)
-		{
-			log.error(sql, e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-	}	// setC_DocType_ID
-
-	/**
-	 * Set Document Type
-	 *
-	 * @param C_DocType_ID doc type
-	 */
-	@Override
-	public void setC_DocType_ID(final int C_DocType_ID)
-	{
-		// if (getDocumentNo() != null && getC_DocType_ID() != C_DocType_ID)
-		// setDocumentNo(null);
-		super.setC_DocType_ID(C_DocType_ID);
-	}	// setC_DocType_ID
+		
+		final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
+		final DocTypeId docTypeId = docTypesRepo.getDocTypeId(DocTypeQuery.builder()
+				.docBaseType(isReceipt ? X_C_DocType.DOCBASETYPE_ARReceipt : X_C_DocType.DOCBASETYPE_APPayment)
+				.adClientId(getAD_Client_ID())
+				.adOrgId(getAD_Org_ID())
+				.build());
+		setC_DocType_ID(docTypeId.getRepoId());
+	}
 
 	/**
 	 * Verify Document Type with Invoice
@@ -1147,7 +780,7 @@ public final class MPayment extends X_C_Payment
 	 */
 	private boolean verifyDocType(final MPaymentAllocate[] pAllocs)
 	{
-		if (getC_DocType_ID() == 0)
+		if (getC_DocType_ID() <= 0)
 		{
 			return false;
 		}
@@ -1169,7 +802,7 @@ public final class MPayment extends X_C_Payment
 				rs = pstmt.executeQuery();
 				if (rs.next())
 				{
-					documentSO = new Boolean("Y".equals(rs.getString(1)));
+					documentSO = StringUtils.toBoolean(rs.getString(1));
 				}
 			}
 			catch (final Exception e)
@@ -1198,7 +831,7 @@ public final class MPayment extends X_C_Payment
 				rs = pstmt.executeQuery();
 				if (rs.next())
 				{
-					documentSO = new Boolean("Y".equals(rs.getString(1)));
+					documentSO = StringUtils.toBoolean(rs.getString(1));
 				}
 			}
 			catch (final Exception e)
@@ -1237,14 +870,14 @@ public final class MPayment extends X_C_Payment
 						{
 							if (documentSO != null)
 							{ // already set, compare with current
-								if (documentSO.booleanValue() != ("Y".equals(rs.getString(1))))
+								if (documentSO.booleanValue() != (StringUtils.toBoolean(rs.getString(1))))
 								{
 									return false;
 								}
 							}
 							else
 							{
-								documentSO = new Boolean("Y".equals(rs.getString(1)));
+								documentSO = StringUtils.toBoolean(rs.getString(1));
 							}
 						}
 					}
@@ -1276,7 +909,7 @@ public final class MPayment extends X_C_Payment
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				paymentSO = new Boolean("Y".equals(rs.getString(1)));
+				paymentSO = StringUtils.toBoolean(rs.getString(1));
 			}
 		}
 		catch (final Exception e)
@@ -1376,16 +1009,6 @@ public final class MPayment extends X_C_Payment
 	}
 
 	/**
-	 * Get Document Status
-	 *
-	 * @return Document Status Clear Text
-	 */
-	public String getDocStatusName()
-	{
-		return Services.get(IADReferenceDAO.class).retrieveListNameTrl(getCtx(), 131, getDocStatus());
-	}	// getDocStatusName
-
-	/**
 	 * Get Name of Credit Card
 	 *
 	 * @return Name
@@ -1395,13 +1018,7 @@ public final class MPayment extends X_C_Payment
 		return getCreditCardName(getCreditCardType());
 	}	// getCreditCardName
 
-	/**
-	 * Get Name of Credit Card
-	 *
-	 * @param CreditCardType credit card type
-	 * @return Name
-	 */
-	public String getCreditCardName(final String CreditCardType)
+	private String getCreditCardName(final String CreditCardType)
 	{
 		if (CreditCardType == null)
 		{
@@ -1471,23 +1088,6 @@ public final class MPayment extends X_C_Payment
 		return super.getPayAmt().negate();
 	}	// getPayAmt
 
-	/**
-	 * Get Pay Amt in cents
-	 *
-	 * @return amount in cents
-	 */
-	public int getPayAmtInCents()
-	{
-		final BigDecimal bd = super.getPayAmt().multiply(Env.ONEHUNDRED);
-		return bd.intValue();
-	}	// getPayAmtInCents
-
-	/**************************************************************************
-	 * Process document
-	 *
-	 * @param processAction document action
-	 * @return true if performed
-	 */
 	@Override
 	public boolean processIt(final String processAction)
 	{
@@ -1500,45 +1100,27 @@ public final class MPayment extends X_C_Payment
 	/** Just Prepared Flag */
 	private boolean m_justPrepared = false;
 
-	/**
-	 * Unlock Document.
-	 *
-	 * @return true if success
-	 */
 	@Override
 	public boolean unlockIt()
 	{
-		log.info(toString());
 		setProcessing(false);
 		return true;
 	}	// unlockIt
 
-	/**
-	 * Invalidate Document
-	 *
-	 * @return true if success
-	 */
 	@Override
 	public boolean invalidateIt()
 	{
-		log.info(toString());
 		setDocAction(DOCACTION_Prepare);
 		return true;
 	}	// invalidateIt
 
-	/**************************************************************************
-	 * Prepare Document
-	 *
-	 * @return new status (In Progress or Invalid)
-	 */
 	@Override
 	public String prepareIt()
 	{
-		log.info(toString());
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
 		{
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
 		// Std Period open?
@@ -1546,7 +1128,7 @@ public final class MPayment extends X_C_Payment
 				isReceipt() ? X_C_DocType.DOCBASETYPE_ARReceipt : X_C_DocType.DOCBASETYPE_APPayment, getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
 		// Unsuccessful Online Payment
@@ -1560,28 +1142,29 @@ public final class MPayment extends X_C_Payment
 			{
 				m_processMsg = "@PaymentNotProcessed@";
 			}
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
+		//
 		// Waiting Payment - Need to create Invoice & Shipment
-		if (getC_Order_ID() != 0 && getC_Invoice_ID() == 0)
-		{	// see WebOrder.process
-			final MOrder order = new MOrder(getCtx(), getC_Order_ID(), get_TrxName());
-			if (DOCSTATUS_WaitingPayment.equals(order.getDocStatus()))
+		final OrderId orderId = OrderId.ofRepoIdOrNull(getC_Order_ID());
+		if (orderId != null && getC_Invoice_ID() <= 0)
+		{
+			final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
+			
+			final I_C_Order order = ordersRepo.getById(orderId);
+			final DocStatus orderDocStatus = DocStatus.ofCode(order.getDocStatus());
+			if(orderDocStatus.isWaitingForPayment())
 			{
 				order.setC_Payment_ID(getC_Payment_ID());
-				order.setDocAction(X_C_Order.DOCACTION_WaitComplete);
-				order.set_TrxName(get_TrxName());
-				// metas: Prepayment Order shall receive their DateAcct from
-				// Payment, because the Order Dateacct could be far back
-				order.setDateAcct(getDateAcct());
-				// metas end
-				// boolean ok =
-				order.processIt(X_C_Order.DOCACTION_WaitComplete);
-				m_processMsg = order.getProcessMsg();
-				order.saveEx(get_TrxName());
+				order.setDocAction(IDocument.ACTION_WaitComplete);
+				order.setDateAcct(getDateAcct()); // Prepayment Order shall receive their DateAcct from Payment, because the Order Dateacct could be far back
+				
+				Services.get(IDocumentBL.class).processEx(order, IDocument.ACTION_WaitComplete);
+				ordersRepo.save(order);
+				
 				// Set Invoice
-				final MInvoice[] invoices = order.getInvoices();
+				final MInvoice[] invoices = MOrder.getInvoices(orderId);
 				final int length = invoices.length;
 				if (length > 0)
 				{
@@ -1604,21 +1187,21 @@ public final class MPayment extends X_C_Payment
 		if (!verifyDocType(pAllocs))
 		{
 			m_processMsg = "@PaymentDocTypeInvoiceInconsistent@";
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
 		// Payment Allocate is ignored if charge/invoice/order exists in header
 		if (!verifyPaymentAllocateVsHeader(pAllocs))
 		{
 			m_processMsg = "@PaymentAllocateIgnored@";
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
 		// Payment Amount must be equal to sum of Allocate amounts
 		if (!verifyPaymentAllocateSum(pAllocs))
 		{
 			m_processMsg = "@PaymentAllocateSumInconsistent@";
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
 		// Do not pay when Credit Stop/Hold
@@ -1627,7 +1210,7 @@ public final class MPayment extends X_C_Payment
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
 		{
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
 		m_justPrepared = true;
@@ -1635,7 +1218,7 @@ public final class MPayment extends X_C_Payment
 		{
 			setDocAction(DOCACTION_Complete);
 		}
-		return IDocument.STATUS_InProgress;
+		return DocStatus.InProgress.getCode();
 	}	// prepareIt
 
 	private void checkCreditLimit()
@@ -1654,7 +1237,7 @@ public final class MPayment extends X_C_Payment
 		}
 
 		final BigDecimal crediUsed = stats.getSOCreditUsed();
-		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
+		final BPartnerCreditLimitRepository creditLimitRepo = SpringContextHolder.instance.getBean(BPartnerCreditLimitRepository.class);
 		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(getC_BPartner_ID(), getDateTrx());
 
 
@@ -1673,54 +1256,37 @@ public final class MPayment extends X_C_Payment
 		}
 	}
 
-	/**
-	 * Approve Document
-	 *
-	 * @return true if success
-	 */
 	@Override
 	public boolean approveIt()
 	{
-		log.info(toString());
 		setIsApproved(true);
 		return true;
 	}	// approveIt
 
-	/**
-	 * Reject Approval
-	 *
-	 * @return true if success
-	 */
 	@Override
 	public boolean rejectIt()
 	{
-		log.info(toString());
 		setIsApproved(false);
 		return true;
 	}	// rejectIt
 
-	/**************************************************************************
-	 * Complete Document
-	 *
-	 * @return new status (Complete, In Progress, Invalid, Waiting ..)
-	 */
 	@Override
 	public String completeIt()
 	{
 		// Re-Check
 		if (!m_justPrepared)
 		{
-			final String status = prepareIt();
-			if (!IDocument.STATUS_InProgress.equals(status))
+			final DocStatus docStatus = DocStatus.ofCode(prepareIt());
+			if (!docStatus.isInProgress())
 			{
-				return status;
+				return docStatus.getCode();
 			}
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
 		{
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
 		// Implicit Approval
@@ -1778,7 +1344,7 @@ public final class MPayment extends X_C_Payment
 			if (cash == null || cash.get_ID() == 0)
 			{
 				m_processMsg = "@NoCashBook@";
-				return IDocument.STATUS_Invalid;
+				return DocStatus.Invalid.getCode();
 			}
 			final MCashLine cl = new MCashLine(cash);
 			cl.setCashType(X_C_CashLine.CASHTYPE_GeneralReceipts);
@@ -1804,7 +1370,7 @@ public final class MPayment extends X_C_Payment
 			if (!cl.save(get_TrxName()))
 			{
 				m_processMsg = "Could not save Cash Journal Line";
-				return IDocument.STATUS_Invalid;
+				return DocStatus.Invalid.getCode();
 			}
 		}
 		// End Trifon - CashPayments
@@ -1817,7 +1383,7 @@ public final class MPayment extends X_C_Payment
 		if (valid != null)
 		{
 			m_processMsg = valid;
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
 		// Set the definite document number after completed (if needed)
@@ -1826,7 +1392,7 @@ public final class MPayment extends X_C_Payment
 		//
 		setProcessed(true);
 		setDocAction(DOCACTION_Reverse_Correct); // issue #347
-		return IDocument.STATUS_Completed;
+		return DocStatus.Completed.getCode();
 	}	// completeIt
 
 	/**
@@ -1834,7 +1400,7 @@ public final class MPayment extends X_C_Payment
 	 */
 	private void setDefiniteDocumentNo()
 	{
-		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
+		final I_C_DocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 		if (dt.isOverwriteDateOnComplete())
 		{
 			setDateTrx(new Timestamp(System.currentTimeMillis()));
@@ -1874,23 +1440,21 @@ public final class MPayment extends X_C_Payment
 			return null;
 		}
 		// Business Partner needs to be linked to Org
-		final MBPartner bp = new MBPartner(getCtx(), getC_BPartner_ID(), get_TrxName());
-		final int counterAD_Org_ID = bp.getAD_OrgBP_ID_Int();
-		if (counterAD_Org_ID == 0)
+		final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(getC_BPartner_ID());
+		final int counterAD_Org_ID = bp.getAD_OrgBP_ID();
+		if (counterAD_Org_ID <= 0)
 		{
 			return null;
 		}
 
-		final MBPartner counterBP = new MBPartner(getCtx(), counterC_BPartner_ID, get_TrxName());
+		final I_C_BPartner counterBP = Services.get(IBPartnerDAO.class).getById(counterC_BPartner_ID);
 		// MOrgInfo counterOrgInfo = MOrgInfo.get(getCtx(), counterAD_Org_ID);
-		log.info("Counter BP=" + counterBP.getName());
 
 		// Document Type
 		int C_DocTypeTarget_ID = 0;
 		final MDocTypeCounter counterDT = MDocTypeCounter.getCounterDocType(getCtx(), getC_DocType_ID());
 		if (counterDT != null)
 		{
-			log.debug(counterDT.toString());
 			if (!counterDT.isCreateCounter() || !counterDT.isValid())
 			{
 				return null;
@@ -1901,7 +1465,6 @@ public final class MPayment extends X_C_Payment
 		// indirect
 		{
 			C_DocTypeTarget_ID = MDocTypeCounter.getCounterDocType_ID(getCtx(), getC_DocType_ID());
-			log.debug("Indirect C_DocTypeTarget_ID=" + C_DocTypeTarget_ID);
 			if (C_DocTypeTarget_ID <= 0)
 			{
 				return null;
@@ -1943,7 +1506,6 @@ public final class MPayment extends X_C_Payment
 		counter.setUser1_ID(getUser1_ID());
 		counter.setUser2_ID(getUser2_ID());
 		counter.saveEx(get_TrxName());
-		log.debug(counter.toString());
 		setRef_Payment_ID(counter.getC_Payment_ID());
 
 		// Document Action
@@ -1966,14 +1528,8 @@ public final class MPayment extends X_C_Payment
 	 */
 	public boolean allocateIt()
 	{
-		final boolean result = allocateIt0();
-		return result;
-	}
-
-	private boolean allocateIt0()
-	{
 		// Create invoice Allocation - See also MCash.completeIt
-		if (getC_Invoice_ID() != 0)
+		if (getC_Invoice_ID() > 0)
 		{
 			return allocateInvoice();
 		}
@@ -2164,25 +1720,23 @@ public final class MPayment extends X_C_Payment
 		// De-Allocate all
 		final MAllocationHdr[] allocations = MAllocationHdr.getOfPayment(getCtx(),
 				getC_Payment_ID(), get_TrxName());
-		log.debug("#" + allocations.length);
-		for (int i = 0; i < allocations.length; i++)
+		for (MAllocationHdr allocation : allocations)
 		{
-			final String docStatus = allocations[i].getDocStatus();
+			final DocStatus allocDocStatus = DocStatus.ofCode(allocation.getDocStatus());
 
 			// 07570: Skip allocations which were already Reversed or Voided
-			if (IDocument.STATUS_Reversed.equals(docStatus)
-					|| IDocument.STATUS_Voided.equals(docStatus))
+			if(allocDocStatus.isReversedOrVoided())
 			{
 				continue;
 			}
 
-			allocations[i].set_TrxName(get_TrxName());
-			allocations[i].setDocAction(IDocument.ACTION_Reverse_Correct);
-			if (!allocations[i].processIt(IDocument.ACTION_Reverse_Correct))
+			allocation.set_TrxName(get_TrxName());
+			allocation.setDocAction(IDocument.ACTION_Reverse_Correct);
+			if (!allocation.processIt(IDocument.ACTION_Reverse_Correct))
 			{
-				throw new AdempiereException(allocations[i].getProcessMsg());
+				throw new AdempiereException(allocation.getProcessMsg());
 			}
-			allocations[i].saveEx();
+			allocation.saveEx();
 		}
 
 		// Unlink (in case allocation did not get it)
@@ -2223,7 +1777,6 @@ public final class MPayment extends X_C_Payment
 	@Override
 	public boolean voidIt()
 	{
-		log.info(toString());
 		// Before Void
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
 		if (m_processMsg != null)
@@ -2233,14 +1786,10 @@ public final class MPayment extends X_C_Payment
 
 		//
 		// Make sure not already closed
-		final String docStatus = getDocStatus();
-		if (DOCSTATUS_Closed.equals(docStatus)
-				|| DOCSTATUS_Reversed.equals(docStatus)
-				|| DOCSTATUS_Voided.equals(docStatus))
+		final DocStatus docStatus = DocStatus.ofCode(getDocStatus());
+		if(docStatus.isClosedReversedOrVoided())
 		{
-			m_processMsg = "Document Closed: " + docStatus;
-			setDocAction(DOCACTION_None);
-			return false;
+			throw new AdempiereException("Document Closed: " + docStatus);
 		}
 
 		//
@@ -2252,11 +1801,7 @@ public final class MPayment extends X_C_Payment
 
 		//
 		// Not Processed
-		if (DOCSTATUS_Drafted.equals(docStatus)
-				|| DOCSTATUS_Invalid.equals(docStatus)
-				|| DOCSTATUS_InProgress.equals(docStatus)
-				|| DOCSTATUS_Approved.equals(docStatus)
-				|| DOCSTATUS_NotApproved.equals(docStatus))
+		if (docStatus.isNotProcessed())
 		{
 			addDescription(Services.get(IMsgBL.class).getMsg(getCtx(), "Voided") + " (" + getPayAmt() + ")");
 			setPayAmt(BigDecimal.ZERO);
@@ -2293,7 +1838,6 @@ public final class MPayment extends X_C_Payment
 	@Override
 	public boolean closeIt()
 	{
-		log.info(toString());
 		// Before Close
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
 		if (m_processMsg != null)
@@ -2318,7 +1862,6 @@ public final class MPayment extends X_C_Payment
 	@Override
 	public boolean reverseCorrectIt()
 	{
-		log.info(toString());
 		// Before reverseCorrect
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSECORRECT);
 		if (m_processMsg != null)
@@ -2350,7 +1893,7 @@ public final class MPayment extends X_C_Payment
 		reversal.setDateAcct(dateAcct);
 		//
 		reversal.setDocumentNo(getDocumentNo() + REVERSE_INDICATOR);	// indicate reversals
-		reversal.setDocStatus(DOCSTATUS_Drafted);
+		reversal.setDocStatus(DocStatus.Drafted.getCode());
 		reversal.setDocAction(DOCACTION_Complete);
 		//
 		reversal.setPayAmt(getPayAmt().negate());
@@ -2383,7 +1926,7 @@ public final class MPayment extends X_C_Payment
 			return false;
 		}
 		reversal.closeIt();
-		reversal.setDocStatus(DOCSTATUS_Reversed);
+		reversal.setDocStatus(DocStatus.Reversed.getCode());
 		reversal.setDocAction(DOCACTION_None);
 		reversal.save(get_TrxName());
 
@@ -2393,7 +1936,7 @@ public final class MPayment extends X_C_Payment
 		setIsAllocated(true);	// the allocation below is overwritten
 		// Set Status
 		addDescription("(" + reversal.getDocumentNo() + "<-)");
-		setDocStatus(DOCSTATUS_Reversed);
+		setDocStatus(DocStatus.Reversed.getCode());
 		setDocAction(DOCACTION_None);
 		setProcessed(true);
 		// FR [ 1948157 ]
@@ -2463,8 +2006,6 @@ public final class MPayment extends X_C_Payment
 	@Override
 	public boolean reverseAccrualIt()
 	{
-		log.info(toString());
-
 		// Before reverseAccrual
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL);
 		if (m_processMsg != null)
@@ -2490,7 +2031,6 @@ public final class MPayment extends X_C_Payment
 	@Override
 	public boolean reActivateIt()
 	{
-		log.info(toString());
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
 		if (m_processMsg != null)
@@ -2670,11 +2210,12 @@ public final class MPayment extends X_C_Payment
 			return;
 		}
 
-		final I_C_DocType orderDocType = order.getC_DocType();
-		if (orderDocType == null)
+		final DocTypeId orderDocTypeId = DocTypeId.ofRepoId(order.getC_DocType_ID());
+		if (orderDocTypeId == null)
 		{
 			return; // shall not happen
 		}
+		final I_C_DocType orderDocType = Services.get(IDocTypeDAO.class).getById(orderDocTypeId);
 
 		final String orderDocSubType = orderDocType.getDocSubType();
 		if (!X_C_DocType.DOCSUBTYPE_POSOrder.equals(orderDocSubType)

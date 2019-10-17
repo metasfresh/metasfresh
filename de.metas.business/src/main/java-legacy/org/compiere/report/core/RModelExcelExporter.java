@@ -13,9 +13,15 @@
  *****************************************************************************/
 package org.compiere.report.core;
 
+import javax.annotation.Nullable;
+
 import de.metas.impexp.excel.AbstractExcelExporter;
 import de.metas.impexp.excel.CellValue;
 import de.metas.impexp.excel.CellValues;
+import de.metas.impexp.excel.ExcelExportConstants;
+import de.metas.impexp.excel.ExcelFormat;
+import lombok.Builder;
+import lombok.NonNull;
 
 /**
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
@@ -24,11 +30,15 @@ import de.metas.impexp.excel.CellValues;
 public class RModelExcelExporter
 		extends AbstractExcelExporter
 {
-	private RModel m_model = null;
+	private final RModel m_model;
 
-	public RModelExcelExporter(final RModel model)
+	@Builder
+	private RModelExcelExporter(
+			@Nullable final ExcelFormat poiFactory,
+			@Nullable final ExcelExportConstants constants,
+			@NonNull final RModel model)
 	{
-		super();
+		super(poiFactory, constants);
 		m_model = model;
 	}
 

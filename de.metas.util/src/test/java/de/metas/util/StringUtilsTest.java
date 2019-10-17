@@ -31,7 +31,6 @@ import org.adempiere.util.lang.IPair;
 import org.junit.Assert;
 import org.junit.Test;
 
-import de.metas.util.StringUtils;
 import de.metas.util.StringUtils.TruncateAt;
 
 public class StringUtilsTest
@@ -176,4 +175,18 @@ public class StringUtilsTest
 		assertThat(result.getRight()).isEqualTo("14-26c");
 	}
 
+	@Test
+	public void test_trimBlankToNull()
+	{
+		assertThat(StringUtils.trimBlankToNull(null)).isNull();
+		assertThat(StringUtils.trimBlankToNull("")).isNull();
+		assertThat(StringUtils.trimBlankToNull(" ")).isNull();
+		assertThat(StringUtils.trimBlankToNull(" \t\n ")).isNull();
+		assertThat(StringUtils.trimBlankToNull(" \taaaa\n ")).isEqualTo("aaaa");
+
+		{
+			final String s = "test";
+			assertThat(StringUtils.trimBlankToNull(s)).isSameAs(s);
+		}
+	}
 }

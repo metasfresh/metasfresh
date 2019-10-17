@@ -15,7 +15,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1709215247L;
+	private static final long serialVersionUID = -1758677625L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Item_Product (Properties ctx, int M_HU_PI_Item_Product_ID, String trxName)
@@ -47,18 +47,6 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
 		Bezeichnet einen Geschäftspartner
@@ -82,18 +70,6 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
 	}
 
 	/** Set Maßeinheit.
@@ -135,6 +111,38 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	public java.lang.String getDescription () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
+	}
+
+	/** Set TU-EAN.
+		@param EAN_TU TU-EAN	  */
+	@Override
+	public void setEAN_TU (java.lang.String EAN_TU)
+	{
+		set_Value (COLUMNNAME_EAN_TU, EAN_TU);
+	}
+
+	/** Get TU-EAN.
+		@return TU-EAN	  */
+	@Override
+	public java.lang.String getEAN_TU () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EAN_TU);
+	}
+
+	/** Set GTIN.
+		@param GTIN GTIN	  */
+	@Override
+	public void setGTIN (java.lang.String GTIN)
+	{
+		set_Value (COLUMNNAME_GTIN, GTIN);
+	}
+
+	/** Get GTIN.
+		@return GTIN	  */
+	@Override
+	public java.lang.String getGTIN () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_GTIN);
 	}
 
 	/** Set Jedes Produkt erlauben.
@@ -184,7 +192,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI_Item getM_HU_PI_Item() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_PI_Item getM_HU_PI_Item()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Item_ID, de.metas.handlingunits.model.I_M_HU_PI_Item.class);
 	}
@@ -239,18 +247,6 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
-	}
-
 	/** Set Produkt.
 		@param M_Product_ID 
 		Produkt, Leistung, Artikel
@@ -277,9 +273,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -287,8 +281,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{
@@ -317,23 +310,20 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 		return bd;
 	}
 
-	/** Set UPC/EAN.
-		@param UPC 
-		Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
-	  */
+	/** Set TU-UPC.
+		@param UPC_TU TU-UPC	  */
 	@Override
-	public void setUPC (java.lang.String UPC)
+	public void setUPC_TU (java.lang.String UPC_TU)
 	{
-		set_Value (COLUMNNAME_UPC, UPC);
+		set_Value (COLUMNNAME_UPC_TU, UPC_TU);
 	}
 
-	/** Get UPC/EAN.
-		@return Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
-	  */
+	/** Get TU-UPC.
+		@return TU-UPC	  */
 	@Override
-	public java.lang.String getUPC () 
+	public java.lang.String getUPC_TU () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_UPC);
+		return (java.lang.String)get_Value(COLUMNNAME_UPC_TU);
 	}
 
 	/** Set Gültig ab.

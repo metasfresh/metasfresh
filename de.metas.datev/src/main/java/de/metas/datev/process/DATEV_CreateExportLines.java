@@ -1,6 +1,6 @@
 package de.metas.datev.process;
 
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.datev.DATEVExportLinesRepository;
@@ -38,7 +38,7 @@ public class DATEV_CreateExportLines extends JavaProcess implements IProcessPrec
 
 	public DATEV_CreateExportLines()
 	{
-		Adempiere.autowire(this);
+		SpringContextHolder.instance.autowire(this);
 	}
 
 	@Override

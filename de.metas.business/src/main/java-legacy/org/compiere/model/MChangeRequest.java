@@ -110,9 +110,9 @@ public class MChangeRequest extends X_M_ChangeRequest
 		}
 		
 		//	Derive ChangeNotice from BOM if defined
-		if (newRecord && getPP_Product_BOM_ID() != 0 && getM_ChangeNotice_ID() == 0)
+		if (newRecord && getPP_Product_BOM_ID() > 0 && getM_ChangeNotice_ID() <= 0)
 		{
-			final I_PP_Product_BOM bom = Services.get(IProductBOMDAO.class).retrieveBOMById(getCtx(), getPP_Product_BOM_ID());
+			final I_PP_Product_BOM bom = Services.get(IProductBOMDAO.class).getById(getPP_Product_BOM_ID());
 			if (bom.getM_ChangeNotice_ID() > 0)
 			{
 				setM_ChangeNotice_ID(bom.getM_ChangeNotice_ID());

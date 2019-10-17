@@ -1,8 +1,10 @@
 package de.metas.order.compensationGroup;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -32,6 +34,7 @@ public class GroupTemplateId implements RepoIdAware
 {
 	int repoId;
 
+	@JsonCreator
 	public static GroupTemplateId ofRepoId(final int repoId)
 	{
 		return new GroupTemplateId(repoId);
@@ -52,4 +55,10 @@ public class GroupTemplateId implements RepoIdAware
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}
 
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
+	}
 }

@@ -1,10 +1,9 @@
 package de.metas.handlingunits;
 
-import org.compiere.util.Util;
-
 import com.google.common.base.MoreObjects;
 
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 public final class LUTUCUPair
@@ -66,6 +65,6 @@ public final class LUTUCUPair
 
 	public I_M_HU getTopLevelHU()
 	{
-		return Util.coalesce(luHU, tuHU, vhu);
+		return CoalesceUtil.coalesce(luHU, tuHU, vhu);
 	}
 }

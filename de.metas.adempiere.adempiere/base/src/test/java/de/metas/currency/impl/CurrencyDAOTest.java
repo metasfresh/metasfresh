@@ -1,15 +1,17 @@
 package de.metas.currency.impl;
 
-import java.util.Date;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+
+import java.time.LocalDate;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_ConversionType_Default;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -18,8 +20,10 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import de.metas.currency.ConversionType;
+import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 
 /*
@@ -35,11 +39,11 @@ import de.metas.util.Services;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -53,9 +57,9 @@ public class CurrencyDAOTest
 	@Rule
 	public AdempiereTestWatcher testWatcher = new AdempiereTestWatcher();
 
-	private I_C_ConversionType conversionType_Spot;
-	private I_C_ConversionType conversionType_Company;
-	private I_C_ConversionType conversionType_PeriodEnd;
+	private CurrencyConversionTypeId conversionTypeId_Spot;
+	private CurrencyConversionTypeId conversionTypeId_Company;
+	private CurrencyConversionTypeId conversionTypeId_PeriodEnd;
 
 	@Before
 	public void init()
@@ -67,31 +71,31 @@ public class CurrencyDAOTest
 
 		currencyDAO = Services.get(ICurrencyDAO.class);
 
-		conversionType_Spot = currencyDAO.retrieveConversionType(ctx, ConversionType.Spot);
-		conversionType_Company = currencyDAO.retrieveConversionType(ctx, ConversionType.Company);
-		conversionType_PeriodEnd = currencyDAO.retrieveConversionType(ctx, ConversionType.PeriodEnd);
+		conversionTypeId_Spot = currencyDAO.getConversionTypeId(ConversionTypeMethod.Spot);
+		conversionTypeId_Company = currencyDAO.getConversionTypeId(ConversionTypeMethod.Company);
+		conversionTypeId_PeriodEnd = currencyDAO.getConversionTypeId(ConversionTypeMethod.PeriodEnd);
 	}
 
 	@Test
 	public void test()
 	{
 		clearConversionTypeDefaults();
-		createConversionTypeDefault(conversionType_Spot, TimeUtil.getDay(1970, 1, 1));
-		createConversionTypeDefault(conversionType_Company, TimeUtil.getDay(2016, 1, 1));
-		createConversionTypeDefault(conversionType_PeriodEnd, TimeUtil.getDay(2017, 1, 1));
+		createConversionTypeDefault(conversionTypeId_Spot, LocalDate.of(1970, 1, 1));
+		createConversionTypeDefault(conversionTypeId_Company, LocalDate.of(2016, 1, 1));
+		createConversionTypeDefault(conversionTypeId_PeriodEnd, LocalDate.of(2017, 1, 1));
 
-		assertNoDefaultConversionType(TimeUtil.getDay(1969, 12, 31));
+		assertNoDefaultConversionType(LocalDate.of(1969, 12, 31));
 
-		assertDefaultConversionType(conversionType_Spot, TimeUtil.getDay(1970, 1, 1));
-		assertDefaultConversionType(conversionType_Spot, TimeUtil.getDay(2015, 1, 1));
-		assertDefaultConversionType(conversionType_Spot, TimeUtil.getDay(2015, 12, 31));
+		assertDefaultConversionType(conversionTypeId_Spot, LocalDate.of(1970, 1, 1));
+		assertDefaultConversionType(conversionTypeId_Spot, LocalDate.of(2015, 1, 1));
+		assertDefaultConversionType(conversionTypeId_Spot, LocalDate.of(2015, 12, 31));
 
-		assertDefaultConversionType(conversionType_Company, TimeUtil.getDay(2016, 1, 1));
-		assertDefaultConversionType(conversionType_Company, TimeUtil.getDay(2016, 5, 1));
-		assertDefaultConversionType(conversionType_Company, TimeUtil.getDay(2016, 12, 31));
+		assertDefaultConversionType(conversionTypeId_Company, LocalDate.of(2016, 1, 1));
+		assertDefaultConversionType(conversionTypeId_Company, LocalDate.of(2016, 5, 1));
+		assertDefaultConversionType(conversionTypeId_Company, LocalDate.of(2016, 12, 31));
 
-		assertDefaultConversionType(conversionType_PeriodEnd, TimeUtil.getDay(2017, 1, 1));
-		assertDefaultConversionType(conversionType_PeriodEnd, TimeUtil.getDay(2020, 1, 1));
+		assertDefaultConversionType(conversionTypeId_PeriodEnd, LocalDate.of(2017, 1, 1));
+		assertDefaultConversionType(conversionTypeId_PeriodEnd, LocalDate.of(2020, 1, 1));
 	}
 
 	private final void clearConversionTypeDefaults()
@@ -102,42 +106,42 @@ public class CurrencyDAOTest
 				.deleteDirectly();
 	}
 
-	private final I_C_ConversionType createConversionTypeDefault(final I_C_ConversionType conversionType, final Date validFrom)
+	private final void createConversionTypeDefault(
+			final CurrencyConversionTypeId conversionTypeId,
+			final LocalDate validFrom)
 	{
-		final I_C_ConversionType_Default conversionTypeDefault = InterfaceWrapperHelper.create(ctx, I_C_ConversionType_Default.class, ITrx.TRXNAME_None);
-		conversionTypeDefault.setC_ConversionType(conversionType);
-		conversionTypeDefault.setValidFrom(TimeUtil.asTimestamp(validFrom));
-		InterfaceWrapperHelper.save(conversionTypeDefault);
-
-		return conversionType;
+		final I_C_ConversionType_Default record = newInstanceOutOfTrx(I_C_ConversionType_Default.class);
+		record.setC_ConversionType_ID(conversionTypeId.getRepoId());
+		record.setValidFrom(TimeUtil.asTimestamp(validFrom));
+		InterfaceWrapperHelper.save(record);
 	}
 
-	private final void assertDefaultConversionType(final I_C_ConversionType expectedConversionType, final Date date)
+	private final void assertDefaultConversionType(final CurrencyConversionTypeId expectedConversionTypeId, final LocalDate date)
 	{
-		final int adClientId = Env.getAD_Client_ID(ctx);
-		final int adOrgId = Env.getAD_Org_ID(ctx);
+		final ClientId adClientId = Env.getClientId(ctx);
+		final OrgId adOrgId = Env.getOrgId(ctx);
 
-		final I_C_ConversionType actualConversionType = currencyDAO.retrieveDefaultConversionType(ctx, adClientId, adOrgId, date);
+		final CurrencyConversionTypeId actualConversionTypeId = currencyDAO.getDefaultConversionTypeId(adClientId, adOrgId, date);
 
 		final String info = "AD_Client_ID=" + adClientId + ", AD_Org_ID=" + adOrgId
 				+ ", date=" + date
-				+ ", expectedConversionType=" + (expectedConversionType == null ? null : expectedConversionType.getValue())
-				+ ", actualConversionType=" + (actualConversionType == null ? null : actualConversionType.getValue())
+				+ ", expectedConversionType=" + expectedConversionTypeId
+				+ ", actualConversionType=" + actualConversionTypeId
 		//
 		;
 
-		Assert.assertEquals("Invalid conversion type -- " + info, expectedConversionType.getC_ConversionType_ID(), actualConversionType.getC_ConversionType_ID());
+		Assert.assertEquals("Invalid conversion type -- " + info, expectedConversionTypeId, actualConversionTypeId);
 	}
 
-	private final void assertNoDefaultConversionType(final Date date)
+	private final void assertNoDefaultConversionType(final LocalDate date)
 	{
-		final int adClientId = Env.getAD_Client_ID(ctx);
-		final int adOrgId = Env.getAD_Org_ID(ctx);
+		final ClientId adClientId = Env.getClientId(ctx);
+		final OrgId adOrgId = Env.getOrgId(ctx);
 
 		try
 		{
-			final I_C_ConversionType actualConversionType = currencyDAO.retrieveDefaultConversionType(ctx, adClientId, adOrgId, date);
-			Assert.fail("We assume there is no default conversion type for " + date + " but we got " + actualConversionType);
+			final CurrencyConversionTypeId actualConversionTypeId = currencyDAO.getDefaultConversionTypeId(adClientId, adOrgId, date);
+			Assert.fail("We assume there is no default conversion type for " + date + " but we got " + actualConversionTypeId);
 		}
 		catch (final AdempiereException e)
 		{

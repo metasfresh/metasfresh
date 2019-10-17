@@ -29,7 +29,6 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Predicate;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -51,6 +50,7 @@ import org.slf4j.Logger;
 import ch.qos.logback.classic.Level;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.client.terminal.POSTerminalTestHelper;
@@ -160,11 +160,11 @@ public abstract class AbstractHUDDOrderProcessIntegrationTest extends AbstractHU
 			piTU_Item_Product_Tomato = helper.assignProduct(piTU_Item,
 					mrpMasterData.pTomatoId,
 					new BigDecimal("10"),
-					mrpMasterData.pTomato.getC_UOM()); // 10 x Tomato Per TU
+					mrpMasterData.uomKg); // 10 x Tomato Per TU
 			piTU_Item_Product_Onion = helper.assignProduct(piTU_Item,
 					mrpMasterData.pOnionId,
 					new BigDecimal("20"),
-					mrpMasterData.pOnion.getC_UOM()); // 20 x Onion Per TU
+					mrpMasterData.uomKg); // 20 x Onion Per TU
 
 			piTU_Item_PackingMaterial = helper.createHU_PI_Item_PackingMaterial(piTU, pmIFCO);
 		}
@@ -290,7 +290,7 @@ public abstract class AbstractHUDDOrderProcessIntegrationTest extends AbstractHU
 		final int bpartnerLocationId = 1;
 
 		final ProductId cuProductId = ProductId.ofRepoId(tuPIItemProduct.getM_Product_ID());
-		final I_C_UOM cuUOM = tuPIItemProduct.getC_UOM();
+		final I_C_UOM cuUOM = IHUPIItemProductBL.extractUOMOrNull(tuPIItemProduct);
 
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(tuPIItemProduct,
@@ -298,7 +298,7 @@ public abstract class AbstractHUDDOrderProcessIntegrationTest extends AbstractHU
 				cuUOM,
 				bpartner,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU
-		lutuConfiguration.setC_BPartner(bpartner);
+		lutuConfiguration.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
 		lutuConfiguration.setC_BPartner_Location_ID(bpartnerLocationId);
 		lutuConfigurationFactory.save(lutuConfiguration);
 
@@ -319,15 +319,9 @@ public abstract class AbstractHUDDOrderProcessIntegrationTest extends AbstractHU
 	protected I_M_MovementLine getDDOrderLineMovementLine(final I_DD_OrderLine ddOrderLine, final boolean movementReceipt)
 	{
 		final List<I_M_MovementLine> movementLines = ddOrderDAO.retriveMovementLines(ddOrderLine, I_M_MovementLine.class);
-		return CollectionUtils.singleElement(movementLines, new Predicate<I_M_MovementLine>()
-		{
-
-			@Override
-			public boolean test(final I_M_MovementLine movementLine)
-			{
-				final boolean movementLineIsReceipt = ddOrderBL.isMovementReceipt(movementLine);
-				return movementReceipt == movementLineIsReceipt;
-			}
+		return CollectionUtils.singleElement(movementLines, movementLine -> {
+			final boolean movementLineIsReceipt = ddOrderBL.isMovementReceipt(movementLine);
+			return movementReceipt == movementLineIsReceipt;
 		});
 	}
 

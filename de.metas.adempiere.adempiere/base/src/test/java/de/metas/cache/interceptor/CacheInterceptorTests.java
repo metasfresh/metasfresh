@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.Properties;
 import java.util.UUID;
 
-import org.adempiere.util.exceptions.ServicesException;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
 import org.compiere.Adempiere;
@@ -46,6 +45,7 @@ import de.metas.cache.interceptor.testservices.impl.TestServiceWithCacheReload;
 import de.metas.cache.interceptor.testservices.impl.TestServiceWithCachedMethod;
 import de.metas.cache.interceptor.testservices.impl.TestServiceWithCachedMethod.TestException;
 import de.metas.util.Services;
+import de.metas.util.exceptions.ServicesException;
 
 public class CacheInterceptorTests
 {

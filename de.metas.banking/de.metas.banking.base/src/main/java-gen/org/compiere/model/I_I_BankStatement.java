@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
 
@@ -28,13 +12,13 @@ public interface I_I_BankStatement
     public static final String Table_Name = "I_BankStatement";
 
     /** AD_Table_ID=600 */
-    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 2 - Client 
+    /** AccessLevel = 2 - Client
      */
-    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(2);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(2);
 
     /** Load Meta Data */
 
@@ -47,8 +31,6 @@ public interface I_I_BankStatement
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Client_ID();
-
-	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_I_BankStatement, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_I_BankStatement, org.compiere.model.I_AD_Client>(I_I_BankStatement.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
@@ -74,10 +56,6 @@ public interface I_I_BankStatement
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_I_BankStatement, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_I_BankStatement, org.compiere.model.I_AD_Org>(I_I_BankStatement.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
@@ -108,6 +86,29 @@ public interface I_I_BankStatement
     public static final org.adempiere.model.ModelColumn<I_I_BankStatement, Object> COLUMN_BankAccountNo = new org.adempiere.model.ModelColumn<I_I_BankStatement, Object>(I_I_BankStatement.class, "BankAccountNo", null);
     /** Column name BankAccountNo */
     public static final String COLUMNNAME_BankAccountNo = "BankAccountNo";
+
+	/**
+	 * Set Name Rechnungspartner.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBill_BPartner_Name (java.lang.String Bill_BPartner_Name);
+
+	/**
+	 * Get Name Rechnungspartner.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getBill_BPartner_Name();
+
+    /** Column definition for Bill_BPartner_Name */
+    public static final org.adempiere.model.ModelColumn<I_I_BankStatement, Object> COLUMN_Bill_BPartner_Name = new org.adempiere.model.ModelColumn<I_I_BankStatement, Object>(I_I_BankStatement.class, "Bill_BPartner_Name", null);
+    /** Column name Bill_BPartner_Name */
+    public static final String COLUMNNAME_Bill_BPartner_Name = "Bill_BPartner_Name";
 
 	/**
 	 * Set Geschäftspartner-Schlüssel.
@@ -193,35 +194,6 @@ public interface I_I_BankStatement
     public static final String COLUMNNAME_C_BankStatementLine_ID = "C_BankStatementLine_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Identifies a Business Partner
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
-
-	/**
-	 * Get Geschäftspartner.
-	 * Identifies a Business Partner
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BPartner_ID();
-
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_BankStatement, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_I_BankStatement, org.compiere.model.I_C_BPartner>(I_I_BankStatement.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
-
-	/**
 	 * Set Bankverbindung.
 	 * Bankverbindung des Geschäftspartners
 	 *
@@ -249,6 +221,60 @@ public interface I_I_BankStatement
     public static final org.adempiere.model.ModelColumn<I_I_BankStatement, org.compiere.model.I_C_BP_BankAccount> COLUMN_C_BP_BankAccount_ID = new org.adempiere.model.ModelColumn<I_I_BankStatement, org.compiere.model.I_C_BP_BankAccount>(I_I_BankStatement.class, "C_BP_BankAccount_ID", org.compiere.model.I_C_BP_BankAccount.class);
     /** Column name C_BP_BankAccount_ID */
     public static final String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
+
+	/**
+	 * Set Cashbook/Bank account To.
+	 * Cashbook/Bank account To
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BP_BankAccountTo_ID (int C_BP_BankAccountTo_ID);
+
+	/**
+	 * Get Cashbook/Bank account To.
+	 * Cashbook/Bank account To
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BP_BankAccountTo_ID();
+
+	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccountTo();
+
+	public void setC_BP_BankAccountTo(org.compiere.model.I_C_BP_BankAccount C_BP_BankAccountTo);
+
+    /** Column definition for C_BP_BankAccountTo_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_BankStatement, org.compiere.model.I_C_BP_BankAccount> COLUMN_C_BP_BankAccountTo_ID = new org.adempiere.model.ModelColumn<I_I_BankStatement, org.compiere.model.I_C_BP_BankAccount>(I_I_BankStatement.class, "C_BP_BankAccountTo_ID", org.compiere.model.I_C_BP_BankAccount.class);
+    /** Column name C_BP_BankAccountTo_ID */
+    public static final String COLUMNNAME_C_BP_BankAccountTo_ID = "C_BP_BankAccountTo_ID";
+
+	/**
+	 * Set Geschäftspartner.
+	 * Identifies a Business Partner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Geschäftspartner.
+	 * Identifies a Business Partner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BPartner_ID();
+
+    /** Column definition for C_BPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_BankStatement, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_I_BankStatement, org.compiere.model.I_C_BPartner>(I_I_BankStatement.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name C_BPartner_ID */
+    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
 	 * Set Kosten.
@@ -299,62 +325,10 @@ public interface I_I_BankStatement
 	 */
 	public int getC_Currency_ID();
 
-	public org.compiere.model.I_C_Currency getC_Currency();
-
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
-
     /** Column definition for C_Currency_ID */
     public static final org.adempiere.model.ModelColumn<I_I_BankStatement, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_I_BankStatement, org.compiere.model.I_C_Currency>(I_I_BankStatement.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
-
-	/**
-	 * Set Gebühr.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setChargeAmt (java.math.BigDecimal ChargeAmt);
-
-	/**
-	 * Get Gebühr.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getChargeAmt();
-
-    /** Column definition for ChargeAmt */
-    public static final org.adempiere.model.ModelColumn<I_I_BankStatement, Object> COLUMN_ChargeAmt = new org.adempiere.model.ModelColumn<I_I_BankStatement, Object>(I_I_BankStatement.class, "ChargeAmt", null);
-    /** Column name ChargeAmt */
-    public static final String COLUMNNAME_ChargeAmt = "ChargeAmt";
-
-	/**
-	 * Set Gebühren-Bezeichnung.
-	 * Name of the Charge
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setChargeName (java.lang.String ChargeName);
-
-	/**
-	 * Get Gebühren-Bezeichnung.
-	 * Name of the Charge
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getChargeName();
-
-    /** Column definition for ChargeName */
-    public static final org.adempiere.model.ModelColumn<I_I_BankStatement, Object> COLUMN_ChargeName = new org.adempiere.model.ModelColumn<I_I_BankStatement, Object>(I_I_BankStatement.class, "ChargeName", null);
-    /** Column name ChargeName */
-    public static final String COLUMNNAME_ChargeName = "ChargeName";
 
 	/**
 	 * Set Rechnung.
@@ -413,6 +387,54 @@ public interface I_I_BankStatement
     public static final org.adempiere.model.ModelColumn<I_I_BankStatement, org.compiere.model.I_C_Payment> COLUMN_C_Payment_ID = new org.adempiere.model.ModelColumn<I_I_BankStatement, org.compiere.model.I_C_Payment>(I_I_BankStatement.class, "C_Payment_ID", org.compiere.model.I_C_Payment.class);
     /** Column name C_Payment_ID */
     public static final String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
+
+	/**
+	 * Set Gebühr.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setChargeAmt (java.math.BigDecimal ChargeAmt);
+
+	/**
+	 * Get Gebühr.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getChargeAmt();
+
+    /** Column definition for ChargeAmt */
+    public static final org.adempiere.model.ModelColumn<I_I_BankStatement, Object> COLUMN_ChargeAmt = new org.adempiere.model.ModelColumn<I_I_BankStatement, Object>(I_I_BankStatement.class, "ChargeAmt", null);
+    /** Column name ChargeAmt */
+    public static final String COLUMNNAME_ChargeAmt = "ChargeAmt";
+
+	/**
+	 * Set Gebühren-Bezeichnung.
+	 * Name of the Charge
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setChargeName (java.lang.String ChargeName);
+
+	/**
+	 * Get Gebühren-Bezeichnung.
+	 * Name of the Charge
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getChargeName();
+
+    /** Column definition for ChargeName */
+    public static final org.adempiere.model.ModelColumn<I_I_BankStatement, Object> COLUMN_ChargeName = new org.adempiere.model.ModelColumn<I_I_BankStatement, Object>(I_I_BankStatement.class, "ChargeName", null);
+    /** Column name ChargeName */
+    public static final String COLUMNNAME_ChargeName = "ChargeName";
 
 	/**
 	 * Get Erstellt.
@@ -916,6 +938,54 @@ public interface I_I_BankStatement
     public static final String COLUMNNAME_I_IsImported = "I_IsImported";
 
 	/**
+	 * Set IBAN.
+	 * International Bank Account Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setIBAN (java.lang.String IBAN);
+
+	/**
+	 * Get IBAN.
+	 * International Bank Account Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getIBAN();
+
+    /** Column definition for IBAN */
+    public static final org.adempiere.model.ModelColumn<I_I_BankStatement, Object> COLUMN_IBAN = new org.adempiere.model.ModelColumn<I_I_BankStatement, Object>(I_I_BankStatement.class, "IBAN", null);
+    /** Column name IBAN */
+    public static final String COLUMNNAME_IBAN = "IBAN";
+
+	/**
+	 * Set IBAN_To.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setIBAN_To (java.lang.String IBAN_To);
+
+	/**
+	 * Get IBAN_To.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getIBAN_To();
+
+    /** Column definition for IBAN_To */
+    public static final org.adempiere.model.ModelColumn<I_I_BankStatement, Object> COLUMN_IBAN_To = new org.adempiere.model.ModelColumn<I_I_BankStatement, Object>(I_I_BankStatement.class, "IBAN_To", null);
+    /** Column name IBAN_To */
+    public static final String COLUMNNAME_IBAN_To = "IBAN_To";
+
+	/**
 	 * Set Interest Amount.
 	 * Interest Amount
 	 *
@@ -1140,7 +1210,6 @@ public interface I_I_BankStatement
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1150,7 +1219,6 @@ public interface I_I_BankStatement
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1312,8 +1380,8 @@ public interface I_I_BankStatement
     public static final String COLUMNNAME_StatementDate = "StatementDate";
 
 	/**
-	 * Set Datum Auszugs-Position.
-	 * Date of the Statement Line
+	 * Set Valuta Datum.
+	 * Valuta Datum
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1322,8 +1390,8 @@ public interface I_I_BankStatement
 	public void setStatementLineDate (java.sql.Timestamp StatementLineDate);
 
 	/**
-	 * Get Datum Auszugs-Position.
-	 * Date of the Statement Line
+	 * Get Valuta Datum.
+	 * Valuta Datum
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false

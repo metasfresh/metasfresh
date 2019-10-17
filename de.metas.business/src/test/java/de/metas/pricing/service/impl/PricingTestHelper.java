@@ -6,6 +6,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.model.I_C_PricingRule;
@@ -14,7 +18,6 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -33,6 +36,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -74,13 +78,14 @@ public class PricingTestHelper
 	private I_C_UOM defaultUOM;
 
 	public I_M_Attribute attr_Country;
-	public I_M_AttributeValue attr_Country_DE;
-	public I_M_AttributeValue attr_Country_CH;
+	public AttributeListValue attr_Country_DE;
+	public AttributeListValue attr_Country_CH;
 
 	public I_M_Attribute attr_Label;
-	public I_M_AttributeValue attr_Label_Bio;
-	public final I_M_AttributeValue attr_Label_NULL = null;
+	public AttributeListValue attr_Label_Bio;
+	public final AttributeListValue attr_Label_NULL = null;
 
+	private final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoId(1);
 
 	public PricingTestHelper()
 	{
@@ -91,7 +96,8 @@ public class PricingTestHelper
 		defaultPriceList = createPriceList(defaultPricingSystem, defaultCountry);
 		defaultPriceListVerion = createPriceListVersion(defaultPriceList);
 		//
-		defaultUOM = newInstance(I_C_UOM.class); saveRecord(defaultUOM);
+		defaultUOM = newInstance(I_C_UOM.class);
+		saveRecord(defaultUOM);
 		defaultProduct = createProduct("Product1", defaultUOM);
 		//
 		attr_Country = createM_Attribute("Country", X_M_Attribute.ATTRIBUTEVALUETYPE_List);
@@ -106,20 +112,11 @@ public class PricingTestHelper
 
 	protected List<String> getPricingRuleClassnamesToRegister()
 	{
-		return ImmutableList.copyOf(new String[] {
-				// "de.metas.handlingunits.pricing.spi.impl.HUPricing" //
-				"de.metas.pricing.attributebased.impl.AttributePricing" //
-				, "de.metas.adempiere.pricing.spi.impl.rules.ProductScalePrice" //
-				// , "org.adempiere.pricing.spi.impl.rules.PriceListVersionVB" //
-				, "org.adempiere.pricing.spi.impl.rules.PriceListVersion" //
-				// , "org.adempiere.pricing.spi.impl.rules.PriceListVB" //
-				// , "org.adempiere.pricing.spi.impl.rules.PriceList" //
-				// , "org.adempiere.pricing.spi.impl.rules.BasePriceListVB" //
-				// , "org.adempiere.pricing.spi.impl.rules.BasePriceList" //
-				, "org.adempiere.pricing.spi.impl.rules.Discount" //
-				// , "de.metas.procurement.base.pricing.spi.impl.ProcurementFlatrateRule" //
-				// , "de.metas.flatrate.pricing.spi.impl.ContractDiscount" //
-		});
+		return ImmutableList.of(
+				de.metas.pricing.attributebased.impl.AttributePricing.class.getName(),
+				de.metas.adempiere.pricing.spi.impl.rules.ProductScalePrice.class.getName(),
+				de.metas.pricing.rules.PriceListVersion.class.getName(),
+				de.metas.pricing.rules.Discount.class.getName());
 	}
 
 	private final void createPricingRules()
@@ -130,6 +127,7 @@ public class PricingTestHelper
 		for (final String classname : classnames)
 		{
 			final I_C_PricingRule pricingRule = InterfaceWrapperHelper.create(Env.getCtx(), I_C_PricingRule.class, ITrx.TRXNAME_None);
+			pricingRule.setName(classname);
 			pricingRule.setClassname(classname);
 			pricingRule.setIsActive(true);
 			pricingRule.setSeqNo(nextSeqNo);
@@ -157,7 +155,7 @@ public class PricingTestHelper
 		product.setValue(name);
 		product.setName(name);
 		product.setM_Product_Category_ID(20);
-		product.setC_UOM(uom);
+		product.setC_UOM_ID(uom.getC_UOM_ID());
 		InterfaceWrapperHelper.save(product);
 		return product;
 	}
@@ -173,8 +171,8 @@ public class PricingTestHelper
 	public final I_M_PriceList createPriceList(final I_M_PricingSystem pricingSystem, final I_C_Country country)
 	{
 		final I_M_PriceList priceList = InterfaceWrapperHelper.newInstance(I_M_PriceList.class, pricingSystem);
-		priceList.setM_PricingSystem(pricingSystem);
-		priceList.setC_Country(country);
+		priceList.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
+		priceList.setC_Country_ID(country.getC_Country_ID());
 		priceList.setC_Currency_ID(country.getC_Currency_ID());
 		priceList.setIsSOPriceList(true);
 		priceList.setPricePrecision(2);
@@ -201,14 +199,13 @@ public class PricingTestHelper
 		return attribute;
 	}
 
-	public final I_M_AttributeValue createM_AttributeValue(final I_M_Attribute attribute, final String value)
+	public final AttributeListValue createM_AttributeValue(final I_M_Attribute attribute, final String value)
 	{
-		final I_M_AttributeValue av = InterfaceWrapperHelper.newInstance(I_M_AttributeValue.class, attribute);
-		av.setM_Attribute(attribute);
-		av.setValue(value);
-		av.setName(value);
-		InterfaceWrapperHelper.save(av);
-		return av;
+		return Services.get(IAttributeDAO.class).createAttributeValue(AttributeListValueCreateRequest.builder()
+				.attributeId(AttributeId.ofRepoId(attribute.getM_Attribute_ID()))
+				.value(value)
+				.name(value)
+				.build());
 	}
 
 	public final IAttributeSetInstanceAware asiAware(final I_M_AttributeSetInstance asi)
@@ -239,7 +236,8 @@ public class PricingTestHelper
 
 	public ProductPriceBuilder newProductPriceBuilder()
 	{
-		return new ProductPriceBuilder(defaultPriceListVerion, defaultProduct);
+		return new ProductPriceBuilder(defaultPriceListVerion, defaultProduct)
+				.setTaxCategoryId(getTaxCategoryId());
 	}
 
 	public IPricingResult calculatePrice(final IPricingContext pricingCtx)
@@ -265,5 +263,10 @@ public class PricingTestHelper
 	public I_M_Product getDefaultProduct()
 	{
 		return defaultProduct;
+	}
+
+	public TaxCategoryId getTaxCategoryId()
+	{
+		return taxCategoryId;
 	}
 }

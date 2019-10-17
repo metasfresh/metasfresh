@@ -53,7 +53,6 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -61,17 +60,21 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
+import de.metas.process.PInstanceRequest;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoLog;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.model.I_AD_PInstance_SelectedIncludedRecords;
+import de.metas.security.RoleId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 public class ADPInstanceDAO implements IADPInstanceDAO
@@ -158,8 +161,8 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		try
 		{
 			DB.getConstraints() // 02625
-					.setOnlyAllowedTrxNamePrefixes(true)
-					.addAllowedTrxNamePrefix(ITrx.TRXNAME_PREFIX_LOCAL);
+			.setOnlyAllowedTrxNamePrefixes(true)
+			.addAllowedTrxNamePrefix(ITrx.TRXNAME_PREFIX_LOCAL);
 
 			saveParametersToDB0(pinstanceId, piParams);
 		}
@@ -472,12 +475,12 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	public void lock(final PInstanceId pinstanceId)
 	{
 		Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_AD_PInstance.class)
-				.addEqualsFilter(I_AD_PInstance.COLUMN_AD_PInstance_ID, pinstanceId)
-				.create()
-				.updateDirectly()
-				.addSetColumnValue(I_AD_PInstance.COLUMNNAME_IsProcessing, true)
-				.execute();
+		.createQueryBuilderOutOfTrx(I_AD_PInstance.class)
+		.addEqualsFilter(I_AD_PInstance.COLUMN_AD_PInstance_ID, pinstanceId)
+		.create()
+		.updateDirectly()
+		.addSetColumnValue(I_AD_PInstance.COLUMNNAME_IsProcessing, true)
+		.execute();
 	}
 
 	@Override
@@ -538,11 +541,11 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		// Update the AD_PInstance and save
 		adPInstance.setAD_Org_ID(pi.getAD_Org_ID());
 		adPInstance.setAD_User_ID(pi.getAD_User_ID());
-		adPInstance.setAD_Role_ID(pi.getAD_Role_ID());
+		adPInstance.setAD_Role_ID(RoleId.toRepoId(pi.getRoleId()));
 		adPInstance.setAD_Table_ID(pi.getTable_ID());
-		adPInstance.setRecord_ID(Util.firstGreaterThanZero(pi.getRecord_ID(), 0)); // TODO: workaround while Record_ID is mandatory and value <= is interpreted as null
+		adPInstance.setRecord_ID(CoalesceUtil.firstGreaterThanZero(pi.getRecord_ID(), 0)); // TODO: workaround while Record_ID is mandatory and value <= is interpreted as null
 		adPInstance.setWhereClause(pi.getWhereClause());
-		adPInstance.setAD_Process_ID(pi.getAD_Process_ID());
+		adPInstance.setAD_Process_ID(pi.getAdProcessId().getRepoId());
 		adPInstance.setAD_Window_ID(pi.getAD_Window_ID());
 
 		final Language reportingLanguage = pi.getReportLanguage();
@@ -557,7 +560,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	}
 
 	@Override
-	public PInstanceId createPInstanceId()
+	public PInstanceId createSelectionId()
 	{
 		final String trxName = ITrx.TRXNAME_None;
 		final int adPInstanceId = DB.getNextID(Env.getCtx(), I_AD_PInstance.Table_Name, trxName);
@@ -565,20 +568,13 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 	}
 
 	@Override
-	public I_AD_PInstance createAD_PInstance(final int AD_Process_ID, final int AD_Table_ID, final int recordId)
+	public I_AD_PInstance createAD_PInstance(@NonNull final AdProcessId adProcessId)
 	{
 		final I_AD_PInstance adPInstance = newInstanceOutOfTrx(I_AD_PInstance.class);
-		adPInstance.setAD_Process_ID(AD_Process_ID);
-		if (AD_Table_ID > 0)
-		{
-			adPInstance.setAD_Table_ID(AD_Table_ID);
-			adPInstance.setRecord_ID(recordId);
-		}
-		else
-		{
-			adPInstance.setAD_Table(null);
-			adPInstance.setRecord_ID(0); // mandatory
-		}
+		adPInstance.setAD_Process_ID(adProcessId.getRepoId());
+
+		adPInstance.setAD_Table(null);
+		adPInstance.setRecord_ID(0); // mandatory
 
 		final Properties ctx = Env.getCtx();
 		adPInstance.setAD_User_ID(Env.getAD_User_ID(ctx));
@@ -588,6 +584,17 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 
 		return adPInstance;
 	}
+
+	@Override
+	public PInstanceId createADPinstanceAndADPInstancePara(final @NonNull PInstanceRequest pinstanceRequest)
+	{
+		final I_AD_PInstance adPInstanceRecord = createAD_PInstance(pinstanceRequest.getProcessId());
+		final PInstanceId adPInstance = PInstanceId.ofRepoId(adPInstanceRecord.getAD_PInstance_ID());
+		saveParameterToDB(adPInstance, pinstanceRequest.getProcessParams());
+		return adPInstance;
+	}
+
+
 
 	@Override
 	public I_AD_PInstance getById(@NonNull final PInstanceId pinstanceId)

@@ -1,30 +1,9 @@
 package de.metas.tourplanning.api;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
-import java.sql.Timestamp;
-import java.util.Date;
-
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.util.Check;
 
 /**
@@ -35,19 +14,19 @@ import de.metas.util.Check;
  */
 public final class PlainDeliveryDayQueryParams implements IDeliveryDayQueryParams
 {
-	private Date deliveryDate = null;
-	private int bpartnerLocationId = -1;
+	private ZonedDateTime deliveryDate = null;
+	private BPartnerLocationId bpartnerLocationId = null;
 	private Boolean toBeFetched = null;
 	private Boolean processed = null;
 	/**
 	 * The time when the calculation is performed. For instance, the date+time when the order was created or the system time.
 	 */
-	private Timestamp calculationTime = null;
+	private ZonedDateTime calculationTime = null;
 
 	/**
 	 * The day when the products should be delivered
 	 */
-	private Timestamp preparationDay = null;
+	private LocalDate preparationDay = null;
 
 	@Override
 	public String toString()
@@ -61,23 +40,23 @@ public final class PlainDeliveryDayQueryParams implements IDeliveryDayQueryParam
 	}
 
 	@Override
-	public Date getDeliveryDate()
+	public ZonedDateTime getDeliveryDate()
 	{
 		return deliveryDate;
 	}
 
-	public void setDeliveryDate(final Date deliveryDate)
+	public void setDeliveryDate(final ZonedDateTime deliveryDate)
 	{
 		this.deliveryDate = deliveryDate;
 	}
 
 	@Override
-	public int getC_BPartner_Location_ID()
+	public BPartnerLocationId getBPartnerLocationId()
 	{
 		return bpartnerLocationId;
 	}
 
-	public void setC_BPartner_Location_ID(final int bpartnerLocationId)
+	public void setBPartnerLocationId(final BPartnerLocationId bpartnerLocationId)
 	{
 		this.bpartnerLocationId = bpartnerLocationId;
 	}
@@ -111,7 +90,7 @@ public final class PlainDeliveryDayQueryParams implements IDeliveryDayQueryParam
 	}
 
 	@Override
-	public Timestamp getCalculationTime()
+	public ZonedDateTime getCalculationTime()
 	{
 		return calculationTime;
 	}
@@ -121,17 +100,18 @@ public final class PlainDeliveryDayQueryParams implements IDeliveryDayQueryParam
 	 * 
 	 * @param calculationTime
 	 */
-	public void setCalculationTime(final Timestamp calculationTime)
+	public void setCalculationTime(final ZonedDateTime calculationTime)
 	{
 		this.calculationTime = calculationTime;
 	}
 
-	public Timestamp getPreparationDay()
+	@Override
+	public LocalDate getPreparationDay()
 	{
 		return preparationDay;
 	}
 
-	public void setPreparationDay(Timestamp preparationDay)
+	public void setPreparationDay(LocalDate preparationDay)
 	{
 		this.preparationDay = preparationDay;
 	}

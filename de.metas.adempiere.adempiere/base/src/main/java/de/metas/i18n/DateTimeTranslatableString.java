@@ -1,24 +1,20 @@
 package de.metas.i18n;
 
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.i18n.ITranslatableString;
-
+import de.metas.util.time.SystemTime;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.ToString;
 
 /*
  * #%L
@@ -42,54 +38,50 @@ import lombok.ToString;
  * #L%
  */
 
-@ToString
 @EqualsAndHashCode
-public final class DateTimeTranslatableString implements ITranslatableString
+final class DateTimeTranslatableString implements ITranslatableString
 {
-	public static final DateTimeTranslatableString ofDate(@NonNull final java.util.Date date)
+	static DateTimeTranslatableString ofDate(@NonNull final java.util.Date date)
 	{
-		return new DateTimeTranslatableString(date.getTime(), false);
+		return new DateTimeTranslatableString(date.toInstant(), false);
 	}
 
-	public static final DateTimeTranslatableString ofDate(@NonNull final LocalDate date)
+	static DateTimeTranslatableString ofDate(@NonNull final LocalDate date)
 	{
-		final long epochMillis = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+		final Instant instant = date.atStartOfDay(SystemTime.zoneId()).toInstant();
 		final boolean dateTime = false;
-		return new DateTimeTranslatableString(epochMillis, dateTime);
+		return new DateTimeTranslatableString(instant, dateTime);
 	}
 
-	public static final DateTimeTranslatableString ofDateTime(@NonNull final java.util.Date date)
+	static DateTimeTranslatableString ofDateTime(@NonNull final java.util.Date date)
 	{
-		return new DateTimeTranslatableString(date.getTime(), true);
+		return new DateTimeTranslatableString(date.toInstant(), true);
 	}
 
-	public static final DateTimeTranslatableString ofDateTime(@NonNull final LocalDateTime date)
+	public static DateTimeTranslatableString ofDateTime(@NonNull final ZonedDateTime date)
 	{
-		final long epochMillis = date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+		final Instant instant = date.toInstant();
 		final boolean dateTime = true;
-		return new DateTimeTranslatableString(epochMillis, dateTime);
+		return new DateTimeTranslatableString(instant, dateTime);
 	}
 
-	public static final DateTimeTranslatableString ofDateTime(@NonNull final ZonedDateTime date)
+	public static DateTimeTranslatableString ofDateTime(@NonNull final Instant instant)
 	{
-		final long epochMillis = date.toInstant().toEpochMilli();
 		final boolean dateTime = true;
-		return new DateTimeTranslatableString(epochMillis, dateTime);
+		return new DateTimeTranslatableString(instant, dateTime);
 	}
 
-	public static final DateTimeTranslatableString ofTime(@NonNull final LocalTime time)
+	private static DateTimeTranslatableString ofTime(@NonNull final LocalTime time)
 	{
-		final long epochMillis = TimeUtil.asLocalDateTime(time).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-		return new DateTimeTranslatableString(epochMillis, DisplayType.Time);
+		final Instant instant = LocalDate.now()
+				.atTime(time)
+				.atZone(SystemTime.zoneId())
+				.toInstant();
+
+		return new DateTimeTranslatableString(instant, DisplayType.Time);
 	}
 
-	public static final DateTimeTranslatableString ofObject(@NonNull final Object obj)
-	{
-		final int displayType = -1;
-		return ofObject(obj, displayType);
-	}
-
-	public static final DateTimeTranslatableString ofObject(@NonNull final Object obj, final int displayType)
+	static DateTimeTranslatableString ofObject(@NonNull final Object obj, final int displayType)
 	{
 		if (obj instanceof java.util.Date)
 		{
@@ -112,17 +104,13 @@ public final class DateTimeTranslatableString implements ITranslatableString
 		{
 			return ofDate((LocalDate)obj);
 		}
-		else if (obj instanceof LocalDateTime)
-		{
-			return ofDateTime((LocalDateTime)obj);
-		}
-		else if (obj instanceof ZonedDateTime)
-		{
-			return ofDateTime((ZonedDateTime)obj);
-		}
 		else if (obj instanceof LocalTime)
 		{
 			return ofTime((LocalTime)obj);
+		}
+		else if (obj instanceof Instant)
+		{
+			return ofDateTime((Instant)obj);
 		}
 		else
 		{
@@ -130,19 +118,26 @@ public final class DateTimeTranslatableString implements ITranslatableString
 		}
 	}
 
-	private final long epochMillis;
+	private final Instant instant;
 	private final int displayType;
 
-	private DateTimeTranslatableString(final long epochMillis, final boolean dateTime)
+	private DateTimeTranslatableString(@NonNull final Instant instant, final boolean dateTime)
 	{
-		this.epochMillis = epochMillis;
-		displayType = dateTime ? DisplayType.DateTime : DisplayType.Date;
+		this(instant,
+				dateTime ? DisplayType.DateTime : DisplayType.Date);
 	}
 
-	private DateTimeTranslatableString(final long epochMillis, final int displayType)
+	private DateTimeTranslatableString(@NonNull final Instant instant, final int displayType)
 	{
-		this.epochMillis = epochMillis;
+		this.instant = instant;
 		this.displayType = displayType;
+	}
+
+	@Override
+	@Deprecated
+	public String toString()
+	{
+		return getDefaultValue();
 	}
 
 	@Override
@@ -150,15 +145,20 @@ public final class DateTimeTranslatableString implements ITranslatableString
 	{
 		final Language language = Language.getLanguage(adLanguage);
 		final SimpleDateFormat dateFormat = DisplayType.getDateFormat(displayType, language);
-		final String dateStr = dateFormat.format(new java.util.Date(epochMillis));
+		final String dateStr = dateFormat.format(toDate());
 		return dateStr;
+	}
+
+	private java.util.Date toDate()
+	{
+		return java.util.Date.from(instant);
 	}
 
 	@Override
 	public String getDefaultValue()
 	{
 		final SimpleDateFormat dateFormat = DisplayType.getDateFormat(displayType);
-		final String dateStr = dateFormat.format(new java.util.Date(epochMillis));
+		final String dateStr = dateFormat.format(toDate());
 		return dateStr;
 	}
 

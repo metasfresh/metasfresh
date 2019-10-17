@@ -27,11 +27,12 @@ import java.io.InputStream;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import de.metas.util.StreamUtils;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.util.IOStreamUtils;
 
 public class JsonBeanEncoder implements IBeanEnconder
 {
-	private final ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally
+	private final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	@Override
 	public <T> T decodeString(final String text, final Class<T> clazz)
@@ -57,7 +58,7 @@ public class JsonBeanEncoder implements IBeanEnconder
 		String str = null;
 		try
 		{
-			str = StreamUtils.toString(in);
+			str = IOStreamUtils.toString(in);
 			return mapper.readValue(str, clazz);
 		}
 		catch (final Exception e)

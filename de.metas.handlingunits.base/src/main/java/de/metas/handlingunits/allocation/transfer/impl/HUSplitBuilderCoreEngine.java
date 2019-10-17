@@ -100,7 +100,7 @@ public class HUSplitBuilderCoreEngine
 		if (huAllocationDestination != null)
 		{
 			huAllocationDestination.setHUStatus(huToSplit.getHUStatus());
-			huAllocationDestination.setC_BPartner(huToSplit.getC_BPartner());
+			huAllocationDestination.setC_BPartner(IHandlingUnitsBL.extractBPartnerOrNull(huToSplit));
 			huAllocationDestination.setC_BPartner_Location_ID(huToSplit.getC_BPartner_Location_ID());
 			huAllocationDestination.setLocatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(huToSplit.getM_Locator_ID()));
 		}
@@ -291,8 +291,8 @@ public class HUSplitBuilderCoreEngine
 				continue;
 			}
 
-			hu.setM_HU_PI_Item_Product(piip);
-			InterfaceWrapperHelper.save(hu);
+			hu.setM_HU_PI_Item_Product_ID(piip.getM_HU_PI_Item_Product_ID());
+			handlingUnitsDAO.saveHU(hu);
 		}
 	}
 
@@ -302,7 +302,11 @@ public class HUSplitBuilderCoreEngine
 		{
 			return null;
 		}
-		final I_M_HU_PI_Item_Product piip = piipDAO.retrievePIMaterialItemProduct(tuPIItem, hu.getC_BPartner(), productId, SystemTime.asDate());
+		final I_M_HU_PI_Item_Product piip = piipDAO.retrievePIMaterialItemProduct(
+				tuPIItem, 
+				IHandlingUnitsBL.extractBPartnerOrNull(hu), 
+				productId, 
+				SystemTime.asDate());
 		return piip;
 	}
 }

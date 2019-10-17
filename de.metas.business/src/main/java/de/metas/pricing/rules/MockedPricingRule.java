@@ -30,9 +30,12 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import lombok.ToString;
 
 /**
@@ -53,7 +56,7 @@ public class MockedPricingRule implements IPricingRule
 	/** Default price to return */
 	public BigDecimal priceToReturn = priceToReturnInitial;
 
-	private int precision;
+	private CurrencyPrecision precision;
 
 	private final Map<ProductId, I_C_UOM> productId2priceUOM = new HashMap<>();
 
@@ -74,7 +77,7 @@ public class MockedPricingRule implements IPricingRule
 		productId2priceUOM.put(ProductId.ofRepoId(product.getM_Product_ID()), uom);
 	}
 
-	public void setPrecision(int precision)
+	public void setPrecision(CurrencyPrecision precision)
 	{
 		this.precision = precision;
 	}
@@ -108,12 +111,12 @@ public class MockedPricingRule implements IPricingRule
 
 		result.setPrecision(precision);
 
-		result.setC_TaxCategory_ID(100);
+		result.setTaxCategoryId(TaxCategoryId.ofRepoId(100));
 
 		final I_C_UOM priceUOM = productId2priceUOM.get(productId);
 		if (priceUOM != null)
 		{
-			result.setPrice_UOM_ID(priceUOM.getC_UOM_ID());
+			result.setPriceUomId(UomId.ofRepoId(priceUOM.getC_UOM_ID()));
 		}
 
 		result.setCalculated(true);

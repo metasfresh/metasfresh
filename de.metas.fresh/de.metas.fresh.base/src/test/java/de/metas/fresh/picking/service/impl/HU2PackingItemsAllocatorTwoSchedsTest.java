@@ -113,7 +113,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		for (final int qtyToDeliverInt : qtysToDeliver)
 		{
 			final Quantity qtyToDeliver = Quantity.of(qtyToDeliverInt, uomEach);
-			final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, qtyToDeliver.getAsBigDecimal(), BigDecimal.ZERO);
+			final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, qtyToDeliver.toBigDecimal(), BigDecimal.ZERO);
 
 			parts.updatePart(PackingItems.newPackingItemPart(schedule)
 					.qty(qtyToDeliver)
@@ -124,11 +124,11 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		this.itemToPack = PackingItems.newPackingItem(parts);
 
 		// Validate
-		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliverSum)));
+		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliverSum)));
 
 		//
 		// Validate initial context state
-		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().getAsBigDecimal(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliverSum)));
+		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum().toBigDecimal(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliverSum)));
 
 		for (final I_M_ShipmentSchedule shipmentSchedule : getShipmentSchedules(itemToPack))
 		{

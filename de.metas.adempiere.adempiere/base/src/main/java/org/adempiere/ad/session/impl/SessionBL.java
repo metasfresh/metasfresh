@@ -2,8 +2,6 @@ package org.adempiere.ad.session.impl;
 
 import java.util.Properties;
 
-import org.adempiere.ad.security.IUserRolePermissions;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -40,6 +38,7 @@ import org.compiere.util.Ini;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.cache.CCache;
+import de.metas.security.IUserRolePermissions;
 import de.metas.util.Services;
 
 public class SessionBL implements ISessionBL
@@ -90,7 +89,7 @@ public class SessionBL implements ISessionBL
 
 		//
 		// Set Client Info if available - 04442
-		if ((Ini.isClient())  // task 08569: only try it if we are running in any client mode
+		if ((Ini.isSwingClient())  // task 08569: only try it if we are running in any client mode
 				&& Services.isAvailable(IClientUI.class))
 		{
 			sessionPO.setClient_Info(Services.get(IClientUI.class).getClientInfo());
@@ -209,8 +208,8 @@ public class SessionBL implements ISessionBL
 
 		//
 		// Check if role allows us to create the change log
-		final IUserRolePermissions role = Env.getUserRolePermissions();
-		if (role == null || !role.hasPermission(IUserRolePermissions.PERMISSION_ChangeLog))
+		final IUserRolePermissions role = Env.getUserRolePermissionsOrNull();
+		if (role != null && !role.hasPermission(IUserRolePermissions.PERMISSION_ChangeLog))
 		{
 			return false;
 		}

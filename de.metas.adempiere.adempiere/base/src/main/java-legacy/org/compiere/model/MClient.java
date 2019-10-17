@@ -27,20 +27,24 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
-import javax.mail.internet.InternetAddress;
-
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.user.api.IUserDAO;
+import org.adempiere.service.impl.ClientDAO;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.email.EMail;
+import de.metas.email.EMailAddress;
+import de.metas.email.EMailCustomType;
 import de.metas.email.EMailSentStatus;
-import de.metas.email.IMailBL;
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.ClientEMailConfig;
+import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.i18n.Language;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
@@ -166,7 +170,9 @@ public class MClient extends X_AD_Client
 	{
 		String s = super.getSMTPHost();
 		if (s == null)
+		{
 			s = "localhost";
+		}
 		return s;
 	}	//	getSMTPHost
 
@@ -201,7 +207,7 @@ public class MClient extends X_AD_Client
 		if (m_language == null)
 		{
 			m_language = Language.getLanguage(getAD_Language());
-			Env.verifyLanguage(m_language);
+			m_language = Env.verifyLanguageFallbackToBase(m_language);
 		}
 		return m_language;
 	}	//	getLanguage
@@ -227,7 +233,9 @@ public class MClient extends X_AD_Client
 	{
 		String s = super.getAD_Language ();
 		if (s == null)
+		{
 			return Language.getBaseAD_Language();
+		}
 		return s;
 	}	//	getAD_Language
 
@@ -239,7 +247,9 @@ public class MClient extends X_AD_Client
 	{
 		Language lang = getLanguage();
 		if (lang != null)
+		{
 			return lang.getLocale();
+		}
 		return Locale.getDefault();
 	}	//	getLocale
 
@@ -253,12 +263,16 @@ public class MClient extends X_AD_Client
 	{
 		//	Create Trees
 		String sql = null;
-		if (Env.isBaseLanguage (language, "AD_Ref_List"))	//	Get TreeTypes & Name
+		if (Env.isBaseLanguage (language, "AD_Ref_List"))
+		{
 			sql = "SELECT Value, Name FROM AD_Ref_List WHERE AD_Reference_ID=120 AND IsActive='Y'";
+		}
 		else
+		{
 			sql = "SELECT l.Value, t.Name FROM AD_Ref_List l, AD_Ref_List_Trl t "
 				+ "WHERE l.AD_Reference_ID=120 AND l.AD_Ref_List_ID=t.AD_Ref_List_ID AND l.IsActive='Y'"
 				+ " AND t.AD_Language=" + DB.TO_STRING(language);
+		}
 
 		//  Tree IDs
 		int AD_Tree_Org_ID=0, AD_Tree_BPartner_ID=0, AD_Tree_Project_ID=0,
@@ -336,8 +350,10 @@ public class MClient extends X_AD_Client
 					success = true;
 				}
 				// metas: end
-				else if (value.equals(X_AD_Tree.TREETYPE_Menu))	//	No Menu
+				else if (value.equals(X_AD_Tree.TREETYPE_Menu))
+				{
 					success = true;
+				}
 				else	//	PC (Product Category), BB (BOM)
 				{
 					tree = new MTree_Base (this, name, value);
@@ -359,7 +375,9 @@ public class MClient extends X_AD_Client
 		}
 
 		if (!success)
+		{
 			return false;
+		}
 
 		//	Create ClientInfo
 		MClientInfo clientInfo = new MClientInfo (this,
@@ -393,16 +411,19 @@ public class MClient extends X_AD_Client
 	 * Test EMail
 	 *
 	 * @return OK or error
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
 	public String testEMail()
 	{
-		if (getRequestEMail() == null || getRequestEMail().length() == 0)
+		final ClientEMailConfig clientEmailConfig = ClientDAO.toClientEMailConfig(this);
+		if(!Check.isEmpty(clientEmailConfig.getUsername()))
+		{
 			return "No Request EMail for " + getName();
+		}
 		
 		final String subject = Adempiere.getName() + " EMail Test";
-		final EMail email = createEMail (getRequestEMail(), subject, "");
+		final EMail email = createEMail(clientEmailConfig.getEmail(), subject, "");
 		if (email == null)
 		{
 			return "Could not create EMail: " + getName();
@@ -435,53 +456,60 @@ public class MClient extends X_AD_Client
 	/**
 	 * Send EMail from Request User - with trace
 	 * 
-	 * @param AD_User_ID recipient
+	 * @param recipientUserId recipient
 	 * @param subject subject
 	 * @param message message
 	 * @param attachment optional attachment
 	 * @return true if sent
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
-	public boolean sendEMail (int AD_User_ID, String subject, String message, File attachment)
+	public boolean sendEMail (UserId recipientUserId, String subject, String message, File attachment)
 	{
 		Collection<File> attachments = new ArrayList<>();
 		if (attachment != null)
+		{
 			attachments.add(attachment);
-		return sendEMailAttachments(AD_User_ID, subject, message, attachments);
+		}
+		return sendEMailAttachments(recipientUserId, subject, message, attachments);
 	}
 
 	/**
 	 * Send EMail from Request User - with trace
 	 * 
-	 * @param AD_User_ID recipient
+	 * @param recipientUserId
 	 * @param subject subject
 	 * @param message message
 	 * @param attachment optional collection of attachments
 	 * @return true if sent
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
-	public boolean sendEMailAttachments (int AD_User_ID, String subject, String message, Collection<File> attachments)
+	private boolean sendEMailAttachments (UserId recipientUserId, String subject, String message, Collection<File> attachments)
 	{
-		return sendEMailAttachments(AD_User_ID, subject, message, attachments, false);
+		return sendEMailAttachments(recipientUserId, subject, message, attachments, false);
 	}
 
 	/**
 	 * Send EMail from Request User - with trace
 	 * 
-	 * @param AD_User_ID recipient
+	 * @param recipientUserId recipient
 	 * @param subject subject
 	 * @param message message
 	 * @param attachment optional collection of attachments
 	 * @param html
 	 * @return true if sent
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
-	private boolean sendEMailAttachments (int AD_User_ID, String subject, String message, Collection<File> attachments, boolean html)
+	private boolean sendEMailAttachments (
+			final UserId recipientUserId, 
+			String subject, 
+			String message, 
+			Collection<File> attachments, 
+			boolean html)
 	{
-		final I_AD_User to = Services.get(IUserDAO.class).retrieveUser(AD_User_ID);
+		final I_AD_User to = Services.get(IUserDAO.class).getById(recipientUserId);
 		String toEMail = to.getEMail();
 		if (toEMail == null || toEMail.length() == 0)
 		{
@@ -490,7 +518,9 @@ public class MClient extends X_AD_Client
 		}
 		EMail email = createEMail(null, to, subject, message, html);
 		if (email == null)
+		{
 			return false;
+		}
 		email.addAttachments(attachments);
 		try
 		{
@@ -511,10 +541,10 @@ public class MClient extends X_AD_Client
 	 * @param message message
 	 * @param attachment optional attachment
 	 * @return true if sent
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
-	public boolean sendEMail (String to, String subject, String message, File attachment)
+	public boolean sendEMail (EMailAddress to, String subject, String message, File attachment)
 	{
 		return sendEMail(to, subject, message, attachment, false);
 	}
@@ -528,16 +558,20 @@ public class MClient extends X_AD_Client
 	 * @param attachment optional attachment
 	 * @param html
 	 * @return true if sent
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
-	public boolean sendEMail (String to, String subject, String message, File attachment, boolean html)
+	public boolean sendEMail (EMailAddress to, String subject, String message, File attachment, boolean html)
 	{
 		final EMail email = createEMail(to, subject, message, html);
 		if (email == null)
+		{
 			return false;
+		}
 		if (attachment != null)
+		{
 			email.addAttachment(attachment);
+		}
 		try
 		{
 			final EMailSentStatus emailSentStatus = email.send();
@@ -570,10 +604,10 @@ public class MClient extends X_AD_Client
 	 * @param message message
 	 * @param attachment optional attachment
 	 * @return true if sent
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
-	public boolean sendEMail (I_AD_User from, I_AD_User to, String subject, String message, File attachment)
+	public boolean sendEMail (UserEMailConfig from, I_AD_User to, String subject, String message, File attachment)
 	{
 		return sendEMail(from, to, subject, message, attachment, false);
 	}
@@ -588,26 +622,29 @@ public class MClient extends X_AD_Client
 	 * @param attachment optional attachment
 	 * @param isHtml
 	 * @return true if sent
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
-	public boolean sendEMail (I_AD_User from, I_AD_User to, String subject, String message, File attachment, boolean isHtml)
+	public boolean sendEMail (UserEMailConfig fromUserEmailConfig, I_AD_User to, String subject, String message, File attachment, boolean isHtml)
 	{
-		EMail email = createEMail(from, to, subject, message, isHtml);
+		EMail email = createEMail(fromUserEmailConfig, to, subject, message, isHtml);
 		if (email == null)
+		{
 			return false;
+		}
 
 		if (attachment != null)
+		{
 			email.addAttachment(attachment);
-		InternetAddress emailFrom = email.getFrom();
+		}
+		EMailAddress emailFrom = email.getFrom();
 		try
 		{
-			return sendEmailNow(from, to, email);
+			return sendEmailNow(fromUserEmailConfig, to, email);
 		}
 		catch (Exception ex)
 		{
-			log.error(getName() + " - from " + emailFrom
-				+ " to " + to + ": " + ex.getLocalizedMessage());
+			log.error(getName() + " - from " + emailFrom + " to " + to + ": " + ex.getLocalizedMessage(), ex);
 			return false;
 		}
 	}	//	sendEMail
@@ -619,10 +656,10 @@ public class MClient extends X_AD_Client
 	 * @param to to user
 	 * @param email email
 	 * @return true if sent
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
-	public boolean sendEmailNow(I_AD_User from, I_AD_User to, EMail email)
+	public boolean sendEmailNow(UserEMailConfig from, I_AD_User to, EMail email)
 	{
 		final EMailSentStatus emailSentStatus = email.send();
 		//
@@ -647,25 +684,33 @@ public class MClient extends X_AD_Client
 		if (emailSentStatus.isSentOK())
 		{
 			if (from != null)
+			{
 				log.info("Sent Email: " + email.getSubject()
-					+ " from " + from.getEMail()
+					+ " from " + from.getEmail()
 					+ " to " + to.getEMail());
+			}
 			else
+			{
 				log.info("Sent Email: " + email.getSubject()
 					+ " to " + to.getEMail());
+			}
 			return true;
 		}
 		else
 		{
 			if (from != null)
+			{
 				log.warn("Could NOT Send Email: " + email.getSubject()
-					+ " from " + from.getEMail()
+					+ " from " + from.getEmail()
 					+ " to " + to.getEMail() + ": " + emailSentStatus.getSentMsg()
 					+ " (" + getName() + ")");
+			}
 			else
+			{
 				log.warn("Could NOT Send Email: " + email.getSubject()
 					+ " to " + to.getEMail() + ": " + emailSentStatus.getSentMsg()
 					+ " (" + getName() + ")");
+			}
 			return false;
 		}
 	}	//	sendEmailNow
@@ -677,15 +722,14 @@ public class MClient extends X_AD_Client
 	 * @param subject sunject
 	 * @param message nessage
 	 * @return EMail
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
-	public EMail createEMail (String to, String subject, String message)
+	public EMail createEMail (EMailAddress to, String subject, String message)
 	{
-		final I_AD_User from = null;
+		final UserEMailConfig from = null;
 		final boolean html = false;
-		final String mailCustomType = null;
-		return createEMail(from, to, subject, message, html, mailCustomType);
+		return createEMail(from, to, subject, message, html);
 	}
 
 	/************
@@ -693,17 +737,16 @@ public class MClient extends X_AD_Client
 	 * 
 	 * @param to recipient
 	 * @param subject sunject
-	 * @param message nessage
+	 * @param message message
 	 * @param html
 	 * @return EMail
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
-	public EMail createEMail (String to, String subject, String message, boolean html)
+	public EMail createEMail (EMailAddress to, String subject, String message, boolean html)
 	{
-		final I_AD_User from = null;
-		final String mailCustomType = null;
-		return createEMail(from, to, subject, message, html, mailCustomType);
+		final UserEMailConfig from = null;
+		return createEMail(from, to, subject, message, html);
 	}
 	
 	/**
@@ -714,12 +757,12 @@ public class MClient extends X_AD_Client
 	 * @param subject sunject
 	 * @param message nessage
 	 * @return EMail
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
-	public EMail createEMail (I_AD_User from, I_AD_User to, String subject, String message)
+	public EMail createEMail (UserEMailConfig fromUserEmailConfig, I_AD_User to, String subject, String message)
 	{
-		return createEMail(from, to, subject, message, false);
+		return createEMail(fromUserEmailConfig, to, subject, message, false);
 	}
 
 	/**
@@ -731,10 +774,10 @@ public class MClient extends X_AD_Client
 	 * @param message nessage
 	 * @param html
 	 * @return EMail
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
-	private EMail createEMail (I_AD_User from, I_AD_User userTo, String subject, String message, boolean html)
+	private EMail createEMail (UserEMailConfig fromUserEmailConfig, I_AD_User userTo, String subject, String message, boolean html)
 	{
 		if (userTo == null)
 		{
@@ -746,60 +789,41 @@ public class MClient extends X_AD_Client
 			log.warn("No To address: " + userTo);
 			return null;
 		}
-		final String mailCustomType = null;
-		return createEMail(from, userTo.getEMail(), subject, message, html, mailCustomType);
+		
+		return createEMail(fromUserEmailConfig, EMailAddress.ofString(userTo.getEMail()), subject, message, html);
 
 	}	//	createEMail
 
 	/**
-	 * Create EMail from User.
-	 * 
-	 * @param from optional sender
-	 * @param to recipient
-	 * @param subject sunject
-	 * @param message nessage
-	 * @return EMail
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
-	 */
-	@Deprecated
-	public EMail createEMail (I_AD_User from, String to, String subject, String message)
-	{
-		final boolean html = false;
-		final String mailCustomType = null;
-		return createEMail(from, to, subject, message, html, mailCustomType);
-	}
-
-	/**
 	 * Create EMail from User
 	 * 
-	 * @param from optional sender
+	 * @param fromUserEmailConfig optional sender
 	 * @param to recipient
 	 * @param subject sunject
 	 * @param message nessage
 	 * @param html
 	 * @return EMail
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
-	public EMail createEMail (I_AD_User from, String to, String subject, String message, boolean html)
-	{
-		final String mailCustomType = null;
-		return createEMail(from, to, subject, message, html, mailCustomType);
-	}
-	
-	@Deprecated
-	private EMail createEMail (I_AD_User from, String to, 
-			String subject, String message, boolean html,
-			String mailCustomType)
+	public EMail createEMail (
+			final UserEMailConfig fromUserEmailConfig, 
+			final EMailAddress to, 
+			final String subject,
+			final String message,
+			final boolean html)
 	{
 		try
 		{
-			final IMailBL mailBL = Services.get(IMailBL.class);
-			return mailBL.createEMail(this, mailCustomType, from, to, subject, message, html);
+			final MailService mailService = Adempiere.getBean(MailService.class);
+			
+			final EMailCustomType mailCustomType = null;
+			final ClientEMailConfig tenantEmailConfig = ClientDAO.toClientEMailConfig(this);
+			return mailService.createEMail(tenantEmailConfig, mailCustomType, fromUserEmailConfig, to, subject, message, html);
 		}
-		catch (AdempiereException e)
+		catch (Exception ex)
 		{
-			log.error("Failed to create the email", e);
+			log.error("Failed to create the email", ex);
 			return null;
 		}
 	}	//	createEMail

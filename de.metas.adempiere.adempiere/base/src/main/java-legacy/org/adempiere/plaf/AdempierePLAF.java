@@ -303,10 +303,10 @@ public final class AdempierePLAF
 		final List<ValueNamePair> lafList = new ArrayList<>();
 		final List<ValueNamePair> plasticThemes = new ArrayList<>();
 
-		final ValueNamePair lafAdempiere = new ValueNamePair(AdempiereLookAndFeel.class.getName(), AdempiereLookAndFeel.NAME);
+		final ValueNamePair lafAdempiere = ValueNamePair.of(AdempiereLookAndFeel.class.getName(), AdempiereLookAndFeel.NAME);
 		lafList.add(lafAdempiere);
 
-		final ValueNamePair metasFreshTheme = new ValueNamePair(MetasFreshTheme.class.getName(), MetasFreshTheme.NAME);
+		final ValueNamePair metasFreshTheme = ValueNamePair.of(MetasFreshTheme.class.getName(), MetasFreshTheme.NAME);
 		plasticThemes.add(metasFreshTheme);
 
 		//

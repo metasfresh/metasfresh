@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
@@ -36,7 +38,6 @@ import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.mm.attributes.spi.NullAttributeValueCallout;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
@@ -56,6 +57,7 @@ import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.exceptions.InvalidAttributeValueException;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.logging.LogManager;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -97,10 +99,12 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 			valueType = _attributeValuesProvider.getAttributeValueType();
 			Check.assume(!X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(valueType),
 					"Provider {} shall not return attribute value type List", _attributeValuesProvider);
+			Check.assumeNotNull(valueType, "{} shall return non-null value type", _attributeValuesProvider);
 		}
 		else
 		{
 			valueType = attribute.getAttributeValueType();
+			Check.assumeNotNull(valueType, "{} shall return non-null value type", attribute);
 		}
 	}
 
@@ -559,10 +563,8 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 	 * @return value as NamePair; never returns null
 	 * @throws InvalidAttributeValueException
 	 */
-	private final NamePair valueToAttributeValue(final Object value)
+	private final NamePair valueToAttributeValue(@NonNull final Object value)
 	{
-		Check.assumeNotNull(value, "value not null");
-
 		final Object valueNormalized;
 		if (value instanceof NamePair)
 		{
@@ -646,7 +648,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		return availableValues;
 	}
 
-	protected final Date valueToDate(final Object value)
+	protected static final Date valueToDate(final Object value)
 	{
 		if (value == null)
 		{
@@ -726,7 +728,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		}
 	}
 
-	@Override
+	@Nullable @Override
 	public final Object getEmptyValue()
 	{
 		final Object value = getValue();
@@ -740,6 +742,10 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 			return BigDecimal.ZERO;
 		}
 		else if (value instanceof String)
+		{
+			return null;
+		}
+		else if(TimeUtil.isDateOrTimeObject(value))
 		{
 			return null;
 		}

@@ -745,6 +745,7 @@ public final class MimeType
 			.put(".xlw", "application/vnd.ms-excel")
 			// .put( ".xlw", "application/x-excel")
 			// .put( ".xlw", "application/x-msexcel")
+			.put(".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 			.put(".xm", "audio/xm")
 			// .put( ".xml", "application/xml")
 			.put(".xml", TYPE_XML)

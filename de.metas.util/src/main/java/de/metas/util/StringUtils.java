@@ -36,6 +36,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
 
@@ -67,6 +68,7 @@ public final class StringUtils
 		return ImmutablePair.of(trim(street), trim(number));
 	}
 
+	@Nullable
 	public static String trim(@Nullable String untrimmedStringOrNull)
 	{
 		if (untrimmedStringOrNull == null)
@@ -76,10 +78,27 @@ public final class StringUtils
 		return untrimmedStringOrNull.trim();
 	}
 
+	@Nullable
+	public static String trimBlankToNull(@Nullable final String str)
+	{
+		if (str == null || str.isEmpty())
+		{
+			return null;
+		}
+
+		final String strTrim = str.trim();
+		if (strTrim.isEmpty())
+		{
+			return null;
+		}
+
+		return strTrim;
+	}
+
 	public enum TruncateAt
 	{
 		STRING_START, STRING_END
-	};
+	}
 
 	/**
 	 * Truncate string to a given length, if required.
@@ -208,7 +227,7 @@ public final class StringUtils
 	 *         <li><code>defaultValue</code> if value is null or other
 	 *         </ul>
 	 */
-	public static final Boolean toBoolean(final Object value, final Boolean defaultValue)
+	public static Boolean toBoolean(final Object value, final Boolean defaultValue)
 	{
 		if (value == null)
 		{
@@ -249,7 +268,7 @@ public final class StringUtils
 	 *         <li>false if value is null or other
 	 *         </ul>
 	 */
-	public static final boolean toBoolean(final Object value)
+	public static boolean toBoolean(final Object value)
 	{
 		final Boolean defaultValue = Boolean.FALSE;
 		return toBoolean(value, defaultValue);
@@ -266,7 +285,7 @@ public final class StringUtils
 	 *         <li>"N" if value is false
 	 *         </ul>
 	 */
-	public static final String ofBoolean(@Nullable final Boolean value)
+	public static String ofBoolean(@Nullable final Boolean value)
 	{
 		if (value == null)
 		{
@@ -446,7 +465,7 @@ public final class StringUtils
 	 * @param stringToVerify
 	 * @return {@link code true} if the given string consists only of digits (i.e. contains no letter, whitespace decimal point etc).
 	 */
-	public static final boolean isNumber(final String stringToVerify)
+	public static boolean isNumber(final String stringToVerify)
 	{
 		// Null or empty strings are not numbers
 		if (stringToVerify == null || stringToVerify.isEmpty())
@@ -465,13 +484,13 @@ public final class StringUtils
 		return true;
 	}
 
-	public static final String toString(final Collection<?> collection, final String separator)
+	public static String toString(final Collection<?> collection, final String separator)
 	{
 		return toStringBuilder(collection, separator)
 				.toString();
 	}
 
-	public static final StringBuilder toStringBuilder(final Collection<?> collection, final String separator)
+	public static StringBuilder toStringBuilder(final Collection<?> collection, final String separator)
 	{
 		if (collection == null)
 		{
@@ -508,4 +527,470 @@ public final class StringUtils
 		}
 		return string + suffix;
 	}
+
+	/**
+	 * Replace String values.
+	 *
+	 * @param value string to be processed
+	 * @param oldPart old part
+	 * @param newPart replacement - can be null or ""
+	 * @return String with replaced values
+	 */
+	public static String replace(String value, String oldPart, String newPart)
+	{
+		if (value == null || value.length() == 0
+				|| oldPart == null || oldPart.length() == 0)
+		{
+			return value;
+		}
+		//
+		final int oldPartLength = oldPart.length();
+		String oldValue = value;
+		final StringBuffer retValue = new StringBuffer();
+		int pos = oldValue.indexOf(oldPart);
+		while (pos != -1)
+		{
+			retValue.append(oldValue.substring(0, pos));
+			if (newPart != null && newPart.length() > 0)
+			{
+				retValue.append(newPart);
+			}
+			oldValue = oldValue.substring(pos + oldPartLength);
+			pos = oldValue.indexOf(oldPart);
+		}
+		retValue.append(oldValue);
+		// log.debug( "Env.replace - " + value + " - Old=" + oldPart + ", New=" + newPart + ", Result=" + retValue.toString());
+		return retValue.toString();
+	}	// replace
+
+	/**
+	 * Remove CR / LF from String
+	 *
+	 * @param in input
+	 * @return cleaned string
+	 */
+	public static String removeCRLF(@Nullable final String in)
+	{
+		if (in == null)
+		{
+			return null;
+		}
+		return in.replaceAll("(\\r|\\n)", "");
+	}
+
+	/**
+	 * Fetch the numbers from a string
+	 *
+	 * @param text
+	 * @return string which contains all digits, or null if text is null
+	 */
+	public static String getDigits(final String text)
+	{
+		if (text == null)
+		{
+			return null;
+		}
+		final StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < text.length(); i++)
+		{
+			if (Character.isDigit(text.charAt(i)))
+			{
+				sb.append(text.charAt(i));
+			}
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * Fetch only the text from a given string <br>
+	 * E.g. text= '9000 St. Gallen'<br>
+	 * This method will return test St. Gallen
+	 *
+	 * @param text
+	 * @return string which contains all letters not digits, or null if text is null
+	 */
+	public static String stripDigits(final String text)
+	{
+		if (text == null)
+		{
+			return null;
+		}
+		final char[] inArray = text.toCharArray();
+		final StringBuilder out = new StringBuilder(inArray.length);
+		for (final char element : inArray)
+		{
+			final char c = element;
+			if (Character.isLetter(c) || !Character.isDigit(c))
+			{
+				out.append(c);
+			}
+		}
+		return out.toString();
+	}
+
+	/**
+	 * Clean - Remove all white spaces
+	 *
+	 * @param in in
+	 * @return cleaned string
+	 */
+	public static String cleanWhitespace(String in)
+	{
+		final char[] inArray = in.toCharArray();
+		final StringBuffer out = new StringBuffer(inArray.length);
+		boolean lastWasSpace = false;
+		for (final char c : inArray)
+		{
+			if (Character.isWhitespace(c))
+			{
+				if (!lastWasSpace)
+				{
+					out.append(' ');
+				}
+				lastWasSpace = true;
+			}
+			else
+			{
+				out.append(c);
+				lastWasSpace = false;
+			}
+		}
+		return out.toString();
+	}	// cleanWhitespace
+
+	/**
+	 * remove white space from the begin
+	 *
+	 * @param in
+	 * @return
+	 */
+	public static String cleanBeginWhitespace(String in)
+	{
+		final int len = in.length();
+		int st = 0;
+		final int off = 0;
+		final char[] val = in.toCharArray();
+
+		while ((st < len) && (val[off + st] <= ' '))
+		{
+			st++;
+		}
+		return ((st > 0) || (len < in.length())) ? in.substring(st, len) : in;
+	}
+
+	/**
+	 *
+	 * @param value note: <code>null</code> is threaded like ""
+	 * @param size
+	 * @param description
+	 * @return
+	 */
+	public static String lpadZero(final String value, final int size, final String description)
+	{
+		final String valueFixed = prepareValueForPadding(value, size, description);
+
+		final String s = "0000000000000000000" + valueFixed;
+		return s.substring(s.length() - size);
+	}
+
+	/**
+	 * Add 0 digits at the end of a String until it gets to the size given as paraameter.
+	 *
+	 * @param value
+	 * @param size
+	 * @param description
+	 * @return
+	 */
+	public static String rpadZero(final String value, final int size, final String description)
+	{
+		final String valueFixed = prepareValueForPadding(value, size, description);
+
+		final String s = valueFixed + "0000000000000000000";
+		return s.substring(0, size);
+	}
+
+	private static String prepareValueForPadding(String value, int size, String description)
+	{
+		final String valueFixed;
+
+		if (value == null)
+		{
+			valueFixed = "";
+		}
+		else
+		{
+			valueFixed = value.trim();
+		}
+		if (valueFixed.length() > size)
+		{
+			Check.fail("value='" + valueFixed + "' of '" + description + "' is bigger than " + size + " characters");
+		}
+
+		return valueFixed;
+	}
+
+	/**
+	 * Mask HTML content. i.e. replace characters with &values; CR is not masked
+	 *
+	 * @param content content
+	 * @return masked content
+	 * @see #maskHTML(String, boolean)
+	 */
+	public static String maskHTML(String content)
+	{
+		return maskHTML(content, false);
+	}	// maskHTML
+
+	/**
+	 * Mask HTML content. i.e. replace characters with &values;
+	 *
+	 * @param content content
+	 * @param maskCR convert CR into <br>
+	 * @return masked content or null if the <code>content</code> is null
+	 * @deprecated please consider using {@link StringEscapeUtils#escapeHtml4(String)} instead.
+	 */
+	@Deprecated
+	public static String maskHTML(String content, boolean maskCR)
+	{
+		// If the content is null, then return null - teo_sarca [ 1748346 ]
+		if (content == null || content.isEmpty())
+		{
+			return content;
+		}
+		//
+		final StringBuilder out = new StringBuilder();
+		final char[] chars = content.toCharArray();
+		for (final char c : chars)
+		{
+			switch (c)
+			{
+				case '<':
+					out.append("&lt;");
+					break;
+				case '>':
+					out.append("&gt;");
+					break;
+				case '&':
+					out.append("&amp;");
+					break;
+				case '"':
+					out.append("&quot;");
+					break;
+				case '\'':
+					out.append("&#039;");
+					break;
+				case '\n':
+					if (maskCR)
+					{
+						out.append("<br>");
+					}
+					break;
+				//
+				default:
+					final int ii = c;
+					if (ii > 255)
+					{
+						out.append("&#").append(ii).append(";");
+					}
+					else
+					{
+						out.append(c);
+					}
+					break;
+			}
+		}
+		return out.toString();
+	}	// maskHTML
+
+	/**
+	 * Get the number of occurances of countChar in string.
+	 *
+	 * @param string String to be searched
+	 * @param countChar to be counted character
+	 * @return number of occurances
+	 */
+	public static int getCount(String string, char countChar)
+	{
+		if (string == null || string.length() == 0)
+		{
+			return 0;
+		}
+		int counter = 0;
+		final char[] array = string.toCharArray();
+		for (final char element : array)
+		{
+			if (element == countChar)
+			{
+				counter++;
+			}
+		}
+		return counter;
+	}	// getCount
+
+	/**************************************************************************
+	 * Find index of search character in str. This ignores content in () and 'texts'
+	 *
+	 * @param str string
+	 * @param search search character
+	 * @return index or -1 if not found
+	 */
+	public static int findIndexOf(String str, char search)
+	{
+		return findIndexOf(str, search, search);
+	}   // findIndexOf
+
+	/**
+	 * Find index of search characters in str. This ignores content in () and 'texts'
+	 *
+	 * @param str string
+	 * @param search1 first search character
+	 * @param search2 second search character (or)
+	 * @return index or -1 if not found
+	 */
+	public static int findIndexOf(String str, char search1, char search2)
+	{
+		if (str == null)
+		{
+			return -1;
+		}
+		//
+		int endIndex = -1;
+		int parCount = 0;
+		boolean ignoringText = false;
+		final int size = str.length();
+		while (++endIndex < size)
+		{
+			final char c = str.charAt(endIndex);
+			if (c == '\'')
+			{
+				ignoringText = !ignoringText;
+			}
+			else if (!ignoringText)
+			{
+				if (parCount == 0 && (c == search1 || c == search2))
+				{
+					return endIndex;
+				}
+				else if (c == ')')
+				{
+					parCount--;
+				}
+				else if (c == '(')
+				{
+					parCount++;
+				}
+			}
+		}
+		return -1;
+	}   // findIndexOf
+
+	/**
+	 * Find index of search character in str. This ignores content in () and 'texts'
+	 *
+	 * @param str string
+	 * @param search search character
+	 * @return index or -1 if not found
+	 */
+	public static int findIndexOf(String str, String search)
+	{
+		if (str == null || search == null || search.length() == 0)
+		{
+			return -1;
+		}
+		//
+		int endIndex = -1;
+		int parCount = 0;
+		boolean ignoringText = false;
+		final int size = str.length();
+		while (++endIndex < size)
+		{
+			final char c = str.charAt(endIndex);
+			if (c == '\'')
+			{
+				ignoringText = !ignoringText;
+			}
+			else if (!ignoringText)
+			{
+				if (parCount == 0 && c == search.charAt(0))
+				{
+					if (str.substring(endIndex).startsWith(search))
+					{
+						return endIndex;
+					}
+				}
+				else if (c == ')')
+				{
+					parCount--;
+				}
+				else if (c == '(')
+				{
+					parCount++;
+				}
+			}
+		}
+		return -1;
+	}   // findIndexOf
+
+	/**************************************************************************
+	 * Return Hex String representation of byte b
+	 *
+	 * @param b byte
+	 * @return Hex
+	 */
+	static public String toHex(byte b)
+	{
+		final char hexDigit[] = {
+				'0', '1', '2', '3', '4', '5', '6', '7',
+				'8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+		};
+		final char[] array = { hexDigit[(b >> 4) & 0x0f], hexDigit[b & 0x0f] };
+		return new String(array);
+	}
+
+	/**
+	 * Return Hex String representation of char c
+	 *
+	 * @param c character
+	 * @return Hex
+	 */
+	static public String toHex(char c)
+	{
+		final byte hi = (byte)(c >>> 8);
+		final byte lo = (byte)(c & 0xff);
+		return toHex(hi) + toHex(lo);
+	}   // toHex
+
+	/**************************************************************************
+	 * Init Cap Words With Spaces
+	 *
+	 * @param in string
+	 * @return init cap
+	 */
+	public static String initCap(String in)
+	{
+		if (in == null || in.length() == 0)
+		{
+			return in;
+		}
+		//
+		boolean capitalize = true;
+		final char[] data = in.toCharArray();
+		for (int i = 0; i < data.length; i++)
+		{
+			if (data[i] == ' ' || Character.isWhitespace(data[i]))
+			{
+				capitalize = true;
+			}
+			else if (capitalize)
+			{
+				data[i] = Character.toUpperCase(data[i]);
+				capitalize = false;
+			}
+			else
+			{
+				data[i] = Character.toLowerCase(data[i]);
+			}
+		}
+		return new String(data);
+	}	// initCap
 }

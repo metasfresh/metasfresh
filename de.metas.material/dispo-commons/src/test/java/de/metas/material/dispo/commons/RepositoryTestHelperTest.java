@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
@@ -43,7 +43,7 @@ public class RepositoryTestHelperTest
 {
 	private RepositoryTestHelper repositoryTestHelper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

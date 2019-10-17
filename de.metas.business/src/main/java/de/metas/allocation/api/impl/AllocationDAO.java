@@ -43,17 +43,16 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_GL_Journal;
-import org.compiere.model.X_C_Payment;
 import org.compiere.util.DB;
 
-import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
-import de.metas.document.engine.IDocument;
+import de.metas.document.engine.DocStatus;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -62,7 +61,7 @@ public class AllocationDAO implements IAllocationDAO
 
 	@Override
 	public final BigDecimal retrieveOpenAmt(
-			@NonNull final org.compiere.model.I_C_Invoice invoice,
+			@NonNull final I_C_Invoice invoice,
 			final boolean creditMemoAdjusted)
 	{
 		if (invoice.isPaid())
@@ -90,7 +89,7 @@ public class AllocationDAO implements IAllocationDAO
 	}
 
 	@Override
-	public final List<I_C_AllocationLine> retrieveAllocationLines(final org.compiere.model.I_C_Invoice invoice)
+	public final List<I_C_AllocationLine> retrieveAllocationLines(final I_C_Invoice invoice)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_AllocationLine.class, invoice)
@@ -163,7 +162,7 @@ public class AllocationDAO implements IAllocationDAO
 				.addColumn(I_C_Payment.COLUMN_C_Payment_ID);
 
 		queryBuilder.addEqualsFilter(I_C_Payment.COLUMN_C_BPartner_ID, invoice.getC_BPartner_ID());
-		queryBuilder.addEqualsFilter(I_C_Payment.COLUMN_DocStatus, X_C_Payment.DOCSTATUS_Completed);
+		queryBuilder.addEqualsFilter(I_C_Payment.COLUMN_DocStatus, DocStatus.Completed);
 		queryBuilder.addEqualsFilter(I_C_Payment.COLUMN_Processed, true);
 
 		// Matching DocType
@@ -179,10 +178,10 @@ public class AllocationDAO implements IAllocationDAO
 	}
 
 	@Override
-	public BigDecimal retrieveAllocatedAmt(org.compiere.model.I_C_Invoice invoice)
+	public BigDecimal retrieveAllocatedAmt(@NonNull final I_C_Invoice invoiceRecord)
 	{
-		final int invoiceId = invoice.getC_Invoice_ID();
-		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
+		final int invoiceId = invoiceRecord.getC_Invoice_ID();
+		final String trxName = InterfaceWrapperHelper.getTrxName(invoiceRecord);
 
 		return retrieveAllocatedAmt(invoiceId, trxName);
 	}
@@ -227,7 +226,7 @@ public class AllocationDAO implements IAllocationDAO
 	}
 
 	@Override
-	public BigDecimal retrieveWriteoffAmt(org.compiere.model.I_C_Invoice invoice)
+	public BigDecimal retrieveWriteoffAmt(I_C_Invoice invoice)
 	{
 		final String sql = "select invoicewriteoff(?)";
 
@@ -239,9 +238,9 @@ public class AllocationDAO implements IAllocationDAO
 
 		return amt;
 	}
-	
+
 	@Override
-	public BigDecimal retrieveAllocatedAmtIgnoreGivenPaymentIDs(final org.compiere.model.I_C_Invoice invoice, final Set<Integer> paymentIDsToIgnore)
+	public BigDecimal retrieveAllocatedAmtIgnoreGivenPaymentIDs(final I_C_Invoice invoice, final Set<Integer> paymentIDsToIgnore)
 	{
 		BigDecimal retValue = null;
 
@@ -345,7 +344,7 @@ public class AllocationDAO implements IAllocationDAO
 		return allocationHdrQuery
 				.addEqualsFilter(I_C_AllocationHdr.COLUMNNAME_Posted, true) // Posted
 				.addEqualsFilter(I_C_AllocationHdr.COLUMNNAME_Processed, true) // Processed
-				.addInArrayOrAllFilter(I_GL_Journal.COLUMNNAME_DocStatus, IDocument.STATUS_Closed, IDocument.STATUS_Completed) // DocStatus in ('CO', 'CL')
+				.addInArrayOrAllFilter(I_GL_Journal.COLUMNNAME_DocStatus, DocStatus.completedOrClosedStatuses())
 				.addNotInSubQueryFilter(I_C_AllocationHdr.COLUMNNAME_C_AllocationHdr_ID, I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery) // has no accounting
 				.create()
 				.list(I_C_AllocationHdr.class);
@@ -371,7 +370,7 @@ public class AllocationDAO implements IAllocationDAO
 		final List<I_C_Payment> availablePayments = queryBL.createQueryBuilder(I_C_Payment.class, invoice)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Payment.COLUMN_C_BPartner_ID, invoice.getC_BPartner_ID())
-				.addEqualsFilter(I_C_Payment.COLUMN_DocStatus, IDocument.STATUS_Completed)
+				.addEqualsFilter(I_C_Payment.COLUMN_DocStatus, DocStatus.Completed)
 				.addEqualsFilter(I_C_Payment.COLUMN_Processed, true)
 				.addEqualsFilter(I_C_Payment.COLUMN_IsReceipt, invoice.isSOTrx())
 				.addEqualsFilter(I_C_Payment.COLUMN_IsAllocated, true)

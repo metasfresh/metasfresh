@@ -10,12 +10,12 @@ package org.adempiere.ad.migration.logger.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,8 +31,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.adempiere.ad.dao.model.I_T_Query_Selection;
-import org.adempiere.ad.dao.model.I_T_Query_Selection_ToDelete;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.logger.IMigrationLoggerContext;
 import org.adempiere.ad.migration.model.I_AD_Migration;
@@ -71,6 +69,8 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
+import de.metas.dao.selection.model.I_T_Query_Selection;
+import de.metas.dao.selection.model.I_T_Query_Selection_ToDelete;
 import de.metas.logging.LogManager;
 import de.metas.process.model.I_AD_PInstance_SelectedIncludedRecords;
 import de.metas.util.Check;
@@ -149,7 +149,7 @@ public class MigrationLogger implements IMigrationLogger
 				"AD_MIGRATION",
 				"AD_MIGRATIONSTEP",
 				"AD_MIGRATIONDATA",
-				
+
 				// Don't log AD_Sequence because these will be created automatically (at least for Table_ID)
 				// NOTE: while this is applying for XML migrations, we need this to be logged in SQL migrations
 				// and currently we use SQL migrations
@@ -355,7 +355,7 @@ public class MigrationLogger implements IMigrationLogger
 
 	/**
 	 * Create and set a short description about what was changed in this step
-	 * 
+	 *
 	 * @param po
 	 * @param migrationStep
 	 * @param stepDataList
@@ -636,7 +636,7 @@ public class MigrationLogger implements IMigrationLogger
 	protected IMigrationLoggerContext getSessionMigrationLoggerContext(final MFSession session)
 	{
 		final String key = getClass().getCanonicalName();
-		IMigrationLoggerContext mctx = session.getTransientProperty(key); 
+		IMigrationLoggerContext mctx = session.getTransientProperty(key);
 		if (mctx == null)
 		{
 			mctx = new SessionMigrationLoggerContext();

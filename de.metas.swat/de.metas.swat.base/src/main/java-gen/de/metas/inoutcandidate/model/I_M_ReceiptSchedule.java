@@ -32,8 +32,6 @@ public interface I_M_ReceiptSchedule
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_AD_Client>(I_M_ReceiptSchedule.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -43,7 +41,7 @@ public interface I_M_ReceiptSchedule
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -53,15 +51,11 @@ public interface I_M_ReceiptSchedule
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_AD_Org>(I_M_ReceiptSchedule.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
@@ -88,10 +82,6 @@ public interface I_M_ReceiptSchedule
 	 */
 	public int getAD_Table_ID();
 
-	public org.compiere.model.I_AD_Table getAD_Table();
-
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
-
     /** Column definition for AD_Table_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_AD_Table>(I_M_ReceiptSchedule.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
     /** Column name AD_Table_ID */
@@ -117,10 +107,6 @@ public interface I_M_ReceiptSchedule
 	 */
 	public int getAD_User_ID();
 
-	public org.compiere.model.I_AD_User getAD_User();
-
-	public void setAD_User(org.compiere.model.I_AD_User AD_User);
-
     /** Column definition for AD_User_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_AD_User> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_AD_User>(I_M_ReceiptSchedule.class, "AD_User_ID", org.compiere.model.I_AD_User.class);
     /** Column name AD_User_ID */
@@ -143,10 +129,6 @@ public interface I_M_ReceiptSchedule
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_User_Override_ID();
-
-	public org.compiere.model.I_AD_User getAD_User_Override();
-
-	public void setAD_User_Override(org.compiere.model.I_AD_User AD_User_Override);
 
     /** Column definition for AD_User_Override_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_AD_User> COLUMN_AD_User_Override_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_AD_User>(I_M_ReceiptSchedule.class, "AD_User_Override_ID", org.compiere.model.I_AD_User.class);
@@ -219,10 +201,6 @@ public interface I_M_ReceiptSchedule
 	 */
 	public int getC_BP_Location_Override_ID();
 
-	public org.compiere.model.I_C_BPartner_Location getC_BP_Location_Override();
-
-	public void setC_BP_Location_Override(org.compiere.model.I_C_BPartner_Location C_BP_Location_Override);
-
     /** Column definition for C_BP_Location_Override_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BP_Location_Override_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_C_BPartner_Location>(I_M_ReceiptSchedule.class, "C_BP_Location_Override_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name C_BP_Location_Override_ID */
@@ -247,10 +225,6 @@ public interface I_M_ReceiptSchedule
 	 * <br>Virtual Column: false
 	 */
 	public int getC_BPartner_ID();
-
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
 
     /** Column definition for C_BPartner_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_C_BPartner>(I_M_ReceiptSchedule.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
@@ -277,10 +251,6 @@ public interface I_M_ReceiptSchedule
 	 */
 	public int getC_BPartner_Location_ID();
 
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location();
-
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location);
-
     /** Column definition for C_BPartner_Location_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_C_BPartner_Location>(I_M_ReceiptSchedule.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name C_BPartner_Location_ID */
@@ -306,10 +276,6 @@ public interface I_M_ReceiptSchedule
 	 */
 	public int getC_BPartner_Override_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner_Override();
-
-	public void setC_BPartner_Override(org.compiere.model.I_C_BPartner C_BPartner_Override);
-
     /** Column definition for C_BPartner_Override_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_Override_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_C_BPartner>(I_M_ReceiptSchedule.class, "C_BPartner_Override_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_Override_ID */
@@ -334,10 +300,6 @@ public interface I_M_ReceiptSchedule
 	 * <br>Virtual Column: false
 	 */
 	public int getC_DocType_ID();
-
-	public org.compiere.model.I_C_DocType getC_DocType();
-
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
 
     /** Column definition for C_DocType_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_C_DocType>(I_M_ReceiptSchedule.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
@@ -421,10 +383,6 @@ public interface I_M_ReceiptSchedule
 	 * <br>Virtual Column: false
 	 */
 	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
 
     /** Column definition for C_UOM_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_C_UOM>(I_M_ReceiptSchedule.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
@@ -752,10 +710,6 @@ public interface I_M_ReceiptSchedule
 	 */
 	public int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
-
     /** Column definition for M_Product_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_M_Product>(I_M_ReceiptSchedule.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
@@ -802,10 +756,6 @@ public interface I_M_ReceiptSchedule
 	 */
 	public int getM_Warehouse_Dest_ID();
 
-	public org.compiere.model.I_M_Warehouse getM_Warehouse_Dest();
-
-	public void setM_Warehouse_Dest(org.compiere.model.I_M_Warehouse M_Warehouse_Dest);
-
     /** Column definition for M_Warehouse_Dest_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_Dest_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_M_Warehouse>(I_M_ReceiptSchedule.class, "M_Warehouse_Dest_ID", org.compiere.model.I_M_Warehouse.class);
     /** Column name M_Warehouse_Dest_ID */
@@ -830,10 +780,6 @@ public interface I_M_ReceiptSchedule
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Warehouse_ID();
-
-	public org.compiere.model.I_M_Warehouse getM_Warehouse();
-
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
 
     /** Column definition for M_Warehouse_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_M_Warehouse>(I_M_ReceiptSchedule.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
@@ -860,10 +806,6 @@ public interface I_M_ReceiptSchedule
 	 */
 	public int getM_Warehouse_Override_ID();
 
-	public org.compiere.model.I_M_Warehouse getM_Warehouse_Override();
-
-	public void setM_Warehouse_Override(org.compiere.model.I_M_Warehouse M_Warehouse_Override);
-
     /** Column definition for M_Warehouse_Override_ID */
     public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_Override_ID = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_M_Warehouse>(I_M_ReceiptSchedule.class, "M_Warehouse_Override_ID", org.compiere.model.I_M_Warehouse.class);
     /** Column name M_Warehouse_Override_ID */
@@ -873,7 +815,7 @@ public interface I_M_ReceiptSchedule
 	 * Set Bewegungsdatum.
 	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -883,7 +825,7 @@ public interface I_M_ReceiptSchedule
 	 * Get Bewegungsdatum.
 	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

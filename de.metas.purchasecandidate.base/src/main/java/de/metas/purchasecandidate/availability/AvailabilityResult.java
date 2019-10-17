@@ -1,12 +1,11 @@
 package de.metas.purchasecandidate.availability;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.quantity.Quantity;
@@ -49,7 +48,7 @@ public class AvailabilityResult
 				.trackingId(responseItem.getTrackingId())
 				.type(Type.ofAvailabilityResponseItemType(responseItem.getType()))
 				.availabilityText(responseItem.getAvailabilityText())
-				.datePromised(TimeUtil.asLocalDateTime(responseItem.getDatePromised()))
+				.datePromised(responseItem.getDatePromised())
 				.qty(Quantity.of(responseItem.getAvailableQuantity(), uom));
 	}
 
@@ -82,7 +81,7 @@ public class AvailabilityResult
 
 	Quantity qty;
 
-	LocalDateTime datePromised;
+	ZonedDateTime datePromised;
 
 	String availabilityText;
 
@@ -93,7 +92,7 @@ public class AvailabilityResult
 			@Nullable TrackingId trackingId,
 			@NonNull final Type type,
 			@NonNull final Quantity qty,
-			@Nullable final LocalDateTime datePromised,
+			@Nullable final ZonedDateTime datePromised,
 			@Nullable final String availabilityText,
 			@Nullable final VendorGatewayService vendorGatewayServicethatWasUsed)
 	{

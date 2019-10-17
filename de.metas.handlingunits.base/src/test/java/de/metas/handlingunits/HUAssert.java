@@ -70,7 +70,7 @@ public class HUAssert extends AbstractAssert<HUAssert, I_M_HU>
 		final IHUStorage huStorage = storageFactory.getStorage(actual);
 		final BigDecimal qtyActual = huStorage.getQty(productId, uom);
 
-		if (qtyActual.compareTo(expectedQuantity.getAsBigDecimal()) != 0)
+		if (qtyActual.compareTo(expectedQuantity.toBigDecimal()) != 0)
 		{
 			failWithMessage("Invalid HU Storage for product: <%s>; expected <%s>, but has <%s>",
 					Services.get(IProductBL.class).getProductValueAndName(productId),

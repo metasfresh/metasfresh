@@ -5,7 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_Order;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,12 +24,12 @@ import de.metas.shipping.ShipperId;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -45,8 +47,10 @@ public class DeliveryGroupCandidateTest
 	@Test
 	public void toSTringAndHashCodeAndEqualsDontCauseStackOverflow()
 	{
+		final TableRecordReference orderReference = TableRecordReference.of(I_C_Order.Table_Name, 10);
+
 		final DeliveryGroupCandidate group = DeliveryGroupCandidate.builder()
-				.groupId(10)
+				.groupId(DeliveryGroupCandidateGroupId.of(orderReference))
 				.warehouseId(WarehouseId.ofRepoId(20))
 				.shipperId(ShipperId.optionalOfRepoId(1))
 				.bPartnerAddress("bPartnerAddress")

@@ -10,12 +10,12 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,6 +30,7 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.comparator.AccessorComparator;
 import org.adempiere.util.comparator.ComparableComparator;
+import org.adempiere.util.comparator.ComparableComparatorNullsEqual;
 import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.util.comparator.NullComparator;
 
@@ -151,14 +152,21 @@ class QueryOrderBy extends AbstractQueryOrderBy
 				@SuppressWarnings("rawtypes")
 				final ModelAccessor<Comparable> accessor = new ModelAccessor<Comparable>(item.getColumnName());
 
+
+				final boolean reverse = item.getDirection() == Direction.Descending;
+				@SuppressWarnings("rawtypes")
+				final Comparator<Object> cmpDirection = new AccessorComparator<Object, Comparable>(
+						ComparableComparatorNullsEqual.getInstance(),
+						accessor);
+				cmpChain.addComparator(cmpDirection, reverse);
+
 				final boolean nullsFirst = item.getNulls() == Nulls.First ? true : false;
 				@SuppressWarnings("rawtypes")
-				final Comparator<Object> cmp = new AccessorComparator<Object, Comparable>(
+				final Comparator<Object> cmpNulls = new AccessorComparator<Object, Comparable>(
 						ComparableComparator.getInstance(nullsFirst),
 						accessor);
 
-				final boolean reverse = item.getDirection() == Direction.Descending;
-				cmpChain.addComparator(cmp, reverse);
+				cmpChain.addComparator(cmpNulls);
 			}
 			comparator = cmpChain;
 		}

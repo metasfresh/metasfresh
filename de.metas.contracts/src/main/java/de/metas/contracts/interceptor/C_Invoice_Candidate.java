@@ -75,7 +75,8 @@ public class C_Invoice_Candidate
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void updateIsToClear(final I_C_Invoice_Candidate invoiceCand)
 	{
-		if ("Y".equals(invoiceCand.getProcessed_Override()))
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+		if(invoiceCandBL.extractProcessedOverride(invoiceCand).isTrue())
 		{
 			return; // #183 FRESH-511: nothing to check or update
 		}
@@ -158,7 +159,7 @@ public class C_Invoice_Candidate
 			if (invoiceCand.isToClear())
 			{
 				final List<I_C_Invoice_Clearing_Alloc> icas = flatrateDAO.retrieveClearingAllocs(invoiceCand);
-				Check.assume(icas.size() <= 1, invoiceCand + " has max 1 ica");
+				Check.assume(icas.size() <= 1, invoiceCand + " has max 1 C_Invoice_Clearing_Alloc");
 
 				if (!icas.isEmpty() && icas.get(0).getC_Flatrate_DataEntry_ID() > 0)
 				{

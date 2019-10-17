@@ -3,7 +3,6 @@ package de.metas.inoutcandidate.spi.impl;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.uom.api.impl.UOMTestHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
@@ -11,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.uom.impl.UOMTestHelper;
 
 public class HUReceiptLineCandidatesBuilderTest
 {
@@ -35,7 +35,7 @@ public class HUReceiptLineCandidatesBuilderTest
 		uomHelper = new UOMTestHelper(context.getCtx());
 		uom = uomHelper.createUOM("UOM1", 2);
 		receiptSchedule = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class, context);
-		receiptSchedule.setC_UOM(uom);
+		receiptSchedule.setC_UOM_ID(uom.getC_UOM_ID());
 		InterfaceWrapperHelper.save(receiptSchedule);
 	}
 
@@ -142,7 +142,7 @@ public class HUReceiptLineCandidatesBuilderTest
 				.copyFrom(aggregatedExpectations.aggregatedExpectation())
 				.endExpectation()
 			.assertExpected(huReceiptLineCandidatesBuilder);
-		;
+		
 		//@formatter:off
 	}
 

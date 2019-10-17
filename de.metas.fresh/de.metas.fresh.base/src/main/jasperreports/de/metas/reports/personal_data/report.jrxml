@@ -23,7 +23,7 @@
 			<textField>
 				<reportElement x="0" y="0" width="550" height="30" uuid="275e2f1a-45dc-427d-87d1-f570c398443c"/>
 				<textElement>
-					<font size="20" isBold="true"/>
+					<font size="20" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
 			</textField>
@@ -34,21 +34,21 @@
 			<textField>
 				<reportElement x="0" y="20" width="180" height="20" uuid="6c9f322d-bc09-4412-86c9-775dd69726bd"/>
 				<textElement>
-					<font size="12" isBold="true"/>
+					<font size="12" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{tablename}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="180" y="20" width="180" height="20" uuid="bc2400c6-25fa-45b3-bd39-33b9c6626b51"/>
 				<textElement>
-					<font size="12" isBold="true"/>
+					<font size="12" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{columnname}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="360" y="20" width="180" height="20" uuid="aad6fc43-427e-492a-9e20-8b4472f25789"/>
 				<textElement>
-					<font size="12" isBold="true"/>
+					<font size="12" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{category}]]></textFieldExpression>
 			</textField>

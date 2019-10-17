@@ -1,21 +1,28 @@
 package de.metas.material.event.pporder;
 
-import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.Instant;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_S_Resource;
-import org.compiere.util.Util;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.DocStatus;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.product.ResourceId;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -43,18 +50,19 @@ import lombok.Value;
  * #L%
  */
 @Value
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class PPOrder
 {
-	int orgId;
+	ClientAndOrgId clientAndOrgId;
 
 	/**
 	 * The {@link I_S_Resource#getS_Resource_ID()} of the plant, as specified by the respective product planning record.
 	 */
-	int plantId;
+	ResourceId plantId;
 
-	int warehouseId;
+	WarehouseId warehouseId;
 
-	int bPartnerId;
+	BPartnerId bpartnerId;
 
 	int productPlanningId;
 
@@ -63,7 +71,7 @@ public class PPOrder
 	 * When the material-dispo posts a {@link PPOrderRequestedEvent}, it contains a group-ID,
 	 * and the respective {@link PPOrderCreatedEvent} contains the same group-ID.
 	 */
-	int materialDispoGroupId;
+	MaterialDispoGroupId materialDispoGroupId;
 
 	ProductDescriptor productDescriptor;
 
@@ -77,17 +85,17 @@ public class PPOrder
 	 */
 	int ppOrderId;
 
-	String docStatus;
+	DocStatus docStatus;
 
 	/**
 	 * This is usually the respective supply candidates' date value.
 	 */
-	Date datePromised;
+	Instant datePromised;
 
 	/**
-	 * This is usually the respective demand candiates' date value.
+	 * This is usually the respective demand candidates' date value.
 	 */
-	Date dateStartSchedule;
+	Instant dateStartSchedule;
 
 	BigDecimal qtyRequired;
 
@@ -101,27 +109,27 @@ public class PPOrder
 	@JsonCreator
 	@Builder(toBuilder = true)
 	public PPOrder(
-			@JsonProperty("orgId") final int orgId,
-			@JsonProperty("plantId") final int plantId,
-			@JsonProperty("warehouseId") final int warehouseId,
-			@JsonProperty("bPartnerId") final int bPartnerId,
+			@JsonProperty("clientAndOrgId") @NonNull final ClientAndOrgId clientAndOrgId,
+			@JsonProperty("plantId") @NonNull final ResourceId plantId,
+			@JsonProperty("warehouseId") @NonNull final WarehouseId warehouseId,
+			@JsonProperty("bpartnerId") @Nullable final BPartnerId bpartnerId,
 			@JsonProperty("productPlanningId") final int productPlanningId,
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
 			@JsonProperty("orderLineId") final int orderLineId,
 			@JsonProperty("ppOrderId") final int ppOrderId,
-			@JsonProperty("docStatus") @Nullable final String docStatus,
-			@JsonProperty("datePromised") @NonNull final Date datePromised,
-			@JsonProperty("dateStartSchedule") @NonNull final Date dateStartSchedule,
+			@JsonProperty("docStatus") @Nullable final DocStatus docStatus,
+			@JsonProperty("datePromised") @NonNull final Instant datePromised,
+			@JsonProperty("dateStartSchedule") @NonNull final Instant dateStartSchedule,
 			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired,
 			@JsonProperty("qtyDelivered") @Nullable final BigDecimal qtyDelivered,
 			@JsonProperty("lines") @Singular final List<PPOrderLine> lines,
-			@JsonProperty("materialDispoGroupId") final int materialDispoGroupId)
+			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId)
 	{
-		this.orgId = checkIdGreaterThanZero("orgId", orgId);
-		this.plantId = checkIdGreaterThanZero("plantId", plantId);
-		this.warehouseId = checkIdGreaterThanZero("warehouseId", warehouseId);
+		this.clientAndOrgId = clientAndOrgId;
+		this.plantId = plantId;
+		this.warehouseId = warehouseId;
 
-		this.bPartnerId = bPartnerId;
+		this.bpartnerId = bpartnerId;
 		this.productPlanningId = productPlanningId; // ok to be not set
 		this.productDescriptor = productDescriptor;
 
@@ -132,10 +140,20 @@ public class PPOrder
 		this.dateStartSchedule = dateStartSchedule;
 
 		this.qtyRequired = qtyRequired;
-		this.qtyDelivered =Util.coalesce(qtyDelivered, ZERO);
+		this.qtyDelivered = CoalesceUtil.coalesce(qtyDelivered, ZERO);
 
 		this.lines = lines;
 
 		this.materialDispoGroupId = materialDispoGroupId;
+	}
+
+	public OrgId getOrgId()
+	{
+		return getClientAndOrgId().getOrgId();
+	}
+
+	public BigDecimal getQtyOpen()
+	{
+		return getQtyRequired().subtract(getQtyDelivered());
 	}
 }

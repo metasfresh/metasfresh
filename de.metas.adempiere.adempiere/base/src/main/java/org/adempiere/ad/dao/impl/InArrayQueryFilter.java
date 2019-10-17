@@ -23,11 +23,14 @@ package org.adempiere.ad.dao.impl;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
@@ -38,8 +41,9 @@ import org.compiere.util.DB;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
-
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 /**
@@ -65,7 +69,8 @@ import lombok.NonNull;
  *
  * @param <T>
  */
-public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
+@EqualsAndHashCode(exclude = { "sqlBuilt", "sqlWhereClause", "sqlParams" })
+public final class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
 	protected static final String SQL_TRUE = "1=1";
 	protected static final String SQL_FALSE = "1=0";
@@ -75,6 +80,10 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	private boolean defaultReturnWhenEmpty = true;
 	private boolean embedSqlParams = false;
 
+	private boolean sqlBuilt = false; // lazy
+	private String sqlWhereClause = null; // lazy
+	private List<Object> sqlParams = null; // lazy
+
 	/**
 	 * Creates filter that accepts a model if the given {@link code columnName} has one of the given {@code values}.
 	 *
@@ -83,27 +92,14 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	 */
 	public InArrayQueryFilter(@NonNull final String columnName, final Object... values)
 	{
-		this.columnName = columnName;
-
-		if (values == null || values.length == 0)
-		{
-			this.values = null;
-		}
-		else
-		{
-			this.values = new ArrayList<>(values.length);
-			for (final Object v : values)
-			{
-				this.values.add(v);
-			}
-		}
+		this(columnName, Arrays.asList(values));
 	}
 
 	/**
 	 * Creates filter that accepts a model if the given {@link code columnName} has one of the given {@code values}.
 	 *
 	 * @param columnName
-	 * @param values
+	 * @param values may also be {@link RepoIdAware}s
 	 */
 	public InArrayQueryFilter(@NonNull final String columnName, final Collection<? extends Object> values)
 	{
@@ -117,14 +113,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		{
 			this.values = values
 					.stream()
-					.map(value -> {
-						// map RepoIdAwares to their respective repoIds
-						if (value instanceof RepoIdAware)
-						{
-							return ((RepoIdAware)value).getRepoId();
-						}
-						return value;
-					})
+					.map(value -> normalizeValue(value))
 					.collect(Collectors.toCollection(ArrayList::new)); // note that guava's immutableList doesn't allow null values
 		}
 	}
@@ -198,11 +187,15 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		return false;
 	}
 
-	private static final Object normalizeValue(final Object value)
+	private static Object normalizeValue(@Nullable final Object value)
 	{
 		if (value instanceof RepoIdAware)
 		{
 			return ((RepoIdAware)value).getRepoId();
+		}
+		else if (value instanceof ReferenceListAwareEnum)
+		{
+			return ((ReferenceListAwareEnum)value).getCode();
 		}
 		else
 		{
@@ -236,11 +229,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		return values;
 	}
 
-	private boolean sqlBuilt = false;
-	private String sqlWhereClause = null;
-	private List<Object> sqlParams = null;
-
-	private final void buildSql()
+	private void buildSql()
 	{
 		if (sqlBuilt)
 		{

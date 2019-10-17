@@ -42,8 +42,7 @@ public class RejectPickingRequest
 	@NonNull
 	Quantity qtyToReject;
 
-	// NOTE: not null just because PickingCandidate.pickFromHuId is not null
-	@NonNull
+	@Nullable
 	HuId rejectPickingFromHuId;
 
 	@Nullable

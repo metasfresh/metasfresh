@@ -24,6 +24,7 @@ package de.metas.process;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -151,25 +152,25 @@ public class ProcessParams implements IRangeAwareParams
 	}
 
 	@Override
-	public final int getParameterAsInt(final String parameterName)
+	public final int getParameterAsInt(final String parameterName, final int defaultValue)
 	{
 		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
 		if (processInfoParameter == null)
 		{
-			return 0;
+			return defaultValue;
 		}
-		return processInfoParameter.getParameterAsInt();
+		return processInfoParameter.getParameterAsInt(defaultValue);
 	}
 
 	@Override
-	public int getParameter_ToAsInt(final String parameterName)
+	public int getParameter_ToAsInt(final String parameterName, final int defaultValue)
 	{
 		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
 		if (processInfoParameter == null)
 		{
-			return 0;
+			return defaultValue;
 		}
-		return processInfoParameter.getParameter_ToAsInt();
+		return processInfoParameter.getParameter_ToAsInt(defaultValue);
 	}
 
 	@Override
@@ -220,22 +221,28 @@ public class ProcessParams implements IRangeAwareParams
 	public final Timestamp getParameterAsTimestamp(final String parameterName)
 	{
 		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
-		if (processInfoParameter == null)
-		{
-			return null;
-		}
-		return processInfoParameter.getParameterAsTimestamp();
+		return processInfoParameter != null ? processInfoParameter.getParameterAsTimestamp() : null;
+	}
+
+	@Override
+	public LocalDate getParameterAsLocalDate(final String parameterName)
+	{
+		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
+		return processInfoParameter != null ? processInfoParameter.getParameterAsLocalDate() : null;
 	}
 
 	@Override
 	public Timestamp getParameter_ToAsTimestamp(final String parameterName)
 	{
 		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
-		if (processInfoParameter == null)
-		{
-			return null;
-		}
-		return processInfoParameter.getParameter_ToAsTimestamp();
+		return processInfoParameter != null ? processInfoParameter.getParameter_ToAsTimestamp() : null;
+	}
+
+	@Override
+	public LocalDate getParameter_ToAsLocalDate(final String parameterName)
+	{
+		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
+		return processInfoParameter != null ? processInfoParameter.getParameter_ToAsLocalDate() : null;
 	}
 
 	/**

@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import javax.swing.JFrame;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.compiere.apps.AEnv;
 import org.compiere.model.GridTab;
 import org.compiere.model.X_AD_Process;
@@ -44,7 +45,7 @@ public final class ProcessDialogBuilder
 	private int AD_Table_ID;
 	private int Record_ID;
 
-	private int AD_Window_ID = -1;
+	private AdWindowId adWindowId;
 
 	private boolean skipResultsPanel = false;
 	private IProcessExecutionListener processExecutionListener;
@@ -112,15 +113,15 @@ public final class ProcessDialogBuilder
 		return tabNo;
 	}
 
-	public ProcessDialogBuilder setAD_Window_ID(final int AD_Window_ID)
+	public ProcessDialogBuilder setAdWindowId(final AdWindowId adWindowId)
 	{
-		this.AD_Window_ID = AD_Window_ID;
+		this.adWindowId = adWindowId;
 		return this;
 	}
 
-	int getAD_Window_ID()
+	AdWindowId getAdWindowId()
 	{
-		return AD_Window_ID;
+		return adWindowId;
 	}
 
 	public ProcessDialogBuilder setAD_Process_ID(final int AD_Process_ID)
@@ -216,7 +217,7 @@ public final class ProcessDialogBuilder
 		final int tabNo = gridTab.getTabNo();
 		setWindowAndTabNo(windowNo, tabNo);
 
-		setAD_Window_ID(gridTab.getAD_Window_ID());
+		setAdWindowId(gridTab.getAdWindowId());
 
 		setIsSOTrx(Env.isSOTrx(gridTab.getCtx(), windowNo));
 		setTableAndRecord(gridTab.getAD_Table_ID(), gridTab.getRecord_ID());

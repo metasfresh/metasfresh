@@ -2,6 +2,9 @@ package de.metas.pricing.limit;
 
 import java.math.BigDecimal;
 
+import javax.annotation.Nullable;
+
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingContext;
 import lombok.Builder;
 import lombok.NonNull;
@@ -33,19 +36,19 @@ import lombok.Value;
 public class PriceLimitRuleContext
 {
 	IPricingContext pricingContext;
-	int paymentTermId;
+	PaymentTermId paymentTermId;
 	BigDecimal priceActual;
 	BigDecimal priceLimit;
 
 	@Builder
 	private PriceLimitRuleContext(
 			@NonNull final IPricingContext pricingContext,
-			final int paymentTermId,
+			@Nullable final PaymentTermId paymentTermId,
 			@NonNull final BigDecimal priceActual,
 			@NonNull final BigDecimal priceLimit)
 	{
 		this.pricingContext = pricingContext;
-		this.paymentTermId = paymentTermId > 0 ? paymentTermId : -1;
+		this.paymentTermId = paymentTermId;
 		this.priceActual = priceActual;
 		this.priceLimit = priceLimit;
 	}

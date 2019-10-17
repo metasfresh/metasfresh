@@ -1,7 +1,5 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.store;
 
-import lombok.NonNull;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -14,11 +12,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import de.metas.attachments.AttachmentConstants;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentTags;
 import de.metas.attachments.storeattachment.StoreAttachmentServiceImpl;
 import de.metas.cache.CCache;
+import de.metas.dunning_gateway.spi.DunningExportClientFactory;
 import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import de.metas.invoice_gateway.spi.model.BPartnerId;
 import de.metas.util.Check;
@@ -31,9 +30,10 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.Store
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.StoreConfigRepository;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.CrossVersionRequestConverter;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlPayload.PayloadMod;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.model.XmlRequest.RequestMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlPayload.PayloadMod;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest.RequestMod;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -106,22 +106,26 @@ public class StoreForumDatenaustauschAttachmentService implements StoreAttachmen
 
 	private Optional<StoreConfig> retrieveForAttachmentEntry0(@NonNull final AttachmentEntry attachmentEntry)
 	{
-		final boolean isDocument = attachmentEntry.hasTagSetToTrue(
-				AttachmentConstants.TAGNAME_IS_DOCUMENT);
+		final AttachmentTags tags = attachmentEntry.getTags();
+		final boolean isDocument = tags.hasTagSetToTrue(
+				AttachmentTags.TAGNAME_IS_DOCUMENT);
 		if (!isDocument)
 		{
 			return Optional.empty();
 		}
 
-		final boolean isForumDatenaustausch = attachmentEntry.hasTagSetToString(
+		final boolean isForumDatenaustauschInvoice = tags.hasTagSetToString(
 				InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER,
 				ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID);
-		if (!isForumDatenaustausch)
+		final boolean isForumDatenaustauschDunning = tags.hasTagSetToString(
+				DunningExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER,
+				ForumDatenaustauschChConstants.DUNNING_EXPORT_PROVIDER_ID);
+		if (!isForumDatenaustauschInvoice && !isForumDatenaustauschDunning)
 		{
 			return Optional.empty();
 		}
 
-		final String bPartnerIdStr = attachmentEntry.getTagValueOrNull(AttachmentConstants.TAGNAME_BPARTNER_RECIPIENT_ID);
+		final String bPartnerIdStr = tags.getTagValueOrNull(AttachmentTags.TAGNAME_BPARTNER_RECIPIENT_ID);
 		if (Check.isEmpty(bPartnerIdStr))
 		{
 			return Optional.empty();
@@ -152,9 +156,10 @@ public class StoreForumDatenaustauschAttachmentService implements StoreAttachmen
 	{
 		final boolean attachmentIsStoredForThefirstTime = !attachmentEntry
 				.getTags()
+				.toMap()
 				.keySet()
 				.stream()
-				.anyMatch(key -> key.startsWith(AttachmentConstants.TAGNAME_STORED_PREFIX));
+				.anyMatch(key -> key.startsWith(AttachmentTags.TAGNAME_STORED_PREFIX));
 
 		byte[] attachmentDataToStore;
 		if (attachmentIsStoredForThefirstTime)
@@ -188,7 +193,7 @@ public class StoreForumDatenaustauschAttachmentService implements StoreAttachmen
 
 		// get the converter to use
 		final String xsdName = XmlIntrospectionUtil.extractXsdValueOrNull(new ByteArrayInputStream(attachmentData));
-		final CrossVersionRequestConverter<?> converter = crossVersionServiceRegistry.getConverterForXsdName(xsdName);
+		final CrossVersionRequestConverter converter = crossVersionServiceRegistry.getRequestConverterForXsdName(xsdName);
 		Check.assumeNotNull(converter, "Missing CrossVersionRequestConverter for XSD={}; attachmentEntry={}", xsdName, attachmentEntry);
 
 		// convert to crossVersion data

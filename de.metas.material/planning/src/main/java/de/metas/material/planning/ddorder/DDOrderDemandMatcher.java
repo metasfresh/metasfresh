@@ -47,7 +47,7 @@ public class DDOrderDemandMatcher implements IMaterialDemandMatcher
 		// Check if there is a distribution network
 		if (productPlanning.getDD_NetworkDistribution_ID() <= 0)
 		{
-			Loggables.get().addLog(
+			Loggables.addLog(
 					"No distribution network configured in product data planning of the given mrp context; DDOrderDemandMatcher returns false; productPlanning={}; mrpContext={}",
 					productPlanning, mrpContext);
 			return false;

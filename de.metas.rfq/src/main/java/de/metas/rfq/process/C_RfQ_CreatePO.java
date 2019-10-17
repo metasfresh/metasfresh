@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.MOrder;
@@ -25,6 +24,7 @@ import de.metas.rfq.model.I_C_RfQLineQty;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -259,6 +259,6 @@ public class C_RfQ_CreatePO extends JavaProcess
 		final Quantity qtyOrdered = uomConversionBL.convertToProductUOM(
 				Quantity.of(rfqLineQty.getQty(), rfqLineQty.getC_UOM()),
 				productId);
-		ol.setQtyOrdered(qtyOrdered.getAsBigDecimal());
+		ol.setQtyOrdered(qtyOrdered.toBigDecimal());
 	}
 }

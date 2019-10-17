@@ -39,12 +39,12 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import com.google.common.base.MoreObjects.ToStringHelper;
 
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
-import de.metas.handlingunits.IMutableHUTransactionAttribute;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.attribute.PIAttributes;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.handlingunits.hutransaction.MutableHUTransactionAttribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -171,7 +171,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public void updateHUTrxAttribute(final IMutableHUTransactionAttribute huTrxAttribute, final IAttributeValue fromAttributeValue)
+	public void updateHUTrxAttribute(final MutableHUTransactionAttribute huTrxAttribute, final IAttributeValue fromAttributeValue)
 	{
 		huTrxAttribute.setReferencedObject(asi);
 	}

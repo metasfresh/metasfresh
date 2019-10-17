@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.print;
 
@@ -52,10 +52,10 @@ public final class ReportCtl
 	{
 		return new Builder();
 	}
-	
+
 	/** Static Logger */
 	private static final Logger logger = LogManager.getLogger(ReportCtl.class);
-	
+
 	private static ReportViewerProvider defaultReportEngineViewerProvider = re -> logger.warn("No {} registered to display {}", ReportViewerProvider.class, re);
 
 	private final ProcessInfo processInfo;
@@ -64,10 +64,8 @@ public final class ReportCtl
 
 	private ReportCtl(final Builder builder)
 	{
-		super();
 		this.processInfo = builder.getProcessInfo();
 	}
-
 
 	/**
 	 * Create Report.
@@ -76,7 +74,7 @@ public final class ReportCtl
 	{
 		logger.info("start - {}", processInfo);
 
-		final int adProcessId = processInfo.getAD_Process_ID();
+		final int adProcessId = processInfo.getAdProcessId().getRepoId();
 		final int reportEngineDocumentType = extractReportEngineDocumentType(adProcessId);
 
 		//
@@ -107,7 +105,7 @@ public final class ReportCtl
 			startStandardReport(processInfo, printerName);
 		}
 	}
-	
+
 	private String getPrinterName()
 	{
 		if (printerName == null)
@@ -116,7 +114,7 @@ public final class ReportCtl
 		}
 		return printerName.orElse(null);
 	}
-	
+
 	private final String findPrinterName()
 	{
 		String printerName = null;
@@ -231,7 +229,7 @@ public final class ReportCtl
 	{
 		// Create Query from Parameters
 		final Properties ctx = Env.getCtx();
-		final String TableName = pi.getAD_Process_ID() == 202 ? "T_Report" : "T_ReportStatement";
+		final String TableName = pi.getAdProcessId().getRepoId() == 202 ? "T_Report" : "T_ReportStatement";
 		final MQuery query = MQuery.get(ctx, pi.getPinstanceId(), TableName);
 
 		// Get PrintFormat
@@ -273,9 +271,9 @@ public final class ReportCtl
 					//
 					.setCtx(processInfo.getCtx())
 					.setCreateTemporaryCtx()
-					.setAD_Client_ID(processInfo.getAD_Client_ID())
-					.setAD_User_ID(processInfo.getAD_User_ID())
-					.setAD_Role_ID(processInfo.getAD_Role_ID())
+					.setClientId(processInfo.getClientId())
+					.setUserId(processInfo.getUserId())
+					.setRoleId(processInfo.getRoleId())
 					.setWhereClause(processInfo.getWhereClause())
 					.setWindowNo(processInfo.getWindowNo())
 					.setTabNo(processInfo.getTabNo())
@@ -293,7 +291,7 @@ public final class ReportCtl
 			//
 			// Throw exception in case of failure
 			jasperProcessResult.propagateErrorIfAny();
-			
+
 			//
 			// Update caller process result
 			final ProcessExecutionResult callerProcessResult = processInfo.getResult();
@@ -351,14 +349,13 @@ public final class ReportCtl
 	{
 		return defaultReportEngineViewerProvider;
 	}
-	
+
 	public static final class Builder
 	{
 		private ProcessInfo processInfo;
-		
+
 		private Builder()
 		{
-			super();
 		}
 
 		public ReportCtl start()
@@ -367,13 +364,13 @@ public final class ReportCtl
 			reportCtl.start();
 			return reportCtl;
 		}
-		
+
 		public Builder setProcessInfo(final ProcessInfo processInfo)
 		{
 			this.processInfo = processInfo;
 			return this;
 		}
-		
+
 		private ProcessInfo getProcessInfo()
 		{
 			Check.assumeNotNull(processInfo, "Parameter processInfo is not null");

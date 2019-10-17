@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 
 import javax.annotation.Nullable;
 
@@ -14,11 +13,9 @@ import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.ASICopy;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.OrgId;
+import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Locator;
@@ -27,6 +24,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
@@ -40,11 +38,18 @@ import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.springframework.stereotype.Service;
 
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ddorder.DDOrderUtil;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -72,8 +77,16 @@ import lombok.NonNull;
 @Service
 public class DDOrderProducer
 {
-	public static final ModelDynAttributeAccessor<I_DD_Order, Integer> ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID = //
-			new ModelDynAttributeAccessor<>(I_DD_Order.class.getName(), "DDOrderRequestedEvent_GroupId", Integer.class);
+	private final IDDOrderDAO ddOrdersRepo = Services.get(IDDOrderDAO.class);
+	private final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
+	private final IMRPBL mrpBL = Services.get(IMRPBL.class);
+	private final IMRPDAO mrpDAO = Services.get(IMRPDAO.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
+
+	public static final ModelDynAttributeAccessor<I_DD_Order, MaterialDispoGroupId> ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID = //
+			new ModelDynAttributeAccessor<>(I_DD_Order.class.getName(), "DDOrderRequestedEvent_GroupId", MaterialDispoGroupId.class);
 
 	public I_DD_Order createDDOrder(
 			@NonNull final DDOrder pojo,
@@ -93,55 +106,53 @@ public class DDOrderProducer
 
 	/**
 	 *
-	 * @param pojo
+	 * @param ddOrder
 	 * @param request may be {@code null}. If not-null, then the method also does some {@link I_PP_MRP} related stuff that is likely to become obsolete soon.
 	 * @return
 	 */
 	private I_DD_Order createDDOrder(
-			@NonNull final DDOrder pojo,
+			@NonNull final DDOrder ddOrder,
 			@NonNull final Date dateOrdered,
 			@Nullable final IMRPCreateSupplyRequest request)
 	{
-		final I_PP_Product_Planning productPlanning = InterfaceWrapperHelper.create(Env.getCtx(), pojo.getProductPlanningId(), I_PP_Product_Planning.class, ITrx.TRXNAME_ThreadInherited);
+		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(ddOrder.getProductPlanningId());
 
-		final int orgBPartnerId = DDOrderUtil.retrieveOrgBPartnerId(Env.getCtx(), pojo.getOrgId());
-		final int orgBPartnerLocationId = DDOrderUtil.retrieveOrgBPartnerLocationId(Env.getCtx(), pojo.getOrgId());
+		final BPartnerLocationId orgBPartnerLocationId = DDOrderUtil.retrieveOrgBPartnerLocationId(ddOrder.getOrgId());
 
 		final I_DD_Order ddOrderRecord = InterfaceWrapperHelper.newInstance(I_DD_Order.class);
-		ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID.setValue(ddOrderRecord, pojo.getMaterialDispoGroupId());
+		ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID.setValue(ddOrderRecord, ddOrder.getMaterialDispoGroupId());
 
-		ddOrderRecord.setAD_Org_ID(pojo.getOrgId());
+		ddOrderRecord.setAD_Org_ID(ddOrder.getOrgId().getRepoId());
 		ddOrderRecord.setMRP_Generated(true);
 		ddOrderRecord.setMRP_AllowCleanup(true);
-		ddOrderRecord.setAD_Org_ID(pojo.getOrgId());
-		ddOrderRecord.setPP_Plant_ID(pojo.getPlantId());
-		ddOrderRecord.setC_BPartner_ID(orgBPartnerId);
-		ddOrderRecord.setC_BPartner_Location_ID(orgBPartnerLocationId);
+		ddOrderRecord.setPP_Plant_ID(ddOrder.getPlantId());
+		ddOrderRecord.setC_BPartner_ID(orgBPartnerLocationId != null ? orgBPartnerLocationId.getBpartnerId().getRepoId() : -1);
+		ddOrderRecord.setC_BPartner_Location_ID(orgBPartnerLocationId != null ? orgBPartnerLocationId.getRepoId() : -1);
 		ddOrderRecord.setAD_User_ID(productPlanning.getPlanner_ID()); // FIXME: improve performances/cache and retrive Primary BP's User
 		ddOrderRecord.setSalesRep_ID(productPlanning.getPlanner_ID());
 
-		ddOrderRecord.setC_DocType_ID(getC_DocType_ID(pojo.getOrgId()));
+		ddOrderRecord.setC_DocType_ID(getDocTypeId(ddOrder.getOrgId()).getRepoId());
 
-		final WarehouseId inTransitWarehouseId = DDOrderUtil.retrieveInTransitWarehouseId(OrgId.ofRepoId(pojo.getOrgId()));
+		final WarehouseId inTransitWarehouseId = DDOrderUtil.retrieveInTransitWarehouseId(ddOrder.getOrgId());
 		ddOrderRecord.setM_Warehouse_ID(inTransitWarehouseId.getRepoId());
 
 		ddOrderRecord.setDocStatus(X_DD_Order.DOCSTATUS_Drafted);
 		ddOrderRecord.setDocAction(X_DD_Order.DOCACTION_Complete);
 		ddOrderRecord.setDateOrdered(new Timestamp(dateOrdered.getTime()));
-		ddOrderRecord.setDatePromised(new Timestamp(pojo.getDatePromised().getTime()));
-		ddOrderRecord.setM_Shipper_ID(pojo.getShipperId());
+		ddOrderRecord.setDatePromised(TimeUtil.asTimestamp(ddOrder.getDatePromised()));
+		ddOrderRecord.setM_Shipper_ID(ddOrder.getShipperId());
 		ddOrderRecord.setIsInDispute(false);
 		ddOrderRecord.setIsInTransit(false);
 
 		ddOrderRecord.setPP_Product_Planning_ID(productPlanning.getPP_Product_Planning_ID());
 
-		InterfaceWrapperHelper.save(ddOrderRecord);
+		ddOrdersRepo.save(ddOrderRecord);
 
-		for (final DDOrderLine linePojo : pojo.getLines())
+		for (final DDOrderLine linePojo : ddOrder.getLines())
 		{
 			// Create DD Order Line
 			final I_DD_OrderLine ddOrderline = InterfaceWrapperHelper.newInstance(I_DD_OrderLine.class, ddOrderRecord);
-			ddOrderline.setAD_Org_ID(pojo.getOrgId());
+			ddOrderline.setAD_Org_ID(ddOrder.getOrgId().getRepoId());
 			ddOrderline.setDD_Order(ddOrderRecord);
 			ddOrderline.setC_OrderLineSO_ID(linePojo.getSalesOrderLineId());
 			ddOrderline.setC_BPartner_ID(linePojo.getBPartnerId());
@@ -157,11 +168,11 @@ public class DDOrderProducer
 
 			// get supply source warehouse and locator
 			final I_M_Warehouse warehouseFrom = networkDistributionLine.getM_WarehouseSource();
-			final I_M_Locator locatorFrom = Services.get(IWarehouseBL.class).getDefaultLocator(warehouseFrom);
+			final I_M_Locator locatorFrom = warehouseBL.getDefaultLocator(warehouseFrom);
 
 			// get supply target warehouse and locator
 			final I_M_Warehouse warehouseTo = networkDistributionLine.getM_Warehouse();
-			final I_M_Locator locatorTo = Services.get(IWarehouseBL.class).getDefaultLocator(warehouseTo);
+			final I_M_Locator locatorTo = warehouseBL.getDefaultLocator(warehouseTo);
 
 			//
 			// Locator From/To
@@ -198,9 +209,7 @@ public class DDOrderProducer
 
 			//
 			// Save DD Order Line
-			InterfaceWrapperHelper.save(ddOrderline);
-
-			final IMRPDAO mrpDAO = Services.get(IMRPDAO.class);
+			ddOrdersRepo.save(ddOrderline);
 
 			if (request != null)
 			{
@@ -228,7 +237,7 @@ public class DDOrderProducer
 				{
 					mrp.setDateStartSchedule(supplyDateStartSchedule);
 					mrp.setDateFinishSchedule(supplyDateFinishSchedule);
-					InterfaceWrapperHelper.save(mrp);
+					mrpDAO.save(mrp);
 				}
 			}
 		}
@@ -240,8 +249,6 @@ public class DDOrderProducer
 			final I_DD_OrderLine ddOrderLine,
 			final I_PP_MRP_Alternative mrpAlternative)
 	{
-		final IMRPBL mrpBL = Services.get(IMRPBL.class);
-
 		final I_DD_OrderLine_Alternative ddOrderLineAlt = InterfaceWrapperHelper.newInstance(I_DD_OrderLine_Alternative.class, ddOrderLine);
 		ddOrderLineAlt.setAD_Org_ID(mrpAlternative.getAD_Org_ID());
 		ddOrderLineAlt.setDD_OrderLine(ddOrderLine);
@@ -257,17 +264,17 @@ public class DDOrderProducer
 		ddOrderLineAlt.setQtyDelivered(BigDecimal.ZERO);
 		ddOrderLineAlt.setQtyInTransit(BigDecimal.ZERO);
 
-		InterfaceWrapperHelper.save(ddOrderLineAlt);
+		ddOrdersRepo.save(ddOrderLineAlt);
 	}
 
-	private int getC_DocType_ID(final int orgId)
+	private DocTypeId getDocTypeId(final OrgId orgId)
 	{
-		final Properties ctx = Env.getCtx();
+		final ClientId clientId = orgDAO.getClientIdByOrgId(orgId);
 
-		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-		final I_AD_Org org = orgDAO.retrieveOrg(ctx, orgId);
-
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-		return docTypeDAO.getDocTypeId(ctx, X_C_DocType.DOCBASETYPE_ManufacturingOrder, org.getAD_Client_ID(), orgId, ITrx.TRXNAME_None);
+		return docTypesRepo.getDocTypeId(DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)
+				.adClientId(clientId.getRepoId())
+				.adOrgId(orgId.getRepoId())
+				.build());
 	}
 }

@@ -4,7 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.sql.Timestamp;
 import java.time.format.DateTimeFormatter;
 
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -58,7 +58,7 @@ public class DATEV_ExportFile extends JavaProcess implements IProcessPreconditio
 
 	public DATEV_ExportFile()
 	{
-		Adempiere.autowire(this);
+		SpringContextHolder.instance.autowire(this);
 	}
 
 	@Override

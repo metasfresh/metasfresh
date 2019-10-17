@@ -23,20 +23,20 @@ package de.metas.pricing;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.uom.UomId;
-
+import de.metas.currency.CurrencyPrecision;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
-
-import lombok.NonNull;
 
 /**
  * Result of a pricing calculation
@@ -44,8 +44,6 @@ import lombok.NonNull;
  */
 public interface IPricingResult
 {
-	int NO_PRECISION = -1;
-
 	CurrencyId getCurrencyId();
 
 	void setCurrencyId(CurrencyId currencyId);
@@ -55,14 +53,9 @@ public interface IPricingResult
 		return CurrencyId.toRepoId(getCurrencyId());
 	}
 
-	int getPrice_UOM_ID();
+	void setPriceUomId(final UomId uomId);
 
-	void setPrice_UOM_ID(int uomId);
-
-	default void setPriceUomId(@NonNull final UomId uomId)
-	{
-		setPrice_UOM_ID(uomId.getRepoId());
-	}
+	UomId getPriceUomId();
 
 	BigDecimal getPriceList();
 
@@ -76,21 +69,20 @@ public interface IPricingResult
 
 	void setPriceLimit(BigDecimal priceLimit);
 
-	boolean isEnforcePriceLimit();
+	BooleanWithReason getEnforcePriceLimit();
 
-	void setEnforcePriceLimit(boolean enforcePriceLimit);
+	void setEnforcePriceLimit(BooleanWithReason enforcePriceLimit);
 
 	/**
-	 *
 	 * @return discount (between 0 and 100); never null
 	 */
 	Percent getDiscount();
 
 	void setDiscount(Percent discount);
 
-	int getPrecision();
+	CurrencyPrecision getPrecision();
 
-	void setPrecision(int precision);
+	void setPrecision(CurrencyPrecision precision);
 
 	boolean isTaxIncluded();
 
@@ -105,7 +97,6 @@ public interface IPricingResult
 	void setDisallowDiscount(boolean disallowDiscount);
 
 	/**
-	 *
 	 * @return true if the price was calculated successfully
 	 */
 	boolean isCalculated();
@@ -130,11 +121,9 @@ public interface IPricingResult
 
 	void addPricingRuleApplied(IPricingRule rule);
 
-	List<IPricingRule> getPricingRulesApplied();
+	TaxCategoryId getTaxCategoryId();
 
-	int getC_TaxCategory_ID();
-
-	void setC_TaxCategory_ID(int C_TaxCategory_ID);
+	void setTaxCategoryId(TaxCategoryId taxCategoryId);
 
 	ProductId getProductId();
 
@@ -160,14 +149,7 @@ public interface IPricingResult
 	 *
 	 * @return the timestamp that was relevant for the price calculation.
 	 */
-	Timestamp getPriceDate();
-
-	/**
-	 * See {@link #getPriceDate()}.
-	 *
-	 * @param priceDate
-	 */
-	void setPriceDate(Timestamp priceDate);
+	LocalDate getPriceDate();
 
 	boolean isPriceEditable();
 
@@ -176,4 +158,9 @@ public interface IPricingResult
 	boolean isDiscountEditable();
 
 	void setDiscountEditable(boolean isDiscountEditable);
+
+	/** This info is contained in the pricing master data; it's not relevant for the price per unit, but to compute the invoicable quantity.*/
+	InvoicableQtyBasedOn getInvoicableQtyBasedOn();
+
+	void setInvoicableQtyBasedOn(InvoicableQtyBasedOn invoicableQtyBasedOn);
 }

@@ -8,11 +8,11 @@ import java.util.Map;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.eevolution.model.I_PP_Cost_Collector;
-import org.eevolution.model.I_PP_Order;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 
@@ -38,7 +38,7 @@ public class PlainPPOrderMInOutLineRetrievalService implements IPPOrderMInOutLin
 	}
 
 	@Override
-	public Map<Integer, BigDecimal> retrieveIolAndQty(I_PP_Order ppOrder)
+	public Map<Integer, BigDecimal> retrieveIolAndQty(PPOrderId ppOrderId)
 	{
 		//TODO : this part shall be tested too
 		return Collections.emptyMap();

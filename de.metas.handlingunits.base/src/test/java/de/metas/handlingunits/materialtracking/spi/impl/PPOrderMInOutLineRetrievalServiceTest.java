@@ -1,5 +1,7 @@
 package de.metas.handlingunits.materialtracking.spi.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -14,10 +16,9 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
+import org.eevolution.api.CostCollectorType;
 import org.eevolution.model.I_PP_Cost_Collector;
-import org.eevolution.model.X_PP_Cost_Collector;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -106,8 +107,8 @@ public class PPOrderMInOutLineRetrievalServiceTest
 
 		{
 			reversedLines = createReceiptInOutLines(IDocument.STATUS_Reversed);
-			assertThat(reversedLines.get(0).getM_Product(), is(helper.pTomato));
-			assertThat(reversedLines.get(1).getM_Product(), is(helper.pSalad));
+			assertThat(reversedLines.get(0).getM_Product_ID(), is(helper.pTomato.getM_Product_ID()));
+			assertThat(reversedLines.get(1).getM_Product_ID(), is(helper.pSalad.getM_Product_ID()));
 
 			reversedLineTomatoHU = createLU(helper.pTomatoProductId, new BigDecimal("20"));
 			assertThat(handlingUnitsBL.isTopLevel(reversedLineTomatoHU), is(true));
@@ -148,7 +149,7 @@ public class PPOrderMInOutLineRetrievalServiceTest
 
 		final I_PP_Cost_Collector issueCostCollectorTomato;
 		{
-			issueCostCollectorTomato = createCostCollector(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, helper.pTomato);
+			issueCostCollectorTomato = createCostCollector(CostCollectorType.ComponentIssue, helper.pTomatoProductId);
 
 			createAssignments(
 					issueCostCollectorTomato,
@@ -161,7 +162,7 @@ public class PPOrderMInOutLineRetrievalServiceTest
 
 		final I_PP_Cost_Collector issueCostCollectorSalad;
 		{
-			issueCostCollectorSalad = createCostCollector(X_PP_Cost_Collector.COSTCOLLECTORTYPE_ComponentIssue, helper.pSalad);
+			issueCostCollectorSalad = createCostCollector(CostCollectorType.ComponentIssue, helper.pSaladProductId);
 
 			createAssignments(
 					issueCostCollectorSalad,
@@ -238,24 +239,24 @@ public class PPOrderMInOutLineRetrievalServiceTest
 		final I_M_InOutLine iol1 = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class);
 		iol1.setM_InOut(io);
 		iol1.setLine(10);
-		iol1.setM_Product(helper.pTomato);
+		iol1.setM_Product_ID(helper.pTomato.getM_Product_ID());
 		InterfaceWrapperHelper.save(iol1);
 
 		final I_M_InOutLine iol2 = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class);
 		iol2.setM_InOut(io);
 		iol2.setLine(20);
-		iol2.setM_Product(helper.pSalad);
+		iol2.setM_Product_ID(helper.pSalad.getM_Product_ID());
 		InterfaceWrapperHelper.save(iol2);
 
 		return ImmutableList.<I_M_InOutLine> of(iol1, iol2);
 	}
 
-	private I_PP_Cost_Collector createCostCollector(final String costCollectorType, final I_M_Product product)
+	private I_PP_Cost_Collector createCostCollector(final CostCollectorType costCollectorType, final ProductId productId)
 	{
-		final I_PP_Cost_Collector cc = InterfaceWrapperHelper.newInstance(I_PP_Cost_Collector.class);
-		cc.setCostCollectorType(costCollectorType);
-		cc.setM_Product(product);
-		InterfaceWrapperHelper.save(cc);
+		final I_PP_Cost_Collector cc = newInstance(I_PP_Cost_Collector.class);
+		cc.setCostCollectorType(costCollectorType.getCode());
+		cc.setM_Product_ID(productId.getRepoId());
+		saveRecord(cc);
 
 		return cc;
 	}

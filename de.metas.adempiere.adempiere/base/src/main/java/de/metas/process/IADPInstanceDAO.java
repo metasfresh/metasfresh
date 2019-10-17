@@ -23,7 +23,6 @@ package de.metas.process;
  */
 
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -38,7 +37,7 @@ public interface IADPInstanceDAO extends ISingletonService
 	 *
 	 * @param pi
 	 * @see #saveProcessInfoOnly(ProcessInfo)
-	 * @see #saveParameterToDB(int, List)
+	 * @see #saveParameterToDB(PInstanceId, List)
 	 */
 	void saveProcessInfo(ProcessInfo pi);
 
@@ -85,24 +84,19 @@ public interface IADPInstanceDAO extends ISingletonService
 	List<ProcessInfoLog> retrieveProcessInfoLogs(PInstanceId pinstanceId);
 
 	/**
-	 * Creates a new AD_PInstance_ID.
+	 * Creates a new selection ID (AD_PInstance_ID).
 	 *
 	 * IMPORTANT: <b>this method is NOT creating an {@link I_AD_PInstance} record.</b>
-	 * If you want to create an {@link I_AD_PInstance}, please use {@link #createAD_PInstance(Properties, int, int, int)}.
+	 * If you want to create an {@link I_AD_PInstance}, please use {@link #createAD_PInstance(AdProcessId)}.
 	 *
 	 * @return new AD_PInstance_ID
 	 */
-	PInstanceId createPInstanceId();
+	PInstanceId createSelectionId();
 
 	/**
 	 * Creates and saves a new AD_PInstance.
-	 *
-	 * @param AD_Process_ID
-	 * @param AD_Table_ID
-	 * @param recordId
-	 * @return
 	 */
-	I_AD_PInstance createAD_PInstance(int AD_Process_ID, int AD_Table_ID, int recordId);
+	I_AD_PInstance createAD_PInstance(AdProcessId adProcessId);
 
 	/**
 	 * @return process instance; never returns null
@@ -112,4 +106,6 @@ public interface IADPInstanceDAO extends ISingletonService
 	Set<TableRecordReference> retrieveSelectedIncludedRecords(PInstanceId pinstanceId);
 
 	void saveSelectedIncludedRecords(PInstanceId pinstanceId, Set<TableRecordReference> recordRefs);
+
+	PInstanceId createADPinstanceAndADPInstancePara(PInstanceRequest pinstanceRequest);
 }

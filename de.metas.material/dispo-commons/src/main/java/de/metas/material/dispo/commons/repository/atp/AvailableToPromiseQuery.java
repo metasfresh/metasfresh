@@ -1,6 +1,6 @@
 package de.metas.material.dispo.commons.repository.atp;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -8,12 +8,14 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.commons.attributes.AttributesKeyPattern;
+import de.metas.material.commons.attributes.AttributesKeyPatterns;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.util.Check;
 import de.metas.util.time.SystemTime;
@@ -51,61 +53,46 @@ public class AvailableToPromiseQuery
 	{
 		return AvailableToPromiseQuery.builder()
 				.warehouseId(materialDescriptor.getWarehouseId())
-				.date(TimeUtil.asLocalDateTime(materialDescriptor.getDate()))
+				.date(TimeUtil.asZonedDateTime(materialDescriptor.getDate()))
 				.productId(materialDescriptor.getProductId())
-				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
-				.bpartnerId(materialDescriptor.getCustomerId())
+				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(materialDescriptor.getStorageAttributesKey()))
+				.bpartner(BPartnerClassifier.specificOrNone(materialDescriptor.getCustomerId()))
 				.build();
 	}
 
-	ImmutableSet<Integer> warehouseIds;
+	ImmutableSet<WarehouseId> warehouseIds;
 
 	/** optional; if null, then "now" is used */
-	LocalDateTime date;
+	ZonedDateTime date;
 
 	ImmutableList<Integer> productIds;
-	ImmutableList<AttributesKey> storageAttributesKeys;
+	ImmutableList<AttributesKeyPattern> storageAttributesKeyPatterns;
 
-	public static final int BPARTNER_ID_ANY = -1;
-	public static final int BPARTNER_ID_NONE = -2;
-
-	/** null means "none" */
-	private final int bpartnerId;
+	BPartnerClassifier bpartner;
 
 	@Builder(toBuilder = true)
 	private AvailableToPromiseQuery(
-			@Singular final Set<Integer> warehouseIds,
-			@Nullable final LocalDateTime date,
+			@Singular final Set<WarehouseId> warehouseIds,
+			@Nullable final ZonedDateTime date,
 			@Singular final List<Integer> productIds,
-			@Singular final List<AttributesKey> storageAttributesKeys,
-			final int bpartnerId)
+			@Singular final List<AttributesKeyPattern> storageAttributesKeyPatterns,
+			@Nullable final BPartnerClassifier bpartner)
 	{
 		Check.assumeNotEmpty(productIds, "productIds is not empty");
 
 		this.warehouseIds = warehouseIds == null || warehouseIds.isEmpty() ? ImmutableSet.of() : ImmutableSet.copyOf(warehouseIds);
-		this.date = date != null ? date : SystemTime.asLocalDateTime();
+		this.date = date != null ? date : SystemTime.asZonedDateTime();
 		this.productIds = ImmutableList.copyOf(productIds);
-		this.storageAttributesKeys = ImmutableList.copyOf(storageAttributesKeys);
-
-		final boolean bPartnerIdIsSpecified = bpartnerId == BPARTNER_ID_ANY
-				|| bpartnerId == BPARTNER_ID_NONE
-				|| bpartnerId > 0;
-		if (bPartnerIdIsSpecified)
-		{
-			this.bpartnerId = bpartnerId;
-		}
-		else // default, including 0; bpartnerId was not specified on build time
-		{
-			this.bpartnerId = BPARTNER_ID_NONE;
-		}
+		this.storageAttributesKeyPatterns = ImmutableList.copyOf(storageAttributesKeyPatterns);
+		this.bpartner = bpartner != null ? bpartner : BPartnerClassifier.none();
 	}
 
 	public AvailableToPromiseQuery withDate(@NonNull final Date newDate)
 	{
-		return withDateTime(TimeUtil.asLocalDateTime(newDate));
+		return withDateTime(TimeUtil.asZonedDateTime(newDate));
 	}
 
-	public AvailableToPromiseQuery withDateTime(@NonNull final LocalDateTime newDate)
+	public AvailableToPromiseQuery withDateTime(@NonNull final ZonedDateTime newDate)
 	{
 		if (Objects.equals(this.date, newDate))
 		{
@@ -113,21 +100,4 @@ public class AvailableToPromiseQuery
 		}
 		return toBuilder().date(newDate).build();
 	}
-
-	public boolean isBPartnerMatching(final int bpartnerIdToMatch)
-	{
-		return isBPartnerMatching(bpartnerId, bpartnerIdToMatch);
-	}
-
-	public static boolean isBPartnerMatching(final int bpartnerId, final int bpartnerIdToMatch)
-	{
-		final boolean bpartnerIdMatchesEveryBPartnerIdToMatch = bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_ANY;
-		final boolean bpartnerIdToMatchMatchesAnyBPartnerId = bpartnerIdToMatch == AvailableToPromiseQuery.BPARTNER_ID_ANY;
-
-		return bpartnerIdMatchesEveryBPartnerIdToMatch
-				|| bpartnerIdToMatchMatchesAnyBPartnerId
-				|| (bpartnerId == AvailableToPromiseQuery.BPARTNER_ID_NONE && bpartnerIdToMatch <= 0)
-				|| (bpartnerId == bpartnerIdToMatch);
-	}
-
 }

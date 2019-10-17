@@ -4,15 +4,14 @@ import java.util.Collection;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.model.I_AD_Issue;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
-import de.metas.event.Event;
-import de.metas.event.log.impl.EventLogEntryCollector;
-import de.metas.event.log.impl.EventLogLoggable;
+import com.google.common.annotations.VisibleForTesting;
+
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -53,16 +52,15 @@ import lombok.Value;
 @Service
 public class EventLogUserService
 {
-	public static final String PROPERTY_PROCESSED_BY_HANDLER_CLASS_NAMES = "EventStore_ProcessedByHandlerClassNames";
-
-	public static final String PROPERTY_STORE_THIS_EVENT = "EventStore_StoreThisEvent";
+	@VisibleForTesting
+	static final String PROPERTY_PROCESSED_BY_HANDLER_CLASS_NAMES = "EventStore_ProcessedByHandlerClassNames";
 
 	@Value
 	public static class EventLogEntryRequest
 	{
 		boolean processed;
 		boolean error;
-		int adIssueId;
+		AdIssueId adIssueId;
 		String message;
 		Class<?> eventHandlerClass;
 
@@ -73,7 +71,7 @@ public class EventLogUserService
 		public EventLogEntryRequest(
 				final boolean processed,
 				final boolean error,
-				final int adIssueId,
+				final AdIssueId adIssueId,
 				@Nullable final String message, Class<?> eventHandlerClass)
 		{
 			this.processed = processed;
@@ -102,23 +100,6 @@ public class EventLogUserService
 	}
 
 	/**
-	 * Before <b>posting</b> an event, you can use this method to tell the system, that the event shall be stored.
-	 * <p>
-	 * Note: even if an event was not prepared by this method, you can still store log messages,
-	 * but there won't be event data needed to <i>replay</i> the event in question.
-	 *
-	 * @param eventbuilder
-	 * @param adviseValue
-	 * @return
-	 */
-	public Event.Builder addEventLogAdvise(
-			@NonNull final Event.Builder eventbuilder,
-			final boolean adviseValue)
-	{
-		return eventbuilder.putProperty(PROPERTY_STORE_THIS_EVENT, adviseValue);
-	}
-
-	/**
 	 * Creates a builder to log a message to the current event processing log.
 	 * <p>
 	 * Note: as your current code was most probably invoked via {@link #invokeHandlerAndLog(InvokeHandlerandLogRequest)},
@@ -144,13 +125,13 @@ public class EventLogUserService
 			@NonNull final Class<?> handlerClass,
 			@NonNull final Exception e)
 	{
-		final I_AD_Issue issue = Services.get(IErrorManager.class).createIssue(e);
+		final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(e);
 
 		return EventLogEntryRequest.builder()
 				.error(true)
 				.eventHandlerClass(handlerClass)
 				.message(e.getMessage())
-				.adIssueId(issue.getAD_Issue_ID());
+				.adIssueId(issueId);
 	}
 
 	@Value
@@ -183,13 +164,16 @@ public class EventLogUserService
 			request.getInvokaction().run();
 
 			newLogEntry(request.getHandlerClass())
+					.formattedMessage("this handler is done")
 					.processed(true)
 					.createAndStore();
 		}
 		catch (final RuntimeException e)
 		{
-			newErrorLogEntry(request.getHandlerClass(), e)
-					.createAndStore();
+			// e.printStackTrace();
+			newErrorLogEntry(
+					request.getHandlerClass(), e)
+							.createAndStore();
 		}
 	}
 

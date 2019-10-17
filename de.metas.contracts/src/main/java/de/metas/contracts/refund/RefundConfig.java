@@ -1,16 +1,18 @@
 package de.metas.contracts.refund;
 
+import static de.metas.util.Check.fail;
+
 import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
 
 import de.metas.contracts.ConditionsId;
+import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -52,18 +54,23 @@ public class RefundConfig
 
 	public enum RefundMode
 	{
-		/** The config matching the respective minQty is applied only to the part that exceeds that quantity. */
+		/**
+		 * The config matching the respective minQty is applied only to the part that exceeds that quantity.
+		 * A.k.a {@link X_C_Flatrate_RefundConfig#REFUNDMODE_Tiered}
+		 */
 		APPLY_TO_EXCEEDING_QTY,
 
-		/** The config matching the respective minQty is applied to all assignments. */
+		/**
+		 * The config matching the respective minQty is applied to all assignments.
+		 * A.k.a {@link X_C_Flatrate_RefundConfig#REFUNDMODE_Accumulated}
+		 */
 		APPLY_TO_ALL_QTIES;
 	}
-
 
 	RefundConfigId id;
 
 	/**
-	 *  Why BigDecimal and not Quantity: this config might apply to "any" product (if productId == null). The quantity's UOM is always the uom of the respective product.
+	 * Why BigDecimal and not Quantity: this config might apply to "any" product (if productId == null). The quantity's UOM is always the uom of the respective product.
 	 */
 	BigDecimal minQty;
 
@@ -83,7 +90,6 @@ public class RefundConfig
 	ConditionsId conditionsId;
 
 	boolean useInProfitCalculation;
-
 
 	RefundMode refundMode;
 
@@ -108,22 +114,27 @@ public class RefundConfig
 		this.invoiceSchedule = invoiceSchedule;
 		this.conditionsId = conditionsId;
 		this.useInProfitCalculation = useInProfitCalculation;
+		this.refundMode = refundMode;
 
-		if (RefundBase.PERCENTAGE.equals(refundBase))
+		switch (refundBase)
 		{
-			this.amount = null;
-			this.percent = Check.assumeNotNull(percent, "If parameter 'refundBase'={}, then parameter 'percent' may not be null", RefundBase.PERCENTAGE);
-		}
-		else
-		{
-			this.amount = Check.assumeNotNull(amount, "If parameter 'refundBase'={}, then parameter 'amount' may not be null", RefundBase.AMOUNT_PER_UNIT);
-			this.percent = null;
+			case PERCENTAGE:
+				this.amount = null;
+				this.percent = Check.assumeNotNull(percent, "If parameter 'refundBase'={}, then parameter 'percent' may not be null; this={}", RefundBase.PERCENTAGE, this);
+				break;
+			case AMOUNT_PER_UNIT:
+				this.amount = Check.assumeNotNull(amount, "If parameter 'refundBase'={}, then parameter 'amount' may not be null; this={}", RefundBase.AMOUNT_PER_UNIT, this);
+				this.percent = null;
+				break;
+			default:
+				fail("Unexpected refundBase={}", refundBase);
+				this.amount = null;
+				this.percent = null;
+				break;
 		}
 
 		Check.errorIf(minQty.signum() < 0, "Parameter 'minQty' may not be negative; minQty={}", minQty);
 		this.minQty = minQty;
-
-		this.refundMode = refundMode;
 
 		Check.errorIf(invoiceSchedule == null && !isZeroConfig(),
 				"Parameter invoiceSchedule may not be null, unless both amount, percent and minQty are null/zero");

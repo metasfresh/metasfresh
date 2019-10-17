@@ -1,6 +1,8 @@
 package de.metas.tourplanning.callout;
 
-import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 /*
  * #%L
@@ -31,6 +33,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.order.IOrderBL;
 import de.metas.tourplanning.api.IOrderDeliveryDayBL;
 import de.metas.util.Services;
 
@@ -52,7 +55,7 @@ public class C_Order
 			return;
 		}
 
-		final Timestamp dateOrdered = order.getDateOrdered();
+		final LocalDate dateOrdered = TimeUtil.asLocalDate(order.getDateOrdered());
 		if (dateOrdered == null)
 		{
 			return;
@@ -64,8 +67,12 @@ public class C_Order
 			return;
 		}
 
-		final Timestamp datePromised = TimeUtil.addDays(dateOrdered, datePromisedOffsetDays);
-		order.setDatePromised(datePromised);
+		final ZoneId timeZone = Services.get(IOrderBL.class).getTimeZone(order);
+
+		final ZonedDateTime datePromised = dateOrdered
+				.plusDays(datePromisedOffsetDays)
+				.atStartOfDay(timeZone);
+		order.setDatePromised(TimeUtil.asTimestamp(datePromised));
 	}
 
 	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_C_BPartner_Location_ID, I_C_Order.COLUMNNAME_DatePromised })

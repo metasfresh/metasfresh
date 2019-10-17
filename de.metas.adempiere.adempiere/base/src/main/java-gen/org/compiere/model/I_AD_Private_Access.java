@@ -69,10 +69,33 @@ public interface I_AD_Private_Access
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set AD_Private_Access.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Private_Access_ID (int AD_Private_Access_ID);
+
+	/**
+	 * Get AD_Private_Access.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Private_Access_ID();
+
+    /** Column definition for AD_Private_Access_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Private_Access, Object> COLUMN_AD_Private_Access_ID = new org.adempiere.model.ModelColumn<I_AD_Private_Access, Object>(I_AD_Private_Access.class, "AD_Private_Access_ID", null);
+    /** Column name AD_Private_Access_ID */
+    public static final String COLUMNNAME_AD_Private_Access_ID = "AD_Private_Access_ID";
+
+	/**
 	 * Set DB-Tabelle.
 	 * Database Table information
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -82,7 +105,7 @@ public interface I_AD_Private_Access
 	 * Get DB-Tabelle.
 	 * Database Table information
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -101,8 +124,8 @@ public interface I_AD_Private_Access
 	 * Set Ansprechpartner.
 	 * User within the system - Internal or Business Partner Contact
 	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setAD_User_ID (int AD_User_ID);
@@ -111,8 +134,8 @@ public interface I_AD_Private_Access
 	 * Get Ansprechpartner.
 	 * User within the system - Internal or Business Partner Contact
 	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_User_ID();
@@ -125,6 +148,33 @@ public interface I_AD_Private_Access
     public static final org.adempiere.model.ModelColumn<I_AD_Private_Access, org.compiere.model.I_AD_User> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<I_AD_Private_Access, org.compiere.model.I_AD_User>(I_AD_Private_Access.class, "AD_User_ID", org.compiere.model.I_AD_User.class);
     /** Column name AD_User_ID */
     public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
+
+	/**
+	 * Set Nutzergruppe.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_UserGroup_ID (int AD_UserGroup_ID);
+
+	/**
+	 * Get Nutzergruppe.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_UserGroup_ID();
+
+	public org.compiere.model.I_AD_UserGroup getAD_UserGroup();
+
+	public void setAD_UserGroup(org.compiere.model.I_AD_UserGroup AD_UserGroup);
+
+    /** Column definition for AD_UserGroup_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Private_Access, org.compiere.model.I_AD_UserGroup> COLUMN_AD_UserGroup_ID = new org.adempiere.model.ModelColumn<I_AD_Private_Access, org.compiere.model.I_AD_UserGroup>(I_AD_Private_Access.class, "AD_UserGroup_ID", org.compiere.model.I_AD_UserGroup.class);
+    /** Column name AD_UserGroup_ID */
+    public static final String COLUMNNAME_AD_UserGroup_ID = "AD_UserGroup_ID";
 
 	/**
 	 * Get Erstellt.

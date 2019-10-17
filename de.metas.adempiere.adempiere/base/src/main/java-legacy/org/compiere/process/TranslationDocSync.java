@@ -19,15 +19,18 @@ package org.compiere.process;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import org.compiere.model.MClient;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.IClientDAO;
 import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
-import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 
 
 /**
@@ -41,16 +44,21 @@ public class TranslationDocSync extends JavaProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
-		for (int i = 0; i < para.length; i++)
+		for (ProcessInfoParameter element : para)
 		{
-			String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
-				;
+			String name = element.getParameterName();
+			if (element.getParameter() == null)
+			{
+				
+			}
 			else
+			{
 				log.error("Unknown Parameter: " + name);
+			}
 		}
 	}	//	prepare
 
@@ -59,13 +67,15 @@ public class TranslationDocSync extends JavaProcess
 	 *  @return Message
 	 *  @throws Exception
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
-		MClient client = MClient.get(getCtx());
-		if (client.isMultiLingualDocument())
-			throw new AdempiereUserError("@AD_Client_ID@: @IsMultiLingualDocument@");
+		final ClientId clientId = ClientId.ofRepoId(getAD_Client_ID());
+		if(Services.get(IClientDAO.class).isMultilingualDocumentsEnabled(clientId))
+		{
+			throw new AdempiereException("@AD_Client_ID@: @IsMultiLingualDocument@");
+		}
 		//
-		log.info("" + client);
 		String sql = "SELECT * FROM AD_Table "
 			+ "WHERE TableName LIKE '%_Trl' AND TableName NOT LIKE 'AD%' "
 			+ "ORDER BY TableName";
@@ -77,7 +87,7 @@ public class TranslationDocSync extends JavaProcess
 			rs = pstmt.executeQuery ();
 			while (rs.next ())
 			{
-				processTable (new MTable(getCtx(), rs, null), client.getAD_Client_ID());
+				processTable (new MTable(getCtx(), rs, null), clientId);
 			}
 		}
 		catch (Exception e)
@@ -98,19 +108,20 @@ public class TranslationDocSync extends JavaProcess
 	 * 	Process Translation Table
 	 *	@param table table
 	 */
-	private void processTable (MTable table, int AD_Client_ID)
+	private void processTable (MTable table, ClientId clientId)
 	{
 		StringBuffer sql = new StringBuffer();
 		MColumn[] columns = table.getColumns(false);
-		for (int i = 0; i < columns.length; i++)
+		for (MColumn column : columns)
 		{
-			MColumn column = columns[i];
 			if (column.getAD_Reference_ID() == DisplayType.String
 				|| column.getAD_Reference_ID() == DisplayType.Text)
 			{
 				String columnName = column.getColumnName();
 				if (sql.length() != 0)
+				{
 					sql.append(",");
+				}
 				sql.append(columnName);
 			}
 		}
@@ -125,7 +136,7 @@ public class TranslationDocSync extends JavaProcess
 			.append(columnNames).append(") = (SELECT ").append(columnNames)
 			.append(" FROM ").append(baseTable).append(" b WHERE t.")
 			.append(baseTable).append("_ID=b.").append(baseTable).append("_ID) WHERE AD_Client_ID=")
-			.append(AD_Client_ID);
+			.append(clientId.getRepoId());
 		
 		int no = DB.executeUpdate(DB.convertSqlToNative(sql.toString()), get_TrxName());
 		addLog(0, null, new BigDecimal(no), baseTable);

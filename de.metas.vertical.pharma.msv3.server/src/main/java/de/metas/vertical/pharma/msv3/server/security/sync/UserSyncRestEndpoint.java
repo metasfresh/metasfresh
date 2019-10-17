@@ -75,7 +75,7 @@ public class UserSyncRestEndpoint
 
 	private MSV3UserChangedEvent toMSV3UserChangedEvent(final MSV3User user)
 	{
-		return MSV3UserChangedEvent.prepareCreatedOrUpdatedEvent()
+		return MSV3UserChangedEvent.prepareCreatedOrUpdatedEvent(user.getMetasfreshMSV3UserId())
 				.username(user.getUsername())
 				.password("N/A")
 				.bpartnerId(user.getBpartnerId().getBpartnerId())

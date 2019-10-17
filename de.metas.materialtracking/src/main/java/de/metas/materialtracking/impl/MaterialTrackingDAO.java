@@ -1,5 +1,7 @@
 package de.metas.materialtracking.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+
 /*
  * #%L
  * de.metas.materialtracking
@@ -13,11 +15,11 @@ package de.metas.materialtracking.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -33,28 +35,33 @@ import org.adempiere.ad.dao.IQueryOrderByBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Period;
-import org.compiere.model.I_M_AttributeValue;
 import org.eevolution.model.I_PP_Order;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.IMaterialTrackingQuery;
 import de.metas.materialtracking.IMaterialTrackingQuery.OnMoreThanOneFound;
+import de.metas.materialtracking.MaterialTrackingId;
 import de.metas.materialtracking.ch.lagerkonf.interfaces.I_C_Flatrate_Conditions;
-import de.metas.materialtracking.ch.lagerkonf.interfaces.I_M_Material_Tracking;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report_Line;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_Version;
 import de.metas.materialtracking.model.IMaterialTrackingAware;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class MaterialTrackingDAO implements IMaterialTrackingDAO
 {
@@ -65,27 +72,26 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 	}
 
 	@Override
-	public de.metas.materialtracking.model.I_M_Material_Tracking retrieveMaterialTracking(final Properties ctx, final IMaterialTrackingQuery queryVO)
+	public I_M_Material_Tracking retrieveMaterialTracking(
+			final Properties ctx,
+			final IMaterialTrackingQuery materialTrackingQuery)
 	{
-		final IQueryBuilder<de.metas.materialtracking.model.I_M_Material_Tracking> queryBuilder = new MaterialTrackingQueryCompiler()
-				.setCtx(ctx)
-				.createQueryBuilder(queryVO);
-		final IQuery<de.metas.materialtracking.model.I_M_Material_Tracking> query = queryBuilder.create();
+		final IQuery<I_M_Material_Tracking> query = createQuery(ctx, materialTrackingQuery);
 
 		//
 		// Execute query
-		final OnMoreThanOneFound onMoreThanOneFound = queryVO.getOnMoreThanOneFound();
+		final OnMoreThanOneFound onMoreThanOneFound = materialTrackingQuery.getOnMoreThanOneFound();
 		if (onMoreThanOneFound == OnMoreThanOneFound.ThrowException)
 		{
-			return query.firstOnly(de.metas.materialtracking.model.I_M_Material_Tracking.class);
+			return query.firstOnly(I_M_Material_Tracking.class);
 		}
 		else if (onMoreThanOneFound == OnMoreThanOneFound.ReturnNull)
 		{
-			return query.firstOnlyOrNull(de.metas.materialtracking.model.I_M_Material_Tracking.class);
+			return query.firstOnlyOrNull(I_M_Material_Tracking.class);
 		}
 		else if (onMoreThanOneFound == OnMoreThanOneFound.ReturnFirst)
 		{
-			return query.first(de.metas.materialtracking.model.I_M_Material_Tracking.class);
+			return query.first(I_M_Material_Tracking.class);
 		}
 		else
 		{
@@ -94,11 +100,28 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 	}
 
 	@Override
-	public I_M_Material_Tracking_Ref createMaterialTrackingRefNoSave(final de.metas.materialtracking.model.I_M_Material_Tracking materialTracking, final Object model)
+	public List<I_M_Material_Tracking> retrieveMaterialTrackings(final Properties ctx, final IMaterialTrackingQuery materialTrackingQuery)
 	{
-		Check.assumeNotNull(materialTracking, "materialTracking not null");
-		Check.assumeNotNull(model, "model not null");
+		final IQuery<I_M_Material_Tracking> query = createQuery(ctx, materialTrackingQuery);
+		return query.list();
+	}
 
+	private IQuery<I_M_Material_Tracking> createQuery(
+			final Properties ctx,
+			@NonNull final IMaterialTrackingQuery queryVO)
+	{
+		final IQuery<I_M_Material_Tracking> query = new MaterialTrackingQueryCompiler()
+				.setCtx(ctx)
+				.createQuery(queryVO);
+
+		return query;
+	}
+
+	@Override
+	public I_M_Material_Tracking_Ref createMaterialTrackingRefNoSave(
+			@NonNull final I_M_Material_Tracking materialTracking,
+			@NonNull final Object model)
+	{
 		final IContextAware threadContextAware = Services.get(ITrxManager.class).createThreadContextAware(model);
 
 		final I_M_Material_Tracking_Ref ref = InterfaceWrapperHelper.newInstance(I_M_Material_Tracking_Ref.class, threadContextAware);
@@ -110,10 +133,37 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 	}
 
 	@Override
-	public I_M_Material_Tracking_Ref retrieveMaterialTrackingRefForModel(final Object model)
+	public I_M_Material_Tracking_Ref retrieveSingleMaterialTrackingRefForModel(@NonNull final Object model)
 	{
-		Check.assumeNotNull(model, "model not null");
+		final List<I_M_Material_Tracking_Ref> refs = retrieveMaterialTrackingRefsForModel(model);
+		if (refs.isEmpty())
+		{
+			return null;
+		}
+		Check.assume(refs.size() <= 1, "At most one element M_Material_Tracking_Ref was expected for the given model, but we got more; model={}; refs={}", model, refs);
+		return refs.get(0);
+	}
 
+	@Override
+	public I_M_Material_Tracking_Ref retrieveMaterialTrackingRefFor(
+			@NonNull final Object model,
+			@NonNull final MaterialTrackingId materialTrackingId)
+	{
+		// 07669: Use the transaction of the thread and do not rely on the model's transaction
+		final IContextAware threadContextAware = Services.get(ITrxManager.class).createThreadContextAware(model);
+
+		return new MaterialTrackingQueryCompiler()
+				.setContext(threadContextAware)
+				.createMaterialTrackingRefQueryBuilderForModel(model)
+				.addOnlyActiveRecordsFilter() /* TODO cleanup/extend MaterialTrackingQueryCompiler */
+				.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMNNAME_M_Material_Tracking_ID, materialTrackingId)
+				.create()
+				.firstOnly(I_M_Material_Tracking_Ref.class);
+	}
+
+	@Override
+	public List<I_M_Material_Tracking_Ref> retrieveMaterialTrackingRefsForModel(@NonNull final Object model)
+	{
 		// 07669: Use the transaction of the thread and do not rely on the model's transaction
 		final IContextAware threadContextAware = Services.get(ITrxManager.class).createThreadContextAware(model);
 
@@ -122,7 +172,7 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 				.createMaterialTrackingRefQueryBuilderForModel(model)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.firstOnly(I_M_Material_Tracking_Ref.class);
+				.list();
 	}
 
 	/* package */final void setDefaultOrderBy(final IQueryOrderByBuilder<I_M_Material_Tracking_Ref> orderByBuilder)
@@ -134,17 +184,16 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 	}
 
 	@Override
-	public List<I_M_Material_Tracking_Ref> retrieveMaterialTrackingRefForType(final de.metas.materialtracking.model.I_M_Material_Tracking materialTracking, final Class<?> modelClass)
+	public List<I_M_Material_Tracking_Ref> retrieveMaterialTrackingRefForType(
+			@NonNull final I_M_Material_Tracking materialTracking, final Class<?> modelClass)
 	{
-		Check.assumeNotNull(materialTracking, "materialTracking not null");
-
 		final int adTableId = InterfaceWrapperHelper.getTableId(modelClass);
 
 		final IQueryBuilder<I_M_Material_Tracking_Ref> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Material_Tracking_Ref.class, materialTracking)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMN_M_Material_Tracking_ID, materialTracking.getM_Material_Tracking_ID())
-				.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMN_AD_Table_ID, adTableId);
+				.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMNNAME_M_Material_Tracking_ID, materialTracking.getM_Material_Tracking_ID())
+				.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMNNAME_AD_Table_ID, adTableId);
 
 		setDefaultOrderBy(queryBuilder.orderBy());
 
@@ -153,27 +202,39 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 	}
 
 	@Override
-	public de.metas.materialtracking.model.I_M_Material_Tracking retrieveMaterialTrackingForModel(final Object model)
+	public de.metas.materialtracking.model.I_M_Material_Tracking retrieveSingleMaterialTrackingForModel(@NonNull final Object model)
+	{
+		final List<de.metas.materialtracking.model.I_M_Material_Tracking> refs = retrieveMaterialTrackingsForModel(model);
+		if (refs.isEmpty())
+		{
+			return null;
+		}
+		Check.assume(refs.size() <= 1, "At most one element M_Material_Tracking_Ref was expected for the given model, but we got more; model={}; refs={}", model, refs);
+		return refs.get(0);
+	}
+
+	@Override
+	public List<de.metas.materialtracking.model.I_M_Material_Tracking> retrieveMaterialTrackingsForModel(@NonNull final Object model)
 	{
 		final IMaterialTrackingAware materialTrackingAwareOrNull = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(model, IMaterialTrackingAware.class);
 		if (materialTrackingAwareOrNull != null)
 		{
-			return materialTrackingAwareOrNull.getM_Material_Tracking();
+			if (materialTrackingAwareOrNull.getM_Material_Tracking_ID() > 0)
+			{
+				return ImmutableList.of(materialTrackingAwareOrNull.getM_Material_Tracking());
+			}
+			return ImmutableList.of();
 		}
 
-		final I_M_Material_Tracking_Ref ref = retrieveMaterialTrackingRefForModel(model);
-		if (ref == null)
-		{
-			return null;
-		}
-		return ref.getM_Material_Tracking();
+		final List<I_M_Material_Tracking_Ref> refs = retrieveMaterialTrackingRefsForModel(model);
+		return refs.stream()
+				.map(I_M_Material_Tracking_Ref::getM_Material_Tracking)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
-	public <T> List<de.metas.materialtracking.model.I_M_Material_Tracking> retrieveMaterialTrackingForModels(final IQueryBuilder<T> modelsQuery)
+	public <T> List<de.metas.materialtracking.model.I_M_Material_Tracking> retrieveMaterialTrackingForModels(@NonNull final IQueryBuilder<T> modelsQuery)
 	{
-		Check.assumeNotNull(modelsQuery, "modelsQuery not null");
-
 		// 07669: Use the transaction of the thread and do not rely on the model's transaction
 		final IContextAware threadContextAware = Services.get(ITrxManager.class).createThreadContextAware(modelsQuery.getCtx());
 
@@ -184,35 +245,30 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 				.andCollect(I_M_Material_Tracking_Ref.COLUMN_M_Material_Tracking_ID)
 				//
 				.create()
-				.list(de.metas.materialtracking.model.I_M_Material_Tracking.class);
+				.list(I_M_Material_Tracking.class);
 	}
 
 	@Override
-	public de.metas.materialtracking.model.I_M_Material_Tracking retrieveMaterialTrackingByAttributeValue(final I_M_AttributeValue attributeValue)
+	public I_M_Material_Tracking retrieveMaterialTrackingByAttributeValue(@NonNull final AttributeValueId attributeValueId)
 	{
-		if (attributeValue == null || attributeValue.getM_AttributeValue_ID() <= 0)
-		{
-			return null;
-		}
-
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final de.metas.materialtracking.model.I_M_Material_Tracking materialTracking = queryBL.createQueryBuilder(de.metas.materialtracking.model.I_M_Material_Tracking.class, attributeValue)
+		final I_M_Material_Tracking materialTracking = queryBL.createQueryBuilder(I_M_Material_Tracking.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(de.metas.materialtracking.model.I_M_Material_Tracking.COLUMNNAME_M_AttributeValue_ID, attributeValue.getM_AttributeValue_ID())
+				.addEqualsFilter(I_M_Material_Tracking.COLUMNNAME_M_AttributeValue_ID, attributeValueId)
 				.create()
-				.firstOnly(de.metas.materialtracking.model.I_M_Material_Tracking.class);
+				.firstOnly(I_M_Material_Tracking.class);
 
 		if (materialTracking == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_MaterialTracking_ID@"
-					+ "\n @M_AttributeValue_ID@: " + attributeValue);
+					+ "\n @M_AttributeValue_ID@: " + attributeValueId);
 		}
 
 		return materialTracking;
 	}
 
 	@Override
-	public <T> List<T> retrieveReferences(final de.metas.materialtracking.model.I_M_Material_Tracking materialTracking, final Class<T> referenceType)
+	public <T> List<T> retrieveReferences(final I_M_Material_Tracking materialTracking, final Class<T> referenceType)
 	{
 		final List<I_M_Material_Tracking_Ref> references = retrieveMaterialTrackingRefForType(materialTracking, referenceType);
 		final List<T> models = new ArrayList<>(references.size());
@@ -231,7 +287,7 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 	}
 
 	@Override
-	public <T> T retrieveReference(final de.metas.materialtracking.model.I_M_Material_Tracking materialTracking, final Class<T> referenceType)
+	public <T> T retrieveReference(final I_M_Material_Tracking materialTracking, final Class<T> referenceType)
 	{
 		final List<T> references = retrieveReferences(materialTracking, referenceType);
 		if (references == null || references.isEmpty())
@@ -253,9 +309,7 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 	@Override
 	public int retrieveNumberOfInspection(final I_PP_Order ppOrder)
 	{
-		// TODO: optimize a lot here!
-
-		final de.metas.materialtracking.model.I_M_Material_Tracking materialTracking = retrieveMaterialTrackingForModel(ppOrder);
+		final de.metas.materialtracking.model.I_M_Material_Tracking materialTracking = retrieveSingleMaterialTrackingForModel(ppOrder);
 		Check.assumeNotNull(materialTracking, "Inspection order has material tracking: {}", ppOrder);
 
 		final List<I_M_Material_Tracking_Ref> references = retrieveMaterialTrackingRefForType(materialTracking, I_PP_Order.class);
@@ -288,12 +342,17 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 	}
 
 	@Override
-	public List<I_C_Flatrate_Term> retrieveC_Flatrate_Terms_For_MaterialTracking(final I_M_Material_Tracking materialTracking)
+	public List<I_C_Flatrate_Term> retrieveC_Flatrate_Terms_For_MaterialTracking(@NonNull final I_M_Material_Tracking materialTracking)
 	{
+		final I_M_QualityInsp_LagerKonf_Version lagerKonfVersion = create(
+				materialTracking,
+				de.metas.materialtracking.ch.lagerkonf.interfaces.I_M_Material_Tracking.class)
+						.getM_QualityInsp_LagerKonf_Version();
+
 		final int partnerID = materialTracking.getC_BPartner_ID();
 		final int productID = materialTracking.getM_Product_ID();
-		final I_M_QualityInsp_LagerKonf_Version lagerKonfVersion = materialTracking.getM_QualityInsp_LagerKonf_Version();
 		final int lagerKonfID = lagerKonfVersion == null ? -1 : lagerKonfVersion.getM_QualityInsp_LagerKonf_ID();
+
 		final Timestamp startDate = materialTracking.getValidFrom();
 		final Timestamp endDate = materialTracking.getValidTo();
 
@@ -322,19 +381,19 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 	}
 
 	@Override
-	public List<de.metas.materialtracking.model.I_M_Material_Tracking> retrieveMaterialTrackingsForPeriodAndOrg(
+	public List<I_M_Material_Tracking> retrieveMaterialTrackingsForPeriodAndOrg(
 			final I_C_Period period,
 			final I_AD_Org org)
 	{
 		final Timestamp periodEndDate = period.getEndDate();
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		return queryBL.createQueryBuilder(de.metas.materialtracking.model.I_M_Material_Tracking.class, period)
+		return queryBL.createQueryBuilder(I_M_Material_Tracking.class, period)
 				.addOnlyActiveRecordsFilter()
-				.addCompareFilter(de.metas.materialtracking.model.I_M_Material_Tracking.COLUMN_ValidFrom, Operator.LESS_OR_EQUAL, periodEndDate)
-				.addCompareFilter(de.metas.materialtracking.model.I_M_Material_Tracking.COLUMN_ValidTo, Operator.GREATER_OR_EQUAL, periodEndDate)
-				.addInArrayOrAllFilter(I_M_Material_Tracking.COLUMN_AD_Org_ID, 0, org.getAD_Org_ID())
+				.addCompareFilter(I_M_Material_Tracking.COLUMN_ValidFrom, Operator.LESS_OR_EQUAL, periodEndDate)
+				.addCompareFilter(I_M_Material_Tracking.COLUMN_ValidTo, Operator.GREATER_OR_EQUAL, periodEndDate)
+				.addInArrayOrAllFilter(I_M_Material_Tracking.COLUMNNAME_AD_Org_ID, OrgId.ANY.getRepoId(), org.getAD_Org_ID())
 				.create()
-				.list(de.metas.materialtracking.model.I_M_Material_Tracking.class);
+				.list(I_M_Material_Tracking.class);
 	}
 
 	@Override
@@ -348,5 +407,4 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 				.deleteDirectly();
 
 	}
-
 }

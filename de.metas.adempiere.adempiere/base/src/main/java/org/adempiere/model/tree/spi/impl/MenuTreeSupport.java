@@ -30,7 +30,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Menu;
@@ -44,6 +44,10 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
 import de.metas.i18n.Language;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.security.permissions.ElementPermission;
+import de.metas.security.permissions.ElementResource;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -200,7 +204,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		final String action = rs.getString(I_AD_Menu.COLUMNNAME_Action);
 		info.setImageIndicator(action);
 
-		final int AD_Window_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Window_ID);
+		final AdWindowId adWindowId = AdWindowId.ofRepoIdOrNull(rs.getInt(I_AD_Menu.COLUMNNAME_AD_Window_ID));
 		final int AD_Process_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Process_ID);
 		final int AD_Form_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Form_ID);
 		final int AD_Workflow_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Workflow_ID);
@@ -212,7 +216,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		final String webuiNameNewBreadcrumb = rs.getString(I_AD_Menu.COLUMNNAME_WEBUI_NameNewBreadcrumb);
 		final String windowMainTableName = rs.getString("AD_Window_TableName"); // table name of first window tab
 
-		info.setAD_Window_ID(AD_Window_ID);
+		info.setAD_Window_ID(AdWindowId.toRepoId(adWindowId));
 		info.setAD_Process_ID(AD_Process_ID);
 		info.setAD_Form_ID(AD_Form_ID);
 		info.setAD_Workflow_ID(AD_Workflow_ID);
@@ -237,10 +241,10 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		//
 		// Check role access
 		final IUserRolePermissions role = tree.getUserRolePermissions();
-		Boolean access = null;
+		final ElementPermission access;
 		if (X_AD_Menu.ACTION_Window.equals(action))
 		{
-			access = role.checkWindowAccess(AD_Window_ID);
+			access = role.checkWindowPermission(adWindowId);
 
 			if (Services.get(IDeveloperModeBL.class).isEnabled())
 			{
@@ -252,7 +256,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		}
 		else if (X_AD_Menu.ACTION_Process.equals(action))
 		{
-			access = role.checkProcessAccess(AD_Process_ID);
+			access = role.checkProcessPermission(AD_Process_ID);
 
 			if (Services.get(IDeveloperModeBL.class).isEnabled())
 			{
@@ -265,7 +269,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		}
 		else if (X_AD_Menu.ACTION_Report.equals(action))
 		{
-			access = role.checkProcessAccess(AD_Process_ID);
+			access = role.checkProcessPermission(AD_Process_ID);
 
 			if (Services.get(IDeveloperModeBL.class).isEnabled())
 			{
@@ -278,7 +282,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		}
 		else if (X_AD_Menu.ACTION_Form.equals(action))
 		{
-			access = role.checkFormAccess(AD_Form_ID);
+			access = role.checkFormPermission(AD_Form_ID);
 
 			if (Services.get(IDeveloperModeBL.class).isEnabled())
 			{
@@ -291,19 +295,25 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		}
 		else if (X_AD_Menu.ACTION_WorkFlow.equals(action))
 		{
-			access = role.checkWorkflowAccess(AD_Workflow_ID);
+			access = role.checkWorkflowPermission(AD_Workflow_ID);
 		}
 		else if (X_AD_Menu.ACTION_Task.equals(action))
 		{
-			access = role.checkTaskAccess(AD_Task_ID);
+			access = role.checkTaskPermission(AD_Task_ID);
 		}
 		else if (X_AD_Menu.ACTION_Board.equals(action))
 		{
-			access = true;
+			final ElementResource resource = ElementResource.of("WEBUI_Board", WEBUI_Board_ID);
+			access = ElementPermission.ofReadWriteFlag(resource, true);
 		}
+		else
+		{
+			access = null;
+		}
+
 		//
-		if (access == null // rw or ro for Role
-				&& !tree.isEditable())
+		if (!tree.isEditable()
+				&& (access == null || !access.hasAccess(Access.READ))) // rw or ro for Role
 		{
 			return null;
 		}

@@ -17,7 +17,6 @@
 package org.compiere.grid.ed;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
@@ -26,29 +25,14 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
 
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
-import net.miginfocom.layout.AC;
-import net.miginfocom.layout.CC;
-import net.miginfocom.layout.LC;
-import net.miginfocom.swing.MigLayout;
-
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.AEnv;
@@ -58,22 +42,24 @@ import org.compiere.model.I_C_Region;
 import org.compiere.model.MCountry;
 import org.compiere.model.MLocation;
 import org.compiere.model.MRegion;
-import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
 import org.compiere.swing.ListComboBoxModel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.Env;
-
-import com.akunagroup.uk.postcode.AddressInterface;
-import com.akunagroup.uk.postcode.AddressLookupInterface;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import net.miginfocom.layout.AC;
+import net.miginfocom.layout.CC;
+import net.miginfocom.layout.LC;
+import net.miginfocom.swing.MigLayout;
 
 /**
  * Dialog to enter Location Info (Address)
@@ -148,7 +134,6 @@ public class VLocationDialog extends CDialog
 		//
 		// Add listeners
 		fCountry.addActionListener(this);
-		fOnline.addActionListener(this);
 		fRegion.addActionListener(this);
 
 		loadFieldsFromLocationModel();
@@ -188,9 +173,7 @@ public class VLocationDialog extends CDialog
 	private final CComboBox<MRegion> fRegion = new CComboBox<>(fRegionModel);
 	private final CTextField fPostal = new CTextField(5); // length=10
 	private final CTextField fPostalAdd = new CTextField(5); // length=10
-	private final CButton fOnline = new CButton(msgBL.getMsg(Env.getCtx(), "Online"));
 	private final List<LocationPart> locationParts = new ArrayList<>();
-	private LocationPart locationPart_Online;
 	private LocationPart locationPart_Region;
 
 	private static final LocationCaptureSequence DEFAULT_CaptureSequence = LocationCaptureSequence.fromString("CO");	// we use country only to allow user to change the country at least
@@ -257,8 +240,6 @@ public class VLocationDialog extends CDialog
 			locationPart_Region = createAndAddLocationPart(LocationCaptureSequence.PART_Country, "Region", fRegion);
 			locationPart_Region.setEnabledCustom(false);
 			createAndAddLocationPart(LocationCaptureSequence.PART_Country, "Country", fCountry);
-			locationPart_Online = createAndAddLocationPart(LocationCaptureSequence.PART_Country, "Online", fOnline);
-			locationPart_Online.setEnabledCustom(false);
 		}
 
 		//
@@ -300,7 +281,7 @@ public class VLocationDialog extends CDialog
 		Check.assumeNotNull(captureSequence, "captureSequence not null");
 
 		// Do nothing if the capture sequence was not changed
-		if (Check.equals(_captureSequence, captureSequence))
+		if (Objects.equals(_captureSequence, captureSequence))
 		{
 			return;
 		}
@@ -420,15 +401,6 @@ public class VLocationDialog extends CDialog
 		{
 			onRegionChanged();
 		}
-		else if (e.getSource() == fOnline)
-		{
-			// check to see if we have a postcode lookup plugin for this country
-			final MCountry country = fCountry.getSelectedItem();
-			if (country != null && country.isPostcodeLookup())
-			{
-				lookupPostcode(country, fCity.getText(), fPostal.getText());
-			}
-		}
 	}
 
 	private final void onCountryChanged()
@@ -440,7 +412,6 @@ public class VLocationDialog extends CDialog
 			fRegionModel.setCountry(country);
 			locationPart_Region.setEnabledCustom(country.isHasRegion());
 			locationPart_Region.setLabelText(fRegionModel.getRegionNameLabel());
-			locationPart_Online.setEnabledCustom(country.isPostcodeLookup());
 
 			fCityAutoCompleter.setC_Country_ID(country.getC_Country_ID());
 			setContext(CTXNAME_C_Country_ID, country.getC_Country_ID());
@@ -564,258 +535,6 @@ public class VLocationDialog extends CDialog
 	private final MLocation getC_Location()
 	{
 		return _location;
-	}
-
-	/**
-	 * lookupPostcode
-	 *
-	 *
-	 * @param country
-	 * @param postcode
-	 * @return
-	 */
-	private String lookupPostcode(final MCountry country, final String city, String postcode)
-	{
-		// Initialize the lookup class.
-		AddressLookupInterface pcLookup = null;
-		try
-		{
-			final AddressLookupInterface pcLookupTmp = (AddressLookupInterface)Class
-					.forName(country.getLookupClassName()).newInstance();
-			pcLookup = pcLookupTmp.newInstance();
-			pcLookup.setCity(city); // metas
-			pcLookup.setCountryCode(country.getCountryCode()); // metas
-		}
-		catch (final Exception e)
-		{
-			throw AdempiereException.wrapIfNeeded(e);
-		}
-
-		// remove any spaces from the postcode and convert to upper case
-		postcode = postcode.replaceAll(" ", "").toUpperCase();
-		log.debug("Looking up postcode: " + postcode);
-
-		// Lookup postcode on server.
-		pcLookup.setServerUrl(country.getLookupUrl());
-		pcLookup.setClientID(country.getLookupClientID());
-		pcLookup.setPassword(country.getLookupPassword());
-		final int result = pcLookup.lookupPostcode(postcode);
-		if (result >= 1)
-		{
-			// Success
-			fillLocation(pcLookup.getAddressData(), country);
-			// FIXME fAddress1.requestFocusInWindow();
-		}
-		// metas: changed
-		else if (result == 0)
-		{
-			if (pcLookup.isRegisterLocalSupported())
-			{
-				final String msg = msgBL.getMsg(Env.getCtx(), "PostalCodeNotFound_Add", new Object[] { postcode, city });
-				if (clientUI.ask(m_WindowNo, "NotFound", msg))
-				{
-					pcLookup.registerLocal(postcode);
-				}
-			}
-			else
-			{
-				throw new AdempiereException("@NotFound@ @Postal@");
-			}
-		}
-		else
-		{
-			throw new AdempiereException("Postcode Lookup Error");
-		}
-
-		return "";
-	}
-
-	/**
-	 * Fills the location field using the information retrieved from postcode servers.
-	 *
-	 * @param ctx Context
-	 * @param pkeyData Lookup results
-	 * @param windowNo Window No.
-	 * @param tab Tab
-	 * @param field Field
-	 */
-	// metas: tsa: us786: fully changed this method because initial implementation was a huge crap
-	private void fillLocation(final Map<String, Object> postcodeData, final MCountry country)
-	{
-		if (postcodeData == null || postcodeData.isEmpty())
-		{
-			return;
-		}
-
-		final List<AddressInterface> addresses = new ArrayList<AddressInterface>();
-		for (final Object o : postcodeData.values())
-		{
-			addresses.add((AddressInterface)o);
-		}
-
-		final boolean userChanges = !isEmpty(fCity);
-		// || !isEmpty(fAddress1)
-		// || !isEmpty(fAddress2)
-		// || !isEmpty(fAddress3)
-		// || !isEmpty(fAddress4)
-
-		final AddressInterface values; // selected value
-		if (userChanges || addresses.size() > 1)
-		{
-			final JList<Object> jlistAddresses = new JList<>(addresses.toArray());
-			jlistAddresses.setCellRenderer(new AddressListCellRenderer());
-			jlistAddresses.setSelectedIndex(0);
-
-			final JScrollPane scroll = new JScrollPane(jlistAddresses);
-			scroll.setPreferredSize(new Dimension(250, 80));
-
-			final int response = JOptionPane.showConfirmDialog(
-					this,
-					new Object[] { // options
-					msgBL.getMsg(Env.getCtx(), "Postal_Select_System_Data_Warning"),
-							scroll,
-					},
-					msgBL.getMsg(Env.getCtx(), "Postal_Select_System_Data"), // title
-					JOptionPane.DEFAULT_OPTION, // optionType,
-					JOptionPane.INFORMATION_MESSAGE, // messageType,
-					null // icon,
-					);
-			if (response < 0)
-			{
-				return;
-			}
-			values = (AddressInterface)jlistAddresses.getSelectedValue();
-		}
-		else
-		{
-			values = addresses.get(0);
-		}
-
-		if (values == null)
-		{
-			log.warn("Nothing selected");
-			return;
-		}
-		// Overwrite the values in location field.
-		// fAddress1.setText(values.getStreet1());
-		// fAddress2.setText(values.getStreet2());
-		// fAddress3.setText(values.getStreet3());
-		// fAddress4.setText(values.getStreet4());
-		fCityAutoCompleter.setTextNoPopup(values.getCity());
-		fPostal.setText(values.getPostcode());
-
-		// Do region lookup
-		if (country.isHasRegion())
-		{
-			// get all regions for this country
-			final MRegion[] regions = MRegion.getRegions(country.getCtx(), country.getC_Country_ID());
-
-			// If regions were loaded
-			if (regions.length > 0)
-			{
-				// loop through regions array to attempt a region match - don't finish loop if region found
-				boolean found = false;
-				for (int i = 0; i < regions.length && !found; i++)
-				{
-
-					if (regions[i].getName().equals(values.getRegion()))
-					{
-						// found Region
-						fRegion.setSelectedItem(regions[i]);
-						log.debug("Found region: " + regions[i].getName());
-						found = true;
-					}
-				}
-				if (!found)
-				{
-					// add new region
-					final MRegion region = new MRegion(country, values.getRegion());
-					if (region.save())
-					{
-						log.debug("Added new region from web service: " + values.getRegion());
-
-						// clears cache
-						// Env.reset(false); // not needed; this shall be done automatically on save
-
-						// reload regions to combo box
-						fRegionModel.set(MRegion.getRegions(Env.getCtx(), country.getC_Country_ID()));
-						// select region
-						fRegion.setSelectedItem(values);
-					}
-					else
-					{
-						log.error("Error saving new region: " + region.getName());
-					}
-				}
-			}
-			else
-			{
-				log.error("Region lookup failed for Country: " + country.getName());
-			}
-		}
-	}
-
-	// metas: begin ------------------------------------------------------------
-	private static final boolean isEmpty(final JTextField field)
-	{
-		return field == null || Check.isEmpty(field.getText());
-	}
-
-	private static class AddressListCellRenderer extends DefaultListCellRenderer
-	{
-		private static final long serialVersionUID = -235724306927853784L;
-
-		public AddressListCellRenderer()
-		{
-			super();
-		}
-
-		@Override
-		public Component getListCellRendererComponent(final JList<?> list, final Object value, final int index, final boolean isSelected, final boolean cellHasFocus)
-		{
-			if (value instanceof AddressInterface)
-			{
-				final AddressInterface address = (AddressInterface)value;
-				return super.getListCellRendererComponent(list, toString(address), index, isSelected, cellHasFocus);
-			}
-			else
-			{
-				return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-			}
-		}
-
-		private static String toString(final AddressInterface address)
-		{
-			final StringBuilder sb = new StringBuilder();
-			sb.append(address.getPostcode());
-			sb.append(" - ");
-			sb.append(address.getCountryCode());
-			if (!Check.isEmpty(address.getRegion(), true))
-			{
-				sb.append(", ").append(address.getRegion());
-			}
-			if (!Check.isEmpty(address.getCity(), true))
-			{
-				sb.append(", ").append(address.getCity());
-			}
-			if (!Check.isEmpty(address.getStreet1(), true))
-			{
-				sb.append(", ").append(address.getStreet1());
-			}
-			if (!Check.isEmpty(address.getStreet2(), true))
-			{
-				sb.append(", ").append(address.getStreet2());
-			}
-			if (!Check.isEmpty(address.getStreet3(), true))
-			{
-				sb.append(", ").append(address.getStreet3());
-			}
-			if (!Check.isEmpty(address.getStreet4(), true))
-			{
-				sb.append(", ").append(address.getStreet4());
-			}
-			return sb.toString();
-		}
 	}
 
 	private static final class RegionsComboBoxModel extends ListComboBoxModel<MRegion>

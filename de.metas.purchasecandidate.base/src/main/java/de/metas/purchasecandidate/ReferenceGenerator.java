@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.document.IDocumentSequenceDAO;
+import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.util.Check;
@@ -40,20 +41,20 @@ public class ReferenceGenerator
 
 	public String getNextDemandReference()
 	{
-		final int adSequenceId = Services.get(ISysConfigBL.class)
+		final DocSequenceId docSequenceId = DocSequenceId.ofRepoIdOrNull(Services.get(ISysConfigBL.class)
 				.getIntValue(SYSCONFIG_AD_SEQUENCE_ID,
 						-1, // default
 						Env.getAD_Client_ID(),
-						Env.getAD_Org_ID(Env.getCtx()));
+						Env.getAD_Org_ID(Env.getCtx())));
 
-		Check.errorIf(adSequenceId <= 0, "Unable to retrieve an AD_Sequence_ID from sysconfig; sysconfig key={}", SYSCONFIG_AD_SEQUENCE_ID);
+		Check.errorIf(docSequenceId == null, "Unable to retrieve an AD_Sequence_ID from sysconfig; sysconfig key={}", SYSCONFIG_AD_SEQUENCE_ID);
 
 		final DocumentSequenceInfo documentSeqInfo = Services.get(IDocumentSequenceDAO.class)
-				.retriveDocumentSequenceInfo(adSequenceId);
+				.retriveDocumentSequenceInfo(docSequenceId);
 
 		final IDocumentNoBuilder documentNoBuilder = Services.get(IDocumentNoBuilderFactory.class)
 				.createDocumentNoBuilder()
-				.setAD_Client_ID(Env.getAD_Client_ID(Env.getCtx()))
+				.setClientId(Env.getClientId())
 				.setDocumentSequenceInfo(documentSeqInfo)
 				.setFailOnError(true);
 

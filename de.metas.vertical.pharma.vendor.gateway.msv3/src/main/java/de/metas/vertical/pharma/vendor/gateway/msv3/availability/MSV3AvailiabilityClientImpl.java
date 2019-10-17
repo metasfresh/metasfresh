@@ -1,6 +1,6 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3.availability;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -206,7 +206,7 @@ public class MSV3AvailiabilityClientImpl implements MSV3AvailiabilityClient
 		// get the data to pass to the response item's builder
 		final AvailabilityRequestItem correspondingRequestItem = requestItemsByPZN.get(responseItem.getPzn());
 
-		final LocalDateTime datePromised = responseItemPart.getDeliveryDate();
+		final ZonedDateTime datePromised = responseItemPart.getDeliveryDate();
 
 		// if we can't get a datePromised, then we assume the item as not available
 		// final Type type = VerfuegbarkeitRueckmeldungTyp.NICHT_LIEFERBAR.equals(singleAnteil.getTyp()) ? Type.NOT_AVAILABLE : Type.AVAILABLE;

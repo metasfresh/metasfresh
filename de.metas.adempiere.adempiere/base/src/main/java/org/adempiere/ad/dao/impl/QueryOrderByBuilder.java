@@ -10,12 +10,12 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,7 +41,6 @@ final class QueryOrderByBuilder<T> implements IQueryOrderByBuilder<T>
 
 	public QueryOrderByBuilder()
 	{
-		super();
 	}
 
 	@Override
@@ -89,11 +88,11 @@ final class QueryOrderByBuilder<T> implements IQueryOrderByBuilder<T>
 		final Nulls nulls = getNulls(direction);
 		return addColumn(columnName, direction, nulls);
 	}
-	
+
 	@Override
 	public IQueryOrderByBuilder<T> addColumn(
-			@NonNull final String columnName, 
-			@NonNull final Direction direction, 
+			@NonNull final String columnName,
+			@NonNull final Direction direction,
 			@NonNull final Nulls nulls)
 	{
 		final QueryOrderByItem orderByItem = new QueryOrderByItem(columnName, direction, nulls);
@@ -117,7 +116,7 @@ final class QueryOrderByBuilder<T> implements IQueryOrderByBuilder<T>
 		// "By default, null values sort as if larger than any non-null value;
 		// that is, NULLS FIRST is the default for DESC order, and NULLS LAST otherwise."
 		//
-		// see http://www.postgresql.org/docs/9.1/static/queries-order.html
+		// see https://www.postgresql.org/docs/9.5/queries-order.html
 		if (direction == Direction.Descending)
 		{
 			return Nulls.First;

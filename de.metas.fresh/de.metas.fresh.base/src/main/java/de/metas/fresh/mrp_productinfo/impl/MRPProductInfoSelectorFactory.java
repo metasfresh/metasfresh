@@ -34,6 +34,7 @@ import de.metas.fresh.mrp_productinfo.IMRPProductInfoSelectorFactory;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.OrderLineId;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -148,7 +149,8 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 
 	private Timestamp getDateForOrderLine(final I_C_OrderLine orderLine)
 	{
-		final I_M_ShipmentSchedule schedForOrderLine = Services.get(IShipmentSchedulePA.class).retrieveForOrderLine(orderLine);
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
+		final I_M_ShipmentSchedule schedForOrderLine = Services.get(IShipmentSchedulePA.class).getByOrderLineId(orderLineId);
 		if (schedForOrderLine != null)
 		{
 			final Timestamp date = Services.get(IShipmentScheduleEffectiveBL.class).getPreparationDate(schedForOrderLine);
@@ -214,11 +216,11 @@ public class MRPProductInfoSelectorFactory implements IMRPProductInfoSelectorFac
 		Check.assumeNotNull(params, "param 'params' is not null");
 
 		Check.errorUnless(params.hasParameter(paramPrefix + PRODUCT_PARAM_SUFFIX), "Missing parameter {} in params={}", paramPrefix + PRODUCT_PARAM_SUFFIX, params);
-		final int productID = params.getParameterAsInt(paramPrefix + PRODUCT_PARAM_SUFFIX);
+		final int productID = params.getParameterAsInt(paramPrefix + PRODUCT_PARAM_SUFFIX, -1);
 		Check.errorIf(productID <= 0, "Params={} has {} <= 0", params, paramPrefix + PRODUCT_PARAM_SUFFIX);
 
 		Check.errorUnless(params.hasParameter(paramPrefix + ASI_PARAM_SUFFIX), "Missing parameter {} in params={}", paramPrefix + ASI_PARAM_SUFFIX, params);
-		final int asiID = params.getParameterAsInt(paramPrefix + ASI_PARAM_SUFFIX);
+		final int asiID = params.getParameterAsInt(paramPrefix + ASI_PARAM_SUFFIX, -1);
 		Check.errorIf(asiID < 0, "Params={} has {} < 0", params, paramPrefix + ASI_PARAM_SUFFIX);
 
 		Check.errorUnless(params.hasParameter(paramPrefix + DATE_PARAM_SUFFIX), "Missing parameter {} in params={}", paramPrefix + DATE_PARAM_SUFFIX, params);

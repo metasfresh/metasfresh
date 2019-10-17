@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.metas.material</groupId>
 		<artifactId>metasfresh-material</artifactId>
-		<version>[1,10.0.0]</version>
+		<version>10.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -59,6 +59,13 @@
 			<groupId>de.metas.material</groupId>
 			<artifactId>metasfresh-material-commons</artifactId>
 			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>${mockito.version}</version>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>

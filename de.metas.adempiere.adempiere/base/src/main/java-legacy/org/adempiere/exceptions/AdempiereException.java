@@ -32,14 +32,14 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableMap;
 
 import ch.qos.logback.classic.Level;
+import de.metas.error.AdIssueId;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /**
@@ -104,15 +104,22 @@ public class AdempiereException extends RuntimeException
 			return "null";
 		}
 
-		String message = throwable.getLocalizedMessage();
-
-		// If throwable message is null or it's very short then it's better to use throwable.toString()
-		if (message == null || message.length() < 4)
+		if (throwable instanceof NullPointerException)
 		{
-			message = throwable.toString();
+			return throwable.toString();
 		}
+		else
+		{
+			String message = throwable.getLocalizedMessage();
 
-		return message;
+			// If throwable message is null or it's very short then it's better to use throwable.toString()
+			if (message == null || message.length() < 4)
+			{
+				message = throwable.toString();
+			}
+
+			return message;
+		}
 	}
 
 	public static final ITranslatableString extractMessageTrl(final Throwable throwable)
@@ -123,7 +130,19 @@ public class AdempiereException extends RuntimeException
 			return ex.getMessageBuilt();
 		}
 
-		return ImmutableTranslatableString.constant(extractMessage(throwable));
+		return TranslatableStrings.constant(extractMessage(throwable));
+	}
+
+	public static final Map<String, Object> extractParameters(final Throwable throwable)
+	{
+		if (throwable instanceof AdempiereException)
+		{
+			return ((AdempiereException)throwable).getParameters();
+		}
+		else
+		{
+			return ImmutableMap.of();
+		}
 	}
 
 	/**
@@ -145,6 +164,19 @@ public class AdempiereException extends RuntimeException
 			return cause;
 		}
 		if (throwable instanceof com.google.common.util.concurrent.UncheckedExecutionException)
+		{
+			return cause;
+		}
+
+		if (cause instanceof NullPointerException)
+		{
+			return cause;
+		}
+		if (cause instanceof IllegalArgumentException)
+		{
+			return cause;
+		}
+		if (cause instanceof IllegalStateException)
 		{
 			return cause;
 		}
@@ -199,7 +231,7 @@ public class AdempiereException extends RuntimeException
 	private ITranslatableString _messageBuilt = null;
 	private final String adLanguage;
 
-	private Integer adIssueId = null;
+	private AdIssueId adIssueId = null;
 	private boolean userNotified = false;
 	private boolean userValidationError;
 
@@ -241,18 +273,18 @@ public class AdempiereException extends RuntimeException
 		this(Env.getAD_Language(), adMessage, params);
 	}
 
-	public AdempiereException(final Throwable cause)
+	public AdempiereException(@Nullable final Throwable cause)
 	{
 		super(cause);
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
-		this.messageTrl = ImmutableTranslatableString.empty();
+		this.messageTrl = TranslatableStrings.empty();
 	}
 
 	public AdempiereException(final String message, final Throwable cause)
 	{
 		super(cause);
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
-		this.messageTrl = ImmutableTranslatableString.constant(message);
+		this.messageTrl = TranslatableStrings.constant(message);
 	}
 
 	public AdempiereException(@NonNull final ITranslatableString message, final Throwable cause)
@@ -337,7 +369,7 @@ public class AdempiereException extends RuntimeException
 	 */
 	protected ITranslatableString buildMessage()
 	{
-		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder message = TranslatableStrings.builder();
 		message.append(getOriginalMessage());
 		if (appendParametersToMessage)
 		{
@@ -464,16 +496,21 @@ public class AdempiereException extends RuntimeException
 	}
 
 	@Override
-	public final void markIssueReported(final int adIssueId)
+	public final void markIssueReported(final AdIssueId adIssueId)
 	{
-		this.adIssueId = (adIssueId <= 0 ? 0 : adIssueId);
+		this.adIssueId = adIssueId;
 	}
 
 	@Override
 	public final boolean isIssueReported()
 	{
-		// NOTE: we consider it as issue reported even if the AD_Issue_ID <= 0
 		return adIssueId != null;
+	}
+
+	@Override
+	public AdIssueId getAdIssueId()
+	{
+		return adIssueId;
 	}
 
 	public final boolean isUserNotified()
@@ -507,9 +544,61 @@ public class AdempiereException extends RuntimeException
 		return this;
 	}
 
+	protected final AdempiereException putParametetersFrom(@Nullable final Throwable ex)
+	{
+		if (ex instanceof AdempiereException)
+		{
+			this.putParameteters(((AdempiereException)ex).parameters);
+		}
+
+		return this;
+	}
+
+	private final AdempiereException putParameteters(@Nullable final Map<String, Object> parameters)
+	{
+		if (parameters == null || parameters.isEmpty())
+		{
+			return this;
+		}
+
+		if (this.parameters == null)
+		{
+			this.parameters = new LinkedHashMap<>();
+		}
+
+		parameters.forEach((name, value) -> this.parameters.put(name, Null.box(value)));
+		resetMessageBuilt();
+
+		return this;
+	}
+
+	@OverridingMethodsMustInvokeSuper
+	public <T extends Enum<?>> AdempiereException setParameter(@NonNull final T enumValue)
+	{
+		final String parameterName = buildParameterName(enumValue);
+		return setParameter(parameterName, enumValue);
+	}
+
+	@OverridingMethodsMustInvokeSuper
+	public <T extends Enum<?>> boolean hasParameter(@NonNull final T enumValue)
+	{
+		final String parameterName = buildParameterName(enumValue);
+		return enumValue.equals(getParameter(parameterName));
+	}
+
+	private static final <T extends Enum<?>> String buildParameterName(@NonNull final T enumValue)
+	{
+		return enumValue.getClass().getSimpleName();
+	}
+
 	public final boolean hasParameter(@NonNull final String name)
 	{
 		return parameters == null ? false : parameters.containsKey(name);
+	}
+
+	public final Object getParameter(@NonNull final String name)
+	{
+		return parameters != null ? parameters.get(name) : null;
 	}
 
 	public final Map<String, Object> getParameters()
@@ -556,10 +645,10 @@ public class AdempiereException extends RuntimeException
 		final Map<String, Object> parameters = getParameters();
 		if (parameters.isEmpty())
 		{
-			return ImmutableTranslatableString.empty();
+			return TranslatableStrings.empty();
 		}
 
-		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder message = TranslatableStrings.builder();
 		message.append("Additional parameters:");
 		for (final Map.Entry<String, Object> paramName2Value : parameters.entrySet())
 		{
@@ -577,7 +666,7 @@ public class AdempiereException extends RuntimeException
 	protected final void appendParameters(final TranslatableStringBuilder message)
 	{
 		final ITranslatableString parametersStr = buildParametersString();
-		if (ImmutableTranslatableString.isBlank(parametersStr))
+		if (TranslatableStrings.isBlank(parametersStr))
 		{
 			return;
 		}
@@ -609,5 +698,14 @@ public class AdempiereException extends RuntimeException
 	public static final boolean isUserValidationError(final Throwable ex)
 	{
 		return (ex instanceof AdempiereException) && ((AdempiereException)ex).isUserValidationError();
+	}
+
+	/**
+	 * Fluent version of {@link #addSuppressed(Throwable)}
+	 */
+	public AdempiereException suppressing(@NonNull final Throwable exception)
+	{
+		addSuppressed(exception);
+		return this;
 	}
 }

@@ -2,6 +2,7 @@ package de.metas.report;
 
 import java.util.Collections;
 
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.model.ModelValidationEngine;
@@ -13,8 +14,13 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import de.metas.JsonObjectMapperHolder;
+import de.metas.MetasfreshBeanNameGenerator;
 import de.metas.Profiles;
 import de.metas.util.StringUtils;
 
@@ -40,34 +46,47 @@ import de.metas.util.StringUtils;
  * #L%
  */
 
-
-@SpringBootApplication(scanBasePackages =
-	{ "de.metas.report", "de.metas.adempiere.report.jasper" })
-@ServletComponentScan(value =
-	{ "de.metas.adempiere.report.jasper.servlet" })
-@Profile(Profiles.PROFILE_JasperService)
+@SpringBootApplication(scanBasePackages = { "de.metas" })
+@ServletComponentScan(value = { "de.metas.adempiere.report.jasper.servlet" })
+@Profile(ReportServiceMain.PROFILE_JasperService_Standalone)
 public class ReportServiceMain
 {
 	@Autowired
 	private ApplicationContext applicationContext;
 
+	static final String PROFILE_JasperService_Standalone = Profiles.PROFILE_JasperService + "-standalone";
+
 	/**
 	 * By default, we run in headless mode. But using this system property, we can also run with headless=false.
 	 * The only known use of that is that metasfresh can open the initial license & connection dialog to store the initial properties file.
 	 */
-	public static final String SYSTEM_PROPERTY_HEADLESS = "app-server-run-headless";
+	static final String SYSTEM_PROPERTY_HEADLESS = "app-server-run-headless";
 
 	public static void main(final String[] args)
 	{
-		Ini.setRunMode(RunMode.BACKEND);
+		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
+		{
+			Ini.setRunMode(RunMode.BACKEND);
 
-		final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
+			final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
 
-		new SpringApplicationBuilder(ReportServiceMain.class)
-				.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
-				.web(true)
-				.profiles(Profiles.PROFILE_JasperService)
-				.run(args);
+			new SpringApplicationBuilder(ReportServiceMain.class)
+					.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
+					.web(true)
+					.profiles(Profiles.PROFILE_JasperService, PROFILE_JasperService_Standalone)
+					.beanNameGenerator(new MetasfreshBeanNameGenerator())
+					.run(args);
+		}
+
+		// now init the model validation engine
+		ModelValidationEngine.get();
+	}
+
+	@Bean
+	@Primary
+	public ObjectMapper jsonObjectMapper()
+	{
+		return JsonObjectMapperHolder.sharedJsonObjectMapper();
 	}
 
 	@Profile(Profiles.PROFILE_NotTest)

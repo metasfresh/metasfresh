@@ -1,15 +1,15 @@
 /******************************************************************************
- * Copyright (C) 2009 Low Heng Sin                                            *
- * Copyright (C) 2009 Idalica Corporation                                     *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Copyright (C) 2009 Low Heng Sin *
+ * Copyright (C) 2009 Idalica Corporation *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
  *****************************************************************************/
 package de.metas.ui.web.base.session;
 
@@ -132,20 +132,29 @@ public final class UserPreference implements Serializable
 		final Properties ctx = createDAOCtx();
 		final Map<String, I_AD_Preference> preferencesMap = retrievePreferencesMap(ctx, m_AD_User_ID);
 
-		for (int i = 0; i < PROPERTIES.length; i++)
+		for (final String attribute : PROPERTIES)
 		{
-			final String attribute = PROPERTIES[i];
 			I_AD_Preference preference = preferencesMap.get(attribute);
-			if (preference == null)
-			{
-				preference = InterfaceWrapperHelper.create(ctx, I_AD_Preference.class, ITrx.TRXNAME_ThreadInherited);
-				preference.setAD_User_ID(m_AD_User_ID);
-				preference.setAttribute(attribute);
-			}
-
 			final String value = getProperty(attribute);
-			preference.setValue(value);
-			InterfaceWrapperHelper.save(preference);
+			if (Check.isEmpty(value) || "-1".equals(value))
+			{
+				if (preference != null)
+				{
+					InterfaceWrapperHelper.delete(preference);
+				}
+			}
+			else
+			{
+				if (preference == null)
+				{
+					preference = InterfaceWrapperHelper.create(ctx, I_AD_Preference.class, ITrx.TRXNAME_ThreadInherited);
+					preference.setAD_User_ID(m_AD_User_ID);
+					preference.setAttribute(attribute);
+				}
+
+				preference.setValue(value);
+				InterfaceWrapperHelper.save(preference);
+			}
 		}
 	}
 
@@ -276,17 +285,17 @@ public final class UserPreference implements Serializable
 			return "";
 		}
 
-		if(props == null)
+		if (props == null)
 		{
 			return "";
 		}
-		
+
 		final String value = props.getProperty(key, "");
 		if (Check.isEmpty(value))
 		{
 			return "";
 		}
-		
+
 		return value;
 	}
 

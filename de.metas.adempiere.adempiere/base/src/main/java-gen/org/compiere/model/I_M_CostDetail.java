@@ -123,6 +123,35 @@ public interface I_M_CostDetail
     public static final String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
 
 	/**
+	 * Set Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Currency_ID();
+
+	public org.compiere.model.I_C_Currency getC_Currency();
+
+	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
+
+    /** Column definition for C_Currency_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_CostDetail, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_M_CostDetail, org.compiere.model.I_C_Currency>(I_M_CostDetail.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
 	 * Set Rechnungsposition.
 	 * Invoice Detail Line
 	 *
@@ -208,6 +237,35 @@ public interface I_M_CostDetail
     public static final org.adempiere.model.ModelColumn<I_M_CostDetail, org.compiere.model.I_C_ProjectIssue> COLUMN_C_ProjectIssue_ID = new org.adempiere.model.ModelColumn<I_M_CostDetail, org.compiere.model.I_C_ProjectIssue>(I_M_CostDetail.class, "C_ProjectIssue_ID", org.compiere.model.I_C_ProjectIssue.class);
     /** Column name C_ProjectIssue_ID */
     public static final String COLUMNNAME_C_ProjectIssue_ID = "C_ProjectIssue_ID";
+
+	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+	public org.compiere.model.I_C_UOM getC_UOM();
+
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_CostDetail, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_CostDetail, org.compiere.model.I_C_UOM>(I_M_CostDetail.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Get Erstellt.
@@ -336,6 +394,31 @@ public interface I_M_CostDetail
     public static final org.adempiere.model.ModelColumn<I_M_CostDetail, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_CostDetail, Object>(I_M_CostDetail.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Changing costs.
+	 * Set if this record is changing the costs.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsChangingCosts (boolean IsChangingCosts);
+
+	/**
+	 * Get Changing costs.
+	 * Set if this record is changing the costs.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isChangingCosts();
+
+    /** Column definition for IsChangingCosts */
+    public static final org.adempiere.model.ModelColumn<I_M_CostDetail, Object> COLUMN_IsChangingCosts = new org.adempiere.model.ModelColumn<I_M_CostDetail, Object>(I_M_CostDetail.class, "IsChangingCosts", null);
+    /** Column name IsChangingCosts */
+    public static final String COLUMNNAME_IsChangingCosts = "IsChangingCosts";
 
 	/**
 	 * Set Verkaufs-Transaktion.
@@ -504,6 +587,64 @@ public interface I_M_CostDetail
     public static final String COLUMNNAME_M_InventoryLine_ID = "M_InventoryLine_ID";
 
 	/**
+	 * Set Abgleich Rechnung.
+	 * Match Shipment/Receipt to Invoice
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_MatchInv_ID (int M_MatchInv_ID);
+
+	/**
+	 * Get Abgleich Rechnung.
+	 * Match Shipment/Receipt to Invoice
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_MatchInv_ID();
+
+	public org.compiere.model.I_M_MatchInv getM_MatchInv();
+
+	public void setM_MatchInv(org.compiere.model.I_M_MatchInv M_MatchInv);
+
+    /** Column definition for M_MatchInv_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_CostDetail, org.compiere.model.I_M_MatchInv> COLUMN_M_MatchInv_ID = new org.adempiere.model.ModelColumn<I_M_CostDetail, org.compiere.model.I_M_MatchInv>(I_M_CostDetail.class, "M_MatchInv_ID", org.compiere.model.I_M_MatchInv.class);
+    /** Column name M_MatchInv_ID */
+    public static final String COLUMNNAME_M_MatchInv_ID = "M_MatchInv_ID";
+
+	/**
+	 * Set Abgleich Bestellung.
+	 * Match Purchase Order to Shipment/Receipt and Invoice
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_MatchPO_ID (int M_MatchPO_ID);
+
+	/**
+	 * Get Abgleich Bestellung.
+	 * Match Purchase Order to Shipment/Receipt and Invoice
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_MatchPO_ID();
+
+	public org.compiere.model.I_M_MatchPO getM_MatchPO();
+
+	public void setM_MatchPO(org.compiere.model.I_M_MatchPO M_MatchPO);
+
+    /** Column definition for M_MatchPO_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_CostDetail, org.compiere.model.I_M_MatchPO> COLUMN_M_MatchPO_ID = new org.adempiere.model.ModelColumn<I_M_CostDetail, org.compiere.model.I_M_MatchPO>(I_M_CostDetail.class, "M_MatchPO_ID", org.compiere.model.I_M_MatchPO.class);
+    /** Column name M_MatchPO_ID */
+    public static final String COLUMNNAME_M_MatchPO_ID = "M_MatchPO_ID";
+
+	/**
 	 * Set Warenbewegungs- Position.
 	 * Inventory Move document Line
 	 *
@@ -587,6 +728,121 @@ public interface I_M_CostDetail
     public static final org.adempiere.model.ModelColumn<I_M_CostDetail, org.eevolution.model.I_PP_Cost_Collector> COLUMN_PP_Cost_Collector_ID = new org.adempiere.model.ModelColumn<I_M_CostDetail, org.eevolution.model.I_PP_Cost_Collector>(I_M_CostDetail.class, "PP_Cost_Collector_ID", org.eevolution.model.I_PP_Cost_Collector.class);
     /** Column name PP_Cost_Collector_ID */
     public static final String COLUMNNAME_PP_Cost_Collector_ID = "PP_Cost_Collector_ID";
+
+	/**
+	 * Set Previous Cumulated Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPrev_CumulatedAmt (java.math.BigDecimal Prev_CumulatedAmt);
+
+	/**
+	 * Get Previous Cumulated Amount.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPrev_CumulatedAmt();
+
+    /** Column definition for Prev_CumulatedAmt */
+    public static final org.adempiere.model.ModelColumn<I_M_CostDetail, Object> COLUMN_Prev_CumulatedAmt = new org.adempiere.model.ModelColumn<I_M_CostDetail, Object>(I_M_CostDetail.class, "Prev_CumulatedAmt", null);
+    /** Column name Prev_CumulatedAmt */
+    public static final String COLUMNNAME_Prev_CumulatedAmt = "Prev_CumulatedAmt";
+
+	/**
+	 * Set Previous Cumulated Quantity.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPrev_CumulatedQty (java.math.BigDecimal Prev_CumulatedQty);
+
+	/**
+	 * Get Previous Cumulated Quantity.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPrev_CumulatedQty();
+
+    /** Column definition for Prev_CumulatedQty */
+    public static final org.adempiere.model.ModelColumn<I_M_CostDetail, Object> COLUMN_Prev_CumulatedQty = new org.adempiere.model.ModelColumn<I_M_CostDetail, Object>(I_M_CostDetail.class, "Prev_CumulatedQty", null);
+    /** Column name Prev_CumulatedQty */
+    public static final String COLUMNNAME_Prev_CumulatedQty = "Prev_CumulatedQty";
+
+	/**
+	 * Set Previous Current Cost Price.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPrev_CurrentCostPrice (java.math.BigDecimal Prev_CurrentCostPrice);
+
+	/**
+	 * Get Previous Current Cost Price.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPrev_CurrentCostPrice();
+
+    /** Column definition for Prev_CurrentCostPrice */
+    public static final org.adempiere.model.ModelColumn<I_M_CostDetail, Object> COLUMN_Prev_CurrentCostPrice = new org.adempiere.model.ModelColumn<I_M_CostDetail, Object>(I_M_CostDetail.class, "Prev_CurrentCostPrice", null);
+    /** Column name Prev_CurrentCostPrice */
+    public static final String COLUMNNAME_Prev_CurrentCostPrice = "Prev_CurrentCostPrice";
+
+	/**
+	 * Set Previous Current Cost Price LL.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPrev_CurrentCostPriceLL (java.math.BigDecimal Prev_CurrentCostPriceLL);
+
+	/**
+	 * Get Previous Current Cost Price LL.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPrev_CurrentCostPriceLL();
+
+    /** Column definition for Prev_CurrentCostPriceLL */
+    public static final org.adempiere.model.ModelColumn<I_M_CostDetail, Object> COLUMN_Prev_CurrentCostPriceLL = new org.adempiere.model.ModelColumn<I_M_CostDetail, Object>(I_M_CostDetail.class, "Prev_CurrentCostPriceLL", null);
+    /** Column name Prev_CurrentCostPriceLL */
+    public static final String COLUMNNAME_Prev_CurrentCostPriceLL = "Prev_CurrentCostPriceLL";
+
+	/**
+	 * Set Previous Current Qty.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPrev_CurrentQty (java.math.BigDecimal Prev_CurrentQty);
+
+	/**
+	 * Get Previous Current Qty.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPrev_CurrentQty();
+
+    /** Column definition for Prev_CurrentQty */
+    public static final org.adempiere.model.ModelColumn<I_M_CostDetail, Object> COLUMN_Prev_CurrentQty = new org.adempiere.model.ModelColumn<I_M_CostDetail, Object>(I_M_CostDetail.class, "Prev_CurrentQty", null);
+    /** Column name Prev_CurrentQty */
+    public static final String COLUMNNAME_Prev_CurrentQty = "Prev_CurrentQty";
 
 	/**
 	 * Set Preis.

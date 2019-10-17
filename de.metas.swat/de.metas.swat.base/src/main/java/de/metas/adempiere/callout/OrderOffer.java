@@ -27,15 +27,16 @@ package de.metas.adempiere.callout;
 
 
 import java.sql.Timestamp;
-import java.util.Properties;
 
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.CalloutEngine;
-import org.compiere.model.MDocType;
 import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
+import de.metas.util.Services;
 
 /**
  * @author tsa
@@ -46,18 +47,18 @@ public class OrderOffer extends CalloutEngine
 	public String setOfferValidDays (final ICalloutField calloutField)
 	{
 		I_C_Order order = calloutField.getModel(I_C_Order.class);
-		setOfferValidDate(calloutField.getCtx(), order);
+		setOfferValidDate(order);
 		return "";
 	}
 	
-	private static void setOfferValidDate(Properties ctx, I_C_Order order)
+	private static void setOfferValidDate(I_C_Order order)
 	{
 		if (order.isProcessed())
 			return;
 		
 		final Timestamp dateOrdered = order.getDateOrdered();
 		
-		if (dateOrdered != null && isOffer(ctx, order))
+		if (dateOrdered != null && isOffer(order))
 		{
 			final int days = order.getOfferValidDays();
 			if (days < 0)
@@ -72,18 +73,19 @@ public class OrderOffer extends CalloutEngine
 		}
 	}
 	
-	private static boolean isOffer(Properties ctx, I_C_Order order)
+	private static boolean isOffer(final I_C_Order order)
 	{
-		int docType_ID = order.getC_DocType_ID();
-		if (docType_ID <= 0)
-			docType_ID = order.getC_DocTypeTarget_ID();
-		if (docType_ID <= 0)
+		DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID());
+		if (docTypeId == null)
+		{
+			docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
+		}
+		if (docTypeId == null)
+		{
 			return false;
-		
-		MDocType dt = MDocType.get(ctx, docType_ID);
-		if (dt == null)
-			return false;
-		return dt.isOffer();
+		}
+
+		return Services.get(IDocTypeBL.class).isSalesProposalOrQuotation(docTypeId);
 	}
 
 }

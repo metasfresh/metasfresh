@@ -42,6 +42,7 @@ import de.metas.adempiere.form.terminal.IKeyLayoutSelectionModel;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -264,7 +265,7 @@ public class InventoryHUSelectModel extends AbstractHUSelectModel
 			{
 				throw new AdempiereException("@" + MSG_ErrorNoBPartnerSelected + "@");
 			}
-			huQueryBuilder.addOnlyInBPartnerId(bPartnerId);
+			huQueryBuilder.addOnlyInBPartnerId(BPartnerId.ofRepoId(bPartnerId));
 
 			// BPartner Location
 			if (considerSelectedBPartnerLocation)

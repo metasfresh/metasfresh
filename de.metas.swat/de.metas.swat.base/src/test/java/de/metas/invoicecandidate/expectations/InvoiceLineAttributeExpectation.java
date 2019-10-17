@@ -78,14 +78,14 @@ public class InvoiceLineAttributeExpectation<ParentExpectationType> extends Abst
 		assertNotNull(messageToUse.expect("invoiceLineAttribute is null"), invoiceLineAttribute);
 
 		final I_M_AttributeInstance attributeInstanceTemplate = invoiceLineAttribute.getAttributeInstanceTemplate();
-		final I_M_Attribute attributeActual = attributeInstanceTemplate.getM_Attribute();
+		final int attributeActualId = attributeInstanceTemplate.getM_Attribute_ID();
 		final String valueStringActual = attributeInstanceTemplate.getValue();
 		final BigDecimal valueNumberActual = attributeInstanceTemplate.getValueNumber();
 
 		//
 		// Attribute
 		final I_M_Attribute attributeExpected = this.attribute;
-		assertModelEquals(messageToUse.expect("attribute"), attributeExpected, attributeActual);
+		assertEquals(messageToUse.expect("attribute"), attributeExpected.getM_Attribute_ID(), attributeActualId);
 
 		//
 		// Validates values
@@ -109,7 +109,7 @@ public class InvoiceLineAttributeExpectation<ParentExpectationType> extends Abst
 
 		final I_M_AttributeInstance ai = InterfaceWrapperHelper.newInstance(I_M_AttributeInstance.class, asi);
 		ai.setM_AttributeSetInstance(asi);
-		ai.setM_Attribute(attribute);
+		ai.setM_Attribute_ID(attribute.getM_Attribute_ID());
 		ai.setValue(valueString);
 		ai.setValueNumber(valueNumber);
 		InterfaceWrapperHelper.save(ai);

@@ -3,14 +3,11 @@
  */
 package de.metas.contracts.order;
 
-import lombok.NonNull;
-
 import java.util.HashSet;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.proxy.Cached;
 import org.springframework.stereotype.Service;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -19,6 +16,7 @@ import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -52,7 +50,6 @@ public class ContractOrderService
 	/**
 	 * Retrieves the linked order through column <code>I_C_Order.COLUMNNAME_Ref_FollowupOrder_ID</code>.
 	 */
-	@Cached(cacheName = I_C_Order.Table_Name + "#by#OrderId")
 	public OrderId retrieveLinkedFollowUpContractOrder(@NonNull final OrderId orderId)
 	{
 		int oroginalOrderId = Services.get(IQueryBL.class).createQueryBuilder(I_C_Order.class)
@@ -72,23 +69,20 @@ public class ContractOrderService
 	{
 		final Set<OrderId> orderIds = new HashSet<>();
 		final OrderId ancestorId = retrieveOriginalContractOrder(orderId);
-		if (ancestorId != null)
-		{
-			orderIds.add(ancestorId);
-			buildAllContractOrderList(ancestorId, orderIds);
-		}
-		else
-		{	// add itself
-			orderIds.add(orderId);
-		}
+		orderIds.add(ancestorId);
+		buildAllContractOrderList(ancestorId, orderIds);
 		return orderIds;
 	}
 
 	/**
-	 * retrieves original order through column <code>I_C_Order.COLUMNNAME_Ref_FollowupOrder_ID</code>,
+	 * <ul>
+	 * * retrieves original order through column <code>I_C_Order.COLUMNNAME_Ref_FollowupOrder_ID</code>,
 	 * going recursively until the original one
+	 * </ul>
+	 * <ul>
+	 * * if the order given as parameter does not have any ancestor, will be that returned
+	 * </ul>
 	 */
-	@Cached(cacheName = I_C_Order.Table_Name + "#by#OrderId")
 	public OrderId retrieveOriginalContractOrder(@NonNull final OrderId orderId)
 	{
 		OrderId ancestor = retrieveLinkedFollowUpContractOrder(orderId);
@@ -102,7 +96,7 @@ public class ContractOrderService
 			}
 		}
 
-		return ancestor;
+		return orderId;
 	}
 
 	/**
@@ -148,7 +142,6 @@ public class ContractOrderService
 		return OrderId.ofRepoId(ol.getC_Order_ID());
 	}
 
-	@Cached(cacheName = I_C_Flatrate_Term.Table_Name + "#by#OrderId")
 	public boolean isContractSalesOrder(@NonNull final OrderId orderId)
 	{
 		return Services.get(IQueryBL.class)

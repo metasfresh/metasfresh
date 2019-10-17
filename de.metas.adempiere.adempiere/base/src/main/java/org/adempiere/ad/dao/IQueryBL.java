@@ -26,13 +26,21 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 
+import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.util.ISingletonService;
 
 public interface IQueryBL extends ISingletonService
 {
 	<T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass, Properties ctx, String trxName);
+
+	/**
+	 * @param next identifier of the next page, as taken from the previous page's {@link QueryResultPage#getNextPageDescriptor()}.
+	 * @see IQuery#paginate(Class, int)
+	 */
+	<T> QueryResultPage<T> retrieveNextPage(Class<T> clazz, String next);
 
 	<T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass, Object contextProvider);
 

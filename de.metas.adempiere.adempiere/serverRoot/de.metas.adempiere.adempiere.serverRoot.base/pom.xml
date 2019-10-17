@@ -2,7 +2,6 @@
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
-
 	<parent>
 		<groupId>de.metas.adempiere.adempiere</groupId>
 		<artifactId>de.metas.adempiere.adempiere.serverRoot</artifactId>
@@ -29,7 +28,6 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-
 
 	<dependencies>
 		<!-- Spring Boot -->

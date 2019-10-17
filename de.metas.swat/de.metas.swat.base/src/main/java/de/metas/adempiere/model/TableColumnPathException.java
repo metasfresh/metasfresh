@@ -10,12 +10,12 @@ package de.metas.adempiere.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,12 +24,13 @@ package de.metas.adempiere.model;
 
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Util;
+
+import de.metas.util.Check;
 
 public class TableColumnPathException extends AdempiereException
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 8007680258422505748L;
 
@@ -38,12 +39,12 @@ public class TableColumnPathException extends AdempiereException
 	private static final String buildMessage(String pathStr, String message)
 	{
 		StringBuffer sb = new StringBuffer();
-		if (!Util.isEmpty(message))
+		if (!Check.isEmpty(message))
 			sb.append(message);
 		else
 			sb.append("Unknown error");
 
-		if (!Util.isEmpty(pathStr))
+		if (!Check.isEmpty(pathStr))
 		{
 			sb.append(" (path: " + pathStr + ")");
 		}

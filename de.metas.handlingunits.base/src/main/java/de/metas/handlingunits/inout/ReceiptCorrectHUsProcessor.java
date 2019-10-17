@@ -9,9 +9,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Stream;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Locator;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -24,6 +22,7 @@ import com.google.common.collect.TreeMultimap;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUAware;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
@@ -125,9 +124,7 @@ public class ReceiptCorrectHUsProcessor
 
 				// task #1065
 				// do not allow HUs to be displayed in the ReceiptCorrect list if they are already in a quality warehouse
-				final I_M_Locator huLocator = hu.getM_Locator();
-
-				final I_M_Warehouse huWarehouse = InterfaceWrapperHelper.create(huLocator.getM_Warehouse(), I_M_Warehouse.class);
+				final I_M_Warehouse huWarehouse = IHandlingUnitsBL.extractWarehouse(hu); 
 				if (huWarehouse.isQualityReturnWarehouse())
 				{
 					continue;

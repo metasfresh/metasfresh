@@ -25,32 +25,56 @@ package de.metas.document.impl;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 
+import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
+import de.metas.document.IDocTypeDAO;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 public class DocTypeBL implements IDocTypeBL
 {
-
 	@Override
-	public boolean isQuotation(final I_C_DocType dt)
+	public boolean isSalesQuotation(@NonNull final DocTypeId docTypeId)
 	{
-		return X_C_DocType.DOCSUBTYPE_Quotation.equals(dt.getDocSubType())
-				&& X_C_DocType.DOCBASETYPE_SalesOrder.equals(dt.getDocBaseType());
+		final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
+		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		return isSalesQuotation(dt);
 	}
 
 	@Override
-	public boolean isProposal(final I_C_DocType dt)
+	public boolean isSalesQuotation(final I_C_DocType dt)
 	{
-		return X_C_DocType.DOCSUBTYPE_Proposal.equals(dt.getDocSubType())
-				&& X_C_DocType.DOCBASETYPE_SalesOrder.equals(dt.getDocBaseType());
+		return X_C_DocType.DOCBASETYPE_SalesOrder.equals(dt.getDocBaseType())
+				&& X_C_DocType.DOCSUBTYPE_Quotation.equals(dt.getDocSubType());
 	}
 
 	@Override
-	public boolean isOffer(final I_C_DocType dt)
+	public boolean isSalesProposal(@NonNull final DocTypeId docTypeId)
 	{
-		return (X_C_DocType.DOCSUBTYPE_Proposal.equals(dt.getDocSubType())
-				|| X_C_DocType.DOCSUBTYPE_Quotation.equals(dt.getDocSubType()))
-				&& X_C_DocType.DOCBASETYPE_SalesOrder.equals(dt.getDocBaseType());
+		final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
+		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		return isSalesProposal(dt);
+	}
+
+	@Override
+	public boolean isSalesProposal(final I_C_DocType dt)
+	{
+		return X_C_DocType.DOCBASETYPE_SalesOrder.equals(dt.getDocBaseType())
+				&& X_C_DocType.DOCSUBTYPE_Proposal.equals(dt.getDocSubType());
+	}
+
+	@Override
+	public boolean isSalesProposalOrQuotation(@NonNull final DocTypeId docTypeId)
+	{
+		final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
+		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		return isSalesProposalOrQuotation(dt);
+	}
+
+	@Override
+	public boolean isSalesProposalOrQuotation(final I_C_DocType dt)
+	{
+		return isSalesProposal(dt) || isSalesQuotation(dt);
 	}
 
 	@Override
@@ -59,6 +83,13 @@ public class DocTypeBL implements IDocTypeBL
 		return X_C_DocType.DOCBASETYPE_SalesOrder.equals(docBaseType)
 				|| X_C_DocType.DOCBASETYPE_MaterialDelivery.equals(docBaseType)
 				|| docBaseType.startsWith("AR"); // Account Receivables (Invoice, Payment Receipt)
+	}
+
+	@Override
+	public boolean isPrepay(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		return isPrepay(docType);
 	}
 
 	@Override

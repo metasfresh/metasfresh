@@ -1,17 +1,17 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved.               *
- * Contributor(s): victor.perez@e-evolution.com www.e-evolution.com           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved. *
+ * Contributor(s): victor.perez@e-evolution.com www.e-evolution.com *
  *****************************************************************************/
 
 package org.eevolution.form;
@@ -29,11 +29,11 @@ package org.eevolution.form;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -63,7 +63,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
-import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.ConfirmPanel;
@@ -76,19 +76,25 @@ import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.MiniTable;
 import org.compiere.model.MOrder;
 import org.compiere.model.MQuery;
-import org.compiere.model.MTab;
 import org.compiere.model.MTable;
 import org.compiere.swing.CPanel;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.SwingUtils;
-import org.eevolution.model.MPPOrder;
+import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
 
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.process.IProcessExecutionListener;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.util.Services;
 
 /**
  *
@@ -329,7 +335,7 @@ public class VOrderPlanning extends CPanel
 	{
 
 		// prepareTable (m_layout, getTableName(), " DocStatus='"+MPPOrder.DOCSTATUS_Drafted + "' " +find(), "2" );
-		prepareTable(m_layout, getTableName(), " DocStatus='" + MPPOrder.DOCSTATUS_Drafted + "' ", "2");
+		prepareTable(m_layout, getTableName(), " DocStatus='" + IDocument.STATUS_Drafted + "' ", "2");
 		executeQuery();
 	}
 
@@ -349,11 +355,9 @@ public class VOrderPlanning extends CPanel
 				IDColumn id = (IDColumn)p_table.getValueAt(rows[r], 0);
 				if (id != null && id.isSelected())
 				{
-					Integer PP_Order_ID = id.getRecord_ID();
-					MPPOrder order = new MPPOrder(Env.getCtx(), PP_Order_ID.intValue(), null);
-					order.setDocStatus(order.prepareIt());
-					order.setDocAction(MPPOrder.DOCACTION_Complete);
-					order.save();
+					final PPOrderId ppOrderId = PPOrderId.ofRepoId(id.getRecord_ID());
+					final I_PP_Order order = Services.get(IPPOrderDAO.class).getById(ppOrderId);
+					Services.get(IDocumentBL.class).processEx(order, IDocument.ACTION_Prepare);
 				}
 			}
 			if (rows.length != 0)
@@ -415,7 +419,7 @@ public class VOrderPlanning extends CPanel
 	private String find()
 	{
 		int AD_Window_ID = MTable.get(Env.getCtx(), MOrder.Table_ID).getAD_Window_ID();
-		int AD_Tab_ID = MTab.getTab_ID(AD_Window_ID, "Order");
+		int AD_Tab_ID = getTab_ID(AD_Window_ID, "Order");
 		//
 		Find find = Find.builder()
 				.setParentFrame(SwingUtils.getFrame(this))
@@ -433,6 +437,19 @@ public class VOrderPlanning extends CPanel
 		else
 			return "";
 	}
+
+	// begin e-evolution vpj-cd
+	/**
+	 * 	get Tab ID
+	 *	@param String AD_Window_ID
+	 *	@param String TabName
+	 *	@return int retValue
+	 */
+	private static int getTab_ID(int AD_Window_ID , String TabName) {
+		String SQL = "SELECT AD_Tab_ID FROM AD_Tab WHERE AD_Window_ID= ?  AND Name = ?";
+		return DB.getSQLValueEx(ITrx.TRXNAME_None, SQL, AD_Window_ID, TabName);
+	}
+	//end vpj-cd e-evolution
 
 	/*
 	 * private MField[] getFields()
@@ -696,7 +713,8 @@ public class VOrderPlanning extends CPanel
 			sql.append(m_sqlAdd);
 			String xSql = Msg.parseTranslation(Env.getCtx(), sql.toString());	// Variables
 			xSql = Env.getUserRolePermissions().addAccessSQL(xSql, getTableName(),
-					IUserRolePermissions.SQL_FULLYQUALIFIED, IUserRolePermissions.SQL_RO);
+					IUserRolePermissions.SQL_FULLYQUALIFIED,
+					Access.READ);
 
 			try
 			{

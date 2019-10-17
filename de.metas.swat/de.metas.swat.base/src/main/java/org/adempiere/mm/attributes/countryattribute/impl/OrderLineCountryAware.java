@@ -27,24 +27,23 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.countryattribute.ICountryAware;
 import org.adempiere.mm.attributes.countryattribute.ICountryAwareFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class OrderLineCountryAware implements ICountryAware
 {
-	public static final ICountryAwareFactory factory = new ICountryAwareFactory()
-	{
-		@Override
-		public ICountryAware createCountryAware(Object model)
-		{
-			final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
-			final ICountryAware countryAware = new OrderLineCountryAware(orderLine);
-			return countryAware;
-		}
+	public static final ICountryAwareFactory factory = model -> {
+		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
+		final ICountryAware countryAware = new OrderLineCountryAware(orderLine);
+		return countryAware;
 	};
 
 	private final I_C_OrderLine orderLine;
@@ -80,12 +79,14 @@ public class OrderLineCountryAware implements ICountryAware
 	{
 		final I_C_Order order = getOrder();
 
-		final I_C_BPartner_Location bpLocation = order.getC_BPartner_Location();
-		if (bpLocation == null)
+		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
+		if (bpLocationId == null)
 		{
 			return null;
 		}
-		return bpLocation.getC_Location().getC_Country();
+		
+		final CountryId countryId = Services.get(IBPartnerBL.class).getBPartnerLocationCountryId(bpLocationId);
+		return Services.get(ICountryDAO.class).getById(countryId);
 	}
 
 	private I_C_Order getOrder()

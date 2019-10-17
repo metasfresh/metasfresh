@@ -37,18 +37,17 @@ import javax.swing.text.JTextComponent;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.apps.search.FieldAutoCompleter;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.MAccountLookup;
-import org.compiere.model.MTable;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
-import de.metas.autocomplete.model.I_AD_Table;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 
 public class VAccountAutoCompleter extends FieldAutoCompleter
@@ -56,7 +55,7 @@ public class VAccountAutoCompleter extends FieldAutoCompleter
 
 	private final MAccountLookup accountLookup;
 	private final VAccount editor;
-	private final int acctSchemaId;
+	private final AcctSchemaId acctSchemaId;
 
 	/**
 	 *
@@ -66,7 +65,7 @@ public class VAccountAutoCompleter extends FieldAutoCompleter
 	 *            results.
 	 * @param acctSchemaId the <code>C_AcctSchema_ID</code> by which we filter the eligible records.
 	 */
-	public VAccountAutoCompleter(final JTextComponent comp, final VAccount editor, final MAccountLookup accountLookup, final int acctSchemaId)
+	public VAccountAutoCompleter(final JTextComponent comp, final VAccount editor, final MAccountLookup accountLookup, final AcctSchemaId acctSchemaId)
 	{
 		super(comp);
 		this.accountLookup = accountLookup;
@@ -76,7 +75,7 @@ public class VAccountAutoCompleter extends FieldAutoCompleter
 		// copied from VLookupAutocompleter..can't actually claim that i understand this..
 		//
 		// Set Popup Mininum Chars:
-		final int popupMinimumChars = InterfaceWrapperHelper.create(MTable.get(Env.getCtx(), I_C_ValidCombination.Table_Name), I_AD_Table.class).getACTriggerLength();
+		final int popupMinimumChars = Services.get(IADTableDAO.class).getTypeaheadMinLength(I_C_ValidCombination.Table_Name);
 		if (popupMinimumChars > 0)
 		{
 			setPopupMinimumChars(popupMinimumChars);
@@ -137,7 +136,8 @@ public class VAccountAutoCompleter extends FieldAutoCompleter
 						.addStringLikeFilter(I_C_ValidCombination.COLUMNNAME_Description, searchStringForFilter, ignoreCase)
 						.addStringLikeFilter(I_C_ValidCombination.COLUMNNAME_Combination, searchStringForFilter, ignoreCase);
 
-		final IQuery<I_C_ValidCombination> query = Services.get(IQueryBL.class).createQueryBuilder(I_C_ValidCombination.class, Env.getCtx(), ITrx.TRXNAME_None)
+		final IQuery<I_C_ValidCombination> query = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_ValidCombination.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_ValidCombination.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
 				.filter(filter)
@@ -154,7 +154,7 @@ public class VAccountAutoCompleter extends FieldAutoCompleter
 			final String sql = sqlQuery.getSQL();
 
 			// this is taken from VAccount.cmd_text() which used to do the lookup
-			return Env.getUserRolePermissions().addAccessSQL(sql, "C_ValidCombination", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
+			return Env.getUserRolePermissions().addAccessSQL(sql, "C_ValidCombination", IUserRolePermissions.SQL_NOTQUALIFIED, Access.READ);
 		}
 		return null; // according to the doc we shall return "null" for "error"
 	}
@@ -183,7 +183,7 @@ public class VAccountAutoCompleter extends FieldAutoCompleter
 	protected Object fetchUserObject(final ResultSet rs) throws SQLException
 	{
 		final int id = rs.getInt(I_C_ValidCombination.COLUMNNAME_C_ValidCombination_ID);
-		final KeyNamePair item = new KeyNamePair(id, accountLookup.getDisplay(null, id));
+		final KeyNamePair item = KeyNamePair.of(id, accountLookup.getDisplay(null, id));
 
 		return item;
 	}

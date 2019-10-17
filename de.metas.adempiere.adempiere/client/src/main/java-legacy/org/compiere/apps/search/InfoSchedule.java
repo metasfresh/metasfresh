@@ -29,10 +29,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.GregorianCalendar;
-import org.slf4j.Logger;
-
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -43,7 +39,6 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.images.Images;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
@@ -52,11 +47,15 @@ import org.compiere.grid.ed.VDate;
 import org.compiere.model.MResourceAssignment;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
+import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 
 
 /**
@@ -236,7 +235,8 @@ public class InfoSchedule extends CDialog
 		//	Get Resource Types
 		String sql = Env.getUserRolePermissions().addAccessSQL(
 			"SELECT S_ResourceType_ID, Name FROM S_ResourceType WHERE IsActive='Y' ORDER BY 2",
-			"S_ResourceType", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
+			"S_ResourceType", IUserRolePermissions.SQL_NOTQUALIFIED,
+			Access.READ);
 		KeyNamePair defaultValue = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;

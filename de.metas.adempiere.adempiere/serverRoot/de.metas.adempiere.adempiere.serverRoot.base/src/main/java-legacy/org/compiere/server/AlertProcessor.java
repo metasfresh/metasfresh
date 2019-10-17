@@ -41,15 +41,18 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.ValueNamePair;
 import org.springframework.core.io.FileSystemResource;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.event.Topic;
 import de.metas.i18n.Msg;
 import de.metas.impexp.excel.ArrayExcelExporter;
+import de.metas.impexp.excel.ExcelFormats;
 import de.metas.impexp.excel.service.ExcelExporterService;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -232,7 +235,7 @@ public class AlertProcessor extends AdempiereServer
 		message.append(Msg.translate(getCtx(), "Date")).append(" : ")
 				.append(df.format(new Timestamp(System.currentTimeMillis())));
 
-		final Set<Integer> userIds = alert.getRecipientUsers();
+		final Set<UserId> userIds = alert.getRecipientUsers();
 		notifyUsers(userIds, alert.getAlertSubject(), message.toString(), attachments);
 
 		m_summary.append(alert.getName()).append(" - ");
@@ -240,7 +243,7 @@ public class AlertProcessor extends AdempiereServer
 	}	// processAlert
 
 	private void notifyUsers(
-			final Set<Integer> userIds,
+			final Set<UserId> userIds,
 			final String subject,
 			final String message,
 			final Collection<File> attachments)
@@ -256,7 +259,7 @@ public class AlertProcessor extends AdempiereServer
 
 		final INotificationBL userNotificationsService = Services.get(INotificationBL.class);
 		userIds.stream()
-				.filter(userId -> userId >= 0)
+				.filter(Predicates.notNull())
 				.map(userId -> UserNotificationRequest.builder()
 						.topic(USER_NOTIFICATIONS_TOPIC)
 						.recipientUserId(userId)
@@ -348,7 +351,7 @@ public class AlertProcessor extends AdempiereServer
 		}
 
 		//
-		final File file = rule.createReportFile("xls");
+		final File file = rule.createReportFile(ExcelFormats.getDefaultFileExtension());
 		ArrayExcelExporter.builder()
 				.ctx(getCtx())
 				.data(data)

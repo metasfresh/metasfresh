@@ -26,7 +26,6 @@ import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
@@ -36,6 +35,7 @@ import de.metas.handlingunits.attribute.strategy.IAttributeSplitterStrategy;
 import de.metas.handlingunits.attribute.strategy.IAttributeStrategyFactory;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 
 public abstract class AbstractHUAttributeValue extends AbstractAttributeValue

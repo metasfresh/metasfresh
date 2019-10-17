@@ -18,6 +18,7 @@ package de.metas.process.processtools;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Process;
 
+import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -35,8 +36,8 @@ public class AD_Process_Copy extends JavaProcess
 {
 	private final transient IADProcessDAO processesRepo = Services.get(IADProcessDAO.class);
 
-	private int p_sourceProcessId = 0;
-	private int p_targetProcessId = 0;
+	private AdProcessId p_sourceProcessId;
+	private AdProcessId p_targetProcessId;
 
 	@Override
 	protected void prepare()
@@ -46,24 +47,24 @@ public class AD_Process_Copy extends JavaProcess
 			final String para = parameter.getParameterName();
 			if ("AD_Process_ID".equals(para))
 			{
-				p_sourceProcessId = parameter.getParameterAsInt();
+				p_sourceProcessId = parameter.getParameterAsRepoId(AdProcessId::ofRepoId);
 			}
 			else if ("AD_Process_To_ID".equals(para))
 			{
-				p_targetProcessId = parameter.getParameterAsInt();
+				p_targetProcessId = parameter.getParameterAsRepoId(AdProcessId::ofRepoId);
 			}
 		}
 
-		if (p_targetProcessId <= 0 && I_AD_Process.Table_Name.equals(getTableName()))
+		if (p_targetProcessId == null && I_AD_Process.Table_Name.equals(getTableName()))
 		{
-			p_targetProcessId = getRecord_ID();
+			p_targetProcessId = AdProcessId.ofRepoId(getRecord_ID());
 		}
 	}
 
 	@Override
 	protected String doIt()
 	{
-		if (p_sourceProcessId <= 0 || p_targetProcessId <= 0)
+		if (p_sourceProcessId == null || p_targetProcessId == null)
 		{
 			throw new AdempiereException("@CopyProcessRequired@");
 		}

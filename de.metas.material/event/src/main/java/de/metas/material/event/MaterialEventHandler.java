@@ -28,7 +28,7 @@ import de.metas.util.Loggables;
  */
 
 /**
- * Implementors if this interface are registered to {@link MaterialEventHandlerRegistry}.
+ * Implementors of this interface are registered to {@link MaterialEventHandlerRegistry}.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -50,8 +50,6 @@ public interface MaterialEventHandler<T extends MaterialEvent>
 	/**
 	 * Note that when this method is called, there is a thread-local {@link ILoggable} instance you can get with {@link Loggables#get()}.
 	 * What you log to it will be persisted in the {@code I_AD_EventLog} table.
-	 *
-	 * @param event
 	 */
 	void handleEvent(T event);
 

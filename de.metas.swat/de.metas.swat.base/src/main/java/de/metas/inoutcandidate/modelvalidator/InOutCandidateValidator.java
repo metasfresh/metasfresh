@@ -3,27 +3,29 @@ package de.metas.inoutcandidate.modelvalidator;
 import java.util.Collection;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.housekeeping.IHouseKeepingBL;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyRegistry;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.MClient;
 import org.compiere.model.MProduct;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 
-import de.metas.adempiere.model.I_M_Product;
 import de.metas.cache.CacheMgt;
 import de.metas.inoutcandidate.agg.key.impl.ShipmentScheduleKeyValueHandler;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
-import de.metas.inoutcandidate.housekeeping.sqi.impl.Reset_M_ShipmentSchedule_Recompute;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.impl.DefaultCandidateProcessor;
 import de.metas.inoutcandidate.spi.impl.OnlyOneOpenInvoiceCandProcessor;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.storage.IStorageListeners;
 import de.metas.storage.IStorageSegment;
 import de.metas.storage.StorageListenerAdapter;
@@ -49,7 +51,7 @@ public final class InOutCandidateValidator implements ModelValidator
 	}
 
 	@Override
-	public final void initialize(final ModelValidationEngine engine, final MClient client)
+	public void initialize(final ModelValidationEngine engine, final MClient client)
 	{
 		if (client != null)
 		{
@@ -74,9 +76,6 @@ public final class InOutCandidateValidator implements ModelValidator
 
 		engine.addModelChange(org.compiere.model.I_M_Product.Table_Name, this);
 
-		// FRESH-342: clean up stale M_ShipmentSchedule_Recompute records.
-		Services.get(IHouseKeepingBL.class).registerStartupHouseKeepingTask(new Reset_M_ShipmentSchedule_Recompute());
-
 		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 
 		//
@@ -100,7 +99,8 @@ public final class InOutCandidateValidator implements ModelValidator
 			@Override
 			public void onStorageSegmentChanged(final Collection<IStorageSegment> storageSegments)
 			{
-				Services.get(IShipmentSchedulePA.class).invalidate(storageSegments);
+				final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
+				invalidSchedulesRepo.invalidateStorageSegments(storageSegments);
 			}
 		});
 
@@ -153,25 +153,28 @@ public final class InOutCandidateValidator implements ModelValidator
 	{
 		if (po instanceof MProduct)
 		{
-			productChange((MProduct)po, type);
+			productChange((MProduct)po, ModelChangeType.valueOf(type));
 		}
 		return null;
 	}
 
-	private void productChange(final MProduct productPO, final int type)
+	private void productChange(final I_M_Product productPO, final ModelChangeType type)
 	{
-		if (type == ModelValidator.TYPE_AFTER_NEW || type == ModelValidator.TYPE_AFTER_CHANGE)
+		if(type.isNewOrChange() && type.isAfter())
 		{
-			final boolean isDiversechanged = productPO.is_ValueChanged(I_M_Product.COLUMNNAME_IsDiverse);
-			final boolean isProductTypeChanged = productPO.is_ValueChanged(org.compiere.model.I_M_Product.COLUMNNAME_ProductType);
+			final boolean isDiverseChanged = InterfaceWrapperHelper.isValueChanged(productPO, de.metas.adempiere.model.I_M_Product.COLUMNNAME_IsDiverse);
+			final boolean isProductTypeChanged = InterfaceWrapperHelper.isValueChanged(productPO, I_M_Product.COLUMNNAME_ProductType);
 
-			if (isDiversechanged || isProductTypeChanged)
+			if (isDiverseChanged || isProductTypeChanged)
 			{
+				final ProductId productId = ProductId.ofRepoId(productPO.getM_Product_ID());
 				final boolean display = Services.get(IProductBL.class).isItem(productPO);
 
 				final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-				shipmentSchedulePA.invalidateForProduct(productPO.get_ID(), productPO.get_TrxName());
-				shipmentSchedulePA.setIsDiplayedForProduct(productPO.get_ID(), display, productPO.get_TrxName());
+				shipmentSchedulePA.setIsDiplayedForProduct(productId, display);
+				
+				final IShipmentScheduleInvalidateRepository shipmentScheduleInvalidateRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
+				shipmentScheduleInvalidateRepo.invalidateForProduct(productId);
 			}
 		}
 	}

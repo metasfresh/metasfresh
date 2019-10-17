@@ -1,10 +1,16 @@
 package de.metas.uom;
 
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Utility class with more or less "trivial", but reusable for UOM-code.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -23,7 +29,7 @@ public class UOMUtil
 
 	/**
 	 * Minute
-	 * 
+	 *
 	 * @param uom
 	 * @return true if UOM is minute
 	 */
@@ -34,7 +40,7 @@ public class UOMUtil
 
 	/**
 	 * Hour
-	 * 
+	 *
 	 * @param uom
 	 * @return true if UOM is hour
 	 */
@@ -45,7 +51,7 @@ public class UOMUtil
 
 	/**
 	 * Day
-	 * 
+	 *
 	 * @param uom
 	 * @return true if UOM is Day
 	 */
@@ -55,9 +61,9 @@ public class UOMUtil
 	}
 
 	/**
-	 * 
+	 *
 	 * WorkDay
-	 * 
+	 *
 	 * @param uom
 	 * @return true if UOM is work day
 	 */
@@ -68,7 +74,7 @@ public class UOMUtil
 
 	/**
 	 * Week
-	 * 
+	 *
 	 * @param uom
 	 * @return true if UOM is Week
 	 */
@@ -79,7 +85,7 @@ public class UOMUtil
 
 	/**
 	 * Month
-	 * 
+	 *
 	 * @param uom
 	 * @return true if UOM is Month
 	 */
@@ -90,7 +96,7 @@ public class UOMUtil
 
 	/**
 	 * WorkMonth
-	 * 
+	 *
 	 * @param uom
 	 * @return true if UOM is Work Month
 	 */
@@ -101,7 +107,7 @@ public class UOMUtil
 
 	/**
 	 * Year
-	 * 
+	 *
 	 * @param uom
 	 * @return true if UOM is year
 	 */
@@ -112,22 +118,36 @@ public class UOMUtil
 
 	/**
 	 * Check if it's an UOM that measures time
-	 * 
+	 *
 	 * @param uom
 	 * @return true if is time UOM
 	 */
-	public static boolean isTime(I_C_UOM uom)
+	public static boolean isTime(final I_C_UOM uom)
 	{
 		final String x12de355 = uom.getX12DE355();
-
-		return UOMConstants.X12_SECOND.equals(x12de355)
-				|| UOMConstants.X12_MINUTE.equals(x12de355)
-				|| UOMConstants.X12_HOUR.equals(x12de355)
-				|| UOMConstants.X12_DAY.equals(x12de355)
-				|| UOMConstants.X12_DAY_WORK.equals(x12de355)
-				|| UOMConstants.X12_WEEK.equals(x12de355)
-				|| UOMConstants.X12_MONTH.equals(x12de355)
-				|| UOMConstants.X12_MONTH_WORK.equals(x12de355)
-				|| UOMConstants.X12_YEAR.equals(x12de355);
+		return temporalUnitsByX12DE355.containsKey(x12de355);
 	}
+
+	public static TemporalUnit toTemporalUnit(final I_C_UOM uom)
+	{
+		final String x12de355 = uom.getX12DE355();
+		final TemporalUnit unit = temporalUnitsByX12DE355.get(x12de355);
+		if (unit == null)
+		{
+			throw new AdempiereException("UOM " + x12de355 + " is not a known temporal unit");
+		}
+		return unit;
+	}
+
+	private static final ImmutableMap<String, TemporalUnit> temporalUnitsByX12DE355 = ImmutableMap.<String, TemporalUnit> builder()
+			.put(UOMConstants.X12_SECOND, ChronoUnit.SECONDS)
+			.put(UOMConstants.X12_MINUTE, ChronoUnit.MINUTES)
+			.put(UOMConstants.X12_HOUR, ChronoUnit.HOURS)
+			.put(UOMConstants.X12_DAY, ChronoUnit.DAYS)
+			// .put(UOMConstants.X12_DAY_WORK, ChronoUnit.)
+			.put(UOMConstants.X12_WEEK, ChronoUnit.WEEKS)
+			.put(UOMConstants.X12_MONTH, ChronoUnit.MONTHS)
+			// .put(UOMConstants.X12_MONTH_WORK, ChronoUnit.)
+			.put(UOMConstants.X12_YEAR, ChronoUnit.YEARS)
+			.build();
 }

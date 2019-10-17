@@ -159,7 +159,7 @@ public class HUPIItemProductDisplayNameBuilderTest
 		piItemProduct.setM_HU_PI_Item(piItem);
 		piItemProduct.setIsInfiniteCapacity(isInfiniteCapacity);
 		piItemProduct.setQty(qty);
-		piItemProduct.setC_UOM(uom);
+		piItemProduct.setC_UOM_ID(uom.getC_UOM_ID());
 		InterfaceWrapperHelper.save(piItemProduct);
 
 		return piItemProduct;

@@ -1,6 +1,8 @@
 package org.compiere.util;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -313,6 +315,16 @@ public final class CtxName
 			return sourceResult;
 		}
 		return defaultValueAsBigDecimal;
+	}
+
+	public ZonedDateTime getValueAsZonedDateTime(final Evaluatee source)
+	{
+		return TimeUtil.asZonedDateTime(getValueAsDate(source));
+	}
+
+	public LocalDate getValueAsLocalDate(final Evaluatee source)
+	{
+		return TimeUtil.asLocalDate(getValueAsDate(source));
 	}
 
 	public java.util.Date getValueAsDate(final Evaluatee source)

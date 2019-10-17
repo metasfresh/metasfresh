@@ -27,9 +27,15 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+
+import javax.annotation.Nullable;
+
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /**
  * Code taken from the book "Test Driven", Chapter 7 ("Test-driving the
@@ -38,9 +44,9 @@ import java.util.GregorianCalendar;
  * @author ts
  *
  */
+@UtilityClass
 public final class SystemTime
 {
-
 	private static final TimeSource defaultTimeSource = () -> System.currentTimeMillis();
 
 	private static TimeSource timeSource;
@@ -48,6 +54,11 @@ public final class SystemTime
 	public static long millis()
 	{
 		return getTimeSource().millis();
+	}
+
+	public static ZoneId zoneId()
+	{
+		return ZoneId.systemDefault();
 	}
 
 	public static GregorianCalendar asGregorianCalendar()
@@ -70,18 +81,29 @@ public final class SystemTime
 		return new Timestamp(millis());
 	}
 
+	public static Instant asInstant()
+	{
+		return Instant.ofEpochMilli(millis());
+	}
+
 	public static LocalDateTime asLocalDateTime()
 	{
-		return Instant.ofEpochMilli(millis())
-				.atZone(ZoneId.systemDefault())
-				.toLocalDateTime();
+		return asZonedDateTime().toLocalDateTime();
 	}
 
 	public static LocalDate asLocalDate()
 	{
-		return Instant.ofEpochMilli(millis())
-				.atZone(ZoneId.systemDefault())
-				.toLocalDate();
+		return asZonedDateTime().toLocalDate();
+	}
+
+	public static ZonedDateTime asZonedDateTime()
+	{
+		return asZonedDateTime(zoneId());
+	}
+
+	public static ZonedDateTime asZonedDateTime(@NonNull final ZoneId zoneId)
+	{
+		return asInstant().atZone(zoneId);
 	}
 
 	/**
@@ -130,9 +152,8 @@ public final class SystemTime
 	 * @param newTimeSource
 	 *            the given TimeSource will be used for the time returned by the
 	 *            methods of this class (unless it is null).
-	 *
 	 */
-	public static void setTimeSource(TimeSource newTimeSource)
+	public static void setTimeSource(@Nullable final TimeSource newTimeSource)
 	{
 		timeSource = newTimeSource;
 	}

@@ -38,6 +38,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -155,6 +156,10 @@ public class ServerMonitor extends HttpServlet
 
 	private boolean isAllowCacheReset()
 	{
+		if(Services.get(IDeveloperModeBL.class).isEnabled())
+		{
+			return true;
+		}
 		return ALLOW_CacheReset;
 	}
 
@@ -209,9 +214,8 @@ public class ServerMonitor extends HttpServlet
 		table.addElement(line);
 
 		final AdempiereProcessorLog[] logs = server.getLogs();
-		for (int i = 0; i < logs.length; i++)
+		for (final AdempiereProcessorLog pLog : logs)
 		{
-			final AdempiereProcessorLog pLog = logs[i];
 			line = new tr();
 			line.addElement(new td().addElement(WebEnv.getCellContent(pLog.getCreated())));
 			line.addElement(new td().addElement(WebEnv.getCellContent(pLog.getSummary())));
@@ -352,7 +356,9 @@ public class ServerMonitor extends HttpServlet
 		}
 
 		if (traceCmd == null || traceCmd.length() == 0)
+		{
 			return false;
+		}
 
 		log.info("Command: " + traceCmd);
 		//
@@ -443,7 +449,9 @@ public class ServerMonitor extends HttpServlet
 				final ServletOutputStream out = response.getOutputStream();
 				int read = 0;
 				while ((read = fis.read(buffer)) > 0)
+				{
 					out.write(buffer, 0, read);
+				}
 				out.flush();
 				out.close();
 				fis.close();
@@ -662,9 +670,8 @@ public class ServerMonitor extends HttpServlet
 		createLogMgtPage(bb);
 
 		// ***** Server Details *****
-		for (int i = 0; i < servers.length; i++)
+		for (final AdempiereServer server : servers)
 		{
-			final AdempiereServer server = servers[i];
 			bb.addElement(new hr());
 			bb.addElement(new a().setName(server.getServerID()));
 			bb.addElement(new h2(server.getName()));
@@ -862,15 +869,13 @@ public class ServerMonitor extends HttpServlet
 			}
 
 			// Transactions
-			final ITrx[] trxs = Services.get(ITrxManager.class).getActiveTransactions();
-			for (ITrx trx : trxs)
+			for (ITrx trx : Services.get(ITrxManager.class).getActiveTransactionsList())
 			{
 				if (trx != null && trx.isActive())
 				{
 					tr line = new tr();
 					line.addElement(new th().addElement("Active Transaction "));
-					line.addElement(new td().addElement("Name=" + trx.getTrxName()
-							+ ", StartTime=" + trx.getStartTime()));
+					line.addElement(new td().addElement("Name=" + trx.getTrxName() + ", StartTime=" + trx.getStartTime()));
 					table.addElement(line);
 				}
 			}

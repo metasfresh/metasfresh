@@ -2,8 +2,10 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
 
 import java.util.List;
 
+import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.X_M_Attribute;
 import org.junit.Assert;
 
 import de.metas.handlingunits.attribute.strategy.impl.CopyHUAttributeTransferStrategy;
@@ -58,13 +60,16 @@ public class HUShipmentProcess_AttributesAggregation_NoTemplateAttribute_Test
 	{
 		super.initialize();
 
+		this.attribute = new AttributesTestHelper().createM_Attribute("Discriminator", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+
+
 		template_huPIAttribute = null;
-		tu_huPIAttribute = helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attribute)
+		tu_huPIAttribute = helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attribute)
 				.setM_HU_PI(piTU)
 				.setUseInASI(true)
 				.setTransferStrategyClass(CopyHUAttributeTransferStrategy.class) // does not matter
 		);
-		lu_huPIAttribute = helper.createM_HU_PI_Attribute(new HUPIAttributeBuilder(attribute)
+		lu_huPIAttribute = helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attribute)
 				.setM_HU_PI(piLU)
 				.setUseInASI(true)
 				.setTransferStrategyClass(CopyHUAttributeTransferStrategy.class) // does not matter

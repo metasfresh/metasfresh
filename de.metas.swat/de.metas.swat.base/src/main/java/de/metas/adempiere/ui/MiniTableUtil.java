@@ -10,12 +10,12 @@ package de.metas.adempiere.ui;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,11 +39,11 @@ import org.compiere.model.MTable;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 
 public class MiniTableUtil
 {
@@ -128,7 +128,7 @@ public class MiniTableUtil
 	private static final String getColumnSQL(I_AD_Column column)
 	{
 		String columnSQL = column.getColumnName();
-		if (!Util.isEmpty(column.getColumnSQL()))
+		if (!Check.isEmpty(column.getColumnSQL()))
 			columnSQL = column.getColumnSQL();
 		return columnSQL;
 	}
@@ -144,11 +144,11 @@ public class MiniTableUtil
 			throw new AdempiereException(e);
 		}
 	}
-	
+
 	public static ColumnInfo[] createColumnInfo(GridTab gridTab)
 	{
 		final List<ColumnInfo> list = new ArrayList<ColumnInfo>();
-		
+
 		for (GridField gridField : gridTab.getFields())
 		{
 			final boolean isID = gridField.getDisplayType() == DisplayType.ID;

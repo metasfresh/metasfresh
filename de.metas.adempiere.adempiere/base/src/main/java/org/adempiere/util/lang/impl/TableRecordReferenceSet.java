@@ -13,7 +13,13 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.exceptions.AdempiereException;
+
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimaps;
 
 import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
@@ -144,11 +150,48 @@ public final class TableRecordReferenceSet implements Iterable<TableRecordRefere
 		return recordRefs.stream().filter(recordRef -> tableName.equals(recordRef.getTableName()));
 	}
 
+	public ListMultimap<AdTableId, Integer> extractTableId2RecordIds()
+	{
+		final ImmutableListMultimap<AdTableId, TableRecordReference> tableName2References = Multimaps.index(recordRefs, TableRecordReference::getAdTableId);
+		final ListMultimap<AdTableId, Integer> tableName2RecordIds = Multimaps.transformValues(tableName2References, TableRecordReference::getRecord_ID);
+
+		return tableName2RecordIds;
+	}
+
 	public <T extends RepoIdAware> Stream<T> streamIds(@NonNull final String tableName, @NonNull final IntFunction<T> idMapper)
 	{
 		return streamByTableName(tableName)
 				.mapToInt(TableRecordReference::getRecord_ID)
 				.mapToObj(idMapper);
+	}
+
+	public String getSingleTableName()
+	{
+		final ImmutableSet<String> tableNames = recordRefs.stream()
+				.map(TableRecordReference::getTableName)
+				.collect(ImmutableSet.toImmutableSet());
+		if (tableNames.isEmpty())
+		{
+			throw new AdempiereException("No tablename");
+		}
+		else if (tableNames.size() == 1)
+		{
+			return tableNames.iterator().next();
+		}
+		else
+		{
+			throw new AdempiereException("More than one tablename found: " + tableNames);
+		}
+	}
+
+	public Set<Integer> toIntSet()
+	{
+		// just to make sure that our records are from a single table
+		getSingleTableName();
+
+		return recordRefs.stream()
+				.map(TableRecordReference::getRecord_ID)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 }

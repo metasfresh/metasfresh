@@ -4,10 +4,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.adempiere.ad.security.IUserRolePermissions;
-import org.adempiere.ad.security.IUserRolePermissionsDAO;
-import org.adempiere.ad.security.UserRolePermissionsKey;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
 import com.google.common.base.Suppliers;
@@ -18,6 +15,9 @@ import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsBL;
 import de.metas.document.engine.IDocActionOptionsCustomizer;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.UserRolePermissionsKey;
 import de.metas.util.Services;
 
 public class DocActionOptionsBL implements IDocActionOptionsBL
@@ -48,7 +48,7 @@ public class DocActionOptionsBL implements IDocActionOptionsBL
 		if (docTypeId != null)
 		{
 			final UserRolePermissionsKey permissionsKey = optionsCtx.getUserRolePermissionsKey();
-			final IUserRolePermissions role = Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(permissionsKey);
+			final IUserRolePermissions role = Services.get(IUserRolePermissionsDAO.class).getUserRolePermissions(permissionsKey);
 			role.applyActionAccess(optionsCtx);
 		}
 	}
@@ -60,8 +60,7 @@ public class DocActionOptionsBL implements IDocActionOptionsBL
 
 	private static final ImmutableMap<String, IDocActionOptionsCustomizer> retrieveDocActionOptionsCustomizer()
 	{
-		final ImmutableMap<String, IDocActionOptionsCustomizer> customizers = Adempiere.getSpringApplicationContext().getBeansOfType(IDocActionOptionsCustomizer.class)
-				.values()
+		final ImmutableMap<String, IDocActionOptionsCustomizer> customizers = SpringContextHolder.instance.getBeansOfType(IDocActionOptionsCustomizer.class)
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(IDocActionOptionsCustomizer::getAppliesToTableName, Function.identity()));
 

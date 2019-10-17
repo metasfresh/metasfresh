@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.acct.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for Fact_Acct_Summary
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -93105674L;
+	private static final long serialVersionUID = -2077561041L;
 
     /** Standard Constructor */
     public X_Fact_Acct_Summary (Properties ctx, int Fact_Acct_Summary_ID, String trxName)
@@ -41,15 +24,15 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
       /** if (Fact_Acct_Summary_ID == 0)
         {
 			setAccount_ID (0);
-			setAmtAcctCr (Env.ZERO);
-			setAmtAcctCr_YTD (Env.ZERO);
-			setAmtAcctDr (Env.ZERO);
-			setAmtAcctDr_YTD (Env.ZERO);
+			setAmtAcctCr (BigDecimal.ZERO);
+			setAmtAcctCr_YTD (BigDecimal.ZERO);
+			setAmtAcctDr (BigDecimal.ZERO);
+			setAmtAcctDr_YTD (BigDecimal.ZERO);
 			setC_AcctSchema_ID (0);
 			setC_Period_ID (0);
 			setC_Year_ID (0);
 			setPostingType (null);
-			setQty (Env.ZERO);
+			setQty (BigDecimal.ZERO);
         } */
     }
 
@@ -69,7 +52,7 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
     }
 
 	@Override
-	public org.compiere.model.I_C_ElementValue getAccount() throws RuntimeException
+	public org.compiere.model.I_C_ElementValue getAccount()
 	{
 		return get_ValueAsPO(COLUMNNAME_Account_ID, org.compiere.model.I_C_ElementValue.class);
 	}
@@ -103,18 +86,6 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_AD_Org getAD_OrgTrx() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_OrgTrx_ID, org.compiere.model.I_AD_Org.class);
-	}
-
-	@Override
-	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_OrgTrx_ID, org.compiere.model.I_AD_Org.class, AD_OrgTrx);
 	}
 
 	/** Set Trx Organization.
@@ -160,7 +131,7 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctCr);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -179,7 +150,7 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctCr_YTD);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -201,7 +172,7 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctDr);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -220,12 +191,12 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtAcctDr_YTD);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
 	@Override
-	public org.compiere.model.I_C_AcctSchema getC_AcctSchema() throws RuntimeException
+	public org.compiere.model.I_C_AcctSchema getC_AcctSchema()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
 	}
@@ -262,7 +233,7 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	}
 
 	@Override
-	public org.compiere.model.I_C_Activity getC_Activity() throws RuntimeException
+	public org.compiere.model.I_C_Activity getC_Activity()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class);
 	}
@@ -298,18 +269,6 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
 	/** Set Business Partner .
 		@param C_BPartner_ID 
 		Identifies a Business Partner
@@ -336,7 +295,7 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	}
 
 	@Override
-	public org.compiere.model.I_C_Campaign getC_Campaign() throws RuntimeException
+	public org.compiere.model.I_C_Campaign getC_Campaign()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class);
 	}
@@ -373,7 +332,7 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	}
 
 	@Override
-	public org.compiere.model.I_C_Location getC_LocFrom() throws RuntimeException
+	public org.compiere.model.I_C_Location getC_LocFrom()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_LocFrom_ID, org.compiere.model.I_C_Location.class);
 	}
@@ -410,7 +369,7 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	}
 
 	@Override
-	public org.compiere.model.I_C_Location getC_LocTo() throws RuntimeException
+	public org.compiere.model.I_C_Location getC_LocTo()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_LocTo_ID, org.compiere.model.I_C_Location.class);
 	}
@@ -447,7 +406,7 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	}
 
 	@Override
-	public org.compiere.model.I_C_Period getC_Period() throws RuntimeException
+	public org.compiere.model.I_C_Period getC_Period()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Period_ID, org.compiere.model.I_C_Period.class);
 	}
@@ -484,7 +443,7 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	}
 
 	@Override
-	public org.compiere.model.I_C_Project getC_Project() throws RuntimeException
+	public org.compiere.model.I_C_Project getC_Project()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class);
 	}
@@ -521,7 +480,7 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	}
 
 	@Override
-	public org.compiere.model.I_C_ProjectPhase getC_ProjectPhase() throws RuntimeException
+	public org.compiere.model.I_C_ProjectPhase getC_ProjectPhase()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_ProjectPhase_ID, org.compiere.model.I_C_ProjectPhase.class);
 	}
@@ -558,7 +517,7 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	}
 
 	@Override
-	public org.compiere.model.I_C_ProjectTask getC_ProjectTask() throws RuntimeException
+	public org.compiere.model.I_C_ProjectTask getC_ProjectTask()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_ProjectTask_ID, org.compiere.model.I_C_ProjectTask.class);
 	}
@@ -595,7 +554,7 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	}
 
 	@Override
-	public org.compiere.model.I_C_SalesRegion getC_SalesRegion() throws RuntimeException
+	public org.compiere.model.I_C_SalesRegion getC_SalesRegion()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_SalesRegion_ID, org.compiere.model.I_C_SalesRegion.class);
 	}
@@ -632,7 +591,7 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	}
 
 	@Override
-	public org.compiere.model.I_C_SubAcct getC_SubAcct() throws RuntimeException
+	public org.compiere.model.I_C_SubAcct getC_SubAcct()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_SubAcct_ID, org.compiere.model.I_C_SubAcct.class);
 	}
@@ -669,7 +628,7 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	}
 
 	@Override
-	public org.compiere.model.I_C_Year getC_Year() throws RuntimeException
+	public org.compiere.model.I_C_Year getC_Year()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Year_ID, org.compiere.model.I_C_Year.class);
 	}
@@ -725,7 +684,7 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	}
 
 	@Override
-	public org.compiere.model.I_GL_Budget getGL_Budget() throws RuntimeException
+	public org.compiere.model.I_GL_Budget getGL_Budget()
 	{
 		return get_ValueAsPO(COLUMNNAME_GL_Budget_ID, org.compiere.model.I_GL_Budget.class);
 	}
@@ -761,18 +720,6 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
-	}
-
 	/** Set Produkt.
 		@param M_Product_ID 
 		Produkt, Leistung, Artikel
@@ -799,7 +746,7 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	}
 
 	@Override
-	public org.compiere.model.I_PA_ReportCube getPA_ReportCube() throws RuntimeException
+	public org.compiere.model.I_PA_ReportCube getPA_ReportCube()
 	{
 		return get_ValueAsPO(COLUMNNAME_PA_ReportCube_ID, org.compiere.model.I_PA_ReportCube.class);
 	}
@@ -850,6 +797,8 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	public static final String POSTINGTYPE_Statistical = "S";
 	/** Reservation = R */
 	public static final String POSTINGTYPE_Reservation = "R";
+	/** Actual Year End = Y */
+	public static final String POSTINGTYPE_ActualYearEnd = "Y";
 	/** Set PostingType.
 		@param PostingType 
 		The type of posted amount for the transaction
@@ -888,12 +837,12 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
 	@Override
-	public org.compiere.model.I_C_ElementValue getUser1() throws RuntimeException
+	public org.compiere.model.I_C_ElementValue getUser1()
 	{
 		return get_ValueAsPO(COLUMNNAME_User1_ID, org.compiere.model.I_C_ElementValue.class);
 	}
@@ -930,7 +879,7 @@ public class X_Fact_Acct_Summary extends org.compiere.model.PO implements I_Fact
 	}
 
 	@Override
-	public org.compiere.model.I_C_ElementValue getUser2() throws RuntimeException
+	public org.compiere.model.I_C_ElementValue getUser2()
 	{
 		return get_ValueAsPO(COLUMNNAME_User2_ID, org.compiere.model.I_C_ElementValue.class);
 	}

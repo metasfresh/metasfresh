@@ -13,15 +13,14 @@ package de.metas.dunning;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.text.ParseException;
@@ -31,8 +30,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
-import org.adempiere.acct.api.IPostingService;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
@@ -43,11 +40,9 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.document.service.impl.DummyDocumentLocationBL;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.impl.PlainInvoiceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
 import org.junit.After;
 import org.junit.Before;
@@ -55,6 +50,9 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
+import de.metas.acct.api.IPostingService;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -76,6 +74,7 @@ import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.impl.MockedCloseableIterator;
 import de.metas.dunning.spi.impl.MockedDunnableSource;
+import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 
 public class DunningTestBase
@@ -97,9 +96,9 @@ public class DunningTestBase
 	protected PlainInvoiceBL invoiceBL;
 	protected PlainDunningUtil dunningUtil;
 
-	protected I_C_Currency currencyEUR;
-	protected I_C_Currency currencyCHF;
-	protected final IDunningBL dunningBL = Services.get(IDunningBL.class);;
+	protected CurrencyId currencyEUR;
+	protected CurrencyId currencyCHF;
+	protected final IDunningBL dunningBL = Services.get(IDunningBL.class);
 
 	@Before
 	public final void beforeTest()
@@ -125,8 +124,6 @@ public class DunningTestBase
 		final PlainDocumentBL docActionBL = (PlainDocumentBL)Services.get(IDocumentBL.class);
 		docActionBL.setDefaultProcessInterceptor(PlainDocumentBL.PROCESSINTERCEPTOR_CompleteDirectly);
 
-
-
 		MockedCloseableIterator.clear();
 
 		//
@@ -140,19 +137,8 @@ public class DunningTestBase
 
 		//
 		// now set up master data
-		currencyEUR = InterfaceWrapperHelper.create(ctx, I_C_Currency.class, ITrx.TRXNAME_None);
-		currencyEUR.setISO_Code("EUR");
-		currencyEUR.setStdPrecision(2);
-		currencyEUR.setIsEuro(true);
-		InterfaceWrapperHelper.save(currencyEUR);
-		POJOWrapper.enableStrictValues(currencyEUR);
-
-		currencyCHF = InterfaceWrapperHelper.create(ctx, I_C_Currency.class, ITrx.TRXNAME_None);
-		currencyCHF.setISO_Code("CHF");
-		currencyCHF.setStdPrecision(2);
-		currencyCHF.setIsEuro(true);
-		InterfaceWrapperHelper.save(currencyCHF);
-		POJOWrapper.enableStrictValues(currencyCHF);
+		currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
+		currencyCHF = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
 
 		createMasterData();
 	}
@@ -171,7 +157,7 @@ public class DunningTestBase
 
 	protected void generateDunningCandidates(final PlainDunningContext dunningContext)
 	{
-		for (final I_C_Dunning dunning : dao.retrieveDunnings(dunningContext.getCtx()))
+		for (final I_C_Dunning dunning : dao.retrieveDunnings())
 		{
 			for (final I_C_DunningLevel dunningLevel : dao.retrieveDunningLevels(dunning))
 			{
@@ -277,7 +263,7 @@ public class DunningTestBase
 		level.setDaysBetweenDunning(DaysBetweenDunning);
 		level.setDaysAfterDue(BigDecimal.valueOf(DaysAfterDue));
 		level.setInterestPercent(BigDecimal.valueOf(InterestPercent));
-		level.setFeeAmt(Env.ZERO);
+		level.setFeeAmt(BigDecimal.ZERO);
 		level.setIsWriteOff(false);
 
 		dao.save(level);

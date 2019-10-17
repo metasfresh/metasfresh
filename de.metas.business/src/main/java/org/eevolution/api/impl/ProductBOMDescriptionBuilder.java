@@ -1,8 +1,8 @@
 package org.eevolution.api.impl;
 
+import java.math.BigDecimal;
 import java.util.stream.Collectors;
 
-import org.adempiere.uom.api.IUOMDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IProductBOMDAO;
@@ -13,6 +13,7 @@ import com.google.common.base.Predicates;
 
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -67,7 +68,8 @@ final class ProductBOMDescriptionBuilder
 				.stream()
 				.map(this::toBOMLineString)
 				.filter(Predicates.notNull())
-				.collect(Collectors.joining("\r\n"));
+				.collect(Collectors.joining("\r\n"))
+				.trim();
 	}
 
 	private String toBOMLineString(final I_PP_Product_BOMLine bomLine)
@@ -81,12 +83,11 @@ final class ProductBOMDescriptionBuilder
 		final String qtyStr = toBOMLineQtyAndUOMString(bomLine);
 
 		return new StringBuilder()
-				.append(product.getValue())
-				.append(" ")
 				.append(product.getName())
 				.append(" ")
 				.append(qtyStr)
-				.toString();
+				.toString()
+				.trim();
 	}
 
 	private String toBOMLineQtyAndUOMString(final I_PP_Product_BOMLine bomLine)
@@ -94,6 +95,10 @@ final class ProductBOMDescriptionBuilder
 		if (bomLine.isQtyPercentage())
 		{
 			return NumberUtils.stripTrailingDecimalZeros(bomLine.getQtyBatch()) + "%";
+		}
+		else if (BigDecimal.ONE.equals(bomLine.getQtyBOM()))
+		{
+			return "";
 		}
 		else
 		{

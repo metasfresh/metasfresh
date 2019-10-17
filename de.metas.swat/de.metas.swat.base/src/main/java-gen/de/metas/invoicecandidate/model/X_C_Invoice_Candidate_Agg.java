@@ -14,7 +14,7 @@ public class X_C_Invoice_Candidate_Agg extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1635267573L;
+	private static final long serialVersionUID = -1517917749L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate_Agg (Properties ctx, int C_Invoice_Candidate_Agg_ID, String trxName)
@@ -42,18 +42,6 @@ public class X_C_Invoice_Candidate_Agg extends org.compiere.model.PO implements 
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
 
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
@@ -138,7 +126,7 @@ public class X_C_Invoice_Candidate_Agg extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public de.metas.invoicecandidate.model.I_M_ProductGroup getM_ProductGroup() throws RuntimeException
+	public de.metas.invoicecandidate.model.I_M_ProductGroup getM_ProductGroup()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_ProductGroup_ID, de.metas.invoicecandidate.model.I_M_ProductGroup.class);
 	}
@@ -175,9 +163,7 @@ public class X_C_Invoice_Candidate_Agg extends org.compiere.model.PO implements 
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -185,8 +171,7 @@ public class X_C_Invoice_Candidate_Agg extends org.compiere.model.PO implements 
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{

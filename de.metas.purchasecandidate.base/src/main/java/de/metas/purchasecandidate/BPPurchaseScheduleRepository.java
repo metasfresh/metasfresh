@@ -286,7 +286,7 @@ public class BPPurchaseScheduleRepository
 	public BPPurchaseSchedule save(@NonNull final BPPurchaseSchedule schedule)
 	{
 		final I_C_BP_PurchaseSchedule scheduleRecord = createOrUpdateRecord(schedule);
-		saveRecord(schedule);
+		saveRecord(scheduleRecord);
 
 		return schedule.toBuilder()
 				.bpPurchaseScheduleId(BPPurchaseScheduleId.ofRepoId(scheduleRecord.getC_BP_PurchaseSchedule_ID()))

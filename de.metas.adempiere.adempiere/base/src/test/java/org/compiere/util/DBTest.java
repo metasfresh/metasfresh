@@ -15,34 +15,39 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Consumer;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import de.metas.util.Check;
-
 public class DBTest
 {
-	@Test(expected = AdempiereException.class)
+	@Test(expected = NullPointerException.class)
 	public void test_buildSqlList_null_paramsOut()
 	{
-		Check.setDefaultExClass(AdempiereException.class); // setting the exception that a failing assumption shall throw
-		DB.buildSqlList(new ArrayList<>(), null);
+		final List<Object> paramsOut = null;
+		DB.buildSqlList(new ArrayList<>(), paramsOut);
+	}
+
+	@Test(expected = NullPointerException.class)
+	public void test_buildSqlList_null_paramsOutCollector()
+	{
+		final Consumer<Collection<? extends Object>> paramsOutCollector = null;
+		DB.buildSqlList(new ArrayList<>(), paramsOutCollector);
 	}
 
 	@Test
@@ -50,7 +55,7 @@ public class DBTest
 	{
 		{
 			final List<Object> paramsOut = new ArrayList<>();
-			final String sql = DB.buildSqlList(null, paramsOut);
+			final String sql = DB.buildSqlList((Collection<? extends Object>)null, paramsOut);
 			Assert.assertTrue("paramsOut shall be empty: " + paramsOut, paramsOut.isEmpty());
 			Assert.assertEquals("sql shall be empty list", DB.SQL_EmptyList, sql);
 		}

@@ -1,22 +1,23 @@
 package de.metas.material.planning.pporder.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.math.BigDecimal;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.uom.api.impl.UOMTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
+import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.product.ProductId;
+import de.metas.uom.impl.UOMTestHelper;
 
 /*
  * #%L
@@ -50,12 +51,12 @@ public class PPOrderBOMBL_calculateQtyToIssueBasedOnFinishedGoodReceipt_Test
 	// Master data
 	private I_C_UOM uomMm;
 	private I_C_UOM uomEa;
-//	private I_M_Product pABAliceSalad;
-//	private I_M_Product pFolie;
+	// private I_M_Product pABAliceSalad;
+	// private I_M_Product pFolie;
 	private I_PP_Order ppOrder;
 	private I_PP_Order_BOMLine ppOrderBOMLine;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -78,21 +79,20 @@ public class PPOrderBOMBL_calculateQtyToIssueBasedOnFinishedGoodReceipt_Test
 		// Finished good
 		ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class);
 		ppOrder.setM_Product_ID(pABAliceSalad.getRepoId());
-		ppOrder.setC_UOM(uomEa);
+		ppOrder.setC_UOM_ID(uomEa.getC_UOM_ID());
 
 		PPOrderBOMBL_TestUtils.setCommonValues(ppOrder);
-		
+
 		// Component
 		ppOrderBOMLine = InterfaceWrapperHelper.newInstance(I_PP_Order_BOMLine.class);
 		ppOrderBOMLine.setPP_Order(ppOrder);
-		ppOrderBOMLine.setComponentType(X_PP_Order_BOMLine.COMPONENTTYPE_Packing);
+		ppOrderBOMLine.setComponentType(BOMComponentType.Packing.getCode());
 		ppOrderBOMLine.setM_Product_ID(pFolie.getRepoId());
 		ppOrderBOMLine.setC_UOM(uomMm);
 		ppOrderBOMLine.setQtyRequiered(null);
 
 		PPOrderBOMBL_TestUtils.setCommonValues(ppOrderBOMLine);
 	}
-
 
 	/**
 	 * Setup standard "P000787_AB Alicesalat 250g" test case.
@@ -125,9 +125,10 @@ public class PPOrderBOMBL_calculateQtyToIssueBasedOnFinishedGoodReceipt_Test
 
 	private void assertQtyToIssueBasedOnFinishedGoodReceived(final String expectedStr)
 	{
-		final BigDecimal expected = new BigDecimal(expectedStr);
-		final BigDecimal actual = ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM()).getAsBigDecimal();
-		Assert.assertThat("Invalid calculated QtyToIssue based on finished goods received", actual, Matchers.comparesEqualTo(expected));
+		final BigDecimal actual = ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM()).toBigDecimal();
+		assertThat(actual)
+				.as("qtyToIssue based on finished goods received")
+				.isEqualByComparingTo(expectedStr);
 	}
 
 	@Test
@@ -229,7 +230,7 @@ public class PPOrderBOMBL_calculateQtyToIssueBasedOnFinishedGoodReceipt_Test
 			ppOrder.setQtyDelivered(new BigDecimal("0")); // i.e. Qty Receipt
 
 			PPOrderBOMBL_TestUtils.setCommonValues(ppOrder);
-			
+
 			// Component
 			ppOrderBOMLine.setIssueMethod(X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived);
 			ppOrderBOMLine.setIsQtyPercentage(false);
@@ -263,7 +264,9 @@ public class PPOrderBOMBL_calculateQtyToIssueBasedOnFinishedGoodReceipt_Test
 		//
 		// Over produce finished goods, lets say additional +10Ea, so it will be 110Ea in sum
 		ppOrder.setQtyDelivered(ppOrder.getQtyDelivered().add(new BigDecimal("10")));
-		Assert.assertThat("Invalid PP_Order.QtyDelivered", ppOrder.getQtyDelivered(), Matchers.comparesEqualTo(new BigDecimal("110")));
+		assertThat(ppOrder.getQtyDelivered())
+				.as("PP_Order.QtyDelivered")
+				.isEqualByComparingTo("110");
 		assertQtyToIssueBasedOnFinishedGoodReceived("3500"); // (110 - 100) x 350
 
 		//

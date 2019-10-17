@@ -2,6 +2,7 @@ package de.metas.rfq.exceptions;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.rfq.RfQResponsePublisherRequest;
 
 /*
@@ -64,7 +65,7 @@ public class RfQPublishException extends RfQException
 	@Override
 	protected ITranslatableString buildMessage()
 	{
-		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder message = TranslatableStrings.builder();
 		message.appendADMessage("Error");
 		if (request != null)
 		{

@@ -14,7 +14,7 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1018450953L;
+	private static final long serialVersionUID = 644045757L;
 
     /** Standard Constructor */
     public X_AD_Tab (Properties ctx, int AD_Tab_ID, String trxName)
@@ -22,9 +22,11 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
       super (ctx, AD_Tab_ID, trxName);
       /** if (AD_Tab_ID == 0)
         {
+			setAD_Element_ID (0);
 			setAD_Tab_ID (0);
 			setAD_Table_ID (0);
 			setAD_Window_ID (0);
+			setAllowQuickInput (true); // Y
 			setEntityType (null); // U
 			setHasTree (false);
 			setIsAdvancedTab (false); // N
@@ -33,6 +35,7 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 			setIsInsertRecord (true); // Y
 			setIsReadOnly (false);
 			setIsRefreshAllOnActivate (false); // N
+			setIsRefreshViewOnChangeEvents (false); // N
 			setIsSearchCollapsed (true); // Y
 			setIsSingleRow (false);
 			setIsSortTab (false); // N
@@ -164,6 +167,43 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	public int getAD_ColumnSortYesNo_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_ColumnSortYesNo_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Element getAD_Element() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Element_ID, org.compiere.model.I_AD_Element.class);
+	}
+
+	@Override
+	public void setAD_Element(org.compiere.model.I_AD_Element AD_Element)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Element_ID, org.compiere.model.I_AD_Element.class, AD_Element);
+	}
+
+	/** Set System-Element.
+		@param AD_Element_ID 
+		Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
+	  */
+	@Override
+	public void setAD_Element_ID (int AD_Element_ID)
+	{
+		if (AD_Element_ID < 1) 
+			set_Value (COLUMNNAME_AD_Element_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Element_ID, Integer.valueOf(AD_Element_ID));
+	}
+
+	/** Get System-Element.
+		@return Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
+	  */
+	@Override
+	public int getAD_Element_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Element_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -379,6 +419,29 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 		return ii.intValue();
 	}
 
+	/** Set Schnelleingabe einschalten.
+		@param AllowQuickInput Schnelleingabe einschalten	  */
+	@Override
+	public void setAllowQuickInput (boolean AllowQuickInput)
+	{
+		set_Value (COLUMNNAME_AllowQuickInput, Boolean.valueOf(AllowQuickInput));
+	}
+
+	/** Get Schnelleingabe einschalten.
+		@return Schnelleingabe einschalten	  */
+	@Override
+	public boolean isAllowQuickInput () 
+	{
+		Object oo = get_Value(COLUMNNAME_AllowQuickInput);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Speicherwarnung.
 		@param CommitWarning 
 		Warning displayed when saving
@@ -576,6 +639,25 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Interner Name.
+		@param InternalName 
+		Generally used to give records a name that can be safely referenced from code.
+	  */
+	@Override
+	public void setInternalName (java.lang.String InternalName)
+	{
+		set_Value (COLUMNNAME_InternalName, InternalName);
+	}
+
+	/** Get Interner Name.
+		@return Generally used to give records a name that can be safely referenced from code.
+	  */
+	@Override
+	public java.lang.String getInternalName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_InternalName);
 	}
 
 	/** Set Advanced Tab.
@@ -783,6 +865,29 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 		return false;
 	}
 
+	/** Set Refresh view on change events.
+		@param IsRefreshViewOnChangeEvents Refresh view on change events	  */
+	@Override
+	public void setIsRefreshViewOnChangeEvents (boolean IsRefreshViewOnChangeEvents)
+	{
+		set_Value (COLUMNNAME_IsRefreshViewOnChangeEvents, Boolean.valueOf(IsRefreshViewOnChangeEvents));
+	}
+
+	/** Get Refresh view on change events.
+		@return Refresh view on change events	  */
+	@Override
+	public boolean isRefreshViewOnChangeEvents () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsRefreshViewOnChangeEvents);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Search Active.
 		@param IsSearchActive 
 		This mark activates the search button from toolbar
@@ -933,9 +1038,7 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -943,8 +1046,7 @@ public class X_AD_Tab extends org.compiere.model.PO implements I_AD_Tab, org.com
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{

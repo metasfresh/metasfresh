@@ -52,14 +52,15 @@ FROM
 			--
 			, C_Element_Levels lvl
 				INNER JOIN (
-					SELECT C_ElementValue_ID
+					SELECT ev.C_ElementValue_ID
 					-- NOTE: by customer requirement, we are not considering the account sign but always DR - CR
 					, 1 as Multiplicator
 					-- , acctBalance(C_ElementValue_ID, 1, 0) AS Multiplicator
-					, ad_client_id
-					, AccountType
-					FROM C_ElementValue
-					WHERE isActive = 'Y'
+					, ev.ad_client_id
+					, ev.AccountType
+					FROM C_ElementValue ev
+					JOIN C_Element e on e.C_Element_id = ev.C_Element_ID
+					WHERE ev.isActive = 'Y' and e.IsNaturalAccount='Y'
 				) ev ON (lvl.C_ElementValue_ID = ev.C_ElementValue_ID)
 				LEFT OUTER JOIN AD_ClientInfo ci ON (ci.AD_Client_ID=ev.AD_Client_ID) AND ci.isActive = 'Y'
 				LEFT OUTER JOIN C_AcctSchema acs ON (acs.C_AcctSchema_ID=ci.C_AcctSchema1_ID) AND acs.isActive = 'Y'

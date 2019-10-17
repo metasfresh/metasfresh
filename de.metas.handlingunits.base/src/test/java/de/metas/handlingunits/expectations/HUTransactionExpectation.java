@@ -94,7 +94,7 @@ public class HUTransactionExpectation<ParentExpectationType> extends AbstractHUE
 		}
 		if (_qty != null)
 		{
-			assertEquals(prefix + "Qty", _qty, transaction.getQuantity().getAsBigDecimal());
+			assertEquals(prefix + "Qty", _qty, transaction.getQuantity().toBigDecimal());
 		}
 		if (_uom != null)
 		{

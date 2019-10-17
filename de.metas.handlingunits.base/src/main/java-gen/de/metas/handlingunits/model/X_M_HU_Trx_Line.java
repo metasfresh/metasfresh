@@ -15,7 +15,7 @@ public class X_M_HU_Trx_Line extends org.compiere.model.PO implements I_M_HU_Trx
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1606928726L;
+	private static final long serialVersionUID = 619011036L;
 
     /** Standard Constructor */
     public X_M_HU_Trx_Line (Properties ctx, int M_HU_Trx_Line_ID, String trxName)
@@ -45,7 +45,7 @@ public class X_M_HU_Trx_Line extends org.compiere.model.PO implements I_M_HU_Trx
     }
 
 	@Override
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
+	public org.compiere.model.I_AD_Table getAD_Table()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
 	}
@@ -79,18 +79,6 @@ public class X_M_HU_Trx_Line extends org.compiere.model.PO implements I_M_HU_Trx
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
 	}
 
 	/** Set Maßeinheit.
@@ -172,7 +160,7 @@ public class X_M_HU_Trx_Line extends org.compiere.model.PO implements I_M_HU_Trx
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU getM_HU() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU getM_HU()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
 	}
@@ -183,8 +171,8 @@ public class X_M_HU_Trx_Line extends org.compiere.model.PO implements I_M_HU_Trx
 		set_ValueFromPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU);
 	}
 
-	/** Set Handling Units.
-		@param M_HU_ID Handling Units	  */
+	/** Set Handling Unit.
+		@param M_HU_ID Handling Unit	  */
 	@Override
 	public void setM_HU_ID (int M_HU_ID)
 	{
@@ -194,8 +182,8 @@ public class X_M_HU_Trx_Line extends org.compiere.model.PO implements I_M_HU_Trx
 			set_Value (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
 	}
 
-	/** Get Handling Units.
-		@return Handling Units	  */
+	/** Get Handling Unit.
+		@return Handling Unit	  */
 	@Override
 	public int getM_HU_ID () 
 	{
@@ -206,7 +194,7 @@ public class X_M_HU_Trx_Line extends org.compiere.model.PO implements I_M_HU_Trx
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_Item getM_HU_Item() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_Item getM_HU_Item()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_Item_ID, de.metas.handlingunits.model.I_M_HU_Item.class);
 	}
@@ -240,7 +228,7 @@ public class X_M_HU_Trx_Line extends org.compiere.model.PO implements I_M_HU_Trx
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_Trx_Hdr getM_HU_Trx_Hdr() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_Trx_Hdr getM_HU_Trx_Hdr()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_Trx_Hdr_ID, de.metas.handlingunits.model.I_M_HU_Trx_Hdr.class);
 	}
@@ -295,18 +283,6 @@ public class X_M_HU_Trx_Line extends org.compiere.model.PO implements I_M_HU_Trx
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Locator getM_Locator() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class);
-	}
-
-	@Override
-	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class, M_Locator);
-	}
-
 	/** Set Lagerort.
 		@param M_Locator_ID 
 		Lagerort im Lager
@@ -330,18 +306,6 @@ public class X_M_HU_Trx_Line extends org.compiere.model.PO implements I_M_HU_Trx
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.
@@ -370,7 +334,7 @@ public class X_M_HU_Trx_Line extends org.compiere.model.PO implements I_M_HU_Trx
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_Trx_Line getParent_HU_Trx_Line() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_Trx_Line getParent_HU_Trx_Line()
 	{
 		return get_ValueAsPO(COLUMNNAME_Parent_HU_Trx_Line_ID, de.metas.handlingunits.model.I_M_HU_Trx_Line.class);
 	}
@@ -477,7 +441,7 @@ public class X_M_HU_Trx_Line extends org.compiere.model.PO implements I_M_HU_Trx
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_Trx_Line getReversalLine() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_Trx_Line getReversalLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_ReversalLine_ID, de.metas.handlingunits.model.I_M_HU_Trx_Line.class);
 	}
@@ -511,7 +475,7 @@ public class X_M_HU_Trx_Line extends org.compiere.model.PO implements I_M_HU_Trx
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_Item getVHU_Item() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_Item getVHU_Item()
 	{
 		return get_ValueAsPO(COLUMNNAME_VHU_Item_ID, de.metas.handlingunits.model.I_M_HU_Item.class);
 	}

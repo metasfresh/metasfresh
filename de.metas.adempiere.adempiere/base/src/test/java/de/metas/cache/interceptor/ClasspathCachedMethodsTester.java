@@ -27,6 +27,7 @@ import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
 import org.junit.Assert;
@@ -58,7 +59,6 @@ public class ClasspathCachedMethodsTester
 
 	public ClasspathCachedMethodsTester()
 	{
-		super();
 		javaAssistInterceptor = new JavaAssistInterceptor();
 	}
 
@@ -71,6 +71,12 @@ public class ClasspathCachedMethodsTester
 
 		final Set<Method> methods = reflections.getMethodsAnnotatedWith(Cached.class);
 		System.out.println("Found " + methods.size() + " methods annotated with " + Cached.class);
+
+		if(methods.isEmpty())
+		{
+			throw new AdempiereException("No classes found. Might be because for some reason Reflections does not work correctly with maven surefire plugin."
+					+ "\n See https://github.com/metasfresh/metasfresh/issues/4773.");
+		}
 
 		for (final Method method : methods)
 		{

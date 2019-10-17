@@ -73,7 +73,7 @@ public class CalloutShipperTransportation extends CalloutEngine
 		String swingclassname = "de.metas.shipping.compiere.form.VCreateFromPackage";
 		String zkclassname = "de.metas.shipping.adempiere.webui.form.WCreateFromPackage";
 		String classname;
-		if (Ini.isClient())
+		if (Ini.isSwingClient())
 			classname = swingclassname;
 		else
 			classname = zkclassname;
@@ -81,7 +81,7 @@ public class CalloutShipperTransportation extends CalloutEngine
 		ICreateFrom cf = null;
 		Class cl;
 		try {
-			if (Ini.isClient())
+			if (Ini.isSwingClient())
 				cl = Class.forName(classname);
 			else
 				cl = Thread.currentThread().getContextClassLoader().loadClass(classname);

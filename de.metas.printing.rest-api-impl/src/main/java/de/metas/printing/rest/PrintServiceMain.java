@@ -2,7 +2,6 @@ package de.metas.printing.rest;
 
 import java.util.Collections;
 
-import org.adempiere.ad.security.UserAuthTokenRepository;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.model.ModelValidationEngine;
@@ -14,9 +13,15 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import de.metas.JsonObjectMapperHolder;
+import de.metas.MetasfreshBeanNameGenerator;
 import de.metas.Profiles;
+import de.metas.security.UserAuthTokenRepository;
 import de.metas.util.StringUtils;
 import de.metas.util.web.security.UserAuthTokenFilter;
 import de.metas.util.web.security.UserAuthTokenService;
@@ -70,7 +75,15 @@ public class PrintServiceMain
 				.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
 				.web(true)
 				.profiles(Profiles.PROFILE_PrintService)
+				.beanNameGenerator(new MetasfreshBeanNameGenerator())
 				.run(args);
+	}
+
+	@Bean
+	@Primary
+	public ObjectMapper jsonObjectMapper()
+	{
+		return JsonObjectMapperHolder.sharedJsonObjectMapper();
 	}
 
 	@Profile(Profiles.PROFILE_NotTest)

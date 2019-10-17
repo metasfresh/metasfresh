@@ -8,12 +8,12 @@ import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -37,6 +37,7 @@ import de.metas.material.planning.ddorder.DDOrderAdvisedEventCreator;
 import de.metas.material.planning.ddorder.DDOrderPojoSupplier;
 import de.metas.material.planning.pporder.PPOrderAdvisedEventCreator;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -64,7 +65,7 @@ import lombok.NonNull;
  */
 
 @Service
-@Profile(Profiles.PROFILE_App) // we want only one component to bother itself with SupplyRequiredEvent
+@Profile(Profiles.PROFILE_App) // we want only one component to bother itself with SupplyRequiredEvents
 public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequiredEvent>
 {
 	private final DDOrderAdvisedEventCreator dDOrderAdvisedEventCreator;
@@ -126,15 +127,15 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
 		final I_S_Resource plant = productPlanningDAO.findPlant(
-				eventDescr.getOrgId(),
+				eventDescr.getOrgId().getRepoId(),
 				warehouse,
 				materialDescr.getProductId(),
 				materialDescr.getAttributeSetInstanceId());
 
 		final ProductPlanningQuery productPlanningQuery = ProductPlanningQuery.builder()
 				.orgId(eventDescr.getOrgId())
-				.warehouseId(WarehouseId.ofRepoId(materialDescr.getWarehouseId()))
-				.plantId(plant.getS_Resource_ID())
+				.warehouseId(materialDescr.getWarehouseId())
+				.plantId(ResourceId.ofRepoId(plant.getS_Resource_ID()))
 				.productId(ProductId.ofRepoId(materialDescr.getProductId()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(materialDescr.getAttributeSetInstanceId()))
 				.build();
@@ -142,7 +143,7 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(productPlanningQuery);
 		if (productPlanning == null)
 		{
-			Loggables.get().addLog("No PP_Product_Planning record found; query={}", productPlanningQuery);
+			Loggables.addLog("No PP_Product_Planning record found => nothing to do; query={}", productPlanningQuery);
 			return null;
 		}
 
@@ -153,7 +154,7 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 		mrpContext.setM_Product(product);
 		mrpContext.setM_AttributeSetInstance_ID(materialDescr.getAttributeSetInstanceId());
 		mrpContext.setM_Warehouse(warehouse);
-		mrpContext.setDate(materialDescr.getDate());
+		mrpContext.setDate(TimeUtil.asDate(materialDescr.getDate()));
 		mrpContext.setCtx(Env.getCtx());
 		mrpContext.setTrxName(ITrx.TRXNAME_ThreadInherited);
 

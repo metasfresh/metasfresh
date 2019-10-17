@@ -13,7 +13,8 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import de.metas.JsonObjectMapperHolder;
 
 /*
  * #%L
@@ -45,8 +46,7 @@ public class ReceiverPostResonseJsonTest
 	{
 		final String serializedResponse = "[{\"status\":\"upsert success\",\"id\":\"6\"},\"invalid address 'test3-invalidmail';\",{\"status\":\"upsert success\",\"id\":\"7\"}]";
 
-		final ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.registerModule(new JavaTimeModule());
+		final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
 		final List<Object> resultList = JsonParserFactory.getJsonParser().parseList(serializedResponse);

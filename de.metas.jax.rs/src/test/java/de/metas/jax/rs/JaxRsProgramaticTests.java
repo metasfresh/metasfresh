@@ -13,11 +13,11 @@ package de.metas.jax.rs;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -27,6 +27,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -36,6 +37,7 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.TransportConnector;
@@ -46,6 +48,7 @@ import org.apache.cxf.jaxrs.client.JAXRSClientFactory;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.transport.jms.JMSConfigFeature;
 import org.apache.cxf.transport.jms.JMSConfiguration;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
@@ -61,16 +64,37 @@ import de.metas.jax.rs.testService2.TestService2;
  */
 public class JaxRsProgramaticTests
 {
-
-	private static final String JMS_URL = "tcp://localhost:61616";
 	private static final String JMS_QUEUE = "test.de.metas.jax.rs.jmstransport.queue";
+	private int jmsPort;
+	private String jmsServerUrl;
+	private String jmsClientUrl;
 
-	private static final String CLIENT_ADDRESS_URL_ENCODED = ""
-			+ "jms:jndi:dynamicQueues/" + JMS_QUEUE
-			+ "?jndiInitialContextFactory=org.apache.activemq.jndi.ActiveMQInitialContextFactory"
-			+ "&replyToName=dynamicQueues/test.de.metas.jax.rs.jmstransport.response"
-			+ "&jndiURL=" + JMS_URL
-			+ "&connectionFactoryName=jmsConnectionFactory";
+	@Before
+	public void init()
+	{
+		jmsPort = findRandomOpenPort();
+		jmsServerUrl = "tcp://localhost:" + jmsPort;
+		jmsClientUrl = ""
+				+ "jms:jndi:dynamicQueues/" + JMS_QUEUE
+				+ "?jndiInitialContextFactory=org.apache.activemq.jndi.ActiveMQInitialContextFactory"
+				+ "&replyToName=dynamicQueues/test.de.metas.jax.rs.jmstransport.response"
+				+ "&jndiURL=" + jmsServerUrl
+				+ "&connectionFactoryName=jmsConnectionFactory";
+
+		System.out.println("Using JMS port: " + jmsPort);
+	}
+
+	private static int findRandomOpenPort()
+	{
+		try (ServerSocket socket = new ServerSocket(0))
+		{
+			return socket.getLocalPort();
+		}
+		catch (IOException ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
+	}
 
 	@Test
 	public void testServerWithJmsTransport() throws Exception
@@ -113,7 +137,7 @@ public class JaxRsProgramaticTests
 
 	private JMSConfigFeature setupJMSConfiguration()
 	{
-		final ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(JMS_URL);
+		final ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(jmsServerUrl);
 
 		final JMSConfiguration conf = new JMSConfiguration();
 		conf.setConnectionFactory(connectionFactory);
@@ -133,7 +157,7 @@ public class JaxRsProgramaticTests
 		broker.setPersistenceAdapter(new MemoryPersistenceAdapter());
 		broker.setDataDirectory("target/activemq-data");
 		final TransportConnector connector = new TransportConnector();
-		connector.setUri(new URI(JMS_URL));
+		connector.setUri(new URI(jmsServerUrl));
 		broker.addConnector(connector);
 		broker.start();
 
@@ -153,7 +177,7 @@ public class JaxRsProgramaticTests
 		//
 		// setting up the 1st client
 		final ITestService client = JAXRSClientFactory.create(
-				CLIENT_ADDRESS_URL_ENCODED,
+				jmsClientUrl,
 				ITestService.class,
 				Collections.singletonList(jacksonJaxbJsonProvider));
 		assertThat(client, notNullValue());
@@ -167,7 +191,7 @@ public class JaxRsProgramaticTests
 		//
 		// setting up the 2nd client
 		final ITestService2 client2 = JAXRSClientFactory.create(
-				CLIENT_ADDRESS_URL_ENCODED,
+				jmsClientUrl,
 				ITestService2.class,
 				Collections.singletonList(jacksonJaxbJsonProvider));
 		assertThat(client2, notNullValue());

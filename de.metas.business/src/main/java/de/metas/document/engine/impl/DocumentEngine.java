@@ -45,9 +45,6 @@ import static de.metas.document.engine.IDocument.STATUS_WaitingPayment;
 
 import java.util.Set;
 
-import org.adempiere.acct.api.IFactAcctDAO;
-import org.adempiere.acct.api.IPostingRequestBuilder.PostImmediate;
-import org.adempiere.acct.api.IPostingService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.slf4j.Logger;
@@ -55,6 +52,9 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.api.IPostingService;
+import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.document.engine.IDocument;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;

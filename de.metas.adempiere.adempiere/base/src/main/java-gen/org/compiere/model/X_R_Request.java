@@ -15,7 +15,7 @@ public class X_R_Request extends org.compiere.model.PO implements I_R_Request, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1384303322L;
+	private static final long serialVersionUID = 870790799L;
 
     /** Standard Constructor */
     public X_R_Request (Properties ctx, int R_Request_ID, String trxName)
@@ -293,9 +293,9 @@ public class X_R_Request extends org.compiere.model.PO implements I_R_Request, o
 	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
 	}
 
 	/** Get Business Partner .
@@ -636,6 +636,25 @@ public class X_R_Request extends org.compiere.model.PO implements I_R_Request, o
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateCompletePlan);
 	}
 
+	/** Set Lieferdatum.
+		@param DateDelivered 
+		Datum, zu dem die Ware geliefert wurde
+	  */
+	@Override
+	public void setDateDelivered (java.sql.Timestamp DateDelivered)
+	{
+		set_Value (COLUMNNAME_DateDelivered, DateDelivered);
+	}
+
+	/** Get Lieferdatum.
+		@return Datum, zu dem die Ware geliefert wurde
+	  */
+	@Override
+	public java.sql.Timestamp getDateDelivered () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateDelivered);
+	}
+
 	/** Set Date last action.
 		@param DateLastAction 
 		Date this request was last acted on
@@ -731,7 +750,7 @@ public class X_R_Request extends org.compiere.model.PO implements I_R_Request, o
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateTrx);
 	}
 
-	/** Set Beleg Nr..
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
@@ -741,7 +760,7 @@ public class X_R_Request extends org.compiere.model.PO implements I_R_Request, o
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Beleg Nr..
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
 	@Override
@@ -1082,6 +1101,28 @@ public class X_R_Request extends org.compiere.model.PO implements I_R_Request, o
 		return ii.intValue();
 	}
 
+	/** Set Qualität-Notiz.
+		@param M_QualityNote_ID Qualität-Notiz	  */
+	@Override
+	public void setM_QualityNote_ID (int M_QualityNote_ID)
+	{
+		if (M_QualityNote_ID < 1) 
+			set_Value (COLUMNNAME_M_QualityNote_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_QualityNote_ID, Integer.valueOf(M_QualityNote_ID));
+	}
+
+	/** Get Qualität-Notiz.
+		@return Qualität-Notiz	  */
+	@Override
+	public int getM_QualityNote_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_QualityNote_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	@Override
 	public org.compiere.model.I_M_RMA getM_RMA() throws RuntimeException
 	{
@@ -1146,6 +1187,32 @@ public class X_R_Request extends org.compiere.model.PO implements I_R_Request, o
 	public java.lang.String getNextAction () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_NextAction);
+	}
+
+	/** 
+	 * PerformanceType AD_Reference_ID=540689
+	 * Reference name: R_Request.PerformanceType
+	 */
+	public static final int PERFORMANCETYPE_AD_Reference_ID=540689;
+	/** Liefer Performance = LP */
+	public static final String PERFORMANCETYPE_LieferPerformance = "LP";
+	/** Quality Performance = QP */
+	public static final String PERFORMANCETYPE_QualityPerformance = "QP";
+	/** Set PerformanceType.
+		@param PerformanceType PerformanceType	  */
+	@Override
+	public void setPerformanceType (java.lang.String PerformanceType)
+	{
+
+		set_Value (COLUMNNAME_PerformanceType, PerformanceType);
+	}
+
+	/** Get PerformanceType.
+		@return PerformanceType	  */
+	@Override
+	public java.lang.String getPerformanceType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PerformanceType);
 	}
 
 	/** 

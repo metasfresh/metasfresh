@@ -1,5 +1,7 @@
 package de.metas.materialtracking.spi.impl.listeners;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.materialtracking
@@ -10,23 +12,20 @@ package de.metas.materialtracking.spi.impl.listeners;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.eevolution.model.I_PP_Order;
-import org.junit.Assert;
-
 import de.metas.materialtracking.impl.MaterialTrackingPPOrderBL_IsQualityInspectionOrder_Test;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 
@@ -35,7 +34,7 @@ import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
  * <ul>
  * <li>if {@link I_M_Material_Tracking_Ref#COLUMN_IsQualityInspectionDoc} is set correctly
  * </ul>
- * 
+ *
  * @author tsa
  *
  */
@@ -51,18 +50,16 @@ public class PPOrderMaterialTrackingListenerTest extends MaterialTrackingPPOrder
 
 	/**
 	 * Tests {@link PPOrderMaterialTrackingListener#setIsQualityInspectionDoc(I_M_Material_Tracking_Ref, I_PP_Order)}.
-	 * 
-	 * @param isQualityInspectionDocExpected
-	 * @param ppOrder
 	 */
 	private void test_IsQualityInspectionDoc(final boolean isQualityInspectionDocExpected, final I_PP_Order ppOrder)
 	{
 		final I_M_Material_Tracking_Ref materialTrackingRef = createM_Material_Tracking_Ref();
-		PPOrderMaterialTrackingListener.instance.setIsQualityInspectionDoc(materialTrackingRef, ppOrder);
-		Assert.assertEquals("Invalid M_Material_Tracking_Ref.isQualityInspectionDoc() result",
-				isQualityInspectionDocExpected,
-				materialTrackingRef.isQualityInspectionDoc());
 
+		PPOrderMaterialTrackingListener.instance.setIsQualityInspectionDoc(materialTrackingRef, ppOrder);
+
+		assertThat(materialTrackingRef.isQualityInspectionDoc())
+				.as("Invalid M_Material_Tracking_Ref.isQualityInspectionDoc() result")
+				.isEqualTo(isQualityInspectionDocExpected);
 	}
 
 	private I_M_Material_Tracking_Ref createM_Material_Tracking_Ref()

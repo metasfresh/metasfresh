@@ -21,25 +21,37 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
-import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.acct.FactTrxLines.FactTrxLinesType;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.MAccount;
-import org.compiere.model.MAcctSchema;
-import org.compiere.model.MAcctSchemaElement;
-import org.compiere.model.MFactAcct;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.currency.ICurrencyConversionContext;
+import de.metas.acct.api.AccountId;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaElement;
+import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.acct.api.AcctSchemaElementsMap;
+import de.metas.acct.api.AcctSchemaGeneralLedger;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAccountDAO;
+import de.metas.acct.api.PostingType;
+import de.metas.bpartner.BPartnerId;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Accounting Fact
@@ -56,46 +68,28 @@ public final class Fact
 	 *
 	 * @param document pointer to document
 	 * @param acctSchema Account Schema to create accounts
-	 * @param defaultPostingType the default Posting type (actual,..) for this posting
+	 * @param postingType the default Posting type (actual,..) for this posting
 	 */
-	public Fact(final Doc document, final MAcctSchema acctSchema, final String defaultPostingType)
+	public Fact(
+			@NonNull final Doc<?> document,
+			@NonNull final AcctSchema acctSchema,
+			@NonNull final PostingType postingType)
 	{
-		Check.assumeNotNull(document, "document not null");
-		m_doc = document;
-
-		Check.assumeNotNull(acctSchema, "acctSchema not null");
-		m_acctSchema = acctSchema;
-
-		Check.assumeNotEmpty(defaultPostingType, "defaultPostingType not empty");
-		m_postingType = defaultPostingType;
-
-		// Fix [ 1884676 ] Fact not setting transaction
-		m_trxName = document.getTrxName();
-
-		log.info("Fact: {}", this);
-	}	// Fact
+		this.m_doc = document;
+		this.acctSchema = acctSchema;
+		this.postingType = postingType;
+	}
 
 	// services
 	private static final transient Logger log = LogManager.getLogger(Fact.class);
 
 	/** Document */
-	private final Doc m_doc;
+	private final Doc<?> m_doc;
 	/** Accounting Schema */
-	private final MAcctSchema m_acctSchema;
-	/** Transaction */
-	private String m_trxName = ITrx.TRXNAME_None;
+	private final AcctSchema acctSchema;
 
 	/** Posting Type */
-	private final String m_postingType;
-
-	/** Actual Balance Type */
-	public static final String POST_Actual = MFactAcct.POSTINGTYPE_Actual;
-	/** Budget Balance Type */
-	public static final String POST_Budget = MFactAcct.POSTINGTYPE_Budget;
-	/** Encumbrance Posting */
-	public static final String POST_Commitment = MFactAcct.POSTINGTYPE_Commitment;
-	/** Encumbrance Posting */
-	public static final String POST_Reservation = MFactAcct.POSTINGTYPE_Reservation;
+	private final PostingType postingType;
 
 	/** Is Converted */
 	private boolean m_converted = false;
@@ -114,7 +108,7 @@ public final class Fact
 	/**
 	 * Dispose
 	 */
-	public final void dispose()
+	public void dispose()
 	{
 		m_lines.clear();
 		m_lines = null;
@@ -125,25 +119,33 @@ public final class Fact
 	 *
 	 * @param docLine the document line or null
 	 * @param account if null, line is not created
-	 * @param C_Currency_ID the currency
+	 * @param currencyId the currency
 	 * @param debitAmt debit amount, can be null
 	 * @param creditAmt credit amount, can be null
 	 * @return Fact Line
 	 */
-	public FactLine createLine(final DocLine docLine,
+	public FactLine createLine(final DocLine<?> docLine,
 			final MAccount account,
-			final int C_Currency_ID,
+			final CurrencyId currencyId,
 			final BigDecimal debitAmt, final BigDecimal creditAmt)
 	{
 		return createLine()
 				.setDocLine(docLine)
 				.setAccount(account)
-				.setAmtSource(C_Currency_ID, debitAmt, creditAmt)
-				.setQty(null) // N/A
+				.setAmtSource(currencyId, debitAmt, creditAmt)
 				.buildAndAdd();
 	}
 
-	public final FactLineBuilder createLine()
+	public FactLine createLine(final DocLine<?> docLine,
+			final MAccount account,
+			final int C_Currency_ID,
+			final BigDecimal debitAmt, final BigDecimal creditAmt)
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(C_Currency_ID);
+		return createLine(docLine, account, currencyId, debitAmt, creditAmt);
+	}
+
+	public FactLineBuilder createLine()
 	{
 		return new FactLineBuilder(this);
 	}
@@ -153,32 +155,42 @@ public final class Fact
 	 *
 	 * @param docLine the document line or null
 	 * @param account if null, line is not created
-	 * @param C_Currency_ID the currency
+	 * @param currencyId the currency
 	 * @param debitAmt debit amount, can be null
 	 * @param creditAmt credit amount, can be null
 	 * @param qty quantity, can be null and in that case the standard qty from DocLine/Doc will be used.
 	 * @return Fact Line or null
 	 */
-	public FactLine createLine(final DocLine docLine,
+	public FactLine createLine(final DocLine<?> docLine,
 			final MAccount account,
-			final int C_Currency_ID,
+			final CurrencyId currencyId,
 			final BigDecimal debitAmt, final BigDecimal creditAmt,
 			final BigDecimal qty)
 	{
 		return createLine()
 				.setDocLine(docLine)
 				.setAccount(account)
-				.setAmtSource(C_Currency_ID, debitAmt, creditAmt)
+				.setAmtSource(currencyId, debitAmt, creditAmt)
 				.setQty(qty)
 				.buildAndAdd();
 	}	// createLine
+
+	public FactLine createLine(final DocLine<?> docLine,
+			final MAccount account,
+			final int C_Currency_ID,
+			final BigDecimal debitAmt, final BigDecimal creditAmt,
+			final BigDecimal qty)
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(C_Currency_ID);
+		return createLine(docLine, account, currencyId, debitAmt, creditAmt, qty);
+	}
 
 	/**
 	 * Add Fact Line
 	 *
 	 * @param line fact line
 	 */
-	private final void add(final FactLine line)
+	private void add(final FactLine line)
 	{
 		Check.assumeNotNull(line, "line not null");
 		m_lines.add(line);
@@ -197,51 +209,21 @@ public final class Fact
 	/**
 	 * Create and convert Fact Line. Used to create either a DR or CR entry
 	 *
-	 * @param docLine Document Line or null
-	 * @param accountDr Account to be used if Amt is DR balance
-	 * @param accountCr Account to be used if Amt is CR balance
-	 * @param C_Currency_ID Currency
-	 * @param Amt if negative Cr else Dr
-	 * @return FactLine
-	 */
-	public FactLine createLine(DocLine docLine, MAccount accountDr, MAccount accountCr, int C_Currency_ID, BigDecimal Amt)
-	{
-		return createLine()
-				.setDocLine(docLine)
-				.setC_Currency_ID(C_Currency_ID)
-				.setAccountDrOrCrAndAmount(accountDr, accountCr, Amt)
-				.buildAndAdd();
-	}   // createLine
-
-	/**
-	 * Create and convert Fact Line. Used to create either a DR or CR entry
-	 *
 	 * @param docLine Document line or null
 	 * @param account Account to be used
-	 * @param C_Currency_ID Currency
+	 * @param currencyId Currency
 	 * @param Amt if negative Cr else Dr
 	 * @return FactLine
 	 */
-	public FactLine createLine(DocLine docLine, MAccount account, int C_Currency_ID, BigDecimal Amt)
+	public FactLine createLine(DocLine<?> docLine, MAccount account, CurrencyId currencyId, BigDecimal Amt)
 	{
 		return createLine()
 				.setDocLine(docLine)
-				.setC_Currency_ID(C_Currency_ID)
+				.setCurrencyId(currencyId)
 				.setAccount(account)
 				.setAmtSourceDrOrCr(Amt)
 				.buildAndAdd();
 	}   // createLine
-
-	/**
-	 * Is Posting Type
-	 *
-	 * @param PostingType - see POST_*
-	 * @return true if document is posting type
-	 */
-	public boolean isPostingType(String PostingType)
-	{
-		return m_postingType.equals(PostingType);
-	}   // isPostingType
 
 	/**
 	 * Is converted
@@ -258,14 +240,24 @@ public final class Fact
 	 *
 	 * @return AcctSchema; never returns null
 	 */
-	public final MAcctSchema getAcctSchema()
+	public AcctSchema getAcctSchema()
 	{
-		return m_acctSchema;
+		return acctSchema;
 	}	// getAcctSchema
 
-	public final String getPostingType()
+	public AcctSchemaId getAcctSchemaId()
 	{
-		return m_postingType;
+		return getAcctSchema().getId();
+	}
+
+	private AcctSchemaElementsMap getAcctSchemaElements()
+	{
+		return getAcctSchema().getSchemaElements();
+	}
+
+	public PostingType getPostingType()
+	{
+		return postingType;
 	}
 
 	/**************************************************************************
@@ -283,7 +275,7 @@ public final class Fact
 		BigDecimal balance = getSourceBalance();
 		boolean retValue = balance.signum() == 0;
 		if (retValue)
-			log.trace(toString());
+			log.trace("{}", this);
 		else
 			log.warn("NO - Diff=" + balance + " - " + toString());
 		return retValue;
@@ -314,25 +306,27 @@ public final class Fact
 	 */
 	public FactLine balanceSource()
 	{
-		if (!m_acctSchema.isSuspenseBalancing() || m_doc.isMultiCurrency())
+		final AcctSchema acctSchema = getAcctSchema();
+		final AcctSchemaGeneralLedger acctSchemaGL = acctSchema.getGeneralLedger();
+		if (!acctSchemaGL.isSuspenseBalancing() || m_doc.isMultiCurrency())
 			return null;
 		BigDecimal diff = getSourceBalance();
 		log.trace("Diff=" + diff);
 
 		// new line
-		FactLine line = new FactLine(m_doc.getCtx(), m_doc.get_Table_ID(), m_doc.get_ID(), 0, get_TrxName());
+		FactLine line = new FactLine(m_doc.get_Table_ID(), m_doc.get_ID());
 		line.setDocumentInfo(m_doc, null);
-		line.setPostingType(m_postingType);
+		line.setPostingType(getPostingType());
 
 		// Account
-		line.setAccount(m_acctSchema, m_acctSchema.getSuspenseBalancing_Acct());
+		line.setAccount(acctSchema, acctSchemaGL.getSuspenseBalancingAcctId());
 
 		// Amount
 		if (diff.signum() < 0)   // negative balance => DR
-			line.setAmtSource(m_doc.getC_Currency_ID(), diff.abs(), BigDecimal.ZERO);
+			line.setAmtSource(m_doc.getCurrencyId(), diff.abs(), BigDecimal.ZERO);
 		else
 			// positive balance => CR
-			line.setAmtSource(m_doc.getC_Currency_ID(), BigDecimal.ZERO, diff);
+			line.setAmtSource(m_doc.getCurrencyId(), BigDecimal.ZERO, diff);
 
 		// Convert
 		line.convert();
@@ -354,14 +348,16 @@ public final class Fact
 		if (m_lines.size() == 0 || m_doc.isMultiCurrency())
 			return true;
 
-		MAcctSchemaElement[] elements = m_acctSchema.getAcctSchemaElements();
 		// check all balancing segments
-		for (MAcctSchemaElement element : elements)
+		for (AcctSchemaElement ase : getAcctSchemaElements())
 		{
-			MAcctSchemaElement ase = element;
-			if (ase.isBalanced() && !isSegmentBalanced(ase.getElementType()))
+			final AcctSchemaElementType elementType = ase.getElementType();
+			if (ase.isBalanced() && !isSegmentBalanced(elementType))
+			{
 				return false;
+			}
 		}
+
 		return true;
 	}   // isSegmentBalanced
 
@@ -371,9 +367,9 @@ public final class Fact
 	 * @param segmentType - see AcctSchemaElement.SEGMENT_* Implemented only for Org Other sensible candidates are Project, User1/2
 	 * @return true if segments are balanced
 	 */
-	public boolean isSegmentBalanced(String segmentType)
+	private boolean isSegmentBalanced(final AcctSchemaElementType segmentType)
 	{
-		if (segmentType.equals(MAcctSchemaElement.ELEMENTTYPE_Organization))
+		if (segmentType.equals(AcctSchemaElementType.Organization))
 		{
 			HashMap<Integer, BigDecimal> map = new HashMap<>();
 			// Add up values by key
@@ -401,11 +397,12 @@ public final class Fact
 				}
 			}
 			map.clear();
-			log.trace("(" + segmentType + ") - " + toString());
 			return true;
 		}
-		log.trace("(" + segmentType + ") (not checked) - " + toString());
-		return true;
+		else
+		{
+			return true;
+		}
 	}   // isSegmentBalanced
 
 	/**
@@ -413,12 +410,13 @@ public final class Fact
 	 */
 	public void balanceSegments()
 	{
-		MAcctSchemaElement[] elements = m_acctSchema.getAcctSchemaElements();
 		// check all balancing segments
-		for (MAcctSchemaElement ase : elements)
+		for (final AcctSchemaElement ase : getAcctSchemaElements())
 		{
 			if (ase.isBalanced())
+			{
 				balanceSegment(ase.getElementType());
+			}
 		}
 	}   // balanceSegments
 
@@ -427,16 +425,16 @@ public final class Fact
 	 *
 	 * @param elementType segment element type
 	 */
-	private void balanceSegment(String elementType)
+	private void balanceSegment(final AcctSchemaElementType elementType)
 	{
 		// no lines -> balanced
-		if (m_lines.size() == 0)
+		if (m_lines.isEmpty())
+		{
 			return;
-
-		log.debug("(" + elementType + ") - " + toString());
+		}
 
 		// Org
-		if (elementType.equals(MAcctSchemaElement.ELEMENTTYPE_Organization))
+		if (elementType.equals(AcctSchemaElementType.Organization))
 		{
 			HashMap<Integer, Balance> map = new HashMap<>();
 			// Add up values by key
@@ -462,39 +460,41 @@ public final class Fact
 			{
 				Integer key = keys.next();
 				Balance difference = map.get(key);
-				log.info(elementType + "=" + key + ", " + difference);
+
 				//
 				if (!difference.isZeroBalance())
 				{
 					// Create Balancing Entry
-					final FactLine line = new FactLine(m_doc.getCtx(), m_doc.get_Table_ID(), m_doc.get_ID(), 0, get_TrxName());
+					final FactLine line = new FactLine(m_doc.get_Table_ID(), m_doc.get_ID());
 					line.setDocumentInfo(m_doc, null);
-					line.setPostingType(m_postingType);
+					line.setPostingType(getPostingType());
 					// Amount & Account
+					final AcctSchema acctSchema = getAcctSchema();
+					final AcctSchemaGeneralLedger acctSchemaGL = acctSchema.getGeneralLedger();
 					if (difference.getBalance().signum() < 0)
 					{
 						if (difference.isReversal())
 						{
-							line.setAccount(m_acctSchema, m_acctSchema.getDueTo_Acct(elementType));
-							line.setAmtSource(m_doc.getC_Currency_ID(), BigDecimal.ZERO, difference.getPostBalance());
+							line.setAccount(acctSchema, acctSchemaGL.getDueToAcctId(elementType));
+							line.setAmtSource(m_doc.getCurrencyId(), BigDecimal.ZERO, difference.getPostBalance());
 						}
 						else
 						{
-							line.setAccount(m_acctSchema, m_acctSchema.getDueFrom_Acct(elementType));
-							line.setAmtSource(m_doc.getC_Currency_ID(), difference.getPostBalance(), BigDecimal.ZERO);
+							line.setAccount(acctSchema, acctSchemaGL.getDueFromAcct(elementType));
+							line.setAmtSource(m_doc.getCurrencyId(), difference.getPostBalance(), BigDecimal.ZERO);
 						}
 					}
 					else
 					{
 						if (difference.isReversal())
 						{
-							line.setAccount(m_acctSchema, m_acctSchema.getDueFrom_Acct(elementType));
-							line.setAmtSource(m_doc.getC_Currency_ID(), difference.getPostBalance(), BigDecimal.ZERO);
+							line.setAccount(acctSchema, acctSchemaGL.getDueFromAcct(elementType));
+							line.setAmtSource(m_doc.getCurrencyId(), difference.getPostBalance(), BigDecimal.ZERO);
 						}
 						else
 						{
-							line.setAccount(m_acctSchema, m_acctSchema.getDueTo_Acct(elementType));
-							line.setAmtSource(m_doc.getC_Currency_ID(), BigDecimal.ZERO, difference.getPostBalance());
+							line.setAccount(acctSchema, acctSchemaGL.getDueToAcctId(elementType));
+							line.setAmtSource(m_doc.getCurrencyId(), BigDecimal.ZERO, difference.getPostBalance());
 						}
 					}
 					line.convert();
@@ -553,9 +553,6 @@ public final class Fact
 	public FactLine balanceAccounting()
 	{
 		BigDecimal diff = getAcctBalance();		// DR-CR
-		log.debug("Balance=" + diff
-				+ ", CurrBal=" + m_acctSchema.isCurrencyBalancing()
-				+ " - " + toString());
 		FactLine line = null;
 
 		BigDecimal BSamount = BigDecimal.ZERO;
@@ -565,11 +562,11 @@ public final class Fact
 
 		//
 		// Find line biggest BalanceSheet or P&L line
-		final int acctCurrencyId = getAcctSchema().getC_Currency_ID();
+		final CurrencyId acctCurrencyId = getAcctSchema().getCurrencyId();
 		for (final FactLine l : m_lines)
 		{
 			// Consider only the lines which are in foreign currency
-			if (l.getC_Currency_ID() == acctCurrencyId)
+			if (acctCurrencyId.equals(l.getCurrencyId()))
 			{
 				continue;
 			}
@@ -588,15 +585,17 @@ public final class Fact
 		}
 
 		// Create Currency Balancing Entry
-		if (m_acctSchema.isCurrencyBalancing())
+		final AcctSchema acctSchema = getAcctSchema();
+		final AcctSchemaGeneralLedger acctSchemaGL = acctSchema.getGeneralLedger();
+		if (acctSchemaGL.isCurrencyBalancing())
 		{
-			line = new FactLine(m_doc.getCtx(), m_doc.get_Table_ID(), m_doc.get_ID(), 0, get_TrxName());
+			line = new FactLine(m_doc.get_Table_ID(), m_doc.get_ID());
 			line.setDocumentInfo(m_doc, null);
-			line.setPostingType(m_postingType);
-			line.setAccount(m_acctSchema, m_acctSchema.getCurrencyBalancing_Acct());
+			line.setPostingType(getPostingType());
+			line.setAccount(acctSchema, acctSchemaGL.getCurrencyBalancingAcctId());
 
 			// Amount
-			line.setAmtSource(m_doc.getC_Currency_ID(), BigDecimal.ZERO, BigDecimal.ZERO);
+			line.setAmtSource(m_doc.getCurrencyId(), BigDecimal.ZERO, BigDecimal.ZERO);
 			line.convert();
 			// Accounted
 			BigDecimal drAmt = BigDecimal.ZERO;
@@ -713,9 +712,9 @@ public final class Fact
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder("Fact[");
-		sb.append(m_doc.toString());
-		sb.append(",").append(m_acctSchema.toString());
-		sb.append(",PostType=").append(m_postingType);
+		sb.append(m_doc);
+		sb.append(",").append(getAcctSchema());
+		sb.append(",PostType=").append(getPostingType());
 		sb.append("]");
 		return sb.toString();
 	}	// toString
@@ -738,10 +737,8 @@ public final class Fact
 	 * @param trxName transaction
 	 * @return true if all lines were saved
 	 */
-	public final void save(final String trxName)
+	public void save()
 	{
-		m_trxName = trxName;
-
 		factTrxLinesStrategy
 				.createFactTrxLines(m_lines)
 				.forEach(this::save);
@@ -749,18 +746,16 @@ public final class Fact
 
 	private void save(final FactTrxLines factTrxLines)
 	{
-		final String trxName = m_trxName;
-
 		//
 		// Case: 1 debit line, one or more credit lines
 		if (factTrxLines.getType() == FactTrxLinesType.Debit)
 		{
 			final FactLine drLine = factTrxLines.getDebitLine();
-			InterfaceWrapperHelper.save(drLine, trxName);
+			InterfaceWrapperHelper.save(drLine, ITrx.TRXNAME_ThreadInherited);
 
 			factTrxLines.forEachCreditLine(crLine -> {
 				crLine.setCounterpart_Fact_Acct_ID(drLine.getFact_Acct_ID());
-				InterfaceWrapperHelper.save(crLine, trxName);
+				InterfaceWrapperHelper.save(crLine, ITrx.TRXNAME_ThreadInherited);
 			});
 
 		}
@@ -769,11 +764,11 @@ public final class Fact
 		else if (factTrxLines.getType() == FactTrxLinesType.Credit)
 		{
 			final FactLine crLine = factTrxLines.getCreditLine();
-			InterfaceWrapperHelper.save(crLine, trxName);
+			InterfaceWrapperHelper.save(crLine, ITrx.TRXNAME_ThreadInherited);
 
 			factTrxLines.forEachDebitLine(drLine -> {
 				drLine.setCounterpart_Fact_Acct_ID(crLine.getFact_Acct_ID());
-				InterfaceWrapperHelper.save(drLine, trxName);
+				InterfaceWrapperHelper.save(drLine, ITrx.TRXNAME_ThreadInherited);
 			});
 		}
 		//
@@ -789,18 +784,13 @@ public final class Fact
 
 		//
 		// also save the zero lines, if they are here
-		factTrxLines.forEachZeroLine(zeroLine -> InterfaceWrapperHelper.save(zeroLine, trxName));
+		factTrxLines.forEachZeroLine(zeroLine -> InterfaceWrapperHelper.save(zeroLine, ITrx.TRXNAME_ThreadInherited));
 	}
 
-	/**
-	 * Get Transaction
-	 *
-	 * @return trx
-	 */
-	public final String get_TrxName()
+	public void forEach(final Consumer<FactLine> consumer)
 	{
-		return m_trxName;
-	}	// getTrxName
+		m_lines.forEach(consumer);
+	}
 
 	/**
 	 * Fact Balance Utility
@@ -900,32 +890,34 @@ public final class Fact
 		} // toString
 	}	// Balance
 
+	@ToString(exclude = "fact")
 	public static final class FactLineBuilder
 	{
 		private boolean built = false;
 
-		@ToStringBuilder(skip = true)
 		private final Fact fact;
-		private DocLine docLine = null;
+		private DocLine<?> docLine = null;
 		private Integer subLineId = null;
 
 		private MAccount account = null;
 
-		private int currencyId;
-		private ICurrencyConversionContext currencyConversionCtx;
+		private CurrencyId currencyId;
+		private CurrencyConversionContext currencyConversionCtx;
 		private BigDecimal amtSourceDr;
 		private BigDecimal amtSourceCr;
 
 		private BigDecimal qty = null;
+		private int uomId;
 
 		private boolean alsoAddZeroLine = false;
-		
-		// Other dimensions
-		private Integer AD_Org_ID;
-		private Integer C_BPartner_ID;
-		private Integer C_Tax_ID;
 
-		
+		// Other dimensions
+		private OrgId orgId;
+		private BPartnerId bpartnerId;
+		private Integer C_Tax_ID;
+		private Integer locatorId;
+		private ActivityId activityId;
+
 		private FactLineBuilder(final Fact fact)
 		{
 			this.fact = fact;
@@ -948,7 +940,7 @@ public final class Fact
 			return fl;
 		}
 
-		private final FactLine build()
+		private FactLine build()
 		{
 			markAsBuilt();
 
@@ -956,18 +948,16 @@ public final class Fact
 			final MAccount account = getAccount();
 			if (account == null)
 			{
-				log.info("No account for {}", this);
-				return null;
+				throw new AdempiereException("No account for " + this);
 			}
 
 			//
-			final Doc doc = getDoc();
-			final DocLine docLine = getDocLine();
-			final FactLine line = new FactLine(doc.getCtx(),
+			final Doc<?> doc = getDoc();
+			final DocLine<?> docLine = getDocLine();
+			final FactLine line = new FactLine(
 					doc.get_Table_ID(), // AD_Table_ID
 					doc.get_ID(), // Record_ID
-					docLine == null ? 0 : docLine.get_ID(), // Line_ID
-					getTrxName());
+					docLine == null ? 0 : docLine.get_ID()); // Line_ID
 
 			// Set Document, Line, Sub Line
 			line.setDocumentInfo(doc, docLine);
@@ -979,7 +969,7 @@ public final class Fact
 
 			// Account
 			line.setPostingType(getPostingType());
-			line.setAccount(getC_AcctSchema(), account);
+			line.setAccount(getAcctSchema(), account);
 
 			//
 			// Qty
@@ -988,10 +978,15 @@ public final class Fact
 			{
 				line.setQty(qty);
 			}
+			final int uomId = getUomId();
+			if (uomId > 0)
+			{
+				line.setC_UOM_ID(uomId);
+			}
 
 			//
 			// Amounts - one needs to not zero
-			final int currencyId = getC_Currency_ID();
+			final CurrencyId currencyId = getCurrencyId();
 			final BigDecimal amtSourceDr = getAmtSourceDr();
 			final BigDecimal amtSourceCr = getAmtSourceCr();
 			line.setAmtSource(currencyId, amtSourceDr, amtSourceCr);
@@ -1001,7 +996,7 @@ public final class Fact
 				{
 					log.debug("Both amounts & qty = 0/Null - {}", this);
 					// https://github.com/metasfresh/metasfresh/issues/4147 we might need the zero-line later
-					if(!alsoAddZeroLine)
+					if (!alsoAddZeroLine)
 					{
 						return null;
 					}
@@ -1013,7 +1008,7 @@ public final class Fact
 
 			//
 			// Currency convert
-			final ICurrencyConversionContext currencyConversionCtx = getCurrencyConversionCtx();
+			final CurrencyConversionContext currencyConversionCtx = getCurrencyConversionCtx();
 			if (currencyConversionCtx != null)
 			{
 				line.setCurrencyConversionCtx(currencyConversionCtx);
@@ -1030,16 +1025,23 @@ public final class Fact
 
 			//
 			// Set the other dimensions
-			final Integer adOrgId = getAD_Org_ID();
-			if (adOrgId != null)
+			final Integer locatorId = getLocatorId();
+			if (locatorId != null)
 			{
-				line.setAD_Org_ID(adOrgId);
+				// NOTE: set locator before org because when locator is set, the org is reset.
+				line.setM_Locator_ID(locatorId);
 			}
 			//
-			final Integer bpartnerId = getC_BPartner_ID();
+			final OrgId orgId = getOrgId();
+			if (orgId != null)
+			{
+				line.setAD_Org_ID(orgId.getRepoId());
+			}
+			//
+			final BPartnerId bpartnerId = getBpartnerId();
 			if (bpartnerId != null)
 			{
-				line.setC_BPartner_ID(bpartnerId);
+				line.setC_BPartner_ID(bpartnerId.getRepoId());
 			}
 			//
 			final Integer taxId = getC_Tax_ID();
@@ -1047,84 +1049,85 @@ public final class Fact
 			{
 				line.setC_Tax_ID(taxId);
 			}
+			//
+			final ActivityId activityId = getActivityId();
+			if (activityId != null)
+			{
+				line.setC_Activity_ID(activityId.getRepoId());
+			}
 
 			//
 			log.debug("Built: {}", line);
 			return line;
 		}
 
-		private final void assertNotBuild()
+		private void assertNotBuild()
 		{
 			Check.assume(!built, "not already built");
 		}
 
-		private final void markAsBuilt()
+		private void markAsBuilt()
 		{
 			assertNotBuild();
 			built = true;
 		}
 
-		@Override
-		public String toString()
+		public FactLineBuilder setAccount(@NonNull final AccountId accountId)
 		{
-			return ObjectUtils.toString(this);
+			final IAccountDAO accountsRepo = Services.get(IAccountDAO.class);
+			return setAccount(accountsRepo.getById(Env.getCtx(), accountId));
 		}
 
-		public FactLineBuilder setAccount(MAccount account)
+		public FactLineBuilder setAccount(final MAccount account)
 		{
 			assertNotBuild();
 			this.account = account;
 			return this;
 		}
 
-		private final MAccount getAccount()
+		private MAccount getAccount()
 		{
 			// TODO: check if we can enforce it all the time
 			// Check.assumeNotNull(account, "account not null for {}", this);
 			return account;
 		}
 
-		private final Doc getDoc()
+		private Doc<?> getDoc()
 		{
 			return fact.m_doc;
 		}
 
-		public final FactLineBuilder setDocLine(DocLine docLine)
+		public FactLineBuilder setDocLine(DocLine<?> docLine)
 		{
 			assertNotBuild();
 			this.docLine = docLine;
 			return this;
 		}
 
-		private final DocLine getDocLine()
+		private DocLine<?> getDocLine()
 		{
 			return docLine;
 		}
 
-		public final FactLineBuilder setSubLine_ID(final int subLineId)
+		public FactLineBuilder setSubLine_ID(final int subLineId)
 		{
 			this.subLineId = subLineId;
 			return this;
 		}
 
-		private final Integer getSubLine_ID()
+		private Integer getSubLine_ID()
 		{
 			return subLineId;
 		}
 
-		private final MAcctSchema getC_AcctSchema()
+		private AcctSchema getAcctSchema()
 		{
 			return fact.getAcctSchema();
 		}
 
-		private final String getPostingType()
+		private PostingType getPostingType()
 		{
 			return fact.getPostingType();
-		}
-
-		private final String getTrxName()
-		{
-			return fact.get_TrxName();
 		}
 
 		public FactLineBuilder setQty(BigDecimal qty)
@@ -1134,14 +1137,27 @@ public final class Fact
 			return this;
 		}
 
-		private final BigDecimal getQty()
+		public FactLineBuilder setQty(final Quantity qty)
+		{
+			assertNotBuild();
+			this.qty = qty.toBigDecimal();
+			this.uomId = qty.getUOMId();
+			return this;
+		}
+
+		private BigDecimal getQty()
 		{
 			return qty;
 		}
 
-		public FactLineBuilder setAmtSource(final int currencyId, final BigDecimal amtSourceDr, final BigDecimal amtSourceCr)
+		private int getUomId()
 		{
-			setC_Currency_ID(currencyId);
+			return uomId;
+		}
+
+		public FactLineBuilder setAmtSource(final CurrencyId currencyId, final BigDecimal amtSourceDr, final BigDecimal amtSourceCr)
+		{
+			setCurrencyId(currencyId);
 			setAmtSource(amtSourceDr, amtSourceCr);
 			return this;
 		}
@@ -1154,7 +1170,7 @@ public final class Fact
 			return this;
 		}
 
-		/** 
+		/**
 		 * Usually the {@link #buildAndAdd()} method ignores fact lines that have zero/null source amount and zero/null qty.
 		 * Invoke this builder method still have the builder add them.
 		 */
@@ -1163,37 +1179,37 @@ public final class Fact
 			alsoAddZeroLine = true;
 			return this;
 		}
-		
-		public FactLineBuilder setC_Currency_ID(final int currencyId)
+
+		public FactLineBuilder setCurrencyId(final CurrencyId currencyId)
 		{
 			assertNotBuild();
 			this.currencyId = currencyId;
 			return this;
 		}
 
-		private final int getC_Currency_ID()
+		private CurrencyId getCurrencyId()
 		{
 			return currencyId;
 		}
 
-		public FactLineBuilder setCurrencyConversionCtx(ICurrencyConversionContext currencyConversionCtx)
+		public FactLineBuilder setCurrencyConversionCtx(CurrencyConversionContext currencyConversionCtx)
 		{
 			assertNotBuild();
 			this.currencyConversionCtx = currencyConversionCtx;
 			return this;
 		}
 
-		private final ICurrencyConversionContext getCurrencyConversionCtx()
+		private CurrencyConversionContext getCurrencyConversionCtx()
 		{
 			return currencyConversionCtx;
 		}
 
-		private final BigDecimal getAmtSourceDr()
+		private BigDecimal getAmtSourceDr()
 		{
 			return amtSourceDr;
 		}
 
-		private final BigDecimal getAmtSourceCr()
+		private BigDecimal getAmtSourceCr()
 		{
 			return amtSourceCr;
 		}
@@ -1231,49 +1247,74 @@ public final class Fact
 			return this;
 		}
 
+		@Deprecated
 		public FactLineBuilder setAD_Org_ID(Integer adOrgId)
 		{
+			final OrgId orgId = adOrgId != null ? OrgId.ofRepoIdOrNull(adOrgId) : null;
+			return orgId(orgId);
+		}
+
+		public FactLineBuilder orgId(final OrgId orgId)
+		{
 			assertNotBuild();
-			this.AD_Org_ID = adOrgId;
+			this.orgId = orgId;
 			return this;
 		}
 
+		@Deprecated
 		public FactLineBuilder setAD_Org_ID_IfValid(final int adOrgId)
 		{
-			assertNotBuild();
-			if (adOrgId > 0 && adOrgId != Env.CTXVALUE_AD_Org_ID_System)
+			return orgIdIfValid(OrgId.ofRepoIdOrNull(adOrgId));
+		}
+
+		public FactLineBuilder orgIdIfValid(final OrgId orgId)
+		{
+			if (orgId != null && orgId.isRegular())
 			{
-				setAD_Org_ID(adOrgId);
+				orgId(orgId);
 			}
 			return this;
 		}
 
-		private Integer getAD_Org_ID()
+		private OrgId getOrgId()
 		{
-			return AD_Org_ID;
+			return orgId;
 		}
 
-		public FactLineBuilder setC_BPartner_ID(Integer bpartnerId)
+		@Deprecated
+		public FactLineBuilder setC_BPartner_ID(Integer bpartnerRepoId)
+		{
+			final BPartnerId bpartnerId = bpartnerRepoId != null ? BPartnerId.ofRepoIdOrNull(bpartnerRepoId) : null;
+			return bpartnerId(bpartnerId);
+		}
+
+		public FactLineBuilder bpartnerId(final BPartnerId bpartnerId)
 		{
 			assertNotBuild();
-			this.C_BPartner_ID = bpartnerId;
+			this.bpartnerId = bpartnerId;
 			return this;
 		}
 
-		public FactLineBuilder setC_BPartner_ID_IfValid(final int bpartnerId)
+		public FactLineBuilder bpartnerIdIfNotNull(final BPartnerId bpartnerId)
 		{
-			assertNotBuild();
-			if (bpartnerId > 0)
+			if (bpartnerId != null)
 			{
-				setC_BPartner_ID(bpartnerId);
+				return bpartnerId(bpartnerId);
 			}
-			return this;
-
+			else
+			{
+				return this;
+			}
 		}
 
-		private Integer getC_BPartner_ID()
+		public FactLineBuilder setC_BPartner_ID_IfValid(final int bpartnerRepoId)
 		{
-			return C_BPartner_ID;
+			return bpartnerIdIfNotNull(BPartnerId.ofRepoIdOrNull(bpartnerRepoId));
+		}
+
+		private BPartnerId getBpartnerId()
+		{
+			return bpartnerId;
 		}
 
 		public FactLineBuilder setC_Tax_ID(Integer taxId)
@@ -1286,6 +1327,30 @@ public final class Fact
 		private Integer getC_Tax_ID()
 		{
 			return C_Tax_ID;
+		}
+
+		public FactLineBuilder locatorId(final int locatorId)
+		{
+			assertNotBuild();
+			this.locatorId = locatorId;
+			return this;
+		}
+
+		private Integer getLocatorId()
+		{
+			return locatorId;
+		}
+
+		public FactLineBuilder activityId(final ActivityId activityId)
+		{
+			assertNotBuild();
+			this.activityId = activityId;
+			return this;
+		}
+
+		private ActivityId getActivityId()
+		{
+			return activityId;
 		}
 	}
 }   // Fact

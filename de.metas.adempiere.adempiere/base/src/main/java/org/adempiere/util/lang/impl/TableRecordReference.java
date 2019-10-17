@@ -1,9 +1,5 @@
 package org.adempiere.util.lang.impl;
 
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.List;
@@ -34,9 +30,14 @@ import java.util.Optional;
 
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.IntFunction;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.EqualsBuilder;
@@ -52,11 +53,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.jgoodies.common.base.Objects;
 
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 
 /**
  * Simple implementation of {@link ITableRecordReference} which can:
@@ -79,7 +82,7 @@ public final class TableRecordReference implements ITableRecordReference
 	 * @param model model interface or {@link TableRecordReference}; <code>null</code> is NOT allowed
 	 * @return {@link TableRecordReference}; never returns null
 	 */
-	public static final TableRecordReference of(final Object model)
+	public static TableRecordReference of(@NonNull final Object model)
 	{
 		if (model instanceof TableRecordReference)
 		{
@@ -97,7 +100,7 @@ public final class TableRecordReference implements ITableRecordReference
 	}
 
 	@Deprecated
-	public static final TableRecordReference of(TableRecordReference recordRef)
+	public static TableRecordReference of(TableRecordReference recordRef)
 	{
 		return recordRef;
 	}
@@ -108,7 +111,7 @@ public final class TableRecordReference implements ITableRecordReference
 	 * @param model
 	 * @return {@link TableRecordReference} or null
 	 */
-	public static final TableRecordReference ofOrNull(final Object model)
+	public static TableRecordReference ofOrNull(final Object model)
 	{
 		if (model == null)
 		{
@@ -120,7 +123,7 @@ public final class TableRecordReference implements ITableRecordReference
 	/**
 	 * @return immutable list of {@link TableRecordReference}s
 	 */
-	public static final List<TableRecordReference> ofCollection(@Nullable final Collection<?> models)
+	public static List<TableRecordReference> ofCollection(@Nullable final Collection<?> models)
 	{
 		if (models == null || models.isEmpty())
 		{
@@ -134,7 +137,7 @@ public final class TableRecordReference implements ITableRecordReference
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	public static final List<TableRecordReference> ofRecordIds(
+	public static List<TableRecordReference> ofRecordIds(
 			@NonNull final String tableName,
 			@Nullable final Collection<Integer> recordIds)
 	{
@@ -149,7 +152,7 @@ public final class TableRecordReference implements ITableRecordReference
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	public static final Set<TableRecordReference> ofSet(final Collection<?> models)
+	public static Set<TableRecordReference> ofSet(final Collection<?> models)
 	{
 		if (models == null || models.isEmpty())
 		{
@@ -190,17 +193,17 @@ public final class TableRecordReference implements ITableRecordReference
 		return new TableRecordReference(adTableId.get(), recordId.get());
 	}
 
-	public static final TableRecordReference of(final int adTableId, final int recordId)
+	public static TableRecordReference of(final int adTableId, final int recordId)
 	{
 		return new TableRecordReference(adTableId, recordId);
 	}
 
-	public static final TableRecordReference of(final String tableName, final int recordId)
+	public static TableRecordReference of(final String tableName, final int recordId)
 	{
 		return new TableRecordReference(tableName, recordId);
 	}
 
-	public static final TableRecordReference of(@NonNull final String tableName, @NonNull final RepoIdAware recordId)
+	public static TableRecordReference of(@NonNull final String tableName, @NonNull final RepoIdAware recordId)
 	{
 		return new TableRecordReference(tableName, recordId.getRepoId());
 	}
@@ -208,7 +211,7 @@ public final class TableRecordReference implements ITableRecordReference
 	/**
 	 * @return immutable list of {@link TableRecordReference}s
 	 */
-	public static final List<TableRecordReference> ofRecordIds(final String tableName, final List<Integer> recordIds)
+	public static List<TableRecordReference> ofRecordIds(final String tableName, final List<Integer> recordIds)
 	{
 		if (recordIds == null || recordIds.isEmpty())
 		{
@@ -221,7 +224,7 @@ public final class TableRecordReference implements ITableRecordReference
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	public static final TableRecordReference ofMapOrNull(final Map<?, ?> map)
+	public static TableRecordReference ofMapOrNull(final Map<?, ?> map)
 	{
 		final Object tableNameObj = map.get(PROP_TableName);
 		if (tableNameObj == null)
@@ -309,7 +312,9 @@ public final class TableRecordReference implements ITableRecordReference
 	 * @param recordId
 	 */
 	@JsonCreator
-	public TableRecordReference(@JsonProperty("tableName") final String tableName, @JsonProperty("recordId") final int recordId)
+	public TableRecordReference(
+			@JsonProperty("tableName") final String tableName,
+			@JsonProperty("recordId") final int recordId)
 	{
 		Check.assumeNotEmpty(tableName, "tableName not empty");
 		this.tableName = tableName;
@@ -337,7 +342,7 @@ public final class TableRecordReference implements ITableRecordReference
 				.omitNullValues()
 				.add("tableName", tableName)
 				.add("recordId", recordId)
-				.add(" (SoftReference-)model", modelRef.get())
+				// .add(" (SoftReference-)model", modelRef.get())
 				.toString();
 	}
 
@@ -385,6 +390,14 @@ public final class TableRecordReference implements ITableRecordReference
 		return tableName;
 	}
 
+	public void assertTableName(@NonNull final String expectedTableName)
+	{
+		if (!Objects.equals(getTableName(), expectedTableName))
+		{
+			throw new AdempiereException("Reference is expected to have '" + expectedTableName + "' table: " + this);
+		}
+	}
+
 	@Override
 	@JsonIgnore
 	public int getAD_Table_ID()
@@ -392,11 +405,31 @@ public final class TableRecordReference implements ITableRecordReference
 		return adTableId;
 	}
 
+	@JsonIgnore
+	public AdTableId getAdTableId()
+	{
+		return AdTableId.ofRepoId(adTableId);
+	}
+
 	@Override
 	@JsonIgnore
 	public int getRecord_ID()
 	{
 		return recordId;
+	}
+
+	public int getRecordIdAssumingTableName(@NonNull final String expectedTableName)
+	{
+		Check.assumeEquals(this.tableName, expectedTableName, "tableName");
+		return getRecord_ID();
+	}
+
+	public <T extends RepoIdAware> T getIdAssumingTableName(
+			@NonNull final String expectedTableName,
+			@NonNull final IntFunction<T> mapper)
+	{
+		final int repoId = getRecordIdAssumingTableName(expectedTableName);
+		return mapper.apply(repoId);
 	}
 
 	@Override
@@ -476,5 +509,11 @@ public final class TableRecordReference implements ITableRecordReference
 				.stream()
 				.map(ref -> ref.getModel(modelClass))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public boolean isOfType(@NonNull final Class<?> modelClass)
+	{
+		final String modelTableName = InterfaceWrapperHelper.getTableNameOrNull(modelClass);
+		return modelTableName != null && modelTableName.equals(getTableName());
 	}
 }

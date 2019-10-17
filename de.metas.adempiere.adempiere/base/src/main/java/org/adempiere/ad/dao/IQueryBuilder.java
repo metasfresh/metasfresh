@@ -107,19 +107,20 @@ public interface IQueryBuilder<T>
 
 	/**
 	 * Convenient way of calling {@link #setOption(String, Object)} with <code>value</code> = {@link Boolean#TRUE}.
-	 *
-	 * @param name
 	 */
 	IQueryBuilder<T> setOption(String name);
 
 	int getLimit();
 
+	/** Make sure this instance now has an order-by-builder and return it. */
 	IQueryBuilderOrderByClause<T> orderBy();
 
 	//@formatter:off
+	default IQueryBuilder<T> clearOrderBys() { orderBy().clear(); return this; }
 	default IQueryBuilder<T> orderBy(final String columnName) { orderBy().addColumn(columnName); return this; }
 	default IQueryBuilder<T> orderBy(final ModelColumn<T, ?> column) { orderBy().addColumn(column); return this; }
 	default IQueryBuilder<T> orderByDescending(final String columnName) { orderBy().addColumnDescending(columnName); return this; }
+	default IQueryBuilder<T> orderByDescending(final ModelColumn<T, ?> column) { orderBy().addColumnDescending(column.getColumnName()); return this; }
 	//@formatter:on
 
 	IQuery<T> create();
@@ -143,17 +144,16 @@ public interface IQueryBuilder<T>
 	IQueryBuilder<T> addEqualsFilter(ModelColumn<T, ?> column, Object value);
 
 	/**
-	 * @see ICompositeQueryFilter#addSubstringFilter(String, String)
+	 * Filters using the given string as a <b>substring</b>.
+	 * If this "substring" behavior is too opinionated for your case, consider using e.g. {@link #addCompareFilter(String, Operator, Object)}.
+	 *
+	 * @param substring will be complemented with {@code %} at both the string's start and end, if the given string doesn't have them yet.
+	 * @param ignoreCase if {@code true}, then {@code ILIKE} is used as operator instead of {@code LIKE}
 	 */
 	IQueryBuilder<T> addStringLikeFilter(String columnname, String substring, boolean ignoreCase);
 
 	/**
 	 * See {@link #addStringLikeFilter(String, String, boolean)}.
-	 *
-	 * @param column
-	 * @param substring
-	 * @param ignoreCase
-	 * @return
 	 */
 	IQueryBuilder<T> addStringLikeFilter(ModelColumn<T, ?> column, String substring, boolean ignoreCase);
 

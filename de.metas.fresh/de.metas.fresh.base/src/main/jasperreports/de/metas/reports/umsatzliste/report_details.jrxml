@@ -72,7 +72,7 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="10" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{month}]]></textFieldExpression>
 				</textField>
@@ -85,7 +85,7 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="10" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{MonthInvoiced}]]></textFieldExpression>
 				</textField>
@@ -98,7 +98,7 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="10" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{MonthShipped}]]></textFieldExpression>
 				</textField>
@@ -111,7 +111,7 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="10" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{MonthOrdered}]]></textFieldExpression>
 				</textField>
@@ -124,7 +124,7 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="10" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+						<font size="10" fontName="Arial" isBold="true" isItalic="false" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
 				</textField>
@@ -144,7 +144,7 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
 				</textField>
@@ -157,7 +157,7 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{bp_name}]]></textFieldExpression>
 				</textField>
@@ -170,7 +170,7 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{BPinvoiced}]]></textFieldExpression>
 				</textField>
@@ -183,7 +183,7 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{BPshipped}]]></textFieldExpression>
 				</textField>
@@ -196,7 +196,7 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{BPordered}]]></textFieldExpression>
 				</textField>
@@ -209,7 +209,7 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="8" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" isItalic="false" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{iso_code}]]></textFieldExpression>
 				</textField>

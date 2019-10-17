@@ -1,7 +1,6 @@
 package de.metas.elasticsearch.denormalizers.impl;
 
 import java.io.IOException;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
@@ -12,6 +11,7 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 
 import de.metas.elasticsearch.denormalizers.IESDenormalizer;
 import de.metas.elasticsearch.types.ESIndexType;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -40,7 +40,7 @@ import lombok.ToString;
 @ToString
 final class DateDenormalizer implements IESDenormalizer
 {
-	public static final DateDenormalizer of(final int dateDisplayType, final ESIndexType indexType)
+	public static DateDenormalizer of(final int dateDisplayType, final ESIndexType indexType)
 	{
 		return new DateDenormalizer(dateDisplayType, indexType);
 	}
@@ -88,7 +88,7 @@ final class DateDenormalizer implements IESDenormalizer
 		return value;
 	}
 
-	private final Temporal toTemporal(final Object value)
+	private Temporal toTemporal(final Object value)
 	{
 		if (value == null)
 		{
@@ -97,7 +97,7 @@ final class DateDenormalizer implements IESDenormalizer
 		else if (value instanceof java.util.Date)
 		{
 			final java.util.Date date = (java.util.Date)value;
-			return ZonedDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+			return ZonedDateTime.ofInstant(date.toInstant(), SystemTime.zoneId());
 		}
 		else if (value instanceof Temporal)
 		{

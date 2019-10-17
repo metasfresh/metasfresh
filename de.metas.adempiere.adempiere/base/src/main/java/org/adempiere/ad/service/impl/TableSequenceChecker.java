@@ -81,7 +81,7 @@ public class TableSequenceChecker implements ITableSequenceChecker
 
 	private ILoggable getLogger()
 	{
-		return Loggables.get().withLogger(log, Level.INFO);
+		return Loggables.withLogger(log, Level.INFO);
 	}
 
 	@Override
@@ -112,7 +112,7 @@ public class TableSequenceChecker implements ITableSequenceChecker
 	public ITableSequenceChecker setTables(final List<I_AD_Table> tables)
 	{
 		Check.assumeNotEmpty(tables, "tables not empty");
-		this.tables = new ArrayList<I_AD_Table>(tables);
+		this.tables = new ArrayList<>(tables);
 
 		return this;
 	}
@@ -325,10 +325,14 @@ public class TableSequenceChecker implements ITableSequenceChecker
 		{
 			String sql = "SELECT MAX(" + keyColumnName + ") FROM " + tableName;
 			if (IDRangeEnd > 0)
+			{
 				sql += " WHERE " + tableName + "_ID < " + IDRangeEnd;
+			}
 			int maxTableID = DB.getSQLValue(ITrx.TRXNAME_None, sql);
 			if (maxTableID < MSequence.INIT_NO)
+			{
 				maxTableID = MSequence.INIT_NO - 1;
+			}
 			maxTableID++;		// Next
 			if (seq.getCurrentNext() < maxTableID)
 			{
@@ -344,15 +348,21 @@ public class TableSequenceChecker implements ITableSequenceChecker
 			final String sql = "SELECT MAX(" + keyColumnName + ") FROM " + tableName + " WHERE " + keyColumnName + " < " + MSequence.INIT_NO;
 			int maxTableSysID = DB.getSQLValue(ITrx.TRXNAME_None, sql);
 			if (maxTableSysID <= 0)
+			{
 				maxTableSysID = MSequence.INIT_SYS_NO - 1;
+			}
 			maxTableSysID++;	// Next
 			if (seq.getCurrentNextSys() < maxTableSysID)
 			{
 				seq.setCurrentNextSys(maxTableSysID);
 				if (info == null)
+				{
 					info = "CurrentNextSys=" + maxTableSysID;
+				}
 				else
+				{
 					info += " - CurrentNextSys=" + maxTableSysID;
+				}
 				changed = true;
 			}
 		}
