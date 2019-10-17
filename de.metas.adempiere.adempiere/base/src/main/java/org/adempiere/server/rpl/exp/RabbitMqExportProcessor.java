@@ -21,8 +21,18 @@
  */
 package org.adempiere.server.rpl.exp;
 
-import de.metas.logging.LogManager;
-import lombok.NonNull;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.Properties;
+
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.process.rpl.IExportProcessor;
 import org.apache.commons.lang3.StringUtils;
@@ -39,12 +49,8 @@ import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.w3c.dom.Document;
 
-import javax.xml.transform.*;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.Properties;
+import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public class RabbitMqExportProcessor implements IExportProcessor
 {
@@ -138,8 +144,7 @@ public class RabbitMqExportProcessor implements IExportProcessor
 		admin.declareBinding(BindingBuilder.bind(queue).to(exchange).with(routingKey));
 		template.convertAndSend(msg);
 		log.info("AMQP Message sent!");
-		connectionFactory.stop();
-
+		connectionFactory.destroy();
 	}
 
 	@Override
