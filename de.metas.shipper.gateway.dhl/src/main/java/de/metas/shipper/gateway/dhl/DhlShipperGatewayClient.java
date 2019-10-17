@@ -184,14 +184,6 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	}
 
 	@Override
-	public DeliveryOrder voidDeliveryOrder(final DeliveryOrder deliveryOrder) throws ShipperGatewayException
-	{
-		//noinspection ConstantConditions
-		// todo
-		return null;
-	}
-
-	@Override
 	public List<PackageLabels> getPackageLabelsList(final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
 		final ILoggable epicLogger = getEpicLogger();
@@ -208,12 +200,6 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 
 		return packageLabels;
 	}
-
-	/////////////////////////////////////////////////
-	/////////////////////////////////////////////////
-	/////////////////////////////////////////////////
-	/////////////////////////////////////////////////
-	/////////////////////////////////////////////////
 
 	@NonNull
 	private static PackageLabels createPackageLabel(@NonNull final byte[] labelData, @NonNull final String awb)

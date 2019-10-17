@@ -37,19 +37,19 @@ public class DhlClientConfig
 	private final String baseUrl;
 
 	@NonNull
-	private final String applicationID;
+	private final String applicationID; // CIG Auth (https://entwickler.dhl.de/en/group/ep/authentifizierung)
 
 	@NonNull
-	private final String applicationToken;
+	private final String applicationToken; // CIG Auth (https://entwickler.dhl.de/en/group/ep/authentifizierung)
 
 	@NonNull
-	private final String accountNumber;
+	private final String accountNumber; // DHL Business Customer Portal (also presented as EKP)
 
 	@NonNull
-	private final String username;
+	private final String username; // DHL Business Customer Portal
 
 	@NonNull
-	private final String signature;
+	private final String signature; // DHL Business Customer Portal
 
 	@NonNull
 	private final UomId lengthUomId;

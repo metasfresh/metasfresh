@@ -171,7 +171,10 @@ public class GOClient implements ShipperGatewayClient
 		return deliveryOrderResponse;
 	}
 
-	@Override
+	/**
+	 * @deprecated This method is not used. In the future, if cancelling is needed, we could revise this.
+	 */
+	@Deprecated
 	public DeliveryOrder voidDeliveryOrder(@NonNull final DeliveryOrder deliveryOrderRequest)
 	{
 		logger.trace("Creating delivery order for {}", deliveryOrderRequest);
