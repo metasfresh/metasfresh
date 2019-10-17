@@ -24,6 +24,7 @@ package de.metas.shipper.gateway.dhl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
@@ -46,6 +47,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -339,13 +341,27 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 			final ImmutableList<Integer> packageIdsAsList = deliveryPosition.getPackageIds().asList();
 			for (int i = 0; i < deliveryPosition.getNumberOfPackages(); i++)
 			{
+				//noinspection ConstantConditions
 				final DhlCustomDeliveryData customDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
 
 				final I_DHL_ShipmentOrder shipmentOrder = getShipmentOrderByRequestIdAndPackageId(deliveryOrder.getRepoId(), packageIdsAsList.get(i));
-				//noinspection ConstantConditions
-				shipmentOrder.setawb(customDeliveryData.getAwbBySequenceNumber(DhlSequenceNumber.of(shipmentOrder.getDHL_ShipmentOrder_ID())));
-				//noinspection ConstantConditions
-				shipmentOrder.setPdfLabelData(customDeliveryData.getPdfLabelDataBySequenceNumber(DhlSequenceNumber.of(shipmentOrder.getDHL_ShipmentOrder_ID())));
+				final String awb = customDeliveryData.getAwbBySequenceNumber(DhlSequenceNumber.of(shipmentOrder.getDHL_ShipmentOrder_ID()));
+				if (awb != null)
+				{
+					shipmentOrder.setawb(awb);
+				}
+
+				final byte[] pdfData = customDeliveryData.getPdfLabelDataBySequenceNumber(DhlSequenceNumber.of(shipmentOrder.getDHL_ShipmentOrder_ID()));
+				if (pdfData != null)
+				{
+					shipmentOrder.setPdfLabelData(pdfData);
+
+					// save pdf as attachment as well
+					final TableRecordReference salesOrderRef = TableRecordReference.of(I_DHL_ShipmentOrder.Table_Name, shipmentOrder.getDHL_ShipmentOrder_ID());
+
+					final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+					attachmentEntryService.createNewAttachment(salesOrderRef, awb + ".pdf", pdfData);
+				}
 
 				InterfaceWrapperHelper.save(shipmentOrder);
 			}

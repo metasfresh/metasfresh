@@ -63,7 +63,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set awb.
+	 * Set Luftfrachtbrief.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -72,7 +72,7 @@ public interface I_DHL_ShipmentOrder
 	public void setawb (java.lang.String awb);
 
 	/**
-	 * Get awb.
+	 * Get Luftfrachtbrief.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -189,7 +189,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_CustomerReference = "CustomerReference";
 
 	/**
-	 * Set DHL_HeightInCm.
+	 * Set Höhe in cm.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -198,7 +198,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_HeightInCm (int DHL_HeightInCm);
 
 	/**
-	 * Get DHL_HeightInCm.
+	 * Get Höhe in cm.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -212,7 +212,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_HeightInCm = "DHL_HeightInCm";
 
 	/**
-	 * Set DHL_LengthInCm.
+	 * Set Länge in cm.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -221,7 +221,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_LengthInCm (int DHL_LengthInCm);
 
 	/**
-	 * Get DHL_LengthInCm.
+	 * Get Länge in cm.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -235,7 +235,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_LengthInCm = "DHL_LengthInCm";
 
 	/**
-	 * Set DHL_Product.
+	 * Set Produkt.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -244,7 +244,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_Product (java.lang.String DHL_Product);
 
 	/**
-	 * Get DHL_Product.
+	 * Get Produkt.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -258,7 +258,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_Product = "DHL_Product";
 
 	/**
-	 * Set DHL_Receiver_City.
+	 * Set Empfängerort.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -267,7 +267,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_Receiver_City (java.lang.String DHL_Receiver_City);
 
 	/**
-	 * Get DHL_Receiver_City.
+	 * Get Empfängerort.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -281,7 +281,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_Receiver_City = "DHL_Receiver_City";
 
 	/**
-	 * Set DHL_Receiver_CountryISO2Code.
+	 * Set Empfänger Ländercode (ISO-2).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -290,7 +290,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_Receiver_CountryISO2Code (java.lang.String DHL_Receiver_CountryISO2Code);
 
 	/**
-	 * Get DHL_Receiver_CountryISO2Code.
+	 * Get Empfänger Ländercode (ISO-2).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -304,7 +304,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_Receiver_CountryISO2Code = "DHL_Receiver_CountryISO2Code";
 
 	/**
-	 * Set DHL_Receiver_CountryISO3Code.
+	 * Set Empfänger Ländercode (ISO-3).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -313,7 +313,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_Receiver_CountryISO3Code (java.lang.String DHL_Receiver_CountryISO3Code);
 
 	/**
-	 * Get DHL_Receiver_CountryISO3Code.
+	 * Get Empfänger Ländercode (ISO-3).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -327,7 +327,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_Receiver_CountryISO3Code = "DHL_Receiver_CountryISO3Code";
 
 	/**
-	 * Set DHL_Receiver_Email.
+	 * Set E-Mail Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -336,7 +336,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_Receiver_Email (java.lang.String DHL_Receiver_Email);
 
 	/**
-	 * Get DHL_Receiver_Email.
+	 * Get E-Mail Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -350,7 +350,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_Receiver_Email = "DHL_Receiver_Email";
 
 	/**
-	 * Set DHL_Receiver_Name1.
+	 * Set Name 1 Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -359,7 +359,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_Receiver_Name1 (java.lang.String DHL_Receiver_Name1);
 
 	/**
-	 * Get DHL_Receiver_Name1.
+	 * Get Name 1 Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -373,7 +373,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_Receiver_Name1 = "DHL_Receiver_Name1";
 
 	/**
-	 * Set DHL_Receiver_Name2.
+	 * Set Name 2 Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -382,7 +382,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_Receiver_Name2 (java.lang.String DHL_Receiver_Name2);
 
 	/**
-	 * Get DHL_Receiver_Name2.
+	 * Get Name 2 Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -396,7 +396,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_Receiver_Name2 = "DHL_Receiver_Name2";
 
 	/**
-	 * Set DHL_Receiver_Phone.
+	 * Set Telefon Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -405,7 +405,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_Receiver_Phone (java.lang.String DHL_Receiver_Phone);
 
 	/**
-	 * Get DHL_Receiver_Phone.
+	 * Get Telefon Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -419,7 +419,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_Receiver_Phone = "DHL_Receiver_Phone";
 
 	/**
-	 * Set DHL_Receiver_StreetName1.
+	 * Set Straße 1 Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -428,7 +428,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_Receiver_StreetName1 (java.lang.String DHL_Receiver_StreetName1);
 
 	/**
-	 * Get DHL_Receiver_StreetName1.
+	 * Get Straße 1 Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -442,7 +442,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_Receiver_StreetName1 = "DHL_Receiver_StreetName1";
 
 	/**
-	 * Set DHL_Receiver_StreetName2.
+	 * Set Straße 2 Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -451,7 +451,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_Receiver_StreetName2 (java.lang.String DHL_Receiver_StreetName2);
 
 	/**
-	 * Get DHL_Receiver_StreetName2.
+	 * Get Straße 2 Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -465,7 +465,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_Receiver_StreetName2 = "DHL_Receiver_StreetName2";
 
 	/**
-	 * Set DHL_Receiver_StreetNumber.
+	 * Set Hausnummer Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -474,7 +474,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_Receiver_StreetNumber (java.lang.String DHL_Receiver_StreetNumber);
 
 	/**
-	 * Get DHL_Receiver_StreetNumber.
+	 * Get Hausnummer Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -488,7 +488,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_Receiver_StreetNumber = "DHL_Receiver_StreetNumber";
 
 	/**
-	 * Set DHL_Receiver_ZipCode.
+	 * Set PLZ Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -497,7 +497,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_Receiver_ZipCode (java.lang.String DHL_Receiver_ZipCode);
 
 	/**
-	 * Get DHL_Receiver_ZipCode.
+	 * Get PLZ Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -534,7 +534,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_RecipientEmailAddress = "DHL_RecipientEmailAddress";
 
 	/**
-	 * Set DHL_ShipmentDate.
+	 * Set Lieferdatum.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -543,7 +543,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_ShipmentDate (java.lang.String DHL_ShipmentDate);
 
 	/**
-	 * Get DHL_ShipmentDate.
+	 * Get Lieferdatum.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -557,7 +557,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_ShipmentDate = "DHL_ShipmentDate";
 
 	/**
-	 * Set DHL_ShipmetnOrder.
+	 * Set DHL_ShipmentOrder.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -566,7 +566,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_ShipmentOrder_ID (int DHL_ShipmentOrder_ID);
 
 	/**
-	 * Get DHL_ShipmetnOrder.
+	 * Get DHL_ShipmentOrder.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -607,7 +607,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_ShipmentOrderRequest_ID = "DHL_ShipmentOrderRequest_ID";
 
 	/**
-	 * Set DHL_Shipper_City.
+	 * Set Lieferort.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -616,7 +616,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_Shipper_City (java.lang.String DHL_Shipper_City);
 
 	/**
-	 * Get DHL_Shipper_City.
+	 * Get Lieferort.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -630,7 +630,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_Shipper_City = "DHL_Shipper_City";
 
 	/**
-	 * Set DHL_Shipper_CountryISO2Code.
+	 * Set Lieferant Ländercode (ISO-2).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -639,7 +639,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_Shipper_CountryISO2Code (java.lang.String DHL_Shipper_CountryISO2Code);
 
 	/**
-	 * Get DHL_Shipper_CountryISO2Code.
+	 * Get Lieferant Ländercode (ISO-2).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -653,7 +653,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_Shipper_CountryISO2Code = "DHL_Shipper_CountryISO2Code";
 
 	/**
-	 * Set DHL_Shipper_CountryISO3Code.
+	 * Set Lieferant Ländercode (ISO-3).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -662,7 +662,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_Shipper_CountryISO3Code (java.lang.String DHL_Shipper_CountryISO3Code);
 
 	/**
-	 * Get DHL_Shipper_CountryISO3Code.
+	 * Get Lieferant Ländercode (ISO-3).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -676,7 +676,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_Shipper_CountryISO3Code = "DHL_Shipper_CountryISO3Code";
 
 	/**
-	 * Set DHL_Shipper_Name1.
+	 * Set Lieferant Name 1.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -685,7 +685,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_Shipper_Name1 (java.lang.String DHL_Shipper_Name1);
 
 	/**
-	 * Get DHL_Shipper_Name1.
+	 * Get Lieferant Name 1.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -699,7 +699,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_Shipper_Name1 = "DHL_Shipper_Name1";
 
 	/**
-	 * Set DHL_Shipper_Name2.
+	 * Set  Lieferant Name 2.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -708,7 +708,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_Shipper_Name2 (java.lang.String DHL_Shipper_Name2);
 
 	/**
-	 * Get DHL_Shipper_Name2.
+	 * Get  Lieferant Name 2.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -722,7 +722,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_Shipper_Name2 = "DHL_Shipper_Name2";
 
 	/**
-	 * Set DHL_Shipper_StreetName1.
+	 * Set Straße 1 Lieferant.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -731,7 +731,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_Shipper_StreetName1 (java.lang.String DHL_Shipper_StreetName1);
 
 	/**
-	 * Get DHL_Shipper_StreetName1.
+	 * Get Straße 1 Lieferant.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -745,7 +745,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_Shipper_StreetName1 = "DHL_Shipper_StreetName1";
 
 	/**
-	 * Set DHL_Shipper_StreetName2.
+	 * Set Straße 2 Lieferant.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -754,7 +754,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_Shipper_StreetName2 (java.lang.String DHL_Shipper_StreetName2);
 
 	/**
-	 * Get DHL_Shipper_StreetName2.
+	 * Get Straße 2 Lieferant.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -768,7 +768,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_Shipper_StreetName2 = "DHL_Shipper_StreetName2";
 
 	/**
-	 * Set DHL_Shipper_StreetNumber.
+	 * Set Hausnummer Lieferant.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -777,7 +777,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_Shipper_StreetNumber (java.lang.String DHL_Shipper_StreetNumber);
 
 	/**
-	 * Get DHL_Shipper_StreetNumber.
+	 * Get Hausnummer Lieferant.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -791,7 +791,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_Shipper_StreetNumber = "DHL_Shipper_StreetNumber";
 
 	/**
-	 * Set DHL_Shipper_ZipCode.
+	 * Set PLZ Lieferant.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -800,7 +800,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_Shipper_ZipCode (java.lang.String DHL_Shipper_ZipCode);
 
 	/**
-	 * Get DHL_Shipper_ZipCode.
+	 * Get PLZ Lieferant.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -814,7 +814,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_Shipper_ZipCode = "DHL_Shipper_ZipCode";
 
 	/**
-	 * Set DHL_WeightInKg.
+	 * Set Gewicht in kg.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -823,7 +823,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_WeightInKg (java.math.BigDecimal DHL_WeightInKg);
 
 	/**
-	 * Get DHL_WeightInKg.
+	 * Get Gewicht in kg.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -837,7 +837,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_WeightInKg = "DHL_WeightInKg";
 
 	/**
-	 * Set DHL_WidthInCm.
+	 * Set Breite in cm.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -846,7 +846,7 @@ public interface I_DHL_ShipmentOrder
 	public void setDHL_WidthInCm (int DHL_WidthInCm);
 
 	/**
-	 * Get DHL_WidthInCm.
+	 * Get Breite in cm.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -937,7 +937,7 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_M_ShipperTransportation_ID = "M_ShipperTransportation_ID";
 
 	/**
-	 * Set Package Id.
+	 * Set Paket-ID.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -946,7 +946,7 @@ public interface I_DHL_ShipmentOrder
 	public void setPackageId (int PackageId);
 
 	/**
-	 * Get Package Id.
+	 * Get Paket-ID.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true

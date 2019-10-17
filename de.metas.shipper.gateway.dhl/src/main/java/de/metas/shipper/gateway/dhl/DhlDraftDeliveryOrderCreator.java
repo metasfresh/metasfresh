@@ -92,11 +92,11 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		// todo when editing this don't forget to update de.metas.shipper.gateway.dhl.DhlDeliveryOrderRepository.toDeliveryOrderPO
 		return DeliveryOrder.builder()
 				.shipperId(deliveryOrderKey.getShipperId())
-				//	todo what's this? what is it used for?			.shipperTransportationId(deliveryOrderKey.getShipperTransportationId())
+				.shipperTransportationId(deliveryOrderKey.getShipperTransportationId())
 				//
+
 				.serviceType(DhlServiceType.V01PAK) // todo how to change the service type?
 				//				.customerReference() // todo this is not set in any place with any user-relevant value afaics!
-				//				todo .customDeliveryData(goDeliveryOrderData)
 				//
 				// Pickup aka Shipper
 				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocation(pickupFromLocation)
@@ -144,7 +144,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	 * 		INNER JOIN m_hu_packingmaterial pack ON huitem.m_hu_packingmaterial_id = pack.m_hu_packingmaterial_id
 	 * WHERE phu.m_package_id = 1000023
 	 * }</pre>
-	 *
+	 * <p>
 	 * thx to ruxi for this query
 	 */
 	@NonNull

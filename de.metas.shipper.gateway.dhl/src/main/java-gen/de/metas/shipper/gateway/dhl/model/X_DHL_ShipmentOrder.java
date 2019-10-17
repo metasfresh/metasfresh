@@ -15,7 +15,7 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -594850136L;
+	private static final long serialVersionUID = 853511318L;
 
     /** Standard Constructor */
     public X_DHL_ShipmentOrder (Properties ctx, int DHL_ShipmentOrder_ID, String trxName)
@@ -47,16 +47,16 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
       return poi;
     }
 
-	/** Set awb.
-		@param awb awb	  */
+	/** Set Luftfrachtbrief.
+		@param awb Luftfrachtbrief	  */
 	@Override
 	public void setawb (java.lang.String awb)
 	{
 		set_Value (COLUMNNAME_awb, awb);
 	}
 
-	/** Get awb.
-		@return awb	  */
+	/** Get Luftfrachtbrief.
+		@return Luftfrachtbrief	  */
 	@Override
 	public java.lang.String getawb () 
 	{
@@ -129,16 +129,16 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 		return (java.lang.String)get_Value(COLUMNNAME_CustomerReference);
 	}
 
-	/** Set DHL_HeightInCm.
-		@param DHL_HeightInCm DHL_HeightInCm	  */
+	/** Set Höhe in cm.
+		@param DHL_HeightInCm Höhe in cm	  */
 	@Override
 	public void setDHL_HeightInCm (int DHL_HeightInCm)
 	{
 		set_Value (COLUMNNAME_DHL_HeightInCm, Integer.valueOf(DHL_HeightInCm));
 	}
 
-	/** Get DHL_HeightInCm.
-		@return DHL_HeightInCm	  */
+	/** Get Höhe in cm.
+		@return Höhe in cm	  */
 	@Override
 	public int getDHL_HeightInCm () 
 	{
@@ -148,16 +148,16 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 		return ii.intValue();
 	}
 
-	/** Set DHL_LengthInCm.
-		@param DHL_LengthInCm DHL_LengthInCm	  */
+	/** Set Länge in cm.
+		@param DHL_LengthInCm Länge in cm	  */
 	@Override
 	public void setDHL_LengthInCm (int DHL_LengthInCm)
 	{
 		set_Value (COLUMNNAME_DHL_LengthInCm, Integer.valueOf(DHL_LengthInCm));
 	}
 
-	/** Get DHL_LengthInCm.
-		@return DHL_LengthInCm	  */
+	/** Get Länge in cm.
+		@return Länge in cm	  */
 	@Override
 	public int getDHL_LengthInCm () 
 	{
@@ -167,192 +167,192 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 		return ii.intValue();
 	}
 
-	/** Set DHL_Product.
-		@param DHL_Product DHL_Product	  */
+	/** Set Produkt.
+		@param DHL_Product Produkt	  */
 	@Override
 	public void setDHL_Product (java.lang.String DHL_Product)
 	{
 		set_Value (COLUMNNAME_DHL_Product, DHL_Product);
 	}
 
-	/** Get DHL_Product.
-		@return DHL_Product	  */
+	/** Get Produkt.
+		@return Produkt	  */
 	@Override
 	public java.lang.String getDHL_Product () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_Product);
 	}
 
-	/** Set DHL_Receiver_City.
-		@param DHL_Receiver_City DHL_Receiver_City	  */
+	/** Set Empfängerort.
+		@param DHL_Receiver_City Empfängerort	  */
 	@Override
 	public void setDHL_Receiver_City (java.lang.String DHL_Receiver_City)
 	{
 		set_Value (COLUMNNAME_DHL_Receiver_City, DHL_Receiver_City);
 	}
 
-	/** Get DHL_Receiver_City.
-		@return DHL_Receiver_City	  */
+	/** Get Empfängerort.
+		@return Empfängerort	  */
 	@Override
 	public java.lang.String getDHL_Receiver_City () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_Receiver_City);
 	}
 
-	/** Set DHL_Receiver_CountryISO2Code.
-		@param DHL_Receiver_CountryISO2Code DHL_Receiver_CountryISO2Code	  */
+	/** Set Empfänger Ländercode (ISO-2).
+		@param DHL_Receiver_CountryISO2Code Empfänger Ländercode (ISO-2)	  */
 	@Override
 	public void setDHL_Receiver_CountryISO2Code (java.lang.String DHL_Receiver_CountryISO2Code)
 	{
 		set_Value (COLUMNNAME_DHL_Receiver_CountryISO2Code, DHL_Receiver_CountryISO2Code);
 	}
 
-	/** Get DHL_Receiver_CountryISO2Code.
-		@return DHL_Receiver_CountryISO2Code	  */
+	/** Get Empfänger Ländercode (ISO-2).
+		@return Empfänger Ländercode (ISO-2)	  */
 	@Override
 	public java.lang.String getDHL_Receiver_CountryISO2Code () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_Receiver_CountryISO2Code);
 	}
 
-	/** Set DHL_Receiver_CountryISO3Code.
-		@param DHL_Receiver_CountryISO3Code DHL_Receiver_CountryISO3Code	  */
+	/** Set Empfänger Ländercode (ISO-3).
+		@param DHL_Receiver_CountryISO3Code Empfänger Ländercode (ISO-3)	  */
 	@Override
 	public void setDHL_Receiver_CountryISO3Code (java.lang.String DHL_Receiver_CountryISO3Code)
 	{
 		set_Value (COLUMNNAME_DHL_Receiver_CountryISO3Code, DHL_Receiver_CountryISO3Code);
 	}
 
-	/** Get DHL_Receiver_CountryISO3Code.
-		@return DHL_Receiver_CountryISO3Code	  */
+	/** Get Empfänger Ländercode (ISO-3).
+		@return Empfänger Ländercode (ISO-3)	  */
 	@Override
 	public java.lang.String getDHL_Receiver_CountryISO3Code () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_Receiver_CountryISO3Code);
 	}
 
-	/** Set DHL_Receiver_Email.
-		@param DHL_Receiver_Email DHL_Receiver_Email	  */
+	/** Set E-Mail Empfänger.
+		@param DHL_Receiver_Email E-Mail Empfänger	  */
 	@Override
 	public void setDHL_Receiver_Email (java.lang.String DHL_Receiver_Email)
 	{
 		set_Value (COLUMNNAME_DHL_Receiver_Email, DHL_Receiver_Email);
 	}
 
-	/** Get DHL_Receiver_Email.
-		@return DHL_Receiver_Email	  */
+	/** Get E-Mail Empfänger.
+		@return E-Mail Empfänger	  */
 	@Override
 	public java.lang.String getDHL_Receiver_Email () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_Receiver_Email);
 	}
 
-	/** Set DHL_Receiver_Name1.
-		@param DHL_Receiver_Name1 DHL_Receiver_Name1	  */
+	/** Set Name 1 Empfänger.
+		@param DHL_Receiver_Name1 Name 1 Empfänger	  */
 	@Override
 	public void setDHL_Receiver_Name1 (java.lang.String DHL_Receiver_Name1)
 	{
 		set_Value (COLUMNNAME_DHL_Receiver_Name1, DHL_Receiver_Name1);
 	}
 
-	/** Get DHL_Receiver_Name1.
-		@return DHL_Receiver_Name1	  */
+	/** Get Name 1 Empfänger.
+		@return Name 1 Empfänger	  */
 	@Override
 	public java.lang.String getDHL_Receiver_Name1 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_Receiver_Name1);
 	}
 
-	/** Set DHL_Receiver_Name2.
-		@param DHL_Receiver_Name2 DHL_Receiver_Name2	  */
+	/** Set Name 2 Empfänger.
+		@param DHL_Receiver_Name2 Name 2 Empfänger	  */
 	@Override
 	public void setDHL_Receiver_Name2 (java.lang.String DHL_Receiver_Name2)
 	{
 		set_Value (COLUMNNAME_DHL_Receiver_Name2, DHL_Receiver_Name2);
 	}
 
-	/** Get DHL_Receiver_Name2.
-		@return DHL_Receiver_Name2	  */
+	/** Get Name 2 Empfänger.
+		@return Name 2 Empfänger	  */
 	@Override
 	public java.lang.String getDHL_Receiver_Name2 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_Receiver_Name2);
 	}
 
-	/** Set DHL_Receiver_Phone.
-		@param DHL_Receiver_Phone DHL_Receiver_Phone	  */
+	/** Set Telefon Empfänger.
+		@param DHL_Receiver_Phone Telefon Empfänger	  */
 	@Override
 	public void setDHL_Receiver_Phone (java.lang.String DHL_Receiver_Phone)
 	{
 		set_Value (COLUMNNAME_DHL_Receiver_Phone, DHL_Receiver_Phone);
 	}
 
-	/** Get DHL_Receiver_Phone.
-		@return DHL_Receiver_Phone	  */
+	/** Get Telefon Empfänger.
+		@return Telefon Empfänger	  */
 	@Override
 	public java.lang.String getDHL_Receiver_Phone () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_Receiver_Phone);
 	}
 
-	/** Set DHL_Receiver_StreetName1.
-		@param DHL_Receiver_StreetName1 DHL_Receiver_StreetName1	  */
+	/** Set Straße 1 Empfänger.
+		@param DHL_Receiver_StreetName1 Straße 1 Empfänger	  */
 	@Override
 	public void setDHL_Receiver_StreetName1 (java.lang.String DHL_Receiver_StreetName1)
 	{
 		set_Value (COLUMNNAME_DHL_Receiver_StreetName1, DHL_Receiver_StreetName1);
 	}
 
-	/** Get DHL_Receiver_StreetName1.
-		@return DHL_Receiver_StreetName1	  */
+	/** Get Straße 1 Empfänger.
+		@return Straße 1 Empfänger	  */
 	@Override
 	public java.lang.String getDHL_Receiver_StreetName1 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_Receiver_StreetName1);
 	}
 
-	/** Set DHL_Receiver_StreetName2.
-		@param DHL_Receiver_StreetName2 DHL_Receiver_StreetName2	  */
+	/** Set Straße 2 Empfänger.
+		@param DHL_Receiver_StreetName2 Straße 2 Empfänger	  */
 	@Override
 	public void setDHL_Receiver_StreetName2 (java.lang.String DHL_Receiver_StreetName2)
 	{
 		set_Value (COLUMNNAME_DHL_Receiver_StreetName2, DHL_Receiver_StreetName2);
 	}
 
-	/** Get DHL_Receiver_StreetName2.
-		@return DHL_Receiver_StreetName2	  */
+	/** Get Straße 2 Empfänger.
+		@return Straße 2 Empfänger	  */
 	@Override
 	public java.lang.String getDHL_Receiver_StreetName2 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_Receiver_StreetName2);
 	}
 
-	/** Set DHL_Receiver_StreetNumber.
-		@param DHL_Receiver_StreetNumber DHL_Receiver_StreetNumber	  */
+	/** Set Hausnummer Empfänger.
+		@param DHL_Receiver_StreetNumber Hausnummer Empfänger	  */
 	@Override
 	public void setDHL_Receiver_StreetNumber (java.lang.String DHL_Receiver_StreetNumber)
 	{
 		set_Value (COLUMNNAME_DHL_Receiver_StreetNumber, DHL_Receiver_StreetNumber);
 	}
 
-	/** Get DHL_Receiver_StreetNumber.
-		@return DHL_Receiver_StreetNumber	  */
+	/** Get Hausnummer Empfänger.
+		@return Hausnummer Empfänger	  */
 	@Override
 	public java.lang.String getDHL_Receiver_StreetNumber () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_Receiver_StreetNumber);
 	}
 
-	/** Set DHL_Receiver_ZipCode.
-		@param DHL_Receiver_ZipCode DHL_Receiver_ZipCode	  */
+	/** Set PLZ Empfänger.
+		@param DHL_Receiver_ZipCode PLZ Empfänger	  */
 	@Override
 	public void setDHL_Receiver_ZipCode (java.lang.String DHL_Receiver_ZipCode)
 	{
 		set_Value (COLUMNNAME_DHL_Receiver_ZipCode, DHL_Receiver_ZipCode);
 	}
 
-	/** Get DHL_Receiver_ZipCode.
-		@return DHL_Receiver_ZipCode	  */
+	/** Get PLZ Empfänger.
+		@return PLZ Empfänger	  */
 	@Override
 	public java.lang.String getDHL_Receiver_ZipCode () 
 	{
@@ -375,24 +375,24 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_RecipientEmailAddress);
 	}
 
-	/** Set DHL_ShipmentDate.
-		@param DHL_ShipmentDate DHL_ShipmentDate	  */
+	/** Set Lieferdatum.
+		@param DHL_ShipmentDate Lieferdatum	  */
 	@Override
 	public void setDHL_ShipmentDate (java.lang.String DHL_ShipmentDate)
 	{
 		set_Value (COLUMNNAME_DHL_ShipmentDate, DHL_ShipmentDate);
 	}
 
-	/** Get DHL_ShipmentDate.
-		@return DHL_ShipmentDate	  */
+	/** Get Lieferdatum.
+		@return Lieferdatum	  */
 	@Override
 	public java.lang.String getDHL_ShipmentDate () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_ShipmentDate);
 	}
 
-	/** Set DHL_ShipmetnOrder.
-		@param DHL_ShipmentOrder_ID DHL_ShipmetnOrder	  */
+	/** Set DHL_ShipmentOrder.
+		@param DHL_ShipmentOrder_ID DHL_ShipmentOrder	  */
 	@Override
 	public void setDHL_ShipmentOrder_ID (int DHL_ShipmentOrder_ID)
 	{
@@ -402,8 +402,8 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 			set_ValueNoCheck (COLUMNNAME_DHL_ShipmentOrder_ID, Integer.valueOf(DHL_ShipmentOrder_ID));
 	}
 
-	/** Get DHL_ShipmetnOrder.
-		@return DHL_ShipmetnOrder	  */
+	/** Get DHL_ShipmentOrder.
+		@return DHL_ShipmentOrder	  */
 	@Override
 	public int getDHL_ShipmentOrder_ID () 
 	{
@@ -447,160 +447,160 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 		return ii.intValue();
 	}
 
-	/** Set DHL_Shipper_City.
-		@param DHL_Shipper_City DHL_Shipper_City	  */
+	/** Set Lieferort.
+		@param DHL_Shipper_City Lieferort	  */
 	@Override
 	public void setDHL_Shipper_City (java.lang.String DHL_Shipper_City)
 	{
 		set_Value (COLUMNNAME_DHL_Shipper_City, DHL_Shipper_City);
 	}
 
-	/** Get DHL_Shipper_City.
-		@return DHL_Shipper_City	  */
+	/** Get Lieferort.
+		@return Lieferort	  */
 	@Override
 	public java.lang.String getDHL_Shipper_City () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_Shipper_City);
 	}
 
-	/** Set DHL_Shipper_CountryISO2Code.
-		@param DHL_Shipper_CountryISO2Code DHL_Shipper_CountryISO2Code	  */
+	/** Set Lieferant Ländercode (ISO-2).
+		@param DHL_Shipper_CountryISO2Code Lieferant Ländercode (ISO-2)	  */
 	@Override
 	public void setDHL_Shipper_CountryISO2Code (java.lang.String DHL_Shipper_CountryISO2Code)
 	{
 		set_Value (COLUMNNAME_DHL_Shipper_CountryISO2Code, DHL_Shipper_CountryISO2Code);
 	}
 
-	/** Get DHL_Shipper_CountryISO2Code.
-		@return DHL_Shipper_CountryISO2Code	  */
+	/** Get Lieferant Ländercode (ISO-2).
+		@return Lieferant Ländercode (ISO-2)	  */
 	@Override
 	public java.lang.String getDHL_Shipper_CountryISO2Code () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_Shipper_CountryISO2Code);
 	}
 
-	/** Set DHL_Shipper_CountryISO3Code.
-		@param DHL_Shipper_CountryISO3Code DHL_Shipper_CountryISO3Code	  */
+	/** Set Lieferant Ländercode (ISO-3).
+		@param DHL_Shipper_CountryISO3Code Lieferant Ländercode (ISO-3)	  */
 	@Override
 	public void setDHL_Shipper_CountryISO3Code (java.lang.String DHL_Shipper_CountryISO3Code)
 	{
 		set_Value (COLUMNNAME_DHL_Shipper_CountryISO3Code, DHL_Shipper_CountryISO3Code);
 	}
 
-	/** Get DHL_Shipper_CountryISO3Code.
-		@return DHL_Shipper_CountryISO3Code	  */
+	/** Get Lieferant Ländercode (ISO-3).
+		@return Lieferant Ländercode (ISO-3)	  */
 	@Override
 	public java.lang.String getDHL_Shipper_CountryISO3Code () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_Shipper_CountryISO3Code);
 	}
 
-	/** Set DHL_Shipper_Name1.
-		@param DHL_Shipper_Name1 DHL_Shipper_Name1	  */
+	/** Set Lieferant Name 1.
+		@param DHL_Shipper_Name1 Lieferant Name 1	  */
 	@Override
 	public void setDHL_Shipper_Name1 (java.lang.String DHL_Shipper_Name1)
 	{
 		set_Value (COLUMNNAME_DHL_Shipper_Name1, DHL_Shipper_Name1);
 	}
 
-	/** Get DHL_Shipper_Name1.
-		@return DHL_Shipper_Name1	  */
+	/** Get Lieferant Name 1.
+		@return Lieferant Name 1	  */
 	@Override
 	public java.lang.String getDHL_Shipper_Name1 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_Shipper_Name1);
 	}
 
-	/** Set DHL_Shipper_Name2.
-		@param DHL_Shipper_Name2 DHL_Shipper_Name2	  */
+	/** Set  Lieferant Name 2.
+		@param DHL_Shipper_Name2  Lieferant Name 2	  */
 	@Override
 	public void setDHL_Shipper_Name2 (java.lang.String DHL_Shipper_Name2)
 	{
 		set_Value (COLUMNNAME_DHL_Shipper_Name2, DHL_Shipper_Name2);
 	}
 
-	/** Get DHL_Shipper_Name2.
-		@return DHL_Shipper_Name2	  */
+	/** Get  Lieferant Name 2.
+		@return  Lieferant Name 2	  */
 	@Override
 	public java.lang.String getDHL_Shipper_Name2 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_Shipper_Name2);
 	}
 
-	/** Set DHL_Shipper_StreetName1.
-		@param DHL_Shipper_StreetName1 DHL_Shipper_StreetName1	  */
+	/** Set Straße 1 Lieferant.
+		@param DHL_Shipper_StreetName1 Straße 1 Lieferant	  */
 	@Override
 	public void setDHL_Shipper_StreetName1 (java.lang.String DHL_Shipper_StreetName1)
 	{
 		set_Value (COLUMNNAME_DHL_Shipper_StreetName1, DHL_Shipper_StreetName1);
 	}
 
-	/** Get DHL_Shipper_StreetName1.
-		@return DHL_Shipper_StreetName1	  */
+	/** Get Straße 1 Lieferant.
+		@return Straße 1 Lieferant	  */
 	@Override
 	public java.lang.String getDHL_Shipper_StreetName1 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_Shipper_StreetName1);
 	}
 
-	/** Set DHL_Shipper_StreetName2.
-		@param DHL_Shipper_StreetName2 DHL_Shipper_StreetName2	  */
+	/** Set Straße 2 Lieferant.
+		@param DHL_Shipper_StreetName2 Straße 2 Lieferant	  */
 	@Override
 	public void setDHL_Shipper_StreetName2 (java.lang.String DHL_Shipper_StreetName2)
 	{
 		set_Value (COLUMNNAME_DHL_Shipper_StreetName2, DHL_Shipper_StreetName2);
 	}
 
-	/** Get DHL_Shipper_StreetName2.
-		@return DHL_Shipper_StreetName2	  */
+	/** Get Straße 2 Lieferant.
+		@return Straße 2 Lieferant	  */
 	@Override
 	public java.lang.String getDHL_Shipper_StreetName2 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_Shipper_StreetName2);
 	}
 
-	/** Set DHL_Shipper_StreetNumber.
-		@param DHL_Shipper_StreetNumber DHL_Shipper_StreetNumber	  */
+	/** Set Hausnummer Lieferant.
+		@param DHL_Shipper_StreetNumber Hausnummer Lieferant	  */
 	@Override
 	public void setDHL_Shipper_StreetNumber (java.lang.String DHL_Shipper_StreetNumber)
 	{
 		set_Value (COLUMNNAME_DHL_Shipper_StreetNumber, DHL_Shipper_StreetNumber);
 	}
 
-	/** Get DHL_Shipper_StreetNumber.
-		@return DHL_Shipper_StreetNumber	  */
+	/** Get Hausnummer Lieferant.
+		@return Hausnummer Lieferant	  */
 	@Override
 	public java.lang.String getDHL_Shipper_StreetNumber () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_Shipper_StreetNumber);
 	}
 
-	/** Set DHL_Shipper_ZipCode.
-		@param DHL_Shipper_ZipCode DHL_Shipper_ZipCode	  */
+	/** Set PLZ Lieferant.
+		@param DHL_Shipper_ZipCode PLZ Lieferant	  */
 	@Override
 	public void setDHL_Shipper_ZipCode (java.lang.String DHL_Shipper_ZipCode)
 	{
 		set_Value (COLUMNNAME_DHL_Shipper_ZipCode, DHL_Shipper_ZipCode);
 	}
 
-	/** Get DHL_Shipper_ZipCode.
-		@return DHL_Shipper_ZipCode	  */
+	/** Get PLZ Lieferant.
+		@return PLZ Lieferant	  */
 	@Override
 	public java.lang.String getDHL_Shipper_ZipCode () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DHL_Shipper_ZipCode);
 	}
 
-	/** Set DHL_WeightInKg.
-		@param DHL_WeightInKg DHL_WeightInKg	  */
+	/** Set Gewicht in kg.
+		@param DHL_WeightInKg Gewicht in kg	  */
 	@Override
 	public void setDHL_WeightInKg (java.math.BigDecimal DHL_WeightInKg)
 	{
 		set_Value (COLUMNNAME_DHL_WeightInKg, DHL_WeightInKg);
 	}
 
-	/** Get DHL_WeightInKg.
-		@return DHL_WeightInKg	  */
+	/** Get Gewicht in kg.
+		@return Gewicht in kg	  */
 	@Override
 	public java.math.BigDecimal getDHL_WeightInKg () 
 	{
@@ -610,16 +610,16 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 		return bd;
 	}
 
-	/** Set DHL_WidthInCm.
-		@param DHL_WidthInCm DHL_WidthInCm	  */
+	/** Set Breite in cm.
+		@param DHL_WidthInCm Breite in cm	  */
 	@Override
 	public void setDHL_WidthInCm (int DHL_WidthInCm)
 	{
 		set_Value (COLUMNNAME_DHL_WidthInCm, Integer.valueOf(DHL_WidthInCm));
 	}
 
-	/** Get DHL_WidthInCm.
-		@return DHL_WidthInCm	  */
+	/** Get Breite in cm.
+		@return Breite in cm	  */
 	@Override
 	public int getDHL_WidthInCm () 
 	{
@@ -688,16 +688,16 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 		return ii.intValue();
 	}
 
-	/** Set Package Id.
-		@param PackageId Package Id	  */
+	/** Set Paket-ID.
+		@param PackageId Paket-ID	  */
 	@Override
 	public void setPackageId (int PackageId)
 	{
 		set_Value (COLUMNNAME_PackageId, Integer.valueOf(PackageId));
 	}
 
-	/** Get Package Id.
-		@return Package Id	  */
+	/** Get Paket-ID.
+		@return Paket-ID	  */
 	@Override
 	public int getPackageId () 
 	{
