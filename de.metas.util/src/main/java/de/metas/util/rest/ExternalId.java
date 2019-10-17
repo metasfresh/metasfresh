@@ -5,6 +5,11 @@ import static de.metas.util.Check.isEmpty;
 
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -34,7 +39,8 @@ import lombok.Value;
 public class ExternalId
 {
 	String value;
-
+	
+	@JsonCreator
 	public static ExternalId of(@NonNull final String value)
 	{
 		return new ExternalId(value);
@@ -57,9 +63,12 @@ public class ExternalId
 		}
 		return externalId.getValue();
 	}
-
-	private ExternalId(@NonNull final String value)
+	
+	@JsonValue
+	public String getValue()
 	{
-		this.value = assumeNotEmpty(value, "Given parameter 'value may not be empty");
+		return value;
 	}
+	
+
 }
