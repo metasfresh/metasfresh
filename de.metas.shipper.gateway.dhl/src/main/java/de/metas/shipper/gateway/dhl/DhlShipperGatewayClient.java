@@ -23,6 +23,7 @@
 package de.metas.shipper.gateway.dhl;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import de.dhl.webservice.cisbase.AuthentificationType;
 import de.dhl.webservice.cisbase.CommunicationType;
@@ -53,6 +54,7 @@ import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
+import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
@@ -81,9 +83,12 @@ import javax.xml.bind.Marshaller;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DhlShipperGatewayClient implements ShipperGatewayClient
 {
@@ -131,17 +136,45 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	@Override
 	public DeliveryOrder completeDeliveryOrder(final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
-		final ILoggable iLoggable = getEpicLogger();
+		final ILoggable epicLogger = getEpicLogger();
 
-		iLoggable.addLog("Creating shipment order request for {}", deliveryOrder);
+		epicLogger.addLog("Creating shipment order request for {}", deliveryOrder);
 		final CreateShipmentOrderRequest dhlRequest = createDHLShipmentOrderRequest(deliveryOrder);
 
 		final CreateShipmentOrderResponse response = (CreateShipmentOrderResponse)doActualRequest(dhlRequest);
+		if (!BigInteger.ZERO.equals(response.getStatus().getStatusCode()))
+		{
+			final String exceptionMessage = response.getCreationState().stream()
+					.map(it -> Joiner.on("; ")
+							.skipNulls()
+							.join(it.getLabelData().getStatus().getStatusMessage())
+					)
+					.collect(Collectors.joining("; "));
+			throw new ShipperGatewayException(exceptionMessage);
+		}
 		final DeliveryOrder completedDeliveryOrder = updateDeliveryOrderFromResponse(deliveryOrder, response);
 
-		iLoggable.addLog("Completed deliveryOrder is {}", completedDeliveryOrder);
+		// todo just for testing
+		final ImmutableList<DhlCustomDeliveryDataDetail> l = DhlCustomDeliveryData.cast(completedDeliveryOrder.getCustomDeliveryData()).getDetails();
+		dumpPdfsToDisk(l);
+
+		epicLogger.addLog("Completed deliveryOrder is {}", completedDeliveryOrder);
 
 		return completedDeliveryOrder;
+	}
+
+	private void dumpPdfsToDisk(final ImmutableList<DhlCustomDeliveryDataDetail> details)
+	{
+		details.forEach(it -> {
+			try
+			{
+				//noinspection ConstantConditions
+				Files.write(Paths.get("C:", "a", Long.toString(System.currentTimeMillis()) + ".pdf"), it.getPdfLabelData());
+			}
+			catch (IOException ignore)
+			{
+			}
+		});
 	}
 
 	@NonNull
@@ -161,8 +194,8 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	@Override
 	public List<PackageLabels> getPackageLabelsList(final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
-		final ILoggable iLoggable = getEpicLogger();
-		iLoggable.addLog("getPackageLabelsList for {}", deliveryOrder);
+		final ILoggable epicLogger = getEpicLogger();
+		epicLogger.addLog("getPackageLabelsList for {}", deliveryOrder);
 
 		final DhlCustomDeliveryData customDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
 
@@ -171,7 +204,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 				.map(detail -> createPackageLabel(detail.getPdfLabelData(), detail.getAwb()))
 				.collect(ImmutableList.toImmutableList());
 
-		iLoggable.addLog("getPackageLabelsList: labels are {}", packageLabels);
+		epicLogger.addLog("getPackageLabelsList: labels are {}", packageLabels);
 
 		return packageLabels;
 	}
@@ -201,7 +234,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	{
 		final DhlCustomDeliveryData initialCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
 
-		final ImmutableList.Builder<DhlCustomDeliveryDataDetail> updatedCustomDeliveryData = ImmutableList.<DhlCustomDeliveryDataDetail>builder();
+		final ImmutableList.Builder<DhlCustomDeliveryDataDetail> updatedCustomDeliveryData = ImmutableList.builder();
 
 		for (final CreationState creationState : response.getCreationState())
 		{

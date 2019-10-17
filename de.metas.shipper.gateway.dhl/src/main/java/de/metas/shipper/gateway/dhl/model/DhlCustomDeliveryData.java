@@ -43,12 +43,9 @@ public class DhlCustomDeliveryData implements CustomDeliveryData
 	}
 
 	@NonNull
-	public ImmutableList<byte[]> getPdfLabelList()
+	public ImmutableList<DhlCustomDeliveryDataDetail> getDetails()
 	{
-		return details.stream()
-				.map(DhlCustomDeliveryDataDetail::getPdfLabelData)
-				.filter(Objects::nonNull)
-				.collect(ImmutableList.toImmutableList());
+		return ImmutableList.copyOf(details);
 	}
 
 	@NonNull
