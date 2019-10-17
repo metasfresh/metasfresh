@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.DumpPOJOLookupMapOnTestFail;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Inventory;
@@ -68,7 +68,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@ExtendWith(DumpPOJOLookupMapOnTestFail.class)
+@ExtendWith(AdempiereTestWatcher.class)
 class DraftInventoryLinesCreatorTest
 {
 	private static final BigDecimal TWO = new BigDecimal("2");
