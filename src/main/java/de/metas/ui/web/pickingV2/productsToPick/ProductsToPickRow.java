@@ -104,7 +104,7 @@ public class ProductsToPickRow implements IViewRow
 	private final Quantity qty;
 
 	static final String FIELD_QtyOverride = "qtyOverride";
-	@ViewColumn(fieldName = FIELD_QtyOverride, widgetType = DocumentFieldWidgetType.Quantity, captionKey = "QtyOverride", widgetSize = WidgetSize.Small, editor = ViewEditorRenderMode.ALWAYS)
+	@ViewColumn(fieldName = FIELD_QtyOverride, widgetType = DocumentFieldWidgetType.Quantity, captionKey = "Qty_Override", widgetSize = WidgetSize.Small, editor = ViewEditorRenderMode.ALWAYS)
 	private final Quantity qtyOverride;
 
 	static final String FIELD_QtyReview = "qtyReview";
