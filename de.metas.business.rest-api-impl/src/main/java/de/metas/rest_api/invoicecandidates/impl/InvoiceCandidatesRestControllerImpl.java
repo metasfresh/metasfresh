@@ -7,11 +7,11 @@ import java.util.stream.Collectors;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_PInstance;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,21 +21,17 @@ import org.springframework.web.bind.annotation.RestController;
 import de.metas.Profiles;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
-import de.metas.invoicecandidate.api.IInvoicingParams;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
-import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
-import de.metas.process.PInstanceRequest;
 import de.metas.rest_api.invoicecandidates.InvoiceCandidatesRestEndpoint;
 import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandCreateRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidates;
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandCreateResponse;
+import de.metas.rest_api.utils.JsonErrors;
 import de.metas.security.permissions.Access;
 import de.metas.util.Services;
-import de.metas.util.rest.ExternalId;
 import lombok.NonNull;
 
 /*
@@ -63,28 +59,52 @@ import lombok.NonNull;
 @RestController
 @RequestMapping(InvoiceCandidatesRestEndpoint.ENDPOINT)
 @Profile(Profiles.PROFILE_App)
-public class InvoiceCandidatesRestControllerImpl implements InvoiceCandidatesRestEndpoint
+class InvoiceCandidatesRestControllerImpl implements InvoiceCandidatesRestEndpoint
 {
 
 	private static final Logger logger = LogManager.getLogger(InvoiceCandidatesRestControllerImpl.class);
 
 	final private IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	private final InvoiceJsonConverters jsonConverters;
 
-	@PostMapping
+	public InvoiceCandidatesRestControllerImpl(
+			@NonNull final InvoiceJsonConverters jsonConverters)
+	{
+		this.jsonConverters = jsonConverters;
+	}
+	
+	@PostMapping(consumes={"application/json"})
 	@Override
 	public ResponseEntity<JsonInvoiceCandCreateResponse> createInvoices(@RequestBody @NonNull final JsonInvoiceCandCreateRequest request)
 	{
-		PInstanceId pInstanceId = getPInstanceId();
-		createAndExecuteICQueryBuilder(request.getJsonInvoices(), pInstanceId);
+		try
+		{
+			PInstanceId pInstanceId = getPInstanceId();
+			createAndExecuteICQueryBuilder(request.getJsonInvoices(), pInstanceId);
 
-		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
-				.setContext(Env.getCtx())
-				.setInvoicingParams(createInvoicingParams(request))
-				.setFailIfNothingEnqueued(true)
-				.enqueueSelection(pInstanceId);
-		return null;
+			final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
+					.setContext(Env.getCtx())
+					.setInvoicingParams(createInvoicingParams(request))
+					.setFailIfNothingEnqueued(true)
+					.enqueueSelection(pInstanceId);
+
+			final ITrxManager trxManager = Services.get(ITrxManager.class);
+			final JsonInvoiceCandCreateResponse //
+			response = trxManager.callInNewTrx(() -> jsonConverters.toJson(enqueueResult));
+
+			return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Got exception while processing {}", request, ex);
+
+			final String adLanguage = Env.getADLanguageOrBaseLanguage();
+			return ResponseEntity.badRequest()
+					.body(JsonInvoiceCandCreateResponse.error(JsonErrors.ofThrowable(ex, adLanguage)));
+		}
 	}
+
 
 	@PostMapping(PATH_TEST)
 	@Override
@@ -101,7 +121,7 @@ public class InvoiceCandidatesRestControllerImpl implements InvoiceCandidatesRes
 				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, true)
 				.setJoinOr();
 		List<String> ids = new ArrayList<>();
-		jsonInvoices.stream().forEach(p -> ids.addAll(p.getExternalLineId().stream().map(e -> e.getValue()).collect(Collectors.toList())));
+		jsonInvoices.stream().forEach(p -> ids.addAll(p.getExternalLineIds().stream().map(e -> e.getValue()).collect(Collectors.toList())));
 
 		for (final JsonInvoiceCandidates cand : jsonInvoices)
 		{

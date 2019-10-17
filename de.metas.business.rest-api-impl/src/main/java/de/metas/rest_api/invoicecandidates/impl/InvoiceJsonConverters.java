@@ -1,6 +1,12 @@
 package de.metas.rest_api.invoicecandidates.impl;
 
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
+
+import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
+import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCand;
+import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandCreateResponse;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -15,16 +21,25 @@ import org.springframework.stereotype.Service;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 @Service
 class InvoiceJsonConverters
 {
+	public final JsonInvoiceCandCreateResponse toJson(@NonNull final IInvoiceCandidateEnqueueResult enqueueResult)
+	{
+		JsonInvoiceCand jsonInvoiceCand=JsonInvoiceCand.builder().invoiceCandidateEnqueuedCount(enqueueResult.getInvoiceCandidateEnqueuedCount())
+				.summaryTranslated(enqueueResult.getSummaryTranslated(Env.getCtx()))
+				.totalNetAmtToInvoiceChecksum(enqueueResult.getTotalNetAmtToInvoiceChecksum())
+				.workpackageEnqueuedCount(enqueueResult.getWorkpackageEnqueuedCount())
+				.workpackageQueueSizeBeforeEnqueueing(enqueueResult.getWorkpackageQueueSizeBeforeEnqueueing()).build();
+		return JsonInvoiceCandCreateResponse.ok(jsonInvoiceCand);
+	}
 
 }

@@ -1,21 +1,11 @@
 package de.metas.rest_api.invoicecandidates.response;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandCreateRequest;
-import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidates;
-import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandCreateRequest.JsonInvoiceCandCreateRequestBuilder;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -42,51 +32,30 @@ import lombok.Value;
 @Value
 public class JsonInvoiceCand
 {
+	private String summaryTranslated;
 
-	List<JsonInvoiceCandidates> jsonInvoices;
+	private int invoiceCandidateEnqueuedCount;
 
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	@JsonInclude(Include.NON_NULL)
-	private LocalDate dateInvoiced;
+	private int workpackageEnqueuedCount;
 
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	@JsonInclude(Include.NON_NULL)
-	private LocalDate dateAcct;
+	private int workpackageQueueSizeBeforeEnqueueing;
 
-	private String poReference;
-
-	private Boolean onlyApprovedForInvoicing;
-
-	private Boolean ignoreInvoiceSchedule;
-
-	private Boolean supplementMissingPaymentTermIds;
-
-	private Boolean updateLocationAndContactForInvoice;
-	
-	private BigDecimal check_NetAmtToInvoice;
+	private BigDecimal totalNetAmtToInvoiceChecksum;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonInvoiceCand(
-			@JsonProperty("dateInvoiced") final LocalDate dateInvoiced,
-			@JsonProperty("dateAcct") final LocalDate dateAcct,
-			@JsonProperty("poReference") final String poReference,
-			@JsonProperty("onlyApprovedForInvoicing") final @NonNull Boolean onlyApprovedForInvoicing,
-			@JsonProperty("ignoreInvoiceSchedule") final @NonNull Boolean ignoreInvoiceSchedule,
-			@JsonProperty("supplementMissingPaymentTermIds") final @NonNull Boolean supplementMissingPaymentTermIds,
-			@JsonProperty("updateLocationAndContactForInvoice") final @NonNull Boolean updateLocationAndContactForInvoice,
-			@JsonProperty("check_NetAmtToInvoice") final BigDecimal check_NetAmtToInvoice,
-			List<JsonInvoiceCandidates> jsonInvoices)
+			@JsonProperty("summaryTranslated") final String summaryTranslated,
+			@JsonProperty("invoiceCandidateEnqueuedCount") int invoiceCandidateEnqueuedCount,
+			@JsonProperty("workpackageEnqueuedCount") int workpackageEnqueuedCount,
+			@JsonProperty("workpackageQueueSizeBeforeEnqueueing") int workpackageQueueSizeBeforeEnqueueing,
+			@JsonProperty("totalNetAmtToInvoiceChecksum") final BigDecimal totalNetAmtToInvoiceChecksum)
 	{
-		this.jsonInvoices = jsonInvoices;
-		this.poReference = poReference;
-		this.check_NetAmtToInvoice = check_NetAmtToInvoice;
-		this.dateAcct = dateAcct;
-		this.dateInvoiced = dateInvoiced;
-		this.onlyApprovedForInvoicing = onlyApprovedForInvoicing;
-		this.ignoreInvoiceSchedule = ignoreInvoiceSchedule;
-		this.supplementMissingPaymentTermIds = supplementMissingPaymentTermIds;
-		this.updateLocationAndContactForInvoice = updateLocationAndContactForInvoice;
+		this.summaryTranslated = summaryTranslated;
+		this.invoiceCandidateEnqueuedCount = invoiceCandidateEnqueuedCount;
+		this.workpackageEnqueuedCount = workpackageEnqueuedCount;
+		this.workpackageQueueSizeBeforeEnqueueing = workpackageQueueSizeBeforeEnqueueing;
+		this.totalNetAmtToInvoiceChecksum = totalNetAmtToInvoiceChecksum;
 	}
 
 }

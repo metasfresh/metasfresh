@@ -33,9 +33,10 @@ import de.metas.util.rest.MetasfreshRestAPIConstants;
 
 public interface InvoiceCandidatesRestEndpoint
 {
-	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/invoices/createFromCandidates";
-	String PATH_TEST = "/test";
+	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/invoices/createFromInvoiceCandidates";
 	ResponseEntity<JsonInvoiceCandCreateResponse> createInvoices(JsonInvoiceCandCreateRequest request);
+	
+	String PATH_TEST = "/test";
 	void receiveRequest();
 
 }

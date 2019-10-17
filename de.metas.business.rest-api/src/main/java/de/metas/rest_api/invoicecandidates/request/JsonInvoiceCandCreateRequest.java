@@ -4,15 +4,19 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.google.common.collect.ImmutableList;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -77,17 +81,17 @@ public final class JsonInvoiceCandCreateRequest
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonInvoiceCandCreateRequest(
+			@JsonProperty("jsonInvoices") @Singular final List<JsonInvoiceCandidates> jsonInvoices,
+			@JsonProperty("check_NetAmtToInvoice") final BigDecimal check_NetAmtToInvoice,
 			@JsonProperty("dateInvoiced") final LocalDate dateInvoiced,
 			@JsonProperty("dateAcct") final LocalDate dateAcct,
 			@JsonProperty("poReference") final String poReference,
 			@JsonProperty("onlyApprovedForInvoicing") final @NonNull Boolean onlyApprovedForInvoicing,
 			@JsonProperty("ignoreInvoiceSchedule") final @NonNull Boolean ignoreInvoiceSchedule,
 			@JsonProperty("supplementMissingPaymentTermIds") final @NonNull Boolean supplementMissingPaymentTermIds,
-			@JsonProperty("updateLocationAndContactForInvoice") final @NonNull Boolean updateLocationAndContactForInvoice,
-			@JsonProperty("check_NetAmtToInvoice") final BigDecimal check_NetAmtToInvoice,
-			List<JsonInvoiceCandidates> jsonInvoices)
+			@JsonProperty("updateLocationAndContactForInvoice") final @NonNull Boolean updateLocationAndContactForInvoice)
 	{
-		this.jsonInvoices = jsonInvoices;
+		this.jsonInvoices = ImmutableList.copyOf(jsonInvoices);
 		this.poReference = poReference;
 		this.check_NetAmtToInvoice = check_NetAmtToInvoice;
 		this.dateAcct = dateAcct;

@@ -5,13 +5,12 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.rest_api.ordercandidates.response.JsonOLCand;
 import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.utils.JsonError;
 import de.metas.util.Check;
@@ -47,37 +46,37 @@ public final class JsonInvoiceCandCreateResponse
 {
 	@JsonProperty("result")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final List<JsonInvoiceCand> result;
+	private final JsonInvoiceCand result;
 
 	@JsonProperty("error")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JsonError error;
 	
-	public static JsonInvoiceCandCreateResponse ok(@NonNull final List<JsonInvoiceCand> olCands)
+	public static JsonInvoiceCandCreateResponse ok(@NonNull final JsonInvoiceCand iCands)
 	{
 		final JsonError error = null;
-		return new JsonInvoiceCandCreateResponse(olCands, error);
+		return new JsonInvoiceCandCreateResponse(iCands, error);
 	}
 
 	public static JsonInvoiceCandCreateResponse error(@NonNull final JsonError error)
 	{
-		final List<JsonInvoiceCand> olCands = null;
-		return new JsonInvoiceCandCreateResponse(olCands, error);
+		final JsonInvoiceCand iCands = null;
+		return new JsonInvoiceCandCreateResponse(iCands, error);
 	}
 	
 	@JsonCreator
 	private JsonInvoiceCandCreateResponse(
-			@JsonProperty("result") @Nullable final List<JsonInvoiceCand> olCands,
+			@JsonProperty("result") @Nullable final JsonInvoiceCand iCands,
 			@JsonProperty("error") @Nullable final JsonError error)
 	{
 		this.error = error;
 		if (error == null)
 		{
-			result = olCands != null ? ImmutableList.copyOf(olCands) : ImmutableList.of();
+			result = iCands;
 		}
 		else
 		{
-			Check.assume(olCands == null || olCands.isEmpty(), "No olCands shall be provided when error");
+			Check.assume(iCands == null, "No iCands shall be provided when error");
 			result = null;
 		}
 	}
@@ -96,11 +95,11 @@ public final class JsonInvoiceCandCreateResponse
 		return error;
 	}
 
-	public List<JsonInvoiceCand> getResult()
+	public JsonInvoiceCand getResult()
 	{
 		if (error != null)
 		{
-			throw new IllegalStateException("Not an successful result: " + this, error.getThrowable());
+			throw new IllegalStateException("Not a successful result: " + this, error.getThrowable());
 		}
 		return result;
 	}

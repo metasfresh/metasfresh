@@ -11,7 +11,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.google.common.collect.ImmutableList;
 
+import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandCreateRequest.JsonInvoiceCandCreateRequestBuilder;
 import de.metas.rest_api.ordercandidates.request.JsonDocTypeInfo;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOrganization;
@@ -22,6 +24,7 @@ import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest.JsonOLC
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -50,8 +53,18 @@ public final class JsonInvoiceCandidates
 {
 	@ApiModelProperty(allowEmptyValue = true, value = "This translates to <code>I_C_Invoice_Candidate.externalLineId</code>.\n")
 	@JsonInclude(Include.NON_EMPTY)
-	List<ExternalId> externalLineId;
+	List<ExternalId> externalLineIds;
 	@ApiModelProperty(allowEmptyValue = false, value = "This translates to <code>I_C_Invoice_Candidate.externalHeaderId</code>.\n")
 	String externalHeaderId;
+	
+	@JsonCreator
+	@Builder(toBuilder = true)
+	private JsonInvoiceCandidates(
+			@JsonProperty("externalLineIds") @Singular final List<ExternalId> externalLineIds,
+			@JsonProperty("externalHeaderId") final String externalHeaderId)
+	{
+		this.externalLineIds = ImmutableList.copyOf(externalLineIds);
+		this.externalHeaderId = externalHeaderId;
+	}
 
 }
