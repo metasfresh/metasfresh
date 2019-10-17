@@ -324,7 +324,7 @@ public class CreateInvoiceCandidateDialog
 
 		//
 		// Get pricing system (or dispose window if none was found)
-		final PricingSystemId pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(partnerId, soTrx);
+		final PricingSystemId pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemIdOrNull(partnerId, soTrx);
 		if (pricingSystemId == null)
 		{
 			missingCollector.add(I_C_Invoice_Candidate.COLUMNNAME_M_PricingSystem_ID);

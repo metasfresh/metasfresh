@@ -71,7 +71,7 @@ public interface I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v
     public static final String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 
 	/**
-	 * Set UPC/EAN.
+	 * Set UPC.
 	 * Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
 	 *
 	 * <br>Type: String
@@ -81,7 +81,7 @@ public interface I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v
 	public void setUPC (java.lang.String UPC);
 
 	/**
-	 * Get UPC/EAN.
+	 * Get UPC.
 	 * Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
 	 *
 	 * <br>Type: String

@@ -15,7 +15,7 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 683045244L;
+	private static final long serialVersionUID = -1846433013L;
 
     /** Standard Constructor */
     public X_EDI_Desadv (Properties ctx, int EDI_Desadv_ID, String trxName)
@@ -24,7 +24,6 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
       /** if (EDI_Desadv_ID == 0)
         {
 			setEDI_Desadv_ID (0);
-			setEDI_ExportStatus (null); // P
 			setProcessing (false); // N
         } */
     }

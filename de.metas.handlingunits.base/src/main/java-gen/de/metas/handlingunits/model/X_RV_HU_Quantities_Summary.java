@@ -15,7 +15,7 @@ public class X_RV_HU_Quantities_Summary extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1455506267L;
+	private static final long serialVersionUID = -1353176801L;
 
     /** Standard Constructor */
     public X_RV_HU_Quantities_Summary (Properties ctx, int RV_HU_Quantities_Summary_ID, String trxName)
@@ -88,18 +88,6 @@ public class X_RV_HU_Quantities_Summary extends org.compiere.model.PO implements
 			return "Y".equals(oo);
 		}
 		return false;
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product_Category getM_Product_Category()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class);
-	}
-
-	@Override
-	public void setM_Product_Category(org.compiere.model.I_M_Product_Category M_Product_Category)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class, M_Product_Category);
 	}
 
 	/** Set Produkt Kategorie.

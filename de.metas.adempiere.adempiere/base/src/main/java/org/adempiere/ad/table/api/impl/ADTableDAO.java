@@ -246,6 +246,13 @@ public class ADTableDAO implements IADTableDAO
 		return loadOutOfTrx(tableID, I_AD_Table.class); // load out of trx to benefit from caching
 	}
 
+
+	@Override
+	public I_AD_Table retrieveTable(@NonNull final AdTableId tableId)
+	{
+		return loadOutOfTrx(tableId, I_AD_Table.class); // load out of trx to benefit from caching
+	}
+
 	@Override
 	public I_AD_Table retrieveTableOrNull(@Nullable final String tableName)
 	{

@@ -41,7 +41,7 @@ public interface I_M_HU_PI_Version
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -51,7 +51,7 @@ public interface I_M_HU_PI_Version
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -185,6 +185,33 @@ public interface I_M_HU_PI_Version
     public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Version, Object> COLUMN_IsCurrent = new org.adempiere.model.ModelColumn<I_M_HU_PI_Version, Object>(I_M_HU_PI_Version.class, "IsCurrent", null);
     /** Column name IsCurrent */
     public static final String COLUMNNAME_IsCurrent = "IsCurrent";
+
+	/**
+	 * Set Verpackungscode.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_HU_PackagingCode_ID (int M_HU_PackagingCode_ID);
+
+	/**
+	 * Get Verpackungscode.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_HU_PackagingCode_ID();
+
+	public de.metas.handlingunits.model.I_M_HU_PackagingCode getM_HU_PackagingCode();
+
+	public void setM_HU_PackagingCode(de.metas.handlingunits.model.I_M_HU_PackagingCode M_HU_PackagingCode);
+
+    /** Column definition for M_HU_PackagingCode_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Version, de.metas.handlingunits.model.I_M_HU_PackagingCode> COLUMN_M_HU_PackagingCode_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Version, de.metas.handlingunits.model.I_M_HU_PackagingCode>(I_M_HU_PI_Version.class, "M_HU_PackagingCode_ID", de.metas.handlingunits.model.I_M_HU_PackagingCode.class);
+    /** Column name M_HU_PackagingCode_ID */
+    public static final String COLUMNNAME_M_HU_PackagingCode_ID = "M_HU_PackagingCode_ID";
 
 	/**
 	 * Set Packvorschrift.

@@ -1,10 +1,11 @@
 package de.metas.edi.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IEDIDocumentBL;
@@ -15,7 +16,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
-@Validator(I_M_InOut.class)
+@Interceptor(I_M_InOut.class)
+@Component
 public class M_InOut
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_M_InOut.COLUMNNAME_C_BPartner_ID)

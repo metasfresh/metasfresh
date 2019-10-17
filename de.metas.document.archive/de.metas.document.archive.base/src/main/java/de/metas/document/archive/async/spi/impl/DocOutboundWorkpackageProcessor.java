@@ -24,8 +24,11 @@ package de.metas.document.archive.async.spi.impl;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_User;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -38,6 +41,7 @@ import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.spi.impl.DefaultModelArchiver;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Process work packages from queue and:
@@ -65,12 +69,14 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 			{
 				InterfaceWrapperHelper.setDynAttribute(record, Async_Constants.C_Async_Batch, workpackage.getC_Async_Batch());
 			}
-			generateOutboundDocument(record);
+			generateOutboundDocument(record, workpackage.getAD_User());
 		}
 		return Result.SUCCESS;
 	}
 
-	private void generateOutboundDocument(final Object record)
+	private void generateOutboundDocument(
+			@NonNull final Object record,
+			@Nullable final I_AD_User userRecord)
 	{
 		final I_AD_Archive archive = createModelArchiver(record).archive();
 		if (archive == null)
@@ -81,11 +87,11 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		Loggables.addLog("Created AD_Archive_ID={} for record={}", archive.getAD_Archive_ID(), record);
 
 		final String action = X_C_Doc_Outbound_Log_Line.ACTION_PdfExport; // this action is ported here. i'm not 100% sure it makes sense
-		archiveEventManager.firePdfUpdate(archive, null, action); // user=null
+		archiveEventManager.firePdfUpdate(archive, userRecord, action);
 	}
 
 	@VisibleForTesting
-	protected DefaultModelArchiver createModelArchiver(final Object record)
+	protected DefaultModelArchiver createModelArchiver(@NonNull final Object record)
 	{
 		return DefaultModelArchiver.of(record);
 	}
