@@ -154,27 +154,9 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		}
 		final DeliveryOrder completedDeliveryOrder = updateDeliveryOrderFromResponse(deliveryOrder, response);
 
-		// todo just for testing
-		final ImmutableList<DhlCustomDeliveryDataDetail> l = DhlCustomDeliveryData.cast(completedDeliveryOrder.getCustomDeliveryData()).getDetails();
-		dumpPdfsToDisk(l);
-
 		epicLogger.addLog("Completed deliveryOrder is {}", completedDeliveryOrder);
 
 		return completedDeliveryOrder;
-	}
-
-	private void dumpPdfsToDisk(final ImmutableList<DhlCustomDeliveryDataDetail> details)
-	{
-		details.forEach(it -> {
-			try
-			{
-				//noinspection ConstantConditions
-				Files.write(Paths.get("C:", "a", Long.toString(System.currentTimeMillis()) + ".pdf"), it.getPdfLabelData());
-			}
-			catch (IOException ignore)
-			{
-			}
-		});
 	}
 
 	@NonNull

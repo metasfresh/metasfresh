@@ -262,7 +262,6 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 					shipmentOrder.setC_BPartner_Location_ID(deliveryAddress.getBpartnerLocationId());
 					shipmentOrder.setM_Shipper_ID(deliveryOrder.getShipperId());
 					shipmentOrder.setM_ShipperTransportation_ID(deliveryOrder.getShipperTransportationId());
-
 				}
 
 				{
@@ -371,7 +370,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	private static I_DHL_ShipmentOrder getShipmentOrderByRequestIdAndPackageId(final int requestId, final int packageId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_DHL_ShipmentOrder.class)
+				.createQueryBuilder(I_DHL_ShipmentOrder.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DHL_ShipmentOrder.COLUMNNAME_DHL_ShipmentOrderRequest_ID, requestId)
 				.addEqualsFilter(I_DHL_ShipmentOrder.COLUMNNAME_PackageId, packageId)
