@@ -305,7 +305,7 @@ public class StepComXMLDesadvBean
 			qtyDelivered = BigDecimal.ZERO;
 		}
 		cuQuantity.setQUANTITY(formatNumber(qtyDelivered, decimalFormat));
-		final MeasurementUnit measurementUnit = MeasurementUnit.fromCUOM(ediExpDesadvLineType.getCUOMID().getX12DE355());
+		final MeasurementUnit measurementUnit = MeasurementUnit.fromMetasfreshUOM(ediExpDesadvLineType.getCUOMID().getX12DE355());
 		if (measurementUnit != null)
 		{
 			cuQuantity.setMEASUREMENTUNIT(measurementUnit.toString());

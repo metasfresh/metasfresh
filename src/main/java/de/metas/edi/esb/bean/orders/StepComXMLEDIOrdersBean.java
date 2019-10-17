@@ -113,7 +113,7 @@ public class StepComXMLEDIOrdersBean extends AbstractEDIOrdersBean
 					if (!Util.isEmpty(dquan1.getMEASUREMENTUNIT()))
 					{
 						final MeasurementUnit measurementUnit = MeasurementUnit.valueOf(dquan1.getMEASUREMENTUNIT());
-						orderUnit = measurementUnit.getCuom();
+						orderUnit = MeasurementUnit.fromEdiUOM(measurementUnit);
 					}
 					break;
 				}

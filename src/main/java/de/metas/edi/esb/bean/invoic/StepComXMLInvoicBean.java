@@ -325,7 +325,7 @@ public class StepComXMLInvoicBean
 			invoicedQuantity.setDOCUMENTID(documentId);
 			invoicedQuantity.setLINENUMBER(lineNumber);
 			invoicedQuantity.setQUANTITYQUAL(QuantityQual.INVO.name());
-			final MeasurementUnit measurementUnit = MeasurementUnit.fromCUOM(xmlCctopInvoic500V.getEancomUom());
+			final MeasurementUnit measurementUnit = MeasurementUnit.fromMetasfreshUOM(xmlCctopInvoic500V.getEancomUom());
 			if (measurementUnit != null)
 			{
 				invoicedQuantity.setMEASUREMENTUNIT(measurementUnit.name());
@@ -347,7 +347,7 @@ public class StepComXMLInvoicBean
 			price.setPRICEQUAL(PriceQual.NETT.name());
 			price.setPRICE(formatNumber(xmlCctopInvoic500V.getPriceActual(), decimalFormat));
 			price.setPRICESPEC(PriceSpecCode.NETP.name());
-			final MeasurementUnit priceMeasurementUnit = MeasurementUnit.fromCUOM(xmlCctopInvoic500V.getEanComPriceUOM());
+			final MeasurementUnit priceMeasurementUnit = MeasurementUnit.fromMetasfreshUOM(xmlCctopInvoic500V.getEanComPriceUOM());
 			if (priceMeasurementUnit != null)
 			{
 				price.setPRICEMEASUREUNIT(priceMeasurementUnit.name());
