@@ -20,12 +20,13 @@
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.shipper.gateway.dhl.DhlDeliveryOrderRepository;
 import de.metas.shipper.gateway.dhl.DhlShipperGatewayClient;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
+import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
-import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,7 +61,7 @@ class OneMoreUsingMetasfreshFunctionalityTest
 				.build());
 	}
 
-	@Disabled("this is broken currently")
+	@Disabled("this is broken currently and i have no idea how to fix it")
 	@Test
 	void testDeliveryOrderPersistence()
 	{
@@ -85,20 +86,19 @@ class OneMoreUsingMetasfreshFunctionalityTest
 		final DhlCustomDeliveryData customDeliveryData = DhlCustomDeliveryData.cast(savedCompletedDeliveryOrder.getCustomDeliveryData());
 
 		//noinspection ConstantConditions
-		assertEquals(5, customDeliveryData.getSequenceNumberToPdfLabel().size());
-		assertEquals(5, customDeliveryData.getSequenceNumberToAWB().size());
+		assertEquals(5, customDeliveryData.getDetails().size());
 
 		//
-		//				dumpPdfsToDisk(customDeliveryData);
+		dumpPdfsToDisk(customDeliveryData.getDetails());
 	}
 
-	@SuppressWarnings("unused")
-	private void dumpPdfsToDisk(final DhlCustomDeliveryData deliveryData)
+	private void dumpPdfsToDisk(final ImmutableList<DhlCustomDeliveryDataDetail> details)
 	{
-		deliveryData.getSequenceNumberToPdfLabel().values().forEach(it -> {
+		details.forEach(it -> {
 			try
 			{
-				Files.write(Paths.get("C:", "a", Long.toString(System.currentTimeMillis()) + ".pdf"), it);
+				//noinspection ConstantConditions
+				Files.write(Paths.get("C:", "a", Long.toString(System.currentTimeMillis()) + ".pdf"), it.getPdfLabelData());
 			}
 			catch (IOException ignore)
 			{
