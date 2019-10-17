@@ -1,6 +1,5 @@
 package de.metas.process;
 
-import java.beans.Visibility;
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -10,7 +9,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -21,8 +19,10 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
 import org.compiere.util.Util;
+import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
