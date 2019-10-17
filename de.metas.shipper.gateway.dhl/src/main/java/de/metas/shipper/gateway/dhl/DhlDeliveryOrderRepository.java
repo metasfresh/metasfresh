@@ -176,6 +176,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 				.serviceType(DhlServiceType.valueOf(firstOrder.getDHL_Product()))
 				.deliveryPositions(constructDeliveryPositions(firstOrder, packageIds))
 				.shipperId(firstOrder.getM_Shipper_ID())
+				.shipperTransportationId(firstOrder.getM_ShipperTransportation_ID())
 				.customDeliveryData(DhlCustomDeliveryData.builder()
 						.details(dhlCustomDeliveryDataDetail)
 						.build())
@@ -258,12 +259,13 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 					shipmentOrder.setC_BPartner_ID(deliveryAddress.getBpartnerId());
 					shipmentOrder.setC_BPartner_Location_ID(deliveryAddress.getBpartnerLocationId());
 					shipmentOrder.setM_Shipper_ID(deliveryOrder.getShipperId());
+					shipmentOrder.setM_ShipperTransportation_ID(deliveryOrder.getShipperTransportationId());
+
 				}
 
 				{
 					// (2.2.1) Shipment Details aka PackageDetails
 					shipmentOrder.setDHL_Product(deliveryOrder.getServiceType().getCode());
-					shipmentOrder.setDHL_AccountNumber("22222222220104"); // todo from where do i get this? 	 how to get DHL account numbers??
 					//noinspection ConstantConditions
 					shipmentOrder.setCustomerReference(deliveryOrder.getCustomerReference());
 					shipmentOrder.setDHL_ShipmentDate(deliveryOrder.getPickupDate().getDate().format(DateTimeFormatter.ISO_LOCAL_DATE));

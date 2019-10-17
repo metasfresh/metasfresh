@@ -189,29 +189,6 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_CustomerReference = "CustomerReference";
 
 	/**
-	 * Set DHL_AccountNumber.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setDHL_AccountNumber (java.lang.String DHL_AccountNumber);
-
-	/**
-	 * Get DHL_AccountNumber.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getDHL_AccountNumber();
-
-    /** Column definition for DHL_AccountNumber */
-    public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object> COLUMN_DHL_AccountNumber = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object>(I_DHL_ShipmentOrder.class, "DHL_AccountNumber", null);
-    /** Column name DHL_AccountNumber */
-    public static final String COLUMNNAME_DHL_AccountNumber = "DHL_AccountNumber";
-
-	/**
 	 * Set DHL_HeightInCm.
 	 *
 	 * <br>Type: Integer
@@ -935,6 +912,29 @@ public interface I_DHL_ShipmentOrder
     public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, org.compiere.model.I_M_Shipper>(I_DHL_ShipmentOrder.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
     /** Column name M_Shipper_ID */
     public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
+
+	/**
+	 * Set Transport Auftrag.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_ShipperTransportation_ID (int M_ShipperTransportation_ID);
+
+	/**
+	 * Get Transport Auftrag.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_ShipperTransportation_ID();
+
+    /** Column definition for M_ShipperTransportation_ID */
+    public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object> COLUMN_M_ShipperTransportation_ID = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object>(I_DHL_ShipmentOrder.class, "M_ShipperTransportation_ID", null);
+    /** Column name M_ShipperTransportation_ID */
+    public static final String COLUMNNAME_M_ShipperTransportation_ID = "M_ShipperTransportation_ID";
 
 	/**
 	 * Set Package Id.

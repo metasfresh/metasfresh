@@ -15,7 +15,7 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 754458283L;
+	private static final long serialVersionUID = -594850136L;
 
     /** Standard Constructor */
     public X_DHL_ShipmentOrder (Properties ctx, int DHL_ShipmentOrder_ID, String trxName)
@@ -127,22 +127,6 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 	public java.lang.String getCustomerReference () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_CustomerReference);
-	}
-
-	/** Set DHL_AccountNumber.
-		@param DHL_AccountNumber DHL_AccountNumber	  */
-	@Override
-	public void setDHL_AccountNumber (java.lang.String DHL_AccountNumber)
-	{
-		set_Value (COLUMNNAME_DHL_AccountNumber, DHL_AccountNumber);
-	}
-
-	/** Get DHL_AccountNumber.
-		@return DHL_AccountNumber	  */
-	@Override
-	public java.lang.String getDHL_AccountNumber () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_DHL_AccountNumber);
 	}
 
 	/** Set DHL_HeightInCm.
@@ -677,6 +661,28 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 	public int getM_Shipper_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Shipper_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Transport Auftrag.
+		@param M_ShipperTransportation_ID Transport Auftrag	  */
+	@Override
+	public void setM_ShipperTransportation_ID (int M_ShipperTransportation_ID)
+	{
+		if (M_ShipperTransportation_ID < 1) 
+			set_Value (COLUMNNAME_M_ShipperTransportation_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_ShipperTransportation_ID, Integer.valueOf(M_ShipperTransportation_ID));
+	}
+
+	/** Get Transport Auftrag.
+		@return Transport Auftrag	  */
+	@Override
+	public int getM_ShipperTransportation_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShipperTransportation_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
