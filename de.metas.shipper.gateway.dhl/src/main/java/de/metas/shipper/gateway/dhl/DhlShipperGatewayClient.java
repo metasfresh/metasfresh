@@ -167,8 +167,8 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		final DhlCustomDeliveryData customDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
 
 		//noinspection ConstantConditions
-		final ImmutableList<PackageLabels> packageLabels = customDeliveryData.getPdfLabels().stream()
-				.map(DhlShipperGatewayClient::createPackageLabel)
+		final ImmutableList<PackageLabels> packageLabels = customDeliveryData.getDetails().stream()
+				.map(detail -> createPackageLabel(detail.getPdfLabelData(), detail.getAwb()))
 				.collect(ImmutableList.toImmutableList());
 
 		iLoggable.addLog("getPackageLabelsList: labels are {}", packageLabels);
@@ -182,10 +182,12 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	/////////////////////////////////////////////////
 	/////////////////////////////////////////////////
 
-	private static PackageLabels createPackageLabel(final byte[] labelData)
+	@NonNull
+	private static PackageLabels createPackageLabel(@NonNull final byte[] labelData, @NonNull final String awb)
 	{
 		return PackageLabels.builder()
-				//				.orderId() todo what order is is this???
+				.orderId(OrderId.of(DhlConstants.SHIPPER_GATEWAY_ID, awb))
+				.defaultLabelType(DhlPackageLabelType.GUI)
 				.label(PackageLabel.builder()
 						.type(DhlPackageLabelType.GUI)
 						.labelData(labelData)

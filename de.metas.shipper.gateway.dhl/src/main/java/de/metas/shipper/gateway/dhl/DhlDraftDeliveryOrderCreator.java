@@ -23,19 +23,34 @@
 package de.metas.shipper.gateway.dhl;
 
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
+import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
+import de.metas.shipper.gateway.dhl.model.DhlClientConfigRepository;
 import de.metas.shipper.gateway.dhl.model.DhlServiceType;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
+import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_UOM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -43,19 +58,20 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.Set;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 @Service
 public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
 	private static final Logger logger = LoggerFactory.getLogger(DhlDraftDeliveryOrderCreator.class);
 
-	@Override public String getShipperGatewayId()
+	@Override
+	public String getShipperGatewayId()
 	{
 		return DhlConstants.SHIPPER_GATEWAY_ID;
 	}
 
-	@Override public DeliveryOrder createDraftDeliveryOrder(final CreateDraftDeliveryOrderRequest request)
+	@NonNull
+	@Override
+	public DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
 		final Set<Integer> mpackageIds = request.getMpackageIds();
@@ -66,24 +82,16 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final LocalDate pickupDate = deliveryOrderKey.getPickupDate();
 
 		final int deliverToBPartnerId = deliveryOrderKey.getDeliverToBPartnerId();
-		final I_C_BPartner deliverToBPartner = load(deliverToBPartnerId, I_C_BPartner.class);
+		final I_C_BPartner deliverToBPartner = InterfaceWrapperHelper.load(deliverToBPartnerId, I_C_BPartner.class);
 
 		final int deliverToBPartnerLocationId = deliveryOrderKey.getDeliverToBPartnerLocationId();
-		final I_C_BPartner_Location deliverToBPLocation = load(deliverToBPartnerLocationId, I_C_BPartner_Location.class);
+		final I_C_BPartner_Location deliverToBPLocation = InterfaceWrapperHelper.load(deliverToBPartnerLocationId, I_C_BPartner_Location.class);
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
 
-		// todo: implement DHL custom delivery order data, the rest of the code is similar to the 2 other shippers
-		//		final GoDeliveryOrderData goDeliveryOrderData = GoDeliveryOrderData.builder()
-		//				.receiptConfirmationPhoneNumber(null)
-		//				.paidMode(GOPaidMode.Prepaid)
-		//				.selfPickup(GOSelfPickup.Delivery)
-		//				.selfDelivery(GOSelfDelivery.Pickup)
-		//				.build();
-
 		// todo when editing this don't forget to update de.metas.shipper.gateway.dhl.DhlDeliveryOrderRepository.toDeliveryOrderPO
 		return DeliveryOrder.builder()
-				//	todo what's this? what is it used for?			.shipperId(deliveryOrderKey.getShipperId())
+				.shipperId(deliveryOrderKey.getShipperId())
 				//	todo what's this? what is it used for?			.shipperTransportationId(deliveryOrderKey.getShipperTransportationId())
 				//
 				.serviceType(DhlServiceType.V01PAK) // todo how to change the service type?
@@ -116,11 +124,62 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 						.numberOfPackages(mpackageIds.size())
 						.packageIds(mpackageIds)
 						.grossWeightKg(Math.max(request.getGrossWeightInKg(), 1))
-//						.packageDimensions() // todo how to get these?
+						.packageDimensions(getPackageDimensions(mpackageIds, deliveryOrderKey.getShipperId()))
 						.build())
 				// todo if needed .customerReference(null)
 				//
 				.build();
 
+	}
+
+	/**
+	 * Assume that all the packages inside a delivery position are of the same type and therefore have the same size.
+	 * <p>
+	 * sql:
+	 *
+	 * <pre>{@code
+	 * SELECT pack.width
+	 * FROM m_package_hu phu
+	 * 		INNER JOIN m_hu_item huitem ON phu.m_hu_id = huitem.m_hu_id
+	 * 		INNER JOIN m_hu_packingmaterial pack ON huitem.m_hu_packingmaterial_id = pack.m_hu_packingmaterial_id
+	 * WHERE phu.m_package_id = 1000023
+	 * }</pre>
+	 *
+	 * thx to ruxi for this query
+	 */
+	@NonNull
+	private PackageDimensions getPackageDimensions(@NonNull final Set<Integer> mpackageIds, final int shipperId)
+	{
+		final Integer firstPackageId = mpackageIds.iterator().next();
+
+		// packing material is never null
+		final I_M_HU_PackingMaterial packingMaterial = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Package_HU.class)
+				.addEqualsFilter(I_M_Package_HU.COLUMNNAME_M_Package_ID, firstPackageId)
+				//
+
+				.andCollect(I_M_HU.COLUMN_M_HU_ID, I_M_HU.class)
+				.andCollectChildren(I_M_HU_Item.COLUMN_M_HU_ID)
+				.andCollect(I_M_HU_PackingMaterial.COLUMN_M_HU_PackingMaterial_ID, I_M_HU_PackingMaterial.class)
+				.create()
+				.firstOnly(I_M_HU_PackingMaterial.class);
+
+		final UomId uomId = UomId.ofRepoIdOrNull(packingMaterial.getC_UOM_Dimension_ID());
+
+		if (uomId == null)
+		{
+			throw new AdempiereException("Package UOM must be set");
+		}
+
+		final DhlClientConfig clientConfig = SpringContextHolder.instance.getBean(DhlClientConfigRepository.class).getByShipperId(shipperId);
+
+		final I_C_UOM fromUom = InterfaceWrapperHelper.load(uomId, I_C_UOM.class);
+		final I_C_UOM toUom = InterfaceWrapperHelper.load(clientConfig.getLengthUomId(), I_C_UOM.class);
+
+		return PackageDimensions.builder()
+				.heightInCM(Services.get(IUOMConversionBL.class).convert(fromUom, toUom, packingMaterial.getHeight()).get().intValue())
+				.lengthInCM(Services.get(IUOMConversionBL.class).convert(fromUom, toUom, packingMaterial.getLength()).get().intValue())
+				.widthInCM(Services.get(IUOMConversionBL.class).convert(fromUom, toUom, packingMaterial.getWidth()).get().intValue())
+				.build();
 	}
 }
