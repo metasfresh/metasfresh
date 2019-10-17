@@ -48,9 +48,9 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 {
 	public static final String ROUTE_ID = "MF-Invoice-To-STEPCOM-XML-Invoic";
 
-	private static final String EDI_STEPCOM_XML_INVOICE_FILENAME_PATTERN = "edi.file.invoice.stepcom-xml.filename";
+	private static final String EDI_STEPCOM_XML_INVOICE_FILENAME_PATTERN = "edi.file.invoic.stepcom-xml.filename";
 
-	public static final String EP_EDI_STEPCOM_XML_INVOICE_CONSUMER = "direct:edi.invoice.stepcom-xml.consumer";
+	public static final String EP_EDI_STEPCOM_XML_INVOICE_CONSUMER = "direct:edi.invoic.stepcom-xml.consumer";
 
 	public static final String EDI_XML_OWNER_ID = "edi.props.stepcom.owner.id";
 	public static final String EDI_XML_APPLICATION_REF = "edi.props.stepcom.application.ref";
@@ -61,7 +61,7 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 	private final static QName EDIInvoiceFeedback_QNAME = Constants.JAXB_ObjectFactory.createEDIInvoiceFeedback(null).getName();
 	private static final String METHOD_setCInvoiceID = "setCInvoiceID";
 
-	private static final String EP_EDI_XML_FILE_INVOICE = "{{edi.file.invoice.stepcom-xml}}";
+	private static final String EP_EDI_XML_FILE_INVOICE = "{{edi.file.invoic.stepcom-xml}}";
 
 	private static final String JAXB_INVOIC_CONTEXTPATH = ObjectFactory.class.getPackage().getName();
 

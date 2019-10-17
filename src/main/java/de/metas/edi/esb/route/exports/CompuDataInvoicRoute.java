@@ -25,7 +25,7 @@ public class CompuDataInvoicRoute extends AbstractEDIRoute
 {
 	public static final String ROUTE_ID = "MF-Invoic-To-COMPUDATA-Invoic";
 
-	private static final String EDI_INVOICE_FILENAME_PATTERN = "edi.file.invoice.compudata.filename";
+	private static final String EDI_INVOICE_FILENAME_PATTERN = "edi.file.invoic.compudata.filename";
 
 	public static final String EP_EDI_COMPUDATA_INVOICE_CONSUMER = "direct:edi.invoice.consumer";
 
@@ -38,7 +38,7 @@ public class CompuDataInvoicRoute extends AbstractEDIRoute
 	/**
 	 * The FILE folder where the EDI file will be stored
 	 */
-	public static final String EP_EDI_FILE_INVOICE = "{{edi.file.invoice.compudata}}";
+	public static final String EP_EDI_FILE_INVOICE = "{{edi.file.invoic.compudata}}";
 
 	@Override
 	public void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)

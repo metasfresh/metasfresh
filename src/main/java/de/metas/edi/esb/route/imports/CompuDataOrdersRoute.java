@@ -27,7 +27,7 @@ import java.util.Set;
 @Component
 public class CompuDataOrdersRoute extends AbstractEDIRoute
 {
-	public static final String EDI_INPUT_ORDERS = "{{edi.input.orders.computdata.filename}}";
+	public static final String EDI_INPUT_ORDERS = "{{edi.file.orders.compudata}}";
 
 	private static final Set<Class<?>> pojoTypes = new HashSet<Class<?>>();
 	static
