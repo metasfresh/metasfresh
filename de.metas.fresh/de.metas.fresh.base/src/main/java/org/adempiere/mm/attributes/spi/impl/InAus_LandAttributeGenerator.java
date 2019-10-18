@@ -13,28 +13,29 @@ package org.adempiere.mm.attributes.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Properties;
 
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IInAusLandAttributeBL;
 import org.adempiere.mm.attributes.api.IInAusLandAttributeDAO;
 import org.adempiere.mm.attributes.spi.AbstractAttributeValueGenerator;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
 
 import de.metas.util.Check;
@@ -58,7 +59,7 @@ public class InAus_LandAttributeGenerator extends AbstractAttributeValueGenerato
 	}
 
 	@Override
-	public I_M_AttributeValue generateAttributeValue(Properties ctx, int tableId, int recordId, boolean isSOTrx, String trxName)
+	public AttributeListValue generateAttributeValue(Properties ctx, int tableId, int recordId, boolean isSOTrx, String trxName)
 	{
 		final ITableRecordReference record = new TableRecordReference(tableId, recordId);
 		Check.errorUnless(I_C_Country.Table_Name.equals(record.getTableName()),
@@ -71,15 +72,13 @@ public class InAus_LandAttributeGenerator extends AbstractAttributeValueGenerato
 			// In/Aus Land attribute was not configured => do nothing
 			return null;
 		}
-		
+
 		final String inAusLand = Services.get(IInAusLandAttributeBL.class).getAttributeStringValueByCountryId(countryId);
 
-		final I_M_AttributeValue inAusLandattributeValue = InterfaceWrapperHelper.create(ctx, I_M_AttributeValue.class, trxName);
-		inAusLandattributeValue.setM_Attribute(inAusLandAttribute);
-		inAusLandattributeValue.setName(inAusLand);
-		inAusLandattributeValue.setValue(inAusLand);
-		InterfaceWrapperHelper.save(inAusLandattributeValue);
-
-		return inAusLandattributeValue;
+		return Services.get(IAttributeDAO.class).createAttributeValue(AttributeListValueCreateRequest.builder()
+				.attributeId(AttributeId.ofRepoId(inAusLandAttribute.getM_Attribute_ID()))
+				.value(inAusLand)
+				.name(inAusLand)
+				.build());
 	}
 }

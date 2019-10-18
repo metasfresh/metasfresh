@@ -13,21 +13,24 @@ package org.adempiere.mm.attributes.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeListValueTrxRestriction;
 import org.adempiere.mm.attributes.api.AttributeAction;
+import org.adempiere.mm.attributes.api.AttributeListValueChangeRequest;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.api.IInAusLandAttributeBL;
 import org.adempiere.mm.attributes.api.IInAusLandAttributeDAO;
@@ -35,12 +38,12 @@ import org.adempiere.mm.attributes.countryattribute.ICountryAware;
 import org.adempiere.mm.attributes.exceptions.AttributeRestrictedException;
 import org.adempiere.mm.attributes.exceptions.NoAttributeGeneratorException;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeValue;
 
+import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -56,15 +59,15 @@ public class InAusLandAttributeBL implements IInAusLandAttributeBL
 	 */
 	// FIXME: hardcoded
 	// NOTE: public for testing
-	public static final int COUNTRY_ID_SCHWEIZ_ID = 107;
+	public static final int COUNTRY_ID_SCHWEIZ_ID = CountryId.SWITZERLAND.getRepoId();
 	public static final String ATTRIBUTEVALUE_INLAND = "Inland";
 	public static final String ATTRIBUTEVALUE_AUSLAND = "Ausland";
-	
+
 	@Override
 	public AttributeId getAttributeId(final ICountryAware countryAware)
 	{
 		final IInAusLandAttributeDAO inAusLandAttributeDAO = Services.get(IInAusLandAttributeDAO.class);
-		
+
 		final int adClientId = countryAware.getAD_Client_ID();
 		final int adOrgId = countryAware.getAD_Org_ID();
 		final AttributeId inAusLandAttributeId = inAusLandAttributeDAO.retrieveInAusLandAttributeId(adClientId, adOrgId);
@@ -72,22 +75,22 @@ public class InAusLandAttributeBL implements IInAusLandAttributeBL
 	}
 
 	@Override
-	public I_M_AttributeValue getCreateAttributeValue(final IContextAware context, final ICountryAware countryAware)
+	public AttributeListValue getCreateAttributeValue(final IContextAware context, final ICountryAware countryAware)
 	{
 		final Properties ctx = context.getCtx();
 		final String trxName = context.getTrxName();
-		
+
 		Check.assumeNotNull(countryAware, "countryAware not null");
 		final I_C_Country country = countryAware.getC_Country();
 		Check.assumeNotNull(country, "country not null");
-		final boolean isSOTrx = countryAware.isSOTrx();
-		
+		final SOTrx soTrx = SOTrx.ofBoolean(countryAware.isSOTrx());
+
 		final String inAusLand = getAttributeStringValueByCountryId(country.getC_Country_ID());
 
-		final I_M_AttributeValue attributeValue = Services.get(IInAusLandAttributeDAO.class).retrieveInAusLandAttributeValue(ctx, inAusLand);
+		final AttributeListValue existingAttributeValue = Services.get(IInAusLandAttributeDAO.class).retrieveInAusLandAttributeValue(ctx, inAusLand);
 
 		final AttributeAction attributeAction = Services.get(IAttributesBL.class).getAttributeAction(ctx);
-		if (attributeValue == null)
+		if (existingAttributeValue == null)
 		{
 			if (attributeAction == AttributeAction.Error)
 			{
@@ -113,29 +116,36 @@ public class InAusLandAttributeBL implements IInAusLandAttributeBL
 			{
 				throw new AdempiereException("@NotSupported@ AttributeAction " + attributeAction);
 			}
+
+			return existingAttributeValue;
 		}
 		else
 		{
-			if (!Services.get(IAttributesBL.class).isSameTrx(attributeValue, isSOTrx))
+			if (!existingAttributeValue.isMatchingSOTrx(soTrx))
 			{
 				if (attributeAction == AttributeAction.Error)
 				{
-					throw new AttributeRestrictedException(ctx, isSOTrx, attributeValue, country.getCountryCode());
+					throw new AttributeRestrictedException(ctx, soTrx, existingAttributeValue, country.getCountryCode());
 				}
 
 				// We have an attribute value, but it is marked for a different transaction. Change type to "null", to make it available for both.
-				attributeValue.setAvailableTrx(null);
-				InterfaceWrapperHelper.save(attributeValue);
+				final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+				return attributesRepo.changeAttributeValue(AttributeListValueChangeRequest.builder()
+						.id(existingAttributeValue.getId())
+						.availableForTrx(AttributeListValueTrxRestriction.ANY_TRANSACTION)
+						.build());
+			}
+			else
+			{
+				return existingAttributeValue;
 			}
 		}
-
-		return attributeValue;
 	}
 
 	@Override
 	public String getAttributeStringValueByCountryId(final int countryId)
 	{
-		if (COUNTRY_ID_SCHWEIZ_ID == countryId)
+		if (CountryId.SWITZERLAND.getRepoId() == countryId)
 		{
 			return ATTRIBUTEVALUE_INLAND;
 		}

@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
@@ -29,6 +30,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * General Database Constants and Utilities
@@ -55,6 +57,15 @@ public class Database
 				Database.DB_POSTGRESQL.equals(type),
 				"Given type=%s is not supported; the only currently supported type is %s",
 				type, Database.DB_POSTGRESQL);
+	}
+
+	public static String TO_DATE(@NonNull final ZonedDateTime zdt)
+	{
+		return "'"
+				+ zdt.getYear() + "-" + zdt.getMonthValue() + "-" + zdt.getDayOfMonth()
+				+ " " + zdt.getHour() + ":" + zdt.getMinute() + ":" + zdt.getSecond()
+				+ " " + zdt.getZone().getId()
+				+ "'::timestamptz";
 	}
 
 	/**

@@ -7,26 +7,27 @@ import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.stock.ResetStockPInstanceId;
 import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.material.event.stock.StockChangedEvent.StockChangeDetails;
-import mockit.Expectations;
-import mockit.Injectable;
-import mockit.Tested;
-import mockit.Verifications;
 
 /*
  * #%L
@@ -52,23 +53,21 @@ import mockit.Verifications;
 
 public class StockChangedEventHandlerTest
 {
-	private static final BigDecimal FIFTEEN = new BigDecimal("15");
-
-	private static final BigDecimal FIVE = new BigDecimal("5");
-
-	@Tested
 	private StockChangedEventHandler stockChangedEventHandler;
-
-	@Injectable
 	private CandidateChangeService candidateChangeService;
-
-	@Injectable
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		candidateRepositoryRetrieval = Mockito.mock(CandidateRepositoryRetrieval.class);
+		candidateChangeService = Mockito.mock(CandidateChangeService.class);
+
+		stockChangedEventHandler = new StockChangedEventHandler(
+				candidateRepositoryRetrieval,
+				candidateChangeService);
 	}
 
 	/**
@@ -83,26 +82,20 @@ public class StockChangedEventHandlerTest
 	{
 		final StockChangedEvent event = createCommonStockChangedEvent();
 
-		// @formatter:off
-		new Expectations()
-		{{
-			candidateRepositoryRetrieval.retrieveLatestMatchOrNull((CandidatesQuery)any); result = null;
-		}};	// @formatter:on
+		when(candidateRepositoryRetrieval.retrieveLatestMatchOrNull(any()))
+				.thenReturn(null);
 
 		// invoke the method under test
 		stockChangedEventHandler.handleEvent(event);
 
-		// @formatter:off
-		new Verifications()
-		{{
-			Candidate candidate;
-			candidateChangeService.onCandidateNewOrChange(candidate = withCapture()); times = 1;
-
-			assertInvocationCandidateCommons(candidate);
-
-			assertThat(candidate.getType()).isEqualTo(CandidateType.INVENTORY_UP);
-			assertThat(candidate.getQuantity()).isEqualByComparingTo(TEN);
-		}};	// @formatter:on
+		final ArgumentCaptor<Candidate> candidateCaptor = ArgumentCaptor.forClass(Candidate.class);
+		verify(candidateChangeService)
+				.onCandidateNewOrChange(candidateCaptor.capture());
+		final Candidate candidate = candidateCaptor.getValue();
+		//
+		assertInvocationCandidateCommons(candidate);
+		assertThat(candidate.getType()).isEqualTo(CandidateType.INVENTORY_UP);
+		assertThat(candidate.getQuantity()).isEqualByComparingTo(TEN);
 	}
 
 	/**
@@ -118,31 +111,24 @@ public class StockChangedEventHandlerTest
 		final StockChangedEvent event = createCommonStockChangedEvent();
 		assertThat(event.getQtyOnHand()).isEqualByComparingTo(TEN); // guard
 
-		// @formatter:off
-		new Expectations()
-		{{
-			final Candidate existingStockCandidate = Candidate.builder()
-					.type(CandidateType.STOCK)
-					.clientAndOrgId(CLIENT_AND_ORG_ID)
-					.materialDescriptor(createMaterialDescriptor().withQuantity(FIFTEEN))
-					.build();
-			candidateRepositoryRetrieval.retrieveLatestMatchOrNull((CandidatesQuery)any); result = existingStockCandidate;
-		}};	// @formatter:on
+		when(candidateRepositoryRetrieval.retrieveLatestMatchOrNull(any()))
+				.thenReturn(Candidate.builder()
+						.type(CandidateType.STOCK)
+						.clientAndOrgId(CLIENT_AND_ORG_ID)
+						.materialDescriptor(createMaterialDescriptor().withQuantity(new BigDecimal("15")))
+						.build());
 
 		// invoke the method under test
 		stockChangedEventHandler.handleEvent(event);
 
-		// @formatter:off
-		new Verifications()
-		{{
-			Candidate candidate;
-			candidateChangeService.onCandidateNewOrChange(candidate = withCapture()); times = 1;
-
-			assertInvocationCandidateCommons(candidate);
-
-			assertThat(candidate.getType()).isEqualTo(CandidateType.INVENTORY_DOWN);
-			assertThat(candidate.getQuantity()).isEqualByComparingTo(FIVE);
-		}};	// @formatter:on
+		final ArgumentCaptor<Candidate> candidateCaptor = ArgumentCaptor.forClass(Candidate.class);
+		verify(candidateChangeService)
+				.onCandidateNewOrChange(candidateCaptor.capture());
+		final Candidate candidate = candidateCaptor.getValue();
+		//
+		assertInvocationCandidateCommons(candidate);
+		assertThat(candidate.getType()).isEqualTo(CandidateType.INVENTORY_DOWN);
+		assertThat(candidate.getQuantity()).isEqualByComparingTo("5");
 	}
 
 	private StockChangedEvent createCommonStockChangedEvent()
@@ -155,7 +141,7 @@ public class StockChangedEventHandlerTest
 				.qtyOnHandOld(ZERO)
 				.stockChangeDetails(StockChangeDetails.builder()
 						.stockId(30)
-						.resetStockAdPinstanceId(40)
+						.resetStockPInstanceId(ResetStockPInstanceId.ofRepoId(40))
 						.transactionId(50)
 						.build())
 				.warehouseId(WAREHOUSE_ID)
@@ -171,7 +157,7 @@ public class StockChangedEventHandlerTest
 		assertThat(candidate.getOrgId().getRepoId()).isEqualTo(20);
 		assertThat(candidate.getTransactionDetails()).hasSize(1);
 		assertThat(candidate.getTransactionDetails().get(0).getStockId()).isEqualTo(30);
-		assertThat(candidate.getTransactionDetails().get(0).getResetStockAdPinstanceId()).isEqualTo(40);
+		assertThat(candidate.getTransactionDetails().get(0).getResetStockPInstanceId().getRepoId()).isEqualTo(40);
 		assertThat(candidate.getTransactionDetails().get(0).getTransactionId()).isEqualTo(50);
 	}
 }

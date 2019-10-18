@@ -15,7 +15,7 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 351049644L;
+	private static final long serialVersionUID = -1347172278L;
 
     /** Standard Constructor */
     public X_M_HU_Trace (Properties ctx, int M_HU_Trace_ID, String trxName)
@@ -490,8 +490,10 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 		set_ValueFromPO(COLUMNNAME_VHU_ID, de.metas.handlingunits.model.I_M_HU.class, VHU);
 	}
 
-	/** Set CU Handling Unit (VHU).
-		@param VHU_ID CU Handling Unit (VHU)	  */
+	/** Set CU.
+		@param VHU_ID 
+		Customer Unit
+	  */
 	@Override
 	public void setVHU_ID (int VHU_ID)
 	{
@@ -501,8 +503,9 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 			set_ValueNoCheck (COLUMNNAME_VHU_ID, Integer.valueOf(VHU_ID));
 	}
 
-	/** Get CU Handling Unit (VHU).
-		@return CU Handling Unit (VHU)	  */
+	/** Get CU.
+		@return Customer Unit
+	  */
 	@Override
 	public int getVHU_ID () 
 	{

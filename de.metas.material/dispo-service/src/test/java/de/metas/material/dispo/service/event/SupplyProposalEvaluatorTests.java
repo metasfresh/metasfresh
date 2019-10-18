@@ -11,10 +11,10 @@ import java.time.temporal.ChronoUnit;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableList;
 
@@ -36,7 +36,6 @@ import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.util.time.SystemTime;
-import mockit.Mocked;
 
 /*
  * #%L
@@ -60,12 +59,9 @@ import mockit.Mocked;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class SupplyProposalEvaluatorTests
 {
-	/** Watches the current tests and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private final Instant t1 = SystemTime.asInstant();
 	private final Instant t2 = t1.plus(10, ChronoUnit.MINUTES);
 	private final Instant t3 = t1.plus(20, ChronoUnit.MINUTES);
@@ -83,12 +79,9 @@ public class SupplyProposalEvaluatorTests
 
 	private CandidateRepositoryWriteService candidateRepositoryCommands;
 
-	@Mocked
-	private PostMaterialEventService postMaterialEventService;
-
 	private AvailableToPromiseRepository availableToPromiseRepository;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -101,6 +94,8 @@ public class SupplyProposalEvaluatorTests
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands);
+
+		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
 		availableToPromiseRepository = new AvailableToPromiseRepository();
 

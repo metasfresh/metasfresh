@@ -39,7 +39,7 @@ public interface IPPCostCollectorDAO extends ISingletonService
 
 	List<I_PP_Cost_Collector> getByParent(I_PP_Cost_Collector parentCostCollector);
 
-	I_PP_Cost_Collector getById(int costCollectorId);
+	I_PP_Cost_Collector getById(PPCostCollectorId costCollectorId);
 
 	List<I_PP_Cost_Collector> getByOrderId(PPOrderId ppOrderId);
 

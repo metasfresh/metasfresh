@@ -25,13 +25,16 @@ package org.adempiere.mmovement.api;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.mmovement.MovementLineId;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 
+import de.metas.inventory.InventoryId;
 import de.metas.util.ISingletonService;
 
 public interface IMovementDAO extends ISingletonService
 {
+	I_M_MovementLine getLineById(MovementLineId movementLineId);
 
 	/**
 	 * Retrieves all {@link I_M_MovementLine}s (including inactive ones), ordered by "Line" column.
@@ -51,7 +54,7 @@ public interface IMovementDAO extends ISingletonService
 	 */
 	<MovementLineType extends I_M_MovementLine> List<MovementLineType> retrieveLines(I_M_Movement movement, final Class<MovementLineType> movementLineClass);
 
-	IQueryBuilder<I_M_Movement> retrieveMovementsForInventoryQuery(int inventoryId);
+	IQueryBuilder<I_M_Movement> retrieveMovementsForInventoryQuery(InventoryId inventoryId);
 
 	void save(final I_M_Movement movement);
 

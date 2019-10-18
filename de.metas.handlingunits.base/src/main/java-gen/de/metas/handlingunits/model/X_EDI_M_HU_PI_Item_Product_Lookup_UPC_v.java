@@ -14,7 +14,7 @@ public class X_EDI_M_HU_PI_Item_Product_Lookup_UPC_v extends org.compiere.model.
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -963144348L;
+	private static final long serialVersionUID = -2130942076L;
 
     /** Standard Constructor */
     public X_EDI_M_HU_PI_Item_Product_Lookup_UPC_v (Properties ctx, int EDI_M_HU_PI_Item_Product_Lookup_UPC_v_ID, String trxName)
@@ -62,7 +62,7 @@ public class X_EDI_M_HU_PI_Item_Product_Lookup_UPC_v extends org.compiere.model.
 		return ii.intValue();
 	}
 
-	/** Set UPC/EAN.
+	/** Set UPC.
 		@param UPC 
 		Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
 	  */
@@ -72,7 +72,7 @@ public class X_EDI_M_HU_PI_Item_Product_Lookup_UPC_v extends org.compiere.model.
 		set_Value (COLUMNNAME_UPC, UPC);
 	}
 
-	/** Get UPC/EAN.
+	/** Get UPC.
 		@return Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
 	  */
 	@Override

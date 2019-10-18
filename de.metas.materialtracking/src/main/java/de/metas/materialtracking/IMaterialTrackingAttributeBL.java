@@ -7,7 +7,6 @@ import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.util.ISingletonService;
@@ -33,8 +32,8 @@ public interface IMaterialTrackingAttributeBL extends ISingletonService
 	/**
 	 * Called by API when {@link I_M_Material_Tracking} record is changed.
 	 *
-	 * This method will update the corresponding {@link I_M_AttributeValue} record.
-	 *
+	 * This method will update the corresponding attribute value record.
+	 * 
 	 * When changing the implementation, please make sure that the model interceptors' <code>ifColumnsChanged</code> are in sync.
 	 *
 	 * @param materialTracking

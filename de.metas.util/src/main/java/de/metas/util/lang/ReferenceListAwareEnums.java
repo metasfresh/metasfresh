@@ -46,6 +46,11 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class ReferenceListAwareEnums
 {
+	public static <T extends ReferenceListAwareEnum> ValuesIndex<T> index(final T[] values)
+	{
+		return new ValuesIndex<>(values);
+	}
+
 	public static <T extends ReferenceListAwareEnum> ImmutableMap<String, T> indexByCode(final T[] values)
 	{
 		return Maps.uniqueIndex(Arrays.asList(values), ReferenceListAwareEnum::getCode);
@@ -194,5 +199,36 @@ public class ReferenceListAwareEnums
 
 		@Nullable
 		final Optional<ImmutableSet<ReferenceListAwareEnum>> values;
+	}
+
+	public static final class ValuesIndex<T extends ReferenceListAwareEnum>
+	{
+		private final String typeName;
+		private final ImmutableMap<String, T> typesByCode;
+
+		private ValuesIndex(@NonNull final T[] values)
+		{
+			if (values.length == 0)
+			{
+				throw new IllegalArgumentException("values not allowed to be empty");
+			}
+			this.typeName = values[0].getClass().getSimpleName();
+			typesByCode = Maps.uniqueIndex(Arrays.asList(values), ReferenceListAwareEnum::getCode);
+		}
+
+		public T ofNullableCode(@Nullable final String code)
+		{
+			return code != null ? ofCode(code) : null;
+		}
+
+		public T ofCode(@NonNull final String code)
+		{
+			T type = typesByCode.get(code);
+			if (type == null)
+			{
+				throw Check.mkEx("No " + typeName + " found for code: " + code);
+			}
+			return type;
+		}
 	}
 }

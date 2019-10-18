@@ -25,6 +25,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  */
 
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
@@ -37,13 +40,17 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.DB;
 
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.allocation.api.IAllocationDAO;
@@ -99,8 +106,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 		queryBuilder
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_Posted, true) // Posted
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_Processed, true) // Processed
-				.addInArrayOrAllFilter(I_C_Payment.COLUMN_DocStatus, DocStatus.completedOrClosedStatuses())
-		;
+				.addInArrayOrAllFilter(I_C_Payment.COLUMN_DocStatus, DocStatus.completedOrClosedStatuses());
 
 		// Only the documents created after the given start time
 		if (startTime != null)
@@ -181,4 +187,15 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 				.listIds(PaymentId::ofRepoId)
 				.stream();
 	}
+
+	/*
+	 * TODO please consider the following improvement
+	 * - create an AD_Table like `C_InvoiceOpenAmounts` that has the required values (`C_BPartner_ID`, `C_Currency_ID`, `InvoiceOpen`...) as columns
+	 * - put this select-stuff into a DB function. that function shall return the `C_InvoiceOpenAmounts` as result (i.e. the metasfresh `C_InvoiceOpenAmounts` table is not a physical table in the DB; it's just what the DB-function returns)
+	 * - create a model class `I_C_InvoiceOpenAmounts` for your AD_Table.
+	 * - have the `PaymentDAO` implementation invoke the DB-function to get it's `I_C_InvoiceOpenAmounts` (=> you can do this with IQueryBL)
+	 * - have the `PlainPaymentDAO ` implementation return "plain" instances of `I_C_InvoiceOpenAmounts`
+	 * - that way, one can write a unit test where they first create one or two plain `I_C_InvoiceOpenAmounts`s and then query them in their test
+	 */
+	public abstract void updateDiscountAndPayment(I_C_Payment payment, int c_Invoice_ID, I_C_DocType c_DocType);
 }

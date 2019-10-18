@@ -2,6 +2,8 @@ package de.metas.handlingunits.allocation.impl;
 
 import java.util.List;
 
+import org.adempiere.ad.trx.api.ITrx;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -25,7 +27,7 @@ import java.util.List;
  */
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.util.TrxRunnable2;
+import org.adempiere.ad.trx.api.TrxCallable;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -57,9 +59,8 @@ public class HUContextProcessorExecutor implements IHUContextProcessorExecutor
 	 */
 	private IHUTransactionAttributeBuilder trxAttributesBuilder;
 
-	public HUContextProcessorExecutor(final IHUContext huContext)
+	public HUContextProcessorExecutor(@NonNull final IHUContext huContext)
 	{
-		Check.assumeNotNull(huContext, "huContext not null");
 		huContextInitial = huContext;
 	}
 
@@ -73,12 +74,10 @@ public class HUContextProcessorExecutor implements IHUContextProcessorExecutor
 	@Override
 	public IMutableAllocationResult run(@NonNull final IHUContextProcessor processor)
 	{
-		final IMutableAllocationResult[] result = new IMutableAllocationResult[] { null };
-
 		final String trxName = huContextInitial.getTrxName();
-		trxManager.run(trxName, new TrxRunnable2()
+		return trxManager.call(trxName, new TrxCallable<IMutableAllocationResult>()
 		{
-			// Note: If trxName from initial request is not null, ITrxManager.run() won't commit in case of success!
+			// Note: If trxName from initial request is not null, ITrxManager.call() won't commit in case of success!
 
 			/**
 			 * True if our processing was a success
@@ -86,11 +85,11 @@ public class HUContextProcessorExecutor implements IHUContextProcessorExecutor
 			private boolean success = false;
 
 			@Override
-			public void run(final String localTrxName) throws Exception
+			public IMutableAllocationResult call()
 			{
 				//
 				// Create a context identical like the one we got, but using our local transaction name
-				final IHUContext huContextInLocalTrx = huContextFactory.deriveWithTrxName(huContextInitial, localTrxName);
+				final IHUContext huContextInLocalTrx = huContextFactory.deriveWithTrxName(huContextInitial, ITrx.TRXNAME_ThreadInherited);
 
 				//
 				// Create HU Attribute transactions collector and register it to Attribute Storage
@@ -99,7 +98,7 @@ public class HUContextProcessorExecutor implements IHUContextProcessorExecutor
 
 				//
 				// Do the actual processing
-				result[0] = processor.process(huContextInLocalTrx);
+				final IMutableAllocationResult result = processor.process(huContextInLocalTrx);
 
 				//
 				// If there are remaining attribute transactions, add them in a new transaction and process it
@@ -109,9 +108,9 @@ public class HUContextProcessorExecutor implements IHUContextProcessorExecutor
 					//
 					// Merge result back to our final result (which will be returned at the end)
 					// NOTE: it could be that the result is null because we don't care about it
-					if (result[0] != null)
+					if (result != null)
 					{
-						AllocationUtils.mergeAllocationResult(result[0], attributeTrxsResult);
+						AllocationUtils.mergeAllocationResult(result, attributeTrxsResult);
 					}
 				}
 
@@ -130,6 +129,7 @@ public class HUContextProcessorExecutor implements IHUContextProcessorExecutor
 				//
 				// If we reach this point it was a success
 				success = true;
+				return result;
 			}
 
 			@Override
@@ -166,7 +166,5 @@ public class HUContextProcessorExecutor implements IHUContextProcessorExecutor
 				}
 			}
 		});
-
-		return result[0];
 	}
 }

@@ -36,6 +36,8 @@ public class BPLocationBuilder
 
 	private boolean billTo;
 
+	private boolean billToDefault;
+
 	private final BPartnerId bpartnerId;
 
 	public BPLocationBuilder(@NonNull BPartnerId bpartnerId)
@@ -49,6 +51,8 @@ public class BPLocationBuilder
 		bpLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 		bpLocationRecord.setIsShipTo(shipTo);
 		bpLocationRecord.setIsBillTo(billTo);
+		bpLocationRecord.setIsBillToDefault(billToDefault);
+
 		saveRecord(bpLocationRecord);
 
 		return bpLocationRecord;
@@ -63,6 +67,12 @@ public class BPLocationBuilder
 	public BPLocationBuilder shipTo(final boolean shipTo)
 	{
 		this.shipTo = shipTo;
+		return this;
+	}
+
+	public BPLocationBuilder billToDefault(final boolean billToDefault)
+	{
+		this.billToDefault = billToDefault;
 		return this;
 	}
 }

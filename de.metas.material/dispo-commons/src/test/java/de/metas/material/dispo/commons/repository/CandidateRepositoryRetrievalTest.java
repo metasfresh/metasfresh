@@ -8,8 +8,8 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate;
@@ -44,7 +44,7 @@ public class CandidateRepositoryRetrievalTest
 {
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

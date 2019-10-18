@@ -13,15 +13,14 @@ package de.metas.handlingunits.attribute.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -43,7 +42,6 @@ import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -65,16 +63,13 @@ public class HUTransactionAttributeBuilder implements IHUTransactionAttributeBui
 	private final HUTrxAttributesCollector trxAttributesCollector;
 	private final IAttributeStorageFactory attributeStorageFactory;
 
-	public HUTransactionAttributeBuilder(final IHUContext huContext)
+	public HUTransactionAttributeBuilder(@NonNull final IHUContext huContext)
 	{
-		super();
-
-		Check.assumeNotNull(huContext, "huContext not null");
 		this.huContext = huContext;
 
 		//
 		// Setup and register HUTrxAttributesCollector to current storage
-		trxAttributesCollector = new HUTrxAttributesCollector();
+		trxAttributesCollector = HUTrxAttributesCollector.newInstance();
 
 		//
 		// Registers the collector as a listener to current attribute storages.
@@ -169,7 +164,7 @@ public class HUTransactionAttributeBuilder implements IHUTransactionAttributeBui
 				BigDecimal.ZERO, // qtyAllocated
 				Collections.<IHUTransactionCandidate> emptyList(), // trxs
 				attributeTrxs // attribute transactions
-				);
+		);
 
 		return result;
 	}

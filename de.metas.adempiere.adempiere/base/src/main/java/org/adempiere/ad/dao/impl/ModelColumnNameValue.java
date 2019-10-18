@@ -13,26 +13,30 @@ package org.adempiere.ad.dao.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 
 import de.metas.util.Check;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
 
+@EqualsAndHashCode
+@ToString
 public final class ModelColumnNameValue<T>
 {
-	public static <ModelType> ModelColumnNameValue<ModelType> forColumn(final ModelColumn<ModelType, ?> column)
+	public static <ModelType> ModelColumnNameValue<ModelType> forColumn(@NonNull final ModelColumn<ModelType, ?> column)
 	{
-		Check.assumeNotNull(column, "column not null");
 		return new ModelColumnNameValue<>(column.getColumnName());
 	}
 
@@ -43,10 +47,6 @@ public final class ModelColumnNameValue<T>
 
 	/**
 	 * Creates a fully qualified column name
-	 *
-	 * @param tableName
-	 * @param columnName
-	 * @return
 	 */
 	public static <ModelType> ModelColumnNameValue<ModelType> forColumnName(final String tableName, final String columnName)
 	{
@@ -57,40 +57,28 @@ public final class ModelColumnNameValue<T>
 		return new ModelColumnNameValue<>(columnNameFQ);
 	}
 
+	@Getter
 	private final String columnName;
 
 	private ModelColumnNameValue(final String columnName)
 	{
-		super();
 		Check.assumeNotEmpty(columnName, "columnName not empty");
 		this.columnName = columnName;
 	}
 
-	public String getColumnName()
-	{
-		return this.columnName;
-	}
-
 	/**
 	 * <b>Might return <code>null</code>!</b>
+	 * 
 	 * @param model
 	 * @return
 	 */
-	public Object getValue(final T model)
+	public Object getValue(@NonNull final T model)
 	{
-		Check.assumeNotNull(model, "model not null");
-
 		final String columnName = getColumnName();
 		if (InterfaceWrapperHelper.isNull(model, columnName))
 		{
 			return null;
 		}
 		return InterfaceWrapperHelper.getValue(model, columnName).orElse(null);
-	}
-
-	@Override
-	public String toString()
-	{
-		return "ModelColumnNameValue [columnName=" + columnName + "]";
 	}
 }

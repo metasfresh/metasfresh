@@ -1,20 +1,25 @@
 package de.metas.handlingunits.material.interceptor;
 
-import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.util.TimeUtil.asInstant;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Transaction;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.inout.InOutLineId;
+import de.metas.product.ProductId;
 import de.metas.util.time.SystemTime;
 
 /*
@@ -30,52 +35,70 @@ import de.metas.util.time.SystemTime;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public class TransactionDescriptorFactoryTest
 {
-
-	private static final int M_WAREHOUSE_ID = 10;
-	private I_M_Locator locator;
+	private TransactionDescriptorFactory transactionDescriptorFactory;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		locator = newInstance(I_M_Locator.class);
-		locator.setM_Warehouse_ID(M_WAREHOUSE_ID);
-		save(locator);
+		transactionDescriptorFactory = new TransactionDescriptorFactory();
+	}
+
+	private LocatorId createLocator(WarehouseId warehouseId)
+	{
+		final I_M_Locator record = newInstance(I_M_Locator.class);
+		record.setM_Warehouse_ID(warehouseId.getRepoId());
+		saveRecord(record);
+		return LocatorId.ofRepoId(warehouseId, record.getM_Locator_ID());
+	}
+
+	private InOutLineId createInOutLine()
+	{
+		final I_M_InOutLine inoutLine = newInstance(I_M_InOutLine.class);
+		saveRecord(inoutLine);
+		final InOutLineId inoutLineId = InOutLineId.ofRepoId(inoutLine.getM_InOutLine_ID());
+		return inoutLineId;
 	}
 
 	@Test
 	public void ofRecord()
 	{
+		final ProductId productId = ProductId.ofRepoId(11);
+
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(10);
+		final LocatorId locatorId = createLocator(warehouseId);
+
+		final InOutLineId inoutLineId = createInOutLine();
+
 		final Timestamp movementDate = SystemTime.asTimestamp();
 
-		final I_M_InOutLine inoutLine = newInstance(I_M_InOutLine.class);
-		save(inoutLine);
-
 		final I_M_Transaction transactionRecord = newInstance(I_M_Transaction.class);
-		transactionRecord.setM_InOutLine(inoutLine);
-		transactionRecord.setMovementQty(TEN.negate());
-		transactionRecord.setM_Locator(locator);
+		transactionRecord.setM_Product_ID(productId.getRepoId());
+		transactionRecord.setM_InOutLine_ID(inoutLineId.getRepoId());
+		transactionRecord.setMovementQty(new BigDecimal("-10.234"));
+		transactionRecord.setM_Locator_ID(locatorId.getRepoId());
 		transactionRecord.setMovementDate(movementDate);
 		save(transactionRecord);
 
 		// invoke the method under test
-		final TransactionDescriptor result = new TransactionDescriptorFactory().ofRecord(transactionRecord);
+		final TransactionDescriptor result = transactionDescriptorFactory.ofRecord(transactionRecord);
 
-		assertThat(result.getMovementQty()).isEqualByComparingTo("-10");
-		assertThat(result.getInoutLineId().getRepoId()).isEqualTo(inoutLine.getM_InOutLine_ID());
+		assertThat(result.getProductId()).isEqualTo(productId);
+		assertThat(result.getInoutLineId()).isEqualTo(inoutLineId);
+		assertThat(result.getMovementQty()).isEqualByComparingTo("-10.234");
+		assertThat(result.getWarehouseId()).isEqualTo(warehouseId);
 		assertThat(result.getTransactionDate()).isEqualTo(asInstant(movementDate));
 	}
-
 }

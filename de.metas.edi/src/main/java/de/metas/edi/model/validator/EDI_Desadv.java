@@ -13,21 +13,22 @@ package de.metas.edi.model.validator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.util.List;
 
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IDesadvDAO;
@@ -39,17 +40,11 @@ import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
 
-@Validator(I_EDI_Desadv.class)
+@Interceptor(I_EDI_Desadv.class)
+@Component
 public class EDI_Desadv
 {
-	public static final Object INSTANCE = new EDI_Desadv();
-
-	private EDI_Desadv()
-	{
-		super();
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void onDesadvDelete(final I_EDI_Desadv desadv)
 	{
 		final List<I_EDI_DesadvLine> allLines = Services.get(IDesadvDAO.class).retrieveAllDesadvLines(desadv);
@@ -90,8 +85,7 @@ public class EDI_Desadv
 		desadv.setProcessed(processed);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_EDI_Desadv.COLUMNNAME_EDIErrorMsg })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_EDI_Desadv.COLUMNNAME_EDIErrorMsg })
 	public void translateErrorMessage(final I_EDI_Desadv desadv)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
