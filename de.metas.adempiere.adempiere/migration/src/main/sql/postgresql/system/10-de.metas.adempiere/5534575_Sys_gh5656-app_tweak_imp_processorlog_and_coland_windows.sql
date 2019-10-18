@@ -44,3 +44,7 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP(
 DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=547211
 ;
 
+-- 2019-10-18T04:47:16.602Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table_Process SET WEBUI_ViewQuickAction='N',Updated=TO_TIMESTAMP('2019-10-18 06:47:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_Process_ID=540516
+;
