@@ -29,8 +29,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.BOMType;
+import org.eevolution.api.BOMUse;
 import org.eevolution.model.I_PP_Product_BOM;
-import org.eevolution.model.X_PP_Product_BOM;
 
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
@@ -94,8 +95,8 @@ public class ProductBOMBuilder
 		productBOM.setC_UOM_ID(getC_UOM().getC_UOM_ID());
 		productBOM.setValue(product.getValue());
 		productBOM.setName(product.getName());
-		productBOM.setBOMType(X_PP_Product_BOM.BOMTYPE_CurrentActive);
-		productBOM.setBOMUse(X_PP_Product_BOM.BOMUSE_Manufacturing);
+		productBOM.setBOMType(BOMType.CurrentActive.getCode());
+		productBOM.setBOMUse(BOMUse.Manufacturing.getCode());
 		InterfaceWrapperHelper.save(productBOM);
 		this._productBOM = productBOM;
 

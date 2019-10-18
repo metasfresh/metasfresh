@@ -274,7 +274,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 			return sqlParams;
 		}
 
-		private static final String toSqlArrayString(final Collection<Integer> ids)
+		private static String toSqlArrayString(final Collection<Integer> ids)
 		{
 			final StringBuilder sql = new StringBuilder();
 			sql.append("{");
@@ -302,8 +302,8 @@ public class ProductBOMDAO implements IProductBOMDAO
 		bomRecord.setValue(request.getProductValue());
 		bomRecord.setName(request.getProductName());
 		bomRecord.setC_UOM_ID(request.getUomId().getRepoId());
-		bomRecord.setBOMType(request.getBomType());
-		bomRecord.setBOMUse(request.getBomUse());
+		bomRecord.setBOMType(request.getBomType().getCode());
+		bomRecord.setBOMUse(request.getBomUse().getCode());
 		bomRecord.setValidFrom(TimeUtil.asTimestamp(validFrom));
 		saveRecord(bomRecord);
 		final ProductBOMId bomId = ProductBOMId.ofRepoId(bomRecord.getPP_Product_BOM_ID());

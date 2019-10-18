@@ -14,11 +14,11 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
+import org.eevolution.api.BOMType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
-import org.eevolution.model.X_PP_Product_BOM;
 
 import com.google.common.collect.ImmutableList;
 
@@ -180,7 +180,8 @@ public class BOMPriceCalculator
 
 	private boolean isEligible(final I_PP_Product_BOM bom)
 	{
-		return X_PP_Product_BOM.BOMTYPE_Make_To_Order.equals(bom.getBOMType());
+		final BOMType bomType = BOMType.ofNullableCode(bom.getBOMType());
+		return BOMType.MakeToOrder.equals(bomType);
 	}
 
 	//
