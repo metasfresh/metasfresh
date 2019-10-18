@@ -23,6 +23,7 @@
 import com.google.common.collect.ImmutableList;
 import de.metas.shipper.gateway.dhl.DhlDeliveryOrderRepository;
 import de.metas.shipper.gateway.dhl.DhlShipperGatewayClient;
+import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
@@ -58,7 +59,8 @@ class OneMoreUsingMetasfreshFunctionalityTest
 				.accountNumber("22222222220104")
 				.signature("pass")
 				.username("2222222222_01")
-				.build());
+				.build(),
+				DhlDatabaseClientLogger.instance);
 	}
 
 	@Disabled("this is broken currently and i have no idea how to fix it")

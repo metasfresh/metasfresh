@@ -24,6 +24,7 @@ package de.metas.shipper.gateway.dhl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.base.Joiner;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.dhl.webservice.cisbase.AuthentificationType;
 import de.dhl.webservice.cisbase.CommunicationType;
@@ -43,6 +44,8 @@ import de.dhl.webservices.businesscustomershipping._3.ShipmentNotificationType;
 import de.dhl.webservices.businesscustomershipping._3.ShipmentOrderType;
 import de.dhl.webservices.businesscustomershipping._3.ShipperType;
 import de.dhl.webservices.businesscustomershipping._3.Version;
+import de.metas.shipper.gateway.dhl.logger.DhlClientLogEvent;
+import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
@@ -74,25 +77,23 @@ import org.springframework.ws.client.core.WebServiceTemplate;
 import org.springframework.ws.soap.SoapHeader;
 import org.springframework.ws.soap.SoapMessage;
 import org.springframework.ws.transport.http.HttpComponentsMessageSender;
-import org.springframework.xml.transform.StringResult;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class DhlShipperGatewayClient implements ShipperGatewayClient
 {
 	private static final Logger logger = LoggerFactory.getLogger(DhlShipperGatewayClient.class);
+	private final DhlDatabaseClientLogger databaseLogger;
 
 	private final Version API_VERSION;
 
@@ -105,9 +106,10 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	private final de.dhl.webservices.businesscustomershipping._3.ObjectFactory objectFactory;
 
 	@Builder
-	public DhlShipperGatewayClient(@NonNull final DhlClientConfig config)
+	public DhlShipperGatewayClient(@NonNull final DhlClientConfig config, @NonNull final DhlDatabaseClientLogger databaseLogger)
 	{
 		this.config = config;
+		this.databaseLogger = databaseLogger;
 
 		objectFactoryCis = new de.dhl.webservice.cisbase.ObjectFactory();
 		objectFactory = new de.dhl.webservices.businesscustomershipping._3.ObjectFactory();
@@ -141,7 +143,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		epicLogger.addLog("Creating shipment order request for {}", deliveryOrder);
 		final CreateShipmentOrderRequest dhlRequest = createDHLShipmentOrderRequest(deliveryOrder);
 
-		final CreateShipmentOrderResponse response = (CreateShipmentOrderResponse)doActualRequest(dhlRequest);
+		final CreateShipmentOrderResponse response = (CreateShipmentOrderResponse)doActualRequest(dhlRequest, deliveryOrder.getRepoId());
 		if (!BigInteger.ZERO.equals(response.getStatus().getStatusCode()))
 		{
 			final String exceptionMessage = response.getCreationState().stream()
@@ -230,36 +232,38 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 				.build();
 	}
 
-	private Object doActualRequest(final Object request)
+	private Object doActualRequest(final Object request, final int deliveryOrderRepoId)
 	{
-		logPersist(request);
-		final Object response = webServiceTemplate.marshalSendAndReceive(request, soapHeaderWithAuth);
-		logPersist(response);
-
-		return response;
-	}
-
-	private void logPersist(final Object object)
-	{
-
-		final org.springframework.oxm.Marshaller marshaller = webServiceTemplate.getMarshaller();
-
-		// todo this has to be extracted to a database logger.
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		final DhlClientLogEvent.DhlClientLogEventBuilder logEventBuilder = DhlClientLogEvent.builder()
+				.marshaller(webServiceTemplate.getMarshaller())
+				.requestElement(request)
+				.deliveryOrderRepoId(deliveryOrderRepoId)
+				.config(config);
 		try
 		{
-			final StringResult result = new StringResult();
-			marshaller.marshal(object, result);
-			System.out.println(result.toString());
+			final Object response = webServiceTemplate.marshalSendAndReceive(request, soapHeaderWithAuth);
+			databaseLogger.log(logEventBuilder
+					.responseElement(response)
+					.durationMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS))
+					.build());
+			return response;
 		}
-		catch (final IOException ignored)
+		catch (final Throwable throwable)
 		{
-		}
+			final AdempiereException exception = AdempiereException.wrapIfNeeded(throwable);
+			databaseLogger.log(logEventBuilder
+					.responseException(exception)
+					.durationMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS))
+					.build());
 
-		// todo persist the full request body!
+			throw exception;
+		}
 	}
 
 	@NonNull
-	private CreateShipmentOrderRequest createDHLShipmentOrderRequest(@NonNull final DeliveryOrder deliveryOrder)
+	private CreateShipmentOrderRequest createDHLShipmentOrderRequest(
+			@NonNull final DeliveryOrder deliveryOrder)
 	{
 		final CreateShipmentOrderRequest createShipmentOrderRequest = objectFactory.createCreateShipmentOrderRequest();
 		createShipmentOrderRequest.setVersion(API_VERSION);
