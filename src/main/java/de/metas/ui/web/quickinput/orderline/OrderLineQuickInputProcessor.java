@@ -3,7 +3,9 @@ package de.metas.ui.web.quickinput.orderline;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -15,7 +17,15 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.eevolution.api.BOMUse;
+import org.eevolution.api.IProductBOMBL;
+import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.model.I_PP_Product_BOMLine;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.HUPackingAwareCopy.ASICopyMode;
@@ -74,20 +84,32 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
+	private final IProductBOMDAO bomsRepo = Services.get(IProductBOMDAO.class);
+	private final IProductBOMBL bomsService = Services.get(IProductBOMBL.class);
 
 	private final Collection<IOrderLineInputValidator> validators = SpringContextHolder.instance.getBeansOfType(IOrderLineInputValidator.class);
 
 	@Override
-	public DocumentId process(final QuickInput quickInput)
+	public Set<DocumentId> process(final QuickInput quickInput)
 	{
-		final OrderLineCandidate candidate = toOrderLineCandidate(quickInput);
-		validateInput(candidate);
+		final OrderLineCandidate initialCandidate = toOrderLineCandidate(quickInput);
+		validateInput(initialCandidate);
+
+		final List<OrderLineCandidate> candidates = explodeTradingBOM(initialCandidate);
 
 		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-		final I_C_OrderLine newOrderLine = OrderFastInput.addOrderLine(ctx, order, orderLine -> updateOrderLine(orderLine, candidate));
-		final int newOrderLineId = newOrderLine.getC_OrderLine_ID();
-		return DocumentId.of(newOrderLineId);
+
+		final ImmutableSet.Builder<DocumentId> documentIds = ImmutableSet.builder();
+		for (final OrderLineCandidate candidate : candidates)
+		{
+			final I_C_OrderLine newOrderLine = OrderFastInput.addOrderLine(ctx, order, orderLine -> updateOrderLine(orderLine, candidate));
+			final int newOrderLineId = newOrderLine.getC_OrderLine_ID();
+			final DocumentId documentId = DocumentId.of(newOrderLineId);
+			documentIds.add(documentId);
+		}
+
+		return documentIds.build();
 	}
 
 	private void validateInput(final OrderLineCandidate candidate)
@@ -141,6 +163,34 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 				.bpartnerId(bpartnerId)
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
 				.build();
+	}
+
+	private List<OrderLineCandidate> explodeTradingBOM(final OrderLineCandidate candidate)
+	{
+		final ProductId productId = candidate.getProductAndAttributes().getProductId();
+		final I_PP_Product_BOM bom = bomsRepo.getDefaultBOMByProductId(productId).orElse(null);
+		if (bom == null)
+		{
+			return ImmutableList.of(candidate);
+		}
+
+		final BOMUse bomUse = BOMUse.ofNullableCode(bom.getBOMUse());
+		if (!BOMUse.Trading.equals(bomUse))
+		{
+			return ImmutableList.of(candidate);
+		}
+
+		final ArrayList<OrderLineCandidate> result = new ArrayList<>();
+		final List<I_PP_Product_BOMLine> bomLines = bomsRepo.retrieveLines(bom);
+		for (final I_PP_Product_BOMLine bomLine : bomLines)
+		{
+			final ProductId bomLineProductId = ProductId.ofRepoId(bomLine.getM_Product_ID());
+			final BigDecimal bomLineQty = bomsService.computeQtyRequired(bomLine, productId, candidate.getQty());
+
+			result.add(candidate.withProductAndQty(bomLineProductId, bomLineQty));
+		}
+
+		return result;
 	}
 
 	private void updateOrderLine(final I_C_OrderLine to, final OrderLineCandidate candidate)
@@ -204,7 +254,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	}
 
 	@Value
-	@Builder
+	@Builder(toBuilder = true)
 	private static class OrderLineCandidate
 	{
 		@NonNull
@@ -227,5 +277,13 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 
 		@NonNull
 		SOTrx soTrx;
+
+		public OrderLineCandidate withProductAndQty(@NonNull final ProductId productId, @NonNull final BigDecimal qty)
+		{
+			return toBuilder()
+					.productAndAttributes(productAndAttributes.withProductId(productId))
+					.qty(qty)
+					.build();
+		}
 	}
 }
