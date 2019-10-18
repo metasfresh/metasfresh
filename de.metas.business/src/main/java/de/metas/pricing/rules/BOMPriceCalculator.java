@@ -118,7 +118,7 @@ public class BOMPriceCalculator
 			}
 		}
 
-		final BigDecimal qty = bomsBL.getQtyMultiplier(bomLine, bomProductId);
+		final BigDecimal qty = bomsBL.computeQtyMultiplier(bomLine, bomProductId);
 		return qty;
 	}
 

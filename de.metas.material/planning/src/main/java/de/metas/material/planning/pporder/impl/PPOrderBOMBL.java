@@ -121,8 +121,16 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 	void setQtyRequired(final I_PP_Order_BOMLine orderBOMLine, final Quantity qtyFinishedGood)
 	{
-		final Quantity qtyRequired = calculateQtyRequired(fromRecord(orderBOMLine), qtyFinishedGood.toBigDecimal());
+		final Quantity qtyRequired = computeQtyRequired(fromRecord(orderBOMLine), qtyFinishedGood.toBigDecimal());
 		orderBOMLine.setQtyRequiered(qtyRequired.toBigDecimal());
+	}
+
+	@Override
+	public Quantity computeQtyRequired(
+			@NonNull final PPOrderLine ppOrderLinePojo,
+			@NonNull final BigDecimal qtyFinishedGood)
+	{
+		return computeQtyRequired(fromPojo(ppOrderLinePojo), qtyFinishedGood);
 	}
 
 	/**
@@ -134,7 +142,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	 * @return standard quantity required to be issued (standard UOM)
 	 */
 	@VisibleForTesting
-	Quantity calculateQtyRequired(
+	Quantity computeQtyRequired(
 			@NonNull final PPOrderBomLineAware orderBOMLine,
 			@NonNull final BigDecimal qtyFinishedGood)
 	{
@@ -154,20 +162,12 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		// Adjust the qtyRequired by adding the scrap percentage to it.
 		final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 		final Percent qtyScrap = orderBOMLine.getScrap();
-		final BigDecimal qtyRequiredPlusScrap = productBOMBL.calculateQtyWithScrap(qtyRequired, qtyScrap);
+		final BigDecimal qtyRequiredPlusScrap = productBOMBL.computeQtyWithScrap(qtyRequired, qtyScrap);
 		return Quantity.of(qtyRequiredPlusScrap, orderBOMLine.getUom());
 	}
 
 	@Override
-	public Quantity calculateQtyRequired(
-			@NonNull final PPOrderLine ppOrderLinePojo,
-			@NonNull final BigDecimal qtyFinishedGood)
-	{
-		return calculateQtyRequired(fromPojo(ppOrderLinePojo), qtyFinishedGood);
-	}
-
-	@Override
-	public Quantity calculateQtyToIssueBasedOnFinishedGoodReceipt(
+	public Quantity computeQtyToIssueBasedOnFinishedGoodReceipt(
 			@NonNull final I_PP_Order_BOMLine orderBOMLine,
 			@NonNull final I_C_UOM uom)
 	{
@@ -180,7 +180,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 		//
 		// Calculate how much we can issue at max, based on how much finish goods we delivered
-		final Quantity qtyToIssueTarget = calculateQtyRequired(fromRecord(orderBOMLine), qtyDelivered_FinishedGood);
+		final Quantity qtyToIssueTarget = computeQtyRequired(fromRecord(orderBOMLine), qtyDelivered_FinishedGood);
 		if (qtyToIssueTarget.signum() <= 0)
 		{
 			return Quantity.zero(uom);

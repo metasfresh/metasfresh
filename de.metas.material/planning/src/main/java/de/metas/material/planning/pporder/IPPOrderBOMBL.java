@@ -114,7 +114,7 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 * @param uom
 	 * @return qty to issue (in given <code>uom</code>)
 	 */
-	Quantity calculateQtyToIssueBasedOnFinishedGoodReceipt(I_PP_Order_BOMLine orderBOMLine, I_C_UOM uom);
+	Quantity computeQtyToIssueBasedOnFinishedGoodReceipt(I_PP_Order_BOMLine orderBOMLine, I_C_UOM uom);
 
 	void voidBOMLine(I_PP_Order_BOMLine line);
 
@@ -130,7 +130,7 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 * @param qtyFinishedGood
 	 * @return
 	 */
-	Quantity calculateQtyRequired(PPOrderLine ppOrderLinePojo, BigDecimal qtyFinishedGood);
+	Quantity computeQtyRequired(PPOrderLine ppOrderLinePojo, BigDecimal qtyFinishedGood);
 
 	boolean isSomethingReportedOnBOMLines(PPOrderId ppOrderId);
 	

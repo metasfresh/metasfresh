@@ -43,6 +43,8 @@ import de.metas.product.UpdateProductRequest;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
@@ -110,8 +112,7 @@ public class ProductBOMBL implements IProductBOMBL
 		return new ProductLowLevelUpdater();
 	}
 
-	@Override
-	public BigDecimal calculateQtyWithScrap(final BigDecimal qty, @NonNull final Percent scrapPercent)
+	public BigDecimal computeQtyWithScrap(final BigDecimal qty, @NonNull final Percent scrapPercent)
 	{
 		if (qty == null || qty.signum() == 0)
 		{
@@ -153,27 +154,53 @@ public class ProductBOMBL implements IProductBOMBL
 	}
 
 	@Override
-	public BigDecimal getQtyMultiplier(
-			@NonNull final I_PP_Product_BOMLine productBomLine,
-			@NonNull final ProductId endProductId)
+	public BigDecimal computeQtyRequired(
+			@NonNull I_PP_Product_BOMLine bomLine,
+			@NonNull ProductId finishedGoodProductId,
+			@NonNull BigDecimal finishedGoodQty)
 	{
-		if (!productBomLine.isQtyPercentage())
+		final BigDecimal multiplier = computeQtyMultiplier(bomLine, finishedGoodProductId);
+
+		final BigDecimal qtyRequired;
+		final BOMComponentType componentType = BOMComponentType.ofCode(bomLine.getComponentType());
+		if (componentType.isTools())
 		{
-			return productBomLine.getQtyBOM();
+			qtyRequired = multiplier;
+		}
+		else
+		{
+			qtyRequired = finishedGoodQty.multiply(multiplier).setScale(8, RoundingMode.UP);
+		}
+
+		//
+		// Adjust the qtyRequired by adding the scrap percentage to it.
+		final Percent qtyScrap = Percent.of(bomLine.getScrap());
+		final BigDecimal qtyRequiredPlusScrap = computeQtyWithScrap(qtyRequired, qtyScrap);
+		return qtyRequiredPlusScrap;
+	}
+
+	@Override
+	public BigDecimal computeQtyMultiplier(
+			@NonNull final I_PP_Product_BOMLine bomLine,
+			@NonNull final ProductId finishedGoodProductId)
+	{
+		if (!bomLine.isQtyPercentage())
+		{
+			return bomLine.getQtyBOM();
 		}
 
 		// We also need to multiply by BOM UOM to BOM Line UOM multiplier
 		// see http://dewiki908/mediawiki/index.php/06973_Fix_percentual_BOM_line_quantities_calculation_%28108941319640%29
 		final IProductBL productBL = Services.get(IProductBL.class);
-		final I_C_UOM endUOM = productBL.getStockUOM(endProductId);
+		final UomId endUOMId = productBL.getStockUOMId(finishedGoodProductId);
 
-		final I_C_UOM bomLineUOM = productBomLine.getC_UOM();
-		Check.assumeNotNull(bomLineUOM, "bomLineUOM not null");
+		final UomId bomLineUOMId = UomId.ofRepoId(bomLine.getC_UOM_ID());
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final BigDecimal bomToLineUOMMultiplier = uomConversionBL.convertQty(endProductId, BigDecimal.ONE, endUOM, bomLineUOM);
+		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(finishedGoodProductId);
+		final BigDecimal bomToLineUOMMultiplier = uomConversionBL.convertQty(uomConversionCtx, BigDecimal.ONE, endUOMId, bomLineUOMId);
 
-		final Percent qtyBatchPercent = Percent.of(productBomLine.getQtyBatch());
+		final Percent qtyBatchPercent = Percent.of(bomLine.getQtyBatch());
 		return qtyBatchPercent.multiply(bomToLineUOMMultiplier, 8);
 	}
 
@@ -227,7 +254,7 @@ public class ProductBOMBL implements IProductBOMBL
 		if (includeScrapQty)
 		{
 			final Percent scrap = Percent.of(bomLine.getScrap());
-			qty = calculateQtyWithScrap(qty, scrap);
+			qty = computeQtyWithScrap(qty, scrap);
 		}
 		//
 		if (qty.scale() > precision)
