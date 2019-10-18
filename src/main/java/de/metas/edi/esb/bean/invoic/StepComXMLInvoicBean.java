@@ -28,6 +28,7 @@ import static de.metas.edi.esb.commons.Util.isEmpty;
 import static de.metas.edi.esb.commons.Util.normalize;
 import static de.metas.edi.esb.commons.Util.toDate;
 import static de.metas.edi.esb.commons.Util.toFormattedStringDate;
+import static de.metas.edi.esb.commons.Util.trimAndTruncate;
 
 import java.text.DecimalFormat;
 import java.util.Comparator;
@@ -315,7 +316,7 @@ public class StepComXMLInvoicBean
 			productDescr.setDOCUMENTID(documentId);
 			productDescr.setLINENUMBER(lineNumber);
 			productDescr.setPRODUCTDESCQUAL(ProductDescQual.PROD.name());
-			productDescr.setPRODUCTDESCTEXT(xmlCctopInvoic500V.getProductDescription());
+			productDescr.setPRODUCTDESCTEXT(trimAndTruncate(xmlCctopInvoic500V.getProductDescription(), 512));
 			// use consumer unit and german language as default
 			productDescr.setPRODUCTDESCTYPE(ProductDescType.CU.name());
 			productDescr.setPRODUCTDESCLANG(ProductDescLang.DE.name());
@@ -460,8 +461,8 @@ public class StepComXMLInvoicBean
 
 			if (!isEmpty(xmlCctop119V.getAddress1()))
 			{
-				address.setSTREET1(xmlCctop119V.getAddress1());
-				address.setSTREET2(xmlCctop119V.getAddress2());
+				address.setSTREET1(trimAndTruncate(xmlCctop119V.getAddress1(), 35));
+				address.setSTREET2(trimAndTruncate(xmlCctop119V.getAddress2(), 35));
 			}
 			else
 			{
@@ -469,12 +470,12 @@ public class StepComXMLInvoicBean
 				{
 					throw new RuntimeCamelException(xmlCctop119V + " must have at least one filled address");
 				}
-				address.setSTREET1(xmlCctop119V.getAddress2());
+				address.setSTREET1(trimAndTruncate(xmlCctop119V.getAddress2(), 35));
 			}
 			if (!isEmpty(xmlCctop119V.getName()))
 			{
-				address.setNAME1(xmlCctop119V.getName());
-				address.setNAME2(xmlCctop119V.getName2());
+				address.setNAME1(trimAndTruncate(xmlCctop119V.getName(), 35));
+				address.setNAME2(trimAndTruncate(xmlCctop119V.getName2(), 35));
 			}
 			else
 			{
@@ -484,9 +485,9 @@ public class StepComXMLInvoicBean
 				}
 				address.setNAME1(normalize(xmlCctop119V.getName2()));
 			}
-			address.setCITY(xmlCctop119V.getCity());
-			address.setPOSTALCODE(xmlCctop119V.getPostal());
-			address.setCOUNTRY(xmlCctop119V.getCountryCode());
+			address.setCITY(trimAndTruncate(xmlCctop119V.getCity(), 35));
+			address.setPOSTALCODE(trimAndTruncate(xmlCctop119V.getPostal(), 20));
+			address.setCOUNTRY(trimAndTruncate(xmlCctop119V.getCountryCode(), 20));
 
 			if (addressQual == AddressQual.SUPL && isEmpty(xmlCctop119V.getVATaxID()))
 			{
@@ -523,13 +524,13 @@ public class StepComXMLInvoicBean
 		issiAddress.setADDRESSQUAL(qualifier.name());
 		issiAddress.setDOCUMENTID(address.getDOCUMENTID());
 		issiAddress.setPARTYIDGLN(address.getPARTYIDGLN());
-		issiAddress.setSTREET1(address.getSTREET1());
-		issiAddress.setSTREET2(address.getSTREET2());
-		issiAddress.setNAME1(address.getNAME1());
-		issiAddress.setNAME2(address.getNAME2());
-		issiAddress.setCITY(address.getCITY());
-		issiAddress.setPOSTALCODE(address.getPOSTALCODE());
-		issiAddress.setCOUNTRY(address.getCOUNTRY());
+		issiAddress.setSTREET1(trimAndTruncate(address.getSTREET1(), 35));
+		issiAddress.setSTREET2(trimAndTruncate(address.getSTREET2(), 35));
+		issiAddress.setNAME1(trimAndTruncate(address.getNAME1(), 35));
+		issiAddress.setNAME2(trimAndTruncate(address.getNAME2(), 35));
+		issiAddress.setCITY(trimAndTruncate(address.getCITY(), 35));
+		issiAddress.setPOSTALCODE(trimAndTruncate(address.getPOSTALCODE(), 20));
+		issiAddress.setCOUNTRY(trimAndTruncate(address.getCOUNTRY(), 20));
 
 		return issiAddress;
 	}

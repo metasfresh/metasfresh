@@ -320,7 +320,7 @@ public final class Util
 	 * @param value
 	 * @return {@link String}
 	 */
-	public static String trimString(final String value)
+	public static String trimString(@Nullable final String value)
 	{
 		if (value == null)
 		{
@@ -334,6 +334,16 @@ public final class Util
 		}
 
 		return trimmedValue;
+	}
+
+	public static String trimAndTruncate(@Nullable final String value, final int targetLength)
+	{
+		final String valueToWorkWith = trimString(value);
+		if (valueToWorkWith == null || valueToWorkWith.length() <= targetLength)
+		{
+			return valueToWorkWith;// nothing to do
+		}
+		return valueToWorkWith.substring(0, targetLength);
 	}
 
 	/**

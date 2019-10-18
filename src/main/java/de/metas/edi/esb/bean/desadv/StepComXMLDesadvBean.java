@@ -26,6 +26,7 @@ package de.metas.edi.esb.bean.desadv;
 import static de.metas.edi.esb.commons.Util.formatNumber;
 import static de.metas.edi.esb.commons.Util.toDate;
 import static de.metas.edi.esb.commons.Util.toFormattedStringDate;
+import static de.metas.edi.esb.commons.Util.trimAndTruncate;
 import static de.metas.edi.esb.commons.ValidationHelper.validateString;
 
 import java.math.BigDecimal;
@@ -284,10 +285,10 @@ public class StepComXMLDesadvBean
 			prodDescr.setLINENUMBER(lineNumber);
 			prodDescr.setPRODUCTDESCQUAL(ProductDescQual.PROD.toString());
 			prodDescr.setPRODUCTDESCTYPE(ProductDescType.CU.toString());
-			prodDescr.setPRODUCTDESCTEXT(ediExpDesadvLineType.getProductDescription());
+			prodDescr.setPRODUCTDESCTEXT(trimAndTruncate(ediExpDesadvLineType.getProductDescription(), 512));
 			detail.getDPRDE1().add(prodDescr);
 		}
-		if(ediExpDesadvLineType.getPriceActual() != null)
+		if (ediExpDesadvLineType.getPriceActual() != null)
 		{
 			final DPRDE1 prodDescr = DESADV_objectFactory.createDPRDE1();
 			prodDescr.setDOCUMENTID(documentId);
