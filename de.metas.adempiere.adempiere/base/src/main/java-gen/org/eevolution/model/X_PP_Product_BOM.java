@@ -104,6 +104,8 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	public static final String BOMUSE_Planning = "P";
 	/** Quality = Q */
 	public static final String BOMUSE_Quality = "Q";
+	/** Trading = T */
+	public static final String BOMUSE_Trading = "T";
 	/** Set BOM Use.
 		@param BOMUse 
 		The use of the Bill of Material
