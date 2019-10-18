@@ -24,6 +24,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstanceId;
+import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory;
+import de.metas.contracts.commission.commissioninstance.services.CommissionHierarchyFactory;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstanceRepository;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionRecordStagingService;
 import de.metas.contracts.commission.model.I_C_Commission_Fact;
@@ -75,7 +77,10 @@ class CommissionInstanceRepositoryTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		commissionInstanceRepository = new CommissionInstanceRepository(new CommissionRecordStagingService());
+
+		commissionInstanceRepository = new CommissionInstanceRepository(
+				new CommissionConfigFactory(new CommissionHierarchyFactory()),
+				new CommissionRecordStagingService());
 	}
 
 	@BeforeAll

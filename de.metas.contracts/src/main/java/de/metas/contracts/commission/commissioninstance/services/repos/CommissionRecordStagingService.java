@@ -55,7 +55,7 @@ import lombok.NonNull;
  * #L%
  */
 
-/** Code exclusively intended for {@link CommissionInstanceRepository} to avoid n+1 problems. */
+/** This service is intended exclusively for {@link CommissionInstanceRepository}, to avoid n+1 problems. */
 @Service
 class CommissionRecordStagingService
 {

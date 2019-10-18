@@ -15,7 +15,7 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -123409202L;
+	private static final long serialVersionUID = -525053587L;
 
     /** Standard Constructor */
     public X_C_Commission_Share (Properties ctx, int C_Commission_Share_ID, String trxName)
@@ -26,6 +26,7 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
 			setC_BPartner_SalesRep_ID (0);
 			setC_Commission_Instance_ID (0);
 			setC_Commission_Share_ID (0);
+			setC_Flatrate_Term_ID (0);
 			setLevelHierarchy (0);
 			setPointsSum_Forecasted (BigDecimal.ZERO); // 0
 			setPointsSum_Invoiceable (BigDecimal.ZERO); // 0
@@ -121,6 +122,28 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
 	public int getC_Commission_Share_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Commission_Share_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Pauschale - Vertragsperiode.
+		@param C_Flatrate_Term_ID Pauschale - Vertragsperiode	  */
+	@Override
+	public void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID)
+	{
+		if (C_Flatrate_Term_ID < 1) 
+			set_Value (COLUMNNAME_C_Flatrate_Term_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Flatrate_Term_ID, Integer.valueOf(C_Flatrate_Term_ID));
+	}
+
+	/** Get Pauschale - Vertragsperiode.
+		@return Pauschale - Vertragsperiode	  */
+	@Override
+	public int getC_Flatrate_Term_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Term_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

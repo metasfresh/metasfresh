@@ -8,6 +8,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -20,19 +21,22 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.Beneficiary;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionFact;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance.CommissionInstanceBuilder;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstanceId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionShare;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionShare.CommissionShareBuilder;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionState;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionTriggerData;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance.CommissionInstanceBuilder;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionShare.CommissionShareBuilder;
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfig;
-import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
+import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionRecordStagingService.CommissionRecords;
 import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
@@ -67,10 +71,14 @@ import lombok.NonNull;
 public class CommissionInstanceRepository
 {
 	private final CommissionRecordStagingService commissionRecordStagingService;
+	private final CommissionConfigFactory commissionConfigFactory;
 
-	public CommissionInstanceRepository(@NonNull final CommissionRecordStagingService commissionInstanceRecordStagingService)
+	public CommissionInstanceRepository(
+			@NonNull final CommissionConfigFactory commissionConfigFactory,
+			@NonNull final CommissionRecordStagingService commissionInstanceRecordStagingService)
 	{
 		this.commissionRecordStagingService = commissionInstanceRecordStagingService;
+		this.commissionConfigFactory = commissionConfigFactory;
 	}
 
 	public CommissionInstance getForCommissionInstanceId(@NonNull final CommissionInstanceId commissionInstanceId)
@@ -107,23 +115,39 @@ public class CommissionInstanceRepository
 	{
 		final CommissionInstanceId commissionInstanceId = CommissionInstanceId.ofRepoId(instanceRecord.getC_Commission_Instance_ID());
 
-		final CommissionInstanceBuilder instance = CommissionInstance.builder()
-				.id(commissionInstanceId)
-				.config(new HierarchyConfig())  // TODO load the config!
-				.currentTriggerData(createCommissionTriggerData(instanceRecord));
-
 		final List<I_C_Commission_Share> shareRecords = stagingRecords.getShareRecordsForInstanceRecordId(commissionInstanceId);
+		// TODO get the shares' beneficiaries and load their respective contracts
+		final ImmutableList<FlatrateTermId> flatrateTermIds = shareRecords.stream()
+				.map(I_C_Commission_Share::getC_Flatrate_Term_ID)
+				.map(FlatrateTermId::ofRepoId)
+				.collect(ImmutableList.toImmutableList());
+
+		final CommissionConfig commissionConfig = commissionConfigFactory.createFor(flatrateTermIds);
+
+		final CommissionInstanceBuilder instanceBuilder = CommissionInstance.builder()
+				.id(commissionInstanceId)
+				.config(commissionConfig)
+				.currentTriggerData(createCommissionTriggerData(instanceRecord));
 
 		for (final I_C_Commission_Share shareRecord : shareRecords)
 		{
-			final CommissionShareBuilder share = createShareBuilder(shareRecord);
+			final CommissionShareBuilder shareBuilder = createShareBuilder(shareRecord);
+
+			final Beneficiary beneficiary = createBeneficiary(shareRecord.getC_BPartner_SalesRep_ID());
+			final CommissionContract contract = commissionConfig.getContractFor(beneficiary);
+			shareBuilder.contract(contract);
 
 			final ImmutableList<I_C_Commission_Fact> factRecords = stagingRecords.getFactRecordsForShareRecordId(shareRecord.getC_Commission_Share_ID());
-			share.facts(createFacts(factRecords));
+			shareBuilder.facts(createFacts(factRecords));
 
-			instance.share(share.build());
+			instanceBuilder.share(shareBuilder.build());
 		}
-		return instance.build();
+		return instanceBuilder.build();
+	}
+
+	public Beneficiary createBeneficiary(final int c_BPartner_SalesRep_ID)
+	{
+		return Beneficiary.of(BPartnerId.ofRepoId(c_BPartner_SalesRep_ID));
 	}
 
 	private CommissionTriggerData createCommissionTriggerData(@NonNull final I_C_Commission_Instance instanceRecord)
@@ -141,7 +165,6 @@ public class CommissionInstanceRepository
 	{
 		final CommissionShareBuilder share = CommissionShare.builder()
 				.beneficiary(Beneficiary.of(BPartnerId.ofRepoId(shareRecord.getC_BPartner_SalesRep_ID())))
-				.contract(new HierarchyContract(new HierarchyConfig())) // TODO load the contract!
 				.level(HierarchyLevel.of(shareRecord.getLevelHierarchy()));
 		return share;
 	}
@@ -263,6 +286,7 @@ public class CommissionInstanceRepository
 			shareRecordToUse.setLevelHierarchy(share.getLevel().toInt());
 		}
 		shareRecordToUse.setC_BPartner_SalesRep_ID(share.getBeneficiary().getBPartnerId().getRepoId());
+		shareRecordToUse.setC_Flatrate_Term_ID(share.getContract().getId().getRepoId());
 		shareRecordToUse.setPointsSum_Forecasted(share.getForecastedPointsSum().toBigDecimal());
 		shareRecordToUse.setPointsSum_Invoiceable(share.getInvoiceablePointsSum().toBigDecimal());
 		shareRecordToUse.setPointsSum_Invoiced(share.getInvoicedPointsSum().toBigDecimal());

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.Customer;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
@@ -20,12 +21,11 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.Commission
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionTriggerChange;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionTriggerData;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CreateInstanceRequest;
-import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierachyAlgorithm;
-import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyNode;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
 /*
@@ -90,7 +90,20 @@ class HierachyAlgorithmTest
 				.commissionTriggerData(triggerData)
 				.build();
 
-		final HierarchyConfig config = new HierarchyConfig();
+		final HierarchyConfig config = HierarchyConfig.builder().subtractLowerLevelCommissionFromBase(true)
+				.beneficiary2HierarchyContract(headOfSales, HierarchyContract.builder()
+						.id(FlatrateTermId.ofRepoId(1))
+						.commissionPercent(Percent.of(10))
+						.pointsPrecision(2))
+				.beneficiary2HierarchyContract(salesSupervisor, HierarchyContract.builder()
+						.id(FlatrateTermId.ofRepoId(2))
+						.commissionPercent(Percent.of(10))
+						.pointsPrecision(2))
+				.beneficiary2HierarchyContract(salesRep, HierarchyContract.builder()
+						.id(FlatrateTermId.ofRepoId(3))
+						.commissionPercent(Percent.of(10))
+						.pointsPrecision(2))
+				.build();
 
 		final CreateInstanceRequest request = CreateInstanceRequest.builder()
 				.config(config)

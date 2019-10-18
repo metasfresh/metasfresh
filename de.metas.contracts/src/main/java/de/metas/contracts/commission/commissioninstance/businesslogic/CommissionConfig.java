@@ -2,9 +2,9 @@ package de.metas.contracts.commission.commissioninstance.businesslogic;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
-
 import static com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY;
 import static com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME;
 
@@ -40,4 +40,6 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 public interface CommissionConfig
 {
 	CommissionType getCommissionType();
+
+	CommissionContract getContractFor(Beneficiary beneficiary);
 }

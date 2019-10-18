@@ -36,6 +36,7 @@ import lombok.Singular;
  * #L%
  */
 
+/** one instance has a commission trigger and {@code n} commission shares (according to the sales rep hierarchy). */
 @Data
 public class CommissionInstance
 {

@@ -2,6 +2,7 @@ package de.metas.contracts.commission.commissioninstance.services;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.stream.StreamSupport;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -68,7 +69,7 @@ public class CommissionConfigFactory
 		this.commissionHierarchyFactory = commissionHierarchyFactory;
 	}
 
-	ImmutableList<CommissionConfig> createFor(@NonNull final ContractRequest contractRequest)
+	public ImmutableList<CommissionConfig> createFor(@NonNull final ContractRequest contractRequest)
 	{
 		final Hierarchy hierarchy = commissionHierarchyFactory.createFor(contractRequest.getBPartnerId());
 		final Iterable<HierarchyNode> beneficiaries = hierarchy.getUpStream(Beneficiary.of(contractRequest.getBPartnerId()));
@@ -92,21 +93,12 @@ public class CommissionConfigFactory
 				.filter(termRecord -> CommissionConstants.TYPE_CONDITIONS_COMMISSION.equals(termRecord.getType_Conditions()))
 				.collect(ImmutableList.toImmutableList());
 
-		// TODO create those three in just one loop
-		final ImmutableMap<BPartnerId, FlatrateTermId> bPartnerId2FlatrateTermIds = extractBPartnerId2TermRecords(commissionTermRecords);
-		final ImmutableListMultimap<BPartnerId, Integer> bPartnerId2ConditionRecordIds = extractBPartnerId2ConditionRecordIds(commissionTermRecords);
-		final ImmutableListMultimap<Integer, BPartnerId> conditionRecordId2BPartnerIds = extractConditionRecordId2BPartnerIds(commissionTermRecords);
+		final Mappings mappings = extractMappings(commissionTermRecords);
+		final ImmutableMap<BPartnerId, FlatrateTermId> bPartnerId2FlatrateTermIds = mappings.getBPartnerId2FlatrateTermIds();
+		final ImmutableListMultimap<BPartnerId, Integer> bPartnerId2ConditionRecordIds = mappings.getBPartnerId2ConditionRecordIds();
+		final ImmutableListMultimap<Integer, BPartnerId> conditionRecordId2BPartnerIds = mappings.getConditionRecordId2BPartnerIds();
 
-		final ImmutableSet<Integer> conditionRecordIds = ImmutableSet.copyOf(CollectionUtils.extractDistinctElements(
-				commissionTermRecords,
-				I_C_Flatrate_Term::getC_Flatrate_Conditions_ID));
-
-		final List<I_C_HierarchyCommissionSettings> commisionSettingsRecords = Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_C_HierarchyCommissionSettings.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_C_HierarchyCommissionSettings.COLUMN_C_Flatrate_Conditions_ID, conditionRecordIds)
-				.create()
-				.list();
+		final List<I_C_HierarchyCommissionSettings> commisionSettingsRecords = retrieveHierachySettings(commissionTermRecords);
 
 		// TODO add a UC such that two settings can't point to the same conditions
 
@@ -140,43 +132,35 @@ public class CommissionConfigFactory
 		return result.build();
 	}
 
-	private ImmutableMap<BPartnerId, FlatrateTermId> extractBPartnerId2TermRecords(
-			@NonNull final ImmutableList<I_C_Flatrate_Term> commissionTermRecords)
+
+
+
+
+	private Mappings extractMappings(			@NonNull final ImmutableList<I_C_Flatrate_Term> commissionTermRecords)
 	{
-		final ImmutableMap.Builder<BPartnerId, FlatrateTermId> result = ImmutableMap.<BPartnerId, FlatrateTermId> builder();
+		final ImmutableListMultimap.Builder<BPartnerId, Integer> bpartnerId2ConditionRecordIds = ImmutableListMultimap.<BPartnerId, Integer> builder();
+		final ImmutableListMultimap.Builder<Integer, BPartnerId> conditionRecordId2BPartnerIds = ImmutableListMultimap.<Integer, BPartnerId> builder();
+		final ImmutableMap.Builder<BPartnerId, FlatrateTermId> bpartnerId2FlatrateTermId = ImmutableMap.<BPartnerId, FlatrateTermId> builder();
+
+
 		for (final I_C_Flatrate_Term commissionTermRecord : commissionTermRecords)
 		{
-			result.put(
+			conditionRecordId2BPartnerIds.put(
+					commissionTermRecord.getC_Flatrate_Conditions_ID(),
+					BPartnerId.ofRepoId(commissionTermRecord.getBill_BPartner_ID()));
+			bpartnerId2ConditionRecordIds.put(
+					BPartnerId.ofRepoId(commissionTermRecord.getBill_BPartner_ID()),
+					commissionTermRecord.getC_Flatrate_Conditions_ID());
+			bpartnerId2FlatrateTermId.put(
 					BPartnerId.ofRepoId(commissionTermRecord.getBill_BPartner_ID()),
 					FlatrateTermId.ofRepoId(commissionTermRecord.getC_Flatrate_Term_ID()));
 		}
-		return result.build();
-	}
 
-	private ImmutableListMultimap<BPartnerId, Integer> extractBPartnerId2ConditionRecordIds(
-			@NonNull final ImmutableList<I_C_Flatrate_Term> commissionTermRecords)
-	{
-		final ImmutableListMultimap.Builder<BPartnerId, Integer> result = ImmutableListMultimap.<BPartnerId, Integer> builder();
-		for (final I_C_Flatrate_Term commissionTermRecord : commissionTermRecords)
-		{
-			result.put(
-					BPartnerId.ofRepoId(commissionTermRecord.getBill_BPartner_ID()),
-					commissionTermRecord.getC_Flatrate_Conditions_ID());
-		}
-		return result.build();
-	}
-
-	private ImmutableListMultimap<Integer, BPartnerId> extractConditionRecordId2BPartnerIds(
-			@NonNull final ImmutableList<I_C_Flatrate_Term> commissionTermRecords)
-	{
-		final ImmutableListMultimap.Builder<Integer, BPartnerId> result = ImmutableListMultimap.<Integer, BPartnerId> builder();
-		for (final I_C_Flatrate_Term commissionTermRecord : commissionTermRecords)
-		{
-			result.put(
-					commissionTermRecord.getC_Flatrate_Conditions_ID(),
-					BPartnerId.ofRepoId(commissionTermRecord.getBill_BPartner_ID()));
-		}
-		return result.build();
+		return Mappings.builder()
+				.conditionRecordId2BPartnerIds(conditionRecordId2BPartnerIds.build())
+				.bPartnerId2ConditionRecordIds(bpartnerId2ConditionRecordIds.build())
+				.bPartnerId2FlatrateTermIds(bpartnerId2FlatrateTermId.build())
+				.build();
 	}
 
 	@Builder
@@ -191,5 +175,71 @@ public class CommissionConfigFactory
 
 		@NonNull
 		LocalDate date;
+	}
+
+	public CommissionConfig createFor(ImmutableList<FlatrateTermId> flatrateTermIds)
+	{
+		final ImmutableList<I_C_Flatrate_Term> commissionTermRecords = Services.get(IFlatrateDAO.class)
+				.retrieveTerms(flatrateTermIds)
+				.stream()
+				.collect(ImmutableList.toImmutableList());
+
+		final ImmutableMap<I_C_Flatrate_Term, I_C_HierarchyCommissionSettings> commisionSettingsRecords = retrieveHierachySettings(commissionTermRecords);
+
+		for (final Entry<I_C_Flatrate_Term, I_C_HierarchyCommissionSettings> entry : commisionSettingsRecords.entrySet())
+		{
+			final I_C_Flatrate_Term commissionTermRecord = entry.getKey();
+			final I_C_HierarchyCommissionSettings commisionSettingsRecord = entry.getValue();
+
+			final HierarchyContractBuilder contractBuilder = HierarchyContract.builder()
+					.id(FlatrateTermId.ofRepoId(commissionTermRecord.getC_Flatrate_Term_ID()))
+					.commissionPercent(Percent.of(commisionSettingsRecord.getPercentOfBasePoints()))
+					.pointsPrecision(2);
+
+			final HierarchyConfigBuilder builder = HierarchyConfig
+					.builder()
+					.subtractLowerLevelCommissionFromBase(commisionSettingsRecord.isSubtractLowerLevelCommissionFromBase());
+
+			builder.beneficiary2HierarchyContract(
+					Beneficiary.of(BPartnerId.ofRepoId(commissionTermRecord.getBill_BPartner_ID())),
+					contractBuilder);
+
+		}
+
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private ImmutableMap<I_C_Flatrate_Term, I_C_HierarchyCommissionSettings> retrieveHierachySettings(final ImmutableList<I_C_Flatrate_Term> commissionTermRecords)
+	{
+		final Mappings mappings = extractMappings(commissionTermRecords);
+
+		final ImmutableSet<Integer> conditionRecordIds = ImmutableSet.copyOf(CollectionUtils.extractDistinctElements(
+				commissionTermRecords,
+				I_C_Flatrate_Term::getC_Flatrate_Conditions_ID));
+
+		final List<I_C_HierarchyCommissionSettings> commisionSettingsRecords = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_HierarchyCommissionSettings.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_HierarchyCommissionSettings.COLUMN_C_Flatrate_Conditions_ID, conditionRecordIds)
+				.create()
+				.list();
+
+
+		return commisionSettingsRecords;
+	}
+
+	@Value
+	@Builder
+	private static class Mappings
+	{
+		@NonNull
+		ImmutableMap<BPartnerId, FlatrateTermId> bPartnerId2FlatrateTermIds;
+
+		@NonNull
+		ImmutableListMultimap<BPartnerId, Integer> bPartnerId2ConditionRecordIds;
+
+		@NonNull
+		ImmutableListMultimap<Integer, BPartnerId> conditionRecordId2BPartnerIds;
 	}
 }
