@@ -34,7 +34,6 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.Commission
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionShare.CommissionShareBuilder;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionState;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionTriggerData;
-import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionRecordStagingService.CommissionRecords;
@@ -116,7 +115,7 @@ public class CommissionInstanceRepository
 		final CommissionInstanceId commissionInstanceId = CommissionInstanceId.ofRepoId(instanceRecord.getC_Commission_Instance_ID());
 
 		final List<I_C_Commission_Share> shareRecords = stagingRecords.getShareRecordsForInstanceRecordId(commissionInstanceId);
-		// TODO get the shares' beneficiaries and load their respective contracts
+
 		final ImmutableList<FlatrateTermId> flatrateTermIds = shareRecords.stream()
 				.map(I_C_Commission_Share::getC_Flatrate_Term_ID)
 				.map(FlatrateTermId::ofRepoId)

@@ -23,9 +23,12 @@ package de.metas.contracts;
  */
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
@@ -35,6 +38,7 @@ import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
@@ -42,9 +46,16 @@ import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
+import de.metas.costing.ChargeId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 
 public interface IFlatrateDAO extends ISingletonService
 {
@@ -153,6 +164,28 @@ public interface IFlatrateDAO extends ISingletonService
 	List<I_C_Flatrate_Term> retrieveTerms(I_C_Invoice_Candidate ic);
 
 	List<I_C_Flatrate_Term> retrieveTerms(Properties ctx, int bill_BPartner_ID, Timestamp dateOrdered, int m_Product_Category_ID, int m_Product_ID, int c_Charge_ID, String trxName);
+
+	List<I_C_Flatrate_Term> retrieveTerms(TermsQuery query);
+
+	@Value
+	@Builder
+	public static class TermsQuery
+	{
+		@Singular
+		List<BPartnerId> billPartnerIds;
+
+		@NonNull
+		LocalDate dateOrdered;
+
+		@Nullable
+		ProductCategoryId productCategoryId;
+
+		@Nullable
+		ProductId productId;
+
+		@Nullable
+		ChargeId chargeId;
+	}
 
 	List<I_C_Flatrate_Term> retrieveTerms(Collection<FlatrateTermId> flatrateTermIds);
 

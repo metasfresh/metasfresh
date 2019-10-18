@@ -6,19 +6,18 @@ import java.util.Map.Entry;
 import java.util.stream.StreamSupport;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.IFlatrateDAO.TermsQuery;
 import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfig;
@@ -63,6 +62,8 @@ import lombok.Value;
 public class CommissionConfigFactory
 {
 	private final CommissionHierarchyFactory commissionHierarchyFactory;
+	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public CommissionConfigFactory(@NonNull final CommissionHierarchyFactory commissionHierarchyFactory)
 	{
@@ -80,15 +81,14 @@ public class CommissionConfigFactory
 				.map(Beneficiary::getBPartnerId)
 				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableList<I_C_Flatrate_Term> commissionTermRecords = Services.get(IFlatrateDAO.class)
-				.retrieveTerms( // TODO modernize this oldie
-						Env.getCtx(),
-						contractRequest.getBPartnerId().getRepoId(), // TODO instead give it all allBPartnerIds at once!
-						TimeUtil.asTimestamp(contractRequest.getDate()),
-						-1 /* m_Product_Category_ID */,
-						contractRequest.getProductId().getRepoId(),
-						-1 /* c_Charge_ID */,
-						ITrx.TRXNAME_None)
+		final TermsQuery termsQuery = TermsQuery.builder()
+				.billPartnerIds(allBPartnerIds)
+				.productId(contractRequest.getProductId())
+				.dateOrdered(contractRequest.getDate())
+				.build();
+
+		final ImmutableList<I_C_Flatrate_Term> commissionTermRecords = flatrateDAO
+				.retrieveTerms(termsQuery)
 				.stream()
 				.filter(termRecord -> CommissionConstants.TYPE_CONDITIONS_COMMISSION.equals(termRecord.getType_Conditions()))
 				.collect(ImmutableList.toImmutableList());
@@ -98,7 +98,8 @@ public class CommissionConfigFactory
 		final ImmutableListMultimap<BPartnerId, Integer> bPartnerId2ConditionRecordIds = mappings.getBPartnerId2ConditionRecordIds();
 		final ImmutableListMultimap<Integer, BPartnerId> conditionRecordId2BPartnerIds = mappings.getConditionRecordId2BPartnerIds();
 
-		final List<I_C_HierarchyCommissionSettings> commisionSettingsRecords = retrieveHierachySettings(commissionTermRecords);
+		final ImmutableList<I_C_HierarchyCommissionSettings> //
+		commisionSettingsRecords = retrieveSettingsRecords(commissionTermRecords);
 
 		// TODO add a UC such that two settings can't point to the same conditions
 
@@ -132,16 +133,11 @@ public class CommissionConfigFactory
 		return result.build();
 	}
 
-
-
-
-
-	private Mappings extractMappings(			@NonNull final ImmutableList<I_C_Flatrate_Term> commissionTermRecords)
+	private Mappings extractMappings(@NonNull final ImmutableList<I_C_Flatrate_Term> commissionTermRecords)
 	{
 		final ImmutableListMultimap.Builder<BPartnerId, Integer> bpartnerId2ConditionRecordIds = ImmutableListMultimap.<BPartnerId, Integer> builder();
 		final ImmutableListMultimap.Builder<Integer, BPartnerId> conditionRecordId2BPartnerIds = ImmutableListMultimap.<Integer, BPartnerId> builder();
 		final ImmutableMap.Builder<BPartnerId, FlatrateTermId> bpartnerId2FlatrateTermId = ImmutableMap.<BPartnerId, FlatrateTermId> builder();
-
 
 		for (final I_C_Flatrate_Term commissionTermRecord : commissionTermRecords)
 		{
@@ -177,14 +173,18 @@ public class CommissionConfigFactory
 		LocalDate date;
 	}
 
-	public CommissionConfig createFor(ImmutableList<FlatrateTermId> flatrateTermIds)
+	public CommissionConfig createFor(@NonNull final ImmutableList<FlatrateTermId> flatrateTermIds)
 	{
-		final ImmutableList<I_C_Flatrate_Term> commissionTermRecords = Services.get(IFlatrateDAO.class)
+
+		final ImmutableList<I_C_Flatrate_Term> commissionTermRecords = flatrateDAO
 				.retrieveTerms(flatrateTermIds)
 				.stream()
 				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableMap<I_C_Flatrate_Term, I_C_HierarchyCommissionSettings> commisionSettingsRecords = retrieveHierachySettings(commissionTermRecords);
+		final ImmutableMap<I_C_Flatrate_Term, I_C_HierarchyCommissionSettings> commisionSettingsRecords = retrieveTermRecord2settingsRecord(commissionTermRecords);
+
+		final HierarchyConfigBuilder builder = HierarchyConfig
+				.builder();
 
 		for (final Entry<I_C_Flatrate_Term, I_C_HierarchyCommissionSettings> entry : commisionSettingsRecords.entrySet())
 		{
@@ -196,37 +196,60 @@ public class CommissionConfigFactory
 					.commissionPercent(Percent.of(commisionSettingsRecord.getPercentOfBasePoints()))
 					.pointsPrecision(2);
 
-			final HierarchyConfigBuilder builder = HierarchyConfig
-					.builder()
-					.subtractLowerLevelCommissionFromBase(commisionSettingsRecord.isSubtractLowerLevelCommissionFromBase());
+			builder.subtractLowerLevelCommissionFromBase(commisionSettingsRecord.isSubtractLowerLevelCommissionFromBase());
 
 			builder.beneficiary2HierarchyContract(
 					Beneficiary.of(BPartnerId.ofRepoId(commissionTermRecord.getBill_BPartner_ID())),
 					contractBuilder);
-
 		}
 
-		// TODO Auto-generated method stub
-		return null;
+		return builder.build();
 	}
 
-	private ImmutableMap<I_C_Flatrate_Term, I_C_HierarchyCommissionSettings> retrieveHierachySettings(final ImmutableList<I_C_Flatrate_Term> commissionTermRecords)
+	private ImmutableMap<I_C_Flatrate_Term, I_C_HierarchyCommissionSettings> retrieveTermRecord2settingsRecord(
+			@NonNull final ImmutableList<I_C_Flatrate_Term> commissionTermRecords)
 	{
-		final Mappings mappings = extractMappings(commissionTermRecords);
-
 		final ImmutableSet<Integer> conditionRecordIds = ImmutableSet.copyOf(CollectionUtils.extractDistinctElements(
 				commissionTermRecords,
 				I_C_Flatrate_Term::getC_Flatrate_Conditions_ID));
 
-		final List<I_C_HierarchyCommissionSettings> commisionSettingsRecords = Services.get(IQueryBL.class)
+		final List<I_C_HierarchyCommissionSettings> commisionSettingsRecords = queryBL
 				.createQueryBuilderOutOfTrx(I_C_HierarchyCommissionSettings.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_HierarchyCommissionSettings.COLUMN_C_Flatrate_Conditions_ID, conditionRecordIds)
 				.create()
 				.list();
 
+		// each C_Flatrate_Conditionsrecord is referenced by just one C_HierarchyCommissionSettings record
+		final ImmutableMap<Integer, I_C_HierarchyCommissionSettings> //
+		conditionRecordId2CommissionSettings = Maps.uniqueIndex(commisionSettingsRecords, I_C_HierarchyCommissionSettings::getC_Flatrate_Conditions_ID);
 
-		return commisionSettingsRecords;
+		final ImmutableMap.Builder<I_C_Flatrate_Term, I_C_HierarchyCommissionSettings> //
+		builder = ImmutableMap.<I_C_Flatrate_Term, I_C_HierarchyCommissionSettings> builder();
+
+		for (final I_C_Flatrate_Term commissionTermRecord : commissionTermRecords)
+		{
+			final I_C_HierarchyCommissionSettings //
+			commissionSettings = conditionRecordId2CommissionSettings.get(commissionTermRecord.getC_Flatrate_Conditions_ID());
+
+			builder.put(commissionTermRecord, commissionSettings);
+		}
+		return builder.build();
+	}
+
+	private ImmutableList<I_C_HierarchyCommissionSettings> retrieveSettingsRecords(
+			@NonNull final ImmutableList<I_C_Flatrate_Term> commissionTermRecords)
+	{
+		final ImmutableSet<Integer> conditionRecordIds = ImmutableSet.copyOf(CollectionUtils.extractDistinctElements(
+				commissionTermRecords,
+				I_C_Flatrate_Term::getC_Flatrate_Conditions_ID));
+
+		return queryBL
+				.createQueryBuilderOutOfTrx(I_C_HierarchyCommissionSettings.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_HierarchyCommissionSettings.COLUMN_C_Flatrate_Conditions_ID, conditionRecordIds)
+				.create()
+				.listImmutable(I_C_HierarchyCommissionSettings.class);
 	}
 
 	@Value

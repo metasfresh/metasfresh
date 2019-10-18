@@ -27,6 +27,7 @@ import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.document.engine.IDocument;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 
@@ -54,7 +55,6 @@ import lombok.NonNull;
 
 class CommissionConfigFactoryTest
 {
-
 	@BeforeEach
 	void beforeEach()
 	{
@@ -86,7 +86,8 @@ class CommissionConfigFactoryTest
 		final LocalDate date = LocalDate.now();
 
 		final I_C_Flatrate_Conditions flatrateConditions = newInstance(I_C_Flatrate_Conditions.class);
-		flatrateConditions.setType_Conditions("Commission");
+		flatrateConditions.setType_Conditions(CommissionConstants.TYPE_CONDITIONS_COMMISSION);
+		flatrateConditions.setDocStatus(IDocument.STATUS_Completed);
 		saveRecord(flatrateConditions);
 
 		final I_C_Flatrate_Matching flatrateMatchingRecord = newInstance(I_C_Flatrate_Matching.class);
@@ -97,7 +98,7 @@ class CommissionConfigFactoryTest
 		final I_C_HierarchyCommissionSettings settingsRecord = newInstance(I_C_HierarchyCommissionSettings.class);
 		settingsRecord.setC_Flatrate_Conditions_ID(flatrateConditions.getC_Flatrate_Conditions_ID());
 		settingsRecord.setIsSubtractLowerLevelCommissionFromBase(true);
-		settingsRecord.setPercentOfBasePoints(new BigDecimal(20));
+		settingsRecord.setPercentOfBasePoints(new BigDecimal("20"));
 		saveRecord(settingsRecord);
 
 		createFlatrateTerm(salesRepLvl0Id, date, flatrateConditions);
@@ -108,8 +109,7 @@ class CommissionConfigFactoryTest
 		final ContractRequest contractRequest = ContractRequest.builder()
 				.bPartnerId(salesRepLvl0Id)
 				.productId(productId)
-				.date(date)
-				.build();
+				.date(date).build();
 		final ImmutableList<CommissionConfig> configs = new CommissionConfigFactory(new CommissionHierarchyFactory()).createFor(contractRequest);
 
 		assertThat(configs).hasSize(1);
@@ -121,17 +121,17 @@ class CommissionConfigFactoryTest
 
 		final CommissionContract contractLvl0 = hierarchyConfig.getContractFor(Beneficiary.of(salesRepLvl0Id));
 		final HierarchyContract hierarchyContractLvl0 = HierarchyContract.cast(contractLvl0);
-		assertThat(hierarchyContractLvl0.getCommissionPercent().toBigDecimal()).isEqualTo("10");
+		assertThat(hierarchyContractLvl0.getCommissionPercent().toBigDecimal()).isEqualTo("20");
 		assertThat(hierarchyContractLvl0.getPointsPrecision()).isEqualTo(2);
 
 		final CommissionContract contractLvl1 = hierarchyConfig.getContractFor(Beneficiary.of(salesRepLvl1Id));
 		final HierarchyContract hierarchyContractLvl1 = HierarchyContract.cast(contractLvl1);
-		assertThat(hierarchyContractLvl1.getCommissionPercent().toBigDecimal()).isEqualTo("10");
+		assertThat(hierarchyContractLvl1.getCommissionPercent().toBigDecimal()).isEqualTo("20");
 		assertThat(hierarchyContractLvl1.getPointsPrecision()).isEqualTo(2);
 
 		final CommissionContract contractLvl2 = hierarchyConfig.getContractFor(Beneficiary.of(salesRepLvl2Id));
 		final HierarchyContract hierarchyContractLvl2 = HierarchyContract.cast(contractLvl2);
-		assertThat(hierarchyContractLvl2.getCommissionPercent().toBigDecimal()).isEqualTo("10");
+		assertThat(hierarchyContractLvl2.getCommissionPercent().toBigDecimal()).isEqualTo("20");
 		assertThat(hierarchyContractLvl2.getPointsPrecision()).isEqualTo(2);
 	}
 
@@ -143,6 +143,8 @@ class CommissionConfigFactoryTest
 		final I_C_Flatrate_Term flatrateTermRecord = newInstance(I_C_Flatrate_Term.class);
 		flatrateTermRecord.setC_Flatrate_Conditions_ID(flatrateConditions.getC_Flatrate_Conditions_ID());
 		flatrateTermRecord.setBill_BPartner_ID(salesRepBPartnerId.getRepoId());
+		flatrateTermRecord.setDocStatus(IDocument.STATUS_Completed);
+		flatrateTermRecord.setType_Conditions(CommissionConstants.TYPE_CONDITIONS_COMMISSION);
 		flatrateTermRecord.setStartDate(TimeUtil.asTimestamp(date.minusDays(10)));
 		flatrateTermRecord.setEndDate(TimeUtil.asTimestamp(date.plusDays(10)));
 		saveRecord(flatrateTermRecord);

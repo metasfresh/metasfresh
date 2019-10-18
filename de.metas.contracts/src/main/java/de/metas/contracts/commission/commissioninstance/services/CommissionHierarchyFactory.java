@@ -45,7 +45,7 @@ public class CommissionHierarchyFactory
 		return createFor(bPartnerId, Hierarchy.builder());
 	}
 
-	private Hierarchy createFor(final BPartnerId bPartnerId, final HierarchyBuilder hierarchyBuilder)
+	private Hierarchy createFor(@NonNull final BPartnerId bPartnerId, @NonNull final HierarchyBuilder hierarchyBuilder)
 	{
 		final I_C_BPartner bPartnerRecord = loadOutOfTrx(bPartnerId, I_C_BPartner.class);
 		final BPartnerId parentBPartnerId = BPartnerId.ofRepoIdOrNull(bPartnerRecord.getBPartner_Parent_ID());
@@ -64,7 +64,7 @@ public class CommissionHierarchyFactory
 		return hierarchyBuilder.build();
 	}
 
-	private HierarchyNode node(final BPartnerId bPartnerId)
+	private HierarchyNode node(@NonNull final BPartnerId bPartnerId)
 	{
 		return HierarchyNode.of(Beneficiary.of(bPartnerId));
 	}

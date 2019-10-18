@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.contracts.commission.Beneficiary;
 import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -40,6 +41,7 @@ import lombok.NonNull;
  */
 
 @Immutable
+@ToString
 public class Hierarchy
 {
 	private final ImmutableMap<HierarchyNode, HierarchyNode> child2Parent;
