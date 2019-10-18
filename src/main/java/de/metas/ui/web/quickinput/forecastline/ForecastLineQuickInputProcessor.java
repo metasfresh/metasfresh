@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -13,6 +14,8 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.model.I_M_Product;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.gui.search.HUPackingAwareCopy.ASICopyMode;
 import de.metas.adempiere.gui.search.IHUPackingAware;
@@ -54,14 +57,15 @@ public class ForecastLineQuickInputProcessor implements IQuickInputProcessor
 	private final transient IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 
 	@Override
-	public DocumentId process(final QuickInput quickInput)
+	public Set<DocumentId> process(final QuickInput quickInput)
 	{
 		final I_M_Forecast forecast = quickInput.getRootDocumentAs(I_M_Forecast.class);
 		final I_M_ForecastLine forecastLine = InterfaceWrapperHelper.newInstance(I_M_ForecastLine.class, forecast);
 		forecastLine.setM_Forecast(forecast);
 		updateForecastLine(forecastLine, quickInput);
 		save(forecastLine);
-		return DocumentId.of(forecastLine.getM_ForecastLine_ID());
+		final DocumentId documentId = DocumentId.of(forecastLine.getM_ForecastLine_ID());
+		return ImmutableSet.of(documentId);
 	}
 
 	private final void updateForecastLine(final I_M_ForecastLine forecastLine, final QuickInput fromQuickInput)

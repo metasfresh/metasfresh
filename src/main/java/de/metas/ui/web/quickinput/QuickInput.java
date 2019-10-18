@@ -1,6 +1,7 @@
 package de.metas.ui.web.quickinput;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
@@ -14,6 +15,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -239,17 +241,22 @@ public final class QuickInput
 	/**
 	 * @return newly created document
 	 */
-	public Document complete()
+	public List<Document> complete()
 	{
-		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		trxManager.assertThreadInheritedTrxExists();
 
 		final IQuickInputProcessor processor = descriptor.createProcessor();
-		final DocumentId documentLineId = processor.process(this);
+		final Set<DocumentId> documentLineIds = processor.process(this);
+		
 		final Document rootDocument = getRootDocument();
-		final Document includedDocumentJustCreated = rootDocument.getIncludedDocument(targetDetailId, documentLineId);
+		
+		final List<Document> includedDocumentsJustCreated = documentLineIds.stream()
+				.map(documentLineId -> rootDocument.getIncludedDocument(targetDetailId, documentLineId))
+				.collect(ImmutableList.toImmutableList());
 
 		this.completed = true;
-		return includedDocumentJustCreated;
+		return includedDocumentsJustCreated;
 	}
 
 	public boolean isCompleted()

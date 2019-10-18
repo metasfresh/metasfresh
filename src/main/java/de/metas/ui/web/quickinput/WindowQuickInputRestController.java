@@ -313,7 +313,7 @@ public class WindowQuickInputRestController
 	}
 
 	@PostMapping("{quickInputId}/complete")
-	public JSONDocument complete(
+	public List<JSONDocument> complete(
 			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentIdStr //
 			, @PathVariable("tabId") final String tabIdStr //
@@ -326,8 +326,8 @@ public class WindowQuickInputRestController
 		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
 		return Execution.callInNewExecution("quickInput-writable-" + quickInputPath, () -> {
 			return forQuickInputWritable(quickInputPath, changesCollector, quickInput -> {
-				final Document document = quickInput.complete();
-				return JSONDocument.ofDocument(document, newJSONDocumentOptions());
+				final List<Document> documentLines = quickInput.complete();
+				return JSONDocument.ofDocumentsList(documentLines, newJSONDocumentOptions());
 			});
 		});
 	}
