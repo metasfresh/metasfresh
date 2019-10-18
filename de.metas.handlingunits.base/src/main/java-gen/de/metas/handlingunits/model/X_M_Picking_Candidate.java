@@ -15,7 +15,7 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1657834495L;
+	private static final long serialVersionUID = -1989480737L;
 
     /** Standard Constructor */
     public X_M_Picking_Candidate (Properties ctx, int M_Picking_Candidate_ID, String trxName)
@@ -299,16 +299,16 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 		return (java.lang.String)get_Value(COLUMNNAME_PickStatus);
 	}
 
-	/** Set Qty Picked.
-		@param QtyPicked Qty Picked	  */
+	/** Set Menge (Lagereinheit).
+		@param QtyPicked Menge (Lagereinheit)	  */
 	@Override
 	public void setQtyPicked (java.math.BigDecimal QtyPicked)
 	{
 		set_Value (COLUMNNAME_QtyPicked, QtyPicked);
 	}
 
-	/** Get Qty Picked.
-		@return Qty Picked	  */
+	/** Get Menge (Lagereinheit).
+		@return Menge (Lagereinheit)	  */
 	@Override
 	public java.math.BigDecimal getQtyPicked () 
 	{

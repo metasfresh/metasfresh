@@ -15,7 +15,7 @@ public class X_M_HU_Trx_Line extends org.compiere.model.PO implements I_M_HU_Trx
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 619011036L;
+	private static final long serialVersionUID = -351575180L;
 
     /** Standard Constructor */
     public X_M_HU_Trx_Line (Properties ctx, int M_HU_Trx_Line_ID, String trxName)
@@ -43,18 +43,6 @@ public class X_M_HU_Trx_Line extends org.compiere.model.PO implements I_M_HU_Trx
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_AD_Table getAD_Table()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
-	}
-
-	@Override
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
-	}
 
 	/** Set DB-Tabelle.
 		@param AD_Table_ID 

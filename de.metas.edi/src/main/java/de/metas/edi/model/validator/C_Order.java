@@ -24,11 +24,12 @@ package de.metas.edi.model.validator;
 
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IEDIInputDataSourceBL;
@@ -38,16 +39,10 @@ import de.metas.edi.model.I_EDI_Document;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
-@Validator(I_C_Order.class)
+@Interceptor(I_C_Order.class)
+@Component
 public class C_Order
 {
-
-	public static final C_Order INSTANCE = new C_Order();
-
-	private C_Order()
-	{
-	}
-
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,
 			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
 			ModelValidator.TIMING_BEFORE_REVERSECORRECT,

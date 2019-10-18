@@ -148,6 +148,8 @@ public interface IADTableDAO extends ISingletonService
 	 */
 	IQueryBuilder<I_AD_Column> retrieveColumnQueryBuilder(String tableName, String columnName, String trxnameThreadinherited);
 
+	I_AD_Table retrieveTable(AdTableId tableId);
+
 	/**
 	 * Return the table with the given name. Use {@link org.compiere.model.MTable} under the hood,
 	 * because tables are a bit sensitive and using the {@link org.adempiere.ad.dao.impl.QueryBL} and {@link org.adempiere.util.proxy.Cached} does not work under all circumstances.

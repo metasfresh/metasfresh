@@ -42,8 +42,6 @@ public interface I_EDI_C_BPartner_Lookup_BPL_GLN_v
 	 */
 	public int getC_BPartner_ID();
 
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_C_BPartner_Lookup_BPL_GLN_v, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_EDI_C_BPartner_Lookup_BPL_GLN_v, org.compiere.model.I_C_BPartner>(I_EDI_C_BPartner_Lookup_BPL_GLN_v.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 

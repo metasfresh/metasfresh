@@ -32,6 +32,7 @@ import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
+import de.metas.payment.PaymentRule;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -110,6 +111,8 @@ final class TestMasterdata
 		bpRecord.setName(bpValue + "-name");
 		bpRecord.setIsCustomer(true);
 		bpRecord.setM_PricingSystem_ID(PricingSystemId.toRepoId(salesPricingSystemId));
+		bpRecord.setPaymentRule(PaymentRule.OnCredit.getCode());
+		bpRecord.setPaymentRulePO(PaymentRule.OnCredit.getCode());
 		saveRecord(bpRecord);
 
 		return prepareBPartnerLocation()

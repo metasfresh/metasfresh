@@ -54,9 +54,9 @@ import lombok.NonNull;
 @Repository
 public class OLCandRepository
 {
-	private IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-	public OLCandSource getForProcessor(@NonNull OLCandProcessorDescriptor processor)
+	public OLCandSource getForProcessor(@NonNull final OLCandProcessorDescriptor processor)
 	{
 		return RelationTypeOLCandSource.builder()
 				.orderDefaults(processor.getDefaults())
