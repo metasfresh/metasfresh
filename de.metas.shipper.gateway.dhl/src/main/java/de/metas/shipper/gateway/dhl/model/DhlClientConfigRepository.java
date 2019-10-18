@@ -23,8 +23,10 @@
 package de.metas.shipper.gateway.dhl.model;
 
 import de.metas.cache.CCache;
+import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Repository;
@@ -34,9 +36,11 @@ public class DhlClientConfigRepository
 {
 	private final CCache<Integer, DhlClientConfig> cache = CCache.newCache(I_DHL_Shipper_Config.Table_Name, 1, CCache.EXPIREMINUTES_Never);
 
-	public DhlClientConfig getByShipperId(final int shipperId)
+	@NonNull
+	public DhlClientConfig getByShipperId(@NonNull final ShipperId shipperId)
 	{
-		return cache.getOrLoad(shipperId, () -> retrieveConfig(shipperId));
+		final int repoId = shipperId.getRepoId();
+		return cache.getOrLoad(repoId, () -> retrieveConfig(repoId));
 	}
 
 	private static DhlClientConfig retrieveConfig(final int shipperId)

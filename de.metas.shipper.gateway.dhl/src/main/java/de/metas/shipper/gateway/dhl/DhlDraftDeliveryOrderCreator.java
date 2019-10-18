@@ -38,6 +38,7 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -171,7 +172,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			throw new AdempiereException("Package UOM must be set");
 		}
 
-		final DhlClientConfig clientConfig = SpringContextHolder.instance.getBean(DhlClientConfigRepository.class).getByShipperId(shipperId);
+		final DhlClientConfig clientConfig = SpringContextHolder.instance.getBean(DhlClientConfigRepository.class).getByShipperId(ShipperId.ofRepoId(shipperId));
 
 		final I_C_UOM fromUom = InterfaceWrapperHelper.load(uomId, I_C_UOM.class);
 		final I_C_UOM toUom = InterfaceWrapperHelper.load(clientConfig.getLengthUomId(), I_C_UOM.class);

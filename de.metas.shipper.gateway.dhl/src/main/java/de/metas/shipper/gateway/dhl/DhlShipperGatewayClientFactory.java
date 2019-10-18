@@ -26,6 +26,7 @@ import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfigRepository;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
+import de.metas.shipping.ShipperId;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +49,7 @@ public class DhlShipperGatewayClientFactory implements ShipperGatewayClientFacto
 	@Override
 	public ShipperGatewayClient newClientForShipperId(final int shipperId)
 	{
-		final DhlClientConfig config = configRepo.getByShipperId(shipperId);
+		final DhlClientConfig config = configRepo.getByShipperId(ShipperId.ofRepoId(shipperId));
 		return DhlShipperGatewayClient
 				.builder()
 				.config(config)
