@@ -14,7 +14,7 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1794949249L;
+	private static final long serialVersionUID = 863762944L;
 
     /** Standard Constructor */
     public X_PP_Product_BOM (Properties ctx, int PP_Product_BOM_ID, String trxName)
@@ -126,18 +126,6 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 		return (java.lang.String)get_Value(COLUMNNAME_BOMUse);
 	}
 
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
-	}
-
 	/** Set Maßeinheit.
 		@param C_UOM_ID 
 		Unit of Measure
@@ -237,7 +225,7 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	}
 
 	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
@@ -274,7 +262,7 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	}
 
 	@Override
-	public org.compiere.model.I_M_ChangeNotice getM_ChangeNotice() throws RuntimeException
+	public org.compiere.model.I_M_ChangeNotice getM_ChangeNotice()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_ChangeNotice_ID, org.compiere.model.I_M_ChangeNotice.class);
 	}
@@ -308,18 +296,6 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.
@@ -428,7 +404,7 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Sequence getSerialNo_Sequence() throws RuntimeException
+	public org.compiere.model.I_AD_Sequence getSerialNo_Sequence()
 	{
 		return get_ValueAsPO(COLUMNNAME_SerialNo_Sequence_ID, org.compiere.model.I_AD_Sequence.class);
 	}
@@ -439,8 +415,8 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 		set_ValueFromPO(COLUMNNAME_SerialNo_Sequence_ID, org.compiere.model.I_AD_Sequence.class, SerialNo_Sequence);
 	}
 
-	/** Set Serial No. Sequence.
-		@param SerialNo_Sequence_ID Serial No. Sequence	  */
+	/** Set Nummernfolge für Seriennummer.
+		@param SerialNo_Sequence_ID Nummernfolge für Seriennummer	  */
 	@Override
 	public void setSerialNo_Sequence_ID (int SerialNo_Sequence_ID)
 	{
@@ -450,8 +426,8 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 			set_Value (COLUMNNAME_SerialNo_Sequence_ID, Integer.valueOf(SerialNo_Sequence_ID));
 	}
 
-	/** Get Serial No. Sequence.
-		@return Serial No. Sequence	  */
+	/** Get Nummernfolge für Seriennummer.
+		@return Nummernfolge für Seriennummer	  */
 	@Override
 	public int getSerialNo_Sequence_ID () 
 	{
