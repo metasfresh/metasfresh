@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.dhl;
 
+import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfigRepository;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
@@ -50,9 +51,9 @@ public class DhlShipperGatewayClientFactory implements ShipperGatewayClientFacto
 	public ShipperGatewayClient newClientForShipperId(final int shipperId)
 	{
 		final DhlClientConfig config = configRepo.getByShipperId(ShipperId.ofRepoId(shipperId));
-		return DhlShipperGatewayClient
-				.builder()
+		return DhlShipperGatewayClient.builder()
 				.config(config)
+				.databaseLogger(DhlDatabaseClientLogger.instance)
 				.build();
 	}
 }

@@ -38,7 +38,6 @@ import de.dhl.webservices.businesscustomershipping._3.ShipperType;
 import de.dhl.webservices.businesscustomershipping._3.Version;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
-import de.metas.shipper.gateway.spi.model.CountryCode;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
@@ -71,7 +70,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class CreateShipmentRequestFromDeliveryOrderTest
 {
 
-	private static final CountryCode COUNTRY_CODE_DE = CountryCode.builder().alpha2("DE").alpha3("DEU").build();
 	private static final String USER_NAME = "a";
 	private static final String PASSWORD = "b";
 

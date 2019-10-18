@@ -31,6 +31,10 @@ import org.adempiere.exceptions.AdempiereException;
 
 import java.util.stream.Stream;
 
+/**
+ * as of 2019.10.18 there's no way for the customer to change the service type!
+ * It is hardcoded inside CreateDraftDeliveryOrder, and that's it.
+ */
 public enum DhlServiceType implements ServiceType
 {
 
