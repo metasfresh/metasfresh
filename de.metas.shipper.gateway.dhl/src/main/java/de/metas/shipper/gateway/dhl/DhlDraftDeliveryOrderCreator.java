@@ -70,6 +70,13 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		return DhlConstants.SHIPPER_GATEWAY_ID;
 	}
 
+	/**
+	 * Create the initial DTO.
+	 * <p>
+	 * keep in sync with {@link DhlDeliveryOrderRepository#toDeliveryOrderFromPO(de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest)}
+	 * and {@link DhlDeliveryOrderRepository#toCreateShipmentOrderRequestPO(de.metas.shipper.gateway.spi.model.DeliveryOrder)}
+	 */
+	@SuppressWarnings("JavadocReference")
 	@NonNull
 	@Override
 	public DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
@@ -90,7 +97,6 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
 
-		// todo when editing this don't forget to update de.metas.shipper.gateway.dhl.DhlDeliveryOrderRepository.toDeliveryOrderPO
 		return DeliveryOrder.builder()
 				.shipperId(deliveryOrderKey.getShipperId())
 				.shipperTransportationId(deliveryOrderKey.getShipperTransportationId())
@@ -127,7 +133,6 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 						.grossWeightKg(Math.max(request.getGrossWeightInKg(), 1))
 						.packageDimensions(getPackageDimensions(mpackageIds, deliveryOrderKey.getShipperId()))
 						.build())
-				// todo if needed .customerReference(null)
 				//
 				.build();
 

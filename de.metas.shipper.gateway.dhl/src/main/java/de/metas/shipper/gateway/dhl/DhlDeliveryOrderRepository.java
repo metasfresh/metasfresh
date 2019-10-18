@@ -61,8 +61,6 @@ import java.util.List;
 @Repository
 public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 {
-	private static final Logger logger = LoggerFactory.getLogger(DhlDeliveryOrderRepository.class);
-
 	@Override
 	public String getShipperGatewayId()
 	{
@@ -114,7 +112,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	/**
 	 * Read the DHL specific PO and return a DTO.
 	 * <p>
-	 * keep in sync with {@link #toCreateShipmentOrderRequestPO(DeliveryOrder)}
+	 * keep in sync with {@link #toCreateShipmentOrderRequestPO(DeliveryOrder)} and {@link DhlDraftDeliveryOrderCreator#createDraftDeliveryOrder(de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest)}
 	 */
 	private DeliveryOrder toDeliveryOrderFromPO(final I_DHL_ShipmentOrderRequest requestPo)
 	{
@@ -219,9 +217,8 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	/**
 	 * Persists the shipper-dependant DeliveryOrder details
 	 * <p>
-	 * todo: https://chat.metasfresh.org/metasfresh/pl/z7pahtuci3b35naios3ha16tnh
-	 * <p>
 	 * keep in sync with {@link #toDeliveryOrderFromPO(I_DHL_ShipmentOrderRequest)}
+	 * and {@link DhlDraftDeliveryOrderCreator#createDraftDeliveryOrder(de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest)}
 	 */
 	@NonNull
 	private I_DHL_ShipmentOrderRequest toCreateShipmentOrderRequestPO(@NonNull final DeliveryOrder deliveryOrder)
@@ -235,19 +232,11 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 				"The DHL implementation needs to always create DeliveryOrders with exactly 1 DeliveryPosition; deliveryOrder={}",
 				deliveryOrder);
 
-		//		int totalPackages = 0;
-		//		final int MAX_NUMBER_OF_PACKAGES = 30; // todo this must not be hardcoded; though i'm not sure where i read about this limitation. maybe i'm wrong and there's no limitations in the number of packages sent in 1 order
 		for (final DeliveryPosition deliveryPosition : deliveryOrder.getDeliveryPositions()) // only a single delivery position should exist
 		{
 			final ImmutableList<Integer> packageIdsAsList = deliveryPosition.getPackageIds().asList();
 			for (int i = 0; i < deliveryPosition.getNumberOfPackages(); i++)
 			{
-				//				if (totalPackages > MAX_NUMBER_OF_PACKAGES)
-				//				{
-				//					throw new AdempiereException("Maximum number of packages for a delivery order for DHL is 30.");
-				//				}
-				//				totalPackages++;
-
 				final ContactPerson deliveryContact = deliveryOrder.getDeliveryContact();
 
 				final I_DHL_ShipmentOrder shipmentOrder = InterfaceWrapperHelper.newInstance(I_DHL_ShipmentOrder.class);
