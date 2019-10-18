@@ -1,8 +1,11 @@
 package de.metas.uom.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.time.temporal.TemporalUnit;
+import java.util.Collection;
+import java.util.List;
 
 /*
  * #%L
@@ -48,6 +51,8 @@ import lombok.NonNull;
 
 public class UOMDAO implements IUOMDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	public I_C_UOM getById(final int uomId)
 	{
@@ -70,6 +75,12 @@ public class UOMDAO implements IUOMDAO
 	public I_C_UOM getById(@NonNull final UomId uomId)
 	{
 		return loadOutOfTrx(uomId, I_C_UOM.class); // assume it's cached on table level
+	}
+
+	@Override
+	public List<I_C_UOM> getByIds(@NonNull final Collection<UomId> uomIds)
+	{
+		return loadByRepoIdAwaresOutOfTrx(uomIds, I_C_UOM.class); // assume it's cached on table level
 	}
 
 	@Override
@@ -117,7 +128,7 @@ public class UOMDAO implements IUOMDAO
 			@NonNull final String x12de355,
 			final boolean throwExIfNull)
 	{
-		final int uomId = Services.get(IQueryBL.class)
+		final int uomId = queryBL
 				.createQueryBuilder(I_C_UOM.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyContextClientOrSystem()
 				.addOnlyActiveRecordsFilter()

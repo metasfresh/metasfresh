@@ -13,21 +13,21 @@ package de.metas.document.archive.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
@@ -66,10 +66,11 @@ public interface IDocOutboundDAO extends ISingletonService
 	/**
 	 * Retrieve {@link I_C_Doc_Outbound_Log} for give archive (AD_Table_ID and Record_ID fields will be used for matching)
 	 *
-	 * @param archive
 	 * @return {@link I_C_Doc_Outbound_Log} record or null if not found
 	 */
 	I_C_Doc_Outbound_Log retrieveLog(I_AD_Archive archive);
+
+	I_C_Doc_Outbound_Log retrieveLog(TableRecordReference tableRecordReference);
 
 	/**
 	 * Find among the given <code>log</code>'s {@link I_C_Doc_Outbound_Log_Line}s the latest one with action <code>PDF</code> (i.e highest ID)
@@ -86,9 +87,10 @@ public interface IDocOutboundDAO extends ISingletonService
 	 * @param queryBuilder
 	 */
 	void addPDFArchiveLogLineFilters(IQueryBuilder<I_C_Doc_Outbound_Log_Line> queryBuilder);
-	
+
 	/**
-	 *  Retrieves last created {@link I_C_Doc_Outbound_Log} for given bpartner and table
+	 * Retrieves last created {@link I_C_Doc_Outbound_Log} for given bpartner and table
+	 *
 	 * @param contextProvider
 	 * @param bpartnerId
 	 * @param AD_Table_ID
@@ -98,6 +100,7 @@ public interface IDocOutboundDAO extends ISingletonService
 
 	/**
 	 * retrieve selected docoutbounds
+	 *
 	 * @param ctx
 	 * @param pinstanceId
 	 * @param trxName

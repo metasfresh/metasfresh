@@ -68,7 +68,7 @@ final class ProductPriceMasterDataProvider
 		}
 		else
 		{
-			pricingSystemId = bpartnersRepo.retrievePricingSystemId(bpartnerId, soTrx);
+			pricingSystemId = bpartnersRepo.retrievePricingSystemIdOrNull(bpartnerId, soTrx);
 			if (pricingSystemId == null)
 			{
 				throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@")

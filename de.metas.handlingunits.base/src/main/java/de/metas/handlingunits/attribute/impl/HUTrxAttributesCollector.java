@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Util;
@@ -41,9 +42,9 @@ import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.hutransaction.HUTransactionAttributeOperation;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
-import de.metas.handlingunits.impl.MutableHUTransactionAttribute;
-import de.metas.handlingunits.model.X_M_HU_Trx_Attribute;
+import de.metas.handlingunits.hutransaction.MutableHUTransactionAttribute;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -58,8 +59,13 @@ import de.metas.util.Services;
  * @author tsa
  *
  */
-/* package */class HUTrxAttributesCollector implements IAttributeStorageListener
+final class HUTrxAttributesCollector implements IAttributeStorageListener
 {
+	public static HUTrxAttributesCollector newInstance()
+	{
+		return new HUTrxAttributesCollector();
+	}
+
 	// services
 	private static final transient Logger logger = LogManager.getLogger(HUTrxAttributesCollector.class);
 
@@ -71,9 +77,8 @@ import de.metas.util.Services;
 	 */
 	private List<IHUTransactionAttribute> transactions = null;
 
-	/* package */ HUTrxAttributesCollector()
+	private HUTrxAttributesCollector()
 	{
-		super();
 	}
 
 	@Override
@@ -97,7 +102,7 @@ import de.metas.util.Services;
 							+ "\n Disposed flag: " + _disposed)
 									.throwIfDeveloperModeOrLogWarningElse(logger);
 		}
-	};
+	}
 
 	/**
 	 * Flags this collector as disposed.
@@ -124,7 +129,7 @@ import de.metas.util.Services;
 	 * Makes sure this collector was not already disposed, because if it was disposed, there is no point to add more transactions to it
 	 * because they will be lost.
 	 */
-	private final void assertNotDisposed()
+	private void assertNotDisposed()
 	{
 		Check.assume(!_disposed, "Collector shall not be disposed: {}", this);
 	}
@@ -137,23 +142,18 @@ import de.metas.util.Services;
 	 * @param operation attribute operation (save/drop)
 	 * @return attribute transaction candidate
 	 */
-	private IHUTransactionAttribute createTrxAttribute(final IAttributeStorage storage, final IAttributeValue attributeValue, final String operation)
+	private IHUTransactionAttribute createTrxAttribute(final IAttributeStorage storage, final IAttributeValue attributeValue, final HUTransactionAttributeOperation operation)
 	{
-		final MutableHUTransactionAttribute huTrxAttribute = new MutableHUTransactionAttribute();
-
-		//
-		// Set Attribute Transaction operation (Save/Drop)
-		huTrxAttribute.setOperation(operation);
-
-		//
-		// Update our "huTrxAttribute" from attributeValue
-		huTrxAttribute.setM_Attribute(attributeValue.getM_Attribute());
-		huTrxAttribute.setValueString(attributeValue.getValueAsString());
-		huTrxAttribute.setValueNumber(attributeValue.getValueAsBigDecimal());
-		huTrxAttribute.setValueDate(attributeValue.getValueAsDate());
-		huTrxAttribute.setValueStringInitial(attributeValue.getValueInitialAsString());
-		huTrxAttribute.setValueNumberInitial(attributeValue.getValueInitialAsBigDecimal());
-		huTrxAttribute.setValueDateInitial(attributeValue.getValueInitialAsDate());
+		final MutableHUTransactionAttribute huTrxAttribute = MutableHUTransactionAttribute.builder()
+				.operation(operation)
+				.attributeId(AttributeId.ofRepoId(attributeValue.getM_Attribute().getM_Attribute_ID()))
+				.valueString(attributeValue.getValueAsString())
+				.valueNumber(attributeValue.getValueAsBigDecimal())
+				.valueDate(attributeValue.getValueAsDate())
+				.valueStringInitial(attributeValue.getValueInitialAsString())
+				.valueNumberInitial(attributeValue.getValueInitialAsBigDecimal())
+				.valueDateInitial(attributeValue.getValueInitialAsDate())
+				.build();
 
 		//
 		// Update our "huTrxAttribute" with storage specific settings
@@ -174,7 +174,7 @@ import de.metas.util.Services;
 	 * @param operation attribute operation (save/drop)
 	 * @return created attribute transaction candidate
 	 */
-	private IHUTransactionAttribute createAndAddTrxAttribute(final IAttributeStorage storage, final IAttributeValue attributeValue, final String operation)
+	private IHUTransactionAttribute createAndAddTrxAttribute(final IAttributeStorage storage, final IAttributeValue attributeValue, final HUTransactionAttributeOperation operation)
 	{
 		assertNotDisposed();
 
@@ -205,19 +205,19 @@ import de.metas.util.Services;
 	@Override
 	public void onAttributeValueCreated(final IAttributeValueContext attributeValueContext, final IAttributeStorage storage, final IAttributeValue attributeValue)
 	{
-		createAndAddTrxAttribute(storage, attributeValue, X_M_HU_Trx_Attribute.OPERATION_Save);
+		createAndAddTrxAttribute(storage, attributeValue, HUTransactionAttributeOperation.SAVE);
 	}
 
 	@Override
 	public void onAttributeValueChanged(final IAttributeValueContext attributeValueContext, final IAttributeStorage storage, final IAttributeValue attributeValue, final Object valueOld)
 	{
-		createAndAddTrxAttribute(storage, attributeValue, X_M_HU_Trx_Attribute.OPERATION_Save);
+		createAndAddTrxAttribute(storage, attributeValue, HUTransactionAttributeOperation.SAVE);
 	}
 
 	@Override
 	public void onAttributeValueDeleted(final IAttributeValueContext attributeValueContext, final IAttributeStorage storage, final IAttributeValue attributeValue)
 	{
-		createAndAddTrxAttribute(storage, attributeValue, X_M_HU_Trx_Attribute.OPERATION_Drop);
+		createAndAddTrxAttribute(storage, attributeValue, HUTransactionAttributeOperation.DROP);
 	}
 
 	/**
@@ -248,7 +248,7 @@ import de.metas.util.Services;
 	/**
 	 * @return true if there are no attribute transactions collected
 	 */
-	public final boolean isEmpty()
+	public boolean isEmpty()
 	{
 		return transactions == null ? true : transactions.isEmpty();
 	}
@@ -256,7 +256,7 @@ import de.metas.util.Services;
 	/**
 	 * Removes all collected transactions (if any).
 	 */
-	public final void clearTransactions()
+	public void clearTransactions()
 	{
 		transactions = null;
 	}
@@ -268,7 +268,7 @@ import de.metas.util.Services;
 	 *
 	 * @param transactions
 	 */
-	private final void removeDuplicateTransactions(final List<IHUTransactionAttribute> transactions)
+	private void removeDuplicateTransactions(final List<IHUTransactionAttribute> transactions)
 	{
 		if (transactions.isEmpty())
 		{
@@ -311,10 +311,10 @@ import de.metas.util.Services;
 	 * @param trx
 	 * @return
 	 */
-	private final ArrayKey mkKey(final IHUTransactionAttribute trx)
+	private ArrayKey mkKey(final IHUTransactionAttribute trx)
 	{
-		final int attributeId = trx.getM_Attribute().getM_Attribute_ID();
-		final String operation = trx.getOperation();
+		final AttributeId attributeId = trx.getAttributeId();
+		final HUTransactionAttributeOperation operation = trx.getOperation();
 
 		final Object referencedObject = trx.getReferencedObject();
 		final String referencedObjectTableName;

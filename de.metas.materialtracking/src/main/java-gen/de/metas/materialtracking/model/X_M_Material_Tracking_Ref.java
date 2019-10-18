@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.materialtracking.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_Material_Tracking_Ref
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_M_Material_Tracking_Ref extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 963553039L;
+	private static final long serialVersionUID = -26577681L;
 
     /** Standard Constructor */
     public X_M_Material_Tracking_Ref (Properties ctx, int M_Material_Tracking_Ref_ID, String trxName)
@@ -41,8 +24,7 @@ public class X_M_Material_Tracking_Ref extends org.compiere.model.PO implements 
       /** if (M_Material_Tracking_Ref_ID == 0)
         {
 			setAD_Table_ID (0);
-			setIsQualityInspectionDoc (false);
-// N
+			setIsQualityInspectionDoc (false); // N
 			setM_Material_Tracking_ID (0);
 			setM_Material_Tracking_Ref_ID (0);
 			setRecord_ID (0);
@@ -63,18 +45,6 @@ public class X_M_Material_Tracking_Ref extends org.compiere.model.PO implements 
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
-	}
-
-	@Override
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
-	}
 
 	/** Set DB-Tabelle.
 		@param AD_Table_ID 
@@ -101,25 +71,7 @@ public class X_M_Material_Tracking_Ref extends org.compiere.model.PO implements 
 		return ii.intValue();
 	}
 
-	/** Set Lieferdatum.
-		@param DateDelivered 
-		Datum, zu dem die Ware geliefert wurde
-	  */
-	@Override
-	public void setDateDelivered (java.sql.Timestamp DateDelivered)
-	{
-		throw new IllegalArgumentException ("DateDelivered is virtual column");	}
-
-	/** Get Lieferdatum.
-		@return Datum, zu dem die Ware geliefert wurde
-	  */
-	@Override
-	public java.sql.Timestamp getDateDelivered () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateDelivered);
-	}
-
-	/** Set Beleg Nr..
+	/** Set Nr..
 		@param DocumentNo 
 		Document sequence number of the document
 	  */
@@ -128,7 +80,7 @@ public class X_M_Material_Tracking_Ref extends org.compiere.model.PO implements 
 	{
 		throw new IllegalArgumentException ("DocumentNo is virtual column");	}
 
-	/** Get Beleg Nr..
+	/** Get Nr..
 		@return Document sequence number of the document
 	  */
 	@Override
@@ -161,15 +113,15 @@ public class X_M_Material_Tracking_Ref extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public I_M_Material_Tracking getM_Material_Tracking() throws RuntimeException
+	public de.metas.materialtracking.model.I_M_Material_Tracking getM_Material_Tracking()
 	{
-		return get_ValueAsPO(COLUMNNAME_M_Material_Tracking_ID, I_M_Material_Tracking.class);
+		return get_ValueAsPO(COLUMNNAME_M_Material_Tracking_ID, de.metas.materialtracking.model.I_M_Material_Tracking.class);
 	}
 
 	@Override
-	public void setM_Material_Tracking(I_M_Material_Tracking M_Material_Tracking)
+	public void setM_Material_Tracking(de.metas.materialtracking.model.I_M_Material_Tracking M_Material_Tracking)
 	{
-		set_ValueFromPO(COLUMNNAME_M_Material_Tracking_ID, I_M_Material_Tracking.class, M_Material_Tracking);
+		set_ValueFromPO(COLUMNNAME_M_Material_Tracking_ID, de.metas.materialtracking.model.I_M_Material_Tracking.class, M_Material_Tracking);
 	}
 
 	/** Set Material-Vorgang-ID.
@@ -216,22 +168,58 @@ public class X_M_Material_Tracking_Ref extends org.compiere.model.PO implements 
 		return ii.intValue();
 	}
 
-	/** Set Qty Issued.
-		@param QtyIssued Qty Issued	  */
+	/** Set Bewegungsdatum.
+		@param MovementDate 
+		Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	  */
+	@Override
+	public void setMovementDate (java.sql.Timestamp MovementDate)
+	{
+		throw new IllegalArgumentException ("MovementDate is virtual column");	}
+
+	/** Get Bewegungsdatum.
+		@return Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	  */
+	@Override
+	public java.sql.Timestamp getMovementDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_MovementDate);
+	}
+
+	/** Set Ausgelagerte Menge.
+		@param QtyIssued Ausgelagerte Menge	  */
 	@Override
 	public void setQtyIssued (java.math.BigDecimal QtyIssued)
 	{
 		set_Value (COLUMNNAME_QtyIssued, QtyIssued);
 	}
 
-	/** Get Qty Issued.
-		@return Qty Issued	  */
+	/** Get Ausgelagerte Menge.
+		@return Ausgelagerte Menge	  */
 	@Override
 	public java.math.BigDecimal getQtyIssued () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyIssued);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Empfangene Menge.
+		@param QtyReceived Empfangene Menge	  */
+	@Override
+	public void setQtyReceived (java.math.BigDecimal QtyReceived)
+	{
+		throw new IllegalArgumentException ("QtyReceived is virtual column");	}
+
+	/** Get Empfangene Menge.
+		@return Empfangene Menge	  */
+	@Override
+	public java.math.BigDecimal getQtyReceived () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyReceived);
+		if (bd == null)
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

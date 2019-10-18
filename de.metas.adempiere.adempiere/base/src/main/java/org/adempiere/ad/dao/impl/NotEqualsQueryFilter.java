@@ -1,5 +1,7 @@
 package org.adempiere.ad.dao.impl;
 
+import lombok.EqualsAndHashCode;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -22,6 +24,7 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
+@EqualsAndHashCode(callSuper = true, doNotUseGetters = true)
 public class NotEqualsQueryFilter<T> extends CompareQueryFilter<T>
 {
 	public static <T> NotEqualsQueryFilter<T> of(final String columnName, final Object value)

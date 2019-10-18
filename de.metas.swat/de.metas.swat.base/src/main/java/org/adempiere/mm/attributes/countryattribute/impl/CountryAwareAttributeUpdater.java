@@ -1,6 +1,7 @@
 package org.adempiere.mm.attributes.countryattribute.impl;
 
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
 
 /*
  * #%L
@@ -38,7 +39,6 @@ import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_AttributeValue;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.product.ProductId;
@@ -130,7 +130,7 @@ public class CountryAwareAttributeUpdater
 		//
 		// Get M_AttributeValue
 		final IContextAware ctx = InterfaceWrapperHelper.getContextAware(sourceModel);
-		final I_M_AttributeValue attributeValue = countryAwareAttributeService.getCreateAttributeValue(ctx, countryAware);
+		final AttributeListValue attributeValue = countryAwareAttributeService.getCreateAttributeValue(ctx, countryAware);
 		if (attributeValue == null)
 		{
 			// No attribute and sys config set to "Ignore". Nothing to do.

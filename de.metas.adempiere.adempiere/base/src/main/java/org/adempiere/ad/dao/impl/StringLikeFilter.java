@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryFilterModifier;
 
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 /**
@@ -33,12 +34,14 @@ import lombok.NonNull;
  *
  * @param <T> the type of the class we filter for.
  */
+@EqualsAndHashCode(callSuper = true, doNotUseGetters = true)
 public class StringLikeFilter<T> extends CompareQueryFilter<T>
 {
 	/**
 	 * Modified the given parameters for for the substring-SQL
 	 *
 	 */
+	@EqualsAndHashCode
 	private static class StringLikeQueryFilterModifier implements IQueryFilterModifier
 	{
 		private final boolean ignoreCase;

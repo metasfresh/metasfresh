@@ -111,7 +111,7 @@ public class PMMPricingBL implements IPMMPricingBL
 
 		// Pricing system
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-		final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemIdInTrx(bpartnerId, soTrx);
+		final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemIdOrNullInTrx(bpartnerId, soTrx);
 		if (pricingSystemId == null)
 		{
 			// no term and no pricing system means that we can't figure out the price

@@ -14,7 +14,7 @@ public class X_C_Doc_Outbound_Log_Line extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -340074797L;
+	private static final long serialVersionUID = -1349749021L;
 
     /** Standard Constructor */
     public X_C_Doc_Outbound_Log_Line (Properties ctx, int C_Doc_Outbound_Log_Line_ID, String trxName)
@@ -75,7 +75,7 @@ public class X_C_Doc_Outbound_Log_Line extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Archive getAD_Archive() throws RuntimeException
+	public org.compiere.model.I_AD_Archive getAD_Archive()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Archive_ID, org.compiere.model.I_AD_Archive.class);
 	}
@@ -111,18 +111,6 @@ public class X_C_Doc_Outbound_Log_Line extends org.compiere.model.PO implements 
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
-	}
-
-	@Override
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
-	}
-
 	/** Set DB-Tabelle.
 		@param AD_Table_ID 
 		Database Table information
@@ -148,18 +136,6 @@ public class X_C_Doc_Outbound_Log_Line extends org.compiere.model.PO implements 
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User(org.compiere.model.I_AD_User AD_User)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
-	}
-
 	/** Set Ansprechpartner.
 		@param AD_User_ID 
 		User within the system - Internal or Business Partner Contact
@@ -183,18 +159,6 @@ public class X_C_Doc_Outbound_Log_Line extends org.compiere.model.PO implements 
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
 	}
 
 	/** Set Geschäftspartner.
@@ -223,7 +187,7 @@ public class X_C_Doc_Outbound_Log_Line extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public de.metas.document.archive.model.I_C_Doc_Outbound_Log getC_Doc_Outbound_Log() throws RuntimeException
+	public de.metas.document.archive.model.I_C_Doc_Outbound_Log getC_Doc_Outbound_Log()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Doc_Outbound_Log_ID, de.metas.document.archive.model.I_C_Doc_Outbound_Log.class);
 	}
@@ -276,18 +240,6 @@ public class X_C_Doc_Outbound_Log_Line extends org.compiere.model.PO implements 
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class);
-	}
-
-	@Override
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType)
-	{
-		set_ValueFromPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class, C_DocType);
 	}
 
 	/** Set Belegart.

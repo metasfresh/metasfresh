@@ -40,8 +40,7 @@ import de.metas.dunning.model.I_C_Dunning_Candidate_Invoice_v1;
 import de.metas.dunning.spi.impl.AbstractDunnableSource;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Services;
-import de.metas.util.collections.ConvertIteratorWrapper;
-import de.metas.util.collections.Converter;
+import de.metas.util.collections.IteratorUtils;
 import lombok.NonNull;
 
 public class InvoiceSource extends AbstractDunnableSource
@@ -50,15 +49,7 @@ public class InvoiceSource extends AbstractDunnableSource
 	protected Iterator<IDunnableDoc> createRawSourceIterator(final IDunningContext context)
 	{
 		final Iterator<I_C_Dunning_Candidate_Invoice_v1> it = Services.get(IInvoiceSourceDAO.class).retrieveDunningCandidateInvoices(context);
-
-		return new ConvertIteratorWrapper<>(it, new Converter<IDunnableDoc, I_C_Dunning_Candidate_Invoice_v1>()
-		{
-			@Override
-			public IDunnableDoc convert(I_C_Dunning_Candidate_Invoice_v1 value)
-			{
-				return createDunnableDoc(context, value);
-			}
-		});
+		return IteratorUtils.map(it, candidate -> createDunnableDoc(context, candidate));
 	}
 
 	private IDunnableDoc createDunnableDoc(

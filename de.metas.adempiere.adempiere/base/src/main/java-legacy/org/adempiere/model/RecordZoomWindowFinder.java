@@ -178,7 +178,7 @@ public class RecordZoomWindowFinder
 	public Optional<AdWindowId> findAdWindowId()
 	{
 		final WindowIds windowIds = getEffectiveWindowIds();
-		return windowIds.getAdWindowIdBySOTrx(() -> getSOTrxEffective());
+		return windowIds.getAdWindowIdBySOTrx(this::getSOTrxEffective);
 	}
 
 	@Deprecated

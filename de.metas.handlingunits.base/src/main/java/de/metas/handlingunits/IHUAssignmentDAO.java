@@ -58,13 +58,7 @@ public interface IHUAssignmentDAO extends ISingletonService
 	I_M_HU_Assignment retrieveHUAssignmentOrNull(Properties ctx, int huId, int adTableId, int recordId, String trxName);
 
 	/**
-	 * Retrieve top-level handling unit assignments for given document record, identified by <code>adTableId</code> and <code>recordId</code>.
-	 *
-	 * @param ctx
-	 * @param adTableId
-	 * @param recordId
-	 * @param trxName
-	 * @return assignments
+	 * Retrieve handling unit assignments for given document record, identified by <code>adTableId</code> and <code>recordId</code>.
 	 */
 	List<I_M_HU_Assignment> retrieveHUAssignmentsForModel(Properties ctx, int adTableId, int recordId, String trxName);
 
@@ -157,7 +151,6 @@ public interface IHUAssignmentDAO extends ISingletonService
 
 			this.referencedRecord = referencedRecord;
 		}
-
 	}
 
 	IQueryBuilder<I_M_HU_Assignment> retrieveHUAssignmentsForModelQuery(Object model);

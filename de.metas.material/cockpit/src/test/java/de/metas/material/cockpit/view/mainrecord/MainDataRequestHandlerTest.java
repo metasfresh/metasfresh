@@ -7,8 +7,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.Instant;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
@@ -41,7 +41,7 @@ public class MainDataRequestHandlerTest
 
 	private static final Instant NOW = Instant.now();
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

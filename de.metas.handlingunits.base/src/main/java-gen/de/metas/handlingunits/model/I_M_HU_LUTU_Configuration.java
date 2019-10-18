@@ -41,7 +41,7 @@ public interface I_M_HU_LUTU_Configuration
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -51,7 +51,7 @@ public interface I_M_HU_LUTU_Configuration
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -113,31 +113,6 @@ public interface I_M_HU_LUTU_Configuration
     public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, org.compiere.model.I_C_UOM>(I_M_HU_LUTU_Configuration.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -166,6 +141,31 @@ public interface I_M_HU_LUTU_Configuration
     public static final org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, org.compiere.model.I_AD_User>(I_M_HU_LUTU_Configuration.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, org.compiere.model.I_C_UOM>(I_M_HU_LUTU_Configuration.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Gebinde Status.
@@ -485,7 +485,7 @@ public interface I_M_HU_LUTU_Configuration
     public static final String COLUMNNAME_QtyCU = "QtyCU";
 
 	/**
-	 * Set Menge LU.
+	 * Set LU Anzahl.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -494,7 +494,7 @@ public interface I_M_HU_LUTU_Configuration
 	public void setQtyLU (java.math.BigDecimal QtyLU);
 
 	/**
-	 * Get Menge LU.
+	 * Get LU Anzahl.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -508,7 +508,7 @@ public interface I_M_HU_LUTU_Configuration
     public static final String COLUMNNAME_QtyLU = "QtyLU";
 
 	/**
-	 * Set Menge TU.
+	 * Set TU Anzahl.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -517,7 +517,7 @@ public interface I_M_HU_LUTU_Configuration
 	public void setQtyTU (java.math.BigDecimal QtyTU);
 
 	/**
-	 * Get Menge TU.
+	 * Get TU Anzahl.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true

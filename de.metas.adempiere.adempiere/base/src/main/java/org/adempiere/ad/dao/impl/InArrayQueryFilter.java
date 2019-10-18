@@ -43,6 +43,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 /**
@@ -68,7 +69,8 @@ import lombok.NonNull;
  *
  * @param <T>
  */
-public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
+@EqualsAndHashCode(exclude = { "sqlBuilt", "sqlWhereClause", "sqlParams" })
+public final class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
 	protected static final String SQL_TRUE = "1=1";
 	protected static final String SQL_FALSE = "1=0";
@@ -77,6 +79,10 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	private final List<Object> values;
 	private boolean defaultReturnWhenEmpty = true;
 	private boolean embedSqlParams = false;
+
+	private boolean sqlBuilt = false; // lazy
+	private String sqlWhereClause = null; // lazy
+	private List<Object> sqlParams = null; // lazy
 
 	/**
 	 * Creates filter that accepts a model if the given {@link code columnName} has one of the given {@code values}.
@@ -181,7 +187,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		return false;
 	}
 
-	private static final Object normalizeValue(@Nullable final Object value)
+	private static Object normalizeValue(@Nullable final Object value)
 	{
 		if (value instanceof RepoIdAware)
 		{
@@ -223,11 +229,7 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		return values;
 	}
 
-	private boolean sqlBuilt = false;
-	private String sqlWhereClause = null;
-	private List<Object> sqlParams = null;
-
-	private final void buildSql()
+	private void buildSql()
 	{
 		if (sqlBuilt)
 		{

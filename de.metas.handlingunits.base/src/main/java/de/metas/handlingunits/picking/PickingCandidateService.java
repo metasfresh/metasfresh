@@ -17,6 +17,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.candidate.commands.AddQtyToHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.ClosePickingCandidateCommand;
+import de.metas.handlingunits.picking.candidate.commands.CreatePickingCandidatesCommand;
 import de.metas.handlingunits.picking.candidate.commands.PickHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
 import de.metas.handlingunits.picking.candidate.commands.ProcessHUsAndPickingCandidateCommand;
@@ -268,4 +269,14 @@ public class PickingCandidateService
 				.perform();
 
 	}
+
+	public PickHUResult createAndSavePickingCandidates(@NonNull final PickHURequest request)
+	{
+		return CreatePickingCandidatesCommand.builder()
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.request(request)
+				.build()
+				.perform();
+	}
+
 }

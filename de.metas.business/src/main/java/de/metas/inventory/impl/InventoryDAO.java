@@ -12,6 +12,7 @@ import org.compiere.model.I_M_InventoryLine;
 
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
+import de.metas.inventory.InventoryLineId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -43,6 +44,12 @@ public class InventoryDAO implements IInventoryDAO
 	public I_M_Inventory getById(@NonNull final InventoryId inventoryId)
 	{
 		return load(inventoryId, I_M_Inventory.class);
+	}
+
+	@Override
+	public I_M_InventoryLine getLineById(@NonNull final InventoryLineId inventoryLineId)
+	{
+		return load(inventoryLineId, I_M_InventoryLine.class);
 	}
 
 	@Override

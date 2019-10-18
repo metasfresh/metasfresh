@@ -454,7 +454,7 @@ public class PPOrderProductAttributeBL_AttributesMap_putOrMerge_Tests
 	private I_PP_Order_ProductAttribute mkPPOrderAttribute(final I_M_Attribute attribute, final String value, final BigDecimal valueNumber)
 	{
 		final I_PP_Order_ProductAttribute ppOrderAttribute1 = InterfaceWrapperHelper.newInstance(I_PP_Order_ProductAttribute.class);
-		ppOrderAttribute1.setM_Attribute(attribute);
+		ppOrderAttribute1.setM_Attribute_ID(attribute.getM_Attribute_ID());
 		ppOrderAttribute1.setValue(value);
 		ppOrderAttribute1.setValueNumber(valueNumber);
 		InterfaceWrapperHelper.save(ppOrderAttribute1);

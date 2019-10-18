@@ -88,12 +88,14 @@ public class AttributeInstanceExpectation<ParentExpectationType> extends Abstrac
 
 		if (attribute != null)
 		{
-			assertModelEquals(messageToUse.expect("M_Attribute_ID"), attribute, attributeInstance.getM_Attribute());
+			assertEquals(messageToUse.expect("M_Attribute_ID"), attribute.getM_Attribute_ID(), attributeInstance.getM_Attribute_ID());
 		}
 		if (attributeKey != null)
 		{
-			final I_M_Attribute attributeActual = attributeInstance.getM_Attribute();
-			assertNotNull(messageToUse.expect("M_Attribute_ID not null"), attributeActual);
+			final AttributeId attributeActualId = AttributeId.ofRepoIdOrNull(attributeInstance.getM_Attribute_ID());
+			assertNotNull(messageToUse.expect("M_Attribute_ID not null"), attributeActualId);
+			
+			final I_M_Attribute attributeActual = Services.get(IAttributeDAO.class).getAttributeById(attributeActualId);
 			assertEquals(messageToUse.expect("M_Attribute.Value"), attributeKey, attributeActual.getValue());
 		}
 		if (valueStringSet)

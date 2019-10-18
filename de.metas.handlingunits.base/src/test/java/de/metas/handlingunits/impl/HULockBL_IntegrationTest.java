@@ -74,9 +74,9 @@ public class HULockBL_IntegrationTest
 	public final AdempiereTestWatcher testWatcher = new AdempiereTestWatcher()
 	{
 		@Override
-		protected void failed(final Throwable e, final org.junit.runner.Description description)
+		protected void onTestFailed(final String testName, final Throwable exception)
 		{
-			super.failed(e, description);
+			super.onTestFailed(testName, exception);
 
 			PlainLockManager.get().dump();
 		};

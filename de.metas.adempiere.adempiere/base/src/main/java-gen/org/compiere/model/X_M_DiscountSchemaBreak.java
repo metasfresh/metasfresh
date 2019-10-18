@@ -15,7 +15,7 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1799499718L;
+	private static final long serialVersionUID = -1483333538L;
 
     /** Standard Constructor */
     public X_M_DiscountSchemaBreak (Properties ctx, int M_DiscountSchemaBreak_ID, String trxName)
@@ -47,18 +47,6 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_M_PricingSystem getBase_PricingSystem() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_Base_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class);
-	}
-
-	@Override
-	public void setBase_PricingSystem(org.compiere.model.I_M_PricingSystem Base_PricingSystem)
-	{
-		set_ValueFromPO(COLUMNNAME_Base_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class, Base_PricingSystem);
-	}
 
 	/** Set Preissystem.
 		@param Base_PricingSystem_ID Preissystem	  */
@@ -126,18 +114,6 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 		return bd;
 	}
 
-	@Override
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
-	}
-
-	@Override
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
-	}
-
 	/** Set Währung.
 		@param C_Currency_ID 
 		Die Währung für diesen Eintrag
@@ -161,18 +137,6 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class);
-	}
-
-	@Override
-	public void setC_PaymentTerm(org.compiere.model.I_C_PaymentTerm C_PaymentTerm)
-	{
-		set_ValueFromPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class, C_PaymentTerm);
 	}
 
 	/** Set Zahlungsbedingung.
@@ -252,18 +216,6 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 		return false;
 	}
 
-	@Override
-	public org.compiere.model.I_M_Attribute getM_Attribute() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class);
-	}
-
-	@Override
-	public void setM_Attribute(org.compiere.model.I_M_Attribute M_Attribute)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class, M_Attribute);
-	}
-
 	/** Set Merkmal.
 		@param M_Attribute_ID 
 		Produkt-Merkmal
@@ -287,18 +239,6 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_AttributeValue getM_AttributeValue() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_AttributeValue_ID, org.compiere.model.I_M_AttributeValue.class);
-	}
-
-	@Override
-	public void setM_AttributeValue(org.compiere.model.I_M_AttributeValue M_AttributeValue)
-	{
-		set_ValueFromPO(COLUMNNAME_M_AttributeValue_ID, org.compiere.model.I_M_AttributeValue.class, M_AttributeValue);
 	}
 
 	/** Set Merkmals-Wert.
@@ -327,7 +267,7 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public org.compiere.model.I_M_DiscountSchema getM_DiscountSchema() throws RuntimeException
+	public org.compiere.model.I_M_DiscountSchema getM_DiscountSchema()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_DiscountSchema_ID, org.compiere.model.I_M_DiscountSchema.class);
 	}
@@ -388,18 +328,6 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Product_Category getM_Product_Category() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class);
-	}
-
-	@Override
-	public void setM_Product_Category(org.compiere.model.I_M_Product_Category M_Product_Category)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class, M_Product_Category);
-	}
-
 	/** Set Produkt Kategorie.
 		@param M_Product_Category_ID 
 		Kategorie eines Produktes
@@ -425,18 +353,6 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
-	}
-
 	/** Set Produkt.
 		@param M_Product_ID 
 		Produkt, Leistung, Artikel
@@ -460,18 +376,6 @@ public class X_M_DiscountSchemaBreak extends org.compiere.model.PO implements I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner getManufacturer() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_Manufacturer_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setManufacturer(org.compiere.model.I_C_BPartner Manufacturer)
-	{
-		set_ValueFromPO(COLUMNNAME_Manufacturer_ID, org.compiere.model.I_C_BPartner.class, Manufacturer);
 	}
 
 	/** Set Hersteller.

@@ -77,7 +77,7 @@ public class C_Invoice
 		}
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
-		final PricingSystemId pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemId(bpartnerId, soTrx);
+		final PricingSystemId pricingSystemId = Services.get(IBPartnerDAO.class).retrievePricingSystemIdOrNull(bpartnerId, soTrx);
 		if (pricingSystemId == null)
 		{
 			return;

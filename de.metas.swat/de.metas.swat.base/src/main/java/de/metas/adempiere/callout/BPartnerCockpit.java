@@ -10,18 +10,17 @@ package de.metas.adempiere.callout;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.adempiere.util.MiscUtils.getCalloutId;
 import static org.compiere.model.I_C_Order.Table_Name;
@@ -43,9 +42,14 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.MQuery;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveBillContactRequest;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.IMsgBL;
+import de.metas.user.User;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 
 public class BPartnerCockpit extends CalloutEngine
@@ -81,8 +85,8 @@ public class BPartnerCockpit extends CalloutEngine
 			return msgBL.getMsg(ctx, MSG_MISSING_SHIP_LOC);
 		}
 
-		final I_C_BPartner_Location billLoc = bPartnerDAO.retrieveBillToLocation(ctx, bPartnerId, 
-				false, // alsoTryBParnterRelation. Calling with 'false' to preserve the old/default behavior 
+		final I_C_BPartner_Location billLoc = bPartnerDAO.retrieveBillToLocation(ctx, bPartnerId,
+				false, // alsoTryBParnterRelation. Calling with 'false' to preserve the old/default behavior
 				ITrx.TRXNAME_None);
 		if (billLoc == null)
 		{
@@ -92,17 +96,24 @@ public class BPartnerCockpit extends CalloutEngine
 
 		final I_AD_User contact = bPartnerBL.retrieveShipContact(ctx, bPartnerId, ITrx.TRXNAME_None);
 
-		final I_AD_User billContact = bPartnerBL.retrieveBillContact(ctx, bPartnerId, ITrx.TRXNAME_None);
+		final User billContact = bPartnerBL.retrieveBillContactOrNull(RetrieveBillContactRequest.builder()
+				.bpartnerId(BPartnerId.ofRepoId(bPartnerId))
+				.bPartnerLocationId(BPartnerLocationId.ofRepoId(bPartnerId, billLoc.getC_BPartner_Location_ID()))
+				.build());
 
-		openSOWindow(bPartnerId, getIDOrNull(shipLoc), getIDOrNull(billLoc), getIDOrNull(contact), getIDOrNull(billContact));
+		openSOWindow(bPartnerId,
+				getIDOrNull(shipLoc),
+				getIDOrNull(billLoc),
+				getIDOrNull(contact),
+				billContact == null ? 0 : UserId.toRepoId(billContact.getId()));
 
 		mField.setValue(oldValue, false);
 		return "";
 	}
 
-	private int getIDOrNull(final Object shipLoc)
+	private int getIDOrNull(final Object object)
 	{
-		return shipLoc == null ? 0 : InterfaceWrapperHelper.getId(shipLoc);
+		return object == null ? 0 : InterfaceWrapperHelper.getId(object);
 	}
 
 	private boolean openSOWindow(final int bPartnerId,
