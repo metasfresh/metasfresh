@@ -1,5 +1,7 @@
 package de.metas.order.impl;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -37,6 +39,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
@@ -58,6 +61,8 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveBillContactRequest;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveBillContactRequest.RetrieveBillContactRequestBuilder;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -69,12 +74,15 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.order.BPartnerOrderParams;
+import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
@@ -86,6 +94,7 @@ import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
@@ -119,15 +128,16 @@ public class OrderBL implements IOrderBL
 				return;
 			}
 
-			final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+			final IBPartnerDAO bpartnersDAO = Services.get(IBPartnerDAO.class);
 			final BPartnerId bpartnerId = bpartnerAndLocation.getBpartnerId();
 			final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
-			final PricingSystemId pricingSysId = bpartnersRepo.retrievePricingSystemId(bpartnerId, soTrx);
+			final PricingSystemId pricingSysId = bpartnersDAO.retrievePricingSystemIdOrNull(bpartnerId, soTrx);
 
 			final boolean throwExIfNotFound = !overridePricingSystemAndDontThrowExIfNotFound;
 			if (pricingSysId == null && throwExIfNotFound)
 			{
-				final String bpartnerName = Services.get(IBPartnerBL.class).getBPartnerValueAndName(bpartnerId);
+				final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+				final String bpartnerName = bpartnerBL.getBPartnerValueAndName(bpartnerId);
 				Check.errorIf(true, "Unable to find pricing system for BPartner {}_{}; SOTrx={}", bpartnerName, soTrx);
 			}
 
@@ -142,7 +152,7 @@ public class OrderBL implements IOrderBL
 		// * overridePriceSystem is false and M_PricingSystem_ID was not changed: in this case we shall NOT update the price list because it might be that we were called for a completed Order and we don't want to change the data.
 		if (overridePricingSystemAndDontThrowExIfNotFound || previousPricingSystemId != order.getM_PricingSystem_ID()
 				|| order.getM_PriceList_ID() <= 0 // gh #936: attempt to set the pricelist, if we don't have it yet (i don't understand the error, but this might solve it. going to try it out)
-				)
+		)
 		{
 			setPriceList(order);
 		}
@@ -259,29 +269,22 @@ public class OrderBL implements IOrderBL
 			return true;
 		}
 
-		final IBPartnerBL bpartnerService = Services.get(IBPartnerBL.class);
-		final I_AD_User billContact;
-		// Case: Bill Location is set, we can use it to retrieve the contact for that location
+		final RetrieveBillContactRequestBuilder retrieveBillContanctRequest = RetrieveBillContactRequest.builder()
+				.bpartnerId(BPartnerId.ofRepoId(order.getBill_BPartner_ID()));
 		if (billToBPLocationId != null)
 		{
-			final I_C_BPartner_Location billLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(billToBPLocationId);
-			billContact = bpartnerService.retrieveUserForLoc(billLocation);
-		}
-		// Case: Bill Location is NOT set, we search for default bill contact
-		else
-		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-			final String trxName = InterfaceWrapperHelper.getTrxName(order);
-			final int bPartnerId = order.getBill_BPartner_ID();
-			billContact = bpartnerService.retrieveBillContact(ctx, bPartnerId, trxName);
-		}
+			// Case: Bill Location is set, we can use it to retrieve the contact for that location
+			retrieveBillContanctRequest.bPartnerLocationId(billToBPLocationId);
 
+		}
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		final User billContact = bpartnerBL.retrieveBillContactOrNull(retrieveBillContanctRequest.build());
 		if (billContact == null)
 		{
 			return false;
 		}
 
-		order.setBill_User_ID(billContact.getAD_User_ID());
+		order.setBill_User_ID(billContact.getId().getRepoId());
 		return true;
 	}
 
@@ -434,20 +437,33 @@ public class OrderBL implements IOrderBL
 		final DeliveryViaRule orderDeliveryViaRule = DeliveryViaRule.ofNullableCode(order.getDeliveryViaRule());
 		return orderDeliveryViaRule != null
 				? orderDeliveryViaRule
-						: findDeliveryViaRule(order);
+				: findDeliveryViaRule(order);
 	}
 
-	private DeliveryViaRule findDeliveryViaRule(final I_C_Order order)
+	private DeliveryViaRule findDeliveryViaRule(final I_C_Order orderRecord)
 	{
-		final BPartnerId bpartnerId = extractBPartnerIdOrNull(order);
-		return bpartnerId != null
-				? Services.get(IBPartnerBL.class).getDeliveryViaRuleOrNull(bpartnerId, SOTrx.ofBoolean(order.isSOTrx()))
-						: null;
+		final BPartnerOrderParams params = retrieveBPartnerParams(orderRecord);
+		return params.getDeliveryViaRule().orElse(null);
 	}
 
-	private BPartnerId extractBPartnerIdOrNull(final I_C_Order order)
+	private BPartnerOrderParams retrieveBPartnerParams(@NonNull final I_C_Order orderRecord)
 	{
-		return BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+		final BPartnerId shipBPartnerId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID());
+		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(coalesce(
+				orderRecord.getBill_BPartner_ID(),
+				orderRecord.getC_BPartner_ID()));
+
+		final SOTrx soTrx = SOTrx.ofBoolean(orderRecord.isSOTrx());
+
+		final BPartnerOrderParamsRepository bpartnerOrderParamsRepository = SpringContextHolder.instance.getBean(BPartnerOrderParamsRepository.class);
+
+		final BPartnerOrderParamsQuery query = BPartnerOrderParamsQuery.builder()
+				.shipBPartnerId(shipBPartnerId)
+				.billBPartnerId(billBPartnerId)
+				.soTrx(soTrx)
+				.build();
+		final BPartnerOrderParams params = bpartnerOrderParamsRepository.getBy(query);
+		return params;
 	}
 
 	@Override
@@ -492,7 +508,7 @@ public class OrderBL implements IOrderBL
 		final BPartnerId bpartnerId = extractBPartnerIdOrNull(order);
 		return bpartnerId != null
 				? Services.get(IBPartnerDAO.class).getById(bpartnerId, I_C_BPartner.class)
-						: null;
+				: null;
 	}
 
 	@Override
@@ -694,6 +710,11 @@ public class OrderBL implements IOrderBL
 		return true; // found it
 	}
 
+	private BPartnerId extractBPartnerIdOrNull(final I_C_Order order)
+	{
+		return BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+	}
+
 	private BPartnerLocationId extractBPartnerLocationOrNull(final I_C_Order order)
 	{
 		return BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
@@ -705,7 +726,7 @@ public class OrderBL implements IOrderBL
 		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(order.getM_PriceList_ID());
 		return priceListId != null
 				? Services.get(IPriceListBL.class).getPricePrecision(priceListId)
-						: CurrencyPrecision.TWO;
+				: CurrencyPrecision.TWO;
 	}
 
 	@Override
@@ -714,7 +735,7 @@ public class OrderBL implements IOrderBL
 		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(order.getM_PriceList_ID());
 		return priceListId != null
 				? Services.get(IPriceListBL.class).getAmountPrecision(priceListId)
-						: CurrencyPrecision.TWO;
+				: CurrencyPrecision.TWO;
 	}
 
 	@Override
@@ -723,7 +744,7 @@ public class OrderBL implements IOrderBL
 		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(order.getM_PriceList_ID());
 		return priceListId != null
 				? Services.get(IPriceListBL.class).getTaxPrecision(priceListId)
-						: CurrencyPrecision.TWO;
+				: CurrencyPrecision.TWO;
 	}
 
 	@Override
@@ -825,7 +846,7 @@ public class OrderBL implements IOrderBL
 
 		return contactId != null
 				? Services.get(IUserDAO.class).getById(contactId)
-						: null;
+				: null;
 	}
 
 	@Override
@@ -834,7 +855,7 @@ public class OrderBL implements IOrderBL
 		final BPartnerLocationId billToBPLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID());
 		return billToBPLocationId != null
 				? billToBPLocationId
-						: BPartnerLocationId.ofRepoId(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
+				: BPartnerLocationId.ofRepoId(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
 	}
 
 	@Override
@@ -843,7 +864,7 @@ public class OrderBL implements IOrderBL
 		final BPartnerContactId billToContactId = BPartnerContactId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_User_ID());
 		return billToContactId != null
 				? billToContactId
-						: BPartnerContactId.ofRepoId(order.getC_BPartner_ID(), order.getAD_User_ID());
+				: BPartnerContactId.ofRepoId(order.getC_BPartner_ID(), order.getAD_User_ID());
 	}
 
 	private static final ModelDynAttributeAccessor<org.compiere.model.I_C_Order, BigDecimal> DYNATTR_QtyInvoicedSum = new ModelDynAttributeAccessor<>("QtyInvoicedSum", BigDecimal.class);
@@ -947,7 +968,7 @@ public class OrderBL implements IOrderBL
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID());
 		return docTypeId != null
 				? Services.get(IDocTypeDAO.class).getById(docTypeId)
-						: null;
+				: null;
 	}
 
 	private I_C_DocType getDocTypeTargetOrNull(@NonNull final I_C_Order order)
@@ -955,7 +976,7 @@ public class OrderBL implements IOrderBL
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
 		return docTypeId != null
 				? Services.get(IDocTypeDAO.class).getById(docTypeId)
-						: null;
+				: null;
 	}
 
 	@Override

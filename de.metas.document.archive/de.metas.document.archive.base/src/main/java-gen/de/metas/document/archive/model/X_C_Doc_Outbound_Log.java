@@ -14,7 +14,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 658703404L;
+	private static final long serialVersionUID = 575358176L;
 
     /** Standard Constructor */
     public X_C_Doc_Outbound_Log (Properties ctx, int C_Doc_Outbound_Log_ID, String trxName)
@@ -43,18 +43,6 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
-	}
-
-	@Override
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
-	}
-
 	/** Set DB-Tabelle.
 		@param AD_Table_ID 
 		Database Table information
@@ -78,18 +66,6 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
 	}
 
 	/** Set Geschäftspartner.
@@ -118,7 +94,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	}
 
 	@Override
-	public org.compiere.model.I_C_BP_Group getC_BP_Group() throws RuntimeException
+	public org.compiere.model.I_C_BP_Group getC_BP_Group()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class);
 	}
@@ -172,18 +148,6 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class);
-	}
-
-	@Override
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType)
-	{
-		set_ValueFromPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class, C_DocType);
-	}
-
 	/** Set Belegart.
 		@param C_DocType_ID 
 		Belegart oder Verarbeitungsvorgaben
@@ -223,18 +187,6 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	public java.lang.String getCurrentEMailAddress () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_CurrentEMailAddress);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_User getCurrentEMailRecipient() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_CurrentEMailRecipient_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setCurrentEMailRecipient(org.compiere.model.I_AD_User CurrentEMailRecipient)
-	{
-		set_ValueFromPO(COLUMNNAME_CurrentEMailRecipient_ID, org.compiere.model.I_AD_User.class, CurrentEMailRecipient);
 	}
 
 	/** Set Derzeitiger Mailempfänger.

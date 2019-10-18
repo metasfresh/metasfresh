@@ -14,14 +14,22 @@ import org.compiere.util.TimeUtil;
 import com.google.common.base.MoreObjects;
 
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.freighcost.FreightCostRule;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
+import de.metas.order.InvoiceRule;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.product.ProductId;
+import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 
 /*
  * #%L
@@ -51,13 +59,32 @@ public final class OLCand implements IProductPriceAware
 
 	private final I_C_OLCand olCandRecord;
 
+	@Getter
+	@Setter
 	private LocalDate dateDoc;
 
 	private final BPartnerInfo bpartnerInfo;
+
+	@Getter
 	private final BPartnerInfo billBPartnerInfo;
+
+	@Getter
 	private final BPartnerInfo dropShipBPartnerInfo;
+
+	@Getter
 	private final BPartnerInfo handOverBPartnerInfo;
+
+	@Getter
 	private final PricingSystemId pricingSystemId;
+
+	@Getter
+	private final DeliveryRule deliveryRule;
+
+	@Getter
+	private final DeliveryViaRule deliveryViaRule;
+
+	@Getter
+	private final ShipperId shipperId;
 
 	@Getter
 	private final String externalLineId;
@@ -65,44 +92,71 @@ public final class OLCand implements IProductPriceAware
 	@Getter
 	private final String externalHeaderId;
 
+	@Getter
+	private final FreightCostRule freightCostRule;
+
+	@Getter
+	private final PaymentRule paymentRule;
+
+	@Getter
+	private final PaymentTermId paymentTermId;
+
+	@Getter
+	private final InvoiceRule invoiceRule;
+
 	@Builder
 	private OLCand(
 			@NonNull final IOLCandEffectiveValuesBL olCandEffectiveValuesBL,
+			@NonNull final I_C_OLCand olCandRecord,
 			//
-			@NonNull final I_C_OLCand candidate,
-			@Nullable final PricingSystemId pricingSystemId)
+			@Nullable final DeliveryRule deliveryRule,
+			@Nullable final DeliveryViaRule deliveryViaRule,
+			@Nullable final FreightCostRule freightCostRule,
+			@Nullable final InvoiceRule invoiceRule,
+			@Nullable final PaymentRule paymentRule,
+			@Nullable final PaymentTermId paymentTermId,
+			@Nullable final PricingSystemId pricingSystemId,
+			@Nullable final ShipperId shipperId)
 	{
 		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL;
 
-		this.olCandRecord = candidate;
+		this.olCandRecord = olCandRecord;
 
-		this.dateDoc = TimeUtil.asLocalDate(candidate.getDateOrdered());
+		this.dateDoc = TimeUtil.asLocalDate(olCandRecord.getDateOrdered());
 
 		this.bpartnerInfo = BPartnerInfo.builder()
-				.bpartnerId(this.olCandEffectiveValuesBL.getBPartnerEffectiveId(candidate))
-				.bpartnerLocationId(this.olCandEffectiveValuesBL.getLocationEffectiveId(candidate))
-				.contactId(this.olCandEffectiveValuesBL.getContactEffectiveId(candidate))
+				.bpartnerId(this.olCandEffectiveValuesBL.getBPartnerEffectiveId(olCandRecord))
+				.bpartnerLocationId(this.olCandEffectiveValuesBL.getLocationEffectiveId(olCandRecord))
+				.contactId(this.olCandEffectiveValuesBL.getContactEffectiveId(olCandRecord))
 				.build();
 		this.billBPartnerInfo = BPartnerInfo.builder()
-				.bpartnerId(this.olCandEffectiveValuesBL.getBillBPartnerEffectiveId(candidate))
-				.bpartnerLocationId(this.olCandEffectiveValuesBL.getBillLocationEffectiveId(candidate))
-				.contactId(this.olCandEffectiveValuesBL.getBillContactEffectiveId(candidate))
+				.bpartnerId(this.olCandEffectiveValuesBL.getBillBPartnerEffectiveId(olCandRecord))
+				.bpartnerLocationId(this.olCandEffectiveValuesBL.getBillLocationEffectiveId(olCandRecord))
+				.contactId(this.olCandEffectiveValuesBL.getBillContactEffectiveId(olCandRecord))
 				.build();
 		this.dropShipBPartnerInfo = BPartnerInfo.builder()
-				.bpartnerId(this.olCandEffectiveValuesBL.getDropShipBPartnerEffectiveId(candidate))
-				.bpartnerLocationId(this.olCandEffectiveValuesBL.getDropShipLocationEffectiveId(candidate))
-				.contactId(this.olCandEffectiveValuesBL.getDropShipContactEffectiveId(candidate))
+				.bpartnerId(this.olCandEffectiveValuesBL.getDropShipBPartnerEffectiveId(olCandRecord))
+				.bpartnerLocationId(this.olCandEffectiveValuesBL.getDropShipLocationEffectiveId(olCandRecord))
+				.contactId(this.olCandEffectiveValuesBL.getDropShipContactEffectiveId(olCandRecord))
 				.build();
 		this.handOverBPartnerInfo = BPartnerInfo.builder()
-				.bpartnerId(this.olCandEffectiveValuesBL.getHandOverPartnerEffectiveId(candidate))
-				.bpartnerLocationId(this.olCandEffectiveValuesBL.getHandOverLocationEffectiveId(candidate))
+				.bpartnerId(this.olCandEffectiveValuesBL.getHandOverPartnerEffectiveId(olCandRecord))
+				.bpartnerLocationId(this.olCandEffectiveValuesBL.getHandOverLocationEffectiveId(olCandRecord))
 				// .contactId(this.xolCandEffectiveValuesBL.getHandOver_User_Effective_ID(candidate))
 				.build();
 
+		this.externalLineId = olCandRecord.getExternalLineId();
+		this.externalHeaderId = olCandRecord.getExternalHeaderId();
+
+		this.deliveryRule = deliveryRule;
+		this.deliveryViaRule = deliveryViaRule;
+		this.freightCostRule = freightCostRule;
+		this.invoiceRule = invoiceRule;
+		this.paymentRule = paymentRule;
+		this.paymentTermId = paymentTermId;
 		this.pricingSystemId = pricingSystemId;
 
-		this.externalLineId = candidate.getExternalLineId();
-		this.externalHeaderId = candidate.getExternalHeaderId();
+		this.shipperId = shipperId;
 	}
 
 	@Override
@@ -134,31 +188,6 @@ public final class OLCand implements IProductPriceAware
 	public int getAD_Org_ID()
 	{
 		return olCandRecord.getAD_Org_ID();
-	}
-
-	public BPartnerInfo getBPartnerInfo()
-	{
-		return bpartnerInfo;
-	}
-
-	public BPartnerInfo getBillBPartnerInfo()
-	{
-		return billBPartnerInfo;
-	}
-
-	public BPartnerInfo getDropShipBPartnerInfo()
-	{
-		return dropShipBPartnerInfo;
-	}
-
-	public BPartnerInfo getHandOverBPartnerInfo()
-	{
-		return handOverBPartnerInfo;
-	}
-
-	public PricingSystemId getPricingSystemId()
-	{
-		return pricingSystemId;
 	}
 
 	public int getC_Charge_ID()
@@ -256,16 +285,6 @@ public final class OLCand implements IProductPriceAware
 	public String getPOReference()
 	{
 		return olCandRecord.getPOReference();
-	}
-
-	public LocalDate getDateDoc()
-	{
-		return dateDoc;
-	}
-
-	public void setDateDoc(@NonNull final LocalDate dateDoc)
-	{
-		this.dateDoc = dateDoc;
 	}
 
 	public ZonedDateTime getDatePromised()
@@ -371,5 +390,10 @@ public final class OLCand implements IProductPriceAware
 	public LocalDate getPresetDateShipped()
 	{
 		return TimeUtil.asLocalDate(olCandRecord.getPresetDateShipped());
+	}
+
+	public BPartnerInfo getBPartnerInfo()
+	{
+		return bpartnerInfo;
 	}
 }

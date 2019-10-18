@@ -130,10 +130,6 @@ public interface I_RV_HU_Quantities_Summary
 	 */
 	public int getM_Product_Category_ID();
 
-	public org.compiere.model.I_M_Product_Category getM_Product_Category();
-
-	public void setM_Product_Category(org.compiere.model.I_M_Product_Category M_Product_Category);
-
     /** Column definition for M_Product_Category_ID */
     public static final org.adempiere.model.ModelColumn<I_RV_HU_Quantities_Summary, org.compiere.model.I_M_Product_Category> COLUMN_M_Product_Category_ID = new org.adempiere.model.ModelColumn<I_RV_HU_Quantities_Summary, org.compiere.model.I_M_Product_Category>(I_RV_HU_Quantities_Summary.class, "M_Product_Category_ID", org.compiere.model.I_M_Product_Category.class);
     /** Column name M_Product_Category_ID */

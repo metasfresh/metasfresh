@@ -57,9 +57,7 @@ import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ILocationBL;
 import de.metas.location.impl.AddressBuilder;
-import de.metas.order.DeliveryViaRule;
 import de.metas.organization.OrgId;
-import de.metas.shipping.ShipperId;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
@@ -160,16 +158,6 @@ public class BPartnerBL implements IBPartnerBL
 		contact.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		contact.setName(bpartner.getName());
 		return contact;
-	}
-
-	@Override
-	public I_AD_User retrieveBillContact(final Properties ctx, final int bPartnerId, final String trxName)
-	{
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-		final org.compiere.model.I_C_BPartner_Location loc = bPartnerDAO.retrieveBillToLocation(ctx, bPartnerId, false, trxName);
-
-		final int bPartnerLocationId = loc == null ? -1 : loc.getC_BPartner_Location_ID();
-		return retrieveUserForLoc(ctx, bPartnerId, bPartnerLocationId, trxName);
 	}
 
 	@Override
@@ -587,18 +575,6 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public ShipperId getShipperIdOrNull(final BPartnerId bpartnerId)
-	{
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-
-		final I_C_BPartner bpartnerRecord = bPartnerDAO.getById(bpartnerId);
-
-		final int shipperId = bpartnerRecord.getM_Shipper_ID();
-
-		return ShipperId.ofRepoIdOrNull(shipperId);
-	}
-
-	@Override
 	public CountryId getBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpLocationId)
 	{
 		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
@@ -621,26 +597,6 @@ public class BPartnerBL implements IBPartnerBL
 		final I_C_BP_Group bpGroup = bpGroupsRepo.getByBPartnerId(bpartnerId);
 		freightCostId = bpGroup.getM_FreightCost_ID();
 		return freightCostId;
-	}
-
-	@Override
-	public DeliveryViaRule getDeliveryViaRuleOrNull(@NonNull final BPartnerId bpartnerId, SOTrx soTrx)
-	{
-		final I_C_BPartner bp = getById(bpartnerId);
-
-		if (soTrx.isSales())
-		{
-			return DeliveryViaRule.ofNullableCode(bp.getDeliveryViaRule());
-		}
-		else if (soTrx.isPurchase())
-		{
-			return DeliveryViaRule.ofNullableCode(bp.getPO_DeliveryViaRule());
-		}
-		else
-		{
-			// shall not happen
-			return null;
-		}
 	}
 
 	@Override

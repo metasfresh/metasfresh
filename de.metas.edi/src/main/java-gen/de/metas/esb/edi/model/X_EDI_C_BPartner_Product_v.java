@@ -14,7 +14,7 @@ public class X_EDI_C_BPartner_Product_v extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1245521856L;
+	private static final long serialVersionUID = -670550482L;
 
     /** Standard Constructor */
     public X_EDI_C_BPartner_Product_v (Properties ctx, int EDI_C_BPartner_Product_v_ID, String trxName)
@@ -180,16 +180,19 @@ public class X_EDI_C_BPartner_Product_v extends org.compiere.model.PO implements
 		return (java.lang.String)get_Value(COLUMNNAME_ProductNo);
 	}
 
-	/** Set UPC/EAN.
-		@param UPC UPC/EAN	  */
+	/** Set UPC.
+		@param UPC 
+		Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
+	  */
 	@Override
 	public void setUPC (java.lang.String UPC)
 	{
 		set_Value (COLUMNNAME_UPC, UPC);
 	}
 
-	/** Get UPC/EAN.
-		@return UPC/EAN	  */
+	/** Get UPC.
+		@return Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
+	  */
 	@Override
 	public java.lang.String getUPC () 
 	{

@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -87,8 +88,10 @@ public class HUTraceEventsService
 			I_PP_Cost_Collector.Table_Name,
 			I_M_ShipmentSchedule_QtyPicked.Table_Name);
 
-	private final HUTraceRepository huTraceRepository;
-	private final HUAccessService huAccessService;
+	private final transient HUTraceRepository huTraceRepository;
+	private final transient HUAccessService huAccessService;
+
+	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 	public HUTraceEventsService(
 			@NonNull final HUTraceRepository huTraceRepository,
@@ -382,7 +385,7 @@ public class HUTraceEventsService
 			}
 			if (trxLine.getAD_Table_ID() > 0)
 			{
-				final String tableName = trxLine.getAD_Table().getTableName();
+				final String tableName = adTableDAO.retrieveTableName(trxLine.getAD_Table_ID());
 				if (TABLE_NAMES_IGNORED_FOR_TRANSFORMATION_TRACING.contains(tableName))
 				{
 					continue; // we only care for "standalone" HU-transactions. for the others, we have other means to trace them

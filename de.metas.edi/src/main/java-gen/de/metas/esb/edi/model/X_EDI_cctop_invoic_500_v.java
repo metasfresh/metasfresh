@@ -15,7 +15,7 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -587829026L;
+	private static final long serialVersionUID = -1633246333L;
 
     /** Standard Constructor */
     public X_EDI_cctop_invoic_500_v (Properties ctx, int EDI_cctop_invoic_500_v_ID, String trxName)
@@ -110,6 +110,38 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 		return (java.lang.String)get_Value(COLUMNNAME_eancom_uom);
 	}
 
+	/** Set CU-EAN.
+		@param EAN_CU CU-EAN	  */
+	@Override
+	public void setEAN_CU (java.lang.String EAN_CU)
+	{
+		set_ValueNoCheck (COLUMNNAME_EAN_CU, EAN_CU);
+	}
+
+	/** Get CU-EAN.
+		@return CU-EAN	  */
+	@Override
+	public java.lang.String getEAN_CU () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EAN_CU);
+	}
+
+	/** Set TU-EAN.
+		@param EAN_TU TU-EAN	  */
+	@Override
+	public void setEAN_TU (java.lang.String EAN_TU)
+	{
+		set_ValueNoCheck (COLUMNNAME_EAN_TU, EAN_TU);
+	}
+
+	/** Get TU-EAN.
+		@return TU-EAN	  */
+	@Override
+	public java.lang.String getEAN_TU () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EAN_TU);
+	}
+
 	/** Set EDI_cctop_invoic_500_v.
 		@param EDI_cctop_invoic_500_v_ID EDI_cctop_invoic_500_v	  */
 	@Override
@@ -164,6 +196,22 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set GTIN.
+		@param GTIN GTIN	  */
+	@Override
+	public void setGTIN (java.lang.String GTIN)
+	{
+		set_ValueNoCheck (COLUMNNAME_GTIN, GTIN);
+	}
+
+	/** Get GTIN.
+		@return GTIN	  */
+	@Override
+	public java.lang.String getGTIN () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_GTIN);
 	}
 
 	/** Set ISO Währungscode.
@@ -467,20 +515,36 @@ public class X_EDI_cctop_invoic_500_v extends org.compiere.model.PO implements I
 		return false;
 	}
 
-	/** Set UPC/EAN.
-		@param UPC UPC/EAN	  */
+	/** Set CU-UPC.
+		@param UPC_CU CU-UPC	  */
 	@Override
-	public void setUPC (java.lang.String UPC)
+	public void setUPC_CU (java.lang.String UPC_CU)
 	{
-		set_Value (COLUMNNAME_UPC, UPC);
+		set_ValueNoCheck (COLUMNNAME_UPC_CU, UPC_CU);
 	}
 
-	/** Get UPC/EAN.
-		@return UPC/EAN	  */
+	/** Get CU-UPC.
+		@return CU-UPC	  */
 	@Override
-	public java.lang.String getUPC () 
+	public java.lang.String getUPC_CU () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_UPC);
+		return (java.lang.String)get_Value(COLUMNNAME_UPC_CU);
+	}
+
+	/** Set TU-UPC.
+		@param UPC_TU TU-UPC	  */
+	@Override
+	public void setUPC_TU (java.lang.String UPC_TU)
+	{
+		set_ValueNoCheck (COLUMNNAME_UPC_TU, UPC_TU);
+	}
+
+	/** Get TU-UPC.
+		@return TU-UPC	  */
+	@Override
+	public java.lang.String getUPC_TU () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_UPC_TU);
 	}
 
 	/** Set Suchschlüssel.

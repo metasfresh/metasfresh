@@ -24,6 +24,7 @@ package de.metas.document.archive.spi.impl;
 
 import java.util.Properties;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.util.Env;
@@ -55,6 +56,10 @@ public abstract class AbstractDocOutboundProducer implements IDocOutboundProduce
 {
 	protected final transient Logger logger = LogManager.getLogger(getClass());
 
+	private final transient IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+	private final transient IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+
 	private final I_C_Doc_Outbound_Config config;
 	private final String tableName;
 	private final boolean isDocument;
@@ -65,23 +70,11 @@ public abstract class AbstractDocOutboundProducer implements IDocOutboundProduce
 	@Override
 	public abstract void destroy(IDocOutboundProducerService producerService);
 
-	public AbstractDocOutboundProducer(final I_C_Doc_Outbound_Config config)
+	public AbstractDocOutboundProducer(@NonNull final I_C_Doc_Outbound_Config config)
 	{
-		super();
-
-		Check.assumeNotNull(config, "config not null");
-
 		this.config = config;
-		tableName = config.getAD_Table().getTableName();
-
-		if (Services.get(IDocumentBL.class).isDocumentTable(tableName))
-		{
-			isDocument = true;
-		}
-		else
-		{
-			isDocument = false;
-		}
+		this.tableName = adTableDAO.retrieveTableName(config.getAD_Table_ID());
+		this.isDocument = documentBL.isDocumentTable(tableName);
 	}
 
 	@Override
@@ -138,7 +131,7 @@ public abstract class AbstractDocOutboundProducer implements IDocOutboundProduce
 		final String requiredDocBaseType = config.getDocBaseType();
 		if (!Check.isEmpty(requiredDocBaseType, true))
 		{
-			final I_C_DocType docType = Services.get(IDocumentBL.class).getDocTypeOrNull(model);
+			final I_C_DocType docType = documentBL.getDocTypeOrNull(model);
 			if (docType == null)
 			{
 				logger.info("No document type found for {}. Ignore it.", model);
@@ -173,8 +166,6 @@ public abstract class AbstractDocOutboundProducer implements IDocOutboundProduce
 			@NonNull final Class<? extends IWorkpackageProcessor> packageProcessorClass)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
-
-		final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 
 		workPackageQueueFactory
 				.getQueueForEnqueuing(ctx, packageProcessorClass)
