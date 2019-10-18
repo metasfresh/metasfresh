@@ -1,5 +1,6 @@
 package de.metas.inventory.interceptor;
 
+import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
@@ -35,14 +36,14 @@ import de.metas.util.Services;
  * #L%
  */
 @Interceptor(I_M_InventoryLine.class)
+@Callout(I_M_InventoryLine.class)
 @Component
 public class M_InventoryLine
 {
 	@Init
-	public void init()
+	public void registerCallout()
 	{
-		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
-		programaticCalloutProvider.registerAnnotatedCallout(this);
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_M_InventoryLine.COLUMNNAME_InventoryType)
@@ -71,10 +72,7 @@ public class M_InventoryLine
 			return;
 		}
 
-		final int chargeId = inventoryBL.getDefaultInternalChargeId();
-
-		inventoryLine.setC_Charge_ID(chargeId);
-
+		inventoryBL.setDefaultInternalChargeId(inventoryLine);
 	}
 
 }
