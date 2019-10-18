@@ -164,7 +164,7 @@ public class BOMPriceCalculator
 			return null;
 		}
 
-		final I_PP_Product_BOM bom = bomsRepo.retrieveDefaultBOM(bomProduct);
+		final I_PP_Product_BOM bom = bomsRepo.getDefaultBOM(bomProduct).orElse(null);
 		if (bom == null)
 		{
 			return null;

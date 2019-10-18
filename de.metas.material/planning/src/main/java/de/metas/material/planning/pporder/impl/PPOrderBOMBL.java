@@ -30,7 +30,6 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
@@ -326,8 +325,8 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 		final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
 
-		final I_M_Product product = orderBOMLine.getM_Product();
-		final I_PP_Product_BOM bom = productBOMDAO.retrieveDefaultBOM(product);
+		final ProductId bomProductId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
+		final I_PP_Product_BOM bom = productBOMDAO.getDefaultBOMByProductId(bomProductId).orElse(null);
 		if (bom == null)
 		{
 			return;

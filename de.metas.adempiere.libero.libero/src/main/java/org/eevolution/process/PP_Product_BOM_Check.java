@@ -160,7 +160,7 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 		updateProductLLCAndMarkAsVerified(product);
 
 		// Get Default BOM from this product
-		final I_PP_Product_BOM bom = productBOMDAO.retrieveDefaultBOM(product);
+		final I_PP_Product_BOM bom = productBOMDAO.getDefaultBOM(product).orElse(null);
 		if (bom == null)
 		{
 			throw new AdempiereException("No Default BOM found for " + product.getValue() + "_" + product.getName());
