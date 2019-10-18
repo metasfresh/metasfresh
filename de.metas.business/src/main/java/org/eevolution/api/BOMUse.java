@@ -1,5 +1,7 @@
 package org.eevolution.api;
 
+import javax.annotation.Nullable;
+
 import org.eevolution.model.X_PP_Product_BOM;
 
 import de.metas.util.lang.ReferenceListAwareEnum;
@@ -51,6 +53,11 @@ public enum BOMUse implements ReferenceListAwareEnum
 	public static BOMUse ofCode(@NonNull final String code)
 	{
 		return index.ofCode(code);
+	}
+
+	public static BOMUse ofNullableCode(@Nullable final String code)
+	{
+		return index.ofNullableCode(code);
 	}
 
 	private static final ValuesIndex<BOMUse> index = ReferenceListAwareEnums.index(values());
