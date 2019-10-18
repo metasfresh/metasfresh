@@ -37,7 +37,6 @@ import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
-import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -100,9 +99,7 @@ public class M_ShipmentSchedule
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void updateHeaderAggregationKey(final I_M_ShipmentSchedule schedule)
 	{
-		final IAggregationKeyBuilder<I_M_ShipmentSchedule> shipmentScheduleKeyBuilder = Services.get(IShipmentScheduleBL.class).mkShipmentHeaderAggregationKeyBuilder();
-		final String headerAggregationKey = shipmentScheduleKeyBuilder.buildKey(schedule);
-		schedule.setHeaderAggregationKey(headerAggregationKey);
+		 Services.get(IShipmentScheduleBL.class).updateHeaderAggregationKey(schedule);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
