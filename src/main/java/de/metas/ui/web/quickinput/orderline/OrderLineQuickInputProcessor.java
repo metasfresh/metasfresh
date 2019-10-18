@@ -1,12 +1,14 @@
 package de.metas.ui.web.quickinput.orderline;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -15,16 +17,15 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.HUPackingAwareCopy.ASICopyMode;
-import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.OrderLineHUPackingAware;
 import de.metas.adempiere.gui.search.impl.PlainHUPackingAware;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
@@ -40,7 +41,9 @@ import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndAttributes;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -68,121 +71,109 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 {
 	// services
 	private static final transient Logger logger = LogManager.getLogger(OrderLineQuickInputProcessor.class);
-	private final transient IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
+	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 	private final Collection<IOrderLineInputValidator> validators = SpringContextHolder.instance.getBeansOfType(IOrderLineInputValidator.class);
-
-	public OrderLineQuickInputProcessor()
-	{
-	}
 
 	@Override
 	public DocumentId process(final QuickInput quickInput)
 	{
+		final OrderLineCandidate candidate = toOrderLineCandidate(quickInput);
+		validateInput(candidate);
+
 		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-
-		validateInput(quickInput);
-
-		final I_C_OrderLine newOrderLine = OrderFastInput.addOrderLine(ctx, order, orderLine -> updateOrderLine(orderLine, quickInput));
+		final I_C_OrderLine newOrderLine = OrderFastInput.addOrderLine(ctx, order, orderLine -> updateOrderLine(orderLine, candidate));
 		final int newOrderLineId = newOrderLine.getC_OrderLine_ID();
 		return DocumentId.of(newOrderLineId);
 	}
 
-	private void validateInput(final QuickInput quickInput)
+	private void validateInput(final OrderLineCandidate candidate)
 	{
-		validateInput(quickInput, validators);
-	}
+		final BPartnerId bpartnerId = candidate.getBpartnerId();
+		final ProductId productId = candidate.getProductAndAttributes().getProductId();
+		final SOTrx soTrx = candidate.getSoTrx();
 
-	private static void validateInput(final QuickInput quickInput, final Collection<IOrderLineInputValidator> validators)
-	{
-		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
-		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
-		final IOrderLineQuickInput orderLineQuickInput = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
-		final ProductId productId = ProductId.ofRepoId(orderLineQuickInput.getM_Product_ID().getIdAsInt());
-
-		final List<ITranslatableString> validationErrorMessages = validators
-				.stream()
-				.map(validator -> {
-					final OrderLineInputValidatorResults validationResults = validator.validate(bpartnerId, productId, soTrx);
-
-					if (!validationResults.isValid())
-					{
-						return validationResults.getErrorMessage();
-					}
-
-					return null;
-				})
-				.filter(Objects::nonNull)
-				.collect(ImmutableList.toImmutableList());
+		final ArrayList<ITranslatableString> validationErrorMessages = new ArrayList<>();
+		for (final IOrderLineInputValidator validator : validators)
+		{
+			final OrderLineInputValidatorResults validationResults = validator.validate(bpartnerId, productId, soTrx);
+			if (validationResults != null
+					&& !validationResults.isValid()
+					&& validationResults.getErrorMessage() != null)
+			{
+				validationErrorMessages.add(validationResults.getErrorMessage());
+			}
+		}
 
 		if (!validationErrorMessages.isEmpty())
 		{
 			throw new AdempiereException(TranslatableStrings.joinList("\n", validationErrorMessages));
 		}
-
 	}
 
-	private void updateOrderLine(final I_C_OrderLine newOrderLine, final QuickInput fromQuickInput)
+	private OrderLineCandidate toOrderLineCandidate(final QuickInput quickInput)
 	{
-		final I_C_Order order = fromQuickInput.getRootDocumentAs(I_C_Order.class);
-		final IOrderLineQuickInput fromOrderLineQuickInput = fromQuickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
-		final IHUPackingAware quickInputPackingAware = createQuickInputPackingAware(order, fromOrderLineQuickInput);
+		final IOrderLineQuickInput orderLineQuickInput = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
 
-		final IHUPackingAware orderLinePackingAware = OrderLineHUPackingAware.of(newOrderLine);
-
-		huPackingAwareBL.prepareCopyFrom(quickInputPackingAware)
-				.overridePartner(false)
-				.asiCopyMode(ASICopyMode.CopyID) // because we just created the ASI
-				.copyTo(orderLinePackingAware);
-		
-		newOrderLine.setShipmentAllocation_BestBefore_Policy(fromOrderLineQuickInput.getShipmentAllocation_BestBefore_Policy());
-	}
-
-	private IHUPackingAware createQuickInputPackingAware(
-			@NonNull final I_C_Order order,
-			@NonNull final IOrderLineQuickInput quickInput)
-	{
-		final PlainHUPackingAware huPackingAware = createAndInitHuPackingAware(order, quickInput);
-
-		// Get quickInput's Qty
-		final BigDecimal quickInputQty = quickInput.getQty();
+		// Validate quick input:
+		final BigDecimal quickInputQty = orderLineQuickInput.getQty();
 		if (quickInputQty == null || quickInputQty.signum() <= 0)
 		{
-			logger.warn("Invalid Qty={} for {}", quickInputQty, quickInput);
+			logger.warn("Invalid Qty={} for {}", quickInputQty, orderLineQuickInput);
 			throw new AdempiereException("Qty shall be greather than zero"); // TODO trl
 		}
 
-		huPackingAwareBL.computeAndSetQtysForNewHuPackingAware(huPackingAware, quickInputQty);
+		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
 
-		return validateNewHuPackingAware(huPackingAware);
+		final ProductAndAttributes productAndAttributes = ProductLookupDescriptor.toProductAndAttributes(orderLineQuickInput.getM_Product_ID());
+		final UomId uomId = productBL.getStockUOMId(productAndAttributes.getProductId());
+
+		return OrderLineCandidate.builder()
+				.productAndAttributes(productAndAttributes)
+				.uomId(uomId)
+				.piItemProductId(HUPIItemProductId.ofRepoIdOrNull(orderLineQuickInput.getM_HU_PI_Item_Product_ID()))
+				.qty(quickInputQty)
+				.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.ofNullableCode(orderLineQuickInput.getShipmentAllocation_BestBefore_Policy()))
+				.bpartnerId(bpartnerId)
+				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
+				.build();
 	}
 
-	private PlainHUPackingAware createAndInitHuPackingAware(
-			@NonNull final I_C_Order order,
-			@NonNull final IOrderLineQuickInput quickInput)
+	private void updateOrderLine(final I_C_OrderLine to, final OrderLineCandidate candidate)
 	{
-		final IProductBL productBL = Services.get(IProductBL.class);
+		final PlainHUPackingAware fromPackingInfo = createQuickInputPackingAware(candidate);
+		huPackingAwareBL.prepareCopyFrom(fromPackingInfo)
+				.overridePartner(false)
+				.asiCopyMode(ASICopyMode.CopyID) // because we just created the ASI
+				.copyTo(OrderLineHUPackingAware.of(to));
+
+		if (candidate.getBestBeforePolicy() != null)
+		{
+			to.setShipmentAllocation_BestBefore_Policy(candidate.getBestBeforePolicy().getCode());
+		}
+	}
+
+	private PlainHUPackingAware createQuickInputPackingAware(@NonNull final OrderLineCandidate candidate)
+	{
+		final ProductAndAttributes productAndAttributes = candidate.getProductAndAttributes();
 
 		final PlainHUPackingAware huPackingAware = new PlainHUPackingAware();
-		huPackingAware.setC_BPartner_ID(order.getC_BPartner_ID());
+		huPackingAware.setBpartnerId(candidate.getBpartnerId());
 		huPackingAware.setInDispute(false);
+		huPackingAware.setProductId(productAndAttributes.getProductId());
+		huPackingAware.setUomId(candidate.getUomId());
+		huPackingAware.setAsiId(createASI(productAndAttributes));
+		huPackingAware.setPiItemProductId(candidate.getPiItemProductId());
 
-		final ProductAndAttributes productAndAttributes = ProductLookupDescriptor.toProductAndAttributes(quickInput.getM_Product_ID());
-		final UomId uomId = productBL.getStockUOMId(productAndAttributes.getProductId());
-		huPackingAware.setM_Product_ID(productAndAttributes.getProductId().getRepoId());
-		huPackingAware.setC_UOM_ID(uomId.getRepoId());
-		huPackingAware.setM_AttributeSetInstance_ID(createASI(productAndAttributes));
+		//
+		huPackingAwareBL.computeAndSetQtysForNewHuPackingAware(huPackingAware, candidate.getQty());
 
-		final int piItemProductId = quickInput.getM_HU_PI_Item_Product_ID();
-		huPackingAware.setM_HU_PI_Item_Product_ID(piItemProductId);
-
-		return huPackingAware;
-	}
-
-	private PlainHUPackingAware validateNewHuPackingAware(@NonNull final PlainHUPackingAware huPackingAware)
-	{
+		//
+		// Validate:
 		if (huPackingAware.getQty() == null || huPackingAware.getQty().signum() <= 0)
 		{
 			logger.warn("Invalid Qty={} for {}", huPackingAware.getQty(), huPackingAware);
@@ -193,23 +184,48 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 			logger.warn("Invalid QtyTU={} for {}", huPackingAware.getQtyTU(), huPackingAware);
 			throw new AdempiereException("QtyTU shall be greather than zero"); // TODO trl
 		}
+
 		return huPackingAware;
 	}
 
-	private static int createASI(final ProductAndAttributes productAndAttributes)
+	private AttributeSetInstanceId createASI(final ProductAndAttributes productAndAttributes)
 	{
 		final ImmutableAttributeSet attributes = productAndAttributes.getAttributes();
 		if (attributes.isEmpty())
 		{
-			return -1;
+			return null;
 		}
-
-		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 		final I_M_AttributeSetInstance asi = asiBL.createASIWithASFromProductAndInsertAttributeSet(
 				productAndAttributes.getProductId(),
 				attributes);
 
-		return asi.getM_AttributeSetInstance_ID();
+		return AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
+	}
+
+	@Value
+	@Builder
+	private static class OrderLineCandidate
+	{
+		@NonNull
+		ProductAndAttributes productAndAttributes;
+
+		@NonNull
+		UomId uomId;
+
+		@Nullable
+		HUPIItemProductId piItemProductId;
+
+		@NonNull
+		BigDecimal qty;
+
+		@Nullable
+		ShipmentAllocationBestBeforePolicy bestBeforePolicy;
+
+		@Nullable
+		BPartnerId bpartnerId;
+
+		@NonNull
+		SOTrx soTrx;
 	}
 }
