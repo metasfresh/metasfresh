@@ -5,7 +5,6 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_M_InventoryLine;
@@ -35,7 +34,7 @@ import de.metas.util.Services;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Interceptor(I_M_Inventory.class)
+@Interceptor(I_M_InventoryLine.class)
 @Component
 public class M_InventoryLine
 {
