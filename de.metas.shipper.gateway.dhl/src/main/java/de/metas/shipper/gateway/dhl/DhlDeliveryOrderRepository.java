@@ -67,16 +67,18 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 		return DhlConstants.SHIPPER_GATEWAY_ID;
 	}
 
+	@NonNull
 	@Override
-	public ITableRecordReference toTableRecordReference(final DeliveryOrder deliveryOrder)
+	public ITableRecordReference toTableRecordReference(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		final int deliveryOrderRepoId = deliveryOrder.getRepoId();
 		Check.assume(deliveryOrderRepoId > 0, "deliveryOrderRepoId > 0 for {}", deliveryOrder);
 		return TableRecordReference.of(I_DHL_ShipmentOrderRequest.Table_Name, deliveryOrderRepoId);
 	}
 
+	@NonNull
 	@Override
-	public DeliveryOrder getByRepoId(final DeliveryOrderId deliveryOrderRepoId)
+	public DeliveryOrder getByRepoId(@NonNull final DeliveryOrderId deliveryOrderRepoId)
 	{
 		final I_DHL_ShipmentOrderRequest dhlShipmentOrderRequest = InterfaceWrapperHelper.load(deliveryOrderRepoId, I_DHL_ShipmentOrderRequest.class);
 		Check.assumeNotNull(dhlShipmentOrderRequest, "DHL delivery order must exist for ID={}", deliveryOrderRepoId);
@@ -91,6 +93,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	 * - I_DHL_ShipmentOrderRequest is the persisted object for that DTO with data relevant for DHL.
 	 * Each different shipper has its own "shipper-PO" with its own relevant data.
 	 */
+	@NonNull
 	@Override
 	public DeliveryOrder save(@NonNull final DeliveryOrder deliveryOrder)
 	{
