@@ -93,6 +93,7 @@ public class ProductBOMBL implements IProductBOMBL
 		final boolean hasBOMs = bomsRepo.hasBOMs(productId);
 
 		productsRepo.updateProduct(UpdateProductRequest.builder()
+				.productId(productId)
 				.isBOM(hasBOMs)
 				.build());
 	}
