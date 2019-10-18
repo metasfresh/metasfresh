@@ -39,9 +39,11 @@ public class DeliveryPosition
 	int numberOfPackages;
 	int grossWeightKg;
 	String content;
+
+	@Nullable
 	PackageDimensions packageDimensions;
 
-	/** optional, can be {@code null} */
+	@Nullable
 	CustomDeliveryData customDeliveryData;
 
 	ImmutableSet<Integer> packageIds;
