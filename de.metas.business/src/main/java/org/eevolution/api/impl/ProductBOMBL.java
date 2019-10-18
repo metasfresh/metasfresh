@@ -28,7 +28,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
@@ -38,7 +37,9 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.product.UpdateProductRequest;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
@@ -84,10 +85,16 @@ public class ProductBOMBL implements IProductBOMBL
 	}
 
 	@Override
-	public void setIsBOM(final I_M_Product product)
+	public void updateIsBOMFlag(@NonNull final ProductId productId)
 	{
-		final boolean hasBOMs = Services.get(IProductBOMDAO.class).hasBOMs(product);
-		product.setIsBOM(hasBOMs);
+		final IProductDAO productsRepo = Services.get(IProductDAO.class);
+		final IProductBOMDAO bomsRepo = Services.get(IProductBOMDAO.class);
+
+		final boolean hasBOMs = bomsRepo.hasBOMs(productId);
+
+		productsRepo.updateProduct(UpdateProductRequest.builder()
+				.isBOM(hasBOMs)
+				.build());
 	}
 
 	@Override

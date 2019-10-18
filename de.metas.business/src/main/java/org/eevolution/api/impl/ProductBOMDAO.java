@@ -176,16 +176,14 @@ public class ProductBOMDAO implements IProductBOMDAO
 	}
 
 	@Override
-	public boolean hasBOMs(final I_M_Product product)
+	public boolean hasBOMs(final ProductId productId)
 	{
-		final IQueryBuilder<I_PP_Product_BOM> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_PP_Product_BOM.class, product);
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final ICompositeQueryFilter<I_PP_Product_BOM> filters = queryBuilder.getCompositeFilter();
-		filters.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, product.getM_Product_ID());
-		filters.addOnlyActiveRecordsFilter();
-
-		return queryBuilder
+		// IMPORTANT: fetch in current trx because this pice of code can be called from some PP_Product_BOM model interceptor!
+		return queryBL.createQueryBuilder(I_PP_Product_BOM.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, productId)
 				.create()
 				.match();
 	}

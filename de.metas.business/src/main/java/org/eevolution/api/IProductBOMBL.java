@@ -25,7 +25,6 @@ package org.eevolution.api;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
@@ -40,7 +39,7 @@ public interface IProductBOMBL extends ISingletonService
 
 	boolean isValidFromTo(I_PP_Product_BOMLine bomLine, Date date);
 
-	void setIsBOM(I_M_Product product);
+	void updateIsBOMFlag(ProductId productId);
 
 	/**
 	 * Calculates low level code (LLC) for given product.
