@@ -43,12 +43,16 @@ public class DhlCustomDeliveryDataDetail
 	@Nullable
 	String awb;
 
+	@Nullable
+	String trackingUrl;
+
 	@Builder(toBuilder = true)
 	private DhlCustomDeliveryDataDetail(
 			final int packageId,
 			@NonNull final DhlSequenceNumber sequenceNumber,
 			@Nullable final byte[] pdfLabelData,
-			@Nullable final String awb)
+			@Nullable final String awb,
+			@Nullable final String trackingUrl)
 	{
 		Check.assumeGreaterThanZero(packageId, "packageId");
 
@@ -56,5 +60,6 @@ public class DhlCustomDeliveryDataDetail
 		this.sequenceNumber = sequenceNumber;
 		this.pdfLabelData = pdfLabelData;
 		this.awb = awb;
+		this.trackingUrl = trackingUrl;
 	}
 }
