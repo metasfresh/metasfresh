@@ -39,7 +39,7 @@ public enum BOMUse implements ReferenceListAwareEnum
 	Manufacturing(X_PP_Product_BOM.BOMUSE_Manufacturing), //
 	Planning(X_PP_Product_BOM.BOMUSE_Planning), //
 	Quality(X_PP_Product_BOM.BOMUSE_Quality), //
-	Trading(X_PP_Product_BOM.BOMUSE_Trading) //
+	Phantom(X_PP_Product_BOM.BOMUSE_Phantom) //
 	;
 
 	@Getter

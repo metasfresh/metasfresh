@@ -14,7 +14,7 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 863762944L;
+	private static final long serialVersionUID = -1419357784L;
 
     /** Standard Constructor */
     public X_PP_Product_BOM (Properties ctx, int PP_Product_BOM_ID, String trxName)
@@ -104,8 +104,8 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	public static final String BOMUSE_Planning = "P";
 	/** Quality = Q */
 	public static final String BOMUSE_Quality = "Q";
-	/** Trading = T */
-	public static final String BOMUSE_Trading = "T";
+	/** Phantom = H */
+	public static final String BOMUSE_Phantom = "H";
 	/** Set BOM Use.
 		@param BOMUse 
 		The use of the Bill of Material
