@@ -220,33 +220,6 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Set Order Compensation Group.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_Order_CompensationGroup_ID (int C_Order_CompensationGroup_ID);
-
-	/**
-	 * Get Order Compensation Group.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_Order_CompensationGroup_ID();
-
-	public org.compiere.model.I_C_Order_CompensationGroup getC_Order_CompensationGroup();
-
-	public void setC_Order_CompensationGroup(org.compiere.model.I_C_Order_CompensationGroup C_Order_CompensationGroup);
-
-    /** Column definition for C_Order_CompensationGroup_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_C_Order_CompensationGroup> COLUMN_C_Order_CompensationGroup_ID = new org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_C_Order_CompensationGroup>(I_M_Packageable_V.class, "C_Order_CompensationGroup_ID", org.compiere.model.I_C_Order_CompensationGroup.class);
-    /** Column name C_Order_CompensationGroup_ID */
-    public static final String COLUMNNAME_C_Order_CompensationGroup_ID = "C_Order_CompensationGroup_ID";
-
-	/**
 	 * Set Auftragsposition.
 	 * Auftragsposition
 	 *
