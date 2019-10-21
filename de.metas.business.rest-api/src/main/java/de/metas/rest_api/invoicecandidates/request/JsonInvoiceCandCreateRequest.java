@@ -1,17 +1,14 @@
 package de.metas.rest_api.invoicecandidates.request;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.google.common.collect.ImmutableList;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.google.common.collect.ImmutableList;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -61,9 +58,6 @@ public final class JsonInvoiceCandCreateRequest
 	@ApiModelProperty(value = "External reference (document number) on a remote system. Not neccesarily unique, but but the external user will want to filter recrods using it")
 	private String poReference;
 
-	@ApiModelProperty(required = true, value = "If selected, only the billing candidates released for billing will be billed.")
-	private Boolean onlyApprovedForInvoicing;
-
 	@ApiModelProperty(required = true, value = "Ignore invoice schedule.")
 	private Boolean ignoreInvoiceSchedule;
 
@@ -75,28 +69,21 @@ public final class JsonInvoiceCandCreateRequest
 			value = "If this parameter is activated, the invoices to be created receive the current users and locations of their business partners, regardless of the values in Bill_Location and Bill_User that are set in the queued billing candidates.")
 	private Boolean updateLocationAndContactForInvoice;
 
-	@ApiModelProperty(required = false, value = "Accounting net amount.")
-	private BigDecimal check_NetAmtToInvoice;
-
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonInvoiceCandCreateRequest(
 			@JsonProperty("jsonInvoices") @Singular final List<JsonInvoiceCandidates> jsonInvoices,
-			@JsonProperty("check_NetAmtToInvoice") final BigDecimal check_NetAmtToInvoice,
 			@JsonProperty("dateInvoiced") final LocalDate dateInvoiced,
 			@JsonProperty("dateAcct") final LocalDate dateAcct,
 			@JsonProperty("poReference") final String poReference,
-			@JsonProperty("onlyApprovedForInvoicing") final @NonNull Boolean onlyApprovedForInvoicing,
 			@JsonProperty("ignoreInvoiceSchedule") final @NonNull Boolean ignoreInvoiceSchedule,
 			@JsonProperty("supplementMissingPaymentTermIds") final @NonNull Boolean supplementMissingPaymentTermIds,
 			@JsonProperty("updateLocationAndContactForInvoice") final @NonNull Boolean updateLocationAndContactForInvoice)
 	{
 		this.jsonInvoices = ImmutableList.copyOf(jsonInvoices);
 		this.poReference = poReference;
-		this.check_NetAmtToInvoice = check_NetAmtToInvoice;
 		this.dateAcct = dateAcct;
 		this.dateInvoiced = dateInvoiced;
-		this.onlyApprovedForInvoicing = onlyApprovedForInvoicing;
 		this.ignoreInvoiceSchedule = ignoreInvoiceSchedule;
 		this.supplementMissingPaymentTermIds = supplementMissingPaymentTermIds;
 		this.updateLocationAndContactForInvoice = updateLocationAndContactForInvoice;

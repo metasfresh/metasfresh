@@ -1,8 +1,6 @@
 package de.metas.rest_api.invoicecandidates.impl;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -18,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.Profiles;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
@@ -30,8 +30,8 @@ import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandCreateRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidates;
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandCreateResponse;
 import de.metas.rest_api.utils.JsonErrors;
-import de.metas.security.permissions.Access;
 import de.metas.util.Services;
+import de.metas.util.rest.ExternalId;
 import lombok.NonNull;
 
 /*
@@ -59,8 +59,7 @@ import lombok.NonNull;
 @RestController
 @RequestMapping(InvoiceCandidatesRestEndpoint.ENDPOINT)
 @Profile(Profiles.PROFILE_App)
-class InvoiceCandidatesRestControllerImpl implements InvoiceCandidatesRestEndpoint
-{
+class InvoiceCandidatesRestControllerImpl implements InvoiceCandidatesRestEndpoint {
 
 	private static final Logger logger = LogManager.getLogger(InvoiceCandidatesRestControllerImpl.class);
 
@@ -68,25 +67,20 @@ class InvoiceCandidatesRestControllerImpl implements InvoiceCandidatesRestEndpoi
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final InvoiceJsonConverters jsonConverters;
 
-	public InvoiceCandidatesRestControllerImpl(
-			@NonNull final InvoiceJsonConverters jsonConverters)
-	{
+	public InvoiceCandidatesRestControllerImpl(@NonNull final InvoiceJsonConverters jsonConverters) {
 		this.jsonConverters = jsonConverters;
 	}
-	
-	@PostMapping(consumes={"application/json"})
+
+	@PostMapping(consumes = { "application/json" })
 	@Override
-	public ResponseEntity<JsonInvoiceCandCreateResponse> createInvoices(@RequestBody @NonNull final JsonInvoiceCandCreateRequest request)
-	{
-		try
-		{
+	public ResponseEntity<JsonInvoiceCandCreateResponse> createInvoices(
+			@RequestBody @NonNull final JsonInvoiceCandCreateRequest request) {
+		try {
 			PInstanceId pInstanceId = getPInstanceId();
 			createAndExecuteICQueryBuilder(request.getJsonInvoices(), pInstanceId);
 
 			final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
-					.setContext(Env.getCtx())
-					.setInvoicingParams(createInvoicingParams(request))
-					.setFailIfNothingEnqueued(true)
+					.setInvoicingParams(createInvoicingParams(request)).setFailIfNothingEnqueued(true)
 					.enqueueSelection(pInstanceId);
 
 			final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -94,9 +88,7 @@ class InvoiceCandidatesRestControllerImpl implements InvoiceCandidatesRestEndpoi
 			response = trxManager.callInNewTrx(() -> jsonConverters.toJson(enqueueResult));
 
 			return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
-		}
-		catch (final Exception ex)
-		{
+		} catch (final Exception ex) {
 			logger.warn("Got exception while processing {}", request, ex);
 
 			final String adLanguage = Env.getADLanguageOrBaseLanguage();
@@ -105,57 +97,39 @@ class InvoiceCandidatesRestControllerImpl implements InvoiceCandidatesRestEndpoi
 		}
 	}
 
-
-	@PostMapping(PATH_TEST)
-	@Override
-	public void receiveRequest()
-	{
-		System.out.println("Test 1234");
-	}
-
-	private void createAndExecuteICQueryBuilder(List<JsonInvoiceCandidates> jsonInvoices, PInstanceId pInstanceId)
-	{
+	private void createAndExecuteICQueryBuilder(List<JsonInvoiceCandidates> jsonInvoices, PInstanceId pInstanceId) {
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, true)
-				.setJoinOr();
-		List<String> ids = new ArrayList<>();
-		jsonInvoices.stream().forEach(p -> ids.addAll(p.getExternalLineIds().stream().map(e -> e.getValue()).collect(Collectors.toList())));
-
-		for (final JsonInvoiceCandidates cand : jsonInvoices)
-		{
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
+				.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, true).setJoinOr();
+		ImmutableList<String> ids = jsonInvoices.stream()
+				.flatMap(jsonInvoice -> jsonInvoice.getExternalLineIds().stream()).map(ExternalId::getValue)
+				.collect(ImmutableList.toImmutableList());
+		for (final JsonInvoiceCandidates cand : jsonInvoices) {
 			final ICompositeQueryFilter<I_C_Invoice_Candidate> invoiceCandidatesFilter = queryBL
-					.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
-					.addOnlyActiveRecordsFilter()
+					.createCompositeQueryFilter(I_C_Invoice_Candidate.class).addOnlyActiveRecordsFilter()
 					.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_ExternalLineId, ids)
 					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_ExternalHeaderId, cand.getExternalHeaderId());
 
 			queryBuilder.filter(invoiceCandidatesFilter);
 		}
 
-		queryBuilder
-				.create()
-//				.setRequiredAccess(Access.READ)
-				.createSelection(pInstanceId);
+		queryBuilder.create().createSelection(pInstanceId);
 	}
 
-	private InvoicingParamsObject createInvoicingParams(JsonInvoiceCandCreateRequest request)
-	{
+	private InvoicingParamsObject createInvoicingParams(JsonInvoiceCandCreateRequest request) {
 		InvoicingParamsObject invoicingParams = new InvoicingParamsObject();
-		invoicingParams.setCheck_NetAmtToInvoice(request.getCheck_NetAmtToInvoice());
 		invoicingParams.setDateAcct(request.getDateAcct());
 		invoicingParams.setDateInvoiced(request.getDateInvoiced());
 		invoicingParams.setIgnoreInvoiceSchedule(request.getIgnoreInvoiceSchedule());
-		invoicingParams.setOnlyApprovedForInvoicing(request.getOnlyApprovedForInvoicing());
 		invoicingParams.setPOReference(request.getPoReference());
 		invoicingParams.setSupplementMissingPaymentTermIds(request.getSupplementMissingPaymentTermIds());
 		invoicingParams.setUpdateLocationAndContactForInvoice(request.getUpdateLocationAndContactForInvoice());
 		return invoicingParams;
 	}
 
-	private PInstanceId getPInstanceId()
-	{
+	private PInstanceId getPInstanceId() {
 		return adPInstanceDAO.createSelectionId();
 	}
 }
