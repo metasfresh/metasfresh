@@ -660,17 +660,18 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		if (referingAggregators > 0)
 		{
-			// Note: we invalidate *every* candidate, so there is no need to use the different IInvoiceCandidateHandler
-			// implementations.
+			// Note: we invalidate *every* candidate, so there is no need to use the different IInvoiceCandidateHandler implementations.
 			invalidateAllCands(ctx, trxName);
 		}
 	}
 
 	@Override
-	public void invalidateCandsThatReference(TableRecordReference recordReference)
+	public void invalidateCandsThatReference(@NonNull final TableRecordReference recordReference)
 	{
-		// TODO Auto-generated method stub
-
+		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = retrieveInvoiceCandidatesForRecordQuery(recordReference)
+				// Not already processed
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false);
+		invalidateCandsFor(icQueryBuilder);
 	}
 
 	@Override

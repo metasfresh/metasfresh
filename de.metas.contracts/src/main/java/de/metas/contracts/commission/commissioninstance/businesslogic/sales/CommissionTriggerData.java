@@ -1,4 +1,4 @@
-package de.metas.contracts.commission.commissioninstance.businesslogic;
+package de.metas.contracts.commission.commissioninstance.businesslogic.sales;
 
 import static de.metas.util.lang.CoalesceUtil.coalesce;
 
@@ -7,6 +7,7 @@ import java.time.Instant;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import lombok.Builder;
 import lombok.NonNull;

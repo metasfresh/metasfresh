@@ -38,6 +38,8 @@ import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
@@ -52,6 +54,7 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -188,6 +191,11 @@ public interface IFlatrateDAO extends ISingletonService
 	}
 
 	List<I_C_Flatrate_Term> retrieveTerms(Collection<FlatrateTermId> flatrateTermIds);
+
+	default I_C_Flatrate_Term retrieveTerm(@NonNull final FlatrateTermId flatrateTermId)
+	{
+		return CollectionUtils.singleElement(retrieveTerms(ImmutableList.of(flatrateTermId)));
+	}
 
 	List<I_M_Product> retrieveHoldingFeeProducts(I_C_Flatrate_Conditions c_Flatrate_Conditions);
 

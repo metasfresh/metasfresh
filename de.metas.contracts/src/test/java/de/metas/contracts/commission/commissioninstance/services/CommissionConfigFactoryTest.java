@@ -12,11 +12,12 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
+import  de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.Beneficiary;
+import de.metas.contracts.commission.CommissionConstants;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionType;
@@ -24,7 +25,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyContract;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory.ContractRequest;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
+
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.engine.IDocument;
@@ -85,7 +86,13 @@ class CommissionConfigFactoryTest
 		final ProductId productId = ProductId.ofRepoId(33);
 		final LocalDate date = LocalDate.now();
 
+		final I_C_HierarchyCommissionSettings settingsRecord = newInstance(I_C_HierarchyCommissionSettings.class);
+		settingsRecord.setIsSubtractLowerLevelCommissionFromBase(true);
+		settingsRecord.setPercentOfBasePoints(new BigDecimal("20"));
+		saveRecord(settingsRecord);
+
 		final I_C_Flatrate_Conditions flatrateConditions = newInstance(I_C_Flatrate_Conditions.class);
+		flatrateConditions.setC_HierarchyCommissionSettings_ID(settingsRecord.getC_HierarchyCommissionSettings_ID());
 		flatrateConditions.setType_Conditions(CommissionConstants.TYPE_CONDITIONS_COMMISSION);
 		flatrateConditions.setDocStatus(IDocument.STATUS_Completed);
 		saveRecord(flatrateConditions);
@@ -95,11 +102,6 @@ class CommissionConfigFactoryTest
 		flatrateMatchingRecord.setM_Product_ID(productId.getRepoId());
 		saveRecord(flatrateMatchingRecord);
 
-		final I_C_HierarchyCommissionSettings settingsRecord = newInstance(I_C_HierarchyCommissionSettings.class);
-		settingsRecord.setC_Flatrate_Conditions_ID(flatrateConditions.getC_Flatrate_Conditions_ID());
-		settingsRecord.setIsSubtractLowerLevelCommissionFromBase(true);
-		settingsRecord.setPercentOfBasePoints(new BigDecimal("20"));
-		saveRecord(settingsRecord);
 
 		createFlatrateTerm(salesRepLvl0Id, date, flatrateConditions);
 		createFlatrateTerm(salesRepLvl1Id, date, flatrateConditions);

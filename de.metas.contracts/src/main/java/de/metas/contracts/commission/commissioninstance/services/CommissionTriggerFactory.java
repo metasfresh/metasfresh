@@ -1,7 +1,6 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import java.util.Optional;
 
 import org.compiere.util.TimeUtil;
@@ -10,7 +9,7 @@ import org.springframework.stereotype.Service;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.Customer;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionTrigger;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTrigger;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionTriggerDataRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -50,7 +49,7 @@ public class CommissionTriggerFactory
 
 	public Optional<CommissionTrigger> createForId(@NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
-		final I_C_Invoice_Candidate icRecord = loadOutOfTrx(invoiceCandidateId, I_C_Invoice_Candidate.class);
+		final I_C_Invoice_Candidate icRecord = load(invoiceCandidateId, I_C_Invoice_Candidate.class);
 		return createForRecord(icRecord);
 	}
 

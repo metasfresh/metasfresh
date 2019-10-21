@@ -15,15 +15,15 @@ import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.Customer;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionShare;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionState;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionTrigger;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionTriggerChange;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionTriggerData;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CreateInstanceRequest;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyNode;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTrigger;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerChange;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerData;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionState;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -118,7 +118,7 @@ class HierachyAlgorithmTest
 		assertThat(instance.getCurrentTriggerData()).isEqualTo(triggerData);
 		assertThat(instance.getConfig()).isEqualTo(config);
 
-		final ImmutableList<CommissionShare> shares = instance.getShares();
+		final ImmutableList<SalesCommissionShare> shares = instance.getShares();
 		assertThat(shares).hasSize(3);
 
 		assertThat(shares.get(0)).satisfies(share -> {
@@ -129,9 +129,9 @@ class HierachyAlgorithmTest
 			assertThat(share.getFacts())
 					.extracting("state", "points")
 					.containsExactly(
-							tuple(CommissionState.FORECASTED, CommissionPoints.of("100.00")),
-							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("10.00")),
-							tuple(CommissionState.INVOICED, CommissionPoints.of("1.00")));
+							tuple(SalesCommissionState.FORECASTED, CommissionPoints.of("100.00")),
+							tuple(SalesCommissionState.INVOICEABLE, CommissionPoints.of("10.00")),
+							tuple(SalesCommissionState.INVOICED, CommissionPoints.of("1.00")));
 		});
 
 		assertThat(shares.get(1)).satisfies(share -> {
@@ -142,9 +142,9 @@ class HierachyAlgorithmTest
 			assertThat(share.getFacts())
 					.extracting("state", "points")
 					.containsExactly(
-							tuple(CommissionState.FORECASTED, CommissionPoints.of("90.00")/* remaining commission base=900 */),
-							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("9.00")),
-							tuple(CommissionState.INVOICED, CommissionPoints.of("0.90")));
+							tuple(SalesCommissionState.FORECASTED, CommissionPoints.of("90.00")/* remaining commission base=900 */),
+							tuple(SalesCommissionState.INVOICEABLE, CommissionPoints.of("9.00")),
+							tuple(SalesCommissionState.INVOICED, CommissionPoints.of("0.90")));
 		});
 
 		assertThat(shares.get(2)).satisfies(share -> {
@@ -155,9 +155,9 @@ class HierachyAlgorithmTest
 			assertThat(share.getFacts())
 					.extracting("state", "points")
 					.containsExactly(
-							tuple(CommissionState.FORECASTED, CommissionPoints.of("81.00")/* remaining commission base=810 */),
-							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("8.10")),
-							tuple(CommissionState.INVOICED, CommissionPoints.of("0.81")));
+							tuple(SalesCommissionState.FORECASTED, CommissionPoints.of("81.00")/* remaining commission base=810 */),
+							tuple(SalesCommissionState.INVOICEABLE, CommissionPoints.of("8.10")),
+							tuple(SalesCommissionState.INVOICED, CommissionPoints.of("0.81")));
 		});
 
 		return instance;
@@ -184,7 +184,7 @@ class HierachyAlgorithmTest
 		new HierachyAlgorithm().applyTriggerChangeToShares(change);
 
 		assertThat(instance).isNotNull();
-		final ImmutableList<CommissionShare> shares = instance.getShares();
+		final ImmutableList<SalesCommissionShare> shares = instance.getShares();
 		assertThat(shares).hasSize(3);
 
 		assertThat(shares.get(0)).satisfies(share -> {
@@ -193,13 +193,13 @@ class HierachyAlgorithmTest
 			assertThat(share.getFacts())
 					.extracting("state", "points")
 					.containsExactly(
-							tuple(CommissionState.FORECASTED, CommissionPoints.of("100.00")),
-							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("10.00")),
-							tuple(CommissionState.INVOICED, CommissionPoints.of("1.00")),
+							tuple(SalesCommissionState.FORECASTED, CommissionPoints.of("100.00")),
+							tuple(SalesCommissionState.INVOICEABLE, CommissionPoints.of("10.00")),
+							tuple(SalesCommissionState.INVOICED, CommissionPoints.of("1.00")),
 
-							tuple(CommissionState.FORECASTED, CommissionPoints.of("-100.00")),
-							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("-10.00")),
-							tuple(CommissionState.INVOICED, CommissionPoints.of("110.00")));
+							tuple(SalesCommissionState.FORECASTED, CommissionPoints.of("-100.00")),
+							tuple(SalesCommissionState.INVOICEABLE, CommissionPoints.of("-10.00")),
+							tuple(SalesCommissionState.INVOICED, CommissionPoints.of("110.00")));
 		});
 
 		assertThat(shares.get(1)).satisfies(share -> {
@@ -208,13 +208,13 @@ class HierachyAlgorithmTest
 			assertThat(share.getFacts())
 					.extracting("state", "points")
 					.containsExactly(
-							tuple(CommissionState.FORECASTED, CommissionPoints.of("90.00")),
-							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("9.00")),
-							tuple(CommissionState.INVOICED, CommissionPoints.of("0.90")),
+							tuple(SalesCommissionState.FORECASTED, CommissionPoints.of("90.00")),
+							tuple(SalesCommissionState.INVOICEABLE, CommissionPoints.of("9.00")),
+							tuple(SalesCommissionState.INVOICED, CommissionPoints.of("0.90")),
 
-							tuple(CommissionState.FORECASTED, CommissionPoints.of("-90.00")),
-							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("-9.00")),
-							tuple(CommissionState.INVOICED, CommissionPoints.of("99.00")));
+							tuple(SalesCommissionState.FORECASTED, CommissionPoints.of("-90.00")),
+							tuple(SalesCommissionState.INVOICEABLE, CommissionPoints.of("-9.00")),
+							tuple(SalesCommissionState.INVOICED, CommissionPoints.of("99.00")));
 		});
 		assertThat(shares.get(2)).satisfies(share -> {
 			assertThat(share).extracting("forecastedPointsSum", "invoiceablePointsSum", "invoicedPointsSum")
@@ -222,13 +222,13 @@ class HierachyAlgorithmTest
 			assertThat(share.getFacts())
 					.extracting("state", "points")
 					.containsExactly(
-							tuple(CommissionState.FORECASTED, CommissionPoints.of("81.00")),
-							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("8.10")),
-							tuple(CommissionState.INVOICED, CommissionPoints.of("0.81")),
+							tuple(SalesCommissionState.FORECASTED, CommissionPoints.of("81.00")),
+							tuple(SalesCommissionState.INVOICEABLE, CommissionPoints.of("8.10")),
+							tuple(SalesCommissionState.INVOICED, CommissionPoints.of("0.81")),
 
-							tuple(CommissionState.FORECASTED, CommissionPoints.of("-81.00")),
-							tuple(CommissionState.INVOICEABLE, CommissionPoints.of("-8.10")),
-							tuple(CommissionState.INVOICED, CommissionPoints.of("89.10")));
+							tuple(SalesCommissionState.FORECASTED, CommissionPoints.of("-81.00")),
+							tuple(SalesCommissionState.INVOICEABLE, CommissionPoints.of("-8.10")),
+							tuple(SalesCommissionState.INVOICED, CommissionPoints.of("89.10")));
 		});
 	}
 }

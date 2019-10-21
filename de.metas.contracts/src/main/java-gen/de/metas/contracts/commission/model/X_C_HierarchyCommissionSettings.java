@@ -15,7 +15,7 @@ public class X_C_HierarchyCommissionSettings extends org.compiere.model.PO imple
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -524542521L;
+	private static final long serialVersionUID = -1238116602L;
 
     /** Standard Constructor */
     public X_C_HierarchyCommissionSettings (Properties ctx, int C_HierarchyCommissionSettings_ID, String trxName)
@@ -23,9 +23,9 @@ public class X_C_HierarchyCommissionSettings extends org.compiere.model.PO imple
       super (ctx, C_HierarchyCommissionSettings_ID, trxName);
       /** if (C_HierarchyCommissionSettings_ID == 0)
         {
-			setC_Flatrate_Conditions_ID (0);
 			setC_HierarchyCommissionSettings_ID (0);
 			setIsSubtractLowerLevelCommissionFromBase (true); // Y
+			setName (null);
 			setPercentOfBasePoints (BigDecimal.ZERO);
         } */
     }
@@ -44,28 +44,6 @@ public class X_C_HierarchyCommissionSettings extends org.compiere.model.PO imple
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	/** Set Vertragsbedingungen.
-		@param C_Flatrate_Conditions_ID Vertragsbedingungen	  */
-	@Override
-	public void setC_Flatrate_Conditions_ID (int C_Flatrate_Conditions_ID)
-	{
-		if (C_Flatrate_Conditions_ID < 1) 
-			set_Value (COLUMNNAME_C_Flatrate_Conditions_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Flatrate_Conditions_ID, Integer.valueOf(C_Flatrate_Conditions_ID));
-	}
-
-	/** Get Vertragsbedingungen.
-		@return Vertragsbedingungen	  */
-	@Override
-	public int getC_Flatrate_Conditions_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Conditions_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
 
 	/** Set Einstellungen für Hierachie-Provisionsverträge.
 		@param C_HierarchyCommissionSettings_ID Einstellungen für Hierachie-Provisionsverträge	  */
@@ -87,6 +65,22 @@ public class X_C_HierarchyCommissionSettings extends org.compiere.model.PO imple
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Beschreibung.
+		@param Description Beschreibung	  */
+	@Override
+	public void setDescription (java.lang.String Description)
+	{
+		set_Value (COLUMNNAME_Description, Description);
+	}
+
+	/** Get Beschreibung.
+		@return Beschreibung	  */
+	@Override
+	public java.lang.String getDescription () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
 	/** Set Provision von Basis abziehen.
@@ -113,6 +107,22 @@ public class X_C_HierarchyCommissionSettings extends org.compiere.model.PO imple
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Name.
+		@param Name Name	  */
+	@Override
+	public void setName (java.lang.String Name)
+	{
+		set_Value (COLUMNNAME_Name, Name);
+	}
+
+	/** Get Name.
+		@return Name	  */
+	@Override
+	public java.lang.String getName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
 	/** Set % der Basispunkte.

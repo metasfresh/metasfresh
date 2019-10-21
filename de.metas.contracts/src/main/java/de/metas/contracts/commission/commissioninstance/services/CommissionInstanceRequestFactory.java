@@ -11,9 +11,9 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionTrigger;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CreateInstanceRequest;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTrigger;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory.ContractRequest;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -59,6 +59,7 @@ public class CommissionInstanceRequestFactory
 		this.commissionTriggerFactory = commissionTriggerFactory;
 	}
 
+	/** note: if the given IC is a "commission-product-IC, then there won't be reequests because these IC's don't have a sales rep */
 	public ImmutableList<CreateInstanceRequest> createRequestsFor(@NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
 		final I_C_Invoice_Candidate icRecord = loadOutOfTrx(invoiceCandidateId, I_C_Invoice_Candidate.class);
@@ -67,7 +68,11 @@ public class CommissionInstanceRequestFactory
 
 	private ImmutableList<CreateInstanceRequest> createRequestFor(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final BPartnerId salesRepBPartnerId = BPartnerId.ofRepoId(icRecord.getC_BPartner_SalesRep_ID());
+		final BPartnerId salesRepBPartnerId = BPartnerId.ofRepoIdOrNull(icRecord.getC_BPartner_SalesRep_ID());
+		if (salesRepBPartnerId == null)
+		{
+			return ImmutableList.of();
+		}
 
 		final ContractRequest contractRequest = ContractRequest.builder()
 				.bPartnerId(salesRepBPartnerId)
@@ -96,7 +101,10 @@ public class CommissionInstanceRequestFactory
 		return result.build();
 	}
 
-	private CreateInstanceRequest createRequest(final Hierarchy hierarchy, final CommissionConfig config, final CommissionTrigger trigger)
+	private CreateInstanceRequest createRequest(
+			@NonNull final Hierarchy hierarchy,
+			@NonNull final CommissionConfig config,
+			@NonNull final CommissionTrigger trigger)
 	{
 		final CreateInstanceRequest request = CreateInstanceRequest.builder()
 				.config(config)

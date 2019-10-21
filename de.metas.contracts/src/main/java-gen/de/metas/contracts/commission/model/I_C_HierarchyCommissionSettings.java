@@ -59,29 +59,6 @@ public interface I_C_HierarchyCommissionSettings
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Vertragsbedingungen.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_Flatrate_Conditions_ID (int C_Flatrate_Conditions_ID);
-
-	/**
-	 * Get Vertragsbedingungen.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_Flatrate_Conditions_ID();
-
-    /** Column definition for C_Flatrate_Conditions_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object> COLUMN_C_Flatrate_Conditions_ID = new org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object>(I_C_HierarchyCommissionSettings.class, "C_Flatrate_Conditions_ID", null);
-    /** Column name C_Flatrate_Conditions_ID */
-    public static final String COLUMNNAME_C_Flatrate_Conditions_ID = "C_Flatrate_Conditions_ID";
-
-	/**
 	 * Set Einstellungen für Hierachie-Provisionsverträge.
 	 *
 	 * <br>Type: ID
@@ -133,6 +110,29 @@ public interface I_C_HierarchyCommissionSettings
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Beschreibung.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDescription (java.lang.String Description);
+
+	/**
+	 * Get Beschreibung.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDescription();
+
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object>(I_C_HierarchyCommissionSettings.class, "Description", null);
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -181,6 +181,29 @@ public interface I_C_HierarchyCommissionSettings
     public static final org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object> COLUMN_IsSubtractLowerLevelCommissionFromBase = new org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object>(I_C_HierarchyCommissionSettings.class, "IsSubtractLowerLevelCommissionFromBase", null);
     /** Column name IsSubtractLowerLevelCommissionFromBase */
     public static final String COLUMNNAME_IsSubtractLowerLevelCommissionFromBase = "IsSubtractLowerLevelCommissionFromBase";
+
+	/**
+	 * Set Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setName (java.lang.String Name);
+
+	/**
+	 * Get Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getName();
+
+    /** Column definition for Name */
+    public static final org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object>(I_C_HierarchyCommissionSettings.class, "Name", null);
+    /** Column name Name */
+    public static final String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Set % der Basispunkte.

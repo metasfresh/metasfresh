@@ -129,7 +129,7 @@ public class C_Invoice_Candidate
 					I_C_Invoice_Candidate.COLUMNNAME_QtyDelivered,
 					I_C_Invoice_Candidate.COLUMNNAME_QtyDeliveredInUOM,
 					I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate })
-	public void invalidateCandidatesAfterChange(final I_C_Invoice_Candidate ic)
+	public void invalidateCandidatesAfterChange(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		invalidateCandidates0(ic);
 	}

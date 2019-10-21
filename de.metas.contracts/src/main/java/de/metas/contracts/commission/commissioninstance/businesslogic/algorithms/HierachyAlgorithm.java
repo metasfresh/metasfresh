@@ -7,19 +7,19 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionAlgorithm;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionFact;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionShare;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionState;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionTrigger;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionTriggerChange;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionTriggerData;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CreateInstanceRequest;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance.CommissionInstanceBuilder;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyNode;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTrigger;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerChange;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerData;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionFact;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionState;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -62,9 +62,8 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 				.currentTriggerData(triggerData)
 				.config(config);
 
-		final ImmutableList<CommissionShare> shares = createNewShares(config, hierarchy, trigger);
+		final ImmutableList<SalesCommissionShare> shares = createNewShares(config, hierarchy, trigger);
 		result.shares(shares);
-
 
 		createAndAddFacts(shares,
 				triggerData.getTimestamp(),
@@ -75,12 +74,12 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 		return result.build();
 	}
 
-	private ImmutableList<CommissionShare> createNewShares(
+	private ImmutableList<SalesCommissionShare> createNewShares(
 			final HierarchyConfig config,
 			final Hierarchy hierarchy,
 			final CommissionTrigger trigger)
 	{
-		final ImmutableList.Builder<CommissionShare> shares = ImmutableList.builder();
+		final ImmutableList.Builder<SalesCommissionShare> shares = ImmutableList.builder();
 
 		HierarchyLevel currentLevel = HierarchyLevel.ZERO;
 
@@ -88,8 +87,13 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 		{
 			final Beneficiary beneficiary = node.getBeneficiary();
 			final HierarchyContract contract = HierarchyContract.cast(config.getContractFor(beneficiary));
+			if (contract == null)
+			{
+				// current hierarchy member doesn't have a contract; skip it.
+				continue;
 
-			final CommissionShare share = CommissionShare.builder()
+			}
+			final SalesCommissionShare share = SalesCommissionShare.builder()
 					.beneficiary(beneficiary)
 					.level(currentLevel)
 					.contract(contract)
@@ -113,7 +117,7 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 		final CommissionPoints toInvoiceBaseDelta = newTriggerData.getInvoiceablePoints().subtract(oldTriggerData.getInvoiceablePoints());
 		final CommissionPoints invoicedBaseDelta = newTriggerData.getInvoicedPoints().subtract(oldTriggerData.getInvoicedPoints());
 
-		final ImmutableList<CommissionShare> sharesToChange = instanceToChange.getShares();
+		final ImmutableList<SalesCommissionShare> sharesToChange = instanceToChange.getShares();
 
 		createAndAddFacts(
 				sharesToChange,
@@ -124,7 +128,7 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 	}
 
 	private void createAndAddFacts(
-			@NonNull final ImmutableList<CommissionShare> shares,
+			@NonNull final ImmutableList<SalesCommissionShare> shares,
 			@NonNull final Instant timestamp,
 			@NonNull final CommissionPoints initialForecastedBase,
 			@NonNull final CommissionPoints initialToInvoiceBase,
@@ -134,13 +138,13 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 		CommissionPoints currentToInvoiceBase = initialToInvoiceBase;
 		CommissionPoints currentInvoicedBase = initialInvoicedBase;
 
-		for (final CommissionShare share : shares)
+		for (final SalesCommissionShare share : shares)
 		{
 			final HierarchyContract contract = HierarchyContract.cast(share.getContract());
 
-			final Optional<CommissionFact> forecastedFact = createFact(timestamp, contract, CommissionState.FORECASTED, currentForecastedBase);
-			final Optional<CommissionFact> toInvoiceFact = createFact(timestamp, contract, CommissionState.INVOICEABLE, currentToInvoiceBase);
-			final Optional<CommissionFact> invoicedFact = createFact(timestamp, contract, CommissionState.INVOICED, currentInvoicedBase);
+			final Optional<SalesCommissionFact> forecastedFact = createFact(timestamp, contract, SalesCommissionState.FORECASTED, currentForecastedBase);
+			final Optional<SalesCommissionFact> toInvoiceFact = createFact(timestamp, contract, SalesCommissionState.INVOICEABLE, currentToInvoiceBase);
+			final Optional<SalesCommissionFact> invoicedFact = createFact(timestamp, contract, SalesCommissionState.INVOICED, currentInvoicedBase);
 
 			forecastedFact.ifPresent(share::addFact);
 			toInvoiceFact.ifPresent(share::addFact);
@@ -149,17 +153,17 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 			final HierarchyConfig config = contract.getConfig();
 			if (config.isSubtractLowerLevelCommissionFromBase())
 			{
-				currentForecastedBase = currentForecastedBase.subtract(forecastedFact.map(CommissionFact::getPoints).orElse(CommissionPoints.ZERO));
-				currentToInvoiceBase = currentToInvoiceBase.subtract(toInvoiceFact.map(CommissionFact::getPoints).orElse(CommissionPoints.ZERO));
-				currentInvoicedBase = currentInvoicedBase.subtract(invoicedFact.map(CommissionFact::getPoints).orElse(CommissionPoints.ZERO));
+				currentForecastedBase = currentForecastedBase.subtract(forecastedFact.map(SalesCommissionFact::getPoints).orElse(CommissionPoints.ZERO));
+				currentToInvoiceBase = currentToInvoiceBase.subtract(toInvoiceFact.map(SalesCommissionFact::getPoints).orElse(CommissionPoints.ZERO));
+				currentInvoicedBase = currentInvoicedBase.subtract(invoicedFact.map(SalesCommissionFact::getPoints).orElse(CommissionPoints.ZERO));
 			}
 		}
 	}
 
-	private Optional<CommissionFact> createFact(
+	private Optional<SalesCommissionFact> createFact(
 			final Instant timestamp,
 			final HierarchyContract contract,
-			final CommissionState state,
+			final SalesCommissionState state,
 			final CommissionPoints base)
 	{
 		final CommissionPoints percentage = base.computePercentageOf(
@@ -171,7 +175,7 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 			return Optional.empty();
 		}
 
-		final CommissionFact fact = CommissionFact.builder()
+		final SalesCommissionFact fact = SalesCommissionFact.builder()
 				.state(state)
 				.points(percentage)
 				.timestamp(timestamp)

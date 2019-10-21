@@ -1,10 +1,11 @@
-package de.metas.contracts.commission.commissioninstance.businesslogic;
+package de.metas.contracts.commission.commissioninstance.businesslogic.sales;
 
 import java.time.Instant;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -32,21 +33,20 @@ import lombok.Value;
  */
 
 @Value
-
-public class CommissionFact
+public class SalesCommissionFact
 {
 	/** This fact's timestamp; note that we need chronology, but don't care for a particular timezone. */
 	Instant timestamp;
 
-	CommissionState state;
+	SalesCommissionState state;
 
 	CommissionPoints points;
 
 	@JsonCreator
 	@Builder
-	private CommissionFact(
+	private SalesCommissionFact(
 			@JsonProperty("timestamp") @NonNull final Instant timestamp,
-			@JsonProperty("state") @NonNull final CommissionState state,
+			@JsonProperty("state") @NonNull final SalesCommissionState state,
 			@JsonProperty("points") @NonNull final CommissionPoints points)
 	{
 		this.timestamp = timestamp;

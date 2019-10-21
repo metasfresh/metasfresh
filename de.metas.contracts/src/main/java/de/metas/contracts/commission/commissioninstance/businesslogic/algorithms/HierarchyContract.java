@@ -2,6 +2,8 @@ package de.metas.contracts.commission.commissioninstance.businesslogic.algorithm
 
 import static de.metas.util.Check.assumeGreaterOrEqualToZero;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -11,7 +13,9 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 
 /*
@@ -37,6 +41,8 @@ import lombok.Value;
  */
 
 @Value
+@ToString(exclude = "config" /* avoid StackOVerflowError */)
+@EqualsAndHashCode(exclude = "config")
 public class HierarchyContract implements CommissionContract
 {
 	FlatrateTermId id;
@@ -44,8 +50,12 @@ public class HierarchyContract implements CommissionContract
 	Percent commissionPercent;
 	int pointsPrecision;
 
-	public static HierarchyContract cast(@NonNull final CommissionContract contract)
+	public static HierarchyContract cast(@Nullable final CommissionContract contract)
 	{
+		if (contract == null)
+		{
+			return null;
+		}
 		if (contract instanceof HierarchyContract)
 		{
 			return (HierarchyContract)contract;

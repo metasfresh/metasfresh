@@ -9,6 +9,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.contracts.commission.Beneficiary;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerData;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -48,7 +50,7 @@ public class CommissionInstance
 	private final CommissionConfig config;
 
 	/** Each share means that commission will be paid to some {@link Beneficiary} in accordance to some commission contract and hierarchy. */
-	private final ImmutableList<CommissionShare> shares;
+	private final ImmutableList<SalesCommissionShare> shares;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
@@ -56,7 +58,7 @@ public class CommissionInstance
 			@JsonProperty("id") @Nullable final CommissionInstanceId id,
 			@JsonProperty("currentTriggerData") @NonNull final CommissionTriggerData currentTriggerData,
 			@JsonProperty("config") @NonNull final CommissionConfig config,
-			@JsonProperty("shares") @Singular final List<CommissionShare> shares)
+			@JsonProperty("shares") @Singular final List<SalesCommissionShare> shares)
 	{
 		this.id = id;
 		this.currentTriggerData = currentTriggerData;

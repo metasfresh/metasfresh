@@ -2,16 +2,15 @@ package de.metas.contracts.commission.commissioninstance.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.contracts.commission.commissioninstance.services.InvoiceCandidateService;
+import de.metas.contracts.commission.CommissionConstants;
+import de.metas.contracts.commission.commissioninstance.services.SalesInvoiceCandidateService;
+import de.metas.contracts.commission.commissioninstance.services.SettlementInvoiceCandidateService;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstanceRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -40,15 +39,18 @@ import lombok.NonNull;
 @Component
 public class C_Invoice_Candidate
 {
-	private final InvoiceCandidateService invoiceCandidateService;
-	private CommissionInstanceRepository commissionInstanceRepository;
+	private final SalesInvoiceCandidateService invoiceCandidateService;
+	private final CommissionInstanceRepository commissionInstanceRepository;
+	private final SettlementInvoiceCandidateService settlementInvoiceCandidateService;
 
 	public C_Invoice_Candidate(
-			@NonNull final InvoiceCandidateService invoiceCandidateService,
-			@NonNull final CommissionInstanceRepository commissionInstanceRepository)
+			@NonNull final SalesInvoiceCandidateService invoiceCandidateService,
+			@NonNull final CommissionInstanceRepository commissionInstanceRepository,
+			@NonNull final SettlementInvoiceCandidateService settlementInvoiceCandidateService)
 	{
 		this.invoiceCandidateService = invoiceCandidateService;
 		this.commissionInstanceRepository = commissionInstanceRepository;
+		this.settlementInvoiceCandidateService = settlementInvoiceCandidateService;
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, // we aren't interested in "after-new", because prior to the first revalidation, the ICs isn't in a valid state anyways
@@ -60,18 +62,36 @@ public class C_Invoice_Candidate
 					I_C_Invoice_Candidate.COLUMNNAME_PriceActual })
 	public void createOrUpdateCommissionInstance(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
+		if (icRecord.getM_Product_ID() <= 0 /* ic can't belong to a commission contract */ )
+		{
+			return; // nothing to do
+		}
+
 		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
 
-		Services.get(ITrxManager.class)
-				.getCurrentTrxListenerManagerOrAutoCommit()
-				.newEventListener(TrxEventTiming.AFTER_COMMIT)
-				.registerHandlingMethod(trx -> invoiceCandidateService.createOrUpdateCommissionInstance(invoiceCandidateId));
+		if (CommissionConstants.COMMISSION_PRODUCT_ID.getRepoId() == icRecord.getM_Product_ID())
+		{
+			settlementInvoiceCandidateService.syncSettlementICToCommissionInstance(invoiceCandidateId);
+		}
+		else
+		{
+			invoiceCandidateService.syncSalesICToCommissionInstance(invoiceCandidateId);
+		}
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteCommissionInstance(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
-		commissionInstanceRepository.deleteCommissionRecordsFor(invoiceCandidateId);
+
+		if (CommissionConstants.COMMISSION_PRODUCT_ID.getRepoId() == icRecord.getM_Product_ID())
+		{
+			// TODO: update commission share by deactivating or otherwise discarding facts that reference the settlement IC
+		}
+		else
+		{
+			// TODO: fail delete if there are already invoiced settlement records
+			commissionInstanceRepository.deleteCommissionRecordsForSalesIC(invoiceCandidateId);
+		}
 	}
 }

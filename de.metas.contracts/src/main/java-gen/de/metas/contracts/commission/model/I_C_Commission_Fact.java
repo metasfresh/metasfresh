@@ -109,6 +109,29 @@ public interface I_C_Commission_Fact
     public static final String COLUMNNAME_C_Commission_Share_ID = "C_Commission_Share_ID";
 
 	/**
+	 * Set Provisionsabrechnungskandidat.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Invoice_Candidate_Commission_ID (int C_Invoice_Candidate_Commission_ID);
+
+	/**
+	 * Get Provisionsabrechnungskandidat.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Invoice_Candidate_Commission_ID();
+
+    /** Column definition for C_Invoice_Candidate_Commission_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Commission_Fact, Object> COLUMN_C_Invoice_Candidate_Commission_ID = new org.adempiere.model.ModelColumn<I_C_Commission_Fact, Object>(I_C_Commission_Fact.class, "C_Invoice_Candidate_Commission_ID", null);
+    /** Column name C_Invoice_Candidate_Commission_ID */
+    public static final String COLUMNNAME_C_Invoice_Candidate_Commission_ID = "C_Invoice_Candidate_Commission_ID";
+
+	/**
 	 * Set Status.
 	 *
 	 * <br>Type: List

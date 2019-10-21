@@ -1,5 +1,8 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic;
 
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerChange;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
+
 /*
  * #%L
  * de.metas.commission
@@ -25,7 +28,7 @@ package de.metas.contracts.commission.commissioninstance.businesslogic;
 public interface CommissionAlgorithm
 {
 	/**
-	 * Create a new commission instance with the given {@code trigger} and {@link CommissionShare}s.
+	 * Create a new commission instance with the given {@code trigger} and {@link SalesCommissionShare}s.
 	 * The method is invoked by the framework and can safely assume that no commission instance exists yet (in case that matters).
 	 */
 	CommissionInstance createInstance(CreateInstanceRequest request);

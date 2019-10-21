@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionTriggerChange;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionTriggerData;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CreateInstanceRequest;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerChange;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerData;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstanceRepository;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionTriggerDataRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -38,15 +38,14 @@ import lombok.NonNull;
  */
 
 @Service
-public class InvoiceCandidateService
+public class SalesInvoiceCandidateService
 {
-
 	private final CommissionInstanceRepository commissionInstanceRepository;
 	private final CommissionInstanceRequestFactory commissionInstanceRequestFactory;
 	private final CommissionAlgorithmInvoker commissionAlgorithmInvoker;
-	private CommissionTriggerDataRepository commissionTriggerDataRepository;
+	private final CommissionTriggerDataRepository commissionTriggerDataRepository;
 
-	public InvoiceCandidateService(
+	public SalesInvoiceCandidateService(
 			@NonNull final CommissionInstanceRepository commissionInstanceRepository,
 			@NonNull final CommissionInstanceRequestFactory commissionInstanceRequestFactory,
 			@NonNull final CommissionTriggerDataRepository commissionTriggerDataRepository,
@@ -58,11 +57,15 @@ public class InvoiceCandidateService
 		this.commissionAlgorithmInvoker = commissionAlgorithmInvoker;
 	}
 
-	public void createOrUpdateCommissionInstance(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	/**
+	 * Note: creating/updating commission related records results in the invoice candidate handler framework being fired in order to also keep the commission-settlement IC up to date.
+	 */
+	public void syncSalesICToCommissionInstance(@NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
 		final List<CommissionInstance> instances = commissionInstanceRepository.getForInvoiceCandidateId(invoiceCandidateId);
 		if (instances.isEmpty())
 		{
+			// initially create commission data for the given invoice candidate
 			final ImmutableList<CreateInstanceRequest> requests = commissionInstanceRequestFactory.createRequestsFor(invoiceCandidateId);
 			for (final CreateInstanceRequest request : requests)
 			{
@@ -72,6 +75,7 @@ public class InvoiceCandidateService
 			return;
 		}
 
+		// update existing commission data
 		for (final CommissionInstance instance : instances)
 		{
 			final CommissionTriggerData newTriggerData = commissionTriggerDataRepository.getForInvoiceCandiateId(invoiceCandidateId);
@@ -79,9 +83,9 @@ public class InvoiceCandidateService
 					.instanceToUpdate(instance)
 					.newCommissionTriggerData(newTriggerData)
 					.build();
-			commissionAlgorithmInvoker.applyTriggerChangeToShares(change);
+			commissionAlgorithmInvoker.applyTriggerChangeToSharesOfInstance(change);
 
-			instance.setCurrentTriggerData(newTriggerData); 
+			instance.setCurrentTriggerData(newTriggerData);
 			commissionInstanceRepository.save(instance);
 		}
 	}

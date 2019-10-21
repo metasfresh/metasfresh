@@ -14,6 +14,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -21,10 +22,14 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.contracts.commission.model.I_C_Commission_Instance;
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.commission.CommissionConstants;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
@@ -41,7 +46,6 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxBL;
@@ -73,8 +77,16 @@ import lombok.NonNull;
 
 public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 {
-	public static final ProductId COMMISSION_PRODUCT_ID = ProductId.ofRepoId(540420);
-	public static final DocTypeId COLLISSION_DOCTYPE_ID = DocTypeId.ofRepoId(99999); // TODO
+	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 
 	@Override
 	public Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(int limit_IGNORED)
@@ -85,19 +97,17 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 
 	public IQuery<I_C_Commission_Share> createShareWithMissingICsQuery()
 	{
-		final IQuery<I_C_Commission_Share> termWithMissingCandidateQueryBuilder = Services.get(IQueryBL.class)
+		final IQuery<I_C_Commission_Share> shareWithMissingCandidateQuery = queryBL
 				.createQueryBuilder(I_C_Commission_Share.class)
 				.addOnlyActiveRecordsFilter()
 				.addNotInSubQueryFilter(I_C_Commission_Share.COLUMN_C_Commission_Share_ID, I_C_Invoice_Candidate.COLUMN_Record_ID, createICsThatReferenceSharesQuery())
 				.create();
 
-		return termWithMissingCandidateQueryBuilder;
+		return shareWithMissingCandidateQuery;
 	}
 
 	private IQuery<I_C_Invoice_Candidate> createICsThatReferenceSharesQuery()
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, getTableId(I_C_Commission_Share.class))
@@ -120,39 +130,34 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		ic.setAD_Table_ID(commissionShareRef.getAD_Table_ID());
 		ic.setRecord_ID(commissionShareRef.getRecord_ID());
 
-		// ic.setPOReference(olc.getPOReference());
+		final I_C_Flatrate_Term flatrateTerm = flatrateDAO.retrieveTerm(FlatrateTermId.ofRepoId(commissionShareRecord.getC_Flatrate_Term_ID()));
 
 		// product
-		ic.setM_Product_ID(COMMISSION_PRODUCT_ID.getRepoId());
-
-		// charge
-		// final int chargeId = olc.getC_Charge_ID();
-		// ic.setC_Charge_ID(chargeId);
+		ic.setM_Product_ID(CommissionConstants.COMMISSION_PRODUCT_ID.getRepoId());
 
 		setOrderedData(ic, commissionShareRecord);
+		setDeliveredData(ic);
 
 		ic.setQtyToInvoice(ZERO); // to be computed
 
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-		final IPricingBL pricingBL = Services.get(IPricingBL.class);
-		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(commissionShareRecord.getC_BPartner_SalesRep_ID());
+		final BPartnerLocationId commissionToLocationId = BPartnerLocationId.ofRepoId(flatrateTerm.getBill_BPartner_ID(), flatrateTerm.getBill_Location_ID());
 
 		final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemIdOrNull(bPartnerId, SOTrx.PURCHASE);
-		final BPartnerLocationId commissionToLocationId = bPartnerDAO.getCommissionToDefaultLocationIdByBpartnerId(bPartnerId);
+
 		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, commissionToLocationId, SOTrx.PURCHASE);
 
 		final IEditablePricingContext pricingContext = pricingBL
 				.createInitialContext(
-						COMMISSION_PRODUCT_ID,
+						CommissionConstants.COMMISSION_PRODUCT_ID,
 						bPartnerId,
-						Quantitys.create(ONE, COMMISSION_PRODUCT_ID),
+						Quantitys.create(ONE, CommissionConstants.COMMISSION_PRODUCT_ID),
 						SOTrx.PURCHASE)
 				.setPriceListId(priceListId)
 				.setPriceDate(TimeUtil.asLocalDate(ic.getDateOrdered()));
 
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
+		// TODO throw exception if not calculated
 
 		ic.setInvoicableQtyBasedOn(X_C_Invoice_Candidate.INVOICABLEQTYBASEDON_Nominal);
 		ic.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId));
@@ -164,35 +169,38 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		ic.setPriceEntered(pricingResult.getPriceStd());
 		ic.setDiscount(pricingResult.getDiscount().toBigDecimal());
 
-		I_C_Flatrate_Term term = null; // TODO get term for commission-bpartner
-
-		ic.setBill_BPartner_ID(bPartnerId.getRepoId());
-
 		// bill location
-		ic.setBill_Location_ID(term.getBill_Location_ID());
-		ic.setBill_User_ID(term.getBill_User_ID());
+		ic.setBill_BPartner_ID(bPartnerId.getRepoId());
+		ic.setBill_Location_ID(commissionToLocationId.getRepoId());
+		ic.setBill_User_ID(flatrateTerm.getBill_User_ID());
 
-		ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate); // Immediate
+		ic.setInvoiceRule(flatrateTerm.getC_Flatrate_Conditions().getInvoiceRule());
 
-		// 05265
-		ic.setIsSOTrx(true);
+		ic.setIsSOTrx(false);
 
-		ic.setC_DocTypeInvoice_ID(COLLISSION_DOCTYPE_ID.getRepoId());
+		final DocTypeId docTypeId = docTypeDAO.getDocTypeId(
+				DocTypeQuery.builder()
+						.docBaseType(X_C_DocType.DOCBASETYPE_APInvoice)
+						.docSubType(CommissionConstants.COMMISSION_DOC_SUBTYPE_VALUE)
+						.adClientId(commissionShareRecord.getAD_Client_ID())
+						.adOrgId(commissionShareRecord.getAD_Org_ID())
+						.build());
+		ic.setC_DocTypeInvoice_ID(docTypeId.getRepoId());
 
 		// 07442 activity and tax
 		final OrgId orgId = OrgId.ofRepoId(commissionShareRecord.getAD_Org_ID());
-		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
+
+		final ActivityId activityId = productAcctDAO.retrieveActivityForAcct(
 				ClientId.ofRepoId(commissionShareRecord.getAD_Client_ID()),
 				orgId,
-				COMMISSION_PRODUCT_ID);
+				CommissionConstants.COMMISSION_PRODUCT_ID);
 		ic.setC_Activity_ID(ActivityId.toRepoId(activityId));
 
-		final ITaxBL taxBL = Services.get(ITaxBL.class);
 		final int taxId = taxBL.getTax(
 				Env.getCtx(),
 				ic, // model
 				pricingResult.getTaxCategoryId(),
-				COMMISSION_PRODUCT_ID.getRepoId(),
+				CommissionConstants.COMMISSION_PRODUCT_ID.getRepoId(),
 				ic.getDeliveryDate(),
 				orgId,
 				(WarehouseId)null,
@@ -206,15 +214,14 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	@Override
 	public void invalidateCandidatesFor(@NonNull final Object model)
 	{
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 		invoiceCandDAO.invalidateCandsThatReference(TableRecordReference.of(model));
 	}
 
-	/** @return {@code C_Commission_Instance} */
+	/** @return {@code C_Commission_Share} */
 	@Override
 	public String getSourceTable()
 	{
-		return I_C_Commission_Instance.Table_Name;
+		return I_C_Commission_Share.Table_Name;
 	}
 
 	/** @return {@code false} */
@@ -244,7 +251,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 			@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final I_C_Commission_Share commissionShareRecord)
 	{
-		final UomId uomId = Services.get(IProductBL.class).getStockUOMId(COMMISSION_PRODUCT_ID);
+		final UomId uomId = productBL.getStockUOMId(ic.getM_Product_ID());
 
 		final BigDecimal allPoints = commissionShareRecord.getPointsSum_Forecasted()
 				.add(commissionShareRecord.getPointsSum_Invoiceable())
@@ -262,9 +269,9 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 
 	/**
 	 * <ul>
-	 * <li>QtyDelivered := QtyOrdered
-	 * <li>DeliveryDate := DateOrdered
-	 * <li>M_InOut_ID: untouched
+	 * <li>QtyDelivered := Invoiced quantity of the respective {@code C_Commission_Share}
+	 * <li>DeliveryDate := (latest) DatenInvoiced of the respective {@code C_Commission_Share}'s invoice candidate's invoice
+	 * <li>M_InOut_ID: := -1
 	 * </ul>
 	 *
 	 * @see IInvoiceCandidateHandler#setDeliveredData(I_C_Invoice_Candidate)
@@ -296,5 +303,4 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		final I_C_Commission_Share commissionShareRecord = getCommissionShareRecord(ic);
 		ic.setBill_BPartner_ID(commissionShareRecord.getC_BPartner_SalesRep_ID());
 	}
-
 }

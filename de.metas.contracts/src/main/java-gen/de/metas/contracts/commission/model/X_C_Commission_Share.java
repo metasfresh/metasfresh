@@ -15,7 +15,7 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -525053587L;
+	private static final long serialVersionUID = -50619823L;
 
     /** Standard Constructor */
     public X_C_Commission_Share (Properties ctx, int C_Commission_Share_ID, String trxName)
@@ -31,6 +31,8 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
 			setPointsSum_Forecasted (BigDecimal.ZERO); // 0
 			setPointsSum_Invoiceable (BigDecimal.ZERO); // 0
 			setPointsSum_Invoiced (BigDecimal.ZERO); // 0
+			setPointsSum_Settled (BigDecimal.ZERO); // 0
+			setPointsSum_ToSettle (BigDecimal.ZERO); // 0
         } */
     }
 
@@ -49,8 +51,8 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
       return poi;
     }
 
-	/** Set Vertriebspartner.
-		@param C_BPartner_SalesRep_ID Vertriebspartner	  */
+	/** Set Zugeordneter Vertriebspartner.
+		@param C_BPartner_SalesRep_ID Zugeordneter Vertriebspartner	  */
 	@Override
 	public void setC_BPartner_SalesRep_ID (int C_BPartner_SalesRep_ID)
 	{
@@ -60,8 +62,8 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_SalesRep_ID, Integer.valueOf(C_BPartner_SalesRep_ID));
 	}
 
-	/** Get Vertriebspartner.
-		@return Vertriebspartner	  */
+	/** Get Zugeordneter Vertriebspartner.
+		@return Zugeordneter Vertriebspartner	  */
 	@Override
 	public int getC_BPartner_SalesRep_ID () 
 	{
@@ -187,16 +189,16 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
 		return bd;
 	}
 
-	/** Set Abzurechn. Punktzahl.
-		@param PointsSum_Invoiceable Abzurechn. Punktzahl	  */
+	/** Set Gelieferte Punktzahl.
+		@param PointsSum_Invoiceable Gelieferte Punktzahl	  */
 	@Override
 	public void setPointsSum_Invoiceable (java.math.BigDecimal PointsSum_Invoiceable)
 	{
 		set_ValueNoCheck (COLUMNNAME_PointsSum_Invoiceable, PointsSum_Invoiceable);
 	}
 
-	/** Get Abzurechn. Punktzahl.
-		@return Abzurechn. Punktzahl	  */
+	/** Get Gelieferte Punktzahl.
+		@return Gelieferte Punktzahl	  */
 	@Override
 	public java.math.BigDecimal getPointsSum_Invoiceable () 
 	{
@@ -206,20 +208,58 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
 		return bd;
 	}
 
-	/** Set Abgerechn. Punktzahl.
-		@param PointsSum_Invoiced Abgerechn. Punktzahl	  */
+	/** Set Fakturierte Punktzahl.
+		@param PointsSum_Invoiced Fakturierte Punktzahl	  */
 	@Override
 	public void setPointsSum_Invoiced (java.math.BigDecimal PointsSum_Invoiced)
 	{
 		set_Value (COLUMNNAME_PointsSum_Invoiced, PointsSum_Invoiced);
 	}
 
-	/** Get Abgerechn. Punktzahl.
-		@return Abgerechn. Punktzahl	  */
+	/** Get Fakturierte Punktzahl.
+		@return Fakturierte Punktzahl	  */
 	@Override
 	public java.math.BigDecimal getPointsSum_Invoiced () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PointsSum_Invoiced);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Abgerechnete Punktzahl.
+		@param PointsSum_Settled Abgerechnete Punktzahl	  */
+	@Override
+	public void setPointsSum_Settled (java.math.BigDecimal PointsSum_Settled)
+	{
+		set_Value (COLUMNNAME_PointsSum_Settled, PointsSum_Settled);
+	}
+
+	/** Get Abgerechnete Punktzahl.
+		@return Abgerechnete Punktzahl	  */
+	@Override
+	public java.math.BigDecimal getPointsSum_Settled () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PointsSum_Settled);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Abzurechnende Punktzahl.
+		@param PointsSum_ToSettle Abzurechnende Punktzahl	  */
+	@Override
+	public void setPointsSum_ToSettle (java.math.BigDecimal PointsSum_ToSettle)
+	{
+		set_Value (COLUMNNAME_PointsSum_ToSettle, PointsSum_ToSettle);
+	}
+
+	/** Get Abzurechnende Punktzahl.
+		@return Abzurechnende Punktzahl	  */
+	@Override
+	public java.math.BigDecimal getPointsSum_ToSettle () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PointsSum_ToSettle);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

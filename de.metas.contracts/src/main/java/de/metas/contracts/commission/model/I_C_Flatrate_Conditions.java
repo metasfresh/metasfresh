@@ -1,8 +1,8 @@
-package de.metas.contracts.commission.commissioninstance.businesslogic;
+package de.metas.contracts.commission.model;
 
 /*
  * #%L
- * de.metas.commission
+ * de.metas.contracts
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -13,24 +13,19 @@ package de.metas.contracts.commission.commissioninstance.businesslogic;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-/** Please keep in sync with {@code AD_Reference_ID=541042}. */
-public enum CommissionState
+public interface I_C_Flatrate_Conditions extends de.metas.contracts.model.I_C_Flatrate_Conditions
 {
-	/** Related to an invoice candidate's open (i.e. not-yet-invoiced) QtyOrdered. */
-	FORECASTED,
+	String COLUMNNAME_C_HierarchyCommissionSettings_ID = "C_HierarchyCommissionSettings_ID";
+	int getC_HierarchyCommissionSettings_ID();
+	void setC_HierarchyCommissionSettings_ID(int C_HierarchyCommissionSettings_ID);
 
-	/** Related to an invoice candidate's QtyToInvoice. */
-	INVOICEABLE,
-
-	/** Related to an invoice candidate's QtyInvoiced. */
-	INVOICED
 }

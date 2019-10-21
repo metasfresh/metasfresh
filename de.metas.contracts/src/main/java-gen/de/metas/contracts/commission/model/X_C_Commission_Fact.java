@@ -15,7 +15,7 @@ public class X_C_Commission_Fact extends org.compiere.model.PO implements I_C_Co
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 648158503L;
+	private static final long serialVersionUID = -635621058L;
 
     /** Standard Constructor */
     public X_C_Commission_Fact (Properties ctx, int C_Commission_Fact_ID, String trxName)
@@ -102,6 +102,28 @@ public class X_C_Commission_Fact extends org.compiere.model.PO implements I_C_Co
 		return ii.intValue();
 	}
 
+	/** Set Provisionsabrechnungskandidat.
+		@param C_Invoice_Candidate_Commission_ID Provisionsabrechnungskandidat	  */
+	@Override
+	public void setC_Invoice_Candidate_Commission_ID (int C_Invoice_Candidate_Commission_ID)
+	{
+		if (C_Invoice_Candidate_Commission_ID < 1) 
+			set_Value (COLUMNNAME_C_Invoice_Candidate_Commission_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Invoice_Candidate_Commission_ID, Integer.valueOf(C_Invoice_Candidate_Commission_ID));
+	}
+
+	/** Get Provisionsabrechnungskandidat.
+		@return Provisionsabrechnungskandidat	  */
+	@Override
+	public int getC_Invoice_Candidate_Commission_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Candidate_Commission_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** 
 	 * Commission_Fact_State AD_Reference_ID=541042
 	 * Reference name: C_Commission_Fact_State
@@ -113,6 +135,8 @@ public class X_C_Commission_Fact extends org.compiere.model.PO implements I_C_Co
 	public static final String COMMISSION_FACT_STATE_INVOICEABLE = "INVOICEABLE";
 	/** INVOICED = INVOICED */
 	public static final String COMMISSION_FACT_STATE_INVOICED = "INVOICED";
+	/** SETTLED = SETTLED */
+	public static final String COMMISSION_FACT_STATE_SETTLED = "SETTLED";
 	/** Set Status.
 		@param Commission_Fact_State Status	  */
 	@Override

@@ -59,7 +59,7 @@ public interface I_C_Commission_Share
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Vertriebspartner.
+	 * Set Zugeordneter Vertriebspartner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -68,7 +68,7 @@ public interface I_C_Commission_Share
 	public void setC_BPartner_SalesRep_ID (int C_BPartner_SalesRep_ID);
 
 	/**
-	 * Get Vertriebspartner.
+	 * Get Zugeordneter Vertriebspartner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -252,7 +252,7 @@ public interface I_C_Commission_Share
     public static final String COLUMNNAME_PointsSum_Forecasted = "PointsSum_Forecasted";
 
 	/**
-	 * Set Abzurechn. Punktzahl.
+	 * Set Gelieferte Punktzahl.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -261,7 +261,7 @@ public interface I_C_Commission_Share
 	public void setPointsSum_Invoiceable (java.math.BigDecimal PointsSum_Invoiceable);
 
 	/**
-	 * Get Abzurechn. Punktzahl.
+	 * Get Gelieferte Punktzahl.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -275,7 +275,7 @@ public interface I_C_Commission_Share
     public static final String COLUMNNAME_PointsSum_Invoiceable = "PointsSum_Invoiceable";
 
 	/**
-	 * Set Abgerechn. Punktzahl.
+	 * Set Fakturierte Punktzahl.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -284,7 +284,7 @@ public interface I_C_Commission_Share
 	public void setPointsSum_Invoiced (java.math.BigDecimal PointsSum_Invoiced);
 
 	/**
-	 * Get Abgerechn. Punktzahl.
+	 * Get Fakturierte Punktzahl.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -296,6 +296,52 @@ public interface I_C_Commission_Share
     public static final org.adempiere.model.ModelColumn<I_C_Commission_Share, Object> COLUMN_PointsSum_Invoiced = new org.adempiere.model.ModelColumn<I_C_Commission_Share, Object>(I_C_Commission_Share.class, "PointsSum_Invoiced", null);
     /** Column name PointsSum_Invoiced */
     public static final String COLUMNNAME_PointsSum_Invoiced = "PointsSum_Invoiced";
+
+	/**
+	 * Set Abgerechnete Punktzahl.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPointsSum_Settled (java.math.BigDecimal PointsSum_Settled);
+
+	/**
+	 * Get Abgerechnete Punktzahl.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPointsSum_Settled();
+
+    /** Column definition for PointsSum_Settled */
+    public static final org.adempiere.model.ModelColumn<I_C_Commission_Share, Object> COLUMN_PointsSum_Settled = new org.adempiere.model.ModelColumn<I_C_Commission_Share, Object>(I_C_Commission_Share.class, "PointsSum_Settled", null);
+    /** Column name PointsSum_Settled */
+    public static final String COLUMNNAME_PointsSum_Settled = "PointsSum_Settled";
+
+	/**
+	 * Set Abzurechnende Punktzahl.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPointsSum_ToSettle (java.math.BigDecimal PointsSum_ToSettle);
+
+	/**
+	 * Get Abzurechnende Punktzahl.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPointsSum_ToSettle();
+
+    /** Column definition for PointsSum_ToSettle */
+    public static final org.adempiere.model.ModelColumn<I_C_Commission_Share, Object> COLUMN_PointsSum_ToSettle = new org.adempiere.model.ModelColumn<I_C_Commission_Share, Object>(I_C_Commission_Share.class, "PointsSum_ToSettle", null);
+    /** Column name PointsSum_ToSettle */
+    public static final String COLUMNNAME_PointsSum_ToSettle = "PointsSum_ToSettle";
 
 	/**
 	 * Get Aktualisiert.

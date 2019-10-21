@@ -1,10 +1,7 @@
-package de.metas.contracts.commission.commissioninstance.businesslogic;
+package de.metas.contracts.commission;
 
-import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTrigger;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.product.ProductId;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -28,16 +25,16 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class CreateInstanceRequest
+@UtilityClass
+public class CommissionConstants
 {
-	@NonNull
-	CommissionTrigger trigger;
+	public static final ProductId COMMISSION_PRODUCT_ID = ProductId.ofRepoId(540420);
 
-	@NonNull
-	CommissionConfig config;
+	public static final String COMMISSION_DOC_SUBTYPE_VALUE = "CA";
+	public static final String COMMISSION_DOC_SUBTYPE_VALUENAME = "CommissionSettlement";
 
-	@NonNull
-	Hierarchy hierarchy;
+	/**
+	 * Please keep in sysnc with {@code AD_Ref_List_ID=542010} and various display logic expressions.
+	 */
+	public static final String TYPE_CONDITIONS_COMMISSION = "Commission";
 }

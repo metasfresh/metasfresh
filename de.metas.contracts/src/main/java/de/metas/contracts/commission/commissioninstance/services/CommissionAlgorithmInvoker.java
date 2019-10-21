@@ -5,9 +5,9 @@ import org.springframework.stereotype.Service;
 
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionAlgorithm;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionTriggerChange;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionType;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CreateInstanceRequest;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerChange;
 import lombok.NonNull;
 
 /*
@@ -52,7 +52,7 @@ public class CommissionAlgorithmInvoker
 		return algorithm.createInstance(request);
 	}
 
-	public void applyTriggerChangeToShares(@NonNull final CommissionTriggerChange change)
+	public void applyTriggerChangeToSharesOfInstance(@NonNull final CommissionTriggerChange change)
 	{
 		final CommissionAlgorithm algorithm;
 		try

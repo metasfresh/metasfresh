@@ -1,4 +1,4 @@
-package de.metas.contracts.commission.commissioninstance.businesslogic;
+package de.metas.contracts.commission.commissioninstance.businesslogic.sales;
 
 import java.time.Instant;
 
@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.Customer;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

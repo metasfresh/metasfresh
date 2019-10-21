@@ -111,9 +111,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * <ul>
 	 * <li>whose Bill_BPartner references he given invoiceSchedule and
 	 * <li>that have their InvoiceRule_Override/InvoiceRule_Override set to 'S'
-	 *
-	 * @param invoiceSchedule
-	 * @return
 	 */
 	List<I_C_Invoice_Candidate> retrieveForInvoiceSchedule(I_C_InvoiceSchedule invoiceSchedule);
 
@@ -391,13 +388,13 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	String getSQLDefaultFilter(Properties ctx);
 
-//	/**
-//	 * Retrieve all the invoice candidates for the given inventoryLine
-//	 *
-//	 * @param inventoryLine
-//	 * @return
-//	 */
-//	IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInventoryLineQuery(I_M_InventoryLine inventoryLine);
+	// /**
+	// * Retrieve all the invoice candidates for the given inventoryLine
+	// *
+	// * @param inventoryLine
+	// * @return
+	// */
+	// IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInventoryLineQuery(I_M_InventoryLine inventoryLine);
 
 	Set<String> retrieveOrderDocumentNosForIncompleteGroupsFromSelection(PInstanceId pinstanceId);
 

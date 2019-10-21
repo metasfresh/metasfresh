@@ -59,9 +59,14 @@ class CommissionHierarchyFactoryTest
 		salesRep1.setBPartner_Parent_ID(salesSuperVisor.getC_BPartner_ID());
 		saveRecord(salesRep1);
 
+		// sibling of salesRep1; shall not be part of salesRep1's hierachy
 		final I_C_BPartner salesRep2 = newInstance(I_C_BPartner.class);
 		salesRep2.setBPartner_Parent_ID(salesSuperVisor.getC_BPartner_ID());
 		saveRecord(salesRep2);
+
+		// add a cycle to make sure the code can handle it
+		headOfSalesRecord.setBPartner_Parent_ID(salesRep1.getC_BPartner_ID());
+		saveRecord(headOfSalesRecord);
 
 		// invoke the method under test
 		final Hierarchy result = new CommissionHierarchyFactory().createFor(BPartnerId.ofRepoId(salesRep1.getC_BPartner_ID()));

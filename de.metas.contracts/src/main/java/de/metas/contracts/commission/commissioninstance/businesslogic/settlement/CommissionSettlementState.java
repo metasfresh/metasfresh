@@ -1,14 +1,8 @@
-package de.metas.contracts.commission.commissioninstance.businesslogic;
-
-import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTrigger;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+package de.metas.contracts.commission.commissioninstance.businesslogic.settlement;
 
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.commission
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -28,16 +22,12 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class CreateInstanceRequest
+/** Please keep in sync with the respective values of {@code AD_Reference_ID=541042}. */
+public enum CommissionSettlementState
 {
-	@NonNull
-	CommissionTrigger trigger;
+	/** basically this is the effective qty to invoice of the sales rep's commission settlement invoice candidate. */
+	TO_SETTLE,
 
-	@NonNull
-	CommissionConfig config;
-
-	@NonNull
-	Hierarchy hierarchy;
+	/** related to the sales rep's invoice candidate where he/she got his commission settlement invoice. */
+	SETTLED;
 }

@@ -59,6 +59,8 @@ import lombok.NonNull;
 @Service
 class CommissionRecordStagingService
 {
+	final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	CommissionRecords retrieveRecordsForInstanceId(
 			@NonNull final Collection<CommissionInstanceId> commissionInstanceIds,
 			final boolean onlyActive)
@@ -82,7 +84,7 @@ class CommissionRecordStagingService
 
 	private IQueryBuilder<I_C_Commission_Instance> createInstanceQueryBuilder(final boolean onlyActive)
 	{
-		final IQueryBuilder<I_C_Commission_Instance> instanceQueryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_C_Commission_Instance> instanceQueryBuilder = queryBL
 				.createQueryBuilder(I_C_Commission_Instance.class);
 		if (onlyActive)
 		{
@@ -106,7 +108,7 @@ class CommissionRecordStagingService
 				.instanceRecordIdToInstance(instanceRecordIdToInstance);
 
 		// ------------------ I_C_Commission_Share
-		final IQueryBuilder<I_C_Commission_Share> shareQueryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_C_Commission_Share> shareQueryBuilder = queryBL
 				.createQueryBuilder(I_C_Commission_Share.class)
 				.addInArrayFilter(I_C_Commission_Share.COLUMN_C_Commission_Instance_ID, intanceRecordIds);
 		if (onlyActive)
@@ -121,7 +123,7 @@ class CommissionRecordStagingService
 		final ImmutableList<Integer> shareRecordIds = CollectionUtils.extractDistinctElements(shareRecords, I_C_Commission_Share::getC_Commission_Share_ID);
 
 		// ------------------ I_C_Commission_Fact
-		final IQueryBuilder<I_C_Commission_Fact> factQueryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_C_Commission_Fact> factQueryBuilder = queryBL
 				.createQueryBuilder(I_C_Commission_Fact.class)
 				.addInArrayFilter(I_C_Commission_Fact.COLUMN_C_Commission_Share_ID, shareRecordIds);
 		if (onlyActive)
