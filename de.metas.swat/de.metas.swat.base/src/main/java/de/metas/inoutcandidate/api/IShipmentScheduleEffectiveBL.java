@@ -23,7 +23,6 @@ package de.metas.inoutcandidate.api;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 
 import org.adempiere.warehouse.LocatorId;
@@ -98,5 +97,5 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 	 * @param sched
 	 * @return
 	 */
-	Timestamp getPreparationDate(I_M_ShipmentSchedule sched);
+	ZonedDateTime getPreparationDate(I_M_ShipmentSchedule sched);
 }

@@ -1,9 +1,6 @@
 package de.metas.inoutcandidate.api.impl;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
-
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -176,9 +173,9 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	}
 
 	@Override
-	public Timestamp getPreparationDate(final I_M_ShipmentSchedule sched)
+	public ZonedDateTime getPreparationDate(final I_M_ShipmentSchedule sched)
 	{
-		final Timestamp preparationDateOverride = sched.getPreparationDate_Override();
+		final ZonedDateTime preparationDateOverride = TimeUtil.asZonedDateTime(sched.getPreparationDate_Override());
 		if (preparationDateOverride != null)
 		{
 			return preparationDateOverride;
@@ -186,15 +183,17 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 
 		if (sched.getPreparationDate() != null)
 		{
-			return sched.getPreparationDate();
+			return TimeUtil.asZonedDateTime(sched.getPreparationDate());
 		}
 
 		if (sched.getC_Order_ID() > 0)
 		{
 			final I_C_Order order = sched.getC_Order();
-			return coalesce(order.getPreparationDate(), order.getDatePromised());
+			return CoalesceUtil.coalesceSuppliers(
+					() -> TimeUtil.asZonedDateTime(order.getPreparationDate()),
+					() -> TimeUtil.asZonedDateTime(order.getDatePromised()));
 		}
 
-		return SystemTime.asTimestamp();
+		return SystemTime.asZonedDateTime();
 	}
 }
