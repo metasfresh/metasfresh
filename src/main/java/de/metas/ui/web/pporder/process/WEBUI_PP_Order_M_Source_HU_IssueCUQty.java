@@ -206,7 +206,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 
 			if (row.isProcessed())
 			{
-				final Quantity quantityToIssueForWhatWasReceived = ppOrderBomBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(bomLine, row.getUom());
+				final Quantity quantityToIssueForWhatWasReceived = ppOrderBomBL.computeQtyToIssueBasedOnFinishedGoodReceipt(bomLine, row.getUom());
 				return qtyLeftToIssue.min(quantityToIssueForWhatWasReceived.toBigDecimal());
 			}
 			else

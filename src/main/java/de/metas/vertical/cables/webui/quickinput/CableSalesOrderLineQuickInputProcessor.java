@@ -3,6 +3,7 @@ package de.metas.vertical.cables.webui.quickinput;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -14,6 +15,8 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.model.I_PP_Product_BOM;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.model.I_C_Order;
@@ -51,14 +54,15 @@ public class CableSalesOrderLineQuickInputProcessor implements IQuickInputProces
 	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 	@Override
-	public DocumentId process(final QuickInput quickInput)
+	public Set<DocumentId> process(final QuickInput quickInput)
 	{
 		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 
 		final I_C_OrderLine newOrderLine = OrderFastInput.addOrderLine(ctx, order, orderLine -> updateOrderLine(orderLine, quickInput));
 		final int newOrderLineId = newOrderLine.getC_OrderLine_ID();
-		return DocumentId.of(newOrderLineId);
+		final DocumentId documentId = DocumentId.of(newOrderLineId);
+		return ImmutableSet.of(documentId);
 	}
 
 	private final void updateOrderLine(final I_C_OrderLine newOrderLine, final QuickInput fromQuickInput)
