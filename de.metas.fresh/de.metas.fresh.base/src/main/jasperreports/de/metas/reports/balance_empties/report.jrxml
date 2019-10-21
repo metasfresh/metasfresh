@@ -33,17 +33,6 @@
 	<background>
 		<band splitType="Stretch"/>
 	</background>
-	<title>
-		<band height="75">
-			<textField>
-				<reportElement x="0" y="60" width="595" height="14" uuid="a13e9211-65d0-4943-a113-813abbb7e3b7"/>
-				<textElement textAlignment="Center" verticalAlignment="Top" markup="none">
-					<font fontName="Arial" size="11" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Name}]]></textFieldExpression>
-			</textField>
-		</band>
-	</title>
 	<pageHeader>
 		<band height="102" splitType="Stretch">
 			<rectangle>
@@ -56,6 +45,7 @@
 				<reportElement x="39" y="85" width="82" height="13" forecolor="#FFFFFF" uuid="7c019e3c-8dae-4c0a-ba31-564c7d79a695"/>
 				<textElement>
 					<font fontName="Arial" isBold="true"/>
+					<paragraph leftIndent="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{value}]]></textFieldExpression>
 			</textField>
@@ -84,6 +74,7 @@
 				<reportElement x="504" y="85" width="51" height="13" forecolor="#FFFFFF" uuid="83648ff0-1298-49ca-ab82-4665f23cbc72"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" isBold="true"/>
+					<paragraph rightIndent="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Balance}]]></textFieldExpression>
 			</textField>
@@ -91,6 +82,7 @@
 				<reportElement x="38" y="60" width="40" height="13" uuid="1006feab-5554-45e5-a3a9-53236dc57a4b"/>
 				<textElement>
 					<font fontName="Arial" isBold="false"/>
+					<paragraph leftIndent="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Date}+": "]]></textFieldExpression>
 			</textField>
@@ -121,13 +113,20 @@
 					<pen lineWidth="1.0" lineStyle="Solid"/>
 				</graphicElement>
 			</line>
+			<textField>
+				<reportElement x="0" y="35" width="595" height="20" uuid="29523cce-0443-490d-81ce-af579a7351cc"/>
+				<textElement textAlignment="Center" verticalAlignment="Top" markup="none">
+					<font fontName="Arial" size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Name}]]></textFieldExpression>
+			</textField>
 		</band>
 	</pageHeader>
 	<detail>
 		<band height="13" splitType="Stretch">
 			<rectangle>
 				<reportElement key="rectangle-4" x="38" y="0" width="517" height="13" backcolor="#FFFFCC" uuid="a6884487-2b5c-4c9c-9a5c-d1c1b545fb97">
-					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{COLUMN_COUNT}.intValue()%2)==1) ]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new java.lang.Boolean(($V{COLUMN_COUNT}.intValue()%2)==1)]]></printWhenExpression>
 				</reportElement>
 				<graphicElement>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
@@ -158,6 +157,7 @@
 				<reportElement x="504" y="0" width="51" height="11" uuid="9fc3ca8e-96fa-4115-82db-304df5387b08"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph rightIndent="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{balance}]]></textFieldExpression>
 			</textField>
@@ -165,6 +165,7 @@
 				<reportElement x="38" y="0" width="82" height="11" uuid="13d25d3e-e0fb-4c61-a98d-6bae4a60daf0"/>
 				<textElement>
 					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph leftIndent="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{productvalue}]]></textFieldExpression>
 			</textField>
@@ -182,6 +183,7 @@
 				</box>
 				<textElement textAlignment="Right">
 					<font size="8"/>
+					<paragraph rightIndent="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{page} + " " + $V{PAGE_NUMBER} + " " + $R{of}]]></textFieldExpression>
 			</textField>
@@ -195,6 +197,7 @@
 				</box>
 				<textElement textAlignment="Right">
 					<font size="8" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" isPdfEmbedded="false"/>
+					<paragraph rightIndent="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
@@ -202,6 +205,7 @@
 				<reportElement x="38" y="8" width="100" height="20" uuid="bc66c4cd-350c-4c34-97cb-15a5775ac715"/>
 				<textElement>
 					<font size="8"/>
+					<paragraph leftIndent="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
 			</textField>
