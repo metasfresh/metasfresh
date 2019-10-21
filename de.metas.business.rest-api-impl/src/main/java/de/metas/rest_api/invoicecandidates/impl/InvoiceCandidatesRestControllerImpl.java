@@ -125,18 +125,18 @@ class InvoiceCandidatesRestControllerImpl implements InvoiceCandidatesRestEndpoi
 
 		for (final JsonInvoiceCandidates cand : jsonInvoices)
 		{
-			final ICompositeQueryFilter<I_C_Invoice_Candidate> invoiceCandiatesFilter = queryBL
+			final ICompositeQueryFilter<I_C_Invoice_Candidate> invoiceCandidatesFilter = queryBL
 					.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
 					.addOnlyActiveRecordsFilter()
 					.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_ExternalLineId, ids)
 					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_ExternalHeaderId, cand.getExternalHeaderId());
 
-			queryBuilder.filter(invoiceCandiatesFilter);
+			queryBuilder.filter(invoiceCandidatesFilter);
 		}
 
 		queryBuilder
 				.create()
-				.setRequiredAccess(Access.READ)
+//				.setRequiredAccess(Access.READ)
 				.createSelection(pInstanceId);
 	}
 
