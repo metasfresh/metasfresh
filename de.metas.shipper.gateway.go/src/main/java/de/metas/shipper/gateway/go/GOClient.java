@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.xml.bind.JAXBElement;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.slf4j.Logger;
@@ -134,7 +135,9 @@ public class GOClient implements ShipperGatewayClient
 		return GOConstants.SHIPPER_GATEWAY_ID;
 	}
 
+	@Deprecated
 	@Override
+	@VisibleForTesting
 	public DeliveryOrder createDeliveryOrder(@NonNull final DeliveryOrder draftDeliveryOrder)
 	{
 		logger.trace("Creating delivery order for {}", draftDeliveryOrder);
@@ -168,7 +171,10 @@ public class GOClient implements ShipperGatewayClient
 		return deliveryOrderResponse;
 	}
 
-	@Override
+	/**
+	 * @deprecated This method is not used. In the future, if cancelling is needed, we could revise this.
+	 */
+	@Deprecated
 	public DeliveryOrder voidDeliveryOrder(@NonNull final DeliveryOrder deliveryOrderRequest)
 	{
 		logger.trace("Creating delivery order for {}", deliveryOrderRequest);

@@ -162,7 +162,8 @@
 		<module>de.metas.shipper.gateway.spi</module>
 		<module>de.metas.shipper.gateway.go</module>
 		<module>de.metas.shipper.gateway.derkurier</module>
-		<!-- commented out because we don't include it in any distribution 
+		<module>de.metas.shipper.gateway.dhl</module>
+		<!-- commented out because we don't include it in any distribution
 		<module>../de.metas.shipper.gateway.dpd-legacy</module> 
 		-->
 
