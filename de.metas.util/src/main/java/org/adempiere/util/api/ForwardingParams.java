@@ -3,6 +3,7 @@ package org.adempiere.util.api;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 
 import lombok.EqualsAndHashCode;
@@ -88,6 +89,12 @@ public class ForwardingParams implements IParams
 	public LocalDate getParameterAsLocalDate(final String parameterName)
 	{
 		return params.getParameterAsLocalDate(parameterName);
+	}
+	
+	@Override
+	public ZonedDateTime getParameterAsZonedDateTime(final String parameterName)
+	{
+		return params.getParameterAsZonedDateTime(parameterName);
 	}
 
 	@Override
