@@ -220,8 +220,11 @@ public class PP_Order extends CalloutEngine
 		if (pp.getPP_Product_BOM_ID() <= 0)
 		{
 			final IProductBOMDAO bomsRepo = Services.get(IProductBOMDAO.class);
-			final int bomId = bomsRepo.getDefaultProductBOMIdByProductId(productId);
-			pp.setPP_Product_BOM_ID(bomId);
+			final ProductBOMId bomId = bomsRepo.getDefaultBOMIdByProductId(productId).orElse(null);
+			if(bomId != null)
+			{
+				pp.setPP_Product_BOM_ID(bomId.getRepoId());
+			}
 		}
 
 		return pp;

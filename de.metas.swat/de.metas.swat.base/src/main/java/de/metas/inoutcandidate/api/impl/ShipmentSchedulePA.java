@@ -158,7 +158,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Processed, false)
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_AD_Table_ID, recordRef.getAD_Table_ID())
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Record_ID, recordRef.getRecord_ID())
 				.orderBy(I_M_ShipmentSchedule.COLUMN_M_ShipmentSchedule_ID)
 				.create()
@@ -257,7 +257,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	{
 		Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_M_Product_ID, productId)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID, productId)
 				.create()
 				.updateDirectly()
 				.addSetColumnValue(I_M_ShipmentSchedule.COLUMNNAME_IsDisplayed, displayed)
@@ -462,7 +462,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		}
 		final int deletedCount = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_AD_Table_ID, referencedRecord.getAD_Table_ID())
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_AD_Table_ID, referencedRecord.getAD_Table_ID())
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Record_ID, referencedRecord.getRecord_ID())
 				.create()
 				.delete();
