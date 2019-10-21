@@ -161,6 +161,9 @@ public class MInventoryLine extends X_M_InventoryLine
 	@Override
 	protected boolean beforeSave(final boolean newRecord)
 	{
+
+		final IInventoryBL inventoryBL  = Services.get(IInventoryBL.class);
+
 		if (newRecord && Services.get(IInventoryBL.class).isComplete(getM_Inventory()))
 		{
 			throw new AdempiereException("@ParentComplete@ @M_Inventory_ID@");
@@ -212,7 +215,7 @@ public class MInventoryLine extends X_M_InventoryLine
 			//
 			if (getC_Charge_ID() <= 0)
 			{
-				throw new AdempiereException("@InternalUseNeedsCharge@");
+				inventoryBL.setDefaultInternalChargeId(this);
 			}
 		}
 		else if (INVENTORYTYPE_ChargeAccount.equals(getInventoryType()))
