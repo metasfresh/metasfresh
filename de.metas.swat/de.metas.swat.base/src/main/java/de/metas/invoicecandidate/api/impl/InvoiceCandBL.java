@@ -1936,12 +1936,16 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 			ic.setDeliveryDate(firstInvoiceableCandRecord.getDeliveryDate());
 			ic.setQtyToInvoice(ONE);
+			ic.setQtyDelivered(ONE);
+			ic.setQtyToInvoiceInUOM(ONE);
 			set_DateToInvoice_DefaultImpl(ic);
 		}
 
 		else
 		{
 			ic.setQtyToInvoice(ZERO);
+			ic.setQtyDelivered(ZERO);
+			ic.setQtyToInvoiceInUOM(ZERO);
 			set_DateToInvoice_DefaultImpl(ic);
 		}
 	}

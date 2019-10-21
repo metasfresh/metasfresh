@@ -501,8 +501,6 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 	private I_PP_Order createPP_OrderAndValidateBomLine(final String qtyOrderedStr, final I_PP_Product_BOM productBOM)
 	{
-		final I_C_UOM uom = productBOM.getC_UOM();
-
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
 		docType.setDocBaseType(X_C_DocType.DOCBASETYPE_ManufacturingOrder);
 		saveRecord(docType);
@@ -519,7 +517,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		ppOrder.setDatePromised(SystemTime.asDayTimestamp());
 		ppOrder.setDocStatus(IDocument.STATUS_Drafted);
 		ppOrder.setDocAction(IDocument.ACTION_Complete);
-		ppOrder.setC_UOM_ID(uom.getC_UOM_ID());
+		ppOrder.setC_UOM_ID(productBOM.getC_UOM_ID());
 		ppOrder.setDateStartSchedule(SystemTime.asTimestamp());
 		ppOrder.setPlanningStatus(PPOrderPlanningStatus.PLANNING.getCode());
 		Services.get(IPPOrderDAO.class).save(ppOrder);

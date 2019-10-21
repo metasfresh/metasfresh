@@ -1,7 +1,11 @@
 package de.metas.order.compensationGroup;
 
 import java.util.Collection;
+import java.util.Set;
 
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.GroupRepository.RetrieveOrCreateGroupRequest;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -33,7 +37,7 @@ public final class GroupCreator
 	private final GroupRepository groupsRepo;
 	private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
 
-	private Collection<Integer> lineIdsToGroup;
+	private Set<OrderLineId> lineIdsToGroup;
 	private GroupTemplate _groupTemplate;
 
 	public GroupCreator(
@@ -44,10 +48,10 @@ public final class GroupCreator
 		this.compensationLineCreateRequestFactory = compensationLineCreateRequestFactory;
 	}
 
-	public GroupCreator linesToGroup(@NonNull final Collection<Integer> lineIdsToGroup)
+	public GroupCreator linesToGroup(@NonNull final Collection<OrderLineId> lineIdsToGroup)
 	{
 		Check.assumeNotEmpty(lineIdsToGroup, "lineIdsToGroup is not empty");
-		this.lineIdsToGroup = lineIdsToGroup;
+		this.lineIdsToGroup = ImmutableSet.copyOf(lineIdsToGroup);
 		return this;
 	}
 

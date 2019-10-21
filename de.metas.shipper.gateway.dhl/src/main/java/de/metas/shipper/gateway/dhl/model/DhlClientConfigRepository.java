@@ -29,6 +29,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Shipper;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -63,6 +65,13 @@ public class DhlClientConfigRepository
 				.username(configPO.getUserName())
 				.signature(configPO.getSignature())
 				.lengthUomId(UomId.ofRepoId(configPO.getDhl_LenghtUOM_ID()))
+				.trackingUrlBase(retrieveTrackingUrl(configPO.getM_Shipper_ID()))
 				.build();
+	}
+
+	private static String retrieveTrackingUrl(final int m_shipper_id)
+	{
+		final I_M_Shipper shipperPo = InterfaceWrapperHelper.load(m_shipper_id, I_M_Shipper.class);
+		return shipperPo.getTrackingURL();
 	}
 }

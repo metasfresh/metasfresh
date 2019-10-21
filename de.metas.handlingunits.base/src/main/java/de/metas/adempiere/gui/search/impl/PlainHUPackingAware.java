@@ -23,10 +23,15 @@ package de.metas.adempiere.gui.search.impl;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
-import lombok.ToString;
+import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
+import lombok.Data;
 
 /**
  * Plain POJO implementation of {@link IHUPackingAware}
@@ -34,114 +39,85 @@ import lombok.ToString;
  * @author tsa
  *
  */
-@ToString
+@Data
 public class PlainHUPackingAware implements IHUPackingAware
 {
-	private int productId = -1;
-	private int asiId = -1;
+	private ProductId productId;
+	private AttributeSetInstanceId asiId;
 	private BigDecimal qty;
-	private int uomId;
-	private int huPiItemProductId;
-	private BigDecimal qtyPacks;
-
-	private int partnerId;
-	private Timestamp dateOrdered;
-
+	private UomId uomId;
+	private HUPIItemProductId piItemProductId;
+	private BigDecimal qtyTU;
+	private BPartnerId bpartnerId;
 	private boolean inDispute = false;
 
 	@Override
+	@Deprecated
 	public int getM_Product_ID()
 	{
-		return productId;
+		return ProductId.toRepoId(getProductId());
 	}
 
 	@Override
+	@Deprecated
 	public void setM_Product_ID(final int productId)
 	{
-		this.productId = productId;
+		setProductId(ProductId.ofRepoIdOrNull(productId));
 	}
 
 	@Override
+	@Deprecated
 	public int getC_UOM_ID()
 	{
-		return uomId;
+		return UomId.toRepoId(getUomId());
 	}
 
 	@Override
+	@Deprecated
 	public void setC_UOM_ID(final int uomId)
 	{
-		this.uomId = uomId;
+		setUomId(UomId.ofRepoIdOrNull(uomId));
 	}
 
 	@Override
-	public void setQty(final BigDecimal qty)
-	{
-		this.qty = qty;
-	}
-
-	@Override
-	public BigDecimal getQty()
-	{
-		return qty;
-	}
-
-	@Override
+	@Deprecated
 	public int getM_HU_PI_Item_Product_ID()
 	{
-		return huPiItemProductId;
+		return HUPIItemProductId.toRepoId(getPiItemProductId());
 	}
 
 	@Override
-	public void setM_HU_PI_Item_Product_ID(final int huPiItemProductId)
+	@Deprecated
+	public void setM_HU_PI_Item_Product_ID(final int piItemProductId)
 	{
-		this.huPiItemProductId = huPiItemProductId;
+		setPiItemProductId(HUPIItemProductId.ofRepoIdOrNull(piItemProductId));
 	}
 
 	@Override
-	public BigDecimal getQtyTU()
-	{
-		return qtyPacks;
-	}
-
-	@Override
-	public void setQtyTU(final BigDecimal qtyPacks)
-	{
-		this.qtyPacks = qtyPacks;
-	}
-
-	@Override
+	@Deprecated
 	public int getM_AttributeSetInstance_ID()
 	{
-		return asiId;
+		return AttributeSetInstanceId.toRepoId(getAsiId());
 	}
 
 	@Override
+	@Deprecated
 	public void setM_AttributeSetInstance_ID(final int M_AttributeSetInstance_ID)
 	{
-		asiId = M_AttributeSetInstance_ID;
+		setAsiId(AttributeSetInstanceId.ofRepoIdOrNull(M_AttributeSetInstance_ID));
 	}
 
 	@Override
+	@Deprecated
 	public int getC_BPartner_ID()
 	{
-		return partnerId;
+		return BPartnerId.toRepoId(getBpartnerId());
 	}
 
 	@Override
-	public void setC_BPartner_ID(final int partnerId)
+	@Deprecated
+	public void setC_BPartner_ID(final int bpartnerId)
 	{
-		this.partnerId = partnerId;
-	}
-
-	@Override
-	public boolean isInDispute()
-	{
-		return inDispute;
-	}
-
-	@Override
-	public void setInDispute(final boolean inDispute)
-	{
-		this.inDispute = inDispute;
+		setBpartnerId(BPartnerId.ofRepoIdOrNull(bpartnerId));
 	}
 }

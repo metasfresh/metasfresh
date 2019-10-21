@@ -15,7 +15,7 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 853511318L;
+	private static final long serialVersionUID = -432340413L;
 
     /** Standard Constructor */
     public X_DHL_ShipmentOrder (Properties ctx, int DHL_ShipmentOrder_ID, String trxName)
@@ -721,5 +721,24 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 	public byte[] getPdfLabelData () 
 	{
 		return (byte[])get_Value(COLUMNNAME_PdfLabelData);
+	}
+
+	/** Set Nachverfolgungs-URL.
+		@param TrackingURL 
+		URL des Spediteurs um Sendungen zu verfolgen
+	  */
+	@Override
+	public void setTrackingURL (java.lang.String TrackingURL)
+	{
+		set_Value (COLUMNNAME_TrackingURL, TrackingURL);
+	}
+
+	/** Get Nachverfolgungs-URL.
+		@return URL des Spediteurs um Sendungen zu verfolgen
+	  */
+	@Override
+	public java.lang.String getTrackingURL () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_TrackingURL);
 	}
 }

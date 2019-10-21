@@ -1114,8 +1114,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final int count = queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_M_Product_ID, productId)
-				.addNotEqualsFilter(I_M_ShipmentSchedule.COLUMN_Catch_UOM_ID, catchUomRepoId)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID, productId)
+				.addNotEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Catch_UOM_ID, catchUomRepoId)
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Processed, false)
 				.filter(lockManager.getNotLockedFilter(I_M_ShipmentSchedule.class))
 				.create()

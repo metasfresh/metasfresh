@@ -69,17 +69,25 @@ public class TableCreateColumns extends JavaProcess
 	protected void prepare ()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
-		for (int i = 0; i < para.length; i++)
+		for (ProcessInfoParameter element : para)
 		{
-			String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
+			String name = element.getParameterName();
+			if (element.getParameter() == null)
+			{
 				;
+			}
 			else if (name.equals("EntityType"))
-				p_EntityType = (String)para[i].getParameter();
+			{
+				p_EntityType = (String)element.getParameter();
+			}
 			else if (name.equals("AllTables"))
-				p_AllTables = "Y".equals(para[i].getParameter());
+			{
+				p_AllTables = "Y".equals(element.getParameter());
+			}
 			else
+			{
 				log.error("Unknown Parameter: " + name);
+			}
 		}
 		p_AD_Table_ID = getRecord_ID();
 	}	//	prepare
@@ -93,7 +101,9 @@ public class TableCreateColumns extends JavaProcess
 	protected String doIt () throws Exception
 	{
 		if (p_AD_Table_ID == 0)
+		{
 			throw new AdempiereSystemError("@NotFound@ @AD_Table_ID@ " + p_AD_Table_ID);
+		}
 		log.info("EntityType=" + p_EntityType
 			+ ", AllTables=" + p_AllTables
 			+ ", AD_Table_ID=" + p_AD_Table_ID);
@@ -108,17 +118,23 @@ public class TableCreateColumns extends JavaProcess
 			String schema = db.getSchema();
 			
 			if (p_AllTables)
+			{
 				addTable (md, catalog, schema);
+			}
 			else
 			{
 				MTable table = new MTable (getCtx(), p_AD_Table_ID, get_TrxName());
 				if (table == null || table.get_ID() == 0)
+				{
 					throw new AdempiereSystemError("@NotFound@ @AD_Table_ID@ " + p_AD_Table_ID);
+				}
 				log.info(table.getTableName() + ", EntityType=" + p_EntityType);
 				String tableName = table.getTableName();
 				// globalqss 2005-10-24
 				if (DB.isPostgreSQL())
-				    tableName = tableName.toLowerCase();
+				{
+					tableName = tableName.toLowerCase();
+				}
 				// end globalqss 2005-10-24
 				ResultSet rs = md.getColumns(catalog, schema, tableName, null);
 				addTableColumn(rs, table);
@@ -147,9 +163,13 @@ public class TableCreateColumns extends JavaProcess
 		// ResultSet rs = md.getTables(catalog, schema, null, null);
 		ResultSet rs;
 		if (DB.isPostgreSQL())
+		{
 			rs = md.getTables(catalog, schema, null, new String [] {"TABLE", "VIEW"});
+		}
 		else
+		{
 			rs = md.getTables(catalog, schema, null, null);
+		}
 		// end globalqss 2005-10-25
 		while (rs.next())
 		{
@@ -185,12 +205,16 @@ public class TableCreateColumns extends JavaProcess
 				table.setTableName (tableName);
 				table.setIsView("VIEW".equals(tableType));
 				if (!table.save())
+				{
 					continue;
+				}
 			}
 			//	Check Columns
 			// globalqss 2005-10-24
 			if (DB.isPostgreSQL())
-			    tableName = tableName.toLowerCase();
+			{
+				tableName = tableName.toLowerCase();
+			}
 			// end globalqss 2005-10-24
 			ResultSet rsC = md.getColumns(catalog, schema, tableName, null);
 			addTableColumn(rsC, table);
@@ -209,17 +233,23 @@ public class TableCreateColumns extends JavaProcess
 		String tableName = table.getTableName ();
 		// globalqss 2005-10-24
 		if (DB.isPostgreSQL())
-		    tableName = tableName.toLowerCase();
+		{
+			tableName = tableName.toLowerCase();
+		}
 		// end globalqss 2005-10-24
 		while (rs.next ())
 		{
 			String tn = rs.getString ("TABLE_NAME");
 			if (!tableName.equalsIgnoreCase (tn))
+			{
 				continue;
+			}
 			String columnName = rs.getString ("COLUMN_NAME");
 			MColumn column = table.getColumn (columnName);
 			if (column != null)
+			{
 				continue;
+			}
 			int dataType = rs.getInt ("DATA_TYPE");
 			String typeName = rs.getString ("TYPE_NAME");
 			String nullable = rs.getString ("IS_NULLABLE");
@@ -271,14 +301,17 @@ public class TableCreateColumns extends JavaProcess
 			// bug [ 1637912 ] 
 			else if (columnName.toUpperCase ().endsWith("_ACCT")
 				&& size == 10)
+			{
 				column.setAD_Reference_ID (DisplayType.Account);
-			// Account
+			}
 			else if (columnName.equalsIgnoreCase ("C_Location_ID"))
+			{
 				column.setAD_Reference_ID (DisplayType.Location);
-			// Product Attribute
+			}
 			else if (columnName.equalsIgnoreCase ("M_AttributeSetInstance_ID"))
+			{
 				column.setAD_Reference_ID (DisplayType.PAttribute);
-			// SalesRep_ID (=User)
+			}
 			else if (columnName.equalsIgnoreCase ("SalesRep_ID"))
 			{
 				column.setAD_Reference_ID (DisplayType.Table);
@@ -286,14 +319,18 @@ public class TableCreateColumns extends JavaProcess
 			}
 			// ID
 			else if (columnName.toUpperCase().endsWith ("_ID"))
-				column.setAD_Reference_ID (DisplayType.TableDir);
+			{
+				column.setAD_Reference_ID (DisplayType.Search);
+			}
 			// Date
 			else if (dataType == Types.DATE || dataType == Types.TIME
 				|| dataType == Types.TIMESTAMP
 				// || columnName.toUpperCase().indexOf("DATE") != -1
 				|| columnName.equalsIgnoreCase ("Created")
 				|| columnName.equalsIgnoreCase ("Updated"))
+			{
 				column.setAD_Reference_ID (DisplayType.DateTime);
+			}
 			// CreatedBy/UpdatedBy (=User)
 			else if (columnName.equalsIgnoreCase ("CreatedBy")
 				|| columnName.equalsIgnoreCase ("UpdatedBy"))
@@ -310,23 +347,35 @@ public class TableCreateColumns extends JavaProcess
 			}
 			// CLOB
 			else if (dataType == Types.CLOB)
+			{
 				column.setAD_Reference_ID (DisplayType.TextLong);
+			}
 			// BLOB
 			else if (dataType == Types.BLOB)
+			{
 				column.setAD_Reference_ID (DisplayType.Binary);
+			}
 			// Amount
 			else if (columnName.toUpperCase ().indexOf ("AMT") != -1)
+			{
 				column.setAD_Reference_ID (DisplayType.Amount);
+			}
 			// Qty
 			else if (columnName.toUpperCase ().indexOf ("QTY") != -1)
+			{
 				column.setAD_Reference_ID (DisplayType.Quantity);
+			}
 			// Boolean
 			else if (size == 1
 				&& (columnName.toUpperCase ().startsWith ("IS") || dataType == Types.CHAR))
+			{
 				column.setAD_Reference_ID (DisplayType.YesNo);
+			}
 			// List
 			else if (size < 4 && dataType == Types.CHAR)
+			{
 				column.setAD_Reference_ID (DisplayType.List);
+			}
 			// Name, DocumentNo
 			else if (columnName.equalsIgnoreCase ("Name")
 				|| columnName.equals ("DocumentNo"))
@@ -340,25 +389,37 @@ public class TableCreateColumns extends JavaProcess
 				|| typeName.startsWith ("NVAR")
 				|| typeName.startsWith ("NCHAR"))
 			{
-				if (typeName.startsWith("N"))	//	MultiByte	
+				if (typeName.startsWith("N"))
+				{
 					size /= 2;
+				}
 				if (size > 255)
+				{
 					column.setAD_Reference_ID (DisplayType.Text);
+				}
 				else
+				{
 					column.setAD_Reference_ID (DisplayType.String);
+				}
 			}
 			// Number
 			else if (dataType == Types.INTEGER || dataType == Types.SMALLINT
 				|| dataType == Types.DECIMAL || dataType == Types.NUMERIC)
 			{
 				if (size == 10)
+				{
 					column.setAD_Reference_ID (DisplayType.Integer);
+				}
 				else
+				{
 					column.setAD_Reference_ID (DisplayType.Number);
+				}
 			}
 			//	??
 			else
+			{
 				column.setAD_Reference_ID (DisplayType.String);
+			}
 			
 			column.setFieldLength (size);
 			if (column.isUpdateable()
@@ -367,12 +428,14 @@ public class TableCreateColumns extends JavaProcess
 					|| columnName.equalsIgnoreCase("AD_Org_ID")
 					|| columnName.toUpperCase().startsWith("CREATED") 
 					|| columnName.toUpperCase().equals("UPDATED") ))
+			{
 				column.setIsUpdateable(false);
+			}
 
 			column.setIsAllowLogging(columnBL.getDefaultAllowLoggingByColumnName(columnName));
 			
 			//	Done
-			if (column.save ())
+			if (column.save())
 			{
 				addLog (0, null, null, table.getTableName() + "." + column.getColumnName());
 				m_count++;
