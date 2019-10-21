@@ -122,11 +122,7 @@ public class BPartnerOrderParamsRepository
 	{
 		if (soTrx.isSales())
 		{
-			return Optional.ofNullable(DeliveryRule.ofNullableCode(bpartnerRecord.getDeliveryViaRule()));
-		}
-		else if (soTrx.isPurchase())
-		{
-			return Optional.ofNullable(DeliveryRule.ofNullableCode(bpartnerRecord.getPO_DeliveryViaRule()));
+			return Optional.ofNullable(DeliveryRule.ofNullableCode(bpartnerRecord.getDeliveryRule()));
 		}
 
 		return Optional.empty(); // shall not happen
