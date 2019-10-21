@@ -100,7 +100,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		final OrderLineCandidate initialCandidate = toOrderLineCandidate(quickInput);
 		validateInput(initialCandidate);
 
-		final List<OrderLineCandidate> candidates = explodeTradingBOM(initialCandidate);
+		final List<OrderLineCandidate> candidates = explodePhantomBOM(initialCandidate);
 
 		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
@@ -173,7 +173,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 				.build();
 	}
 
-	private List<OrderLineCandidate> explodeTradingBOM(final OrderLineCandidate initialCandidate)
+	private List<OrderLineCandidate> explodePhantomBOM(final OrderLineCandidate initialCandidate)
 	{
 		final ProductId bomProductId = initialCandidate.getProductId();
 		final I_PP_Product_BOM bom = bomsRepo.getDefaultBOMByProductId(bomProductId).orElse(null);
@@ -183,7 +183,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		}
 
 		final BOMUse bomUse = BOMUse.ofNullableCode(bom.getBOMUse());
-		if (!BOMUse.Trading.equals(bomUse))
+		if (!BOMUse.Phantom.equals(bomUse))
 		{
 			return ImmutableList.of(initialCandidate);
 		}
