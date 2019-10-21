@@ -41,7 +41,11 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineInputValidator;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineInputValidatorResults;
+import de.metas.order.compensationGroup.GroupCreateRequest;
+import de.metas.order.compensationGroup.GroupId;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
@@ -87,6 +91,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	private final IProductBOMDAO bomsRepo = Services.get(IProductBOMDAO.class);
 	private final IProductBOMBL bomsService = Services.get(IProductBOMBL.class);
 
+	private final OrderGroupRepository orderGroupsRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final Collection<IOrderLineInputValidator> validators = SpringContextHolder.instance.getBeansOfType(IOrderLineInputValidator.class);
 
 	@Override
@@ -115,7 +120,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	private void validateInput(final OrderLineCandidate candidate)
 	{
 		final BPartnerId bpartnerId = candidate.getBpartnerId();
-		final ProductId productId = candidate.getProductAndAttributes().getProductId();
+		final ProductId productId = candidate.getProductId();
 		final SOTrx soTrx = candidate.getSoTrx();
 
 		final ArrayList<ITranslatableString> validationErrorMessages = new ArrayList<>();
@@ -149,13 +154,16 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		}
 
 		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
 
 		final ProductAndAttributes productAndAttributes = ProductLookupDescriptor.toProductAndAttributes(orderLineQuickInput.getM_Product_ID());
 		final UomId uomId = productBL.getStockUOMId(productAndAttributes.getProductId());
 
 		return OrderLineCandidate.builder()
-				.productAndAttributes(productAndAttributes)
+				.orderId(orderId)
+				.productId(productAndAttributes.getProductId())
+				.attributes(productAndAttributes.getAttributes())
 				.uomId(uomId)
 				.piItemProductId(HUPIItemProductId.ofRepoIdOrNull(orderLineQuickInput.getM_HU_PI_Item_Product_ID()))
 				.qty(quickInputQty)
@@ -165,29 +173,43 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 				.build();
 	}
 
-	private List<OrderLineCandidate> explodeTradingBOM(final OrderLineCandidate candidate)
+	private List<OrderLineCandidate> explodeTradingBOM(final OrderLineCandidate initialCandidate)
 	{
-		final ProductId productId = candidate.getProductAndAttributes().getProductId();
-		final I_PP_Product_BOM bom = bomsRepo.getDefaultBOMByProductId(productId).orElse(null);
+		final ProductId bomProductId = initialCandidate.getProductId();
+		final I_PP_Product_BOM bom = bomsRepo.getDefaultBOMByProductId(bomProductId).orElse(null);
 		if (bom == null)
 		{
-			return ImmutableList.of(candidate);
+			return ImmutableList.of(initialCandidate);
 		}
 
 		final BOMUse bomUse = BOMUse.ofNullableCode(bom.getBOMUse());
 		if (!BOMUse.Trading.equals(bomUse))
 		{
-			return ImmutableList.of(candidate);
+			return ImmutableList.of(initialCandidate);
 		}
+
+		GroupId compensationGroupId = null;
 
 		final ArrayList<OrderLineCandidate> result = new ArrayList<>();
 		final List<I_PP_Product_BOMLine> bomLines = bomsRepo.retrieveLines(bom);
 		for (final I_PP_Product_BOMLine bomLine : bomLines)
 		{
 			final ProductId bomLineProductId = ProductId.ofRepoId(bomLine.getM_Product_ID());
-			final BigDecimal bomLineQty = bomsService.computeQtyRequired(bomLine, productId, candidate.getQty());
+			final BigDecimal bomLineQty = bomsService.computeQtyRequired(bomLine, bomProductId, initialCandidate.getQty());
 
-			result.add(candidate.withProductAndQty(bomLineProductId, bomLineQty));
+			if (compensationGroupId == null)
+			{
+				compensationGroupId = orderGroupsRepo.createNewGroupId(GroupCreateRequest.builder()
+						.orderId(initialCandidate.getOrderId())
+						.name(productBL.getProductName(bomProductId))
+						.build());
+			}
+
+			result.add(initialCandidate.toBuilder()
+					.productId(bomLineProductId)
+					.qty(bomLineQty)
+					.compensationGroupId(compensationGroupId)
+					.build());
 		}
 
 		return result;
@@ -205,18 +227,21 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		{
 			to.setShipmentAllocation_BestBefore_Policy(candidate.getBestBeforePolicy().getCode());
 		}
+
+		if (candidate.getCompensationGroupId() != null)
+		{
+			to.setC_Order_CompensationGroup_ID(candidate.getCompensationGroupId().getOrderCompensationGroupId());
+		}
 	}
 
 	private PlainHUPackingAware createQuickInputPackingAware(@NonNull final OrderLineCandidate candidate)
 	{
-		final ProductAndAttributes productAndAttributes = candidate.getProductAndAttributes();
-
 		final PlainHUPackingAware huPackingAware = new PlainHUPackingAware();
 		huPackingAware.setBpartnerId(candidate.getBpartnerId());
 		huPackingAware.setInDispute(false);
-		huPackingAware.setProductId(productAndAttributes.getProductId());
+		huPackingAware.setProductId(candidate.getProductId());
 		huPackingAware.setUomId(candidate.getUomId());
-		huPackingAware.setAsiId(createASI(productAndAttributes));
+		huPackingAware.setAsiId(createASI(candidate.getProductId(), candidate.getAttributes()));
 		huPackingAware.setPiItemProductId(candidate.getPiItemProductId());
 
 		//
@@ -238,16 +263,17 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		return huPackingAware;
 	}
 
-	private AttributeSetInstanceId createASI(final ProductAndAttributes productAndAttributes)
+	private AttributeSetInstanceId createASI(
+			@NonNull final ProductId productId,
+			@NonNull final ImmutableAttributeSet attributes)
 	{
-		final ImmutableAttributeSet attributes = productAndAttributes.getAttributes();
 		if (attributes.isEmpty())
 		{
 			return null;
 		}
 
 		final I_M_AttributeSetInstance asi = asiBL.createASIWithASFromProductAndInsertAttributeSet(
-				productAndAttributes.getProductId(),
+				productId,
 				attributes);
 
 		return AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
@@ -258,7 +284,13 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	private static class OrderLineCandidate
 	{
 		@NonNull
-		ProductAndAttributes productAndAttributes;
+		OrderId orderId;
+
+		@NonNull
+		ProductId productId;
+
+		@NonNull
+		ImmutableAttributeSet attributes;
 
 		@NonNull
 		UomId uomId;
@@ -278,12 +310,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		@NonNull
 		SOTrx soTrx;
 
-		public OrderLineCandidate withProductAndQty(@NonNull final ProductId productId, @NonNull final BigDecimal qty)
-		{
-			return toBuilder()
-					.productAndAttributes(productAndAttributes.withProductId(productId))
-					.qty(qty)
-					.build();
-		}
+		@Nullable
+		GroupId compensationGroupId;
 	}
 }
