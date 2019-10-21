@@ -268,16 +268,6 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		Services.get(IPPOrderCostBL.class).createOrderCosts(this);
 
 		//
-		// Auto receipt and issue for kit
-		final I_PP_Order_BOM ppOrderBOM = orderBOMsRepo.getByOrderId(orderId);
-		if (X_PP_Order_BOM.BOMTYPE_Make_To_Kit.equals(ppOrderBOM.getBOMType())
-				&& X_PP_Order_BOM.BOMUSE_Manufacturing.equals(ppOrderBOM.getBOMUse()))
-		{
-			PPOrderMakeToKitHelper.complete(this);
-			return IDocument.STATUS_Closed;
-		}
-
-		//
 		// Create the Activity Control
 		autoReportActivities();
 
