@@ -97,7 +97,7 @@ class InvoiceCandidatesRestControllerImpl implements InvoiceCandidatesRestEndpoi
 		}
 	}
 
-	private void createAndExecuteICQueryBuilder(List<JsonInvoiceCandidates> jsonInvoices, PInstanceId pInstanceId) {
+	public void createAndExecuteICQueryBuilder(List<JsonInvoiceCandidates> jsonInvoices, PInstanceId pInstanceId) {
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
