@@ -23,7 +23,6 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.shipmentschedule.AbstractShipmentScheduleEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
-import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent.ShipmentScheduleCreatedEventBuilder;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import de.metas.util.Services;
@@ -114,15 +113,13 @@ public class M_ShipmentSchedule
 				referencedLineFactory.createFor(shipmentSchedule)
 						.getDocumentLineDescriptor();
 
-		final ShipmentScheduleCreatedEventBuilder builder = //
-				ShipmentScheduleCreatedEvent.builder()
+		return ShipmentScheduleCreatedEvent.builder()
 						.eventDescriptor(EventDescriptor.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID()))
 						.materialDescriptor(materialDescriptor)
 						.reservedQuantity(shipmentSchedule.getQtyReserved())
 						.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
-						.documentLineDescriptor(documentLineDescriptor);
-
-		return builder.build();
+						.documentLineDescriptor(documentLineDescriptor)
+						.build();
 	}
 
 	private ShipmentScheduleUpdatedEvent createUpdatedEvent(
