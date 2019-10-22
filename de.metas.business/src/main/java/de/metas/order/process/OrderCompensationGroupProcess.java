@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.process.IProcessPrecondition;
@@ -74,7 +75,7 @@ public abstract class OrderCompensationGroupProcess extends JavaProcess implemen
 
 	protected final ProcessPreconditionsResolution acceptIfOrderLinesHaveSameGroupId(final IProcessPreconditionsContext context)
 	{
-		final Set<Integer> orderLineIds = getSelectedOrderLineIds(context);
+		final Set<OrderLineId> orderLineIds = getSelectedOrderLineIds(context);
 		if (orderLineIds.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Select some order lines");
@@ -89,13 +90,13 @@ public abstract class OrderCompensationGroupProcess extends JavaProcess implemen
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Selected lines shall be part of the same group");
 		}
-		
+
 		return ProcessPreconditionsResolution.accept();
 	}
 
 	protected final ProcessPreconditionsResolution acceptIfOrderLinesNotInGroup(final IProcessPreconditionsContext context)
 	{
-		final Set<Integer> orderLineIds = getSelectedOrderLineIds(context);
+		final Set<OrderLineId> orderLineIds = getSelectedOrderLineIds(context);
 		if (orderLineIds.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Select some order lines");
@@ -110,18 +111,21 @@ public abstract class OrderCompensationGroupProcess extends JavaProcess implemen
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	private static final Set<Integer> getSelectedOrderLineIds(final IProcessPreconditionsContext context)
+	private static final Set<OrderLineId> getSelectedOrderLineIds(final IProcessPreconditionsContext context)
 	{
 		return context.getSelectedIncludedRecords()
 				.stream()
 				.filter(recordRef -> I_C_OrderLine.Table_Name.equals(recordRef.getTableName()))
-				.map(recordRef -> recordRef.getRecord_ID())
+				.map(recordRef -> OrderLineId.ofRepoId(recordRef.getRecord_ID()))
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	protected final Set<Integer> getSelectedOrderLineIds()
+	protected final Set<OrderLineId> getSelectedOrderLineIds()
 	{
-		return getSelectedIncludedRecordIds(I_C_OrderLine.class);
+		return getSelectedIncludedRecordIds(I_C_OrderLine.class)
+				.stream()
+				.map(OrderLineId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	protected final List<I_C_OrderLine> getSelectedOrderLines()

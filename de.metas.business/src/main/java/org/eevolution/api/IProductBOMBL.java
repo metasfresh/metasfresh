@@ -25,7 +25,6 @@ package org.eevolution.api;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
@@ -40,7 +39,7 @@ public interface IProductBOMBL extends ISingletonService
 
 	boolean isValidFromTo(I_PP_Product_BOMLine bomLine, Date date);
 
-	void setIsBOM(I_M_Product product);
+	void updateIsBOMFlag(ProductId productId);
 
 	/**
 	 * Calculates low level code (LLC) for given product.
@@ -60,7 +59,7 @@ public interface IProductBOMBL extends ISingletonService
 	 * @param scrapPercent scrap percent (between 0..100)
 	 * @return qty * (1 + qtyScrap/100)
 	 */
-	BigDecimal calculateQtyWithScrap(BigDecimal qty, Percent scrapPercent);
+	BigDecimal computeQtyWithScrap(BigDecimal qty, Percent scrapPercent);
 
 	/**
 	 * Checks if a BOMLine which is a <code>X_PP_Product_BOMLine.COMPONENTTYPE_Variant</code> has a valid VariantGroup<br>
@@ -74,16 +73,21 @@ public interface IProductBOMBL extends ISingletonService
 	boolean isValidVariantGroup(I_PP_Product_BOMLine bomLine);
 
 	/**
+	 * @return how much of bom line's product we need to produce an amount of <code>finishedGoodQty</code>
+	 */
+	BigDecimal computeQtyRequired(I_PP_Product_BOMLine bomLine, ProductId finishedGoodProductId, BigDecimal finishedGoodQty);
+
+	/**
 	 * Return Unified BOM Qty Multiplier.
 	 *
 	 * i.e. how much of this component is needed for 1 item of finished good.
 	 *
-	 * @param productBomLine
-	 * @param endProductId
+	 * @param bomLine
+	 * @param finishedGoodProductId
 	 *
 	 * @return If is percentage then QtyBatch / 100 will be returned, else QtyBOM.
 	 */
-	BigDecimal getQtyMultiplier(I_PP_Product_BOMLine productBomLine, ProductId endProductId);
+	BigDecimal computeQtyMultiplier(I_PP_Product_BOMLine bomLine, ProductId finishedGoodProductId);
 
 	String getBOMDescriptionForProductId(ProductId productId);
 

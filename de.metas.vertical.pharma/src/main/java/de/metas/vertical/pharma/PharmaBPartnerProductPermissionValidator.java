@@ -70,9 +70,12 @@ public class PharmaBPartnerProductPermissionValidator implements IOrderLineInput
 	 * TypeC can ship typeA + narcotics.
 	 */
 	@Override
-	public OrderLineInputValidatorResults validate(final @NonNull BPartnerId bpartnerId, final @NonNull ProductId productId, final SOTrx isSoTrx)
+	public OrderLineInputValidatorResults validate(
+			@NonNull final BPartnerId bpartnerId, 
+			@NonNull final ProductId productId,
+			@NonNull final SOTrx soTrx)
 	{
-		if (isSoTrx.isSales())
+		if (soTrx.isSales())
 		{
 			return evaluateSalesPrescriptionPermission(bpartnerId, productId);
 		}

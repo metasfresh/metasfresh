@@ -67,7 +67,7 @@ public class ShipmentConstraintsBL implements IShipmentConstraintsBL
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Shipment_Constraint.class, PlainContextAware.newOutOfTrx())
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Shipment_Constraint.COLUMN_Bill_BPartner_ID, billBPartnerId)
+				.addEqualsFilter(I_M_Shipment_Constraint.COLUMNNAME_Bill_BPartner_ID, billBPartnerId)
 				.addEqualsFilter(I_M_Shipment_Constraint.COLUMN_IsDeliveryStop, true)
 				.orderBy()
 				.addColumn(I_M_Shipment_Constraint.COLUMN_M_Shipment_Constraint_ID)
