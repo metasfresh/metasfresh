@@ -1,5 +1,5 @@
 
-package org.eevolution.mrp.spi.impl.pporder;
+package org.eevolution.api.impl;
 
 import static de.metas.document.engine.IDocument.ACTION_Complete;
 import static de.metas.document.engine.IDocument.STATUS_Completed;
@@ -13,15 +13,14 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
-import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.model.X_PP_Order;
-import org.springframework.stereotype.Service;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
@@ -37,9 +36,12 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -63,18 +65,29 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Service
-public class PPOrderProducer
+
+/**
+ * Creates manufacturing order from {@link PPOrderCreateRequest}.
+ */
+final class CreateOrderCommand
 {
-	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	private final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
 	private final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
 	private final IProductBOMDAO bomsRepo = Services.get(IProductBOMDAO.class);
 	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
+	private final IUOMConversionBL uomConversionService = Services.get(IUOMConversionBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
-	public I_PP_Order createPPOrder(@NonNull final PPOrderCreateRequest request)
+	private final PPOrderCreateRequest request;
+
+	@Builder
+	private CreateOrderCommand(@NonNull final PPOrderCreateRequest request)
+	{
+		this.request = request;
+	}
+
+	public I_PP_Order execute()
 	{
 		final ProductPlanningId productPlanningId = request.getProductPlanningId();
 		final I_PP_Product_Planning productPlanning = productPlanningId != null
@@ -129,7 +142,7 @@ public class PPOrderProducer
 		ppOrderRecord.setDateStartSchedule(TimeUtil.asTimestamp(request.getDateStartSchedule()));
 
 		// Qty/UOM
-		ppOrderBL.setQtyRequired(ppOrderRecord, request.getQtyRequired());
+		setQtyRequired(ppOrderRecord, request.getQtyRequired());
 		// QtyBatchSize : do not set it, let the MO to take it from workflow
 		ppOrderRecord.setYield(BigDecimal.ZERO);
 
@@ -265,4 +278,16 @@ public class PPOrderProducer
 				.adOrgId(clientAndOrgId.getOrgId().getRepoId())
 				.build());
 	}
+
+	private void setQtyRequired(@NonNull final I_PP_Order order, @NonNull final Quantity qty)
+	{
+		final Quantity qtyRounded = qty.roundToUOMPrecision();
+		order.setQtyEntered(qtyRounded.toBigDecimal());
+		order.setC_UOM_ID(qtyRounded.getUomId().getRepoId());
+
+		final ProductId productId = ProductId.ofRepoId(order.getM_Product_ID());
+		final Quantity qtyInSockingUOM = uomConversionService.convertToProductUOM(qtyRounded, productId);
+		order.setQtyOrdered(qtyInSockingUOM.toBigDecimal());
+	}
+
 }

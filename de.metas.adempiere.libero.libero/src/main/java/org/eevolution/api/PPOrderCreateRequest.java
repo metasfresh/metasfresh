@@ -1,4 +1,4 @@
-package org.eevolution.mrp.spi.impl.pporder;
+package org.eevolution.api;
 
 import java.time.Instant;
 
@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.ProductBOMId;
-import org.eevolution.mrp.spi.impl.pporder.PPOrderCreateRequest.PPOrderCreateRequestBuilder;
+import org.eevolution.api.PPOrderCreateRequest.PPOrderCreateRequestBuilder;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;

@@ -5,9 +5,9 @@ import java.util.Collection;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_C_UOM;
+import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.model.I_PP_Order;
-import org.eevolution.mrp.spi.impl.pporder.PPOrderCreateRequest;
-import org.eevolution.mrp.spi.impl.pporder.PPOrderProducer;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -52,13 +52,8 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App) // only one handler should bother itself with these events
 public class PPOrderRequestedEventHandler implements MaterialEventHandler<PPOrderRequestedEvent>
 {
+	private final IPPOrderBL ppOrderService = Services.get(IPPOrderBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final PPOrderProducer ppOrderProducer;
-
-	public PPOrderRequestedEventHandler(@NonNull final PPOrderProducer ppOrderProducer)
-	{
-		this.ppOrderProducer = ppOrderProducer;
-	}
 
 	@Override
 	public Collection<Class<? extends PPOrderRequestedEvent>> getHandeledEventType()
@@ -92,7 +87,7 @@ public class PPOrderRequestedEventHandler implements MaterialEventHandler<PPOrde
 		final I_C_UOM uom = productBL.getStockUOM(productId);
 		final Quantity qtyRequired = Quantity.of(ppOrder.getQtyRequired(), uom);
 
-		return ppOrderProducer.createPPOrder(PPOrderCreateRequest.builder()
+		return ppOrderService.createOrder(PPOrderCreateRequest.builder()
 				.clientAndOrgId(ppOrder.getClientAndOrgId())
 				.productPlanningId(ProductPlanningId.ofRepoId(ppOrder.getProductPlanningId()))
 				.materialDispoGroupId(ppOrder.getMaterialDispoGroupId())

@@ -37,6 +37,7 @@ import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderRoutingRepository;
+import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityStatus;
@@ -58,7 +59,6 @@ import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -66,7 +66,15 @@ import lombok.NonNull;
 
 public class PPOrderBL implements IPPOrderBL
 {
-	private final IUOMConversionBL uomConversionService = Services.get(IUOMConversionBL.class);
+
+	@Override
+	public I_PP_Order createOrder(@NonNull final PPOrderCreateRequest request)
+	{
+		return CreateOrderCommand.builder()
+				.request(request)
+				.build()
+				.execute();
+	}
 
 	@Override
 	public void setDefaults(final I_PP_Order ppOrder)
@@ -87,18 +95,6 @@ public class PPOrderBL implements IPPOrderBL
 		setDocType(ppOrder, X_C_DocType.DOCBASETYPE_ManufacturingOrder, /* docSubType */null);
 		ppOrder.setDocStatus(X_PP_Order.DOCSTATUS_Drafted);
 		ppOrder.setDocAction(X_PP_Order.DOCACTION_Complete);
-	}
-
-	@Override
-	public void setQtyRequired(@NonNull final I_PP_Order order, @NonNull final Quantity qty)
-	{
-		final Quantity qtyRounded = qty.roundToUOMPrecision();
-		order.setQtyEntered(qtyRounded.toBigDecimal());
-		order.setC_UOM_ID(qtyRounded.getUomId().getRepoId());
-
-		final ProductId productId = ProductId.ofRepoId(order.getM_Product_ID());
-		final Quantity qtyInSockingUOM = uomConversionService.convertToProductUOM(qtyRounded, productId);
-		order.setQtyOrdered(qtyInSockingUOM.toBigDecimal());
 	}
 
 	@Override

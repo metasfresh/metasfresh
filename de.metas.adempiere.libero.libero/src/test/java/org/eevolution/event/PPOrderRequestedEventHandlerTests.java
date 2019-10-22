@@ -7,8 +7,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,7 +37,6 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.validator.PP_Order;
-import org.eevolution.mrp.spi.impl.pporder.PPOrderProducer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -210,7 +207,7 @@ public class PPOrderRequestedEventHandlerTests
 				.warehouseId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()))
 				.build();
 
-		ppOrderRequestedEventHandler = new PPOrderRequestedEventHandler(new PPOrderProducer());
+		ppOrderRequestedEventHandler = new PPOrderRequestedEventHandler();
 	}
 
 	private PPRoutingId createRouting()
@@ -302,12 +299,12 @@ public class PPOrderRequestedEventHandlerTests
 		assertThat(orderBOMLines.isEmpty()).isFalse();
 		assertThat(orderBOMLines).hasSize(2);
 
-		assertThat(filter(ppOrder, BOMComponentType.Component).size(), is(1));
+		assertThat(filter(ppOrder, BOMComponentType.Component)).hasSize(1);
 		final I_PP_Order_BOMLine componentLine = filter(ppOrder, BOMComponentType.Component).get(0);
 		assertThat(componentLine.getDescription()).isEqualTo("supposed to become the component line");
 		assertThat(componentLine.getM_Product_ID()).isEqualTo(bomComponentProduct.getM_Product_ID());
 
-		assertThat(filter(ppOrder, BOMComponentType.CoProduct).size(), is(1));
+		assertThat(filter(ppOrder, BOMComponentType.CoProduct)).hasSize(1);
 		final I_PP_Order_BOMLine coProductLine = filter(ppOrder, BOMComponentType.CoProduct).get(0);
 		assertThat(coProductLine.getDescription()).isEqualTo("supposed to become the co-product line");
 		assertThat(coProductLine.getM_Product_ID()).isEqualTo(bomCoProduct.getM_Product_ID());

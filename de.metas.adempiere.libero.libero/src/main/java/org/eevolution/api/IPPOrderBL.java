@@ -11,9 +11,9 @@ import de.metas.util.ISingletonService;
 
 public interface IPPOrderBL extends ISingletonService
 {
-	void setDefaults(I_PP_Order ppOrder);
+	I_PP_Order createOrder(PPOrderCreateRequest request);
 
-	void setQtyRequired(I_PP_Order order, Quantity qty);
+	void setDefaults(I_PP_Order ppOrder);
 
 	/**
 	 * Add to Description
