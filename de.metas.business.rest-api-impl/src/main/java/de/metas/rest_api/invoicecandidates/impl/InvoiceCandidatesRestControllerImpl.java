@@ -6,6 +6,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
@@ -77,8 +78,8 @@ class InvoiceCandidatesRestControllerImpl implements InvoiceCandidatesRestEndpoi
 			@RequestBody @NonNull final JsonInvoiceCandCreateRequest request) {
 		try {
 			PInstanceId pInstanceId = getPInstanceId();
-			createAndExecuteICQueryBuilder(request.getJsonInvoices(), pInstanceId);
-
+			IQuery<I_C_Invoice_Candidate> queryBuilder = createICQueryBuilder(request.getJsonInvoices());
+			queryBuilder.createSelection(pInstanceId);
 			final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
 					.setInvoicingParams(createInvoicingParams(request)).setFailIfNothingEnqueued(true)
 					.enqueueSelection(pInstanceId);
@@ -97,7 +98,7 @@ class InvoiceCandidatesRestControllerImpl implements InvoiceCandidatesRestEndpoi
 		}
 	}
 
-	public void createAndExecuteICQueryBuilder(List<JsonInvoiceCandidates> jsonInvoices, PInstanceId pInstanceId) {
+	public IQuery<I_C_Invoice_Candidate> createICQueryBuilder(List<JsonInvoiceCandidates> jsonInvoices) {
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
@@ -114,8 +115,7 @@ class InvoiceCandidatesRestControllerImpl implements InvoiceCandidatesRestEndpoi
 
 			queryBuilder.filter(invoiceCandidatesFilter);
 		}
-
-		queryBuilder.create().createSelection(pInstanceId);
+		return queryBuilder.create();
 	}
 
 	private InvoicingParamsObject createInvoicingParams(JsonInvoiceCandCreateRequest request) {
