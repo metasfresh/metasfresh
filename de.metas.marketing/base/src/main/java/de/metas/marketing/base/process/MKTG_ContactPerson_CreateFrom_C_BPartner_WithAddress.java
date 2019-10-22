@@ -42,6 +42,9 @@ public class MKTG_ContactPerson_CreateFrom_C_BPartner_WithAddress extends JavaPr
 	@Param(mandatory = true, parameterName = "DefaultAddressType")
 	private String defaultAddresType;
 
+	@Param(mandatory = true, parameterName = "IsRemoveAllExistingContactsFromCampaign")
+	private boolean removeAllExistingContactsFromCampaign;
+
 	@Override
 	protected String doIt() throws Exception
 	{
@@ -56,7 +59,7 @@ public class MKTG_ContactPerson_CreateFrom_C_BPartner_WithAddress extends JavaPr
 				.selectionFilter(currentSelectionFilter)
 				.campaignId(campaignId)
 				.addresType(DefaultAddressType.forCode(defaultAddresType))
-				.removeAllExistingContactsFromCampaign(false)
+				.removeAllExistingContactsFromCampaign(removeAllExistingContactsFromCampaign)
 				.build();
 
 		contactPersonProcessBase.createContactPersonsForPartner(params);

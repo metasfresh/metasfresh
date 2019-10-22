@@ -63,3 +63,13 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 UPDATE AD_Process_Para_Trl SET IsTranslated='Y', Name='Remove All Existing Contacts From Campaign',Updated=TO_TIMESTAMP('2019-10-22 16:42:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_Para_ID=541632
 ;
 
+-- 2019-10-22T14:51:53.111Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,DefaultValue,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,577237,0,540990,541633,20,'IsRemoveAllExistingContactsFromCampaign',TO_TIMESTAMP('2019-10-22 17:51:52','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.marketing.base',0,'Y','N','Y','N','Y','N','Entfernen aller bestehenden Kampagnenteilnehmer',30,TO_TIMESTAMP('2019-10-22 17:51:52','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2019-10-22T14:51:53.118Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Process_Para_ID=541633 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
+;
+
