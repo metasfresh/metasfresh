@@ -99,17 +99,14 @@ public interface IInvoiceCandidateHandler
 	}
 
 	/**
-	 * Checks if this handler can generate invoice candidates for given model. Returns {@code true} by default.
+	 * Invoice candidate handlers usually need to implement this method,
+	 * because they need to make sure that the given {@code model} does not have an invoice candidate yet, before they can return {@code true}.
 	 * <p>
 	 * Note that this method only matters if {@link #isCreateMissingCandidatesAutomatically()} returned {@code true} when the system started.
 	 *
-	 * @param model
 	 * @return {@code true} if the invoice candidates shall be automatically generated for the given particular model.
 	 */
-	default boolean isCreateMissingCandidatesAutomatically(Object model)
-	{
-		return true;
-	}
+	boolean isCreateMissingCandidatesAutomatically(Object model);
 
 	/**
 	 * Returns {@code AFTER_COMPLETE} by default.
@@ -233,9 +230,10 @@ public interface IInvoiceCandidateHandler
 	/**
 	 * Method responsible for setting
 	 * <ul>
-	 * <li>M_InOut_ID
-	 * <li>DeliveryDate
-	 * <li>QtyDelivered
+	 * <li>{@code M_InOut_ID}
+	 * <li>{@code DeliveryDate}
+	 * <li>{@code QtyDelivered}
+	 * <li>{@code QtyDeliveredInUOM}
 	 * </ul>
 	 * of the given invoice candidate.
 	 * <p>
