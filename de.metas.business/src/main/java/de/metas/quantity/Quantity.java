@@ -45,6 +45,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
+import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
@@ -720,5 +721,14 @@ public final class Quantity implements Comparable<Quantity>
 		}
 
 		return new Quantity(qty.multiply(multiplicand), uom, sourceQty.multiply(multiplicand), sourceUom);
+	}
+
+	public Quantity roundToUOMPrecision()
+	{
+		final UOMPrecision precision = UOMPrecision.ofInt(uom.getStdPrecision());
+		final BigDecimal qtyRounted = precision.roundIfNeeded(qty);
+		return qty.equals(qtyRounted)
+				? this
+				: new Quantity(qtyRounted, uom, sourceQty, sourceUom);
 	}
 }
