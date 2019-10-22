@@ -8,8 +8,12 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstanceId;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -52,26 +56,39 @@ public class CommissionInstanceTestRecord
 	Long mostRecentTriggerTimestamp;
 
 	@NonNull
-	Integer C_INVOICE_CANDIDATE_ID;
+	InvoiceCandidateId C_INVOICE_CANDIDATE_ID;
 
 	@Singular
 	List<CommissionShareTestRecord> commissionShareTestRecords;
 
-	public CommissionInstanceId createCommissionData()
+	public CreateCommissionInstanceResult createCommissionData()
 	{
 		final I_C_Commission_Instance instanceRecord = newInstance(I_C_Commission_Instance.class);
-		instanceRecord.setC_Invoice_Candidate_ID(C_INVOICE_CANDIDATE_ID);
+		instanceRecord.setC_Invoice_Candidate_ID(C_INVOICE_CANDIDATE_ID.getRepoId());
 		instanceRecord.setMostRecentTriggerTimestamp(Timestamp.from(Instant.ofEpochMilli(mostRecentTriggerTimestamp)));
 		instanceRecord.setPointsBase_Forecasted(new BigDecimal(pointsBase_Forecasted));
 		instanceRecord.setPointsBase_Invoiceable(new BigDecimal(pointsBase_Invoiceable));
 		instanceRecord.setPointsBase_Invoiced(new BigDecimal(pointsBase_Invoiced));
 		saveRecord(instanceRecord);
 
+		final ImmutableMap.Builder<BPartnerId, Integer> bpartnerId2commissionShareId = ImmutableMap.builder();
 		for (final CommissionShareTestRecord commissionShareTestRecord : commissionShareTestRecords)
 		{
-			commissionShareTestRecord.createCommissionData(instanceRecord.getC_Commission_Instance_ID());
+			final int C_Commission_Share_ID = commissionShareTestRecord.createCommissionData(instanceRecord.getC_Commission_Instance_ID());
+			bpartnerId2commissionShareId.put(commissionShareTestRecord.getC_BPartner_SalesRep_ID(), C_Commission_Share_ID);
 		}
-
-		return CommissionInstanceId.ofRepoId(instanceRecord.getC_Commission_Instance_ID());
+		return new CreateCommissionInstanceResult(
+				CommissionInstanceId.ofRepoId(instanceRecord.getC_Commission_Instance_ID()),
+				bpartnerId2commissionShareId.build());
 	}
+
+	@Value
+	public static class CreateCommissionInstanceResult
+	{
+		@NonNull
+		CommissionInstanceId commissionInstanceId;
+
+		ImmutableMap<BPartnerId, Integer> bpartnerId2commissionShareId;
+	}
+
 }

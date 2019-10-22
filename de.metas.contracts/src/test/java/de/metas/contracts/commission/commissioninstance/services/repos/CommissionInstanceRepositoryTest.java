@@ -79,9 +79,9 @@ class CommissionInstanceRepositoryTest
 {
 	private static final long START_TIMESTAMP = 1568720955000L; // Tuesday, September 17, 2019 11:49:15 AM
 
-	private static long currentTimestamp = START_TIMESTAMP;
+	private long currentTimestamp = START_TIMESTAMP;
 
-	private static final int C_INVOICE_CANDIDATE_ID = 10;
+	private static final InvoiceCandidateId C_INVOICE_CANDIDATE_ID = InvoiceCandidateId.ofRepoId(10);
 
 	private static final BPartnerId C_BPartner_SalesRep_1_ID = BPartnerId.ofRepoId(20);
 	private static final BPartnerId C_BPartner_SalesRep_2_ID = BPartnerId.ofRepoId(21);
@@ -121,11 +121,9 @@ class CommissionInstanceRepositoryTest
 		createCommissionData();
 
 		// invoke the method under test
-		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(C_INVOICE_CANDIDATE_ID);
-		final ImmutableList<CommissionInstance> result = commissionInstanceRepository.getForInvoiceCandidateId(invoiceCandidateId);
-		assertThat(result).hasSize(1);
 
-		// JSONObjectMapper.forClass(CommissionInstance.class).writeValueAsString(result.get(0));
+		final ImmutableList<CommissionInstance> result = commissionInstanceRepository.getForInvoiceCandidateId(C_INVOICE_CANDIDATE_ID);
+		assertThat(result).hasSize(1);
 
 		SnapshotMatcher.expect(result.get(0)).toMatchSnapshot();
 	}
@@ -210,27 +208,12 @@ class CommissionInstanceRepositoryTest
 	private long incAndGetTimestamp()
 	{
 		currentTimestamp += 10000;
-
 		return currentTimestamp;
 	}
-
-	// @Test
-	// void getForCommissionInstanceId()
-	// {
-	// CommissionInstanceId commissionInstanceId = createCommissionData();
-	//
-	// // invoke the method under test
-	// final CommissionInstance result = commissionInstanceRepository.getForCommissionInstanceId(commissionInstanceId);
-	//
-	// SnapshotMatcher.expect(result).toMatchSnapshot();
-	// }
 
 	@Test
 	void save()
 	{
-		// final InputStream objectStream = getClass().getResourceAsStream("/de/metas/contracts/commission/commissioninstance/services/repos/CommissionInstance.json");
-		// assertThat(objectStream).isNotNull();
-		// final CommissionInstance commissionInstance = JSONObjectMapper.forClass(CommissionInstance.class).readValue(objectStream);
 		// the actual contract data is not saved
 		final ImmutableMap<BPartnerId, FlatrateTermId> bpartnerId2flatrateTermId = ConfigTestRecord.builder()
 				.percentOfBasePoints("10")

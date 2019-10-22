@@ -10,6 +10,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -43,11 +44,23 @@ public class CommissionShareTestRecord
 	@NonNull
 	BPartnerId C_BPartner_SalesRep_ID;
 	@NonNull
-	String pointsSum_Forecasted;
+	@Default
+	String pointsSum_Forecasted = "0";
 	@NonNull
-	String pointsSum_Invoiceable;
+	@Default
+	String pointsSum_Invoiceable = "0";
 	@NonNull
-	String pointsSum_Invoiced;
+	@Default
+	String pointsSum_Invoiced = "0";
+
+	@NonNull
+	@Default
+	String pointsSum_ToSettle = "0";
+
+	@NonNull
+	@Default
+	String pointsSum_Settled = "0";
+
 	@NonNull
 	Integer levelHierarchy;
 
@@ -57,7 +70,7 @@ public class CommissionShareTestRecord
 	@Singular
 	List<CommissionFactTestRecord> commissionFactTestRecords;
 
-	public void createCommissionData(final int C_Commission_Instance_ID)
+	public int createCommissionData(final int C_Commission_Instance_ID)
 	{
 		final I_C_Commission_Share shareRecord = newInstance(I_C_Commission_Share.class);
 		shareRecord.setC_Flatrate_Term_ID(flatrateTermId.getRepoId());
@@ -67,6 +80,8 @@ public class CommissionShareTestRecord
 		shareRecord.setPointsSum_Forecasted(new BigDecimal(pointsSum_Forecasted));
 		shareRecord.setPointsSum_Invoiceable(new BigDecimal(pointsSum_Invoiceable));
 		shareRecord.setPointsSum_Invoiced(new BigDecimal(pointsSum_Invoiced));
+		shareRecord.setPointsSum_ToSettle(new BigDecimal(pointsSum_ToSettle));
+		shareRecord.setPointsSum_Settled(new BigDecimal(pointsSum_Settled));
 
 		saveRecord(shareRecord);
 
@@ -74,5 +89,6 @@ public class CommissionShareTestRecord
 		{
 			commissionFactTestRecord.createCommissionData(shareRecord.getC_Commission_Share_ID());
 		}
+		return shareRecord.getC_Commission_Share_ID();
 	}
 }

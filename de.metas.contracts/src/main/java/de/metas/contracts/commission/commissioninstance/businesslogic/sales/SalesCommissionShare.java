@@ -50,8 +50,6 @@ public class SalesCommissionShare
 	@Setter(AccessLevel.NONE)
 	private final SalesCommissionShareId id;
 
-	//private final CommissionContract contract;
-
 	private final HierarchyLevel level;
 
 	private final Beneficiary beneficiary;
@@ -78,7 +76,6 @@ public class SalesCommissionShare
 			@JsonProperty("facts") @NonNull @Singular final List<SalesCommissionFact> facts)
 	{
 		this.id = id;
-		//this.contract = contract;
 		this.level = level;
 		this.beneficiary = beneficiary;
 		this.facts = new ArrayList<>();

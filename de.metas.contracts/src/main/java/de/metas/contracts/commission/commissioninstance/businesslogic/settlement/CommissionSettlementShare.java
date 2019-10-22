@@ -42,6 +42,7 @@ import lombok.Setter;
 @Data
 public class CommissionSettlementShare
 {
+	/** a settlement share doesn't make sense without a sames commission share. */
 	private SalesCommissionShareId salesCommissionShareId;
 
 	@Setter(AccessLevel.NONE)
@@ -61,6 +62,9 @@ public class CommissionSettlementShare
 	{
 		this.salesCommissionShareId = salesCommissionShareId;
 		this.facts = new ArrayList<>();
+
+		this.pointsToSettleSum = CommissionPoints.ZERO;
+		this.settledPointsSum = CommissionPoints.ZERO;
 
 		for (final CommissionSettlementFact fact : facts)
 		{
