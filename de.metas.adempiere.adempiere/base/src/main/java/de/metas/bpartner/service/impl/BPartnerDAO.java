@@ -200,6 +200,20 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public Optional<BPartnerId> getBPartnerIdBySalesPartnerCode(String salesPartnerCode)
+	{
+		final String valueFixed = salesPartnerCode.trim();
+
+		final BPartnerId bpartnerId = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_SalesPartnerCode, valueFixed)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstIdOnly(BPartnerId::ofRepoIdOrNull);
+		return Optional.ofNullable(bpartnerId);
+	}
+
+	@Override
 	public I_C_BPartner getByIdInTrx(@NonNull final BPartnerId bpartnerId)
 	{
 		return load(bpartnerId, I_C_BPartner.class);
@@ -1344,7 +1358,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
-				.addEqualsFilter(I_C_BPartner.COLUMN_BPartner_Parent_ID, parentPartnerId)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_BPartner_Parent_ID, parentPartnerId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.listIds(BPartnerId::ofRepoId)
@@ -1377,7 +1391,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner.class)
 				.addEqualsFilter(I_C_BPartner.COLUMN_C_BPartner_ID, bpartnerId)
-				.addNotNull(I_C_BPartner.COLUMN_BPartner_Parent_ID)
+				.addNotNull(I_C_BPartner.COLUMNNAME_BPartner_Parent_ID)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.listDistinct(I_C_BPartner.COLUMNNAME_BPartner_Parent_ID, Integer.class)
@@ -1405,7 +1419,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsCustomer, true)
 				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsAllowPriceMutation, true)
-				.addEqualsFilter(I_C_BPartner.COLUMN_M_PricingSystem_ID, pricingSystemId.getRepoId())
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_M_PricingSystem_ID, pricingSystemId.getRepoId())
 				.create()
 				.match();
 

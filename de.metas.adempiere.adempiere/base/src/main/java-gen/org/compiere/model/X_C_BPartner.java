@@ -15,7 +15,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1389553180L;
+	private static final long serialVersionUID = -1074828550L;
 
     /** Standard Constructor */
     public X_C_BPartner (Properties ctx, int C_BPartner_ID, String trxName)
@@ -177,10 +177,8 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return false;
 	}
 
-	/** Set Partner Parent.
-		@param BPartner_Parent_ID 
-		Business Partner Parent
-	  */
+	/** Set Übergeordneter Partner.
+		@param BPartner_Parent_ID Übergeordneter Partner	  */
 	@Override
 	public void setBPartner_Parent_ID (int BPartner_Parent_ID)
 	{
@@ -190,9 +188,8 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 			set_Value (COLUMNNAME_BPartner_Parent_ID, Integer.valueOf(BPartner_Parent_ID));
 	}
 
-	/** Get Partner Parent.
-		@return Business Partner Parent
-	  */
+	/** Get Übergeordneter Partner.
+		@return Übergeordneter Partner	  */
 	@Override
 	public int getBPartner_Parent_ID () 
 	{
@@ -227,8 +224,8 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return ii.intValue();
 	}
 
-	/** Set Vertriebspartner.
-		@param C_BPartner_SalesRep_ID Vertriebspartner	  */
+	/** Set Zugeordneter Vertriebspartner.
+		@param C_BPartner_SalesRep_ID Zugeordneter Vertriebspartner	  */
 	@Override
 	public void setC_BPartner_SalesRep_ID (int C_BPartner_SalesRep_ID)
 	{
@@ -238,8 +235,8 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 			set_Value (COLUMNNAME_C_BPartner_SalesRep_ID, Integer.valueOf(C_BPartner_SalesRep_ID));
 	}
 
-	/** Get Vertriebspartner.
-		@return Vertriebspartner	  */
+	/** Get Zugeordneter Vertriebspartner.
+		@return Zugeordneter Vertriebspartner	  */
 	@Override
 	public int getC_BPartner_SalesRep_ID () 
 	{
@@ -1371,9 +1368,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return false;
 	}
 
-	/** Set Nur mit Vertriebspartner.
+	/** Set Auftrag nur mit Vertriebspartner.
 		@param IsSalesPartnerRequired 
-		Legt für den Rechnungspartner fest, ob bei einer Beauftragung der Vertriebspartner angegeben werden muss.
+		Legt für den Rechnungspartner fest, ob bei einer Beauftragung immer ein Vertriebspartner angegeben werden muss.
 	  */
 	@Override
 	public void setIsSalesPartnerRequired (boolean IsSalesPartnerRequired)
@@ -1381,8 +1378,8 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		set_Value (COLUMNNAME_IsSalesPartnerRequired, Boolean.valueOf(IsSalesPartnerRequired));
 	}
 
-	/** Get Nur mit Vertriebspartner.
-		@return Legt für den Rechnungspartner fest, ob bei einer Beauftragung der Vertriebspartner angegeben werden muss.
+	/** Get Auftrag nur mit Vertriebspartner.
+		@return Legt für den Rechnungspartner fest, ob bei einer Beauftragung immer ein Vertriebspartner angegeben werden muss.
 	  */
 	@Override
 	public boolean isSalesPartnerRequired () 
@@ -1397,9 +1394,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return false;
 	}
 
-	/** Set Vertriebspartner.
+	/** Set Ist Vertriebspartner.
 		@param IsSalesRep 
-		Indicates if  the business partner is a sales representative or company agent
+		Mit Vertriebspartnern können Provisionsverträge abgeschlossen werden.
 	  */
 	@Override
 	public void setIsSalesRep (boolean IsSalesRep)
@@ -1407,8 +1404,8 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		set_Value (COLUMNNAME_IsSalesRep, Boolean.valueOf(IsSalesRep));
 	}
 
-	/** Get Vertriebspartner.
-		@return Indicates if  the business partner is a sales representative or company agent
+	/** Get Ist Vertriebspartner.
+		@return Mit Vertriebspartnern können Provisionsverträge abgeschlossen werden.
 	  */
 	@Override
 	public boolean isSalesRep () 
@@ -2471,6 +2468,22 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getSalesgroup () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Salesgroup);
+	}
+
+	/** Set Vertriebspartnercode.
+		@param SalesPartnerCode Vertriebspartnercode	  */
+	@Override
+	public void setSalesPartnerCode (java.lang.String SalesPartnerCode)
+	{
+		set_Value (COLUMNNAME_SalesPartnerCode, SalesPartnerCode);
+	}
+
+	/** Get Vertriebspartnercode.
+		@return Vertriebspartnercode	  */
+	@Override
+	public java.lang.String getSalesPartnerCode () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_SalesPartnerCode);
 	}
 
 	/** Set Kundenbetreuer.

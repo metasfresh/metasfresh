@@ -76,7 +76,9 @@ public interface IBPartnerDAO extends ISingletonService
 
 	<T extends I_C_BPartner> T getById(BPartnerId bpartnerId, Class<T> modelClass);
 
-	BPartnerId getBPartnerIdByValue(final String bpartnerValue);
+	BPartnerId getBPartnerIdByValue(String bpartnerValue);
+
+	Optional<BPartnerId> getBPartnerIdBySalesPartnerCode(String salesPartnerCode);
 
 	I_C_BPartner getByIdInTrx(BPartnerId bpartnerId);
 

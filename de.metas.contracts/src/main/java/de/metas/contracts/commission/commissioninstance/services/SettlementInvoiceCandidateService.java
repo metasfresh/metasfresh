@@ -1,5 +1,7 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
+import static java.math.BigDecimal.ZERO;
+
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -49,7 +51,9 @@ public class SettlementInvoiceCandidateService
 		this.commissionSettlementShareRepository = commissionSettlementShareRepository;
 	}
 
-	public void syncSettlementICToCommissionInstance(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	public void syncSettlementICToCommissionInstance(
+			@NonNull final InvoiceCandidateId invoiceCandidateId,
+			final boolean candidateDeleted)
 	{
 		final I_C_Invoice_Candidate settlementICRecord = invoiceCandDAO.getById(invoiceCandidateId);
 
@@ -57,7 +61,7 @@ public class SettlementInvoiceCandidateService
 
 		//
 		// pointsToSettle fact
-		final CommissionPoints newPointsToSettle = CommissionPoints.of(settlementICRecord.getQtyToInvoice());
+		final CommissionPoints newPointsToSettle = CommissionPoints.of(candidateDeleted ? ZERO : settlementICRecord.getQtyToInvoice());
 		final CommissionPoints pointsToSettleDelta = newPointsToSettle.subtract(settlementShare.getPointsToSettleSum());
 		if (!pointsToSettleDelta.isZero())
 		{
@@ -72,7 +76,7 @@ public class SettlementInvoiceCandidateService
 
 		//
 		// settledPoints fact
-		final CommissionPoints settledPoints = CommissionPoints.of(settlementICRecord.getQtyInvoiced());
+		final CommissionPoints settledPoints = CommissionPoints.of(candidateDeleted ? ZERO : settlementICRecord.getQtyInvoiced());
 		final CommissionPoints settledPointsDelta = settledPoints.subtract(settlementShare.getSettledPointsSum());
 		if (!settledPointsDelta.isZero())
 		{

@@ -15,7 +15,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1093216475L;
+	private static final long serialVersionUID = 2025653177L;
 
     /** Standard Constructor */
     public X_C_Order (Properties ctx, int C_Order_ID, String trxName)
@@ -49,6 +49,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 			setIsDropShip (false); // N
 			setIsInvoiced (false);
 			setIsPrinted (false);
+			setIsSalesPartnerRequired (false); // N
 			setIsSelected (false);
 			setIsSelfService (false);
 			setIsSOTrx (false); // @IsSOTrx@
@@ -382,8 +383,8 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		return (java.lang.String)get_Value(COLUMNNAME_C_BPartner_Memo);
 	}
 
-	/** Set Vertriebspartner.
-		@param C_BPartner_SalesRep_ID Vertriebspartner	  */
+	/** Set Zugeordneter Vertriebspartner.
+		@param C_BPartner_SalesRep_ID Zugeordneter Vertriebspartner	  */
 	@Override
 	public void setC_BPartner_SalesRep_ID (int C_BPartner_SalesRep_ID)
 	{
@@ -393,8 +394,8 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 			set_Value (COLUMNNAME_C_BPartner_SalesRep_ID, Integer.valueOf(C_BPartner_SalesRep_ID));
 	}
 
-	/** Get Vertriebspartner.
-		@return Vertriebspartner	  */
+	/** Get Zugeordneter Vertriebspartner.
+		@return Zugeordneter Vertriebspartner	  */
 	@Override
 	public int getC_BPartner_SalesRep_ID () 
 	{
@@ -1636,6 +1637,32 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		return false;
 	}
 
+	/** Set Auftrag nur mit Vertriebspartner.
+		@param IsSalesPartnerRequired 
+		Legt für den Rechnungspartner fest, ob bei einer Beauftragung immer ein Vertriebspartner angegeben werden muss.
+	  */
+	@Override
+	public void setIsSalesPartnerRequired (boolean IsSalesPartnerRequired)
+	{
+		set_Value (COLUMNNAME_IsSalesPartnerRequired, Boolean.valueOf(IsSalesPartnerRequired));
+	}
+
+	/** Get Auftrag nur mit Vertriebspartner.
+		@return Legt für den Rechnungspartner fest, ob bei einer Beauftragung immer ein Vertriebspartner angegeben werden muss.
+	  */
+	@Override
+	public boolean isSalesPartnerRequired () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsSalesPartnerRequired);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Selektiert.
 		@param IsSelected Selektiert	  */
 	@Override
@@ -2447,6 +2474,22 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Vertriebspartnercode.
+		@param SalesPartnerCode Vertriebspartnercode	  */
+	@Override
+	public void setSalesPartnerCode (java.lang.String SalesPartnerCode)
+	{
+		set_Value (COLUMNNAME_SalesPartnerCode, SalesPartnerCode);
+	}
+
+	/** Get Vertriebspartnercode.
+		@return Vertriebspartnercode	  */
+	@Override
+	public java.lang.String getSalesPartnerCode () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_SalesPartnerCode);
 	}
 
 	/** Set Kundenbetreuer.

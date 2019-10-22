@@ -71,7 +71,7 @@ public class C_Invoice_Candidate
 
 		if (CommissionConstants.COMMISSION_PRODUCT_ID.getRepoId() == icRecord.getM_Product_ID())
 		{
-			settlementInvoiceCandidateService.syncSettlementICToCommissionInstance(invoiceCandidateId);
+			settlementInvoiceCandidateService.syncSettlementICToCommissionInstance(invoiceCandidateId, false/*candidateDeleted*/);
 		}
 		else
 		{
@@ -86,7 +86,7 @@ public class C_Invoice_Candidate
 
 		if (CommissionConstants.COMMISSION_PRODUCT_ID.getRepoId() == icRecord.getM_Product_ID())
 		{
-			// TODO: update commission share by deactivating or otherwise discarding facts that reference the settlement IC
+			settlementInvoiceCandidateService.syncSettlementICToCommissionInstance(invoiceCandidateId, true/*candidateDeleted*/);
 		}
 		else
 		{

@@ -1,7 +1,10 @@
 package de.metas.contracts.commission.salesorder.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static de.metas.util.Check.isEmpty;
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import java.util.Optional;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -14,6 +17,8 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
@@ -46,27 +51,62 @@ import lombok.NonNull;
 @Interceptor(I_C_Order.class)
 public class C_Order
 {
-	private static final String MSG_CUSTOMER_NEEDS_SALES_PARTNER = "de.metas.contracts.commission.salesorder.CustomerNeedsSalesPartner";
+	private static final String MSG_CUSTOMER_NEEDS_SALES_PARTNER = "de.metas.contracts.commission.salesOrder.MissingSalesPartner";
+
+	private final IBPartnerDAO bpartnerDAO;
 
 	public C_Order()
 	{
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+
+		bpartnerDAO = Services.get(IBPartnerDAO.class);
 	}
 
-	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_Bill_BPartner_ID)
-	public void updateSalesPartnerInOrder(@NonNull final I_C_Order orderRecord)
+	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_C_BPartner_ID, I_C_Order.COLUMNNAME_Bill_BPartner_ID })
+	public void updateSalesPartnerFromBillPartner(@NonNull final I_C_Order orderRecord)
 	{
 		if (!orderRecord.isSOTrx())
 		{
 			return;
 		}
-		if (orderRecord.getBill_BPartner_ID() <= 0)
+
+		final BPartnerId effectiveBillPartnerId = extractEffectiveBillPartnerId(orderRecord);
+		if (effectiveBillPartnerId == null)
 		{
 			return;
 		}
 
-		final I_C_BPartner billBPartnerRecord = loadOutOfTrx(orderRecord.getBill_BPartner_ID(), I_C_BPartner.class);
-		orderRecord.setC_BPartner_SalesRep_ID(billBPartnerRecord.getC_BPartner_SalesRep_ID());
+		final I_C_BPartner billBPartnerRecord = bpartnerDAO.getById(effectiveBillPartnerId);
+		orderRecord.setIsSalesPartnerRequired(billBPartnerRecord.isSalesPartnerRequired());
+
+		final BPartnerId salesBPartnerId = BPartnerId.ofRepoIdOrNull(billBPartnerRecord.getC_BPartner_SalesRep_ID());
+		orderRecord.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(salesBPartnerId));
+
+		if (salesBPartnerId == null)
+		{
+			orderRecord.setSalesPartnerCode(null);
+			return;
+		}
+
+		final I_C_BPartner salesBPartnerRecord = bpartnerDAO.getById(salesBPartnerId);
+		orderRecord.setSalesPartnerCode(salesBPartnerRecord.getSalesPartnerCode());
+	}
+
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_SalesPartnerCode)
+	public void updateSalesPartnerFromCode(@NonNull final I_C_Order orderRecord)
+	{
+		final String salesPartnerCode = orderRecord.getSalesPartnerCode();
+		if (isEmpty(salesPartnerCode, true))
+		{
+			orderRecord.setC_BPartner_SalesRep_ID(-1);
+			return;
+		}
+
+		final Optional<BPartnerId> salesPartnerId = bpartnerDAO.getBPartnerIdBySalesPartnerCode(salesPartnerCode);
+		if (salesPartnerId.isPresent())
+		{
+			orderRecord.setC_BPartner_SalesRep_ID(salesPartnerId.get().getRepoId());
+		}
 	}
 
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_SalesRep_ID)
@@ -76,16 +116,24 @@ public class C_Order
 		{
 			return;
 		}
-		if (orderRecord.getBill_BPartner_ID() <= 0)
-		{
-			return;
-		}
-		if (orderRecord.getC_BPartner_SalesRep_ID() <= 0)
+
+		final BPartnerId effectiveBillPartnerId = extractEffectiveBillPartnerId(orderRecord);
+		if (effectiveBillPartnerId == null)
 		{
 			return;
 		}
 
-		final I_C_BPartner billBPartnerRecord = loadOutOfTrx(orderRecord.getBill_BPartner_ID(), I_C_BPartner.class);
+		final BPartnerId salesBPartnerId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_SalesRep_ID());
+		if (salesBPartnerId == null)
+		{
+			orderRecord.setSalesPartnerCode(null);
+			return;
+		}
+
+		final I_C_BPartner salesBPartnerRecord = bpartnerDAO.getById(salesBPartnerId);
+		orderRecord.setSalesPartnerCode(salesBPartnerRecord.getSalesPartnerCode());
+
+		final I_C_BPartner billBPartnerRecord = bpartnerDAO.getById(effectiveBillPartnerId);
 		billBPartnerRecord.setC_BPartner_SalesRep_ID(orderRecord.getC_BPartner_SalesRep_ID());
 		saveRecord(billBPartnerRecord);
 	}
@@ -95,26 +143,35 @@ public class C_Order
 	{
 		if (!orderRecord.isSOTrx())
 		{
-			return;
-		}
-		if (orderRecord.getBill_BPartner_ID() <= 0)
-		{
-			return;
-		}
-
-		final I_C_BPartner billBPartnerRecord = loadOutOfTrx(orderRecord.getBill_BPartner_ID(), I_C_BPartner.class);
-		if (!billBPartnerRecord.isSalesPartnerRequired())
-		{
-			return;
+			return; // nothing to do for purchase orders
 		}
 
 		if (orderRecord.getC_BPartner_SalesRep_ID() > 0)
 		{
+			return; // having specified a sales partner is never wrong
+		}
+
+		final BPartnerId effectiveBillPartnerId = extractEffectiveBillPartnerId(orderRecord);
+		if (effectiveBillPartnerId == null)
+		{
 			return;
 		}
 
+		final I_C_BPartner bpartnerRecord = bpartnerDAO.getById(effectiveBillPartnerId);
+		if (!bpartnerRecord.isSalesPartnerRequired())
+		{
+			return; // doesn't need to have a sales partner
+		}
+
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
-		final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_CUSTOMER_NEEDS_SALES_PARTNER, billBPartnerRecord);
-		throw new AdempiereException(message);
+		final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_CUSTOMER_NEEDS_SALES_PARTNER);
+		throw new AdempiereException(message).markAsUserValidationError();
+	}
+
+	private BPartnerId extractEffectiveBillPartnerId(@NonNull final I_C_Order orderRecord)
+	{
+		return BPartnerId.ofRepoIdOrNull(firstGreaterThanZero(
+				orderRecord.getBill_BPartner_ID(),
+				orderRecord.getC_BPartner_ID()));
 	}
 }
