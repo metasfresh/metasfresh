@@ -1,0 +1,136 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<definitions targetNamespace="http://dpd.com/common/service/ShipmentService/3.2" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://dpd.com/common/service/ShipmentService/3.2" xmlns:types="http://dpd.com/common/service/types/ShipmentService/3.2" xmlns:types_authentication="http://dpd.com/common/service/types/Authentication/2.0"
+             xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://dpd.com/common/service/types/ShipmentService/3.2 ">
+    <wsdl:documentation>
+        <version name="3.2.0">
+            - New field extraPickup in pickup
+            - New field startPosition in printOptions
+        </version>
+        <version name="3.1.0">
+            - New field tyres in productAndServiceData
+            - Field customerNumber in sender/recipient address and field invoicePosition in international must be numeric.
+            - Parcelblock is optional, for only one parcel with no additional data.
+            - Return parcel label in format A7 support.
+            - Return parcel label receipt support.
+            - Variable sender address support.
+            - Parcel with 0kg weight handle as classic parcel.
+        </version>
+        <version name="3.0.0">
+            - New field countrySpecificService in productAndServiceData
+            - Removed field paperFormat in storeOrders
+            - Introduced new element printOptions in storeOrders with paperformat, printertype and printer options
+        </version>
+    </wsdl:documentation>
+    <types>
+        <xsd:schema targetNamespace="http://dpd.com/common/service/ShipmentService/3.2" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://dpd.com/common/service/ShipmentService/3.2" xmlns:types="http://dpd.com/common/service/types/ShipmentService/3.2" xmlns:types_authentication="http://dpd.com/common/service/types/Authentication/2.0"
+                    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+            <xsd:import namespace="http://dpd.com/common/service/types/ShipmentService/3.2" schemaLocation="https://public-ws-stage.dpd.com/services/ShipmentService/V3_2/?xsd=ShipmentService-Public_3_2.xsd">
+            </xsd:import>
+            <xsd:import namespace="http://dpd.com/common/service/types/Authentication/2.0" schemaLocation="https://public-ws-stage.dpd.com/services/ShipmentService/V3_2/?xsd=Authentication_2_0.xsd">
+            </xsd:import>
+        </xsd:schema>
+    </types>
+    <message name="storeOrdersHeader">
+        <part element="types_authentication:authentication" name="authentication">
+        </part>
+    </message>
+    <message name="AuthenticationFaultMsg">
+        <part element="types_authentication:authenticationFault" name="fault">
+        </part>
+    </message>
+    <message name="storeOrdersResponse">
+        <part element="types:storeOrdersResponse" name="return">
+        </part>
+    </message>
+    <message name="storeOrders">
+        <part element="types:storeOrders" name="parameters">
+        </part>
+    </message>
+    <portType name="ShipmentService_3_2">
+        <operation name="storeOrders">
+            <wsdl:documentation>Stores up to 30 shipments and creates corresponding shipment documents.
+
+                Sample request:
+                &lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://dpd.com/common/service/types/Authentication/2.0" xmlns:ns1="http://dpd.com/common/service/types/ShipmentService/3.2">
+                &lt;soapenv:Header>
+                &lt;ns:authentication>
+                &lt;delisId>&lt;your delisId>&lt;/delisId>
+                &lt;authToken>&lt;your authToken>&lt;/authToken>
+                &lt;messageLanguage>de_DE&lt;/messageLanguage>
+                &lt;/ns:authentication>
+                &lt;/soapenv:Header>
+                &lt;soapenv:Body>
+                &lt;ns1:storeOrders>
+                &lt;printOptions>
+                &lt;printerLanguage>PDF&lt;/printerLanguage>
+                &lt;paperFormat>A4&lt;/paperFormat>
+                &lt;/printOptions>
+                &lt;order>
+                &lt;generalShipmentData>
+                &lt;identificationNumber>77777&lt;/identificationNumber>
+                &lt;sendingDepot>0163&lt;/sendingDepot>
+                &lt;product>CL&lt;/product>
+                &lt;mpsCompleteDelivery>0&lt;/mpsCompleteDelivery>
+                &lt;sender>
+                &lt;name1>Abholer1&lt;/name1>
+                &lt;street>Strasse 1&lt;/street>
+                &lt;country>DE&lt;/country>
+                &lt;zipCode>11111&lt;/zipCode>
+                &lt;city>Ort1&lt;/city>
+                &lt;customerNumber>12345679&lt;/customerNumber>
+                &lt;/sender>
+                &lt;recipient>
+                &lt;name1>Test-Empfaenger&lt;/name1>
+                &lt;street>Test-Strasse&lt;/street>
+                &lt;state>BY&lt;/state>
+                &lt;country>DE&lt;/country>
+                &lt;zipCode>63741&lt;/zipCode>
+                &lt;city>Aschaffenburg&lt;/city>
+                &lt;/recipient>
+                &lt;/generalShipmentData>
+                &lt;parcels>
+                &lt;parcelLabelNumber>&lt;/parcelLabelNumber>
+                &lt;/parcels>
+                &lt;productAndServiceData>
+                &lt;orderType>consignment&lt;/orderType>
+                &lt;/productAndServiceData>
+                &lt;/order>
+                &lt;/ns1:storeOrders>
+                &lt;/soapenv:Body>
+                &lt;/soapenv:Envelope>
+            </wsdl:documentation>
+            <input message="tns:storeOrders">
+            </input>
+            <output message="tns:storeOrdersResponse">
+            </output>
+            <fault message="tns:AuthenticationFaultMsg" name="AuthenticationFault">
+            </fault>
+        </operation>
+    </portType>
+    <binding name="ShipmentService-Public_3_2_SOAP" type="tns:ShipmentService_3_2">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="storeOrders">
+            <soap:operation soapAction="http://dpd.com/common/service/ShipmentService/3.2/storeOrders"/>
+            <input>
+                <soap:header message="tns:storeOrdersHeader" part="authentication" use="literal">
+                </soap:header>
+                <soap:body parts="parameters" use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+            <fault name="AuthenticationFault">
+                <soap:fault name="AuthenticationFault" use="literal"/>
+            </fault>
+        </operation>
+    </binding>
+    <service name="ShipmentService-Public_3_2">
+        <wsdl:documentation>
+            <version>3.2.0</version>
+        </wsdl:documentation>
+        <port binding="tns:ShipmentService-Public_3_2_SOAP" name="ShipmentService-Public_3_2_SOAP">
+            <soap:address location="https://public-ws-stage.dpd.com/services/ShipmentService/V3_2/"/>
+        </port>
+    </service>
+</definitions>
