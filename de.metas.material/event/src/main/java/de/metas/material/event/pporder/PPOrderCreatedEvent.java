@@ -37,6 +37,13 @@ import lombok.ToString;
  * #L%
  */
 
+/**
+ * Fired when a manufacturing order was created:
+ * <ul>
+ * <li>manually by user
+ * <li>as a response to an {@link PPOrderRequestedEvent}
+ * </ul>
+ */
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
