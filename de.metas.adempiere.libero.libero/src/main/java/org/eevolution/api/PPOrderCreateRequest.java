@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
-import org.eevolution.api.ProductBOMId;
 import org.eevolution.api.PPOrderCreateRequest.PPOrderCreateRequestBuilder;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -71,6 +70,8 @@ public class PPOrderCreateRequest
 	OrderLineId salesOrderLineId;
 	BPartnerId customerId;
 
+	Boolean completeDocument;
+
 	@Builder
 	PPOrderCreateRequest(
 			@NonNull final ClientAndOrgId clientAndOrgId,
@@ -90,7 +91,9 @@ public class PPOrderCreateRequest
 			@NonNull final Instant dateStartSchedule,
 			//
 			@Nullable final OrderLineId salesOrderLineId,
-			@Nullable final BPartnerId customerId)
+			@Nullable final BPartnerId customerId,
+			//
+			@Nullable final Boolean completeDocument)
 	{
 		Check.assume(!qtyRequired.isZero(), "qtyRequired shall not be zero");
 
@@ -112,6 +115,8 @@ public class PPOrderCreateRequest
 
 		this.salesOrderLineId = salesOrderLineId;
 		this.customerId = customerId;
+
+		this.completeDocument = completeDocument;
 	}
 
 	@JsonPOJOBuilder(withPrefix = "")

@@ -181,6 +181,11 @@ final class CreateOrderCommand
 			@NonNull final PPOrderCreateRequest request,
 			@Nullable final I_PP_Product_Planning productPlanning)
 	{
+		if (request.getCompleteDocument() != null)
+		{
+			return request.getCompleteDocument();
+		}
+
 		return productPlanning != null && productPlanning.isDocComplete();
 	}
 
