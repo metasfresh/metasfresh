@@ -111,7 +111,7 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 		ddOrderHeader.setDeliveryViaRule(inout.getDeliveryViaRule());
 		ddOrderHeader.setDeliveryRule(inout.getDeliveryRule());
 		ddOrderHeader.setPriorityRule(inout.getPriorityRule());
-		ddOrderHeader.setM_Warehouse(productPlanning.getM_Warehouse());
+		ddOrderHeader.setM_Warehouse_ID(productPlanning.getM_Warehouse_ID());
 		ddOrderHeader.setC_DocType_ID(docTypeId);
 		ddOrderHeader.setDocStatus(X_DD_Order.DOCSTATUS_Drafted);
 		ddOrderHeader.setDocAction(X_DD_Order.DOCACTION_Complete);

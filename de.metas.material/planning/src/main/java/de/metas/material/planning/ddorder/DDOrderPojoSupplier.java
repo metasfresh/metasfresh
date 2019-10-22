@@ -15,7 +15,6 @@ import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
 import org.eevolution.model.I_DD_NetworkDistribution;
@@ -121,12 +120,12 @@ public class DDOrderPojoSupplier
 		if (networkLines.isEmpty())
 		{
 			// No network lines were found for our target warehouse
-			final I_M_Warehouse warehouseTo = productPlanningData.getM_Warehouse();
+			final int warehouseToId = productPlanningData.getM_Warehouse_ID();
 			Loggables.addLog(
 					"DD_NetworkDistribution has no lines for target M_Warehouse_ID={}; {} returns entpy list; "
 							+ "networkDistribution={}"
-							+ "warehouseTo={}",
-					productPlanningData.getM_Warehouse_ID(), this.getClass(), network, warehouseTo);
+							+ "warehouseToId={}",
+					productPlanningData.getM_Warehouse_ID(), this.getClass(), network, warehouseToId);
 			return ImmutableList.of();
 		}
 

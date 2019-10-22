@@ -233,9 +233,9 @@ public class ProductPlanningDAO_findPlantTest
 	{
 		final I_PP_Product_Planning pp = InterfaceWrapperHelper.newInstance(I_PP_Product_Planning.class, context);
 		pp.setIsAttributeDependant(false);
-		pp.setAD_Org(org);
-		pp.setM_Warehouse(warehouse);
-		pp.setM_Product(product);
+		pp.setAD_Org_ID(org.getAD_Org_ID());
+		pp.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+		pp.setM_Product_ID(product.getM_Product_ID());
 		if (plantId != null)
 		{
 			pp.setS_Resource_ID(plantId.getRepoId());

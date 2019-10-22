@@ -13,11 +13,11 @@ package de.metas.fresh.ordercheckup.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -28,16 +28,17 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
 
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
 import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
-import de.metas.fresh.ordercheckup.model.I_PP_Product_Planning;
 import de.metas.util.Services;
 
 public class OrderCheckupDAO implements IOrderCheckupDAO
@@ -50,7 +51,7 @@ public class OrderCheckupDAO implements IOrderCheckupDAO
 		final ICompositeQueryFilter<I_PP_Product_Planning> manufacturedOrTraded = queryBL.createCompositeQueryFilter(I_PP_Product_Planning.class)
 				.setJoinOr()
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsManufactured, X_PP_Product_Planning.ISMANUFACTURED_Yes)
-				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsTraded, I_PP_Product_Planning.ISTRADED_Yes);
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsTraded, X_PP_Product_Planning.ISTRADED_Yes);
 
 		final I_PP_Product_Planning productPlanning = queryBL.createQueryBuilder(I_PP_Product_Planning.class, orderLine)
 				.addOnlyActiveRecordsFilter()
@@ -73,13 +74,18 @@ public class OrderCheckupDAO implements IOrderCheckupDAO
 	public I_M_Warehouse retrieveManufacturingWarehouseOrNull(final I_C_OrderLine orderLine)
 	{
 		final I_PP_Product_Planning productPlanning = retrieveProductPlanningOrNull(orderLine);
-		if (productPlanning == null
-				|| productPlanning.getM_Warehouse_ID() < 0)
+		if (productPlanning == null)
+		{
+			return null;
+		}
+
+		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(productPlanning.getM_Warehouse_ID());
+		if (warehouseId == null)
 		{
 			return null; // no warehouse available
 		}
 
-		return InterfaceWrapperHelper.create(productPlanning.getM_Warehouse(), I_M_Warehouse.class);
+		return Services.get(IWarehouseDAO.class).getById(warehouseId, I_M_Warehouse.class);
 	}
 
 	@Override
