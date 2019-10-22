@@ -2,7 +2,7 @@ package de.metas.marketing.base.process;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.marketing.base.bpartner.DefaultAddressType;
@@ -50,8 +50,16 @@ public class MKTG_ContactPerson_CreateFrom_C_BPartner_WithAddress extends JavaPr
 
 		final CampaignId campaignId = CampaignId.ofRepoId(campaignRecordId);
 
-		final MKTG_ContactPerson_ProcessBase contactPersonProcessBase = Adempiere.getBean(MKTG_ContactPerson_ProcessBase.class);
-		contactPersonProcessBase.createContactPersonsForPartner(currentSelectionFilter, campaignId, DefaultAddressType.forCode(defaultAddresType));
+		final MKTG_ContactPerson_ProcessBase contactPersonProcessBase = SpringContextHolder.instance.getBean(MKTG_ContactPerson_ProcessBase.class);
+
+		final MKTG_ContactPerson_ProcessParams params = MKTG_ContactPerson_ProcessParams.builder()
+				.selectionFilter(currentSelectionFilter)
+				.campaignId(campaignId)
+				.addresType(DefaultAddressType.forCode(defaultAddresType))
+				.removeAllExistingContactsFromCampaign(false)
+				.build();
+
+		contactPersonProcessBase.createContactPersonsForPartner(params);
 
 		return MSG_OK;
 	}

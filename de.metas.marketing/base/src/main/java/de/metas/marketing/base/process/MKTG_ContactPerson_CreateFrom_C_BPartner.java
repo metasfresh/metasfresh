@@ -2,7 +2,7 @@ package de.metas.marketing.base.process;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.marketing.base.model.CampaignId;
@@ -38,6 +38,9 @@ public class MKTG_ContactPerson_CreateFrom_C_BPartner extends JavaProcess
 	@Param(mandatory = true, parameterName = I_MKTG_Campaign.COLUMNNAME_MKTG_Campaign_ID)
 	private int campaignRecordId;
 
+	@Param(mandatory = true, parameterName = "IsRemoveAllExistingContactsFromCampaign")
+	private boolean removeAllExistingContactsFromCampaign;
+
 	@Override
 	protected String doIt() throws Exception
 	{
@@ -46,8 +49,16 @@ public class MKTG_ContactPerson_CreateFrom_C_BPartner extends JavaProcess
 
 		final CampaignId campaignId = CampaignId.ofRepoId(campaignRecordId);
 
-		final MKTG_ContactPerson_ProcessBase contactPersonProcessBase = Adempiere.getBean(MKTG_ContactPerson_ProcessBase.class);
-		contactPersonProcessBase.createContactPersonsForPartner(currentSelectionFilter, campaignId, null/*defaultAddressType*/);
+		final MKTG_ContactPerson_ProcessBase contactPersonProcessBase = SpringContextHolder.instance.getBean(MKTG_ContactPerson_ProcessBase.class);
+
+		final MKTG_ContactPerson_ProcessParams params = MKTG_ContactPerson_ProcessParams.builder()
+				.selectionFilter(currentSelectionFilter)
+				.campaignId(campaignId)
+				.addresType(null)
+				.removeAllExistingContactsFromCampaign(removeAllExistingContactsFromCampaign)
+				.build();
+
+		contactPersonProcessBase.createContactPersonsForPartner(params);
 
 		return MSG_OK;
 	}
