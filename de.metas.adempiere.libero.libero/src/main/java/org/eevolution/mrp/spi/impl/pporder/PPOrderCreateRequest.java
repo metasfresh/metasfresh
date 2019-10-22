@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.api.ProductBOMId;
 import org.eevolution.mrp.spi.impl.pporder.PPOrderCreateRequest.PPOrderCreateRequestBuilder;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -19,6 +20,7 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -55,7 +57,9 @@ public class PPOrderCreateRequest
 	MaterialDispoGroupId materialDispoGroupId;
 	ResourceId plantId;
 	WarehouseId warehouseId;
+	UserId plannerId;
 
+	ProductBOMId bomId;
 	ProductId productId;
 	AttributeSetInstanceId attributeSetInstanceId;
 	Quantity qtyRequired;
@@ -70,11 +74,13 @@ public class PPOrderCreateRequest
 	@Builder
 	PPOrderCreateRequest(
 			@NonNull final ClientAndOrgId clientAndOrgId,
-			@NonNull final ProductPlanningId productPlanningId,
+			@Nullable final ProductPlanningId productPlanningId,
 			@Nullable final MaterialDispoGroupId materialDispoGroupId,
 			@NonNull final ResourceId plantId,
 			@NonNull final WarehouseId warehouseId,
+			@Nullable final UserId plannerId,
 			//
+			@Nullable ProductBOMId bomId,
 			@NonNull ProductId productId,
 			@Nullable AttributeSetInstanceId attributeSetInstanceId,
 			@NonNull Quantity qtyRequired,
@@ -93,7 +99,9 @@ public class PPOrderCreateRequest
 		this.materialDispoGroupId = materialDispoGroupId;
 		this.plantId = plantId;
 		this.warehouseId = warehouseId;
+		this.plannerId = plannerId;
 
+		this.bomId = bomId;
 		this.productId = productId;
 		this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
 		this.qtyRequired = qtyRequired;

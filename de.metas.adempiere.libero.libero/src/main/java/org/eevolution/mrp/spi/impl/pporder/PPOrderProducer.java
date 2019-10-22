@@ -175,20 +175,33 @@ public class PPOrderProducer
 			@NonNull final PPOrderCreateRequest request,
 			@Nullable final I_PP_Product_Planning productPlanning)
 	{
+		if (request.getPlannerId() != null)
+		{
+			return request.getPlannerId();
+		}
+
 		if (productPlanning != null)
 		{
-			return UserId.ofRepoIdOrNull(productPlanning.getPlanner_ID());
+			final UserId plannerId = UserId.ofRepoIdOrNull(productPlanning.getPlanner_ID());
+			if (plannerId != null)
+			{
+				return plannerId;
+			}
 		}
-		else
-		{
-			return null;
-		}
+
+		// default:
+		return null;
 	}
 
 	private ProductBOMId getBOMId(
 			@NonNull final PPOrderCreateRequest request,
 			@Nullable final I_PP_Product_Planning productPlanning)
 	{
+		if (request.getBomId() != null)
+		{
+			return request.getBomId();
+		}
+
 		if (productPlanning != null)
 		{
 			final ProductBOMId bomId = ProductBOMId.ofRepoIdOrNull(productPlanning.getPP_Product_BOM_ID());
