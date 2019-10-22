@@ -43,14 +43,14 @@ public final class JsonInvoiceCandCreateRequest
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
 			value = "These are the invoices json objects</code>.\n")
-	List<JsonInvoiceCandidates> jsonInvoices;
+	List<JsonInvoiceCandidate> jsonInvoices;
 
-	@ApiModelProperty(value = "Date of the invoice. ")
+	@ApiModelProperty(value = "Date of the invoice.")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonInclude(Include.NON_NULL)
 	private LocalDate dateInvoiced;
 
-	@ApiModelProperty(value = "Accounting date. ")
+	@ApiModelProperty(value = "Accounting date.")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonInclude(Include.NON_NULL)
 	private LocalDate dateAcct;
@@ -72,7 +72,7 @@ public final class JsonInvoiceCandCreateRequest
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonInvoiceCandCreateRequest(
-			@JsonProperty("jsonInvoices") @Singular final List<JsonInvoiceCandidates> jsonInvoices,
+			@JsonProperty("jsonInvoices") @Singular final List<JsonInvoiceCandidate> jsonInvoices,
 			@JsonProperty("dateInvoiced") final LocalDate dateInvoiced,
 			@JsonProperty("dateAcct") final LocalDate dateAcct,
 			@JsonProperty("poReference") final String poReference,

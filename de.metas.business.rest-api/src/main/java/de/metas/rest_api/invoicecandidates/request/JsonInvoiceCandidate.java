@@ -49,7 +49,7 @@ import lombok.Value;
  * #L%
  */
 @Value
-public final class JsonInvoiceCandidates
+public final class JsonInvoiceCandidate
 {
 	@ApiModelProperty(allowEmptyValue = true, value = "This translates to <code>I_C_Invoice_Candidate.externalLineId</code>.\n")
 	@JsonInclude(Include.NON_EMPTY)
@@ -59,7 +59,7 @@ public final class JsonInvoiceCandidates
 	
 	@JsonCreator
 	@Builder(toBuilder = true)
-	private JsonInvoiceCandidates(
+	private JsonInvoiceCandidate(
 			@JsonProperty("externalLineIds") @Singular final List<ExternalId> externalLineIds,
 			@JsonProperty("externalHeaderId") final String externalHeaderId)
 	{

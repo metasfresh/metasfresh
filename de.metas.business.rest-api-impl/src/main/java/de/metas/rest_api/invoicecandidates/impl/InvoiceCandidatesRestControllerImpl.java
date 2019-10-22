@@ -28,7 +28,7 @@ import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.rest_api.invoicecandidates.InvoiceCandidatesRestEndpoint;
 import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandCreateRequest;
-import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidates;
+import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidate;
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandCreateResponse;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.util.Services;
@@ -64,7 +64,7 @@ class InvoiceCandidatesRestControllerImpl implements InvoiceCandidatesRestEndpoi
 
 	private static final Logger logger = LogManager.getLogger(InvoiceCandidatesRestControllerImpl.class);
 
-	final private IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
+	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final InvoiceJsonConverters jsonConverters;
 
@@ -78,15 +78,15 @@ class InvoiceCandidatesRestControllerImpl implements InvoiceCandidatesRestEndpoi
 			@RequestBody @NonNull final JsonInvoiceCandCreateRequest request) {
 		try {
 			PInstanceId pInstanceId = getPInstanceId();
-			IQuery<I_C_Invoice_Candidate> queryBuilder = createICQueryBuilder(request.getJsonInvoices());
-			queryBuilder.createSelection(pInstanceId);
+
+			createICQueryBuilder(request.getJsonInvoices()).createSelection(pInstanceId);
+
 			final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
 					.setInvoicingParams(createInvoicingParams(request)).setFailIfNothingEnqueued(true)
 					.enqueueSelection(pInstanceId);
 
-			final ITrxManager trxManager = Services.get(ITrxManager.class);
-			final JsonInvoiceCandCreateResponse //
-			response = trxManager.callInNewTrx(() -> jsonConverters.toJson(enqueueResult));
+			final JsonInvoiceCandCreateResponse response = Services.get(ITrxManager.class)
+					.callInNewTrx(() -> jsonConverters.toJson(enqueueResult));
 
 			return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
 		} catch (final Exception ex) {
@@ -98,7 +98,7 @@ class InvoiceCandidatesRestControllerImpl implements InvoiceCandidatesRestEndpoi
 		}
 	}
 
-	public IQuery<I_C_Invoice_Candidate> createICQueryBuilder(List<JsonInvoiceCandidates> jsonInvoices) {
+	public IQuery<I_C_Invoice_Candidate> createICQueryBuilder(List<JsonInvoiceCandidate> jsonInvoices) {
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
@@ -107,7 +107,7 @@ class InvoiceCandidatesRestControllerImpl implements InvoiceCandidatesRestEndpoi
 		ImmutableList<String> ids = jsonInvoices.stream()
 				.flatMap(jsonInvoice -> jsonInvoice.getExternalLineIds().stream()).map(ExternalId::getValue)
 				.collect(ImmutableList.toImmutableList());
-		for (final JsonInvoiceCandidates cand : jsonInvoices) {
+		for (final JsonInvoiceCandidate cand : jsonInvoices) {
 			final ICompositeQueryFilter<I_C_Invoice_Candidate> invoiceCandidatesFilter = queryBL
 					.createCompositeQueryFilter(I_C_Invoice_Candidate.class).addOnlyActiveRecordsFilter()
 					.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_ExternalLineId, ids)
