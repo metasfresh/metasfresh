@@ -121,7 +121,7 @@ public class CandidateServiceTests
 
 		final PPOrder ppOrder = ppOrderRequestedEvent.getPpOrder();
 		assertThat(ppOrder).isNotNull();
-		assertThat(ppOrder.getOrgId().getRepoId()).isEqualTo(30);
+		assertThat(ppOrder.getClientAndOrgId().getOrgId().getRepoId()).isEqualTo(30);
 		assertThat(ppOrder.getProductDescriptor().getProductId()).isEqualTo(PRODUCT_ID);
 
 		assertThat(ppOrder.getLines()).hasSize(2);

@@ -20,7 +20,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
@@ -145,11 +144,6 @@ public class PPOrder
 		this.lines = lines;
 
 		this.materialDispoGroupId = materialDispoGroupId;
-	}
-
-	public OrgId getOrgId()
-	{
-		return getClientAndOrgId().getOrgId();
 	}
 
 	public BigDecimal getQtyOpen()

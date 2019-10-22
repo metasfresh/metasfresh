@@ -9,7 +9,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
@@ -28,8 +27,7 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.product.IProductBL;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -63,7 +61,6 @@ public class PPOrderProducer
 	private final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
 	private final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 
 	public I_PP_Order createPPOrder(
@@ -85,14 +82,14 @@ public class PPOrderProducer
 
 		//
 		// Planning dimension
-		ppOrderRecord.setAD_Org_ID(ppOrder.getOrgId().getRepoId());
+		ppOrderRecord.setAD_Org_ID(ppOrder.getClientAndOrgId().getOrgId().getRepoId());
 		ppOrderRecord.setS_Resource_ID(ppOrder.getPlantId().getRepoId());
 		ppOrderRecord.setM_Warehouse_ID(ppOrder.getWarehouseId().getRepoId());
 		ppOrderRecord.setPlanner_ID(productPlanning.getPlanner_ID());
 
 		//
 		// Document Type & Status
-		final DocTypeId docTypeId = getDocTypeId(ppOrder.getOrgId());
+		final DocTypeId docTypeId = getDocTypeId(ppOrder.getClientAndOrgId());
 
 		ppOrderRecord.setC_DocTypeTarget_ID(docTypeId.getRepoId());
 		ppOrderRecord.setC_DocType_ID(docTypeId.getRepoId());
@@ -169,14 +166,12 @@ public class PPOrderProducer
 		return ppOrderRecord;
 	}
 
-	private DocTypeId getDocTypeId(final OrgId orgId)
+	private DocTypeId getDocTypeId(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		final ClientId clientId = orgsRepo.getClientIdByOrgId(orgId);
-
 		return docTypesRepo.getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_ManufacturingOrder)
-				.adClientId(clientId.getRepoId())
-				.adOrgId(orgId.getRepoId())
+				.adClientId(clientAndOrgId.getClientId().getRepoId())
+				.adOrgId(clientAndOrgId.getOrgId().getRepoId())
 				.build());
 	}
 }
