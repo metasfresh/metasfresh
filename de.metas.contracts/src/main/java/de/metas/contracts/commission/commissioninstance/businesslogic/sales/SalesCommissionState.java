@@ -1,5 +1,15 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales;
 
+import java.util.Arrays;
+import java.util.Collection;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.contracts.commission.model.X_C_Commission_Fact;
+import lombok.Getter;
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.commission
@@ -26,11 +36,37 @@ package de.metas.contracts.commission.commissioninstance.businesslogic.sales;
 public enum SalesCommissionState
 {
 	/** Related to an invoice candidate's open (i.e. not-yet-invoiced) QtyOrdered. */
-	FORECASTED,
+	FORECASTED(X_C_Commission_Fact.COMMISSION_FACT_STATE_FORECASTED),
 
 	/** Related to an invoice candidate's QtyToInvoice. */
-	INVOICEABLE,
+	INVOICEABLE(X_C_Commission_Fact.COMMISSION_FACT_STATE_INVOICEABLE),
 
 	/** Related to an invoice candidate's QtyInvoiced. */
-	INVOICED;
+	INVOICED(X_C_Commission_Fact.COMMISSION_FACT_STATE_INVOICED);
+
+	private static ImmutableMap<String, SalesCommissionState> recordCode2State = ImmutableMap.of(
+			FORECASTED.getRecordCode(), FORECASTED,
+			INVOICEABLE.getRecordCode(), INVOICEABLE,
+			INVOICED.getRecordCode(), INVOICED);
+
+	@Getter
+	private final String recordCode;
+
+	private SalesCommissionState(String recordCode)
+	{
+		this.recordCode = recordCode;
+	}
+
+	public static SalesCommissionState forRecordCode(@NonNull final String recordCode)
+	{
+		return recordCode2State.get(recordCode);
+	}
+
+	public static Collection<String> allRecordCodes()
+	{
+		return Arrays.asList(SalesCommissionState.values())
+				.stream()
+				.map(SalesCommissionState::getRecordCode)
+				.collect(ImmutableList.toImmutableList());
+	}
 }

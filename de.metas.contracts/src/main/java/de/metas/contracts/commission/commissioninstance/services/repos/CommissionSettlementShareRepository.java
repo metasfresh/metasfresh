@@ -105,7 +105,7 @@ public class CommissionSettlementShareRepository
 		final ImmutableList<I_C_Commission_Fact> factRecords = queryBL.createQueryBuilder(I_C_Commission_Fact.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Commission_Fact.COLUMN_C_Commission_Share_ID, shareRecord.getC_Commission_Share_ID())
-				.addInArrayFilter(I_C_Commission_Fact.COLUMN_Commission_Fact_State, CommissionSettlementState.values())
+				.addInArrayFilter(I_C_Commission_Fact.COLUMN_Commission_Fact_State, CommissionSettlementState.allRecordCodes())
 				.orderBy(I_C_Commission_Fact.COLUMN_CommissionFactTimestamp)
 				.create()
 				.listImmutable(I_C_Commission_Fact.class);

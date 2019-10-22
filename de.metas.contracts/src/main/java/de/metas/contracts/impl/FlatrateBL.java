@@ -1686,7 +1686,7 @@ public class FlatrateBL implements IFlatrateBL
 	@Override
 	public void completeIfValid(final I_C_Flatrate_Term term)
 	{
-		if (couldOverlapWithOtherTerms(term))
+		if (!isAllowedToOverlapWithOtherTerms(term))
 		{
 			final boolean hasOverlappingTerms = hasOverlappingTerms(term);
 			if (hasOverlappingTerms)
@@ -1710,10 +1710,10 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@Override
-	public boolean couldOverlapWithOtherTerms(@NonNull final I_C_Flatrate_Term term)
+	public boolean isAllowedToOverlapWithOtherTerms(@NonNull final I_C_Flatrate_Term term)
 	{
-		final boolean canOverlapWithOtherTerms = !X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(term.getType_Conditions());
-		return canOverlapWithOtherTerms;
+		final boolean allowedToOverlapWithOtherTerms = X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(term.getType_Conditions());
+		return allowedToOverlapWithOtherTerms;
 	}
 
 	@Override

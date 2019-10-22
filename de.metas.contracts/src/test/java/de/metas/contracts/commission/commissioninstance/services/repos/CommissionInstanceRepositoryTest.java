@@ -1,29 +1,41 @@
 package de.metas.contracts.commission.commissioninstance.services.repos;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
+import static de.metas.contracts.commission.model.X_C_Commission_Fact.*;
+
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
-import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstanceId;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfig;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyContract;
+import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerData;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionFact;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionState;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory;
 import de.metas.contracts.commission.commissioninstance.services.CommissionHierarchyFactory;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstanceRepository;
@@ -31,9 +43,14 @@ import de.metas.contracts.commission.commissioninstance.services.repos.Commissio
 import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
-import de.metas.contracts.commission.model.X_C_Commission_Fact;
+import de.metas.contracts.commission.testhelpers.CommissionFactTestRecord;
+import de.metas.contracts.commission.testhelpers.CommissionInstanceTestRecord;
+import de.metas.contracts.commission.testhelpers.CommissionShareTestRecord;
+import de.metas.contracts.commission.testhelpers.ConfigTestRecord;
+import de.metas.contracts.commission.testhelpers.ContractTestRecord;
 import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.util.JSONObjectMapper;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.lang.Percent;
 import io.github.jsonSnapshot.SnapshotMatcher;
 
 /*
@@ -62,11 +79,12 @@ class CommissionInstanceRepositoryTest
 {
 	private static final long START_TIMESTAMP = 1568720955000L; // Tuesday, September 17, 2019 11:49:15 AM
 
-	private static long nextTimestamp = START_TIMESTAMP;
+	private static long currentTimestamp = START_TIMESTAMP;
 
 	private static final int C_INVOICE_CANDIDATE_ID = 10;
-	private static final int C_BPartner_SalesRep_1_ID = 20;
-	private static final int C_BPartner_SalesRep_2_ID = 21;
+
+	private static final BPartnerId C_BPartner_SalesRep_1_ID = BPartnerId.ofRepoId(20);
+	private static final BPartnerId C_BPartner_SalesRep_2_ID = BPartnerId.ofRepoId(21);
 
 	private static final BigDecimal ELEVEN = new BigDecimal("11");
 	private static final BigDecimal TWELVE = new BigDecimal("12");
@@ -107,7 +125,93 @@ class CommissionInstanceRepositoryTest
 		final ImmutableList<CommissionInstance> result = commissionInstanceRepository.getForInvoiceCandidateId(invoiceCandidateId);
 		assertThat(result).hasSize(1);
 
+		// JSONObjectMapper.forClass(CommissionInstance.class).writeValueAsString(result.get(0));
+
 		SnapshotMatcher.expect(result.get(0)).toMatchSnapshot();
+	}
+
+	private void createCommissionData()
+	{
+		final ImmutableMap<BPartnerId, FlatrateTermId> bpartnerId2flatrateTermId = ConfigTestRecord.builder()
+				.percentOfBasePoints("10")
+				.subtractLowerLevelCommissionFromBase(true)
+				.contractTestRecord(ContractTestRecord.builder().C_BPartner_SalesRep_ID(C_BPartner_SalesRep_1_ID).build())
+				.contractTestRecord(ContractTestRecord.builder().C_BPartner_SalesRep_ID(C_BPartner_SalesRep_2_ID).build())
+				.build()
+				.createConfigData();
+
+		CommissionInstanceTestRecord.builder()
+				.C_INVOICE_CANDIDATE_ID(C_INVOICE_CANDIDATE_ID)
+				.pointsBase_Forecasted("10")
+				.pointsBase_Invoiceable("11")
+				.pointsBase_Invoiced("12")
+				.commissionShareTestRecord(CommissionShareTestRecord.builder()
+						.C_BPartner_SalesRep_ID(C_BPartner_SalesRep_1_ID)
+						.flatrateTermId(bpartnerId2flatrateTermId.get(C_BPartner_SalesRep_1_ID))
+						.levelHierarchy(10)
+						.pointsSum_Forecasted("1")
+						.pointsSum_Invoiceable("1.1")
+						.pointsSum_Invoiced("1.2")
+						.commissionFactTestRecord(CommissionFactTestRecord.builder()
+								.state(COMMISSION_FACT_STATE_FORECASTED)
+								.commissionPoints("10")
+								.timestamp(incAndGetTimestamp()).build())
+						.commissionFactTestRecord(CommissionFactTestRecord.builder()
+								.state(COMMISSION_FACT_STATE_FORECASTED)
+								.commissionPoints("-9")
+								.timestamp(incAndGetTimestamp()).build())
+						.commissionFactTestRecord(CommissionFactTestRecord.builder()
+								.state(COMMISSION_FACT_STATE_INVOICEABLE)
+								.commissionPoints("1.1")
+								.timestamp(incAndGetTimestamp()).build())
+						.commissionFactTestRecord(CommissionFactTestRecord.builder()
+								.state(COMMISSION_FACT_STATE_INVOICED)
+								.commissionPoints("1.2")
+								.timestamp(incAndGetTimestamp()).build())
+						// the last two are irrelevant for sales-commission-share
+						.commissionFactTestRecord(CommissionFactTestRecord.builder()
+								.state(COMMISSION_FACT_STATE_TO_SETTLE)
+								.commissionPoints("4.2")
+								.timestamp(incAndGetTimestamp()).build())
+						.commissionFactTestRecord(CommissionFactTestRecord.builder()
+								.state(COMMISSION_FACT_STATE_SETTLED)
+								.commissionPoints("3.1")
+								.timestamp(incAndGetTimestamp()).build())
+						.build())
+				.commissionShareTestRecord(CommissionShareTestRecord.builder()
+						.C_BPartner_SalesRep_ID(C_BPartner_SalesRep_2_ID)
+						.flatrateTermId(bpartnerId2flatrateTermId.get(C_BPartner_SalesRep_2_ID))
+						.levelHierarchy(20)
+						.pointsSum_Forecasted("2")
+						.pointsSum_Invoiceable("2.1")
+						.pointsSum_Invoiced("2.2")
+						.commissionFactTestRecord(CommissionFactTestRecord.builder()
+								.state(COMMISSION_FACT_STATE_FORECASTED)
+								.commissionPoints("2")
+								.timestamp(incAndGetTimestamp()).build())
+						.commissionFactTestRecord(CommissionFactTestRecord.builder()
+								.state(COMMISSION_FACT_STATE_INVOICEABLE)
+								.commissionPoints("2.1")
+								.timestamp(incAndGetTimestamp()).build())
+						.commissionFactTestRecord(CommissionFactTestRecord.builder()
+								.state(COMMISSION_FACT_STATE_INVOICED)
+								.commissionPoints("10")
+								.timestamp(incAndGetTimestamp()).build())
+						.commissionFactTestRecord(CommissionFactTestRecord.builder()
+								.state(COMMISSION_FACT_STATE_INVOICED)
+								.commissionPoints("-7.8")
+								.timestamp(incAndGetTimestamp()).build())
+						.build())
+				.mostRecentTriggerTimestamp(currentTimestamp)
+				.build()
+				.createCommissionData();
+	}
+
+	private long incAndGetTimestamp()
+	{
+		currentTimestamp += 10000;
+
+		return currentTimestamp;
 	}
 
 	// @Test
@@ -121,73 +225,89 @@ class CommissionInstanceRepositoryTest
 	// SnapshotMatcher.expect(result).toMatchSnapshot();
 	// }
 
-	private CommissionInstanceId createCommissionData()
-	{
-
-		final I_C_Commission_Instance instanceRecord = newInstance(I_C_Commission_Instance.class);
-		instanceRecord.setC_Invoice_Candidate_ID(C_INVOICE_CANDIDATE_ID);
-		instanceRecord.setMostRecentTriggerTimestamp(TimeUtil.asTimestamp(createNextInstant()));
-		instanceRecord.setPointsBase_Forecasted(TEN);
-		instanceRecord.setPointsBase_Invoiceable(ELEVEN);
-		instanceRecord.setPointsBase_Invoiced(TWELVE);
-		saveRecord(instanceRecord);
-
-		final I_C_Commission_Share shareRecord1 = newInstance(I_C_Commission_Share.class);
-		shareRecord1.setC_Commission_Instance_ID(instanceRecord.getC_Commission_Instance_ID());
-		shareRecord1.setC_BPartner_SalesRep_ID(C_BPartner_SalesRep_1_ID);
-		shareRecord1.setLevelHierarchy(10);
-		shareRecord1.setPointsSum_Forecasted(new BigDecimal("1"));
-		shareRecord1.setPointsSum_Invoiceable(new BigDecimal("1.1"));
-		shareRecord1.setPointsSum_Invoiced(new BigDecimal("1.2"));
-		saveRecord(shareRecord1);
-
-		createFactRecord(shareRecord1, X_C_Commission_Fact.COMMISSION_FACT_STATE_FORECASTED, new BigDecimal("10"));
-		createFactRecord(shareRecord1, X_C_Commission_Fact.COMMISSION_FACT_STATE_FORECASTED, new BigDecimal("-9"));
-		createFactRecord(shareRecord1, X_C_Commission_Fact.COMMISSION_FACT_STATE_INVOICEABLE, new BigDecimal("1.1"));
-		createFactRecord(shareRecord1, X_C_Commission_Fact.COMMISSION_FACT_STATE_INVOICED, new BigDecimal("1.2"));
-
-		final I_C_Commission_Share shareRecord2 = newInstance(I_C_Commission_Share.class);
-		shareRecord2.setC_Commission_Instance_ID(instanceRecord.getC_Commission_Instance_ID());
-		shareRecord2.setC_BPartner_SalesRep_ID(C_BPartner_SalesRep_2_ID);
-		shareRecord2.setLevelHierarchy(20);
-		shareRecord2.setPointsSum_Forecasted(new BigDecimal("2"));
-		shareRecord2.setPointsSum_Invoiceable(new BigDecimal("2.1"));
-		shareRecord2.setPointsSum_Invoiced(new BigDecimal("2.2"));
-		saveRecord(shareRecord2);
-
-		createFactRecord(shareRecord2, X_C_Commission_Fact.COMMISSION_FACT_STATE_FORECASTED, new BigDecimal("2"));
-		createFactRecord(shareRecord2, X_C_Commission_Fact.COMMISSION_FACT_STATE_INVOICEABLE, new BigDecimal("2.1"));
-		createFactRecord(shareRecord2, X_C_Commission_Fact.COMMISSION_FACT_STATE_INVOICED, new BigDecimal("10"));
-		createFactRecord(shareRecord2, X_C_Commission_Fact.COMMISSION_FACT_STATE_INVOICED, new BigDecimal("-7.8"));
-
-		return CommissionInstanceId.ofRepoId(instanceRecord.getC_Commission_Instance_ID());
-	}
-
-	private void createFactRecord(final I_C_Commission_Share shareRecord, final String state, final BigDecimal points)
-	{
-		final I_C_Commission_Fact factRecord = newInstance(I_C_Commission_Fact.class);
-		factRecord.setC_Commission_Share_ID(shareRecord.getC_Commission_Share_ID());
-		factRecord.setCommissionFactTimestamp(createNextInstant().toString());
-		factRecord.setCommission_Fact_State(state);
-		factRecord.setCommissionPoints(points);
-		saveRecord(factRecord);
-	}
-
-	private Instant createNextInstant()
-	{
-		final Instant result = Instant.ofEpochMilli(nextTimestamp);
-		nextTimestamp += 10000;
-
-		return result;
-	}
-
 	@Test
 	void save()
 	{
-		final InputStream objectStream = getClass().getResourceAsStream("/de/metas/contracts/commission/commissioninstance/services/repos/CommissionInstance.json");
-		assertThat(objectStream).isNotNull();
+		// final InputStream objectStream = getClass().getResourceAsStream("/de/metas/contracts/commission/commissioninstance/services/repos/CommissionInstance.json");
+		// assertThat(objectStream).isNotNull();
+		// final CommissionInstance commissionInstance = JSONObjectMapper.forClass(CommissionInstance.class).readValue(objectStream);
+		// the actual contract data is not saved
+		final ImmutableMap<BPartnerId, FlatrateTermId> bpartnerId2flatrateTermId = ConfigTestRecord.builder()
+				.percentOfBasePoints("10")
+				.subtractLowerLevelCommissionFromBase(true)
+				.contractTestRecord(ContractTestRecord.builder().C_BPartner_SalesRep_ID(C_BPartner_SalesRep_1_ID).build())
+				.contractTestRecord(ContractTestRecord.builder().C_BPartner_SalesRep_ID(C_BPartner_SalesRep_2_ID).build())
+				.build()
+				.createConfigData();
 
-		final CommissionInstance commissionInstance = JSONObjectMapper.forClass(CommissionInstance.class).readValue(objectStream);
+		final I_C_Invoice_Candidate salesInvoiceCandidate = newInstance(I_C_Invoice_Candidate.class);
+		salesInvoiceCandidate.setBill_BPartner_ID(10);
+		saveRecord(salesInvoiceCandidate);
+
+		final Beneficiary beneficiary1 = Beneficiary.of(C_BPartner_SalesRep_1_ID);
+		final Beneficiary beneficiary2 = Beneficiary.of(C_BPartner_SalesRep_2_ID);
+
+		final HierarchyConfig config = HierarchyConfig.builder()
+				.subtractLowerLevelCommissionFromBase(true)
+				.beneficiary2HierarchyContract(
+						beneficiary1,
+						HierarchyContract.builder().id(bpartnerId2flatrateTermId.get(C_BPartner_SalesRep_1_ID)).commissionPercent(Percent.of("10")).pointsPrecision(2))
+				.beneficiary2HierarchyContract(
+						beneficiary2,
+						HierarchyContract.builder().id(bpartnerId2flatrateTermId.get(C_BPartner_SalesRep_2_ID)).commissionPercent(Percent.of("10")).pointsPrecision(2))
+				.build();
+
+		final CommissionInstance commissionInstance = CommissionInstance.builder()
+				.config(config)
+				.id(null) // not yet persisted
+				.currentTriggerData(CommissionTriggerData.builder()
+						.invoiceCandidateId(InvoiceCandidateId.ofRepoId(salesInvoiceCandidate.getC_Invoice_Candidate_ID()))
+						.timestamp(Instant.parse("2019-09-17T11:50:35Z"))
+						.forecastedPoints(CommissionPoints.of("10"))
+						.invoiceablePoints(CommissionPoints.of("11"))
+						.invoicedPoints(CommissionPoints.of("12"))
+						.build())
+				.share(SalesCommissionShare.builder()
+						.beneficiary(beneficiary1)
+						.level(HierarchyLevel.of(10))
+						.fact(SalesCommissionFact.builder()
+								.points(CommissionPoints.of("10"))
+								.state(SalesCommissionState.FORECASTED)
+								.timestamp(Instant.parse("2019-09-17T11:49:25Z")).build())
+						.fact(SalesCommissionFact.builder()
+								.state(SalesCommissionState.FORECASTED)
+								.points(CommissionPoints.of("-9"))
+								.timestamp(Instant.parse("2019-09-17T11:49:35Z")).build())
+						.fact(SalesCommissionFact.builder()
+								.state(SalesCommissionState.INVOICEABLE)
+								.points(CommissionPoints.of("1.1"))
+								.timestamp(Instant.parse("2019-09-17T11:49:45Z")).build())
+						.fact(SalesCommissionFact.builder()
+								.points(CommissionPoints.of("1.2"))
+								.state(SalesCommissionState.INVOICED)
+								.timestamp(Instant.parse("2019-09-17T11:49:55Z")).build())
+						.build())
+				.share(SalesCommissionShare.builder()
+						.beneficiary(beneficiary2)
+						.level(HierarchyLevel.of(20))
+						.fact(SalesCommissionFact.builder()
+								.points(CommissionPoints.of("2"))
+								.state(SalesCommissionState.FORECASTED)
+								.timestamp(Instant.parse("2019-09-17T11:50:05Z")).build())
+						.fact(SalesCommissionFact.builder()
+								.state(SalesCommissionState.INVOICEABLE)
+								.points(CommissionPoints.of("2.1"))
+								.timestamp(Instant.parse("2019-09-17T11:50:15Z")).build())
+						.fact(SalesCommissionFact.builder()
+								.state(SalesCommissionState.INVOICED)
+								.points(CommissionPoints.of("10"))
+								.timestamp(Instant.parse("2019-09-17T11:50:25Z")).build())
+						.fact(SalesCommissionFact.builder()
+								.state(SalesCommissionState.INVOICED)
+								.points(CommissionPoints.of("-7.8"))
+								.timestamp(Instant.parse("2019-09-17T11:50:35Z")).build())
+						.build())
+				.build();
 
 		// invoke the method under test
 		final CommissionInstanceId result = commissionInstanceRepository.save(commissionInstance);
@@ -196,7 +316,7 @@ class CommissionInstanceRepositoryTest
 		final List<I_C_Commission_Instance> instanceRecords = POJOLookupMap.get().getRecords(I_C_Commission_Instance.class);
 		assertThat(instanceRecords).hasSize(1)
 				.extracting("C_Commission_Instance_ID", "PointsBase_Forecasted", "PointsBase_Invoiceable", "PointsBase_Invoiced", "MostRecentTriggerTimestamp.time")
-				.contains(tuple(result.getRepoId(), TEN, ELEVEN, TWELVE, 1568720955000L/* "2019-09-17T11:49:15Z" */));
+				.contains(tuple(result.getRepoId(), TEN, ELEVEN, TWELVE, 1568721035000L/* "2019-09-17T11:50:35Z" */));
 
 		final List<I_C_Commission_Share> shareRecords = POJOLookupMap.get().getRecords(I_C_Commission_Share.class);
 		assertThat(shareRecords).hasSize(2)

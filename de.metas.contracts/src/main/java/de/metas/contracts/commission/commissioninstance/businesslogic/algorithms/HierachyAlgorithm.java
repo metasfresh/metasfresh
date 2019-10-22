@@ -66,6 +66,7 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 		result.shares(shares);
 
 		createAndAddFacts(shares,
+				config,
 				triggerData.getTimestamp(),
 				triggerData.getForecastedPoints(),
 				triggerData.getInvoiceablePoints(),
@@ -96,7 +97,6 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 			final SalesCommissionShare share = SalesCommissionShare.builder()
 					.beneficiary(beneficiary)
 					.level(currentLevel)
-					.contract(contract)
 					.build();
 			shares.add(share);
 
@@ -121,6 +121,7 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 
 		createAndAddFacts(
 				sharesToChange,
+				HierarchyConfig.cast(instanceToChange.getConfig()),
 				newTriggerData.getTimestamp(),
 				forecastedBaseDelta,
 				toInvoiceBaseDelta,
@@ -129,6 +130,7 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 
 	private void createAndAddFacts(
 			@NonNull final ImmutableList<SalesCommissionShare> shares,
+			@NonNull final HierarchyConfig config,
 			@NonNull final Instant timestamp,
 			@NonNull final CommissionPoints initialForecastedBase,
 			@NonNull final CommissionPoints initialToInvoiceBase,
@@ -140,7 +142,7 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 
 		for (final SalesCommissionShare share : shares)
 		{
-			final HierarchyContract contract = HierarchyContract.cast(share.getContract());
+			final HierarchyContract contract = HierarchyContract.cast(config.getContractFor(share.getBeneficiary()));
 
 			final Optional<SalesCommissionFact> forecastedFact = createFact(timestamp, contract, SalesCommissionState.FORECASTED, currentForecastedBase);
 			final Optional<SalesCommissionFact> toInvoiceFact = createFact(timestamp, contract, SalesCommissionState.INVOICEABLE, currentToInvoiceBase);
@@ -150,7 +152,6 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 			toInvoiceFact.ifPresent(share::addFact);
 			invoicedFact.ifPresent(share::addFact);
 
-			final HierarchyConfig config = contract.getConfig();
 			if (config.isSubtractLowerLevelCommissionFromBase())
 			{
 				currentForecastedBase = currentForecastedBase.subtract(forecastedFact.map(SalesCommissionFact::getPoints).orElse(CommissionPoints.ZERO));

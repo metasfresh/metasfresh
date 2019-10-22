@@ -33,8 +33,8 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerData;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionFact;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionState;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare.SalesCommissionShareBuilder;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionState;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionRecordStagingService.CommissionRecords;
 import de.metas.contracts.commission.model.I_C_Commission_Fact;
@@ -82,10 +82,10 @@ public class CommissionInstanceRepository
 
 	public CommissionInstance getForCommissionInstanceId(@NonNull final CommissionInstanceId commissionInstanceId)
 	{
-		final CommissionRecords records = commissionRecordStagingService.retrieveRecordsForInstanceId(ImmutableList.of(commissionInstanceId), true/* onlyActive */);
+		final CommissionRecords stagingRecords = commissionRecordStagingService.retrieveRecordsForInstanceId(ImmutableList.of(commissionInstanceId), true/* onlyActive */);
 
-		final I_C_Commission_Instance instanceRecord = records.getInstanceRecordIdToInstance().get(commissionInstanceId.getRepoId());
-		final CommissionInstance instance = createCommissionInstance(instanceRecord, records);
+		final I_C_Commission_Instance instanceRecord = stagingRecords.getInstanceRecordIdToInstance().get(commissionInstanceId.getRepoId());
+		final CommissionInstance instance = createCommissionInstance(instanceRecord, stagingRecords);
 		return instance;
 	}
 
@@ -132,12 +132,8 @@ public class CommissionInstanceRepository
 		{
 			final SalesCommissionShareBuilder shareBuilder = createShareBuilder(shareRecord);
 
-			final Beneficiary beneficiary = createBeneficiary(shareRecord.getC_BPartner_SalesRep_ID());
-			final CommissionContract contract = commissionConfig.getContractFor(beneficiary);
-			shareBuilder.contract(contract);
-
-			final ImmutableList<I_C_Commission_Fact> factRecords = stagingRecords.getFactRecordsForShareRecordId(shareRecord.getC_Commission_Share_ID());
-			shareBuilder.facts(createFacts(factRecords));
+			final ImmutableList<I_C_Commission_Fact> salesFactRecords = stagingRecords.getSalesFactRecordsForShareRecordId(shareRecord.getC_Commission_Share_ID());
+			shareBuilder.facts(createFacts(salesFactRecords));
 
 			final SalesCommissionShare share = shareBuilder.build();
 			instanceBuilder.share(share);
@@ -189,14 +185,14 @@ public class CommissionInstanceRepository
 	public CommissionInstanceId save(@NonNull final CommissionInstance instance)
 	{
 		final CommissionInstanceId instanceIdOrNull = instance.getId();
-		final CommissionRecords records;
+		final CommissionRecords stagingRecords;
 		if (instanceIdOrNull == null)
 		{
-			records = CommissionRecords.EMPTY;
+			stagingRecords = CommissionRecords.EMPTY;
 		}
 		else
 		{
-			records = commissionRecordStagingService.retrieveRecordsForInstanceId(ImmutableList.of(instanceIdOrNull), true/* onlyActive */);
+			stagingRecords = commissionRecordStagingService.retrieveRecordsForInstanceId(ImmutableList.of(instanceIdOrNull), true/* onlyActive */);
 
 		}
 		final CommissionTriggerData triggerData = instance.getCurrentTriggerData();
@@ -216,11 +212,15 @@ public class CommissionInstanceRepository
 
 		final CommissionInstanceId commissionInstanceId = CommissionInstanceId.ofRepoId(commissionInstanceRecord.getC_Commission_Instance_ID());
 
-		final ImmutableMap<SalesCommissionShare, I_C_Commission_Share> shareToShareRecord = syncShareRecords(instance.getShares(), commissionInstanceId, records);
+		final ImmutableMap<SalesCommissionShare, I_C_Commission_Share> shareToShareRecord = syncShareRecords(
+				instance.getShares(),
+				commissionInstanceId,
+				instance.getConfig(),
+				stagingRecords);
 
 		for (final SalesCommissionShare share : instance.getShares())
 		{
-			createNewFactRecords(share.getFacts(), shareToShareRecord.get(share).getC_Commission_Share_ID(), records);
+			createNewFactRecords(share.getFacts(), shareToShareRecord.get(share).getC_Commission_Share_ID(), stagingRecords);
 		}
 		return commissionInstanceId;
 	}
@@ -238,6 +238,7 @@ public class CommissionInstanceRepository
 	private ImmutableMap<SalesCommissionShare, I_C_Commission_Share> syncShareRecords(
 			@NonNull final ImmutableList<SalesCommissionShare> shares,
 			@NonNull final CommissionInstanceId commissionInstanceId,
+			@NonNull final CommissionConfig config,
 			@NonNull final CommissionRecords records)
 	{
 		final ImmutableList<I_C_Commission_Share> shareRecords = records.getShareRecordsForInstanceRecordId(commissionInstanceId);
@@ -258,7 +259,11 @@ public class CommissionInstanceRepository
 			{
 				shareRecordsToDelete.remove(shareRecordOrNull);
 			}
-			final I_C_Commission_Share shareRecord = createOrUpdateShareRecord(commissionInstanceId, share, shareRecordOrNull);
+			final I_C_Commission_Share shareRecord = createOrUpdateShareRecord(
+					config.getContractFor(share.getBeneficiary()),
+					commissionInstanceId,
+					share,
+					shareRecordOrNull);
 
 			result.put(share, shareRecord);
 			unPersistedShares.remove(share);
@@ -266,7 +271,11 @@ public class CommissionInstanceRepository
 
 		for (final SalesCommissionShare share : unPersistedShares)
 		{
-			final I_C_Commission_Share shareRecord = createOrUpdateShareRecord(commissionInstanceId, share, null/* shareRecordOrNull */);
+			final I_C_Commission_Share shareRecord = createOrUpdateShareRecord(
+					config.getContractFor(share.getBeneficiary()),
+					commissionInstanceId,
+					share,
+					null/* shareRecordOrNull */);
 			result.put(share, shareRecord);
 		}
 
@@ -276,6 +285,7 @@ public class CommissionInstanceRepository
 	}
 
 	private I_C_Commission_Share createOrUpdateShareRecord(
+			@NonNull final CommissionContract contract,
 			@NonNull final CommissionInstanceId commissionInstanceId,
 			@NonNull final SalesCommissionShare share,
 			@Nullable final I_C_Commission_Share shareRecordOrNull)
@@ -288,7 +298,7 @@ public class CommissionInstanceRepository
 			shareRecordToUse.setLevelHierarchy(share.getLevel().toInt());
 		}
 		shareRecordToUse.setC_BPartner_SalesRep_ID(share.getBeneficiary().getBPartnerId().getRepoId());
-		shareRecordToUse.setC_Flatrate_Term_ID(share.getContract().getId().getRepoId());
+		shareRecordToUse.setC_Flatrate_Term_ID(contract.getId().getRepoId());
 		shareRecordToUse.setPointsSum_Forecasted(share.getForecastedPointsSum().toBigDecimal());
 		shareRecordToUse.setPointsSum_Invoiceable(share.getInvoiceablePointsSum().toBigDecimal());
 		shareRecordToUse.setPointsSum_Invoiced(share.getInvoicedPointsSum().toBigDecimal());
@@ -302,7 +312,7 @@ public class CommissionInstanceRepository
 			final int commissionShareRecordId,
 			@NonNull final CommissionRecords records)
 	{
-		final ImmutableList<I_C_Commission_Fact> factRecords = records.getFactRecordsForShareRecordId(commissionShareRecordId);
+		final ImmutableList<I_C_Commission_Fact> factRecords = records.getSalesFactRecordsForShareRecordId(commissionShareRecordId);
 
 		final ImmutableMap<ArrayKey, I_C_Commission_Fact> idAndTypeAndTimestampToFactRecord = Maps.uniqueIndex(
 				factRecords,

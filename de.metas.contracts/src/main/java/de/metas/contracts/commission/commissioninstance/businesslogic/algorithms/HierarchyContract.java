@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.contracts.FlatrateTermId;
@@ -41,13 +42,16 @@ import lombok.Value;
  */
 
 @Value
-@ToString(exclude = "config" /* avoid StackOVerflowError */)
+@ToString(exclude = "config" /* avoid StackOverflowError */)
 @EqualsAndHashCode(exclude = "config")
 public class HierarchyContract implements CommissionContract
 {
 	FlatrateTermId id;
+
 	HierarchyConfig config;
+
 	Percent commissionPercent;
+
 	int pointsPrecision;
 
 	public static HierarchyContract cast(@Nullable final CommissionContract contract)
@@ -93,5 +97,13 @@ public class HierarchyContract implements CommissionContract
 	{
 		return pointsPrecision;
 	}
+
+	@Override
+	@JsonIgnore /* avoid StackOverflowError */
+	public HierarchyConfig getConfig()
+	{
+		return config;
+	}
+
 
 }

@@ -15,7 +15,7 @@ public class X_C_Commission_Fact extends org.compiere.model.PO implements I_C_Co
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -635621058L;
+	private static final long serialVersionUID = 270076088L;
 
     /** Standard Constructor */
     public X_C_Commission_Fact (Properties ctx, int C_Commission_Fact_ID, String trxName)
@@ -137,6 +137,8 @@ public class X_C_Commission_Fact extends org.compiere.model.PO implements I_C_Co
 	public static final String COMMISSION_FACT_STATE_INVOICED = "INVOICED";
 	/** SETTLED = SETTLED */
 	public static final String COMMISSION_FACT_STATE_SETTLED = "SETTLED";
+	/** TO_SETTLE = TO_SETTLE */
+	public static final String COMMISSION_FACT_STATE_TO_SETTLE = "TO_SETTLE";
 	/** Set Status.
 		@param Commission_Fact_State Status	  */
 	@Override

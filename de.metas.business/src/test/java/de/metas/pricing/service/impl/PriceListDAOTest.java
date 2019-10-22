@@ -173,7 +173,7 @@ public class PriceListDAOTest
 	{
 		return BPartnerLocationId.ofRepoId(
 				bplRecord.getC_BPartner_ID(),
-				bplRecord.getC_BPartner_ID());
+				bplRecord.getC_BPartner_Location_ID());
 	}
 
 	@Test

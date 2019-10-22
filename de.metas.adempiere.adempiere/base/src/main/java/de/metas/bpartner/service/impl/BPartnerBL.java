@@ -218,8 +218,12 @@ public class BPartnerBL implements IBPartnerBL
 		return null;
 	}
 
-	private boolean recordMatchesType(@NonNull final I_AD_User contactRecord, @NonNull final ContactType contactType)
+	private boolean recordMatchesType(@NonNull final I_AD_User contactRecord, @Nullable final ContactType contactType)
 	{
+		if (contactType == null)
+		{
+			return true;
+		}
 		switch (contactType)
 		{
 			case BILL_TO_DEFAULT:
@@ -237,14 +241,14 @@ public class BPartnerBL implements IBPartnerBL
 
 	private User findBestMatch(
 			@NonNull final Set<User> contacts,
-			@Nullable final User defaultBillContact,
+			@Nullable final User defaultContactOfType,
 			@Nullable final User defaultContact)
 	{
 		Check.assumeNotEmpty(contacts, "Parameter contacts needs to be non-empty");
 
-		if (defaultBillContact != null && contacts.contains(defaultBillContact))
+		if (defaultContactOfType != null && contacts.contains(defaultContactOfType))
 		{
-			return defaultBillContact;
+			return defaultContactOfType;
 		}
 		else if (defaultContact != null && contacts.contains(defaultContact))
 		{

@@ -4,6 +4,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import org.adempiere.exceptions.AdempiereException;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.contracts.commission.Beneficiary;
@@ -43,7 +45,8 @@ public class HierarchyConfig implements CommissionConfig
 {
 	boolean subtractLowerLevelCommissionFromBase;
 
-	Map<Beneficiary, HierarchyContract> beneficiary2HierarchyContracts;
+	/* using integer as key to avoid complications on deserializing from JSON which we do in our tests. */
+	Map<Integer, HierarchyContract> bpartnerId2HierarchyContracts;
 
 	public static HierarchyConfig cast(@NonNull final CommissionConfig config)
 	{
@@ -57,20 +60,21 @@ public class HierarchyConfig implements CommissionConfig
 				.setParameter("config", config);
 	}
 
+	@JsonCreator
 	@Builder
 	private HierarchyConfig(
-			@NonNull final Boolean subtractLowerLevelCommissionFromBase,
-			@Singular @NonNull final Map<Beneficiary, HierarchyContractBuilder> beneficiary2HierarchyContracts)
+			@JsonProperty("subtractLowerLevelCommissionFromBase") @NonNull final Boolean subtractLowerLevelCommissionFromBase,
+			@JsonProperty("beneficiary2HierarchyContracts") @Singular @NonNull final Map<Beneficiary, HierarchyContractBuilder> beneficiary2HierarchyContracts)
 	{
 		this.subtractLowerLevelCommissionFromBase = subtractLowerLevelCommissionFromBase;
 
-		final ImmutableMap.Builder<Beneficiary, HierarchyContract> builder = ImmutableMap.<Beneficiary, HierarchyContract> builder();
+		final ImmutableMap.Builder<Integer, HierarchyContract> builder = ImmutableMap.<Integer, HierarchyContract> builder();
 		for (final Entry<Beneficiary, HierarchyContractBuilder> entry : beneficiary2HierarchyContracts.entrySet())
 		{
 			final HierarchyContract contract = entry.getValue().config(this).build();
-			builder.put(entry.getKey(), contract);
+			builder.put(entry.getKey().getBPartnerId().getRepoId(), contract);
 		}
-		this.beneficiary2HierarchyContracts = builder.build();
+		this.bpartnerId2HierarchyContracts = builder.build();
 	}
 
 	@Override
@@ -79,9 +83,10 @@ public class HierarchyConfig implements CommissionConfig
 		return CommissionType.HIERARCHY_COMMISSION;
 	}
 
+	@Override
 	public CommissionContract getContractFor(@NonNull final Beneficiary beneficiary)
 	{
-		return beneficiary2HierarchyContracts.get(beneficiary);
+		return bpartnerId2HierarchyContracts.get(beneficiary.getBPartnerId().getRepoId());
 	}
 
 }

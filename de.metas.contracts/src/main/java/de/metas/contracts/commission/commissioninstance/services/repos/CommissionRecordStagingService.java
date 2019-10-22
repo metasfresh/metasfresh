@@ -21,6 +21,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstanceId;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionState;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionRecordStagingService.CommissionRecords.CommissionRecordsBuilder;
 import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
@@ -125,7 +126,8 @@ class CommissionRecordStagingService
 		// ------------------ I_C_Commission_Fact
 		final IQueryBuilder<I_C_Commission_Fact> factQueryBuilder = queryBL
 				.createQueryBuilder(I_C_Commission_Fact.class)
-				.addInArrayFilter(I_C_Commission_Fact.COLUMN_C_Commission_Share_ID, shareRecordIds);
+				.addInArrayFilter(I_C_Commission_Fact.COLUMN_C_Commission_Share_ID, shareRecordIds)
+				.addInArrayFilter(I_C_Commission_Fact.COLUMN_Commission_Fact_State, SalesCommissionState.allRecordCodes());
 		if (onlyActive)
 		{
 			shareQueryBuilder.addOnlyActiveRecordsFilter();
@@ -150,7 +152,7 @@ class CommissionRecordStagingService
 		ImmutableListMultimap<Integer, I_C_Commission_Share> instanceRecordIdToShareRecords;
 
 		@Getter(AccessLevel.NONE)
-		ImmutableListMultimap<Integer, I_C_Commission_Fact> shareRecordIdToFactRecords;
+		ImmutableListMultimap<Integer, I_C_Commission_Fact> shareRecordIdToSalesFactRecords;
 
 		@Builder
 		private CommissionRecords(
@@ -162,14 +164,14 @@ class CommissionRecordStagingService
 			this.icRecordIdToInstanceRecords = coalesce(icRecordIdToInstanceRecords, ImmutableListMultimap.of());
 			this.instanceRecordIdToInstance = coalesce(instanceRecordIdToInstance, ImmutableMap.of());
 			this.instanceRecordIdToShareRecords = coalesce(instanceRecordIdToShareRecords, ImmutableListMultimap.of());
-			this.shareRecordIdToFactRecords = coalesce(shareRecordIdToFactRecords, ImmutableListMultimap.of());
+			this.shareRecordIdToSalesFactRecords = coalesce(shareRecordIdToFactRecords, ImmutableListMultimap.of());
 		}
 
 		void deleteAll()
 		{
 			this.instanceRecordIdToInstance.entrySet().forEach(entry -> delete(entry.getValue()));
 			this.instanceRecordIdToShareRecords.entries().forEach(entry -> delete(entry.getValue()));
-			this.shareRecordIdToFactRecords.entries().forEach(entry -> delete(entry.getValue()));
+			this.shareRecordIdToSalesFactRecords.entries().forEach(entry -> delete(entry.getValue()));
 		}
 
 		ImmutableList<I_C_Commission_Share> getShareRecordsForInstanceRecordId(@NonNull final CommissionInstanceId commissionInstanceId)
@@ -177,9 +179,9 @@ class CommissionRecordStagingService
 			return instanceRecordIdToShareRecords.get(commissionInstanceId.getRepoId());
 		}
 
-		ImmutableList<I_C_Commission_Fact> getFactRecordsForShareRecordId(int commissionShareRecordId)
+		ImmutableList<I_C_Commission_Fact> getSalesFactRecordsForShareRecordId(int commissionShareRecordId)
 		{
-			return shareRecordIdToFactRecords.get(commissionShareRecordId);
+			return shareRecordIdToSalesFactRecords.get(commissionShareRecordId);
 		}
 	}
 }
