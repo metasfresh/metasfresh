@@ -316,6 +316,29 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		return false;
 	}
 
+	/** Set Kommissionierauftrag.
+		@param IsPickingOrder Kommissionierauftrag	  */
+	@Override
+	public void setIsPickingOrder (boolean IsPickingOrder)
+	{
+		set_Value (COLUMNNAME_IsPickingOrder, Boolean.valueOf(IsPickingOrder));
+	}
+
+	/** Get Kommissionierauftrag.
+		@return Kommissionierauftrag	  */
+	@Override
+	public boolean isPickingOrder () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPickingOrder);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** 
 	 * IsPurchased AD_Reference_ID=319
 	 * Reference name: _YesNo

@@ -360,8 +360,30 @@ public interface I_PP_Product_Planning
     public static final String COLUMNNAME_IsPickDirectlyIfFeasible = "IsPickDirectlyIfFeasible";
 
 	/**
-	 * Set Eingekauft.
-	 * Die Organisation kauft dieses Produkt ein
+	 * Set Kommissionierauftrag.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsPickingOrder (boolean IsPickingOrder);
+
+	/**
+	 * Get Kommissionierauftrag.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isPickingOrder();
+
+    /** Column definition for IsPickingOrder */
+    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsPickingOrder = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "IsPickingOrder", null);
+    /** Column name IsPickingOrder */
+    public static final String COLUMNNAME_IsPickingOrder = "IsPickingOrder";
+
+	/**
+	 * Set Wird Eingekauft.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false

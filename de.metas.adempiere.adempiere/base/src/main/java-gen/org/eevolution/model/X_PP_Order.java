@@ -814,6 +814,29 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		return false;
 	}
 
+	/** Set Kommissionierauftrag.
+		@param IsPickingOrder Kommissionierauftrag	  */
+	@Override
+	public void setIsPickingOrder (boolean IsPickingOrder)
+	{
+		set_Value (COLUMNNAME_IsPickingOrder, Boolean.valueOf(IsPickingOrder));
+	}
+
+	/** Get Kommissionierauftrag.
+		@return Kommissionierauftrag	  */
+	@Override
+	public boolean isPickingOrder () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPickingOrder);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set andrucken.
 		@param IsPrinted 
 		Indicates if this document / line is printed

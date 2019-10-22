@@ -153,6 +153,8 @@ final class CreateOrderCommand
 		// Inherit values from MRP demand
 		ppOrderRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getSalesOrderLineId()));
 		ppOrderRecord.setC_BPartner_ID(BPartnerId.toRepoId(getCustomerIdOrNull(request)));
+		
+		ppOrderRecord.setIsPickingOrder(productPlanning.isPickingOrder());
 
 		//
 		// Save the manufacturing order

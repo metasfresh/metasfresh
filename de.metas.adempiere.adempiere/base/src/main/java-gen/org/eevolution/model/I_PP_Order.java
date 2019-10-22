@@ -835,6 +835,29 @@ public interface I_PP_Order
     public static final String COLUMNNAME_IsApproved = "IsApproved";
 
 	/**
+	 * Set Kommissionierauftrag.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsPickingOrder (boolean IsPickingOrder);
+
+	/**
+	 * Get Kommissionierauftrag.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isPickingOrder();
+
+    /** Column definition for IsPickingOrder */
+    public static final org.adempiere.model.ModelColumn<I_PP_Order, Object> COLUMN_IsPickingOrder = new org.adempiere.model.ModelColumn<I_PP_Order, Object>(I_PP_Order.class, "IsPickingOrder", null);
+    /** Column name IsPickingOrder */
+    public static final String COLUMNNAME_IsPickingOrder = "IsPickingOrder";
+
+	/**
 	 * Set andrucken.
 	 * Indicates if this document / line is printed
 	 *

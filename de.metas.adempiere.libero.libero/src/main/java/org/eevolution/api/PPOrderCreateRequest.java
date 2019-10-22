@@ -93,6 +93,8 @@ public class PPOrderCreateRequest
 			@Nullable final OrderLineId salesOrderLineId,
 			@Nullable final BPartnerId customerId,
 			//
+			final boolean pickingOrder,
+			//
 			@Nullable final Boolean completeDocument)
 	{
 		Check.assume(!qtyRequired.isZero(), "qtyRequired shall not be zero");
