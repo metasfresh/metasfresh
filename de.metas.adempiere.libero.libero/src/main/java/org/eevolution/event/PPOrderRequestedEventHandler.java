@@ -18,6 +18,7 @@ import de.metas.Profiles;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -93,7 +94,7 @@ public class PPOrderRequestedEventHandler implements MaterialEventHandler<PPOrde
 
 		return ppOrderProducer.createPPOrder(PPOrderCreateRequest.builder()
 				.clientAndOrgId(ppOrder.getClientAndOrgId())
-				.productPlanningId(ppOrder.getProductPlanningId())
+				.productPlanningId(ProductPlanningId.ofRepoId(ppOrder.getProductPlanningId()))
 				.materialDispoGroupId(ppOrder.getMaterialDispoGroupId())
 				.plantId(ppOrder.getPlantId())
 				.warehouseId(ppOrder.getWarehouseId())

@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
@@ -50,7 +51,7 @@ import lombok.Value;
 public class PPOrderCreateRequest
 {
 	ClientAndOrgId clientAndOrgId;
-	int productPlanningId;
+	ProductPlanningId productPlanningId;
 	MaterialDispoGroupId materialDispoGroupId;
 	ResourceId plantId;
 	WarehouseId warehouseId;
@@ -69,7 +70,7 @@ public class PPOrderCreateRequest
 	@Builder
 	PPOrderCreateRequest(
 			@NonNull final ClientAndOrgId clientAndOrgId,
-			final int productPlanningId,
+			@NonNull final ProductPlanningId productPlanningId,
 			@Nullable final MaterialDispoGroupId materialDispoGroupId,
 			@NonNull final ResourceId plantId,
 			@NonNull final WarehouseId warehouseId,
@@ -85,7 +86,6 @@ public class PPOrderCreateRequest
 			@Nullable final OrderLineId salesOrderLineId,
 			@Nullable final BPartnerId customerId)
 	{
-		Check.assumeGreaterThanZero(productPlanningId, "productPlanningId");
 		Check.assume(!qtyRequired.isZero(), "qtyRequired shall not be zero");
 
 		this.clientAndOrgId = clientAndOrgId;

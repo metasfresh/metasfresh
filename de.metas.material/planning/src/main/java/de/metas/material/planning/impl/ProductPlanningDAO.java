@@ -53,11 +53,11 @@ import de.metas.material.commons.attributes.AttributesKeyQueryHelper;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IResourceDAO;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -67,9 +67,8 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	private final IResourceDAO resourcesRepo = Services.get(IResourceDAO.class);
 
 	@Override
-	public I_PP_Product_Planning getById(final int ppProductPlanningId)
+	public I_PP_Product_Planning getById(@NonNull final ProductPlanningId ppProductPlanningId)
 	{
-		Check.assumeGreaterThanZero(ppProductPlanningId, "ppProductPlanningId");
 		return loadOutOfTrx(ppProductPlanningId, I_PP_Product_Planning.class);
 	}
 

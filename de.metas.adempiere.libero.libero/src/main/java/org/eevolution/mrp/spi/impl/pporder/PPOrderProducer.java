@@ -7,11 +7,16 @@ import static de.metas.document.engine.IDocument.STATUS_Completed;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_MRP;
@@ -25,10 +30,14 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
+import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.product.ProductId;
+import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -60,20 +69,24 @@ public class PPOrderProducer
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	private final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
 	private final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
+	private final IProductBOMDAO bomsRepo = Services.get(IProductBOMDAO.class);
 	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	public I_PP_Order createPPOrder(@NonNull final PPOrderCreateRequest request)
 	{
-		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(request.getProductPlanningId());
+		final ProductPlanningId productPlanningId = request.getProductPlanningId();
+		final I_PP_Product_Planning productPlanning = productPlanningId != null
+				? productPlanningsRepo.getById(productPlanningId)
+				: null;
 
 		//
 		// Create PP Order
 		final I_PP_Order ppOrderRecord = InterfaceWrapperHelper.newInstance(I_PP_Order.class);
 		PPOrderPojoConverter.setMaterialDispoGroupId(ppOrderRecord, request.getMaterialDispoGroupId());
 
-		ppOrderRecord.setPP_Product_Planning_ID(productPlanning.getPP_Product_Planning_ID());
+		ppOrderRecord.setPP_Product_Planning_ID(ProductPlanningId.toRepoId(productPlanningId));
 
 		ppOrderRecord.setMRP_Generated(true);
 		ppOrderRecord.setMRP_AllowCleanup(true);
@@ -84,7 +97,7 @@ public class PPOrderProducer
 		ppOrderRecord.setAD_Org_ID(request.getClientAndOrgId().getOrgId().getRepoId());
 		ppOrderRecord.setS_Resource_ID(request.getPlantId().getRepoId());
 		ppOrderRecord.setM_Warehouse_ID(request.getWarehouseId().getRepoId());
-		ppOrderRecord.setPlanner_ID(productPlanning.getPlanner_ID());
+		ppOrderRecord.setPlanner_ID(UserId.toRepoId(getPlannerIdOrNull(request, productPlanning)));
 
 		//
 		// Document Type & Status
@@ -102,8 +115,8 @@ public class PPOrderProducer
 
 		//
 		// BOM & Workflow
-		ppOrderRecord.setPP_Product_BOM_ID(productPlanning.getPP_Product_BOM_ID());
-		ppOrderRecord.setAD_Workflow_ID(productPlanning.getAD_Workflow_ID());
+		ppOrderRecord.setPP_Product_BOM_ID(getBOMId(request, productPlanning).getRepoId());
+		ppOrderRecord.setAD_Workflow_ID(getRoutingId(request, productPlanning).getRepoId());
 
 		//
 		// Dates
@@ -139,7 +152,7 @@ public class PPOrderProducer
 
 		//
 		// Complete if requested
-		if (productPlanning.isDocComplete())
+		if (isCompleteDocument(request, productPlanning))
 		{
 			documentBL.processEx(ppOrderRecord, ACTION_Complete, STATUS_Completed);
 			Loggables.addLog(
@@ -149,6 +162,69 @@ public class PPOrderProducer
 
 		//
 		return ppOrderRecord;
+	}
+
+	private boolean isCompleteDocument(
+			@NonNull final PPOrderCreateRequest request,
+			@Nullable final I_PP_Product_Planning productPlanning)
+	{
+		return productPlanning != null && productPlanning.isDocComplete();
+	}
+
+	private static UserId getPlannerIdOrNull(
+			@NonNull final PPOrderCreateRequest request,
+			@Nullable final I_PP_Product_Planning productPlanning)
+	{
+		if (productPlanning != null)
+		{
+			return UserId.ofRepoIdOrNull(productPlanning.getPlanner_ID());
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	private ProductBOMId getBOMId(
+			@NonNull final PPOrderCreateRequest request,
+			@Nullable final I_PP_Product_Planning productPlanning)
+	{
+		if (productPlanning != null)
+		{
+			final ProductBOMId bomId = ProductBOMId.ofRepoIdOrNull(productPlanning.getPP_Product_BOM_ID());
+			if (bomId != null)
+			{
+				return bomId;
+			}
+		}
+
+		final ProductId productId = request.getProductId();
+		final ProductBOMId defaultBOMId = bomsRepo.getDefaultBOMIdByProductId(productId).orElse(null);
+		if (defaultBOMId != null)
+		{
+			return defaultBOMId;
+		}
+
+		throw new AdempiereException("@NotFound@ @PP_Product_BOM_ID@")
+				.appendParametersToMessage()
+				.setParameter("request", request)
+				.setParameter("productPlanning", productPlanning);
+	}
+
+	private static PPRoutingId getRoutingId(
+			@NonNull final PPOrderCreateRequest request,
+			@Nullable final I_PP_Product_Planning productPlanning)
+	{
+		if (productPlanning != null)
+		{
+			final PPRoutingId routingId = PPRoutingId.ofRepoIdOrNull(productPlanning.getAD_Workflow_ID());
+			if (routingId != null)
+			{
+				return routingId;
+			}
+		}
+
+		return PPRoutingId.NONE;
 	}
 
 	private BPartnerId getCustomerIdOrNull(final PPOrderCreateRequest request)

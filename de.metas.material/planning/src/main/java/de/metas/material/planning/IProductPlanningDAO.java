@@ -78,7 +78,7 @@ public interface IProductPlanningDAO extends ISingletonService
 		}
 	}
 
-	I_PP_Product_Planning getById(int ppProductPlanningId);
+	I_PP_Product_Planning getById(ProductPlanningId ppProductPlanningId);
 
 	/**
 	 * Find best matching product planning.
