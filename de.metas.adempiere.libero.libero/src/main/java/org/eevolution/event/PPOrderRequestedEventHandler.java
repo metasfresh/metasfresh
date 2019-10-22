@@ -3,7 +3,10 @@ package org.eevolution.event;
 import java.time.Instant;
 import java.util.Collection;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_PP_Order;
+import org.eevolution.mrp.spi.impl.pporder.PPOrderCreateRequest;
 import org.eevolution.mrp.spi.impl.pporder.PPOrderProducer;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -15,6 +18,11 @@ import de.metas.Profiles;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
+import de.metas.order.OrderLineId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -43,6 +51,7 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App) // only one handler should bother itself with these events
 public class PPOrderRequestedEventHandler implements MaterialEventHandler<PPOrderRequestedEvent>
 {
+	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final PPOrderProducer ppOrderProducer;
 
 	public PPOrderRequestedEventHandler(@NonNull final PPOrderProducer ppOrderProducer)
@@ -78,6 +87,27 @@ public class PPOrderRequestedEventHandler implements MaterialEventHandler<PPOrde
 		final PPOrder ppOrder = ppOrderRequestedEvent.getPpOrder();
 		final Instant dateOrdered = ppOrderRequestedEvent.getDateOrdered();
 
-		return ppOrderProducer.createPPOrder(ppOrder, dateOrdered);
+		final ProductId productId = ProductId.ofRepoId(ppOrder.getProductDescriptor().getProductId());
+		final I_C_UOM uom = productBL.getStockUOM(productId);
+		final Quantity qtyRequired = Quantity.of(ppOrder.getQtyRequired(), uom);
+
+		return ppOrderProducer.createPPOrder(PPOrderCreateRequest.builder()
+				.clientAndOrgId(ppOrder.getClientAndOrgId())
+				.productPlanningId(ppOrder.getProductPlanningId())
+				.materialDispoGroupId(ppOrder.getMaterialDispoGroupId())
+				.plantId(ppOrder.getPlantId())
+				.warehouseId(ppOrder.getWarehouseId())
+				//
+				.productId(productId)
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(ppOrder.getProductDescriptor().getAttributeSetInstanceId()))
+				.qtyRequired(qtyRequired)
+				//
+				.dateOrdered(dateOrdered)
+				.datePromised(ppOrder.getDatePromised())
+				.dateStartSchedule(ppOrder.getDateStartSchedule())
+				//
+				.salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrder.getOrderLineId()))
+				//
+				.build());
 	}
 }

@@ -58,9 +58,7 @@ import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UOMPrecision;
-import de.metas.uom.UomId;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -68,6 +66,8 @@ import lombok.NonNull;
 
 public class PPOrderBL implements IPPOrderBL
 {
+	private final IUOMConversionBL uomConversionService = Services.get(IUOMConversionBL.class);
+
 	@Override
 	public void setDefaults(final I_PP_Order ppOrder)
 	{
@@ -89,49 +89,17 @@ public class PPOrderBL implements IPPOrderBL
 		ppOrder.setDocAction(X_PP_Order.DOCACTION_Complete);
 	}
 
-	/**
-	 * Set Qty Entered - enforce entered UOM
-	 *
-	 * @param QtyEntered
-	 */
 	@Override
-	public void setQtyEntered(final I_PP_Order order, final BigDecimal QtyEntered)
+	public void setQtyRequired(@NonNull final I_PP_Order order, @NonNull final Quantity qty)
 	{
-		final BigDecimal qtyEnteredToUse;
-		final UomId uomId = UomId.ofRepoIdOrNull(order.getC_UOM_ID());
-		if (QtyEntered != null && uomId != null)
-		{
-			final UOMPrecision precision = Services.get(IUOMDAO.class).getStandardPrecision(uomId);
-			qtyEnteredToUse = precision.round(QtyEntered);
-		}
-		else
-		{
-			qtyEnteredToUse = QtyEntered;
-		}
-		order.setQtyEntered(qtyEnteredToUse);
-	}	// setQtyEntered
+		final Quantity qtyRounded = qty.roundToUOMPrecision();
+		order.setQtyEntered(qtyRounded.toBigDecimal());
+		order.setC_UOM_ID(qtyRounded.getUomId().getRepoId());
 
-	/**
-	 * Set Qty Ordered - enforce Product UOM
-	 *
-	 * @param qtyOrdered
-	 */
-	@Override
-	public void setQtyOrdered(final I_PP_Order order, final BigDecimal qtyOrdered)
-	{
-		final BigDecimal qtyOrderedToUse;
-		if (qtyOrdered != null)
-		{
-			final ProductId productId = ProductId.ofRepoId(order.getM_Product_ID());
-			final UOMPrecision precision = Services.get(IProductBL.class).getUOMPrecision(productId);
-			qtyOrderedToUse = precision.round(qtyOrdered);
-		}
-		else
-		{
-			qtyOrderedToUse = qtyOrdered;
-		}
-		order.setQtyOrdered(qtyOrderedToUse);
-	}	// setQtyOrdered
+		final ProductId productId = ProductId.ofRepoId(order.getM_Product_ID());
+		final Quantity qtyInSockingUOM = uomConversionService.convertToProductUOM(qtyRounded, productId);
+		order.setQtyOrdered(qtyInSockingUOM.toBigDecimal());
+	}
 
 	@Override
 	public void addDescription(final I_PP_Order order, final String description)
@@ -319,7 +287,7 @@ public class PPOrderBL implements IPPOrderBL
 		final BigDecimal qtyDelivered = ppOrder.getQtyDelivered();
 
 		ppOrder.setQtyBeforeClose(qtyOrderedOld);
-		setQtyOrdered(ppOrder, qtyDelivered);
+		ppOrder.setQtyOrdered(qtyDelivered);
 
 		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
 		ppOrdersRepo.save(ppOrder);

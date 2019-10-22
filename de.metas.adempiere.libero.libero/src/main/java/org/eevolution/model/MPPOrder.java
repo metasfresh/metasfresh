@@ -318,8 +318,8 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		if (qtyOrderedOld.signum() != 0)
 		{
 			ppOrderBL.addDescription(this, Services.get(IMsgBL.class).parseTranslation(getCtx(), "@Voided@ @QtyOrdered@ : (" + qtyOrderedOld + ")"));
-			ppOrderBL.setQtyOrdered(this, BigDecimal.ZERO);
-			ppOrderBL.setQtyEntered(this, BigDecimal.ZERO);
+			setQtyEntered(BigDecimal.ZERO);
+			setQtyOrdered(BigDecimal.ZERO);
 			Services.get(IPPOrderDAO.class).save(this);
 		}
 
