@@ -1,17 +1,16 @@
----DROP FUNCTION IF EXISTS report.cu_product_label(IN M_HU_ID numeric);
+DROP FUNCTION IF EXISTS report.cu_product_label(IN M_HU_ID numeric);
 
-CREATE FUNCTION report.cu_product_label(IN M_HU_ID numeric)
-  RETURNS TABLE
-  (
-    created         date,
-    value           Character Varying,
-    serialno        text,
-    name            Character Varying(255),
-    prod_value      Character Varying,
-    vendorName      Character Varying(255),
+CREATE FUNCTION report.cu_product_label(IN M_HU_ID numeric) RETURNS TABLE
+	(
+	created date, 
+	value Character Varying, 
+	serialno text,
+	name Character Varying (255),
+	prod_value Character Varying,
+	vendorName Character Varying (255),
     PurchaseOrderNo Character Varying
-  )
-AS
+	)
+AS 
 $$
 SELECT
   tu.created :: date,
@@ -55,8 +54,9 @@ FROM
   --get vallues for aggregated HUs if any
   left outer join "de.metas.handlingunits".get_TU_Values_From_Aggregation(tu.M_HU_ID) val on true
 WHERE
-  tu.M_HU_ID = $1;
+	tu.M_HU_ID = $1
+
+;
 
 $$
-LANGUAGE sql
-STABLE;
+  LANGUAGE sql STABLE;
