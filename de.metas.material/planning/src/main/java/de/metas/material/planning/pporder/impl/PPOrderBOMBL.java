@@ -33,9 +33,9 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
-import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
+import org.eevolution.api.ProductBOMQtys;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -160,9 +160,8 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 		//
 		// Adjust the qtyRequired by adding the scrap percentage to it.
-		final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 		final Percent qtyScrap = orderBOMLine.getScrap();
-		final BigDecimal qtyRequiredPlusScrap = productBOMBL.computeQtyWithScrap(qtyRequired, qtyScrap);
+		final BigDecimal qtyRequiredPlusScrap = ProductBOMQtys.computeQtyWithScrap(qtyRequired, qtyScrap);
 		return Quantity.of(qtyRequiredPlusScrap, orderBOMLine.getUom());
 	}
 
