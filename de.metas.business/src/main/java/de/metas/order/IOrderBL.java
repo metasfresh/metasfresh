@@ -14,6 +14,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocTypeId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
@@ -113,7 +114,13 @@ public interface IOrderBL extends ISingletonService
 	 */
 	void setDocTypeTargetId(I_C_Order order);
 
-	void setDocTypeTargetIdAndUpdateDescription(I_C_Order order, int docTypeId);
+	void setDocTypeTargetIdAndUpdateDescription(I_C_Order order, DocTypeId docTypeId);
+
+	@Deprecated
+	default void setDocTypeTargetIdAndUpdateDescription(I_C_Order order, int docTypeId)
+	{
+		setDocTypeTargetIdAndUpdateDescription(order, DocTypeId.ofRepoId(docTypeId));
+	}
 
 	/**
 	 * Updates the addresses in the order lines from the order. Also sets the header info in the lines.

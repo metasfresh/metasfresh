@@ -176,4 +176,14 @@ public class CampaignRepository
 				.create()
 				.delete();
 	}
+
+	public void removeAllContactPersonsFromCampaign(final CampaignId campaignId)
+	{
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
+				.addEqualsFilter(I_MKTG_Campaign_ContactPerson.COLUMN_MKTG_Campaign_ID, campaignId)
+				.create()
+				.delete();
+	}
+
 }
