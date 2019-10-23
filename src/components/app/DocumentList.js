@@ -39,6 +39,7 @@ import {
   NO_SELECTION,
   NO_VIEW,
   PANEL_WIDTHS,
+  GEO_PANEL_STATES,
   getSortingQuery,
   redirectToNewDocument,
   doesSelectionExist,
@@ -77,6 +78,7 @@ export class DocumentList extends Component {
       layout: null,
       pageColumnInfosByFieldName: null,
       toggleWidth: 0,
+      toggleState: 0,
       viewId: defaultViewId,
       page: defaultPage || 1,
       sort: defaultSort,
@@ -762,6 +764,17 @@ export class DocumentList extends Component {
     });
   };
 
+  collapseGeoPanels = () => {
+    const stateIdx =
+      this.state.toggleState + 1 === GEO_PANEL_STATES.length
+        ? 0
+        : this.state.toggleState + 1;
+
+    this.setState({
+      toggleState: stateIdx,
+    });
+  };
+
   /**
    * @method redirectToDocument
    * @summary ToDo: Describe the method.
@@ -885,6 +898,7 @@ export class DocumentList extends Component {
       refreshSelection,
       supportAttribute,
       toggleWidth,
+      toggleState,
       rowEdited,
       initialValuesNulled,
       rowDataMap,
@@ -926,6 +940,9 @@ export class DocumentList extends Component {
     }
 
     const showQuickActions = true;
+    const showModalResizeBtn =
+      layout && isModal && hasIncluded && hasShowIncluded;
+    const showGeoResizeBtn = layout && layout.supportGeoLocations;
 
     return (
       <div
@@ -935,7 +952,7 @@ export class DocumentList extends Component {
         })}
         style={styleObject}
       >
-        {layout && isModal && hasIncluded && hasShowIncluded && (
+        {showModalResizeBtn && (
           <div className="column-size-button col-xxs-3 col-md-0 ignore-react-onclickoutside">
             <button
               className={classnames(
@@ -1034,7 +1051,25 @@ export class DocumentList extends Component {
         />
 
         {layout && data && (
-          <div className="document-list-body">
+          <div
+            className={classnames('document-list-body', {
+              posRelative: showGeoResizeBtn,
+            })}
+          >
+            {showGeoResizeBtn && (
+              <div className="pane-size-button col-xxs-3 ignore-react-onclickoutside">
+                <button
+                  className={classnames(
+                    'btn btn-meta-outline-secondary btn-sm btn-switch ignore-react-onclickoutside',
+                  )}
+                  onClick={this.collapseGeoPanels}
+                >
+                  {(toggleState === 0 || toggleState === 1) && (<i className='icon icon-grid' />)}
+                  {toggleState === 1 && '/'}
+                  {(toggleState === 1 || toggleState === 2) && (<i className='icon icon-map'/>)}
+                </button>
+              </div>
+            )}
             <Table
               entity="documentView"
               ref={c =>
@@ -1090,6 +1125,7 @@ export class DocumentList extends Component {
                 hasIncluded,
                 viewId,
                 windowType,
+                toggleState,
               }}
             >
               {layout.supportAttributes && !isIncluded && !hasIncluded && (

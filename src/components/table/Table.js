@@ -1121,6 +1121,7 @@ class Table extends Component {
       disablePaginationShortcuts,
       hasIncluded,
       blurOnIncludedView,
+      toggleState,
     } = this.props;
 
     const {
@@ -1140,7 +1141,10 @@ class Table extends Component {
     return (
       <div ref={ref => (this.wrapper = ref)} className="row table-flex-wrapper">
         <div
-          className={classnames('col-12', {
+          className={classnames({
+            'col-12': toggleState === 0,
+            'col-6': toggleState === 1,
+            'd-none': toggleState === 2,
             'table-flex-wrapper-row': mainTable,
           })}
         >
