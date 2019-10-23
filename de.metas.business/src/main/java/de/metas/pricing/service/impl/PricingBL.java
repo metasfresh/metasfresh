@@ -26,6 +26,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
@@ -67,6 +69,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -85,6 +88,35 @@ public class PricingBL implements IPricingBL
 	public IEditablePricingContext createPricingContext()
 	{
 		return new PricingContext();
+	}
+
+	@Override
+	public IEditablePricingContext createInitialContext(
+			@Nullable final ProductId productId,
+			@Nullable BPartnerId bPartnerId,
+			@Nullable final Quantity quantity,
+			@NonNull final SOTrx soTrx)
+	{
+		final IEditablePricingContext pricingCtx = createPricingContext();
+		pricingCtx.setProductId(productId);
+		pricingCtx.setBPartnerId(bPartnerId);
+		pricingCtx.setConvertPriceToContextUOM(true); // backward compatibility
+
+		if (quantity != null)
+		{
+			if (quantity.signum() != 0)
+			{
+				pricingCtx.setQty(quantity.toBigDecimal());
+			}
+			pricingCtx.setUomId(quantity.getUomId());
+		}
+		else
+		{
+			pricingCtx.setQty(BigDecimal.ONE);
+		}
+		pricingCtx.setSOTrx(soTrx);
+
+		return pricingCtx;
 	}
 
 	@Override

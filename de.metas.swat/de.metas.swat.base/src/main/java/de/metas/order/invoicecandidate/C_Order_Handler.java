@@ -1,5 +1,7 @@
 package de.metas.order.invoicecandidate;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -90,11 +92,12 @@ public class C_Order_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Retrieve order line handlers
-		final List<IInvoiceCandidateHandler> orderLineHandlers = invoiceCandidateHandlerBL.retrieveImplementationsForTable(ctx, org.compiere.model.I_C_OrderLine.Table_Name);
+		final List<IInvoiceCandidateHandler> orderLineHandlers = invoiceCandidateHandlerBL.retrieveImplementationsForTable(ctx, I_C_OrderLine.Table_Name);
 
 		//
 		// Create the order line requests and return them
-		return InvoiceCandidateGenerateRequest.of(orderLineHandlers, orderLines);
+		final List<InvoiceCandidateGenerateRequest> of = InvoiceCandidateGenerateRequest.ofAll(orderLineHandlers, orderLines);
+		return of;
 	}
 
 	/**
@@ -107,20 +110,10 @@ public class C_Order_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public InvoiceCandidateGenerateResult createCandidatesFor(final InvoiceCandidateGenerateRequest request)
-	{
-		throw new IllegalStateException("Not supported");
-	}
-
-	@Override
 	public void invalidateCandidatesFor(final Object model)
 	{
-		final I_C_Order order = InterfaceWrapperHelper.create(model, I_C_Order.class);
-		invalidateCandidatesFor(order);
-	}
+		final I_C_Order order = create(model, I_C_Order.class);
 
-	private void invalidateCandidatesFor(final I_C_Order order)
-	{
 		// services
 		final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -172,4 +165,12 @@ public class C_Order_Handler extends AbstractInvoiceCandidateHandler
 	{
 		throw new IllegalStateException("Not supported");
 	}
+
+
+	@Override
+	public InvoiceCandidateGenerateResult createCandidatesFor(final InvoiceCandidateGenerateRequest request)
+	{
+		throw new IllegalStateException("Not supported");
+	}
+
 }

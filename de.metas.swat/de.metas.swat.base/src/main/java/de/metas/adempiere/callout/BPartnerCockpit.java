@@ -45,7 +45,7 @@ import org.compiere.model.MQuery;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerBL.RetrieveBillContactRequest;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.user.User;
@@ -96,7 +96,7 @@ public class BPartnerCockpit extends CalloutEngine
 
 		final I_AD_User contact = bPartnerBL.retrieveShipContact(ctx, bPartnerId, ITrx.TRXNAME_None);
 
-		final User billContact = bPartnerBL.retrieveBillContactOrNull(RetrieveBillContactRequest.builder()
+		final User billContact = bPartnerBL.retrieveContactOrNull(RetrieveContactRequest.builder()
 				.bpartnerId(BPartnerId.ofRepoId(bPartnerId))
 				.bPartnerLocationId(BPartnerLocationId.ofRepoId(bPartnerId, billLoc.getC_BPartner_Location_ID()))
 				.build());

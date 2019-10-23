@@ -71,7 +71,7 @@ import lombok.Value;
 public class SalesInvoicePaymentStatusRepository
 {
 	private final CurrencyRepository currenciesRepo;
-	
+
 	public SalesInvoicePaymentStatusRepository(@NonNull final CurrencyRepository currenciesRepo)
 	{
 		this.currenciesRepo = currenciesRepo;
@@ -130,7 +130,7 @@ public class SalesInvoicePaymentStatusRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner_Location.COLUMN_GLN, locatorGln)
 				.andCollect(I_C_BPartner_Location.COLUMN_C_BPartner_ID)
-				.addCompareFilter(I_C_BPartner.COLUMN_AD_OrgBP_ID, Operator.GREATER, 0)
+				.addCompareFilter(I_C_BPartner.COLUMNNAME_AD_OrgBP_ID, Operator.GREATER, 0)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.setRequiredAccess(Access.WRITE)

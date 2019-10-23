@@ -34,7 +34,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -42,6 +41,7 @@ import org.compiere.model.I_M_ProductPrice;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.impexp.processing.product.ProductPriceCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -89,7 +89,7 @@ public interface IPriceListDAO extends ISingletonService
 	/**
 	 * @return the price list for the given pricing system and location or <code>null</code>.
 	 */
-	I_M_PriceList retrievePriceListByPricingSyst(PricingSystemId pricingSystemId, I_C_BPartner_Location bpartnerLocation, SOTrx soTrx);
+	PriceListId retrievePriceListIdByPricingSyst(PricingSystemId pricingSystemId, BPartnerLocationId bpartnerLocationId, SOTrx soTrx);
 
 	/**
 	 * Retrieves the plv for the given price list and date. Never returns <code>null</code>

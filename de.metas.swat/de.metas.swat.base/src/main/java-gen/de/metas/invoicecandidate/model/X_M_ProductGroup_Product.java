@@ -14,7 +14,7 @@ public class X_M_ProductGroup_Product extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -305623020L;
+	private static final long serialVersionUID = 1554657872L;
 
     /** Standard Constructor */
     public X_M_ProductGroup_Product (Properties ctx, int M_ProductGroup_Product_ID, String trxName)
@@ -42,18 +42,6 @@ public class X_M_ProductGroup_Product extends org.compiere.model.PO implements I
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_M_Product_Category getM_Product_Category()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class);
-	}
-
-	@Override
-	public void setM_Product_Category(org.compiere.model.I_M_Product_Category M_Product_Category)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_Category_ID, org.compiere.model.I_M_Product_Category.class, M_Product_Category);
-	}
 
 	/** Set Produkt Kategorie.
 		@param M_Product_Category_ID 

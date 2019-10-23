@@ -162,7 +162,12 @@ public class FlatrateBLTest extends ContractsTestBase
 		location.setC_Country_ID(country.getC_Country_ID());
 		save(location);
 
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		bpartner.setName("bpartner1");
+		save(bpartner);
+
 		final I_C_BPartner_Location bpLocation = newInstance(I_C_BPartner_Location.class);
+		bpLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		bpLocation.setName("Location1");
 		bpLocation.setC_Location_ID(location.getC_Location_ID());
 		save(bpLocation);
@@ -173,6 +178,7 @@ public class FlatrateBLTest extends ContractsTestBase
 		currentTerm.setEndDate(TimeUtil.getDay(2014, 7, 27));
 		currentTerm.setC_Flatrate_Conditions(flatrateConditions);
 		currentTerm.setM_PricingSystem(pricingSystem);
+		currentTerm.setBill_BPartner_ID(bpartner.getC_BPartner_ID());
 		currentTerm.setBill_Location(bpLocation);
 		save(currentTerm);
 

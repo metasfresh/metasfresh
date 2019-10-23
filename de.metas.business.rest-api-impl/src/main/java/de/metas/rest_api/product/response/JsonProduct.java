@@ -61,7 +61,7 @@ public class JsonProduct
 	@Nullable
 	String description;
 
-	@ApiModelProperty("This translates to `M_Product.UPC`.")
+	@ApiModelProperty(value = "This translates to `M_Product.UPC`.<br>Note that different bPartners may assign different EANs to the same product")
 	@Nullable
 	@JsonInclude(Include.NON_EMPTY)
 	String ean;

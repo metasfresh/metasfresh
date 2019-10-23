@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
@@ -18,6 +20,7 @@ import de.metas.invoicecandidate.internalbusinesslogic.DeliveredData.DeliveredDa
 import de.metas.invoicecandidate.internalbusinesslogic.ShipmentData.ShipmentDataBuilder;
 import de.metas.invoicecandidate.internalbusinesslogic.ShippedQtyItem.ShippedQtyItemBuilder;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -54,29 +57,54 @@ import lombok.Value;
  */
 
 @Value
-@lombok.Builder
 public class DeliveredDataLoader
 {
-	@NonNull
 	UomId stockUomId;
 
-	@NonNull
 	UomId icUomId;
 
-	@NonNull
 	ProductId productId;
 
-	@NonNull
 	InvoiceCandidateId invoiceCandidateId;
 
-	@NonNull
 	SOTrx soTrx;
 
-	@NonNull
 	Boolean negateQtys;
 
-	@NonNull // always empty, if soTrx, sometimes set if poTrx
+	/** always empty, if soTrx; sometimes set if poTrx */
 	Optional<Percent> deliveryQualityDiscount;
+
+	/**
+	 * This can be set from the {@code C_Invoice_Candidate}'s current qtyDelivered and
+	 * will be used in case there are no assigned inout lines.
+	 * <p>
+	 * Background:
+	 * <li>in some business cases we may have a QtyDelivered but no receipt lines at all (like commission settlement ICs).
+	 * <li>in these cases, {@link IInvoiceCandidateHandler#setDeliveredData(de.metas.invoicecandidate.model.I_C_Invoice_Candidate)} might delivered quantities that are not related to inout lines.
+	 * <li>these quantities need to end up in the IC's "deliveredData".
+	 */
+	StockQtyAndUOMQty defaultQtyDelivered;
+
+	@lombok.Builder
+	private DeliveredDataLoader(
+			@NonNull final UomId stockUomId,
+			@NonNull final UomId icUomId,
+			@NonNull final ProductId productId,
+			@NonNull final InvoiceCandidateId invoiceCandidateId,
+			@NonNull final SOTrx soTrx,
+			@NonNull final Boolean negateQtys,
+			@NonNull final Optional<Percent> deliveryQualityDiscount,
+			@Nullable final StockQtyAndUOMQty defaultQtyDelivered)
+	{
+		this.stockUomId = stockUomId;
+		this.icUomId = icUomId;
+		this.productId = productId;
+		this.invoiceCandidateId = invoiceCandidateId;
+		this.soTrx = soTrx;
+		this.negateQtys = negateQtys;
+		this.deliveryQualityDiscount = deliveryQualityDiscount;
+		this.defaultQtyDelivered = coalesce(defaultQtyDelivered, StockQtyAndUOMQtys.createZero(productId, icUomId));
+	}
 
 	DeliveredData loadDeliveredQtys()
 	{
@@ -107,13 +135,21 @@ public class DeliveredDataLoader
 	{
 		final ImmutableList<ShippedQtyItem> shippedQtyItems = loadshippedQtyItems(icIolAssociationRecords);
 
-		Quantity qtyInStockUom = Quantitys.createZero(stockUomId);
-		Quantity qtyNominal = Quantitys.createZero(icUomId);
-		Quantity qtyCatch = Quantitys.createZero(icUomId);
-
 		final ShipmentDataBuilder result = ShipmentData.builder()
 				.productId(productId)
 				.shippedQtyItems(shippedQtyItems);
+
+		if (shippedQtyItems.isEmpty())
+		{
+			return result
+					.qtyInStockUom(defaultQtyDelivered.getStockQty())
+					.qtyNominal(defaultQtyDelivered.getUOMQtyNotNull())
+					.build();
+		}
+
+		Quantity qtyInStockUom = Quantitys.createZero(stockUomId);
+		Quantity qtyNominal = Quantitys.createZero(icUomId);
+		Quantity qtyCatch = Quantitys.createZero(icUomId);
 
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
 
@@ -152,38 +188,10 @@ public class DeliveredDataLoader
 		{
 			result.qtyCatch(qtyCatch);
 		}
+		return result.build();
 
-		final ShipmentData build = result.build();
-		return build;
 	}
 
-	private ReceiptData loadReceiptQualityData(@NonNull final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords)
-	{
-		StockQtyAndUOMQty qtysWithIssues = StockQtyAndUOMQtys.createZero(productId, icUomId);
-		StockQtyAndUOMQty qtysTotal = StockQtyAndUOMQtys.createZero(productId, icUomId);
-
-		for (final I_C_InvoiceCandidate_InOutLine iciol : icIolAssociationRecords)
-		{
-			final I_M_InOutLine inoutLine = create(iciol.getM_InOutLine(), I_M_InOutLine.class);
-
-			final StockQtyAndUOMQty qtys = StockQtyAndUOMQtys
-					.create(
-							iciol.getQtyDelivered(), productId,
-							iciol.getQtyDeliveredInUOM_Nominal(), UomId.ofRepoIdOrNull(iciol.getC_UOM_ID()))
-					.negateIf(negateQtys);
-
-			qtysTotal = StockQtyAndUOMQtys.add(qtysTotal, qtys);
-			if (inoutLine.isInDispute())
-			{
-				qtysWithIssues = StockQtyAndUOMQtys.add(qtysWithIssues, qtys);
-			}
-		}
-
-		return ReceiptData.builder()
-				.qtysTotal(qtysTotal)
-				.qtysWithIssues(qtysWithIssues)
-				.build();
-	}
 
 	private ImmutableList<ShippedQtyItem> loadshippedQtyItems(@NonNull final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords)
 	{
@@ -232,4 +240,39 @@ public class DeliveredDataLoader
 		return result.build();
 	}
 
+	private ReceiptData loadReceiptQualityData(@NonNull final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords)
+	{
+		StockQtyAndUOMQty qtysWithIssues = StockQtyAndUOMQtys.createZero(productId, icUomId);
+
+		if (icIolAssociationRecords.isEmpty())
+		{
+			return ReceiptData.builder()
+					.qtysTotal(defaultQtyDelivered)
+					.qtysWithIssues(qtysWithIssues)
+					.build();
+		}
+
+		StockQtyAndUOMQty qtysTotal = StockQtyAndUOMQtys.createZero(productId, icUomId);
+		for (final I_C_InvoiceCandidate_InOutLine iciol : icIolAssociationRecords)
+		{
+			final I_M_InOutLine inoutLine = create(iciol.getM_InOutLine(), I_M_InOutLine.class);
+
+			final StockQtyAndUOMQty qtys = StockQtyAndUOMQtys
+					.create(
+							iciol.getQtyDelivered(), productId,
+							iciol.getQtyDeliveredInUOM_Nominal(), UomId.ofRepoIdOrNull(iciol.getC_UOM_ID()))
+					.negateIf(negateQtys);
+
+			qtysTotal = StockQtyAndUOMQtys.add(qtysTotal, qtys);
+			if (inoutLine.isInDispute())
+			{
+				qtysWithIssues = StockQtyAndUOMQtys.add(qtysWithIssues, qtys);
+			}
+		}
+
+		return ReceiptData.builder()
+				.qtysTotal(qtysTotal)
+				.qtysWithIssues(qtysWithIssues)
+				.build();
+	}
 }

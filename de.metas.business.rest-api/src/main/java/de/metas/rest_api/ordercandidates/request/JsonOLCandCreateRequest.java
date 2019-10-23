@@ -123,9 +123,7 @@ public final class JsonOLCandCreateRequest
 
 	private int flatrateConditionsId;
 
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			value = "This translates to <code>C_OLCand.M_Product_ID</code>.")
+	@ApiModelProperty(value = "This translates to <code>C_OLCand.M_Product_ID</code>.")
 	private JsonProductInfo product;
 
 	@JsonInclude(Include.NON_NULL)
@@ -133,17 +131,20 @@ public final class JsonOLCandCreateRequest
 
 	private BigDecimal qty;
 
-	@ApiModelProperty( //
-			allowEmptyValue = true, //
-			value = " This translates to <code>C_UOM.X12DE355</code>.\n"
-					+ "The respective UOM needs to exist in metasfresh and its ID is set as <code>C_OLCand.C_UOM_ID</code>.\n"
-					+ "If not set, then the respective product's UOM is used.\n"
-					+ "Note that if this is set, then there also needs to exist a UOM-conversion rule between this UOM and the <code>product</code>'s UOM")
+	@ApiModelProperty(value = "This translates to <code>C_UOM.X12DE355</code>.\n"
+			+ "The respective UOM needs to exist in metasfresh and its ID is set as <code>C_OLCand.C_UOM_ID</code>.\n"
+			+ "If not set, then the respective product's UOM is used.\n"
+			+ "Note that if this is set, then there also needs to exist a UOM-conversion rule between this UOM and the <code>product</code>'s UOM")
 	@JsonInclude(Include.NON_NULL)
 	private String uomCode;
 
 	private int packingMaterialId;
 
+	@ApiModelProperty(value = "If a new product price needs to be created on the fly and the system can't deduce the respective pricing system from given business partner,\n"
+			+ "then we need this property to specify the `M_PricingSystem.Value` of the pricing system to work with.\n\n"
+			+ "Also note that:n"
+			+ "- the pricing system also needs to have a price list that matches the BPartner's country and that has a default tax category to be used the creating the new price."
+			+ "- if a new business partner is created on the fly, the detault business partner group (to which the new BPartner is added) needs to have this pricing system set; otherwise the order line candidate will be created, but can't be processed.")
 	@JsonInclude(Include.NON_NULL)
 	private String pricingSystemCode;
 
