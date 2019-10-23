@@ -260,6 +260,11 @@ public final class ImmutableAttributeSet implements IAttributeSet
 			return null;
 		}
 
+		if ("".equals(valueObj))
+		{
+			return null;
+		}
+
 		final BigDecimal valueBD = NumberUtils.asBigDecimal(valueObj, null);
 		if (valueBD == null)
 		{
