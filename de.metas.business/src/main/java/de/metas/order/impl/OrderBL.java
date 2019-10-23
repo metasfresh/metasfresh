@@ -58,11 +58,11 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveBillContactRequest;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveBillContactRequest.RetrieveBillContactRequestBuilder;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
-import de.metas.bpartner.service.IBPartnerBL.RetrieveBillContactRequest;
-import de.metas.bpartner.service.IBPartnerBL.RetrieveBillContactRequest.RetrieveBillContactRequestBuilder;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -76,13 +76,13 @@ import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.BPartnerOrderParams;
 import de.metas.order.BPartnerOrderParamsRepository;
+import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
-import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
@@ -306,8 +306,8 @@ public class OrderBL implements IOrderBL
 					.build();
 			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
-			final int docTypeId = DocTypeId.toRepoId(docTypeDAO.getDocTypeIdOrNull(docTypeQuery));
-			if (docTypeId <= 0)
+			final DocTypeId docTypeId = docTypeDAO.getDocTypeIdOrNull(docTypeQuery);
+			if (docTypeId == null)
 			{
 				logger.error("No POO found for {}", docTypeQuery);
 			}
@@ -330,8 +330,8 @@ public class OrderBL implements IOrderBL
 				.build();
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
-		final int docTypeId = DocTypeId.toRepoId(docTypeDAO.getDocTypeIdOrNull(docTypeQuery));
-		if (docTypeId <= 0)
+		final DocTypeId docTypeId = docTypeDAO.getDocTypeIdOrNull(docTypeQuery);
+		if (docTypeId == null)
 		{
 			logger.error("Not found for {}", docTypeQuery);
 		}
@@ -344,9 +344,9 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public void setDocTypeTargetIdAndUpdateDescription(final I_C_Order order, final int docTypeId)
+	public void setDocTypeTargetIdAndUpdateDescription(@NonNull final I_C_Order order, @NonNull final DocTypeId docTypeId)
 	{
-		order.setC_DocTypeTarget_ID(docTypeId);
+		order.setC_DocTypeTarget_ID(docTypeId.getRepoId());
 		updateDescriptionFromDocTypeTargetId(order);
 	}
 
