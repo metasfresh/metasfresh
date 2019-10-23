@@ -85,10 +85,6 @@ public interface IBPartnerDAO extends ISingletonService
 	/**
 	 * Retrieve {@link I_C_BPartner} assigned to given organization
 	 *
-	 * @param ctx
-	 * @param orgId
-	 * @param clazz
-	 * @param trxName
 	 * @return {@link I_C_BPartner}; never return null
 	 * @throws OrgHasNoBPartnerLinkException if no partner was found
 	 */
@@ -262,8 +258,6 @@ public interface IBPartnerDAO extends ISingletonService
 	BPartnerLocationId getBilltoDefaultLocationIdByBpartnerId(BPartnerId bpartnerId);
 
 	BPartnerLocationId getShiptoDefaultLocationIdByBpartnerId(BPartnerId bpartnerId);
-
-	BPartnerLocationId getCommissionToDefaultLocationIdByBpartnerId(BPartnerId bPartnerId);
 
 	String getBPartnerNameById(BPartnerId bpartnerId);
 

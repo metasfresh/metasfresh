@@ -1,4 +1,4 @@
-package de.metas.contracts.commission.salesorder.interceptor;
+package de.metas.contracts.commission.interceptor;
 
 import static de.metas.util.Check.isEmpty;
 import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
