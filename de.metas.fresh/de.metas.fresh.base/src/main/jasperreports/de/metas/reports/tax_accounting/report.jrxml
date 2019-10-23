@@ -108,9 +108,9 @@
 		<groupHeader>
 			<band height="23">
 				<textField>
-					<reportElement x="0" y="2" width="100" height="20" uuid="a04a7acf-914c-406a-9ffd-1d8e23744d21"/>
+					<reportElement x="0" y="2" width="280" height="20" uuid="a04a7acf-914c-406a-9ffd-1d8e23744d21"/>
 					<textElement>
-						<font fontName="Arial" size="9" isBold="true"/>
+						<font fontName="Arial" size="10" isBold="true"/>
 						<paragraph leftIndent="5"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{vatcode} !=null ? $F{vatcode} : $R{no_vatcode}]]></textFieldExpression>

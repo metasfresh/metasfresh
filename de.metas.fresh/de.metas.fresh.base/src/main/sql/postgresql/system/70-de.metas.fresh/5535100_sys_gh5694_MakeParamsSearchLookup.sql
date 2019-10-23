@@ -43,3 +43,9 @@ UPDATE AD_Ref_Table SET WhereClause='C_Year.fiscalyear desc',Updated=TO_TIMESTAM
 UPDATE AD_Process_Para SET AD_Reference_ID=30, AD_Reference_Value_ID=540133, IsAutocomplete='Y',Updated=TO_TIMESTAMP('2019-10-23 19:03:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=540907
 ;
 
+
+-- 2019-10-23T16:16:58.868Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_Table SET OrderByClause='C_Year.fiscalyear desc', WhereClause='',Updated=TO_TIMESTAMP('2019-10-23 19:16:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540133
+;
+
