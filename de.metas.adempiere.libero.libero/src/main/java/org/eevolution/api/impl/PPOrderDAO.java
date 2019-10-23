@@ -37,7 +37,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
@@ -68,16 +67,6 @@ public class PPOrderDAO implements IPPOrderDAO
 	public List<I_PP_Order> getByIds(final Set<PPOrderId> orderIds)
 	{
 		return loadByRepoIdAwares(orderIds, I_PP_Order.class);
-	}
-
-	@Override
-	public List<I_PP_Order> retrieveAllForOrderLine(final I_C_OrderLine line)
-	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_PP_Order.class, line)
-				.addEqualsFilter(I_PP_Order.COLUMNNAME_C_OrderLine_ID, line.getC_OrderLine_ID())
-				.addEqualsFilter(I_PP_Order.COLUMNNAME_M_Product_ID, line.getM_Product_ID())
-				.create()
-				.list(I_PP_Order.class);
 	}
 
 	@Override
