@@ -4,7 +4,7 @@
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="intercheeseuat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<parameter name="c_period_id" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
