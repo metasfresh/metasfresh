@@ -1,3 +1,5 @@
+import { getLanguageSpecific } from '../../support/utils/utils';
+
 let description;
 let category;
 let postingType;
@@ -11,7 +13,7 @@ it('Read fixture and prepare the names', function() {
   cy.fixture('finance/create_GL_journal_line_entry_spec.json').then(f => {
     description = f['description'];
     category = f['category'];
-    postingType = f['postingType'];
+    postingType = getLanguageSpecific(f,'postingType');
     currency = f['currency'];
     docType = f['docType'];
     account = f['account'];
