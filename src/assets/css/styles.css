@@ -108,6 +108,10 @@ body {
     }
 }
 
+.posRelative {
+    position: relative;
+}
+
 .text-brand {
     font-weight: 700;
     color: $brand-color-primary;
@@ -511,6 +515,34 @@ body {
     top: 0;
     right: 0;
     z-index: 1000;
+}
+
+.pane-size-button {
+    display: block;
+    position: absolute;
+    padding: 0;
+    top: -24px;
+    right: 5px;
+    z-index: 1000;
+
+    .btn-switch {
+        display: flex;
+    }
+
+    .icon {
+        width: 15px;
+        height: 15px;
+        background: no-repeat scroll 0 center;
+        display: block;
+    }
+
+    .icon-grid {
+        background-image: url('../images/list-solid.svg');
+    }
+
+    .icon-map {
+        background-image: url('../images/map-marked-alt-solid.svg');
+    }
 }
 
 .tablet, .mobile {
