@@ -15,7 +15,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 40671130L;
+	private static final long serialVersionUID = 408081812L;
 
     /** Standard Constructor */
     public X_C_OrderLine (Properties ctx, int C_OrderLine_ID, String trxName)
@@ -37,6 +37,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 			setFreightAmt (BigDecimal.ZERO);
 			setFrequencyType (null); // M
 			setInvoicableQtyBasedOn (null); // Nominal
+			setIsCampaignPrice (false); // N
 			setIsDescription (false); // N
 			setIsDiscountEditable (true); // Y
 			setIsGroupCompensationLine (false); // N
@@ -973,6 +974,32 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public java.lang.String getInvoicableQtyBasedOn () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_InvoicableQtyBasedOn);
+	}
+
+	/** Set AP.
+		@param IsCampaignPrice 
+		Aktionspreise
+	  */
+	@Override
+	public void setIsCampaignPrice (boolean IsCampaignPrice)
+	{
+		set_Value (COLUMNNAME_IsCampaignPrice, Boolean.valueOf(IsCampaignPrice));
+	}
+
+	/** Get AP.
+		@return Aktionspreise
+	  */
+	@Override
+	public boolean isCampaignPrice () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsCampaignPrice);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Description Only.
