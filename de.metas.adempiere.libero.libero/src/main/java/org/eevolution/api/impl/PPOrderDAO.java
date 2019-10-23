@@ -28,13 +28,16 @@ import java.time.LocalDateTime;
  */
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
@@ -51,6 +54,8 @@ import lombok.NonNull;
 
 public class PPOrderDAO implements IPPOrderDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	
 	@Override
 	public I_PP_Order getById(@NonNull final PPOrderId ppOrderId)
 	{
@@ -70,9 +75,39 @@ public class PPOrderDAO implements IPPOrderDAO
 	}
 
 	@Override
+	public Optional<I_PP_Order> retrieveOpenPickingOrderForSalesOrderLine(@NonNull final OrderLineId salesOrderLineId)
+	{
+		final List<I_PP_Order> ppOrders = queryBL.createQueryBuilderOutOfTrx(I_PP_Order.class)
+				.addEqualsFilter(I_PP_Order.COLUMNNAME_C_OrderLine_ID, salesOrderLineId)
+				.addEqualsFilter(I_PP_Order.COLUMN_IsPickingOrder, true)
+				//
+				// Only Releases Manufacturing orders:
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_Order.COLUMN_Processed, true)
+				.addEqualsFilter(I_PP_Order.COLUMN_DocStatus, DocStatus.Completed)
+				//
+				.create()
+				.list(I_PP_Order.class);
+
+		if (ppOrders.isEmpty())
+		{
+			return Optional.empty();
+		}
+		else if (ppOrders.size() == 1)
+		{
+			return Optional.of(ppOrders.get(0));
+		}
+		else
+		{
+			final String documentNos = ppOrders.stream().map(I_PP_Order::getDocumentNo).collect(Collectors.joining(", "));
+			throw new AdempiereException("More than one picking order found: " + documentNos);
+		}
+	}
+
+	@Override
 	public List<I_PP_Order> retrieveReleasedManufacturingOrdersForWarehouse(final WarehouseId warehouseId)
 	{
-		final IQueryBuilder<I_PP_Order> queryBuilder = Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_PP_Order.class)
+		return queryBL.createQueryBuilderOutOfTrx(I_PP_Order.class)
 				// For Warehouse
 				.addEqualsFilter(I_PP_Order.COLUMNNAME_M_Warehouse_ID, warehouseId)
 				// Only Releases Manufacturing orders
@@ -80,12 +115,9 @@ public class PPOrderDAO implements IPPOrderDAO
 				.addEqualsFilter(I_PP_Order.COLUMN_DocStatus, DocStatus.Completed)
 				// Only those which are active
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient();
-
-		queryBuilder.orderBy()
-				.addColumn(I_PP_Order.COLUMN_DocumentNo);
-
-		return queryBuilder
+				//
+				.orderBy(I_PP_Order.COLUMN_DocumentNo)
+				//
 				.create()
 				.list(I_PP_Order.class);
 	}
@@ -93,7 +125,7 @@ public class PPOrderDAO implements IPPOrderDAO
 	@Override
 	public PPOrderId retrievePPOrderIdByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_PP_Order.class)
 				.addEqualsFilter(I_PP_Order.COLUMN_C_OrderLine_ID, orderLineId)
 				.addOnlyActiveRecordsFilter()
@@ -104,7 +136,7 @@ public class PPOrderDAO implements IPPOrderDAO
 	@Override
 	public Stream<I_PP_Order> streamOpenPPOrderIdsOrderedByDatePromised(@Nullable final ResourceId plantId)
 	{
-		final IQueryBuilder<I_PP_Order> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_PP_Order> queryBuilder = queryBL
 				.createQueryBuilder(I_PP_Order.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_PP_Order.COLUMN_DocStatus, X_PP_Order.DOCSTATUS_InProgress, X_PP_Order.DOCSTATUS_Completed)
