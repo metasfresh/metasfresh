@@ -160,5 +160,11 @@ public class WorkpackageParamDAOTest
 			setParameterValueAndExpectDate(date, TimeUtil.asTimestamp(date));
 		}
 
+		@Test
+		public void bool()
+		{
+			setParameterValueAndBoolean(false, false);
+			setParameterValueAndBoolean(true, true);
+		}
 	}
 }
