@@ -77,9 +77,16 @@ public class MKTG_ContactPerson_ProcessBase
 				defaultAddressType);
 	}
 
-	public void createContactPersonsForPartner(final IQueryFilter<I_C_BPartner> currentSelectionFilter, final CampaignId campaignId, final DefaultAddressType defaultAddressType)
+	public void createContactPersonsForPartner(final MKTG_ContactPerson_ProcessParams params)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final CampaignId campaignId = params.getCampaignId();
+
+		if (params.isRemoveAllExistingContactsFromCampaign())
+		{
+			campaignService.removeContactPersonsFromCampaign(campaignId);
+		}
 
 		final IQuery<I_MKTG_Campaign_ContactPerson> linkTableQuery = queryBL.createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
 				.addOnlyActiveRecordsFilter()
@@ -89,7 +96,7 @@ public class MKTG_ContactPerson_ProcessBase
 		final Stream<User> usersToAdd = queryBL
 				.createQueryBuilder(I_C_BPartner.class)
 				.addOnlyActiveRecordsFilter()
-				.filter(currentSelectionFilter)
+				.filter(params.getSelectionFilter())
 				.andCollectChildren(I_AD_User.COLUMN_C_BPartner_ID)
 				.addNotInSubQueryFilter(I_AD_User.COLUMN_AD_User_ID, I_MKTG_Campaign_ContactPerson.COLUMN_AD_User_ID, linkTableQuery)
 				.create()
@@ -101,7 +108,7 @@ public class MKTG_ContactPerson_ProcessBase
 		campaignService.addAsContactPersonsToCampaign(
 				usersToAdd,
 				campaignId,
-				defaultAddressType);
+				params.getAddresType());
 
 	}
 }
