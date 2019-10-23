@@ -40,6 +40,8 @@ public class CommissionTriggerData
 {
 	InvoiceCandidateId invoiceCandidateId;
 
+	boolean invoiceCandidateWasDeleted;
+
 	/** Exact timestamp of this trigger. E.g. if one invoice candidate is changed, there might be two triggers wit different timestamps that relate to the same IC. */
 	Instant timestamp;
 
@@ -53,13 +55,16 @@ public class CommissionTriggerData
 	@JsonCreator
 	private CommissionTriggerData(
 			@JsonProperty("invoiceCandidateId") @NonNull final InvoiceCandidateId invoiceCandidateId,
+			@JsonProperty("invoiceCandidateWasDeleted") final boolean invoiceCandidateWasDeleted,
 			@JsonProperty("timestamp") @NonNull final Instant timestamp,
 			@JsonProperty("forecastedPoints") @NonNull final CommissionPoints forecastedPoints,
 			@JsonProperty("invoiceablePoints") @NonNull final CommissionPoints invoiceablePoints,
 			@JsonProperty("invoicedPoints") @NonNull final CommissionPoints invoicedPoints)
 	{
-		this.invoiceCandidateId = invoiceCandidateId;
 		this.timestamp = timestamp;
+
+		this.invoiceCandidateId = invoiceCandidateId;
+		this.invoiceCandidateWasDeleted = invoiceCandidateWasDeleted;
 
 		this.forecastedPoints = coalesce(forecastedPoints, CommissionPoints.ZERO);
 		this.invoiceablePoints = coalesce(invoiceablePoints, CommissionPoints.ZERO);

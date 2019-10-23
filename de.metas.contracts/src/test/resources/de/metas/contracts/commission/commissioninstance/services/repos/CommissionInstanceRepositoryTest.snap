@@ -2,6 +2,7 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
   "id" : 100005,
   "currentTriggerData" : {
     "invoiceCandidateId" : 10,
+    "invoiceCandidateWasDeleted" : false,
     "timestamp" : "2019-09-17T11:50:55Z",
     "forecastedPoints" : 10,
     "invoiceablePoints" : 11,

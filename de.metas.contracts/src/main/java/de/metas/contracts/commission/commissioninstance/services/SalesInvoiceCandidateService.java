@@ -60,13 +60,17 @@ public class SalesInvoiceCandidateService
 	/**
 	 * Note: creating/updating commission related records results in the invoice candidate handler framework being fired in order to also keep the commission-settlement IC up to date.
 	 */
-	public void syncSalesICToCommissionInstance(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	public void syncSalesICToCommissionInstance(@NonNull final InvoiceCandidateId invoiceCandidateId, final boolean candidateDeleted)
 	{
 		final List<CommissionInstance> instances = commissionInstanceRepository.getForInvoiceCandidateId(invoiceCandidateId);
 		if (instances.isEmpty())
 		{
+			if(candidateDeleted)
+			{
+				return; // nothing to do
+			}
 			// initially create commission data for the given invoice candidate
-			final ImmutableList<CreateInstanceRequest> requests = commissionInstanceRequestFactory.createRequestsFor(invoiceCandidateId);
+			final ImmutableList<CreateInstanceRequest> requests = commissionInstanceRequestFactory.createRequestsForNewSalesInvoiceCandidate(invoiceCandidateId);
 			for (final CreateInstanceRequest request : requests)
 			{
 				final CommissionInstance createdInstance = commissionAlgorithmInvoker.applyCreateRequest(request);
@@ -78,7 +82,7 @@ public class SalesInvoiceCandidateService
 		// update existing commission data
 		for (final CommissionInstance instance : instances)
 		{
-			final CommissionTriggerData newTriggerData = commissionTriggerDataRepository.getForInvoiceCandiateId(invoiceCandidateId);
+			final CommissionTriggerData newTriggerData = commissionTriggerDataRepository.getForInvoiceCandiateId(invoiceCandidateId, candidateDeleted);
 			final CommissionTriggerChange change = CommissionTriggerChange.builder()
 					.instanceToUpdate(instance)
 					.newCommissionTriggerData(newTriggerData)

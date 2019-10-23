@@ -1,8 +1,6 @@
 package de.metas.contracts.commission.commissioninstance.services.repos;
 
 import static de.metas.util.lang.CoalesceUtil.coalesce;
-import static org.adempiere.model.InterfaceWrapperHelper.delete;
-
 import java.util.Collection;
 import java.util.List;
 
@@ -165,13 +163,6 @@ class CommissionRecordStagingService
 			this.instanceRecordIdToInstance = coalesce(instanceRecordIdToInstance, ImmutableMap.of());
 			this.instanceRecordIdToShareRecords = coalesce(instanceRecordIdToShareRecords, ImmutableListMultimap.of());
 			this.shareRecordIdToSalesFactRecords = coalesce(shareRecordIdToFactRecords, ImmutableListMultimap.of());
-		}
-
-		void deleteAll()
-		{
-			this.instanceRecordIdToInstance.entrySet().forEach(entry -> delete(entry.getValue()));
-			this.instanceRecordIdToShareRecords.entries().forEach(entry -> delete(entry.getValue()));
-			this.shareRecordIdToSalesFactRecords.entries().forEach(entry -> delete(entry.getValue()));
 		}
 
 		ImmutableList<I_C_Commission_Share> getShareRecordsForInstanceRecordId(@NonNull final CommissionInstanceId commissionInstanceId)

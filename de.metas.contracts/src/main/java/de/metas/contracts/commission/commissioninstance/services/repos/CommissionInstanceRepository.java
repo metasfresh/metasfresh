@@ -200,7 +200,14 @@ public class CommissionInstanceRepository
 
 		final I_C_Commission_Instance commissionInstanceRecord = loadOrNewInstanceRecord(instance);
 
-		commissionInstanceRecord.setC_Invoice_Candidate_ID(invoiceCandidateId.getRepoId());
+		if (triggerData.isInvoiceCandidateWasDeleted())
+		{
+			commissionInstanceRecord.setC_Invoice_Candidate_ID(-1);
+		}
+		else
+		{
+			commissionInstanceRecord.setC_Invoice_Candidate_ID(invoiceCandidateId.getRepoId());
+		}
 		commissionInstanceRecord.setMostRecentTriggerTimestamp(TimeUtil.asTimestamp(triggerData.getTimestamp()));
 		commissionInstanceRecord.setPointsBase_Forecasted(triggerData.getForecastedPoints().toBigDecimal());
 		commissionInstanceRecord.setPointsBase_Invoiceable(triggerData.getInvoiceablePoints().toBigDecimal());
@@ -340,13 +347,4 @@ public class CommissionInstanceRepository
 		final I_C_Commission_Instance commissionInstanceRecord = loadOrNew(instance.getId(), I_C_Commission_Instance.class);
 		return commissionInstanceRecord;
 	}
-
-	public void deleteCommissionRecordsForSalesIC(@NonNull final InvoiceCandidateId invoiceCandidateId)
-	{
-		final CommissionRecords records = commissionRecordStagingService.retrieveRecordsForInvoiceCandidateId(
-				ImmutableList.of(invoiceCandidateId),
-				false/* onlyActive */);
-		records.deleteAll();
-	}
-
 }

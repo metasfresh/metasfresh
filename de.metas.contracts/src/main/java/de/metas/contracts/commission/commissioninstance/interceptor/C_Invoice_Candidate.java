@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import de.metas.contracts.commission.CommissionConstants;
 import de.metas.contracts.commission.commissioninstance.services.SalesInvoiceCandidateService;
 import de.metas.contracts.commission.commissioninstance.services.SettlementInvoiceCandidateService;
-import de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstanceRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import lombok.NonNull;
@@ -40,16 +39,13 @@ import lombok.NonNull;
 public class C_Invoice_Candidate
 {
 	private final SalesInvoiceCandidateService invoiceCandidateService;
-	private final CommissionInstanceRepository commissionInstanceRepository;
 	private final SettlementInvoiceCandidateService settlementInvoiceCandidateService;
 
 	public C_Invoice_Candidate(
 			@NonNull final SalesInvoiceCandidateService invoiceCandidateService,
-			@NonNull final CommissionInstanceRepository commissionInstanceRepository,
 			@NonNull final SettlementInvoiceCandidateService settlementInvoiceCandidateService)
 	{
 		this.invoiceCandidateService = invoiceCandidateService;
-		this.commissionInstanceRepository = commissionInstanceRepository;
 		this.settlementInvoiceCandidateService = settlementInvoiceCandidateService;
 	}
 
@@ -75,7 +71,7 @@ public class C_Invoice_Candidate
 		}
 		else
 		{
-			invoiceCandidateService.syncSalesICToCommissionInstance(invoiceCandidateId);
+			invoiceCandidateService.syncSalesICToCommissionInstance(invoiceCandidateId, false/*candidateDeleted*/);
 		}
 	}
 
@@ -90,8 +86,7 @@ public class C_Invoice_Candidate
 		}
 		else
 		{
-			// TODO: fail delete if there are already invoiced settlement records
-			commissionInstanceRepository.deleteCommissionRecordsForSalesIC(invoiceCandidateId);
+			invoiceCandidateService.syncSalesICToCommissionInstance(invoiceCandidateId, true/*candidateDeleted*/);
 		}
 	}
 }

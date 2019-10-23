@@ -47,7 +47,7 @@ public class CommissionTriggerFactory
 		this.commissionTriggerDataRepository = commissionTriggerDataRepository;
 	}
 
-	public Optional<CommissionTrigger> createForId(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	public Optional<CommissionTrigger> createForNewSalesInvoiceCandidate(@NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
 		final I_C_Invoice_Candidate icRecord = load(invoiceCandidateId, I_C_Invoice_Candidate.class);
 		return createForRecord(icRecord);
@@ -71,7 +71,7 @@ public class CommissionTriggerFactory
 				.customer(Customer.of(BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID())))
 				.timestamp(TimeUtil.asInstant(icRecord.getUpdated()))
 				.beneficiary(Beneficiary.of(salesRepId))
-				.commissionTriggerData(commissionTriggerDataRepository.getForInvoiceCandiateId(invoiceCandidateId))
+				.commissionTriggerData(commissionTriggerDataRepository.getForInvoiceCandiateId(invoiceCandidateId, false/* candidateDeleted */))
 				.build();
 
 		return Optional.of(trigger);

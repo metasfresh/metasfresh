@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerData;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTriggerData.CommissionTriggerDataBuilder;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.Money;
@@ -43,24 +44,35 @@ public class CommissionTriggerDataRepository
 		this.icRecordHelper = icRecordHelper;
 	}
 
-	public CommissionTriggerData getForInvoiceCandiateId(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	public CommissionTriggerData getForInvoiceCandiateId(@NonNull final InvoiceCandidateId invoiceCandidateId, final boolean candidateDeleted)
 	{
-		return createCommissionTriggerData(load(invoiceCandidateId, I_C_Invoice_Candidate.class));
+		return createCommissionTriggerData(load(invoiceCandidateId, I_C_Invoice_Candidate.class), candidateDeleted);
 	}
 
-	private CommissionTriggerData createCommissionTriggerData(@NonNull final I_C_Invoice_Candidate icRecord)
+	private CommissionTriggerData createCommissionTriggerData(@NonNull final I_C_Invoice_Candidate icRecord, final boolean candidateDeleted)
 	{
 		final Money forecastNetAmt = icRecordHelper.extractForecastNetAmt(icRecord);
 		final Money netAmtToInvoice = icRecordHelper.extractNetAmtToInvoice(icRecord);
 		final Money invoicedNetAmount = icRecordHelper.extractInvoicedNetAmt(icRecord);
 
-		final CommissionTriggerData commissionTrigerData = CommissionTriggerData.builder()
+		final CommissionTriggerDataBuilder builder = CommissionTriggerData.builder()
+				.invoiceCandidateWasDeleted(candidateDeleted)
 				.invoiceCandidateId(InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID()))
-				.timestamp(TimeUtil.asInstant(icRecord.getUpdated()))
-				.forecastedPoints(CommissionPoints.of(forecastNetAmt.toBigDecimal()))
-				.invoiceablePoints(CommissionPoints.of(netAmtToInvoice.toBigDecimal()))
-				.invoicedPoints(CommissionPoints.of(invoicedNetAmount.toBigDecimal()))
-				.build();
-		return commissionTrigerData;
+				.timestamp(TimeUtil.asInstant(icRecord.getUpdated()));
+		if (candidateDeleted)
+		{
+			builder
+					.forecastedPoints(CommissionPoints.ZERO)
+					.invoiceablePoints(CommissionPoints.ZERO)
+					.invoicedPoints(CommissionPoints.ZERO);
+		}
+		else
+		{
+			builder
+					.forecastedPoints(CommissionPoints.of(forecastNetAmt.toBigDecimal()))
+					.invoiceablePoints(CommissionPoints.of(netAmtToInvoice.toBigDecimal()))
+					.invoicedPoints(CommissionPoints.of(invoicedNetAmount.toBigDecimal()));
+		}
+		return builder.build();
 	}
 }

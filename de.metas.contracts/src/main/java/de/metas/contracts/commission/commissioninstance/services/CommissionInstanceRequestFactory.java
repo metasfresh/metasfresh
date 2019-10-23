@@ -59,8 +59,8 @@ public class CommissionInstanceRequestFactory
 		this.commissionTriggerFactory = commissionTriggerFactory;
 	}
 
-	/** note: if the given IC is a "commission-product-IC, then there won't be reequests because these IC's don't have a sales rep */
-	public ImmutableList<CreateInstanceRequest> createRequestsFor(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	/** note: if the given IC is a "commission-product-IC, then there won't be requests because these IC's don't have a sales rep */
+	public ImmutableList<CreateInstanceRequest> createRequestsForNewSalesInvoiceCandidate(@NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
 		final I_C_Invoice_Candidate icRecord = loadOutOfTrx(invoiceCandidateId, I_C_Invoice_Candidate.class);
 		return createRequestFor(icRecord);
@@ -85,7 +85,7 @@ public class CommissionInstanceRequestFactory
 			return ImmutableList.of();
 		}
 
-		final Optional<CommissionTrigger> trigger = commissionTriggerFactory.createForId(InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID()));
+		final Optional<CommissionTrigger> trigger = commissionTriggerFactory.createForNewSalesInvoiceCandidate(InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID()));
 		if (!trigger.isPresent())
 		{
 			return ImmutableList.of();
