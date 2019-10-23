@@ -11,6 +11,7 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
@@ -73,7 +74,7 @@ public class C_Order
 		final BPartnerId effectiveBillPartnerId = extractEffectiveBillPartnerId(orderRecord);
 		if (effectiveBillPartnerId == null)
 		{
-			return;
+			return; // no customer whose salesrep data we can use to update this order
 		}
 
 		final I_C_BPartner billBPartnerRecord = bpartnerDAO.getById(effectiveBillPartnerId);
@@ -110,7 +111,7 @@ public class C_Order
 	}
 
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_SalesRep_ID)
-	public void updateSalesPartnerInCustomer(@NonNull final I_C_Order orderRecord)
+	public void updateSalesPartnerInOrder(@NonNull final I_C_Order orderRecord)
 	{
 		if (!orderRecord.isSOTrx())
 		{
@@ -120,7 +121,7 @@ public class C_Order
 		final BPartnerId effectiveBillPartnerId = extractEffectiveBillPartnerId(orderRecord);
 		if (effectiveBillPartnerId == null)
 		{
-			return;
+			return; // no customer whose mater data we we could update
 		}
 
 		final BPartnerId salesBPartnerId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_SalesRep_ID());
@@ -132,6 +133,27 @@ public class C_Order
 
 		final I_C_BPartner salesBPartnerRecord = bpartnerDAO.getById(salesBPartnerId);
 		orderRecord.setSalesPartnerCode(salesBPartnerRecord.getSalesPartnerCode());
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_Order.COLUMNNAME_C_BPartner_SalesRep_ID)
+	public void updateSalesPartnerInCustomerMaterdata(@NonNull final I_C_Order orderRecord)
+	{
+		if (!orderRecord.isSOTrx())
+		{
+			return;
+		}
+
+		final BPartnerId effectiveBillPartnerId = extractEffectiveBillPartnerId(orderRecord);
+		if (effectiveBillPartnerId == null)
+		{
+			return; // no customer whose mater data we we could update
+		}
+
+		final BPartnerId salesBPartnerId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_SalesRep_ID());
+		if (salesBPartnerId == null)
+		{
+			return; // leave the master data untouched
+		}
 
 		final I_C_BPartner billBPartnerRecord = bpartnerDAO.getById(effectiveBillPartnerId);
 		billBPartnerRecord.setC_BPartner_SalesRep_ID(orderRecord.getC_BPartner_SalesRep_ID());
