@@ -32,8 +32,6 @@ public interface I_C_OrderLine
 	 */
 	public int getAD_Client_ID();
 
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_AD_Client>(I_C_OrderLine.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -57,8 +55,6 @@ public interface I_C_OrderLine
 	 */
 	public int getAD_Org_ID();
 
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_AD_Org>(I_C_OrderLine.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -82,8 +78,6 @@ public interface I_C_OrderLine
 	 */
 	public int getAD_OrgTrx_ID();
 
-    /** Column definition for AD_OrgTrx_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_AD_Org> COLUMN_AD_OrgTrx_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_AD_Org>(I_C_OrderLine.class, "AD_OrgTrx_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_OrgTrx_ID */
     public static final String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
 
@@ -107,8 +101,6 @@ public interface I_C_OrderLine
 	 */
 	public int getAD_User_ID();
 
-    /** Column definition for AD_User_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_AD_User> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_AD_User>(I_C_OrderLine.class, "AD_User_ID", org.compiere.model.I_AD_User.class);
     /** Column name AD_User_ID */
     public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
@@ -130,8 +122,6 @@ public interface I_C_OrderLine
 	 */
 	public int getBase_PricingSystem_ID();
 
-    /** Column definition for Base_PricingSystem_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_PricingSystem> COLUMN_Base_PricingSystem_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_PricingSystem>(I_C_OrderLine.class, "Base_PricingSystem_ID", org.compiere.model.I_M_PricingSystem.class);
     /** Column name Base_PricingSystem_ID */
     public static final String COLUMNNAME_Base_PricingSystem_ID = "Base_PricingSystem_ID";
 
@@ -178,8 +168,6 @@ public interface I_C_OrderLine
 	 */
 	public int getC_Activity_ID();
 
-    /** Column definition for C_Activity_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Activity> COLUMN_C_Activity_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Activity>(I_C_OrderLine.class, "C_Activity_ID", org.compiere.model.I_C_Activity.class);
     /** Column name C_Activity_ID */
     public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
@@ -203,8 +191,6 @@ public interface I_C_OrderLine
 	 */
 	public int getC_BPartner_ID();
 
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_BPartner>(I_C_OrderLine.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
@@ -228,8 +214,6 @@ public interface I_C_OrderLine
 	 */
 	public int getC_BPartner_Location_ID();
 
-    /** Column definition for C_BPartner_Location_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_BPartner_Location>(I_C_OrderLine.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name C_BPartner_Location_ID */
     public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
@@ -282,8 +266,6 @@ public interface I_C_OrderLine
 	 */
 	public int getC_Charge_ID();
 
-    /** Column definition for C_Charge_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Charge> COLUMN_C_Charge_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Charge>(I_C_OrderLine.class, "C_Charge_ID", org.compiere.model.I_C_Charge.class);
     /** Column name C_Charge_ID */
     public static final String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
@@ -334,8 +316,6 @@ public interface I_C_OrderLine
 	 */
 	public int getC_Currency_ID();
 
-    /** Column definition for C_Currency_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Currency>(I_C_OrderLine.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
@@ -440,8 +420,6 @@ public interface I_C_OrderLine
 	 */
 	public int getC_PaymentTerm_Override_ID();
 
-    /** Column definition for C_PaymentTerm_Override_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_PaymentTerm> COLUMN_C_PaymentTerm_Override_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_PaymentTerm>(I_C_OrderLine.class, "C_PaymentTerm_Override_ID", org.compiere.model.I_C_PaymentTerm.class);
     /** Column name C_PaymentTerm_Override_ID */
     public static final String COLUMNNAME_C_PaymentTerm_Override_ID = "C_PaymentTerm_Override_ID";
 
@@ -465,8 +443,6 @@ public interface I_C_OrderLine
 	 */
 	public int getC_Project_ID();
 
-    /** Column definition for C_Project_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Project> COLUMN_C_Project_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Project>(I_C_OrderLine.class, "C_Project_ID", org.compiere.model.I_C_Project.class);
     /** Column name C_Project_ID */
     public static final String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
@@ -548,8 +524,6 @@ public interface I_C_OrderLine
 	 */
 	public int getC_Tax_ID();
 
-    /** Column definition for C_Tax_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Tax> COLUMN_C_Tax_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Tax>(I_C_OrderLine.class, "C_Tax_ID", org.compiere.model.I_C_Tax.class);
     /** Column name C_Tax_ID */
     public static final String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
 
@@ -573,8 +547,6 @@ public interface I_C_OrderLine
 	 */
 	public int getC_TaxCategory_ID();
 
-    /** Column definition for C_TaxCategory_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_TaxCategory> COLUMN_C_TaxCategory_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_TaxCategory>(I_C_OrderLine.class, "C_TaxCategory_ID", org.compiere.model.I_C_TaxCategory.class);
     /** Column name C_TaxCategory_ID */
     public static final String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
 
@@ -598,8 +570,6 @@ public interface I_C_OrderLine
 	 */
 	public int getC_UOM_ID();
 
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_UOM>(I_C_OrderLine.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
     /** Column name C_UOM_ID */
     public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
@@ -628,8 +598,6 @@ public interface I_C_OrderLine
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_AD_User>(I_C_OrderLine.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -999,6 +967,31 @@ public interface I_C_OrderLine
     public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set AP.
+	 * Aktionspreise
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsCampaignPrice (boolean IsCampaignPrice);
+
+	/**
+	 * Get AP.
+	 * Aktionspreise
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isCampaignPrice();
+
+    /** Column definition for IsCampaignPrice */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_IsCampaignPrice = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "IsCampaignPrice", null);
+    /** Column name IsCampaignPrice */
+    public static final String COLUMNNAME_IsCampaignPrice = "IsCampaignPrice";
 
 	/**
 	 * Set Description Only.
@@ -1472,8 +1465,6 @@ public interface I_C_OrderLine
 	 */
 	public int getM_PriceList_Version_ID();
 
-    /** Column definition for M_PriceList_Version_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_PriceList_Version> COLUMN_M_PriceList_Version_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_PriceList_Version>(I_C_OrderLine.class, "M_PriceList_Version_ID", org.compiere.model.I_M_PriceList_Version.class);
     /** Column name M_PriceList_Version_ID */
     public static final String COLUMNNAME_M_PriceList_Version_ID = "M_PriceList_Version_ID";
 
@@ -1520,8 +1511,6 @@ public interface I_C_OrderLine
 	 */
 	public int getM_Product_ID();
 
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_Product>(I_C_OrderLine.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
@@ -1599,8 +1588,6 @@ public interface I_C_OrderLine
 	 */
 	public int getM_Warehouse_Dest_ID();
 
-    /** Column definition for M_Warehouse_Dest_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_Dest_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_Warehouse>(I_C_OrderLine.class, "M_Warehouse_Dest_ID", org.compiere.model.I_M_Warehouse.class);
     /** Column name M_Warehouse_Dest_ID */
     public static final String COLUMNNAME_M_Warehouse_Dest_ID = "M_Warehouse_Dest_ID";
 
@@ -1624,8 +1611,6 @@ public interface I_C_OrderLine
 	 */
 	public int getM_Warehouse_ID();
 
-    /** Column definition for M_Warehouse_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_M_Warehouse>(I_C_OrderLine.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
     /** Column name M_Warehouse_ID */
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
@@ -1816,8 +1801,6 @@ public interface I_C_OrderLine
 	 */
 	public int getPrice_UOM_ID();
 
-    /** Column definition for Price_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_UOM> COLUMN_Price_UOM_ID = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_C_UOM>(I_C_OrderLine.class, "Price_UOM_ID", org.compiere.model.I_C_UOM.class);
     /** Column name Price_UOM_ID */
     public static final String COLUMNNAME_Price_UOM_ID = "Price_UOM_ID";
 
@@ -2492,8 +2475,6 @@ public interface I_C_OrderLine
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_OrderLine, org.compiere.model.I_AD_User>(I_C_OrderLine.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
