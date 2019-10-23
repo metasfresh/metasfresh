@@ -72,7 +72,13 @@ public final class AttributesKeys
 
 		final ImmutableSet<AttributesKeyPart> parts = attributes.stream()
 				.map(attribute -> createAttributesKeyPart(attributeSet, attribute))
+				.filter(Predicates.notNull())
 				.collect(ImmutableSet.toImmutableSet());
+
+		if (parts.isEmpty())
+		{
+			return Optional.empty();
+		}
 
 		return Optional.of(AttributesKey.ofParts(parts));
 	}
@@ -100,7 +106,9 @@ public final class AttributesKeys
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
 		{
 			final AttributeValueId attributeValueId = attributeSet.getAttributeValueIdOrNull(attributeKey);
-			return AttributesKeyPart.ofAttributeValueId(attributeValueId);
+			return attributeValueId != null
+					? AttributesKeyPart.ofAttributeValueId(attributeValueId)
+					: null;
 		}
 		else
 		{

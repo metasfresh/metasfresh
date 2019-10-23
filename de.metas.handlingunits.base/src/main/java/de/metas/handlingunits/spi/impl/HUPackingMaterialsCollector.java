@@ -488,26 +488,29 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	// 07734
 	private int retrieveMaterialTrackingId(final I_M_HU hu)
 	{
-		final String materialTrackingIdStr;
 		if (huContext == null)
 		{
 			// huContext is null => don't consider the material tracking ID in our collecting efforts
 			// FIXME: introduce some setter or something to make this more obvious,
 			// because "don't set huContext if u don't want material tracking to be collected" it's not obvious at all!
-			materialTrackingIdStr = "-1";
+			return -1;
 		}
-		else
+
+		// retrieve the attribute
+		final AttributeId trackingAttributeId = attributeDAO.retrieveAttributeIdByValueOrNull(I_M_Material_Tracking.COLUMNNAME_M_Material_Tracking_ID);
+		if (trackingAttributeId == null)
 		{
-			// retrieve the attribute
-			final AttributeId trackingAttributeId = attributeDAO.retrieveAttributeIdByValue(I_M_Material_Tracking.COLUMNNAME_M_Material_Tracking_ID);
-			final I_M_HU_Attribute huAttribute = huContext.getHUAttributeStorageFactory().getHUAttributesDAO().retrieveAttribute(hu, trackingAttributeId);
-
-			materialTrackingIdStr = huAttribute == null || huAttribute.getValue() == null ? "-1" : huAttribute.getValue();
+			return -1;
 		}
 
-		final int materialTrackingId = Integer.parseInt(materialTrackingIdStr);
+		final I_M_HU_Attribute huAttribute = huContext.getHUAttributeStorageFactory().getHUAttributesDAO().retrieveAttribute(hu, trackingAttributeId);
+		final String materialTrackingIdStr = huAttribute != null ? huAttribute.getValue() : null;
+		if(Check.isEmpty(materialTrackingIdStr, true))
+		{
+			return -1;
+		}
 
-		return materialTrackingId;
+		return Integer.parseInt(materialTrackingIdStr);
 	}
 
 	private HUPackingMaterialDocumentLineCandidate createHUPackingMaterialDocumentLineCandidate(

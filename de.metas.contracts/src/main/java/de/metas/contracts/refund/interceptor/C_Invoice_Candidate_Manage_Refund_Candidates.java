@@ -132,7 +132,7 @@ public class C_Invoice_Candidate_Manage_Refund_Candidates
 			final Timestamp invoicableFromDate = getValueOverrideOrValue(icRecord, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
 			if (invoicableFromDate == null)
 			{
-				return; // this IC was not yet once validated; it's certainly no assigned, and we can't create an AssignableInvoiceCandidate from it, because invoicableFromDate may not be null
+				return; // this IC was not yet once validated; it's certainly not assigned, and we can't create an AssignableInvoiceCandidate from it, because invoicableFromDate may not be null
 			}
 
 			final AssignableInvoiceCandidate assignableCandidate = assignableInvoiceCandidateRepository.ofRecord(icRecord);

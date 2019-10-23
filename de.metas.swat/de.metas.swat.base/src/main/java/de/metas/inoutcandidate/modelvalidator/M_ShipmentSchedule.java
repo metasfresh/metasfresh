@@ -133,7 +133,7 @@ public class M_ShipmentSchedule
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_IolCandHandler_Log.class, shipmentSchedule)
-				.addEqualsFilter(I_M_IolCandHandler_Log.COLUMN_AD_Table_ID, shipmentSchedule.getAD_Table_ID())
+				.addEqualsFilter(I_M_IolCandHandler_Log.COLUMNNAME_AD_Table_ID, shipmentSchedule.getAD_Table_ID())
 				.addEqualsFilter(I_M_IolCandHandler_Log.COLUMN_Record_ID, shipmentSchedule.getRecord_ID())
 				.create();
 	}

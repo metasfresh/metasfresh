@@ -59,7 +59,7 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerBL.RetrieveBillContactRequest;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.engine.DocStatus;
@@ -769,7 +769,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			billBPLocationId = BPartnerLocationId.ofRepoId(billBPLocation.getC_BPartner_ID(), billBPLocation.getC_BPartner_Location_ID());
 
 			final User billBPContact = bPartnerBL
-					.retrieveBillContactOrNull(RetrieveBillContactRequest.builder()
+					.retrieveContactOrNull(RetrieveContactRequest.builder()
 							.bpartnerId(billBPLocationId.getBpartnerId())
 							.bPartnerLocationId(billBPLocationId)
 							.build());

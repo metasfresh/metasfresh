@@ -11,10 +11,22 @@ Additional notes:
 Here come the actual release notes:
 
 
-# metasfresh 5.123
+# metasfresh 5.124
+## Features
+* metasfresh
+  * [#5602](https://github.com/metasfresh/metasfresh/issues/5602) Cashbook Window
+  * [#5656](https://github.com/metasfresh/metasfresh/issues/5656) EDI-Tweaks
+
 ## Fixes
 * metasfresh-webui-frontend
   * [#2370](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2370) Performance imporovement for Grid Views/ Table Views
+  
+* metasfresh
+  * [#5242](https://github.com/metasfresh/metasfresh/issues/5242) Picking Terminal v2: Cannot fully load AllocationRequest
+  * [#5606](https://github.com/metasfresh/metasfresh/issues/5606) Payment window calculation of skonto yes/ no when adjusting date
+  * [#5628](https://github.com/metasfresh/metasfresh/issues/5628) Partner relations don't work properly in sales order
+  * [#5659](https://github.com/metasfresh/metasfresh/issues/5659) Picklist in Picking Terminal v2 automatically picks, but shall not
+
 
 # metasfresh 5.123
 ## Features

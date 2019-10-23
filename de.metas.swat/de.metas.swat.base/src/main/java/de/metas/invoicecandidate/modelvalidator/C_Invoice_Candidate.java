@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.modelvalidator;
 
+import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -78,6 +80,8 @@ public class C_Invoice_Candidate
 
 	private final InvoiceCandidateRecordService invoiceCandidateRecordService;
 
+	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+
 	public C_Invoice_Candidate(
 			@NonNull final InvoiceCandidateRecordService invoiceCandidateRecordService,
 			@NonNull final InvoiceCandidateGroupRepository groupsRepo,
@@ -98,6 +102,10 @@ public class C_Invoice_Candidate
 					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override })
 	public void updateInvoiceCandidateDirectly(final I_C_Invoice_Candidate icRecord)
 	{
+		if (isValueChanged(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override))
+		{
+			invoiceCandidateHandlerBL.setDeliveredData(icRecord);
+		}
 		final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
 		invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
 	}
@@ -129,7 +137,7 @@ public class C_Invoice_Candidate
 					I_C_Invoice_Candidate.COLUMNNAME_QtyDelivered,
 					I_C_Invoice_Candidate.COLUMNNAME_QtyDeliveredInUOM,
 					I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate })
-	public void invalidateCandidatesAfterChange(final I_C_Invoice_Candidate ic)
+	public void invalidateCandidatesAfterChange(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		invalidateCandidates0(ic);
 	}
@@ -365,7 +373,7 @@ public class C_Invoice_Candidate
 
 		//
 		// Schedule IC generation
-		Services.get(IInvoiceCandidateHandlerBL.class).scheduleCreateMissingCandidatesFor(model);
+		invoiceCandidateHandlerBL.scheduleCreateMissingCandidatesFor(model);
 	}
 
 	/**

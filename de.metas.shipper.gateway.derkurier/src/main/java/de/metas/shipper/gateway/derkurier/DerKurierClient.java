@@ -191,12 +191,6 @@ public class DerKurierClient implements ShipperGatewayClient
 		return builder.build();
 	}
 
-	@Override
-	public DeliveryOrder voidDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
-	{
-		throw new UnsupportedOperationException("Der Kurier doesn't support voiding delivery orders via software");
-	}
-
 	private void printPackageLabels(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		final int adProcessId = retrievePackageLableAdProcessId();

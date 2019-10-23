@@ -2,7 +2,7 @@ package de.metas.contracts.flatrate.process;
 
 import java.math.BigDecimal;
 
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 import de.metas.contracts.impl.ContractChangePriceQtyService;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -18,7 +18,7 @@ public class C_Flatrate_Term_ChangePriceQty extends JavaProcess
 	@Param(parameterName = I_C_Flatrate_Term.COLUMNNAME_PlannedQtyPerUnit, mandatory = false)
 	private BigDecimal plannedQtyPerUnit;
 
-	final private ContractChangePriceQtyService contractsRepository = Adempiere.getBean(ContractChangePriceQtyService.class);
+	final private ContractChangePriceQtyService contractsRepository = SpringContextHolder.instance.getBean(ContractChangePriceQtyService.class);
 
 	@Override
 	protected String doIt()

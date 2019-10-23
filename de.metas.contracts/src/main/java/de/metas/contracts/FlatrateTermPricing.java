@@ -5,8 +5,7 @@ import java.time.LocalDate;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_M_PriceList;
-
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.lang.SOTrx;
 import de.metas.pricing.IEditablePricingContext;
@@ -33,12 +32,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -50,7 +49,7 @@ import lombok.Value;
  * <p>
  * Note: this code use uses the pricing engine.
  * It does not care about special contract related pricing rules that might or might not be applied by the pricing engine.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -75,30 +74,33 @@ public class FlatrateTermPricing
 
 	public IPricingResult computeOrThrowEx()
 	{
-		final I_M_PriceList priceList = retrievePriceListForTerm();
-		final IPricingResult pricingResult = retrievePricingResultUsingPriceList(priceList);
+		final PriceListId priceListId = retrievePriceListForTerm();
+		final IPricingResult pricingResult = retrievePricingResultUsingPriceList(priceListId);
 
 		return pricingResult;
 	}
 
-	private I_M_PriceList retrievePriceListForTerm()
+	private PriceListId retrievePriceListForTerm()
 	{
 		final PricingSystemId pricingSystemIdToUse = PricingSystemId.ofRepoIdOrNull(CoalesceUtil.firstGreaterThanZero(term.getM_PricingSystem_ID(), term.getC_Flatrate_Conditions().getM_PricingSystem_ID()));
 		final I_C_BPartner_Location bpLocationToUse = CoalesceUtil.coalesceSuppliers(term::getDropShip_Location, term::getBill_Location);
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-		final I_M_PriceList priceList = priceListDAO.retrievePriceListByPricingSyst(pricingSystemIdToUse, bpLocationToUse, SOTrx.SALES);
-		if (priceList == null)
+		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(
+				pricingSystemIdToUse,
+				BPartnerLocationId.ofRepoId(bpLocationToUse.getC_BPartner_ID(), bpLocationToUse.getC_BPartner_Location_ID()),
+				SOTrx.SALES);
+		if (priceListId == null)
 		{
 			throw new AdempiereException(MSG_FLATRATEBL_PRICE_LIST_MISSING_2P,
 					new Object[] {
 							priceListDAO.getPricingSystemName(pricingSystemIdToUse),
 							term.getBill_Location().getName() });
 		}
-		return priceList;
+		return priceListId;
 	}
 
-	private IPricingResult retrievePricingResultUsingPriceList(@NonNull final I_M_PriceList priceList)
+	private IPricingResult retrievePricingResultUsingPriceList(@NonNull final PriceListId priceListId)
 	{
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 
@@ -111,7 +113,7 @@ public class FlatrateTermPricing
 				isSOTrx);
 
 		pricingCtx.setPriceDate(priceDate);
-		pricingCtx.setPriceListId(PriceListId.ofRepoId(priceList.getM_PriceList_ID()));
+		pricingCtx.setPriceListId(priceListId);
 
 		final IPricingResult result = pricingBL.calculatePrice(pricingCtx);
 		throwExceptionIfNotCalculated(result);

@@ -66,7 +66,7 @@ public class PackagingDAO implements IPackagingDAO
 		// Filter: Customer
 		if (query.getCustomerId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMN_C_BPartner_Customer_ID, query.getCustomerId());
+			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID, query.getCustomerId());
 		}
 
 		//
@@ -80,7 +80,7 @@ public class PackagingDAO implements IPackagingDAO
 		// Filter: M_Warehouse_ID
 		if (query.getWarehouseId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMN_M_Warehouse_ID, query.getWarehouseId());
+			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_M_Warehouse_ID, query.getWarehouseId());
 		}
 
 		//

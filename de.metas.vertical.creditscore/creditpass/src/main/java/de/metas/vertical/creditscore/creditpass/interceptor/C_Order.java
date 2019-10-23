@@ -74,8 +74,8 @@ public class C_Order
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 		final CreditPassConfig config = creditPassConfigRepository.getConfigByBPartnerId(bPartnerId);
 		final Optional<TransactionResult> transactionResult = transactionResultService.findLastTransactionResult(order.getPaymentRule(), BPartnerId.ofRepoId(order.getC_BPartner_ID()));
-		Optional<CreditPassConfig> configuration = Optional.ofNullable(config);
-		IMsgBL msgBL = Services.get(IMsgBL.class);
+		final Optional<CreditPassConfig> configuration = Optional.ofNullable(config);
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
 		if (configuration.isPresent() && configuration.get().getCreditPassConfigPaymentRuleList().stream()
 				.map(CreditPassConfigPaymentRule::getPaymentRule)
 				.anyMatch(pr -> StringUtils.equals(pr, order.getPaymentRule())))
