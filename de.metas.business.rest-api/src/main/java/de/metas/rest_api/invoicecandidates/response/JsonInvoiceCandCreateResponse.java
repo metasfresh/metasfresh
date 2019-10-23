@@ -46,13 +46,13 @@ public final class JsonInvoiceCandCreateResponse
 {
 	@JsonProperty("result")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final JsonInvoiceCand result;
+	private final InvoiceCandEnqueuerResult result;
 
 	@JsonProperty("error")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JsonError error;
 	
-	public static JsonInvoiceCandCreateResponse ok(@NonNull final JsonInvoiceCand iCands)
+	public static JsonInvoiceCandCreateResponse ok(@NonNull final InvoiceCandEnqueuerResult iCands)
 	{
 		final JsonError error = null;
 		return new JsonInvoiceCandCreateResponse(iCands, error);
@@ -60,13 +60,13 @@ public final class JsonInvoiceCandCreateResponse
 
 	public static JsonInvoiceCandCreateResponse error(@NonNull final JsonError error)
 	{
-		final JsonInvoiceCand iCands = null;
+		final InvoiceCandEnqueuerResult iCands = null;
 		return new JsonInvoiceCandCreateResponse(iCands, error);
 	}
 	
 	@JsonCreator
 	private JsonInvoiceCandCreateResponse(
-			@JsonProperty("result") @Nullable final JsonInvoiceCand iCands,
+			@JsonProperty("result") @Nullable final InvoiceCandEnqueuerResult iCands,
 			@JsonProperty("error") @Nullable final JsonError error)
 	{
 		this.error = error;
@@ -95,7 +95,7 @@ public final class JsonInvoiceCandCreateResponse
 		return error;
 	}
 
-	public JsonInvoiceCand getResult()
+	public InvoiceCandEnqueuerResult getResult()
 	{
 		if (error != null)
 		{

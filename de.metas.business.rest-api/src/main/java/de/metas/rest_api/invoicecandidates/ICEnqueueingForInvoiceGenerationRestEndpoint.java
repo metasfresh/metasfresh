@@ -31,7 +31,7 @@ import de.metas.util.rest.MetasfreshRestAPIConstants;
  * #L%
  */
 
-public interface InvoiceCandidatesRestEndpoint
+public interface ICEnqueueingForInvoiceGenerationRestEndpoint
 {
 	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/invoices/createFromInvoiceCandidates";
 	ResponseEntity<JsonInvoiceCandCreateResponse> createInvoices(JsonInvoiceCandCreateRequest request);

@@ -42,8 +42,8 @@ public final class JsonInvoiceCandCreateRequest
 {
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
-			value = "These are the invoices json objects</code>.\n")
-	List<JsonInvoiceCandidate> jsonInvoices;
+			value = "<code>These are the invoice candidates json objects</code>.\n")
+	List<JsonInvoiceCandidate> invoiceCandidates;
 
 	@ApiModelProperty(value = "Date of the invoice.")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
@@ -72,15 +72,15 @@ public final class JsonInvoiceCandCreateRequest
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonInvoiceCandCreateRequest(
-			@JsonProperty("jsonInvoices") @Singular final List<JsonInvoiceCandidate> jsonInvoices,
+			@JsonProperty("jsonInvoices") @Singular final List<JsonInvoiceCandidate> invoiceCandidates,
 			@JsonProperty("dateInvoiced") final LocalDate dateInvoiced,
 			@JsonProperty("dateAcct") final LocalDate dateAcct,
 			@JsonProperty("poReference") final String poReference,
-			@JsonProperty("ignoreInvoiceSchedule") final @NonNull Boolean ignoreInvoiceSchedule,
-			@JsonProperty("supplementMissingPaymentTermIds") final @NonNull Boolean supplementMissingPaymentTermIds,
-			@JsonProperty("updateLocationAndContactForInvoice") final @NonNull Boolean updateLocationAndContactForInvoice)
+			@JsonProperty("ignoreInvoiceSchedule") final Boolean ignoreInvoiceSchedule,
+			@JsonProperty("supplementMissingPaymentTermIds") final Boolean supplementMissingPaymentTermIds,
+			@JsonProperty("updateLocationAndContactForInvoice") final Boolean updateLocationAndContactForInvoice)
 	{
-		this.jsonInvoices = ImmutableList.copyOf(jsonInvoices);
+		this.invoiceCandidates = ImmutableList.copyOf(invoiceCandidates);
 		this.poReference = poReference;
 		this.dateAcct = dateAcct;
 		this.dateInvoiced = dateInvoiced;

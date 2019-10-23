@@ -974,6 +974,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		splitCand.setC_Tax_Override_ID(ic.getC_Tax_Override_ID());
 
 		splitCand.setExternalHeaderId(ic.getExternalHeaderId());
+		splitCand.setExternalLineId(ic.getExternalLineId());
 
 		return splitCand;
 	}

@@ -4,7 +4,7 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
-import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCand;
+import de.metas.rest_api.invoicecandidates.response.InvoiceCandEnqueuerResult;
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandCreateResponse;
 import lombok.NonNull;
 
@@ -30,11 +30,11 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-class InvoiceJsonConverters
+class InvoiceJsonConverterService
 {
 	public final JsonInvoiceCandCreateResponse toJson(@NonNull final IInvoiceCandidateEnqueueResult enqueueResult)
 	{
-		JsonInvoiceCand jsonInvoiceCand=JsonInvoiceCand.builder().invoiceCandidateEnqueuedCount(enqueueResult.getInvoiceCandidateEnqueuedCount())
+		InvoiceCandEnqueuerResult jsonInvoiceCand=InvoiceCandEnqueuerResult.builder().invoiceCandidateEnqueuedCount(enqueueResult.getInvoiceCandidateEnqueuedCount())
 				.summaryTranslated(enqueueResult.getSummaryTranslated(Env.getCtx()))
 				.totalNetAmtToInvoiceChecksum(enqueueResult.getTotalNetAmtToInvoiceChecksum())
 				.workpackageEnqueuedCount(enqueueResult.getWorkpackageEnqueuedCount())

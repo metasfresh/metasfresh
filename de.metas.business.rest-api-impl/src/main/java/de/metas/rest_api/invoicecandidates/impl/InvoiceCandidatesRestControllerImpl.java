@@ -22,11 +22,12 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
+import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
-import de.metas.rest_api.invoicecandidates.InvoiceCandidatesRestEndpoint;
+import de.metas.rest_api.invoicecandidates.ICEnqueueingForInvoiceGenerationRestEndpoint;
 import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandCreateRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidate;
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandCreateResponse;
@@ -58,17 +59,17 @@ import lombok.NonNull;
  * Used for managing invoices and invoice candidates(create, query)
  */
 @RestController
-@RequestMapping(InvoiceCandidatesRestEndpoint.ENDPOINT)
+@RequestMapping(ICEnqueueingForInvoiceGenerationRestEndpoint.ENDPOINT)
 @Profile(Profiles.PROFILE_App)
-class InvoiceCandidatesRestControllerImpl implements InvoiceCandidatesRestEndpoint {
+class InvoiceCandidatesRestControllerImpl implements ICEnqueueingForInvoiceGenerationRestEndpoint {
 
 	private static final Logger logger = LogManager.getLogger(InvoiceCandidatesRestControllerImpl.class);
 
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-	private final InvoiceJsonConverters jsonConverters;
+	private final InvoiceJsonConverterService jsonConverters;
 
-	public InvoiceCandidatesRestControllerImpl(@NonNull final InvoiceJsonConverters jsonConverters) {
+	public InvoiceCandidatesRestControllerImpl(@NonNull final InvoiceJsonConverterService jsonConverters) {
 		this.jsonConverters = jsonConverters;
 	}
 
@@ -77,9 +78,9 @@ class InvoiceCandidatesRestControllerImpl implements InvoiceCandidatesRestEndpoi
 	public ResponseEntity<JsonInvoiceCandCreateResponse> createInvoices(
 			@RequestBody @NonNull final JsonInvoiceCandCreateRequest request) {
 		try {
-			PInstanceId pInstanceId = getPInstanceId();
+			PInstanceId pInstanceId = adPInstanceDAO.createSelectionId();
 
-			createICQueryBuilder(request.getJsonInvoices()).createSelection(pInstanceId);
+			createICQueryBuilder(request.getInvoiceCandidates()).createSelection(pInstanceId);
 
 			final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
 					.setInvoicingParams(createInvoicingParams(request)).setFailIfNothingEnqueued(true)
@@ -118,8 +119,8 @@ class InvoiceCandidatesRestControllerImpl implements InvoiceCandidatesRestEndpoi
 		return queryBuilder.create();
 	}
 
-	private InvoicingParamsObject createInvoicingParams(JsonInvoiceCandCreateRequest request) {
-		InvoicingParamsObject invoicingParams = new InvoicingParamsObject();
+	private PlainInvoicingParams createInvoicingParams(JsonInvoiceCandCreateRequest request) {
+		PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 		invoicingParams.setDateAcct(request.getDateAcct());
 		invoicingParams.setDateInvoiced(request.getDateInvoiced());
 		invoicingParams.setIgnoreInvoiceSchedule(request.getIgnoreInvoiceSchedule());
@@ -129,7 +130,4 @@ class InvoiceCandidatesRestControllerImpl implements InvoiceCandidatesRestEndpoi
 		return invoicingParams;
 	}
 
-	private PInstanceId getPInstanceId() {
-		return adPInstanceDAO.createSelectionId();
-	}
 }

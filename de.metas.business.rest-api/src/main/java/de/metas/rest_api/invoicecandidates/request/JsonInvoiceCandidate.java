@@ -51,10 +51,10 @@ import lombok.Value;
 @Value
 public final class JsonInvoiceCandidate
 {
-	@ApiModelProperty(allowEmptyValue = true, value = "This translates to <code>I_C_Invoice_Candidate.externalLineId</code>.\n")
+	@ApiModelProperty(allowEmptyValue = true, value = "Inherited from order line candidates. Used to select which invoice candidates which have these invoice line ids should be enqueued.")
 	@JsonInclude(Include.NON_EMPTY)
 	List<ExternalId> externalLineIds;
-	@ApiModelProperty(allowEmptyValue = false, value = "This translates to <code>I_C_Invoice_Candidate.externalHeaderId</code>.\n")
+	@ApiModelProperty(allowEmptyValue = false, value = "Used to select which invoice candidates should be enqueued.")
 	String externalHeaderId;
 	
 	@JsonCreator

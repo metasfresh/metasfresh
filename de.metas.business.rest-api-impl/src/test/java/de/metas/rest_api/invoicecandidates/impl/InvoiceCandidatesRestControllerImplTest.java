@@ -20,8 +20,15 @@ import de.metas.util.rest.ExternalId;
 
 public class InvoiceCandidatesRestControllerImplTest {
 
-	private static final String EXTERNAL_LINE_ID = "Test3";
-	private static final String EXTERNAL_HEADER_ID = "1002";
+	private static final String EXTERNAL_LINE_ID1 = "Test1";
+	private static final String EXTERNAL_HEADER_ID1 = "1001";
+	
+	private static final String EXTERNAL_LINE_ID2 = "Test2";
+	private static final String EXTERNAL_HEADER_ID2 = "1002";
+	
+	private static final String EXTERNAL_LINE_ID3 = "Test3";
+	private static final String EXTERNAL_HEADER_ID3 = "1003";
+	
 	private static final int P_INSTANCE_ID = 1002265;
 	private InvoiceCandidatesRestControllerImpl invoiceCandidatesRestController;
 	private List<JsonInvoiceCandidate> jsonInvoiceCandidates;
@@ -30,29 +37,62 @@ public class InvoiceCandidatesRestControllerImplTest {
 	public void init() {
 		AdempiereTestHelper.get().init();
 		jsonInvoiceCandidates = new ArrayList<JsonInvoiceCandidate>();
-		invoiceCandidatesRestController = new InvoiceCandidatesRestControllerImpl(new InvoiceJsonConverters());
-		ExternalId externalId = new ExternalId(EXTERNAL_LINE_ID);
+		invoiceCandidatesRestController = new InvoiceCandidatesRestControllerImpl(new InvoiceJsonConverterService());
+		ExternalId externalId = new ExternalId(EXTERNAL_LINE_ID1);
 		List<ExternalId> externalLineIds = new ArrayList<ExternalId>();
 		externalLineIds.add(externalId);
-		JsonInvoiceCandidate jic = JsonInvoiceCandidate.builder().externalHeaderId(EXTERNAL_HEADER_ID)
+		JsonInvoiceCandidate jic = JsonInvoiceCandidate.builder().externalHeaderId(EXTERNAL_HEADER_ID1)
 				.externalLineIds(externalLineIds).build();
 		jsonInvoiceCandidates.add(jic);
-		createInvoiceCandidate();
+		createInvoiceCandidate(EXTERNAL_LINE_ID1,EXTERNAL_HEADER_ID1);
 	}
 
 	@Test
 	public void checkInvoiceCandidateSelection() {
 		IQuery<I_C_Invoice_Candidate> queryBuilder = invoiceCandidatesRestController
 				.createICQueryBuilder(jsonInvoiceCandidates);
-		assertThat(queryBuilder.list()).isNotEmpty();
 		int selection = queryBuilder.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
-		assertThat(selection).isGreaterThan(0);
+		assertThat(selection).isEqualTo(1);
+	}
+	
+	@Test
+	public void checkInvoiceCandidatesNotSelected() {
+		List<JsonInvoiceCandidate> jsonInvoiceCandidates = new ArrayList<JsonInvoiceCandidate>();
+		ExternalId externalId = new ExternalId(EXTERNAL_LINE_ID3);
+		List<ExternalId> externalLineIds = new ArrayList<ExternalId>();
+		externalLineIds.add(externalId);
+		JsonInvoiceCandidate jic = JsonInvoiceCandidate.builder().externalHeaderId(EXTERNAL_HEADER_ID3)
+				.externalLineIds(externalLineIds).build();
+		jsonInvoiceCandidates.add(jic);
+		
+		createInvoiceCandidate(EXTERNAL_LINE_ID2,EXTERNAL_HEADER_ID2);
+		
+		IQuery<I_C_Invoice_Candidate> queryBuilder = invoiceCandidatesRestController
+				.createICQueryBuilder(jsonInvoiceCandidates);
+
+		int selection = queryBuilder.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
+		assertThat(selection).isEqualTo(0);
+	}
+	
+	@Test
+	public void checkEmptyListOfExternalLineIds() {
+		List<JsonInvoiceCandidate> jsonInvoiceCandidates = new ArrayList<JsonInvoiceCandidate>();
+		List<ExternalId> externalLineIds = new ArrayList<ExternalId>();
+		JsonInvoiceCandidate jic = JsonInvoiceCandidate.builder().externalHeaderId(EXTERNAL_HEADER_ID3)
+				.externalLineIds(externalLineIds).build();
+		jsonInvoiceCandidates.add(jic);
+		
+		IQuery<I_C_Invoice_Candidate> queryBuilder = invoiceCandidatesRestController
+				.createICQueryBuilder(jsonInvoiceCandidates);
+
+		int selection = queryBuilder.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
+		assertThat(selection).isEqualTo(0);
 	}
 
-	private InvoiceCandidateId createInvoiceCandidate() {
+	private InvoiceCandidateId createInvoiceCandidate(String externalHeaderId, String externalLineId) {
 		final I_C_Invoice_Candidate invoiceCandidate = newInstance(I_C_Invoice_Candidate.class);
-		invoiceCandidate.setExternalHeaderId(EXTERNAL_HEADER_ID);
-		invoiceCandidate.setExternalLineId(EXTERNAL_LINE_ID);
+		invoiceCandidate.setExternalHeaderId(EXTERNAL_HEADER_ID1);
+		invoiceCandidate.setExternalLineId(EXTERNAL_LINE_ID1);
 		saveRecord(invoiceCandidate);
 		return InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
 	}

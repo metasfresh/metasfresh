@@ -53,7 +53,6 @@ public class PlainInvoicingParams implements IInvoicingParams
 
 	private BigDecimal check_NetAmtToInvoice = null;
 
-	@Getter
 	private boolean updateLocationAndContactForInvoice = false;
 
 	private final IInvoicingParams defaults;
@@ -289,5 +288,13 @@ public class PlainInvoicingParams implements IInvoicingParams
 		{
 			return false;
 		}
+	}
+
+	public boolean isUpdateLocationAndContactForInvoice() {
+		return updateLocationAndContactForInvoice;
+	}
+
+	public void setUpdateLocationAndContactForInvoice(boolean updateLocationAndContactForInvoice) {
+		this.updateLocationAndContactForInvoice = updateLocationAndContactForInvoice;
 	}
 }

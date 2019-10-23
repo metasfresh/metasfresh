@@ -30,7 +30,7 @@ import lombok.Value;
  * #L%
  */
 @Value
-public class JsonInvoiceCand
+public class InvoiceCandEnqueuerResult
 {
 	private String summaryTranslated;
 
@@ -44,7 +44,7 @@ public class JsonInvoiceCand
 
 	@JsonCreator
 	@Builder(toBuilder = true)
-	private JsonInvoiceCand(
+	private InvoiceCandEnqueuerResult(
 			@JsonProperty("summaryTranslated") final String summaryTranslated,
 			@JsonProperty("invoiceCandidateEnqueuedCount") int invoiceCandidateEnqueuedCount,
 			@JsonProperty("workpackageEnqueuedCount") int workpackageEnqueuedCount,
