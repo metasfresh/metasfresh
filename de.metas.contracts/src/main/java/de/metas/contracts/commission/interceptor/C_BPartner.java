@@ -34,7 +34,7 @@ import lombok.NonNull;
 @Component
 public class C_BPartner
 {
-	/** 
+	/**
 	 * Makes sure that we don't run into trouble because a user pasted a code with unwanted whitespaces, e.g. from excel.
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, //
@@ -47,5 +47,4 @@ public class C_BPartner
 		}
 		bpartner.setSalesPartnerCode(bpartner.getSalesPartnerCode().trim());
 	}
-
 }
