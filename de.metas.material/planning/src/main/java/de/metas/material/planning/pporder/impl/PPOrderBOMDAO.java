@@ -97,12 +97,18 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 	@Override
 	public void deleteOrderBOMLinesByOrderId(@NonNull final PPOrderId orderId)
 	{
-		Services.get(IQueryBL.class)
+		final List<I_PP_Order_BOMLine> lines = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Order_BOMLine.class)
 				.addEqualsFilter(I_PP_Order_BOMLine.COLUMN_PP_Order_ID, orderId)
 				// .addOnlyActiveRecordsFilter()
 				.create()
-				.delete();
+				.list();
+		
+		for(final I_PP_Order_BOMLine line : lines)
+		{
+			line.setProcessed(false);
+			InterfaceWrapperHelper.delete(line);
+		}
 	}
 
 	@Override
