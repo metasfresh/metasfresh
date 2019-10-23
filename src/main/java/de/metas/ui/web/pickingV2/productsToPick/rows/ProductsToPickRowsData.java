@@ -1,4 +1,4 @@
-package de.metas.ui.web.pickingV2.productsToPick;
+package de.metas.ui.web.pickingV2.productsToPick.rows;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -59,7 +59,7 @@ import lombok.ToString;
  */
 
 @ToString(of = { "_rowsById", "orderBys" })
-class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickRow>
+public class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickRow>
 {
 	private final PickingCandidateService pickingCandidateService;
 

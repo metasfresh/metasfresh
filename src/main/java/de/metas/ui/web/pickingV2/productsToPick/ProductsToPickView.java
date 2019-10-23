@@ -8,6 +8,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsData;
 import de.metas.ui.web.view.AbstractCustomView;
 import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.IView;

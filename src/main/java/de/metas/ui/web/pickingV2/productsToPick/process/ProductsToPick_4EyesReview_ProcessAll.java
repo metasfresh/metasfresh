@@ -21,7 +21,7 @@ import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAss
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.shipping.model.I_M_ShipperTransportation;
-import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRow;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow;
 import de.metas.util.Services;
 
 /*

@@ -10,8 +10,8 @@ import de.metas.handlingunits.picking.requests.PickHURequest;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.pickingV2.config.PickingConfigV2;
-import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRow;
-import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRowsRepository;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsRepository;
 
 /*
  * #%L

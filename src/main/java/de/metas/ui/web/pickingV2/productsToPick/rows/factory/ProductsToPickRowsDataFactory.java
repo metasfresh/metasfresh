@@ -1,4 +1,4 @@
-package de.metas.ui.web.pickingV2.productsToPick;
+package de.metas.ui.web.pickingV2.productsToPick.rows.factory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,26 +13,21 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
@@ -42,27 +37,25 @@ import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationService;
-import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.order.OrderLineId;
-import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductInfo;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowId;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsData;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.ToString;
-import lombok.Value;
 
 /*
  * #%L
@@ -86,11 +79,12 @@ import lombok.Value;
  * #L%
  */
 
-class ProductsToPickRowsDataFactory
+public final class ProductsToPickRowsDataFactory
 {
 	// services
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
+	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 	private final IBPartnerBL bpartnersService;
 	private final HUReservationService huReservationService;
 	private final PickingCandidateService pickingCandidateService;
@@ -98,15 +92,14 @@ class ProductsToPickRowsDataFactory
 	private final LookupValueByIdSupplier locatorLookup;
 	private final IAttributeStorageFactory attributesFactory;
 
-	private final Map<ReservableStorageKey, ReservableStorage> storages = new HashMap<>();
+	private final ProductsToPickSourceStorage storages = new ProductsToPickSourceStorage();
 	private final Map<HuId, ImmutableAttributeSet> huAttributesCache = new HashMap<>();
-	private final Map<HuId, I_M_HU> husCache = new HashMap<>();
 
 	private final boolean considerAttributes;
 
-	static final String ATTR_LotNumber = LotNumberDateAttributeDAO.ATTR_LotNumber;
-	static final String ATTR_BestBeforeDate = AttributeConstants.ATTR_BestBeforeDate;
-	static final String ATTR_RepackNumber = "RepackNumber"; // TODO use it as constant, see RepackNumberUtils
+	public static final String ATTR_LotNumber = LotNumberDateAttributeDAO.ATTR_LotNumber;
+	public static final String ATTR_BestBeforeDate = AttributeConstants.ATTR_BestBeforeDate;
+	public static final String ATTR_RepackNumber = "RepackNumber"; // TODO use it as constant, see RepackNumberUtils
 	private static final ImmutableSet<String> ATTRIBUTES = ImmutableSet.of(
 			ATTR_LotNumber,
 			ATTR_BestBeforeDate,
@@ -155,11 +148,12 @@ class ProductsToPickRowsDataFactory
 		rows.addAll(createRowsFromExistingPickingCandidates(packageable));
 		rows.addAll(createRowsFromHUs(packageable));
 
-		if (!packageable.isAllocated())
+		if (packageable.isAllocated())
 		{
-			rows.add(createQtyNotAvailableRowForRemainingQtyToAllocate(packageable));
+			return rows.stream();
 		}
 
+		rows.add(createQtyNotAvailableRowForRemainingQtyToAllocate(packageable));
 		return rows.stream();
 	}
 
@@ -182,7 +176,7 @@ class ProductsToPickRowsDataFactory
 		if (pickFromHUId != null)
 		{
 			final ProductId productId = packageable.getProductId();
-			final ReservableStorage storage = getStorage(pickFromHUId, productId);
+			final ReservableStorage storage = storages.getStorage(pickFromHUId, productId);
 			qty = storage.reserve(packageable, existingPickingCandidate.getQtyPicked());
 		}
 		else
@@ -270,7 +264,7 @@ class ProductsToPickRowsDataFactory
 
 	private void warmUpCacheForHuIds(final Collection<HuId> huIds)
 	{
-		getHUs(huIds); // pre-load all HUs
+		storages.warmUpCacheForHuIds(huIds); // pre-load all HUs
 		huReservationService.warmup(huIds);
 	}
 
@@ -283,7 +277,7 @@ class ProductsToPickRowsDataFactory
 
 		final HuId huId = row.getHuId();
 		final ProductId productId = packageable.getProductId();
-		final ReservableStorage storage = getStorage(huId, productId);
+		final ReservableStorage storage = storages.getStorage(huId, productId);
 		final Quantity qty = storage.reserve(packageable);
 		if (qty.isZero())
 		{
@@ -373,7 +367,7 @@ class ProductsToPickRowsDataFactory
 			return null;
 		}
 
-		if (!Services.get(IDeveloperModeBL.class).isEnabled())
+		if (!developerModeBL.isEnabled())
 		{
 			return null;
 		}
@@ -383,14 +377,11 @@ class ProductsToPickRowsDataFactory
 
 	private ProductInfo getProductInfo(@NonNull final ProductId productId)
 	{
-		final IProductDAO productsRepo = Services.get(IProductDAO.class);
-		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
-
 		final I_M_Product productRecord = productsRepo.getById(productId);
 
-		final int packageUOMId = productRecord.getPackage_UOM_ID();
+		final UomId packageUOMId = UomId.ofRepoIdOrNull(productRecord.getPackage_UOM_ID());
 		final String packageSizeUOM;
-		if (packageUOMId > 0)
+		if (packageUOMId != null)
 		{
 			final I_C_UOM packageUOM = uomsRepo.getById(packageUOMId);
 			packageSizeUOM = packageUOM.getUOMSymbol();
@@ -414,56 +405,13 @@ class ProductsToPickRowsDataFactory
 
 	private LookupValue getLocatorLookupValueByHuId(final HuId huId)
 	{
-		final I_M_HU hu = getHU(huId);
+		final I_M_HU hu = storages.getHU(huId);
 		final int locatorId = hu.getM_Locator_ID();
 		if (locatorId <= 0)
 		{
 			return null;
 		}
 		return locatorLookup.findById(locatorId);
-	}
-
-	private I_M_HU getHU(final HuId huId)
-	{
-		return husCache.computeIfAbsent(huId, handlingUnitsBL::getById);
-	}
-
-	private Collection<I_M_HU> getHUs(final Collection<HuId> huIds)
-	{
-		return CollectionUtils.getAllOrLoad(husCache, huIds, this::retrieveHUs);
-	}
-
-	private Map<HuId, I_M_HU> retrieveHUs(final Collection<HuId> huIds)
-	{
-		return Maps.uniqueIndex(handlingUnitsBL.getByIds(huIds), hu -> HuId.ofRepoId(hu.getM_HU_ID()));
-	}
-
-	private ReservableStorage getStorage(final HuId huId, final ProductId productId)
-	{
-		final ReservableStorageKey key = ReservableStorageKey.of(huId, productId);
-		return storages.computeIfAbsent(key, this::retrieveStorage);
-	}
-
-	private ReservableStorage retrieveStorage(final ReservableStorageKey key)
-	{
-		final ProductId productId = key.getProductId();
-		final I_M_HU hu = getHU(key.getHuId());
-
-		final IHUProductStorage huProductStorage = handlingUnitsBL
-				.getStorageFactory()
-				.getStorage(hu)
-				.getProductStorageOrNull(productId);
-
-		if (huProductStorage == null)
-		{
-			final I_C_UOM uom = productBL.getStockUOM(productId);
-			return new ReservableStorage(productId, Quantity.zero(uom));
-		}
-		else
-		{
-			final Quantity qtyFreeToReserve = huProductStorage.getQty();
-			return new ReservableStorage(productId, qtyFreeToReserve);
-		}
 	}
 
 	private ImmutableAttributeSet getHUAttributes(final HuId huId)
@@ -473,144 +421,8 @@ class ProductsToPickRowsDataFactory
 
 	private ImmutableAttributeSet retrieveHUAttributes(final HuId huId)
 	{
-		final I_M_HU hu = getHU(huId);
+		final I_M_HU hu = storages.getHU(huId);
 		final IAttributeStorage attributes = attributesFactory.getAttributeStorage(hu);
 		return ImmutableAttributeSet.createSubSet(attributes, a -> ATTRIBUTES.contains(a.getValue()));
-	}
-
-	@ToString
-	private static class AllocablePackageable
-	{
-		public static AllocablePackageable of(final Packageable packageable)
-		{
-			return new AllocablePackageable(packageable);
-		}
-
-		@Getter
-		private BPartnerId customerId;
-		@Getter
-		private final ProductId productId;
-		@Getter
-		private final AttributeSetInstanceId asiId;
-		@Getter
-		private final ShipmentScheduleId shipmentScheduleId;
-		@Getter
-		private final Optional<ShipmentAllocationBestBeforePolicy> bestBeforePolicy;
-		@Getter
-		private final WarehouseId warehouseId;
-		@Getter
-		private final OrderLineId salesOrderLineIdOrNull;
-
-		private final Quantity qtyToAllocateTarget;
-		@Getter
-		private Quantity qtyToAllocate;
-
-		private AllocablePackageable(@NonNull final Packageable packageable)
-		{
-			this.customerId = packageable.getCustomerId();
-			this.productId = packageable.getProductId();
-			this.asiId = packageable.getAsiId();
-			this.shipmentScheduleId = packageable.getShipmentScheduleId();
-			this.bestBeforePolicy = packageable.getBestBeforePolicy();
-			this.warehouseId = packageable.getWarehouseId();
-			this.salesOrderLineIdOrNull = packageable.getSalesOrderLineIdOrNull();
-
-			qtyToAllocateTarget = packageable.getQtyOrdered()
-					.subtract(packageable.getQtyPickedOrDelivered())
-					.toZeroIfNegative();
-
-			qtyToAllocate = qtyToAllocateTarget;
-		}
-
-		public void allocateQty(final Quantity qty)
-		{
-			qtyToAllocate = qtyToAllocate.subtract(qty);
-		}
-
-		public boolean isAllocated()
-		{
-			return getQtyToAllocate().signum() <= 0;
-		}
-	}
-
-	@Value(staticConstructor = "of")
-	private static class ReservableStorageKey
-	{
-		@NonNull
-		HuId huId;
-		@NonNull
-		ProductId productId;
-	}
-
-	@ToString
-	private static class ReservableStorage
-	{
-		private final ProductId productId;
-		private Quantity qtyFreeToReserve;
-
-		private ReservableStorage(
-				@NonNull final ProductId productId,
-				@NonNull final Quantity qtyFreeToReserve)
-		{
-			this.productId = productId;
-			this.qtyFreeToReserve = qtyFreeToReserve.toZeroIfNegative();
-		}
-
-		public Quantity reserve(@NonNull final AllocablePackageable allocable)
-		{
-			final Quantity qtyToReserve = computeEffectiveQtyToReserve(allocable.getQtyToAllocate());
-			return reserve(allocable, qtyToReserve);
-		}
-
-		public Quantity reserve(@NonNull final AllocablePackageable allocable, @NonNull final Quantity qtyToReserve)
-		{
-			assertSameProductId(allocable);
-
-			final Quantity qtyReserved = reserveQty(qtyToReserve);
-			allocable.allocateQty(qtyReserved);
-			return qtyReserved;
-		}
-
-		private void assertSameProductId(final AllocablePackageable allocable)
-		{
-			if (!ProductId.equals(productId, allocable.getProductId()))
-			{
-				throw new AdempiereException("ProductId not matching")
-						.appendParametersToMessage()
-						.setParameter("allocable", allocable)
-						.setParameter("storage", this);
-			}
-		}
-
-		private Quantity computeEffectiveQtyToReserve(@NonNull final Quantity qtyToReserve)
-		{
-			if (qtyToReserve.signum() <= 0)
-			{
-				return qtyToReserve.toZero();
-			}
-			if (qtyFreeToReserve.signum() <= 0)
-			{
-				return qtyToReserve.toZero();
-			}
-
-			return qtyToReserve.min(qtyFreeToReserve);
-		}
-
-		private Quantity reserveQty(@NonNull final Quantity qtyToReserve)
-		{
-			if (qtyToReserve.signum() <= 0)
-			{
-				return qtyToReserve.toZero();
-			}
-			if (qtyFreeToReserve.signum() <= 0)
-			{
-				return qtyToReserve.toZero();
-			}
-
-			final Quantity qtyToReserveEffective = qtyToReserve.min(qtyFreeToReserve);
-			qtyFreeToReserve = qtyFreeToReserve.subtract(qtyToReserveEffective);
-
-			return qtyToReserveEffective;
-		}
 	}
 }

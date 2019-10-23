@@ -1,4 +1,4 @@
-package de.metas.ui.web.pickingV2.productsToPick;
+package de.metas.ui.web.pickingV2.productsToPick.rows;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
@@ -30,7 +30,7 @@ import lombok.Value;
 
 @Value
 @Builder
-class ProductInfo
+public class ProductInfo
 {
 	@NonNull
 	ProductId productId;

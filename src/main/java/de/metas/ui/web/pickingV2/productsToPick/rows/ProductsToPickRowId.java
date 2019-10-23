@@ -1,4 +1,4 @@
-package de.metas.ui.web.pickingV2.productsToPick;
+package de.metas.ui.web.pickingV2.productsToPick.rows;
 
 import javax.annotation.Nullable;
 
@@ -36,7 +36,7 @@ import lombok.ToString;
 
 @EqualsAndHashCode
 @ToString(of = "documentId")
-final class ProductsToPickRowId
+public final class ProductsToPickRowId
 {
 	@Getter
 	private final HuId huId;

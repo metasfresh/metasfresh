@@ -26,7 +26,7 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.report.jasper.client.JRClient;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
-import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRowsRepository;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 

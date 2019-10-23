@@ -1,4 +1,4 @@
-package de.metas.ui.web.pickingV2.productsToPick;
+package de.metas.ui.web.pickingV2.productsToPick.rows;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -16,6 +16,7 @@ import de.metas.handlingunits.picking.PickingCandidatePickStatus;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.quantity.Quantity;
+import de.metas.ui.web.pickingV2.productsToPick.rows.factory.ProductsToPickRowsDataFactory;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
@@ -58,66 +59,66 @@ import lombok.ToString;
 @ToString(exclude = "values")
 public class ProductsToPickRow implements IViewRow
 {
-	static final String FIELD_ProductValue = "productValue";
+	public static final String FIELD_ProductValue = "productValue";
 	@ViewColumn(fieldName = FIELD_ProductValue, widgetType = DocumentFieldWidgetType.Text, captionKey = "ProductValue",
 			// captionKeyIsSysConfig=true, // TODO
 			widgetSize = WidgetSize.Small)
 	private final String productValue;
 
-	static final String FIELD_ProductName = "productName";
+	public static final String FIELD_ProductName = "productName";
 	@ViewColumn(fieldName = FIELD_ProductName, widgetType = DocumentFieldWidgetType.Text, captionKey = "ProductName", widgetSize = WidgetSize.Medium)
 	private final ITranslatableString productName;
 
-	static final String FIELD_ProductPackageSize = "productPackageSize";
+	public static final String FIELD_ProductPackageSize = "productPackageSize";
 	@ViewColumn(fieldName = FIELD_ProductPackageSize, widgetType = DocumentFieldWidgetType.Text, captionKey = "PackageSize", widgetSize = WidgetSize.Small)
 	private final String productPackageSize;
 
-	static final String FIELD_ProductPackageSizeUOM = "productPackageSizeUOM";
+	public static final String FIELD_ProductPackageSizeUOM = "productPackageSizeUOM";
 	@ViewColumn(fieldName = FIELD_ProductPackageSizeUOM, widgetType = DocumentFieldWidgetType.Text, captionKey = "Package_UOM_ID", widgetSize = WidgetSize.Small)
 	private final String productPackageSizeUOM;
 
-	static final String FIELD_Locator = "locator";
+	public static final String FIELD_Locator = "locator";
 	@ViewColumn(fieldName = FIELD_Locator, widgetType = DocumentFieldWidgetType.Lookup, captionKey = "M_Locator_ID", widgetSize = WidgetSize.Small)
 	private final LookupValue locator;
 
-	static final String FIELD_LotNumber = "lotNumber";
+	public static final String FIELD_LotNumber = "lotNumber";
 	@ViewColumn(fieldName = FIELD_LotNumber, widgetType = DocumentFieldWidgetType.Text, //
 			captionKey = ProductsToPickRowsDataFactory.ATTR_LotNumber, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME, //
 			widgetSize = WidgetSize.Small)
 	private final String lotNumber;
 
-	static final String FIELD_ExpiringDate = "expiringDate";
+	public static final String FIELD_ExpiringDate = "expiringDate";
 	@ViewColumn(fieldName = FIELD_ExpiringDate, widgetType = DocumentFieldWidgetType.LocalDate, //
 			captionKey = ProductsToPickRowsDataFactory.ATTR_BestBeforeDate, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME, //
 			widgetSize = WidgetSize.Small)
 	@Getter
 	private final LocalDate expiringDate;
 
-	static final String FIELD_RepackNumber = "repackNumber";
+	public static final String FIELD_RepackNumber = "repackNumber";
 	@ViewColumn(fieldName = FIELD_RepackNumber, widgetType = DocumentFieldWidgetType.Text, //
 			captionKey = ProductsToPickRowsDataFactory.ATTR_RepackNumber, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME, //
 			widgetSize = WidgetSize.Small)
 	private final String repackNumber;
 
-	static final String FIELD_Qty = "qty";
+	public static final String FIELD_Qty = "qty";
 	@ViewColumn(fieldName = FIELD_Qty, widgetType = DocumentFieldWidgetType.Quantity, captionKey = "Qty", widgetSize = WidgetSize.Small)
 	private final Quantity qty;
 
-	static final String FIELD_QtyOverride = "qtyOverride";
+	public static final String FIELD_QtyOverride = "qtyOverride";
 	@ViewColumn(fieldName = FIELD_QtyOverride, widgetType = DocumentFieldWidgetType.Quantity, captionKey = "Qty_Override", widgetSize = WidgetSize.Small, editor = ViewEditorRenderMode.ALWAYS)
 	private final Quantity qtyOverride;
 
-	static final String FIELD_QtyReview = "qtyReview";
+	public static final String FIELD_QtyReview = "qtyReview";
 	@ViewColumn(fieldName = FIELD_QtyReview, widgetType = DocumentFieldWidgetType.Quantity, captionKey = "Qty", widgetSize = WidgetSize.Small, editor = ViewEditorRenderMode.ALWAYS)
 	@Getter
 	private final BigDecimal qtyReview;
 
-	static final String FIELD_PickStatus = "pickStatus";
+	public static final String FIELD_PickStatus = "pickStatus";
 	@ViewColumn(fieldName = FIELD_PickStatus, captionKey = "PickStatus", widgetType = DocumentFieldWidgetType.List, listReferenceId = PickingCandidatePickStatus.AD_REFERENCE_ID, widgetSize = WidgetSize.Small)
 	@Getter
 	private final PickingCandidatePickStatus pickStatus;
 
-	static final String FIELD_ApprovalStatus = "approvalStatus";
+	public static final String FIELD_ApprovalStatus = "approvalStatus";
 	@ViewColumn(fieldName = FIELD_ApprovalStatus, captionKey = "ApprovalStatus", widgetType = DocumentFieldWidgetType.List, listReferenceId = PickingCandidateApprovalStatus.AD_REFERENCE_ID, widgetSize = WidgetSize.Small)
 	private final PickingCandidateApprovalStatus approvalStatus;
 
