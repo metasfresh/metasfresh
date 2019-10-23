@@ -25,8 +25,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +34,6 @@ import java.util.Map;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.IParams;
-import org.adempiere.util.lang.IReference;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 
@@ -53,6 +52,7 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessParams;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 
@@ -67,14 +67,7 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 	public IParams retrieveWorkpackageParams(final I_C_Queue_WorkPackage workpackage)
 	{
 		// NOTE: the actual parameters are lazy loaded on demand
-		return new ProcessParams(new IReference<List<ProcessInfoParameter>>()
-		{
-			@Override
-			public List<ProcessInfoParameter> getValue()
-			{
-				return retrieveWorkpackageProcessInfoParameters(workpackage);
-			}
-		});
+		return new ProcessParams(() -> retrieveWorkpackageProcessInfoParameters(workpackage));
 	}
 
 	/**
@@ -209,12 +202,12 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 			resetParameterValue(workpackageParam);
 			workpackageParam.setP_String(parameterValue.toString());
 		}
-		else if (parameterValue instanceof Date)
+		else if(TimeUtil.isDateOrTimeObject(parameterValue))
 		{
-			final Date date = (Date)parameterValue;
+			final Timestamp date = TimeUtil.asTimestamp(parameterValue);
 			workpackageParam.setAD_Reference_ID(DisplayType.DateTime);
 			resetParameterValue(workpackageParam);
-			workpackageParam.setP_Date(TimeUtil.asTimestamp(date));
+			workpackageParam.setP_Date(date);
 		}
 		else if (parameterValue instanceof BigDecimal)
 		{
@@ -242,11 +235,11 @@ public class WorkpackageParamDAO implements IWorkpackageParamDAO
 			final boolean valueBoolean = (boolean)parameterValue;
 			workpackageParam.setAD_Reference_ID(DisplayType.YesNo);
 			resetParameterValue(workpackageParam);
-			workpackageParam.setP_String(DisplayType.toBooleanString(valueBoolean));
+			workpackageParam.setP_String(StringUtils.ofBoolean(valueBoolean));
 		}
 		else
 		{
-			throw new IllegalArgumentException("Unsupported parameter value: " + parameterValue + " (" + parameterValue.getClass() + ")");
+			throw new AdempiereException("Unsupported parameter value: " + parameterValue + " (" + parameterValue.getClass() + ")");
 		}
 	}
 
