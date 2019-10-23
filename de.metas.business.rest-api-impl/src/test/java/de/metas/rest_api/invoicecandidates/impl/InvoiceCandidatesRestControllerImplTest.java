@@ -22,39 +22,36 @@ public class InvoiceCandidatesRestControllerImplTest {
 
 	private static final String EXTERNAL_LINE_ID1 = "Test1";
 	private static final String EXTERNAL_HEADER_ID1 = "1001";
-	
+
 	private static final String EXTERNAL_LINE_ID2 = "Test2";
 	private static final String EXTERNAL_HEADER_ID2 = "1002";
-	
+
 	private static final String EXTERNAL_LINE_ID3 = "Test3";
 	private static final String EXTERNAL_HEADER_ID3 = "1003";
-	
+
 	private static final int P_INSTANCE_ID = 1002265;
-	private InvoiceCandidatesRestControllerImpl invoiceCandidatesRestController;
 	private List<JsonInvoiceCandidate> jsonInvoiceCandidates;
 
 	@Before
 	public void init() {
 		AdempiereTestHelper.get().init();
 		jsonInvoiceCandidates = new ArrayList<JsonInvoiceCandidate>();
-		invoiceCandidatesRestController = new InvoiceCandidatesRestControllerImpl(new InvoiceJsonConverterService());
 		ExternalId externalId = ExternalId.of(EXTERNAL_LINE_ID1);
 		List<ExternalId> externalLineIds = new ArrayList<ExternalId>();
 		externalLineIds.add(externalId);
 		JsonInvoiceCandidate jic = JsonInvoiceCandidate.builder().externalHeaderId(EXTERNAL_HEADER_ID1)
 				.externalLineIds(externalLineIds).build();
 		jsonInvoiceCandidates.add(jic);
-		createInvoiceCandidate(EXTERNAL_LINE_ID1,EXTERNAL_HEADER_ID1);
+		createInvoiceCandidate(EXTERNAL_LINE_ID1, EXTERNAL_HEADER_ID1);
 	}
 
 	@Test
 	public void checkInvoiceCandidateSelection() {
-		IQuery<I_C_Invoice_Candidate> queryBuilder = invoiceCandidatesRestController
-				.createICQueryBuilder(jsonInvoiceCandidates);
+		IQuery<I_C_Invoice_Candidate> queryBuilder = InvoiceCandidatesQueryBuilderService.createICQueryBuilder(jsonInvoiceCandidates);
 		int selection = queryBuilder.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
 		assertThat(selection).isEqualTo(1);
 	}
-	
+
 	@Test
 	public void checkInvoiceCandidatesNotSelected() {
 		List<JsonInvoiceCandidate> jsonInvoiceCandidates = new ArrayList<JsonInvoiceCandidate>();
@@ -64,16 +61,15 @@ public class InvoiceCandidatesRestControllerImplTest {
 		JsonInvoiceCandidate jic = JsonInvoiceCandidate.builder().externalHeaderId(EXTERNAL_HEADER_ID3)
 				.externalLineIds(externalLineIds).build();
 		jsonInvoiceCandidates.add(jic);
-		
-		createInvoiceCandidate(EXTERNAL_LINE_ID2,EXTERNAL_HEADER_ID2);
-		
-		IQuery<I_C_Invoice_Candidate> queryBuilder = invoiceCandidatesRestController
-				.createICQueryBuilder(jsonInvoiceCandidates);
+
+		createInvoiceCandidate(EXTERNAL_LINE_ID2, EXTERNAL_HEADER_ID2);
+
+		IQuery<I_C_Invoice_Candidate> queryBuilder = InvoiceCandidatesQueryBuilderService.createICQueryBuilder(jsonInvoiceCandidates);
 
 		int selection = queryBuilder.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
 		assertThat(selection).isEqualTo(0);
 	}
-	
+
 	@Test
 	public void checkEmptyListOfExternalLineIds() {
 		List<JsonInvoiceCandidate> jsonInvoiceCandidates = new ArrayList<JsonInvoiceCandidate>();
@@ -81,9 +77,8 @@ public class InvoiceCandidatesRestControllerImplTest {
 		JsonInvoiceCandidate jic = JsonInvoiceCandidate.builder().externalHeaderId(EXTERNAL_HEADER_ID3)
 				.externalLineIds(externalLineIds).build();
 		jsonInvoiceCandidates.add(jic);
-		
-		IQuery<I_C_Invoice_Candidate> queryBuilder = invoiceCandidatesRestController
-				.createICQueryBuilder(jsonInvoiceCandidates);
+
+		IQuery<I_C_Invoice_Candidate> queryBuilder = InvoiceCandidatesQueryBuilderService.createICQueryBuilder(jsonInvoiceCandidates);
 
 		int selection = queryBuilder.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
 		assertThat(selection).isEqualTo(0);

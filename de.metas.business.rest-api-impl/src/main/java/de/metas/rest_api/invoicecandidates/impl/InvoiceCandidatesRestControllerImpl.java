@@ -80,7 +80,7 @@ class InvoiceCandidatesRestControllerImpl implements ICEnqueueingForInvoiceGener
 		try {
 			PInstanceId pInstanceId = adPInstanceDAO.createSelectionId();
 
-			createICQueryBuilder(request.getInvoiceCandidates()).createSelection(pInstanceId);
+			InvoiceCandidatesQueryBuilderService.createICQueryBuilder(request.getInvoiceCandidates()).createSelection(pInstanceId);
 
 			final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
 					.setInvoicingParams(createInvoicingParams(request)).setFailIfNothingEnqueued(true)
@@ -97,26 +97,6 @@ class InvoiceCandidatesRestControllerImpl implements ICEnqueueingForInvoiceGener
 			return ResponseEntity.badRequest()
 					.body(JsonInvoiceCandCreateResponse.error(JsonErrors.ofThrowable(ex, adLanguage)));
 		}
-	}
-
-	public IQuery<I_C_Invoice_Candidate> createICQueryBuilder(List<JsonInvoiceCandidate> jsonInvoices) {
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
-				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, true).setJoinOr();
-		ImmutableList<String> ids = jsonInvoices.stream()
-				.flatMap(jsonInvoice -> jsonInvoice.getExternalLineIds().stream()).map(ExternalId::getValue)
-				.collect(ImmutableList.toImmutableList());
-		for (final JsonInvoiceCandidate cand : jsonInvoices) {
-			final ICompositeQueryFilter<I_C_Invoice_Candidate> invoiceCandidatesFilter = queryBL
-					.createCompositeQueryFilter(I_C_Invoice_Candidate.class).addOnlyActiveRecordsFilter()
-					.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_ExternalLineId, ids)
-					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_ExternalHeaderId, cand.getExternalHeaderId());
-
-			queryBuilder.filter(invoiceCandidatesFilter);
-		}
-		return queryBuilder.create();
 	}
 
 	private PlainInvoicingParams createInvoicingParams(JsonInvoiceCandCreateRequest request) {

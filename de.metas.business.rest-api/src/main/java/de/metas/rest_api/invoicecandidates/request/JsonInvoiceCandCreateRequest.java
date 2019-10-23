@@ -55,14 +55,15 @@ public final class JsonInvoiceCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	private LocalDate dateAcct;
 
-	@ApiModelProperty(value = "External reference (document number) on a remote system. Not neccesarily unique, but but the external user will want to filter recrods using it")
+	@ApiModelProperty(value = "External customer's purchase order's documentno. POReference to be set to all invoice candidates, right before enqueueing them.")
 	private String poReference;
 
-	@ApiModelProperty(required = true, value = "Ignore invoice schedule.")
+	@ApiModelProperty(required = true, value = "This is needed when the user wants to invoice sth that is not yet delivered, the DateToInvoice is sometime in the future."
+			+ "If this is not set and the DateToInvoice is in the future then an error will occur \"no invoicable ICs selected)")
 	private Boolean ignoreInvoiceSchedule;
 
 	@ApiModelProperty(required = true,//
-			value = "Specifies whether RKn with an empty payment term (for example, empties returns) should automatically accept the payment term of another RK.")
+			value = "Specifies whether invoice candidate that have no payment term shall be updated with the reference of another selected invoice candidate.")
 	private Boolean supplementMissingPaymentTermIds;
 
 	@ApiModelProperty(required = true,//
