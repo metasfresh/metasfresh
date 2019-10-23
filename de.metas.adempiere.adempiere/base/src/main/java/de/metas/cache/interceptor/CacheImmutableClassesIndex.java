@@ -10,12 +10,12 @@ package de.metas.cache.interceptor;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,6 +38,8 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import org.compiere.util.NamePair;
 import org.compiere.util.Util.ArrayKey;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
@@ -46,7 +48,7 @@ import lombok.NonNull;
 
 /**
  * Singleton used to hold the immutable classes list.
- * 
+ *
  * @author tsa
  *
  */
@@ -87,14 +89,17 @@ public final class CacheImmutableClassesIndex
 			.add(NamePair.class)
 			.add(ArrayKey.class)
 			//
+			// guava immutable stuff
+			.add(ImmutableList.class)
+			.add(ImmutableSet.class)
+			.add(ImmutableMap.class)
+
 			.build();
 
 	private final CopyOnWriteArraySet<Class<?>> immutableClasses = new CopyOnWriteArraySet<>();
 
 	private CacheImmutableClassesIndex()
 	{
-		super();
-
 		immutableClasses.addAll(immutableClassesSeed);
 	}
 
@@ -109,7 +114,7 @@ public final class CacheImmutableClassesIndex
 		{
 			return true;
 		}
-		
+
 		// Assume IDs are immutable
 		if (RepoIdAware.class.isAssignableFrom(clazz))
 		{
@@ -129,9 +134,9 @@ public final class CacheImmutableClassesIndex
 
 	/**
 	 * Register a new immutable class.
-	 * 
+	 *
 	 * WARNING: to be used only if it's really needed because this is kind of dirty hack which could affect our caching system.
-	 * 
+	 *
 	 * @param immutableClass
 	 */
 	public void registerImmutableClass(final Class<?> immutableClass)

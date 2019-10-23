@@ -155,9 +155,9 @@ public interface IBPartnerBL extends ISingletonService
 	int getDiscountSchemaId(BPartnerId bpartnerId, SOTrx soTrx);
 
 	/**
-	 * Retrieves (out of transaction) a list of {@link User} that could be bill contacts, best first. See {@link RetrieveBillContactRequest}.
+	 * Retrieves (out of transaction) a list of {@link User} that could be bill contacts, best first. See {@link ContactQuery}.
 	 */
-	User retrieveBillContactOrNull(RetrieveBillContactRequest request);
+	User retrieveContactOrNull(RetrieveContactRequest request);
 
 	String getAddressStringByBPartnerLocationId(BPartnerLocationId bpartnerLocationId);
 
@@ -165,12 +165,20 @@ public interface IBPartnerBL extends ISingletonService
 
 	@Value
 	@Builder
-	public static class RetrieveBillContactRequest
+	public static class RetrieveContactRequest
 	{
+		public enum ContactType
+		{
+			BILL_TO_DEFAULT, SHIP_TO_DEFAULT, SALES_DEFAULT, SUBJECT_MATTER;
+		}
+
 		@NonNull
 		BPartnerId bpartnerId;
 
-		/** If specified, then users with this location are preferred, even if a user ad another location is the default bill-to user. */
+		@Nullable
+		ContactType contactType;
+
+		/** If specified, then contacts with this location are preferred, even if a user ad another location is the default bill-to user. */
 		@Nullable
 		BPartnerLocationId bPartnerLocationId;
 

@@ -1,5 +1,7 @@
 package de.metas.contracts.invoicecandidate;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -50,9 +52,9 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(final Object flatrateTermObject)
+	public boolean isCreateMissingCandidatesAutomatically(final Object flatrateTerm)
 	{
-		return isMissingInvoiceCandidate(flatrateTermObject);
+		return isMissingInvoiceCandidate(flatrateTerm);
 	}
 
 	/**
@@ -79,9 +81,9 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public boolean isMissingInvoiceCandidate(final Object flatrateTermObject)
+	public boolean isMissingInvoiceCandidate(final Object flatrateTermObj)
 	{
-		final I_C_Flatrate_Term flatrateTerm = (I_C_Flatrate_Term)flatrateTermObject;
+		final I_C_Flatrate_Term flatrateTerm = create(flatrateTermObj, I_C_Flatrate_Term.class);
 
 		final Collection<ConditionTypeSpecificInvoiceCandidateHandler> specificHandlers = conditionTypeSpecificInvoiceCandidateHandlers.values();
 

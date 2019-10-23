@@ -74,7 +74,14 @@ public class FlatrateMaterialBalanceConfigMatcher implements IMaterialBalanceCon
 
 		final I_M_Product product = loadOutOfTrx(inoutLine.getM_Product_ID(), I_M_Product.class);
 
-		final List<I_C_Flatrate_Term> terms = flatrateDB.retrieveTerms(ctx, partnerId.getRepoId(), inout.getDateOrdered(), product.getM_Product_Category_ID(), product.getM_Product_ID(), inoutLine.getC_Charge_ID(), trxName);
+		final List<I_C_Flatrate_Term> terms = flatrateDB.retrieveTerms(
+				ctx,
+				partnerId.getRepoId(),
+				inout.getDateOrdered(),
+				product.getM_Product_Category_ID(),
+				product.getM_Product_ID(),
+				inoutLine.getC_Charge_ID(),
+				trxName);
 
 		if(terms.isEmpty())
 		{

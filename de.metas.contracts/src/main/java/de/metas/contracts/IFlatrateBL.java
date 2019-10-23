@@ -199,7 +199,7 @@ public interface IFlatrateBL extends ISingletonService
 	/**
 	 * See {@link #hasOverlappingTerms(I_C_Flatrate_Term)}
 	 */
-	 boolean canOverlapWithOtherTerms(@NonNull final I_C_Flatrate_Term term);
+	 boolean isAllowedToOverlapWithOtherTerms(@NonNull final I_C_Flatrate_Term term);
 
 	/**
 	 * Check if there are terms for the same that have a time period overlapping with the given term and match with the same product or product category.

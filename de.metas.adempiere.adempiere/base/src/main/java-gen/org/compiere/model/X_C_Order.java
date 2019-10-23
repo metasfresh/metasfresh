@@ -15,7 +15,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -648746277L;
+	private static final long serialVersionUID = 2025653177L;
 
     /** Standard Constructor */
     public X_C_Order (Properties ctx, int C_Order_ID, String trxName)
@@ -49,6 +49,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 			setIsDropShip (false); // N
 			setIsInvoiced (false);
 			setIsPrinted (false);
+			setIsSalesPartnerRequired (false); // N
 			setIsSelected (false);
 			setIsSelfService (false);
 			setIsSOTrx (false); // @IsSOTrx@
@@ -235,6 +236,22 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		return ii.intValue();
 	}
 
+	/** Set Abw. Rechnungsadresse.
+		@param BillToAddress Abw. Rechnungsadresse	  */
+	@Override
+	public void setBillToAddress (java.lang.String BillToAddress)
+	{
+		set_Value (COLUMNNAME_BillToAddress, BillToAddress);
+	}
+
+	/** Get Abw. Rechnungsadresse.
+		@return Abw. Rechnungsadresse	  */
+	@Override
+	public java.lang.String getBillToAddress () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_BillToAddress);
+	}
+
 	/** Set Rechnungskontakt.
 		@param Bill_User_ID 
 		Ansprechpartner des Geschäftspartners für die Rechnungsstellung
@@ -260,22 +277,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		return ii.intValue();
 	}
 
-	/** Set Abw. Rechnungsadresse.
-		@param BillToAddress Abw. Rechnungsadresse	  */
-	@Override
-	public void setBillToAddress (java.lang.String BillToAddress)
-	{
-		set_Value (COLUMNNAME_BillToAddress, BillToAddress);
-	}
-
-	/** Get Abw. Rechnungsadresse.
-		@return Abw. Rechnungsadresse	  */
-	@Override
-	public java.lang.String getBillToAddress () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_BillToAddress);
-	}
-
 	/** Set Anschrift-Text.
 		@param BPartnerAddress Anschrift-Text	  */
 	@Override
@@ -290,18 +291,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public java.lang.String getBPartnerAddress () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_BPartnerAddress);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Activity getC_Activity()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class);
-	}
-
-	@Override
-	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class, C_Activity);
 	}
 
 	/** Set Kostenstelle.
@@ -324,43 +313,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public int getC_Activity_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Activity_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class);
-	}
-
-	@Override
-	public void setC_BP_BankAccount(org.compiere.model.I_C_BP_BankAccount C_BP_BankAccount)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class, C_BP_BankAccount);
-	}
-
-	/** Set Bankverbindung.
-		@param C_BP_BankAccount_ID 
-		Bank Account of the Business Partner
-	  */
-	@Override
-	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID)
-	{
-		if (C_BP_BankAccount_ID < 1) 
-			set_Value (COLUMNNAME_C_BP_BankAccount_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BP_BankAccount_ID, Integer.valueOf(C_BP_BankAccount_ID));
-	}
-
-	/** Get Bankverbindung.
-		@return Bank Account of the Business Partner
-	  */
-	@Override
-	public int getC_BP_BankAccount_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_BankAccount_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -429,6 +381,65 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public java.lang.String getC_BPartner_Memo () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_C_BPartner_Memo);
+	}
+
+	/** Set Zugeordneter Vertriebspartner.
+		@param C_BPartner_SalesRep_ID Zugeordneter Vertriebspartner	  */
+	@Override
+	public void setC_BPartner_SalesRep_ID (int C_BPartner_SalesRep_ID)
+	{
+		if (C_BPartner_SalesRep_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_SalesRep_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_SalesRep_ID, Integer.valueOf(C_BPartner_SalesRep_ID));
+	}
+
+	/** Get Zugeordneter Vertriebspartner.
+		@return Zugeordneter Vertriebspartner	  */
+	@Override
+	public int getC_BPartner_SalesRep_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_SalesRep_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class);
+	}
+
+	@Override
+	public void setC_BP_BankAccount(org.compiere.model.I_C_BP_BankAccount C_BP_BankAccount)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class, C_BP_BankAccount);
+	}
+
+	/** Set Bankverbindung.
+		@param C_BP_BankAccount_ID 
+		Bank Account of the Business Partner
+	  */
+	@Override
+	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID)
+	{
+		if (C_BP_BankAccount_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_BankAccount_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_BankAccount_ID, Integer.valueOf(C_BP_BankAccount_ID));
+	}
+
+	/** Get Bankverbindung.
+		@return Bank Account of the Business Partner
+	  */
+	@Override
+	public int getC_BP_BankAccount_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_BankAccount_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override
@@ -503,18 +514,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Charge getC_Charge()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Charge_ID, org.compiere.model.I_C_Charge.class);
-	}
-
-	@Override
-	public void setC_Charge(org.compiere.model.I_C_Charge C_Charge)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Charge_ID, org.compiere.model.I_C_Charge.class, C_Charge);
 	}
 
 	/** Set Kosten.
@@ -642,6 +641,66 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		return ii.intValue();
 	}
 
+	/** Set Gebühr.
+		@param ChargeAmt Gebühr	  */
+	@Override
+	public void setChargeAmt (java.math.BigDecimal ChargeAmt)
+	{
+		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
+	}
+
+	/** Get Gebühr.
+		@return Gebühr	  */
+	@Override
+	public java.math.BigDecimal getChargeAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ChargeAmt);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Rabatt %.
+		@param CompleteOrderDiscount 
+		Abschlag in Prozent
+	  */
+	@Override
+	public void setCompleteOrderDiscount (java.math.BigDecimal CompleteOrderDiscount)
+	{
+		set_Value (COLUMNNAME_CompleteOrderDiscount, CompleteOrderDiscount);
+	}
+
+	/** Get Rabatt %.
+		@return Abschlag in Prozent
+	  */
+	@Override
+	public java.math.BigDecimal getCompleteOrderDiscount () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CompleteOrderDiscount);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Copy From.
+		@param CopyFrom 
+		Copy From Record
+	  */
+	@Override
+	public void setCopyFrom (java.lang.String CopyFrom)
+	{
+		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
+	}
+
+	/** Get Copy From.
+		@return Copy From Record
+	  */
+	@Override
+	public java.lang.String getCopyFrom () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CopyFrom);
+	}
+
 	/** Set Auftrag.
 		@param C_Order_ID 
 		Order
@@ -702,18 +761,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class);
-	}
-
-	@Override
-	public void setC_PaymentTerm(org.compiere.model.I_C_PaymentTerm C_PaymentTerm)
-	{
-		set_ValueFromPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class, C_PaymentTerm);
 	}
 
 	/** Set Zahlungsbedingung.
@@ -778,18 +825,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Project getC_Project()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class);
-	}
-
-	@Override
-	public void setC_Project(org.compiere.model.I_C_Project C_Project)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class, C_Project);
-	}
-
 	/** Set Projekt.
 		@param C_Project_ID 
 		Financial Project
@@ -813,66 +848,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Gebühr.
-		@param ChargeAmt Gebühr	  */
-	@Override
-	public void setChargeAmt (java.math.BigDecimal ChargeAmt)
-	{
-		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
-	}
-
-	/** Get Gebühr.
-		@return Gebühr	  */
-	@Override
-	public java.math.BigDecimal getChargeAmt () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ChargeAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Rabatt %.
-		@param CompleteOrderDiscount 
-		Abschlag in Prozent
-	  */
-	@Override
-	public void setCompleteOrderDiscount (java.math.BigDecimal CompleteOrderDiscount)
-	{
-		set_Value (COLUMNNAME_CompleteOrderDiscount, CompleteOrderDiscount);
-	}
-
-	/** Get Rabatt %.
-		@return Abschlag in Prozent
-	  */
-	@Override
-	public java.math.BigDecimal getCompleteOrderDiscount () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CompleteOrderDiscount);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Copy From.
-		@param CopyFrom 
-		Copy From Record
-	  */
-	@Override
-	public void setCopyFrom (java.lang.String CopyFrom)
-	{
-		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
-	}
-
-	/** Get Copy From.
-		@return Copy From Record
-	  */
-	@Override
-	public java.lang.String getCopyFrom () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_CopyFrom);
 	}
 
 	/** Set Create Copy.
@@ -1653,6 +1628,32 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public boolean isPrinted () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsPrinted);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Auftrag nur mit Vertriebspartner.
+		@param IsSalesPartnerRequired 
+		Legt für den Rechnungspartner fest, ob bei einer Beauftragung immer ein Vertriebspartner angegeben werden muss.
+	  */
+	@Override
+	public void setIsSalesPartnerRequired (boolean IsSalesPartnerRequired)
+	{
+		set_Value (COLUMNNAME_IsSalesPartnerRequired, Boolean.valueOf(IsSalesPartnerRequired));
+	}
+
+	/** Get Auftrag nur mit Vertriebspartner.
+		@return Legt für den Rechnungspartner fest, ob bei einer Beauftragung immer ein Vertriebspartner angegeben werden muss.
+	  */
+	@Override
+	public boolean isSalesPartnerRequired () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsSalesPartnerRequired);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -2475,8 +2476,24 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		return ii.intValue();
 	}
 
-	/** Set Aussendienst.
-		@param SalesRep_ID Aussendienst	  */
+	/** Set Vertriebspartnercode.
+		@param SalesPartnerCode Vertriebspartnercode	  */
+	@Override
+	public void setSalesPartnerCode (java.lang.String SalesPartnerCode)
+	{
+		set_Value (COLUMNNAME_SalesPartnerCode, SalesPartnerCode);
+	}
+
+	/** Get Vertriebspartnercode.
+		@return Vertriebspartnercode	  */
+	@Override
+	public java.lang.String getSalesPartnerCode () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_SalesPartnerCode);
+	}
+
+	/** Set Kundenbetreuer.
+		@param SalesRep_ID Kundenbetreuer	  */
 	@Override
 	public void setSalesRep_ID (int SalesRep_ID)
 	{
@@ -2486,8 +2503,8 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 			set_Value (COLUMNNAME_SalesRep_ID, Integer.valueOf(SalesRep_ID));
 	}
 
-	/** Get Aussendienst.
-		@return Aussendienst	  */
+	/** Get Kundenbetreuer.
+		@return Kundenbetreuer	  */
 	@Override
 	public int getSalesRep_ID () 
 	{

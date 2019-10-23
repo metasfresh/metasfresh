@@ -36,11 +36,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.MContactInterest;
 import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_C_Order;
 import org.compiere.model.X_I_BPartner;
 
 import de.metas.bpartner.BPartnerId;
@@ -243,7 +243,7 @@ public class BPartnerImportProcess extends SimpleImportProcessTemplate<I_I_BPart
 					.adClientId(importRecord.getAD_Client_ID())
 					.adOrgId(importRecord.getAD_Org_ID())
 					.build());
-			adTableId = X_C_Order.Table_ID;
+			adTableId = getTableId(I_C_Order.class);
 		}
 		// for customer we have print format for delivery
 		else

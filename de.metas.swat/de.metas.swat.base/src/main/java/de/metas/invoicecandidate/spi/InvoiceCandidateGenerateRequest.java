@@ -6,7 +6,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.util.Check;
+import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -45,7 +45,7 @@ public final class InvoiceCandidateGenerateRequest
 		return new InvoiceCandidateGenerateRequest(handler, model);
 	}
 
-	public static <ModelType> List<InvoiceCandidateGenerateRequest> of(final List<IInvoiceCandidateHandler> handlers, final List<ModelType> models)
+	public static List<InvoiceCandidateGenerateRequest> ofAll(@NonNull final List<? extends IInvoiceCandidateHandler> handlers, @NonNull final List<?> models)
 	{
 		if (handlers.isEmpty() || models.isEmpty())
 		{
@@ -66,12 +66,9 @@ public final class InvoiceCandidateGenerateRequest
 	private final IInvoiceCandidateHandler handler;
 	private final Object model;
 
-	private InvoiceCandidateGenerateRequest(final IInvoiceCandidateHandler handler, final Object model)
+	private InvoiceCandidateGenerateRequest(@NonNull final IInvoiceCandidateHandler handler, @NonNull final Object model)
 	{
-		Check.assumeNotNull(handler, "handler not null");
 		this.handler = handler;
-
-		Check.assumeNotNull(model, "model not null");
 		this.model = model;
 	}
 

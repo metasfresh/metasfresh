@@ -42,6 +42,7 @@ import static de.metas.document.engine.IDocument.STATUS_Reversed;
 import static de.metas.document.engine.IDocument.STATUS_Voided;
 import static de.metas.document.engine.IDocument.STATUS_WaitingConfirmation;
 import static de.metas.document.engine.IDocument.STATUS_WaitingPayment;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 import java.util.Set;
 
@@ -220,7 +221,7 @@ import lombok.NonNull;
 		final LockOwner lockOwner = LockOwner.newOwner(DocumentEngine.class.getSimpleName() + "#processIt");
 
 		final IDocument document = getDocument();
-		
+
 		final ILock lock = lockManager
 				.lock()
 				.setOwner(lockOwner)
@@ -515,9 +516,9 @@ import lombok.NonNull;
 	private boolean closeIt()
 	{
 		final IDocument document = getDocument();
-		if (document.get_Table_ID() == I_C_Order.Table_ID) // orders can be closed any time
+		if (document.get_Table_ID() == getTableId(I_C_Order.class)) // orders can be closed any time
 		{
-			;
+			
 		}
 		else if (!isValidDocAction(ACTION_Close))
 		{
@@ -546,10 +547,10 @@ import lombok.NonNull;
 		{
 			return false;
 		}
-		
+
 		final IDocument document = getDocument();
 		document.unCloseIt();
-		
+
 		final String newDocStatus = STATUS_Completed;
 		setDocStatusIntern(newDocStatus);
 		document.setDocStatus(newDocStatus);

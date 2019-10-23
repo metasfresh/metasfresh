@@ -10,12 +10,12 @@ package de.metas.cache.interceptor;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,7 +44,7 @@ import de.metas.util.collections.Converter;
  */
 final class GenericParamDescriptor implements ICachedMethodPartDescriptor
 {
-	public static final GenericParamDescriptor of(final Class<?> parameterType, final int parameterIndex, final List<Annotation> parameterAnnotations)
+	public static GenericParamDescriptor of(final Class<?> parameterType, final int parameterIndex, final List<Annotation> parameterAnnotations)
 	{
 		//
 		// Skip caching predicate:
@@ -146,7 +146,6 @@ final class GenericParamDescriptor implements ICachedMethodPartDescriptor
 
 	private GenericParamDescriptor(final int parameterIndex, final Converter<Object, Object> argumentConverter, final Predicate<Object> skipCachingPredicate)
 	{
-		super();
 		Check.assume(parameterIndex >= 0, "parameterIndex >= 0");
 		this.parameterIndex = parameterIndex;
 		this.argumentConverter = argumentConverter;

@@ -1,5 +1,7 @@
 package de.metas.contracts.invoicecandidate;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+
 /*
  * #%L
  * de.metas.contracts
@@ -24,8 +26,6 @@ package de.metas.contracts.invoicecandidate;
 
 import java.util.Collections;
 import java.util.Iterator;
-
-import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
@@ -74,17 +74,16 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 	 * Implementation invalidates the C_Flatrate_DataEntry's C_Invoice_Candidate and C_Invoice_Candidate_Corr (if set).
 	 */
 	@Override
-	public void invalidateCandidatesFor(final Object model)
+	public void invalidateCandidatesFor(final Object dataEntryObj)
 	{
-		final I_C_Flatrate_DataEntry de = InterfaceWrapperHelper.create(model, I_C_Flatrate_DataEntry.class);
-
-		if (de.getC_Invoice_Candidate_ID() > 0)
+		final I_C_Flatrate_DataEntry dataEntry = create(dataEntryObj, I_C_Flatrate_DataEntry.class);
+		if (dataEntry.getC_Invoice_Candidate_ID() > 0)
 		{
-			Services.get(IInvoiceCandDAO.class).invalidateCand(de.getC_Invoice_Candidate());
+			Services.get(IInvoiceCandDAO.class).invalidateCand(dataEntry.getC_Invoice_Candidate());
 		}
-		if (de.getC_Invoice_Candidate_Corr_ID() > 0)
+		if (dataEntry.getC_Invoice_Candidate_Corr_ID() > 0)
 		{
-			Services.get(IInvoiceCandDAO.class).invalidateCand(de.getC_Invoice_Candidate_Corr());
+			Services.get(IInvoiceCandDAO.class).invalidateCand(dataEntry.getC_Invoice_Candidate_Corr());
 		}
 	}
 

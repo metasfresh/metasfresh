@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.modelvalidator;
 
+
+
 /*
  * #%L
  * de.metas.swat.base
@@ -33,6 +35,7 @@ import org.springframework.stereotype.Component;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -119,6 +122,7 @@ public class M_InOutLine
 
 			//
 			// (also) calculate qualityDiscountPercent taken from inoutLines (06502)
+			Services.get(IInvoiceCandidateHandlerBL.class).setDeliveredData(icRecord);
 			final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
 			invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
 

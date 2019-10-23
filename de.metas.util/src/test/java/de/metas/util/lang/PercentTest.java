@@ -59,7 +59,7 @@ public class PercentTest
 	{
 		final Percent percent = Percent.of(percentInt);
 		final int precision = 2;
-		assertThat(percent.multiply(BigDecimal.valueOf(base), precision)).isEqualByComparingTo(BigDecimal.valueOf(expectedResult));
+		assertThat(percent.computePercentageOf(BigDecimal.valueOf(base), precision)).isEqualByComparingTo(BigDecimal.valueOf(expectedResult));
 	}
 
 	@Test
@@ -69,7 +69,7 @@ public class PercentTest
 		final BigDecimal base = BigDecimal.valueOf(100);
 		final int precision = 2;
 
-		assertThat(percent.multiply(base, precision)).isEqualByComparingTo(new BigDecimal("50.16"));
+		assertThat(percent.computePercentageOf(base, precision)).isEqualByComparingTo(new BigDecimal("50.16"));
 	}
 
 	@Test
@@ -79,7 +79,7 @@ public class PercentTest
 		final BigDecimal base = new BigDecimal("50.16678");
 		final int precision = 2;
 
-		assertThat(percent.multiply(base, precision)).isEqualByComparingTo(new BigDecimal("5.02"));
+		assertThat(percent.computePercentageOf(base, precision)).isEqualByComparingTo(new BigDecimal("5.02"));
 	}
 
 	@Test

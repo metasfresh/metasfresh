@@ -1,0 +1,21 @@
+de.metas.contracts.commission.commissioninstance.services.repos.CommissionSettlementShareRepositoryTest.getByInvoiceCandidateId=[ {
+  "salesCommissionShareId" : 100006,
+  "facts" : [ {
+    "settlementInvoiceCandidateId" : 100001,
+    "timestamp" : "2019-09-17T11:49:25Z",
+    "state" : "TO_SETTLE",
+    "points" : 20
+  }, {
+    "settlementInvoiceCandidateId" : 100001,
+    "timestamp" : "2019-09-17T11:49:35Z",
+    "state" : "TO_SETTLE",
+    "points" : -3
+  }, {
+    "settlementInvoiceCandidateId" : 100001,
+    "timestamp" : "2019-09-17T11:49:55Z",
+    "state" : "SETTLED",
+    "points" : 18
+  } ],
+  "pointsToSettleSum" : 17,
+  "settledPointsSum" : 18
+} ]
