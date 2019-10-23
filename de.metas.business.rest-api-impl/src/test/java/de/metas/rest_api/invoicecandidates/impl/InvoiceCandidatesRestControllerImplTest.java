@@ -38,7 +38,7 @@ public class InvoiceCandidatesRestControllerImplTest {
 		AdempiereTestHelper.get().init();
 		jsonInvoiceCandidates = new ArrayList<JsonInvoiceCandidate>();
 		invoiceCandidatesRestController = new InvoiceCandidatesRestControllerImpl(new InvoiceJsonConverterService());
-		ExternalId externalId = new ExternalId(EXTERNAL_LINE_ID1);
+		ExternalId externalId = ExternalId.of(EXTERNAL_LINE_ID1);
 		List<ExternalId> externalLineIds = new ArrayList<ExternalId>();
 		externalLineIds.add(externalId);
 		JsonInvoiceCandidate jic = JsonInvoiceCandidate.builder().externalHeaderId(EXTERNAL_HEADER_ID1)
@@ -58,7 +58,7 @@ public class InvoiceCandidatesRestControllerImplTest {
 	@Test
 	public void checkInvoiceCandidatesNotSelected() {
 		List<JsonInvoiceCandidate> jsonInvoiceCandidates = new ArrayList<JsonInvoiceCandidate>();
-		ExternalId externalId = new ExternalId(EXTERNAL_LINE_ID3);
+		ExternalId externalId = ExternalId.of(EXTERNAL_LINE_ID3);
 		List<ExternalId> externalLineIds = new ArrayList<ExternalId>();
 		externalLineIds.add(externalId);
 		JsonInvoiceCandidate jic = JsonInvoiceCandidate.builder().externalHeaderId(EXTERNAL_HEADER_ID3)

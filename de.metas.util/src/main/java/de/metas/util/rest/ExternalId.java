@@ -63,12 +63,4 @@ public class ExternalId
 		}
 		return externalId.getValue();
 	}
-	
-	@JsonValue
-	public String getValue()
-	{
-		return value;
-	}
-	
-
 }
