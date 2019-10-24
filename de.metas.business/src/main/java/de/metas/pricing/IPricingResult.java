@@ -163,4 +163,8 @@ public interface IPricingResult
 	InvoicableQtyBasedOn getInvoicableQtyBasedOn();
 
 	void setInvoicableQtyBasedOn(InvoicableQtyBasedOn invoicableQtyBasedOn);
+
+	void setCampaignPrice(boolean isCampaignPrice);
+
+	boolean isCampaignPrice();
 }

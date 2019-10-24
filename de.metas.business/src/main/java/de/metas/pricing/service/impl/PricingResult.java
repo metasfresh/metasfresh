@@ -105,6 +105,8 @@ final class PricingResult implements IPricingResult
 
 	private boolean discountEditable = true;
 
+	private boolean campaignPrice = false;
+
 	private InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.NominalWeight;
 
 	@Getter(AccessLevel.NONE)
@@ -199,5 +201,11 @@ final class PricingResult implements IPricingResult
 		}
 
 		return precision.round(priceToRound);
+	}
+
+	@Override
+	public boolean isCampaignPrice()
+	{
+		return campaignPrice;
 	}
 }
