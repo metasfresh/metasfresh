@@ -1,11 +1,16 @@
 package de.metas.rest_api.invoicecandidates.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
+import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidate;
 import de.metas.rest_api.invoicecandidates.response.InvoiceCandEnqueuerResult;
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandCreateResponse;
+import de.metas.util.rest.ExternalHeaderAndLineId;
 import lombok.NonNull;
 
 /*
@@ -40,6 +45,17 @@ class InvoiceJsonConverterService
 				.workpackageEnqueuedCount(enqueueResult.getWorkpackageEnqueuedCount())
 				.workpackageQueueSizeBeforeEnqueueing(enqueueResult.getWorkpackageQueueSizeBeforeEnqueueing()).build();
 		return JsonInvoiceCandCreateResponse.ok(jsonInvoiceCand);
+	}
+	
+	public List<ExternalHeaderAndLineId> convertJICToExternalHeaderAndLineIds(
+			List<JsonInvoiceCandidate> invoiceCandidates) {
+		List<ExternalHeaderAndLineId> headerAndLineIds=new ArrayList<ExternalHeaderAndLineId>();
+		for (JsonInvoiceCandidate cand : invoiceCandidates) {
+			ExternalHeaderAndLineId headerAndLineId = ExternalHeaderAndLineId.builder()
+					.externalHeaderId(cand.getExternalHeaderId()).externalLineIds(cand.getExternalLineIds()).build();
+			headerAndLineIds.add(headerAndLineId);
+		}
+		return headerAndLineIds;
 	}
 
 }

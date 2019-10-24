@@ -2,11 +2,7 @@ package de.metas.rest_api.invoicecandidates.impl;
 
 import java.util.List;
 
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
@@ -17,23 +13,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.rest_api.invoicecandidates.ICEnqueueingForInvoiceGenerationRestEndpoint;
 import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandCreateRequest;
-import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidate;
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandCreateResponse;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.util.Services;
-import de.metas.util.rest.ExternalId;
+import de.metas.util.rest.ExternalHeaderAndLineId;
 import lombok.NonNull;
 
 /*
@@ -66,11 +59,12 @@ class InvoiceCandidatesRestControllerImpl implements ICEnqueueingForInvoiceGener
 	private static final Logger logger = LogManager.getLogger(InvoiceCandidatesRestControllerImpl.class);
 
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-	private final InvoiceJsonConverterService jsonConverters;
+	private final InvoiceJsonConverterService jsonConverter;
 
-	public InvoiceCandidatesRestControllerImpl(@NonNull final InvoiceJsonConverterService jsonConverters) {
-		this.jsonConverters = jsonConverters;
+	public InvoiceCandidatesRestControllerImpl(@NonNull final InvoiceJsonConverterService jsonConverter) {
+		this.jsonConverter = jsonConverter;
 	}
 
 	@PostMapping(consumes = { "application/json" })
@@ -79,15 +73,15 @@ class InvoiceCandidatesRestControllerImpl implements ICEnqueueingForInvoiceGener
 			@RequestBody @NonNull final JsonInvoiceCandCreateRequest request) {
 		try {
 			PInstanceId pInstanceId = adPInstanceDAO.createSelectionId();
-
-			InvoiceCandidatesQueryBuilderService.createICQueryBuilder(request.getInvoiceCandidates()).createSelection(pInstanceId);
+			List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(request.getInvoiceCandidates());
+			invoiceCandBL.createICQueryBuilder(headerAndLineIds).createSelection(pInstanceId);
 
 			final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
 					.setInvoicingParams(createInvoicingParams(request)).setFailIfNothingEnqueued(true)
 					.enqueueSelection(pInstanceId);
 
 			final JsonInvoiceCandCreateResponse response = Services.get(ITrxManager.class)
-					.callInNewTrx(() -> jsonConverters.toJson(enqueueResult));
+					.callInNewTrx(() -> jsonConverter.toJson(enqueueResult));
 
 			return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
 		} catch (final Exception ex) {
@@ -109,5 +103,4 @@ class InvoiceCandidatesRestControllerImpl implements ICEnqueueingForInvoiceGener
 		invoicingParams.setUpdateLocationAndContactForInvoice(request.getUpdateLocationAndContactForInvoice());
 		return invoicingParams;
 	}
-
 }

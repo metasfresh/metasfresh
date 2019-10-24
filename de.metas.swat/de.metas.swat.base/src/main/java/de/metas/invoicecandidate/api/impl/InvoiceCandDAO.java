@@ -124,6 +124,8 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
+import de.metas.util.rest.ExternalHeaderAndLineId;
+import de.metas.util.rest.ExternalId;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -1665,5 +1667,25 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false);
 
 		invalidateCandsFor(freightCostCandQueryBuilder);
+	}
+	@Override
+	public IQuery<I_C_Invoice_Candidate> createICQueryBuilder(List<ExternalHeaderAndLineId> headerAndLineIds) {
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
+				.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, true).setJoinOr();
+		ImmutableList<String> ids = headerAndLineIds.stream()
+				.flatMap(headerAndLineId -> headerAndLineId.getExternalLineIds().stream()).map(ExternalId::getValue)
+				.collect(ImmutableList.toImmutableList());
+		
+		for (final ExternalHeaderAndLineId element : headerAndLineIds) {
+			final ICompositeQueryFilter<I_C_Invoice_Candidate> invoiceCandidatesFilter = queryBL
+					.createCompositeQueryFilter(I_C_Invoice_Candidate.class).addOnlyActiveRecordsFilter()
+					.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_ExternalLineId, ids)
+					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_ExternalHeaderId, element.getExternalHeaderId());
+
+			queryBuilder.filter(invoiceCandidatesFilter);
+		}
+		return queryBuilder.create();
 	}
 }

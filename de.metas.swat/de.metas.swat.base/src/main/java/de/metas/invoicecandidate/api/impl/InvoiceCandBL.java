@@ -65,6 +65,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -159,6 +160,7 @@ import de.metas.util.Loggables;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
+import de.metas.util.rest.ExternalHeaderAndLineId;
 import lombok.NonNull;
 
 public class InvoiceCandBL implements IInvoiceCandBL
@@ -1991,5 +1993,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			iciol.setQtyDeliveredInUOM_Nominal(inOutLine.getQtyEntered());
 		}
 		saveRecord(iciol);
+	}
+
+	@Override
+	public IQuery<I_C_Invoice_Candidate> createICQueryBuilder(List<ExternalHeaderAndLineId> headerAndLineIds) {
+		return Services.get(IInvoiceCandDAO.class).createICQueryBuilder(headerAndLineIds);
 	}
 }
