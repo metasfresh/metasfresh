@@ -36,8 +36,10 @@ import de.dhl.webservice.cisbase.ReceiverNativeAddressType;
 import de.dhl.webservices.businesscustomershipping._3.CreateShipmentOrderRequest;
 import de.dhl.webservices.businesscustomershipping._3.CreateShipmentOrderResponse;
 import de.dhl.webservices.businesscustomershipping._3.CreationState;
+import de.dhl.webservices.businesscustomershipping._3.ExportDocumentType;
 import de.dhl.webservices.businesscustomershipping._3.LabelData;
 import de.dhl.webservices.businesscustomershipping._3.ReceiverType;
+import de.dhl.webservices.businesscustomershipping._3.Serviceconfiguration;
 import de.dhl.webservices.businesscustomershipping._3.ShipmentDetailsTypeType;
 import de.dhl.webservices.businesscustomershipping._3.ShipmentItemType;
 import de.dhl.webservices.businesscustomershipping._3.ShipmentNotificationType;
@@ -47,9 +49,9 @@ import de.dhl.webservices.businesscustomershipping._3.Version;
 import de.metas.shipper.gateway.dhl.logger.DhlClientLogEvent;
 import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
-import de.metas.shipper.gateway.dhl.model.DhlClientConfigRepository;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
+import de.metas.shipper.gateway.dhl.model.DhlCustomsDocument;
 import de.metas.shipper.gateway.dhl.model.DhlPackageLabelType;
 import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
@@ -65,7 +67,6 @@ import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -365,6 +366,43 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 					shipperType.setAddress(nativeAddressType);
 
 					shipmentOrderTypeShipment.setShipper(shipperType);
+				}
+
+				{
+					//noinspection ConstantConditions
+					final DhlCustomDeliveryData dhlCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
+					final DhlSequenceNumber sequenceNumber = dhlCustomDeliveryData.getSequenceNumberByPackageId(packageIdsAsList.get(i));
+					final DhlCustomsDocument customsDocument = dhlCustomDeliveryData.getDetailBySequenceNumber(sequenceNumber).getCustomsDocument();
+
+					if (customsDocument != null)
+					{
+						// (2.2.6) Export Document - only for international shipments
+						final ExportDocumentType exportDocumentType = objectFactory.createExportDocumentType();
+						//			exportDocumentType.setInvoiceNumber("2212011"); // optional
+						exportDocumentType.setExportType(customsDocument.getExportType());
+						exportDocumentType.setExportTypeDescription(customsDocument.getExportTypeDescription());
+						//			exportDocumentType.setTermsOfTrade("DDP"); // optional
+						exportDocumentType.setPlaceOfCommital(deliveryOrder.getDeliveryAddress().getCity());
+						exportDocumentType.setAdditionalFee(customsDocument.getAdditionalFee());
+						//			exportDocumentType.setPermitNumber("12345"); //  optional
+						//			exportDocumentType.setAttestationNumber("65421"); //  optional
+
+						// (2.2.6.9)
+						final Serviceconfiguration serviceconfiguration = objectFactory.createServiceconfiguration();
+						serviceconfiguration.setActive(customsDocument.getWithElectronicExportNtfctn());
+						exportDocumentType.setWithElectronicExportNtfctn(serviceconfiguration);
+						// (2.2.6.10)
+						final ExportDocumentType.ExportDocPosition docPosition = objectFactory.createExportDocumentTypeExportDocPosition();
+						docPosition.setDescription(customsDocument.getPackageDescription());
+						docPosition.setCountryCodeOrigin(deliveryOrder.getPickupAddress().getCountry().getAlpha2());
+						docPosition.setCustomsTariffNumber(customsDocument.getCustomsTariffNumber());
+						docPosition.setAmount(customsDocument.getAmount());
+						docPosition.setNetWeightInKG(customsDocument.getNetWeightInKg()); // must be less than the weight!!
+						docPosition.setCustomsValue(customsDocument.getCustomsValue());
+						exportDocumentType.getExportDocPosition().add(docPosition);
+
+						shipmentOrderTypeShipment.setExportDocument(exportDocumentType);
+					}
 				}
 
 				// (2) create the needed shipment order type
