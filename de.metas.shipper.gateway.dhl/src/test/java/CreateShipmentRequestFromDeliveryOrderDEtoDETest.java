@@ -28,6 +28,7 @@ import de.dhl.webservice.cisbase.NativeAddressType;
 import de.dhl.webservice.cisbase.ReceiverNativeAddressType;
 import de.dhl.webservices.businesscustomershipping._3.CreateShipmentOrderRequest;
 import de.dhl.webservices.businesscustomershipping._3.CreateShipmentOrderResponse;
+import de.dhl.webservices.businesscustomershipping._3.CreationState;
 import de.dhl.webservices.businesscustomershipping._3.ObjectFactory;
 import de.dhl.webservices.businesscustomershipping._3.ReceiverType;
 import de.dhl.webservices.businesscustomershipping._3.ShipmentDetailsTypeType;
@@ -65,9 +66,11 @@ import java.math.BigInteger;
 import java.time.format.DateTimeFormatter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Disabled("makes ACTUAL calls to dhl api and needs auth")
-class CreateShipmentRequestFromDeliveryOrderTest
+class CreateShipmentRequestFromDeliveryOrderDEtoDETest
 {
 
 	private static final String USER_NAME = "a";
@@ -95,11 +98,17 @@ class CreateShipmentRequestFromDeliveryOrderTest
 		final CreateShipmentOrderResponse createShipmentOrderResponse = (CreateShipmentOrderResponse)webServiceTemplate.marshalSendAndReceive(createShipmentOrderRequest, new AddSoapHeader());
 
 		assertEquals(BigInteger.ZERO, createShipmentOrderResponse.getStatus().getStatusCode());
+		assertEquals(1, createShipmentOrderResponse.getCreationState().size());
+
+		final CreationState creationState = createShipmentOrderResponse.getCreationState().get(0);
+		assertEquals("1", creationState.getSequenceNumber());
+		assertTrue(creationState.getLabelData().getLabelUrl().startsWith("https://"));
+		assertNull(creationState.getLabelData().getExportLabelUrl());
 	}
 
 	private CreateShipmentOrderRequest createShipmentOrderRequestFromDeliveryOrder()
 	{
-		final DeliveryOrder request = DhlTestUtil.createDummyDeliveryOrder();
+		final DeliveryOrder request = DhlTestUtil.createDummyDeliveryOrderDEtoDE();
 		final ShipmentOrderType shipmentOrderType = createShipmentFromDeliveryOrder(request);
 
 		final Version version = createHardcodedVersion(objectFactory);

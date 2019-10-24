@@ -34,12 +34,13 @@ import lombok.experimental.UtilityClass;
 import java.time.LocalDate;
 
 @UtilityClass
-public class DhlTestUtil
+class DhlTestUtil
 {
 
 	private static final CountryCode COUNTRY_CODE_DE = CountryCode.builder().alpha2("DE").alpha3("DEU").build();
+	private static final CountryCode COUNTRY_CODE_CH = CountryCode.builder().alpha2("CH").alpha3("CHE").build();
 
-	static DeliveryOrder createDummyDeliveryOrder()
+	static DeliveryOrder createDummyDeliveryOrderDEtoDE()
 	{
 		final DeliveryOrder deliveryOrderCreateRequest = DeliveryOrder.builder()
 				// shipper
@@ -81,8 +82,56 @@ public class DhlTestUtil
 						.grossWeightKg(1)
 						.build())
 				.customerReference("the helpful customer reference")
-				.serviceType(DhlServiceType.V01PAK)
+				.serviceType(DhlServiceType.Dhl_Paket)
 				.build();
 		return deliveryOrderCreateRequest;
 	}
+
+	static DeliveryOrder createDummyDeliveryOrderDEtoCH()
+	{
+		final DeliveryOrder deliveryOrderCreateRequest = DeliveryOrder.builder()
+				// shipper
+				.pickupAddress(Address.builder()
+						.companyName1("TheBestPessimist Inc.")
+						.companyName2("The Second Shipper Company Name")
+						.street1("Eduard-Otto-Straße")
+						.street2("Street Name 2 ")
+						.houseNo("10")
+						.zipCode("53129")
+						.city("Bonn")
+						.country(COUNTRY_CODE_DE)
+						.build())
+				.pickupDate(PickupDate.builder()
+						.date(LocalDate.now().plusDays(1)) // always tomorrow!
+						.build())
+				// international (CH) receiver
+				.deliveryAddress(Address.builder()
+						.companyName1("burker king")
+						.companyName2("din lucerna")
+						.street1("Zentralstrasse")
+						.houseNo("3")
+						.zipCode("6003")
+						.city("Luzern")
+						.country(COUNTRY_CODE_CH)
+						.build())
+				.deliveryContact(ContactPerson.builder()
+						.emailAddress("tbp@tbp.com")
+						.simplePhoneNumber("+10-012-345689")
+						.build())
+				.deliveryPosition(DeliveryPosition.builder()
+						.numberOfPackages(5)
+						.packageDimensions(PackageDimensions.builder()
+								.heightInCM(10)
+								.lengthInCM(10)
+								.widthInCM(10)
+								.build())
+						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
+						.grossWeightKg(1)
+						.build())
+				.customerReference("the helpful customer reference")
+				.serviceType(DhlServiceType.Dhl_PaketInternational)
+				.build();
+		return deliveryOrderCreateRequest;
+	}
+
 }

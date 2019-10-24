@@ -67,7 +67,7 @@ class OneMoreUsingMetasfreshFunctionalityTest
 	@Test
 	void testDeliveryOrderPersistence()
 	{
-		final DeliveryOrder originalDO = deliveryOrderRepository.save(DhlTestUtil.createDummyDeliveryOrder());
+		final DeliveryOrder originalDO = deliveryOrderRepository.save(DhlTestUtil.createDummyDeliveryOrderDEtoDE());
 
 		final DeliveryOrder deserialisedDO = deliveryOrderRepository.getByRepoId(DeliveryOrderId.ofRepoId(originalDO.getRepoId()));
 		assertEquals(originalDO, deserialisedDO); // not equal because DeliveryOrder.customDeliveryData is changed
@@ -77,7 +77,7 @@ class OneMoreUsingMetasfreshFunctionalityTest
 	void createDOPersistThenSendItToDHL()
 	{
 		// persist the DO
-		final DeliveryOrder deliveryOrder = deliveryOrderRepository.save(DhlTestUtil.createDummyDeliveryOrder());
+		final DeliveryOrder deliveryOrder = deliveryOrderRepository.save(DhlTestUtil.createDummyDeliveryOrderDEtoDE());
 
 		final DeliveryOrderId deliveryOrderRepoId = DeliveryOrderId.ofRepoId(deliveryOrder.getRepoId());
 		final DeliveryOrder deserialisedDO = deliveryOrderRepository.getByRepoId(deliveryOrderRepoId);
