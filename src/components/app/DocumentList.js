@@ -1045,6 +1045,25 @@ export class DocumentList extends Component {
               )}
             </div>
 
+            {showGeoResizeBtn && (
+              <div className="pane-size-button col-xxs-3 ignore-react-onclickoutside">
+                <button
+                  className={classnames(
+                    'btn btn-meta-outline-secondary btn-sm btn-switch ignore-react-onclickoutside'
+                  )}
+                  onClick={this.collapseGeoPanels}
+                >
+                  {(toggleState === 0 || toggleState === 1) && (
+                    <i className="icon icon-grid" />
+                  )}
+                  {toggleState === 1 && <i className="icon text-middle">/</i>}
+                  {(toggleState === 1 || toggleState === 2) && (
+                    <i className="icon icon-map" />
+                  )}
+                </button>
+              </div>
+            )}
+
             {data && showQuickActions && (
               <QuickActions
                 processStatus={processStatus}
@@ -1078,25 +1097,6 @@ export class DocumentList extends Component {
                     : NO_VIEW
                 }
               />
-            )}
-
-            {showGeoResizeBtn && (
-              <div className="pane-size-button col-xxs-3 ignore-react-onclickoutside">
-                <button
-                  className={classnames(
-                    'btn btn-meta-outline-secondary btn-sm btn-switch ignore-react-onclickoutside'
-                  )}
-                  onClick={this.collapseGeoPanels}
-                >
-                  {(toggleState === 0 || toggleState === 1) && (
-                    <i className="icon icon-grid" />
-                  )}
-                  {toggleState === 1 && '/'}
-                  {(toggleState === 1 || toggleState === 2) && (
-                    <i className="icon icon-map" />
-                  )}
-                </button>
-              </div>
             )}
           </div>
         )}

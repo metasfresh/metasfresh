@@ -517,34 +517,6 @@ body {
     z-index: 1000;
 }
 
-.pane-size-button {
-    display: block;
-    position: absolute;
-    padding: 0;
-    bottom: 5px;
-    right: 5px;
-    z-index: 1000;
-
-    .btn-switch {
-        display: flex;
-    }
-
-    .icon {
-        width: 15px;
-        height: 15px;
-        background: no-repeat scroll 0 center;
-        display: block;
-    }
-
-    .icon-grid {
-        background-image: url('../images/list-solid.svg');
-    }
-
-    .icon-map {
-        background-image: url('../images/map-marked-alt-solid.svg');
-    }
-}
-
 .tablet, .mobile {
     .column-size-button button {
         background-color: white;
@@ -580,6 +552,38 @@ body {
     justify-content: space-between;
     flex-shrink: 0;
     min-height: auto;
+
+    .pane-size-button {
+        display: block;
+        z-index: 1000;
+        margin-right: auto !important;
+        align-self: center;
+
+        .btn-switch {
+            display: flex;
+        }
+
+        .icon {
+            width: 15px;
+            height: 15px;
+            background: no-repeat scroll 0 center;
+            display: block;
+            align-self: center;
+        }
+
+        .text-middle {
+            margin: 0 3px;
+            padding: 0;
+        }
+
+        .icon-grid {
+            background-image: url('../images/list-solid.svg');
+        }
+
+        .icon-map {
+            background-image: url('../images/map-marked-alt-solid.svg');
+        }
+    }
 }
 
 .tablet, .mobile {
