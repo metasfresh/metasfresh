@@ -858,6 +858,7 @@ $F{shiplocation}]]></textFieldExpression>
 		</band>
 		<band height="12">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA[$F{description} != null]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-24" mode="Transparent" x="59" y="0" width="290" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="255675eb-d37b-4dd1-b625-e0b327f8e338"/>
 				<box rightPadding="3">
@@ -873,6 +874,7 @@ $F{shiplocation}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="12">
+			<printWhenExpression><![CDATA[$F{iscampaignprice}.equals("Y")]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-24" mode="Transparent" x="59" y="0" width="290" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="6edca3cd-2a33-4461-a738-79f778a20df0">
 					<printWhenExpression><![CDATA[$F{iscampaignprice}.equals("Y")]]></printWhenExpression>
