@@ -47,7 +47,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -59,6 +58,13 @@ import java.util.List;
 @Repository
 public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 {
+	private final AttachmentEntryService attachmentEntryService;
+
+	public DhlDeliveryOrderRepository(@NonNull final AttachmentEntryService attachmentEntryService)
+	{
+		this.attachmentEntryService = attachmentEntryService;
+	}
+
 	@Override
 	public String getShipperGatewayId()
 	{
@@ -97,12 +103,12 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	{
 		if (deliveryOrder.getRepoId() >= 1)
 		{
-			toUpdateShipmentOrderRequestPO(deliveryOrder);
+			updateShipmentOrderRequest(deliveryOrder);
 			return deliveryOrder;
 		}
 		else
 		{
-			final I_DHL_ShipmentOrderRequest orderRequestPO = toCreateShipmentOrderRequestPO(deliveryOrder);
+			final I_DHL_ShipmentOrderRequest orderRequestPO = createShipmentOrderRequest(deliveryOrder);
 			return deliveryOrder
 					.toBuilder()
 					.repoId(orderRequestPO.getDHL_ShipmentOrderRequest_ID())
@@ -113,7 +119,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	/**
 	 * Read the DHL specific PO and return a DTO.
 	 * <p>
-	 * keep in sync with {@link #toCreateShipmentOrderRequestPO(DeliveryOrder)} and {@link DhlDraftDeliveryOrderCreator#createDraftDeliveryOrder(de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest)}
+	 * keep in sync with {@link #createShipmentOrderRequest(DeliveryOrder)} and {@link DhlDraftDeliveryOrderCreator#createDraftDeliveryOrder(de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest)}
 	 */
 	private DeliveryOrder toDeliveryOrderFromPO(final I_DHL_ShipmentOrderRequest requestPo)
 	{
@@ -222,7 +228,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	 * and {@link DhlDraftDeliveryOrderCreator#createDraftDeliveryOrder(de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest)}
 	 */
 	@NonNull
-	private I_DHL_ShipmentOrderRequest toCreateShipmentOrderRequestPO(@NonNull final DeliveryOrder deliveryOrder)
+	private I_DHL_ShipmentOrderRequest createShipmentOrderRequest(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		final I_DHL_ShipmentOrderRequest shipmentOrderRequest = InterfaceWrapperHelper.newInstance(I_DHL_ShipmentOrderRequest.class);
 		InterfaceWrapperHelper.save(shipmentOrderRequest);
@@ -323,7 +329,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 		return shipmentOrderRequest;
 	}
 
-	private void toUpdateShipmentOrderRequestPO(@NonNull final DeliveryOrder deliveryOrder)
+	private void updateShipmentOrderRequest(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		for (final DeliveryPosition deliveryPosition : deliveryOrder.getDeliveryPositions()) // only a single delivery position should exist
 		{
@@ -348,7 +354,6 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 					// save pdf as attachment as well
 					final TableRecordReference salesOrderRef = TableRecordReference.of(I_DHL_ShipmentOrder.Table_Name, shipmentOrder.getDHL_ShipmentOrder_ID());
 
-					final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 					attachmentEntryService.createNewAttachment(salesOrderRef, awb + ".pdf", pdfData);
 				}
 
