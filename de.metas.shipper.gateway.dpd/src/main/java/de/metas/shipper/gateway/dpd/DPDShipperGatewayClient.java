@@ -47,27 +47,27 @@ public class DPDShipperGatewayClient implements ShipperGatewayClient
 		this.config = config;
 	}
 
-	@Override public String getShipperGatewayId()
+	@Override
+	public String getShipperGatewayId()
 	{
 		return DPDConstants.SHIPPER_GATEWAY_ID;
 	}
 
-	@Override public DeliveryOrder createDeliveryOrder(final DeliveryOrder draftDeliveryOrder) throws ShipperGatewayException
+	@Override
+	@Deprecated
+	public DeliveryOrder createDeliveryOrder(final DeliveryOrder draftDeliveryOrder) throws ShipperGatewayException
+	{
+		throw new ShipperGatewayException("(DRAFT) Delivery Orders shall never be created.");
+	}
+
+	@Override
+	public DeliveryOrder completeDeliveryOrder(final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
 		return null;
 	}
 
-	@Override public DeliveryOrder completeDeliveryOrder(final DeliveryOrder deliveryOrder) throws ShipperGatewayException
-	{
-		return null;
-	}
-
-	@Override public DeliveryOrder voidDeliveryOrder(final DeliveryOrder deliveryOrder) throws ShipperGatewayException
-	{
-		return null;
-	}
-
-	@Override public List<PackageLabels> getPackageLabelsList(final DeliveryOrder deliveryOrder) throws ShipperGatewayException
+	@Override
+	public List<PackageLabels> getPackageLabelsList(final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
 		return null;
 	}
