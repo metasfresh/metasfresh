@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.dhl;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -47,7 +48,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -56,6 +56,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -63,6 +64,13 @@ import java.util.Set;
 public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
 	private static final Logger logger = LoggerFactory.getLogger(DhlDraftDeliveryOrderCreator.class);
+
+	private final DhlClientConfigRepository clientConfigRepository;
+
+	public DhlDraftDeliveryOrderCreator(@NonNull final DhlClientConfigRepository clientConfigRepository)
+	{
+		this.clientConfigRepository = clientConfigRepository;
+	}
 
 	@Override
 	public String getShipperGatewayId()
@@ -74,7 +82,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	 * Create the initial DTO.
 	 * <p>
 	 * keep in sync with {@link DhlDeliveryOrderRepository#toDeliveryOrderFromPO(de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest)}
-	 * and {@link DhlDeliveryOrderRepository#toCreateShipmentOrderRequestPO(de.metas.shipper.gateway.spi.model.DeliveryOrder)}
+	 * and {@link DhlDeliveryOrderRepository#createShipmentOrderRequest(DeliveryOrder)}
 	 */
 	@SuppressWarnings("JavadocReference")
 	@NonNull
@@ -97,12 +105,56 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
 
+		// implement handling for DE -> DE and DE -> International packages
+		DhlServiceType detectedServiceType = DhlServiceType.Dhl_Paket;
+		if (deliverToLocation.getC_Country_ID() != pickupFromLocation.getC_Country_ID())
+		{
+			detectedServiceType = DhlServiceType.Dhl_PaketInternational;
+		}
+
+		final int grossWeightInKg = Math.max(request.getGrossWeightInKg(), 1);
+		final int shipperId = deliveryOrderKey.getShipperId();
+		final int shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
+
+		return createDeliveryOrderFromParams(
+				mpackageIds,
+				pickupFromBPartner,
+				pickupFromLocation,
+				pickupDate,
+				deliverToBPartner,
+				deliverToBPartnerLocationId,
+				deliverToLocation,
+				deliverToPhoneNumber,
+				detectedServiceType,
+				grossWeightInKg,
+				shipperId,
+				shipperTransportationId,
+				getPackageDimensions(mpackageIds, shipperId));
+
+	}
+
+	@VisibleForTesting
+	DeliveryOrder createDeliveryOrderFromParams(
+			@NonNull final Set<Integer> mpackageIds,
+			@NonNull final I_C_BPartner pickupFromBPartner,
+			@NonNull final I_C_Location pickupFromLocation,
+			@NonNull final LocalDate pickupDate,
+			@NonNull final I_C_BPartner deliverToBPartner,
+			final int deliverToBPartnerLocationId,
+			@NonNull final I_C_Location deliverToLocation,
+			@Nullable final String deliverToPhoneNumber,
+			@NonNull final DhlServiceType detectedServiceType,
+			final int grossWeightKg,
+			final int shipperId,
+			final int shipperTransportationId,
+			@NonNull final PackageDimensions packageDimensions)
+	{
 		return DeliveryOrder.builder()
-				.shipperId(deliveryOrderKey.getShipperId())
-				.shipperTransportationId(deliveryOrderKey.getShipperTransportationId())
+				.shipperId(shipperId)
+				.shipperTransportationId(shipperTransportationId)
 				//
 
-				.serviceType(DhlServiceType.Dhl_Paket) // todo how to change the service type?
+				.serviceType(detectedServiceType) // todo this should be made user-selectable. Ref: https://github.com/metasfresh/me03/issues/3128
 				//				.customerReference() // todo this is not set in any place with any user-relevant value afaics!
 				//
 				// Pickup aka Shipper
@@ -118,7 +170,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.deliveryAddress(DeliveryOrderUtil.prepareAddressFromLocation(deliverToLocation)
 						.companyName1(deliverToBPartner.getName())
 						.companyName2(deliverToBPartner.getName2())
-						.bpartnerId(deliverToBPartnerId) // afaics used only for logging
+						.bpartnerId(deliverToBPartner.getC_BPartner_ID()) // afaics used only for logging
 						.bpartnerLocationId(deliverToBPartnerLocationId) // afaics used only for logging
 						.build())
 				.deliveryContact(ContactPerson.builder()
@@ -130,12 +182,11 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(mpackageIds.size())
 						.packageIds(mpackageIds)
-						.grossWeightKg(Math.max(request.getGrossWeightInKg(), 1))
-						.packageDimensions(getPackageDimensions(mpackageIds, deliveryOrderKey.getShipperId()))
+						.grossWeightKg(grossWeightKg)
+						.packageDimensions(packageDimensions)
 						.build())
 				//
 				.build();
-
 	}
 
 	/**
@@ -177,7 +228,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			throw new AdempiereException("Package UOM must be set");
 		}
 
-		final DhlClientConfig clientConfig = SpringContextHolder.instance.getBean(DhlClientConfigRepository.class).getByShipperId(ShipperId.ofRepoId(shipperId));
+		final DhlClientConfig clientConfig = clientConfigRepository.getByShipperId(ShipperId.ofRepoId(shipperId));
 
 		final I_C_UOM fromUom = InterfaceWrapperHelper.load(uomId, I_C_UOM.class);
 		final I_C_UOM toUom = InterfaceWrapperHelper.load(clientConfig.getLengthUomId(), I_C_UOM.class);
