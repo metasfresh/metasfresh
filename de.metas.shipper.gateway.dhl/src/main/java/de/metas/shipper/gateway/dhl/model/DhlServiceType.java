@@ -50,7 +50,7 @@ public enum DhlServiceType implements ServiceType
 	}
 
 	@NonNull
-	public DhlServiceType forCode(final String code)
+	public static DhlServiceType forCode(final String code)
 	{
 		final DhlServiceType type = code2type.get(code);
 		if (type == null)

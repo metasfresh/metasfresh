@@ -174,7 +174,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 						.build())
 				// other
 				.customerReference(firstOrder.getCustomerReference())
-				.serviceType(DhlServiceType.valueOf(firstOrder.getDHL_Product()))
+				.serviceType(DhlServiceType.forCode(firstOrder.getDHL_Product()))
 				.deliveryPositions(constructDeliveryPositions(firstOrder, packageIds))
 				.shipperId(firstOrder.getM_Shipper_ID())
 				.shipperTransportationId(firstOrder.getM_ShipperTransportation_ID())
