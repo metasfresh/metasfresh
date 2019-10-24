@@ -20,7 +20,7 @@
  * #L%
  */
 
-import de.dhl.webservice.cisbase.AuthentificationType;
+package de.metas.shipper.gateway.dhl;import de.dhl.webservice.cisbase.AuthentificationType;
 import de.dhl.webservice.cisbase.CommunicationType;
 import de.dhl.webservice.cisbase.CountryType;
 import de.dhl.webservice.cisbase.NameType;

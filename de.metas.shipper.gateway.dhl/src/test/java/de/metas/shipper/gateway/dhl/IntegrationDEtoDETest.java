@@ -20,15 +20,15 @@
  * #L%
  */
 
-import com.google.common.collect.ImmutableList;
-import de.metas.shipper.gateway.dhl.DhlDeliveryOrderRepository;
-import de.metas.shipper.gateway.dhl.DhlShipperGatewayClient;
+package de.metas.shipper.gateway.dhl;import com.google.common.collect.ImmutableList;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.uom.UomId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -41,24 +41,32 @@ import java.nio.file.Paths;
 import static org.junit.Assert.assertEquals;
 
 @Disabled("makes ACTUAL calls to dhl api and needs auth")
-class OneMoreUsingMetasfreshFunctionalityTest
+class IntegrationDEtoDETest
 {
+	private static final String USER_NAME = "a";
+	private static final String PASSWORD = "b";
+
 	private DhlDeliveryOrderRepository deliveryOrderRepository;
 
 	private DhlShipperGatewayClient client;
+
+	private final UomId dummyUom = UomId.ofRepoId(1);
 
 	@BeforeEach
 	void init()
 	{
 		AdempiereTestHelper.get().init(); // how do i add adempiere Test Helper?
-		deliveryOrderRepository = new DhlDeliveryOrderRepository();
+
+		deliveryOrderRepository = new DhlDeliveryOrderRepository(AttachmentEntryService.createInstanceForUnitTesting());
 		client = new DhlShipperGatewayClient(DhlClientConfig.builder()
 				.baseUrl("https://cig.dhl.de/services/sandbox/soap")
-				.applicationID("a") // secret
-				.applicationToken("b") // secret
+				.applicationID(USER_NAME)
+				.applicationToken(PASSWORD)
 				.accountNumber("22222222220104")
 				.signature("pass")
 				.username("2222222222_01")
+				.lengthUomId(dummyUom)
+				.trackingUrlBase("dummy")
 				.build(),
 				DhlDatabaseClientLogger.instance);
 	}

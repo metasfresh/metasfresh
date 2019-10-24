@@ -20,6 +20,8 @@
  * #L%
  */
 
+package de.metas.shipper.gateway.dhl;
+
 import com.google.common.collect.ImmutableList;
 import de.metas.shipper.gateway.dhl.model.DhlServiceType;
 import de.metas.shipper.gateway.spi.model.Address;
@@ -81,7 +83,7 @@ class DhlTestUtil
 						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
 						.grossWeightKg(1)
 						.build())
-				.customerReference("the helpful customer reference")
+				// .customerReference("the helpful customer reference") // todo: inside createDraftDeliveryOrder, what is the source for customer reference?
 				.serviceType(DhlServiceType.Dhl_Paket)
 				.build();
 		return deliveryOrderCreateRequest;
@@ -128,7 +130,7 @@ class DhlTestUtil
 						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
 						.grossWeightKg(1)
 						.build())
-				.customerReference("the helpful customer reference")
+				// .customerReference("the helpful customer reference") // todo: inside createDraftDeliveryOrder, what is the source for customer reference?
 				.serviceType(DhlServiceType.Dhl_PaketInternational)
 				.build();
 		return deliveryOrderCreateRequest;
