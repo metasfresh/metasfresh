@@ -15,7 +15,7 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -432340413L;
+	private static final long serialVersionUID = 974109082L;
 
     /** Standard Constructor */
     public X_DHL_ShipmentOrder (Properties ctx, int DHL_ShipmentOrder_ID, String trxName)
@@ -23,11 +23,13 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
       super (ctx, DHL_ShipmentOrder_ID, trxName);
       /** if (DHL_ShipmentOrder_ID == 0)
         {
+			setCustomsAmount (0); // 0
 			setDHL_HeightInCm (0); // 0
 			setDHL_LengthInCm (0); // 0
 			setDHL_ShipmentOrder_ID (0);
 			setDHL_WeightInKg (BigDecimal.ZERO); // 0
 			setDHL_WidthInCm (0); // 0
+			setInternationalDelivery (false); // N
 			setPackageId (0); // 0
         } */
     }
@@ -46,6 +48,25 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Additional Fee.
+		@param AdditionalFee Additional Fee	  */
+	@Override
+	public void setAdditionalFee (java.math.BigDecimal AdditionalFee)
+	{
+		set_Value (COLUMNNAME_AdditionalFee, AdditionalFee);
+	}
+
+	/** Get Additional Fee.
+		@return Additional Fee	  */
+	@Override
+	public java.math.BigDecimal getAdditionalFee () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AdditionalFee);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
 
 	/** Set Luftfrachtbrief.
 		@param awb Luftfrachtbrief	  */
@@ -113,6 +134,74 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 		return ii.intValue();
 	}
 
+	@Override
+	public org.compiere.model.I_C_Customs_Invoice getC_Customs_Invoice()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Customs_Invoice_ID, org.compiere.model.I_C_Customs_Invoice.class);
+	}
+
+	@Override
+	public void setC_Customs_Invoice(org.compiere.model.I_C_Customs_Invoice C_Customs_Invoice)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Customs_Invoice_ID, org.compiere.model.I_C_Customs_Invoice.class, C_Customs_Invoice);
+	}
+
+	/** Set Zollrechnung.
+		@param C_Customs_Invoice_ID Zollrechnung	  */
+	@Override
+	public void setC_Customs_Invoice_ID (int C_Customs_Invoice_ID)
+	{
+		if (C_Customs_Invoice_ID < 1) 
+			set_Value (COLUMNNAME_C_Customs_Invoice_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Customs_Invoice_ID, Integer.valueOf(C_Customs_Invoice_ID));
+	}
+
+	/** Get Zollrechnung.
+		@return Zollrechnung	  */
+	@Override
+	public int getC_Customs_Invoice_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Customs_Invoice_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Customs_Invoice_Line getC_Customs_Invoice_Line()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Customs_Invoice_Line_ID, org.compiere.model.I_C_Customs_Invoice_Line.class);
+	}
+
+	@Override
+	public void setC_Customs_Invoice_Line(org.compiere.model.I_C_Customs_Invoice_Line C_Customs_Invoice_Line)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Customs_Invoice_Line_ID, org.compiere.model.I_C_Customs_Invoice_Line.class, C_Customs_Invoice_Line);
+	}
+
+	/** Set Customs Invoice Line.
+		@param C_Customs_Invoice_Line_ID Customs Invoice Line	  */
+	@Override
+	public void setC_Customs_Invoice_Line_ID (int C_Customs_Invoice_Line_ID)
+	{
+		if (C_Customs_Invoice_Line_ID < 1) 
+			set_Value (COLUMNNAME_C_Customs_Invoice_Line_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Customs_Invoice_Line_ID, Integer.valueOf(C_Customs_Invoice_Line_ID));
+	}
+
+	/** Get Customs Invoice Line.
+		@return Customs Invoice Line	  */
+	@Override
+	public int getC_Customs_Invoice_Line_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Customs_Invoice_Line_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Kundenreferenz.
 		@param CustomerReference Kundenreferenz	  */
 	@Override
@@ -127,6 +216,60 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 	public java.lang.String getCustomerReference () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_CustomerReference);
+	}
+
+	/** Set Customs Amount.
+		@param CustomsAmount Customs Amount	  */
+	@Override
+	public void setCustomsAmount (int CustomsAmount)
+	{
+		set_Value (COLUMNNAME_CustomsAmount, Integer.valueOf(CustomsAmount));
+	}
+
+	/** Get Customs Amount.
+		@return Customs Amount	  */
+	@Override
+	public int getCustomsAmount () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_CustomsAmount);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Customs Tariff Number.
+		@param CustomsTariffNumber Customs Tariff Number	  */
+	@Override
+	public void setCustomsTariffNumber (java.lang.String CustomsTariffNumber)
+	{
+		set_Value (COLUMNNAME_CustomsTariffNumber, CustomsTariffNumber);
+	}
+
+	/** Get Customs Tariff Number.
+		@return Customs Tariff Number	  */
+	@Override
+	public java.lang.String getCustomsTariffNumber () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_CustomsTariffNumber);
+	}
+
+	/** Set Customs Value.
+		@param CustomsValue Customs Value	  */
+	@Override
+	public void setCustomsValue (java.math.BigDecimal CustomsValue)
+	{
+		set_Value (COLUMNNAME_CustomsValue, CustomsValue);
+	}
+
+	/** Get Customs Value.
+		@return Customs Value	  */
+	@Override
+	public java.math.BigDecimal getCustomsValue () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CustomsValue);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Höhe in cm.
@@ -629,6 +772,77 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 		return ii.intValue();
 	}
 
+	/** Set Electronic Export Notification.
+		@param ElectronicExportNotification Electronic Export Notification	  */
+	@Override
+	public void setElectronicExportNotification (java.lang.String ElectronicExportNotification)
+	{
+		set_Value (COLUMNNAME_ElectronicExportNotification, ElectronicExportNotification);
+	}
+
+	/** Get Electronic Export Notification.
+		@return Electronic Export Notification	  */
+	@Override
+	public java.lang.String getElectronicExportNotification () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ElectronicExportNotification);
+	}
+
+	/** Set Export Type.
+		@param ExportType Export Type	  */
+	@Override
+	public void setExportType (java.lang.String ExportType)
+	{
+		set_Value (COLUMNNAME_ExportType, ExportType);
+	}
+
+	/** Get Export Type.
+		@return Export Type	  */
+	@Override
+	public java.lang.String getExportType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExportType);
+	}
+
+	/** Set Export Type Description.
+		@param ExportTypeDescription Export Type Description	  */
+	@Override
+	public void setExportTypeDescription (java.lang.String ExportTypeDescription)
+	{
+		set_Value (COLUMNNAME_ExportTypeDescription, ExportTypeDescription);
+	}
+
+	/** Get Export Type Description.
+		@return Export Type Description	  */
+	@Override
+	public java.lang.String getExportTypeDescription () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ExportTypeDescription);
+	}
+
+	/** Set International Delivery.
+		@param InternationalDelivery International Delivery	  */
+	@Override
+	public void setInternationalDelivery (boolean InternationalDelivery)
+	{
+		set_Value (COLUMNNAME_InternationalDelivery, Boolean.valueOf(InternationalDelivery));
+	}
+
+	/** Get International Delivery.
+		@return International Delivery	  */
+	@Override
+	public boolean isInternationalDelivery () 
+	{
+		Object oo = get_Value(COLUMNNAME_InternationalDelivery);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	@Override
 	public org.compiere.model.I_M_Shipper getM_Shipper()
 	{
@@ -686,6 +900,41 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Net Weight (Kg).
+		@param NetWeightKg Net Weight (Kg)	  */
+	@Override
+	public void setNetWeightKg (java.math.BigDecimal NetWeightKg)
+	{
+		set_Value (COLUMNNAME_NetWeightKg, NetWeightKg);
+	}
+
+	/** Get Net Weight (Kg).
+		@return Net Weight (Kg)	  */
+	@Override
+	public java.math.BigDecimal getNetWeightKg () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_NetWeightKg);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Package Description.
+		@param PackageDescription Package Description	  */
+	@Override
+	public void setPackageDescription (java.lang.String PackageDescription)
+	{
+		set_Value (COLUMNNAME_PackageDescription, PackageDescription);
+	}
+
+	/** Get Package Description.
+		@return Package Description	  */
+	@Override
+	public java.lang.String getPackageDescription () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PackageDescription);
 	}
 
 	/** Set Paket-ID.

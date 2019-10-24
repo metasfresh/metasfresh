@@ -25,8 +25,11 @@ package de.metas.shipper.gateway.dhl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.customs.CustomsInvoiceId;
+import de.metas.customs.CustomsInvoiceLineId;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
+import de.metas.shipper.gateway.dhl.model.DhlCustomsDocument;
 import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
 import de.metas.shipper.gateway.dhl.model.DhlServiceType;
 import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrder;
@@ -50,6 +53,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -103,12 +107,12 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	{
 		if (deliveryOrder.getRepoId() >= 1)
 		{
-			updateShipmentOrderRequest(deliveryOrder);
+			updateShipmentOrderRequestPO(deliveryOrder);
 			return deliveryOrder;
 		}
 		else
 		{
-			final I_DHL_ShipmentOrderRequest orderRequestPO = createShipmentOrderRequest(deliveryOrder);
+			final I_DHL_ShipmentOrderRequest orderRequestPO = createShipmentOrderRequestPO(deliveryOrder);
 			return deliveryOrder
 					.toBuilder()
 					.repoId(orderRequestPO.getDHL_ShipmentOrderRequest_ID())
@@ -119,7 +123,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	/**
 	 * Read the DHL specific PO and return a DTO.
 	 * <p>
-	 * keep in sync with {@link #createShipmentOrderRequest(DeliveryOrder)} and {@link DhlDraftDeliveryOrderCreator#createDraftDeliveryOrder(de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest)}
+	 * keep in sync with {@link #createShipmentOrderRequestPO(DeliveryOrder)} and {@link DhlDraftDeliveryOrderCreator#createDraftDeliveryOrder(de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest)}
 	 */
 	private DeliveryOrder toDeliveryOrderFromPO(final I_DHL_ShipmentOrderRequest requestPo)
 	{
@@ -133,6 +137,20 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 						.awb(po.getawb())
 						.sequenceNumber(DhlSequenceNumber.of(po.getDHL_ShipmentOrder_ID()))
 						.pdfLabelData(po.getPdfLabelData())
+						.internationalDelivery(po.isInternationalDelivery())
+						.customsDocument(DhlCustomsDocument.builder()
+								.exportType(po.getExportType())
+								.exportTypeDescription(po.getExportTypeDescription())
+								.additionalFee(po.getAdditionalFee())
+								.electronicExportNotification(po.getElectronicExportNotification())
+								.packageDescription(po.getPackageDescription())
+								.customsTariffNumber(po.getCustomsTariffNumber())
+								.customsAmount(BigInteger.valueOf(po.getCustomsAmount()))
+								.netWeightInKg(po.getNetWeightKg())
+								.customsValue(po.getCustomsValue())
+								.invoiceId(CustomsInvoiceId.ofRepoId(po.getC_Customs_Invoice_ID()))
+								.invoiceLineId(CustomsInvoiceLineId.ofRepoIdOrNull(CustomsInvoiceId.ofRepoId(po.getC_Customs_Invoice_ID()), po.getC_Customs_Invoice_Line_ID()))
+								.build())
 						.build())
 				.collect(ImmutableList.toImmutableList());
 
@@ -228,7 +246,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	 * and {@link DhlDraftDeliveryOrderCreator#createDraftDeliveryOrder(de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest)}
 	 */
 	@NonNull
-	private I_DHL_ShipmentOrderRequest createShipmentOrderRequest(@NonNull final DeliveryOrder deliveryOrder)
+	private I_DHL_ShipmentOrderRequest createShipmentOrderRequestPO(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		final I_DHL_ShipmentOrderRequest shipmentOrderRequest = InterfaceWrapperHelper.newInstance(I_DHL_ShipmentOrderRequest.class);
 		InterfaceWrapperHelper.save(shipmentOrderRequest);
@@ -319,6 +337,36 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 					shipmentOrder.setDHL_Shipper_CountryISO3Code(pickupAddress.getCountry().getAlpha3());
 				}
 
+				{
+					// (2.2.6) Export Document - only for international shipments
+
+					//noinspection ConstantConditions
+					final DhlCustomDeliveryData dhlCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
+					final DhlSequenceNumber sequenceNumber = dhlCustomDeliveryData.getSequenceNumberByPackageId(packageIdsAsList.get(i));
+
+					final DhlCustomDeliveryDataDetail deliveryDataDetail = dhlCustomDeliveryData.getDetailBySequenceNumber(sequenceNumber);
+					//					shipmentOrder.setInternationalDelivery(deliveryDataDetail.isInternationalDelivery());
+					if (deliveryDataDetail.isInternationalDelivery())
+					{
+						final DhlCustomsDocument customsDocument = deliveryDataDetail.getCustomsDocument();
+
+						//noinspection ConstantConditions
+						shipmentOrder.setExportType(customsDocument.getExportType());
+						shipmentOrder.setExportTypeDescription(customsDocument.getExportTypeDescription());
+						shipmentOrder.setAdditionalFee(customsDocument.getAdditionalFee());
+						// (2.2.6.9)
+						shipmentOrder.setElectronicExportNotification(customsDocument.getElectronicExportNotification());
+						// (2.2.6.10)
+						shipmentOrder.setPackageDescription(customsDocument.getPackageDescription());
+						shipmentOrder.setCustomsTariffNumber(customsDocument.getCustomsTariffNumber());
+						shipmentOrder.setCustomsAmount(customsDocument.getCustomsAmount().intValue());
+						shipmentOrder.setNetWeightKg(customsDocument.getNetWeightInKg());
+						shipmentOrder.setCustomsValue(customsDocument.getCustomsValue());
+						shipmentOrder.setC_Customs_Invoice_ID(customsDocument.getInvoiceId().getRepoId());
+						shipmentOrder.setC_Customs_Invoice_Line_ID(customsDocument.getInvoiceLineId().getRepoId());
+					}
+				}
+
 				InterfaceWrapperHelper.save(shipmentOrder);
 				{
 					// (2.1) The id column (I_DHL_ShipmentOrder_ID) is used as ShipmentOrder.sequenceNumber since it's unique
@@ -329,7 +377,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 		return shipmentOrderRequest;
 	}
 
-	private void updateShipmentOrderRequest(@NonNull final DeliveryOrder deliveryOrder)
+	private void updateShipmentOrderRequestPO(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		for (final DeliveryPosition deliveryPosition : deliveryOrder.getDeliveryPositions()) // only a single delivery position should exist
 		{

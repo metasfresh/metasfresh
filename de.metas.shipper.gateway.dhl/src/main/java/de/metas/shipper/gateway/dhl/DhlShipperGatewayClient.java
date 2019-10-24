@@ -369,14 +369,15 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 				}
 
 				{
+					// (2.2.6) Export Document - only for international shipments
+
 					//noinspection ConstantConditions
 					final DhlCustomDeliveryData dhlCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
 					final DhlSequenceNumber sequenceNumber = dhlCustomDeliveryData.getSequenceNumberByPackageId(packageIdsAsList.get(i));
-					final DhlCustomsDocument customsDocument = dhlCustomDeliveryData.getDetailBySequenceNumber(sequenceNumber).getCustomsDocument();
 
-					if (customsDocument != null)
+					if (dhlCustomDeliveryData.getDetailBySequenceNumber(sequenceNumber).isInternationalDelivery())
 					{
-						// (2.2.6) Export Document - only for international shipments
+						final DhlCustomsDocument customsDocument = dhlCustomDeliveryData.getDetailBySequenceNumber(sequenceNumber).getCustomsDocument();
 						final ExportDocumentType exportDocumentType = objectFactory.createExportDocumentType();
 						//			exportDocumentType.setInvoiceNumber("2212011"); // optional
 						exportDocumentType.setExportType(customsDocument.getExportType());
@@ -389,14 +390,14 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 
 						// (2.2.6.9)
 						final Serviceconfiguration serviceconfiguration = objectFactory.createServiceconfiguration();
-						serviceconfiguration.setActive(customsDocument.getWithElectronicExportNtfctn());
+						serviceconfiguration.setActive(customsDocument.getElectronicExportNotification());
 						exportDocumentType.setWithElectronicExportNtfctn(serviceconfiguration);
 						// (2.2.6.10)
 						final ExportDocumentType.ExportDocPosition docPosition = objectFactory.createExportDocumentTypeExportDocPosition();
 						docPosition.setDescription(customsDocument.getPackageDescription());
 						docPosition.setCountryCodeOrigin(deliveryOrder.getPickupAddress().getCountry().getAlpha2());
 						docPosition.setCustomsTariffNumber(customsDocument.getCustomsTariffNumber());
-						docPosition.setAmount(customsDocument.getAmount());
+						docPosition.setAmount(customsDocument.getCustomsAmount());
 						docPosition.setNetWeightInKG(customsDocument.getNetWeightInKg()); // must be less than the weight!!
 						docPosition.setCustomsValue(customsDocument.getCustomsValue());
 						exportDocumentType.getExportDocPosition().add(docPosition);

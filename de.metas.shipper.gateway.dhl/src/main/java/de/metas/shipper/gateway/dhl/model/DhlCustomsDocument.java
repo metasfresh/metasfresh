@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.dhl.model;
 
+import de.metas.customs.CustomsInvoiceId;
 import de.metas.customs.CustomsInvoiceLineId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -45,7 +46,7 @@ public class DhlCustomsDocument
 	BigDecimal additionalFee; // not sure which column inside customs invoice refers to this
 
 	@NonNull
-	String withElectronicExportNtfctn = "1"; // no clue, but i guess it should always have value "1"
+	String electronicExportNotification; // no clue, but i guess it should always have value "1"
 
 	@NonNull
 	String packageDescription;
@@ -54,7 +55,7 @@ public class DhlCustomsDocument
 	@NonNull
 	String customsTariffNumber;
 	@NonNull
-	BigInteger amount; // refers to the qty inside the package
+	BigInteger customsAmount; // refers to the qty inside the package
 	@NonNull
 	BigDecimal netWeightInKg; // must be less than the weight!!
 	@NonNull
@@ -62,5 +63,8 @@ public class DhlCustomsDocument
 
 	// todo this should be changed to NonNull when i figure out how to get the CustomsInvoice
 	@Nullable
-	CustomsInvoiceLineId invoiceId;
+	CustomsInvoiceId invoiceId;
+	@Nullable
+	CustomsInvoiceLineId invoiceLineId;
+
 }
