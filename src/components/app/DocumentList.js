@@ -9,6 +9,7 @@ import currentDevice from 'current-device';
 import {
   getViewLayout,
   browseViewRequest,
+  locationSearchRequest,
   createViewRequest,
   deleteStaticFilter,
   filterViewRequest,
@@ -381,7 +382,7 @@ export class DocumentList extends Component {
    * @method fetchLayoutAndData
    * @summary ToDo: Describe the method.
    */
-  fetchLayoutAndData = isNewFilter => {
+  fetchLayoutAndData = (isNewFilter, locationAreaSearch) => {
     const {
       windowType,
       type,
@@ -391,6 +392,8 @@ export class DocumentList extends Component {
       setNotFound,
     } = this.props;
     const { viewId } = this.state;
+
+    console.log('fetchLayoutAndData isNewFilter: ', isNewFilter)
 
     getViewLayout(windowType, type, viewProfileId)
       .then(response => {
@@ -412,7 +415,7 @@ export class DocumentList extends Component {
                 if (!isNewFilter) {
                   this.browseView();
                 } else {
-                  this.filterView();
+                  this.filterView(locationAreaSearch);
                 }
               } else {
                 this.createView();
@@ -439,14 +442,17 @@ export class DocumentList extends Component {
 
   /**
    * @method browseView
-   * @summary If viewId exist, than browse that view.
+   * @summary If viewId exists, than browse that view.
    */
   browseView = () => {
-    const { viewId, page, sort } = this.state;
+    const { viewId, page, sort, filtersActive } = this.state;
+    const locationSearchFilter = filtersActive.has(`location-area-search`);
+
+    console.log('browseView: ', locationSearchFilter)
 
     // in case of redirect from a notification, first call will have viewId empty
     if (viewId) {
-      this.getData(viewId, page, sort).catch(err => {
+      this.getData(viewId, page, sort, locationSearchFilter).catch(err => {
         if (err.response && err.response.status === 404) {
           this.createView();
         }
@@ -456,7 +462,7 @@ export class DocumentList extends Component {
 
   /**
    * @method createView
-   * @summary ToDo: Describe the method.
+   * @summary Create a new view, on visiting the page for the first time
    */
   createView = () => {
     const {
@@ -468,6 +474,8 @@ export class DocumentList extends Component {
       refRowIds,
     } = this.props;
     const { page, sort, filtersActive } = this.state;
+
+    console.log('createView: ', filtersActive.has(`location-area-search`))
 
     createViewRequest({
       windowId: windowType,
@@ -497,11 +505,13 @@ export class DocumentList extends Component {
 
   /**
    * @method filterView
-   * @summary ToDo: Describe the method.
+   * @summary apply filters and re-fetch layout, data. Then rebuild the page
    */
-  filterView = () => {
+  filterView = locationAreaSearch => {
     const { windowType, isIncluded, dispatch } = this.props;
     const { page, sort, filtersActive, viewId } = this.state;
+
+    console.log('filterView')
 
     filterViewRequest(
       windowType,
@@ -524,7 +534,7 @@ export class DocumentList extends Component {
             triggerSpinner: false,
           },
           () => {
-            this.getData(viewId, page, sort);
+            this.getData(viewId, page, sort, locationAreaSearch);
           }
         );
     });
@@ -534,7 +544,7 @@ export class DocumentList extends Component {
    * @method getData
    * @summary Loads view/included tab data from REST endpoint
    */
-  getData = (id, page, sortingQuery) => {
+  getData = (id, page, sortingQuery, locationAreaSearch) => {
     const {
       dispatch,
       windowType,
@@ -566,6 +576,8 @@ export class DocumentList extends Component {
     }).then(response => {
       const result = List(response.data.result);
       result.hashCode();
+
+      console.log('GETDATARESPONSE: ', response)
 
       const selection = getSelectionDirect(selections, windowType, viewId);
       const forceSelection =
@@ -607,6 +619,13 @@ export class DocumentList extends Component {
           newState.filtersActive = filtersToMap(response.data.filters);
         }
 
+        // we have map search results
+        if (locationAreaSearch || newState.filtersActive.has(`location-area-search`)) {
+          console.log('here')
+          // newState.toggleState = 1;
+          this.getLocationData();
+        }
+
         this.setState({ ...newState }, () => {
           if (forceSelection && response.data && result && result.size > 0) {
             const selection = [result.get(0).id];
@@ -637,6 +656,17 @@ export class DocumentList extends Component {
       }
 
       dispatch(indicatorState('saved'));
+    });
+  };
+
+  getLocationData = () => {
+    const { windowType } = this.props;
+    const { viewId } = this.state;
+
+    locationSearchRequest({ windowId: windowType, viewId }).then(response => {
+      this.setState({
+        toggleState: 1,
+      });
     });
   };
 
@@ -697,6 +727,9 @@ export class DocumentList extends Component {
    * @summary ToDo: Describe the method.
    */
   handleFilterChange = activeFilters => {
+    console.log('handleFiltersChange: ', activeFilters);
+    const locationSearchFilter = activeFilters.has(`location-area-search`);
+
     this.setState(
       {
         filtersActive: activeFilters,
@@ -704,7 +737,7 @@ export class DocumentList extends Component {
         triggerSpinner: true,
       },
       () => {
-        this.fetchLayoutAndData(true);
+        this.fetchLayoutAndData(true, locationSearchFilter);
       }
     );
   };
@@ -1060,13 +1093,17 @@ export class DocumentList extends Component {
               <div className="pane-size-button col-xxs-3 ignore-react-onclickoutside">
                 <button
                   className={classnames(
-                    'btn btn-meta-outline-secondary btn-sm btn-switch ignore-react-onclickoutside',
+                    'btn btn-meta-outline-secondary btn-sm btn-switch ignore-react-onclickoutside'
                   )}
                   onClick={this.collapseGeoPanels}
                 >
-                  {(toggleState === 0 || toggleState === 1) && (<i className='icon icon-grid' />)}
+                  {(toggleState === 0 || toggleState === 1) && (
+                    <i className="icon icon-grid" />
+                  )}
                   {toggleState === 1 && '/'}
-                  {(toggleState === 1 || toggleState === 2) && (<i className='icon icon-map'/>)}
+                  {(toggleState === 1 || toggleState === 2) && (
+                    <i className="icon icon-map" />
+                  )}
                 </button>
               </div>
             )}
