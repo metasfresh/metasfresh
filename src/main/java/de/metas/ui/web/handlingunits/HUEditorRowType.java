@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableBiMap;
 
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.ui.web.view.IViewRowType;
+import de.metas.ui.web.view.ViewRowTypeIconNames;
 
 /*
  * #%L
@@ -33,10 +34,10 @@ import de.metas.ui.web.view.IViewRowType;
 
 public enum HUEditorRowType implements IViewRowType
 {
-	LU("LU", true) //
-	, TU("TU", true) //
-	, VHU("CU", true) //
-	, HUStorage("CU", false) //
+	LU(ViewRowTypeIconNames.ICONNAME_LU, true) //
+	, TU(ViewRowTypeIconNames.ICONNAME_TU, true) //
+	, VHU(ViewRowTypeIconNames.ICONNAME_CU, true) //
+	, HUStorage(ViewRowTypeIconNames.ICONNAME_CU, false) //
 	;
 
 	private final String name;

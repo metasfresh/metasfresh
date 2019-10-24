@@ -12,6 +12,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.view.IViewRowType;
+import de.metas.ui.web.view.ViewRowTypeIconNames;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 
@@ -64,7 +65,7 @@ public enum PPOrderLineType implements IViewRowType
 			@NonNull final String tableName)
 	{
 		this.name = name;
-		this.iconName = canReceive ? "PP_Order_Receive" : "PP_Order_Issue"; // see https://github.com/metasfresh/metasfresh-webui-frontend/issues/675#issuecomment-297016790
+		this.iconName = canReceive ? ViewRowTypeIconNames.ICONNAME_PP_Order_Receive : ViewRowTypeIconNames.ICONNAME_PP_Order_Issue;
 		this.huType = null;
 		this.tableName = tableName;
 
