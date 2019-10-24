@@ -396,6 +396,8 @@ public class ADWindowDAO implements IADWindowDAO
 
 		copy()
 		.setSkipCalculatedColumns(true)
+		// skip it because other wise the MV will fill the name from the AD_Element of the original window and unique name constraint will be broken
+		.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_AD_Element_ID)
 		.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Name)
 		.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_InternalName)
 		.setFrom(sourceWindow)
