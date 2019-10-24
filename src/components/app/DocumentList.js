@@ -81,6 +81,7 @@ export class DocumentList extends Component {
       pageColumnInfosByFieldName: null,
       toggleWidth: 0,
       toggleState: 0,
+      mapSource: 'google',
       viewId: defaultViewId,
       page: defaultPage || 1,
       sort: defaultSort,
@@ -184,6 +185,7 @@ export class DocumentList extends Component {
           viewId: location.hash === '#notification' ? this.state.viewId : null,
           staticFilterCleared: false,
           triggerSpinner: true,
+          toggleState: 0,
         },
         () => {
           if (included) {
@@ -931,6 +933,7 @@ export class DocumentList extends Component {
       rowEdited,
       initialValuesNulled,
       rowDataMap,
+      mapSource,
     } = this.state;
     let { selected, childSelected, parentSelected } = this.getSelected();
     const modalType = modal ? modal.modalType : null;
@@ -971,7 +974,8 @@ export class DocumentList extends Component {
     const showQuickActions = true;
     const showModalResizeBtn =
       layout && isModal && hasIncluded && hasShowIncluded;
-    const showGeoResizeBtn = layout && layout.supportGeoLocations;
+    const showGeoResizeBtn =
+      layout && layout.supportGeoLocations && data && data.locationData;
 
     return (
       <div
@@ -1182,7 +1186,7 @@ export class DocumentList extends Component {
                   </DataLayoutWrapper>
                 )}
               </Table>
-              <GeoMap {...{ toggleState }} data={data.locationData} />
+              <GeoMap {...{ toggleState, mapSource }} data={data.locationData} />
             </div>
           </div>
         )}

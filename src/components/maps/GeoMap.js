@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
-// import React, { Fragment, FunctionComponent } from 'react';
 import cx from 'classnames';
-
 import GoogleMapReact from 'google-map-react';
+import OSMap from 'pigeon-maps';
+import Marker from 'pigeon-marker';
 
 import MapMarker from './MapMarker';
 
@@ -45,7 +45,7 @@ class Map extends Component {
   };
 
   render() {
-    const { data, toggleState } = this.props;
+    const { data, center, zoom, toggleState, mapSource } = this.props;
 
     if (data) {
       return (
@@ -57,25 +57,41 @@ class Map extends Component {
           })}
         >
           <div style={{ height: '100vh', width: '100%' }}>
-            <GoogleMapReact
-              bootstrapURLKeys={{
-                key: 'AIzaSyDeo1sbSGwxTkukztT2EkqFafF3Hp8SmsY',
-              }}
-              defaultCenter={this.props.center}
-              defaultZoom={this.props.zoom}
-              yesIWantToUseGoogleMapApiInternals
-              onGoogleApiLoaded={({ map, maps }) =>
-                this.handleApiLoaded(map, maps)
-              }
-            >
-              {data.map(location => (
-                <MapMarker
-                  lat={location.latitude}
-                  lng={location.longitude}
-                  key={location.rowId}
-                />
-              ))}
-            </GoogleMapReact>
+            {mapSource === 'osm' ? (
+              <OSMap
+                defaultCenter={[center.lat, center.lng]}
+                defaultZoom={zoom}
+                limitBounds="center"
+              >
+                {data.map(location => (
+                  <Marker
+                    key={location.rowId}
+                    anchor={[location.latitude, location.longitude]}
+                    payload={1}
+                  />
+                ))}
+              </OSMap>
+            ) : (
+              <GoogleMapReact
+                bootstrapURLKeys={{
+                  key: config.GOOGLE_API,
+                }}
+                defaultCenter={center}
+                defaultZoom={zoom}
+                yesIWantToUseGoogleMapApiInternals
+                onGoogleApiLoaded={({ map, maps }) =>
+                  this.handleApiLoaded(map, maps)
+                }
+              >
+                {data.map(location => (
+                  <MapMarker
+                    lat={location.latitude}
+                    lng={location.longitude}
+                    key={location.rowId}
+                  />
+                ))}
+              </GoogleMapReact>
+            )}
           </div>
         </div>
       );

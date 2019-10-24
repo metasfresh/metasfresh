@@ -624,7 +624,12 @@ body {
         height: 40px;
         transform: translate(-15px, -40px);
         background: no-repeat scroll 0 center;
-        background-image: url('../images/map-marker-alt-solid.svg');
+        background-size: 29px 34px;
+        background-image: url('../images/map-marker.png');
+
+        &:hover {
+            background-image: url('../images/map-marker-hover.png');
+        }
     }
 }
 
