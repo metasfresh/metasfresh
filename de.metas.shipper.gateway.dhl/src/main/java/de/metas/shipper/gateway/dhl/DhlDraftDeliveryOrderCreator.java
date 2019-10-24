@@ -102,7 +102,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.shipperTransportationId(deliveryOrderKey.getShipperTransportationId())
 				//
 
-				.serviceType(DhlServiceType.V01PAK) // todo how to change the service type?
+				.serviceType(DhlServiceType.Dhl_Paket) // todo how to change the service type?
 				//				.customerReference() // todo this is not set in any place with any user-relevant value afaics!
 				//
 				// Pickup aka Shipper
