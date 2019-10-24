@@ -57,7 +57,7 @@ class DhlPersistenceTest
 	@Test
 	void DEtoDEDraftDeliveryOrderCreator()
 	{
-		final DeliveryOrder deliveryOrder = DhlTestUtil.createDummyDeliveryOrderDEtoDE();
+		final DeliveryOrder deliveryOrder = DhlTestHelper.createDummyDeliveryOrderDEtoDE();
 		final DeliveryPosition deliveryPosition = deliveryOrder.getDeliveryPositions().get(0);
 
 		//
@@ -105,7 +105,7 @@ class DhlPersistenceTest
 	@Test
 	void DEtoCHDraftDeliveryOrderCreator()
 	{
-		final DeliveryOrder deliveryOrder = DhlTestUtil.createDummyDeliveryOrderDEtoCH();
+		final DeliveryOrder deliveryOrder = DhlTestHelper.createDummyDeliveryOrderDEtoCH();
 		final DeliveryPosition deliveryPosition = deliveryOrder.getDeliveryPositions().get(0);
 
 		//

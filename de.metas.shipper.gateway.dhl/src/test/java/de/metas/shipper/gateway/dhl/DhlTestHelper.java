@@ -36,7 +36,7 @@ import lombok.experimental.UtilityClass;
 import java.time.LocalDate;
 
 @UtilityClass
-class DhlTestUtil
+class DhlTestHelper
 {
 
 	private static final CountryCode COUNTRY_CODE_DE = CountryCode.builder().alpha2("DE").alpha3("DEU").build();

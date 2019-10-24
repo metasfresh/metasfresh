@@ -109,7 +109,7 @@ class CreateShipmentRequestFromDeliveryOrderDEtoCHTest
 
 	private CreateShipmentOrderRequest createShipmentOrderRequestFromDeliveryOrder()
 	{
-		final DeliveryOrder request = DhlTestUtil.createDummyDeliveryOrderDEtoCH();
+		final DeliveryOrder request = DhlTestHelper.createDummyDeliveryOrderDEtoCH();
 		final ShipmentOrderType shipmentOrderType = createShipmentFromDeliveryOrder(request);
 
 		final Version version = createHardcodedVersion(objectFactory);
