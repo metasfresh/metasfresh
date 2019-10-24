@@ -1107,7 +1107,7 @@ export class DocumentList extends Component {
 
         {layout && data && (
           <div className="document-list-body">
-            <div className="row">
+            <div className="row table-row">
               <Table
                 entity="documentView"
                 ref={c =>
