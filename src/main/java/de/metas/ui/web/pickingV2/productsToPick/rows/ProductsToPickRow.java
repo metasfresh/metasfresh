@@ -2,10 +2,12 @@ package de.metas.ui.web.pickingV2.productsToPick.rows;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
@@ -59,6 +61,11 @@ import lombok.ToString;
 @ToString(exclude = "values")
 public class ProductsToPickRow implements IViewRow
 {
+	public static ProductsToPickRow cast(final IViewRow row)
+	{
+		return (ProductsToPickRow)row;
+	}
+
 	public static final String FIELD_ProductValue = "productValue";
 	@ViewColumn(fieldName = FIELD_ProductValue, widgetType = DocumentFieldWidgetType.Text, captionKey = "ProductValue",
 			// captionKeyIsSysConfig=true, // TODO
@@ -124,15 +131,16 @@ public class ProductsToPickRow implements IViewRow
 
 	//
 	private final ProductsToPickRowId rowId;
+	private final ProductsToPickRowType rowType;
 	private final ProductInfo productInfo;
 	@Getter
 	private final boolean huReservedForThisRow;
-	private boolean processed;
-	@Getter
-	private final ShipmentScheduleId shipmentScheduleId;
+	private final boolean processed;
 	@Getter
 	@Nullable
 	private final PickingCandidateId pickingCandidateId;
+
+	private final ImmutableList<ProductsToPickRow> includedRows;
 
 	//
 	private final ViewRowFieldNameAndJsonValuesHolder<ProductsToPickRow> values = ViewRowFieldNameAndJsonValuesHolder.newInstance(ProductsToPickRow.class);
@@ -140,6 +148,7 @@ public class ProductsToPickRow implements IViewRow
 	@Builder(toBuilder = true)
 	private ProductsToPickRow(
 			@NonNull final ProductsToPickRowId rowId,
+			@NonNull final ProductsToPickRowType rowType,
 			//
 			@NonNull final ProductInfo productInfo,
 			final boolean huReservedForThisRow,
@@ -158,16 +167,18 @@ public class ProductsToPickRow implements IViewRow
 			final PickingCandidateApprovalStatus approvalStatus,
 			final boolean processed,
 			//
-			@NonNull final ShipmentScheduleId shipmentScheduleId,
-			final PickingCandidateId pickingCandidateId)
+			final PickingCandidateId pickingCandidateId,
+			//
+			@Nullable final List<ProductsToPickRow> includedRows)
 	{
 		this.rowId = rowId;
+		this.rowType = rowType;
 
 		this.productInfo = productInfo;
-		this.productValue = productInfo.getCode();
-		this.productName = productInfo.getName();
-		this.productPackageSize = productInfo.getPackageSize();
-		this.productPackageSizeUOM = productInfo.getPackageSizeUOM();
+		productValue = productInfo.getCode();
+		productName = productInfo.getName();
+		productPackageSize = productInfo.getPackageSize();
+		productPackageSizeUOM = productInfo.getPackageSizeUOM();
 
 		this.huReservedForThisRow = huReservedForThisRow;
 
@@ -184,14 +195,21 @@ public class ProductsToPickRow implements IViewRow
 		this.approvalStatus = approvalStatus != null ? approvalStatus : PickingCandidateApprovalStatus.TO_BE_APPROVED;
 		this.processed = processed;
 
-		this.shipmentScheduleId = shipmentScheduleId;
 		this.pickingCandidateId = pickingCandidateId;
+
+		this.includedRows = includedRows != null ? ImmutableList.copyOf(includedRows) : ImmutableList.of();
 	}
 
 	@Override
 	public DocumentId getId()
 	{
 		return rowId.toDocumentId();
+	}
+
+	@Override
+	public ProductsToPickRowType getType()
+	{
+		return rowType;
 	}
 
 	@Override
@@ -219,9 +237,14 @@ public class ProductsToPickRow implements IViewRow
 		return values.get(this);
 	}
 
-	public HuId getHuId()
+	public ShipmentScheduleId getShipmentScheduleId()
 	{
-		return rowId.getHuId();
+		return rowId.getShipmentScheduleId();
+	}
+
+	public HuId getPickFromHUId()
+	{
+		return rowId.getPickFromHUId();
 	}
 
 	public Quantity getQtyEffective()
@@ -249,12 +272,9 @@ public class ProductsToPickRow implements IViewRow
 
 	public ProductsToPickRow withQty(@NonNull final Quantity qty)
 	{
-		if (Objects.equals(this.qty, qty))
-		{
-			return this;
-		}
-
-		return toBuilder().qty(qty).build();
+		return Objects.equals(this.qty, qty)
+				? this
+				: toBuilder().qty(qty).build();
 	}
 
 	public ProductsToPickRow withQtyOverride(@Nullable final BigDecimal qtyOverrideBD)
@@ -263,12 +283,16 @@ public class ProductsToPickRow implements IViewRow
 				? Quantity.of(qtyOverrideBD, qty.getUOM())
 				: null;
 
-		if (Objects.equals(this.qtyOverride, qtyOverride))
-		{
-			return this;
-		}
+		return Objects.equals(this.qtyOverride, qtyOverride)
+				? this
+				: toBuilder().qtyOverride(qtyOverride).build();
+	}
 
-		return toBuilder().qtyOverride(qtyOverride).build();
+	public ProductsToPickRow withRowType(@Nullable final ProductsToPickRowType rowType)
+	{
+		return Objects.equals(this.rowType, rowType)
+				? this
+				: toBuilder().rowType(rowType).build();
 	}
 
 	public boolean isApproved()
@@ -278,13 +302,14 @@ public class ProductsToPickRow implements IViewRow
 
 	private boolean isEligibleForChangingPickStatus()
 	{
-		return !isProcessed() && !isApproved();
+		return !isProcessed()
+				&& !isApproved()
+				&& getType().isPickable();
 	}
 
 	public boolean isEligibleForPicking()
 	{
 		return isEligibleForChangingPickStatus()
-				&& getHuId() != null
 				&& (pickStatus.isToBePicked() || pickStatus.isPickRejected());
 	}
 
@@ -308,5 +333,11 @@ public class ProductsToPickRow implements IViewRow
 	public String getLocatorName()
 	{
 		return locator != null ? locator.getDisplayName() : "";
+	}
+
+	@Override
+	public List<ProductsToPickRow> getIncludedRows()
+	{
+		return includedRows;
 	}
 }

@@ -1,10 +1,10 @@
 package de.metas.ui.web.pickingV2.productsToPick;
 
 import java.util.List;
-import java.util.function.UnaryOperator;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
@@ -122,9 +122,9 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow> im
 				.allMatch(ProductsToPickRow::isEligibleForReview);
 	}
 
-	public void changeRow(@NonNull final DocumentId rowId, @NonNull final UnaryOperator<ProductsToPickRow> mapper)
+	public void updateViewRowFromPickingCandidate(@NonNull final DocumentId rowId, @NonNull final PickingCandidate pickingCandidate)
 	{
-		rowsData.changeRow(rowId, mapper);
+		rowsData.updateViewRowFromPickingCandidate(rowId, pickingCandidate);
 	}
 
 	public boolean isApproved()

@@ -87,7 +87,7 @@ public class ProductsToPickRowsRepository
 		return PickHURequest.builder()
 				.shipmentScheduleId(row.getShipmentScheduleId())
 				.qtyToPick(row.getQtyEffective())
-				.pickFromHuId(row.getHuId())
+				.pickFromHuId(row.getPickFromHUId())
 				.autoReview(!isPickingReviewRequired)
 				.build();
 	}

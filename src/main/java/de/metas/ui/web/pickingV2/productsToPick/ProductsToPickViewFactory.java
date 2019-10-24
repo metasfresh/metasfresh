@@ -79,7 +79,7 @@ public class ProductsToPickViewFactory implements IViewFactory
 		// Reviewer layout profile
 		if (PickingConstantsV2.PROFILE_ID_ProductsToPickView_Review.equals(profileId))
 		{
-			return ViewLayout.builder()
+			return newViewLayout()
 					.setWindowId(PickingConstantsV2.WINDOWID_ProductsToPickView)
 					.setCaption(msgBL.translatable(MSG_ReviewCaption))
 					.addElementsFromViewRowClassAndFieldNames(
@@ -101,7 +101,7 @@ public class ProductsToPickViewFactory implements IViewFactory
 		// Picker layout profile
 		else
 		{
-			return ViewLayout.builder()
+			return newViewLayout()
 					.setWindowId(PickingConstantsV2.WINDOWID_ProductsToPickView)
 					.setCaption(msgBL.translatable(MSG_PickCaption))
 					.addElementsFromViewRowClassAndFieldNames(
@@ -121,6 +121,15 @@ public class ProductsToPickViewFactory implements IViewFactory
 					.build();
 
 		}
+	}
+
+	private static ViewLayout.Builder newViewLayout()
+	{
+		return ViewLayout.builder()
+				//
+				.setHasTreeSupport(true)
+				.setTreeCollapsible(false)
+				.setTreeExpandedDepth(Integer.MAX_VALUE);
 	}
 
 	@Override

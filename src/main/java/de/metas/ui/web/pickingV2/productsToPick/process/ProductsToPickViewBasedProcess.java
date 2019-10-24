@@ -99,7 +99,7 @@ public abstract class ProductsToPickViewBasedProcess extends ViewBasedProcessTem
 
 	protected void updateViewRowFromPickingCandidate(@NonNull final DocumentId rowId, @NonNull final PickingCandidate pickingCandidate)
 	{
-		getView().changeRow(rowId, row -> row.withUpdatesFromPickingCandidate(pickingCandidate));
+		getView().updateViewRowFromPickingCandidate(rowId, pickingCandidate);
 	}
 
 }

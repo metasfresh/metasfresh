@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 
 import de.metas.handlingunits.HuId;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.Builder;
@@ -39,7 +40,9 @@ import lombok.ToString;
 public final class ProductsToPickRowId
 {
 	@Getter
-	private final HuId huId;
+	private final ShipmentScheduleId shipmentScheduleId;
+	@Getter
+	private final HuId pickFromHUId;
 
 	private final DocumentId documentId;
 
@@ -47,11 +50,13 @@ public final class ProductsToPickRowId
 	private ProductsToPickRowId(
 			@NonNull final ProductId productId,
 			@NonNull ShipmentScheduleId shipmentScheduleId,
-			@Nullable final HuId huId)
+			@Nullable final HuId pickFromHUId,
+			@Nullable final PPOrderBOMLineId issueToOrderBOMLineId)
 	{
-		this.huId = huId;
-		// this.productId = productId;
-		this.documentId = createDocumentId(productId, shipmentScheduleId, huId);
+		this.shipmentScheduleId = shipmentScheduleId;
+		this.pickFromHUId = pickFromHUId;
+
+		this.documentId = createDocumentId(productId, shipmentScheduleId, pickFromHUId, issueToOrderBOMLineId);
 	}
 
 	public DocumentId toDocumentId()
@@ -61,16 +66,22 @@ public final class ProductsToPickRowId
 
 	private static DocumentId createDocumentId(
 			@NonNull final ProductId productId,
-			final ShipmentScheduleId shipmentScheduleId,
-			final HuId huId)
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@Nullable final HuId pickFromHUId,
+			@Nullable final PPOrderBOMLineId issueToOrderBOMLineId)
 	{
 		final StringBuilder sb = new StringBuilder();
 		sb.append("P").append(productId.getRepoId());
 		sb.append("_").append("S").append(shipmentScheduleId.getRepoId());
 
-		if (huId != null)
+		if (pickFromHUId != null)
 		{
-			sb.append("_").append("HU").append(huId.getRepoId());
+			sb.append("_").append("HU").append(pickFromHUId.getRepoId());
+		}
+
+		if (issueToOrderBOMLineId != null)
+		{
+			sb.append("_").append("BOM").append(issueToOrderBOMLineId.getRepoId());
 		}
 
 		return DocumentId.ofString(sb.toString());

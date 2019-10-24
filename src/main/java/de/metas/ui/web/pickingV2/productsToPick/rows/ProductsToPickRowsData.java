@@ -58,15 +58,15 @@ import lombok.ToString;
  * #L%
  */
 
-@ToString(of = { "_rowsById", "orderBys" })
+@ToString(of = { "_allRowsById", "orderBys" })
 public class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickRow>
 {
 	private final PickingCandidateService pickingCandidateService;
 
 	@Getter
 	private final ImmutableList<DocumentQueryOrderBy> orderBys;
-	private final ImmutableList<DocumentId> rowIdsOrdered;
-	private final ConcurrentHashMap<DocumentId, ProductsToPickRow> _rowsById;
+	private final ImmutableList<DocumentId> topLevelRowIdsOrdered;
+	private final ConcurrentHashMap<DocumentId, ProductsToPickRow> _allRowsById;
 	private volatile boolean rowIdsInvalid;
 
 	@Builder
@@ -78,13 +78,15 @@ public class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickR
 		this.pickingCandidateService = pickingCandidateService;
 
 		this.orderBys = orderBys;
-		rowIdsOrdered = rows.stream()
+		topLevelRowIdsOrdered = rows.stream()
 				.sorted(createComparator(orderBys))
 				.map(ProductsToPickRow::getId)
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
 
-		_rowsById = rows.stream()
+		_allRowsById = rows.stream()
+				.flatMap(ProductsToPickRow::streamRecursive)
+				.map(ProductsToPickRow::cast)
 				.map(row -> GuavaCollectors.entry(row.getId(), row))
 				.collect(GuavaCollectors.toMap(ConcurrentHashMap::new));
 		rowIdsInvalid = false;
@@ -96,30 +98,43 @@ public class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickR
 				.thenComparing(ProductsToPickRow::getShipmentScheduleId);
 	}
 
-	private synchronized Map<DocumentId, ProductsToPickRow> getRowsById()
+	private synchronized Map<DocumentId, ProductsToPickRow> getAllRowsById()
 	{
-		if (rowIdsInvalid)
-		{
-			final Map<PickingCandidateId, DocumentId> rowIdsByPickingCandidateId = _rowsById.values()
-					.stream()
-					.filter(row -> row.getPickingCandidateId() != null)
-					.collect(ImmutableMap.toImmutableMap(ProductsToPickRow::getPickingCandidateId, ProductsToPickRow::getId));
-
-			final List<PickingCandidate> pickingCandidates = pickingCandidateService.getByIds(rowIdsByPickingCandidateId.keySet());
-
-			pickingCandidates
-					.forEach(pickingCandidate -> _rowsById.compute(
-							rowIdsByPickingCandidateId.get(pickingCandidate.getId()),
-							(rowId, row) -> row.withUpdatesFromPickingCandidate(pickingCandidate)));
-
-			rowIdsInvalid = false;
-		}
-		return _rowsById;
+		updateInvalidRowsIfNeeded();
+		return getAllRowsByIdNoUpdate();
 	}
 
-	public synchronized void changeRow(@NonNull final DocumentId rowId, @NonNull final UnaryOperator<ProductsToPickRow> mapper)
+	private synchronized Map<DocumentId, ProductsToPickRow> getAllRowsByIdNoUpdate()
 	{
-		final Map<DocumentId, ProductsToPickRow> rowsById = getRowsById();
+		return _allRowsById;
+	}
+
+	private void updateInvalidRowsIfNeeded()
+	{
+		if (!rowIdsInvalid)
+		{
+			return;
+		}
+
+		final Map<PickingCandidateId, DocumentId> rowIdsByPickingCandidateId = _allRowsById.values()
+				.stream()
+				.filter(row -> row.getPickingCandidateId() != null)
+				.collect(ImmutableMap.toImmutableMap(ProductsToPickRow::getPickingCandidateId, ProductsToPickRow::getId));
+
+		final List<PickingCandidate> pickingCandidates = pickingCandidateService.getByIds(rowIdsByPickingCandidateId.keySet());
+		for (PickingCandidate pickingCandidate : pickingCandidates)
+		{
+			_allRowsById.compute(
+					rowIdsByPickingCandidateId.get(pickingCandidate.getId()),
+					(rowId, row) -> row.withUpdatesFromPickingCandidate(pickingCandidate));
+		}
+
+		rowIdsInvalid = false;
+	}
+
+	private synchronized void changeRow(@NonNull final DocumentId rowId, @NonNull final UnaryOperator<ProductsToPickRow> mapper)
+	{
+		final Map<DocumentId, ProductsToPickRow> rowsById = getAllRowsById();
 		rowsById.compute(rowId, (k, row) -> {
 			if (row == null)
 			{
@@ -135,16 +150,31 @@ public class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickR
 	}
 
 	@Override
+	public int size()
+	{
+		return topLevelRowIdsOrdered.size();
+	}
+
+	@Override
+	public Map<DocumentId, ProductsToPickRow> getDocumentId2AllRows()
+	{
+		return getAllRowsById();
+	}
+
+	@Override
 	public Map<DocumentId, ProductsToPickRow> getDocumentId2TopLevelRows()
 	{
-		return getRowsById();
+		final Map<DocumentId, ProductsToPickRow> rowsById = getAllRowsById();
+		return topLevelRowIdsOrdered.stream()
+				.map(rowsById::get)
+				.collect(GuavaCollectors.toImmutableMapByKey(ProductsToPickRow::getId));
 	}
 
 	@Override
 	public Collection<ProductsToPickRow> getTopLevelRows()
 	{
-		final Map<DocumentId, ProductsToPickRow> rowsById = getRowsById();
-		return rowIdsOrdered.stream()
+		final Map<DocumentId, ProductsToPickRow> rowsById = getAllRowsById();
+		return topLevelRowIdsOrdered.stream()
 				.map(rowsById::get)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -195,7 +225,7 @@ public class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickR
 			return DocumentIdsSelection.EMPTY;
 		}
 
-		return getRowsById()
+		return getAllRowsByIdNoUpdate()
 				.values()
 				.stream()
 				.filter(row -> pickingCandidateIds.contains(row.getPickingCandidateId()))
@@ -207,5 +237,10 @@ public class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickR
 	public void invalidateAll()
 	{
 		rowIdsInvalid = true;
+	}
+
+	public void updateViewRowFromPickingCandidate(@NonNull final DocumentId rowId, @NonNull final PickingCandidate pickingCandidate)
+	{
+		changeRow(rowId, row -> row.withUpdatesFromPickingCandidate(pickingCandidate));
 	}
 }
