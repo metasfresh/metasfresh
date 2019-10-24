@@ -13,7 +13,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
 import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
-import de.metas.ui.web.view.AbstractCustomView.IRowsData;
+import de.metas.ui.web.view.template.IRowsData;
 
 /*
  * #%L

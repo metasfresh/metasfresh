@@ -9,7 +9,7 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.handlingunits.stock.HUStockInfo;
-import de.metas.ui.web.view.AbstractCustomView.IRowsData;
+import de.metas.ui.web.view.template.IRowsData;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.NonNull;
