@@ -12,7 +12,36 @@ class Map extends Component {
       lat: 52.31,
       lng: 13.24,
     },
-    zoom: 11,
+    zoom: 10,
+  };
+
+  handleApiLoaded = (map, maps) => {
+    const { data } = this.props;
+    const bounds = new maps.LatLngBounds();
+
+    for (let i = 0; i < data.length; i += 1) {
+      const marker = new maps.Marker(
+        {
+          position: {
+            lat: data[i].latitude,
+            lng: data[i].longitude,
+          },
+        },
+        map
+      );
+
+      bounds.extend(marker.getPosition());
+    }
+
+    map.fitBounds(bounds);
+
+    map.setCenter(bounds.getCenter());
+
+    map.setZoom(map.getZoom() - 1);
+
+    if (map.getZoom() > 15) {
+      map.setZoom(15);
+    }
   };
 
   render() {
@@ -34,6 +63,10 @@ class Map extends Component {
               }}
               defaultCenter={this.props.center}
               defaultZoom={this.props.zoom}
+              yesIWantToUseGoogleMapApiInternals
+              onGoogleApiLoaded={({ map, maps }) =>
+                this.handleApiLoaded(map, maps)
+              }
             >
               {data.map(location => (
                 <MapMarker
