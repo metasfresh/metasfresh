@@ -378,7 +378,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 	}
 
-	private void updateHeaderAggregationKey(final I_M_ShipmentSchedule sched)
+	@Override
+	public void updateHeaderAggregationKey(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final ShipmentScheduleHeaderAggregationKeyBuilder shipmentScheduleKeyBuilder = mkShipmentHeaderAggregationKeyBuilder();
 		final String headerAggregationKey = shipmentScheduleKeyBuilder.buildKey(sched);

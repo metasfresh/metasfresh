@@ -15,12 +15,12 @@ import java.util.Collection;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -51,7 +51,7 @@ public interface IOrderDAO extends ISingletonService
 
 	/**
 	 * Similar to {@link #getById(OrderId)}, but allows to specify which {@link I_C_Order} sub-type the result shall be in.
-	 * 
+	 *
 	 * @param orderId
 	 * @param clazz
 	 * @return order for given orderId
@@ -96,7 +96,7 @@ public interface IOrderDAO extends ISingletonService
 
 	/**
 	 * Similar to {@link #retrieveOrderLines(I_C_Order)}, but allows to specify which {@link org.compiere.model.I_C_OrderLine} sub-type the result shall be in.
-	 * 
+	 *
 	 * @param order
 	 * @param clazz
 	 * @return order lines for given order
@@ -116,21 +116,15 @@ public interface IOrderDAO extends ISingletonService
 	<T extends org.compiere.model.I_C_OrderLine> T retrieveOrderLine(I_C_Order order, int lineNo, Class<T> clazz);
 
 	/**
-	 * @param order
 	 * @return {@link I_M_InOut}s for given order
 	 */
 	List<I_M_InOut> retrieveInOuts(I_C_Order order);
 
 	/**
-	 * @param order
 	 * @return {@link I_M_InOut}s which have at least one matching between C_OrderLine and M_InOutLine for given order
 	 */
 	List<I_M_InOut> retrieveInOutsForMatchingOrderLines(I_C_Order order);
 
-	/**
-	 * @param order
-	 * @return true if for the given order InOuts have been created
-	 */
 	boolean hasInOuts(I_C_Order order);
 
 	/**
@@ -139,10 +133,7 @@ public interface IOrderDAO extends ISingletonService
 	 * <li>a specific bPartner-location
 	 * <li>and with DatePromised between <code>deliveryDateTime</code> and <code>DeliveryDateTimeMax</code> (inclusively)
 	 * </ul>
-	 * 
-	 * @param bpLoc
-	 * @param deliveryDateTime
-	 * @param deliveryDateTimeMax
+	 *
 	 * @return purchase orders matching the given parameters
 	 */
 	List<I_C_Order> retrievePurchaseOrdersForPickup(I_C_BPartner_Location bpLoc, Date deliveryDateTime, Date deliveryDateTimeMax);
