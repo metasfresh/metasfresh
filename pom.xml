@@ -48,7 +48,7 @@
 
 		<!-- The version to be used by metasfresh, as opposed to the ESB's. The 
 			two versions might clash in ait modules -->
-		<metasfresh.cxf.version>3.1.6</metasfresh.cxf.version>
+		<metasfresh.cxf.version>3.3.3</metasfresh.cxf.version>
 
 		<jackson.version>2.9.9</jackson.version>
 
