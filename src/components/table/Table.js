@@ -1139,12 +1139,16 @@ class Table extends Component {
     }
 
     return (
-      <div ref={ref => (this.wrapper = ref)} className="row table-flex-wrapper">
+      <div
+        ref={ref => (this.wrapper = ref)}
+        className={classnames('table-flex-wrapper', {
+          'col-12': toggleState === 0 || toggleState == null,
+          'col-6': toggleState === 1,
+          'd-none': toggleState === 2,
+        })}
+      >
         <div
           className={classnames({
-            'col-12': toggleState === 0,
-            'col-6': toggleState === 1,
-            'd-none': toggleState === 2,
             'table-flex-wrapper-row': mainTable,
           })}
         >

@@ -521,7 +521,7 @@ body {
     display: block;
     position: absolute;
     padding: 0;
-    top: -24px;
+    bottom: 5px;
     right: 5px;
     z-index: 1000;
 
@@ -615,6 +615,17 @@ body {
     display: flex;
     flex-grow: 1;
     flex-direction: column;
+}
+
+.mapComponent {
+    .mapMarker {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        transform: translate(-15px, -40px);
+        background: no-repeat scroll 0 center;
+        background-image: url('../images/map-marker-alt-solid.svg');
+    }
 }
 
 .map-tree-wrapper {
