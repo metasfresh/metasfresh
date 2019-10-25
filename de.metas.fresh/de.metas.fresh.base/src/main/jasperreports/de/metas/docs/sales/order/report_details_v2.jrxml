@@ -555,7 +555,7 @@
 		</band>
 		<band height="12">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<printWhenExpression><![CDATA[new Boolean($R{show_productdescription}.equals( "Y" ))]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean($R{show_productdescription}.equals( "Y" )) && ($F{productdescription} != null && !$F{productdescription}.isEmpty())]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-24" mode="Transparent" x="59" y="0" width="290" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF" uuid="02aa9f79-f3c4-42b3-a896-472036e26b63"/>
 				<box rightPadding="3">
