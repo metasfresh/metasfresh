@@ -56,7 +56,7 @@ class Map extends Component {
             'd-none': toggleState === 0 || toggleState == null,
           })}
         >
-          <div style={{ height: '100vh', width: '100%' }}>
+          <div style={{ height: '100%', width: '100%' }}>
             {mapConfig.provider === 'OpenStreetMap' ? (
               <OSMap
                 defaultCenter={[center.lat, center.lng]}
