@@ -488,5 +488,5 @@ public interface IInvoiceCandBL extends ISingletonService {
 	void updateICIOLAssociationFromIOL(I_C_InvoiceCandidate_InOutLine iciol,
 			org.compiere.model.I_M_InOutLine inOutLine);
 
-	IQuery<I_C_Invoice_Candidate> createICQueryBuilder(List<ExternalHeaderAndLineId> headerAndLineIds);
+	int createSelectionForInvoiceCandidates(List<ExternalHeaderAndLineId> headerAndLineIds, PInstanceId pInstanceId);
 }

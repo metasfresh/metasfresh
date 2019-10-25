@@ -472,5 +472,5 @@ public interface IInvoiceCandDAO extends ISingletonService {
 
 	I_C_Invoice_Candidate getById(InvoiceCandidateId invoiceCandId);
 
-	IQuery<I_C_Invoice_Candidate> createICQueryBuilder(List<ExternalHeaderAndLineId> headerAndLineIds);
+	int createSelectionByHeaderAndLineIds(List<ExternalHeaderAndLineId> headerAndLineIds, PInstanceId pInstanceID);
 }

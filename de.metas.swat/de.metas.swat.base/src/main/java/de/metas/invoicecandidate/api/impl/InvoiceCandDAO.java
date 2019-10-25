@@ -1668,8 +1668,13 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		invalidateCandsFor(freightCostCandQueryBuilder);
 	}
+	
 	@Override
-	public IQuery<I_C_Invoice_Candidate> createICQueryBuilder(List<ExternalHeaderAndLineId> headerAndLineIds) {
+	public int createSelectionByHeaderAndLineIds(List<ExternalHeaderAndLineId> headerAndLineIds,PInstanceId pInstanceID) {
+		return query(headerAndLineIds).createSelection(pInstanceID);
+	}
+	
+	private IQuery<I_C_Invoice_Candidate> query(List<ExternalHeaderAndLineId> headerAndLineIds) {
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class)

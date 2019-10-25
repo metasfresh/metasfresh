@@ -5,6 +5,7 @@ import java.util.List;
 import com.google.common.collect.ImmutableList;
 
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 @Value
@@ -14,7 +15,7 @@ public class ExternalHeaderAndLineId {
 	private String externalHeaderId;
 
 	@Builder(toBuilder = true)
-	private ExternalHeaderAndLineId(List<ExternalId> externalLineIds,String externalHeaderId)
+	private ExternalHeaderAndLineId(List<ExternalId> externalLineIds,@NonNull String externalHeaderId)
 	{
 		this.externalLineIds = ImmutableList.copyOf(externalLineIds);
 		this.externalHeaderId = externalHeaderId;

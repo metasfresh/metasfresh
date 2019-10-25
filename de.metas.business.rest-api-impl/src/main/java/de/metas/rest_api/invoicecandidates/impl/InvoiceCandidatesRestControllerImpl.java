@@ -74,7 +74,7 @@ class InvoiceCandidatesRestControllerImpl implements ICEnqueueingForInvoiceGener
 		try {
 			PInstanceId pInstanceId = adPInstanceDAO.createSelectionId();
 			List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(request.getInvoiceCandidates());
-			invoiceCandBL.createICQueryBuilder(headerAndLineIds).createSelection(pInstanceId);
+			invoiceCandBL.createSelectionForInvoiceCandidates(headerAndLineIds,pInstanceId);
 
 			final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
 					.setInvoicingParams(createInvoicingParams(request)).setFailIfNothingEnqueued(true)

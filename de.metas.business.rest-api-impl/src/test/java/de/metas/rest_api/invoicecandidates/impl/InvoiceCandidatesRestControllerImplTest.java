@@ -55,8 +55,8 @@ public class InvoiceCandidatesRestControllerImplTest {
 				.externalLineIds(externalLineIds).build();
 		jsonInvoiceCandidates.add(jic);
 		List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(jsonInvoiceCandidates);
-		IQuery<I_C_Invoice_Candidate> queryBuilder = invoiceCandBL.createICQueryBuilder(headerAndLineIds);
-		int selection = queryBuilder.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
+		int selection= invoiceCandBL.createSelectionForInvoiceCandidates(headerAndLineIds,PInstanceId.ofRepoId(P_INSTANCE_ID));
+		
 		assertThat(selection).isEqualTo(1);
 	}
 
@@ -72,9 +72,7 @@ public class InvoiceCandidatesRestControllerImplTest {
 		List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(jsonInvoiceCandidates);
 		createInvoiceCandidate(EXTERNAL_LINE_ID2, EXTERNAL_HEADER_ID2);
 
-		IQuery<I_C_Invoice_Candidate> queryBuilder = invoiceCandBL.createICQueryBuilder(headerAndLineIds);
-
-		int selection = queryBuilder.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
+		int selection= invoiceCandBL.createSelectionForInvoiceCandidates(headerAndLineIds,PInstanceId.ofRepoId(P_INSTANCE_ID));
 		assertThat(selection).isEqualTo(0);
 	}
 
@@ -86,9 +84,7 @@ public class InvoiceCandidatesRestControllerImplTest {
 				.externalLineIds(externalLineIds).build();
 		jsonInvoiceCandidates.add(jic);
 		List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(jsonInvoiceCandidates);
-		IQuery<I_C_Invoice_Candidate> queryBuilder = invoiceCandBL.createICQueryBuilder(headerAndLineIds);
-
-		int selection = queryBuilder.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
+		int selection= invoiceCandBL.createSelectionForInvoiceCandidates(headerAndLineIds,PInstanceId.ofRepoId(P_INSTANCE_ID));
 		assertThat(selection).isEqualTo(0);
 	}
 
