@@ -45,9 +45,9 @@ class Map extends Component {
   };
 
   render() {
-    const { data, center, zoom, toggleState, mapSource } = this.props;
+    const { data, center, zoom, toggleState, mapConfig } = this.props;
 
-    if (data) {
+    if (data && mapConfig) {
       return (
         <div
           className={cx('mapComponent', {
@@ -57,7 +57,7 @@ class Map extends Component {
           })}
         >
           <div style={{ height: '100vh', width: '100%' }}>
-            {mapSource === 'osm' ? (
+            {mapConfig.provider === 'OpenStreetMap' ? (
               <OSMap
                 defaultCenter={[center.lat, center.lng]}
                 defaultZoom={zoom}
@@ -74,7 +74,7 @@ class Map extends Component {
             ) : (
               <GoogleMapReact
                 bootstrapURLKeys={{
-                  key: config.GOOGLE_API,
+                  key: mapConfig.googleMapsApiKey,
                 }}
                 defaultCenter={center}
                 defaultZoom={zoom}

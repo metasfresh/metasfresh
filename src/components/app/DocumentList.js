@@ -10,6 +10,7 @@ import {
   getViewLayout,
   browseViewRequest,
   locationSearchRequest,
+  locationConfigRequest,
   createViewRequest,
   deleteStaticFilter,
   filterViewRequest,
@@ -41,7 +42,6 @@ import {
   NO_VIEW,
   PANEL_WIDTHS,
   GEO_PANEL_STATES,
-  MAP_SOURCES,
   getSortingQuery,
   redirectToNewDocument,
   doesSelectionExist,
@@ -58,7 +58,6 @@ import Table from '../table/Table';
 import QuickActions from './QuickActions';
 import SelectionAttributes from './SelectionAttributes';
 import GeoMap from '../maps/GeoMap';
-import SimpleSelect from '../widget/SimpleSelect';
 
 /**
  * @file Class based component.
@@ -83,7 +82,7 @@ export class DocumentList extends Component {
       pageColumnInfosByFieldName: null,
       toggleWidth: 0,
       toggleState: 0,
-      mapSource: MAP_SOURCES[0],
+      mapConfig: null,
       viewId: defaultViewId,
       page: defaultPage || 1,
       sort: defaultSort,
@@ -103,27 +102,25 @@ export class DocumentList extends Component {
     this.fetchLayoutAndData();
   }
 
-  /**
-   * @method componentDidMount
-   * @summary ToDo: Describe the method.
-   */
+  UNSAFE_componentWillMount() {
+    locationConfigRequest().then(resp => {
+      if (resp.data.provider === 'GoogleMaps') {
+        this.setState({
+          mapConfig: resp.data,
+        });
+      }
+    });
+  }
+
   componentDidMount = () => {
     this.mounted = true;
   };
 
-  /**
-   * @method componentWillUnmount
-   * @summary ToDo: Describe the method.
-   */
   componentWillUnmount() {
     this.mounted = false;
     disconnectWS.call(this);
   }
 
-  /**
-   * @method UNSAFE_componentWillReceiveProps
-   * @summary ToDo: Describe the method.
-   */
   UNSAFE_componentWillReceiveProps(nextProps) {
     const {
       defaultPage: nextDefaultPage,
@@ -228,18 +225,10 @@ export class DocumentList extends Component {
     }
   }
 
-  /**
-   * @method shouldComponentUpdate
-   * @summary ToDo: Describe the method.
-   */
   shouldComponentUpdate(nextProps, nextState) {
     return !!nextState.layout && !!nextState.data;
   }
 
-  /**
-   * @method componentDidUpdate
-   * @summary ToDo: Describe the method.
-   */
   componentDidUpdate(prevProps, prevState) {
     const { setModalDescription } = this.props;
     const { data } = this.state;
@@ -658,16 +647,21 @@ export class DocumentList extends Component {
 
   getLocationData = () => {
     const { windowType } = this.props;
-    const { viewId } = this.state;
+    const { viewId, mapConfig } = this.state;
 
     locationSearchRequest({ windowId: windowType, viewId }).then(response => {
-      this.setState({
-        toggleState: 1,
+      const newState = {
         data: {
           ...this.state.data,
           locationData: response.data.locations,
         },
-      });
+      };
+
+      if (mapConfig && mapConfig.provider) {
+        newState.toggleState = 1;
+      }
+
+      this.setState(newState);
     });
   };
 
@@ -808,12 +802,6 @@ export class DocumentList extends Component {
     });
   };
 
-  selectMapSource = option => {
-    this.setState({
-      mapSource: option,
-    });
-  };
-
   /**
    * @method redirectToDocument
    * @summary ToDo: Describe the method.
@@ -941,7 +929,7 @@ export class DocumentList extends Component {
       rowEdited,
       initialValuesNulled,
       rowDataMap,
-      mapSource,
+      mapConfig,
     } = this.state;
     let { selected, childSelected, parentSelected } = this.getSelected();
     const modalType = modal ? modal.modalType : null;
@@ -1072,16 +1060,6 @@ export class DocumentList extends Component {
               </div>
             )}
 
-            {showGeoResizeBtn && (
-              <div className="map-source-select">
-                <SimpleSelect
-                  selected={mapSource}
-                  options={MAP_SOURCES}
-                  onSelect={this.selectMapSource}
-                />
-              </div>
-            )}
-
             {data && showQuickActions && (
               <QuickActions
                 processStatus={processStatus}
@@ -1206,7 +1184,7 @@ export class DocumentList extends Component {
               </Table>
               <GeoMap
                 toggleState={toggleState}
-                mapSource={mapSource.id}
+                mapConfig={mapConfig}
                 data={data.locationData}
               />
             </div>

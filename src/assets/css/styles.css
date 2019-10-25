@@ -557,6 +557,7 @@ body {
         display: block;
         z-index: 1000;
         align-self: center;
+        margin-right: auto !important;
 
         .btn-switch {
             display: flex;
@@ -583,11 +584,6 @@ body {
         .icon-map {
             background-image: url('../images/map-marked-alt-solid.svg');
         }
-    }
-
-    .map-source-select {
-        align-self: center;
-        margin-right: auto !important;
     }
 }
 
