@@ -57,11 +57,21 @@ public class GeoLocationConfigRestController
 			case GOOGLE_MAPS:
 				return getGoogleMapsConfig(geocodingConfig);
 			case OPEN_STREET_MAPS:
+				return getOpenStreetMapsConfig();
 			default:
 				return JsonGeoLocationConfig.builder().build();
 		}
 	}
 
+	@NonNull
+	private JsonGeoLocationConfig getOpenStreetMapsConfig()
+	{
+		return JsonGeoLocationConfig.builder()
+				.provider(JsonGeoLocationProvider.OpenStreetMaps)
+				.build();
+	}
+
+	@NonNull
 	private JsonGeoLocationConfig getGoogleMapsConfig(@NonNull final GeocodingConfig geocodingConfig)
 	{
 		final GeocodingConfig.GoogleMapsConfig googleMapsConfig = geocodingConfig.getGoogleMapsConfig();
