@@ -569,6 +569,10 @@ body {
             background: no-repeat scroll 0 center;
             display: block;
             align-self: center;
+
+            &.greyscaled {
+                filter: grayscale(1);
+            }
         }
 
         .text-middle {

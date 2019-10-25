@@ -1,5 +1,5 @@
 import counterpart from 'counterpart';
-import classnames from 'classnames';
+import cx from 'classnames';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
@@ -993,7 +993,7 @@ export class DocumentList extends Component {
 
     return (
       <div
-        className={classnames('document-list-wrapper', {
+        className={cx('document-list-wrapper', {
           'document-list-included': isShowIncluded || isIncluded,
           'document-list-has-included': hasShowIncluded || hasIncluded,
         })}
@@ -1002,7 +1002,7 @@ export class DocumentList extends Component {
         {showModalResizeBtn && (
           <div className="column-size-button col-xxs-3 col-md-0 ignore-react-onclickoutside">
             <button
-              className={classnames(
+              className={cx(
                 'btn btn-meta-outline-secondary btn-sm ignore-react-onclickoutside',
                 {
                   normal: toggleWidth === 0,
@@ -1017,7 +1017,7 @@ export class DocumentList extends Component {
 
         {layout && !readonly && (
           <div
-            className={classnames(
+            className={cx(
               'panel panel-primary panel-spaced panel-inline document-list-header',
               {
                 posRelative: showGeoResizeBtn,
@@ -1062,18 +1062,22 @@ export class DocumentList extends Component {
             {showGeoResizeBtn && (
               <div className="pane-size-button col-xxs-3 ignore-react-onclickoutside">
                 <button
-                  className={classnames(
+                  className={cx(
                     'btn btn-meta-outline-secondary btn-sm btn-switch ignore-react-onclickoutside'
                   )}
                   onClick={this.collapseGeoPanels}
                 >
-                  {(toggleState === 0 || toggleState === 1) && (
-                    <i className="icon icon-grid" />
-                  )}
-                  {toggleState === 1 && <i className="icon text-middle">/</i>}
-                  {(toggleState === 1 || toggleState === 2) && (
-                    <i className="icon icon-map" />
-                  )}
+                  <i
+                    className={cx('icon icon-grid', {
+                      greyscaled: toggleState === 2,
+                    })}
+                  />
+                  <i className="icon text-middle">/</i>
+                  <i
+                    className={cx('icon icon-map', {
+                      greyscaled: toggleState === 0,
+                    })}
+                  />
                 </button>
               </div>
             )}
