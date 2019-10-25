@@ -400,6 +400,8 @@ public class ADWindowDAO implements IADWindowDAO
 		.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_AD_Element_ID)
 		.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Name)
 		.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_InternalName)
+		.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Description)
+		.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Help)
 		.setFrom(sourceWindow)
 		.setTo(targetWindow)
 		.copy();
