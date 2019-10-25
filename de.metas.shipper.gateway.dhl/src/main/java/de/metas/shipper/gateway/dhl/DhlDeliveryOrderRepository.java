@@ -132,13 +132,11 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 		final I_DHL_ShipmentOrder firstOrder = ordersPo.get(0);
 
 		final ImmutableList<DhlCustomDeliveryDataDetail> dhlCustomDeliveryDataDetail = ordersPo.stream()
-				.map(po -> DhlCustomDeliveryDataDetail.builder()
-						.packageId(po.getPackageId())
-						.awb(po.getawb())
-						.sequenceNumber(DhlSequenceNumber.of(po.getDHL_ShipmentOrder_ID()))
-						.pdfLabelData(po.getPdfLabelData())
-						.internationalDelivery(po.isInternationalDelivery())
-						.customsDocument(DhlCustomsDocument.builder()
+				.map(po -> {
+					DhlCustomsDocument customsDocument = null;
+					if (po.isInternationalDelivery())
+					{
+						customsDocument = DhlCustomsDocument.builder()
 								.exportType(po.getExportType())
 								.exportTypeDescription(po.getExportTypeDescription())
 								.additionalFee(po.getAdditionalFee())
@@ -150,8 +148,18 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 								.customsValue(po.getCustomsValue())
 								.invoiceId(CustomsInvoiceId.ofRepoId(po.getC_Customs_Invoice_ID()))
 								.invoiceLineId(CustomsInvoiceLineId.ofRepoIdOrNull(CustomsInvoiceId.ofRepoId(po.getC_Customs_Invoice_ID()), po.getC_Customs_Invoice_Line_ID()))
-								.build())
-						.build())
+								.build();
+					}
+
+					return DhlCustomDeliveryDataDetail.builder()
+							.packageId(po.getPackageId())
+							.awb(po.getawb())
+							.sequenceNumber(DhlSequenceNumber.of(po.getDHL_ShipmentOrder_ID()))
+							.pdfLabelData(po.getPdfLabelData())
+							.internationalDelivery(po.isInternationalDelivery())
+							.customsDocument(customsDocument)
+							.build();
+				})
 				.collect(ImmutableList.toImmutableList());
 
 		final ImmutableSet<Integer> packageIds = dhlCustomDeliveryDataDetail.stream()
