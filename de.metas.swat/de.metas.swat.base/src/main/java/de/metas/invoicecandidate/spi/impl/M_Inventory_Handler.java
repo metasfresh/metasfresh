@@ -81,7 +81,7 @@ public class M_Inventory_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Create the inventory line requests
-		return InvoiceCandidateGenerateRequest.of(inventoryLineHandlers, linesForInventory);
+		return InvoiceCandidateGenerateRequest.ofAll(inventoryLineHandlers, linesForInventory);
 	}
 
 	@Override
@@ -107,7 +107,7 @@ public class M_Inventory_Handler extends AbstractInvoiceCandidateHandler
 	private void invalidateCandidatesForInventory(final I_M_Inventory inventory)
 	{
 		final InventoryId inventoryId = InventoryId.ofRepoId(inventory.getM_Inventory_ID());
-		
+
 		//
 		// Retrieve inventory line handlers
 		final Properties ctx = InterfaceWrapperHelper.getCtx(inventory);

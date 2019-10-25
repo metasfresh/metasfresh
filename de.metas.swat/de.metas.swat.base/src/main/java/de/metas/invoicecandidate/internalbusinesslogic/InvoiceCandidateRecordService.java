@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate.InvoiceCandidateBuilder;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
@@ -21,6 +20,7 @@ import de.metas.money.CurrencyId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -116,6 +116,7 @@ public class InvoiceCandidateRecordService
 				.stockUomId(stockUomId)
 				.deliveryQualityDiscount(qualityDiscountOverride)
 				.negateQtys(orderedData.isNegative())
+				.defaultQtyDelivered(StockQtyAndUOMQtys.create(icRecord.getQtyDelivered(), productId, icRecord.getQtyDeliveredInUOM(), icUomId))
 				.build()
 				.loadDeliveredQtys();
 
@@ -166,17 +167,10 @@ public class InvoiceCandidateRecordService
 			@NonNull final InvoiceCandidate invoiceCandidate,
 			@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		if (icRecord.getC_ILCandHandler_ID() > 0) // in unit tests there might be no handler; don't bother in those cases
-		{
-			// updating qty delivered; this part used to be in InvoiceCandInvalidupdater
-			// 07814-IT2 only from now on we have the correct QtyDelivered
-			// note that we need this data to be set before we attempt to compute the price, because the delivered qty and date of delivery might play a role.
-			Services.get(IInvoiceCandidateHandlerBL.class).setDeliveredData(icRecord);
-		}
-
-		final DeliveredData deliveredData = invoiceCandidate.getDeliveredData();
+		// (receipt) quality discount
 		if (invoiceCandidate.getSoTrx().isPurchase())
 		{
+			final DeliveredData deliveredData = invoiceCandidate.getDeliveredData();
 			final ReceiptData receiptData = deliveredData.getReceiptData();
 
 			final Percent qualityDiscountOverride = invoiceCandidate.getQualityDiscountOverride();

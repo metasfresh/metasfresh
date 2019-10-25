@@ -13,6 +13,8 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.cache.CacheMgt;
 import de.metas.inoutcandidate.agg.key.impl.ShipmentScheduleKeyValueHandler;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -112,9 +114,7 @@ public final class InOutCandidateValidator implements ModelValidator
 		CacheMgt.get().enableRemoteCacheInvalidationForTableName(I_M_ShipmentSchedule.Table_Name);
 	}
 
-	/**
-	 * Public for testing purposes only!
-	 */
+	@VisibleForTesting
 	public static void registerSSAggregationKeyDependencies()
 	{
 		final IAggregationKeyRegistry keyRegistry = Services.get(IAggregationKeyRegistry.class);
@@ -133,7 +133,7 @@ public final class InOutCandidateValidator implements ModelValidator
 				I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Override_ID,
 				I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Location_ID,
 				I_M_ShipmentSchedule.COLUMNNAME_C_BP_Location_Override_ID,
-				I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, // DateOrdered, POReference fields also depend on this
+				I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, // by adding this, we also cover DateOrdered and POReference
 				I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID,
 				I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID,
 				I_M_ShipmentSchedule.COLUMNNAME_AD_User_ID,
@@ -172,7 +172,7 @@ public final class InOutCandidateValidator implements ModelValidator
 
 				final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 				shipmentSchedulePA.setIsDiplayedForProduct(productId, display);
-				
+
 				final IShipmentScheduleInvalidateRepository shipmentScheduleInvalidateRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
 				shipmentScheduleInvalidateRepo.invalidateForProduct(productId);
 			}

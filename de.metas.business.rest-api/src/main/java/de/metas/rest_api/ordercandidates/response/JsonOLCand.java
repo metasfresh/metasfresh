@@ -74,7 +74,11 @@ public class JsonOLCand
 	private int huPIItemProductId;
 
 	private int pricingSystemId;
+
+	// TODO document: per product, discount not yet applied
 	private BigDecimal price;
+
+	// TODO document: percent
 	private BigDecimal discount;
 
 	private int warehouseDestId;

@@ -64,6 +64,7 @@ import org.adempiere.util.concurrent.AutoClosableThreadLocalBoolean;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
@@ -1349,10 +1350,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				//
 				// If 'il' has an order line, make sure that this order line also has invoice candidates and that those candidates also refer 'il'
 
-				final I_C_OrderLine ol = InterfaceWrapperHelper.create(il.getC_OrderLine(), I_C_OrderLine.class);
-				final List<I_C_Invoice_Candidate> existingICs = invoiceCandDAO.fetchInvoiceCandidates(ctx, org.compiere.model.I_C_OrderLine.Table_Name, il.getC_OrderLine_ID(), trxName);
+				final TableRecordReference olReference = TableRecordReference.of(I_C_OrderLine.Table_Name, il.getC_OrderLine_ID()); // no need to load the OL just yet
+				final List<I_C_Invoice_Candidate> existingICs = invoiceCandDAO.retrieveReferencing(olReference);
 				if (existingICs.isEmpty())
 				{
+					final I_C_OrderLine ol = InterfaceWrapperHelper.create(il.getC_OrderLine(), I_C_OrderLine.class);
 					// NOTE: in case 'invoice' was not created from invoice candidates, it's a big chance here to get zero existing ICs
 					// so we need to create them now
 

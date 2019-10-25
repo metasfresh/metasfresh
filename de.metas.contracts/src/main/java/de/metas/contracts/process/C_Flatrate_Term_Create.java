@@ -2,6 +2,8 @@ package de.metas.contracts.process;
 
 import java.sql.Timestamp;
 
+import javax.annotation.Nullable;
+
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
@@ -51,7 +53,7 @@ public abstract class C_Flatrate_Term_Create extends JavaProcess
 		builder.userInCharge(userInCharge);
 	}
 
-	public void addProduct(I_M_Product product)
+	public void addProduct(@Nullable final I_M_Product product)
 	{
 		builder.product(product);
 	}

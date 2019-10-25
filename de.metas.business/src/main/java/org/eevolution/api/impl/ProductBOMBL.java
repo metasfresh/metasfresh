@@ -186,7 +186,7 @@ public class ProductBOMBL implements IProductBOMBL
 		final BigDecimal bomToLineUOMMultiplier = uomConversionBL.convertQty(uomConversionCtx, BigDecimal.ONE, endUOMId, bomLineUOMId);
 
 		final Percent qtyBatchPercent = Percent.of(bomLine.getQtyBatch());
-		return qtyBatchPercent.multiply(bomToLineUOMMultiplier, 8);
+		return qtyBatchPercent.computePercentageOf(bomToLineUOMMultiplier, 8);
 	}
 
 	@Override

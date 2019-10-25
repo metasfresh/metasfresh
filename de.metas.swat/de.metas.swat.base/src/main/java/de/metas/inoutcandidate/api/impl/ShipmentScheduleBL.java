@@ -55,7 +55,6 @@ import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.NullAutoCloseable;
@@ -379,9 +378,10 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 	}
 
-	private void updateHeaderAggregationKey(final I_M_ShipmentSchedule sched)
+	@Override
+	public void updateHeaderAggregationKey(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final IAggregationKeyBuilder<I_M_ShipmentSchedule> shipmentScheduleKeyBuilder = mkShipmentHeaderAggregationKeyBuilder();
+		final ShipmentScheduleHeaderAggregationKeyBuilder shipmentScheduleKeyBuilder = mkShipmentHeaderAggregationKeyBuilder();
 		final String headerAggregationKey = shipmentScheduleKeyBuilder.buildKey(sched);
 		sched.setHeaderAggregationKey(headerAggregationKey);
 	}
@@ -939,7 +939,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public IAggregationKeyBuilder<I_M_ShipmentSchedule> mkShipmentHeaderAggregationKeyBuilder()
+	public ShipmentScheduleHeaderAggregationKeyBuilder mkShipmentHeaderAggregationKeyBuilder()
 	{
 		return new ShipmentScheduleHeaderAggregationKeyBuilder();
 	}

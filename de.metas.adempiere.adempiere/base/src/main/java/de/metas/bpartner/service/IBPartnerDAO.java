@@ -76,17 +76,15 @@ public interface IBPartnerDAO extends ISingletonService
 
 	<T extends I_C_BPartner> T getById(BPartnerId bpartnerId, Class<T> modelClass);
 
-	BPartnerId getBPartnerIdByValue(final String bpartnerValue);
+	BPartnerId getBPartnerIdByValue(String bpartnerValue);
+
+	Optional<BPartnerId> getBPartnerIdBySalesPartnerCode(String salesPartnerCode);
 
 	I_C_BPartner getByIdInTrx(BPartnerId bpartnerId);
 
 	/**
 	 * Retrieve {@link I_C_BPartner} assigned to given organization
 	 *
-	 * @param ctx
-	 * @param orgId
-	 * @param clazz
-	 * @param trxName
 	 * @return {@link I_C_BPartner}; never return null
 	 * @throws OrgHasNoBPartnerLinkException if no partner was found
 	 */
