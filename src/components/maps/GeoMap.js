@@ -88,6 +88,7 @@ class Map extends Component {
                     lat={location.latitude}
                     lng={location.longitude}
                     key={location.rowId}
+                    text="foo"
                   />
                 ))}
               </GoogleMapReact>
