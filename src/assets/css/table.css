@@ -1,6 +1,7 @@
 .table-row {
     flex: 1;
     width: 100%;
+    max-width: 100%;
 }
 
 .table-flex-wrapper {
