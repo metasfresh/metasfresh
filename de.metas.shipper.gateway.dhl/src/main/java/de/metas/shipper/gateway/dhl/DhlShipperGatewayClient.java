@@ -373,11 +373,11 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 
 					//noinspection ConstantConditions
 					final DhlCustomDeliveryData dhlCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
-					final DhlSequenceNumber sequenceNumber = dhlCustomDeliveryData.getSequenceNumberByPackageId(packageIdsAsList.get(i));
+					final DhlCustomDeliveryDataDetail deliveryDetail = dhlCustomDeliveryData.getDetailByPackageId(packageIdsAsList.get(i));
 
-					if (dhlCustomDeliveryData.getDetailBySequenceNumber(sequenceNumber).isInternationalDelivery())
+					if (deliveryDetail.isInternationalDelivery())
 					{
-						final DhlCustomsDocument customsDocument = dhlCustomDeliveryData.getDetailBySequenceNumber(sequenceNumber).getCustomsDocument();
+						final DhlCustomsDocument customsDocument = deliveryDetail.getCustomsDocument();
 						final ExportDocumentType exportDocumentType = objectFactory.createExportDocumentType();
 						//			exportDocumentType.setInvoiceNumber("2212011"); // optional
 						exportDocumentType.setExportType(customsDocument.getExportType());
@@ -409,8 +409,8 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 				// (2) create the needed shipment order type
 				final ShipmentOrderType shipmentOrderType = objectFactory.createShipmentOrderType();
 				final DhlCustomDeliveryData dhlCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
-				final DhlSequenceNumber sequenceNumber = dhlCustomDeliveryData.getSequenceNumberByPackageId(packageIdsAsList.get(i));
-				shipmentOrderType.setSequenceNumber(sequenceNumber.getSequenceNumber());
+				final DhlCustomDeliveryDataDetail deliveryDetail = dhlCustomDeliveryData.getDetailByPackageId(packageIdsAsList.get(i));
+				shipmentOrderType.setSequenceNumber(deliveryDetail.getSequenceNumber().getSequenceNumber());
 				shipmentOrderType.setShipment(shipmentOrderTypeShipment);
 				createShipmentOrderRequest.getShipmentOrder().add(shipmentOrderType);
 			}

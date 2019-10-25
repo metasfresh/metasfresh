@@ -350,10 +350,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 
 					//noinspection ConstantConditions
 					final DhlCustomDeliveryData dhlCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
-					final DhlSequenceNumber sequenceNumber = dhlCustomDeliveryData.getSequenceNumberByPackageId(packageIdsAsList.get(i));
-
-					final DhlCustomDeliveryDataDetail deliveryDataDetail = dhlCustomDeliveryData.getDetailBySequenceNumber(sequenceNumber);
-					//					shipmentOrder.setInternationalDelivery(deliveryDataDetail.isInternationalDelivery());
+					final DhlCustomDeliveryDataDetail deliveryDataDetail = dhlCustomDeliveryData.getDetailByPackageId(packageIdsAsList.get(i));
 					if (deliveryDataDetail.isInternationalDelivery())
 					{
 						final DhlCustomsDocument customsDocument = deliveryDataDetail.getCustomsDocument();
@@ -396,13 +393,15 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 				final DhlCustomDeliveryData customDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
 
 				final I_DHL_ShipmentOrder shipmentOrder = getShipmentOrderByRequestIdAndPackageId(deliveryOrder.getRepoId(), packageIdsAsList.get(i));
-				final String awb = customDeliveryData.getAwbBySequenceNumber(DhlSequenceNumber.of(shipmentOrder.getDHL_ShipmentOrder_ID()));
+				final DhlCustomDeliveryDataDetail deliveryDetail = customDeliveryData.getDetailBySequenceNumber(DhlSequenceNumber.of(shipmentOrder.getDHL_ShipmentOrder_ID()));
+
+				final String awb = deliveryDetail.getAwb();
 				if (awb != null)
 				{
 					shipmentOrder.setawb(awb);
 				}
 
-				final byte[] pdfData = customDeliveryData.getPdfLabelDataBySequenceNumber(DhlSequenceNumber.of(shipmentOrder.getDHL_ShipmentOrder_ID()));
+				final byte[] pdfData = deliveryDetail.getPdfLabelData();
 				if (pdfData != null)
 				{
 					shipmentOrder.setPdfLabelData(pdfData);
@@ -413,7 +412,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 					attachmentEntryService.createNewAttachment(salesOrderRef, awb + ".pdf", pdfData);
 				}
 
-				final String trackingUrl = customDeliveryData.getTrackingUrlBySequenceNumber(DhlSequenceNumber.of(shipmentOrder.getDHL_ShipmentOrder_ID()));
+				final String trackingUrl = deliveryDetail.getTrackingUrl();
 				if (trackingUrl != null)
 				{
 					shipmentOrder.setTrackingURL(trackingUrl);
