@@ -441,7 +441,7 @@
 					<!-- we need a version that supports encrypted passwords in the settings.xml -->
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jarsigner-plugin</artifactId>
-					<version>1.3.2</version>
+					<version>3.0.0</version>
 				</plugin>
 
 				<plugin>
