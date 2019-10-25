@@ -100,5 +100,5 @@ public interface IADWindowDAO extends ISingletonService
 	 */
 	AdWindowId getAdWindowId(String tableName, SOTrx soTrx, AdWindowId defaultValue);
 
-	List<I_AD_Tab_Callout> retrieveTabCallouts(I_AD_Tab adTab);
+	List<I_AD_Tab_Callout> retrieveTabCallouts(AdTabId tabId);
 }

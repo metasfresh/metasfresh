@@ -865,8 +865,8 @@ public class ADWindowDAO implements IADWindowDAO
 
 	private void copyTabCallouts(final I_AD_Tab targetTab, final I_AD_Tab sourceTab)
 	{
-		final Map<String, I_AD_Tab_Callout> existingTargetTabCallouts = retrieveTabCalloutsQuery(targetTab).create().map(I_AD_Tab_Callout.class, I_AD_Tab_Callout::getClassname);
-		final Collection<I_AD_Tab_Callout> sourceTabCallouts = retrieveTabCallouts(sourceTab);
+		final Map<String, I_AD_Tab_Callout> existingTargetTabCallouts = retrieveTabCalloutsQuery(AdTabId.ofRepoId(targetTab.getAD_Tab_ID())).create().map(I_AD_Tab_Callout.class, I_AD_Tab_Callout::getClassname);
+		final Collection<I_AD_Tab_Callout> sourceTabCallouts = retrieveTabCallouts(AdTabId.ofRepoId(sourceTab.getAD_Tab_ID()));
 
 		for (final I_AD_Tab_Callout sourceField : sourceTabCallouts)
 		{
@@ -968,18 +968,18 @@ public class ADWindowDAO implements IADWindowDAO
 
 	@Override
 	@Cached(cacheName = I_AD_Tab_Callout.Table_Name + "#by#" + I_AD_Tab_Callout.COLUMNNAME_AD_Tab_ID)
-	public List<I_AD_Tab_Callout> retrieveTabCallouts(@NonNull final I_AD_Tab adTab)
+	public List<I_AD_Tab_Callout> retrieveTabCallouts(@NonNull AdTabId tabId)
 	{
-		return retrieveTabCalloutsQuery(adTab)
+		return retrieveTabCalloutsQuery(tabId)
 				.create()
 				.list();
 	}
 
-	private IQueryBuilder<I_AD_Tab_Callout> retrieveTabCalloutsQuery(@NonNull final I_AD_Tab tab)
+	private IQueryBuilder<I_AD_Tab_Callout> retrieveTabCalloutsQuery(@NonNull final AdTabId tabId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Tab_Callout.class, tab)
-				.addEqualsFilter(I_AD_Tab_Callout.COLUMNNAME_AD_Tab_ID, tab.getAD_Tab_ID())
+				.createQueryBuilder(I_AD_Tab_Callout.class)
+				.addEqualsFilter(I_AD_Tab_Callout.COLUMNNAME_AD_Tab_ID, tabId)
 				.orderBy(I_AD_Tab_Callout.COLUMNNAME_AD_Tab_Callout_ID);
 	}
 
