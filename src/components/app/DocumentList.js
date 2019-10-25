@@ -41,6 +41,7 @@ import {
   NO_VIEW,
   PANEL_WIDTHS,
   GEO_PANEL_STATES,
+  MAP_SOURCES,
   getSortingQuery,
   redirectToNewDocument,
   doesSelectionExist,
@@ -57,6 +58,7 @@ import Table from '../table/Table';
 import QuickActions from './QuickActions';
 import SelectionAttributes from './SelectionAttributes';
 import GeoMap from '../maps/GeoMap';
+import SimpleSelect from '../widget/SimpleSelect';
 
 /**
  * @file Class based component.
@@ -81,7 +83,7 @@ export class DocumentList extends Component {
       pageColumnInfosByFieldName: null,
       toggleWidth: 0,
       toggleState: 0,
-      mapSource: 'google',
+      mapSource: MAP_SOURCES[0],
       viewId: defaultViewId,
       page: defaultPage || 1,
       sort: defaultSort,
@@ -806,6 +808,12 @@ export class DocumentList extends Component {
     });
   };
 
+  selectMapSource = option => {
+    this.setState({
+      mapSource: option,
+    });
+  };
+
   /**
    * @method redirectToDocument
    * @summary ToDo: Describe the method.
@@ -1064,6 +1072,16 @@ export class DocumentList extends Component {
               </div>
             )}
 
+            {showGeoResizeBtn && (
+              <div className="map-source-select">
+                <SimpleSelect
+                  selected={mapSource}
+                  options={MAP_SOURCES}
+                  onSelect={this.selectMapSource}
+                />
+              </div>
+            )}
+
             {data && showQuickActions && (
               <QuickActions
                 processStatus={processStatus}
@@ -1186,7 +1204,11 @@ export class DocumentList extends Component {
                   </DataLayoutWrapper>
                 )}
               </Table>
-              <GeoMap {...{ toggleState, mapSource }} data={data.locationData} />
+              <GeoMap
+                toggleState={toggleState}
+                mapSource={mapSource.id}
+                data={data.locationData}
+              />
             </div>
           </div>
         )}

@@ -55,6 +55,10 @@ const NO_SELECTION = [];
 const NO_VIEW = {};
 const PANEL_WIDTHS = ['1', '.2', '4'];
 const GEO_PANEL_STATES = ['grid', 'all', 'map'];
+const MAP_SOURCES = [
+  { id: 'google', caption: 'Google Maps' },
+  { id: 'osm', caption: 'Open Street Maps' },
+];
 
 const filtersToMap = function(filtersArray) {
   let filtersMap = Map();
@@ -114,6 +118,7 @@ export {
   NO_VIEW,
   PANEL_WIDTHS,
   GEO_PANEL_STATES,
+  MAP_SOURCES,
   getSortingQuery,
   redirectToNewDocument,
   filtersToMap,

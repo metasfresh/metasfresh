@@ -556,7 +556,6 @@ body {
     .pane-size-button {
         display: block;
         z-index: 1000;
-        margin-right: auto !important;
         align-self: center;
 
         .btn-switch {
@@ -564,8 +563,8 @@ body {
         }
 
         .icon {
-            width: 15px;
-            height: 15px;
+            width: 20px;
+            height: 20px;
             background: no-repeat scroll 0 center;
             display: block;
             align-self: center;
@@ -574,6 +573,7 @@ body {
         .text-middle {
             margin: 0 3px;
             padding: 0;
+            font-size: medium;
         }
 
         .icon-grid {
@@ -583,6 +583,11 @@ body {
         .icon-map {
             background-image: url('../images/map-marked-alt-solid.svg');
         }
+    }
+
+    .map-source-select {
+        align-self: center;
+        margin-right: auto !important;
     }
 }
 
