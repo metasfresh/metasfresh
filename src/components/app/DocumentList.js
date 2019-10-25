@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { Map, List, Set } from 'immutable';
 import currentDevice from 'current-device';
+import { get } from 'lodash';
 
 import {
   getViewLayout,
@@ -563,6 +564,7 @@ export class DocumentList extends Component {
       const result = List(response.data.result);
       result.hashCode();
 
+      const resultById = {};
       const selection = getSelectionDirect(selections, windowType, viewId);
       const forceSelection =
         (type === 'includedView' || isIncluded) &&
@@ -579,7 +581,9 @@ export class DocumentList extends Component {
           }));
 
       result.map(row => {
-        row.fieldsByName = parseToDisplay(row.fieldsByName);
+        const parsed = parseToDisplay(row.fieldsByName);
+        resultById[`${row.id}`] = parsed;
+        row.fieldsByName = parsed;
       });
 
       const pageColumnInfosByFieldName = response.data.columnsByFieldName;
@@ -593,6 +597,7 @@ export class DocumentList extends Component {
           data: {
             ...response.data,
             result,
+            resultById,
           },
           rowDataMap: Map({ 1: result }),
           pageColumnInfosByFieldName: pageColumnInfosByFieldName,
@@ -609,7 +614,7 @@ export class DocumentList extends Component {
           (newState.filtersActive &&
             newState.filtersActive.has(`location-area-search`))
         ) {
-          this.getLocationData();
+          this.getLocationData(resultById);
         }
 
         this.setState({ ...newState }, () => {
@@ -645,15 +650,28 @@ export class DocumentList extends Component {
     });
   };
 
-  getLocationData = () => {
+  getLocationData = resultById => {
     const { windowType } = this.props;
     const { viewId, mapConfig } = this.state;
 
-    locationSearchRequest({ windowId: windowType, viewId }).then(response => {
+    locationSearchRequest({ windowId: windowType, viewId }).then(({ data }) => {
+      const locationData = data.locations.map(location => {
+        const name = get(
+          resultById,
+          [location.rowId, 'C_BPartner_ID', 'value', 'caption'],
+          location.rowId
+        );
+
+        return {
+          ...location,
+          name,
+        };
+      });
+
       const newState = {
         data: {
           ...this.state.data,
-          locationData: response.data.locations,
+          locationData,
         },
       };
 
