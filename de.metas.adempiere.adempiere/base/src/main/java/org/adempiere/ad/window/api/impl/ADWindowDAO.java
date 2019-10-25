@@ -978,7 +978,7 @@ public class ADWindowDAO implements IADWindowDAO
 	private IQueryBuilder<I_AD_Tab_Callout> retrieveTabCalloutsQuery(@NonNull final AdTabId tabId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Tab_Callout.class, ITrx.TRXNAME_ThreadInherited)
+				.createQueryBuilderOutOfTrx(I_AD_Tab_Callout.class)
 				.addEqualsFilter(I_AD_Tab_Callout.COLUMNNAME_AD_Tab_ID, tabId)
 				.orderBy(I_AD_Tab_Callout.COLUMNNAME_AD_Tab_Callout_ID);
 	}
