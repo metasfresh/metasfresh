@@ -138,7 +138,7 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 		ppOrderBOMLine.setScrap(new BigDecimal("10")); // 10%
 		ppOrderBOMLine.setQtyDelivered(BigDecimal.ZERO);
 
-		assertThat(ppOrderBOMBL.computeQtyRequired(ppOrderBOMBL.fromRecord(ppOrderBOMLine), ppOrder.getQtyOrdered()).toBigDecimal())
+		assertThat(ppOrderBOMBL.toQtyCalculationsBOMLine(ppOrderBOMLine).computeQtyRequired(ppOrder.getQtyOrdered()).toBigDecimal())
 				.as("QtyRequired projected")
 				// Expected: 100(finished goods) x 260(mm/finished good) x (scrap=1 + 10/100)
 				.isEqualByComparingTo("28600");
@@ -174,7 +174,7 @@ public class PPOrderBOMBL_calculateQtyRequired_Test
 		final BigDecimal qtyDelivered_FinishedGood = ppOrder.getQtyDelivered();
 		final BigDecimal qtyRequiredActual_FinishedGood = qtyRequired_FinishedGood.max(qtyDelivered_FinishedGood);
 
-		return ppOrderBOMBL.computeQtyRequired(ppOrderBOMBL.fromRecord(orderBOMLine), qtyRequiredActual_FinishedGood);
+		return ppOrderBOMBL.toQtyCalculationsBOMLine(orderBOMLine).computeQtyRequired(qtyRequiredActual_FinishedGood);
 	}
 
 	/**

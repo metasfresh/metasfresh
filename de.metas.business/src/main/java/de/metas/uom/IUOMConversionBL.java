@@ -154,4 +154,5 @@ public interface IUOMConversionBL extends ISingletonService
 
 	ProductPrice convertProductPriceToUom(ProductPrice price, UomId toUomId, CurrencyPrecision pricePrecision);
 
+	UOMConversionRate getRate(ProductId productId, UomId fromUomId, UomId toUomId);
 }
