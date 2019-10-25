@@ -10,13 +10,15 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.callout.api.ICalloutRecord;
-import org.adempiere.ad.ui.api.ITabCalloutDAO;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.ui.spi.IStatefulTabCallout;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.ad.ui.spi.impl.CompositeTabCallout;
+import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.I_AD_Tab_Callout;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_AD_Tab;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -66,7 +68,8 @@ public class TabCalloutFactory implements ITabCalloutFactory
 
 		//
 		// Retrieve and instantiate tab callouts registered in application dictionary
-		final List<I_AD_Tab_Callout> calloutsDefinition = Services.get(ITabCalloutDAO.class).retrieveAllCalloutsDefinition(ctx, adTabId);
+		final I_AD_Tab tab = InterfaceWrapperHelper.load(adTabId, I_AD_Tab.class);
+		final List<I_AD_Tab_Callout> calloutsDefinition = Services.get(IADWindowDAO.class).retrieveTabCallouts(tab);
 		for (final I_AD_Tab_Callout def : calloutsDefinition)
 		{
 			String classname = def.getClassname();

@@ -967,6 +967,7 @@ public class ADWindowDAO implements IADWindowDAO
 
 
 	@Override
+	@Cached(cacheName = I_AD_Tab_Callout.Table_Name + "#by#" + I_AD_Tab_Callout.COLUMNNAME_AD_Tab_ID)
 	public List<I_AD_Tab_Callout> retrieveTabCallouts(@NonNull final I_AD_Tab adTab)
 	{
 		return retrieveTabCalloutsQuery(adTab)
@@ -976,15 +977,10 @@ public class ADWindowDAO implements IADWindowDAO
 
 	private IQueryBuilder<I_AD_Tab_Callout> retrieveTabCalloutsQuery(@NonNull final I_AD_Tab tab)
 	{
-		Check.assumeNotNull(tab, "adTab not null");
-
-		final IQueryBuilder<I_AD_Tab_Callout> queryBuilder = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Tab_Callout.class, tab)
-				.addEqualsFilter(I_AD_Tab_Callout.COLUMNNAME_AD_Tab_ID, tab.getAD_Tab_ID());
-
-		return queryBuilder.orderBy()
-				.addColumn(I_AD_Tab_Callout.COLUMNNAME_AD_Tab_Callout_ID)
-				.endOrderBy();
+				.addEqualsFilter(I_AD_Tab_Callout.COLUMNNAME_AD_Tab_ID, tab.getAD_Tab_ID())
+				.orderBy(I_AD_Tab_Callout.COLUMNNAME_AD_Tab_Callout_ID);
 	}
 
 	@Override
