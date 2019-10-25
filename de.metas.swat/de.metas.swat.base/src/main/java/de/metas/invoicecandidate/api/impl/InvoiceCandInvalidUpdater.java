@@ -241,20 +241,20 @@ import lombok.NonNull;
 		Loggables.addLog("Update invalid result: {}", result.getSummary());
 	}
 
-	private final void updateInvalid(final I_C_Invoice_Candidate ic)
+	private final void updateInvalid(final I_C_Invoice_Candidate icRecord)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(icRecord);
 
 		// reset scheduler result
-		ic.setSchedulerResult(null);
-		invoiceCandBL.resetError(ic);
+		icRecord.setSchedulerResult(null);
+		invoiceCandBL.resetError(icRecord);
 
 		// update qtyOrdered. we need to be up to date for that factor
-		invoiceCandidateHandlerBL.setOrderedData(ic);
+		invoiceCandidateHandlerBL.setOrderedData(icRecord);
 
 		// i.e. QtyOrdered's signum. Used at different places throughout this method
 		final BigDecimal factor;
-		if (ic.getQtyOrdered().signum() < 0)
+		if (icRecord.getQtyOrdered().signum() < 0)
 		{
 			factor = ONE.negate();
 		}
@@ -263,72 +263,80 @@ import lombok.NonNull;
 			factor = ONE;
 		}
 
-		final BigDecimal oldQtyInvoiced = ic.getQtyInvoiced().multiply(factor);
+		final BigDecimal oldQtyInvoiced = icRecord.getQtyInvoiced().multiply(factor);
 
 		// update the Discount value of 'ic'. We will need it for the priceActual further down
-		invoiceCandBL.set_Discount(ctx, ic);
+		invoiceCandBL.set_Discount(ctx, icRecord);
 
 		// 06502: add entry in C_InvoiceCandidate_InOutLine to link InvoiceCandidate with inoutLines
 		// Note: the code originally related to task 06502 has partially been moved to de.metas.invoicecandidate.modelvalidator.M_InoutLine
 		// we'll need those icIols to be up to date to date in order to have QtyWithIssues (updateQtyWithIssues() et al. further down),
 		// and we need them (depending on which handler) for setDeliveredData()
-		populateC_InvoiceCandidate_InOutLine(ic, ic.getC_OrderLine());
+		populateC_InvoiceCandidate_InOutLine(icRecord, icRecord.getC_OrderLine());
 
 		// Update 'QtyToInvoice_OverrideFulfilled'
 		// If is turns out that the fulfillment is now sufficient,
 		// reset both 'QtyToInvoice_Override' and 'QtyToInvoice_OverrideFulfilled'
-		invoiceCandBL.set_QtyToInvoiceOverrideFulfilled(ic, oldQtyInvoiced, factor);
+		invoiceCandBL.set_QtyToInvoiceOverrideFulfilled(icRecord, oldQtyInvoiced, factor);
+
+		if (icRecord.getC_ILCandHandler_ID() > 0) // in unit tests there might be no handler; don't bother in those cases
+		{
+			// updating qty delivered
+			// 07814-IT2 only from now on we have the correct QtyDelivered
+			// note that we need this data to be set before we attempt to compute the price, because the delivered qty and date of delivery might play a role.
+			invoiceCandidateHandlerBL.setDeliveredData(icRecord);
+		}
 
 		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
-		final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(ic);
-		invoiceCandidateRecordService.updateRecord(invoiceCandidate, ic);
+		final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
+		invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
 
 		//
 		// Update Price and Quantity only if this invoice candidate was NOT approved for invoicing (08610)
-		if (!ic.isApprovalForInvoicing())
+		if (!icRecord.isApprovalForInvoicing())
 		{
 			try
 			{
-				final PriceAndTax priceAndTax = invoiceCandidateHandlerBL.calculatePriceAndTax(ic);
-				IInvoiceCandInvalidUpdater.updatePriceAndTax(ic, priceAndTax);
+				final PriceAndTax priceAndTax = invoiceCandidateHandlerBL.calculatePriceAndTax(icRecord);
+				IInvoiceCandInvalidUpdater.updatePriceAndTax(icRecord, priceAndTax);
 			}
 			catch (final Exception ex)
 			{
-				invoiceCandBL.setError(ic, ex);
+				invoiceCandBL.setError(icRecord, ex);
 			}
 		}
 
 		// update BPartner data from 'ic'
-		invoiceCandidateHandlerBL.setBPartnerData(ic);
+		invoiceCandidateHandlerBL.setBPartnerData(icRecord);
 
-		invoiceCandidateHandlerBL.setInvoiceScheduleAndDateToInvoice(ic);
+		invoiceCandidateHandlerBL.setInvoiceScheduleAndDateToInvoice(icRecord);
 
-		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation0(ctx, ic);
+		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation0(ctx, icRecord);
 
 		// 06539 add qty overdelivery to qty delivered
-		final org.compiere.model.I_C_OrderLine ol = ic.getC_OrderLine();
+		final org.compiere.model.I_C_OrderLine ol = icRecord.getC_OrderLine();
 		if (ol != null)
 		{
-			ic.setQtyOrderedOverUnder(ol.getQtyOrderedOverUnder());
+			icRecord.setQtyOrderedOverUnder(ol.getQtyOrderedOverUnder());
 		}
 
 		// we'll need both qtyToInvoice/qtyToInvoiceInPriceUOM and priceActual to compute the netAmtToInvoice further down
-		invoiceCandBL.setPriceActual_Override(ic);
+		invoiceCandBL.setPriceActual_Override(icRecord);
 
-		invoiceCandBL.setAmountAndDateForFreightCost(ic);
+		invoiceCandBL.setAmountAndDateForFreightCost(icRecord);
 
 		// Note: ic.setProcessed is not invoked here, but in a model validator
 		// That's because QtyToOrder and QtyInvoiced could also be set somewhere else
 
 		// We need to update the NetAmtToInvoice again because in some cases this value depends on overall in invoiceable amount
 		// e.g. see ManualCandidateHandler which is calculated how much we can invoice of a credit memo amount
-		invoiceCandBL.setNetAmtToInvoice(ic);
+		invoiceCandBL.setNetAmtToInvoice(icRecord);
 
-		invoiceCandBL.setInvoiceScheduleAmtStatus(ctx, ic);
+		invoiceCandBL.setInvoiceScheduleAmtStatus(ctx, icRecord);
 
 		//
 		// Save it
-		invoiceCandDAO.save(ic);
+		invoiceCandDAO.save(icRecord);
 	}
 
 	/**

@@ -25,6 +25,8 @@ package de.metas.pricing.service;
 import java.math.BigDecimal;
 import java.util.Set;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
@@ -33,6 +35,8 @@ import de.metas.pricing.limit.IPriceLimitRule;
 import de.metas.pricing.limit.PriceLimitRuleContext;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.rules.IPricingRule;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 
 public interface IPricingBL extends ISingletonService
@@ -41,7 +45,7 @@ public interface IPricingBL extends ISingletonService
 	/**
 	 * Error message for setting product price to both scale and attribute.
 	 */
-	public static final String PRODUCTPRICE_FLAG_ERROR = "de.metas.pricing.flagError";
+	String PRODUCTPRICE_FLAG_ERROR = "de.metas.pricing.flagError";
 
 	/**
 	 * Creates an editable pricing context
@@ -52,8 +56,12 @@ public interface IPricingBL extends ISingletonService
 	 * Creates and editable pricing context, initialized with given values.
 	 *
 	 * @param C_UOM_ID the uom of the given {@code qty}.
+	 * @deprecated please use {@link #createInitialContext(ProductId, BPartnerId, Quantity, SOTrx)} instead.
 	 */
+	@Deprecated
 	IEditablePricingContext createInitialContext(int M_Product_ID, int C_BPartner_ID, int C_UOM_ID, BigDecimal qty, boolean isSOTrx);
+
+	IEditablePricingContext createInitialContext(ProductId productId, BPartnerId bPartnerId, Quantity quantity, SOTrx soTrx);
 
 	IPricingResult calculatePrice(IPricingContext pricingCtx);
 

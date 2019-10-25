@@ -125,6 +125,7 @@ public class CampaignPricingRule implements IPricingRule
 		result.setCurrencyId(campaignPrice.getPriceStd().getCurrencyId());
 		result.setTaxCategoryId(campaignPrice.getTaxCategoryId());
 		result.setPrecision(extractPrecisionFromPrice(campaignPrice.getPriceStd()));
+		result.setCampaignPrice(true);
 	}
 
 	private static CurrencyPrecision extractPrecisionFromPrice(final Money amt)

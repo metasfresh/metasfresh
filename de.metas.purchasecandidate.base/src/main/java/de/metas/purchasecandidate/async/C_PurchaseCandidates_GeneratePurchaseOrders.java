@@ -8,7 +8,7 @@ import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 
 import com.google.common.base.Functions;
@@ -67,7 +67,8 @@ import de.metas.util.Services;
  */
 public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProcessorAdapter
 {
-	private final PurchaseCandidateRepository purchaseCandidateRepo = Adempiere.getBean(PurchaseCandidateRepository.class);
+	private final PurchaseCandidateRepository purchaseCandidateRepo = SpringContextHolder.instance.getBean(PurchaseCandidateRepository.class);
+	private final VendorGatewayInvokerFactory vendorGatewayInvokerFactory = SpringContextHolder.instance.getBean(VendorGatewayInvokerFactory.class);
 
 	public static void enqueue(final Collection<PurchaseCandidateId> purchaseCandidateIds)
 	{
@@ -109,11 +110,6 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
 	{
-		final PurchaseCandidateRepository purchaseCandidateRepo = //
-				Adempiere.getBean(PurchaseCandidateRepository.class);
-		final VendorGatewayInvokerFactory vendorGatewayInvokerFactory = //
-				Adempiere.getBean(VendorGatewayInvokerFactory.class);
-
 		final PurchaseOrderFromItemsAggregator purchaseOrderFromItemsAggregator = //
 				PurchaseOrderFromItemsAggregator.newInstance();
 

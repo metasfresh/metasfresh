@@ -335,7 +335,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			rq.setA_Asset_ID(parent_record_id);
 		}
-		else if (parent_table_id == I_C_Order.Table_ID)
+		else if (parent_table_id == getTableId(I_C_Order.class))
 		{
 			rq.setC_Order_ID(parent_record_id);
 		}
@@ -1032,7 +1032,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	@ToString
 	public static final class BoilerPlateContext
 	{
-		public static final Builder builder()
+		public static Builder builder()
 		{
 			return new Builder(ImmutableMap.of());
 		}
@@ -1263,7 +1263,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		}
 	}
 
-	public static interface SourceDocument
+	public interface SourceDocument
 	{
 		String NAME = "__SourceDocument";
 

@@ -14,7 +14,7 @@ public class X_M_ProductGroup_Product extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2106903026L;
+	private static final long serialVersionUID = 1554657872L;
 
     /** Standard Constructor */
     public X_M_ProductGroup_Product (Properties ctx, int M_ProductGroup_Product_ID, String trxName)

@@ -35,7 +35,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.api.IParams;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -43,6 +43,7 @@ import org.compiere.model.I_M_Product;
 
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.commission.CommissionConstants;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -55,7 +56,7 @@ import de.metas.util.Services;
 
 public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 {
-	private final RefundConfigRepository refundConfigRepository = Adempiere.getBean(RefundConfigRepository.class);
+	private final RefundConfigRepository refundConfigRepository = SpringContextHolder.instance.getBean(RefundConfigRepository.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	private int p_flatrateconditionsID;
@@ -102,6 +103,10 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 					addProduct(product);
 				}
 			}
+		}
+		else if  (CommissionConstants.TYPE_CONDITIONS_COMMISSION.equals(conditions.getType_Conditions()))
+		{
+			addProduct(null);
 		}
 		else
 		{

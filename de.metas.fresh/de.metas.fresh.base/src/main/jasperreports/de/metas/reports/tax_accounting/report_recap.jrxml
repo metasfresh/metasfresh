@@ -65,72 +65,84 @@
 		</band>
 	</title>
 	<pageHeader>
-		<band height="20" splitType="Stretch">
+		<band height="17" splitType="Stretch">
+			<rectangle>
+				<reportElement key="rectangle-1" x="0" y="4" width="782" height="13" backcolor="#808080" uuid="c647c428-44a7-438e-9c9b-a58314ec4521"/>
+				<graphicElement>
+					<pen lineWidth="0.0" lineStyle="Solid"/>
+				</graphicElement>
+			</rectangle>
 			<textField>
-				<reportElement x="1" y="0" width="70" height="20" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
+				<reportElement x="1" y="4" width="70" height="12" forecolor="#FFFFFF" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
 				<textElement>
-					<font fontName="Arial" size="9" isBold="true"/>
+					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{vatcode}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="489" y="0" width="91" height="20" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
+				<reportElement x="489" y="4" width="91" height="12" forecolor="#FFFFFF" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="9" isBold="true"/>
+					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{baseamt}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="580" y="0" width="96" height="20" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
+				<reportElement x="580" y="4" width="96" height="12" forecolor="#FFFFFF" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="9" isBold="true"/>
+					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{amt_not_vat}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="676" y="0" width="100" height="20" uuid="58475cb0-76ef-46d3-8440-818898eb1ce8"/>
+				<reportElement x="676" y="4" width="100" height="12" forecolor="#FFFFFF" uuid="58475cb0-76ef-46d3-8440-818898eb1ce8"/>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="9" isBold="true"/>
+					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{vat_amt}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="434" y="0" width="55" height="20" uuid="b2980ab1-9c3a-47fe-9e0f-214a1e9a0ece"/>
+				<reportElement x="434" y="4" width="55" height="12" forecolor="#FFFFFF" uuid="b2980ab1-9c3a-47fe-9e0f-214a1e9a0ece"/>
 				<textElement textAlignment="Right">
-					<font fontName="Arial" size="9" isBold="true"/>
+					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{vat}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="71" y="0" width="278" height="20" uuid="aff6cbcc-29bc-4a99-a1b7-da1ddbf1630a"/>
+				<reportElement x="71" y="4" width="278" height="12" forecolor="#FFFFFF" uuid="aff6cbcc-29bc-4a99-a1b7-da1ddbf1630a"/>
 				<textElement textAlignment="Left">
-					<font fontName="Arial" size="9" isBold="true"/>
+					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{tax}]]></textFieldExpression>
 			</textField>
+			<line>
+				<reportElement key="line" positionType="FixRelativeToBottom" x="0" y="1" width="782" height="1" forecolor="#000000" uuid="925eb5ac-422b-4ead-baa5-9a1a93308d7d"/>
+				<graphicElement>
+					<pen lineWidth="1.0" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
 		</band>
 	</pageHeader>
 	<columnHeader>
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="20">
+		<band height="17">
 			<textField isBlankWhenNull="true">
-				<reportElement x="0" y="0" width="70" height="15" uuid="9179a5e9-e70e-4d0e-9840-ca3a3ba424ee"/>
+				<reportElement x="0" y="2" width="70" height="15" uuid="9179a5e9-e70e-4d0e-9840-ca3a3ba424ee"/>
 				<textElement>
-					<font fontName="Arial" size="9" isBold="false"/>
+					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{vatcode}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="70" y="0" width="279" height="15" uuid="5de14448-7069-4dc1-beba-f9b49d8b7d24"/>
+				<reportElement x="70" y="2" width="279" height="15" uuid="5de14448-7069-4dc1-beba-f9b49d8b7d24"/>
 				<textElement>
-					<font fontName="Arial" size="9" isBold="false"/>
+					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{taxname}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00">
-				<reportElement x="580" y="0" width="96" height="15" uuid="cbdf57d5-daba-424a-97be-5fda474189ae"/>
+				<reportElement x="580" y="2" width="96" height="15" uuid="cbdf57d5-daba-424a-97be-5fda474189ae"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
@@ -144,14 +156,14 @@
 				<textFieldExpression><![CDATA[$F{taxamt}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00">
-				<reportElement x="489" y="0" width="91" height="15" uuid="9ed91fe9-02ae-4154-bd70-d28995175271"/>
+				<reportElement x="489" y="2" width="91" height="15" uuid="9ed91fe9-02ae-4154-bd70-d28995175271"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{taxbaseamt}.add($F{taxamt})]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="434" y="0" width="55" height="15" uuid="1e83ae9a-0fcd-48ca-9bf8-8010d0272082"/>
+				<reportElement x="434" y="2" width="55" height="15" uuid="1e83ae9a-0fcd-48ca-9bf8-8010d0272082"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>

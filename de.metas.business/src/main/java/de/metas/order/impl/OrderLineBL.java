@@ -1,5 +1,6 @@
 package de.metas.order.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.translate;
 
@@ -242,8 +243,9 @@ public class OrderLineBL implements IOrderLineBL
 		// In case we have a charge, use the tax category from charge
 		if (orderLine.getC_Charge_ID() > 0)
 		{
-			final I_C_Charge charge = InterfaceWrapperHelper.loadOutOfTrx(orderLine.getC_Charge_ID(), I_C_Charge.class);
-			return TaxCategoryId.ofRepoId(charge.getC_TaxCategory_ID());
+			// TODO get rid of C_Charge from C_OrderLine alltogether
+			final I_C_Charge chargeRecord = loadOutOfTrx(orderLine.getC_Charge_ID(), I_C_Charge.class);
+			return TaxCategoryId.ofRepoId(chargeRecord.getC_TaxCategory_ID());
 		}
 
 		final OrderLinePriceUpdateRequest request = OrderLinePriceUpdateRequest.ofOrderLine(orderLine);
