@@ -6,19 +6,26 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_PaymentTerm;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
+import de.metas.util.rest.ExternalHeaderAndLineId;
+import de.metas.util.rest.ExternalId;
 import lombok.NonNull;
 
 /*
@@ -45,6 +52,18 @@ import lombok.NonNull;
 
 public class InvoiceCandDAOTest
 {
+
+	private static final String EXTERNAL_LINE_ID1 = "Test1";
+	private static final String EXTERNAL_HEADER_ID1 = "1001";
+
+	private static final String EXTERNAL_LINE_ID2 = "Test2";
+	private static final String EXTERNAL_HEADER_ID2 = "1002";
+
+	private static final String EXTERNAL_LINE_ID3 = "Test3";
+	private static final String EXTERNAL_HEADER_ID3 = "1003";
+	
+	private static final int P_INSTANCE_ID = 1002265;
+
 	@Before
 	public void init()
 	{
@@ -103,6 +122,75 @@ public class InvoiceCandDAOTest
 		assertThat(getPaymentTermId(unrelatedInvoiceCandidateWithoutPaymentTerm))
 				.as("unrelatedInvoiceCandidateWithoutPaymentTerm shall be left unchanged because it's not part of the selection")
 				.isNull();
+	}
+
+	@Test
+	public void testInvoiceCandidates()
+	{
+		ExternalId externalId1 = ExternalId.of(EXTERNAL_LINE_ID1);
+		ExternalId externalId2 = ExternalId.of(EXTERNAL_LINE_ID2);
+		ExternalId externalId3 = ExternalId.of(EXTERNAL_LINE_ID3);
+		List<ExternalId> externalLineIds = new ArrayList<ExternalId>();
+		externalLineIds.add(externalId1);
+		externalLineIds.add(externalId2);
+		externalLineIds.add(externalId3);
+		List<ExternalHeaderAndLineId> headerAndLineIds = new ArrayList<ExternalHeaderAndLineId>();
+		headerAndLineIds.add(ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID1).externalLineIds(externalLineIds).build());
+		IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId = new InvoiceCandDAO().createQueryByHeaderAndLineId(headerAndLineIds);
+		int size = createQueryByHeaderAndLineId.list().size();
+		//need an advice here- because the size will always be 0 in here.
+	}
+	
+	@Test
+	public void checkInvoiceCandidateSelection()
+	{
+		createInvoiceCandidate(EXTERNAL_LINE_ID1, EXTERNAL_HEADER_ID1);
+		ExternalId externalId1 = ExternalId.of(EXTERNAL_LINE_ID1);
+		List<ExternalId> externalLineIds = new ArrayList<ExternalId>();
+		externalLineIds.add(externalId1);
+		List<ExternalHeaderAndLineId> headerAndLineIds = new ArrayList<ExternalHeaderAndLineId>();
+		headerAndLineIds.add(ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID1).externalLineIds(externalLineIds).build());
+		IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId = new InvoiceCandDAO().createQueryByHeaderAndLineId(headerAndLineIds);
+		
+		int selection = createQueryByHeaderAndLineId.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
+
+		assertThat(selection).isEqualTo(1);
+	}
+
+	@Test
+	public void checkInvoiceCandidatesNotSelected()
+	{
+		createInvoiceCandidate(EXTERNAL_LINE_ID1, EXTERNAL_HEADER_ID1);
+		ExternalId externalId2 = ExternalId.of(EXTERNAL_LINE_ID2);
+		List<ExternalId> externalLineIds = new ArrayList<ExternalId>();
+		externalLineIds.add(externalId2);
+		List<ExternalHeaderAndLineId> headerAndLineIds = new ArrayList<ExternalHeaderAndLineId>();
+		headerAndLineIds.add(ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID2).externalLineIds(externalLineIds).build());
+		IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId = new InvoiceCandDAO().createQueryByHeaderAndLineId(headerAndLineIds);
+		int selection = createQueryByHeaderAndLineId.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
+		assertThat(selection).isEqualTo(0);
+	}
+
+	@Test
+	public void checkEmptyListOfExternalLineIds()
+	{
+		ExternalId externalId3 = ExternalId.of(EXTERNAL_LINE_ID3);
+		List<ExternalId> externalLineIds = new ArrayList<ExternalId>();
+		externalLineIds.add(externalId3);
+		List<ExternalHeaderAndLineId> headerAndLineIds = new ArrayList<ExternalHeaderAndLineId>();
+		headerAndLineIds.add(ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID3).externalLineIds(externalLineIds).build());
+		IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId = new InvoiceCandDAO().createQueryByHeaderAndLineId(headerAndLineIds);
+		int selection = createQueryByHeaderAndLineId.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
+		assertThat(selection).isEqualTo(0);
+	}
+	
+	private InvoiceCandidateId createInvoiceCandidate(String externalHeaderId, String externalLineId)
+	{
+		final I_C_Invoice_Candidate invoiceCandidate = newInstance(I_C_Invoice_Candidate.class);
+		invoiceCandidate.setExternalHeaderId(EXTERNAL_HEADER_ID1);
+		invoiceCandidate.setExternalLineId(EXTERNAL_LINE_ID1);
+		saveRecord(invoiceCandidate);
+		return InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
 	}
 
 	private PaymentTermId createPaymentTerm()

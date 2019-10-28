@@ -8,12 +8,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.IQuery;
 import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
+import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.process.PInstanceId;
 import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidate;
@@ -92,6 +93,7 @@ public class InvoiceCandidatesRestControllerImplTest
 		int selection = invoiceCandBL.createSelectionForInvoiceCandidates(headerAndLineIds, PInstanceId.ofRepoId(P_INSTANCE_ID));
 		assertThat(selection).isEqualTo(0);
 	}
+	
 
 	private InvoiceCandidateId createInvoiceCandidate(String externalHeaderId, String externalLineId)
 	{
@@ -101,4 +103,5 @@ public class InvoiceCandidatesRestControllerImplTest
 		saveRecord(invoiceCandidate);
 		return InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
 	}
+	
 }

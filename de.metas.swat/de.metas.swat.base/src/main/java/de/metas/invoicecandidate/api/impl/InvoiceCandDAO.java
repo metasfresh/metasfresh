@@ -1573,10 +1573,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public int createSelectionByHeaderAndLineIds(final @NonNull List<ExternalHeaderAndLineId> headerAndLineIds,
 			final @NonNull PInstanceId pInstanceID)
 	{
-		return query(headerAndLineIds).createSelection(pInstanceID);
+		return createQueryByHeaderAndLineId(headerAndLineIds).createSelection(pInstanceID);
 	}
 
-	private IQuery<I_C_Invoice_Candidate> query(List<ExternalHeaderAndLineId> headerAndLineIds)
+	public IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId(List<ExternalHeaderAndLineId> headerAndLineIds)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL

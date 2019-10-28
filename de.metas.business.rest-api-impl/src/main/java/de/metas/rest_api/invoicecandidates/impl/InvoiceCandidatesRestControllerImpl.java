@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.Profiles;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.logging.LogManager;
@@ -60,7 +59,6 @@ class InvoiceCandidatesRestControllerImpl implements ICEnqueueingForInvoiceGener
 	private static final Logger logger = LogManager.getLogger(InvoiceCandidatesRestControllerImpl.class);
 
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
-	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final InvoiceJsonConverterService jsonConverter;
 
