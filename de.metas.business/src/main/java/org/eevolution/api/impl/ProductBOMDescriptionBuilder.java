@@ -57,8 +57,7 @@ final class ProductBOMDescriptionBuilder
 
 	public String build(@NonNull final ProductId productId)
 	{
-		final I_M_Product bomProduct = productsRepo.getById(productId);
-		final I_PP_Product_BOM bom = bomsRepo.retrieveDefaultBOM(bomProduct);
+		final I_PP_Product_BOM bom = bomsRepo.getDefaultBOMByProductId(productId).orElse(null);
 		if (bom == null || !bom.isActive())
 		{
 			return null;

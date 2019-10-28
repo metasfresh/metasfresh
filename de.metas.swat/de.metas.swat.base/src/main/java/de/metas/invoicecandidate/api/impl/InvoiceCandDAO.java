@@ -84,8 +84,6 @@ import ch.qos.logback.classic.Level;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheTrx;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
@@ -108,7 +106,6 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
-import de.metas.invoicecandidate.model.I_M_InventoryLine;
 import de.metas.invoicecandidate.model.I_M_ProductGroup;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.money.CurrencyConversionTypeId;
@@ -200,17 +197,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public List<I_C_Invoice_Candidate> retrieveReferencing(@NonNull final Object model)
+	public List<I_C_Invoice_Candidate> retrieveReferencing(@NonNull final TableRecordReference reference)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
-		final String trxName = InterfaceWrapperHelper.getTrxName(model);
-
-		final TableRecordReference reference = TableRecordReference.of(model);
-		return fetchInvoiceCandidates(
-				ctx,
-				reference.getTableName(),
-				reference.getRecord_ID(),
-				trxName);
+		return fetchInvoiceCandidates(reference.getTableName(), reference.getRecord_ID());
 	}
 
 	@Override
@@ -284,16 +273,14 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 	@Override
 	public <T extends org.compiere.model.I_C_Invoice> Map<Integer, T> retrieveInvoices(
-			final Properties ctx,
 			final String tableName,
 			final int recordId,
 			final Class<T> clazz,
-			final boolean onlyUnpaid,
-			final String trxName)
+			final boolean onlyUnpaid)
 	{
 		final Map<Integer, T> openInvoices = new HashMap<>();
 
-		final List<I_C_Invoice_Candidate> icsForCurrentTerm = fetchInvoiceCandidates(ctx, tableName, recordId, trxName);
+		final List<I_C_Invoice_Candidate> icsForCurrentTerm = fetchInvoiceCandidates(tableName, recordId);
 		Check.assumeNotNull(icsForCurrentTerm, "the method might return the empty list, but not null");
 
 		for (final I_C_Invoice_Candidate ic : icsForCurrentTerm)
@@ -673,10 +660,18 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		if (referingAggregators > 0)
 		{
-			// Note: we invalidate *every* candidate, so there is no need to use the different IInvoiceCandidateHandler
-			// implementations.
+			// Note: we invalidate *every* candidate, so there is no need to use the different IInvoiceCandidateHandler implementations.
 			invalidateAllCands(ctx, trxName);
 		}
+	}
+
+	@Override
+	public void invalidateCandsThatReference(@NonNull final TableRecordReference recordReference)
+	{
+		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = retrieveInvoiceCandidatesForRecordQuery(recordReference)
+				// Not already processed
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false);
+		invalidateCandsFor(icQueryBuilder);
 	}
 
 	@Override
@@ -723,16 +718,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public final void invalidateCandsWithSameReference(final I_C_Invoice_Candidate ic)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
-		final String trxName = InterfaceWrapperHelper.getTrxName(ic);
-		final int adTableId = ic.getAD_Table_ID();
-		final int recordId = ic.getRecord_ID();
-		if (adTableId <= 0 || recordId <= 0)
-		{
-			throw new AdempiereException("Invoice candidate has no AD_Table_ID/Record_ID set: " + ic);
-		}
-
-		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = retrieveInvoiceCandidatesForRecordQuery(ctx, adTableId, recordId, trxName)
+		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = retrieveInvoiceCandidatesForRecordQuery(TableRecordReference.ofReferenced(ic))
 				// Not already processed
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false);
 		invalidateCandsFor(icQueryBuilder);
@@ -849,37 +835,25 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		// logger.info("Invalidated {} C_Invoice_Candidates for AD_PInstance_ID={}", new Object[] { count, adPInstanceId });
 	}
 
-	private final IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForRecordQuery(final Properties ctx, final int adTableId, final int recordId, final String trxName)
+	private final IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForRecordQuery(
+			@NonNull final TableRecordReference tableRecordReference)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Record_ID, recordId)
+				.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_AD_Table_ID, tableRecordReference.getAdTableId())
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Record_ID, tableRecordReference.getRecord_ID())
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
-				.orderBy()
-				.addColumn(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID)
-				.endOrderBy();
-	}
-
-	private final IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForRecordQuery(final Properties ctx, final String tableName, final int recordId, final String trxName)
-	{
-		Check.assumeNotEmpty(tableName, "Param 'tableName' is not empty");
-		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-
-		return retrieveInvoiceCandidatesForRecordQuery(ctx, adTableId, recordId, trxName);
+				.addOnlyContextClient();
 	}
 
 	@Cached(cacheName = I_C_Invoice_Candidate.Table_Name + "#by#AD_Table_ID#Record_ID")
-	@Override
 	public List<I_C_Invoice_Candidate> fetchInvoiceCandidates(
-			@CacheCtx final Properties ctx,
 			@NonNull final String tableName,
-			final int recordId, @CacheTrx final String trxName)
+			final int recordId)
 	{
-		Check.assume(recordId > 0, "Param 'recordId' is > 0");
+		Check.assume(recordId > 0, "Param 'recordId' needs to be > 0");
 
-		return retrieveInvoiceCandidatesForRecordQuery(ctx, tableName, recordId, trxName)
+		return retrieveInvoiceCandidatesForRecordQuery(TableRecordReference.of(tableName, recordId))
 				.create()
 				.list(I_C_Invoice_Candidate.class);
 	}
@@ -1594,16 +1568,16 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		return defaultFilter.toString();
 	}
 
-	@Override
-	public IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInventoryLineQuery(final I_M_InventoryLine inventoryLine)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(inventoryLine);
-		final int adTableId = InterfaceWrapperHelper.getTableId(I_M_InventoryLine.class);
-		final int recordId = inventoryLine.getM_InventoryLine_ID();
-		final String trxName = InterfaceWrapperHelper.getTrxName(inventoryLine);
-
-		return retrieveInvoiceCandidatesForRecordQuery(ctx, adTableId, recordId, trxName);
-	}
+	// @Override
+	// public IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInventoryLineQuery(final I_M_InventoryLine inventoryLine)
+	// {
+	// final Properties ctx = InterfaceWrapperHelper.getCtx(inventoryLine);
+	// final int adTableId = InterfaceWrapperHelper.getTableId(I_M_InventoryLine.class);
+	// final int recordId = inventoryLine.getM_InventoryLine_ID();
+	// final String trxName = InterfaceWrapperHelper.getTrxName(inventoryLine);
+	//
+	// return retrieveInvoiceCandidatesForRecordQuery(ctx, adTableId, recordId, trxName);
+	// }
 
 	@Override
 	public Set<String> retrieveOrderDocumentNosForIncompleteGroupsFromSelection(final PInstanceId adPInstanceId)

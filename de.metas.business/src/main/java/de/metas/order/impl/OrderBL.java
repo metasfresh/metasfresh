@@ -61,8 +61,8 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
-import de.metas.bpartner.service.IBPartnerBL.RetrieveBillContactRequest;
-import de.metas.bpartner.service.IBPartnerBL.RetrieveBillContactRequest.RetrieveBillContactRequestBuilder;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.RetrieveContactRequestBuilder;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -76,13 +76,13 @@ import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.BPartnerOrderParams;
 import de.metas.order.BPartnerOrderParamsRepository;
+import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
-import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
@@ -176,15 +176,15 @@ public class OrderBL implements IOrderBL
 		}
 
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
-		final I_M_PriceList priceList = retrievePriceListOrNull(pricingSystemId, bpartnerAndLocationId, soTrx);
-		if (priceList == null)
+		final PriceListId priceListId = retrievePriceListIdOrNull(pricingSystemId, bpartnerAndLocationId, soTrx);
+		if (priceListId == null)
 		{
 			// Fail if no price list found
 			final String pricingSystemName = Services.get(IPriceListDAO.class).getPricingSystemName(pricingSystemId);
 			throw new PriceListNotFoundException(pricingSystemName, soTrx);
 		}
 
-		order.setM_PriceList_ID(priceList.getM_PriceList_ID());
+		order.setM_PriceList_ID(priceListId.getRepoId());
 	}
 
 	@Override
@@ -203,8 +203,8 @@ public class OrderBL implements IOrderBL
 		}
 
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
-		final I_M_PriceList pl = retrievePriceListOrNull(pricingSystemId, bpartnerAndLocationId, soTrx);
-		if (pl == null)
+		final PriceListId plId = retrievePriceListIdOrNull(pricingSystemId, bpartnerAndLocationId, soTrx);
+		if (plId == null)
 		{
 			final String pricingSystemName = Services.get(IPriceListDAO.class).getPricingSystemName(pricingSystemId);
 			throw new PriceListNotFoundException(pricingSystemName, soTrx);
@@ -235,11 +235,10 @@ public class OrderBL implements IOrderBL
 		final PricingSystemId pricingSystemId = pricingSystemIdOverride != null ? pricingSystemIdOverride : PricingSystemId.ofRepoIdOrNull(order.getM_PricingSystem_ID());
 		final BPartnerLocationId bpartnerAndLocationId = getShipToLocationIdOrNull(order);
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
-		final I_M_PriceList priceList = retrievePriceListOrNull(pricingSystemId, bpartnerAndLocationId, soTrx);
-		return priceList != null ? PriceListId.ofRepoId(priceList.getM_PriceList_ID()) : null;
+		return retrievePriceListIdOrNull(pricingSystemId, bpartnerAndLocationId, soTrx);
 	}
 
-	private I_M_PriceList retrievePriceListOrNull(
+	private PriceListId retrievePriceListIdOrNull(
 			final PricingSystemId pricingSystemId,
 			final BPartnerLocationId shipToBPLocationId,
 			@NonNull final SOTrx soTrx)
@@ -250,9 +249,7 @@ public class OrderBL implements IOrderBL
 		}
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-		final I_C_BPartner_Location shipBPLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(shipToBPLocationId);
-		final I_M_PriceList priceList = priceListDAO.retrievePriceListByPricingSyst(pricingSystemId, shipBPLocation, soTrx);
-		return priceList;
+		return priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, shipToBPLocationId, soTrx);
 	}
 
 	@Override
@@ -269,7 +266,7 @@ public class OrderBL implements IOrderBL
 			return true;
 		}
 
-		final RetrieveBillContactRequestBuilder retrieveBillContanctRequest = RetrieveBillContactRequest.builder()
+		final RetrieveContactRequestBuilder retrieveBillContanctRequest = RetrieveContactRequest.builder()
 				.bpartnerId(BPartnerId.ofRepoId(order.getBill_BPartner_ID()));
 		if (billToBPLocationId != null)
 		{
@@ -278,7 +275,7 @@ public class OrderBL implements IOrderBL
 
 		}
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
-		final User billContact = bpartnerBL.retrieveBillContactOrNull(retrieveBillContanctRequest.build());
+		final User billContact = bpartnerBL.retrieveContactOrNull(retrieveBillContanctRequest.build());
 		if (billContact == null)
 		{
 			return false;
@@ -306,8 +303,8 @@ public class OrderBL implements IOrderBL
 					.build();
 			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
-			final int docTypeId = DocTypeId.toRepoId(docTypeDAO.getDocTypeIdOrNull(docTypeQuery));
-			if (docTypeId <= 0)
+			final DocTypeId docTypeId = docTypeDAO.getDocTypeIdOrNull(docTypeQuery);
+			if (docTypeId == null)
 			{
 				logger.error("No POO found for {}", docTypeQuery);
 			}
@@ -330,8 +327,8 @@ public class OrderBL implements IOrderBL
 				.build();
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
-		final int docTypeId = DocTypeId.toRepoId(docTypeDAO.getDocTypeIdOrNull(docTypeQuery));
-		if (docTypeId <= 0)
+		final DocTypeId docTypeId = docTypeDAO.getDocTypeIdOrNull(docTypeQuery);
+		if (docTypeId == null)
 		{
 			logger.error("Not found for {}", docTypeQuery);
 		}
@@ -344,9 +341,9 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public void setDocTypeTargetIdAndUpdateDescription(final I_C_Order order, final int docTypeId)
+	public void setDocTypeTargetIdAndUpdateDescription(@NonNull final I_C_Order order, @NonNull final DocTypeId docTypeId)
 	{
-		order.setC_DocTypeTarget_ID(docTypeId);
+		order.setC_DocTypeTarget_ID(docTypeId.getRepoId());
 		updateDescriptionFromDocTypeTargetId(order);
 	}
 

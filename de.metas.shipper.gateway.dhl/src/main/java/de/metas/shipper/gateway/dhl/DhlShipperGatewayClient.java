@@ -47,6 +47,7 @@ import de.dhl.webservices.businesscustomershipping._3.Version;
 import de.metas.shipper.gateway.dhl.logger.DhlClientLogEvent;
 import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
+import de.metas.shipper.gateway.dhl.model.DhlClientConfigRepository;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlPackageLabelType;
@@ -64,6 +65,7 @@ import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -216,6 +218,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 					.toBuilder()
 					.pdfLabelData(pdfData)
 					.awb(creationState.getShipmentNumber()) // i hope shipmentNumber is the AWB
+					.trackingUrl(config.getTrackingUrlBase() + creationState.getShipmentNumber())
 					.build();
 
 			updatedCustomDeliveryData.add(detail);

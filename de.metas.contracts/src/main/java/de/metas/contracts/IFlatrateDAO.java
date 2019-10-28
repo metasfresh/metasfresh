@@ -23,8 +23,12 @@ package de.metas.contracts;
  */
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
@@ -34,6 +38,9 @@ import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
@@ -41,9 +48,17 @@ import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
+import de.metas.costing.ChargeId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
+import de.metas.util.collections.CollectionUtils;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 
 public interface IFlatrateDAO extends ISingletonService
 {
@@ -146,6 +161,42 @@ public interface IFlatrateDAO extends ISingletonService
 
 	List<I_C_Flatrate_Term> retrieveTerms(I_C_BPartner bPartner, I_C_Flatrate_Conditions flatrateConditions);
 
+	/**
+	 * This method calls {@link #retrieveTerms(Properties, int, Timestamp, int, int, int, String)} using the given invoice candidates values as parameters.
+	 */
+	List<I_C_Flatrate_Term> retrieveTerms(I_C_Invoice_Candidate ic);
+
+	List<I_C_Flatrate_Term> retrieveTerms(Properties ctx, int bill_BPartner_ID, Timestamp dateOrdered, int m_Product_Category_ID, int m_Product_ID, int c_Charge_ID, String trxName);
+
+	List<I_C_Flatrate_Term> retrieveTerms(TermsQuery query);
+
+	@Value
+	@Builder
+	public static class TermsQuery
+	{
+		@Singular
+		List<BPartnerId> billPartnerIds;
+
+		@NonNull
+		LocalDate dateOrdered;
+
+		@Nullable
+		ProductCategoryId productCategoryId;
+
+		@Nullable
+		ProductId productId;
+
+		@Nullable
+		ChargeId chargeId;
+	}
+
+	List<I_C_Flatrate_Term> retrieveTerms(Collection<FlatrateTermId> flatrateTermIds);
+
+	default I_C_Flatrate_Term retrieveTerm(@NonNull final FlatrateTermId flatrateTermId)
+	{
+		return CollectionUtils.singleElement(retrieveTerms(ImmutableList.of(flatrateTermId)));
+	}
+
 	List<I_M_Product> retrieveHoldingFeeProducts(I_C_Flatrate_Conditions c_Flatrate_Conditions);
 
 	List<I_C_UOM> retrieveUOMs(Properties ctx, I_C_Flatrate_Term flatrateTerm, String trxName);
@@ -165,16 +216,6 @@ public interface IFlatrateDAO extends ISingletonService
 	 * @throws AdempiereException if there is more than one non-simulation-term
 	 */
 	I_C_Flatrate_Term retrieveNonSimTermOrNull(I_C_Invoice_Candidate ic);
-
-	/**
-	 * This method calls {@link #retrieveTerms(Properties, int, Timestamp, int, int, int, String)} using the given invoice candidates values as parameters.
-	 *
-	 * @param ic
-	 * @return
-	 */
-	List<I_C_Flatrate_Term> retrieveTerms(I_C_Invoice_Candidate ic);
-
-	List<I_C_Flatrate_Term> retrieveTerms(Properties ctx, int bill_BPartner_ID, Timestamp dateOrdered, int m_Product_Category_ID, int m_Product_ID, int c_Charge_ID, String trxName);
 
 	/**
 	 * Retrieves invoice candidates that don't have an invoice candidate allocation, but should have. Method to be used when there are already invoice candidates and a term is completed (again).

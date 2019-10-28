@@ -31,13 +31,13 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
@@ -138,7 +138,9 @@ public interface IShipmentScheduleBL extends ISingletonService
 	/**
 	 * Creates a new aggregation key builder which can be used to decide if two given shipment schedules can go into the same shipment.
 	 */
-	IAggregationKeyBuilder<I_M_ShipmentSchedule> mkShipmentHeaderAggregationKeyBuilder();
+	ShipmentScheduleHeaderAggregationKeyBuilder mkShipmentHeaderAggregationKeyBuilder();
+
+	void updateHeaderAggregationKey(I_M_ShipmentSchedule sched);
 
 	/**
 	 * If the given <code>shipmentSchedule</code> has its {@link I_M_ShipmentSchedule#COLUMN_QtyOrdered_Override QtyOrdered_Override} set, then override its <code>QtyOrdered</code> value with it. If

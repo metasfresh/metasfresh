@@ -23,7 +23,8 @@ CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details
 	lotno character varying,
 	p_value character varying(30),
 	p_description character varying(255), 
-	inout_description character varying(255)
+	inout_description character varying(255),
+	iscampaignprice       character(1)
 );
 
 
@@ -40,7 +41,7 @@ SELECT
 	END AS Attributes,
 	iol.QtyEnteredTU AS HUQty,
 	pi.name AS HUName,
-	QtyEntered * COALESCE (multiplyrate, 1) AS QtyEntered,
+	iol.QtyEntered * COALESCE (multiplyrate, 1) AS QtyEntered,
 	COALESCE(ic.PriceEntered_Override, ic.PriceEntered) AS PriceEntered,
 	COALESCE(uomt.UOMSymbol, uom.UOMSymbol) AS UOMSymbol,
 	uom.stdPrecision,
@@ -56,7 +57,8 @@ SELECT
 	att.lotno,
 	p.value AS p_value,
 	p.description AS p_description,
-	io.description AS inout_description
+	io.description AS inout_description,
+	ol.iscampaignprice
 FROM
 	M_InOutLine iol
 	INNER JOIN M_InOut io 			ON iol.M_InOut_ID = io.M_InOut_ID AND io.isActive = 'Y'
@@ -71,6 +73,10 @@ FROM
 		WHERE iol.M_InOut_ID = $1 AND iciol.isActive = 'Y'
 		GROUP BY 	Price_UOM_ID, iciol.M_InOutLine_ID
 	) ic ON iol.M_InOutLine_ID = ic.M_InOutLine_ID
+	
+	-- get promotional price details from order line
+    LEFT OUTER JOIN c_orderline ol ON ol.c_orderline_id = iol.c_orderline_id
+	
 	-- Get Packing instruction
 	LEFT OUTER JOIN
 	(
@@ -137,7 +143,7 @@ FROM
 WHERE
 	iol.M_InOut_ID = $1 AND iol.isActive = 'Y'
 	AND (COALESCE(pc.M_Product_Category_ID, -1) != getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID))
-	AND QtyEntered != 0 -- Don't display lines without a Qty. See 08293
+	AND iol.QtyEntered != 0 -- Don't display lines without a Qty. See 08293
 ORDER BY
 	line
 

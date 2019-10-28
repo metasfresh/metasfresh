@@ -36,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -517,7 +519,7 @@ public class FlatrateBL implements IFlatrateBL
 			final ProductId productId = ProductId.ofRepoIdOrNull(dataEntry.getM_Product_DataEntry_ID());
 			Check.assume(productId != null,
 					dataEntry + " has no M_Product_DataEntry, despite " + fc + "has Type_Conditions=" + fc.getType_Conditions());
-			
+
 			productIdForIc = productId.getRepoId();
 
 			priceActual = FlatrateTermPricing.builder()
@@ -690,9 +692,9 @@ public class FlatrateBL implements IFlatrateBL
 		List<I_C_Flatrate_DataEntry> result = new ArrayList<>();
 
 		final List<I_C_Flatrate_DataEntry> invoicingEntries = flatrateDB.retrieveInvoicingEntries(
-				flatrateTerm, 
-				startDate, 
-				endDate, 
+				flatrateTerm,
+				startDate,
+				endDate,
 				uom != null ? UomId.ofRepoId(uom.getC_UOM_ID()) : null);
 
 		final List<I_C_Period> periodsOfTerm = Services.get(ICalendarDAO.class).retrievePeriods(
@@ -1585,7 +1587,7 @@ public class FlatrateBL implements IFlatrateBL
 			final I_C_Flatrate_Conditions conditions,
 			final Timestamp startDate,
 			final I_AD_User userInCharge,
-			final ProductAndCategoryId productAndCategoryId,
+			@Nullable final ProductAndCategoryId productAndCategoryId,
 			final boolean completeIt)
 	{
 		final Properties ctx = context.getCtx();
@@ -1684,8 +1686,7 @@ public class FlatrateBL implements IFlatrateBL
 	@Override
 	public void completeIfValid(final I_C_Flatrate_Term term)
 	{
-		final boolean overlappingIsOK = canOverlapWithOtherTerms(term);
-		if (!overlappingIsOK)
+		if (!isAllowedToOverlapWithOtherTerms(term))
 		{
 			final boolean hasOverlappingTerms = hasOverlappingTerms(term);
 			if (hasOverlappingTerms)
@@ -1709,10 +1710,10 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	@Override
-	public boolean canOverlapWithOtherTerms(@NonNull final I_C_Flatrate_Term term)
+	public boolean isAllowedToOverlapWithOtherTerms(@NonNull final I_C_Flatrate_Term term)
 	{
-		final boolean overlappingIsOK = X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(term.getType_Conditions());
-		return overlappingIsOK;
+		final boolean allowedToOverlapWithOtherTerms = X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription.equals(term.getType_Conditions());
+		return allowedToOverlapWithOtherTerms;
 	}
 
 	@Override

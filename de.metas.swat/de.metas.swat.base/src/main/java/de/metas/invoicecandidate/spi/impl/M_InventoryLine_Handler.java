@@ -8,13 +8,13 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
@@ -27,7 +27,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerBL.RetrieveBillContactRequest;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.invoicecandidate.M_InOutLine_Handler;
@@ -309,7 +309,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 			billBPLocationId = BPartnerLocationId.ofRepoId(billBPLocation.getC_BPartner_ID(), billBPLocation.getC_BPartner_Location_ID());
 
 			final User billBPContact = bPartnerBL
-					.retrieveBillContactOrNull(RetrieveBillContactRequest.builder()
+					.retrieveContactOrNull(RetrieveContactRequest.builder()
 							.bpartnerId(billBPLocationId.getBpartnerId())
 							.bPartnerLocationId(billBPLocationId)
 							.build());
@@ -340,18 +340,8 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public void invalidateCandidatesFor(final Object model)
 	{
-		final I_M_InventoryLine inventoryLine = InterfaceWrapperHelper.create(model, I_M_InventoryLine.class);
-		invalidateCandidateForInventoryLine(inventoryLine);
-
-	}
-
-	private void invalidateCandidateForInventoryLine(final I_M_InventoryLine inventoryLine)
-	{
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-
-		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = invoiceCandDAO.retrieveInvoiceCandidatesForInventoryLineQuery(inventoryLine);
-
-		invoiceCandDAO.invalidateCandsFor(icQueryBuilder);
+		invoiceCandDAO.invalidateCandsThatReference(TableRecordReference.of(model));
 	}
 
 	@Override

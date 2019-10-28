@@ -29,9 +29,10 @@ import org.compiere.model.X_M_Product;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.BOMCreateRequest;
+import org.eevolution.api.BOMType;
+import org.eevolution.api.BOMUse;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
-import org.eevolution.model.X_PP_Product_BOM;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -354,8 +355,8 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 				.productValue(bomProduct.getValue())
 				.productName(bomProduct.getName())
 				.uomId(bomProductUomId)
-				.bomUse(X_PP_Product_BOM.BOMUSE_Manufacturing)
-				.bomType(X_PP_Product_BOM.BOMTYPE_Make_To_Order)
+				.bomUse(BOMUse.Manufacturing)
+				.bomType(BOMType.MakeToOrder)
 				.lines(additionalQuotationLines
 						.stream()
 						.map(quotationLine -> toBOMLineCreateRequest(quotationLine, candidate.getQty()))

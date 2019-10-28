@@ -31,8 +31,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_M_PriceList;
 import org.compiere.model.PO;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -43,9 +41,12 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
+
 import de.metas.freighcost.FreightCostRule;
+
 import de.metas.lang.SOTrx;
-import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.BPartnerOrderParams;
@@ -103,8 +104,8 @@ public class OLCandBL implements IOLCandBL
 	public void process(@NonNull final OLCandProcessorDescriptor processor)
 	{
 		final SpringContextHolder springContextHolder = SpringContextHolder.instance;
-		final OLCandRegistry olCandRegistry = springContextHolder.getBean(OLCandRegistry.class);
-		final OLCandRepository olCandRepo = springContextHolder.getBean(OLCandRepository.class);
+		final OLCandRegistry olCandRegistry =  springContextHolder.getBean(OLCandRegistry.class);
+		final OLCandRepository olCandRepo =  springContextHolder.getBean(OLCandRepository.class);
 
 		final OLCandSource candidatesSource = olCandRepo.getForProcessor(processor);
 
@@ -146,7 +147,7 @@ public class OLCandBL implements IOLCandBL
 			@NonNull final I_C_OLCand olCandRecord,
 			@Nullable final BPartnerOrderParams bPartnerOrderParams,
 			@Nullable final OLCandOrderDefaults orderDefaults)
-	{
+		{
 		if (!Check.isEmpty(olCandRecord.getDeliveryRule(), true))
 		{
 			return DeliveryRule.ofCode(olCandRecord.getDeliveryRule());
@@ -302,10 +303,8 @@ public class OLCandBL implements IOLCandBL
 		// note that even with manual price and/or discount, we need to invoke the pricing engine, in order to get the tax category
 
 		final BPartnerId billBPartnerId = effectiveValuesBL.getBillBPartnerEffectiveId(olCand);
+		final BPartnerLocationId dropShipLocationId = effectiveValuesBL.getDropShipLocationEffectiveId(olCand);
 
-		final I_C_BPartner_Location dropShipLocation = effectiveValuesBL.getDropShip_Location_Effective(olCand);
-
-		pricingCtx.setCountryId(CountryId.ofRepoId(dropShipLocation.getC_Location().getC_Country_ID()));
 
 		final BigDecimal qty = qtyOverride != null ? qtyOverride : olCand.getQty();
 
@@ -328,12 +327,15 @@ public class OLCandBL implements IOLCandBL
 
 		pricingCtx.setDisallowDiscount(olCand.isManualDiscount());
 
-		final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(pricingSystemId, dropShipLocation, SOTrx.SALES);
-		if (pl == null)
+		final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
+				pricingSystemId,
+				dropShipLocationId,
+				SOTrx.SALES);
+		if (plId == null)
 		{
-			throw new AdempiereException("@M_PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @Bill_Location@ " + dropShipLocation.getC_BPartner_Location_ID());
+			throw new AdempiereException("@M_PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @DropShip_Location@ " + dropShipLocationId);
 		}
-		pricingCtx.setPriceListId(PriceListId.ofRepoId(pl.getM_PriceList_ID()));
+		pricingCtx.setPriceListId(plId);
 		pricingCtx.setProductId(effectiveValuesBL.getM_Product_Effective_ID(olCand));
 
 		pricingResult = pricingBL.calculatePrice(pricingCtx);

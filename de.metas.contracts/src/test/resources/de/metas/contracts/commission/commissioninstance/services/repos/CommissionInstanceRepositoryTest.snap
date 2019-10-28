@@ -1,0 +1,83 @@
+de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstanceRepositoryTest.getForInvoiceCandidateId=[ {
+  "id" : 100005,
+  "currentTriggerData" : {
+    "invoiceCandidateId" : 10,
+    "invoiceCandidateWasDeleted" : false,
+    "timestamp" : "2019-09-17T11:50:55Z",
+    "forecastedPoints" : 10,
+    "invoiceablePoints" : 11,
+    "invoicedPoints" : 12
+  },
+  "config" : {
+    "@type" : "HierarchyConfig",
+    "subtractLowerLevelCommissionFromBase" : true,
+    "bpartnerId2HierarchyContracts" : {
+      "20" : {
+        "@type" : "HierarchyContract",
+        "id" : 100003,
+        "pointsPrecision" : 2,
+        "commissionPercent" : 10
+      },
+      "21" : {
+        "@type" : "HierarchyContract",
+        "id" : 100004,
+        "pointsPrecision" : 2,
+        "commissionPercent" : 10
+      }
+    },
+    "commissionType" : "HIERARCHY_COMMISSION"
+  },
+  "shares" : [ {
+    "id" : null,
+    "level" : 10,
+    "beneficiary" : {
+      "bPartnerId" : 20
+    },
+    "facts" : [ {
+      "timestamp" : "2019-09-17T11:49:25Z",
+      "state" : "FORECASTED",
+      "points" : 10
+    }, {
+      "timestamp" : "2019-09-17T11:49:35Z",
+      "state" : "FORECASTED",
+      "points" : -9
+    }, {
+      "timestamp" : "2019-09-17T11:49:45Z",
+      "state" : "INVOICEABLE",
+      "points" : 1.1
+    }, {
+      "timestamp" : "2019-09-17T11:49:55Z",
+      "state" : "INVOICED",
+      "points" : 1.2
+    } ],
+    "forecastedPointsSum" : 1,
+    "invoiceablePointsSum" : 1.1,
+    "invoicedPointsSum" : 1.2
+  }, {
+    "id" : null,
+    "level" : 20,
+    "beneficiary" : {
+      "bPartnerId" : 21
+    },
+    "facts" : [ {
+      "timestamp" : "2019-09-17T11:50:25Z",
+      "state" : "FORECASTED",
+      "points" : 2
+    }, {
+      "timestamp" : "2019-09-17T11:50:35Z",
+      "state" : "INVOICEABLE",
+      "points" : 2.1
+    }, {
+      "timestamp" : "2019-09-17T11:50:45Z",
+      "state" : "INVOICED",
+      "points" : 10
+    }, {
+      "timestamp" : "2019-09-17T11:50:55Z",
+      "state" : "INVOICED",
+      "points" : -7.8
+    } ],
+    "forecastedPointsSum" : 2,
+    "invoiceablePointsSum" : 2.1,
+    "invoicedPointsSum" : 2.2
+  } ]
+} ]

@@ -125,7 +125,7 @@ public class PPOrderBOMBL_calculateQtyToIssueBasedOnFinishedGoodReceipt_Test
 
 	private void assertQtyToIssueBasedOnFinishedGoodReceived(final String expectedStr)
 	{
-		final BigDecimal actual = ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM()).toBigDecimal();
+		final BigDecimal actual = ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM()).toBigDecimal();
 		assertThat(actual)
 				.as("qtyToIssue based on finished goods received")
 				.isEqualByComparingTo(expectedStr);

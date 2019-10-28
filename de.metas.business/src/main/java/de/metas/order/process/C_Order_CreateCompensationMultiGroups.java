@@ -13,6 +13,7 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
 
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateId;
@@ -73,7 +74,7 @@ public class C_Order_CreateCompensationMultiGroups extends OrderCompensationGrou
 		final List<I_C_OrderLine> selectedOrderLines = getSelectedOrderLines();
 		Check.assumeNotEmpty(selectedOrderLines, "selectedOrderLines is not empty");
 
-		final ListMultimap<GroupTemplate, Integer> orderLineIdsByGroupTemplate = extractOrderLineIdsByGroupTemplate(selectedOrderLines);
+		final ListMultimap<GroupTemplate, OrderLineId> orderLineIdsByGroupTemplate = extractOrderLineIdsByGroupTemplate(selectedOrderLines);
 		if (orderLineIdsByGroupTemplate.isEmpty())
 		{
 			throw new AdempiereException("Nothing to group"); // TODO trl
@@ -91,13 +92,13 @@ public class C_Order_CreateCompensationMultiGroups extends OrderCompensationGrou
 		return MSG_OK;
 	}
 
-	private ListMultimap<GroupTemplate, Integer> extractOrderLineIdsByGroupTemplate(final List<I_C_OrderLine> orderLines)
+	private ListMultimap<GroupTemplate, OrderLineId> extractOrderLineIdsByGroupTemplate(final List<I_C_OrderLine> orderLines)
 	{
 		final List<I_C_OrderLine> orderLinesSorted = orderLines.stream()
 				.sorted(Comparator.comparing(I_C_OrderLine::getLine))
 				.collect(ImmutableList.toImmutableList());
 
-		final ListMultimap<GroupTemplate, Integer> orderLineIdsByGroupTemplate = LinkedListMultimap.create();
+		final ListMultimap<GroupTemplate, OrderLineId> orderLineIdsByGroupTemplate = LinkedListMultimap.create();
 		for (final I_C_OrderLine orderLine : orderLinesSorted)
 		{
 			final GroupTemplate groupTemplate = extractGroupTemplate(orderLine);
@@ -106,7 +107,7 @@ public class C_Order_CreateCompensationMultiGroups extends OrderCompensationGrou
 				continue;
 			}
 
-			orderLineIdsByGroupTemplate.put(groupTemplate, orderLine.getC_OrderLine_ID());
+			orderLineIdsByGroupTemplate.put(groupTemplate, OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
 		}
 		return orderLineIdsByGroupTemplate;
 	}
@@ -131,7 +132,7 @@ public class C_Order_CreateCompensationMultiGroups extends OrderCompensationGrou
 		return groupTemplateRepo.getById(groupTemplateId);
 	}
 
-	private Group createGroup(final GroupTemplate groupTemplate, final Collection<Integer> orderLineIds)
+	private Group createGroup(final GroupTemplate groupTemplate, final Collection<OrderLineId> orderLineIds)
 	{
 		return groupsRepo.prepareNewGroup()
 				.linesToGroup(orderLineIds)

@@ -76,6 +76,12 @@ public class DhlCustomDeliveryData implements CustomDeliveryData
 		return getBySequenceNumber(sequenceNumber).getAwb();
 	}
 
+	@Nullable
+	public String getTrackingUrlBySequenceNumber(@NonNull final DhlSequenceNumber sequenceNumber)
+	{
+		return getBySequenceNumber(sequenceNumber).getTrackingUrl();
+	}
+
 	@NonNull
 	private DhlCustomDeliveryDataDetail getBySequenceNumber(@NonNull final DhlSequenceNumber sequenceNumber)
 	{

@@ -54,4 +54,7 @@ public class DhlClientConfig
 	@NonNull
 	private final UomId lengthUomId;
 
+	@NonNull
+	private final String trackingUrlBase;
+
 }

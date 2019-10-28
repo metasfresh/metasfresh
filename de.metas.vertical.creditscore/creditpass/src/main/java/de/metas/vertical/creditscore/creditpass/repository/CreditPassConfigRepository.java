@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 
 /*
  * #%L
- *  de.metas.vertical.creditscore.creditpass.repository
+ * de.metas.vertical.creditscore.creditpass.repository
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -55,7 +55,7 @@ import de.metas.vertical.creditscore.creditpass.model.I_CS_Creditpass_Config_Pay
 public class CreditPassConfigRepository
 {
 
-	private final CCache<BPGroupId, CreditPassConfig> configCache = CCache.<BPGroupId, CreditPassConfig>builder()
+	private final CCache<BPGroupId, CreditPassConfig> configCache = CCache.<BPGroupId, CreditPassConfig> builder()
 			.initialCapacity(1)
 			.tableName(I_CS_Creditpass_Config.Table_Name)
 			.additionalTableNameToResetFor(I_CS_Creditpass_Config_PaymentRule.Table_Name)
@@ -63,14 +63,14 @@ public class CreditPassConfigRepository
 			.additionalTableNameToResetFor(I_CS_Creditpass_BP_Group.Table_Name)
 			.build();
 
-	public CreditPassConfig getConfigByBPartnerId(BPartnerId businessPartnerId)
+	public CreditPassConfig getConfigByBPartnerId(final BPartnerId businessPartnerId)
 	{
 		final IBPGroupDAO bpGroupRepo = Services.get(IBPGroupDAO.class);
 		final BPGroupId bpGroupId = bpGroupRepo.getBPGroupByBPartnerId(businessPartnerId);
 		return configCache.getOrLoad(bpGroupId, () -> getByBPGroupId(bpGroupId));
 	}
 
-	private CreditPassConfig getByBPGroupId(BPGroupId bpGroupId)
+	private CreditPassConfig getByBPGroupId(final BPGroupId bpGroupId)
 	{
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -101,8 +101,8 @@ public class CreditPassConfigRepository
 				.list()
 				.stream()
 				.map(configPaymentRule -> {
-					boolean hasCurrency = configPaymentRule.getC_Currency_ID() > 0;
-					CreditPassConfigPaymentRule creditPassConfigPaymentRule = CreditPassConfigPaymentRule.builder()
+					final boolean hasCurrency = configPaymentRule.getC_Currency_ID() > 0;
+					final CreditPassConfigPaymentRule creditPassConfigPaymentRule = CreditPassConfigPaymentRule.builder()
 							.paymentRule(configPaymentRule.getPaymentRule())
 							.requestPrice(configPaymentRule.getRequestPrice())
 							.purchaseType(configPaymentRule.getPurchaseType().intValue())
@@ -117,7 +117,7 @@ public class CreditPassConfigRepository
 				})
 				.collect(Collectors.toList());
 
-		for (CreditPassConfigPaymentRule paymentRule : configPaymentRules)
+		for (final CreditPassConfigPaymentRule paymentRule : configPaymentRules)
 		{
 			final List<CreditPassConfigPRFallback> configPaymentRuleFallbacks = queryBL
 					.createQueryBuilder(I_CS_Creditpass_CP_Fallback.class)
@@ -137,8 +137,8 @@ public class CreditPassConfigRepository
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final int clientId = Env.getAD_Client_ID();
 		final int orgId = Env.getAD_Org_ID(Env.getCtx());
-		int transactionType = sysConfigBL.getIntValue(CreditPassConstants.SYSCONFIG_TRANSACTION_TYPE, CreditPassConstants.DEFAULT_TRANSACTION_ID, clientId, orgId);
-		int processingCode = sysConfigBL.getIntValue(CreditPassConstants.SYSCONFIG_PROCESSING_CODE, CreditPassConstants.DEFAULT_PROCESSING_CODE, clientId, orgId);
+		final int transactionType = sysConfigBL.getIntValue(CreditPassConstants.SYSCONFIG_TRANSACTION_TYPE, CreditPassConstants.DEFAULT_TRANSACTION_ID, clientId, orgId);
+		final int processingCode = sysConfigBL.getIntValue(CreditPassConstants.SYSCONFIG_PROCESSING_CODE, CreditPassConstants.DEFAULT_PROCESSING_CODE, clientId, orgId);
 
 		return CreditPassConfig.builder()
 				.authId(configRecord.getAuthId())

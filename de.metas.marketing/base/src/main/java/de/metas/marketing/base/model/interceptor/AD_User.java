@@ -95,7 +95,7 @@ public class AD_User
 				return; // nothing to do
 			}
 			final User user = userRepository.ofRecord(userRecord);
-			campaignService.removeFromCampaign(user, defaultcampaignId.get());
+			campaignService.removeUserFromCampaign(user, defaultcampaignId.get());
 		}
 	}
 

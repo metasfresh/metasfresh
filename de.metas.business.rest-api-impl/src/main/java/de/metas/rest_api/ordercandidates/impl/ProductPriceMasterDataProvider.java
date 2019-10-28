@@ -34,12 +34,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -68,7 +68,8 @@ final class ProductPriceMasterDataProvider
 		}
 		else
 		{
-			pricingSystemId = bpartnersRepo.retrievePricingSystemIdOrNull(bpartnerId, soTrx);
+			// we need to retrieve within the current trx, because maybe the BPartner itself was also only just created
+			pricingSystemId = bpartnersRepo.retrievePricingSystemIdOrNullInTrx(bpartnerId, soTrx);
 			if (pricingSystemId == null)
 			{
 				throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@")
@@ -93,7 +94,7 @@ final class ProductPriceMasterDataProvider
 		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(priceList.getDefault_TaxCategory_ID());
 		if (taxCategoryId == null)
 		{
-			throw new AdempiereException("@NotFound@ @C_TaxCategory_ID@")
+			throw new AdempiereException("@NotFound@ @Default_TaxCategory_ID@ of @M_PriceList_ID@")
 					.setParameter("priceListId", priceListId);
 		}
 

@@ -1,16 +1,17 @@
 ---DROP FUNCTION IF EXISTS report.cu_product_label(IN M_HU_ID numeric);
 
-CREATE FUNCTION report.cu_product_label(IN M_HU_ID numeric) RETURNS TABLE
-	(
-	created date, 
-	value Character Varying, 
-	serialno text,
-	name Character Varying (255),
-	prod_value Character Varying,
-	vendorName Character Varying (255),
+CREATE FUNCTION report.cu_product_label(IN M_HU_ID numeric)
+  RETURNS TABLE
+  (
+    created         date,
+    value           Character Varying,
+    serialno        text,
+    name            Character Varying(255),
+    prod_value      Character Varying,
+    vendorName      Character Varying(255),
     PurchaseOrderNo Character Varying
-	)
-AS 
+  )
+AS
 $$
 SELECT
   tu.created :: date,
@@ -34,7 +35,7 @@ FROM
   -- SerialNo
   /** receipt infos */
   LEFT OUTER JOIN (
-                    select
+                    select DISTINCT ON (tu.M_HU_ID)
                       tu.M_HU_ID,
                       bp.name      as vendorName,
                       o.DocumentNo as PurchaseOrderNo
@@ -48,14 +49,14 @@ FROM
                       LEFT JOIN M_ReceiptSchedule rs ON hf_a.Record_ID = rs.M_ReceiptSchedule_ID AND rs.isActive = 'Y'
                       LEFT JOIN C_BPartner bp on rs.C_BPartner_ID = bp.C_BPartner_ID
                       LEFT JOIN C_Order o on rs.C_Order_ID = o.C_Order_ID
+                    order by tu.M_HU_ID, bp.name nulls last, o.DocumentNo nulls last
                   ) ri ON ri.M_HU_ID = tu.M_HU_ID
 
   --get vallues for aggregated HUs if any
   left outer join "de.metas.handlingunits".get_TU_Values_From_Aggregation(tu.M_HU_ID) val on true
 WHERE
-	tu.M_HU_ID = $1
-
-;
+  tu.M_HU_ID = $1;
 
 $$
-  LANGUAGE sql STABLE;
+LANGUAGE sql
+STABLE;

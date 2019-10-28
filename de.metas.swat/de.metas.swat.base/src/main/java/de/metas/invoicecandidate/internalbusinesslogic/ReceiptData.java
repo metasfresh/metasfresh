@@ -57,11 +57,11 @@ public class ReceiptData
 		final Quantity qtyTotal = qtysTotal.getUOMQtyOpt().get();
 		final Quantity qtyTotalInStockUom = qtysTotal.getStockQty();
 
-		final BigDecimal qtyWithIssuesEffective = qualityDiscountOverride.multiply(
+		final BigDecimal qtyWithIssuesEffective = qualityDiscountOverride.computePercentageOf(
 				qtyTotal.toBigDecimal(),
 				qtyTotal.getUOM().getStdPrecision());
 
-		final BigDecimal qtyWithIssuesInStockUomEffective = qualityDiscountOverride.multiply(
+		final BigDecimal qtyWithIssuesInStockUomEffective = qualityDiscountOverride.computePercentageOf(
 				qtyTotalInStockUom.toBigDecimal(),
 				qtyTotalInStockUom.getUOM().getStdPrecision());
 

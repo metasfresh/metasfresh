@@ -48,8 +48,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -352,6 +350,12 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 
 					final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 					attachmentEntryService.createNewAttachment(salesOrderRef, awb + ".pdf", pdfData);
+				}
+
+				final String trackingUrl = customDeliveryData.getTrackingUrlBySequenceNumber(DhlSequenceNumber.of(shipmentOrder.getDHL_ShipmentOrder_ID()));
+				if (trackingUrl != null)
+				{
+					shipmentOrder.setTrackingURL(trackingUrl);
 				}
 
 				InterfaceWrapperHelper.save(shipmentOrder);
