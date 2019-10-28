@@ -41,6 +41,7 @@ class DhlTestHelper
 
 	private static final CountryCode COUNTRY_CODE_DE = CountryCode.builder().alpha2("DE").alpha3("DEU").build();
 	private static final CountryCode COUNTRY_CODE_CH = CountryCode.builder().alpha2("CH").alpha3("CHE").build();
+	private static final CountryCode COUNTRY_CODE_AT = CountryCode.builder().alpha2("AT").alpha3("AUT").build();
 
 	static DeliveryOrder createDummyDeliveryOrderDEtoDE()
 	{
@@ -136,4 +137,50 @@ class DhlTestHelper
 		return deliveryOrderCreateRequest;
 	}
 
+	static DeliveryOrder createDummyDeliveryOrderDEtoAT()
+	{
+		final DeliveryOrder deliveryOrderCreateRequest = DeliveryOrder.builder()
+				// shipper
+				.pickupAddress(Address.builder()
+						.companyName1("TheBestPessimist Inc.")
+						.companyName2("The Second Shipper Company Name")
+						.street1("Eduard-Otto-Straße")
+						.street2("Street Name 2 ")
+						.houseNo("10")
+						.zipCode("53129")
+						.city("Bonn")
+						.country(COUNTRY_CODE_DE)
+						.build())
+				.pickupDate(PickupDate.builder()
+						.date(LocalDate.now().plusDays(1)) // always tomorrow!
+						.build())
+				// international (CH) receiver
+				.deliveryAddress(Address.builder()
+						.companyName1("NOVAPARK Wohlfühlhotel Graz")
+						.companyName2("")
+						.street1("Fischeraustraße")
+						.houseNo("22")
+						.zipCode("8051")
+						.city("Graz")
+						.country(COUNTRY_CODE_AT)
+						.build())
+				.deliveryContact(ContactPerson.builder()
+						.emailAddress("tbp@tbp.com")
+						.simplePhoneNumber("+10-012-345689")
+						.build())
+				.deliveryPosition(DeliveryPosition.builder()
+						.numberOfPackages(5)
+						.packageDimensions(PackageDimensions.builder()
+								.heightInCM(10)
+								.lengthInCM(10)
+								.widthInCM(10)
+								.build())
+						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
+						.grossWeightKg(1)
+						.build())
+				// .customerReference("the helpful customer reference") // todo: inside createDraftDeliveryOrder, what is the source for customer reference?
+				.serviceType(DhlServiceType.Dhl_PaketInternational)
+				.build();
+		return deliveryOrderCreateRequest;
+	}
 }
