@@ -44,16 +44,20 @@ SELECT
   END                                                                                             AS Attributes,
   iol.QtyEnteredTU                                                                                AS HUQty,
   pi.name                                                                                         AS HUName,
-  iol.QtyEntered * COALESCE(multiplyrate, 1)                                                      AS QtyEntered,
+  (case when qtydeliveredcatch is not null
+    then qtydeliveredcatch
+   else iol.QtyEntered * COALESCE(multiplyrate, 1) end)                                           AS QtyEntered,
   COALESCE(ic.PriceEntered_Override, ic.PriceEntered)                                             AS PriceEntered,
-  COALESCE(uomt.UOMSymbol, uom.UOMSymbol)                                                         AS UOMSymbol,
+  (case when qtydeliveredcatch is not null
+    then COALESCE(uomct.UOMSymbol, uomc.UOMSymbol)
+   else COALESCE(uomt.UOMSymbol, uom.UOMSymbol) end)                                              AS UOMSymbol,
   uom.stdPrecision,
   COALESCE(ic.PriceActual_Override, ic.PriceActual) * iol.MovementQty * COALESCE(multiplyrate, 1) AS linenetamt,
   COALESCE(ic.Discount_Override, ic.Discount)                                                     AS Discount,
   bp.isDiscountPrinted,
   CASE WHEN uom.StdPrecision = 0
     THEN '#,##0'
-  ELSE Substring('#,##0.000' FROM 0 FOR 7 + uom.StdPrecision :: integer) END                          AS QtyPattern,
+  ELSE Substring('#,##0.000' FROM 0 FOR 7 + uom.StdPrecision :: integer) END                      AS QtyPattern,
   iol.Description,
   -- in case there is no C_BPartner_Product, fallback to the default ones
   COALESCE(NULLIF(bpp.ProductNo, ''), p.value)                                                    as bp_product_no,
@@ -65,7 +69,7 @@ SELECT
   io.description                                                                                  AS inout_description,
   ol.iscampaignprice,
   ol.qtyordered,
-  COALESCE(uomt_ol.UOMSymbol, uom_ol.UOMSymbol)                                                         AS orderUOMSymbol
+  COALESCE(uomt_ol.UOMSymbol, uom_ol.UOMSymbol)                                                   AS orderUOMSymbol
 FROM
   M_InOutLine iol
   INNER JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID AND io.isActive = 'Y'
@@ -143,6 +147,10 @@ FROM
                                            AND conv.C_UOM_To_ID = ic.Price_UOM_ID
                                            AND iol.M_Product_ID = conv.M_Product_ID
                                            AND conv.isActive = 'Y'
+
+  -- Unit of measurement and its translation for catch weight
+  LEFT OUTER JOIN C_UOM uomc ON uomc.C_UOM_ID = iol.catch_uom_id
+  LEFT OUTER JOIN C_UOM_Trl uomct on uomct.c_UOM_ID = uom.C_UOM_ID and uomct.AD_Language = $2
   -- Attributes
   LEFT OUTER JOIN (
                     SELECT
