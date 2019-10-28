@@ -27,8 +27,10 @@ import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.Value;
 
 @Builder(toBuilder = true)
+@Value
 public class DhlCustomDeliveryData implements CustomDeliveryData
 {
 	@Singular
