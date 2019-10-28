@@ -61,7 +61,7 @@ public class ProductsToPickViewFactory implements IViewFactory
 	private static final String MSG_ReviewCaption = "de.metas.ui.web.pickingV2.productsToPick.Review.caption";
 
 	@Autowired
-	private ProductsToPickRowsService rowsRepository;
+	private ProductsToPickRowsService rowsService;
 	private IViewsRepository viewsRepository;
 
 	@Override
@@ -142,7 +142,7 @@ public class ProductsToPickViewFactory implements IViewFactory
 	{
 		final ViewId viewId = ViewId.random(PickingConstantsV2.WINDOWID_ProductsToPickView);
 
-		final ProductsToPickRowsData rowsData = rowsRepository.createProductsToPickRowsData(packageableRow);
+		final ProductsToPickRowsData rowsData = rowsService.createProductsToPickRowsData(packageableRow);
 
 		final ProductsToPickView view = ProductsToPickView.builder()
 				.viewId(viewId)

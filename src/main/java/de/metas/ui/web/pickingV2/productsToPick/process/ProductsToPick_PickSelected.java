@@ -41,7 +41,7 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 	private PickingCandidateService pickingCandidatesService;
 
 	@Autowired
-	private ProductsToPickRowsService productsToPickRowsRepository;
+	private ProductsToPickRowsService productsToPickRowsService;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -89,7 +89,7 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 	private PickHURequest  createPickHURequest(final ProductsToPickRow row)
 	{
 		final PickingConfigV2 pickingConfig = getPickingConfig();
-		return productsToPickRowsRepository.createPickHURequest(row, pickingConfig.isPickingReviewRequired());
+		return productsToPickRowsService.createPickHURequest(row, pickingConfig.isPickingReviewRequired());
 	}
 
 }
