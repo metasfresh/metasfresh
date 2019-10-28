@@ -140,38 +140,6 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		return toQtyCalculationsBOMLine(ppOrderLinePojo).computeQtyRequired(qtyFinishedGood);
 	}
 
-	// /**
-	// * Calculates how much qty is required (standard) for given BOM Line, considering the given quantity of finished goods.
-	// *
-	// * @param orderBOMLine
-	// * @param qtyFinishedGood
-	// * @param qtyFinishedGoodUOM
-	// * @return standard quantity required to be issued (standard UOM)
-	// */
-	// @VisibleForTesting
-	// Quantity computeQtyRequired(
-	// @NonNull final QtyCalculationsBOMLine orderBOMLine,
-	// @NonNull final BigDecimal qtyFinishedGood)
-	// {
-	// final BigDecimal multiplier = getQtyMultiplier(orderBOMLine);
-	//
-	// final BigDecimal qtyRequired;
-	// if (orderBOMLine.getComponentType().isTools())
-	// {
-	// qtyRequired = multiplier;
-	// }
-	// else
-	// {
-	// qtyRequired = qtyFinishedGood.multiply(multiplier).setScale(8, RoundingMode.UP);
-	// }
-	//
-	// //
-	// // Adjust the qtyRequired by adding the scrap percentage to it.
-	// final Percent qtyScrap = orderBOMLine.getScrap();
-	// final BigDecimal qtyRequiredPlusScrap = ProductBOMQtys.computeQtyWithScrap(qtyRequired, qtyScrap);
-	// return Quantity.of(qtyRequiredPlusScrap, orderBOMLine.getUom());
-	// }
-
 	@Override
 	public Quantity computeQtyToIssueBasedOnFinishedGoodReceipt(
 			@NonNull final I_PP_Order_BOMLine orderBOMLine,
@@ -256,38 +224,6 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 				//
 				.build();
 	}
-
-	// /**
-	// * Return Unified BOM Qty Multiplier.
-	// *
-	// * i.e. how much of this component is needed for 1 item of finished good.
-	// *
-	// * @param orderBOMLine
-	// *
-	// * @return If is percentage then QtyBatch / 100 will be returned, else QtyBOM.
-	// */
-	// /* package */BigDecimal getQtyMultiplier(@NonNull final QtyCalculationsBOMLine orderBOMLine)
-	// {
-	// if (orderBOMLine.isQtyPercentage())
-	// {
-	// final Percent percentOfFinishGood = orderBOMLine.getQtyBatch();
-	//
-	// //
-	// // We also need to multiply by BOM UOM to BOM Line UOM multiplier
-	// // see http://dewiki908/mediawiki/index.php/06973_Fix_percentual_BOM_line_quantities_calculation_%28108941319640%29
-	// final ProductId bomProductId = orderBOMLine.getBomProductId();
-	// final I_C_UOM bomUOM = orderBOMLine.getBomProductUOM();
-	//
-	// final I_C_UOM bomLineUOM = orderBOMLine.getUom();
-	//
-	// final BigDecimal bomToLineUOMMultiplier = uomConversionService.convertQty(bomProductId, BigDecimal.ONE, bomUOM, bomLineUOM);
-	// return percentOfFinishGood.subtractFromBase(bomToLineUOMMultiplier, 8);
-	// }
-	// else
-	// {
-	// return orderBOMLine.getQtyBOM();
-	// }
-	// }
 
 	/**
 	 * Explode Phantom Items.
