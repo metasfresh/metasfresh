@@ -45,7 +45,7 @@ class DhlTestHelper
 
 	static DeliveryOrder createDummyDeliveryOrderDEtoDE()
 	{
-		final DeliveryOrder deliveryOrderCreateRequest = DeliveryOrder.builder()
+		return DeliveryOrder.builder()
 				// shipper
 				.pickupAddress(Address.builder()
 						.companyName1("TheBestPessimist Inc.")
@@ -84,15 +84,14 @@ class DhlTestHelper
 						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
 						.grossWeightKg(1)
 						.build())
-				// .customerReference("the helpful customer reference") // todo: inside createDraftDeliveryOrder, what is the source for customer reference?
+				// .customerReference("the helpful customer reference")
 				.serviceType(DhlServiceType.Dhl_Paket)
 				.build();
-		return deliveryOrderCreateRequest;
 	}
 
 	static DeliveryOrder createDummyDeliveryOrderDEtoCH()
 	{
-		final DeliveryOrder deliveryOrderCreateRequest = DeliveryOrder.builder()
+		return DeliveryOrder.builder()
 				// shipper
 				.pickupAddress(Address.builder()
 						.companyName1("TheBestPessimist Inc.")
@@ -107,7 +106,7 @@ class DhlTestHelper
 				.pickupDate(PickupDate.builder()
 						.date(LocalDate.now().plusDays(1)) // always tomorrow!
 						.build())
-				// international (CH) receiver
+				// international outside UE (CH) receiver
 				.deliveryAddress(Address.builder()
 						.companyName1("burker king")
 						.companyName2("din lucerna")
@@ -131,15 +130,14 @@ class DhlTestHelper
 						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
 						.grossWeightKg(1)
 						.build())
-				// .customerReference("the helpful customer reference") // todo: inside createDraftDeliveryOrder, what is the source for customer reference?
+				// .customerReference("the helpful customer reference")
 				.serviceType(DhlServiceType.Dhl_PaketInternational)
 				.build();
-		return deliveryOrderCreateRequest;
 	}
 
 	static DeliveryOrder createDummyDeliveryOrderDEtoAT()
 	{
-		final DeliveryOrder deliveryOrderCreateRequest = DeliveryOrder.builder()
+		return DeliveryOrder.builder()
 				// shipper
 				.pickupAddress(Address.builder()
 						.companyName1("TheBestPessimist Inc.")
@@ -154,7 +152,7 @@ class DhlTestHelper
 				.pickupDate(PickupDate.builder()
 						.date(LocalDate.now().plusDays(1)) // always tomorrow!
 						.build())
-				// international (CH) receiver
+				// international inside UE (AT) receiver
 				.deliveryAddress(Address.builder()
 						.companyName1("NOVAPARK Wohlfühlhotel Graz")
 						.companyName2("")
@@ -178,9 +176,8 @@ class DhlTestHelper
 						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
 						.grossWeightKg(1)
 						.build())
-				// .customerReference("the helpful customer reference") // todo: inside createDraftDeliveryOrder, what is the source for customer reference?
+				// .customerReference("the helpful customer reference")
 				.serviceType(DhlServiceType.Dhl_PaketInternational)
 				.build();
-		return deliveryOrderCreateRequest;
 	}
 }

@@ -140,7 +140,7 @@ class CreateShipmentRequestFromDeliveryOrderDEtoDETest
 
 			final ShipmentDetailsTypeType shipmentDetailsTypeType = objectFactory.createShipmentDetailsTypeType();
 			shipmentDetailsTypeType.setProduct(deliveryOrder.getServiceType().getCode());
-			shipmentDetailsTypeType.setAccountNumber("22222222220104");
+			shipmentDetailsTypeType.setAccountNumber("22222222220104"); // special account number, depending on target country. why dhl why?????
 			//noinspection ConstantConditions
 			shipmentDetailsTypeType.setCustomerReference(deliveryOrder.getCustomerReference());
 			shipmentDetailsTypeType.setShipmentDate(pickupDate.getDate().format(DateTimeFormatter.ISO_LOCAL_DATE));

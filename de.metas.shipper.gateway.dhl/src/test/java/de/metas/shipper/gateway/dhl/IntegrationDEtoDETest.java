@@ -20,7 +20,9 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.dhl;import com.google.common.collect.ImmutableList;
+package de.metas.shipper.gateway.dhl;
+
+import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
@@ -62,7 +64,7 @@ class IntegrationDEtoDETest
 				.baseUrl("https://cig.dhl.de/services/sandbox/soap")
 				.applicationID(USER_NAME)
 				.applicationToken(PASSWORD)
-				.accountNumber("22222222220104")
+				.accountNumber("22222222220104") // special account number, depending on target country. why dhl why?????
 				.signature("pass")
 				.username("2222222222_01")
 				.lengthUomId(dummyUom)
@@ -71,15 +73,15 @@ class IntegrationDEtoDETest
 				DhlDatabaseClientLogger.instance);
 	}
 
-	@Disabled("this is broken currently and i have no idea how to fix it")
-	@Test
-	void testDeliveryOrderPersistence()
-	{
-		final DeliveryOrder originalDO = deliveryOrderRepository.save(DhlTestHelper.createDummyDeliveryOrderDEtoDE());
-
-		final DeliveryOrder deserialisedDO = deliveryOrderRepository.getByRepoId(DeliveryOrderId.ofRepoId(originalDO.getRepoId()));
-		assertEquals(originalDO, deserialisedDO); // not equal because DeliveryOrder.customDeliveryData is changed
-	}
+	//	@Disabled("this is broken currently and i have no idea how to fix it")
+	//	@Test
+	//	void testDeliveryOrderPersistence()
+	//	{
+	//		final DeliveryOrder originalDO = deliveryOrderRepository.save(DhlTestHelper.createDummyDeliveryOrderDEtoDE());
+	//
+	//		final DeliveryOrder deserialisedDO = deliveryOrderRepository.getByRepoId(DeliveryOrderId.ofRepoId(originalDO.getRepoId()));
+	//		assertEquals(originalDO, deserialisedDO); // not equal because DeliveryOrder.customDeliveryData is changed
+	//	}
 
 	@Test
 	void createDOPersistThenSendItToDHL()
@@ -99,7 +101,7 @@ class IntegrationDEtoDETest
 		assertEquals(5, customDeliveryData.getDetails().size());
 
 		//
-		dumpPdfsToDisk(customDeliveryData.getDetails());
+		//		dumpPdfsToDisk(customDeliveryData.getDetails());
 	}
 
 	private void dumpPdfsToDisk(final ImmutableList<DhlCustomDeliveryDataDetail> details)
