@@ -8,6 +8,7 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
@@ -144,6 +145,7 @@ public class ProductsToPickRow implements IViewRow
 
 	//
 	private final ViewRowFieldNameAndJsonValuesHolder<ProductsToPickRow> values = ViewRowFieldNameAndJsonValuesHolder.newInstance(ProductsToPickRow.class);
+	private final ImmutableMap<String, ViewEditorRenderMode> viewEditorRenderModeByFieldName;
 
 	@Builder(toBuilder = true)
 	private ProductsToPickRow(
@@ -198,6 +200,8 @@ public class ProductsToPickRow implements IViewRow
 		this.pickingCandidateId = pickingCandidateId;
 
 		this.includedRows = includedRows != null ? ImmutableList.copyOf(includedRows) : ImmutableList.of();
+
+		this.viewEditorRenderModeByFieldName = buildViewEditorRenderModeByFieldName(rowType);
 	}
 
 	@Override
@@ -237,6 +241,28 @@ public class ProductsToPickRow implements IViewRow
 		return values.get(this);
 	}
 
+	@Override
+	public ImmutableMap<String, ViewEditorRenderMode> getViewEditorRenderModeByFieldName()
+	{
+		return viewEditorRenderModeByFieldName;
+	}
+
+	private static ImmutableMap<String, ViewEditorRenderMode> buildViewEditorRenderModeByFieldName(
+			@NonNull final ProductsToPickRowType rowType)
+	{
+		final ImmutableMap.Builder<String, ViewEditorRenderMode> result = ImmutableMap.builder();
+		if (rowType.isPickable())
+		{
+			result.put(FIELD_QtyOverride, ViewEditorRenderMode.ALWAYS);
+		}
+		else
+		{
+			result.put(FIELD_QtyOverride, ViewEditorRenderMode.NEVER);
+		}
+
+		return result.build();
+	}
+
 	public ShipmentScheduleId getShipmentScheduleId()
 	{
 		return rowId.getShipmentScheduleId();
@@ -274,7 +300,7 @@ public class ProductsToPickRow implements IViewRow
 	{
 		return Objects.equals(this.qty, qty)
 				? this
-				: toBuilder().qty(qty).build();
+				: toBuilder().qty(qty).qtyOverride(null).build();
 	}
 
 	public ProductsToPickRow withQtyOverride(@Nullable final BigDecimal qtyOverrideBD)
@@ -283,9 +309,25 @@ public class ProductsToPickRow implements IViewRow
 				? Quantity.of(qtyOverrideBD, qty.getUOM())
 				: null;
 
+		return withQtyOverride(qtyOverride);
+	}
+
+	private ProductsToPickRow withQtyOverride(final Quantity qtyOverride)
+	{
 		return Objects.equals(this.qtyOverride, qtyOverride)
 				? this
 				: toBuilder().qtyOverride(qtyOverride).build();
+	}
+
+	public boolean isQtyOverrideEditableByUser()
+	{
+		return isFieldEditable(FIELD_QtyOverride);
+	}
+
+	private boolean isFieldEditable(final String fieldName)
+	{
+		final ViewEditorRenderMode renderMode = getViewEditorRenderModeByFieldName().get(fieldName);
+		return renderMode != null && renderMode.isEditable();
 	}
 
 	public ProductsToPickRow withRowType(@Nullable final ProductsToPickRowType rowType)

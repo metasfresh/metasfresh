@@ -16,10 +16,8 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
-import org.compiere.model.I_C_UOM;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOMLine;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
@@ -39,8 +37,10 @@ import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
-import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
+import de.metas.material.planning.pporder.impl.QtyCalculationsBOMLine;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -55,7 +55,6 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -123,7 +122,7 @@ public final class ProductsToPickRowsDataFactory
 		this.bpartnersService = bpartnersService;
 		this.huReservationService = huReservationService;
 		this.pickingCandidateService = pickingCandidateService;
-		this.productInfos = ProductInfoSupplier.builder()
+		productInfos = ProductInfoSupplier.builder()
 				.productsRepo(productsRepo)
 				.uomsRepo(uomsRepo)
 				.build();
@@ -357,7 +356,7 @@ public final class ProductsToPickRowsDataFactory
 
 	@Builder(builderMethodName = "prepareRow", builderClassName = "_RowBuilder")
 	private ProductsToPickRow createRow(
-			@NonNull ProductsToPickRowType rowType,
+			@NonNull final ProductsToPickRowType rowType,
 			@NonNull final ProductId productId,
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@Nullable final OrderLineId salesOrderLineId,
@@ -443,34 +442,35 @@ public final class ProductsToPickRowsDataFactory
 		return ImmutableAttributeSet.createSubSet(attributes, a -> ATTRIBUTES.contains(a.getValue()));
 	}
 
-	private ProductsToPickRow createRowsFromPickingOrder(final I_PP_Order pickingOrder, final AllocablePackageable mainProductPackageable)
+	private ProductsToPickRow createRowsFromPickingOrder(final I_PP_Order pickingOrder, final AllocablePackageable finishedGoodPackageable)
 	{
-		final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
-
-		final Quantity qty = mainProductPackageable.getQtyToAllocate();
-		mainProductPackageable.allocateQty(qty);
+		final IPPOrderBOMBL orderBOMsService = Services.get(IPPOrderBOMBL.class);
+		final QtyCalculationsBOM bom = orderBOMsService.getQtyCalculationsBOM(pickingOrder);
 
 		final List<ProductsToPickRow> bomLineRows = new ArrayList<>();
-		for (final I_PP_Order_BOMLine bomLine : orderBOMsRepo.retrieveOrderBOMLines(pickingOrder))
+		for (final QtyCalculationsBOMLine bomLine : bom.getLines())
 		{
-			bomLineRows.addAll(createRowsFromPickingOrderBOMLine(bomLine, mainProductPackageable));
+			bomLineRows.addAll(createRowsFromPickingOrderBOMLine(bomLine, finishedGoodPackageable));
 		}
+
+		final Quantity qtyOfFinishedGoods = finishedGoodPackageable.getQtyToAllocate();
+		finishedGoodPackageable.allocateQty(qtyOfFinishedGoods);
 
 		return prepareRow()
 				.rowType(ProductsToPickRowType.PICK_FROM_PICKING_ORDER)
-				.productId(mainProductPackageable.getProductId())
-				.shipmentScheduleId(mainProductPackageable.getShipmentScheduleId())
-				.salesOrderLineId(mainProductPackageable.getSalesOrderLineIdOrNull())
-				.qty(qty)
+				.productId(finishedGoodPackageable.getProductId())
+				.shipmentScheduleId(finishedGoodPackageable.getShipmentScheduleId())
+				.salesOrderLineId(finishedGoodPackageable.getSalesOrderLineIdOrNull())
+				.qty(qtyOfFinishedGoods)
 				.includedRows(bomLineRows)
 				.build();
 	}
 
 	private List<ProductsToPickRow> createRowsFromPickingOrderBOMLine(
-			@NonNull final I_PP_Order_BOMLine bomLine,
-			@NonNull final AllocablePackageable mainProductPackageable)
+			@NonNull final QtyCalculationsBOMLine bomLine,
+			@NonNull final AllocablePackageable finishedGoodPackageable)
 	{
-		final AllocablePackageable bomLinePackageable = toAllocablePackageable(bomLine, mainProductPackageable);
+		final AllocablePackageable bomLinePackageable = toBOMLineAllocablePackageable(bomLine, finishedGoodPackageable);
 
 		final ArrayList<ProductsToPickRow> rows = new ArrayList<>();
 		rows.addAll(createRowsFromHUs(bomLinePackageable));
@@ -483,16 +483,14 @@ public final class ProductsToPickRowsDataFactory
 		return rows;
 	}
 
-	private AllocablePackageable toAllocablePackageable(final I_PP_Order_BOMLine bomLine, final AllocablePackageable mainProductPackageable)
+	private AllocablePackageable toBOMLineAllocablePackageable(final QtyCalculationsBOMLine bomLine, final AllocablePackageable finishedGoodPackageable)
 	{
-		final UomId uomId = UomId.ofRepoId(bomLine.getC_UOM_ID());
-		final I_C_UOM uom = uomsRepo.getById(uomId);
-		final Quantity qty = Quantity.of(bomLine.getQtyRequiered(), uom);
+		final Quantity qty = bomLine.computeQtyRequired(finishedGoodPackageable.getQtyToAllocate());
 
-		return mainProductPackageable.toBuilder()
-				.productId(ProductId.ofRepoId(bomLine.getM_Product_ID()))
+		return finishedGoodPackageable.toBuilder()
+				.productId(bomLine.getProductId())
 				.qtyToAllocateTarget(qty)
-				.issueToOrderBOMLineId(PPOrderBOMLineId.ofRepoId(bomLine.getPP_Order_BOMLine_ID()))
+				.issueToOrderBOMLineId(bomLine.getOrderBOMLineId())
 				.build();
 	}
 }
