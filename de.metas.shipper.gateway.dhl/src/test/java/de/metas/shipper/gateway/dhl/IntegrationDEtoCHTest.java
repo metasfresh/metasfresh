@@ -73,16 +73,6 @@ class IntegrationDEtoCHTest
 				DhlDatabaseClientLogger.instance);
 	}
 
-	//	@Disabled("this is broken currently and i have no idea how to fix it")
-	//	@Test
-	//	void testDeliveryOrderPersistence()
-	//	{
-	//		final DeliveryOrder originalDO = deliveryOrderRepository.save(DhlTestHelper.createDummyDeliveryOrderDEtoCH());
-	//
-	//		final DeliveryOrder deserialisedDO = deliveryOrderRepository.getByRepoId(DeliveryOrderId.ofRepoId(originalDO.getRepoId()));
-	//		assertEquals(originalDO, deserialisedDO); // not equal because DeliveryOrder.customDeliveryData is changed
-	//	}
-
 	@Test
 	void createDOPersistThenSendItToDHL()
 	{
@@ -104,17 +94,4 @@ class IntegrationDEtoCHTest
 		//		dumpPdfsToDisk(customDeliveryData.getDetails());
 	}
 
-	private void dumpPdfsToDisk(final ImmutableList<DhlCustomDeliveryDataDetail> details)
-	{
-		details.forEach(it -> {
-			try
-			{
-				//noinspection ConstantConditions
-				Files.write(Paths.get("C:", "a", Long.toString(System.currentTimeMillis()) + ".pdf"), it.getPdfLabelData());
-			}
-			catch (IOException ignore)
-			{
-			}
-		});
-	}
 }
