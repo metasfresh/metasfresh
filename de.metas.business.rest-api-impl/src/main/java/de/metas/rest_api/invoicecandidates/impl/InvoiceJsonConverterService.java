@@ -35,21 +35,20 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-class InvoiceJsonConverterService
-{
-	public final JsonInvoiceCandCreateResponse toJson(@NonNull final IInvoiceCandidateEnqueueResult enqueueResult)
-	{
-		InvoiceCandEnqueuerResult jsonInvoiceCand=InvoiceCandEnqueuerResult.builder().invoiceCandidateEnqueuedCount(enqueueResult.getInvoiceCandidateEnqueuedCount())
+class InvoiceJsonConverterService {
+	public final JsonInvoiceCandCreateResponse toJson(@NonNull final IInvoiceCandidateEnqueueResult enqueueResult) {
+		InvoiceCandEnqueuerResult jsonInvoiceCand = InvoiceCandEnqueuerResult.builder()
+				.invoiceCandidateEnqueuedCount(enqueueResult.getInvoiceCandidateEnqueuedCount())
 				.summaryTranslated(enqueueResult.getSummaryTranslated(Env.getCtx()))
 				.totalNetAmtToInvoiceChecksum(enqueueResult.getTotalNetAmtToInvoiceChecksum())
 				.workpackageEnqueuedCount(enqueueResult.getWorkpackageEnqueuedCount())
 				.workpackageQueueSizeBeforeEnqueueing(enqueueResult.getWorkpackageQueueSizeBeforeEnqueueing()).build();
 		return JsonInvoiceCandCreateResponse.ok(jsonInvoiceCand);
 	}
-	
+
 	public List<ExternalHeaderAndLineId> convertJICToExternalHeaderAndLineIds(
-			List<JsonInvoiceCandidate> invoiceCandidates) {
-		List<ExternalHeaderAndLineId> headerAndLineIds=new ArrayList<ExternalHeaderAndLineId>();
+			final @NonNull List<JsonInvoiceCandidate> invoiceCandidates) {
+		List<ExternalHeaderAndLineId> headerAndLineIds = new ArrayList<ExternalHeaderAndLineId>();
 		for (JsonInvoiceCandidate cand : invoiceCandidates) {
 			ExternalHeaderAndLineId headerAndLineId = ExternalHeaderAndLineId.builder()
 					.externalHeaderId(cand.getExternalHeaderId()).externalLineIds(cand.getExternalLineIds()).build();

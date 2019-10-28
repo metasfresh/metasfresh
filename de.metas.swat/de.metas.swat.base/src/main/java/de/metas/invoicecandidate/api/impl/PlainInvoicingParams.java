@@ -32,8 +32,7 @@ import lombok.Getter;
 import lombok.ToString;
 
 @ToString
-public class PlainInvoicingParams implements IInvoicingParams
-{
+public class PlainInvoicingParams implements IInvoicingParams {
 	private Boolean onlyApprovedForInvoicing = null;
 	private Boolean consolidateApprovedICs = null;
 	private Boolean ignoreInvoiceSchedule = null;
@@ -57,235 +56,168 @@ public class PlainInvoicingParams implements IInvoicingParams
 
 	private final IInvoicingParams defaults;
 
-	public PlainInvoicingParams()
-	{
+	public PlainInvoicingParams() {
 		this(null);
 	}
 
 	/**
-	 * @param defaults defaults to fallback in case a parameter is not set on this level
+	 * @param defaults defaults to fallback in case a parameter is not set on this
+	 *                 level
 	 */
-	public PlainInvoicingParams(@Nullable final IInvoicingParams defaults)
-	{
+	public PlainInvoicingParams(@Nullable final IInvoicingParams defaults) {
 		this.defaults = defaults;
 	}
 
 	@Override
-	public boolean isOnlyApprovedForInvoicing()
-	{
-		if (onlyApprovedForInvoicing != null)
-		{
+	public boolean isOnlyApprovedForInvoicing() {
+		if (onlyApprovedForInvoicing != null) {
 			return onlyApprovedForInvoicing;
-		}
-		else if (defaults != null)
-		{
+		} else if (defaults != null) {
 			return defaults.isOnlyApprovedForInvoicing();
-		}
-		else
-		{
+		} else {
 			return false;
 		}
 	}
 
-	public void setOnlyApprovedForInvoicing(final boolean onlyApprovedForInvoicing)
-	{
+	public void setOnlyApprovedForInvoicing(final boolean onlyApprovedForInvoicing) {
 		this.onlyApprovedForInvoicing = onlyApprovedForInvoicing;
 	}
 
 	@Override
-	public boolean isConsolidateApprovedICs()
-	{
-		if (consolidateApprovedICs != null)
-		{
+	public boolean isConsolidateApprovedICs() {
+		if (consolidateApprovedICs != null) {
 			return consolidateApprovedICs;
-		}
-		else if (defaults != null)
-		{
+		} else if (defaults != null) {
 			return defaults.isConsolidateApprovedICs();
-		}
-		else
-		{
+		} else {
 			return false;
 		}
 	}
 
-	public void setConsolidateApprovedICs(final boolean consolidateApprovedICs)
-	{
+	public void setConsolidateApprovedICs(final boolean consolidateApprovedICs) {
 		this.consolidateApprovedICs = consolidateApprovedICs;
 	}
 
 	@Override
-	public boolean isIgnoreInvoiceSchedule()
-	{
-		if (ignoreInvoiceSchedule != null)
-		{
+	public boolean isIgnoreInvoiceSchedule() {
+		if (ignoreInvoiceSchedule != null) {
 			return ignoreInvoiceSchedule;
-		}
-		else if (defaults != null)
-		{
+		} else if (defaults != null) {
 			return defaults.isIgnoreInvoiceSchedule();
-		}
-		else
-		{
+		} else {
 			return false;
 		}
 	}
 
-	public void setIgnoreInvoiceSchedule(final boolean ignoreInvoiceSchedule)
-	{
+	public void setIgnoreInvoiceSchedule(final boolean ignoreInvoiceSchedule) {
 		this.ignoreInvoiceSchedule = ignoreInvoiceSchedule;
 	}
 
 	@Override
-	public LocalDate getDateInvoiced()
-	{
-		if (dateInvoicedSet)
-		{
+	public LocalDate getDateInvoiced() {
+		if (dateInvoicedSet) {
 			return dateInvoiced;
-		}
-		else if (defaults != null)
-		{
+		} else if (defaults != null) {
 			return defaults.getDateInvoiced();
-		}
-		else
-		{
+		} else {
 			return null;
 		}
 	}
 
-	public void setDateInvoiced(final LocalDate dateInvoiced)
-	{
+	public void setDateInvoiced(final LocalDate dateInvoiced) {
 		this.dateInvoiced = dateInvoiced;
 		dateInvoicedSet = true;
 	}
 
 	@Override
-	public LocalDate getDateAcct()
-	{
-		if (dateAcctSet)
-		{
+	public LocalDate getDateAcct() {
+		if (dateAcctSet) {
 			return dateAcct;
-		}
-		else if (defaults != null)
-		{
+		} else if (defaults != null) {
 			return defaults.getDateAcct();
-		}
-		else
-		{
+		} else {
 			return null;
 		}
 	}
 
-	public void setDateAcct(final LocalDate dateAcct)
-	{
+	public void setDateAcct(final LocalDate dateAcct) {
 		this.dateAcct = dateAcct;
 		dateAcctSet = true;
 	}
 
 	@Override
-	public String getPOReference()
-	{
-		if (poReferenceSet)
-		{
+	public String getPOReference() {
+		if (poReferenceSet) {
 			return poReference;
-		}
-		else if (defaults != null)
-		{
+		} else if (defaults != null) {
 			return defaults.getPOReference();
-		}
-		else
-		{
+		} else {
 			return null;
 		}
 	}
 
-	public void setPOReference(@Nullable final String poReference)
-	{
+	public void setPOReference(@Nullable final String poReference) {
 		this.poReference = poReference;
 		poReferenceSet = true;
 	}
 
-	public void setSupplementMissingPaymentTermIds(final boolean supplementMissingPaymentTermIds)
-	{
+	public void setSupplementMissingPaymentTermIds(final boolean supplementMissingPaymentTermIds) {
 		this.supplementMissingPaymentTermIds = supplementMissingPaymentTermIds;
 	}
 
 	@Override
-	public boolean isSupplementMissingPaymentTermIds()
-	{
-		if (supplementMissingPaymentTermIds != null)
-		{
+	public boolean isSupplementMissingPaymentTermIds() {
+		if (supplementMissingPaymentTermIds != null) {
 			return supplementMissingPaymentTermIds;
-		}
-		else if (defaults != null)
-		{
+		} else if (defaults != null) {
 			return defaults.isSupplementMissingPaymentTermIds();
 		}
 		return false;
 	}
 
-	public void setCheck_NetAmtToInvoice(final BigDecimal check_NetAmtToInvoice)
-	{
+	public void setCheck_NetAmtToInvoice(final BigDecimal check_NetAmtToInvoice) {
 		this.check_NetAmtToInvoice = check_NetAmtToInvoice;
 	}
 
 	@Override
-	public BigDecimal getCheck_NetAmtToInvoice()
-	{
-		if (check_NetAmtToInvoice != null)
-		{
+	public BigDecimal getCheck_NetAmtToInvoice() {
+		if (check_NetAmtToInvoice != null) {
 			return check_NetAmtToInvoice;
-		}
-		else if (defaults != null)
-		{
+		} else if (defaults != null) {
 			return defaults.getCheck_NetAmtToInvoice();
 		}
 
 		return null;
 	}
 
-	public PlainInvoicingParams setStoreInvoicesInResult(final boolean storeInvoicesInResult)
-	{
+	public PlainInvoicingParams setStoreInvoicesInResult(final boolean storeInvoicesInResult) {
 		this.storeInvoicesInResult = storeInvoicesInResult;
 		return this;
 	}
 
 	@Override
-	public boolean isStoreInvoicesInResult()
-	{
-		if (storeInvoicesInResult != null)
-		{
+	public boolean isStoreInvoicesInResult() {
+		if (storeInvoicesInResult != null) {
 			return storeInvoicesInResult;
-		}
-		else if (defaults != null)
-		{
+		} else if (defaults != null) {
 			return defaults.isStoreInvoicesInResult();
-		}
-		else
-		{
+		} else {
 			return false;
 		}
 	}
 
-	public PlainInvoicingParams setAssumeOneInvoice(final boolean assumeOneInvoice)
-	{
+	public PlainInvoicingParams setAssumeOneInvoice(final boolean assumeOneInvoice) {
 		this.assumeOneInvoice = assumeOneInvoice;
 		return this;
 	}
 
 	@Override
-	public boolean isAssumeOneInvoice()
-	{
-		if (assumeOneInvoice != null)
-		{
+	public boolean isAssumeOneInvoice() {
+		if (assumeOneInvoice != null) {
 			return assumeOneInvoice;
-		}
-		else if (defaults != null)
-		{
+		} else if (defaults != null) {
 			return defaults.isAssumeOneInvoice();
-		}
-		else
-		{
+		} else {
 			return false;
 		}
 	}

@@ -139,7 +139,8 @@ public interface IInvoiceCandDAO extends ISingletonService {
 	void invalidateCandsFor(IQuery<I_C_Invoice_Candidate> icQuery);
 
 	/**
-	 * Invalidates just the given candidate. If the given <code>ic</code> has an IC <= 0, the method does nothing.
+	 * Invalidates just the given candidate. If the given <code>ic</code> has an IC
+	 * <= 0, the method does nothing.
 	 */
 	void invalidateCand(I_C_Invoice_Candidate ic);
 
@@ -257,7 +258,8 @@ public interface IInvoiceCandDAO extends ISingletonService {
 	 *
 	 * @return map of C_Invoice_ID to {@link I_C_Invoice} objects
 	 */
-	<T extends org.compiere.model.I_C_Invoice> Map<Integer, T> retrieveInvoices(String tableName, int recordId, Class<T> clazz, boolean onlyUnpaid);
+	<T extends org.compiere.model.I_C_Invoice> Map<Integer, T> retrieveInvoices(String tableName, int recordId,
+			Class<T> clazz, boolean onlyUnpaid);
 
 	/**
 	 * @deprecated please use
@@ -436,7 +438,9 @@ public interface IInvoiceCandDAO extends ISingletonService {
 	// * @param inventoryLine
 	// * @return
 	// */
-	// IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInventoryLineQuery(I_M_InventoryLine inventoryLine);
+	// IQueryBuilder<I_C_Invoice_Candidate>
+	// retrieveInvoiceCandidatesForInventoryLineQuery(I_M_InventoryLine
+	// inventoryLine);
 
 	Set<String> retrieveOrderDocumentNosForIncompleteGroupsFromSelection(PInstanceId pinstanceId);
 
