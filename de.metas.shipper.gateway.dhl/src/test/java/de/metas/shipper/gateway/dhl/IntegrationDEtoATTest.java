@@ -22,25 +22,39 @@
 
 package de.metas.shipper.gateway.dhl;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.customs.CustomsInvoiceRepository;
 import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
+import de.metas.shipper.gateway.dhl.model.DhlClientConfigRepository;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
+import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
+import de.metas.shipper.gateway.dhl.model.DhlServiceType;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
+import de.metas.shipper.gateway.spi.model.Address;
+import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.DeliveryPosition;
+import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.uom.UomId;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Location;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @Disabled("makes ACTUAL calls to dhl api and needs auth")
 class IntegrationDEtoATTest
@@ -48,18 +62,20 @@ class IntegrationDEtoATTest
 	private static final String USER_NAME = "a";
 	private static final String PASSWORD = "b";
 
-	private DhlDeliveryOrderRepository deliveryOrderRepository;
-
+	private DhlDraftDeliveryOrderCreator draftDeliveryOrderCreator;
+	private final DhlDeliveryOrderRepository orderRepository = new DhlDeliveryOrderRepository(AttachmentEntryService.createInstanceForUnitTesting());
 	private DhlShipperGatewayClient client;
 
 	private final UomId dummyUom = UomId.ofRepoId(1);
 
 	@BeforeEach
-	void init()
+	void setUp()
 	{
-		AdempiereTestHelper.get().init(); // how do i add adempiere Test Helper?
+		AdempiereTestHelper.get().init();
 
-		deliveryOrderRepository = new DhlDeliveryOrderRepository(AttachmentEntryService.createInstanceForUnitTesting());
+		final DhlClientConfigRepository clientConfigRepository = new DhlClientConfigRepository();
+		draftDeliveryOrderCreator = new DhlDraftDeliveryOrderCreator(clientConfigRepository, new CustomsInvoiceRepository());
+
 		client = new DhlShipperGatewayClient(DhlClientConfig.builder()
 				.baseUrl("https://cig.dhl.de/services/sandbox/soap")
 				.applicationID(USER_NAME)
@@ -73,48 +89,177 @@ class IntegrationDEtoATTest
 				DhlDatabaseClientLogger.instance);
 	}
 
-	//	@Disabled("this is broken currently and i have no idea how to fix it")
-	//	@Test
-	//	void testDeliveryOrderPersistence()
-	//	{
-	//		final DeliveryOrder originalDO = deliveryOrderRepository.save(DhlTestHelper.createDummyDeliveryOrderDEtoCH());
-	//
-	//		final DeliveryOrder deserialisedDO = deliveryOrderRepository.getByRepoId(DeliveryOrderId.ofRepoId(originalDO.getRepoId()));
-	//		assertEquals(originalDO, deserialisedDO); // not equal because DeliveryOrder.customDeliveryData is changed
-	//	}
-
 	@Test
-	void createDOPersistThenSendItToDHL()
+	@DisplayName("Delivery Order DE -> AT + test persistence after all steps")
+	void DEtoATDraftDeliveryOrderCreatorAndPersistence()
 	{
-		// persist the DO
-		final DeliveryOrder deliveryOrder = deliveryOrderRepository.save(DhlTestHelper.createDummyDeliveryOrderDEtoAT());
-
-		final DeliveryOrderId deliveryOrderRepoId = DeliveryOrderId.ofRepoId(deliveryOrder.getRepoId());
-		final DeliveryOrder deserialisedDO = deliveryOrderRepository.getByRepoId(deliveryOrderRepoId);
-
-		final DeliveryOrder completedDeliveryOrder = client.completeDeliveryOrder(deserialisedDO);
-		final DeliveryOrder savedCompletedDeliveryOrder = deliveryOrderRepository.save(completedDeliveryOrder);
-
-		final DhlCustomDeliveryData customDeliveryData = DhlCustomDeliveryData.cast(savedCompletedDeliveryOrder.getCustomDeliveryData());
-
-		//noinspection ConstantConditions
-		assertEquals(5, customDeliveryData.getDetails().size());
+		// check 1: draft DO <->> initial dummy DO
+		final DeliveryOrder initialDummyDeliveryOrder = DhlTestHelper.createDummyDeliveryOrderDEtoAT();
+		final DeliveryOrder draftDeliveryOrder = createDraftDeliveryOrderFromDummy(initialDummyDeliveryOrder);
+		assertEquals("nothing should be changed", initialDummyDeliveryOrder, draftDeliveryOrder);
 
 		//
-		//		dumpPdfsToDisk(customDeliveryData.getDetails());
+		// check 2: persisted DO <-> initial dummy DO => create updatedDummy DO
+		final DeliveryOrder persistedDeliveryOrder = orderRepository.save(draftDeliveryOrder);
+		DeliveryOrder updatedDummyDeliveryOrder = initialDummyDeliveryOrder.toBuilder()
+				.repoId(persistedDeliveryOrder.getRepoId())
+				.build();
+		assertNull(updatedDummyDeliveryOrder.getCustomDeliveryData());
+		assertEquals("only the repoId should change after the first persistence", updatedDummyDeliveryOrder, persistedDeliveryOrder);
+
+		//
+		// check 3: updated Dummy DO <-> retrieved DO from persistence
+		final DeliveryOrder deserialisedDO = orderRepository.getByRepoId(DeliveryOrderId.ofRepoId(updatedDummyDeliveryOrder.getRepoId()));
+		DhlCustomDeliveryData customDeliveryData = DhlCustomDeliveryData.builder()
+				.detail(extractPackageIdAndSequenceNumberFromDO(deserialisedDO, 1))
+				.detail(extractPackageIdAndSequenceNumberFromDO(deserialisedDO, 2))
+				.detail(extractPackageIdAndSequenceNumberFromDO(deserialisedDO, 3))
+				.detail(extractPackageIdAndSequenceNumberFromDO(deserialisedDO, 4))
+				.detail(extractPackageIdAndSequenceNumberFromDO(deserialisedDO, 5))
+				.build();
+		updatedDummyDeliveryOrder = updatedDummyDeliveryOrder.toBuilder()
+				.customDeliveryData(customDeliveryData)
+				.build();
+		assertEquals("only packageId and SequenceNumber should be modified", updatedDummyDeliveryOrder, deserialisedDO);
+
+		//
+		// check 4: run dhlClient.completeDeliveryOrder
+		final DeliveryOrder completedDeliveryOrder = client.completeDeliveryOrder(deserialisedDO);
+		customDeliveryData = DhlCustomDeliveryData.builder()
+				.detail(extractFieldsAfterCompleteDeliveryOrder(customDeliveryData, completedDeliveryOrder, 1))
+				.detail(extractFieldsAfterCompleteDeliveryOrder(customDeliveryData, completedDeliveryOrder, 2))
+				.detail(extractFieldsAfterCompleteDeliveryOrder(customDeliveryData, completedDeliveryOrder, 3))
+				.detail(extractFieldsAfterCompleteDeliveryOrder(customDeliveryData, completedDeliveryOrder, 4))
+				.detail(extractFieldsAfterCompleteDeliveryOrder(customDeliveryData, completedDeliveryOrder, 5))
+				.build();
+		updatedDummyDeliveryOrder = updatedDummyDeliveryOrder.toBuilder()
+				.customDeliveryData(customDeliveryData)
+				.build();
+		assertEquals("only awb, pdf label data and tracking url should be modified", updatedDummyDeliveryOrder, completedDeliveryOrder);
+		assertSizeOfCustomDeliveryData(completedDeliveryOrder);
+
+		//
+		// check 5: persist the completed delivery order: nothing should be modified
+		final DeliveryOrder savedCompletedDeliveryOrder = orderRepository.save(completedDeliveryOrder);
+		assertEquals("nothing should be modified", updatedDummyDeliveryOrder, savedCompletedDeliveryOrder);
+		assertSizeOfCustomDeliveryData(savedCompletedDeliveryOrder);
+
+		//
+		// check 6: retrieve the persisted completed DO. nothing should be modified
+		final DeliveryOrder deserialisedCompletedDeliveryOrder = orderRepository.getByRepoId(DeliveryOrderId.ofRepoId(updatedDummyDeliveryOrder.getRepoId()));
+		assertEquals("nothing should be modified", updatedDummyDeliveryOrder, deserialisedCompletedDeliveryOrder);
+		assertSizeOfCustomDeliveryData(deserialisedCompletedDeliveryOrder);
 	}
 
-	private void dumpPdfsToDisk(final ImmutableList<DhlCustomDeliveryDataDetail> details)
+	private void assertSizeOfCustomDeliveryData(final DeliveryOrder deliveryOrder)
 	{
-		details.forEach(it -> {
-			try
-			{
-				//noinspection ConstantConditions
-				Files.write(Paths.get("C:", "a", Long.toString(System.currentTimeMillis()) + ".pdf"), it.getPdfLabelData());
-			}
-			catch (IOException ignore)
-			{
-			}
-		});
+		assertNotNull(deliveryOrder.getCustomDeliveryData());
+		assertEquals(5, DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()).getDetails().size());
+	}
+
+	private DhlCustomDeliveryDataDetail extractFieldsAfterCompleteDeliveryOrder(@NonNull final DhlCustomDeliveryData customDeliveryData, @NonNull final DeliveryOrder completedDeliveryOrder, final int packageId)
+	{
+		assertNotNull(completedDeliveryOrder.getCustomDeliveryData());
+
+		final DhlCustomDeliveryDataDetail dhlCustomDeliveryDataDetail = DhlCustomDeliveryData.cast(completedDeliveryOrder.getCustomDeliveryData()).getDetailByPackageId(packageId);
+		final String awb = dhlCustomDeliveryDataDetail.getAwb();
+		final byte[] pdfLabelData = dhlCustomDeliveryDataDetail.getPdfLabelData();
+		final String trackingUrl = dhlCustomDeliveryDataDetail.getTrackingUrl();
+		assertNotNull(awb);
+		assertNotNull(pdfLabelData);
+		assertNotNull(trackingUrl);
+
+		final DhlCustomDeliveryDataDetail detailByPackageId = customDeliveryData.getDetailByPackageId(packageId);
+		return detailByPackageId.toBuilder()
+				.awb(awb)
+				.pdfLabelData(pdfLabelData)
+				.trackingUrl(trackingUrl)
+				.build();
+	}
+
+	private DhlCustomDeliveryDataDetail extractPackageIdAndSequenceNumberFromDO(@NonNull final DeliveryOrder deliveryOrder, final int packageId)
+	{
+		//noinspection ConstantConditions
+		final DhlSequenceNumber sequenceNumber = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()).getDetailByPackageId(packageId).getSequenceNumber();
+		assertNotNull(sequenceNumber);
+		return DhlCustomDeliveryDataDetail.builder()
+				.packageId(packageId)
+				.sequenceNumber(sequenceNumber)
+				.build();
+	}
+
+	private DeliveryOrder createDraftDeliveryOrderFromDummy(@NonNull final DeliveryOrder deliveryOrder)
+	{
+		final DeliveryPosition deliveryPosition = deliveryOrder.getDeliveryPositions().get(0);
+
+		//
+		final Set<Integer> mpackageIds = deliveryPosition.getPackageIds();
+
+		//
+		final I_C_BPartner pickupFromBPartner = createBPartner(deliveryOrder.getPickupAddress());
+		final I_C_Location pickupFromLocation = createLocation(deliveryOrder.getPickupAddress());
+		final LocalDate pickupDate = deliveryOrder.getPickupDate().getDate();
+
+		//
+		final I_C_BPartner deliverToBPartner = createBPartner(deliveryOrder.getDeliveryAddress());
+		//noinspection deprecation,ConstantConditions
+		deliverToBPartner.setEMail(deliveryOrder.getDeliveryContact().getEmailAddress());
+		final I_C_Location deliverToLocation = createLocation(deliveryOrder.getDeliveryAddress());
+		final int deliverToBPartnerLocationId = 0;
+		final String deliverToPhoneNumber = deliveryOrder.getDeliveryContact().getSimplePhoneNumber();
+
+		//
+		final DhlServiceType detectedServiceType = (DhlServiceType)deliveryOrder.getServiceType();
+		final int grossWeightInKg = deliveryPosition.getGrossWeightKg();
+		final int shipperId = deliveryOrder.getShipperId();
+		final int shipperTransportationId = deliveryOrder.getShipperTransportationId();
+		final PackageDimensions packageDimensions = deliveryPosition.getPackageDimensions();
+
+		final CustomDeliveryData customDeliveryData = null;
+
+		final String customerReference = null;
+
+		//noinspection ConstantConditions
+		return draftDeliveryOrderCreator.createDeliveryOrderFromParams(
+				mpackageIds,
+				pickupFromBPartner,
+				pickupFromLocation,
+				pickupDate,
+				deliverToBPartner,
+				deliverToBPartnerLocationId,
+				deliverToLocation,
+				deliverToPhoneNumber,
+				detectedServiceType,
+				grossWeightInKg,
+				shipperId,
+				customerReference,
+				shipperTransportationId,
+				packageDimensions,
+				customDeliveryData);
+	}
+
+	@NonNull
+	private I_C_Location createLocation(@NonNull final Address pickupAddress)
+	{
+		final I_C_Location pickupFromLocation = InterfaceWrapperHelper.newInstance(I_C_Location.class);
+		pickupFromLocation.setAddress1(pickupAddress.getStreet1() + " " + pickupAddress.getHouseNo());
+		pickupFromLocation.setAddress2(pickupAddress.getStreet2());
+		pickupFromLocation.setPostal(pickupAddress.getZipCode());
+		pickupFromLocation.setCity(pickupAddress.getCity());
+		final I_C_Country i_c_country = InterfaceWrapperHelper.newInstance(I_C_Country.class);
+		i_c_country.setCountryCode(pickupAddress.getCountry().getAlpha2());
+		InterfaceWrapperHelper.save(i_c_country);
+		pickupFromLocation.setC_Country(i_c_country);
+
+		return pickupFromLocation;
+	}
+
+	@NonNull
+	private I_C_BPartner createBPartner(@NonNull final Address pickupAddress)
+	{
+		final I_C_BPartner pickupFromBPartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		pickupFromBPartner.setName(pickupAddress.getCompanyName1());
+		pickupFromBPartner.setName2(pickupAddress.getCompanyName2());
+		return pickupFromBPartner;
 	}
 }
