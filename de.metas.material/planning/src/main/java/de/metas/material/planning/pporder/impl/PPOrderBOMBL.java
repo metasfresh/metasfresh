@@ -42,6 +42,7 @@ import org.eevolution.model.I_PP_Product_BOMLine;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.i18n.IMsgBL;
@@ -193,6 +194,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 				.bomProductUOM(uomsRepo.getById(bom.getC_UOM_ID()))
 				.componentType(BOMComponentType.ofCode(productBOMLine.getComponentType()))
 				//
+				.productId(ProductId.ofRepoId(productBOMLine.getM_Product_ID()))
 				.qtyPercentage(productBOMLine.isQtyPercentage())
 				.qtyForOneFinishedGood(productBOMLine.getQtyBOM())
 				.percentOfFinishedGood(Percent.of(productBOMLine.getQtyBatch()))
@@ -213,6 +215,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 				.bomProductUOM(uomsRepo.getById(order.getC_UOM_ID()))
 				.componentType(BOMComponentType.ofCode(orderBOMLine.getComponentType()))
 				//
+				.productId(ProductId.ofRepoId(orderBOMLine.getM_Product_ID()))
 				.qtyPercentage(orderBOMLine.isQtyPercentage())
 				.qtyForOneFinishedGood(orderBOMLine.getQtyBOM())
 				.percentOfFinishedGood(Percent.of(orderBOMLine.getQtyBatch()))
@@ -487,5 +490,18 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	{
 		final I_PP_Order_BOM orderBOM = orderBOMsRepo.getByOrderId(ppOrderId);
 		return DocSequenceId.optionalOfRepoId(orderBOM.getSerialNo_Sequence_ID());
+	}
+
+	@Override
+	public QtyCalculationsBOM getQtyCalculationsBOM(@NonNull final I_PP_Order order)
+	{
+		final ImmutableList<QtyCalculationsBOMLine> lines = orderBOMsRepo.retrieveOrderBOMLines(order)
+				.stream()
+				.map(this::toQtyCalculationsBOMLine)
+				.collect(ImmutableList.toImmutableList());
+
+		return QtyCalculationsBOM.builder()
+				.lines(lines)
+				.build();
 	}
 }

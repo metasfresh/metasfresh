@@ -101,6 +101,7 @@ public class QtyCalculationsBOMLineTest
 					//
 					.componentType(BOMComponentType.Component)
 					//
+					.productId(ProductId.ofRepoId(2))
 					.uom(uom("Kg", 2))
 					.qtyPercentage(false)
 					.qtyForOneFinishedGood(new BigDecimal("2"))
@@ -122,6 +123,7 @@ public class QtyCalculationsBOMLineTest
 					//
 					.componentType(BOMComponentType.Component)
 					//
+					.productId(ProductId.ofRepoId(2))
 					.uom(uomKg)
 					.qtyPercentage(true)
 					.percentOfFinishedGood(Percent.of(33))
@@ -140,6 +142,7 @@ public class QtyCalculationsBOMLineTest
 			uomConversion().from(uomMillis).multipliedBy("1000").to(uomLiters).create();
 
 			final ProductId juiceProductId = product("juice", uomLiters);
+			final ProductId concentrateProductId = ProductId.ofRepoId(2);
 
 			QtyCalculationsBOMLine bomLine = QtyCalculationsBOMLine.builder()
 					.bomProductId(juiceProductId)
@@ -148,6 +151,7 @@ public class QtyCalculationsBOMLineTest
 					.componentType(BOMComponentType.Component)
 					//
 					// consider that 12.5% of a concentrate is needed to produce 1L of juice:
+					.productId(concentrateProductId)
 					.uom(uomMillis)
 					.qtyPercentage(true)
 					.percentOfFinishedGood(Percent.of(new BigDecimal("12.5")))

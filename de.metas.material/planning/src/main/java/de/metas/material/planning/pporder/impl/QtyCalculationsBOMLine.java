@@ -51,7 +51,7 @@ import lombok.ToString;
  */
 @EqualsAndHashCode
 @ToString
-final class QtyCalculationsBOMLine
+public final class QtyCalculationsBOMLine
 {
 	private final IUOMConversionBL uomConversionService = Services.get(IUOMConversionBL.class);
 
@@ -60,6 +60,8 @@ final class QtyCalculationsBOMLine
 
 	private final BOMComponentType componentType;
 
+	@Getter
+	private final ProductId productId;
 	private final I_C_UOM uom;
 	private final boolean qtyPercentage;
 	private final BigDecimal qtyForOneFinishedGood;
@@ -77,6 +79,7 @@ final class QtyCalculationsBOMLine
 			//
 			@NonNull final BOMComponentType componentType,
 			//
+			@NonNull final ProductId productId,
 			@NonNull final I_C_UOM uom,
 			final boolean qtyPercentage,
 			final BigDecimal qtyForOneFinishedGood,
@@ -90,6 +93,7 @@ final class QtyCalculationsBOMLine
 		this.bomProductUOM = bomProductUOM;
 		this.componentType = componentType;
 
+		this.productId = productId;
 		this.uom = uom;
 		this.qtyPercentage = qtyPercentage;
 		if (qtyPercentage)
@@ -108,6 +112,13 @@ final class QtyCalculationsBOMLine
 		this.scrap = scrap != null ? scrap : Percent.ZERO;
 
 		this.orderBOMLineId = orderBOMLineId;
+	}
+
+	public Quantity computeQtyRequired(@NonNull final Quantity qtyFinishedGood)
+	{
+		Check.assumeEquals(qtyFinishedGood.getUomId().getRepoId(), bomProductUOM.getC_UOM_ID(), "{} shall have uom={}", qtyFinishedGood, bomProductUOM);
+
+		return computeQtyRequired(qtyFinishedGood.toBigDecimal());
 	}
 
 	public Quantity computeQtyRequired(@NonNull final BigDecimal qtyFinishedGood)
