@@ -713,7 +713,7 @@ export class RawWidget extends Component {
       case 'Quantity':
         return (
           <div
-            className={classnames(this.getClassNames(), {
+            className={classnames(this.getClassNames(), 'number-field', {
               'input-focused': isEdited,
             })}
           >
@@ -730,7 +730,7 @@ export class RawWidget extends Component {
       case 'CostPrice':
         return (
           <div
-            className={classnames(this.getClassNames(), {
+            className={classnames(this.getClassNames(), 'number-field', {
               'input-focused': isEdited,
             })}
           >
