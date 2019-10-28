@@ -4,17 +4,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.process.PInstanceId;
 import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidate;
@@ -51,15 +50,13 @@ public class InvoiceCandidatesRestControllerImplTest
 	@Test
 	public void checkInvoiceCandidateSelection()
 	{
-		List<JsonInvoiceCandidate> jsonInvoiceCandidates = new ArrayList<JsonInvoiceCandidate>();
-		ExternalId externalId = ExternalId.of(EXTERNAL_LINE_ID1);
-		List<ExternalId> externalLineIds = new ArrayList<ExternalId>();
-		externalLineIds.add(externalId);
-		JsonInvoiceCandidate jic = JsonInvoiceCandidate.builder().externalHeaderId(EXTERNAL_HEADER_ID1)
-				.externalLineIds(externalLineIds).build();
-		jsonInvoiceCandidates.add(jic);
-		List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(jsonInvoiceCandidates);
-		int selection = invoiceCandBL.createSelectionForInvoiceCandidates(headerAndLineIds, PInstanceId.ofRepoId(P_INSTANCE_ID));
+		final JsonInvoiceCandidate jic = JsonInvoiceCandidate.builder()
+				.externalHeaderId(ExternalId.of(EXTERNAL_HEADER_ID1))
+				.externalLineId(ExternalId.of(EXTERNAL_LINE_ID1))
+				.build();
+
+		final List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(ImmutableList.of(jic));
+		final int selection = invoiceCandBL.createSelectionForInvoiceCandidates(headerAndLineIds, PInstanceId.ofRepoId(P_INSTANCE_ID));
 
 		assertThat(selection).isEqualTo(1);
 	}
@@ -67,35 +64,31 @@ public class InvoiceCandidatesRestControllerImplTest
 	@Test
 	public void checkInvoiceCandidatesNotSelected()
 	{
-		List<JsonInvoiceCandidate> jsonInvoiceCandidates = new ArrayList<JsonInvoiceCandidate>();
-		ExternalId externalId = ExternalId.of(EXTERNAL_LINE_ID3);
-		List<ExternalId> externalLineIds = new ArrayList<ExternalId>();
-		externalLineIds.add(externalId);
-		JsonInvoiceCandidate jic = JsonInvoiceCandidate.builder().externalHeaderId(EXTERNAL_HEADER_ID3)
-				.externalLineIds(externalLineIds).build();
-		jsonInvoiceCandidates.add(jic);
-		List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(jsonInvoiceCandidates);
+		final JsonInvoiceCandidate jic = JsonInvoiceCandidate.builder()
+				.externalHeaderId(ExternalId.of(EXTERNAL_HEADER_ID3))
+				.externalLineId(ExternalId.of(EXTERNAL_LINE_ID3))
+				.build();
+
+		final List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(ImmutableList.of(jic));
 		createInvoiceCandidate(EXTERNAL_LINE_ID2, EXTERNAL_HEADER_ID2);
 
-		int selection = invoiceCandBL.createSelectionForInvoiceCandidates(headerAndLineIds, PInstanceId.ofRepoId(P_INSTANCE_ID));
+		final int selection = invoiceCandBL.createSelectionForInvoiceCandidates(headerAndLineIds, PInstanceId.ofRepoId(P_INSTANCE_ID));
 		assertThat(selection).isEqualTo(0);
 	}
 
 	@Test
 	public void checkEmptyListOfExternalLineIds()
 	{
-		List<JsonInvoiceCandidate> jsonInvoiceCandidates = new ArrayList<JsonInvoiceCandidate>();
-		List<ExternalId> externalLineIds = new ArrayList<ExternalId>();
-		JsonInvoiceCandidate jic = JsonInvoiceCandidate.builder().externalHeaderId(EXTERNAL_HEADER_ID3)
-				.externalLineIds(externalLineIds).build();
-		jsonInvoiceCandidates.add(jic);
-		List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(jsonInvoiceCandidates);
-		int selection = invoiceCandBL.createSelectionForInvoiceCandidates(headerAndLineIds, PInstanceId.ofRepoId(P_INSTANCE_ID));
+		final JsonInvoiceCandidate jic = JsonInvoiceCandidate.builder()
+				.externalHeaderId(ExternalId.of(EXTERNAL_HEADER_ID3))
+				.build();
+
+		final List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(ImmutableList.of(jic));
+		final int selection = invoiceCandBL.createSelectionForInvoiceCandidates(headerAndLineIds, PInstanceId.ofRepoId(P_INSTANCE_ID));
 		assertThat(selection).isEqualTo(0);
 	}
-	
 
-	private InvoiceCandidateId createInvoiceCandidate(String externalHeaderId, String externalLineId)
+	private InvoiceCandidateId createInvoiceCandidate(final String externalHeaderId, final String externalLineId)
 	{
 		final I_C_Invoice_Candidate invoiceCandidate = newInstance(I_C_Invoice_Candidate.class);
 		invoiceCandidate.setExternalHeaderId(EXTERNAL_HEADER_ID1);
@@ -103,5 +96,5 @@ public class InvoiceCandidatesRestControllerImplTest
 		saveRecord(invoiceCandidate);
 		return InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
 	}
-	
+
 }

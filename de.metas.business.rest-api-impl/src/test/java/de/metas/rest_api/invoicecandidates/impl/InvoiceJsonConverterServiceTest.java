@@ -2,20 +2,17 @@ package de.metas.rest_api.invoicecandidates.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import com.google.common.collect.ImmutableList;
+
 import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidate;
-import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandCreateResponse;
-import de.metas.util.Services;
 import de.metas.util.rest.ExternalHeaderAndLineId;
 import de.metas.util.rest.ExternalId;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -27,12 +24,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -55,14 +52,12 @@ public class InvoiceJsonConverterServiceTest
 	@Test
 	public void convertJICToExternalHeaderAndLineIds()
 	{
-		List<JsonInvoiceCandidate> jsonInvoiceCandidates = new ArrayList<JsonInvoiceCandidate>();
-		ExternalId externalId = ExternalId.of(EXTERNAL_LINE_ID1);
-		List<ExternalId> externalLineIds = new ArrayList<ExternalId>();
-		externalLineIds.add(externalId);
-		JsonInvoiceCandidate jic = JsonInvoiceCandidate.builder().externalHeaderId(EXTERNAL_HEADER_ID1)
-				.externalLineIds(externalLineIds).build();
-		jsonInvoiceCandidates.add(jic);
-		List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(jsonInvoiceCandidates);
+		final JsonInvoiceCandidate jic = JsonInvoiceCandidate.builder()
+				.externalHeaderId(ExternalId.of(EXTERNAL_HEADER_ID1))
+				.externalLineId(ExternalId.of(EXTERNAL_LINE_ID1))
+				.build();
+
+		final List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(ImmutableList.of(jic));
 		assertThat(headerAndLineIds.size()).isEqualTo(1);
 	}
 }

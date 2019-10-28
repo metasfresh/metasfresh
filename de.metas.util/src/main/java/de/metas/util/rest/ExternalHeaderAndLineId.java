@@ -6,17 +6,20 @@ import com.google.common.collect.ImmutableList;
 
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 @Value
 public class ExternalHeaderAndLineId
 {
+	private ExternalId externalHeaderId;
 
-	private List<ExternalId> externalLineIds;
-	private String externalHeaderId;
+	private ImmutableList<ExternalId> externalLineIds;
 
 	@Builder(toBuilder = true)
-	private ExternalHeaderAndLineId(List<ExternalId> externalLineIds, @NonNull String externalHeaderId)
+	private ExternalHeaderAndLineId(
+			@NonNull @Singular final List<ExternalId> externalLineIds,
+			@NonNull final ExternalId externalHeaderId)
 	{
 		this.externalLineIds = ImmutableList.copyOf(externalLineIds);
 		this.externalHeaderId = externalHeaderId;

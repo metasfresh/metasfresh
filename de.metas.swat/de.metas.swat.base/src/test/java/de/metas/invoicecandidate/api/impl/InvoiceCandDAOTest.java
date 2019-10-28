@@ -9,6 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.IQuery;
@@ -53,14 +55,14 @@ import lombok.NonNull;
 public class InvoiceCandDAOTest
 {
 
-	private static final String EXTERNAL_LINE_ID1 = "Test1";
-	private static final String EXTERNAL_HEADER_ID1 = "1001";
+	private static final ExternalId EXTERNAL_LINE_ID1 = ExternalId.of("Test1");
+	private static final ExternalId EXTERNAL_HEADER_ID1 = ExternalId.of("1001");
 
-	private static final String EXTERNAL_LINE_ID2 = "Test2";
-	private static final String EXTERNAL_HEADER_ID2 = "1002";
+	private static final ExternalId EXTERNAL_LINE_ID2 = ExternalId.of("Test2");
+	private static final ExternalId EXTERNAL_HEADER_ID2 = ExternalId.of("1002");
 
-	private static final String EXTERNAL_LINE_ID3 = "Test3";
-	private static final String EXTERNAL_HEADER_ID3 = "1003";
+	private static final ExternalId EXTERNAL_LINE_ID3 = ExternalId.of("Test3");
+	private static final ExternalId EXTERNAL_HEADER_ID3 = ExternalId.of("1003");
 
 	private static final int P_INSTANCE_ID = 1002265;
 
@@ -124,83 +126,6 @@ public class InvoiceCandDAOTest
 				.isNull();
 	}
 
-	@Test
-	public void testInvoiceCandidates()
-	{
-		createInvoiceCandidate(EXTERNAL_HEADER_ID1, EXTERNAL_LINE_ID1);
-		createInvoiceCandidate(EXTERNAL_HEADER_ID2, EXTERNAL_LINE_ID2);
-		createInvoiceCandidate(EXTERNAL_HEADER_ID3, EXTERNAL_LINE_ID3);
-		ExternalId externalId1 = ExternalId.of(EXTERNAL_LINE_ID1);
-		ExternalId externalId2 = ExternalId.of(EXTERNAL_LINE_ID2);
-
-		List<ExternalId> externalLineIds1 = new ArrayList<ExternalId>();
-		externalLineIds1.add(externalId1);
-		List<ExternalId> externalLineIds2 = new ArrayList<ExternalId>();
-		externalLineIds2.add(externalId2);
-
-		List<ExternalHeaderAndLineId> headerAndLineIds1 = new ArrayList<ExternalHeaderAndLineId>();
-		headerAndLineIds1.add(ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID1).externalLineIds(externalLineIds1).build());
-
-		headerAndLineIds1.add(ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID2).externalLineIds(externalLineIds2).build());
-
-		IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId = new InvoiceCandDAO().createQueryByHeaderAndLineId(headerAndLineIds1);
-		int size = createQueryByHeaderAndLineId.list().size();
-		assert (size==2);
-
-	}
-
-	@Test
-	public void checkInvoiceCandidatesNotSelected()
-	{
-		createInvoiceCandidate(EXTERNAL_HEADER_ID1, EXTERNAL_LINE_ID1);
-		ExternalId externalId2 = ExternalId.of(EXTERNAL_LINE_ID2);
-		List<ExternalId> externalLineIds = new ArrayList<ExternalId>();
-		externalLineIds.add(externalId2);
-		List<ExternalHeaderAndLineId> headerAndLineIds = new ArrayList<ExternalHeaderAndLineId>();
-		headerAndLineIds.add(ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID2).externalLineIds(externalLineIds).build());
-		IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId = new InvoiceCandDAO().createQueryByHeaderAndLineId(headerAndLineIds);
-		int selection = createQueryByHeaderAndLineId.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
-		assertThat(selection).isEqualTo(0);
-	}
-
-	@Test
-	public void checkEmptyListOfExternalLineIds()
-	{
-		ExternalId externalId3 = ExternalId.of(EXTERNAL_LINE_ID3);
-		List<ExternalId> externalLineIds = new ArrayList<ExternalId>();
-		externalLineIds.add(externalId3);
-		List<ExternalHeaderAndLineId> headerAndLineIds = new ArrayList<ExternalHeaderAndLineId>();
-		headerAndLineIds.add(ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID3).externalLineIds(externalLineIds).build());
-		IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId = new InvoiceCandDAO().createQueryByHeaderAndLineId(headerAndLineIds);
-		int selection = createQueryByHeaderAndLineId.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
-		assertThat(selection).isEqualTo(0);
-	}
-
-	@Test
-	public void checkInvoiceCandidateSelection()
-	{
-		createInvoiceCandidate(EXTERNAL_HEADER_ID1, EXTERNAL_LINE_ID1);
-		ExternalId externalId1 = ExternalId.of(EXTERNAL_LINE_ID1);
-		List<ExternalId> externalLineIds = new ArrayList<ExternalId>();
-		externalLineIds.add(externalId1);
-		List<ExternalHeaderAndLineId> headerAndLineIds = new ArrayList<ExternalHeaderAndLineId>();
-		headerAndLineIds.add(ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID1).externalLineIds(externalLineIds).build());
-		IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId = new InvoiceCandDAO().createQueryByHeaderAndLineId(headerAndLineIds);
-
-		int selection = createQueryByHeaderAndLineId.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
-
-		assertThat(selection).isEqualTo(1);
-	}
-
-	private InvoiceCandidateId createInvoiceCandidate(String externalHeaderId, String externalLineId)
-	{
-		final I_C_Invoice_Candidate invoiceCandidate = newInstance(I_C_Invoice_Candidate.class);
-		invoiceCandidate.setExternalHeaderId(externalHeaderId);
-		invoiceCandidate.setExternalLineId(externalLineId);
-		saveRecord(invoiceCandidate);
-		return InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
-	}
-
 	private PaymentTermId createPaymentTerm()
 	{
 		final I_C_PaymentTerm record = newInstance(I_C_PaymentTerm.class);
@@ -213,5 +138,80 @@ public class InvoiceCandDAOTest
 		return CoalesceUtil.coalesceSuppliers(
 				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_Override_ID()),
 				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_ID()));
+	}
+
+	@Test
+	public void testInvoiceCandidates()
+	{
+		createInvoiceCandidate(EXTERNAL_HEADER_ID1, EXTERNAL_LINE_ID1);
+		createInvoiceCandidate(EXTERNAL_HEADER_ID2, EXTERNAL_LINE_ID2);
+		createInvoiceCandidate(EXTERNAL_HEADER_ID3, EXTERNAL_LINE_ID3);
+
+		final List<ExternalId> externalLineIds1 = new ArrayList<>();
+		externalLineIds1.add(EXTERNAL_LINE_ID1);
+		final List<ExternalId> externalLineIds2 = new ArrayList<>();
+		externalLineIds2.add(EXTERNAL_LINE_ID2);
+
+		final List<ExternalHeaderAndLineId> headerAndLineIds1 = new ArrayList<>();
+		headerAndLineIds1.add(ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID1).externalLineIds(externalLineIds1).build());
+
+		headerAndLineIds1.add(ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID2).externalLineIds(externalLineIds2).build());
+
+		final IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId = new InvoiceCandDAO().createQueryByHeaderAndLineId(headerAndLineIds1);
+		final int size = createQueryByHeaderAndLineId.list().size();
+		assert size == 2;
+
+	}
+
+	@Test
+	public void checkInvoiceCandidatesNotSelected()
+	{
+		createInvoiceCandidate(EXTERNAL_HEADER_ID1, EXTERNAL_LINE_ID1);
+
+		final ImmutableList<ExternalHeaderAndLineId> headerAndLineIds = ImmutableList.of(
+				ExternalHeaderAndLineId.builder()
+						.externalHeaderId(EXTERNAL_HEADER_ID2)
+						.externalLineId(EXTERNAL_LINE_ID2)
+						.build());
+
+		final IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId = new InvoiceCandDAO().createQueryByHeaderAndLineId(headerAndLineIds);
+		final int selection = createQueryByHeaderAndLineId.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
+		assertThat(selection).isEqualTo(0);
+	}
+
+	@Test
+	public void checkEmptyListOfExternalLineIds()
+	{
+		final List<ExternalHeaderAndLineId> headerAndLineIds = ImmutableList.of(
+				ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID3).externalLineId(EXTERNAL_LINE_ID3).build());
+
+		final IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId = new InvoiceCandDAO().createQueryByHeaderAndLineId(headerAndLineIds);
+		final int selection = createQueryByHeaderAndLineId.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
+		assertThat(selection).isEqualTo(0);
+	}
+
+	@Test
+	public void checkInvoiceCandidateSelection()
+	{
+		createInvoiceCandidate(EXTERNAL_HEADER_ID1, EXTERNAL_LINE_ID1);
+
+		final List<ExternalHeaderAndLineId> headerAndLineIds = ImmutableList.of(
+				ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID1).externalLineId(EXTERNAL_LINE_ID1).build());
+		final IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId = new InvoiceCandDAO().createQueryByHeaderAndLineId(headerAndLineIds);
+
+		final int selection = createQueryByHeaderAndLineId.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
+
+		assertThat(selection).isEqualTo(1);
+	}
+
+	private InvoiceCandidateId createInvoiceCandidate(
+			@Nullable final ExternalId externalHeaderId,
+			@Nullable final ExternalId externalLineId)
+	{
+		final I_C_Invoice_Candidate invoiceCandidate = newInstance(I_C_Invoice_Candidate.class);
+		invoiceCandidate.setExternalHeaderId(ExternalId.toValue(externalHeaderId));
+		invoiceCandidate.setExternalLineId(ExternalId.toValue(externalLineId));
+		saveRecord(invoiceCandidate);
+		return InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
 	}
 }

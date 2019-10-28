@@ -2,7 +2,7 @@ package de.metas.rest_api.invoicecandidates;
 
 import org.springframework.http.ResponseEntity;
 
-import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandCreateRequest;
+import de.metas.rest_api.invoicecandidates.request.JsonInvoicingRequest;
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandCreateResponse;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
@@ -35,6 +35,6 @@ public interface ICEnqueueingForInvoiceGenerationRestEndpoint
 {
 	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/invoices/createFromInvoiceCandidates";
 
-	ResponseEntity<JsonInvoiceCandCreateResponse> createInvoices(JsonInvoiceCandCreateRequest request);
+	ResponseEntity<JsonInvoiceCandCreateResponse> createInvoices(JsonInvoicingRequest request);
 
 }
