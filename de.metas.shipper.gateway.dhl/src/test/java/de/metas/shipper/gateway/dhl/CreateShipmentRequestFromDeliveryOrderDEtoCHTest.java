@@ -20,7 +20,9 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.dhl;import de.dhl.webservice.cisbase.AuthentificationType;
+package de.metas.shipper.gateway.dhl;
+
+import de.dhl.webservice.cisbase.AuthentificationType;
 import de.dhl.webservice.cisbase.CommunicationType;
 import de.dhl.webservice.cisbase.CountryType;
 import de.dhl.webservice.cisbase.NameType;
@@ -140,7 +142,6 @@ class CreateShipmentRequestFromDeliveryOrderDEtoCHTest
 			final ShipmentDetailsTypeType shipmentDetailsTypeType = objectFactory.createShipmentDetailsTypeType();
 			shipmentDetailsTypeType.setProduct(deliveryOrder.getServiceType().getCode());
 			shipmentDetailsTypeType.setAccountNumber("22222222225301");
-			// todo this is PO reference
 			//noinspection ConstantConditions
 			shipmentDetailsTypeType.setCustomerReference(deliveryOrder.getCustomerReference());
 			shipmentDetailsTypeType.setShipmentDate(pickupDate.getDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
@@ -197,7 +198,7 @@ class CreateShipmentRequestFromDeliveryOrderDEtoCHTest
 			final ShipperType shipperType = objectFactory.createShipperType();
 			// (2.2.2.1)
 			final NameType nameType = objectFactoryCis.createNameType();
-			nameType.setName1("TheBestPessimist"); // todo i don't have the name here and it's mandatory (dhl shipper name should be the bpartner name, or what else?? (2.2.2.1.1))
+			nameType.setName1("TheBestPessimist");
 			shipperType.setName(nameType);
 			// (2.2.2.2)
 			final NativeAddressType nativeAddressType = objectFactoryCis.createNativeAddressType();
@@ -218,15 +219,10 @@ class CreateShipmentRequestFromDeliveryOrderDEtoCHTest
 		{
 			// (2.2.6) Export Document - only for international shipments
 			final ExportDocumentType exportDocumentType = objectFactory.createExportDocumentType();
-//			exportDocumentType.setInvoiceNumber("2212011"); // optional
-			exportDocumentType.setExportType("OTHER"); // todo what export type should i chose here????????
-			exportDocumentType.setExportTypeDescription("Sales of Goods"); // todo what export type description should i put here????
-//			exportDocumentType.setTermsOfTrade("DDP"); // optional
-			exportDocumentType.setPlaceOfCommital("Bonn"); // todo what is place of commital? maybe its shipper city
-			exportDocumentType.setAdditionalFee(BigDecimal.valueOf(0)); // todo get this from somewhere
-			//			exportDocumentType.setPermitNumber("12345"); //  optional
-			//			exportDocumentType.setAttestationNumber("65421"); //  optional
-
+			exportDocumentType.setExportType("OTHER");
+			exportDocumentType.setExportTypeDescription("Sales of Goods");
+			exportDocumentType.setPlaceOfCommital("Bonn");
+			exportDocumentType.setAdditionalFee(BigDecimal.valueOf(0));
 
 			// (2.2.6.9)
 			final Serviceconfiguration serviceconfiguration = objectFactory.createServiceconfiguration();
@@ -244,9 +240,10 @@ class CreateShipmentRequestFromDeliveryOrderDEtoCHTest
 
 			shipmentOrderTypeShipment.setExportDocument(exportDocumentType);
 		}
+
 		// (2) create the need shipment order type
 		final ShipmentOrderType shipmentOrderType = objectFactory.createShipmentOrderType();
-		shipmentOrderType.setSequenceNumber("1"); // todo what unique identifier should i use here?
+		shipmentOrderType.setSequenceNumber("1");
 		shipmentOrderType.setShipment(shipmentOrderTypeShipment);
 		return shipmentOrderType;
 
