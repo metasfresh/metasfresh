@@ -145,8 +145,8 @@ public class InvoiceCandDAOTest
 
 		IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId = new InvoiceCandDAO().createQueryByHeaderAndLineId(headerAndLineIds1);
 		int size = createQueryByHeaderAndLineId.list().size();
-		assert (createQueryByHeaderAndLineId.list().isEmpty());
-		// need an advice here- because the size will always be 0 in here.
+		assert (size==2);
+
 	}
 
 	@Test
