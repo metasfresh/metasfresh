@@ -127,17 +127,25 @@ public class InvoiceCandDAOTest
 	@Test
 	public void testInvoiceCandidates()
 	{
+		createInvoiceCandidate(EXTERNAL_LINE_ID1, EXTERNAL_HEADER_ID1);
+		createInvoiceCandidate(EXTERNAL_LINE_ID2, EXTERNAL_HEADER_ID2);
+		createInvoiceCandidate(EXTERNAL_LINE_ID3, EXTERNAL_HEADER_ID3);
 		ExternalId externalId1 = ExternalId.of(EXTERNAL_LINE_ID1);
 		ExternalId externalId2 = ExternalId.of(EXTERNAL_LINE_ID2);
-		ExternalId externalId3 = ExternalId.of(EXTERNAL_LINE_ID3);
-		List<ExternalId> externalLineIds = new ArrayList<ExternalId>();
-		externalLineIds.add(externalId1);
-		externalLineIds.add(externalId2);
-		externalLineIds.add(externalId3);
-		List<ExternalHeaderAndLineId> headerAndLineIds = new ArrayList<ExternalHeaderAndLineId>();
-		headerAndLineIds.add(ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID1).externalLineIds(externalLineIds).build());
-		IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId = new InvoiceCandDAO().createQueryByHeaderAndLineId(headerAndLineIds);
+
+		List<ExternalId> externalLineIds1 = new ArrayList<ExternalId>();
+		externalLineIds1.add(externalId1);
+		List<ExternalId> externalLineIds2 = new ArrayList<ExternalId>();
+		externalLineIds2.add(externalId2);
+
+		List<ExternalHeaderAndLineId> headerAndLineIds1 = new ArrayList<ExternalHeaderAndLineId>();
+		headerAndLineIds1.add(ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID1).externalLineIds(externalLineIds1).build());
+		
+		headerAndLineIds1.add(ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID2).externalLineIds(externalLineIds2).build());
+		
+		IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId = new InvoiceCandDAO().createQueryByHeaderAndLineId(headerAndLineIds1);
 		int size = createQueryByHeaderAndLineId.list().size();
+		assert(size==3);
 		//need an advice here- because the size will always be 0 in here.
 	}
 	
@@ -187,8 +195,8 @@ public class InvoiceCandDAOTest
 	private InvoiceCandidateId createInvoiceCandidate(String externalHeaderId, String externalLineId)
 	{
 		final I_C_Invoice_Candidate invoiceCandidate = newInstance(I_C_Invoice_Candidate.class);
-		invoiceCandidate.setExternalHeaderId(EXTERNAL_HEADER_ID1);
-		invoiceCandidate.setExternalLineId(EXTERNAL_LINE_ID1);
+		invoiceCandidate.setExternalHeaderId(externalHeaderId);
+		invoiceCandidate.setExternalLineId(externalLineId);
 		saveRecord(invoiceCandidate);
 		return InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
 	}
