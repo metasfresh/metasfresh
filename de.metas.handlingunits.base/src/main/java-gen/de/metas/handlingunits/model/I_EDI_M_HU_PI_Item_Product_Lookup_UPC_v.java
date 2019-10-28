@@ -65,8 +65,6 @@ public interface I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v
 	 */
 	public int getM_HU_PI_Item_Product_ID();
 
-    /** Column definition for M_HU_PI_Item_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v, de.metas.handlingunits.model.I_M_HU_PI_Item_Product> COLUMN_M_HU_PI_Item_Product_ID = new org.adempiere.model.ModelColumn<I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v, de.metas.handlingunits.model.I_M_HU_PI_Item_Product>(I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v.class, "M_HU_PI_Item_Product_ID", de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class);
     /** Column name M_HU_PI_Item_Product_ID */
     public static final String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 

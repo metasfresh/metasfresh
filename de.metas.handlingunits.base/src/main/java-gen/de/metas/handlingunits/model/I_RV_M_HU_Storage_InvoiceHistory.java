@@ -32,8 +32,6 @@ public interface I_RV_M_HU_Storage_InvoiceHistory
 	 */
 	public int getAD_Client_ID();
 
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_HU_Storage_InvoiceHistory, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_RV_M_HU_Storage_InvoiceHistory, org.compiere.model.I_AD_Client>(I_RV_M_HU_Storage_InvoiceHistory.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -57,8 +55,6 @@ public interface I_RV_M_HU_Storage_InvoiceHistory
 	 */
 	public int getAD_Org_ID();
 
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_HU_Storage_InvoiceHistory, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_RV_M_HU_Storage_InvoiceHistory, org.compiere.model.I_AD_Org>(I_RV_M_HU_Storage_InvoiceHistory.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -130,8 +126,6 @@ public interface I_RV_M_HU_Storage_InvoiceHistory
 	 */
 	public int getM_Locator_ID();
 
-    /** Column definition for M_Locator_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_HU_Storage_InvoiceHistory, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<I_RV_M_HU_Storage_InvoiceHistory, org.compiere.model.I_M_Locator>(I_RV_M_HU_Storage_InvoiceHistory.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);
     /** Column name M_Locator_ID */
     public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
@@ -155,8 +149,6 @@ public interface I_RV_M_HU_Storage_InvoiceHistory
 	 */
 	public int getM_Product_ID();
 
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_HU_Storage_InvoiceHistory, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_RV_M_HU_Storage_InvoiceHistory, org.compiere.model.I_M_Product>(I_RV_M_HU_Storage_InvoiceHistory.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 

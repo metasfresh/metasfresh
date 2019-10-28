@@ -15,7 +15,7 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1316344370L;
+	private static final long serialVersionUID = -1021896382L;
 
     /** Standard Constructor */
     public X_PP_Order_Qty (Properties ctx, int PP_Order_Qty_ID, String trxName)
@@ -26,8 +26,8 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 			setC_UOM_ID (0);
 			setM_HU_ID (0);
 			setM_Locator_ID (0);
-			setMovementDate (new Timestamp( System.currentTimeMillis() ));
 			setM_Product_ID (0);
+			setMovementDate (new Timestamp( System.currentTimeMillis() ));
 			setPP_Order_ID (0);
 			setPP_Order_Qty_ID (0);
 			setProcessed (false); // N
@@ -134,25 +134,6 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 		return ii.intValue();
 	}
 
-	/** Set Bewegungsdatum.
-		@param MovementDate 
-		Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	  */
-	@Override
-	public void setMovementDate (java.sql.Timestamp MovementDate)
-	{
-		set_ValueNoCheck (COLUMNNAME_MovementDate, MovementDate);
-	}
-
-	/** Get Bewegungsdatum.
-		@return Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	  */
-	@Override
-	public java.sql.Timestamp getMovementDate () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_MovementDate);
-	}
-
 	/** Set Produkt.
 		@param M_Product_ID 
 		Produkt, Leistung, Artikel
@@ -176,6 +157,25 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Bewegungsdatum.
+		@param MovementDate 
+		Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	  */
+	@Override
+	public void setMovementDate (java.sql.Timestamp MovementDate)
+	{
+		set_ValueNoCheck (COLUMNNAME_MovementDate, MovementDate);
+	}
+
+	/** Get Bewegungsdatum.
+		@return Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	  */
+	@Override
+	public java.sql.Timestamp getMovementDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_MovementDate);
 	}
 
 	@Override

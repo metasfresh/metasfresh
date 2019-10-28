@@ -32,8 +32,6 @@ public interface I_RV_HU_Quantities_Summary
 	 */
 	public int getAD_Client_ID();
 
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_HU_Quantities_Summary, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_RV_HU_Quantities_Summary, org.compiere.model.I_AD_Client>(I_RV_HU_Quantities_Summary.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -130,8 +128,6 @@ public interface I_RV_HU_Quantities_Summary
 	 */
 	public int getM_Product_Category_ID();
 
-    /** Column definition for M_Product_Category_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_HU_Quantities_Summary, org.compiere.model.I_M_Product_Category> COLUMN_M_Product_Category_ID = new org.adempiere.model.ModelColumn<I_RV_HU_Quantities_Summary, org.compiere.model.I_M_Product_Category>(I_RV_HU_Quantities_Summary.class, "M_Product_Category_ID", org.compiere.model.I_M_Product_Category.class);
     /** Column name M_Product_Category_ID */
     public static final String COLUMNNAME_M_Product_Category_ID = "M_Product_Category_ID";
 
@@ -155,8 +151,6 @@ public interface I_RV_HU_Quantities_Summary
 	 */
 	public int getM_Product_ID();
 
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_HU_Quantities_Summary, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_RV_HU_Quantities_Summary, org.compiere.model.I_M_Product>(I_RV_HU_Quantities_Summary.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
