@@ -231,6 +231,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 				.customDeliveryData(
 						initialCustomDeliveryData
 								.toBuilder()
+								.clearDetails()
 								.details(updatedCustomDeliveryData.build())
 								.build())
 				.build();
