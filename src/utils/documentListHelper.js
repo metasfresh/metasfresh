@@ -54,6 +54,7 @@ const DLmapStateToProps = (state, props) => ({
 const NO_SELECTION = [];
 const NO_VIEW = {};
 const PANEL_WIDTHS = ['1', '.2', '4'];
+const GEO_PANEL_STATES = ['grid', 'all', 'map'];
 
 const filtersToMap = function(filtersArray) {
   let filtersMap = Map();
@@ -112,6 +113,7 @@ export {
   NO_SELECTION,
   NO_VIEW,
   PANEL_WIDTHS,
+  GEO_PANEL_STATES,
   getSortingQuery,
   redirectToNewDocument,
   filtersToMap,

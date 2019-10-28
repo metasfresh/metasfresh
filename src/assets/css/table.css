@@ -1,3 +1,25 @@
+.table-row {
+    flex: 1;
+    width: 100%;
+    max-width: 100%;
+}
+
+.table-flex-wrapper {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+
+    .document-list-table {
+        flex: 2.6;
+    }
+}
+
+.table-flex-wrapper-row {
+    flex-direction: row;
+    flex: 1;
+    display: flex;
+}
+
 .table {
     margin-bottom: 1px;
     display: table;
@@ -354,22 +376,6 @@
     color: $brand-font-color;
     background-color: #fff;
     text-align: center;
-}
-
-.table-flex-wrapper {
-    display: flex;
-    flex-grow: 1;
-    flex-direction: column;
-
-    .document-list-table {
-        flex: 2.6;
-    }
-}
-
-.table-flex-wrapper-row {
-    flex-direction: row;
-    flex: 1;
-    display: flex;
 }
 
 .row-bordered-bottom td {

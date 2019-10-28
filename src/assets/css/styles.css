@@ -108,6 +108,10 @@ body {
     }
 }
 
+.posRelative {
+    position: relative;
+}
+
 .text-brand {
     font-weight: 700;
     color: $brand-color-primary;
@@ -548,6 +552,43 @@ body {
     justify-content: space-between;
     flex-shrink: 0;
     min-height: auto;
+
+    .pane-size-button {
+        display: block;
+        z-index: 1000;
+        align-self: center;
+        margin-right: auto !important;
+
+        .btn-switch {
+            display: flex;
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+            background: no-repeat scroll 0 center;
+            display: block;
+            align-self: center;
+
+            &.greyscaled {
+                filter: grayscale(1);
+            }
+        }
+
+        .text-middle {
+            margin: 0 3px;
+            padding: 0;
+            font-size: medium;
+        }
+
+        .icon-grid {
+            background-image: url('../images/list-solid.svg');
+        }
+
+        .icon-map {
+            background-image: url('../images/map-marked-alt-solid.svg');
+        }
+    }
 }
 
 .tablet, .mobile {
@@ -582,7 +623,47 @@ body {
 .document-list-body {
     display: flex;
     flex-grow: 1;
-    flex-direction: column;
+    /*flex-direction: column;*/
+}
+
+.mapComponent {
+    .mapMarker {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        transform: translate(-15px, -40px);
+        background: no-repeat scroll 0 center;
+        background-size: 29px 34px;
+        background-image: url('../images/map-marker.png');
+        cursor: pointer;
+
+        &:hover {
+            background-image: url('../images/map-marker-hover.png');
+
+            .markerTooltip {
+                opacity: 1;
+                visibility: visible;
+                transition-delay: 100ms;
+                transform: transateY(-8px);
+            }
+        }
+
+        .markerTooltip {
+            visibility: hidden;
+            opacity: 0;
+            margin-left: -18px;
+            bottom: 100%;
+            left: calc(50% - 6px);
+            position: absolute;
+            z-index:10000;
+            transition: .3s ease;
+            background: #383838;
+            color: #fff;
+            padding: 8px 10px;
+            font-size: 12px;
+            line-height: 12px;
+        }
+    }
 }
 
 .map-tree-wrapper {
