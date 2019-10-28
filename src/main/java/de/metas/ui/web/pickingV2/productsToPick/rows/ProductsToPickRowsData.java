@@ -196,6 +196,12 @@ public class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickR
 			final String fieldName = fieldChangeRequest.getPath();
 			if (ProductsToPickRow.FIELD_QtyOverride.equals(fieldName))
 			{
+				if (!row.isQtyOverrideEditableByUser())
+				{
+					throw new AdempiereException("QtyOverride is not editable")
+							.setParameter("row", row);
+				}
+
 				final BigDecimal qtyOverride = fieldChangeRequest.getValueAsBigDecimal();
 				changedRow = changedRow.withQtyOverride(qtyOverride);
 			}
