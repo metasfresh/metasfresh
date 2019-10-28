@@ -76,7 +76,6 @@ import lombok.NonNull;
 		return new QueryBuilder<>(Object.class, modelTableName);
 	}
 
-
 	/**
 	 * Note: we don't provide two constructors (one without <code>tableName</code> param), because instances of this class are generally created by {@link IQueryBuilder} and that's how a user should obtain them.
 	 * Exceptions might be some test cases, but there is think that a developer can carry the border of explicitly giving a <code>null</code> parameter. On the upside, we don't have multiple different constructors to choose from.
@@ -94,8 +93,6 @@ import lombok.NonNull;
 		final IQueryBL factory = Services.get(IQueryBL.class);
 		filters = factory.createCompositeQueryFilter(this.modelTableName); // always use the tableName we just fetched because it might be that modelClass is not providing a tableName.
 	}
-
-
 
 	private QueryBuilder(final QueryBuilder<T> from)
 	{
@@ -586,34 +583,28 @@ import lombok.NonNull;
 	@Override
 	public <CollectedType, ParentModelType> IQueryBuilder<CollectedType> andCollect(final ModelColumn<ParentModelType, CollectedType> column)
 	{
-		final Class<CollectedType> fieldType = column.getColumnModelType();
-		return andCollect(column, fieldType);
+		return andCollect(column.getColumnName(), column.getColumnModelType());
 	}
 
 	@Override
 	public <CollectedBaseType, CollectedType extends CollectedBaseType, ParentModelType> IQueryBuilder<CollectedType> andCollect(
 			@NonNull final ModelColumn<ParentModelType, CollectedBaseType> column,
-			Class<CollectedType> collectedType)
+			@NonNull final Class<CollectedType> collectedType)
+	{
+		return andCollect(column.getColumnName(), collectedType);
+	}
+
+	@Override
+	public <CollectedType> IQueryBuilder<CollectedType> andCollect(
+			@NonNull final String columnName,
+			@NonNull Class<CollectedType> collectedType)
 	{
 		final IQuery<T> query = create();
 
-		String tableName = null;
-
-		// Get TableName from collectedType (if any)
-		if (tableName == null && collectedType != null)
-		{
-			tableName = InterfaceWrapperHelper.getTableNameOrNull(collectedType);
-		}
-		// Get tableName from model column definition
-		if (tableName == null)
-		{
-			final Class<CollectedBaseType> fieldType = column.getColumnModelType();
-			tableName = InterfaceWrapperHelper.getTableName(fieldType);
-		}
-		Check.assumeNotEmpty(tableName, "TableName not found for column={} and collectedType={}", column, collectedType);
+		String tableName = InterfaceWrapperHelper.getTableNameOrNull(collectedType);
+		Check.assumeNotEmpty(tableName, "TableName not found for column={} and collectedType={}", columnName, collectedType);
 
 		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
-		final String columnName = column.getColumnName();
 
 		return new QueryBuilder<>(collectedType, null) // tableName=null
 				.setContext(ctx, trxName)
@@ -651,7 +642,16 @@ import lombok.NonNull;
 	@Override
 	public <TargetModelType> QueryAggregateBuilder<T, TargetModelType> aggregateOnColumn(final ModelColumn<T, TargetModelType> column)
 	{
-		return new QueryAggregateBuilder<>(this, column);
+		return aggregateOnColumn(column.getColumnName(), column.getColumnModelType());
+	}
+
+	@Override
+	public <TargetModelType> QueryAggregateBuilder<T, TargetModelType> aggregateOnColumn(final String collectOnColumnName, final Class<TargetModelType> targetModelType)
+	{
+		return new QueryAggregateBuilder<>(
+				this,
+				collectOnColumnName,
+				targetModelType);
 	}
 
 	@Override
