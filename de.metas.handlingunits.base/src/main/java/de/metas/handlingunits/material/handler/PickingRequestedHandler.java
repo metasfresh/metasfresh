@@ -17,7 +17,7 @@ import de.metas.Profiles;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.requests.PickHURequest;
+import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
@@ -98,7 +98,7 @@ public class PickingRequestedHandler implements MaterialEventHandler<PickingRequ
 		for (final HuId huIdToPick : HuId.ofRepoIds(event.getTopLevelHuIdsToPick()))
 		{
 			// NOTE: we are not moving the HU to shipment schedule's locator.
-			pickingCandidateService.pickHU(PickHURequest.builder()
+			pickingCandidateService.pickHU(PickRequest.builder()
 					.shipmentScheduleId(shipmentScheduleId)
 					.pickFromHuId(huIdToPick)
 					.pickingSlotId(pickingSlotId)

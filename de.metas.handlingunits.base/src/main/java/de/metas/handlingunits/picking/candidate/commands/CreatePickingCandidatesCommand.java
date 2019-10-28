@@ -7,7 +7,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
-import de.metas.handlingunits.picking.requests.PickHURequest;
+import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
@@ -52,7 +52,7 @@ public class CreatePickingCandidatesCommand
 	@Builder
 	private CreatePickingCandidatesCommand(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
-			@NonNull final PickHURequest request)
+			@NonNull final PickRequest request)
 	{
 		this.pickingCandidateRepository = pickingCandidateRepository;
 

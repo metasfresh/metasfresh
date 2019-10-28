@@ -16,7 +16,7 @@ import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
-import de.metas.handlingunits.picking.requests.PickHURequest;
+import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -68,14 +68,13 @@ public class PickHUCommand
 	private final Quantity qtyToPick;
 	private final HuPackingInstructionsId packToId;
 	private final boolean autoReview;
-	boolean createPickingCandidatesOnly;
 
 	private I_M_ShipmentSchedule _shipmentSchedule; // lazy
 
 	@Builder
 	private PickHUCommand(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
-			@NonNull final PickHURequest request)
+			@NonNull final PickRequest request)
 	{
 		this.pickingCandidateRepository = pickingCandidateRepository;
 
