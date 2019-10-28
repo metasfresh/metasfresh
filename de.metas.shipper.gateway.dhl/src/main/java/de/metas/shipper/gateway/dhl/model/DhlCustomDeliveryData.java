@@ -26,10 +26,12 @@ import com.google.common.collect.ImmutableList;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 
 @Builder(toBuilder = true)
 public class DhlCustomDeliveryData implements CustomDeliveryData
 {
+	@Singular
 	@NonNull
 	private final ImmutableList<DhlCustomDeliveryDataDetail> details;
 

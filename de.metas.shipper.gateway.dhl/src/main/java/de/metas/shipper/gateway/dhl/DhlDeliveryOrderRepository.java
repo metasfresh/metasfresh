@@ -25,11 +25,8 @@ package de.metas.shipper.gateway.dhl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.attachments.AttachmentEntryService;
-import de.metas.customs.CustomsInvoiceId;
-import de.metas.customs.CustomsInvoiceLineId;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
-import de.metas.shipper.gateway.dhl.model.DhlCustomsDocument;
 import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
 import de.metas.shipper.gateway.dhl.model.DhlServiceType;
 import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrder;
@@ -53,7 +50,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -133,23 +129,23 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 
 		final ImmutableList<DhlCustomDeliveryDataDetail> dhlCustomDeliveryDataDetail = ordersPo.stream()
 				.map(po -> {
-					DhlCustomsDocument customsDocument = null;
-					if (po.isInternationalDelivery())
-					{
-						customsDocument = DhlCustomsDocument.builder()
-								.exportType(po.getExportType())
-								.exportTypeDescription(po.getExportTypeDescription())
-								.additionalFee(po.getAdditionalFee())
-								.electronicExportNotification(po.getElectronicExportNotification())
-								.packageDescription(po.getPackageDescription())
-								.customsTariffNumber(po.getCustomsTariffNumber())
-								.customsAmount(BigInteger.valueOf(po.getCustomsAmount()))
-								.netWeightInKg(po.getNetWeightKg())
-								.customsValue(po.getCustomsValue())
-								.invoiceId(CustomsInvoiceId.ofRepoId(po.getC_Customs_Invoice_ID()))
-								.invoiceLineId(CustomsInvoiceLineId.ofRepoIdOrNull(CustomsInvoiceId.ofRepoId(po.getC_Customs_Invoice_ID()), po.getC_Customs_Invoice_Line_ID()))
-								.build();
-					}
+					//					DhlCustomsDocument customsDocument = null;
+					//					if (po.isInternationalDelivery())
+					//					{
+					//						customsDocument = DhlCustomsDocument.builder()
+					//								.exportType(po.getExportType())
+					//								.exportTypeDescription(po.getExportTypeDescription())
+					//								.additionalFee(po.getAdditionalFee())
+					//								.electronicExportNotification(po.getElectronicExportNotification())
+					//								.packageDescription(po.getPackageDescription())
+					//								.customsTariffNumber(po.getCustomsTariffNumber())
+					//								.customsAmount(BigInteger.valueOf(po.getCustomsAmount()))
+					//								.netWeightInKg(po.getNetWeightKg())
+					//								.customsValue(po.getCustomsValue())
+					//								.invoiceId(CustomsInvoiceId.ofRepoId(po.getC_Customs_Invoice_ID()))
+					//								.invoiceLineId(CustomsInvoiceLineId.ofRepoIdOrNull(CustomsInvoiceId.ofRepoId(po.getC_Customs_Invoice_ID()), po.getC_Customs_Invoice_Line_ID()))
+					//								.build();
+					//					}
 
 					return DhlCustomDeliveryDataDetail.builder()
 							.packageId(po.getPackageId())
@@ -157,7 +153,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 							.sequenceNumber(DhlSequenceNumber.of(po.getDHL_ShipmentOrder_ID()))
 							.pdfLabelData(po.getPdfLabelData())
 							.internationalDelivery(po.isInternationalDelivery())
-							.customsDocument(customsDocument)
+							//							.customsDocument(customsDocument)
 							.build();
 				})
 				.collect(ImmutableList.toImmutableList());
@@ -259,7 +255,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 		final I_DHL_ShipmentOrderRequest shipmentOrderRequest = InterfaceWrapperHelper.newInstance(I_DHL_ShipmentOrderRequest.class);
 		InterfaceWrapperHelper.save(shipmentOrderRequest);
 
-		// maybe this will be removed in the future, but for now it simplifies the PO deserialisation implementation and other implementation details dramatically, ref: constructDeliveryPositions()
+		// maybe this will be removed in the future, but for now it simplifies the PO deserialization implementation and other implementation details dramatically, ref: constructDeliveryPositions()
 		// therefore please ignore the for loops over `deliveryOrder.getDeliveryPositions()` as they don't help at all
 		Check.errorIf(deliveryOrder.getDeliveryPositions().size() != 1,
 				"The DHL implementation needs to always create DeliveryOrders with exactly 1 DeliveryPosition; deliveryOrder={}",
@@ -345,32 +341,32 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 					shipmentOrder.setDHL_Shipper_CountryISO3Code(pickupAddress.getCountry().getAlpha3());
 				}
 
-				{
-					// (2.2.6) Export Document - only for international shipments
-
-					//noinspection ConstantConditions
-					final DhlCustomDeliveryData dhlCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
-					final DhlCustomDeliveryDataDetail deliveryDataDetail = dhlCustomDeliveryData.getDetailByPackageId(packageIdsAsList.get(i));
-					if (deliveryDataDetail.isInternationalDelivery())
-					{
-						final DhlCustomsDocument customsDocument = deliveryDataDetail.getCustomsDocument();
-
-						//noinspection ConstantConditions
-						shipmentOrder.setExportType(customsDocument.getExportType());
-						shipmentOrder.setExportTypeDescription(customsDocument.getExportTypeDescription());
-						shipmentOrder.setAdditionalFee(customsDocument.getAdditionalFee());
-						// (2.2.6.9)
-						shipmentOrder.setElectronicExportNotification(customsDocument.getElectronicExportNotification());
-						// (2.2.6.10)
-						shipmentOrder.setPackageDescription(customsDocument.getPackageDescription());
-						shipmentOrder.setCustomsTariffNumber(customsDocument.getCustomsTariffNumber());
-						shipmentOrder.setCustomsAmount(customsDocument.getCustomsAmount().intValue());
-						shipmentOrder.setNetWeightKg(customsDocument.getNetWeightInKg());
-						shipmentOrder.setCustomsValue(customsDocument.getCustomsValue());
-						shipmentOrder.setC_Customs_Invoice_ID(customsDocument.getInvoiceId().getRepoId());
-						shipmentOrder.setC_Customs_Invoice_Line_ID(customsDocument.getInvoiceLineId().getRepoId());
-					}
-				}
+				//				{
+				//					// (2.2.6) Export Document - only for international shipments
+				//
+				//					//noinspection ConstantConditions
+				//					final DhlCustomDeliveryData dhlCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
+				//					final DhlCustomDeliveryDataDetail deliveryDataDetail = dhlCustomDeliveryData.getDetailByPackageId(packageIdsAsList.get(i));
+				//					if (deliveryDataDetail.isInternationalDelivery())
+				//					{
+				//						final DhlCustomsDocument customsDocument = deliveryDataDetail.getCustomsDocument();
+				//
+				//						//noinspection ConstantConditions
+				//						shipmentOrder.setExportType(customsDocument.getExportType());
+				//						shipmentOrder.setExportTypeDescription(customsDocument.getExportTypeDescription());
+				//						shipmentOrder.setAdditionalFee(customsDocument.getAdditionalFee());
+				//						// (2.2.6.9)
+				//						shipmentOrder.setElectronicExportNotification(customsDocument.getElectronicExportNotification());
+				//						// (2.2.6.10)
+				//						shipmentOrder.setPackageDescription(customsDocument.getPackageDescription());
+				//						shipmentOrder.setCustomsTariffNumber(customsDocument.getCustomsTariffNumber());
+				//						shipmentOrder.setCustomsAmount(customsDocument.getCustomsAmount().intValue());
+				//						shipmentOrder.setNetWeightKg(customsDocument.getNetWeightInKg());
+				//						shipmentOrder.setCustomsValue(customsDocument.getCustomsValue());
+				//						shipmentOrder.setC_Customs_Invoice_ID(customsDocument.getInvoiceId().getRepoId());
+				//						shipmentOrder.setC_Customs_Invoice_Line_ID(customsDocument.getInvoiceLineId().getRepoId());
+				//					}
+				//				}
 
 				InterfaceWrapperHelper.save(shipmentOrder);
 				{

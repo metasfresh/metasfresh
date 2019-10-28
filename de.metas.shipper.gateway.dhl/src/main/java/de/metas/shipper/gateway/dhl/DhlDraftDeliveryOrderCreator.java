@@ -24,6 +24,7 @@ package de.metas.shipper.gateway.dhl;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.customs.CustomsInvoiceRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
@@ -32,9 +33,12 @@ import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfigRepository;
+import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
+import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlServiceType;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
+import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
@@ -66,10 +70,12 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	private static final Logger logger = LoggerFactory.getLogger(DhlDraftDeliveryOrderCreator.class);
 
 	private final DhlClientConfigRepository clientConfigRepository;
+	private final CustomsInvoiceRepository customsInvoiceRepository;
 
-	public DhlDraftDeliveryOrderCreator(@NonNull final DhlClientConfigRepository clientConfigRepository)
+	public DhlDraftDeliveryOrderCreator(@NonNull final DhlClientConfigRepository clientConfigRepository, @NonNull final CustomsInvoiceRepository customsInvoiceRepository)
 	{
 		this.clientConfigRepository = clientConfigRepository;
+		this.customsInvoiceRepository = customsInvoiceRepository;
 	}
 
 	@Override
@@ -92,6 +98,8 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
 		final Set<Integer> mpackageIds = request.getMpackageIds();
 
+		final String customerReference = ""; // todo what is the customer reference ?
+
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(deliveryOrderKey.getFromOrgId());
 		final I_C_Location pickupFromLocation = bpartnerOrgBL.retrieveOrgLocation(OrgId.ofRepoId(deliveryOrderKey.getFromOrgId()));
@@ -105,11 +113,56 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
 
-		// implement handling for DE -> DE and DE -> International packages
 		DhlServiceType detectedServiceType = DhlServiceType.Dhl_Paket;
-		if (deliverToLocation.getC_Country_ID() != pickupFromLocation.getC_Country_ID())
+		final DhlCustomDeliveryData.DhlCustomDeliveryDataBuilder dataBuilder = DhlCustomDeliveryData.builder();
+
+		// create the customDeliveryDataDetails
+		for (final Integer packageId : mpackageIds)
 		{
-			detectedServiceType = DhlServiceType.Dhl_PaketInternational;
+			final DhlCustomDeliveryDataDetail.DhlCustomDeliveryDataDetailBuilder dataDetailBuilder = DhlCustomDeliveryDataDetail.builder();
+			dataDetailBuilder.packageId(packageId);
+
+			// implement handling for DE -> DE and DE -> International packages
+			// currently we only support inside-EU international shipping. For everything else dhl api will error out until the DhlCustomsDocument is properly filled!
+			if (deliverToLocation.getC_Country_ID() != pickupFromLocation.getC_Country_ID())
+			{
+				detectedServiceType = DhlServiceType.Dhl_PaketInternational;
+
+				// "{ }" for easier method extraction later on
+				//				{
+				//					final I_M_Package mPackage = InterfaceWrapperHelper.load(packageId, I_M_Package.class);
+				//					final I_M_InOut inOut = InterfaceWrapperHelper.load(mPackage.getM_InOut_ID(), I_M_InOut.class);
+				//					if (!inOut.isExportedToCustomsInvoice())
+				//					{
+				//						throw new AdempiereException("International Delivery Order must have a Customs Invoice!");
+				//					}
+				//
+				//					final List<CustomsInvoiceLine> customsInvoiceLines = customsInvoiceRepository.retrieveLines(CustomsInvoiceId.ofRepoId(inOut.getC_Customs_Invoice_ID()));
+				//
+				//					detectedServiceType = DhlServiceType.Dhl_PaketInternational;
+				//					dataDetailBuilder.customsDocument(
+				//							DhlCustomsDocument.builder()
+				//									.exportType("OTHER")
+				//									//							.exportTypeDescription()
+				//									//							.additionalFee()
+				//									//							.electronicExportNotification()
+				//									//							.packageDescription()
+				//									//							.customsTariffNumber()
+				//									//							.customsAmount()
+				//									//							.netWeightInKg()
+				//									//							.customsValue()
+				//									//							.invoiceId()
+				//									//							.invoiceLineId()
+				//									.build())
+				//							.internationalDelivery(true)
+				//							.build();
+				//				}
+			}
+			else
+			{
+				dataDetailBuilder.internationalDelivery(false);
+			}
+			dataBuilder.detail(dataDetailBuilder.build());
 		}
 
 		final int grossWeightInKg = Math.max(request.getGrossWeightInKg(), 1);
@@ -128,8 +181,10 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				detectedServiceType,
 				grossWeightInKg,
 				shipperId,
+				customerReference,
 				shipperTransportationId,
-				getPackageDimensions(mpackageIds, shipperId));
+				getPackageDimensions(mpackageIds, shipperId),
+				dataBuilder.build());
 
 	}
 
@@ -146,8 +201,9 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			@NonNull final DhlServiceType detectedServiceType,
 			final int grossWeightKg,
 			final int shipperId,
-			final int shipperTransportationId,
-			@NonNull final PackageDimensions packageDimensions)
+			final String customerReference, final int shipperTransportationId,
+			@NonNull final PackageDimensions packageDimensions,
+			final CustomDeliveryData customDeliveryData)
 	{
 		return DeliveryOrder.builder()
 				.shipperId(shipperId)
@@ -155,7 +211,8 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				//
 
 				.serviceType(detectedServiceType) // todo this should be made user-selectable. Ref: https://github.com/metasfresh/me03/issues/3128
-				//				.customerReference() // todo this is not set in any place with any user-relevant value afaics!
+				.customerReference(customerReference)
+				.customDeliveryData(customDeliveryData)
 				//
 				// Pickup aka Shipper
 				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocation(pickupFromLocation)

@@ -368,43 +368,43 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 					shipmentOrderTypeShipment.setShipper(shipperType);
 				}
 
-				{
-					// (2.2.6) Export Document - only for international shipments
-
-					//noinspection ConstantConditions
-					final DhlCustomDeliveryData dhlCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
-					final DhlCustomDeliveryDataDetail deliveryDetail = dhlCustomDeliveryData.getDetailByPackageId(packageIdsAsList.get(i));
-
-					if (deliveryDetail.isInternationalDelivery())
-					{
-						final DhlCustomsDocument customsDocument = deliveryDetail.getCustomsDocument();
-						final ExportDocumentType exportDocumentType = objectFactory.createExportDocumentType();
-						//			exportDocumentType.setInvoiceNumber("2212011"); // optional
-						exportDocumentType.setExportType(customsDocument.getExportType());
-						exportDocumentType.setExportTypeDescription(customsDocument.getExportTypeDescription());
-						//			exportDocumentType.setTermsOfTrade("DDP"); // optional
-						exportDocumentType.setPlaceOfCommital(deliveryOrder.getDeliveryAddress().getCity());
-						exportDocumentType.setAdditionalFee(customsDocument.getAdditionalFee());
-						//			exportDocumentType.setPermitNumber("12345"); //  optional
-						//			exportDocumentType.setAttestationNumber("65421"); //  optional
-
-						// (2.2.6.9)
-						final Serviceconfiguration serviceconfiguration = objectFactory.createServiceconfiguration();
-						serviceconfiguration.setActive(customsDocument.getElectronicExportNotification());
-						exportDocumentType.setWithElectronicExportNtfctn(serviceconfiguration);
-						// (2.2.6.10)
-						final ExportDocumentType.ExportDocPosition docPosition = objectFactory.createExportDocumentTypeExportDocPosition();
-						docPosition.setDescription(customsDocument.getPackageDescription());
-						docPosition.setCountryCodeOrigin(deliveryOrder.getPickupAddress().getCountry().getAlpha2());
-						docPosition.setCustomsTariffNumber(customsDocument.getCustomsTariffNumber());
-						docPosition.setAmount(customsDocument.getCustomsAmount());
-						docPosition.setNetWeightInKG(customsDocument.getNetWeightInKg()); // must be less than the weight!!
-						docPosition.setCustomsValue(customsDocument.getCustomsValue());
-						exportDocumentType.getExportDocPosition().add(docPosition);
-
-						shipmentOrderTypeShipment.setExportDocument(exportDocumentType);
-					}
-				}
+				//				{
+				//					// (2.2.6) Export Document - only for international shipments
+				//
+				//					//noinspection ConstantConditions
+				//					final DhlCustomDeliveryData dhlCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
+				//					final DhlCustomDeliveryDataDetail deliveryDetail = dhlCustomDeliveryData.getDetailByPackageId(packageIdsAsList.get(i));
+				//
+				//					if (deliveryDetail.isInternationalDelivery())
+				//					{
+				//						final DhlCustomsDocument customsDocument = deliveryDetail.getCustomsDocument();
+				//						final ExportDocumentType exportDocumentType = objectFactory.createExportDocumentType();
+				//						//			exportDocumentType.setInvoiceNumber("2212011"); // optional
+				//						exportDocumentType.setExportType(customsDocument.getExportType());
+				//						exportDocumentType.setExportTypeDescription(customsDocument.getExportTypeDescription());
+				//						//			exportDocumentType.setTermsOfTrade("DDP"); // optional
+				//						exportDocumentType.setPlaceOfCommital(deliveryOrder.getDeliveryAddress().getCity());
+				//						exportDocumentType.setAdditionalFee(customsDocument.getAdditionalFee());
+				//						//			exportDocumentType.setPermitNumber("12345"); //  optional
+				//						//			exportDocumentType.setAttestationNumber("65421"); //  optional
+				//
+				//						// (2.2.6.9)
+				//						final Serviceconfiguration serviceconfiguration = objectFactory.createServiceconfiguration();
+				//						serviceconfiguration.setActive(customsDocument.getElectronicExportNotification());
+				//						exportDocumentType.setWithElectronicExportNtfctn(serviceconfiguration);
+				//						// (2.2.6.10)
+				//						final ExportDocumentType.ExportDocPosition docPosition = objectFactory.createExportDocumentTypeExportDocPosition();
+				//						docPosition.setDescription(customsDocument.getPackageDescription());
+				//						docPosition.setCountryCodeOrigin(deliveryOrder.getPickupAddress().getCountry().getAlpha2());
+				//						docPosition.setCustomsTariffNumber(customsDocument.getCustomsTariffNumber());
+				//						docPosition.setAmount(customsDocument.getCustomsAmount());
+				//						docPosition.setNetWeightInKG(customsDocument.getNetWeightInKg()); // must be less than the weight!!
+				//						docPosition.setCustomsValue(customsDocument.getCustomsValue());
+				//						exportDocumentType.getExportDocPosition().add(docPosition);
+				//
+				//						shipmentOrderTypeShipment.setExportDocument(exportDocumentType);
+				//					}
+				//				}
 
 				// (2) create the needed shipment order type
 				final ShipmentOrderType shipmentOrderType = objectFactory.createShipmentOrderType();
