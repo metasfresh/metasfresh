@@ -3,7 +3,6 @@ package de.metas.contracts.commission.testhelpers;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import com.google.common.collect.ImmutableMap;
@@ -12,7 +11,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -43,9 +44,8 @@ import lombok.Value;
 @Builder
 public class ConfigTestRecord
 {
-
-	@NonNull
-	String percentOfBasePoints;
+	@Default
+	int pointsPrecision = 2;
 
 	@NonNull
 	Boolean subtractLowerLevelCommissionFromBase;
@@ -53,10 +53,13 @@ public class ConfigTestRecord
 	@Singular
 	List<ContractTestRecord> contractTestRecords;
 
+	@Singular
+	List<ConfigLineTestRecord> configLineTestRecords;
+
 	public ImmutableMap<BPartnerId, FlatrateTermId> createConfigData()
 	{
 		final I_C_HierarchyCommissionSettings settingsRecord = newInstance(I_C_HierarchyCommissionSettings.class);
-		settingsRecord.setPercentOfBasePoints(new BigDecimal(percentOfBasePoints));
+		settingsRecord.setPointsPrecision(pointsPrecision);
 		settingsRecord.setIsSubtractLowerLevelCommissionFromBase(subtractLowerLevelCommissionFromBase);
 		saveRecord(settingsRecord);
 
@@ -64,14 +67,18 @@ public class ConfigTestRecord
 		conditionsRecord.setC_HierarchyCommissionSettings_ID(settingsRecord.getC_HierarchyCommissionSettings_ID());
 		saveRecord(conditionsRecord);
 
-		final ImmutableMap.Builder<BPartnerId, FlatrateTermId> bpartnerId2flatrateTermId = ImmutableMap.builder();
+		for (final ConfigLineTestRecord configLineTestRecord : configLineTestRecords)
+		{
+			configLineTestRecord.createConfigLineData(settingsRecord.getC_HierarchyCommissionSettings_ID());
+		}
 
+		final ImmutableMap.Builder<BPartnerId, FlatrateTermId> bpartnerId2flatrateTermId = ImmutableMap.builder();
 		for (final ContractTestRecord contractTestRecord : contractTestRecords)
 		{
-			final FlatrateTermId flatrateTermId = contractTestRecord.createContractData(conditionsRecord.getC_Flatrate_Conditions_ID());
+			final I_C_Flatrate_Term termRecord = contractTestRecord.createContractData(conditionsRecord.getC_Flatrate_Conditions_ID());
 			bpartnerId2flatrateTermId.put(
-					contractTestRecord.getC_BPartner_SalesRep_ID(),
-					flatrateTermId);
+					BPartnerId.ofRepoId(termRecord.getBill_BPartner_ID()),
+					FlatrateTermId.ofRepoId(termRecord.getC_Flatrate_Term_ID()));
 		}
 		return bpartnerId2flatrateTermId.build();
 	}

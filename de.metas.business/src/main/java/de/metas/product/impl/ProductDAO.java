@@ -40,6 +40,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -246,7 +248,7 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
-	public ProductCategoryId retrieveProductCategoryByProductId(final ProductId productId)
+	public ProductCategoryId retrieveProductCategoryByProductId(@Nullable final ProductId productId)
 	{
 		if (productId == null)
 		{

@@ -2,6 +2,8 @@ package de.metas.bpartner;
 
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -49,6 +51,15 @@ public class BPGroupId implements RepoIdAware
 			return null;
 		}
 		return new BPGroupId(repoId);
+	}
+
+	public static int toRepoId(@Nullable final BPGroupId bpGroupId)
+	{
+		if (bpGroupId == null)
+		{
+			return -1;
+		}
+		return bpGroupId.getRepoId();
 	}
 
 	private BPGroupId(final int repoId)

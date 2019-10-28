@@ -20,7 +20,7 @@ import com.google.common.collect.Multimaps;
 
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstanceId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionState;
-import de.metas.contracts.commission.commissioninstance.services.repos.CommissionRecordStagingService.CommissionRecords.CommissionRecordsBuilder;
+import de.metas.contracts.commission.commissioninstance.services.repos.CommissionRecordStagingService.CommissionStagingRecords.CommissionStagingRecordsBuilder;
 import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
@@ -60,7 +60,7 @@ class CommissionRecordStagingService
 {
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	CommissionRecords retrieveRecordsForInstanceId(
+	CommissionStagingRecords retrieveRecordsForInstanceId(
 			@NonNull final Collection<CommissionInstanceId> commissionInstanceIds,
 			final boolean onlyActive)
 	{
@@ -70,7 +70,7 @@ class CommissionRecordStagingService
 		return retrieveRecords(instanceQueryBuilder.create(), onlyActive);
 	}
 
-	CommissionRecords retrieveRecordsForInvoiceCandidateId(
+	CommissionStagingRecords retrieveRecordsForInvoiceCandidateId(
 			@NonNull final Collection<InvoiceCandidateId> invoiceCandidateIds,
 			final boolean onlyActive)
 	{
@@ -92,7 +92,7 @@ class CommissionRecordStagingService
 		return instanceQueryBuilder;
 	}
 
-	private CommissionRecords retrieveRecords(
+	private CommissionStagingRecords retrieveRecords(
 			@NonNull final IQuery<I_C_Commission_Instance> instanceRecordQuery,
 			final boolean onlyActive)
 	{
@@ -102,7 +102,7 @@ class CommissionRecordStagingService
 		final ImmutableMap<Integer, I_C_Commission_Instance> instanceRecordIdToInstance = Maps.uniqueIndex(instanceRecords, I_C_Commission_Instance::getC_Commission_Instance_ID);
 		final ImmutableSet<Integer> intanceRecordIds = instanceRecordIdToInstance.keySet();
 
-		final CommissionRecordsBuilder commissionRecords = CommissionRecords.builder()
+		final CommissionStagingRecordsBuilder commissionRecords = CommissionStagingRecords.builder()
 				.icRecordIdToInstanceRecords(icRecordIdToInstanceRecords)
 				.instanceRecordIdToInstance(instanceRecordIdToInstance);
 
@@ -139,9 +139,9 @@ class CommissionRecordStagingService
 	}
 
 	@lombok.Value
-	static class CommissionRecords
+	static class CommissionStagingRecords
 	{
-		final static CommissionRecords EMPTY = CommissionRecords.builder().build();
+		final static CommissionStagingRecords EMPTY = CommissionStagingRecords.builder().build();
 
 		ImmutableListMultimap<Integer, I_C_Commission_Instance> icRecordIdToInstanceRecords;
 		ImmutableMap<Integer, I_C_Commission_Instance> instanceRecordIdToInstance;
@@ -153,7 +153,7 @@ class CommissionRecordStagingService
 		ImmutableListMultimap<Integer, I_C_Commission_Fact> shareRecordIdToSalesFactRecords;
 
 		@Builder
-		private CommissionRecords(
+		private CommissionStagingRecords(
 				@Nullable final ImmutableListMultimap<Integer, I_C_Commission_Instance> icRecordIdToInstanceRecords,
 				@Nullable final ImmutableMap<Integer, I_C_Commission_Instance> instanceRecordIdToInstance,
 				@Nullable final ImmutableListMultimap<Integer, I_C_Commission_Share> instanceRecordIdToShareRecords,

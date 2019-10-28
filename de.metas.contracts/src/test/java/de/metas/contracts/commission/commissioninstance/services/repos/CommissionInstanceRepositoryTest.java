@@ -15,6 +15,7 @@ import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BPartner;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.Beneficiary;
@@ -37,6 +39,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.Sale
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionState;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory;
+import de.metas.contracts.commission.commissioninstance.services.CommissionConfigStagingDataService;
 import de.metas.contracts.commission.commissioninstance.services.CommissionHierarchyFactory;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstanceRepository;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionRecordStagingService;
@@ -46,6 +49,7 @@ import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.contracts.commission.testhelpers.CommissionFactTestRecord;
 import de.metas.contracts.commission.testhelpers.CommissionInstanceTestRecord;
 import de.metas.contracts.commission.testhelpers.CommissionShareTestRecord;
+import de.metas.contracts.commission.testhelpers.ConfigLineTestRecord;
 import de.metas.contracts.commission.testhelpers.ConfigTestRecord;
 import de.metas.contracts.commission.testhelpers.ContractTestRecord;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -83,8 +87,6 @@ class CommissionInstanceRepositoryTest
 
 	private static final InvoiceCandidateId C_INVOICE_CANDIDATE_ID = InvoiceCandidateId.ofRepoId(10);
 
-	private static final BPartnerId C_BPartner_SalesRep_1_ID = BPartnerId.ofRepoId(20);
-	private static final BPartnerId C_BPartner_SalesRep_2_ID = BPartnerId.ofRepoId(21);
 
 	private static final BigDecimal ELEVEN = new BigDecimal("11");
 	private static final BigDecimal TWELVE = new BigDecimal("12");
@@ -96,9 +98,10 @@ class CommissionInstanceRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 
-		commissionInstanceRepository = new CommissionInstanceRepository(
-				new CommissionConfigFactory(new CommissionHierarchyFactory()),
-				new CommissionRecordStagingService());
+		final CommissionConfigStagingDataService commissionConfigStagingDataService = new CommissionConfigStagingDataService();
+		final CommissionConfigFactory commissionConfigFactory = new CommissionConfigFactory(new CommissionHierarchyFactory(), commissionConfigStagingDataService);
+		final CommissionRecordStagingService commissionInstanceRecordStagingService = new CommissionRecordStagingService();
+		commissionInstanceRepository = new CommissionInstanceRepository(commissionConfigFactory, commissionInstanceRecordStagingService);
 	}
 
 	@BeforeAll
@@ -130,13 +133,19 @@ class CommissionInstanceRepositoryTest
 
 	private void createCommissionData()
 	{
+
 		final ImmutableMap<BPartnerId, FlatrateTermId> bpartnerId2flatrateTermId = ConfigTestRecord.builder()
-				.percentOfBasePoints("10")
 				.subtractLowerLevelCommissionFromBase(true)
-				.contractTestRecord(ContractTestRecord.builder().C_BPartner_SalesRep_ID(C_BPartner_SalesRep_1_ID).build())
-				.contractTestRecord(ContractTestRecord.builder().C_BPartner_SalesRep_ID(C_BPartner_SalesRep_2_ID).build())
+				.pointsPrecision(2)
+				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(10).percentOfBasePoints("10").build())
+				.contractTestRecord(ContractTestRecord.builder().build())
+				.contractTestRecord(ContractTestRecord.builder().build())
 				.build()
 				.createConfigData();
+		assertThat(bpartnerId2flatrateTermId).hasSize(2); // guard
+		final ImmutableList<BPartnerId> salesrepIds = bpartnerId2flatrateTermId.keySet().asList();
+		final BPartnerId C_BPartner_SalesRep_1_ID = salesrepIds.get(0);
+		final BPartnerId C_BPartner_SalesRep_2_ID = salesrepIds.get(1);
 
 		CommissionInstanceTestRecord.builder()
 				.C_INVOICE_CANDIDATE_ID(C_INVOICE_CANDIDATE_ID)
@@ -216,15 +225,30 @@ class CommissionInstanceRepositoryTest
 	{
 		// the actual contract data is not saved
 		final ImmutableMap<BPartnerId, FlatrateTermId> bpartnerId2flatrateTermId = ConfigTestRecord.builder()
-				.percentOfBasePoints("10")
 				.subtractLowerLevelCommissionFromBase(true)
-				.contractTestRecord(ContractTestRecord.builder().C_BPartner_SalesRep_ID(C_BPartner_SalesRep_1_ID).build())
-				.contractTestRecord(ContractTestRecord.builder().C_BPartner_SalesRep_ID(C_BPartner_SalesRep_2_ID).build())
+				.pointsPrecision(2)
+				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(10).percentOfBasePoints("10").build())
+				.contractTestRecord(ContractTestRecord.builder().build())
+				.contractTestRecord(ContractTestRecord.builder().build())
 				.build()
 				.createConfigData();
 
+		assertThat(bpartnerId2flatrateTermId).hasSize(2); // guard
+		final ImmutableList<BPartnerId> salesrepIds = bpartnerId2flatrateTermId.keySet().asList();
+		final BPartnerId C_BPartner_SalesRep_1_ID = salesrepIds.get(0);
+		final BPartnerId C_BPartner_SalesRep_2_ID = salesrepIds.get(1);
+
+		final I_M_Product salesProduct = newInstance(I_M_Product.class);
+		salesProduct.setM_Product_Category_ID(20);
+		saveRecord(salesProduct);
+
+		final I_C_BPartner customer = newInstance(I_C_BPartner.class);
+		customer.setC_BP_Group_ID(30);
+		saveRecord(customer);
+
 		final I_C_Invoice_Candidate salesInvoiceCandidate = newInstance(I_C_Invoice_Candidate.class);
-		salesInvoiceCandidate.setBill_BPartner_ID(10);
+		salesInvoiceCandidate.setBill_BPartner_ID(customer.getC_BPartner_ID());
+		salesInvoiceCandidate.setM_Product_ID(salesProduct.getM_Product_ID());
 		saveRecord(salesInvoiceCandidate);
 
 		final Beneficiary beneficiary1 = Beneficiary.of(C_BPartner_SalesRep_1_ID);
@@ -305,8 +329,8 @@ class CommissionInstanceRepositoryTest
 		assertThat(shareRecords).hasSize(2)
 				.extracting("C_Commission_Instance_ID", "LevelHierarchy", "C_BPartner_SalesRep_ID", "PointsSum_Forecasted", "PointsSum_Invoiceable", "PointsSum_Invoiced")
 				.contains(
-						tuple(result.getRepoId(), 10, 20, new BigDecimal("1"), new BigDecimal("1.1"), new BigDecimal("1.2")),
-						tuple(result.getRepoId(), 20, 21, new BigDecimal("2"), new BigDecimal("2.1"), new BigDecimal("2.2")));
+						tuple(result.getRepoId(), 10, C_BPartner_SalesRep_1_ID.getRepoId(), new BigDecimal("1"), new BigDecimal("1.1"), new BigDecimal("1.2")),
+						tuple(result.getRepoId(), 20, C_BPartner_SalesRep_2_ID.getRepoId(), new BigDecimal("2"), new BigDecimal("2.1"), new BigDecimal("2.2")));
 
 		final I_C_Commission_Share shareRecord1 = shareRecords.get(0);
 		assertThat(shareRecord1.getLevelHierarchy()).isEqualTo(10); // guard
@@ -330,7 +354,7 @@ class CommissionInstanceRepositoryTest
 						tuple("2019-09-17T11:50:25Z", "INVOICED", new BigDecimal("10")),
 						tuple("2019-09-17T11:50:35Z", "INVOICED", new BigDecimal("-7.8")));
 
-		// final check; load the CommissionInstance from the records we jsut created and verify that it's equal to the one we got from json
+		// final check; load the CommissionInstance from the records we just created and verify that it's equal to the one we got from json
 		final CommissionInstance reloadedInstance = commissionInstanceRepository.getForCommissionInstanceId(result);
 		assertThat(reloadedInstance).isEqualTo(commissionInstance.toBuilder().id(result).build());
 	}

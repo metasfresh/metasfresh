@@ -8,13 +8,17 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import  de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
+
+import de.metas.contracts.commission.model.I_C_CommissionSettingsLine;
+import de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.CommissionConstants;
@@ -56,10 +60,16 @@ import lombok.NonNull;
 
 class CommissionConfigFactoryTest
 {
+	private CommissionConfigFactory commissionConfigFactory;
+
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+
+		final CommissionHierarchyFactory commissionHierarchyFactory = new CommissionHierarchyFactory();
+		final CommissionConfigStagingDataService commissionConfigStagingDataService = new CommissionConfigStagingDataService();
+		commissionConfigFactory = new CommissionConfigFactory(commissionHierarchyFactory, commissionConfigStagingDataService);
 	}
 
 	@Test
@@ -70,26 +80,45 @@ class CommissionConfigFactoryTest
 		saveRecord(bpartnerRecord_Lvl2);
 
 		final I_C_BPartner bpartnerRecord_Lvl1 = newInstance(I_C_BPartner.class);
-		bpartnerRecord_Lvl1.setBPartner_Parent_ID(bpartnerRecord_Lvl2.getC_BPartner_ID());
+		bpartnerRecord_Lvl1.setC_BPartner_SalesRep_ID(bpartnerRecord_Lvl2.getC_BPartner_ID());
 		bpartnerRecord_Lvl1.setName("SalesRep_Lvl1");
 		saveRecord(bpartnerRecord_Lvl1);
 
 		final I_C_BPartner bpartnerRecord_Lvl0 = newInstance(I_C_BPartner.class);
-		bpartnerRecord_Lvl0.setBPartner_Parent_ID(bpartnerRecord_Lvl1.getC_BPartner_ID());
+		bpartnerRecord_Lvl0.setC_BPartner_SalesRep_ID(bpartnerRecord_Lvl1.getC_BPartner_ID());
 		bpartnerRecord_Lvl0.setName("SalesRep_Lvl0");
 		saveRecord(bpartnerRecord_Lvl0);
 
+		final I_C_BP_Group customerBPGroupRecord = newInstance(I_C_BP_Group.class);
+		saveRecord(customerBPGroupRecord);
+
+		final I_C_BPartner bpartnerRecord_EndCustomer = newInstance(I_C_BPartner.class);
+		bpartnerRecord_EndCustomer.setC_BP_Group_ID(customerBPGroupRecord.getC_BP_Group_ID());
+		bpartnerRecord_EndCustomer.setC_BPartner_SalesRep_ID(bpartnerRecord_Lvl0.getC_BPartner_ID());
+		bpartnerRecord_EndCustomer.setName("bpartnerRecord_EndCustomer");
+		saveRecord(bpartnerRecord_EndCustomer);
+
+		final BPartnerId endCustomerId = BPartnerId.ofRepoId(bpartnerRecord_EndCustomer.getC_BPartner_ID());
 		final BPartnerId salesRepLvl0Id = BPartnerId.ofRepoId(bpartnerRecord_Lvl0.getC_BPartner_ID());
 		final BPartnerId salesRepLvl1Id = BPartnerId.ofRepoId(bpartnerRecord_Lvl1.getC_BPartner_ID());
 		final BPartnerId salesRepLvl2Id = BPartnerId.ofRepoId(bpartnerRecord_Lvl2.getC_BPartner_ID());
 
-		final ProductId productId = ProductId.ofRepoId(33);
+		final I_M_Product salesProductRecord = newInstance(I_M_Product.class);
+		salesProductRecord.setM_Product_Category_ID(33);
+		saveRecord(salesProductRecord);
+		final ProductId productId = ProductId.ofRepoId(salesProductRecord.getM_Product_ID());
+
 		final LocalDate date = LocalDate.now();
 
 		final I_C_HierarchyCommissionSettings settingsRecord = newInstance(I_C_HierarchyCommissionSettings.class);
 		settingsRecord.setIsSubtractLowerLevelCommissionFromBase(true);
-		settingsRecord.setPercentOfBasePoints(new BigDecimal("20"));
+		settingsRecord.setPointsPrecision(2);
 		saveRecord(settingsRecord);
+
+		final I_C_CommissionSettingsLine commissionSettingsLine = newInstance(I_C_CommissionSettingsLine.class);
+		commissionSettingsLine.setC_HierarchyCommissionSettings_ID(settingsRecord.getC_HierarchyCommissionSettings_ID());
+		commissionSettingsLine.setPercentOfBasePoints(new BigDecimal("20"));
+		saveRecord(commissionSettingsLine);
 
 		final I_C_Flatrate_Conditions flatrateConditions = newInstance(I_C_Flatrate_Conditions.class);
 		flatrateConditions.setC_HierarchyCommissionSettings_ID(settingsRecord.getC_HierarchyCommissionSettings_ID());
@@ -102,17 +131,17 @@ class CommissionConfigFactoryTest
 		flatrateMatchingRecord.setM_Product_ID(productId.getRepoId());
 		saveRecord(flatrateMatchingRecord);
 
-
 		createFlatrateTerm(salesRepLvl0Id, date, flatrateConditions);
 		createFlatrateTerm(salesRepLvl1Id, date, flatrateConditions);
 		createFlatrateTerm(salesRepLvl2Id, date, flatrateConditions);
 
 		// invoke method under test
 		final ContractRequest contractRequest = ContractRequest.builder()
-				.bPartnerId(salesRepLvl0Id)
-				.productId(productId)
+				.customerBPartnerId(endCustomerId)
+				.salesRepBPartnerId(salesRepLvl0Id)
+				.salesProductId(productId)
 				.date(date).build();
-		final ImmutableList<CommissionConfig> configs = new CommissionConfigFactory(new CommissionHierarchyFactory()).createFor(contractRequest);
+		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
 
 		assertThat(configs).hasSize(1);
 		final CommissionConfig config = configs.get(0);

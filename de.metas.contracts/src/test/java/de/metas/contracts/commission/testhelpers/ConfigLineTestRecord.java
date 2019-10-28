@@ -3,9 +3,11 @@ package de.metas.contracts.commission.testhelpers;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import org.compiere.model.I_C_BPartner;
+import javax.annotation.Nullable;
 
-import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.bpartner.BPGroupId;
+import de.metas.contracts.commission.model.I_C_CommissionSettingsLine;
+import de.metas.product.ProductCategoryId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -34,23 +36,29 @@ import lombok.Value;
 
 @Value
 @Builder
-public class ContractTestRecord
+public class ConfigLineTestRecord
 {
-//	@NonNull
-//	BPGroupId salesPartnerBPGroupId;
+	@Nullable
+	BPGroupId customerBGroupId;
 
-	public I_C_Flatrate_Term createContractData(@NonNull Integer C_Flatrate_Conditions_ID)
+	@Nullable
+	ProductCategoryId salesProductCategoryId;
+
+	@NonNull
+	String percentOfBasePoints;
+
+	@NonNull
+	Integer seqNo;
+
+	public void createConfigLineData(final int C_HierarchyCommissionSettings)
 	{
-		final I_C_BPartner saleRepBPartnerRecord = newInstance(I_C_BPartner.class);
-		//saleRepBPartnerRecord.setC_BP_Group_ID(salesPartnerBPGroupId.getRepoId());
-		saveRecord(saleRepBPartnerRecord);
+		final I_C_CommissionSettingsLine settingsLineRecord = newInstance(I_C_CommissionSettingsLine.class);
+		settingsLineRecord.setC_HierarchyCommissionSettings_ID(C_HierarchyCommissionSettings);
+		settingsLineRecord.setSeqNo(seqNo);
+		settingsLineRecord.setPercentOfBasePoints(new java.math.BigDecimal(percentOfBasePoints));
+		settingsLineRecord.setC_BP_Group_ID(BPGroupId.toRepoId(customerBGroupId));
+		settingsLineRecord.setM_Product_Category_ID(ProductCategoryId.toRepoId(salesProductCategoryId));
 
-		final I_C_Flatrate_Term termRecord = newInstance(I_C_Flatrate_Term.class);
-		termRecord.setBill_BPartner_ID(saleRepBPartnerRecord.getC_BPartner_ID());
-		termRecord.setC_Flatrate_Conditions_ID(C_Flatrate_Conditions_ID);
-		saveRecord(termRecord);
-
-		return termRecord;
+		saveRecord(settingsLineRecord);
 	}
-
 }
