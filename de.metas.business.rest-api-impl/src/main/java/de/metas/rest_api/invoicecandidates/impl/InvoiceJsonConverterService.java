@@ -35,8 +35,10 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-class InvoiceJsonConverterService {
-	public final JsonInvoiceCandCreateResponse toJson(@NonNull final IInvoiceCandidateEnqueueResult enqueueResult) {
+class InvoiceJsonConverterService
+{
+	public final JsonInvoiceCandCreateResponse toJson(@NonNull final IInvoiceCandidateEnqueueResult enqueueResult)
+	{
 		InvoiceCandEnqueuerResult jsonInvoiceCand = InvoiceCandEnqueuerResult.builder()
 				.invoiceCandidateEnqueuedCount(enqueueResult.getInvoiceCandidateEnqueuedCount())
 				.summaryTranslated(enqueueResult.getSummaryTranslated(Env.getCtx()))
@@ -47,9 +49,11 @@ class InvoiceJsonConverterService {
 	}
 
 	public List<ExternalHeaderAndLineId> convertJICToExternalHeaderAndLineIds(
-			final @NonNull List<JsonInvoiceCandidate> invoiceCandidates) {
+			final @NonNull List<JsonInvoiceCandidate> invoiceCandidates)
+	{
 		List<ExternalHeaderAndLineId> headerAndLineIds = new ArrayList<ExternalHeaderAndLineId>();
-		for (JsonInvoiceCandidate cand : invoiceCandidates) {
+		for (JsonInvoiceCandidate cand : invoiceCandidates)
+		{
 			ExternalHeaderAndLineId headerAndLineId = ExternalHeaderAndLineId.builder()
 					.externalHeaderId(cand.getExternalHeaderId()).externalLineIds(cand.getExternalLineIds()).build();
 			headerAndLineIds.add(headerAndLineId);

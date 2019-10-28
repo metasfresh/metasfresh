@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableList;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
@@ -58,7 +57,7 @@ public final class JsonInvoiceCandCreateRequest
 	@ApiModelProperty(value = "External customer's purchase order's documentno. POReference to be set to all invoice candidates, right before enqueueing them.")
 	private String poReference;
 
-	@ApiModelProperty(required = true, value = "This is needed when the user wants to invoice sth that is not yet delivered, the DateToInvoice is sometime in the future."
+	@ApiModelProperty(required = true, value = "This is needed when the user wants to invoice candidates that have their `DateToInvoice` sometime in the future."
 			+ "If this is not set and the DateToInvoice is in the future then an error will occur \"no invoicable ICs selected)")
 	private Boolean ignoreInvoiceSchedule;
 

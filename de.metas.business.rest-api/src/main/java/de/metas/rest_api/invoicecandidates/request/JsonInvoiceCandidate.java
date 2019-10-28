@@ -56,7 +56,7 @@ public final class JsonInvoiceCandidate
 	List<ExternalId> externalLineIds;
 	@ApiModelProperty(allowEmptyValue = false, value = "Used to select which invoice candidates should be enqueued.")
 	String externalHeaderId;
-	
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonInvoiceCandidate(

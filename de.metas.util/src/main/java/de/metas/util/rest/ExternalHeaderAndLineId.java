@@ -9,13 +9,14 @@ import lombok.NonNull;
 import lombok.Value;
 
 @Value
-public class ExternalHeaderAndLineId {
+public class ExternalHeaderAndLineId
+{
 
 	private List<ExternalId> externalLineIds;
 	private String externalHeaderId;
 
 	@Builder(toBuilder = true)
-	private ExternalHeaderAndLineId(List<ExternalId> externalLineIds,@NonNull String externalHeaderId)
+	private ExternalHeaderAndLineId(List<ExternalId> externalLineIds, @NonNull String externalHeaderId)
 	{
 		this.externalLineIds = ImmutableList.copyOf(externalLineIds);
 		this.externalHeaderId = externalHeaderId;

@@ -6,20 +6,21 @@ package de.metas.invoicecandidate.model;
  * @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
-public interface I_M_ProductGroup {
+public interface I_M_ProductGroup
+{
 
 	/** TableName=M_ProductGroup */
 	public static final String Table_Name = "M_ProductGroup";
 
 	/** AD_Table_ID=540323 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	// public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+	// org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
 	/**
 	 * AccessLevel = 1 - Org
 	 */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
+	// java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
 
 	/** Load Meta Data */
 

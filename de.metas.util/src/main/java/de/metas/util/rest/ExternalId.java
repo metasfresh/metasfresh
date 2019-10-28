@@ -1,15 +1,11 @@
 package de.metas.util.rest;
 
-import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.isEmpty;
 
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
 
-import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -39,7 +35,7 @@ import lombok.Value;
 public class ExternalId
 {
 	String value;
-	
+
 	@JsonCreator
 	public static ExternalId of(@NonNull final String value)
 	{

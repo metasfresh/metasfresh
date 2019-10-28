@@ -58,7 +58,8 @@ import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import de.metas.util.rest.ExternalHeaderAndLineId;
 
-public interface IInvoiceCandDAO extends ISingletonService {
+public interface IInvoiceCandDAO extends ISingletonService
+{
 	/**
 	 * f * @return invoice candidate iterator ordered by
 	 * {@link I_C_Invoice_Candidate#COLUMNNAME_HeaderAggregationKey}
@@ -159,7 +160,7 @@ public interface IInvoiceCandDAO extends ISingletonService {
 	 *
 	 * @param ic
 	 * @throws AdempiereException if the invoice candidate does not have the
-	 *                            AD_Table_ID/Record_ID set
+	 *             AD_Table_ID/Record_ID set
 	 */
 	void invalidateCandsWithSameReference(I_C_Invoice_Candidate ic);
 
@@ -198,11 +199,11 @@ public interface IInvoiceCandDAO extends ISingletonService {
 	/**
 	 * Updates <code>dateInvoiced</code> of candidates from selection.
 	 *
-	 * @param dateInvoiced     new value to be set.
-	 * @param selectionId      id of the <code>T_Selection</code> containing the
-	 *                         candidates that shall be updated.
+	 * @param dateInvoiced new value to be set.
+	 * @param selectionId id of the <code>T_Selection</code> containing the
+	 *            candidates that shall be updated.
 	 * @param updateOnlyIfNull if true then the DateInvoiced column will be updated
-	 *                         only if is null
+	 *            only if is null
 	 */
 	void updateDateInvoiced(LocalDate dateInvoiced, PInstanceId selectionId, boolean updateOnlyIfNull);
 
@@ -334,7 +335,7 @@ public interface IInvoiceCandDAO extends ISingletonService {
 	 * Checks if there exists an allocation between given invoice candidate and
 	 * given receipt/shipment line.
 	 *
-	 * @param ic  invoice candidate
+	 * @param ic invoice candidate
 	 * @param iol receipt/shipment line
 	 * @return true if an allocation exists
 	 * @see I_C_InvoiceCandidate_InOutLine

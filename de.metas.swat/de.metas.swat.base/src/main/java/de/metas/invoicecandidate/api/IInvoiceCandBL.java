@@ -32,7 +32,6 @@ import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_Tax;
@@ -61,8 +60,10 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public interface IInvoiceCandBL extends ISingletonService {
-	public interface IInvoiceGenerateResult {
+public interface IInvoiceCandBL extends ISingletonService
+{
+	public interface IInvoiceGenerateResult
+	{
 		int getInvoiceCount();
 
 		List<I_C_Invoice> getC_Invoices();
@@ -79,7 +80,7 @@ public interface IInvoiceCandBL extends ISingletonService {
 
 		/**
 		 * @param ctx context (for translation)
-		 * @return result summary (using context language)
+		 * @return result summary (using context language)S
 		 */
 		String getSummary(Properties ctx);
 	}
@@ -110,23 +111,23 @@ public interface IInvoiceCandBL extends ISingletonService {
 	 * candidates that are selected via <code>T_Selection</code> with the given
 	 * <code>AD_PInstance_ID</code>.
 	 *
-	 * @param adPInstance              the process instance of the process that does
-	 *                                 the enqueuing.
+	 * @param adPInstance the process instance of the process that does
+	 *            the enqueuing.
 	 * @param onlyApprovedForInvoicing if true, then enqueue only candidates flagged
-	 *                                 as
-	 *                                 {@link I_C_Invoice_Candidate#COLUMNNAME_ApprovalForInvoicing}
-	 * @param consolidateApprovedICs   <b>ignored, unless
-	 *                                 <code>onlyApprovedForInvoicing</code> is true
-	 *                                 </b>. If true then the system will rekey the
-	 *                                 ICs in question according to the default
-	 *                                 C_Aggregation, assuming that is is the most
-	 *                                 basic one with the smallest possible number
-	 *                                 of items and thus the under under which the
-	 *                                 most ICs have an equal HeaderAggregationKey.
+	 *            as
+	 *            {@link I_C_Invoice_Candidate#COLUMNNAME_ApprovalForInvoicing}
+	 * @param consolidateApprovedICs <b>ignored, unless
+	 *            <code>onlyApprovedForInvoicing</code> is true
+	 *            </b>. If true then the system will rekey the
+	 *            ICs in question according to the default
+	 *            C_Aggregation, assuming that is is the most
+	 *            basic one with the smallest possible number
+	 *            of items and thus the under under which the
+	 *            most ICs have an equal HeaderAggregationKey.
 	 * @param ignoreInvoiceSchedule
-	 * @param loggable                 <b>may not be null</b>. Use
-	 *                                 {@link de.metas.util.NullLoggable} if you
-	 *                                 don't have any other loggable.
+	 * @param loggable <b>may not be null</b>. Use
+	 *            {@link de.metas.util.NullLoggable} if you
+	 *            don't have any other loggable.
 	 * @param trxName
 	 *
 	 * @return the number of enqueued workpackages
@@ -202,7 +203,7 @@ public interface IInvoiceCandBL extends ISingletonService {
 	 * candidates
 	 *
 	 * @param ctx
-	 * @param ic  the candidate whose values shall be updated. It is assumed that
+	 * @param ic the candidate whose values shall be updated. It is assumed that
 	 *            the candidate has <code>IsManual='Y'</code>.
 	 */
 	void set_QtyInvoiced_NetAmtInvoiced_Aggregation(Properties ctx, I_C_Invoice_Candidate ic);
@@ -256,8 +257,8 @@ public interface IInvoiceCandBL extends ISingletonService {
 	 * Creates initial {@link IInvoiceGenerateResult}
 	 *
 	 * @param shallStoreInvoices if true, a link to all invoices will be stored; if
-	 *                           false then only some counting/aggregation info will
-	 *                           be stored
+	 *            false then only some counting/aggregation info will
+	 *            be stored
 	 * @return initial {@link IInvoiceGenerateResult} instance
 	 */
 	IInvoiceGenerateResult createInvoiceGenerateResult(boolean shallStoreInvoices);
@@ -272,8 +273,8 @@ public interface IInvoiceCandBL extends ISingletonService {
 	 * @param invoiceCand
 	 * @param invoiceLine
 	 * @param qtyInvoiced
-	 * @param note        may be null or empty. Use it to provide a user-friendly
-	 *                    note that can be displayed to the customer admin/user
+	 * @param note may be null or empty. Use it to provide a user-friendly
+	 *            note that can be displayed to the customer admin/user
 	 * @return returns the invoiceLine allocation that was created or updated never
 	 *         returns <code>null</code>
 	 */
@@ -339,9 +340,9 @@ public interface IInvoiceCandBL extends ISingletonService {
 	 *
 	 * NOTE: this method is NOT saving the invoice candidate
 	 *
-	 * @param ic       invoice candidate
+	 * @param ic invoice candidate
 	 * @param errorMsg error message to be set
-	 * @param note     error note (optional)
+	 * @param note error note (optional)
 	 */
 	void setError(I_C_Invoice_Candidate ic, String errorMsg, I_AD_Note note);
 
@@ -352,9 +353,9 @@ public interface IInvoiceCandBL extends ISingletonService {
 	 * @param errorMsg
 	 * @param note
 	 * @param askForDeleteRegeneration error message will append request to the user
-	 *                                 asking him/her to delete invoice candidate
-	 *                                 after problem was fixed and wait for it's
-	 *                                 regeneration
+	 *            asking him/her to delete invoice candidate
+	 *            after problem was fixed and wait for it's
+	 *            regeneration
 	 */
 	void setError(I_C_Invoice_Candidate ic, String errorMsg, I_AD_Note note, boolean askForDeleteRegeneration);
 
@@ -439,7 +440,8 @@ public interface IInvoiceCandBL extends ISingletonService {
 	 */
 	void closeInvoiceCandidates(Iterator<I_C_Invoice_Candidate> candidatesToClose);
 
-	default void closeInvoiceCandidates(@NonNull final Iterable<I_C_Invoice_Candidate> candidatesToClose) {
+	default void closeInvoiceCandidates(@NonNull final Iterable<I_C_Invoice_Candidate> candidatesToClose)
+	{
 		closeInvoiceCandidates(candidatesToClose.iterator());
 	}
 

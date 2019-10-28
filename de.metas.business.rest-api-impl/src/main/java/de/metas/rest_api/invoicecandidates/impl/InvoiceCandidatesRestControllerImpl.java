@@ -54,7 +54,8 @@ import lombok.NonNull;
 @RestController
 @RequestMapping(ICEnqueueingForInvoiceGenerationRestEndpoint.ENDPOINT)
 @Profile(Profiles.PROFILE_App)
-class InvoiceCandidatesRestControllerImpl implements ICEnqueueingForInvoiceGenerationRestEndpoint {
+class InvoiceCandidatesRestControllerImpl implements ICEnqueueingForInvoiceGenerationRestEndpoint
+{
 
 	private static final Logger logger = LogManager.getLogger(InvoiceCandidatesRestControllerImpl.class);
 
@@ -63,18 +64,21 @@ class InvoiceCandidatesRestControllerImpl implements ICEnqueueingForInvoiceGener
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final InvoiceJsonConverterService jsonConverter;
 
-	public InvoiceCandidatesRestControllerImpl(@NonNull final InvoiceJsonConverterService jsonConverter) {
+	public InvoiceCandidatesRestControllerImpl(@NonNull final InvoiceJsonConverterService jsonConverter)
+	{
 		this.jsonConverter = jsonConverter;
 	}
 
 	@PostMapping(consumes = { "application/json" })
 	@Override
 	public ResponseEntity<JsonInvoiceCandCreateResponse> createInvoices(
-			@RequestBody @NonNull final JsonInvoiceCandCreateRequest request) {
-		try {
+			@RequestBody @NonNull final JsonInvoiceCandCreateRequest request)
+	{
+		try
+		{
 			PInstanceId pInstanceId = adPInstanceDAO.createSelectionId();
 			List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(request.getInvoiceCandidates());
-			invoiceCandBL.createSelectionForInvoiceCandidates(headerAndLineIds,pInstanceId);
+			invoiceCandBL.createSelectionForInvoiceCandidates(headerAndLineIds, pInstanceId);
 
 			final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
 					.setInvoicingParams(createInvoicingParams(request)).setFailIfNothingEnqueued(true)
@@ -84,7 +88,9 @@ class InvoiceCandidatesRestControllerImpl implements ICEnqueueingForInvoiceGener
 					.callInNewTrx(() -> jsonConverter.toJson(enqueueResult));
 
 			return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
-		} catch (final Exception ex) {
+		}
+		catch (final Exception ex)
+		{
 			logger.warn("Got exception while processing {}", request, ex);
 
 			final String adLanguage = Env.getADLanguageOrBaseLanguage();
@@ -93,7 +99,8 @@ class InvoiceCandidatesRestControllerImpl implements ICEnqueueingForInvoiceGener
 		}
 	}
 
-	private PlainInvoicingParams createInvoicingParams(JsonInvoiceCandCreateRequest request) {
+	private PlainInvoicingParams createInvoicingParams(JsonInvoiceCandCreateRequest request)
+	{
 		PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 		invoicingParams.setDateAcct(request.getDateAcct());
 		invoicingParams.setDateInvoiced(request.getDateInvoiced());
