@@ -16,7 +16,7 @@ import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_Request4E
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_SetPackingInstructions;
 import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow;
 import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsData;
-import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsRepository;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsRepository;
@@ -61,7 +61,7 @@ public class ProductsToPickViewFactory implements IViewFactory
 	private static final String MSG_ReviewCaption = "de.metas.ui.web.pickingV2.productsToPick.Review.caption";
 
 	@Autowired
-	private ProductsToPickRowsRepository rowsRepository;
+	private ProductsToPickRowsService rowsRepository;
 	private IViewsRepository viewsRepository;
 
 	@Override

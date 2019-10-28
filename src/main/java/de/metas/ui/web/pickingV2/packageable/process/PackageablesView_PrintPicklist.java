@@ -26,7 +26,7 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.report.jasper.client.JRClient;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
-import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsRepository;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -57,7 +57,7 @@ public class PackageablesView_PrintPicklist extends PackageablesViewBasedProcess
 	final private static AdProcessId PickListPdf_AD_Process_ID = AdProcessId.ofRepoId(541202);
 
 	@Autowired
-	private ProductsToPickRowsRepository productsToPickRowsRepository;
+	private ProductsToPickRowsService productsToPickRowsRepository;
 
 	@Autowired
 	private PickingCandidateService pickingCandidateService;

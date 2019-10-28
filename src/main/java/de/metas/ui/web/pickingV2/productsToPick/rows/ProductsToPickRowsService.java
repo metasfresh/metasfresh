@@ -3,7 +3,7 @@ package de.metas.ui.web.pickingV2.productsToPick.rows;
 import java.util.List;
 
 import org.compiere.model.I_M_Locator;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
@@ -41,15 +41,15 @@ import lombok.NonNull;
  * #L%
  */
 
-@Repository
-public class ProductsToPickRowsRepository
+@Service
+public class ProductsToPickRowsService
 {
 	private final PickingConfigRepositoryV2 pickingConfigRepo;
 	private final IBPartnerBL bpartnersService;
 	private final HUReservationService huReservationService;
 	private final PickingCandidateService pickingCandidateService;
 
-	public ProductsToPickRowsRepository(
+	public ProductsToPickRowsService(
 			@NonNull final PickingConfigRepositoryV2 pickingConfigRepo,
 			@NonNull final IBPartnerBL bpartnersService,
 			@NonNull final HUReservationService huReservationService,

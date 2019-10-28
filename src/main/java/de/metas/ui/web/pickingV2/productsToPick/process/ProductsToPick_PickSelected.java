@@ -11,7 +11,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.pickingV2.config.PickingConfigV2;
 import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow;
-import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsRepository;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService;
 
 /*
  * #%L
@@ -41,7 +41,7 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 	private PickingCandidateService pickingCandidatesService;
 
 	@Autowired
-	private ProductsToPickRowsRepository productsToPickRowsRepository;
+	private ProductsToPickRowsService productsToPickRowsRepository;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
