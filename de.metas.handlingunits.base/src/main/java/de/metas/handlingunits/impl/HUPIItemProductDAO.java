@@ -412,7 +412,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		{
 
 			final IQuery<I_M_HU_PI_Item> packingMaterialQuery = queryBL.createQueryBuilder(I_M_HU_PackingMaterial.class, ctx, trxName)
-					.addEqualsFilter(I_M_HU_PackingMaterial.COLUMN_M_Product_ID, queryVO.getM_Product_Packaging_ID())
+					.addEqualsFilter(I_M_HU_PackingMaterial.COLUMNNAME_M_Product_ID, queryVO.getM_Product_Packaging_ID())
 					.addOnlyActiveRecordsFilter()
 					.andCollectChildren(I_M_HU_PI_Item.COLUMN_M_HU_PackingMaterial_ID, I_M_HU_PI_Item.class)
 					.addEqualsFilter(I_M_HU_PI_Item.COLUMN_ItemType, X_M_HU_PI_Item.ITEMTYPE_PackingMaterial) // when we query PI_Items, we make sure that they have the correct type, just as a failsafe measure

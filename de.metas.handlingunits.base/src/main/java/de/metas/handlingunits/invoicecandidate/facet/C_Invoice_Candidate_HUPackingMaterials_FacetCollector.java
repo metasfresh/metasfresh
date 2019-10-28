@@ -86,7 +86,7 @@ public class C_Invoice_Candidate_HUPackingMaterials_FacetCollector extends Singl
 		//
 		// Query invoice candidates, aggregate them by packing material products and sum the QtyToInvoice
 		final IQueryAggregateBuilder<I_C_Invoice_Candidate, I_M_Product> aggregateOnQtyToInvoiceInPriceUOM = queryBuilderWithDefaultFilters
-				.addInSubQueryFilter(I_C_Invoice_Candidate.COLUMN_M_Product_ID, I_M_HU_PackingMaterial.COLUMN_M_Product_ID, isPackingMaterialQueryFilter)
+				.addInSubQueryFilter(I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID, I_M_HU_PackingMaterial.COLUMNNAME_M_Product_ID, isPackingMaterialQueryFilter)
 				.aggregateOnColumn(I_C_Invoice_Candidate.COLUMN_M_Product_ID);
 		aggregateOnQtyToInvoiceInPriceUOM
 				.sum(DYNATTR_QtyToInvoiceInPriceUOM, I_C_Invoice_Candidate.COLUMN_QtyToInvoiceInPriceUOM);
@@ -94,7 +94,7 @@ public class C_Invoice_Candidate_HUPackingMaterials_FacetCollector extends Singl
 		//
 		// Get aggregated products and create facets from them.
 		final List<I_M_Product> products = aggregateOnQtyToInvoiceInPriceUOM.aggregate();
-		final List<IFacet<I_C_Invoice_Candidate>> facets = new ArrayList<IFacet<I_C_Invoice_Candidate>>(products.size());
+		final List<IFacet<I_C_Invoice_Candidate>> facets = new ArrayList<>(products.size());
 		for (final I_M_Product product : products)
 		{
 			final IFacet<I_C_Invoice_Candidate> facet = createPackingMaterialFacet(product);

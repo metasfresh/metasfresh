@@ -357,7 +357,7 @@ public class InventoryHUSelectModel extends AbstractHUSelectModel
 			huQueryBuilder.addFilter(filter);
 		}
 
-		final List<I_C_BPartner> bPartners = huQueryBuilder.collect(I_M_HU.COLUMN_C_BPartner_ID);
+		final List<I_C_BPartner> bPartners = huQueryBuilder.collect(I_M_HU.COLUMNNAME_C_BPartner_ID, I_C_BPartner.class);
 		bpartnerKeyLayout.createAndSetKeysFromBPartners(bPartners);
 
 		//
@@ -393,7 +393,7 @@ public class InventoryHUSelectModel extends AbstractHUSelectModel
 		final boolean onlyAfterPickingLocator = true;
 		final IQueryAggregateBuilder<I_M_HU, I_C_BPartner_Location> bpLocationsAggregate = createHUQueryBuilder(considerSelectedBPartner, considerSelectedBPartnerLocation, onlyAfterPickingLocator)
 				.createQueryBuilder()
-				.aggregateOnColumn(I_M_HU.COLUMN_C_BPartner_Location_ID);
+				.aggregateOnColumn(I_M_HU.COLUMNNAME_C_BPartner_Location_ID, I_C_BPartner_Location.class);
 
 		// Define CountLockedHUs aggregator:
 		// * counts how many Locked HUs are for each BPartner Location

@@ -67,12 +67,12 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	private IQueryBuilder<I_M_HU_Assignment> applyCommonTopLevelFilters(final IQueryBuilder<I_M_HU_Assignment> queryBuilder, final int adTableId)
 	{
 		queryBuilder
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, adTableId)
 				//
 				// Filter out entries which are specifically for other levels
 				//
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_M_LU_HU_ID, null)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_M_TU_HU_ID, null);
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_LU_HU_ID, null)
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_TU_HU_ID, null);
 		return queryBuilder;
 	}
 
@@ -80,10 +80,10 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	{
 		final IQueryBuilder<I_M_HU_Assignment> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_Assignment.class, ctx, trxName)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_M_HU_ID, huId);
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, huId);
 
 		return applyCommonTopLevelFilters(queryBuilder, adTableId)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_Record_ID, recordId);
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, recordId);
 	}
 
 	public IQueryBuilder<I_M_HU_Assignment> retrieveHUAssignmentsForModelQuery(
@@ -96,10 +96,10 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 				.createQueryBuilder(I_M_HU_Assignment.class, ctx, trxName);
 
 		applyCommonTopLevelFilters(queryBuilder, adTableId)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_Record_ID, recordId);
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, recordId);
 
 		queryBuilder.orderBy()
-				.addColumn(I_M_HU_Assignment.COLUMN_M_HU_Assignment_ID);
+				.addColumn(I_M_HU_Assignment.COLUMNNAME_M_HU_Assignment_ID);
 
 		return queryBuilder;
 	}
@@ -112,8 +112,8 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 
 		final boolean foundHUAssignments = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_Assignment.class, model)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_Record_ID, recordId)
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, recordId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.match();
@@ -178,8 +178,8 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_HU_Assignment.class, ctx, trxName)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_Record_ID, recordId)
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, recordId)
 				.addOnlyActiveRecordsFilter()
 				//
 				// Collect top level HUs
@@ -235,9 +235,9 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_M_HU_Assignment.class, model)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_Record_ID, recordId)
-				.addNotEqualsFilter(I_M_HU_Assignment.COLUMN_M_TU_HU_ID, null) // TU is set
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, recordId)
+				.addNotEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_TU_HU_ID, null) // TU is set
 				.addOnlyActiveRecordsFilter();
 	}
 
@@ -249,17 +249,17 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 
 		queryBuilder
 				// references same record..
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, assignment.getAD_Table_ID())
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_Record_ID, assignment.getRecord_ID())
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, assignment.getAD_Table_ID())
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, assignment.getRecord_ID())
 				// ..and same toplevel-HU..
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_M_HU_ID, assignment.getM_HU_ID());
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, assignment.getM_HU_ID());
 
 		// ..but additionally references one of the HU's components (TU or LU)
 		final ICompositeQueryFilter<I_M_HU_Assignment> subFilter = queryBL.createCompositeQueryFilter(I_M_HU_Assignment.class);
 		subFilter
 				.setJoinOr()
-				.addNotEqualsFilter(I_M_HU_Assignment.COLUMN_M_LU_HU_ID, null)
-				.addNotEqualsFilter(I_M_HU_Assignment.COLUMN_M_TU_HU_ID, null);
+				.addNotEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_LU_HU_ID, null)
+				.addNotEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_TU_HU_ID, null);
 
 		queryBuilder.filter(subFilter);
 
@@ -295,9 +295,9 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 		//
 		// Note that here we don't want to skip anything; we want the HUAssignmentBL to do it's job, so we clean everything up
 		queryBuilder
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_Record_ID, recordId)
-				.addInArrayOrAllFilter(I_M_HU_Assignment.COLUMN_M_HU_ID, huIds)
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, recordId)
+				.addInArrayOrAllFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, huIds)
 				.create()
 				.delete();
 	}
@@ -311,8 +311,8 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_Assignment.class, model)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_Record_ID, recordId)
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, recordId)
 				.create()
 				.match();
 	}
@@ -333,9 +333,9 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_Assignment.class, luAssignment)
 				.addOnlyActiveRecordsFilter() // only active assignments are counted
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, adTableId) // for same kind of model
-				.addCompareFilter(I_M_HU_Assignment.COLUMN_Record_ID, Operator.LESS, recordId) // on a model which was created before ours
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_M_LU_HU_ID, luHUId) // for our LU
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, adTableId) // for same kind of model
+				.addCompareFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, Operator.LESS, recordId) // on a model which was created before ours
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_LU_HU_ID, luHUId) // for our LU
 				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_VHU_ID, luAssignment.getVHU_ID()) // 08564 : also check the vhu
 				//
 				.create()
@@ -375,7 +375,7 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 		;
 
 		applyCommonTopLevelFilters(queryBuilder, adTableId)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_M_HU_ID, hu.getM_HU_ID());
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, hu.getM_HU_ID());
 		return queryBuilder;
 	}
 
@@ -383,8 +383,8 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	{
 		final IQueryBuilder<I_M_HU_Assignment> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Assignment.class, contextProvider);
 
-		queryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, adTableId);
-		queryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMN_M_HU_ID, hu.getM_HU_ID());
+		queryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, adTableId);
+		queryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, hu.getM_HU_ID());
 		return queryBuilder;
 	}
 
@@ -402,7 +402,7 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 		final int recordId = InterfaceWrapperHelper.getId(model);
 
 		return getDerivedTradingUnitAssignmentsQueryBuilder(ctx, model, topLevelHU, luHU, tuHU, trxName)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_Record_ID, recordId)
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, recordId)
 				//
 				.create()
 				.match();
@@ -421,12 +421,12 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 		final Integer tuHUId = tuHU == null ? null : tuHU.getM_HU_ID();
 
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Assignment.class, ctx, trxName)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, adTableId)
 				//
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_M_HU_ID, topLevelHU.getM_HU_ID())
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, topLevelHU.getM_HU_ID())
 				//
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_M_LU_HU_ID, luHUId)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_M_TU_HU_ID, tuHUId);
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_LU_HU_ID, luHUId)
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_TU_HU_ID, tuHUId);
 	}
 
 	@Override
@@ -447,19 +447,19 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 		final IQueryBuilder<I_M_HU_Assignment> huAssigmentQueryBuilder = queryBL.createQueryBuilder(I_M_HU_Assignment.class, hu)
 				.addOnlyContextClientOrSystem()
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, tableId);
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, tableId);
 		if (topLevel)
 		{
-			huAssigmentQueryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMN_M_HU_ID, hu.getM_HU_ID());
+			huAssigmentQueryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, hu.getM_HU_ID());
 			applyCommonTopLevelFilters(huAssigmentQueryBuilder, tableId);
 		}
 		else
 		{
 			final ICompositeQueryFilter<I_M_HU_Assignment> filter = queryBL.createCompositeQueryFilter(I_M_HU_Assignment.class)
 					.setJoinOr()
-					.addEqualsFilter(I_M_HU_Assignment.COLUMN_M_LU_HU_ID, hu.getM_HU_ID())
-					.addEqualsFilter(I_M_HU_Assignment.COLUMN_M_TU_HU_ID, hu.getM_HU_ID())
-					.addEqualsFilter(I_M_HU_Assignment.COLUMN_VHU_ID, hu.getM_HU_ID());
+					.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_LU_HU_ID, hu.getM_HU_ID())
+					.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_TU_HU_ID, hu.getM_HU_ID())
+					.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_VHU_ID, hu.getM_HU_ID());
 			huAssigmentQueryBuilder.filter(filter);
 		}
 
@@ -484,7 +484,7 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	{
 		final IQueryBuilder<I_M_HU_Assignment> queryBuilder = retrieveTableHUAssignmentsQueryNoTopLevel(contextProvider, adTableId, hu);
 		return queryBuilder
-				.addNotEqualsFilter(I_M_HU_Assignment.COLUMN_M_TU_HU_ID, null)
+				.addNotEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_TU_HU_ID, null)
 				.create()
 				.list(I_M_HU_Assignment.class);
 	}
@@ -542,13 +542,13 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 		final List<I_M_HU_Assignment> huAssignmentRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_Assignment.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, getModelTableId(model))
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_Record_ID, getId(model))
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, getModelTableId(model))
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, getId(model))
 				.orderBy() // the ordering is crucial; we need to see the most "specific" records first
-				.addColumn(I_M_HU_Assignment.COLUMN_VHU_ID, Direction.Descending, Nulls.Last)
-				.addColumn(I_M_HU_Assignment.COLUMN_M_TU_HU_ID, Direction.Descending, Nulls.Last)
-				.addColumn(I_M_HU_Assignment.COLUMN_M_LU_HU_ID, Direction.Descending, Nulls.Last)
-				.addColumn(I_M_HU_Assignment.COLUMN_M_HU_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_M_HU_Assignment.COLUMNNAME_VHU_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_M_HU_Assignment.COLUMNNAME_M_TU_HU_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_M_HU_Assignment.COLUMNNAME_M_LU_HU_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, Direction.Descending, Nulls.Last)
 				.endOrderBy()
 				.create()
 				.list();

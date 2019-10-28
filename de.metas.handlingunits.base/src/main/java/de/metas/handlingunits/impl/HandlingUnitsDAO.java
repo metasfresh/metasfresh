@@ -616,7 +616,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_HU.class, ctx, trxName);
 
 		final ICompositeQueryFilter<I_M_HU> filters = queryBuilder.getCompositeFilter();
-		filters.addInArrayOrAllFilter(I_M_HU.COLUMN_M_Locator_ID, locatorIds);
+		filters.addInArrayOrAllFilter(I_M_HU.COLUMNNAME_M_Locator_ID, locatorIds);
 
 		// Top Level filter
 		filters.addEqualsFilter(I_M_HU.COLUMN_M_HU_Item_Parent_ID, null);
@@ -680,9 +680,9 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		//
 		// Fetch only those PI Items which have set our BPartner or who don't have set a BPartner at all
 		// ... and put first those with specific partner
-		piItemsQueryBuilder.addInArrayOrAllFilter(I_M_HU_PI_Item.COLUMN_C_BPartner_ID, null, bpartnerId);
+		piItemsQueryBuilder.addInArrayOrAllFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, null, bpartnerId);
 		piItemsQueryBuilder.orderBy()
-				.addColumn(I_M_HU_PI_Item.COLUMN_C_BPartner_ID, Direction.Descending, Nulls.Last) // lines with BPartner set, first
+				.addColumn(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, Direction.Descending, Nulls.Last) // lines with BPartner set, first
 				.addColumn(I_M_HU_PI_Item.COLUMN_M_HU_PI_Item_ID, Direction.Ascending, Nulls.Last) // just to have a predictable order
 		;
 
@@ -741,13 +741,13 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.addOnlyActiveRecordsFilter()
 
 				// it's an PI-item of the the parent's PI
-				.addEqualsFilter(I_M_HU_PI_Item.COLUMN_M_HU_PI_Version_ID, parentHU.getM_HU_PI_Version_ID())
+				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID, parentHU.getM_HU_PI_Version_ID())
 
 				// it includes the childs's HU PI as one of its "child" PI
-				.addEqualsFilter(I_M_HU_PI_Item.COLUMN_Included_HU_PI_ID, piOfChildHU.getM_HU_PI_ID())
+				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_Included_HU_PI_ID, piOfChildHU.getM_HU_PI_ID())
 
 				// it either has no C_BPartner_ID or a matching one
-				.addInArrayFilter(I_M_HU_PI_Item.COLUMN_C_BPartner_ID, null, parentHU.getC_BPartner_ID())
+				.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, null, parentHU.getC_BPartner_ID())
 
 				// order by C_BPartner_ID descending to favor any piItem with a matching C_BPartner_ID
 				.orderByDescending(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID)
@@ -926,10 +926,10 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClientOrSystem()
 				.addEqualsFilter(I_M_HU_PI.COLUMN_IsDefaultLU, true)
-				.addInArrayOrAllFilter(I_M_HU_PI.COLUMN_AD_Org_ID, Env.CTXVALUE_AD_Org_ID_System, adOrgId)
+				.addInArrayOrAllFilter(I_M_HU_PI.COLUMNNAME_AD_Org_ID, Env.CTXVALUE_AD_Org_ID_System, adOrgId)
 				.orderBy()
-				.addColumn(I_M_HU_PI.COLUMN_AD_Client_ID, Direction.Descending, Nulls.Last)
-				.addColumn(I_M_HU_PI.COLUMN_AD_Org_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_M_HU_PI.COLUMNNAME_AD_Client_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_M_HU_PI.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last)
 				.endOrderBy()
 				.create()
 				.firstOnly(I_M_HU_PI.class);

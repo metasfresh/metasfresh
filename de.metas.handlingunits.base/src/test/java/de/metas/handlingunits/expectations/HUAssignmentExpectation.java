@@ -79,18 +79,18 @@ public class HUAssignmentExpectation<ParentExpectationType> extends AbstractHUEx
 		final IQueryBuilder<I_M_HU_Assignment> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Assignment.class, getContext());
 
 		// Table/Record
-		queryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, tableId);
-		queryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMN_Record_ID, recordId);
+		queryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, tableId);
+		queryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, recordId);
 
 		Check.assumeNotNull(hu, "hu not null");
 		final Integer huId = hu == null ? null : hu.getM_HU_ID();
-		queryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMN_M_HU_ID, huId);
+		queryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, huId);
 
 		final Integer luHUId = luHU == null ? null : luHU.getM_HU_ID();
-		queryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMN_M_LU_HU_ID, luHUId);
+		queryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_LU_HU_ID, luHUId);
 
 		final Integer tuHUId = tuHU == null ? null : tuHU.getM_HU_ID();
-		queryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMN_M_TU_HU_ID, tuHUId);
+		queryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_TU_HU_ID, tuHUId);
 
 		//
 		// Query database and retrieve the HU assignments for our criterias

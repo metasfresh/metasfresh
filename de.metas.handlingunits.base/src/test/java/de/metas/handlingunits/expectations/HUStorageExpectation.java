@@ -74,8 +74,8 @@ public class HUStorageExpectation<ParentExpectationType> extends AbstractHUExpec
 		Check.assumeNotNull(_product, "_product not null");
 		final I_M_HU_Storage huStorage = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_Storage.class, hu)
-				.addEqualsFilter(I_M_HU_Storage.COLUMN_M_HU_ID, hu.getM_HU_ID())
-				.addEqualsFilter(I_M_HU_Storage.COLUMN_M_Product_ID, _product.getM_Product_ID())
+				.addEqualsFilter(I_M_HU_Storage.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
+				.addEqualsFilter(I_M_HU_Storage.COLUMNNAME_M_Product_ID, _product.getM_Product_ID())
 				.create()
 				.firstOnly(I_M_HU_Storage.class);
 

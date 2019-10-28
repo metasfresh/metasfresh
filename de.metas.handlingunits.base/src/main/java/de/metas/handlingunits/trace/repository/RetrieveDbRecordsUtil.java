@@ -71,7 +71,7 @@ public class RetrieveDbRecordsUtil
 		return resultOut.getSelectionId();
 	}
 
-	private static interface EmptyResultSupplier
+	private interface EmptyResultSupplier
 	{
 		Result newEmptyResult();
 	}
@@ -304,7 +304,7 @@ public class RetrieveDbRecordsUtil
 		}
 		if (query.getOrgId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_AD_Org_ID, query.getOrgId());
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_AD_Org_ID, query.getOrgId());
 			queryIsEmpty = false;
 		}
 		if (!query.getVhuIds().isEmpty())
@@ -314,7 +314,7 @@ public class RetrieveDbRecordsUtil
 		}
 		if (query.getProductId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_Product_ID, query.getProductId());
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_M_Product_ID, query.getProductId());
 			queryIsEmpty = false;
 		}
 		if (query.getQty() != null)
@@ -364,7 +364,7 @@ public class RetrieveDbRecordsUtil
 		}
 		if (query.getDocTypeId().isPresent())
 		{
-			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_C_DocType_ID, query.getDocTypeId().get());
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_C_DocType_ID, query.getDocTypeId().get());
 			queryIsEmpty = false;
 		}
 		if (!Check.isEmpty(query.getDocStatus()))
