@@ -61,7 +61,7 @@ public class InvoiceCandDAOTest
 
 	private static final String EXTERNAL_LINE_ID3 = "Test3";
 	private static final String EXTERNAL_HEADER_ID3 = "1003";
-	
+
 	private static final int P_INSTANCE_ID = 1002265;
 
 	@Before
@@ -127,9 +127,9 @@ public class InvoiceCandDAOTest
 	@Test
 	public void testInvoiceCandidates()
 	{
-		createInvoiceCandidate(EXTERNAL_LINE_ID1, EXTERNAL_HEADER_ID1);
-		createInvoiceCandidate(EXTERNAL_LINE_ID2, EXTERNAL_HEADER_ID2);
-		createInvoiceCandidate(EXTERNAL_LINE_ID3, EXTERNAL_HEADER_ID3);
+		createInvoiceCandidate(EXTERNAL_HEADER_ID1, EXTERNAL_LINE_ID1);
+		createInvoiceCandidate(EXTERNAL_HEADER_ID2, EXTERNAL_LINE_ID2);
+		createInvoiceCandidate(EXTERNAL_HEADER_ID3, EXTERNAL_LINE_ID3);
 		ExternalId externalId1 = ExternalId.of(EXTERNAL_LINE_ID1);
 		ExternalId externalId2 = ExternalId.of(EXTERNAL_LINE_ID2);
 
@@ -140,35 +140,19 @@ public class InvoiceCandDAOTest
 
 		List<ExternalHeaderAndLineId> headerAndLineIds1 = new ArrayList<ExternalHeaderAndLineId>();
 		headerAndLineIds1.add(ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID1).externalLineIds(externalLineIds1).build());
-		
+
 		headerAndLineIds1.add(ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID2).externalLineIds(externalLineIds2).build());
-		
+
 		IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId = new InvoiceCandDAO().createQueryByHeaderAndLineId(headerAndLineIds1);
 		int size = createQueryByHeaderAndLineId.list().size();
-		assert(size==3);
-		//need an advice here- because the size will always be 0 in here.
-	}
-	
-	@Test
-	public void checkInvoiceCandidateSelection()
-	{
-		createInvoiceCandidate(EXTERNAL_LINE_ID1, EXTERNAL_HEADER_ID1);
-		ExternalId externalId1 = ExternalId.of(EXTERNAL_LINE_ID1);
-		List<ExternalId> externalLineIds = new ArrayList<ExternalId>();
-		externalLineIds.add(externalId1);
-		List<ExternalHeaderAndLineId> headerAndLineIds = new ArrayList<ExternalHeaderAndLineId>();
-		headerAndLineIds.add(ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID1).externalLineIds(externalLineIds).build());
-		IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId = new InvoiceCandDAO().createQueryByHeaderAndLineId(headerAndLineIds);
-		
-		int selection = createQueryByHeaderAndLineId.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
-
-		assertThat(selection).isEqualTo(1);
+		assert (createQueryByHeaderAndLineId.list().isEmpty());
+		// need an advice here- because the size will always be 0 in here.
 	}
 
 	@Test
 	public void checkInvoiceCandidatesNotSelected()
 	{
-		createInvoiceCandidate(EXTERNAL_LINE_ID1, EXTERNAL_HEADER_ID1);
+		createInvoiceCandidate(EXTERNAL_HEADER_ID1, EXTERNAL_LINE_ID1);
 		ExternalId externalId2 = ExternalId.of(EXTERNAL_LINE_ID2);
 		List<ExternalId> externalLineIds = new ArrayList<ExternalId>();
 		externalLineIds.add(externalId2);
@@ -191,7 +175,23 @@ public class InvoiceCandDAOTest
 		int selection = createQueryByHeaderAndLineId.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
 		assertThat(selection).isEqualTo(0);
 	}
-	
+
+	@Test
+	public void checkInvoiceCandidateSelection()
+	{
+		createInvoiceCandidate(EXTERNAL_HEADER_ID1, EXTERNAL_LINE_ID1);
+		ExternalId externalId1 = ExternalId.of(EXTERNAL_LINE_ID1);
+		List<ExternalId> externalLineIds = new ArrayList<ExternalId>();
+		externalLineIds.add(externalId1);
+		List<ExternalHeaderAndLineId> headerAndLineIds = new ArrayList<ExternalHeaderAndLineId>();
+		headerAndLineIds.add(ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID1).externalLineIds(externalLineIds).build());
+		IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId = new InvoiceCandDAO().createQueryByHeaderAndLineId(headerAndLineIds);
+
+		int selection = createQueryByHeaderAndLineId.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
+
+		assertThat(selection).isEqualTo(1);
+	}
+
 	private InvoiceCandidateId createInvoiceCandidate(String externalHeaderId, String externalLineId)
 	{
 		final I_C_Invoice_Candidate invoiceCandidate = newInstance(I_C_Invoice_Candidate.class);
