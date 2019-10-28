@@ -1,10 +1,13 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.proxy.Cached;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -15,8 +18,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.MultimapBuilder;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CCache;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.model.I_C_CommissionSettingsLine;
 import de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
@@ -128,19 +131,45 @@ public class CommissionConfigStagingDataService
 				.build();
 	}
 
-	/** Notes:
-	 * <li> {@link InterfaceWrapperHelper#loadByIdsOutOfTrx(java.util.Set, Class)} already does caching. Therefore the only thing we need to cache in this service class is this.
-	 * <li> The method is package visible for the {@link Cached} annotation to work */
-	@Cached(cacheName = I_C_CommissionSettingsLine.Table_Name + "#by#C_HierarchyCommissionSettings_ID")
-	List<I_C_CommissionSettingsLine> retrieveHierarchySettings(@NonNull final ImmutableSet<Integer> settingsRecordIds)
-	{ // TODO check via breakpoint if caching works
+	private final CCache<Integer, List<I_C_CommissionSettingsLine>> commissionSettingsLineRecordCache = CCache
+			.<Integer, List<I_C_CommissionSettingsLine>> builder()
+			.tableName(I_C_CommissionSettingsLine.Table_Name)
+			.build();
+
+	/**
+	 * Notes:
+	 * <li>{@link InterfaceWrapperHelper#loadByIdsOutOfTrx(java.util.Set, Class)} already does caching. Therefore the only thing we need to cache in this service class is this.
+	 */
+	private List<I_C_CommissionSettingsLine> retrieveHierarchySettings(@NonNull final ImmutableSet<Integer> settingsRecordIds)
+	{
+		final Collection<List<I_C_CommissionSettingsLine>> allRecords = commissionSettingsLineRecordCache.getAllOrLoad(
+				settingsRecordIds,
+				notYetCachedIds -> retrieveHierarchySettings0(notYetCachedIds));
+
+		return allRecords
+				.stream()
+				.flatMap(Collection::stream)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private Map<Integer, List<I_C_CommissionSettingsLine>> retrieveHierarchySettings0(@NonNull final Collection<Integer> settingsRecordIds)
+	{
 		final List<I_C_CommissionSettingsLine> settingsLineRecords = queryBL.createQueryBuilderOutOfTrx(I_C_CommissionSettingsLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_CommissionSettingsLine.COLUMN_C_HierarchyCommissionSettings_ID, settingsRecordIds)
+				.orderBy(I_C_CommissionSettingsLine.COLUMN_C_HierarchyCommissionSettings_ID)
 				.orderBy(I_C_CommissionSettingsLine.COLUMN_SeqNo)
 				.create()
 				.list();
-		return settingsLineRecords;
+
+		HashMap<Integer, List<I_C_CommissionSettingsLine>> result = new HashMap<Integer, List<I_C_CommissionSettingsLine>>();
+		for (final I_C_CommissionSettingsLine settingsLineRecord : settingsLineRecords)
+		{
+			final List<I_C_CommissionSettingsLine> settingsLines = result.computeIfAbsent(settingsLineRecord.getC_HierarchyCommissionSettings_ID(), ignored -> new ArrayList<I_C_CommissionSettingsLine>());
+			settingsLines.add(settingsLineRecord);
+		}
+
+		return ImmutableMap.copyOf(result);
 	}
 
 	@Value

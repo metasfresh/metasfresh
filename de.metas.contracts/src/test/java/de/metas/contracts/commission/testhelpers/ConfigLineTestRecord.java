@@ -50,7 +50,8 @@ public class ConfigLineTestRecord
 	@NonNull
 	Integer seqNo;
 
-	public void createConfigLineData(final int C_HierarchyCommissionSettings)
+	/** supposed to be invoked from {@link ConfigTestRecord}. */
+	void createConfigLineData(final int C_HierarchyCommissionSettings)
 	{
 		final I_C_CommissionSettingsLine settingsLineRecord = newInstance(I_C_CommissionSettingsLine.class);
 		settingsLineRecord.setC_HierarchyCommissionSettings_ID(C_HierarchyCommissionSettings);

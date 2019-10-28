@@ -22,11 +22,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstanceId;
@@ -51,6 +48,7 @@ import de.metas.contracts.commission.testhelpers.CommissionInstanceTestRecord;
 import de.metas.contracts.commission.testhelpers.CommissionShareTestRecord;
 import de.metas.contracts.commission.testhelpers.ConfigLineTestRecord;
 import de.metas.contracts.commission.testhelpers.ConfigTestRecord;
+import de.metas.contracts.commission.testhelpers.ConfigTestRecord.ConfigData;
 import de.metas.contracts.commission.testhelpers.ContractTestRecord;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -86,7 +84,6 @@ class CommissionInstanceRepositoryTest
 	private long currentTimestamp = START_TIMESTAMP;
 
 	private static final InvoiceCandidateId C_INVOICE_CANDIDATE_ID = InvoiceCandidateId.ofRepoId(10);
-
 
 	private static final BigDecimal ELEVEN = new BigDecimal("11");
 	private static final BigDecimal TWELVE = new BigDecimal("12");
@@ -133,19 +130,18 @@ class CommissionInstanceRepositoryTest
 
 	private void createCommissionData()
 	{
-
-		final ImmutableMap<BPartnerId, FlatrateTermId> bpartnerId2flatrateTermId = ConfigTestRecord.builder()
+		final ConfigData configData = ConfigTestRecord.builder()
 				.subtractLowerLevelCommissionFromBase(true)
 				.pointsPrecision(2)
 				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(10).percentOfBasePoints("10").build())
-				.contractTestRecord(ContractTestRecord.builder().build())
-				.contractTestRecord(ContractTestRecord.builder().build())
+				.contractTestRecord(ContractTestRecord.builder().name("C_BPartner_SalesRep_1_ID").build())
+				.contractTestRecord(ContractTestRecord.builder().name("C_BPartner_SalesRep_2_ID").build())
 				.build()
 				.createConfigData();
-		assertThat(bpartnerId2flatrateTermId).hasSize(2); // guard
-		final ImmutableList<BPartnerId> salesrepIds = bpartnerId2flatrateTermId.keySet().asList();
-		final BPartnerId C_BPartner_SalesRep_1_ID = salesrepIds.get(0);
-		final BPartnerId C_BPartner_SalesRep_2_ID = salesrepIds.get(1);
+
+		assertThat(configData.getName2BPartnerId()).hasSize(2); // guard
+		final BPartnerId C_BPartner_SalesRep_1_ID = configData.getName2BPartnerId().get("C_BPartner_SalesRep_1_ID");
+		final BPartnerId C_BPartner_SalesRep_2_ID = configData.getName2BPartnerId().get("C_BPartner_SalesRep_2_ID");
 
 		CommissionInstanceTestRecord.builder()
 				.C_INVOICE_CANDIDATE_ID(C_INVOICE_CANDIDATE_ID)
@@ -154,7 +150,7 @@ class CommissionInstanceRepositoryTest
 				.pointsBase_Invoiced("12")
 				.commissionShareTestRecord(CommissionShareTestRecord.builder()
 						.C_BPartner_SalesRep_ID(C_BPartner_SalesRep_1_ID)
-						.flatrateTermId(bpartnerId2flatrateTermId.get(C_BPartner_SalesRep_1_ID))
+						.flatrateTermId(configData.getBpartnerId2FlatrateTermId().get(C_BPartner_SalesRep_1_ID))
 						.levelHierarchy(10)
 						.pointsSum_Forecasted("1")
 						.pointsSum_Invoiceable("1.1")
@@ -187,7 +183,7 @@ class CommissionInstanceRepositoryTest
 						.build())
 				.commissionShareTestRecord(CommissionShareTestRecord.builder()
 						.C_BPartner_SalesRep_ID(C_BPartner_SalesRep_2_ID)
-						.flatrateTermId(bpartnerId2flatrateTermId.get(C_BPartner_SalesRep_2_ID))
+						.flatrateTermId(configData.getBpartnerId2FlatrateTermId().get(C_BPartner_SalesRep_2_ID))
 						.levelHierarchy(20)
 						.pointsSum_Forecasted("2")
 						.pointsSum_Invoiceable("2.1")
@@ -224,19 +220,18 @@ class CommissionInstanceRepositoryTest
 	void save()
 	{
 		// the actual contract data is not saved
-		final ImmutableMap<BPartnerId, FlatrateTermId> bpartnerId2flatrateTermId = ConfigTestRecord.builder()
+		final ConfigData configData = ConfigTestRecord.builder()
 				.subtractLowerLevelCommissionFromBase(true)
 				.pointsPrecision(2)
 				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(10).percentOfBasePoints("10").build())
-				.contractTestRecord(ContractTestRecord.builder().build())
-				.contractTestRecord(ContractTestRecord.builder().build())
+				.contractTestRecord(ContractTestRecord.builder().name("C_BPartner_SalesRep_1_ID").build())
+				.contractTestRecord(ContractTestRecord.builder().name("C_BPartner_SalesRep_2_ID").build())
 				.build()
 				.createConfigData();
 
-		assertThat(bpartnerId2flatrateTermId).hasSize(2); // guard
-		final ImmutableList<BPartnerId> salesrepIds = bpartnerId2flatrateTermId.keySet().asList();
-		final BPartnerId C_BPartner_SalesRep_1_ID = salesrepIds.get(0);
-		final BPartnerId C_BPartner_SalesRep_2_ID = salesrepIds.get(1);
+		assertThat(configData.getName2BPartnerId()).hasSize(2); // guard
+		final BPartnerId C_BPartner_SalesRep_1_ID = configData.getName2BPartnerId().get("C_BPartner_SalesRep_1_ID");
+		final BPartnerId C_BPartner_SalesRep_2_ID = configData.getName2BPartnerId().get("C_BPartner_SalesRep_2_ID");
 
 		final I_M_Product salesProduct = newInstance(I_M_Product.class);
 		salesProduct.setM_Product_Category_ID(20);
@@ -258,10 +253,10 @@ class CommissionInstanceRepositoryTest
 				.subtractLowerLevelCommissionFromBase(true)
 				.beneficiary2HierarchyContract(
 						beneficiary1,
-						HierarchyContract.builder().id(bpartnerId2flatrateTermId.get(C_BPartner_SalesRep_1_ID)).commissionPercent(Percent.of("10")).pointsPrecision(2))
+						HierarchyContract.builder().id(configData.getBpartnerId2FlatrateTermId().get(C_BPartner_SalesRep_1_ID)).commissionPercent(Percent.of("10")).pointsPrecision(2))
 				.beneficiary2HierarchyContract(
 						beneficiary2,
-						HierarchyContract.builder().id(bpartnerId2flatrateTermId.get(C_BPartner_SalesRep_2_ID)).commissionPercent(Percent.of("10")).pointsPrecision(2))
+						HierarchyContract.builder().id(configData.getBpartnerId2FlatrateTermId().get(C_BPartner_SalesRep_2_ID)).commissionPercent(Percent.of("10")).pointsPrecision(2))
 				.build();
 
 		final CommissionInstance commissionInstance = CommissionInstance.builder()

@@ -22,8 +22,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
@@ -36,6 +34,7 @@ import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.contracts.commission.testhelpers.CommissionFactTestRecord;
 import de.metas.contracts.commission.testhelpers.CommissionInstanceTestRecord;
 import de.metas.contracts.commission.testhelpers.CommissionInstanceTestRecord.CreateCommissionInstanceResult;
+import de.metas.contracts.commission.testhelpers.ConfigTestRecord.ConfigData;
 import de.metas.contracts.commission.testhelpers.CommissionShareTestRecord;
 import de.metas.contracts.commission.testhelpers.ConfigLineTestRecord;
 import de.metas.contracts.commission.testhelpers.ConfigTestRecord;
@@ -102,14 +101,14 @@ class CommissionSettlementShareRepositoryTest
 		final I_C_Invoice_Candidate settlementICRecord = newInstance(I_C_Invoice_Candidate.class);
 		saveRecord(settlementICRecord);
 		final InvoiceCandidateId settlementInvoiceCandidateId = InvoiceCandidateId.ofRepoId(settlementICRecord.getC_Invoice_Candidate_ID());
-		final ImmutableMap<BPartnerId, FlatrateTermId> bpartnerId2flatrateTermId = ConfigTestRecord.builder()
+		final ConfigData configData = ConfigTestRecord.builder()
 				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(10).percentOfBasePoints("10").build())
 				.subtractLowerLevelCommissionFromBase(true)
-				.contractTestRecord(ContractTestRecord.builder().build())
+				.contractTestRecord(ContractTestRecord.builder().name("C_BPartner_SalesRep_1_ID").build())
 				.build()
 				.createConfigData();
-		assertThat(bpartnerId2flatrateTermId.entrySet()).hasSize(1); // guard
-		final Entry<BPartnerId, FlatrateTermId> bpartnerIdAndFlatrateTermId = CollectionUtils.singleElement(bpartnerId2flatrateTermId.entrySet());
+		assertThat(configData.getBpartnerId2FlatrateTermId().entrySet()).hasSize(1); // guard
+		final Entry<BPartnerId, FlatrateTermId> bpartnerIdAndFlatrateTermId = CollectionUtils.singleElement(configData.getBpartnerId2FlatrateTermId().entrySet());
 
 		final CreateCommissionInstanceResult commissionInstanceResult = CommissionInstanceTestRecord.builder()
 				.C_INVOICE_CANDIDATE_ID(InvoiceCandidateId.ofRepoId(10))
@@ -165,14 +164,14 @@ class CommissionSettlementShareRepositoryTest
 		saveRecord(settlementICRecord);
 		final InvoiceCandidateId settlementInvoiceCandidateId = InvoiceCandidateId.ofRepoId(settlementICRecord.getC_Invoice_Candidate_ID());
 
-		final ImmutableMap<BPartnerId, FlatrateTermId> bpartnerId2flatrateTermId = ConfigTestRecord.builder()
+		 final ConfigData configData = ConfigTestRecord.builder()
 				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(10).percentOfBasePoints("10").build())
 				.subtractLowerLevelCommissionFromBase(true)
-				.contractTestRecord(ContractTestRecord.builder().build())
+				.contractTestRecord(ContractTestRecord.builder().name("C_BPartner_SalesRep_1_ID").build())
 				.build()
 				.createConfigData();
-		assertThat(bpartnerId2flatrateTermId.entrySet()).hasSize(1); // guard
-		final Entry<BPartnerId, FlatrateTermId> bpartnerIdAndFlatrateTermId = CollectionUtils.singleElement(bpartnerId2flatrateTermId.entrySet());
+		assertThat(configData.getBpartnerId2FlatrateTermId().entrySet()).hasSize(1); // guard
+		final Entry<BPartnerId, FlatrateTermId> bpartnerIdAndFlatrateTermId = CollectionUtils.singleElement(configData.getBpartnerId2FlatrateTermId().entrySet());
 
 		final CreateCommissionInstanceResult commissionInstanceResult = CommissionInstanceTestRecord.builder()
 				.C_INVOICE_CANDIDATE_ID(InvoiceCandidateId.ofRepoId(10))
