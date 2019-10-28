@@ -1,26 +1,6 @@
 package de.metas.customs;
 
-import static org.adempiere.model.InterfaceWrapperHelper.deleteAll;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_C_Customs_Invoice;
-import org.compiere.model.I_C_Customs_Invoice_Line;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Repository;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
@@ -30,15 +10,40 @@ import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_Customs_Invoice;
+import org.compiere.model.I_C_Customs_Invoice_Line;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.deleteAll;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -143,6 +148,35 @@ public class CustomsInvoiceRepository
 		deleteAll(existingLineRecords.values());
 
 		return customsInvoiceRecord;
+	}
+
+	public List<CustomsInvoiceLine> retrieveLines(@NonNull final CustomsInvoiceId customsInvoiceId)
+	{
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
+		final I_C_Customs_Invoice customsInvoice = load(customsInvoiceId, I_C_Customs_Invoice.class);
+
+		final List<I_C_Customs_Invoice_Line> lines = retrieveLineRecords(customsInvoiceId);
+		return lines.stream()
+				.map(it -> {
+					final I_M_Product product = productDAO.getById(it.getM_Product_ID());
+					final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
+					final Quantity qty = Quantity.of(BigDecimal.ZERO, uom);
+
+					final Money lineNetAmt = Money.of(it.getLineNetAmt(), CurrencyId.ofRepoId(customsInvoice.getC_Currency_ID()));
+
+					return CustomsInvoiceLine.builder()
+							.id(CustomsInvoiceLineId.ofRepoId(customsInvoiceId, it.getC_Customs_Invoice_Line_ID()))
+							.lineNo(it.getLineNo())
+							.productId(ProductId.ofRepoId(it.getM_Product_ID()))
+							.quantity(qty)
+							.uomId(UomId.ofRepoId(product.getC_UOM_ID()))
+							.orgId(Env.getOrgId())
+							.lineNetAmt(lineNetAmt)
+							.build();
+				})
+				.collect(GuavaCollectors.toImmutableList());
 	}
 
 	private List<I_C_Customs_Invoice_Line> retrieveLineRecords(@NonNull final CustomsInvoiceId customsInvoiceId)
