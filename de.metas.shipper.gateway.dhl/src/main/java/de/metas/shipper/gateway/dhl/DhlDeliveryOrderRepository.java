@@ -152,6 +152,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 							.awb(po.getawb())
 							.sequenceNumber(DhlSequenceNumber.of(po.getDHL_ShipmentOrder_ID()))
 							.pdfLabelData(po.getPdfLabelData())
+							.trackingUrl(po.getTrackingURL())
 							.internationalDelivery(po.isInternationalDelivery())
 							//							.customsDocument(customsDocument)
 							.build();
