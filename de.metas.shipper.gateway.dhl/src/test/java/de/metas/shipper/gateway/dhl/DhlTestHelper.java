@@ -84,7 +84,7 @@ class DhlTestHelper
 						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
 						.grossWeightKg(1)
 						.build())
-				// .customerReference("the helpful customer reference")
+				 .customerReference(null)
 				.serviceType(DhlServiceType.Dhl_Paket)
 				.build();
 	}
@@ -130,7 +130,7 @@ class DhlTestHelper
 						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
 						.grossWeightKg(1)
 						.build())
-				// .customerReference("the helpful customer reference")
+				 .customerReference(null)
 				.serviceType(DhlServiceType.Dhl_PaketInternational)
 				.build();
 	}
@@ -176,7 +176,7 @@ class DhlTestHelper
 						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
 						.grossWeightKg(1)
 						.build())
-				// .customerReference("the helpful customer reference")
+				 .customerReference(null)
 				.serviceType(DhlServiceType.Dhl_PaketInternational)
 				.build();
 	}
