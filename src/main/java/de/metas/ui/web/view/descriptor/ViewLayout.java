@@ -98,6 +98,7 @@ public class ViewLayout implements ETagAware
 	private final ImmutableList<DocumentLayoutElementDescriptor> elements;
 
 	private final String idFieldName;
+	private final String focusOnFieldName;
 
 	private final boolean hasAttributesSupport;
 	private final IncludedViewLayout includedViewLayout;
@@ -139,6 +140,7 @@ public class ViewLayout implements ETagAware
 		defaultOrderBys = ImmutableList.copyOf(builder.getDefaultOrderBys());
 
 		idFieldName = builder.getIdFieldName();
+		focusOnFieldName = builder.focusOnFieldName;
 
 		hasAttributesSupport = builder.hasAttributesSupport;
 
@@ -190,6 +192,7 @@ public class ViewLayout implements ETagAware
 		this.defaultOrderBys = defaultOrderBys;
 
 		idFieldName = from.idFieldName;
+		focusOnFieldName = from.focusOnFieldName;
 
 		hasAttributesSupport = from.hasAttributesSupport;
 
@@ -359,6 +362,11 @@ public class ViewLayout implements ETagAware
 	public boolean isGeoLocationSupport()
 	{
 		return geoLocationSupport;
+	}
+
+	public String getFocusOnFieldName()
+	{
+		return focusOnFieldName;
 	}
 
 	@Override
@@ -570,6 +578,7 @@ public class ViewLayout implements ETagAware
 		private final List<DocumentLayoutElementDescriptor.Builder> elementBuilders = new ArrayList<>();
 
 		private String idFieldName;
+		private String focusOnFieldName;
 
 		private Builder()
 		{
@@ -832,5 +841,10 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
+		public Builder setFocusOnFieldName(final String focusOnFieldName)
+		{
+			this.focusOnFieldName = focusOnFieldName;
+			return this;
+		}
 	}
 }
