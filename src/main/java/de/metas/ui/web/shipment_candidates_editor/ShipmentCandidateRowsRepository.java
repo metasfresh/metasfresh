@@ -9,9 +9,11 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_C_OrderLine;
 
 import com.google.common.collect.ImmutableList;
 
@@ -19,6 +21,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -28,6 +31,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -97,6 +101,7 @@ final class ShipmentCandidateRowsRepository
 	{
 		final Quantity qtyToDeliverStockOverride = extractQtyToDeliver(record);
 		final BigDecimal qtyToDeliverCatchOverride = extractQtyToDeliverCatchOverride(record);
+		final boolean catchWeight = isCatchWeight(record);
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
 
@@ -117,9 +122,11 @@ final class ShipmentCandidateRowsRepository
 				//
 				.asiIdInitial(asiId)
 				.asi(toLookupValue(asiId))
+				.catchWeight(catchWeight)
 				//
 				.build();
 	}
+
 
 	private LookupValue extractSalesOrder(@NonNull final I_M_ShipmentSchedule record)
 	{
@@ -179,4 +186,18 @@ final class ShipmentCandidateRowsRepository
 				.map(q -> q.toBigDecimal())
 				.orElse(null);
 	}
+
+
+	private boolean isCatchWeight(final I_M_ShipmentSchedule record)
+	{
+		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+		final int orderLineId = record.getC_OrderLine_ID();
+
+		final I_C_OrderLine orderLineRecord = orderDAO.getOrderLineById(orderLineId);
+
+		final String invoicableQtyBasedOn = orderLineRecord.getInvoicableQtyBasedOn();
+
+		return (X_C_OrderLine.INVOICABLEQTYBASEDON_CatchWeight.equals(invoicableQtyBasedOn));
+	}
+
 }

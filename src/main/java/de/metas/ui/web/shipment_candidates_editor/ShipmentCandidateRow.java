@@ -2,6 +2,7 @@ package de.metas.ui.web.shipment_candidates_editor;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -11,6 +12,8 @@ import javax.annotation.Nullable;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.util.ASIEditingInfo;
 import org.adempiere.mm.attributes.util.ASIEditingInfo.WindowType;
+
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest;
@@ -94,6 +97,9 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 	private final AttributeSetInstanceId asiIdInitial;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<ShipmentCandidateRow> values;
+	private final ImmutableMap<String, ViewEditorRenderMode> fieldNameAndJsonValues;
+
+	private boolean catchWeight;
 
 	/**
 	 * If {@code catchUOM} is null, then the user is not supposed to enter a catch weight override quantity.
@@ -110,6 +116,7 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 			@NonNull final Quantity qtyToDeliverStockInitial,
 			@NonNull final BigDecimal qtyToDeliverStockOverride,
 			//
+			final boolean catchWeight,
 			@Nullable final BigDecimal qtyToDeliverCatchOverrideInitial,
 			@Nullable final BigDecimal qtyToDeliverCatchOverride,
 			@Nullable final LookupValue catchUOM,
@@ -126,6 +133,7 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 		this.qtyToDeliverStockInitial = qtyToDeliverStockInitial;
 		this.qtyToDeliverStockOverride = qtyToDeliverStockOverride;
 
+		this.catchWeight = catchWeight;
 		this.qtyToDeliverCatchOverrideInitial = qtyToDeliverCatchOverrideInitial;
 		this.qtyToDeliverCatchOverride = qtyToDeliverCatchOverride;
 		this.catchUOM = catchUOM;
@@ -137,6 +145,7 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 		rowId = DocumentId.of(shipmentScheduleId);
 
 		values = ViewRowFieldNameAndJsonValuesHolder.newInstance(ShipmentCandidateRow.class);
+		fieldNameAndJsonValues = buildFieldNameAndJsonValues(catchWeight);
 	}
 
 	@Override
@@ -168,6 +177,21 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 	{
 		return values.get(this);
 	}
+
+	@Override
+	public Map<String, ViewEditorRenderMode> getViewEditorRenderModeByFieldName()
+	{
+		return fieldNameAndJsonValues;
+	}
+
+	private static ImmutableMap<String, ViewEditorRenderMode> buildFieldNameAndJsonValues(final boolean catchWeight)
+	{
+		final ImmutableMap.Builder<String, ViewEditorRenderMode> result = ImmutableMap.builder();
+		result.put(FIELD_qtyToDeliverCatchOverride, catchWeight ? ViewEditorRenderMode.ALWAYS : ViewEditorRenderMode.NEVER);
+
+		return result.build();
+	}
+
 
 	public ShipmentCandidateRow withChanges(@NonNull final ShipmentCandidateRowUserChangeRequest userChanges)
 	{
