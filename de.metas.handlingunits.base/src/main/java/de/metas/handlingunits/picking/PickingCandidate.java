@@ -58,7 +58,7 @@ public class PickingCandidate
 	@NonNull
 	@Default
 	@Setter(AccessLevel.PRIVATE)
-	private PickingCandidateStatus status = PickingCandidateStatus.Draft;
+	private PickingCandidateStatus processingStatus = PickingCandidateStatus.Draft;
 
 	@NonNull
 	@Default
@@ -124,7 +124,7 @@ public class PickingCandidate
 
 	public boolean isDraft()
 	{
-		return PickingCandidateStatus.Draft.equals(getStatus());
+		return PickingCandidateStatus.Draft.equals(getProcessingStatus());
 	}
 
 	public void assertProcessed()
@@ -138,7 +138,7 @@ public class PickingCandidate
 
 	public boolean isProcessed()
 	{
-		return PickingCandidateStatus.Processed.equals(getStatus());
+		return PickingCandidateStatus.Processed.equals(getProcessingStatus());
 	}
 
 	public boolean isRejectedToPick()
@@ -163,7 +163,7 @@ public class PickingCandidate
 
 	public void changeStatusToDraft()
 	{
-		setStatus(PickingCandidateStatus.Draft);
+		setProcessingStatus(PickingCandidateStatus.Draft);
 	}
 
 	public void changeStatusToProcessed()
@@ -174,12 +174,12 @@ public class PickingCandidate
 	public void changeStatusToProcessed(@Nullable final HuId packedToHuId)
 	{
 		setPackedToHuId(packedToHuId);
-		setStatus(PickingCandidateStatus.Processed);
+		setProcessingStatus(PickingCandidateStatus.Processed);
 	}
 
 	public void changeStatusToClosed()
 	{
-		setStatus(PickingCandidateStatus.Closed);
+		setProcessingStatus(PickingCandidateStatus.Closed);
 	}
 
 	public void pick(@NonNull final Quantity qtyPicked)

@@ -139,7 +139,7 @@ public class PickingCandidateRepository
 		return PickingCandidate.builder()
 				.id(PickingCandidateId.ofRepoId(record.getM_Picking_Candidate_ID()))
 				//
-				.status(PickingCandidateStatus.ofCode(record.getStatus()))
+				.processingStatus(PickingCandidateStatus.ofCode(record.getStatus()))
 				.pickStatus(PickingCandidatePickStatus.ofCode(record.getPickStatus()))
 				.approvalStatus(PickingCandidateApprovalStatus.ofCode(record.getApprovalStatus()))
 				//
@@ -159,7 +159,7 @@ public class PickingCandidateRepository
 
 	private static void updateRecord(final I_M_Picking_Candidate record, final PickingCandidate from)
 	{
-		record.setStatus(from.getStatus().getCode());
+		record.setStatus(from.getProcessingStatus().getCode());
 		record.setPickStatus(from.getPickStatus().getCode());
 		record.setApprovalStatus(from.getApprovalStatus().getCode());
 

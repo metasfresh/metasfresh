@@ -370,7 +370,7 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		final HuId packedHUId = HuId.ofRepoId(packedToHU.getM_HU_ID());
 
 		final PickingCandidate pickingCandidate = PickingCandidate.builder()
-				.status(PickingCandidateStatus.Processed) // not relevant
+				.processingStatus(PickingCandidateStatus.Processed) // not relevant
 				.qtyPicked(Quantity.zero(uom)) // not relevant
 				.pickFromHuId(packedHUId)
 				.packedToHuId(packedHUId)

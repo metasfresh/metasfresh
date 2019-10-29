@@ -133,7 +133,7 @@ public class PickHUCommand
 		else
 		{
 			return PickingCandidate.builder()
-					.status(PickingCandidateStatus.Draft)
+					.processingStatus(PickingCandidateStatus.Draft)
 					.qtyPicked(Quantity.zero(getShipmentScheduleUOM()))
 					.shipmentScheduleId(shipmentScheduleId)
 					.pickFromHuId(pickFromHuId)

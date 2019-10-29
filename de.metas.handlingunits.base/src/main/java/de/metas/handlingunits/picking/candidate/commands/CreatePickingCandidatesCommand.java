@@ -76,7 +76,7 @@ public class CreatePickingCandidatesCommand
 	public PickingCandidate createPickingCandidate()
 	{
 		return PickingCandidate.builder()
-				.status(PickingCandidateStatus.Draft)
+				.processingStatus(PickingCandidateStatus.Draft)
 				.qtyPicked(Quantity.zero(getShipmentScheduleUOM()))
 				.shipmentScheduleId(shipmentScheduleId)
 				.pickFromHuId(pickFromHuId)

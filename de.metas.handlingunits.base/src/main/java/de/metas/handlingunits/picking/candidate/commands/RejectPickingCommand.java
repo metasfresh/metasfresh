@@ -83,7 +83,7 @@ public class RejectPickingCommand
 		else
 		{
 			return PickingCandidate.builder()
-					.status(PickingCandidateStatus.Draft)
+					.processingStatus(PickingCandidateStatus.Draft)
 					.qtyPicked(request.getQtyToReject())
 					.shipmentScheduleId(request.getShipmentScheduleId())
 					.pickFromHuId(request.getRejectPickingFromHuId())
