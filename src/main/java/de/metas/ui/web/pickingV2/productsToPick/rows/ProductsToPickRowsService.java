@@ -2,6 +2,7 @@ package de.metas.ui.web.pickingV2.productsToPick.rows;
 
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Locator;
 import org.springframework.stereotype.Service;
 
@@ -10,7 +11,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.requests.PickHURequest;
+import de.metas.handlingunits.picking.requests.PickRequest;
+import de.metas.handlingunits.picking.requests.PickRequest.IssueToPickingOrder;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.ui.web.pickingV2.config.PickingConfigRepositoryV2;
 import de.metas.ui.web.pickingV2.config.PickingConfigV2;
@@ -82,21 +84,47 @@ public class ProductsToPickRowsService
 				.build();
 	}
 
-	public PickHURequest createPickHURequest(@NonNull final ProductsToPickRow row, boolean isPickingReviewRequired)
+	public PickRequest createPickRequest(@NonNull final ProductsToPickRow row, boolean isPickingReviewRequired)
 	{
-		return PickHURequest.builder()
-				.shipmentScheduleId(row.getShipmentScheduleId())
-				.qtyToPick(row.getQtyEffective())
-				.pickFromHuId(row.getPickFromHUId())
-				.autoReview(!isPickingReviewRequired)
-				.build();
+		final ProductsToPickRowType rowType = row.getType();
+		if (ProductsToPickRowType.PICK_FROM_HU.equals(rowType))
+		{
+			return PickRequest.builder()
+					.shipmentScheduleId(row.getShipmentScheduleId())
+					.qtyToPick(row.getQtyEffective())
+					.pickFromHuId(row.getPickFromHUId())
+					.autoReview(!isPickingReviewRequired)
+					.build();
+		}
+		else if (ProductsToPickRowType.PICK_FROM_PICKING_ORDER.equals(rowType))
+		{
+			final ImmutableList<IssueToPickingOrder> issues = row.getIncludedRows()
+					.stream()
+					.map(issueRow -> PickRequest.IssueToPickingOrder.builder()
+							.issueToOrderBOMLineId(issueRow.getIssueToOrderBOMLineId())
+							.qtyToIssue(issueRow.getQtyEffective())
+							.build())
+					.collect(ImmutableList.toImmutableList());
+
+			return PickRequest.builder()
+					.shipmentScheduleId(row.getShipmentScheduleId())
+					.qtyToPick(row.getQtyEffective())
+					.pickFromPickingOrderId(row.getPickFromPickingOrderId())
+					.issuesToPickingOrder(issues)
+					.autoReview(!isPickingReviewRequired)
+					.build();
+		}
+		else
+		{
+			throw new AdempiereException("Type not supported: " + rowType);
+		}
 	}
 
 	public List<PickingCandidate> createPickingCandidates(@NonNull final PackageableRow packageableRow)
 	{
 		final ProductsToPickRowsData productsToPickRowsData = createProductsToPickRowsData(packageableRow);
 		return productsToPickRowsData.getAllRows().stream()
-				.map(productsToPickRow -> pickingCandidateService.createAndSavePickingCandidates(createPickHURequest(productsToPickRow, false/* isPickingReviewRequired */)))
+				.map(productsToPickRow -> pickingCandidateService.createAndSavePickingCandidates(createPickRequest(productsToPickRow, false/* isPickingReviewRequired */)))
 				.map(pickHUResult -> pickHUResult.getPickingCandidate())
 				.collect(ImmutableList.toImmutableList());
 	}

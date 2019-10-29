@@ -18,6 +18,8 @@ import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidatePickStatus;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.pickingV2.productsToPick.rows.factory.ProductsToPickRowsDataFactory;
 import de.metas.ui.web.view.IViewRow;
@@ -271,6 +273,16 @@ public class ProductsToPickRow implements IViewRow
 	public HuId getPickFromHUId()
 	{
 		return rowId.getPickFromHUId();
+	}
+
+	public PPOrderId getPickFromPickingOrderId()
+	{
+		return rowId.getPickFromPickingOrderId();
+	}
+
+	public PPOrderBOMLineId getIssueToOrderBOMLineId()
+	{
+		return rowId.getIssueToOrderBOMLineId();
 	}
 
 	public Quantity getQtyEffective()

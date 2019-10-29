@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import de.metas.handlingunits.HuId;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.Builder;
@@ -44,6 +45,11 @@ public final class ProductsToPickRowId
 	@Getter
 	private final HuId pickFromHUId;
 
+	@Getter
+	private PPOrderId pickFromPickingOrderId;
+	@Getter
+	private final PPOrderBOMLineId issueToOrderBOMLineId;
+
 	private final DocumentId documentId;
 
 	@Builder
@@ -51,12 +57,17 @@ public final class ProductsToPickRowId
 			@NonNull final ProductId productId,
 			@NonNull ShipmentScheduleId shipmentScheduleId,
 			@Nullable final HuId pickFromHUId,
+			@Nullable final PPOrderId pickFromPickingOrderId,
 			@Nullable final PPOrderBOMLineId issueToOrderBOMLineId)
 	{
 		this.shipmentScheduleId = shipmentScheduleId;
+
 		this.pickFromHUId = pickFromHUId;
 
-		this.documentId = createDocumentId(productId, shipmentScheduleId, pickFromHUId, issueToOrderBOMLineId);
+		this.pickFromPickingOrderId = pickFromPickingOrderId;
+		this.issueToOrderBOMLineId = issueToOrderBOMLineId;
+
+		this.documentId = createDocumentId(productId, shipmentScheduleId, pickFromHUId, pickFromPickingOrderId, issueToOrderBOMLineId);
 	}
 
 	public DocumentId toDocumentId()
@@ -68,6 +79,7 @@ public final class ProductsToPickRowId
 			@NonNull final ProductId productId,
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@Nullable final HuId pickFromHUId,
+			@Nullable PPOrderId pickFromPickingOrderId,
 			@Nullable final PPOrderBOMLineId issueToOrderBOMLineId)
 	{
 		final StringBuilder sb = new StringBuilder();
@@ -77,6 +89,11 @@ public final class ProductsToPickRowId
 		if (pickFromHUId != null)
 		{
 			sb.append("_").append("HU").append(pickFromHUId.getRepoId());
+		}
+
+		if (pickFromPickingOrderId != null)
+		{
+			sb.append("_").append("MO").append(pickFromPickingOrderId.getRepoId());
 		}
 
 		if (issueToOrderBOMLineId != null)

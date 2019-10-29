@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
-import de.metas.handlingunits.picking.requests.PickHURequest;
+import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.pickingV2.config.PickingConfigV2;
@@ -70,9 +70,9 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 	protected String doIt()
 	{
 		getSelectedRows()
-		.stream()
-		.filter(ProductsToPickRow::isEligibleForPicking)
-		.forEach(this::pickRow);
+				.stream()
+				.filter(ProductsToPickRow::isEligibleForPicking)
+				.forEach(this::pickRow);
 
 		invalidateView();
 
@@ -81,15 +81,15 @@ public class ProductsToPick_PickSelected extends ProductsToPickViewBasedProcess
 
 	private void pickRow(final ProductsToPickRow row)
 	{
-		final PickHUResult result = pickingCandidatesService.pickHU(createPickHURequest(row));
+		final PickHUResult result = pickingCandidatesService.pickHU(createPickRequest(row));
 
 		updateViewRowFromPickingCandidate(row.getId(), result.getPickingCandidate());
 	}
 
-	private PickHURequest  createPickHURequest(final ProductsToPickRow row)
+	private PickRequest createPickRequest(final ProductsToPickRow row)
 	{
 		final PickingConfigV2 pickingConfig = getPickingConfig();
-		return productsToPickRowsService.createPickHURequest(row, pickingConfig.isPickingReviewRequired());
+		return productsToPickRowsService.createPickRequest(row, pickingConfig.isPickingReviewRequired());
 	}
 
 }

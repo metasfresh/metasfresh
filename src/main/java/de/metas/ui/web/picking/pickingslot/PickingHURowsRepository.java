@@ -231,7 +231,7 @@ public class PickingHURowsRepository
 
 	private static boolean isPickingCandidateProcessed(@NonNull final PickingCandidate pc)
 	{
-		final PickingCandidateStatus status = pc.getStatus();
+		final PickingCandidateStatus status = pc.getProcessingStatus();
 		if (PickingCandidateStatus.Closed.equals(status))
 		{
 			return true;

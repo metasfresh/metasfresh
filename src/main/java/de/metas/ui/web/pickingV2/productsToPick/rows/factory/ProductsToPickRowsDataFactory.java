@@ -39,6 +39,7 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
 import de.metas.material.planning.pporder.impl.QtyCalculationsBOMLine;
 import de.metas.order.OrderLineId;
@@ -363,6 +364,7 @@ public final class ProductsToPickRowsDataFactory
 			@Nullable final PPOrderBOMLineId issueToOrderBOMLineId,
 			@NonNull final Quantity qty,
 			@Nullable final HuId pickFromHUId,
+			@Nullable final PPOrderId pickFromPickingOrderId,
 			@Nullable final PickingCandidate existingPickingCandidate,
 			@Nullable final List<ProductsToPickRow> includedRows)
 	{
@@ -461,6 +463,7 @@ public final class ProductsToPickRowsDataFactory
 				.productId(finishedGoodPackageable.getProductId())
 				.shipmentScheduleId(finishedGoodPackageable.getShipmentScheduleId())
 				.salesOrderLineId(finishedGoodPackageable.getSalesOrderLineIdOrNull())
+				.pickFromPickingOrderId(PPOrderId.ofRepoId(pickingOrder.getPP_Order_ID()))
 				.qty(qtyOfFinishedGoods)
 				.includedRows(bomLineRows)
 				.build();

@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableMultimap;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.requests.PickHURequest;
+import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -263,7 +263,7 @@ import lombok.NonNull;
 		final PickingSlotId pickingSlotId = pickingSlotRow.getPickingSlotId();
 		final ShipmentScheduleId shipmentScheduleId = pickingSlotsView.getCurrentShipmentScheduleId();
 
-		pickingCandidateService.pickHU(PickHURequest.builder()
+		pickingCandidateService.pickHU(PickRequest.builder()
 				.shipmentScheduleId(shipmentScheduleId)
 				.pickFromHuId(huId)
 				.pickingSlotId(pickingSlotId)
