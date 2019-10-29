@@ -75,11 +75,12 @@ public class CommissionInstanceRequestFactory
 		}
 
 		final ContractRequest contractRequest = ContractRequest.builder()
-				.bPartnerId(salesRepBPartnerId)
+				.customerBPartnerId(BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID()))
+				.salesRepBPartnerId(salesRepBPartnerId)
 				.date(TimeUtil.asLocalDate(icRecord.getDateOrdered()))
-				.productId(ProductId.ofRepoId(icRecord.getM_Product_ID()))
+				.salesProductId(ProductId.ofRepoId(icRecord.getM_Product_ID()))
 				.build();
-		final ImmutableList<CommissionConfig> configs = commissionContractFactory.createFor(contractRequest);
+		final ImmutableList<CommissionConfig> configs = commissionContractFactory.createForNewCommissionInstances(contractRequest);
 		if (configs.isEmpty())
 		{
 			return ImmutableList.of();
