@@ -84,7 +84,7 @@ public class CommissionInstanceRepository
 
 	public CommissionInstance getForCommissionInstanceId(@NonNull final CommissionInstanceId commissionInstanceId)
 	{
-		final CommissionStagingRecords stagingRecords = commissionRecordStagingService.retrieveRecordsForInstanceId(ImmutableList.of(commissionInstanceId), true/* onlyActive */);
+		final CommissionStagingRecords stagingRecords = commissionRecordStagingService.retrieveRecordsForInstanceId(ImmutableList.of(commissionInstanceId));
 
 		final I_C_Commission_Instance instanceRecord = stagingRecords.getInstanceRecordIdToInstance().get(commissionInstanceId.getRepoId());
 		final CommissionInstance instance = createCommissionInstance(instanceRecord, stagingRecords);
@@ -93,7 +93,7 @@ public class CommissionInstanceRepository
 
 	public ImmutableList<CommissionInstance> getForInvoiceCandidateId(@NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
-		final CommissionStagingRecords records = commissionRecordStagingService.retrieveRecordsForInvoiceCandidateId(ImmutableList.of(invoiceCandidateId), true/* onlyActive */);
+		final CommissionStagingRecords records = commissionRecordStagingService.retrieveRecordsForInvoiceCandidateId(ImmutableList.of(invoiceCandidateId));
 
 		final List<I_C_Commission_Instance> instanceRecords = records.getIcRecordIdToInstanceRecords().get(invoiceCandidateId.getRepoId());
 		if (instanceRecords.isEmpty())
@@ -199,7 +199,7 @@ public class CommissionInstanceRepository
 		}
 		else
 		{
-			stagingRecords = commissionRecordStagingService.retrieveRecordsForInstanceId(ImmutableList.of(instanceIdOrNull), true/* onlyActive */);
+			stagingRecords = commissionRecordStagingService.retrieveRecordsForInstanceId(ImmutableList.of(instanceIdOrNull));
 
 		}
 		final CommissionTriggerData triggerData = instance.getCurrentTriggerData();

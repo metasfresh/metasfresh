@@ -20,6 +20,8 @@
  * #L%
  */
 
+package de.metas.shipper.gateway.dhl;
+
 import de.dhl.webservice.cisbase.AuthentificationType;
 import de.dhl.webservice.cisbase.CommunicationType;
 import de.dhl.webservice.cisbase.CountryType;
@@ -28,16 +30,23 @@ import de.dhl.webservice.cisbase.NativeAddressType;
 import de.dhl.webservice.cisbase.ReceiverNativeAddressType;
 import de.dhl.webservices.businesscustomershipping._3.CreateShipmentOrderRequest;
 import de.dhl.webservices.businesscustomershipping._3.CreateShipmentOrderResponse;
-import de.dhl.webservices.businesscustomershipping._3.GetVersionResponse;
+import de.dhl.webservices.businesscustomershipping._3.CreationState;
+import de.dhl.webservices.businesscustomershipping._3.ExportDocumentType;
 import de.dhl.webservices.businesscustomershipping._3.ObjectFactory;
 import de.dhl.webservices.businesscustomershipping._3.ReceiverType;
+import de.dhl.webservices.businesscustomershipping._3.Serviceconfiguration;
 import de.dhl.webservices.businesscustomershipping._3.ShipmentDetailsTypeType;
 import de.dhl.webservices.businesscustomershipping._3.ShipmentItemType;
 import de.dhl.webservices.businesscustomershipping._3.ShipmentNotificationType;
 import de.dhl.webservices.businesscustomershipping._3.ShipmentOrderType;
 import de.dhl.webservices.businesscustomershipping._3.ShipperType;
 import de.dhl.webservices.businesscustomershipping._3.Version;
-import de.metas.shipper.gateway.spi.model.CountryCode;
+import de.metas.shipper.gateway.spi.model.Address;
+import de.metas.shipper.gateway.spi.model.ContactPerson;
+import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.DeliveryPosition;
+import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.shipper.gateway.spi.model.PickupDate;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -58,137 +67,52 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Disabled("makes ACTUAL calls to dhl api and needs auth")
-class DhlApiTest
+class CreateShipmentRequestFromDeliveryOrderDEtoCHTest
 {
 
-	private static final CountryCode COUNTRY_CODE_DE = CountryCode.builder().alpha2("DE").alpha3("DEU").build();
 	private static final String USER_NAME = "a";
 	private static final String PASSWORD = "b";
 
 	private WebServiceTemplate webServiceTemplate;
 	private de.dhl.webservice.cisbase.ObjectFactory objectFactoryCis;
-	private de.dhl.webservices.businesscustomershipping._3.ObjectFactory objectFactory;
+	private ObjectFactory objectFactory;
 
 	@BeforeEach
 	private void beforeEach()
 	{
 		webServiceTemplate = createWebServiceTemplate();
 		objectFactoryCis = new de.dhl.webservice.cisbase.ObjectFactory();
-		objectFactory = new de.dhl.webservices.businesscustomershipping._3.ObjectFactory();
+		objectFactory = new ObjectFactory();
 
 	}
 
 	@Test
-	void callGetVersion()
+	void createShipmentOrderFromDeliveryOrder()
 	{
-		final Version versionRequest = objectFactory.createVersion();
-
-		// execute the actual request
-		final GetVersionResponse versionResponse = (GetVersionResponse)webServiceTemplate.marshalSendAndReceive(versionRequest);
-
-		final Version version = versionResponse.getVersion();
-		assertEquals("3", version.getMajorRelease());
-		assertEquals("0", version.getMinorRelease());
-		assertEquals("0", version.getBuild());
-	}
-
-	@Test
-	void createShipmentOrderWithHardcodedData()
-	{
-		final CreateShipmentOrderRequest createShipmentOrderRequest = createShipmentOrderRequestWithHardcodedData();
+		final CreateShipmentOrderRequest createShipmentOrderRequest = createShipmentOrderRequestFromDeliveryOrder();
 
 		// execute the actual request
 		final CreateShipmentOrderResponse createShipmentOrderResponse = (CreateShipmentOrderResponse)webServiceTemplate.marshalSendAndReceive(createShipmentOrderRequest, new AddSoapHeader());
 
 		assertEquals(BigInteger.ZERO, createShipmentOrderResponse.getStatus().getStatusCode());
+		assertEquals(1, createShipmentOrderResponse.getCreationState().size());
+
+		final CreationState creationState = createShipmentOrderResponse.getCreationState().get(0);
+		assertEquals("1", creationState.getSequenceNumber());
+		assertTrue(creationState.getLabelData().getLabelUrl().startsWith("https://"));
+		assertTrue(creationState.getLabelData().getExportLabelUrl().startsWith("https://"));
 	}
 
-	private CreateShipmentOrderRequest createShipmentOrderRequestWithHardcodedData()
+	private CreateShipmentOrderRequest createShipmentOrderRequestFromDeliveryOrder()
 	{
-		// (2.2)  the shipment
-		final ShipmentOrderType.Shipment shipmentOrderTypeShipment = objectFactory.createShipmentOrderTypeShipment();
-
-		{
-			// (2.2.1) shipment details
-			final ShipmentDetailsTypeType shipmentDetailsTypeType = objectFactory.createShipmentDetailsTypeType();
-			// todo make enum from this
-			shipmentDetailsTypeType.setProduct("V01PAK");
-			// todo how to get DHL account numbers??
-			shipmentDetailsTypeType.setAccountNumber("22222222220104");
-			// todo this is PO reference
-			shipmentDetailsTypeType.setCustomerReference("the helpful customer reference");
-			shipmentDetailsTypeType.setShipmentDate(LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE));
-			shipmentDetailsTypeType.setCostCentre("what is a cost center?");
-			// (2.2.1.8)
-			final ShipmentItemType shipmentItemType = objectFactory.createShipmentItemType();
-			shipmentItemType.setHeightInCM(BigInteger.TEN);
-			shipmentItemType.setLengthInCM(BigInteger.TEN);
-			shipmentItemType.setWidthInCM(BigInteger.TEN);
-			shipmentItemType.setWeightInKG(BigDecimal.TEN);
-			shipmentDetailsTypeType.setShipmentItem(shipmentItemType);
-			// (2.2.1.10)
-			final ShipmentNotificationType shipmentNotificationType = objectFactory.createShipmentNotificationType();
-			shipmentNotificationType.setRecipientEmailAddress("cristian.pasat@metasfresh.com");
-			shipmentDetailsTypeType.setNotification(shipmentNotificationType);
-			shipmentOrderTypeShipment.setShipmentDetails(shipmentDetailsTypeType);
-		}
-
-		{
-			// (2.2.4) receiver
-			final ReceiverType receiverType = objectFactory.createReceiverType();
-			receiverType.setName1("DHL Packet gmbh"); // todo where do i find this name in deliveryOrder?
-			// (2.2.4.2)
-			final ReceiverNativeAddressType receiverNativeAddressType = objectFactoryCis.createReceiverNativeAddressType();
-			receiverNativeAddressType.setStreetName("Charles-de-Gaulle-Str.");
-			receiverNativeAddressType.setStreetNumber("20");
-			receiverNativeAddressType.setZip("53113");
-			receiverNativeAddressType.setCity("Bonn");
-			// (2.2.4.2.10)
-			final CountryType countryType = objectFactoryCis.createCountryType();
-			countryType.setCountryISOCode(COUNTRY_CODE_DE.getAlpha2());
-			receiverNativeAddressType.setOrigin(countryType);
-			receiverType.setAddress(receiverNativeAddressType);
-
-			shipmentOrderTypeShipment.setReceiver(receiverType);
-		}
-
-		{
-			// (2.2.2) Shipper
-			final ShipperType shipperType = objectFactory.createShipperType();
-			// (2.2.2.1)
-			final NameType nameType = objectFactoryCis.createNameType();
-			nameType.setName1("TheBestPessimist Inc.");
-			shipperType.setName(nameType);
-			// (2.2.2.2)
-			final NativeAddressType nativeAddressType = objectFactoryCis.createNativeAddressType();
-			nativeAddressType.setStreetName("Eduard-Otto-Straße");
-			nativeAddressType.setStreetNumber("10");
-			nativeAddressType.setZip("53129");
-			nativeAddressType.setCity("Bonn");
-			// (2.2.2.2.8)
-			final CountryType countryType = objectFactoryCis.createCountryType();
-			countryType.setCountryISOCode(COUNTRY_CODE_DE.getAlpha2());
-			nativeAddressType.setOrigin(countryType);
-			shipperType.setAddress(nativeAddressType);
-			// (2.2.2.3)
-			final CommunicationType communicationType = objectFactoryCis.createCommunicationType();
-			communicationType.setPhone("012345689");
-			communicationType.setContactPerson("gigi"); // optional
-			communicationType.setEmail("tbp@tbp.com");
-			shipperType.setCommunication(communicationType);
-			shipmentOrderTypeShipment.setShipper(shipperType);
-		}
-
-		// (2) create the need shipment order type
-		final ShipmentOrderType shipmentOrderType = objectFactory.createShipmentOrderType();
-		shipmentOrderType.setSequenceNumber("1");
-		shipmentOrderType.setShipment(shipmentOrderTypeShipment);
+		final DeliveryOrder request = DhlTestHelper.createDummyDeliveryOrderDEtoCH();
+		final ShipmentOrderType shipmentOrderType = createShipmentFromDeliveryOrder(request);
 
 		final Version version = createHardcodedVersion(objectFactory);
 
@@ -200,12 +124,131 @@ class DhlApiTest
 	}
 
 	/**
-	 * todo how do i find the version?
-	 * todo Should this be a hardcoded value (3.0 in this case)?
-	 * todo or should i always query the dhl api and get their version response?
-	 * todo i don't understand this :(
-	 * todo Ref: https://entwickler.dhl.de/group/ep/wsapis/geschaeftskundenversand-3.0/operationen/createshipmentorder/ioreference section 1. Version
+	 * Create the (2) ShipmentOrderType
 	 */
+	@NonNull
+	private ShipmentOrderType createShipmentFromDeliveryOrder(final DeliveryOrder deliveryOrder)
+	{
+		// (2.2)  the shipment
+		final ShipmentOrderType.Shipment shipmentOrderTypeShipment = objectFactory.createShipmentOrderTypeShipment();
+
+		final ContactPerson deliveryContact = deliveryOrder.getDeliveryContact();
+
+		{
+			// (2.2.1) Shipment Details
+			final PickupDate pickupDate = deliveryOrder.getPickupDate();
+			final DeliveryPosition deliveryPosition = deliveryOrder.getDeliveryPositions().get(0);
+
+			final ShipmentDetailsTypeType shipmentDetailsTypeType = objectFactory.createShipmentDetailsTypeType();
+			shipmentDetailsTypeType.setProduct(deliveryOrder.getServiceType().getCode());
+			shipmentDetailsTypeType.setAccountNumber("22222222225301"); // special account number, depending on target country. why dhl why?????
+			//noinspection ConstantConditions
+			shipmentDetailsTypeType.setCustomerReference(deliveryOrder.getCustomerReference());
+			shipmentDetailsTypeType.setShipmentDate(pickupDate.getDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
+			// (2.2.1.8)
+			final PackageDimensions packageDimensions = deliveryPosition.getPackageDimensions();
+			final ShipmentItemType shipmentItemType = objectFactory.createShipmentItemType();
+			shipmentItemType.setHeightInCM(BigInteger.valueOf(packageDimensions.getHeightInCM()));
+			shipmentItemType.setLengthInCM(BigInteger.valueOf(packageDimensions.getLengthInCM()));
+			shipmentItemType.setWidthInCM(BigInteger.valueOf(packageDimensions.getWidthInCM()));
+			shipmentItemType.setWeightInKG(BigDecimal.valueOf(deliveryPosition.getGrossWeightKg()));
+			shipmentDetailsTypeType.setShipmentItem(shipmentItemType);
+			// (2.2.1.10)
+			final ShipmentNotificationType shipmentNotificationType = objectFactory.createShipmentNotificationType();
+			//noinspection ConstantConditions
+			shipmentNotificationType.setRecipientEmailAddress(deliveryContact != null ? deliveryContact.getEmailAddress() : null);
+			shipmentDetailsTypeType.setNotification(shipmentNotificationType);
+			shipmentOrderTypeShipment.setShipmentDetails(shipmentDetailsTypeType);
+		}
+
+		{
+			// (2.2.4) Receiver aka Delivery
+			final Address deliveryAddress = deliveryOrder.getDeliveryAddress();
+
+			final ReceiverType receiverType = objectFactory.createReceiverType();
+			receiverType.setName1(deliveryAddress.getCompanyName1()); // where do i find this name in deliveryOrder?
+			// (2.2.4.2)
+			final ReceiverNativeAddressType receiverNativeAddressType = objectFactoryCis.createReceiverNativeAddressType();
+			receiverNativeAddressType.setStreetName(deliveryAddress.getStreet1());
+			receiverNativeAddressType.getAddressAddition().add(deliveryAddress.getStreet2());
+			receiverNativeAddressType.setStreetNumber(deliveryAddress.getHouseNo());
+			receiverNativeAddressType.setZip(deliveryAddress.getZipCode());
+			receiverNativeAddressType.setCity(deliveryAddress.getCity());
+			// (2.2.4.2.10)
+			final CountryType countryType = objectFactoryCis.createCountryType();
+			countryType.setCountryISOCode(deliveryAddress.getCountry().getAlpha2());
+			receiverNativeAddressType.setOrigin(countryType);
+			receiverType.setAddress(receiverNativeAddressType);
+			// (2.2.4.2)
+			final CommunicationType communicationType = objectFactoryCis.createCommunicationType();
+			//noinspection ConstantConditions
+			communicationType.setEmail(deliveryContact != null ? deliveryContact.getEmailAddress() : null);
+			//noinspection ConstantConditions
+			communicationType.setPhone(deliveryContact != null ? deliveryContact.getPhoneAsStringOrNull() : null);
+			receiverType.setCommunication(communicationType);
+
+			shipmentOrderTypeShipment.setReceiver(receiverType);
+		}
+
+		{
+			// (2.2.2) Shipper aka Pickup
+			final Address pickupAddress = deliveryOrder.getPickupAddress();
+			//			deliveryOrder.getPickupNote() // todo what is a pickup note?
+
+			final ShipperType shipperType = objectFactory.createShipperType();
+			// (2.2.2.1)
+			final NameType nameType = objectFactoryCis.createNameType();
+			nameType.setName1("TheBestPessimist");
+			shipperType.setName(nameType);
+			// (2.2.2.2)
+			final NativeAddressType nativeAddressType = objectFactoryCis.createNativeAddressType();
+			nativeAddressType.setStreetName(pickupAddress.getStreet1());
+			nativeAddressType.getAddressAddition().add(pickupAddress.getStreet2());
+			nativeAddressType.setStreetNumber(pickupAddress.getHouseNo());
+			nativeAddressType.setZip(pickupAddress.getZipCode());
+			nativeAddressType.setCity(pickupAddress.getCity());
+			// (2.2.2.2.8)
+			final CountryType countryType = objectFactoryCis.createCountryType();
+			countryType.setCountryISOCode(pickupAddress.getCountry().getAlpha2());
+			nativeAddressType.setOrigin(countryType);
+			shipperType.setAddress(nativeAddressType);
+
+			shipmentOrderTypeShipment.setShipper(shipperType);
+		}
+
+		{
+			// (2.2.6) Export Document - only for international shipments
+			final ExportDocumentType exportDocumentType = objectFactory.createExportDocumentType();
+			exportDocumentType.setExportType("OTHER");
+			exportDocumentType.setExportTypeDescription("Sales of Goods");
+			exportDocumentType.setPlaceOfCommital("Bonn");
+			exportDocumentType.setAdditionalFee(BigDecimal.valueOf(0));
+
+			// (2.2.6.9)
+			final Serviceconfiguration serviceconfiguration = objectFactory.createServiceconfiguration();
+			serviceconfiguration.setActive("0");
+			exportDocumentType.setWithElectronicExportNtfctn(serviceconfiguration);
+			// (2.2.6.10)
+			final ExportDocumentType.ExportDocPosition docPosition = objectFactory.createExportDocumentTypeExportDocPosition();
+			docPosition.setDescription("doc_customs_description");
+			docPosition.setCountryCodeOrigin("DE");
+			docPosition.setCustomsTariffNumber("960340");
+			docPosition.setAmount(BigInteger.valueOf(1));
+			docPosition.setNetWeightInKG(BigDecimal.valueOf(0.5)); // must be less than the weight!!
+			docPosition.setCustomsValue(BigDecimal.valueOf(1));
+			exportDocumentType.getExportDocPosition().add(docPosition);
+
+			shipmentOrderTypeShipment.setExportDocument(exportDocumentType);
+		}
+
+		// (2) create the need shipment order type
+		final ShipmentOrderType shipmentOrderType = objectFactory.createShipmentOrderType();
+		shipmentOrderType.setSequenceNumber("1");
+		shipmentOrderType.setShipment(shipmentOrderTypeShipment);
+		return shipmentOrderType;
+
+	}
+
 	@NonNull
 	private static Version createHardcodedVersion(final ObjectFactory objectFactory)
 	{
@@ -215,14 +258,15 @@ class DhlApiTest
 		return version;
 	}
 
-	@NonNull private WebServiceTemplate createWebServiceTemplate()
+	@NonNull
+	private WebServiceTemplate createWebServiceTemplate()
 	{
 		final HttpComponentsMessageSender messageSender = createMessageSenderWithCIGAuthentication(USER_NAME, PASSWORD);
 
 		final Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
 		marshaller.setPackagesToScan(
 				de.dhl.webservice.cisbase.ObjectFactory.class.getPackage().getName(),
-				de.dhl.webservices.businesscustomershipping._3.ObjectFactory.class.getPackage().getName()
+				ObjectFactory.class.getPackage().getName()
 		);
 
 		final WebServiceTemplate webServiceTemplate = new WebServiceTemplate();
@@ -256,7 +300,8 @@ class DhlApiTest
 	{
 		// thx to https://www.devglan.com/spring-mvc/custom-header-in-spring-soap-request
 		// for the SoapHeader reference
-		@Override public void doWithMessage(final WebServiceMessage message)
+		@Override
+		public void doWithMessage(final WebServiceMessage message)
 		{
 			try
 			{

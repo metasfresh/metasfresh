@@ -65,7 +65,7 @@ public class CommissionInstanceTestRecord
 	@NonNull
 	Long mostRecentTriggerTimestamp;
 
-	@NonNull
+	@Nullable
 	InvoiceCandidateId C_INVOICE_CANDIDATE_ID;
 
 	/** If null, the instance's ordered product gets an on-the-fly created category */
@@ -108,7 +108,10 @@ public class CommissionInstanceTestRecord
 		saveRecord(customerRecord);
 
 		final I_C_Commission_Instance instanceRecord = newInstance(I_C_Commission_Instance.class);
-		instanceRecord.setC_Invoice_Candidate_ID(C_INVOICE_CANDIDATE_ID.getRepoId());
+		if (C_INVOICE_CANDIDATE_ID != null)
+		{
+			instanceRecord.setC_Invoice_Candidate_ID(C_INVOICE_CANDIDATE_ID.getRepoId());
+		}
 		instanceRecord.setBill_BPartner_ID(customerRecord.getC_BPartner_ID());
 		instanceRecord.setM_Product_Order_ID(salesProductRecord.getM_Product_ID());
 		instanceRecord.setMostRecentTriggerTimestamp(Timestamp.from(Instant.ofEpochMilli(mostRecentTriggerTimestamp)));

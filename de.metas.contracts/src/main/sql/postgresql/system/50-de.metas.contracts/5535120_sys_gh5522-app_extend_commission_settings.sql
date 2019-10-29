@@ -363,8 +363,9 @@ DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=589587
 DELETE FROM AD_Field WHERE AD_Field_ID=589587
 ;
 
-ALTER TABLE C_HierarchyCommissionSettings DROP COLUMN PercentOfBasePoints;-- 2019-10-24T05:38:59.536Z
+ALTER TABLE C_HierarchyCommissionSettings DROP COLUMN PercentOfBasePoints;
 
+-- 2019-10-24T05:38:59.536Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Tab (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,EntityType,HasTree,ImportFields,InternalName,IsActive,IsAdvancedTab,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Processing,SeqNo,TabLevel,Updated,UpdatedBy) VALUES (0,569267,577241,0,542093,541429,540742,'Y',TO_TIMESTAMP('2019-10-24 07:38:59','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.contracts','N','N','C_CommissionSettingsLine','Y','N','Y','N','N','N','Y','Y','N','N','N','Y','Y','N','N','N',0,'C_CommissionSettingsLine','N',20,0,TO_TIMESTAMP('2019-10-24 07:38:59','YYYY-MM-DD HH24:MI:SS'),100)
 ;
