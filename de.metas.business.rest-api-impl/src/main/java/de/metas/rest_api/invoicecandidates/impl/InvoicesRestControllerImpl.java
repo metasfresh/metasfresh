@@ -18,12 +18,13 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
-import de.metas.rest_api.invoicecandidates.ICEnqueueingForInvoiceGenerationRestEndpoint;
+import de.metas.rest_api.invoicecandidates.IInvoicesRestEndpoint;
 import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.util.Services;
 import de.metas.util.rest.ExternalHeaderAndLineId;
+import io.swagger.annotations.ApiOperation;
 import lombok.NonNull;
 
 /*
@@ -49,25 +50,26 @@ import lombok.NonNull;
  * Used for managing invoices and invoice candidates(create, query)
  */
 @RestController
-@RequestMapping(ICEnqueueingForInvoiceGenerationRestEndpoint.ENDPOINT)
+@RequestMapping(value = IInvoicesRestEndpoint.ENDPOINT, consumes = "application/json", produces = "application/json")
 @Profile(Profiles.PROFILE_App)
-class InvoiceCandidatesRestControllerImpl implements ICEnqueueingForInvoiceGenerationRestEndpoint
+class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 {
 
-	private static final Logger logger = LogManager.getLogger(InvoiceCandidatesRestControllerImpl.class);
+	private static final Logger logger = LogManager.getLogger(InvoicesRestControllerImpl.class);
 
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final InvoiceJsonConverterService jsonConverter;
 
-	public InvoiceCandidatesRestControllerImpl(@NonNull final InvoiceJsonConverterService jsonConverter)
+	public InvoicesRestControllerImpl(@NonNull final InvoiceJsonConverterService jsonConverter)
 	{
 		this.jsonConverter = jsonConverter;
 	}
 
-	@PostMapping(path = "enqueueForInvoicing", consumes = "application/json")
+	@ApiOperation("Enqueues invoice candidates for invoicing")
+	@PostMapping(path = "enqueueForInvoicing")
 	@Override
-	public ResponseEntity<JsonEnqueueForInvoicingResponse> createInvoices(@RequestBody @NonNull final JsonEnqueueForInvoicingRequest request)
+	public ResponseEntity<JsonEnqueueForInvoicingResponse> enqueueForInvoicing(@RequestBody @NonNull final JsonEnqueueForInvoicingRequest request)
 	{
 		try
 		{

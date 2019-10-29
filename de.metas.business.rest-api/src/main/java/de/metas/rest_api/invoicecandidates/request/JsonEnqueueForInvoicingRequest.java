@@ -47,31 +47,31 @@ public final class JsonEnqueueForInvoicingRequest
 			value = "Specifies the invoice candidtes to be invoiced.")
 	List<JsonInvoiceCandidate> invoiceCandidates;
 
-	@ApiModelProperty(value = "Optional invoices' document date.")
+	@ApiModelProperty(position = 20, value = "Optional invoices' document date", example = "2019-10-30")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonInclude(Include.NON_NULL)
 	private LocalDate dateInvoiced;
 
-	@ApiModelProperty(value = "Optional invoices' accounting date")
+	@ApiModelProperty(position = 30, value = "Optional invoices' accounting date", example = "2019-10-30")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonInclude(Include.NON_NULL)
 	private LocalDate dateAcct;
 
-	@ApiModelProperty(value = "Optional customer's purchase order's documentno. POReference to be set to all invoice candidates, right before enqueueing them.")
+	@ApiModelProperty(position = 40, value = "Optional customer's purchase order's documentno. POReference to be set to all invoice candidates, right before enqueueing them.")
 	private String poReference;
 
-	@ApiModelProperty(required = false, //
+	@ApiModelProperty(position = 50, required = false, //
 			value = "This is needed when the user wants to invoice candidates that have their `DateToInvoice` sometime in the future.\n"
 					+ "If this is not set and the DateToInvoice is in the future then an error will occur \"no invoicable ICs selected\n"
 					+ "Default = `false`")
 	private Boolean ignoreInvoiceSchedule;
 
-	@ApiModelProperty(required = false,//
+	@ApiModelProperty(position = 60, required = false,//
 			value = "Specifies whether invoice candidate that have no payment term shall be updated with the reference of another selected invoice candidate.\n"
 					+ "Default = `true`")
 	private Boolean supplementMissingPaymentTermIds;
 
-	@ApiModelProperty(required = false,//
+	@ApiModelProperty(position = 70, required = false,//
 			value = "If this parameter is activated, the invoices to be created receive the current users and locations of their business partners, regardless of the values in `Bill_Location_ID` and `Bill_User_ID` that are set in the queued billing candidates.\n"
 					+ "Default = `false`")
 	private Boolean updateLocationAndContactForInvoice;

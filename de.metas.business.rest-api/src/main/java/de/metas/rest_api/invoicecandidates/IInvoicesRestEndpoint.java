@@ -28,9 +28,9 @@ import de.metas.util.rest.MetasfreshRestAPIConstants;
  * #L%
  */
 
-public interface ICEnqueueingForInvoiceGenerationRestEndpoint
+public interface IInvoicesRestEndpoint
 {
 	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/invoices/";
 
-	ResponseEntity<JsonEnqueueForInvoicingResponse> createInvoices(JsonEnqueueForInvoicingRequest request);
+	ResponseEntity<JsonEnqueueForInvoicingResponse> enqueueForInvoicing(JsonEnqueueForInvoicingRequest request);
 }
