@@ -2,11 +2,8 @@ package de.metas.rest_api.invoicecandidates;
 
 import org.springframework.http.ResponseEntity;
 
-import de.metas.rest_api.invoicecandidates.request.JsonInvoicingRequest;
-import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandCreateResponse;
-import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
-import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
-import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
+import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
+import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
 import de.metas.util.rest.MetasfreshRestAPIConstants;
 
 /*
@@ -19,12 +16,12 @@ import de.metas.util.rest.MetasfreshRestAPIConstants;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,8 +30,7 @@ import de.metas.util.rest.MetasfreshRestAPIConstants;
 
 public interface ICEnqueueingForInvoiceGenerationRestEndpoint
 {
-	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/invoices/createFromInvoiceCandidates";
+	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/invoices/";
 
-	ResponseEntity<JsonInvoiceCandCreateResponse> createInvoices(JsonInvoicingRequest request);
-
+	ResponseEntity<JsonEnqueueForInvoicingResponse> createInvoices(JsonEnqueueForInvoicingRequest request);
 }

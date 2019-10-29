@@ -42,7 +42,7 @@ import lombok.ToString;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @ToString(doNotUseGetters = true)
 @EqualsAndHashCode(doNotUseGetters = true)
-public final class JsonInvoiceCandCreateResponse
+public final class JsonEnqueueForInvoicingResponse
 {
 	@JsonProperty("result")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -52,20 +52,20 @@ public final class JsonInvoiceCandCreateResponse
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JsonError error;
 
-	public static JsonInvoiceCandCreateResponse ok(@NonNull final InvoiceCandEnqueuerResult iCands)
+	public static JsonEnqueueForInvoicingResponse ok(@NonNull final InvoiceCandEnqueuerResult iCands)
 	{
 		final JsonError error = null;
-		return new JsonInvoiceCandCreateResponse(iCands, error);
+		return new JsonEnqueueForInvoicingResponse(iCands, error);
 	}
 
-	public static JsonInvoiceCandCreateResponse error(@NonNull final JsonError error)
+	public static JsonEnqueueForInvoicingResponse error(@NonNull final JsonError error)
 	{
 		final InvoiceCandEnqueuerResult iCands = null;
-		return new JsonInvoiceCandCreateResponse(iCands, error);
+		return new JsonEnqueueForInvoicingResponse(iCands, error);
 	}
 
 	@JsonCreator
-	private JsonInvoiceCandCreateResponse(
+	private JsonEnqueueForInvoicingResponse(
 			@JsonProperty("result") @Nullable final InvoiceCandEnqueuerResult iCands,
 			@JsonProperty("error") @Nullable final JsonError error)
 	{

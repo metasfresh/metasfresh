@@ -8,10 +8,10 @@ import org.springframework.stereotype.Service;
 
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
-import de.metas.rest_api.invoicecandidates.request.JsonInvoicingRequest;
+import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidate;
 import de.metas.rest_api.invoicecandidates.response.InvoiceCandEnqueuerResult;
-import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandCreateResponse;
+import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
 import de.metas.util.rest.ExternalHeaderAndLineId;
 import lombok.NonNull;
 
@@ -39,7 +39,7 @@ import lombok.NonNull;
 @Service
 class InvoiceJsonConverterService
 {
-	public final JsonInvoiceCandCreateResponse toJson(@NonNull final IInvoiceCandidateEnqueueResult enqueueResult)
+	public final JsonEnqueueForInvoicingResponse toJson(@NonNull final IInvoiceCandidateEnqueueResult enqueueResult)
 	{
 		final InvoiceCandEnqueuerResult jsonInvoiceCand = InvoiceCandEnqueuerResult.builder()
 				.invoiceCandidateEnqueuedCount(enqueueResult.getInvoiceCandidateEnqueuedCount())
@@ -48,7 +48,7 @@ class InvoiceJsonConverterService
 				.workpackageEnqueuedCount(enqueueResult.getWorkpackageEnqueuedCount())
 				.workpackageQueueSizeBeforeEnqueueing(enqueueResult.getWorkpackageQueueSizeBeforeEnqueueing())
 				.build();
-		return JsonInvoiceCandCreateResponse.ok(jsonInvoiceCand);
+		return JsonEnqueueForInvoicingResponse.ok(jsonInvoiceCand);
 	}
 
 	public List<ExternalHeaderAndLineId> convertJICToExternalHeaderAndLineIds(
@@ -66,7 +66,7 @@ class InvoiceJsonConverterService
 		return headerAndLineIds;
 	}
 
-	public PlainInvoicingParams createInvoicingParams(@NonNull final JsonInvoicingRequest request)
+	public PlainInvoicingParams createInvoicingParams(@NonNull final JsonEnqueueForInvoicingRequest request)
 	{
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 		invoicingParams.setDateAcct(request.getDateAcct());

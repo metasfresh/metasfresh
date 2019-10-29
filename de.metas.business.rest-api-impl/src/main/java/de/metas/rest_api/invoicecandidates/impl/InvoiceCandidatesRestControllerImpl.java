@@ -19,8 +19,8 @@ import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.rest_api.invoicecandidates.ICEnqueueingForInvoiceGenerationRestEndpoint;
-import de.metas.rest_api.invoicecandidates.request.JsonInvoicingRequest;
-import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandCreateResponse;
+import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
+import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.util.Services;
 import de.metas.util.rest.ExternalHeaderAndLineId;
@@ -65,15 +65,13 @@ class InvoiceCandidatesRestControllerImpl implements ICEnqueueingForInvoiceGener
 		this.jsonConverter = jsonConverter;
 	}
 
-	@PostMapping(consumes = { "application/json" })
+	@PostMapping(path = "enqueueForInvoicing", consumes = "application/json")
 	@Override
-	public ResponseEntity<JsonInvoiceCandCreateResponse> createInvoices(
-			@RequestBody @NonNull final JsonInvoicingRequest request)
+	public ResponseEntity<JsonEnqueueForInvoicingResponse> createInvoices(@RequestBody @NonNull final JsonEnqueueForInvoicingRequest request)
 	{
 		try
 		{
 			final PInstanceId pInstanceId = adPInstanceDAO.createSelectionId();
-
 			final List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(request.getInvoiceCandidates());
 			invoiceCandBL.createSelectionForInvoiceCandidates(headerAndLineIds, pInstanceId);
 
@@ -83,17 +81,17 @@ class InvoiceCandidatesRestControllerImpl implements ICEnqueueingForInvoiceGener
 					.setFailIfNothingEnqueued(true)
 					.enqueueSelection(pInstanceId);
 
-			final JsonInvoiceCandCreateResponse response = jsonConverter.toJson(enqueueResult);
+			final JsonEnqueueForInvoicingResponse response = jsonConverter.toJson(enqueueResult);
 			return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
 		}
 		catch (final Exception ex)
 		{
-			logger.warn("Got exception while processing {}", request, ex);
+			logger.warn("Got exception while processing request={}", request, ex);
 
 			final String adLanguage = Env.getADLanguageOrBaseLanguage();
 			return ResponseEntity
 					.badRequest()
-					.body(JsonInvoiceCandCreateResponse.error(JsonErrors.ofThrowable(ex, adLanguage)));
+					.body(JsonEnqueueForInvoicingResponse.error(JsonErrors.ofThrowable(ex, adLanguage)));
 		}
 	}
 }

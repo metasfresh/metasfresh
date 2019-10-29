@@ -41,7 +41,7 @@ import lombok.Value;
  * #L%
  */
 @Value
-public final class JsonInvoicingRequest
+public final class JsonEnqueueForInvoicingRequest
 {
 	@ApiModelProperty(position = 10, required = true, //
 			value = "Specifies the invoice candidtes to be invoiced.")
@@ -78,7 +78,7 @@ public final class JsonInvoicingRequest
 
 	@JsonCreator
 	@Builder(toBuilder = true)
-	private JsonInvoicingRequest(
+	private JsonEnqueueForInvoicingRequest(
 			@JsonProperty("invoiceCandidates") @Singular final List<JsonInvoiceCandidate> invoiceCandidates,
 			@JsonProperty("dateInvoiced") @Nullable final LocalDate dateInvoiced,
 			@JsonProperty("dateAcct") @Nullable final LocalDate dateAcct,

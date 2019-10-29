@@ -1658,7 +1658,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, false) /* exploding to unions doesn't work with IQuery.createSelection() */
+				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, false) /* exploding ORs to unions doesn't work with IQuery.createSelection() */
 				.setJoinOr();
 
 		for (final ExternalHeaderAndLineId element : headerAndLineIds)
