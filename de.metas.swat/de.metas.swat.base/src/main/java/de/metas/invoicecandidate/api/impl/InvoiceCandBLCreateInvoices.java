@@ -104,14 +104,12 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 	//
 	// Services
-	private static final transient Logger logger = InvoiceCandidate_Constants
-			.getLogger(InvoiceCandBLCreateInvoices.class);
+	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBLCreateInvoices.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final transient IInvoiceDAO invoicesRepo = Services.get(IInvoiceDAO.class);
-	private final transient IInvoiceCandidateListeners invoiceCandListeners = Services
-			.get(IInvoiceCandidateListeners.class);
+	private final transient IInvoiceCandidateListeners invoiceCandListeners = Services.get(IInvoiceCandidateListeners.class);
 	private final transient IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -131,14 +129,12 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private IInvoiceGenerateResult _collector;
 
 	/**
-	 * Implementations of this interface are responsible for converting a given
-	 * {@link IInvoiceHeader} to an {@link I_C_Invoice} with lines and process it.
+	 * Implementations of this interface are responsible for converting a given {@link IInvoiceHeader} to an {@link I_C_Invoice} with lines and process it.
 	 */
 	protected interface IInvoiceGeneratorRunnable extends TrxRunnable
 	{
 		/**
-		 * Initialize this processor. This method will be called by framework, don't
-		 * call it directly.
+		 * Initialize this processor. This method will be called by framework, don't call it directly.
 		 *
 		 * @param ctx
 		 * @param header
@@ -185,8 +181,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		@Override
 		public void run(final String trxName)
 		{
-			// we need the trxName to be set because method 'createInvoiceLines' will have a
-			// nested TrxRunner
+			// we need the trxName to be set because method 'createInvoiceLines' will have a nested TrxRunner
 			// and that runner needs to work with a non-local trx
 			trxManager.assertTrxNameNotNull(trxName);
 
@@ -197,7 +192,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			//
 			// Validate created invoice
 			final String invoiceTrxName = InterfaceWrapperHelper.getTrxName(invoice);
-			Check.assume(trxManager.isSameTrxName(trxName, invoiceTrxName), "Invoice {} (TrxName='{}') has TrxName={}",
+			Check.assume(
+					trxManager.isSameTrxName(trxName, invoiceTrxName),
+					"Invoice {} (TrxName='{}') has TrxName={}",
 					invoice, invoiceTrxName, trxName);
 
 			//
@@ -205,8 +202,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			final List<I_C_InvoiceLine> lines = createInvoiceLines(invoice, header.getLines(), trxName);
 
 			//
-			// If there were no lines generated, delete the invoice because it's pointless
-			// to have it.
+			// If there were no lines generated, delete the invoice because it's pointless to have it.
 			if (lines.isEmpty())
 			{
 				invoicesRepo.delete(invoice);
@@ -215,8 +211,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			//
 			// Check if we shall renumber the lines and renumber them if needed.
-			// We are preventing lines renumbering if there is at least one invoice with a
-			// fixed LineNo set (which actually comes from invoice candidate).
+			// We are preventing lines renumbering if there is at least one invoice with a fixed LineNo set (which actually comes from invoice candidate).
 			invoiceBL.renumberLines(lines, 10);
 
 			// task 08926: on invoice creation
@@ -288,7 +283,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			return notifications;
 		}
 
-		private I_C_Invoice createInvoice(final Properties ctx, final IInvoiceHeader invoiceHeader,
+		private I_C_Invoice createInvoice(
+				final Properties ctx,
+				final IInvoiceHeader invoiceHeader,
 				final String trxName)
 		{
 			final I_C_Invoice invoice;
@@ -303,18 +300,21 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				final DocTypeId invoiceDocTypeId = invoiceHeader.getC_DocTypeInvoice() != null
 						? DocTypeId.ofRepoId(invoiceHeader.getC_DocTypeInvoice().getC_DocType_ID())
 						: null;
-				invoice = create(invoiceBL.createInvoiceFromOrder(order, invoiceDocTypeId,
-						invoiceHeader.getDateInvoiced(), invoiceHeader.getDateAcct() // task 08437
-				), I_C_Invoice.class);
+				invoice = create(
+						invoiceBL.createInvoiceFromOrder(
+								order,
+								invoiceDocTypeId,
+								invoiceHeader.getDateInvoiced(),
+								invoiceHeader.getDateAcct() // task 08437
+						),
+						I_C_Invoice.class);
 				setC_DocType(invoice, invoiceHeader);
 
 				// Validate M_PriceList_ID
 				final int invoicePriceListId = invoice.getM_PriceList_ID();
 				Check.assume(
-						invoicePriceListId == IPriceListDAO.M_PriceList_ID_None
-								|| invoicePriceListId == order.getM_PriceList_ID(),
-						"M_PriceList_ID=" + invoicePriceListId + " is inconsistent with the M_PriceList_ID of "
-								+ order);
+						invoicePriceListId == IPriceListDAO.M_PriceList_ID_None || invoicePriceListId == order.getM_PriceList_ID(),
+						"M_PriceList_ID=" + invoicePriceListId + " is inconsistent with the M_PriceList_ID of " + order);
 			}
 			//
 			// Case: our invoice is not linked to an order
@@ -330,12 +330,10 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoice.setDateInvoiced(TimeUtil.asTimestamp(invoiceHeader.getDateInvoiced()));
 				invoice.setDateAcct(TimeUtil.asTimestamp(invoiceHeader.getDateAcct())); // 03905: also updating DateAcct
 
-				invoice.setM_PriceList_ID(invoiceHeader.getM_PriceList_ID()); // #367: get M_PriceList_ID directly from
-																				 // invoiceHeader.
+				invoice.setM_PriceList_ID(invoiceHeader.getM_PriceList_ID()); // #367: get M_PriceList_ID directly from invoiceHeader.
 			}
 
-			// 08451: we need to get the resp taxIncluded value from the IC, even if there
-			// is a C_Order_ID
+			// 08451: we need to get the resp taxIncluded value from the IC, even if there is a C_Order_ID
 			invoice.setIsTaxIncluded(invoiceHeader.isTaxIncluded()); // tasks 04119
 
 			invoice.setAD_Org_ID(invoiceHeader.getAD_Org_ID());
@@ -344,8 +342,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setAD_User_ID(invoiceHeader.getBill_User_ID());
 			invoice.setC_Currency_ID(invoiceHeader.getCurrencyId().getRepoId()); // 03805
 
-			invoiceBL.updateDescriptionFromDocTypeTargetId(invoice, invoiceHeader.getDescription(),
-					invoiceHeader.getDescriptionBottom());
+			invoiceBL.updateDescriptionFromDocTypeTargetId(invoice, invoiceHeader.getDescription(), invoiceHeader.getDescriptionBottom());
 
 			invoice.setIsSOTrx(header.isSOTrx());
 
@@ -363,11 +360,12 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			return invoice;
 		}
 
-		private List<I_C_InvoiceLine> createInvoiceLines(final I_C_Invoice invoice,
-				final List<IInvoiceCandAggregate> aggregates, final String trxName)
+		private List<I_C_InvoiceLine> createInvoiceLines(
+				final I_C_Invoice invoice,
+				final List<IInvoiceCandAggregate> aggregates,
+				final String trxName)
 		{
-			// we need the trxName to be set because we will have a nested TrxRunner and
-			// that runner needs to work with
+			// we need the trxName to be set because we will have a nested TrxRunner and that runner needs to work with
 			// a non-local trx
 			Check.assume(!Check.isEmpty(trxName), "Param 'trxName' is not empty");
 
@@ -375,16 +373,13 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			//
 			// Set of InvoiceLineRWs which were already processed.
-			// Used to avoid processing (i.e. creating invoice line) an IInvoiceLineRW more
-			// then once.
-			// NOTE: we are not relying on IInvoiceLineRW's equals() method because it could
-			// be that they "look" the same but they are not.
+			// Used to avoid processing (i.e. creating invoice line) an IInvoiceLineRW more then once.
+			// NOTE: we are not relying on IInvoiceLineRW's equals() method because it could be that they "look" the same but they are not.
 			final Set<IInvoiceLineRW> processedLines = new IdentityHashSet<>();
 
 			for (final IInvoiceCandAggregate aggregate : aggregates)
 			{
-				// In case of a problem, this two variables are used to hand the problematic
-				// candidates and the
+				// In case of a problem, this two variables are used to hand the problematic candidates and the
 				// exception over to the TrxRunnable's doFinally() method for logging
 				final List<I_C_Invoice_Candidate> errorCandidates = new ArrayList<>();
 				final AdempiereException[] errorException = { null };
@@ -393,12 +388,12 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				// The invoice lines from 'aggregate' are generated in a common trx runner.
 				// That way we can undo all invoice lines if the creation of one of them fails.
 				final DefaultInvoiceLineGeneratorRunnable genLines = new DefaultInvoiceLineGeneratorRunnable(invoice,
-						aggregate, processedLines, errorCandidates, errorException, trxName);
+						aggregate, processedLines,
+						errorCandidates, errorException,
+						trxName);
 
-				// task 08927: we already do the ILAs in here, so we won't need to update them
-				// again.
-				InvoiceCandBL.DYNATTR_C_Invoice_Candidates_need_NO_ila_updating_on_Invoice_Complete.setValue(invoice,
-						Boolean.TRUE);
+				// task 08927: we already do the ILAs in here, so we won't need to update them again.
+				InvoiceCandBL.DYNATTR_C_Invoice_Candidates_need_NO_ila_updating_on_Invoice_Complete.setValue(invoice, Boolean.TRUE);
 
 				trxManager.run(trxName, genLines);
 				createdLines.addAll(genLines.getCreatedLines());
@@ -441,12 +436,10 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		}
 
 		//
-		// In case our InvoiceHeader is about a Memo, but so far our invoice's document
-		// type is not credit memo
+		// In case our InvoiceHeader is about a Memo, but so far our invoice's document type is not credit memo
 		// We need to correct this right away.
 		//
-		// NOTE: An example about when this could happen is when you create the invoice
-		// from an order
+		// NOTE: An example about when this could happen is when you create the invoice from an order
 		// and the invoice document type is fetched from order's document type
 		// and that document type is not a credit memo.
 		{
@@ -473,9 +466,10 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		private final Set<IInvoiceLineRW> processedLines;
 		private final String trxName;
 
-		private DefaultInvoiceLineGeneratorRunnable(final I_C_Invoice invoice, final IInvoiceCandAggregate aggregate,
-				final Set<IInvoiceLineRW> processedLines, final List<I_C_Invoice_Candidate> errorCandidates,
-				final AdempiereException[] errorException, final String trxName)
+		private DefaultInvoiceLineGeneratorRunnable(final I_C_Invoice invoice,
+				final IInvoiceCandAggregate aggregate, final Set<IInvoiceLineRW> processedLines,
+				final List<I_C_Invoice_Candidate> errorCandidates, final AdempiereException[] errorException,
+				final String trxName)
 		{
 			createdLines = new ArrayList<>();
 
@@ -496,8 +490,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		public void run(final String localTrxName)
 		{
 			// We want no dedicated 'localTrxName' for this invocation.
-			// Instead, we want one "global" trxName that is rolled back (including all
-			// invoice lines) if errors occur
+			// Instead, we want one "global" trxName that is rolled back (including all invoice lines) if errors occur
 			Check.assume(trxName.equals(localTrxName), "trxName=" + trxName + " equals localTrxName=" + localTrxName);
 
 			for (final I_C_Invoice_Candidate cand : aggregate.getAllCands())
@@ -522,18 +515,17 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				{
 					// 'ilVO' has already been processed
 
-					// Note: this assumption makes sure that IInvoiceCandDAO.createIlaIfNotExists()
-					// has
+					// Note: this assumption makes sure that IInvoiceCandDAO.createIlaIfNotExists() has
 					// been called for 'cand'
-					Check.assume(aggregate.getCandsFor(ilVO).contains(cand),
-							cand + " is returned by 'aggregate.getCandsFor(ilVO)' with ilVO=" + ilVO);
+					Check.assume(aggregate.getCandsFor(ilVO).contains(cand), cand + " is returned by 'aggregate.getCandsFor(ilVO)' with ilVO=" + ilVO);
 					continue;
 				}
 
 				final I_C_InvoiceLine invoiceLine = invoiceBL.createLine(invoice);
 				final Properties ilCtx = InterfaceWrapperHelper.getCtx(invoiceLine);
 				final String ilTrxName = InterfaceWrapperHelper.getTrxName(invoiceLine);
-				Check.assume(trxName.equals(ilTrxName),
+				Check.assume(
+						trxName.equals(ilTrxName),
 						invoiceLine + " (TrxName='" + ilTrxName + "') has TrxName=" + trxName);
 
 				//
@@ -547,8 +539,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				if (orderLineId != null)
 				{
 					//
-					// Special case: we can retain the 1:n relation between C_OrderLine and
-					// C_InvoiceLine
+					// Special case: we can retain the 1:n relation between C_OrderLine and C_InvoiceLine
 
 					//
 					// Note that this also sets the order line's C_Tax_ID
@@ -556,12 +547,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 					// // 07242
 					// // Also set the tax from the orderLine
-					// ts: don't set it here; in MInvoiceLine.beforeSave() we call
-					// MInvoiceLine.setTax() to set it on the fly. Don't just take the order line's
-					// rate, because it might have changed
+					// ts: don't set it here; in MInvoiceLine.beforeSave() we call MInvoiceLine.setTax() to set it on the fly. Don't just take the order line's rate, because it might have changed
 					// since the order was created.
-					// final I_C_OrderLine orderLine = create(ilCtx, orderLineId,
-					// I_C_OrderLine.class, ilTrxName);
+					// final I_C_OrderLine orderLine = create(ilCtx, orderLineId, I_C_OrderLine.class, ilTrxName);
 					// invoiceLine.setC_Tax_ID(orderLine.getC_Tax_ID());
 				}
 
@@ -572,22 +560,18 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				//
 				// If there is only one IC-IOL association,
 				// set the inherited InOutLine ID on invoice line if applicable
-				// and rely on MInvoice/MInvoiceLine to automatically create the MatchInv record
-				// (see MInvoice.completeIt0)
+				// and rely on MInvoice/MInvoiceLine to automatically create the MatchInv record (see MInvoice.completeIt0)
 				//
-				// If there more IC-IOL associations, we will handle them below, also in this
-				// method.
+				// If there more IC-IOL associations, we will handle them below, also in this method.
 				boolean matchInvCreatedElsewhere = false;
 				if (iciolIds.size() == 1)
 				{
 					// Note: further down, we also deal with the case of iciolIds.size()>1
 					final int iciolId = iciolIds.iterator().next();
-					final I_C_InvoiceCandidate_InOutLine iciol = create(ilCtx, iciolId,
-							I_C_InvoiceCandidate_InOutLine.class, ilTrxName);
+					final I_C_InvoiceCandidate_InOutLine iciol = create(ilCtx, iciolId, I_C_InvoiceCandidate_InOutLine.class, ilTrxName);
 					invoiceLine.setM_InOutLine_ID(iciol.getM_InOutLine_ID());
 
-					// we rely on MInvoice.complete() to create the M_MatchInv record for PO and
-					// SO-Invoices, so don't create them again here.
+					// we rely on MInvoice.complete() to create the M_MatchInv record for PO and SO-Invoices, so don't create them again here.
 					matchInvCreatedElsewhere = true;
 				}
 
@@ -602,8 +586,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				{
 					invoiceLine.setM_Product_ID(ilVO.getM_Product_ID());
 				}
-				invoiceBL.setQtys(invoiceLine, qtysToInvoice); // task: 08841; note that we need to call this method
-																 // *after* UOMs and product were set
+				invoiceBL.setQtys(invoiceLine, qtysToInvoice); // task: 08841; note that we need to call this method *after* UOMs and product were set
 
 				invoiceLine.setC_Charge_ID(ilVO.getC_Charge_ID());
 				invoiceLine.setIsPackagingMaterial(cand.isPackagingMaterial()); // task FRESH-273
@@ -621,8 +604,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoiceLine.setC_Activity_ID(ilVO.getC_Activity_ID());
 
 				final I_C_Tax tax = ilVO.getC_Tax();
-				if (tax != null) // guard against old ICs which might not have a tax..leave it to the
-								 // MInvoiceLine BL in that case
+				if (tax != null)  // guard against old ICs which might not have a tax..leave it to the MInvoiceLine BL in that case
 				{
 					invoiceLine.setC_Tax(tax);
 					invoiceLine.setC_TaxCategory(tax.getC_TaxCategory());
@@ -634,13 +616,15 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 				final List<I_C_Invoice_Candidate> candsForIlVO = aggregate.getCandsFor(ilVO);
 
-				final List<String> externalIds = candsForIlVO.stream().map(I_C_Invoice_Candidate::getExternalLineId)
-						.filter(Predicates.notNull()).collect(ImmutableList.toImmutableList());
+				final List<String> externalIds = candsForIlVO
+						.stream()
+						.map(I_C_Invoice_Candidate::getExternalLineId)
+						.filter(Predicates.notNull())
+						.collect(ImmutableList.toImmutableList());
 				invoiceLine.setExternalIds(InvoiceUtil.joinExternalIds(externalIds));
 
 				//
-				// Notify listeners that we created a new invoice line and we are about to save
-				// it
+				// Notify listeners that we created a new invoice line and we are about to save it
 				invoiceCandListeners.onBeforeInvoiceLineCreated(invoiceLine, ilVO, candsForIlVO);
 
 				//
@@ -659,43 +643,35 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 						invoiceCandBL.createUpdateIla(candForIlVO, invoiceLine, qtysInvoiced, null/* note */); // TODO
 
 						// #870
-						// Make sure the Qty and Price override are set to null when an invoiceline is
-						// created
+						// Make sure the Qty and Price override are set to null when an invoiceline is created
 						{
 							final int invoiceCandidate_ID = candForIlVO.getC_Invoice_Candidate_ID();
 
 							Services.get(ITrxManager.class)
 									.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
-									.newEventListener(TrxEventTiming.AFTER_COMMIT).registerWeakly(false) // register
-																										 // "hard",
-																										 // because
-																										 // that's
-																										 // how it
-																										 // was
-																										 // before
-									.invokeMethodJustOnce(false) // invoke the handling method on *every* commit,
-																 // because that's how it was and I can't check now
-																 // if it's really needed
-									.registerHandlingMethod(
-											localTrx -> set_QtyAndPriceOverrideToNull(invoiceCandidate_ID));
+									.newEventListener(TrxEventTiming.AFTER_COMMIT)
+									.registerWeakly(false) // register "hard", because that's how it was before
+									.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
+									.registerHandlingMethod(localTrx -> set_QtyAndPriceOverrideToNull(invoiceCandidate_ID));
 						}
 					}
 
 					//
 					// Create M_MatchInv (link between receipt line and purchase invoice line)
-					// task 08507: also create them for sale invoices, to track the invoiced Qtys
-					// per il and iol
+					// task 08507: also create them for sale invoices, to track the invoiced Qtys per il and iol
 					if (!matchInvCreatedElsewhere)
 					{
-						for (final InvoiceCandidateInOutLineToUpdate iciolToUpdate : ilVO
-								.getInvoiceCandidateInOutLinesToUpdate())
+						for (final InvoiceCandidateInOutLineToUpdate iciolToUpdate : ilVO.getInvoiceCandidateInOutLinesToUpdate())
 						{
-							final I_C_InvoiceCandidate_InOutLine icIol = iciolToUpdate
-									.getC_InvoiceCandidate_InOutLine();
+							final I_C_InvoiceCandidate_InOutLine icIol = iciolToUpdate.getC_InvoiceCandidate_InOutLine();
 							final I_M_InOutLine inOutLine = icIol.getM_InOutLine();
 
-							matchInvBL.createMatchInvBuilder().setContext(invoiceLine).setC_InvoiceLine(invoiceLine)
-									.setM_InOutLine(inOutLine).setDateTrx(invoice.getDateInvoiced()).build();
+							matchInvBL.createMatchInvBuilder()
+									.setContext(invoiceLine)
+									.setC_InvoiceLine(invoiceLine)
+									.setM_InOutLine(inOutLine)
+									.setDateTrx(invoice.getDateInvoiced())
+									.build();
 						}
 					}
 
@@ -711,8 +687,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					errorException[0] = e;
 					errorCandidates.addAll(aggregate.getAllCands());
 
-					// re-throw e to trigger the rollback in case some MInvoiceLines were already
-					// created
+					// re-throw e to trigger the rollback in case some MInvoiceLines were already created
 					throw e;
 				}
 			}
@@ -724,8 +699,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		private void set_QtyAndPriceOverrideToNull(final int invoiceCandidate_ID)
 		{
 
-			final I_C_Invoice_Candidate ic = create(Env.getCtx(), invoiceCandidate_ID, I_C_Invoice_Candidate.class,
-					ITrx.TRXNAME_ThreadInherited);
+			final I_C_Invoice_Candidate ic = create(Env.getCtx(), invoiceCandidate_ID, I_C_Invoice_Candidate.class, ITrx.TRXNAME_ThreadInherited);
 
 			ic.setQtyToInvoice_Override(null);
 			ic.setPriceEntered_Override(null);
@@ -756,8 +730,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			return asi;
 		}
 
-		private final void createAttributeInstance(final I_M_AttributeSetInstance asi,
-				final IInvoiceLineAttribute invoiceLineAttribute)
+		private final void createAttributeInstance(final I_M_AttributeSetInstance asi, final IInvoiceLineAttribute invoiceLineAttribute)
 		{
 			final I_M_AttributeInstance ai = newInstance(I_M_AttributeInstance.class, asi);
 			copyValues(invoiceLineAttribute.getAttributeInstanceTemplate(), ai);
@@ -772,11 +745,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		{
 			if (errorException[0] == null)
 			{
-				errorException[0] = new AdempiereException("Error while processing " + aggregate, e); // here we might
-																										 // end up with
-																										 // an empty
-																										 // errorCandidates
-																										 // list
+				errorException[0] = new AdempiereException("Error while processing " + aggregate, e); // here we might end up with an empty errorCandidates list
 			}
 
 			// don't re-throw the exception, but rollback the trx
@@ -805,10 +774,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	/**
 	 * <b>IMPORTANT:</b>
 	 * <ul>
-	 * <li>Candidates with IsError='Y' are ignored, even if they are part of the
-	 * selection!</li>
-	 * <li>Candidates with IsProcessed='Y' are ignored, even if they are part of the
-	 * selection!</li>
+	 * <li>Candidates with IsError='Y' are ignored, even if they are part of the selection!</li>
+	 * <li>Candidates with IsProcessed='Y' are ignored, even if they are part of the selection!</li>
 	 * </ul>
 	 * <br>
 	 */
@@ -833,8 +800,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			icToUnlock.add(ic);
 
 			// Skip invoice candidate if we are adviced to do so
-			// TODO: i think this checking is no longer needed because we are doing it when
-			// enqueueing
+			// TODO: i think this checking is no longer needed because we are doing it when enqueueing
 			if (invoiceCandBL.isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule))
 			{
 				continue;
@@ -844,8 +810,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			try
 			{
 				aggregationEngine.addInvoiceCandidate(ic);
-				netAmtToInvoiceChecker.add(ic); // collect the IC's NetAmtToInvoice; later we will make sure the amount
-												 // is the same as the one user expects
+				netAmtToInvoiceChecker.add(ic); // collect the IC's NetAmtToInvoice; later we will make sure the amount is the same as the one user expects
 			}
 			catch (final AdempiereException e)
 			{
@@ -856,8 +821,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		//
 		// Make sure we have the same net amt as expected (08610)
 		final IInvoicingParams invoicingParams = getInvoicingParams();
-		final BigDecimal expectedNetAmtToInvoice = invoicingParams == null ? null
-				: invoicingParams.getCheck_NetAmtToInvoice();
+		final BigDecimal expectedNetAmtToInvoice = invoicingParams == null ? null : invoicingParams.getCheck_NetAmtToInvoice();
 		if (expectedNetAmtToInvoice != null && expectedNetAmtToInvoice.signum() != 0)
 		{
 			netAmtToInvoiceChecker.assertExpectedNetAmtToInvoice(expectedNetAmtToInvoice);
@@ -875,20 +839,16 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		final IInvoicingParams invoicingParams = getInvoicingParams();
 
 		return AggregationEngine.builder()
-				.alwaysUseDefaultHeaderAggregationKeyBuilder(
-						invoicingParams != null && invoicingParams.isConsolidateApprovedICs())
+				.alwaysUseDefaultHeaderAggregationKeyBuilder(invoicingParams != null && invoicingParams.isConsolidateApprovedICs())
 				.defaultDateInvoiced(invoicingParams != null ? invoicingParams.getDateInvoiced() : null)
 				.defaultDateAcct(invoicingParams != null ? invoicingParams.getDateAcct() : null)
-				.updateLocationAndContactForInvoice(
-						invoicingParams != null ? invoicingParams.isUpdateLocationAndContactForInvoice() : false)
+				.updateLocationAndContactForInvoice(invoicingParams != null ? invoicingParams.isUpdateLocationAndContactForInvoice() : false)
 				.build();
 	}
 
 	/**
 	 *
-	 * @param aggregationEngine note that this is a
-	 *            {@link de.metas.util.IMultitonService}, i.e. a
-	 *            service with internal state.
+	 * @param aggregationEngine note that this is a {@link de.metas.util.IMultitonService}, i.e. a service with internal state.
 	 */
 	private void aggregateAndInvoice(final AggregationEngine aggregationEngine)
 	{
@@ -896,8 +856,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 		if (getInvoicingParams() != null && getInvoicingParams().isAssumeOneInvoice())
 		{
-			Check.errorIf(aggregationResult.size() > 1,
-					"The shall be only one invoice, but instead there are {}; aggregationResult={}",
+			Check.errorIf(aggregationResult.size() > 1, "The shall be only one invoice, but instead there are {}; aggregationResult={}",
 					aggregationResult.size(), aggregationResult);
 		}
 
@@ -950,13 +909,10 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 	/**
 	 *
-	 * @param affectedCands the invoice candidates for which an invoice line
-	 *            creation has failed. Note that an aggregator can create
-	 *            one {@link IInvoiceLineRW} from multiple candidates.
-	 * @param error
-	 * @return
+	 * @param affectedCands the invoice candidates for which an invoice line creation has failed. Note that an aggregator can create one {@link IInvoiceLineRW} from multiple candidates.
 	 */
-	private List<I_AD_Note> createNoticesAndMarkICs(@NonNull final List<I_C_Invoice_Candidate> affectedCands,
+	private List<I_AD_Note> createNoticesAndMarkICs(
+			@NonNull final List<I_C_Invoice_Candidate> affectedCands,
 			@NonNull final Throwable error)
 	{
 		Check.assume(!affectedCands.isEmpty(), "Given list of I_C_Invoice_Candidates is not empty");
@@ -1026,13 +982,14 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 						adLanguage = Env.getAD_Language(getCtx());
 					}
 
-					final String noteMsg = msgBL.getMsg(adLanguage, MSG_INVOICE_CAND_BL_PROCESSING_ERROR_DESC_1P,
+					final String noteMsg = msgBL.getMsg(
+							adLanguage,
+							MSG_INVOICE_CAND_BL_PROCESSING_ERROR_DESC_1P,
 							new Object[] { candidates.toString() });
 					note.setTextMsg(noteMsg);
 					saveRecord(note);
 					// @formatter:off
-					// for the time being, always output the warning, because we don't currently use
-					// the AD_Note feature and therefore the note wont be read.
+					// for the time being, always output the warning, because we don't currently use the AD_Note feature and therefore the note wont be read.
 //					if (developerModeBL.isEnabled())
 //					{
 					logger.warn(error.getLocalizedMessage(), error);
@@ -1049,8 +1006,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				}
 
 				//
-				// Update invoice candidates IsError and ErrorMsg fields. Link previously
-				// created AD_Note if available.
+				// Update invoice candidates IsError and ErrorMsg fields. Link previously created AD_Note if available.
 				for (final I_C_Invoice_Candidate currentAffectedCand : affectedCandsForUser)
 				{
 					final String candErrorMsg = error.getLocalizedMessage();
@@ -1106,8 +1062,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	 * @param invoiceGeneratorClass
 	 * @return
 	 */
-	public InvoiceCandBLCreateInvoices setInvoiceGeneratorClass(
-			final Class<? extends IInvoiceGeneratorRunnable> invoiceGeneratorClass)
+	public InvoiceCandBLCreateInvoices setInvoiceGeneratorClass(final Class<? extends IInvoiceGeneratorRunnable> invoiceGeneratorClass)
 	{
 		this.invoiceGeneratorClass = invoiceGeneratorClass;
 		return this;
@@ -1166,10 +1121,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	{
 		if (_collector == null)
 		{
-			// note that we don't want to store the actual invoices in the result if there
-			// is a change to encounter memory problems
-			_collector = invoiceCandBL.createInvoiceGenerateResult(
-					_invoicingParams == null ? false : _invoicingParams.isStoreInvoicesInResult());
+			// note that we don't want to store the actual invoices in the result if there is a change to encounter memory problems
+			_collector = invoiceCandBL.createInvoiceGenerateResult(_invoicingParams == null ? false : _invoicingParams.isStoreInvoicesInResult());
 		}
 		return _collector;
 	}
