@@ -12,7 +12,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.PickRequest;
-import de.metas.handlingunits.picking.requests.PickRequest.IssueToPickingOrder;
+import de.metas.handlingunits.picking.requests.PickRequest.IssueToPickingOrderRequest;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.ui.web.pickingV2.config.PickingConfigRepositoryV2;
 import de.metas.ui.web.pickingV2.config.PickingConfigV2;
@@ -98,9 +98,9 @@ public class ProductsToPickRowsService
 		}
 		else if (ProductsToPickRowType.PICK_FROM_PICKING_ORDER.equals(rowType))
 		{
-			final ImmutableList<IssueToPickingOrder> issues = row.getIncludedRows()
+			final ImmutableList<IssueToPickingOrderRequest> issues = row.getIncludedRows()
 					.stream()
-					.map(issueRow -> PickRequest.IssueToPickingOrder.builder()
+					.map(issueRow -> PickRequest.IssueToPickingOrderRequest.builder()
 							.issueToOrderBOMLineId(issueRow.getIssueToOrderBOMLineId())
 							.qtyToIssue(issueRow.getQtyEffective())
 							.build())
