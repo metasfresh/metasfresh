@@ -33,10 +33,15 @@ import de.metas.util.GuavaCollectors;
 import lombok.Getter;
 import lombok.NonNull;
 
+
+/**
+ * as of 2019.10.29 there's no way for the customer to change the service type!
+ * It is hardcoded inside CreateDraftDeliveryOrder, and that's it.
+ */
 public enum DPDServiceType implements ServiceType
 {
 
-	Overnight("???"),
+	CL("CL"),
 	AnythingElse("???");
 
 	@Getter
