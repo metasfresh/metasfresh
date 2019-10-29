@@ -1,5 +1,6 @@
 package de.metas.customs;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -39,6 +40,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import static org.adempiere.model.InterfaceWrapperHelper.deleteAll;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -150,33 +152,65 @@ public class CustomsInvoiceRepository
 		return customsInvoiceRecord;
 	}
 
-	public List<CustomsInvoiceLine> retrieveLines(@NonNull final CustomsInvoiceId customsInvoiceId)
+	@NonNull
+	public CustomsInvoice retrieveById(@NonNull final CustomsInvoiceId customsInvoiceId)
+	{
+		final I_C_Customs_Invoice customsInvoicePO = load(customsInvoiceId, I_C_Customs_Invoice.class);
+
+		final CurrencyId currencyId = CurrencyId.ofRepoId(customsInvoicePO.getC_Currency_ID());
+		return CustomsInvoice.builder()
+				.id(customsInvoiceId)
+				.createdBy(UserId.ofRepoId(customsInvoicePO.getCreatedBy()))
+				.lastUpdatedBy(UserId.ofRepoId(customsInvoicePO.getUpdatedBy()))
+				.documentNo(customsInvoicePO.getDocumentNo())
+				.orgId(OrgId.ofRepoId(customsInvoicePO.getAD_Org_ID()))
+				.bpartnerAndLocationId(BPartnerLocationId.ofRepoId(customsInvoicePO.getC_BPartner_ID(), customsInvoicePO.getC_BPartner_Location_ID()))
+				.bpartnerAddress(customsInvoicePO.getBPartnerAddress())
+				.userId(UserId.ofRepoId(customsInvoicePO.getAD_User_ID()))
+				.currencyId(currencyId)
+				.docTypeId(DocTypeId.ofRepoId(customsInvoicePO.getC_DocType_ID()))
+				.invoiceDate(TimeUtil.asLocalDate(customsInvoicePO.getDateInvoiced()))
+				.docAction(customsInvoicePO.getDocAction())
+				.docStatus(DocStatus.ofNullableCode(customsInvoicePO.getDocStatus()))
+				.lines(retrieveLines(customsInvoiceId, currencyId))
+				.build();
+	}
+
+	private ImmutableList<CustomsInvoiceLine> retrieveLines(@NonNull final CustomsInvoiceId id, @NonNull final CurrencyId currencyId)
 	{
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
 		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
-		final I_C_Customs_Invoice customsInvoice = load(customsInvoiceId, I_C_Customs_Invoice.class);
-
-		final List<I_C_Customs_Invoice_Line> lines = retrieveLineRecords(customsInvoiceId);
+		final List<I_C_Customs_Invoice_Line> lines = retrieveLineRecords(id);
 		return lines.stream()
-				.map(it -> {
-					final I_M_Product product = productDAO.getById(it.getM_Product_ID());
-					final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
-					final Quantity qty = Quantity.of(BigDecimal.ZERO, uom);
-
-					final Money lineNetAmt = Money.of(it.getLineNetAmt(), CurrencyId.ofRepoId(customsInvoice.getC_Currency_ID()));
-
-					return CustomsInvoiceLine.builder()
-							.id(CustomsInvoiceLineId.ofRepoId(customsInvoiceId, it.getC_Customs_Invoice_Line_ID()))
-							.lineNo(it.getLineNo())
-							.productId(ProductId.ofRepoId(it.getM_Product_ID()))
-							.quantity(qty)
-							.uomId(UomId.ofRepoId(product.getC_UOM_ID()))
-							.orgId(Env.getOrgId())
-							.lineNetAmt(lineNetAmt)
-							.build();
-				})
+				.map(constructCustomsInvoiceLineFromPO(id, productDAO, uomDAO, currencyId))
 				.collect(GuavaCollectors.toImmutableList());
+	}
+
+	@NonNull
+	private Function<I_C_Customs_Invoice_Line, CustomsInvoiceLine> constructCustomsInvoiceLineFromPO(
+			@NonNull final CustomsInvoiceId customsInvoiceId,
+			@NonNull final IProductDAO productDAO,
+			@NonNull final IUOMDAO uomDAO,
+			@NonNull final CurrencyId currencyId)
+	{
+		return customsInvoiceLinePo -> {
+			final I_M_Product product = productDAO.getById(customsInvoiceLinePo.getM_Product_ID());
+			final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
+			final Quantity qty = Quantity.of(BigDecimal.ZERO, uom);
+
+			final Money lineNetAmt = Money.of(customsInvoiceLinePo.getLineNetAmt(), currencyId);
+
+			return CustomsInvoiceLine.builder()
+					.id(CustomsInvoiceLineId.ofRepoId(customsInvoiceId, customsInvoiceLinePo.getC_Customs_Invoice_Line_ID()))
+					.lineNo(customsInvoiceLinePo.getLineNo())
+					.productId(ProductId.ofRepoId(customsInvoiceLinePo.getM_Product_ID()))
+					.quantity(qty)
+					.uomId(UomId.ofRepoId(product.getC_UOM_ID()))
+					.orgId(Env.getOrgId())
+					.lineNetAmt(lineNetAmt)
+					.build();
+		};
 	}
 
 	private List<I_C_Customs_Invoice_Line> retrieveLineRecords(@NonNull final CustomsInvoiceId customsInvoiceId)
