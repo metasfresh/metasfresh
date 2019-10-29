@@ -88,6 +88,7 @@ class CommissionRecordStagingService
 
 	private CommissionStagingRecords retrieveRecords(@NonNull final IQuery<I_C_Commission_Instance> instanceRecordQuery)
 	{
+		// ------------------ I_C_Commission_Instance
 		final List<I_C_Commission_Instance> instanceRecords = instanceRecordQuery.list();
 
 		final ImmutableListMultimap<Integer, I_C_Commission_Instance> icRecordIdToInstanceRecords = Multimaps.index(instanceRecords, I_C_Commission_Instance::getC_Invoice_Candidate_ID);
@@ -103,7 +104,7 @@ class CommissionRecordStagingService
 				.createQueryBuilder(I_C_Commission_Share.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_Commission_Share.COLUMN_C_Commission_Instance_ID, intanceRecordIds)
-				.orderBy(I_C_Commission_Share.COLUMN_LevelHierarchy);
+				.orderBy(I_C_Commission_Share.COLUMN_LevelHierarchy); // it's very important that we process them in their correct orders
 
 		final List<I_C_Commission_Share> shareRecords = shareQueryBuilder
 				.create()
