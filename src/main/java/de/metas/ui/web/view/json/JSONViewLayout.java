@@ -133,10 +133,14 @@ public final class JSONViewLayout
 	@JsonProperty("supportOpenRecord")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Boolean supportOpenRecord;
-	
+
 	@JsonProperty("supportGeoLocations")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Boolean supportGeoLocations;
+
+	@JsonProperty("focusOnFieldName")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final String focusOnFieldName;
 
 	private JSONViewLayout(final ViewLayout layout, final JSONDocumentLayoutOptions options)
 	{
@@ -206,8 +210,10 @@ public final class JSONViewLayout
 		}
 
 		supportOpenRecord = layout.isAllowOpeningRowDetails();
-		
+
 		supportGeoLocations = layout.isGeoLocationSupport();
+
+		focusOnFieldName = layout.getFocusOnFieldName();
 	}
 
 	@Override
