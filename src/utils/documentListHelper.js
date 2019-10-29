@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import { push } from 'react-router-redux';
 import { Map } from 'immutable';
 import Moment from 'moment-timezone';
+import currentDevice from 'current-device';
 
 import { getItemsByProperty, nullToEmptyStrings } from './index';
 import { getSelection, getSelectionInstant } from '../reducers/windowHandler';
@@ -55,6 +56,11 @@ const NO_SELECTION = [];
 const NO_VIEW = {};
 const PANEL_WIDTHS = ['1', '.2', '4'];
 const GEO_PANEL_STATES = ['grid', 'all', 'map'];
+
+// for mobile devices we only want to show either map or grid
+if (currentDevice.type === 'mobile' || currentDevice.type === 'tablet') {
+  GEO_PANEL_STATES.splice(1, 1);
+}
 
 const filtersToMap = function(filtersArray) {
   let filtersMap = Map();

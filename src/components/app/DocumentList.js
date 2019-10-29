@@ -60,6 +60,8 @@ import QuickActions from './QuickActions';
 import SelectionAttributes from './SelectionAttributes';
 import GeoMap from '../maps/GeoMap';
 
+console.log('GEO_PANEL_STATES: ', currentDevice, GEO_PANEL_STATES)
+
 /**
  * @file Class based component.
  * @module DocumentList
@@ -82,7 +84,7 @@ export class DocumentList extends Component {
       layout: null,
       pageColumnInfosByFieldName: null,
       toggleWidth: 0,
-      toggleState: 0,
+      toggleState: GEO_PANEL_STATES[0],
       mapConfig: null,
       viewId: defaultViewId,
       page: defaultPage || 1,
@@ -676,7 +678,9 @@ export class DocumentList extends Component {
       };
 
       if (mapConfig && mapConfig.provider) {
-        newState.toggleState = 1;
+        // for mobile show map
+        // for desktop show half-n-half
+        newState.toggleState = GEO_PANEL_STATES[1];
       }
 
       this.setState(newState);
@@ -810,13 +814,12 @@ export class DocumentList extends Component {
   };
 
   collapseGeoPanels = () => {
-    const stateIdx =
-      this.state.toggleState + 1 === GEO_PANEL_STATES.length
-        ? 0
-        : this.state.toggleState + 1;
+    const stateIdx = GEO_PANEL_STATES.indexOf(this.state.toggleState);
+    const newStateIdx =
+      stateIdx + 1 === GEO_PANEL_STATES.length ? 0 : stateIdx + 1;
 
     this.setState({
-      toggleState: stateIdx,
+      toggleState: GEO_PANEL_STATES[newStateIdx],
     });
   };
 
@@ -989,7 +992,11 @@ export class DocumentList extends Component {
     const showModalResizeBtn =
       layout && isModal && hasIncluded && hasShowIncluded;
     const showGeoResizeBtn =
-      layout && layout.supportGeoLocations && data && data.locationData;
+      layout &&
+      layout.supportGeoLocations &&
+      data &&
+      data.locationData &&
+      mapConfig.provider !== 'OpenStreetMap';
 
     return (
       <div
@@ -1024,7 +1031,7 @@ export class DocumentList extends Component {
               }
             )}
           >
-            <div className={hasIncluded ? 'disabled' : ''}>
+            <div className={cx('header-element', { disabled: hasIncluded })}>
               {layout.supportNewRecord && !isModal && (
                 <button
                   className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down btn-new-document"
@@ -1060,7 +1067,7 @@ export class DocumentList extends Component {
             </div>
 
             {showGeoResizeBtn && (
-              <div className="pane-size-button col-xxs-3 ignore-react-onclickoutside">
+              <div className="header-element pane-size-button ignore-react-onclickoutside">
                 <button
                   className={cx(
                     'btn btn-meta-outline-secondary btn-sm btn-switch ignore-react-onclickoutside'
@@ -1069,13 +1076,13 @@ export class DocumentList extends Component {
                 >
                   <i
                     className={cx('icon icon-grid', {
-                      greyscaled: toggleState === 2,
+                      greyscaled: toggleState === 'map',
                     })}
                   />
                   <i className="icon text-middle">/</i>
                   <i
                     className={cx('icon icon-map', {
-                      greyscaled: toggleState === 0,
+                      greyscaled: toggleState === 'grid',
                     })}
                   />
                 </button>
@@ -1084,6 +1091,7 @@ export class DocumentList extends Component {
 
             {data && showQuickActions && (
               <QuickActions
+                className="header-element align-items-center"
                 processStatus={processStatus}
                 ref={c => {
                   this.quickActionsComponent = c && c.getWrappedInstance();

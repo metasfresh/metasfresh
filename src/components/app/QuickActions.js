@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import Queue from 'simple-promise-queue';
+import cx from 'classnames';
 
 import { quickActionsRequest } from '../../api';
 import { openModal } from '../../actions/WindowActions';
@@ -332,12 +333,16 @@ export class QuickActions extends Component {
       listTooltip,
       loading,
     } = this.state;
-    const { shouldNotUpdate, processStatus, disabled } = this.props;
+    const { shouldNotUpdate, processStatus, disabled, className } = this.props;
     const disabledDuringProcessing = processStatus === 'pending' || loading;
 
     if (actions.length) {
       return (
-        <div className={'js-not-unselect ' + (disabled ? 'disabled ' : '')}>
+        <div
+          className={cx(className, 'js-not-unselect ', {
+            disabled: disabled,
+          })}
+        >
           <span className="action-label spacer-right">
             {counterpart.translate('window.quickActions.caption')}:
           </span>
