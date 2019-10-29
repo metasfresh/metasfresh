@@ -97,6 +97,7 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 				.allowViewCloseAction(ViewCloseAction.CANCEL)
 				.allowViewCloseAction(ViewCloseAction.DONE)
 				//
+				.setFocusOnFieldName(ProductsProposalRow.FIELD_Qty)
 				.addElementsFromViewRowClassAndFieldNames(
 						ProductsProposalRow.class,
 						key.getViewDataType(),
@@ -153,7 +154,7 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 
 		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 
-		if(!bpartnersRepo.isActionPriceAllowed(bpartnerId))
+		if (!bpartnersRepo.isActionPriceAllowed(bpartnerId))
 		{
 			return CampaignPriceProviders.none();
 		}
@@ -166,7 +167,6 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 			return CampaignPriceProviders.none();
 		}
 		final CurrencyId currencyId = CurrencyId.ofRepoId(priceList.getC_Currency_ID());
-
 
 		final BPGroupId bpGroupId = bpartnersRepo.getBPGroupIdByBPartnerId(bpartnerId);
 
