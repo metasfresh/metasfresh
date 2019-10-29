@@ -1,5 +1,7 @@
 package org.eevolution.api;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -55,5 +57,10 @@ public class PPCostCollectorId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static int toRepoId(@Nullable final PPCostCollectorId id)
+	{
+		return id != null ? id.getRepoId() : -1;
 	}
 }
