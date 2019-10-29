@@ -46,13 +46,21 @@ public class DhlCustomDeliveryDataDetail
 	@Nullable
 	String trackingUrl;
 
+	boolean internationalDelivery;
+
+	//	@Nullable
+	//	DhlCustomsDocument customsDocument;
+
 	@Builder(toBuilder = true)
 	private DhlCustomDeliveryDataDetail(
 			final int packageId,
 			@NonNull final DhlSequenceNumber sequenceNumber,
 			@Nullable final byte[] pdfLabelData,
 			@Nullable final String awb,
-			@Nullable final String trackingUrl)
+			@Nullable final String trackingUrl,
+			final boolean internationalDelivery
+			//			@Nullable final DhlCustomsDocument customsDocument
+	)
 	{
 		Check.assumeGreaterThanZero(packageId, "packageId");
 
@@ -61,5 +69,13 @@ public class DhlCustomDeliveryDataDetail
 		this.pdfLabelData = pdfLabelData;
 		this.awb = awb;
 		this.trackingUrl = trackingUrl;
+		this.internationalDelivery = internationalDelivery;
+//		if (internationalDelivery && customsDocument == null)
+//		{
+//			throw new AdempiereException("International delivery must have a valid Customs Document");
+//		}
+//		this.customsDocument = customsDocument;
 	}
+
 }
+
