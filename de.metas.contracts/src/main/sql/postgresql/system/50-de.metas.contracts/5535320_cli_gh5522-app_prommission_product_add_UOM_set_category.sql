@@ -20,7 +20,7 @@ UPDATE C_UOM_Trl SET Description='', Name='Commission point',Updated=TO_TIMESTAM
 
 -- 2019-10-29T15:44:23.414Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE M_Product SET C_UOM_ID=1000005, IsStocked='N',Updated=TO_TIMESTAMP('2019-10-29 16:44:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Product_ID=540420
+UPDATE M_Product SET C_UOM_ID=540049, IsStocked='N',Updated=TO_TIMESTAMP('2019-10-29 16:44:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE M_Product_ID=540420
 ;
 
 -- 2019-10-29T15:45:16.310Z
