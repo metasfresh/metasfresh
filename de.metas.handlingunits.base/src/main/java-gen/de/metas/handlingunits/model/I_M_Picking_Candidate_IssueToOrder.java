@@ -162,6 +162,33 @@ public interface I_M_Picking_Candidate_IssueToOrder
     public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
+	 * Set Picking candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Picking_Candidate_ID (int M_Picking_Candidate_ID);
+
+	/**
+	 * Get Picking candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Picking_Candidate_ID();
+
+	public de.metas.handlingunits.model.I_M_Picking_Candidate getM_Picking_Candidate();
+
+	public void setM_Picking_Candidate(de.metas.handlingunits.model.I_M_Picking_Candidate M_Picking_Candidate);
+
+    /** Column definition for M_Picking_Candidate_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate_IssueToOrder, de.metas.handlingunits.model.I_M_Picking_Candidate> COLUMN_M_Picking_Candidate_ID = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate_IssueToOrder, de.metas.handlingunits.model.I_M_Picking_Candidate>(I_M_Picking_Candidate_IssueToOrder.class, "M_Picking_Candidate_ID", de.metas.handlingunits.model.I_M_Picking_Candidate.class);
+    /** Column name M_Picking_Candidate_ID */
+    public static final String COLUMNNAME_M_Picking_Candidate_ID = "M_Picking_Candidate_ID";
+
+	/**
 	 * Set Picking Candidate - issue to manufacturing order.
 	 *
 	 * <br>Type: ID

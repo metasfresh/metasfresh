@@ -15,7 +15,7 @@ public class X_M_Picking_Candidate_IssueToOrder extends org.compiere.model.PO im
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -589620981L;
+	private static final long serialVersionUID = -617667934L;
 
     /** Standard Constructor */
     public X_M_Picking_Candidate_IssueToOrder (Properties ctx, int M_Picking_Candidate_IssueToOrder_ID, String trxName)
@@ -25,6 +25,7 @@ public class X_M_Picking_Candidate_IssueToOrder extends org.compiere.model.PO im
         {
 			setC_UOM_ID (0);
 			setM_HU_ID (0);
+			setM_Picking_Candidate_ID (0);
 			setM_Picking_Candidate_IssueToOrder_ID (0);
 			setPP_Order_BOMLine_ID (0);
 			setQtyToIssue (BigDecimal.ZERO);
@@ -100,6 +101,40 @@ public class X_M_Picking_Candidate_IssueToOrder extends org.compiere.model.PO im
 	public int getM_HU_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_Picking_Candidate getM_Picking_Candidate()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Picking_Candidate_ID, de.metas.handlingunits.model.I_M_Picking_Candidate.class);
+	}
+
+	@Override
+	public void setM_Picking_Candidate(de.metas.handlingunits.model.I_M_Picking_Candidate M_Picking_Candidate)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Picking_Candidate_ID, de.metas.handlingunits.model.I_M_Picking_Candidate.class, M_Picking_Candidate);
+	}
+
+	/** Set Picking candidate.
+		@param M_Picking_Candidate_ID Picking candidate	  */
+	@Override
+	public void setM_Picking_Candidate_ID (int M_Picking_Candidate_ID)
+	{
+		if (M_Picking_Candidate_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Picking_Candidate_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Picking_Candidate_ID, Integer.valueOf(M_Picking_Candidate_ID));
+	}
+
+	/** Get Picking candidate.
+		@return Picking candidate	  */
+	@Override
+	public int getM_Picking_Candidate_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Picking_Candidate_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
