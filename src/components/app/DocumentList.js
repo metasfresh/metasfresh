@@ -60,8 +60,6 @@ import QuickActions from './QuickActions';
 import SelectionAttributes from './SelectionAttributes';
 import GeoMap from '../maps/GeoMap';
 
-console.log('GEO_PANEL_STATES: ', currentDevice, GEO_PANEL_STATES)
-
 /**
  * @file Class based component.
  * @module DocumentList
