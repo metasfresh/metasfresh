@@ -234,14 +234,14 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	/** Note: no need to save the record; just unset its processed flag to allow deletion if that makes sense. */
 	private void setProcessedToFalseIfIcNotNeeded(@NonNull final I_C_Invoice_Candidate icToDelete)
 	{
-		boolean manuallyFlaggedAsProcessed = icToDelete.isProcessed() && !icToDelete.isProcessed_Calc();
+		final boolean manuallyFlaggedAsProcessed = icToDelete.isProcessed() && !icToDelete.isProcessed_Calc();
 		if (!manuallyFlaggedAsProcessed)
 		{
 			return; // nothing to do
 		}
 
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-		boolean hasInvoiceLines = !invoiceCandDAO.retrieveIlForIc(icToDelete).isEmpty();
+		final boolean hasInvoiceLines = !invoiceCandDAO.retrieveIlForIc(icToDelete).isEmpty();
 		if (hasInvoiceLines)
 		{
 			return; // nothing to do
@@ -672,8 +672,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public void invalidateCandsThatReference(@NonNull final TableRecordReference recordReference)
 	{
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = retrieveInvoiceCandidatesForRecordQuery(recordReference)
-						// Not already processed
-						.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false);
+				// Not already processed
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false);
 		invalidateCandsFor(icQueryBuilder);
 	}
 
@@ -711,8 +711,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public final void invalidateCandsForHeaderAggregationKey(final Properties ctx, final String headerAggregationKey, final String trxName)
 	{
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = retrieveForHeaderAggregationKeyQuery(ctx, headerAggregationKey, trxName)
-						// Not already processed
-						.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false);
+				// Not already processed
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false);
 
 		invalidateCandsFor(icQueryBuilder);
 		// logger.info("Invalidated {} C_Invoice_Candidates for HeaderAggregationKey={}", new Object[] { count, headerAggregationKey });
@@ -722,8 +722,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public final void invalidateCandsWithSameReference(final I_C_Invoice_Candidate ic)
 	{
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = retrieveInvoiceCandidatesForRecordQuery(TableRecordReference.ofReferenced(ic))
-						// Not already processed
-						.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false);
+				// Not already processed
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false);
 		invalidateCandsFor(icQueryBuilder);
 		// logger.info("Invalidated {} C_Invoice_Candidates for AD_Table_ID={} and Record_ID={}", new Object[] { count, adTableId, recordId });
 	}
@@ -1191,7 +1191,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		Loggables.withLogger(logger, Level.INFO)
 				.addLog("updateMissingPaymentTermIds - {} C_Invoice_Candidates were updated; selectionId={}, paymentTermId={}",
-				updateCount, selectionId, paymentTermId);
+						updateCount, selectionId, paymentTermId);
 
 		// Invalidate the candidates which we updated
 		invalidateCandsForSelection(selectionToUpdateId, ITrx.TRXNAME_ThreadInherited);
@@ -1214,7 +1214,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		{
 			Loggables.withLogger(logger, Level.INFO)
 					.addLog("updateMissingPaymentTermIds - No C_Invoice_Candidate needs to be updated; selectionId={}",
-					selectionId);
+							selectionId);
 		}
 		return selectionToUpdateId;
 	}
@@ -1283,7 +1283,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		{
 			Loggables.withLogger(logger, Level.INFO)
 					.addLog("updateColumnForSelection - No C_Invoice_Candidate needs to be updated; selectionId={}, columnName={}; updateOnlyIfNull={}, newValue={}",
-					selectionId, columnName, updateOnlyIfNull, value);
+							selectionId, columnName, updateOnlyIfNull, value);
 			return;
 		}
 
@@ -1301,7 +1301,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		Loggables.withLogger(logger, Level.INFO)
 				.addLog("updateColumnForSelection - {} C_Invoice_Candidates were updated; selectionId={}, columnName={}; updateOnlyIfNull={}, newValue={}",
-				updateCount, selectionId, columnName, updateOnlyIfNull, value);
+						updateCount, selectionId, columnName, updateOnlyIfNull, value);
 
 		// Invalidate the candidates which we updated
 		invalidateCandsForSelection(selectionToUpdateId, ITrx.TRXNAME_ThreadInherited);
@@ -1655,20 +1655,27 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId(@NonNull final List<ExternalHeaderAndLineId> headerAndLineIds)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, true).setJoinOr();
-		ImmutableList<String> ids = headerAndLineIds.stream()
-				.flatMap(headerAndLineId -> headerAndLineId.getExternalLineIds().stream()).map(ExternalId::getValue)
-				.collect(ImmutableList.toImmutableList());
+				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, false) /* exploding to unions doesn't work with IQuery.createSelection() */
+				.setJoinOr();
 
 		for (final ExternalHeaderAndLineId element : headerAndLineIds)
 		{
-			final ICompositeQueryFilter<I_C_Invoice_Candidate> invoiceCandidatesFilter = queryBL
-					.createCompositeQueryFilter(I_C_Invoice_Candidate.class).addOnlyActiveRecordsFilter()
-					.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_ExternalLineId, ids)
-					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_ExternalHeaderId, element.getExternalHeaderId());
+			final String headerIdAsString = element.getExternalHeaderId().getValue();
 
+			final ImmutableList<String> lineIdsAsString = element
+					.getExternalLineIds()
+					.stream()
+					.map(ExternalId::getValue)
+					.collect(ImmutableList.toImmutableList());
+
+			final ICompositeQueryFilter<I_C_Invoice_Candidate> invoiceCandidatesFilter = queryBL
+					.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_ExternalHeaderId, headerIdAsString)
+					.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_ExternalLineId, lineIdsAsString);
 			queryBuilder.filter(invoiceCandidatesFilter);
 		}
 		return queryBuilder.create();

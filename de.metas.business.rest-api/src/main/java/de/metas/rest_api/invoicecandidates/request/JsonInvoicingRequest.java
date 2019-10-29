@@ -43,7 +43,7 @@ import lombok.Value;
 @Value
 public final class JsonInvoicingRequest
 {
-	@ApiModelProperty(required = true, //
+	@ApiModelProperty(position = 10, required = true, //
 			value = "Specifies the invoice candidtes to be invoiced.")
 	List<JsonInvoiceCandidate> invoiceCandidates;
 
@@ -60,9 +60,10 @@ public final class JsonInvoicingRequest
 	@ApiModelProperty(value = "Optional customer's purchase order's documentno. POReference to be set to all invoice candidates, right before enqueueing them.")
 	private String poReference;
 
-	@ApiModelProperty(required = false, value = "This is needed when the user wants to invoice candidates that have their `DateToInvoice` sometime in the future.\n"
-			+ "If this is not set and the DateToInvoice is in the future then an error will occur \"no invoicable ICs selected\n"
-			+ "Default = `false`")
+	@ApiModelProperty(required = false, //
+			value = "This is needed when the user wants to invoice candidates that have their `DateToInvoice` sometime in the future.\n"
+					+ "If this is not set and the DateToInvoice is in the future then an error will occur \"no invoicable ICs selected\n"
+					+ "Default = `false`")
 	private Boolean ignoreInvoiceSchedule;
 
 	@ApiModelProperty(required = false,//

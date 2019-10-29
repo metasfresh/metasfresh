@@ -57,7 +57,7 @@ class InvoiceCandidatesRestControllerImpl implements ICEnqueueingForInvoiceGener
 	private static final Logger logger = LogManager.getLogger(InvoiceCandidatesRestControllerImpl.class);
 
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
-	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final InvoiceJsonConverterService jsonConverter;
 
 	public InvoiceCandidatesRestControllerImpl(@NonNull final InvoiceJsonConverterService jsonConverter)
@@ -73,6 +73,7 @@ class InvoiceCandidatesRestControllerImpl implements ICEnqueueingForInvoiceGener
 		try
 		{
 			final PInstanceId pInstanceId = adPInstanceDAO.createSelectionId();
+
 			final List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(request.getInvoiceCandidates());
 			invoiceCandBL.createSelectionForInvoiceCandidates(headerAndLineIds, pInstanceId);
 

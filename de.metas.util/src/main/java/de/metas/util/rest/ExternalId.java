@@ -5,6 +5,7 @@ import static de.metas.util.Check.isEmpty;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 import lombok.NonNull;
 import lombok.Value;
@@ -58,5 +59,11 @@ public class ExternalId
 			return null;
 		}
 		return externalId.getValue();
+	}
+
+	@JsonValue
+	public String getValue()
+	{
+		return value;
 	}
 }

@@ -2,6 +2,8 @@ package de.metas.rest_api.invoicecandidates.request;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -11,6 +13,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.util.rest.ExternalId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
@@ -36,24 +39,26 @@ import lombok.Value;
  * #L%
  */
 @Value
-public final class JsonInvoiceCandidate
+public class JsonInvoiceCandidate
 {
-	@ApiModelProperty(allowEmptyValue = true, value = "Optional, used to select which invoice candidates which have these `C_Invoice_candidate.ExternalLineId`s should be enqueued.\n"
-			+ "Inherited from order line candidates.\n"
-			+ "If not specified, then all invoice candidate with the specified `externalHeaderId` are matched")
+	@ApiModelProperty(position = 10, allowEmptyValue = false, dataType = "java.lang.string", example = "abc",//
+			value = "Used to select which invoice candidates should be enqueued.")
+	ExternalId externalHeaderId;
+
+	@ApiModelProperty(position = 20, allowEmptyValue = true, dataType = "java.lang.string", //
+			value = "Optional, used to select which invoice candidates which have these `C_Invoice_candidate.ExternalLineId`s should be enqueued.\n"
+					+ "Inherited from order line candidates.\n"
+					+ "If not specified, then all invoice candidate with the specified `externalHeaderId` are matched")
 	@JsonInclude(Include.NON_EMPTY)
 	List<ExternalId> externalLineIds;
-
-	@ApiModelProperty(allowEmptyValue = false, value = "Used to select which invoice candidates should be enqueued.")
-	ExternalId externalHeaderId;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonInvoiceCandidate(
-			@JsonProperty("externalLineIds") @Singular final List<ExternalId> externalLineIds,
-			@JsonProperty("externalHeaderId") final ExternalId externalHeaderId)
+			@JsonProperty("externalLineIds") @Singular @Nullable final List<ExternalId> externalLineIds,
+			@JsonProperty("externalHeaderId") @NonNull final ExternalId externalHeaderId)
 	{
-		this.externalLineIds = ImmutableList.copyOf(externalLineIds);
+		this.externalLineIds = externalLineIds == null ? ImmutableList.of() : ImmutableList.copyOf(externalLineIds);
 		this.externalHeaderId = externalHeaderId;
 	}
 
