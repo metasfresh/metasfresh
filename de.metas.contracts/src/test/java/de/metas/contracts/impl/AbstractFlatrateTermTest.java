@@ -1,6 +1,3 @@
-/**
- *
- */
 package de.metas.contracts.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -143,7 +140,7 @@ public abstract class AbstractFlatrateTermTest
 		createWarehouse();
 		createDocType();
 		createCountryAndCountryArea();
-		
+
 		currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 	}
 
@@ -158,8 +155,8 @@ public abstract class AbstractFlatrateTermTest
 		createContractChange(conditions);
 
 		return createFlatrateTerm(
-				conditions, 
-				productAndPricingSystem.getProductAndCategoryId(), 
+				conditions,
+				productAndPricingSystem.getProductAndCategoryId(),
 				startDate);
 	}
 
@@ -317,8 +314,8 @@ public abstract class AbstractFlatrateTermTest
 	}
 
 	protected I_C_Flatrate_Term createFlatrateTerm(
-			@NonNull final I_C_Flatrate_Conditions conditions, 
-			@NonNull final ProductAndCategoryId productAndCategoryId, 
+			@NonNull final I_C_Flatrate_Conditions conditions,
+			@NonNull final ProductAndCategoryId productAndCategoryId,
 			@NonNull final Timestamp startDate)
 	{
 		final I_C_OrderLine orderLine = createOrderAndOrderLine(conditions, productAndCategoryId.getProductId());

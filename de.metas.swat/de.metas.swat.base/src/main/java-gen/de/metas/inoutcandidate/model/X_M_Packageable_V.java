@@ -15,7 +15,7 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1437708546L;
+	private static final long serialVersionUID = -2067535654L;
 
     /** Standard Constructor */
     public X_M_Packageable_V (Properties ctx, int M_Packageable_V_ID, String trxName)
@@ -727,19 +727,16 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 		return ii.intValue();
 	}
 
-	/** Set Order Document No.
-		@param OrderDocumentNo 
-		Document Number of the Order
-	  */
+	/** Set Auftragsnr..
+		@param OrderDocumentNo Auftragsnr.	  */
 	@Override
 	public void setOrderDocumentNo (java.lang.String OrderDocumentNo)
 	{
 		set_ValueNoCheck (COLUMNNAME_OrderDocumentNo, OrderDocumentNo);
 	}
 
-	/** Get Order Document No.
-		@return Document Number of the Order
-	  */
+	/** Get Auftragsnr..
+		@return Auftragsnr.	  */
 	@Override
 	public java.lang.String getOrderDocumentNo () 
 	{

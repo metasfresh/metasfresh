@@ -247,7 +247,7 @@ public class PPOrderPojoSupplier
 					.build();
 
 			final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
-			final Quantity qtyRequired = ppOrderBOMBL.calculateQtyRequired(intermedidatePPOrderLine, ppOrder.getQtyRequired());
+			final Quantity qtyRequired = ppOrderBOMBL.computeQtyRequired(intermedidatePPOrderLine, ppOrder.getQtyRequired());
 
 			final PPOrderLine ppOrderLine = intermedidatePPOrderLine.withQtyRequired(qtyRequired.toBigDecimal());
 

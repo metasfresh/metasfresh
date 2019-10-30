@@ -5,33 +5,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.time.LocalDate;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.TreeSet;
 
@@ -47,7 +23,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMCreateRequest;
-import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -97,42 +72,25 @@ public class ProductBOMDAO implements IProductBOMDAO
 	}	// getLines
 
 	@Override
-	public List<I_PP_Product_BOMLine> retrieveLines(final I_PP_Product_BOM productBOM, final Date date)
+	public Optional<ProductBOMId> getDefaultBOMIdByProductId(@NonNull final ProductId productId)
 	{
-		final List<I_PP_Product_BOMLine> linesAll = retrieveLines(productBOM);
-		final List<I_PP_Product_BOMLine> linesValid = new ArrayList<>(linesAll.size()); // Selected BOM Lines Only
-		for (final I_PP_Product_BOMLine bomLine : linesAll)
-		{
-			if (!Services.get(IProductBOMBL.class).isValidFromTo(bomLine, date))
-			{
-				continue;
-			}
-			linesValid.add(bomLine);
-		}
-		//
-		return linesValid;
+		final IProductDAO productsRepo = Services.get(IProductDAO.class);
+		final I_M_Product product = productsRepo.getById(productId);
+
+		return getDefaultBOM(product)
+				.map(bom -> ProductBOMId.ofRepoId(bom.getPP_Product_BOM_ID()));
 	}
 
 	@Override
-	public int retrieveDefaultBOMId(final I_M_Product product)
+	public Optional<I_PP_Product_BOM> getDefaultBOMByProductId(@NonNull final ProductId productId)
 	{
-		final I_PP_Product_BOM bom = retrieveDefaultBOM(product);
-		if (bom == null)
-		{
-			return -1;
-		}
-		return bom.getPP_Product_BOM_ID();
+		final IProductDAO productsRepo = Services.get(IProductDAO.class);
+		final I_M_Product product = productsRepo.getById(productId);
+		return getDefaultBOM(product);
 	}
 
 	@Override
-	public int getDefaultProductBOMIdByProductId(@NonNull final ProductId productId)
-	{
-		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
-		return retrieveDefaultBOMId(product);
-	}
-
-	@Override
-	public I_PP_Product_BOM retrieveDefaultBOM(final I_M_Product product)
+	public Optional<I_PP_Product_BOM> getDefaultBOM(@NonNull final I_M_Product product)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(product);
 		final String trxName = InterfaceWrapperHelper.getTrxName(product);
@@ -143,24 +101,22 @@ public class ProductBOMDAO implements IProductBOMDAO
 	}
 
 	@Cached(cacheName = I_PP_Product_BOM.Table_Name + "#by#IsDefault")
-	/* package */ I_PP_Product_BOM retrieveDefaultBOM(
+	/* package */ Optional<I_PP_Product_BOM> retrieveDefaultBOM(
 			@CacheCtx final Properties ctx,
 			final int productId,
 			final String productValue,
 			@CacheTrx final String trxName)
 	{
-		final IQueryBuilder<I_PP_Product_BOM> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_PP_Product_BOM.class, ctx, trxName);
-
-		final ICompositeQueryFilter<I_PP_Product_BOM> filters = queryBuilder.getCompositeFilter();
-		filters.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, productId);
-		filters.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_Value, productValue);
-		filters.addOnlyActiveRecordsFilter();
-		filters.addOnlyContextClient(ctx);
-
-		return queryBuilder
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final I_PP_Product_BOM bom = queryBL
+				.createQueryBuilder(I_PP_Product_BOM.class, ctx, trxName)
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_Value, productValue)
+				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstOnly(I_PP_Product_BOM.class);
+
+		return Optional.ofNullable(bom);
 	}
 
 	@Override
@@ -176,16 +132,14 @@ public class ProductBOMDAO implements IProductBOMDAO
 	}
 
 	@Override
-	public boolean hasBOMs(final I_M_Product product)
+	public boolean hasBOMs(final ProductId productId)
 	{
-		final IQueryBuilder<I_PP_Product_BOM> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_PP_Product_BOM.class, product);
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final ICompositeQueryFilter<I_PP_Product_BOM> filters = queryBuilder.getCompositeFilter();
-		filters.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, product.getM_Product_ID());
-		filters.addOnlyActiveRecordsFilter();
-
-		return queryBuilder
+		// IMPORTANT: fetch in current trx because this pice of code can be called from some PP_Product_BOM model interceptor!
+		return queryBL.createQueryBuilder(I_PP_Product_BOM.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, productId)
 				.create()
 				.match();
 	}
@@ -274,7 +228,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 			return sqlParams;
 		}
 
-		private static final String toSqlArrayString(final Collection<Integer> ids)
+		private static String toSqlArrayString(final Collection<Integer> ids)
 		{
 			final StringBuilder sql = new StringBuilder();
 			sql.append("{");
@@ -302,8 +256,8 @@ public class ProductBOMDAO implements IProductBOMDAO
 		bomRecord.setValue(request.getProductValue());
 		bomRecord.setName(request.getProductName());
 		bomRecord.setC_UOM_ID(request.getUomId().getRepoId());
-		bomRecord.setBOMType(request.getBomType());
-		bomRecord.setBOMUse(request.getBomUse());
+		bomRecord.setBOMType(request.getBomType().getCode());
+		bomRecord.setBOMUse(request.getBomUse().getCode());
 		bomRecord.setValidFrom(TimeUtil.asTimestamp(validFrom));
 		saveRecord(bomRecord);
 		final ProductBOMId bomId = ProductBOMId.ofRepoId(bomRecord.getPP_Product_BOM_ID());

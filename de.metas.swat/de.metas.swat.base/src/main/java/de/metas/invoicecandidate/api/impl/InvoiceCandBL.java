@@ -64,6 +64,7 @@ import org.adempiere.util.concurrent.AutoClosableThreadLocalBoolean;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
@@ -159,6 +160,7 @@ import de.metas.util.Loggables;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
+import de.metas.util.rest.ExternalHeaderAndLineId;
 import lombok.NonNull;
 
 public class InvoiceCandBL implements IInvoiceCandBL
@@ -226,7 +228,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				return computedateToInvoiceBasedOnDeliveryDate(ic);
 
 			case CustomerScheduleAfterDelivery:
-				if (ic.getC_InvoiceSchedule_ID() <= 0)        // that's a paddlin'
+				if (ic.getC_InvoiceSchedule_ID() <= 0) // that's a paddlin'
 				{
 					return DATE_TO_INVOICE_MAX_DATE;
 				}
@@ -712,7 +714,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			ic.setSchedulerResult(amendment);
 		}
-		else if (!currentVal.contains(amendment))   // this IC might already contain the given amendment
+		else if (!currentVal.contains(amendment)) // this IC might already contain the given amendment
 		{
 			ic.setSchedulerResult(currentVal + "\n" + amendment);
 		}
@@ -878,7 +880,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 			final I_M_PriceList pricelist = Services.get(IPriceListBL.class)
 					.getCurrentPricelistOrNull(
-							PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()),
+					PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()),
 							CountryId.ofRepoId(partnerLocation.getC_Location().getC_Country_ID()),
 							date,
 							soTrx);
@@ -973,7 +975,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		splitCand.setC_Tax_ID(ic.getC_Tax_ID());
 		splitCand.setC_Tax_Override_ID(ic.getC_Tax_Override_ID());
 
-		splitCand.setExternalId(ic.getExternalId());
+		splitCand.setExternalHeaderId(ic.getExternalHeaderId());
+		splitCand.setExternalLineId(ic.getExternalLineId());
 
 		return splitCand;
 	}
@@ -1126,7 +1129,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final BigDecimal priceActualOverride = discount
 					.subtractFromBase(
 							priceEntered.toMoney().toBigDecimal(),
-							precision.toInt());
+					precision.toInt());
 			ic.setPriceActual_Override(priceActualOverride);
 		}
 	}
@@ -1349,10 +1352,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				//
 				// If 'il' has an order line, make sure that this order line also has invoice candidates and that those candidates also refer 'il'
 
-				final I_C_OrderLine ol = InterfaceWrapperHelper.create(il.getC_OrderLine(), I_C_OrderLine.class);
-				final List<I_C_Invoice_Candidate> existingICs = invoiceCandDAO.fetchInvoiceCandidates(ctx, org.compiere.model.I_C_OrderLine.Table_Name, il.getC_OrderLine_ID(), trxName);
+				final TableRecordReference olReference = TableRecordReference.of(I_C_OrderLine.Table_Name, il.getC_OrderLine_ID()); // no need to load the OL just yet
+				final List<I_C_Invoice_Candidate> existingICs = invoiceCandDAO.retrieveReferencing(olReference);
 				if (existingICs.isEmpty())
 				{
+					final I_C_OrderLine ol = InterfaceWrapperHelper.create(il.getC_OrderLine(), I_C_OrderLine.class);
 					// NOTE: in case 'invoice' was not created from invoice candidates, it's a big chance here to get zero existing ICs
 					// so we need to create them now
 
@@ -1916,7 +1920,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			// nothing to do;
 			return;
 		}
-		// boolean hasInvoiceableInvoiceCands = invoiceCandDAO.hasInvoiceableInvoiceCands(orderId);
 
 		final InvoiceCandidateId firstInvoiceableInvoiceCandId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(orderId);
 
@@ -1934,12 +1937,16 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 			ic.setDeliveryDate(firstInvoiceableCandRecord.getDeliveryDate());
 			ic.setQtyToInvoice(ONE);
+			ic.setQtyDelivered(ONE);
+			ic.setQtyToInvoiceInUOM(ONE);
 			set_DateToInvoice_DefaultImpl(ic);
 		}
 
 		else
 		{
 			ic.setQtyToInvoice(ZERO);
+			ic.setQtyDelivered(ZERO);
+			ic.setQtyToInvoiceInUOM(ZERO);
 			set_DateToInvoice_DefaultImpl(ic);
 		}
 	}
@@ -1986,5 +1993,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			iciol.setQtyDeliveredInUOM_Nominal(inOutLine.getQtyEntered());
 		}
 		saveRecord(iciol);
+	}
+
+	@Override
+	public int createSelectionForInvoiceCandidates(List<ExternalHeaderAndLineId> headerAndLineIds,
+			PInstanceId pInstanceId)
+	{
+		return Services.get(IInvoiceCandDAO.class).createSelectionByHeaderAndLineIds(headerAndLineIds, pInstanceId);
 	}
 }

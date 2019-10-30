@@ -19,6 +19,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_M_Attribute;
 import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.rules.TestWatcher;
 
@@ -99,7 +100,7 @@ public class AttributesKeysTest
 	}
 
 	@Test
-	public void createAttributeSetInstanceFromAttributesKey()
+	public void createAttributeSetInstanceFromAttributesKey_standardCase()
 	{
 		final I_M_Attribute attr1 = createStorageRelevantAttribute("test1");
 		final AttributeListValue attributeValue1 = attributesTestHelper.createM_AttributeValue(attr1, "testValue1");
@@ -160,5 +161,35 @@ public class AttributesKeysTest
 		final ImmutableAttributeSet attributeSet2 = AttributesKeys.toImmutableAttributeSet(attributesKey);
 
 		assertThat(attributeSet2).isEqualTo(attributeSet);
+	}
+
+	@Nested
+	public class createAttributesKeyFromAttributeSet
+	{
+		@Test
+		public void nonAttributeValue()
+		{
+			final I_M_Attribute attribute = attributesTestHelper.createM_Attribute("listAttribute", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+			final AttributeListValue attributeValue1 = attributesTestHelper.createM_AttributeValue(attribute, "testValue1");
+
+			final ImmutableAttributeSet attributeSet = ImmutableAttributeSet.builder()
+					.attributeValue(attributeValue1)
+					.build();
+
+			final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromAttributeSet(attributeSet).orElse(null);
+			assertThat(attributesKey.getAsString()).isEqualTo(String.valueOf(attributeValue1.getId().getRepoId()));
+		}
+
+		@Test
+		public void nullAttributeValue()
+		{
+			final I_M_Attribute attribute = attributesTestHelper.createM_Attribute("listAttribute", X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+			final ImmutableAttributeSet attributeSet = ImmutableAttributeSet.builder()
+					.attributeValue(attribute, null)
+					.build();
+
+			final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromAttributeSet(attributeSet).orElse(null);
+			assertThat(attributesKey).isNull();
+		}
 	}
 }

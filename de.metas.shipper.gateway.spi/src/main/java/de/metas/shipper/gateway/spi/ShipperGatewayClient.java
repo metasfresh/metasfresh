@@ -35,7 +35,7 @@ public interface ShipperGatewayClient
 	/**
 	 * Create a delivery order on the remote endpoint. The remote order is drafted and can still be changed.
 	 *
-	 * @deprecated it seems as if we don't need this.
+	 * @deprecated we don't need this.
 	 */
 	@Deprecated
 	DeliveryOrder createDeliveryOrder(DeliveryOrder draftDeliveryOrder) throws ShipperGatewayException;
@@ -44,8 +44,6 @@ public interface ShipperGatewayClient
 	 * Effectively place the given order on the remote endpoint.
 	 */
 	DeliveryOrder completeDeliveryOrder(DeliveryOrder deliveryOrder) throws ShipperGatewayException;
-
-	DeliveryOrder voidDeliveryOrder(DeliveryOrder deliveryOrder) throws ShipperGatewayException;
 
 	List<PackageLabels> getPackageLabelsList(DeliveryOrder deliveryOrder) throws ShipperGatewayException;;
 }

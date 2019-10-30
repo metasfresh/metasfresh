@@ -10,7 +10,8 @@ import org.springframework.stereotype.Component;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerBL.RetrieveBillContactRequest;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
@@ -108,14 +109,15 @@ public class DunningDocOutboundLogMailRecipientProvider
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(dunningRecord.getC_BPartner_ID());
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, dunningRecord.getC_BPartner_Location_ID());
-		final RetrieveBillContactRequest request = RetrieveBillContactRequest
+		final RetrieveContactRequest request = RetrieveContactRequest
 				.builder()
 				.bpartnerId(bpartnerId)
 				.bPartnerLocationId(bPartnerLocationId)
+				.contactType(ContactType.BILL_TO_DEFAULT)
 				.filter(user -> !Check.isEmpty(user.getEmailAddress(), true))
 				.build();
 
-		final User billContact = bpartnerBL.retrieveBillContactOrNull(request);
+		final User billContact = bpartnerBL.retrieveContactOrNull(request);
 		if (billContact != null)
 		{
 			Loggables.addLog("Found billContact={} with a mail address for bpartnerId={} and bPartnerLocationId={}", billContact, bpartnerId, bPartnerLocationId);

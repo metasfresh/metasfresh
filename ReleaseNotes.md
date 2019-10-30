@@ -10,11 +10,37 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.125
+## Features
+* metasfresh
+  * [#5522](https://github.com/metasfresh/metasfresh/issues/5522) Commission calculation
+  * [#5566](https://github.com/metasfresh/metasfresh/issues/5566) Add integration with Google Maps
+  * [#5611](https://github.com/metasfresh/metasfresh/issues/5611) Add DHL Shipper and DHL integration
+  * [#5683](https://github.com/metasfresh/metasfresh/issues/5683) Empties Saldo report per Day
 
-# metasfresh 5.123
+## Fixes
+* metasfresh
+  * [#5556](https://github.com/metasfresh/metasfresh/issues/5556) Prevent Running Link Organisation Process if Organisation Field is empty
+  * [#5666](https://github.com/metasfresh/metasfresh/issues/5666) Freight Cost invoice candidates bug
+  * [#5687](https://github.com/metasfresh/metasfresh/issues/5687) Assumption failure: There is no active M_Attribute record with M_Attribute.Value=M_Material_Tracking_ID
+  * [#5701](https://github.com/metasfresh/metasfresh/issues/5701) Document no not updated when changing doctype
+
+# metasfresh 5.124
+## Features
+* metasfresh
+  * [#5602](https://github.com/metasfresh/metasfresh/issues/5602) Cashbook Window
+  * [#5656](https://github.com/metasfresh/metasfresh/issues/5656) EDI-Tweaks
+
 ## Fixes
 * metasfresh-webui-frontend
   * [#2370](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2370) Performance imporovement for Grid Views/ Table Views
+  
+* metasfresh
+  * [#5242](https://github.com/metasfresh/metasfresh/issues/5242) Picking Terminal v2: Cannot fully load AllocationRequest
+  * [#5606](https://github.com/metasfresh/metasfresh/issues/5606) Payment window calculation of skonto yes/ no when adjusting date
+  * [#5628](https://github.com/metasfresh/metasfresh/issues/5628) Partner relations don't work properly in sales order
+  * [#5659](https://github.com/metasfresh/metasfresh/issues/5659) Picklist in Picking Terminal v2 automatically picks, but shall not
+
 
 # metasfresh 5.123
 ## Features

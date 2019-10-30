@@ -61,7 +61,7 @@ FROM
 	(
 		SELECT 
 		First_Agg ( o.DocumentNo ORDER BY o.DocumentNo ) ||
-				CASE WHEN Count( o.documentNo ) > 1 THEN ' ff.' ELSE '' END AS DocNo
+				CASE WHEN Count( distinct o.documentNo ) > 1 THEN ' ff.' ELSE '' END AS DocNo
 		FROM M_InOutLine iol
 		JOIN C_OrderLine ol ON iol.C_OrderLine_ID = ol.C_OrderLine_ID
 		JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID

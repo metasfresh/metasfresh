@@ -172,9 +172,9 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	}
 
 	/**
-	 * This method does the actual invoice candidate creation by calling the given <code>creatorRecords</code>. Note that each <code>creatorRecord</code> is called multiple times, until it returns the
-	 * empty
-	 * list. That way it is possible to for a creator to create only a limited number of invoice candidates at a time and thus avoid memory issues.
+	 * This method does the actual invoice candidate creation by calling the given <code>creatorRecords</code>.<p>
+	 * Note that each <code>creatorRecord</code> is called multiple times, until it returns the empty list.<br>
+	 * That way it is possible to for a creator to create only a limited number of invoice candidates at a time and thus avoid memory issues.
 	 *
 	 * @param ctx
 	 * @param handlerRecords
@@ -430,7 +430,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			}
 		}
 
-		// now call the api for each representative, assuming that this way *all* candidates that need it are invalidated, but not each one a thousand time.
+		// now call the api for each representative, assuming that this way *all* candidates that need it are invalidated, but not each one a thousand times.
 		for (final I_C_Invoice_Candidate ic : headerAndPartnerKey2IC.values())
 		{
 			invoiceCandBL.invalidateForPartnerIfInvoiceRuleDemandsIt(ic);

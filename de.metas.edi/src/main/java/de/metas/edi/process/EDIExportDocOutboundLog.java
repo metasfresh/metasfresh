@@ -120,7 +120,7 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 		if (selectionCount == 0)
 		{
 			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_No_DocOutboundLog_Selection);
-			throw new AdempiereException(msg);
+			throw new AdempiereException(msg).markAsUserValidationError();
 		}
 	}
 

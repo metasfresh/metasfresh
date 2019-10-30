@@ -109,7 +109,7 @@ final class OrderLinePriceCalculator
 		if (!pricingResult.isCalculated())
 		{
 			throw new ProductNotOnPriceListException(pricingCtx, orderLine.getLine())
-					.setParameter("pricingResult", pricingResult);
+			.setParameter("pricingResult", pricingResult);
 		}
 
 		PriceAndDiscount priceAndDiscount = extractPriceAndDiscount(pricingResult, pricingCtx.getSoTrx());
@@ -149,6 +149,7 @@ final class OrderLinePriceCalculator
 		orderLine.setC_Currency_ID(CurrencyId.toRepoId(pricingResult.getCurrencyId()));
 		orderLine.setM_PriceList_Version_ID(PriceListVersionId.toRepoId(pricingResult.getPriceListVersionId()));
 
+		orderLine.setIsCampaignPrice(pricingResult.isCampaignPrice());
 		orderLine.setIsPriceEditable(pricingResult.isPriceEditable());
 		orderLine.setIsDiscountEditable(pricingResult.isDiscountEditable());
 		orderLine.setEnforcePriceLimit(pricingResult.getEnforcePriceLimit().isTrue());
@@ -214,23 +215,23 @@ final class OrderLinePriceCalculator
 
 			paymentDiscount = pricingConditionsBreak != null
 					? pricingConditionsBreak.getPaymentDiscountOverrideOrNull().toBigDecimal()
-					: null;
+							: null;
 
-			if (pricingConditionsBreak != null
-					&& pricingConditionsBreak.getId() != null
-					&& hasSameValues(orderLine, pricingConditionsResult))
-			{
-				final PricingConditionsBreakId pricingConditionsBreakId = pricingConditionsBreak.getId();
-				discountSchemaId = pricingConditionsBreakId.getDiscountSchemaId();
-				discountSchemaBreakId = pricingConditionsBreakId.getDiscountSchemaBreakId();
-				tempPricingConditions = false;
-			}
-			else
-			{
-				discountSchemaId = -1;
-				discountSchemaBreakId = -1;
-				tempPricingConditions = true;
-			}
+					if (pricingConditionsBreak != null
+							&& pricingConditionsBreak.getId() != null
+							&& hasSameValues(orderLine, pricingConditionsResult))
+					{
+						final PricingConditionsBreakId pricingConditionsBreakId = pricingConditionsBreak.getId();
+						discountSchemaId = pricingConditionsBreakId.getDiscountSchemaId();
+						discountSchemaBreakId = pricingConditionsBreakId.getDiscountSchemaBreakId();
+						tempPricingConditions = false;
+					}
+					else
+					{
+						discountSchemaId = -1;
+						discountSchemaBreakId = -1;
+						tempPricingConditions = true;
+					}
 		}
 		else
 		{
