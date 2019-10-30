@@ -75,19 +75,25 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.ZonedDateTime, captionKey = "PreparationDate")
 	private final ZonedDateTime preparationDate;
 
+	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Quantity, captionKey =  "QtyOrdered")
+	private final BigDecimal qtyOrdered;
+
+	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "C_UOM_ID")
+	private final LookupValue uom;
+
 	public static final String FIELD_qtyToDeliverStockOverride = "qtyToDeliverStockOverride";
-	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Quantity, fieldName = FIELD_qtyToDeliverStockOverride, captionKey = "QtyToDeliver_Override", editor = ViewEditorRenderMode.ALWAYS)
+	@ViewColumn(seqNo = 80, widgetType = DocumentFieldWidgetType.Quantity, fieldName = FIELD_qtyToDeliverStockOverride, captionKey = "QtyToDeliver_Override", editor = ViewEditorRenderMode.ALWAYS)
 	private final BigDecimal qtyToDeliverStockOverride;
 
 	public static final String FIELD_qtyToDeliverCatchOverride = "qtyToDeliverCatchOverride";
-	@ViewColumn(seqNo = 63, widgetType = DocumentFieldWidgetType.Quantity, fieldName = FIELD_qtyToDeliverCatchOverride, captionKey = "QtyToDeliverCatch_Override", editor = ViewEditorRenderMode.ALWAYS)
+	@ViewColumn(seqNo = 90, widgetType = DocumentFieldWidgetType.Quantity, fieldName = FIELD_qtyToDeliverCatchOverride, captionKey = "QtyToDeliverCatch_Override", editor = ViewEditorRenderMode.ALWAYS)
 	private final BigDecimal qtyToDeliverCatchOverride;
 
-	@ViewColumn(seqNo = 66, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "Catch_UOM_ID")
+	@ViewColumn(seqNo = 100, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "Catch_UOM_ID")
 	private final LookupValue catchUOM;
 
 	public static final String FIELD_asi = "asi";
-	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.ProductAttributes, fieldName = FIELD_asi, captionKey = "M_AttributeSetInstance_ID", editor = ViewEditorRenderMode.ALWAYS)
+	@ViewColumn(seqNo = 110, widgetType = DocumentFieldWidgetType.ProductAttributes, fieldName = FIELD_asi, captionKey = "M_AttributeSetInstance_ID", editor = ViewEditorRenderMode.ALWAYS)
 	private final LookupValue asi;
 
 	private final ShipmentScheduleId shipmentScheduleId;
@@ -112,7 +118,8 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 			@NonNull final LookupValue warehouse,
 			@NonNull final LookupValue product,
 			@NonNull final ZonedDateTime preparationDate,
-			//
+			@NonNull final BigDecimal qtyOrdered,
+			@NonNull final LookupValue uom,
 			@NonNull final Quantity qtyToDeliverStockInitial,
 			@NonNull final BigDecimal qtyToDeliverStockOverride,
 			//
@@ -129,6 +136,9 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 		this.warehouse = warehouse;
 		this.product = product;
 		this.preparationDate = preparationDate;
+
+		this.qtyOrdered = qtyOrdered;
+		this.uom = uom;
 
 		this.qtyToDeliverStockInitial = qtyToDeliverStockInitial;
 		this.qtyToDeliverStockOverride = qtyToDeliverStockOverride;
