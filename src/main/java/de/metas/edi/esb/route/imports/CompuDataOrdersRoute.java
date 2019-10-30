@@ -93,14 +93,14 @@ public class CompuDataOrdersRoute extends AbstractEDIRoute
 		// end splitter route (aggregation strategy execute automatically)
 		ediToXMLOrdersRoute = ediToXMLOrdersRoute.end();
 
-		final String defaultEDIMessageDatePattern = Util.resolvePropertyPlaceholders(getContext(), CompuDataOrdersRoute.EDI_ORDER_EDIMessageDatePattern);
-		final String defaultADClientValue = Util.resolvePropertyPlaceholders(getContext(), CompuDataOrdersRoute.EDI_ORDER_ADClientValue);
-		final BigInteger defaultADOrgID = new BigInteger(Util.resolvePropertyPlaceholders(getContext(), CompuDataOrdersRoute.EDI_ORDER_ADOrgID));
-		final String defaultADInputDataDestinationInternalName = Util.resolvePropertyPlaceholders(getContext(), CompuDataOrdersRoute.EDI_ORDER_ADInputDataDestination_InternalName);
-		final BigInteger defaultADInputDataSourceID = new BigInteger(Util.resolvePropertyPlaceholders(getContext(), CompuDataOrdersRoute.EDI_ORDER_ADInputDataSourceID));
-		final BigInteger defaultADUserEnteredByID = new BigInteger(Util.resolvePropertyPlaceholders(getContext(), CompuDataOrdersRoute.EDI_ORDER_ADUserEnteredByID));
-		final String defaultDeliveryRule = Util.resolvePropertyPlaceholders(getContext(), CompuDataOrdersRoute.EDI_ORDER_DELIVERY_RULE);
-		final String defaultDeliveryViaRule = Util.resolvePropertyPlaceholders(getContext(), CompuDataOrdersRoute.EDI_ORDER_DELIVERY_VIA_RULE);
+		final String defaultEDIMessageDatePattern = Util.resolveProperty(getContext(), CompuDataOrdersRoute.EDI_ORDER_EDIMessageDatePattern);
+		final String defaultADClientValue = Util.resolveProperty(getContext(), CompuDataOrdersRoute.EDI_ORDER_ADClientValue);
+		final BigInteger defaultADOrgID = new BigInteger(Util.resolveProperty(getContext(), CompuDataOrdersRoute.EDI_ORDER_ADOrgID));
+		final String defaultADInputDataDestinationInternalName = Util.resolveProperty(getContext(), CompuDataOrdersRoute.EDI_ORDER_ADInputDataDestination_InternalName);
+		final BigInteger defaultADInputDataSourceID = new BigInteger(Util.resolveProperty(getContext(), CompuDataOrdersRoute.EDI_ORDER_ADInputDataSourceID));
+		final BigInteger defaultADUserEnteredByID = new BigInteger(Util.resolveProperty(getContext(), CompuDataOrdersRoute.EDI_ORDER_ADUserEnteredByID));
+		final String defaultDeliveryRule = Util.resolveProperty(getContext(), CompuDataOrdersRoute.EDI_ORDER_DELIVERY_RULE);
+		final String defaultDeliveryViaRule = Util.resolveProperty(getContext(), CompuDataOrdersRoute.EDI_ORDER_DELIVERY_VIA_RULE);
 
 		ediToXMLOrdersRoute = ediToXMLOrdersRoute
 				.log(LoggingLevel.INFO, "EDI: Setting EDI ORDER defaults as properties...")

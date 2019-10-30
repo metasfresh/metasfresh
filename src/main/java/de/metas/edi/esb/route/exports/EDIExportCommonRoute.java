@@ -45,8 +45,8 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 	@Override
 	public void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
 	{
-		final String isXMLInvoice = Util.resolvePropertyPlaceholders(getContext(), EDIExportCommonRoute.EDI_INVOICE_IS_STEPCOM_XML);
-		final String isXMLDesadv = Util.resolvePropertyPlaceholders(getContext(), EDIExportCommonRoute.EDI_DESADV_IS_STEPCOM_XML);
+		final String isXMLInvoice = Util.resolveProperty(getContext(), EDIExportCommonRoute.EDI_INVOICE_IS_STEPCOM_XML);
+		final String isXMLDesadv = Util.resolveProperty(getContext(), EDIExportCommonRoute.EDI_DESADV_IS_STEPCOM_XML);
 		from(Constants.EP_AMQP_FROM_AD)
 				.routeId("XML-To-EDI-Common")
 

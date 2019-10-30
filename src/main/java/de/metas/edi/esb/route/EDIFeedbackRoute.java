@@ -59,7 +59,7 @@ public class EDIFeedbackRoute extends RouteBuilder
 	@Override
 	public void configure()
 	{
-		final String feedbackMessageRoutingKey = Util.resolvePropertyPlaceholders(getContext(), Constants.EP_AMQP_TO_AD_DURABLE_ROUTING_KEY);
+		final String feedbackMessageRoutingKey = Util.resolveProperty(getContext(), Constants.EP_AMQP_TO_AD_DURABLE_ROUTING_KEY);
 
 		// Catch any exception in feedback, log it, and stop the route from continuing execution.
 		onException(Exception.class)

@@ -52,7 +52,7 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 
 	public static final String EP_EDI_STEPCOM_XML_DESADV_CONSUMER = "direct:edi.xml.desadv.consumer";
 
-	public static final String EDI_XML_DESADV_IS_TEST = "edi.props.desadv.stepcom-xml.isTest";
+	//public static final String EDI_XML_DESADV_IS_TEST = "edi.props.desadv.stepcom-xml.isTest";
 
 	public static final String EDI_XML_OWNER_ID = "edi.props.stepcom.owner.id";
 	public static final String EDI_XML_APPLICATION_REF = "edi.props.stepcom.application.ref";
@@ -70,7 +70,7 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 	@Override
 	public void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
 	{
-		final String charset = Util.resolvePropertyPlaceholders(getContext(), AbstractEDIRoute.EDI_STEPCOM_CHARSET_NAME);
+		final String charset = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_STEPCOM_CHARSET_NAME);
 
 		final JaxbDataFormat dataFormat = new JaxbDataFormat(JAXB_DESADV_CONTEXTPATH);
 		dataFormat.setCamelContext(getContext());
@@ -80,21 +80,19 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 		final ReaderTypeConverter readerTypeConverter = new ReaderTypeConverter();
 		getContext().getTypeConverterRegistry().addTypeConverters(readerTypeConverter);
 
-		final String desadvFilenamePattern = Util.resolvePropertyPlaceholders(getContext(), StepComXMLDesadvRoute.EDI_DESADV_XML_FILENAME_PATTERN);
+		final String desadvFilenamePattern = Util.resolveProperty(getContext(), StepComXMLDesadvRoute.EDI_DESADV_XML_FILENAME_PATTERN);
 
-		final String isTest = Util.resolvePropertyPlaceholders(getContext(), StepComXMLDesadvRoute.EDI_XML_DESADV_IS_TEST);
-		final String ownerId = Util.resolvePropertyPlaceholders(getContext(), StepComXMLDesadvRoute.EDI_XML_OWNER_ID);
-		final String applicationRef = Util.resolvePropertyPlaceholders(getContext(), StepComXMLDesadvRoute.EDI_XML_APPLICATION_REF);
-		final String supplierGln = Util.resolvePropertyPlaceholders(getContext(), StepComXMLDesadvRoute.EDI_XML_SUPPLIER_GLN);
+		final String ownerId = Util.resolveProperty(getContext(), StepComXMLDesadvRoute.EDI_XML_OWNER_ID);
+		final String applicationRef = Util.resolveProperty(getContext(), StepComXMLDesadvRoute.EDI_XML_APPLICATION_REF);
+		final String supplierGln = Util.resolveProperty(getContext(), StepComXMLDesadvRoute.EDI_XML_SUPPLIER_GLN);
 
-		final String defaultEDIMessageDatePattern = Util.resolvePropertyPlaceholders(getContext(), StepComXMLDesadvRoute.EDI_ORDER_EDIMessageDatePattern);
-		final String feedbackMessageRoutingKey = Util.resolvePropertyPlaceholders(getContext(), Constants.EP_AMQP_TO_AD_DURABLE_ROUTING_KEY);
+		final String defaultEDIMessageDatePattern = Util.resolveProperty(getContext(), StepComXMLDesadvRoute.EDI_ORDER_EDIMessageDatePattern);
+		final String feedbackMessageRoutingKey = Util.resolveProperty(getContext(), Constants.EP_AMQP_TO_AD_DURABLE_ROUTING_KEY);
 
 		from(StepComXMLDesadvRoute.EP_EDI_STEPCOM_XML_DESADV_CONSUMER)
 				.routeId(ROUTE_ID)
 
 				.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
-				.setProperty(StepComXMLDesadvRoute.EDI_XML_DESADV_IS_TEST).constant(isTest)
 				.setProperty(StepComXMLDesadvRoute.EDI_XML_OWNER_ID).constant(ownerId)
 				.setProperty(StepComXMLDesadvRoute.EDI_XML_APPLICATION_REF).constant(applicationRef)
 				.setProperty(StepComXMLDesadvRoute.EDI_XML_SUPPLIER_GLN).constant(supplierGln)

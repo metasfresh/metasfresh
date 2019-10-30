@@ -38,7 +38,7 @@ import org.apache.camel.RuntimeCamelException;
 import org.apache.commons.lang.StringUtils;
 
 import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.commons.StepComUtil;
+import de.metas.edi.esb.commons.StepComInvoicSettings;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctop119VType;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctop120VType;
@@ -123,21 +123,19 @@ public class StepComXMLInvoicBean
 	private Document createDocument(final Exchange exchange, final EDICctopInvoicVType invoice)
 	{
 		final DecimalFormat decimalFormat = exchange.getProperty(Constants.DECIMAL_FORMAT, DecimalFormat.class);
-		final String isTest = exchange.getProperty(StepComXMLInvoicRoute.EDI_XML_INVOIC_IS_TEST, String.class);
 		final String ownerId = exchange.getProperty(StepComXMLInvoicRoute.EDI_XML_OWNER_ID, String.class);
 		final String applicationRef = exchange.getProperty(StepComXMLInvoicRoute.EDI_XML_APPLICATION_REF, String.class);
 
 		final Document document = INVOIC_objectFactory.createDocument();
 		final Xrech4H xrech4H = INVOIC_objectFactory.createXrech4H();
 
+		final StepComInvoicSettings receiverSettings = StepComInvoicSettings.forReceiverGLN(exchange.getContext(), invoice.getReceivergln());
+
 		final HEADERXrech headerXrech = INVOIC_objectFactory.createHEADERXrech();
-		headerXrech.setTESTINDICATOR(isTest);
+		headerXrech.setTESTINDICATOR(receiverSettings.getTestIndicator());
 
-		final String partnerId = StepComUtil.resolvePartnerId(
-				exchange.getContext(),
-				invoice.getReceivergln());
 
-		headerXrech.setPARTNERID(partnerId);
+		headerXrech.setPARTNERID(receiverSettings.getPartnerId());
 		headerXrech.setAPPLICATIONREF(applicationRef);
 		headerXrech.setOWNERID(ownerId);
 		final String documentId = invoice.getInvoiceDocumentno();
@@ -179,7 +177,6 @@ public class StepComXMLInvoicBean
 		xrech4H.setTRAILR(docTrailer);
 		document.getXrech4H().add(xrech4H);
 		return document;
-
 	}
 
 	private DocumentType mapDocumentType(final String eancomDocType)

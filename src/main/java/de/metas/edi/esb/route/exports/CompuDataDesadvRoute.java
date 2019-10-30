@@ -73,9 +73,9 @@ public class CompuDataDesadvRoute extends AbstractEDIRoute
 		final ReaderTypeConverter readerTypeConverter = new ReaderTypeConverter();
 		getContext().getTypeConverterRegistry().addTypeConverters(readerTypeConverter);
 
-		final String desadvFilenamePattern = Util.resolvePropertyPlaceholders(getContext(), CompuDataDesadvRoute.EDI_DESADV_FILENAME_PATTERN);
+		final String desadvFilenamePattern = Util.resolveProperty(getContext(), CompuDataDesadvRoute.EDI_DESADV_FILENAME_PATTERN);
 
-		final String isTest = Util.resolvePropertyPlaceholders(getContext(), CompuDataDesadvRoute.EDI_DESADV_IS_TEST);
+		final String isTest = Util.resolveProperty(getContext(), CompuDataDesadvRoute.EDI_DESADV_IS_TEST);
 
 		from(CompuDataDesadvRoute.EP_EDI_COMPUDATA_DESADV_CONSUMER)
 				.routeId(ROUTE_ID)

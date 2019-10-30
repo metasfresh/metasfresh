@@ -49,10 +49,10 @@ public class CompuDataInvoicRoute extends AbstractEDIRoute
 		final ReaderTypeConverter readerTypeConverter = new ReaderTypeConverter();
 		getContext().getTypeConverterRegistry().addTypeConverters(readerTypeConverter);
 
-		final String invoiceFilenamePattern = Util.resolvePropertyPlaceholders(getContext(), CompuDataInvoicRoute.EDI_INVOICE_FILENAME_PATTERN);
+		final String invoiceFilenamePattern = Util.resolveProperty(getContext(), CompuDataInvoicRoute.EDI_INVOICE_FILENAME_PATTERN);
 
-		final String senderGln = Util.resolvePropertyPlaceholders(getContext(), CompuDataInvoicRoute.EDI_INVOIC_SENDER_GLN);
-		final String isTest = Util.resolvePropertyPlaceholders(getContext(), CompuDataInvoicRoute.EDI_INVOIC_IS_TEST);
+		final String senderGln = Util.resolveProperty(getContext(), CompuDataInvoicRoute.EDI_INVOIC_SENDER_GLN);
+		final String isTest = Util.resolveProperty(getContext(), CompuDataInvoicRoute.EDI_INVOIC_IS_TEST);
 
 		from(CompuDataInvoicRoute.EP_EDI_COMPUDATA_INVOICE_CONSUMER)
 				.routeId(ROUTE_ID)

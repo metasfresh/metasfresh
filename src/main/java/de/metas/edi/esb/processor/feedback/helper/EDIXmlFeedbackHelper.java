@@ -74,7 +74,7 @@ public final class EDIXmlFeedbackHelper
 	{
 		// make sure that the response sent to metasfresh has the correct CHARSET
 		// NOTE that this will override the existing CHARSET, and that if you do stuff with other exchange content afterwards, you need to set it (again if necessary)
-		exchange.setProperty(Exchange.CHARSET_NAME, Util.resolvePropertyPlaceholders(exchange.getContext(), EDIXmlFeedbackHelper.EDI_FEEDBACK_CHAREST_NAME));
+		exchange.setProperty(Exchange.CHARSET_NAME, Util.resolveProperty(exchange.getContext(), EDIXmlFeedbackHelper.EDI_FEEDBACK_CHAREST_NAME));
 
 		final Message inMessage = exchange.getIn();
 

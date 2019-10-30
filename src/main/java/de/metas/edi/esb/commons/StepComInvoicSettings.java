@@ -2,8 +2,9 @@ package de.metas.edi.esb.commons;
 
 import org.apache.camel.CamelContext;
 
+import lombok.Builder;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import lombok.Value;
 
 /*
  * #%L
@@ -27,15 +28,22 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
-@UtilityClass
-public class StepComUtil
+@Value
+@Builder
+public class StepComInvoicSettings
 {
-	public String resolvePartnerId(
+	public static StepComInvoicSettings forReceiverGLN(
 			@NonNull final CamelContext context,
-			@NonNull final String ediRecipientGLN)
+			@NonNull final String recipientGLN)
 	{
-		final String partnerId = Util.resolvePropertyPlaceholders(context, "edi.stepcom.recipientGLN." + ediRecipientGLN + ".partnerId");
-		return partnerId;
+		return StepComInvoicSettings
+				.builder()
+				.partnerId(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".partnerId"))
+				.testIndicator(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.testIndicator", "T"))
+				.build();
 	}
 
+	String partnerId;
+
+	String testIndicator;
 }

@@ -27,7 +27,7 @@ import static de.metas.edi.esb.commons.Util.formatNumber;
 import static de.metas.edi.esb.commons.Util.toDate;
 import static de.metas.edi.esb.commons.Util.toFormattedStringDate;
 import static de.metas.edi.esb.commons.Util.trimAndTruncate;
-import static de.metas.edi.esb.commons.ValidationHelper.validateString;
+import static de.metas.edi.esb.commons.ValidationHelper.*;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -37,7 +37,7 @@ import org.apache.camel.Exchange;
 import org.apache.commons.lang.StringUtils;
 
 import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.commons.StepComUtil;
+import de.metas.edi.esb.commons.StepComDesadvSettings;
 import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpCBPartnerLocationType;
@@ -89,10 +89,6 @@ public class StepComXMLDesadvBean
 		final StepComDesadvValidation validation = new StepComDesadvValidation();
 
 		// validate mandatory exchange properties
-		validateString(
-				exchange.getProperty(StepComXMLDesadvRoute.EDI_XML_DESADV_IS_TEST, String.class),
-				"exchange property " + StepComXMLDesadvRoute.EDI_XML_DESADV_IS_TEST + " cannot be null or empty");
-
 		final EDIExpDesadvType xmlDesadv = validation.validateExchange(exchange); // throw exceptions if mandatory fields are missing
 		final Document desadvDocument = createDesadvDocumentFromXMLBean(xmlDesadv, exchange);
 
@@ -104,7 +100,6 @@ public class StepComXMLDesadvBean
 	private Document createDesadvDocumentFromXMLBean(@NonNull final EDIExpDesadvType xmlDesadv, @NonNull final Exchange exchange)
 	{
 		final DecimalFormat decimalFormat = exchange.getProperty(Constants.DECIMAL_FORMAT, DecimalFormat.class);
-		final String isTest = exchange.getProperty(StepComXMLDesadvRoute.EDI_XML_DESADV_IS_TEST, String.class);
 		final String dateFormat = (String)exchange.getProperty(AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern);
 
 		final String ownerId = exchange.getProperty(StepComXMLDesadvRoute.EDI_XML_OWNER_ID, String.class);
@@ -118,14 +113,13 @@ public class StepComXMLDesadvBean
 		final HEADERXlief header = DESADV_objectFactory.createHEADERXlief();
 		final String documentId = xmlDesadv.getDocumentNo();
 
-		final String partnerId = StepComUtil.resolvePartnerId(
-				exchange.getContext(),
-				xmlDesadv.getCBPartnerID().getEdiRecipientGLN());
+		// TODO instead of adding all the properties above to the exchange, add them to this settings instance
+		final StepComDesadvSettings receiverSettings = StepComDesadvSettings.forReceiverGLN(exchange.getContext(), xmlDesadv.getCBPartnerID().getEdiRecipientGLN());
 
 		header.setDOCUMENTID(documentId);
-		header.setPARTNERID(partnerId);
+		header.setPARTNERID(receiverSettings.getPartnerId());
 		header.setOWNERID(ownerId);
-		header.setTESTINDICATOR(isTest);
+		header.setTESTINDICATOR(receiverSettings.getTestIndicator());
 		header.setMESSAGEREF(formatNumber(xmlDesadv.getSequenceNoAttr(), decimalFormat));
 		header.setAPPLICATIONREF(applicationRef);
 		header.setDOCUMENTTYP(DocumentType.DADV.toString());
@@ -137,7 +131,7 @@ public class StepComXMLDesadvBean
 
 		mapAddresses(xmlDesadv, header, supplierGln);
 
-		mapPackaging(xmlDesadv, header, decimalFormat);
+		mapPackaging(xmlDesadv, header, receiverSettings, decimalFormat);
 
 		final TRAILR trailr = DESADV_objectFactory.createTRAILR();
 		trailr.setDOCUMENTID(documentId);
@@ -172,6 +166,7 @@ public class StepComXMLDesadvBean
 	private void mapPackaging(
 			@NonNull final EDIExpDesadvType xmlDesadv,
 			@NonNull final HEADERXlief header,
+			@NonNull final StepComDesadvSettings receiverSettings,
 			@NonNull final DecimalFormat decimalFormat)
 	{
 		final PACKINXlief packaging = DESADV_objectFactory.createPACKINXlief();
@@ -188,14 +183,20 @@ public class StepComXMLDesadvBean
 			// usually one, as per spec
 			packDetail.setPACKAGINGDETAIL(DEFAULT_PACK_DETAIL);
 
-			packDetail.setPACKAGINGCODE(ediExpDesadvLineType.getMHUPackagingCodeTUText());
-			packDetail.setPACKAGINGLEVEL(PackagingLevel.INNE.toString());
+			if (receiverSettings.isDesadvLinePackagingCodeTURequired())
+			{
+				packDetail.setPACKAGINGLEVEL(PackagingLevel.INNE.toString());
+				final String packagingCodeTU = validateString(
+						ediExpDesadvLineType.getMHUPackagingCodeTUText(),
+						"@FillMandatory@ @EDI_DesadvLine_ID@=" + ediExpDesadvLineType.getLine() + " @M_HU_PackagingCode_TU_ID@");
+				packDetail.setPACKAGINGCODE(packagingCodeTU);
+			}
 
 			packDetail.setIDENTIFICATIONQUAL(PackIdentificationQual.SSCC.toString());
 			final String sscc18Value = Util.removePrecedingZeros(ediExpDesadvLineType.getIPASSCC18());
 			packDetail.setIDENTIFICATIONCODE(sscc18Value);
 
-			mapDetail(packDetail, xmlDesadv, ediExpDesadvLineType, decimalFormat);
+			mapDetail(packDetail, xmlDesadv, ediExpDesadvLineType, receiverSettings, decimalFormat);
 			packaging.getPPACK1().add(packDetail);
 
 			if (packagingCodeLUText == null)
@@ -214,6 +215,7 @@ public class StepComXMLDesadvBean
 			@NonNull final PPACK1 packDetail,
 			@NonNull final EDIExpDesadvType xmlDesadv,
 			@NonNull final EDIExpDesadvLineType ediExpDesadvLineType,
+			@NonNull final StepComDesadvSettings receiverSettings,
 			final DecimalFormat decimalFormat)
 	{
 		final String documentId = packDetail.getDOCUMENTID();
@@ -288,14 +290,17 @@ public class StepComXMLDesadvBean
 			prodDescr.setPRODUCTDESCTEXT(trimAndTruncate(ediExpDesadvLineType.getProductDescription(), 512));
 			detail.getDPRDE1().add(prodDescr);
 		}
-		if (ediExpDesadvLineType.getPriceActual() != null)
+		if (receiverSettings.isDesadvLinePRICRequired())
 		{
+			final BigDecimal priceActual = validateObject(ediExpDesadvLineType.getPriceActual(),
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + ediExpDesadvLineType.getLine() + " @PriceActual@");
+
 			final DPRDE1 prodDescr = DESADV_objectFactory.createDPRDE1();
 			prodDescr.setDOCUMENTID(documentId);
 			prodDescr.setLINENUMBER(lineNumber);
 			prodDescr.setPRODUCTDESCQUAL(ProductDescQual.PRIC.toString());
 			prodDescr.setPRODUCTDESCTYPE(ProductDescType.CU.toString());
-			prodDescr.setPRODUCTDESCTEXT(formatNumber(ediExpDesadvLineType.getPriceActual(), decimalFormat));
+			prodDescr.setPRODUCTDESCTEXT(formatNumber(priceActual, decimalFormat));
 			detail.getDPRDE1().add(prodDescr);
 		}
 
@@ -321,19 +326,29 @@ public class StepComXMLDesadvBean
 			detail.getDQUAN1().add(cuTuQuantity);
 		}
 
-		final DREFE1 orderHeaderRef = DESADV_objectFactory.createDREFE1();
-		orderHeaderRef.setDOCUMENTID(documentId);
-		orderHeaderRef.setLINENUMBER(lineNumber);
-		orderHeaderRef.setREFERENCEQUAL(ReferenceQual.ORBU.toString());
-		orderHeaderRef.setREFERENCE(xmlDesadv.getPOReference());
-		detail.getDREFE1().add(orderHeaderRef);
+		if (receiverSettings.isDesadvLineORBU())
+		{
+			final DREFE1 orderHeaderRef = DESADV_objectFactory.createDREFE1();
+			orderHeaderRef.setDOCUMENTID(documentId);
+			orderHeaderRef.setLINENUMBER(lineNumber);
+			orderHeaderRef.setREFERENCEQUAL(ReferenceQual.ORBU.toString());
+			orderHeaderRef.setREFERENCE(xmlDesadv.getPOReference());
+			if (receiverSettings.isDesadvLineORBUOrderLineReference())
+			{
+				orderHeaderRef.setREFERENCELINE(lineNumber);
+			}
+			detail.getDREFE1().add(orderHeaderRef);
+		}
 
-		final DREFE1 orderLineRef = DESADV_objectFactory.createDREFE1();
-		orderLineRef.setDOCUMENTID(documentId);
-		orderLineRef.setLINENUMBER(lineNumber);
-		orderLineRef.setREFERENCEQUAL(ReferenceQual.LIRN.toString());
-		orderLineRef.setREFERENCELINE(lineNumber);
-		detail.getDREFE1().add(orderLineRef);
+		if (receiverSettings.isDesadvLineLINR())
+		{
+			final DREFE1 orderLineRef = DESADV_objectFactory.createDREFE1();
+			orderLineRef.setDOCUMENTID(documentId);
+			orderLineRef.setLINENUMBER(lineNumber);
+			orderLineRef.setREFERENCEQUAL(ReferenceQual.LIRN.toString());
+			orderLineRef.setREFERENCELINE(lineNumber);
+			detail.getDREFE1().add(orderLineRef);
+		}
 
 		final BigDecimal quantityDiff = ediExpDesadvLineType.getQtyEntered().subtract(qtyDelivered);
 		if (quantityDiff.signum() != 0)

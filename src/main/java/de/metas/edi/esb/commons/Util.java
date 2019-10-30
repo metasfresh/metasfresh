@@ -424,8 +424,6 @@ public final class Util
 	}
 
 	/**
-	 * @param templateClass
-	 * @param lookupValues
 	 * @return generic lookup object
 	 */
 	public static <T> T resolveGenericLookup(final Class<T> templateClass, final ILookupValue<?>... lookupValues)
@@ -440,10 +438,20 @@ public final class Util
 		}
 	}
 
+	public static String resolveProperty(
+			@NonNull final CamelContext context,
+			@NonNull final String propertyKey)
+	{
+		return resolveProperty(context, propertyKey, null);
+	}
+
 	/**
-	 * @return String resolved property from context
+	 * @return String resolved property from context, or the @code defaultValue} if given
 	 */
-	public static String resolvePropertyPlaceholders(final CamelContext context, final String propertyKey)
+	public static String resolveProperty(
+			@NonNull final CamelContext context,
+			@NonNull final String propertyKey,
+			@Nullable final String defaultValue)
 	{
 		try
 		{
@@ -451,30 +459,42 @@ public final class Util
 		}
 		catch (final Exception e)
 		{
+			if (defaultValue != null)
+			{
+				return defaultValue;
+			}
 			throw new IllegalArgumentException("Exception occured when retrieving property key: " + propertyKey, e);
 		}
 	}
 
-	public static int resolvePropertyPlaceholdersAsInt(final CamelContext context, final String propertyKey)
+	public static int resolvePropertyPlaceholdersAsInt(
+			@NonNull final CamelContext context,
+			@NonNull final String propertyKey)
 	{
-		final String valueStr = resolvePropertyPlaceholders(context, propertyKey);
+		final String valueStr = resolveProperty(context, propertyKey, null);
 		return Integer.parseInt(valueStr);
+	}
+
+	public static int resolvePropertyPlaceholdersAsInt(
+			@NonNull final CamelContext context,
+			@NonNull final String propertyKey,
+			@NonNull final String defaultValue)
+	{
+		final String valueStr = resolveProperty(context, propertyKey, defaultValue);
+		return Integer.parseInt(valueStr);
+	}
+
+	public static boolean resolvePropertyAsBool(
+			@NonNull final CamelContext context,
+			@NonNull final String propertyKey,
+			String defaultValue)
+	{
+		final String valueStr = resolveProperty(context, propertyKey, defaultValue);
+		return Boolean.parseBoolean(valueStr);
 	}
 
 	/**
 	 * Invoke setter method on object.
-	 *
-	 * @param objectType
-	 * @param object
-	 * @param value
-	 * @param valueType
-	 * @param methodName
-	 * @throws IllegalArgumentException
-	 * @throws SecurityException
-	 * @throws IllegalAccessException
-	 * @throws InvocationTargetException
-	 * @throws InstantiationException
-	 * @throws NoSuchMethodException
 	 */
 	public static <T> void invokeSetterMethod(final T object, final Object value, final Class<?> valueType, final String methodName)
 			throws IllegalArgumentException, SecurityException, IllegalAccessException, InvocationTargetException, InstantiationException, NoSuchMethodException

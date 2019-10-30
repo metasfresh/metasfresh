@@ -99,7 +99,7 @@ public abstract class AbstractEDIRoute extends RouteBuilder
 	 */
 	protected final SmooksDataFormat getSDFForConfiguration(final String propertiesConfigurationPath)
 	{
-		final String smooksConfigurationPath = Util.resolvePropertyPlaceholders(getContext(), propertiesConfigurationPath);
+		final String smooksConfigurationPath = Util.resolveProperty(getContext(), propertiesConfigurationPath);
 
 		try
 		{
@@ -119,20 +119,20 @@ public abstract class AbstractEDIRoute extends RouteBuilder
 		final DecimalFormat decimalFormat = (DecimalFormat)NumberFormat.getInstance();
 
 		final ModelCamelContext context = getContext();
-		decimalFormat.setMaximumFractionDigits(Integer.valueOf(Util.resolvePropertyPlaceholders(context, "edi.decimalformat.maximumFractionDigits")));
+		decimalFormat.setMaximumFractionDigits(Integer.valueOf(Util.resolveProperty(context, "edi.decimalformat.maximumFractionDigits")));
 
-		final boolean isGroupingUsed = Boolean.valueOf(Util.resolvePropertyPlaceholders(context, "edi.decimalformat.isGroupingUsed"));
+		final boolean isGroupingUsed = Boolean.valueOf(Util.resolveProperty(context, "edi.decimalformat.isGroupingUsed"));
 		decimalFormat.setGroupingUsed(isGroupingUsed);
 
 		final DecimalFormatSymbols decimalFormatSymbols = decimalFormat.getDecimalFormatSymbols();
 
 		if (isGroupingUsed)
 		{
-			final char groupingSeparator = Util.resolvePropertyPlaceholders(context, "edi.decimalformat.symbol.groupingSeparator").charAt(0);
+			final char groupingSeparator = Util.resolveProperty(context, "edi.decimalformat.symbol.groupingSeparator").charAt(0);
 			decimalFormatSymbols.setGroupingSeparator(groupingSeparator);
 		}
 
-		final char decimalSeparator = Util.resolvePropertyPlaceholders(context, "edi.decimalformat.symbol.decimalSeparator").charAt(0);
+		final char decimalSeparator = Util.resolveProperty(context, "edi.decimalformat.symbol.decimalSeparator").charAt(0);
 		decimalFormatSymbols.setDecimalSeparator(decimalSeparator);
 
 		decimalFormat.setDecimalFormatSymbols(decimalFormatSymbols); // though it seems redundant, it won't be set otherwise for some reason...

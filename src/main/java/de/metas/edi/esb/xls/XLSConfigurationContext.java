@@ -10,12 +10,12 @@ package de.metas.edi.esb.xls;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,7 +34,7 @@ import de.metas.edi.esb.commons.Util;
 
 /**
  * Immutable Excel OLCand import configuration properties.
- * 
+ *
  * @author tsa
  * @task 08839
  */
@@ -43,10 +43,10 @@ public final class XLSConfigurationContext
 {
 	/**
 	 * Creates the configuration by extracting the values from given {@link Exchange}'s properties
-	 * 
+	 *
 	 * NOTE: the properties were set Exchange by {@link #asSetPropertiesToExchangeProcessor()}.
 	 */
-	public static final XLSConfigurationContext createFromExchange(final Exchange exchange)
+	public static XLSConfigurationContext createFromExchange(final Exchange exchange)
 	{
 		return new XLSConfigurationContext(exchange);
 	}
@@ -54,7 +54,7 @@ public final class XLSConfigurationContext
 	/**
 	 * Creates the configuration by extracting the values from given {@link CamelContext}'s properties
 	 */
-	public static final XLSConfigurationContext createFromCamelContext(final CamelContext camelContext)
+	public static XLSConfigurationContext createFromCamelContext(final CamelContext camelContext)
 	{
 		return new XLSConfigurationContext(camelContext);
 	}
@@ -103,18 +103,17 @@ public final class XLSConfigurationContext
 
 	private XLSConfigurationContext(final CamelContext camelContext)
 	{
-		super();
 		this.CamelFileName = null; // NOT available
 		// this.EDIMessageDatePattern = Util.resolvePropertyPlaceholders(camelContext, CONTEXT_EDIMessageDatePattern);
-		this.AD_Client_Value = Util.resolvePropertyPlaceholders(camelContext, CONTEXT_AD_Client_Value);
+		this.AD_Client_Value = Util.resolveProperty(camelContext, CONTEXT_AD_Client_Value);
 		this.AD_Org_ID = Util.resolvePropertyPlaceholdersAsInt(camelContext, CONTEXT_AD_Org_ID);
-		this.ADInputDataDestination_InternalName = Util.resolvePropertyPlaceholders(camelContext, CONTEXT_ADInputDataDestination_InternalName);
-		this.ADInputDataSourceID = new BigInteger(Util.resolvePropertyPlaceholders(camelContext, CONTEXT_ADInputDataSourceID));
-		this.ADUserEnteredByID = new BigInteger(Util.resolvePropertyPlaceholders(camelContext, CONTEXT_ADUserEnteredByID));
-		this.DeliveryRule = Util.resolvePropertyPlaceholders(camelContext, CONTEXT_DELIVERY_RULE);
-		this.DeliveryViaRule = Util.resolvePropertyPlaceholders(camelContext, CONTEXT_DELIVERY_VIA_RULE);
+		this.ADInputDataDestination_InternalName = Util.resolveProperty(camelContext, CONTEXT_ADInputDataDestination_InternalName);
+		this.ADInputDataSourceID = new BigInteger(Util.resolveProperty(camelContext, CONTEXT_ADInputDataSourceID));
+		this.ADUserEnteredByID = new BigInteger(Util.resolveProperty(camelContext, CONTEXT_ADUserEnteredByID));
+		this.DeliveryRule = Util.resolveProperty(camelContext, CONTEXT_DELIVERY_RULE);
+		this.DeliveryViaRule = Util.resolveProperty(camelContext, CONTEXT_DELIVERY_VIA_RULE);
 		//
-		this.currencyISOCode = Util.resolvePropertyPlaceholders(camelContext, CONTEXT_CurrencyISOCode);
+		this.currencyISOCode = Util.resolveProperty(camelContext, CONTEXT_CurrencyISOCode);
 	}
 
 	@Override

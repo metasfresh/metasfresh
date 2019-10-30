@@ -56,7 +56,6 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 	public static final String EDI_XML_APPLICATION_REF = "edi.props.stepcom.application.ref";
 
 	private static final String EDI_INVOICE_SENDER_GLN = "edi.props.000.sender.gln";
-	public static final String EDI_XML_INVOIC_IS_TEST = "edi.props.invoic.stepcom-xml.isTest";
 
 	private final static QName EDIInvoiceFeedback_QNAME = Constants.JAXB_ObjectFactory.createEDIInvoiceFeedback(null).getName();
 	private static final String METHOD_setCInvoiceID = "setCInvoiceID";
@@ -68,7 +67,7 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 	@Override
 	public void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
 	{
-		final String charset = Util.resolvePropertyPlaceholders(getContext(), AbstractEDIRoute.EDI_STEPCOM_CHARSET_NAME);
+		final String charset = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_STEPCOM_CHARSET_NAME);
 
 		final JaxbDataFormat dataFormat = new JaxbDataFormat(JAXB_INVOIC_CONTEXTPATH);
 		dataFormat.setCamelContext(getContext());
@@ -78,21 +77,19 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 		final ReaderTypeConverter readerTypeConverter = new ReaderTypeConverter();
 		getContext().getTypeConverterRegistry().addTypeConverters(readerTypeConverter);
 
-		final String invoiceXMLFilenamePattern = Util.resolvePropertyPlaceholders(getContext(), EDI_STEPCOM_XML_INVOICE_FILENAME_PATTERN);
+		final String invoiceXMLFilenamePattern = Util.resolveProperty(getContext(), EDI_STEPCOM_XML_INVOICE_FILENAME_PATTERN);
 
-		final String senderGln = Util.resolvePropertyPlaceholders(getContext(), EDI_INVOICE_SENDER_GLN);
-		final String isTest = Util.resolvePropertyPlaceholders(getContext(), EDI_XML_INVOIC_IS_TEST);
-		final String ownerId = Util.resolvePropertyPlaceholders(getContext(), EDI_XML_OWNER_ID);
-		final String applicationRef = Util.resolvePropertyPlaceholders(getContext(), EDI_XML_APPLICATION_REF);
-		final String defaultEDIMessageDatePattern = Util.resolvePropertyPlaceholders(getContext(), AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern);
-		final String feedbackMessageRoutingKey = Util.resolvePropertyPlaceholders(getContext(), Constants.EP_AMQP_TO_AD_DURABLE_ROUTING_KEY);
+		final String senderGln = Util.resolveProperty(getContext(), EDI_INVOICE_SENDER_GLN);
+		final String ownerId = Util.resolveProperty(getContext(), EDI_XML_OWNER_ID);
+		final String applicationRef = Util.resolveProperty(getContext(), EDI_XML_APPLICATION_REF);
+		final String defaultEDIMessageDatePattern = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern);
+		final String feedbackMessageRoutingKey = Util.resolveProperty(getContext(), Constants.EP_AMQP_TO_AD_DURABLE_ROUTING_KEY);
 
 		from(EP_EDI_STEPCOM_XML_INVOICE_CONSUMER)
 				.routeId(ROUTE_ID)
 
 				.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
 				.setProperty(EDI_INVOICE_SENDER_GLN).constant(senderGln)
-				.setProperty(EDI_XML_INVOIC_IS_TEST).constant(isTest)
 				.setProperty(EDI_XML_OWNER_ID).constant(ownerId)
 				.setProperty(EDI_XML_APPLICATION_REF).constant(applicationRef)
 				.setProperty(AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern).constant(defaultEDIMessageDatePattern)
