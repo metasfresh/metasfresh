@@ -8,8 +8,6 @@ import org.adempiere.invoice.service.impl.InvoiceBL;
 import org.adempiere.invoice.service.impl.InvoiceDAO;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.misc.service.impl.POService;
-import org.adempiere.process.event.IProcessEventSupport;
-import org.adempiere.process.event.impl.ProcessEventSupport;
 import org.adempiere.processing.service.IProcessingService;
 import org.adempiere.processing.service.impl.ProcessingService;
 
@@ -60,7 +58,6 @@ public class StandardServices implements IAddOn
 		Services.registerService(ICalendarDAO.class, new CalendarDAO());
 		Services.registerService(IPOService.class, new POService());
 		Services.registerService(IPriceListDAO.class, new PriceListDAO());
-		Services.registerService(IProcessEventSupport.class, new ProcessEventSupport());
 		Services.registerService(IProcessingService.class, ProcessingService.get());
 
 		Services.registerService(ISweepTableBL.class, new SweepTableBL());
