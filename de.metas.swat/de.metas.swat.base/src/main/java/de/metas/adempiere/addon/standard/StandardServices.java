@@ -14,12 +14,10 @@ import org.adempiere.processing.service.impl.ProcessingService;
 import de.metas.adempiere.addon.IAddOn;
 import de.metas.adempiere.service.AppDictionaryBL;
 import de.metas.adempiere.service.IAppDictionaryBL;
-import de.metas.adempiere.service.IGlobalLockSystem;
 import de.metas.adempiere.service.IParameterBL;
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.adempiere.service.ISweepTableBL;
 import de.metas.adempiere.service.ITableColumnPathBL;
-import de.metas.adempiere.service.impl.GlobalLockSystem;
 import de.metas.adempiere.service.impl.ParameterBL;
 import de.metas.adempiere.service.impl.PrinterRoutingBL;
 import de.metas.adempiere.service.impl.SweepTableBL;
@@ -62,7 +60,6 @@ public class StandardServices implements IAddOn
 
 		Services.registerService(ISweepTableBL.class, new SweepTableBL());
 
-		Services.registerService(IGlobalLockSystem.class, new GlobalLockSystem());
 		Services.registerService(IAppDictionaryBL.class, new AppDictionaryBL());
 		Services.registerService(ITableColumnPathBL.class, new TableColumnPathBL());
 
