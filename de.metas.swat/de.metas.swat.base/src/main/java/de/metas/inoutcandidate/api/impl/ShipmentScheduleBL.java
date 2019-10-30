@@ -803,8 +803,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
 
-		final boolean isCatchWeight = isCatchWeight(ShipmentScheduleId.ofRepoId(sched.getM_ShipmentSchedule_ID()));
-		if(!isCatchWeight)
+		final boolean isCatchWeight = isCatchWeight(sched);
+		if (!isCatchWeight)
 		{
 			return;
 		}
@@ -1234,16 +1234,13 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public boolean isCatchWeight(final ShipmentScheduleId shipmentScheduleId)
+	public boolean isCatchWeight(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
-		final IShipmentSchedulePA shipmentScheduleDAO = Services.get(IShipmentSchedulePA.class);
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-
-		final I_M_ShipmentSchedule shipmentScheduleRecord = shipmentScheduleDAO.getById(shipmentScheduleId);
 
 		final int orderLineId = shipmentScheduleRecord.getC_OrderLine_ID();
 
-		if(orderLineId < 0)
+		if (orderLineId < 0)
 		{
 			// returning true to keep the old behavior for shipment schedules that are not for sales orders.
 			return true;

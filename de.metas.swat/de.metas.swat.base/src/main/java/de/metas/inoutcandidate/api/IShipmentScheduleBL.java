@@ -196,5 +196,5 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	void applyUserChanges(ShipmentScheduleUserChangeRequestsList userChanges);
 
-	boolean isCatchWeight(ShipmentScheduleId id);
+	boolean isCatchWeight(I_M_ShipmentSchedule shipmentScheduleRecord);
 }
