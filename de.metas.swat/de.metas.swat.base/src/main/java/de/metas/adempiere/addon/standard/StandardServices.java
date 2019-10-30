@@ -10,9 +10,7 @@ import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.invoice.service.impl.InvoiceBL;
 import org.adempiere.invoice.service.impl.InvoiceDAO;
 import org.adempiere.misc.service.IPOService;
-import org.adempiere.misc.service.ITablePA;
 import org.adempiere.misc.service.impl.POService;
-import org.adempiere.misc.service.impl.TablePA;
 import org.adempiere.process.event.IProcessEventSupport;
 import org.adempiere.process.event.impl.ProcessEventSupport;
 import org.adempiere.processing.service.IProcessingService;
@@ -74,7 +72,6 @@ public class StandardServices implements IAddOn
 		Services.registerService(IProcessingService.class, ProcessingService.get());
 
 		Services.registerService(ISweepTableBL.class, new SweepTableBL());
-		Services.registerService(ITablePA.class, new TablePA());
 
 		Services.registerService(IGlobalLockSystem.class, new GlobalLockSystem());
 		Services.registerService(IAppDictionaryBL.class, new AppDictionaryBL());
