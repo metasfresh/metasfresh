@@ -144,12 +144,21 @@ export class RawWidget extends Component {
    * @param {*} value
    */
   handleKeyDown = (e, property, value) => {
-    const { lastFormField, widgetType, listenOnKeysTrue, closeTableField } = this.props;
+    const { lastFormField, widgetType, closeTableField } = this.props;
     const { key } = e;
 
     // for number fields submit them automatically on up/down arrow pressed and blur the field
-    const NumberWidgets = ImmutableList(['Integer', 'Amount', 'Quantity', 'Number', 'CostPrice']);
-    if ((key === 'ArrowUp' || key === 'ArrowDown') && NumberWidgets.includes(widgetType)) {
+    const NumberWidgets = ImmutableList([
+      'Integer',
+      'Amount',
+      'Quantity',
+      'Number',
+      'CostPrice',
+    ]);
+    if (
+      (key === 'ArrowUp' || key === 'ArrowDown') &&
+      NumberWidgets.includes(widgetType)
+    ) {
       closeTableField();
       e.preventDefault();
 
