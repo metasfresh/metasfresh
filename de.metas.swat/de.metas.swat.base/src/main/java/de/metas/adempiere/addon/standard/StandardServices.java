@@ -9,10 +9,8 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.invoice.service.impl.InvoiceBL;
 import org.adempiere.invoice.service.impl.InvoiceDAO;
-import org.adempiere.misc.service.IClientOrgPA;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.misc.service.ITablePA;
-import org.adempiere.misc.service.impl.ClientOrgPA;
 import org.adempiere.misc.service.impl.POService;
 import org.adempiere.misc.service.impl.TablePA;
 import org.adempiere.process.event.IProcessEventSupport;
@@ -65,7 +63,6 @@ public class StandardServices implements IAddOn
 		//
 		// misc services
 		Services.registerService(IAddonService.class, new AddonService());
-		Services.registerService(IClientOrgPA.class, new ClientOrgPA());
 		Services.registerService(IDatabaseBL.class, new DatabaseBL());
 		Services.registerService(IDBService.class, new org.adempiere.db.impl.DBService());
 		Services.registerService(IOrderBL.class, new OrderBL());
