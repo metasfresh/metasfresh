@@ -350,7 +350,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 		importData();
 
 		//
-		// run wahterver after import code
+		// run whatever after import code
 		afterImport();
 
 		final ImportProcessResult result = resultCollector.toResult();
