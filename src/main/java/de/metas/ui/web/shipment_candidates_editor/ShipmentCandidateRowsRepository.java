@@ -9,7 +9,6 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -18,10 +17,11 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -100,10 +100,12 @@ final class ShipmentCandidateRowsRepository
 
 	private ShipmentCandidateRow toShipmentCandidateRow(@NonNull final I_M_ShipmentSchedule record)
 	{
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 		final Quantity qtyToDeliverStockOverride = extractQtyToDeliver(record);
 		final BigDecimal qtyToDeliverCatchOverride = extractQtyToDeliverCatchOverride(record);
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
+		final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(record);
 
 		final boolean catchWeight = shipmentScheduleBL.isCatchWeight(record);
 
@@ -115,8 +117,8 @@ final class ShipmentCandidateRowsRepository
 				.product(extractProduct(record))
 				.preparationDate(extractPreparationTime(record))
 				//
-				.qtyOrdered(record.getQtyOrdered())
-				.uom(extractUOM(record))
+				.qtyOrdered(qtyOrdered)
+				.uom(extractStockUOM(record))
 				//
 				.qtyToDeliverStockInitial(qtyToDeliverStockOverride)
 				.qtyToDeliverStockOverride(qtyToDeliverStockOverride.toBigDecimal())
@@ -158,15 +160,15 @@ final class ShipmentCandidateRowsRepository
 		return productsLookup.findById(productId);
 	}
 
-	private LookupValue extractUOM(@NonNull final I_M_ShipmentSchedule record)
+	private LookupValue extractStockUOM(@NonNull final I_M_ShipmentSchedule record)
 	{
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-		final int orderLineId = record.getC_OrderLine_ID();
-		final I_C_OrderLine orderLineRecord = orderDAO.getOrderLineById(orderLineId);
+		final IProductBL productBL = Services.get(IProductBL.class);
 
-		final UomId uomId = UomId.ofRepoIdOrNull(orderLineRecord.getC_UOM_ID());
-		return uomId != null
-				? uomsLookup.findById(uomId)
+		final int productId = record.getM_Product_ID();
+
+		final UomId stockUOMId = productBL.getStockUOMId(productId);
+		return stockUOMId != null
+				? uomsLookup.findById(stockUOMId)
 				: null;
 	}
 
