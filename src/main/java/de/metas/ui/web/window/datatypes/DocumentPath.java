@@ -48,6 +48,11 @@ public final class DocumentPath
 		return new Builder();
 	}
 
+	public static DocumentPath rootDocumentPath(@NonNull final AdWindowId adWindowId, final int documentIdInt)
+	{
+		return rootDocumentPath(WindowId.of(adWindowId), documentIdInt);
+	}
+
 	public static DocumentPath rootDocumentPath(@NonNull final WindowId windowId, final int documentIdInt)
 	{
 		final DocumentId documentId = DocumentId.of(documentIdInt);
