@@ -16,6 +16,7 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.document.process.WEBUI_Fact_Acct_Repost;
+import de.metas.ui.web.document.process.WEBUI_Fact_Acct_Repost_SingleDocument;
 import de.metas.util.Services;
 
 /*
@@ -54,6 +55,12 @@ public class WebuiAccountingConfig
 	@PostConstruct
 	public void registerRepostProcess()
 	{
+		registerRepostProcessForViewRows();
+		registerRepostProcessForSingleDocuments();
+	}
+
+	private void registerRepostProcessForViewRows()
+	{
 		final IADProcessDAO adProcessesRepo = Services.get(IADProcessDAO.class);
 		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
 
@@ -79,7 +86,39 @@ public class WebuiAccountingConfig
 						.processId(repostProcessId)
 						.tableId(adTableId)
 						.anyWindow()
-						.displayPlace(DisplayPlace.ViewQuickActions) // NOTE: atm the process works only for views
+						.displayPlace(DisplayPlace.ViewQuickActions)
 						.build()));
 	}
+
+	private void registerRepostProcessForSingleDocuments()
+	{
+		final IADProcessDAO adProcessesRepo = Services.get(IADProcessDAO.class);
+		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
+
+		final AdProcessId repostProcessId = adProcessesRepo.retrieveProcessIdByClassIfUnique(WEBUI_Fact_Acct_Repost_SingleDocument.class);
+		if (repostProcessId == null)
+		{
+			logger.warn("No AD_Process_ID found for {}", WEBUI_Fact_Acct_Repost_SingleDocument.class);
+			return;
+		}
+
+		//
+		final List<String> linkToTableNames = new ArrayList<>();
+		linkToTableNames.addAll(acctDocRegistry.getDocTableNames());
+		// linkToTableNames.add(WEBUI_Fact_Acct_Repost.TABLENAME_RV_UnPosted);
+
+		//
+		// Link Repost process to all accountable documents
+		linkToTableNames
+				.stream()
+				.map(adTablesRepo::retrieveTableId)
+				.filter(adTableId -> adTableId > 0)
+				.forEach(adTableId -> adProcessesRepo.registerTableProcess(RelatedProcessDescriptor.builder()
+						.processId(repostProcessId)
+						.tableId(adTableId)
+						.anyWindow()
+						.displayPlace(DisplayPlace.SingleDocumentActionsMenu)
+						.build()));
+	}
+
 }
