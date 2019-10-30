@@ -13,11 +13,6 @@ import de.metas.util.ISingletonService;
 @Deprecated
 public interface IPOService extends ISingletonService
 {
-
-	String IS_ACTIVE = "IsActive";
-	String AD_ORG_ID = "AD_Org_ID";
-	String AD_CLIENT_ID = "AD_Client_ID";
-
 	/**
 	 * Tries to save the given PO with the given transaction. Throws a
 	 * {@link RuntimeException}, if {@link PO#save(String)} returns
