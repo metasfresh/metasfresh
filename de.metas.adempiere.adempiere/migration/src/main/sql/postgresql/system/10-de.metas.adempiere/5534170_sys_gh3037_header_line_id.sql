@@ -39,7 +39,7 @@ COMMIT;
 
 -- 2019-10-15T05:51:59.193Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE C_Invoice_Candidate DROP COLUMN IF EXISTS ExternalId
+select db_alter_table('C_Invoice_Candidate', 'ALTER TABLE C_Invoice_Candidate DROP COLUMN IF EXISTS ExternalId');
 ;
 
 -- 2019-10-15T05:51:59.265Z

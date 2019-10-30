@@ -82,7 +82,7 @@ public class CommissionConfigFactory
 		this.commissionConfigStagingDataService = commissionConfigStagingDataService;
 	}
 
-	public ImmutableList<CommissionConfig> createForNewCommissionInstances(@NonNull final ContractRequest contractRequest)
+	public ImmutableList<CommissionConfig> createForNewCommissionInstances(@NonNull final ConfigRequestForNewInstance contractRequest)
 	{
 		final Hierarchy hierarchy = commissionHierarchyFactory.createFor(contractRequest.getSalesRepBPartnerId());
 		final Iterable<HierarchyNode> beneficiaries = hierarchy.getUpStream(Beneficiary.of(contractRequest.getSalesRepBPartnerId()));
@@ -119,7 +119,7 @@ public class CommissionConfigFactory
 		final ImmutableMap<BPartnerId, FlatrateTermId> bPartnerId2FlatrateTermIds = stagingData.getBPartnerId2FlatrateTermIds();
 		final ImmutableListMultimap<Integer, BPartnerId> conditionRecordId2BPartnerIds = stagingData.getConditionRecordId2BPartnerIds();
 
-		final ImmutableList.Builder<CommissionConfig> result = ImmutableList.<CommissionConfig> builder();
+		final ImmutableList.Builder<CommissionConfig> commissionConfigs = ImmutableList.<CommissionConfig> builder();
 
 		final ProductCategoryId salesProductCategory = productDAO.retrieveProductCategoryByProductId(salesproductId);
 		final BPGroupId customerGroupId = bPartnerDAO.getBPGroupIdByBPartnerId(customerBPartnerId);
@@ -164,9 +164,13 @@ public class CommissionConfigFactory
 					}
 				}
 			}
-			result.add(builder.build());
+			final HierarchyConfig config = builder.build();
+			if (config.containsContracts()) // discard it if there aren't any beneficiaries/contracts
+			{
+				commissionConfigs.add(config);
+			}
 		}
-		return result.build();
+		return commissionConfigs.build();
 	}
 
 	private boolean settingsLineRecordMatches(
@@ -188,14 +192,16 @@ public class CommissionConfigFactory
 
 	@Builder
 	@Value
-	public static class ContractRequest
+	public static class ConfigRequestForNewInstance
 	{
 		@NonNull
 		BPartnerId salesRepBPartnerId;
 
+		/** Needed because config settings can be specific to the customer's group. */
 		@NonNull
 		BPartnerId customerBPartnerId;
 
+		/** Needed because config settings can be specific to the product's category. */
 		@NonNull
 		ProductId salesProductId;
 
@@ -203,7 +209,7 @@ public class CommissionConfigFactory
 		LocalDate date;
 	}
 
-	public CommissionConfig createForExisingInstance(@NonNull final CommissionConfigRequest commissionConfigRequest)
+	public CommissionConfig createForExisingInstance(@NonNull final ConfigRequestForExistingInstance commissionConfigRequest)
 	{
 		final ImmutableList<I_C_Flatrate_Term> commissionTermRecords = flatrateDAO
 				.retrieveTerms(commissionConfigRequest.getContractIds())
@@ -228,7 +234,7 @@ public class CommissionConfigFactory
 
 	@Builder
 	@Value
-	public static class CommissionConfigRequest
+	public static class ConfigRequestForExistingInstance
 	{
 		@NonNull
 		ImmutableList<FlatrateTermId> contractIds;

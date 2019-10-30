@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
+
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
@@ -22,12 +23,11 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.Commission
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionType;
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyContract;
-import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory.ContractRequest;
+import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory.ConfigRequestForNewInstance;
 import de.metas.contracts.commission.testhelpers.ConfigLineTestRecord;
 import de.metas.contracts.commission.testhelpers.ConfigTestRecord;
 import de.metas.contracts.commission.testhelpers.ConfigTestRecord.ConfigData;
 import de.metas.contracts.commission.testhelpers.ContractTestRecord;
-
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 
@@ -75,7 +75,7 @@ class CommissionConfigFactoryTest
 
 		final I_C_BP_Group customerBPGroupRecord = newInstance(I_C_BP_Group.class);
 		saveRecord(customerBPGroupRecord);
-		customerBPGroudId = BPGroupId.ofRepoId( customerBPGroupRecord.getC_BP_Group_ID());
+		customerBPGroudId = BPGroupId.ofRepoId(customerBPGroupRecord.getC_BP_Group_ID());
 
 		bpartnerRecord_EndCustomer = newInstance(I_C_BPartner.class);
 		bpartnerRecord_EndCustomer.setC_BP_Group_ID(customerBPGroupRecord.getC_BP_Group_ID());
@@ -114,7 +114,7 @@ class CommissionConfigFactoryTest
 		final BPartnerId salesRepLvl2Id = configData.getName2BPartnerId().get("headOfSales");
 
 		// invoke method under test
-		final ContractRequest contractRequest = ContractRequest.builder()
+		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
 				.customerBPartnerId(endCustomerId)
 				.salesRepBPartnerId(salesRepLvl0Id)
 				.salesProductId(salesProductId)
@@ -142,5 +142,46 @@ class CommissionConfigFactoryTest
 		final HierarchyContract hierarchyContractLvl2 = HierarchyContract.cast(contractLvl2);
 		assertThat(hierarchyContractLvl2.getCommissionPercent().toBigDecimal()).isEqualTo("20");
 		assertThat(hierarchyContractLvl2.getPointsPrecision()).isEqualTo(3);
+	}
+
+	@Test
+	void createFor_no_lines()
+	{
+		final ConfigData configData = ConfigTestRecord.builder()
+				.pointsPrecision(3)
+				.subtractLowerLevelCommissionFromBase(true)
+				.contractTestRecord(ContractTestRecord.builder().name("salesRep").parentName("salesSupervisor").date(date).build())
+				.contractTestRecord(ContractTestRecord.builder().name("salesSupervisor").parentName("headOfSales").date(date).build())
+				.contractTestRecord(ContractTestRecord.builder().name("headOfSales").date(date).build())
+				.build()
+				.createConfigData();
+
+		final BPartnerId salesRepLvl0Id = configData.getName2BPartnerId().get("salesRep");
+		final BPartnerId salesRepLvl1Id = configData.getName2BPartnerId().get("salesSupervisor");
+		final BPartnerId salesRepLvl2Id = configData.getName2BPartnerId().get("headOfSales");
+
+		// invoke method under test
+		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
+				.customerBPartnerId(endCustomerId)
+				.salesRepBPartnerId(salesRepLvl0Id)
+				.salesProductId(salesProductId)
+				.date(date).build();
+		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
+
+		assertThat(configs).hasSize(1);
+		final CommissionConfig config = configs.get(0);
+		assertThat(config.getCommissionType()).isEqualTo(CommissionType.HIERARCHY_COMMISSION);
+
+		final HierarchyConfig hierarchyConfig = HierarchyConfig.cast(config);
+		assertThat(hierarchyConfig.isSubtractLowerLevelCommissionFromBase()).isTrue();
+
+		final CommissionContract contractLvl0 = hierarchyConfig.getContractFor(Beneficiary.of(salesRepLvl0Id));
+		assertThat(contractLvl0).isNull();
+
+		final CommissionContract contractLvl1 = hierarchyConfig.getContractFor(Beneficiary.of(salesRepLvl1Id));
+		assertThat(contractLvl1).isNull();
+
+		final CommissionContract contractLvl2 = hierarchyConfig.getContractFor(Beneficiary.of(salesRepLvl2Id));
+		assertThat(contractLvl2).isNull();
 	}
 }
