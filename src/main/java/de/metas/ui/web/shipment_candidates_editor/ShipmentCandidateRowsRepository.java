@@ -9,20 +9,19 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_OrderLine;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -66,6 +65,7 @@ final class ShipmentCandidateRowsRepository
 	private final LookupDataSource warehousesLookup;
 	private final LookupDataSource productsLookup;
 	private final LookupDataSource asiLookup;
+	private final LookupDataSource uomsLookup;
 	private final LookupDataSource catchUOMsLookup;
 
 	@Builder
@@ -79,6 +79,7 @@ final class ShipmentCandidateRowsRepository
 		warehousesLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Warehouse.Table_Name);
 		productsLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Product.Table_Name);
 		asiLookup = LookupDataSourceFactory.instance.productAttributes();
+		uomsLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_UOM.Table_Name);
 		catchUOMsLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_UOM.Table_Name);
 	}
 
@@ -99,11 +100,14 @@ final class ShipmentCandidateRowsRepository
 
 	private ShipmentCandidateRow toShipmentCandidateRow(@NonNull final I_M_ShipmentSchedule record)
 	{
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+
 		final Quantity qtyToDeliverStockOverride = extractQtyToDeliver(record);
 		final BigDecimal qtyToDeliverCatchOverride = extractQtyToDeliverCatchOverride(record);
-		final boolean catchWeight = isCatchWeight(record);
-
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
+		final BigDecimal qtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(record);
+
+		final boolean catchWeight = shipmentScheduleBL.isCatchWeight(record);
 
 		return ShipmentCandidateRow.builder()
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
@@ -112,6 +116,9 @@ final class ShipmentCandidateRowsRepository
 				.warehouse(extractWarehouse(record))
 				.product(extractProduct(record))
 				.preparationDate(extractPreparationTime(record))
+				//
+				.qtyOrdered(qtyOrdered)
+				.uom(extractStockUOM(record))
 				//
 				.qtyToDeliverStockInitial(qtyToDeliverStockOverride)
 				.qtyToDeliverStockOverride(qtyToDeliverStockOverride.toBigDecimal())
@@ -126,7 +133,6 @@ final class ShipmentCandidateRowsRepository
 				//
 				.build();
 	}
-
 
 	private LookupValue extractSalesOrder(@NonNull final I_M_ShipmentSchedule record)
 	{
@@ -152,6 +158,18 @@ final class ShipmentCandidateRowsRepository
 	{
 		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
 		return productsLookup.findById(productId);
+	}
+
+	private LookupValue extractStockUOM(@NonNull final I_M_ShipmentSchedule record)
+	{
+		final IProductBL productBL = Services.get(IProductBL.class);
+
+		final int productId = record.getM_Product_ID();
+
+		final UomId stockUOMId = productBL.getStockUOMId(productId);
+		return stockUOMId != null
+				? uomsLookup.findById(stockUOMId)
+				: null;
 	}
 
 	private LookupValue extractCatchUOM(@NonNull final I_M_ShipmentSchedule record)
@@ -183,21 +201,8 @@ final class ShipmentCandidateRowsRepository
 	{
 		return shipmentScheduleBL
 				.getCatchQtyOverride(record)
-				.map(q -> q.toBigDecimal())
+				.map(qty -> qty.toBigDecimal())
 				.orElse(null);
-	}
-
-
-	private boolean isCatchWeight(final I_M_ShipmentSchedule record)
-	{
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-		final int orderLineId = record.getC_OrderLine_ID();
-
-		final I_C_OrderLine orderLineRecord = orderDAO.getOrderLineById(orderLineId);
-
-		final String invoicableQtyBasedOn = orderLineRecord.getInvoicableQtyBasedOn();
-
-		return (X_C_OrderLine.INVOICABLEQTYBASEDON_CatchWeight.equals(invoicableQtyBasedOn));
 	}
 
 }
