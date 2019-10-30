@@ -17,8 +17,6 @@ import org.adempiere.processing.service.IProcessingService;
 import org.adempiere.processing.service.impl.ProcessingService;
 
 import de.metas.adempiere.addon.IAddOn;
-import de.metas.adempiere.addon.IAddonService;
-import de.metas.adempiere.addon.impl.AddonService;
 import de.metas.adempiere.service.AppDictionaryBL;
 import de.metas.adempiere.service.IAppDictionaryBL;
 import de.metas.adempiere.service.IGlobalLockSystem;
@@ -60,7 +58,6 @@ public class StandardServices implements IAddOn
 
 		//
 		// misc services
-		Services.registerService(IAddonService.class, new AddonService());
 		Services.registerService(IDatabaseBL.class, new DatabaseBL());
 		Services.registerService(IDBService.class, new org.adempiere.db.impl.DBService());
 		Services.registerService(IOrderBL.class, new OrderBL());
