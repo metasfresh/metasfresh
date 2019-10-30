@@ -105,11 +105,10 @@ final class ShipmentCandidateRowsRepository
 		final BigDecimal qtyToDeliverCatchOverride = extractQtyToDeliverCatchOverride(record);
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID());
 
-		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID());
-		final boolean catchWeight = shipmentScheduleBL.isCatchWeight(shipmentScheduleId);
+		final boolean catchWeight = shipmentScheduleBL.isCatchWeight(record);
 
 		return ShipmentCandidateRow.builder()
-				.shipmentScheduleId(shipmentScheduleId)
+				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
 				.salesOrder(extractSalesOrder(record))
 				.customer(extractCustomer(record))
 				.warehouse(extractWarehouse(record))
