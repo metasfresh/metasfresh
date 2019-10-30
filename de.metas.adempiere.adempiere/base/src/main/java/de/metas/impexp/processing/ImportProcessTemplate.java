@@ -349,6 +349,10 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 		// Actual import (allow the method to manage the transaction)
 		importData();
 
+		//
+		// run wahterver after import code
+		afterImport();
+
 		final ImportProcessResult result = resultCollector.toResult();
 		loggable.addLog("" + resultCollector);
 		return result;
@@ -417,15 +421,15 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 	protected void resetStandardColumns()
 	{
 		final StringBuilder sql = new StringBuilder("UPDATE " + getImportTableName()
-				+ " SET AD_Client_ID = COALESCE (AD_Client_ID, ").append(getClientId().getRepoId()).append("),"
-						+ " AD_Org_ID = COALESCE (AD_Org_ID, 0),"
-						+ " IsActive = COALESCE (IsActive, 'Y'),"
-						+ " Created = COALESCE (Created, now()),"
-						+ " CreatedBy = COALESCE (CreatedBy, 0),"
-						+ " Updated = COALESCE (Updated, now()),"
-						+ " UpdatedBy = COALESCE (UpdatedBy, 0),"
-						+ ImportTableDescriptor.COLUMNNAME_I_ErrorMsg + " = ' ',"
-						+ ImportTableDescriptor.COLUMNNAME_I_IsImported + "= 'N' ");
+		+ " SET AD_Client_ID = COALESCE (AD_Client_ID, ").append(getClientId().getRepoId()).append("),"
+				+ " AD_Org_ID = COALESCE (AD_Org_ID, 0),"
+				+ " IsActive = COALESCE (IsActive, 'Y'),"
+				+ " Created = COALESCE (Created, now()),"
+				+ " CreatedBy = COALESCE (CreatedBy, 0),"
+				+ " Updated = COALESCE (Updated, now()),"
+				+ " UpdatedBy = COALESCE (UpdatedBy, 0),"
+				+ ImportTableDescriptor.COLUMNNAME_I_ErrorMsg + " = ' ',"
+				+ ImportTableDescriptor.COLUMNNAME_I_IsImported + "= 'N' ");
 		final List<Object> sqlParams = new ArrayList<>();
 
 		for (final Map.Entry<String, Object> defaultValueEntry : getImportTableDefaultValues().entrySet())
@@ -438,7 +442,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 		}
 
 		sql.append("\n WHERE (" + ImportTableDescriptor.COLUMNNAME_I_IsImported + "<>'Y' OR " + ImportTableDescriptor.COLUMNNAME_I_IsImported + " IS NULL) ")
-				.append(" ").append(getImportRecordsSelection().toSqlWhereClause());
+		.append(" ").append(getImportRecordsSelection().toSqlWhereClause());
 		final int no = DB.executeUpdateEx(sql.toString(),
 				sqlParams.toArray(),
 				ITrx.TRXNAME_ThreadInherited);
@@ -464,63 +468,63 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 		final Mutable<ImportGroup<ImportRecordType>> currentImportGroupHolder = new Mutable<>();
 
 		trxItemProcessorExecutorService
-				.<ImportRecordType, Void> createExecutor()
-				.setOnItemErrorPolicy(OnItemErrorPolicy.CancelChunkAndRollBack)
-				.setExceptionHandler(new FailTrxItemExceptionHandler()
-				{
-					@Override
-					public void onCompleteChunkError(final Throwable ex)
-					{
-						// do nothing.
-						// the error will be handled in "afterCompleteChunkError" method
-					}
+		.<ImportRecordType, Void> createExecutor()
+		.setOnItemErrorPolicy(OnItemErrorPolicy.CancelChunkAndRollBack)
+		.setExceptionHandler(new FailTrxItemExceptionHandler()
+		{
+			@Override
+			public void onCompleteChunkError(final Throwable ex)
+			{
+				// do nothing.
+				// the error will be handled in "afterCompleteChunkError" method
+			}
 
-					@Override
-					public void afterCompleteChunkError(final Throwable ex)
-					{
-						final ImportGroup<ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
-						markAsError(currentGroup, ex);
-					}
-				})
-				.setProcessor(new TrxItemChunkProcessorAdapter<ImportRecordType, Void>()
-				{
-					@Override
-					public void newChunk(final ImportRecordType importRecord)
-					{
-						final ImportGroupKey groupKey = extractImportGroupKey(importRecord);
-						currentImportGroupHolder.setValue(ImportGroup.newInstance(groupKey));
-					}
+			@Override
+			public void afterCompleteChunkError(final Throwable ex)
+			{
+				final ImportGroup<ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
+				markAsError(currentGroup, ex);
+			}
+		})
+		.setProcessor(new TrxItemChunkProcessorAdapter<ImportRecordType, Void>()
+		{
+			@Override
+			public void newChunk(final ImportRecordType importRecord)
+			{
+				final ImportGroupKey groupKey = extractImportGroupKey(importRecord);
+				currentImportGroupHolder.setValue(ImportGroup.newInstance(groupKey));
+			}
 
-					@Override
-					public boolean isSameChunk(final ImportRecordType importRecord)
-					{
-						final ImportGroup<ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
-						final ImportGroupKey groupKey = extractImportGroupKey(importRecord);
-						return Objects.equals(currentGroup.getGroupKey(), groupKey);
-					}
+			@Override
+			public boolean isSameChunk(final ImportRecordType importRecord)
+			{
+				final ImportGroup<ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
+				final ImportGroupKey groupKey = extractImportGroupKey(importRecord);
+				return Objects.equals(currentGroup.getGroupKey(), groupKey);
+			}
 
-					@Override
-					public void process(final ImportRecordType importRecord)
-					{
-						final ImportGroup<ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
-						currentGroup.addImportRecord(importRecord);
-					}
+			@Override
+			public void process(final ImportRecordType importRecord)
+			{
+				final ImportGroup<ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
+				currentGroup.addImportRecord(importRecord);
+			}
 
-					@Override
-					public void completeChunk()
-					{
-						final ImportGroup<ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
-						importGroup(currentGroup, stateHolder);
-					}
+			@Override
+			public void completeChunk()
+			{
+				final ImportGroup<ImportRecordType> currentGroup = currentImportGroupHolder.getValue();
+				importGroup(currentGroup, stateHolder);
+			}
 
-					@Override
-					public void cancelChunk()
-					{
-						// nothing
-					}
-				})
-				//
-				.process(retrieveRecordsToImport());
+			@Override
+			public void cancelChunk()
+			{
+				// nothing
+			}
+		})
+		//
+		.process(retrieveRecordsToImport());
 	}
 
 	private Iterator<ImportRecordType> retrieveRecordsToImport()
@@ -664,9 +668,9 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 	protected final int markNotImportedAllWithErrors()
 	{
 		final String sql = "UPDATE " + getImportTableName()
-				+ " SET " + ImportTableDescriptor.COLUMNNAME_I_IsImported + "='N', Updated=now() "
-				+ " WHERE " + ImportTableDescriptor.COLUMNNAME_I_IsImported + "<>'Y' "
-				+ " " + getImportRecordsSelection().toSqlWhereClause();
+		+ " SET " + ImportTableDescriptor.COLUMNNAME_I_IsImported + "='N', Updated=now() "
+		+ " WHERE " + ImportTableDescriptor.COLUMNNAME_I_IsImported + "<>'Y' "
+		+ " " + getImportRecordsSelection().toSqlWhereClause();
 		final int countNotImported = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
 		return countNotImported >= 0 ? countNotImported : 0;
 	}
@@ -679,7 +683,7 @@ public abstract class ImportProcessTemplate<ImportRecordType> implements IImport
 		InterfaceWrapperHelper.save(importRecord);
 	}
 
-	protected void afterImport(final IMutable<Object> state)
+	protected void afterImport()
 	{
 		// nothing to do here
 	}
