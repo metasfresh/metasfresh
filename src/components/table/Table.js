@@ -176,10 +176,10 @@ class Table extends Component {
   }
 
   showSelectedIncludedView = selected => {
-    const { showIncludedViewOnSelect } = this.props;
+    const { showIncludedViewOnSelect, openIncludedViewOnSelect } = this.props;
     const { rows } = this.state;
 
-    if (selected.length === 1) {
+    if (openIncludedViewOnSelect && selected.length === 1) {
       rows.forEach(item => {
         if (item.id === selected[0]) {
           showIncludedViewOnSelect({
