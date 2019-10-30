@@ -806,6 +806,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final boolean isCatchWeight = isCatchWeight(sched);
 		if (!isCatchWeight)
 		{
+			sched.setCatch_UOM_ID(-1);
 			return;
 		}
 
