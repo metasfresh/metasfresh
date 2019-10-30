@@ -1,4 +1,4 @@
-package de.metas.ui.web.config;
+package de.metas.ui.web.accounting;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,8 +15,8 @@ import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
-import de.metas.ui.web.document.process.WEBUI_Fact_Acct_Repost;
-import de.metas.ui.web.document.process.WEBUI_Fact_Acct_Repost_SingleDocument;
+import de.metas.ui.web.accounting.process.WEBUI_Fact_Acct_Repost_ViewRows;
+import de.metas.ui.web.accounting.process.WEBUI_Fact_Acct_Repost_SingleDocument;
 import de.metas.util.Services;
 
 /*
@@ -64,17 +64,17 @@ public class WebuiAccountingConfig
 		final IADProcessDAO adProcessesRepo = Services.get(IADProcessDAO.class);
 		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
 
-		final AdProcessId repostProcessId = adProcessesRepo.retrieveProcessIdByClassIfUnique(WEBUI_Fact_Acct_Repost.class);
+		final AdProcessId repostProcessId = adProcessesRepo.retrieveProcessIdByClassIfUnique(WEBUI_Fact_Acct_Repost_ViewRows.class);
 		if (repostProcessId == null)
 		{
-			logger.warn("No AD_Process_ID found for {}", WEBUI_Fact_Acct_Repost.class);
+			logger.warn("No AD_Process_ID found for {}", WEBUI_Fact_Acct_Repost_ViewRows.class);
 			return;
 		}
 
 		//
 		final List<String> linkToTableNames = new ArrayList<>();
 		linkToTableNames.addAll(acctDocRegistry.getDocTableNames());
-		linkToTableNames.add(WEBUI_Fact_Acct_Repost.TABLENAME_RV_UnPosted);
+		linkToTableNames.add(WEBUI_Fact_Acct_Repost_ViewRows.TABLENAME_RV_UnPosted);
 
 		//
 		// Link Repost process to all accountable documents
@@ -88,6 +88,7 @@ public class WebuiAccountingConfig
 						.anyWindow()
 						.displayPlace(DisplayPlace.ViewQuickActions)
 						.build()));
+		logger.info("Registered {} ({}) to {} tables", WEBUI_Fact_Acct_Repost_ViewRows.class.getName(), repostProcessId, linkToTableNames.size());
 	}
 
 	private void registerRepostProcessForSingleDocuments()
@@ -119,6 +120,7 @@ public class WebuiAccountingConfig
 						.anyWindow()
 						.displayPlace(DisplayPlace.SingleDocumentActionsMenu)
 						.build()));
+		logger.info("Registered {} ({}) to {} tables", WEBUI_Fact_Acct_Repost_SingleDocument.class.getName(), repostProcessId, linkToTableNames.size());
 	}
 
 }

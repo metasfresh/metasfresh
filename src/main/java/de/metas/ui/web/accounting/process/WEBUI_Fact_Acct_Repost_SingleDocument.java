@@ -1,4 +1,4 @@
-package de.metas.ui.web.document.process;
+package de.metas.ui.web.accounting.process;
 
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -15,7 +15,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.document.process.FactAcctRepostCommand.DocumentToRepost;
+import de.metas.ui.web.accounting.process.FactAcctRepostCommand.DocumentToRepost;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.model.Document;

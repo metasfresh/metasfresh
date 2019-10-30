@@ -1,4 +1,4 @@
-package de.metas.ui.web.document.process;
+package de.metas.ui.web.accounting.process;
 
 import java.util.Set;
 
@@ -12,7 +12,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
-import de.metas.ui.web.document.process.FactAcctRepostCommand.DocumentToRepost;
+import de.metas.ui.web.accounting.process.FactAcctRepostCommand.DocumentToRepost;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.util.Services;
@@ -39,7 +39,7 @@ import de.metas.util.Services;
  * #L%
  */
 
-public class WEBUI_Fact_Acct_Repost extends ViewBasedProcessTemplate implements IProcessPrecondition
+public class WEBUI_Fact_Acct_Repost_ViewRows extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 	private final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
 

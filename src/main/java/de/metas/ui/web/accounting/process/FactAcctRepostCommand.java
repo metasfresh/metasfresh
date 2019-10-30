@@ -1,4 +1,4 @@
-package de.metas.ui.web.document.process;
+package de.metas.ui.web.accounting.process;
 
 import java.util.Set;
 
