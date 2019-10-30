@@ -1,6 +1,5 @@
 package de.metas.adempiere.addon.standard;
 
-import org.adempiere.db.IDBService;
 import org.adempiere.inout.replenish.service.IReplenishForFutureQty;
 import org.adempiere.inout.replenish.service.ReplenishForFutureQty;
 import org.adempiere.invoice.service.IInvoiceBL;
@@ -56,7 +55,6 @@ public class StandardServices implements IAddOn
 
 		//
 		// misc services
-		Services.registerService(IDBService.class, new org.adempiere.db.impl.DBService());
 		Services.registerService(IOrderBL.class, new OrderBL());
 		Services.registerService(IParameterBL.class, new ParameterBL());
 		Services.registerService(ICalendarDAO.class, new CalendarDAO());
