@@ -2,12 +2,15 @@
     flex: 1;
     width: 100%;
     max-width: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 .table-flex-wrapper {
     display: flex;
     flex-grow: 1;
     flex-direction: column;
+    padding: 0;
 
     .document-list-table {
         flex: 2.6;

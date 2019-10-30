@@ -51,9 +51,9 @@ class Map extends Component {
       return (
         <div
           className={cx('mapComponent', {
-            'col-12': toggleState === 2,
-            'col-6': toggleState === 1,
-            'd-none': toggleState === 0 || toggleState == null,
+            'col-12': toggleState === 'map',
+            'col-6': toggleState === 'all',
+            'd-none': toggleState === 'grid' || toggleState == null,
           })}
         >
           <div style={{ height: '100%', width: '100%' }}>
