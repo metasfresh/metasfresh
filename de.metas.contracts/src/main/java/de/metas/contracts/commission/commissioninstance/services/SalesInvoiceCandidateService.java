@@ -65,11 +65,12 @@ public class SalesInvoiceCandidateService
 		final List<CommissionInstance> instances = commissionInstanceRepository.getForInvoiceCandidateId(invoiceCandidateId);
 		if (instances.isEmpty())
 		{
-			if(candidateDeleted)
+			if (candidateDeleted)
 			{
 				return; // nothing to do
 			}
-			// initially create commission data for the given invoice candidate
+			// initially create commission data for the given invoice candidate;
+			// the list of requests might be empty, if there are no matching contracts and/or settings
 			final ImmutableList<CreateInstanceRequest> requests = commissionInstanceRequestFactory.createRequestsForNewSalesInvoiceCandidate(invoiceCandidateId);
 			for (final CreateInstanceRequest request : requests)
 			{

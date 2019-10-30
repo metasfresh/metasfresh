@@ -36,7 +36,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.Sale
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare.SalesCommissionShareBuilder;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionState;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory;
-import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory.CommissionConfigRequest;
+import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory.ConfigRequestForExistingInstance;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionRecordStagingService.CommissionStagingRecords;
 import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
@@ -87,7 +87,7 @@ public class CommissionInstanceRepository
 		final CommissionStagingRecords stagingRecords = commissionRecordStagingService.retrieveRecordsForInstanceId(ImmutableList.of(commissionInstanceId));
 
 		final I_C_Commission_Instance instanceRecord = stagingRecords.getInstanceRecordIdToInstance().get(commissionInstanceId.getRepoId());
-		final CommissionInstance instance = createCommissionInstance(instanceRecord, stagingRecords);
+		final CommissionInstance instance = loadCommissionInstance(instanceRecord, stagingRecords);
 		return instance;
 	}
 
@@ -104,13 +104,13 @@ public class CommissionInstanceRepository
 		final ImmutableList.Builder<CommissionInstance> result = ImmutableList.builder();
 		for (final I_C_Commission_Instance instanceRecord : instanceRecords)
 		{
-			final CommissionInstance instance = createCommissionInstance(instanceRecord, records);
+			final CommissionInstance instance = loadCommissionInstance(instanceRecord, records);
 			result.add(instance);
 		}
 		return result.build();
 	}
 
-	private CommissionInstance createCommissionInstance(
+	private CommissionInstance loadCommissionInstance(
 			@NonNull final I_C_Commission_Instance instanceRecord,
 			@NonNull final CommissionStagingRecords stagingRecords)
 	{
@@ -123,7 +123,7 @@ public class CommissionInstanceRepository
 				.map(FlatrateTermId::ofRepoId)
 				.collect(ImmutableList.toImmutableList());
 
-		final CommissionConfigRequest request = CommissionConfigRequest.builder()
+		final ConfigRequestForExistingInstance request = ConfigRequestForExistingInstance.builder()
 				.contractIds(flatrateTermIds)
 				.customerBPartnerId(BPartnerId.ofRepoId(instanceRecord.getBill_BPartner_ID()))
 				.salesProductId(ProductId.ofRepoId(instanceRecord.getM_Product_Order_ID()))
