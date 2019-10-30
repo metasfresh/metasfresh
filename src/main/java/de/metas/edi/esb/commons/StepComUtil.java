@@ -34,7 +34,7 @@ public class StepComUtil
 			@NonNull final CamelContext context,
 			@NonNull final String ediRecipientGLN)
 	{
-		final String partnerId = Util.resolvePropertyPlaceholders(context, "edi.stepcom.partnerId.of.ediRecipientGLN." + ediRecipientGLN);
+		final String partnerId = Util.resolvePropertyPlaceholders(context, "edi.stepcom.recipientGLN." + ediRecipientGLN + ".partnerId");
 		return partnerId;
 	}
 
