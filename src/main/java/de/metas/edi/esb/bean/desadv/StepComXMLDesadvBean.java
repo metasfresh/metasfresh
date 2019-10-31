@@ -340,7 +340,7 @@ public class StepComXMLDesadvBean
 			detail.getDREFE1().add(orderHeaderRef);
 		}
 
-		if (receiverSettings.isDesadvLineLINR())
+		if (receiverSettings.isDesadvLineLIRN())
 		{
 			final DREFE1 orderLineRef = DESADV_objectFactory.createDREFE1();
 			orderLineRef.setDOCUMENTID(documentId);

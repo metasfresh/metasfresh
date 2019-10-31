@@ -42,7 +42,7 @@ public class StepComDesadvSettings
 				.desadvLinePackagingCodeTURequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.packagingCodeTU.required", "false"))
 				.desadvLineORBU(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.ORBU", "false"))
 				.desadvLineORBUOrderLineReference(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.ORBU.orderLineReference", "false"))
-				.desadvLineLINR(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.LINR", "true"))
+				.desadvLineLIRN(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.LIRN", "true"))
 				.desadvLinePRICRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.PRIC.required", "false"))
 				.build();
 	}
@@ -57,7 +57,7 @@ public class StepComDesadvSettings
 
 	boolean desadvLineORBUOrderLineReference;
 
-	boolean desadvLineLINR;
+	boolean desadvLineLIRN;
 
 	boolean desadvLinePRICRequired;
 }
