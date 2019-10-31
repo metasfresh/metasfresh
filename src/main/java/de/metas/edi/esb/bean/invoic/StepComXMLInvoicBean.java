@@ -40,6 +40,7 @@ import org.apache.commons.lang.StringUtils;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.StepComInvoicSettings;
 import de.metas.edi.esb.commons.Util;
+import de.metas.edi.esb.commons.ValidationHelper;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctop119VType;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctop120VType;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctop140VType;
@@ -134,7 +135,6 @@ public class StepComXMLInvoicBean
 		final HEADERXrech headerXrech = INVOIC_objectFactory.createHEADERXrech();
 		headerXrech.setTESTINDICATOR(receiverSettings.getTestIndicator());
 
-
 		headerXrech.setPARTNERID(receiverSettings.getPartnerId());
 		headerXrech.setAPPLICATIONREF(applicationRef);
 		headerXrech.setOWNERID(ownerId);
@@ -165,7 +165,7 @@ public class StepComXMLInvoicBean
 
 		mapAlCh(invoice, decimalFormat, headerXrech);
 
-		mapDetails(invoice, decimalFormat, headerXrech);
+		mapDetails(invoice, receiverSettings, decimalFormat, headerXrech);
 
 		final TRAILR docTrailer = INVOIC_objectFactory.createTRAILR();
 		docTrailer.setDOCUMENTID(documentId);
@@ -234,7 +234,11 @@ public class StepComXMLInvoicBean
 		}
 	}
 
-	private void mapDetails(final EDICctopInvoicVType invoice, final DecimalFormat decimalFormat, final HEADERXrech headerXrech)
+	private void mapDetails(
+			final EDICctopInvoicVType invoice,
+			final StepComInvoicSettings receiverSettings,
+			final DecimalFormat decimalFormat,
+			final HEADERXrech headerXrech)
 	{
 		invoice.getEDICctopInvoic500V().sort(Comparator.comparing(EDICctopInvoic500VType::getLine));
 		final String documentId = headerXrech.getDOCUMENTID();
@@ -283,13 +287,16 @@ public class StepComXMLInvoicBean
 				detailXrech.getDPRIN1().add(productUpc);
 			}
 
-			if (!Util.isEmpty(xmlCctopInvoic500V.getEANCU()))
+			if (receiverSettings.isInvoicLineEANCequired())
 			{
+				final String eanCU = ValidationHelper.validateString(xmlCctopInvoic500V.getEANCU(),
+						"@FillMandatory@ @C_InvoiceLine_ID@=" + xmlCctopInvoic500V.getLine() + " @EANCU@");
+
 				final DPRIN1 productUpc = INVOIC_objectFactory.createDPRIN1();
 				productUpc.setDOCUMENTID(documentId);
 				productUpc.setLINENUMBER(lineNumber);
 				productUpc.setPRODUCTQUAL(ProductQual.EANC.name());
-				productUpc.setPRODUCTID(xmlCctopInvoic500V.getEANCU());
+				productUpc.setPRODUCTID(eanCU);
 				detailXrech.getDPRIN1().add(productUpc);
 			}
 			if (!Util.isEmpty(xmlCctopInvoic500V.getUPCTU()))

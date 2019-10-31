@@ -40,10 +40,13 @@ public class StepComInvoicSettings
 				.builder()
 				.partnerId(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".partnerId"))
 				.testIndicator(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.testIndicator", "T"))
+				.invoicLineEANCequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.EANC.required", "false"))
 				.build();
 	}
 
 	String partnerId;
 
 	String testIndicator;
+
+	boolean invoicLineEANCequired;
 }

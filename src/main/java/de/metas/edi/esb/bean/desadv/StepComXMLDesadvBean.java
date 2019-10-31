@@ -166,7 +166,7 @@ public class StepComXMLDesadvBean
 	private void mapPackaging(
 			@NonNull final EDIExpDesadvType xmlDesadv,
 			@NonNull final HEADERXlief header,
-			@NonNull final StepComDesadvSettings receiverSettings,
+			@NonNull final StepComDesadvSettings recipientSettings,
 			@NonNull final DecimalFormat decimalFormat)
 	{
 		final PACKINXlief packaging = DESADV_objectFactory.createPACKINXlief();
@@ -183,7 +183,7 @@ public class StepComXMLDesadvBean
 			// usually one, as per spec
 			packDetail.setPACKAGINGDETAIL(DEFAULT_PACK_DETAIL);
 
-			if (receiverSettings.isDesadvLinePackagingCodeTURequired())
+			if (recipientSettings.isDesadvLinePackagingCodeTURequired())
 			{
 				packDetail.setPACKAGINGLEVEL(PackagingLevel.INNE.toString());
 				final String packagingCodeTU = validateString(
@@ -196,7 +196,7 @@ public class StepComXMLDesadvBean
 			final String sscc18Value = Util.removePrecedingZeros(ediExpDesadvLineType.getIPASSCC18());
 			packDetail.setIDENTIFICATIONCODE(sscc18Value);
 
-			mapDetail(packDetail, xmlDesadv, ediExpDesadvLineType, receiverSettings, decimalFormat);
+			mapDetail(packDetail, xmlDesadv, ediExpDesadvLineType, recipientSettings, decimalFormat);
 			packaging.getPPACK1().add(packDetail);
 
 			if (packagingCodeLUText == null)

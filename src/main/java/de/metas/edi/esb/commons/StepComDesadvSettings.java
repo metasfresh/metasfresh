@@ -60,6 +60,4 @@ public class StepComDesadvSettings
 	boolean desadvLineLINR;
 
 	boolean desadvLinePRICRequired;
-
-
 }
