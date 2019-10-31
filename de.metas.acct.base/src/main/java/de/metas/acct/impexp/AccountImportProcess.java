@@ -286,7 +286,7 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 	}
 
 	@Override
-	protected void afterImport(final IMutable<Object> state)
+	protected void afterImport()
 	{
 		AccountImportTableSqlUpdater.dbUpdateParentElementValue(getImportRecordsSelection());
 		retrieveImportedAdTrees().forEach(AccountImportTableSqlUpdater::dbUpdateParentElementValueId);
