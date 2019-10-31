@@ -262,11 +262,6 @@ export default class Attributes extends Component {
     });
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
   render() {
     const {
       widgetData,

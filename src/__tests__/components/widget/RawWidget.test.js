@@ -49,7 +49,7 @@ describe('RawWidget component', () => {
       expect(html).toEqual(null);
     });
 
-    it('calls `handlePatch` on `{enter}/{tab}` keydown', () => {
+    it('doesn\'t call `handlePatch` on `{enter}/{tab}` keydown if nothing changed', () => {
       const handlePatchSpy = jest.fn();
       const props = createDummyProps(
         {
@@ -67,6 +67,44 @@ describe('RawWidget component', () => {
         {
           key: 'Enter',
           target: { value: fixtures.longText.data1.value },
+          preventDefault: jest.fn(),
+        },
+      );
+
+      expect(spy).toHaveBeenCalled();
+      expect(handlePatchSpy).not.toHaveBeenCalled();
+
+      wrapper.find('textarea').simulate(
+        'keyDown',
+        {
+          key: 'Tab',
+          target: { value: fixtures.longText.data1.value },
+          preventDefault: jest.fn(),
+        },
+      );
+
+      expect(spy).toHaveBeenCalled();
+      expect(handlePatchSpy).not.toHaveBeenCalled();
+    });
+
+    it('calls `handlePatch` on `{enter}/{tab}` keydown', () => {
+      const handlePatchSpy = jest.fn();
+      const props = createDummyProps(
+        {
+          ...fixtures.longText.layout1,
+          widgetData: [{ ...fixtures.longText.data1 }],
+          handlePatch: handlePatchSpy,
+        },
+      );
+
+      const wrapper = shallow(<RawWidget {...props} />);
+      const spy = jest.spyOn(wrapper.instance(), 'handleKeyDown');
+
+      wrapper.find('textarea').simulate(
+        'keyDown',
+        {
+          key: 'Enter',
+          target: { value: '' },
           preventDefault: jest.fn(),
         },
       );
@@ -157,7 +195,7 @@ describe('RawWidget component', () => {
           { target: { value: fixtures.longText.data1.value } }
         );
 
-      expect(patchSpy).toHaveBeenCalled();
+      expect(patchSpy).not.toHaveBeenCalled();
       expect(blurSpy).toHaveBeenCalled();
       expect(handleBlurSpy).toHaveBeenCalled();
       expect(clickOutsideSpy).toHaveBeenCalled();
@@ -199,7 +237,7 @@ describe('RawWidget component', () => {
       expect(html).toEqual(null);
     });
 
-    it('calls `handlePatch` on `{enter}/{tab}` keydown', () => {
+    it('doesn\'t call `handlePatch` on `{enter}/{tab}` keydown if nothing changed', () => {
       const handlePatchSpy = jest.fn();
       const props = createDummyProps(
         {
@@ -217,6 +255,44 @@ describe('RawWidget component', () => {
         {
           key: 'Enter',
           target: { value: fixtures.text.data1.value },
+          preventDefault: jest.fn(),
+        },
+      );
+
+      expect(spy).toHaveBeenCalled();
+      expect(handlePatchSpy).not.toHaveBeenCalled();
+
+      wrapper.find('input').simulate(
+        'keyDown',
+        {
+          key: 'Tab',
+          target: { value: fixtures.text.data1.value },
+          preventDefault: jest.fn(),
+        },
+      );
+
+      expect(spy).toHaveBeenCalled();
+      expect(handlePatchSpy).not.toHaveBeenCalled();
+    });
+
+    it('calls `handlePatch` on `{enter}/{tab}` keydown', () => {
+      const handlePatchSpy = jest.fn();
+      const props = createDummyProps(
+        {
+          ...fixtures.text.layout1,
+          widgetData: [{ ...fixtures.text.data1 }],
+          handlePatch: handlePatchSpy,
+        },
+      );
+
+      const wrapper = shallow(<RawWidget {...props} />);
+      const spy = jest.spyOn(wrapper.instance(), 'handleKeyDown');
+
+      wrapper.find('input').simulate(
+        'keyDown',
+        {
+          key: 'Enter',
+          target: { value: '' },
           preventDefault: jest.fn(),
         },
       );
@@ -280,7 +356,7 @@ describe('RawWidget component', () => {
           { target: { value: fixtures.text.data1.value } }
         );
 
-      expect(patchSpy).toHaveBeenCalled();
+      expect(patchSpy).not.toHaveBeenCalled();
       expect(blurSpy).toHaveBeenCalled();
       expect(handleBlurSpy).toHaveBeenCalled();
       expect(clickOutsideSpy).toHaveBeenCalled();
@@ -322,7 +398,7 @@ describe('RawWidget component', () => {
       expect(html).toEqual(null);
     });
 
-    it('calls `handlePatch` on `{enter}/{tab}` keydown', () => {
+    it('doesn\'t call `handlePatch` on `{enter}/{tab}` keydown if nothing changed', () => {
       const handlePatchSpy = jest.fn();
       const preventDefaultSpy = jest.fn();
       const props = createDummyProps(
@@ -341,6 +417,48 @@ describe('RawWidget component', () => {
         {
           key: 'Enter',
           target: { value: fixtures.integer.data1.value },
+          preventDefault: preventDefaultSpy,
+        },
+      );
+
+      expect(spy).toHaveBeenCalled();
+      expect(handlePatchSpy).not.toHaveBeenCalled();
+      expect(preventDefaultSpy).toHaveBeenCalled();
+      preventDefaultSpy.mockClear();
+
+      wrapper.find('input').simulate(
+        'keyDown',
+        {
+          key: 'Tab',
+          target: { value: fixtures.integer.data1.value },
+          preventDefault: preventDefaultSpy,
+        },
+      );
+
+      expect(spy).toHaveBeenCalled();
+      expect(handlePatchSpy).not.toHaveBeenCalled();
+      expect(preventDefaultSpy).not.toHaveBeenCalled();
+    });
+
+    it('calls `handlePatch` on `{enter}/{tab}` keydown', () => {
+      const handlePatchSpy = jest.fn();
+      const preventDefaultSpy = jest.fn();
+      const props = createDummyProps(
+        {
+          ...fixtures.integer.layout1,
+          widgetData: [{ ...fixtures.integer.data1 }],
+          handlePatch: handlePatchSpy,
+        },
+      );
+
+      const wrapper = shallow(<RawWidget {...props} />);
+      const spy = jest.spyOn(wrapper.instance(), 'handleKeyDown');
+
+      wrapper.find('input').simulate(
+        'keyDown',
+        {
+          key: 'Enter',
+          target: { value: '' },
           preventDefault: preventDefaultSpy,
         },
       );
