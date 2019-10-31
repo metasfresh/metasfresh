@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
+import ReactDOM from 'react-dom';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 import { merge } from 'lodash';
@@ -51,6 +52,15 @@ class TableItem extends PureComponent {
       this.setState({
         editedCells: {},
       });
+    }
+  }
+
+  componentDidMount() {
+    const { focusOnFieldName, isSelected } = this.props;
+
+    if (focusOnFieldName && isSelected && this.autofocusCell) {
+      // eslint-disable-next-line react/no-find-dom-node
+      ReactDOM.findDOMNode(this.autofocusCell).focus();
     }
   }
 
@@ -290,6 +300,7 @@ class TableItem extends PureComponent {
       viewId,
       keyProperty,
       isSelected,
+      focusOnFieldName,
     } = this.props;
     const {
       edited,
@@ -352,6 +363,11 @@ class TableItem extends PureComponent {
                   supportFieldEdit,
                   handleRightClick,
                   keyProperty,
+                }}
+                ref={c => {
+                  if (c && isSelected && focusOnFieldName === property) {
+                    this.autofocusCell = c;
+                  }
                 }}
                 tdValue={
                   widgetData[0].value

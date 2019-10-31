@@ -981,6 +981,7 @@ class Table extends Component {
       collapsible,
       viewId,
       supportOpenRecord,
+      focusOnFieldName,
     } = this.props;
 
     const {
@@ -1023,6 +1024,7 @@ class Table extends Component {
           viewId,
           supportOpenRecord,
           item,
+          focusOnFieldName,
         }}
         dataHash={dataHash}
         key={`${i}-${viewId}`}
@@ -1047,8 +1049,10 @@ class Table extends Component {
         changeListenOnFalse={() => this.changeListen(false)}
         newRow={i === rows.length - 1 ? newRow : false}
         isSelected={
-          selected &&
-          (selected.indexOf(item[keyProperty]) > -1 || selected[0] === 'all')
+          (selected &&
+            (selected.indexOf(item[keyProperty]) > -1 ||
+              selected[0] === 'all')) ||
+          (selected && !selected[0] && focusOnFieldName && i === 0)
         }
         handleSelect={this.selectRangeProduct}
         contextType={item.type}
