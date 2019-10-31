@@ -54,10 +54,10 @@ public class CreateProductCosts extends JavaProcess
 	{
 		final Iterator<I_M_Product> products = retrieveProducts();
 		Services.get(ITrxItemProcessorExecutorService.class)
-				.<I_M_Product, Void> createExecutor()
-				.setExceptionHandler(LoggerTrxItemExceptionHandler.instance)
-				.setProcessor(this::process)
-				.process(products);
+		.<I_M_Product, Void> createExecutor()
+		.setExceptionHandler(LoggerTrxItemExceptionHandler.instance)
+		.setProcessor(this::process)
+		.process(products);
 
 		return "@Updated@ #" + count_all;
 	}
@@ -72,7 +72,7 @@ public class CreateProductCosts extends JavaProcess
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Product.class)
-				.addEqualsFilter(I_M_Product.COLUMN_AD_Client_ID, getAD_Client_ID())
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, getAD_Client_ID())
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_M_Product.COLUMN_M_Product_ID)
 				.create()
