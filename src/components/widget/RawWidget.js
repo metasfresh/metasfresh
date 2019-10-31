@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
+import { List as ImmutableList } from 'immutable';
 
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { getClassNames, generateMomentObj } from './RawWidgetHelpers';
@@ -136,16 +137,36 @@ export class RawWidget extends Component {
 
   /**
    * @method handleKeyDown
-   * @summary ToDo: Describe the method.
+   * @summary key handler for the widgets. For number fields we're suppressing up/down
+   *          arrows to enable table row navigation
    * @param {*} e
    * @param {*} property
    * @param {*} value
    */
   handleKeyDown = (e, property, value) => {
-    const { lastFormField } = this.props;
+    const { lastFormField, widgetType, closeTableField } = this.props;
+    const { key } = e;
 
-    if ((e.key === 'Enter' || e.key === 'Tab') && !e.shiftKey) {
-      if (e.key === 'Enter' && !lastFormField) {
+    // for number fields submit them automatically on up/down arrow pressed and blur the field
+    const NumberWidgets = ImmutableList([
+      'Integer',
+      'Amount',
+      'Quantity',
+      'Number',
+      'CostPrice',
+    ]);
+    if (
+      (key === 'ArrowUp' || key === 'ArrowDown') &&
+      NumberWidgets.includes(widgetType)
+    ) {
+      closeTableField();
+      e.preventDefault();
+
+      return this.handlePatch(property, value, null, null, true);
+    }
+
+    if ((key === 'Enter' || key === 'Tab') && !e.shiftKey) {
+      if (key === 'Enter' && !lastFormField) {
         e.preventDefault();
       }
       return this.handlePatch(property, value);
@@ -713,7 +734,7 @@ export class RawWidget extends Component {
       case 'Quantity':
         return (
           <div
-            className={classnames(this.getClassNames(), {
+            className={classnames(this.getClassNames(), 'number-field', {
               'input-focused': isEdited,
             })}
           >
@@ -730,7 +751,7 @@ export class RawWidget extends Component {
       case 'CostPrice':
         return (
           <div
-            className={classnames(this.getClassNames(), {
+            className={classnames(this.getClassNames(), 'number-field', {
               'input-focused': isEdited,
             })}
           >

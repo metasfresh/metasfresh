@@ -1178,6 +1178,7 @@ export class DocumentList extends Component {
                   layout.includedView && layout.includedView.openOnSelect
                 }
                 blurOnIncludedView={blurWhenOpen}
+                focusOnFieldName={layout.focusOnFieldName}
                 {...{
                   isIncluded,
                   disconnectFromState,
