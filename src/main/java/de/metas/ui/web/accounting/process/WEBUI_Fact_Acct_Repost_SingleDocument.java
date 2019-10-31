@@ -67,7 +67,7 @@ public class WEBUI_Fact_Acct_Repost_SingleDocument extends JavaProcess implement
 		{
 			final AdWindowId adWindowId = context.getAdWindowId();
 			final int recordId = context.getSingleSelectedRecordId();
-			DocumentPath documentPath = DocumentPath.rootDocumentPath(adWindowId, recordId);
+			final DocumentPath documentPath = DocumentPath.rootDocumentPath(adWindowId, recordId);
 			final Document document = documentsCollection.getDocumentReadonly(documentPath);
 			final BooleanWithReason allowPosting = checkAllowReposting(document);
 			return allowPosting.isTrue()
