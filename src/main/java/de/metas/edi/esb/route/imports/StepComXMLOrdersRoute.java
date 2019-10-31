@@ -43,24 +43,29 @@ import de.metas.edi.esb.route.AbstractEDIRoute;
 public class StepComXMLOrdersRoute
 		extends RouteBuilder
 {
-	public static final String ROUTE_NAME = "STEPCOM-XML-Orders-To-MF-OLCand";
+	private static final String INPUT_ORDERS_REMOTE = "edi.file.orders.stepcom-xml.remote";
 
-	private static final String XML_INPUT_ORDERS = "{{edi.file.orders.stepcom-xml}}";
+	private static final String INPUT_ORDERS_LOCAL = "{{edi.file.orders.stepcom-xml}}";
 
 	private static final String JAXB_ORDER_CONTEXTPATH = ObjectFactory.class.getPackage().getName();
 
-	// @Override
-	// protected void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
-	// {
 	@Override
 	public final void configure()
 	{
 		final JaxbDataFormat dataFormat = new JaxbDataFormat(JAXB_ORDER_CONTEXTPATH);
 		dataFormat.setCamelContext(getContext());
 
-		ProcessorDefinition<?> ediToXMLOrdersRoute = from(StepComXMLOrdersRoute.XML_INPUT_ORDERS)
-				.routeId(ROUTE_NAME)
+		final String remoteEndpoint = Util.resolveProperty(getContext(), INPUT_ORDERS_REMOTE, "");
+		if (!Util.isEmpty(remoteEndpoint))
+		{
+			from(remoteEndpoint)
+					.routeId("STEPCOM-Remote-XML-Orders-To-Local")
+					.log(LoggingLevel.TRACE, "Getting remote file")
+					.to(INPUT_ORDERS_LOCAL);
+		}
 
+		ProcessorDefinition<?> ediToXMLOrdersRoute = from(StepComXMLOrdersRoute.INPUT_ORDERS_LOCAL)
+				.routeId("STEPCOM-XML-Orders-To-MF-OLCand")
 				.log(LoggingLevel.INFO, "EDI: Storing CamelFileName header as property for future use...")
 				.setProperty(Exchange.FILE_NAME, header(Exchange.FILE_NAME))
 				.unmarshal(dataFormat);
@@ -91,7 +96,7 @@ public class StepComXMLOrdersRoute
 		// process the unmarshalled output
 		// @formatter:off
 		ediToXMLOrdersRoute
-				.log(LoggingLevel.INFO, "Splitting XML document into indivdual C_OLCands...")
+				.log(LoggingLevel.INFO, "Splitting XML document into individual C_OLCands...")
 				.split().method(StepComXMLEDIOrdersBean.class, AbstractEDIOrdersBean.METHOD_createXMLDocument)
 					//
 					// aggregate exchanges back to List after data is sent to metasfresh so that we can move the EDI document to DONE

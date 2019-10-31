@@ -30,6 +30,7 @@ import javax.xml.namespace.QName;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
+import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.spi.DataFormat;
 import org.springframework.stereotype.Component;
 
@@ -60,7 +61,9 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 	private final static QName EDIInvoiceFeedback_QNAME = Constants.JAXB_ObjectFactory.createEDIInvoiceFeedback(null).getName();
 	private static final String METHOD_setCInvoiceID = "setCInvoiceID";
 
-	private static final String EP_EDI_XML_FILE_INVOICE = "{{edi.file.invoic.stepcom-xml}}";
+	private static final String OUTPUT_INVOIC_LOCAL = "{{edi.file.invoic.stepcom-xml}}";
+
+	private static final String OUTPUT_INVOIC_REMOTE = "edi.file.invoic.stepcom-xml.remote";
 
 	private static final String JAXB_INVOIC_CONTEXTPATH = ObjectFactory.class.getPackage().getName();
 
@@ -85,7 +88,7 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 		final String defaultEDIMessageDatePattern = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern);
 		final String feedbackMessageRoutingKey = Util.resolveProperty(getContext(), Constants.EP_AMQP_TO_AD_DURABLE_ROUTING_KEY);
 
-		from(EP_EDI_STEPCOM_XML_INVOICE_CONSUMER)
+		final RouteDefinition routeDefinition = from(EP_EDI_STEPCOM_XML_INVOICE_CONSUMER)
 				.routeId(ROUTE_ID)
 
 				.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
@@ -115,9 +118,17 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 				.setHeader(Exchange.FILE_NAME).simple(invoiceXMLFilenamePattern)
 
 				.log(LoggingLevel.INFO, "EDI: Sending the EDI file to the FILE component...")
-				.to(EP_EDI_XML_FILE_INVOICE)
+				.to(OUTPUT_INVOIC_LOCAL);
 
-				.log(LoggingLevel.INFO, "EDI: Creating metasfresh feedback XML Java Object...")
+		final String remoteEndpoint = Util.resolveProperty(getContext(), OUTPUT_INVOIC_REMOTE, "");
+		if (!Util.isEmpty(remoteEndpoint))
+		{
+			routeDefinition
+					.log(LoggingLevel.TRACE, "Uploading file to remote endpoint")
+					.to(remoteEndpoint);
+		}
+
+		routeDefinition.log(LoggingLevel.INFO, "EDI: Creating metasfresh feedback XML Java Object...")
 				.process(new EDIXmlSuccessFeedbackProcessor<>(EDIInvoiceFeedbackType.class, EDIInvoiceFeedback_QNAME, METHOD_setCInvoiceID))
 
 				.log(LoggingLevel.INFO, "EDI: Marshalling XML Java Object feedback -> XML document...")

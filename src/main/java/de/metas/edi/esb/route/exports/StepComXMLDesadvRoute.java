@@ -30,6 +30,7 @@ import javax.xml.namespace.QName;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
+import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.spi.DataFormat;
 import org.springframework.stereotype.Component;
 
@@ -52,8 +53,6 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 
 	public static final String EP_EDI_STEPCOM_XML_DESADV_CONSUMER = "direct:edi.xml.desadv.consumer";
 
-	//public static final String EDI_XML_DESADV_IS_TEST = "edi.props.desadv.stepcom-xml.isTest";
-
 	public static final String EDI_XML_OWNER_ID = "edi.props.stepcom.owner.id";
 	public static final String EDI_XML_APPLICATION_REF = "edi.props.stepcom.application.ref";
 
@@ -63,7 +62,9 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 
 	private static final String METHOD_setEDIDesadvID = "setEDIDesadvID";
 
-	private static final String EP_EDI_FILE_DESADV_XML = "{{edi.file.desadv.stepcom-xml}}";
+	private static final String OUTPUT_DESADV_LOCAL = "{{edi.file.desadv.stepcom-xml}}";
+
+	private static final String OUTPUT_DESADV_REMOTE = "edi.file.desadv.stepcom-xml.remote";
 
 	private static final String JAXB_DESADV_CONTEXTPATH = ObjectFactory.class.getPackage().getName();
 
@@ -89,7 +90,7 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 		final String defaultEDIMessageDatePattern = Util.resolveProperty(getContext(), StepComXMLDesadvRoute.EDI_ORDER_EDIMessageDatePattern);
 		final String feedbackMessageRoutingKey = Util.resolveProperty(getContext(), Constants.EP_AMQP_TO_AD_DURABLE_ROUTING_KEY);
 
-		from(StepComXMLDesadvRoute.EP_EDI_STEPCOM_XML_DESADV_CONSUMER)
+		final RouteDefinition routeDefinition = from(StepComXMLDesadvRoute.EP_EDI_STEPCOM_XML_DESADV_CONSUMER)
 				.routeId(ROUTE_ID)
 
 				.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
@@ -118,9 +119,17 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 				.setHeader(Exchange.FILE_NAME).simple(desadvFilenamePattern)
 
 				.log(LoggingLevel.INFO, "EDI: Sending the stepCOM-XML to the FILE component...")
-				.to(StepComXMLDesadvRoute.EP_EDI_FILE_DESADV_XML)
+				.to(StepComXMLDesadvRoute.OUTPUT_DESADV_LOCAL);
 
-				.log(LoggingLevel.INFO, "EDI: Creating metasfresh feedback XML Java Object...")
+		final String remoteEndpoint = Util.resolveProperty(getContext(), OUTPUT_DESADV_REMOTE, "");
+		if (!Util.isEmpty(remoteEndpoint))
+		{
+			routeDefinition
+					.log(LoggingLevel.TRACE, "Uploading file to remote endpoint")
+					.to(remoteEndpoint);
+		}
+
+		routeDefinition.log(LoggingLevel.INFO, "EDI: Creating metasfresh feedback XML Java Object...")
 				.process(new EDIXmlSuccessFeedbackProcessor<>(EDIDesadvFeedbackType.class, StepComXMLDesadvRoute.EDIDesadvFeedback_QNAME, StepComXMLDesadvRoute.METHOD_setEDIDesadvID))
 
 				.log(LoggingLevel.INFO, "EDI: Marshalling metasfresh feedback XML Java Object -> XML...")
@@ -129,5 +138,6 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 				.log(LoggingLevel.INFO, "EDI: Sending success response to metasfresh...")
 				.setHeader("rabbitmq.ROUTING_KEY").simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
 				.to(Constants.EP_AMQP_TO_AD);
+
 	}
 }
