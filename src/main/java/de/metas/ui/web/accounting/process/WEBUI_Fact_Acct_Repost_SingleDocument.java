@@ -1,11 +1,18 @@
 package de.metas.ui.web.accounting.process;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_Fact_Acct;
+import org.compiere.util.DB;
 
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.document.engine.DocStatus;
@@ -59,7 +66,8 @@ public class WEBUI_Fact_Acct_Repost_SingleDocument extends JavaProcess implement
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
 	{
 		final String recordTableName = context.getTableName();
-		if (I_Fact_Acct.Table_Name.equals(recordTableName))
+		if (I_Fact_Acct.Table_Name.equals(recordTableName)
+				|| WEBUI_Fact_Acct_Repost_ViewRows.TABLENAME_RV_UnPosted.contentEquals(recordTableName))
 		{
 			return ProcessPreconditionsResolution.accept();
 		}
@@ -102,11 +110,53 @@ public class WEBUI_Fact_Acct_Repost_SingleDocument extends JavaProcess implement
 					.clientId(ClientId.ofRepoId(factAcctRecord.getAD_Client_ID()))
 					.build();
 		}
+		else if (WEBUI_Fact_Acct_Repost_ViewRows.TABLENAME_RV_UnPosted.contentEquals(recordTableName))
+		{
+			return getDocumentToRepost_From_RV_UnPosted();
+		}
 		else
 		{
 			final DocumentPath documentPath = DocumentPath.rootDocumentPath(getProcessInfo().getAdWindowId(), getRecord_ID());
 			final Document document = documentsCollection.getDocumentReadonly(documentPath);
 			return extractDocumentToRepostFromSingleDocumentOrNull(document);
+		}
+	}
+
+	private DocumentToRepost getDocumentToRepost_From_RV_UnPosted()
+	{
+		final String sql = "SELECT AD_Client_ID, AD_Table_ID, Record_ID "
+				+ " FROM " + WEBUI_Fact_Acct_Repost_ViewRows.TABLENAME_RV_UnPosted
+				+ " WHERE " + getProcessInfo().getWhereClause();
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			rs = pstmt.executeQuery();
+			if (rs.next())
+			{
+				ClientId clientId = ClientId.ofRepoId(rs.getInt("AD_Client_ID"));
+				int adTableId = rs.getInt("AD_Table_ID");
+				int recordId = rs.getInt("Record_ID");
+				return DocumentToRepost.builder()
+						.adTableId(adTableId)
+						.recordId(recordId)
+						.clientId(clientId)
+						.build();
+			}
+			else
+			{
+				throw new AdempiereException("@NotFound@")
+						.setParameter("sql", sql);
+			}
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex, sql);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
 		}
 	}
 

@@ -15,8 +15,8 @@ import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
-import de.metas.ui.web.accounting.process.WEBUI_Fact_Acct_Repost_ViewRows;
 import de.metas.ui.web.accounting.process.WEBUI_Fact_Acct_Repost_SingleDocument;
+import de.metas.ui.web.accounting.process.WEBUI_Fact_Acct_Repost_ViewRows;
 import de.metas.util.Services;
 
 /*
@@ -106,7 +106,7 @@ public class WebuiAccountingConfig
 		//
 		final List<String> linkToTableNames = new ArrayList<>();
 		linkToTableNames.addAll(acctDocRegistry.getDocTableNames());
-		// linkToTableNames.add(WEBUI_Fact_Acct_Repost.TABLENAME_RV_UnPosted);
+		linkToTableNames.add(WEBUI_Fact_Acct_Repost_ViewRows.TABLENAME_RV_UnPosted);
 
 		//
 		// Link Repost process to all accountable documents
