@@ -68,7 +68,7 @@ public class ReceiptsScheduleDeletedHandler
 	@Override
 	public void handleEvent(@NonNull final ReceiptScheduleDeletedEvent event)
 	{
-		final CandidatesQuery query = ReceiptsScheduleHandlerUtil.createExistingCandidatesQuery(event);
+		final CandidatesQuery query = ReceiptsScheduleHandlerUtil.queryByReceiptScheduleId(event);
 		final Candidate candidateToDelete = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
 		if (candidateToDelete == null)
 		{

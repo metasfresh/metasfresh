@@ -37,7 +37,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends AbstractReceiptScheduleEvent>
+abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends AbstractReceiptScheduleEvent>
 		implements MaterialEventHandler<T>
 {
 
