@@ -172,7 +172,7 @@
 		<band splitType="Stretch"/>
 	</columnFooter>
 	<lastPageFooter>
-		<band height="27" splitType="Stretch">
+		<band height="38" splitType="Stretch">
 			<textField>
 				<reportElement key="textField-52" mode="Transparent" x="60" y="12" width="300" height="12" forecolor="#000000" uuid="9cdb6a19-29dd-43d0-819b-fae3a73436eb"/>
 				<textElement markup="none">
