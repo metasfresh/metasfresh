@@ -470,6 +470,6 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000009, SeqNo=18, Updated=now(), UpdatedBy=1
 
 -- 2019-10-31T12:35:54.661Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Column SET ColumnSQL='(select value || ''_'' || name from M_CustomsTariff t join M_Product p on t.M_CustomsTariff_id=p.M_CustomsTariff_ID where p.M_Product_ID = C_Customs_invoice_Line.M_Product_ID)',Updated=TO_TIMESTAMP('2019-10-31 14:35:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=568325
+UPDATE AD_Column SET ColumnSQL='(select t.value || ''_'' || t.name from M_CustomsTariff t join M_Product p on t.M_CustomsTariff_id=p.M_CustomsTariff_ID where p.M_Product_ID = C_Customs_invoice_Line.M_Product_ID)',Updated=TO_TIMESTAMP('2019-10-31 14:35:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=568325
 ;
 
