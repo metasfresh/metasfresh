@@ -215,7 +215,7 @@ public class MaterialCockpitRowRepository
 
 		final IQueryBuilder<I_M_Product> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Product.class)
-				.addInArrayFilter(I_M_Product.COLUMN_AD_Org_ID, orgId.getRepoId(), 0)
+				.addInArrayFilter(I_M_Product.COLUMNNAME_AD_Org_ID, orgId.getRepoId(), 0)
 				.addEqualsFilter(I_M_Product.COLUMN_IsStocked, true)
 				.filter(productQueryFilter)
 				.orderBy(I_M_Product.COLUMN_Value);
