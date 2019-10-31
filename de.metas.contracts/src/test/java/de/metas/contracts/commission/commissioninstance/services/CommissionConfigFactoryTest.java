@@ -30,6 +30,7 @@ import de.metas.contracts.commission.testhelpers.ConfigTestRecord.ConfigData;
 import de.metas.contracts.commission.testhelpers.ContractTestRecord;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -145,43 +146,53 @@ class CommissionConfigFactoryTest
 	}
 
 	@Test
-	void createFor_no_lines()
+	void createForNewCommissionInstances_no_configLines()
 	{
+		final ProductCategoryId someOtherProductCategoryId = ProductCategoryId.ofRepoId(34);
+
 		final ConfigData configData = ConfigTestRecord.builder()
 				.pointsPrecision(3)
 				.subtractLowerLevelCommissionFromBase(true)
+				// note: we create an unrelated configLine
+				.configLineTestRecord(ConfigLineTestRecord.builder().seqNo(10).salesProductCategoryId(someOtherProductCategoryId).percentOfBasePoints("20").build())
 				.contractTestRecord(ContractTestRecord.builder().name("salesRep").parentName("salesSupervisor").date(date).build())
 				.contractTestRecord(ContractTestRecord.builder().name("salesSupervisor").parentName("headOfSales").date(date).build())
 				.contractTestRecord(ContractTestRecord.builder().name("headOfSales").date(date).build())
 				.build()
 				.createConfigData();
 
-		final BPartnerId salesRepLvl0Id = configData.getName2BPartnerId().get("salesRep");
-		final BPartnerId salesRepLvl1Id = configData.getName2BPartnerId().get("salesSupervisor");
-		final BPartnerId salesRepLvl2Id = configData.getName2BPartnerId().get("headOfSales");
+		assertNoConfigCreated(configData);
+	}
 
-		// invoke method under test
+	@Test
+	void createForNewCommissionInstances_no_matching_configLines()
+	{
+		final ConfigData configData = ConfigTestRecord.builder()
+				.pointsPrecision(3)
+				.subtractLowerLevelCommissionFromBase(true)
+				// note: we create no configLines
+				.contractTestRecord(ContractTestRecord.builder().name("salesRep").parentName("salesSupervisor").date(date).build())
+				.contractTestRecord(ContractTestRecord.builder().name("salesSupervisor").parentName("headOfSales").date(date).build())
+				.contractTestRecord(ContractTestRecord.builder().name("headOfSales").date(date).build())
+				.build()
+				.createConfigData();
+
+		assertNoConfigCreated(configData);
+	}
+
+	private void assertNoConfigCreated(@NonNull final ConfigData configData)
+	{
+		final BPartnerId salesRepLvl0Id = configData.getName2BPartnerId().get("salesRep");
+
 		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
 				.customerBPartnerId(endCustomerId)
 				.salesRepBPartnerId(salesRepLvl0Id)
 				.salesProductId(salesProductId)
 				.date(date).build();
+
+		// invoke method under test
 		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
 
-		assertThat(configs).hasSize(1);
-		final CommissionConfig config = configs.get(0);
-		assertThat(config.getCommissionType()).isEqualTo(CommissionType.HIERARCHY_COMMISSION);
-
-		final HierarchyConfig hierarchyConfig = HierarchyConfig.cast(config);
-		assertThat(hierarchyConfig.isSubtractLowerLevelCommissionFromBase()).isTrue();
-
-		final CommissionContract contractLvl0 = hierarchyConfig.getContractFor(Beneficiary.of(salesRepLvl0Id));
-		assertThat(contractLvl0).isNull();
-
-		final CommissionContract contractLvl1 = hierarchyConfig.getContractFor(Beneficiary.of(salesRepLvl1Id));
-		assertThat(contractLvl1).isNull();
-
-		final CommissionContract contractLvl2 = hierarchyConfig.getContractFor(Beneficiary.of(salesRepLvl2Id));
-		assertThat(contractLvl2).isNull();
+		assertThat(configs).isEmpty();
 	}
 }
