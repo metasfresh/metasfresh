@@ -14,7 +14,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.Commission
 import de.metas.contracts.commission.commissioninstance.businesslogic.CreateInstanceRequest;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionTrigger;
-import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory.ContractRequest;
+import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory.ConfigRequestForNewInstance;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.product.ProductId;
@@ -74,12 +74,13 @@ public class CommissionInstanceRequestFactory
 			return ImmutableList.of();
 		}
 
-		final ContractRequest contractRequest = ContractRequest.builder()
-				.bPartnerId(salesRepBPartnerId)
+		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
+				.customerBPartnerId(BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID()))
+				.salesRepBPartnerId(salesRepBPartnerId)
 				.date(TimeUtil.asLocalDate(icRecord.getDateOrdered()))
-				.productId(ProductId.ofRepoId(icRecord.getM_Product_ID()))
+				.salesProductId(ProductId.ofRepoId(icRecord.getM_Product_ID()))
 				.build();
-		final ImmutableList<CommissionConfig> configs = commissionContractFactory.createFor(contractRequest);
+		final ImmutableList<CommissionConfig> configs = commissionContractFactory.createForNewCommissionInstances(contractRequest);
 		if (configs.isEmpty())
 		{
 			return ImmutableList.of();

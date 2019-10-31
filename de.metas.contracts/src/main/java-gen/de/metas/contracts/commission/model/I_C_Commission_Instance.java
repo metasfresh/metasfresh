@@ -82,7 +82,7 @@ public interface I_C_Commission_Instance
     public static final String COLUMNNAME_Bill_BPartner_ID = "Bill_BPartner_ID";
 
 	/**
-	 * Set C_Commission_Instance.
+	 * Set Provisionsvorgang.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -91,7 +91,7 @@ public interface I_C_Commission_Instance
 	public void setC_Commission_Instance_ID (int C_Commission_Instance_ID);
 
 	/**
-	 * Get C_Commission_Instance.
+	 * Get Provisionsvorgang.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -108,7 +108,7 @@ public interface I_C_Commission_Instance
 	 * Set Rechnungskandidat.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setC_Invoice_Candidate_ID (int C_Invoice_Candidate_ID);
@@ -117,7 +117,7 @@ public interface I_C_Commission_Instance
 	 * Get Rechnungskandidat.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getC_Invoice_Candidate_ID();
@@ -233,7 +233,28 @@ public interface I_C_Commission_Instance
     public static final String COLUMNNAME_MostRecentTriggerTimestamp = "MostRecentTriggerTimestamp";
 
 	/**
-	 * Set Prognostizierte Basispunktzahl.
+	 * Set Beauftragtes Produkt.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Product_Order_ID (int M_Product_Order_ID);
+
+	/**
+	 * Get Beauftragtes Produkt.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Product_Order_ID();
+
+    /** Column name M_Product_Order_ID */
+    public static final String COLUMNNAME_M_Product_Order_ID = "M_Product_Order_ID";
+
+	/**
+	 * Set Beauftragte Basispunktzahl.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -242,7 +263,7 @@ public interface I_C_Commission_Instance
 	public void setPointsBase_Forecasted (java.math.BigDecimal PointsBase_Forecasted);
 
 	/**
-	 * Get Prognostizierte Basispunktzahl.
+	 * Get Beauftragte Basispunktzahl.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -256,7 +277,7 @@ public interface I_C_Commission_Instance
     public static final String COLUMNNAME_PointsBase_Forecasted = "PointsBase_Forecasted";
 
 	/**
-	 * Set Abzurechn. Basispunktzahl.
+	 * Set Fakturierbare Basispunktzahl.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -265,7 +286,7 @@ public interface I_C_Commission_Instance
 	public void setPointsBase_Invoiceable (java.math.BigDecimal PointsBase_Invoiceable);
 
 	/**
-	 * Get Abzurechn. Basispunktzahl.
+	 * Get Fakturierbare Basispunktzahl.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -279,7 +300,7 @@ public interface I_C_Commission_Instance
     public static final String COLUMNNAME_PointsBase_Invoiceable = "PointsBase_Invoiceable";
 
 	/**
-	 * Set Abgerechn. Basispunktzahl.
+	 * Set Fakturierte Basispunktzahl.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -288,7 +309,7 @@ public interface I_C_Commission_Instance
 	public void setPointsBase_Invoiced (java.math.BigDecimal PointsBase_Invoiced);
 
 	/**
-	 * Get Abgerechn. Basispunktzahl.
+	 * Get Fakturierte Basispunktzahl.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true

@@ -8,12 +8,22 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
+import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BPartner;
+
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstanceId;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.order.model.I_M_Product_Category;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -55,16 +65,55 @@ public class CommissionInstanceTestRecord
 	@NonNull
 	Long mostRecentTriggerTimestamp;
 
-	@NonNull
+	@Nullable
 	InvoiceCandidateId C_INVOICE_CANDIDATE_ID;
+
+	/** If null, the instance's ordered product gets an on-the-fly created category */
+	@Nullable
+	ProductCategoryId existingSalesProductCategoryId;
+
+	/** If null, the instance's BillPartner gets an on-the-fly created bpGroup */
+	@Nullable
+	BPGroupId existingCustomerGroupIdId;
 
 	@Singular
 	List<CommissionShareTestRecord> commissionShareTestRecords;
 
 	public CreateCommissionInstanceResult createCommissionData()
 	{
+		final I_M_Product salesProductRecord = newInstance(I_M_Product.class);
+		if (existingSalesProductCategoryId != null)
+		{
+			salesProductRecord.setM_Product_Category_ID(existingSalesProductCategoryId.getRepoId());
+		}
+		else
+		{
+			final I_M_Product_Category productCategoryRecord = newInstance(I_M_Product_Category.class);
+			saveRecord(productCategoryRecord);
+			salesProductRecord.setM_Product_Category_ID(productCategoryRecord.getM_Product_Category_ID());
+		}
+		saveRecord(salesProductRecord);
+
+		final I_C_BPartner customerRecord = newInstance(I_C_BPartner.class);
+		if (existingCustomerGroupIdId != null)
+		{
+			customerRecord.setC_BP_Group_ID(existingCustomerGroupIdId.getRepoId());
+		}
+		else
+		{
+			final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
+			saveRecord(bpGroupRecord);
+			customerRecord.setC_BP_Group_ID(bpGroupRecord.getC_BP_Group_ID());
+		}
+		saveRecord(customerRecord);
+
 		final I_C_Commission_Instance instanceRecord = newInstance(I_C_Commission_Instance.class);
-		instanceRecord.setC_Invoice_Candidate_ID(C_INVOICE_CANDIDATE_ID.getRepoId());
+		if (C_INVOICE_CANDIDATE_ID != null)
+		{
+			instanceRecord.setC_Invoice_Candidate_ID(C_INVOICE_CANDIDATE_ID.getRepoId());
+		}
+		instanceRecord.setBill_BPartner_ID(customerRecord.getC_BPartner_ID());
+		instanceRecord.setM_Product_Order_ID(salesProductRecord.getM_Product_ID());
 		instanceRecord.setMostRecentTriggerTimestamp(Timestamp.from(Instant.ofEpochMilli(mostRecentTriggerTimestamp)));
 		instanceRecord.setPointsBase_Forecasted(new BigDecimal(pointsBase_Forecasted));
 		instanceRecord.setPointsBase_Invoiceable(new BigDecimal(pointsBase_Invoiceable));
@@ -78,6 +127,8 @@ public class CommissionInstanceTestRecord
 			bpartnerId2commissionShareId.put(commissionShareTestRecord.getC_BPartner_SalesRep_ID(), C_Commission_Share_ID);
 		}
 		return new CreateCommissionInstanceResult(
+				ProductId.ofRepoId(salesProductRecord.getM_Product_ID()),
+				BPartnerId.ofRepoId(customerRecord.getC_BPartner_ID()),
 				CommissionInstanceId.ofRepoId(instanceRecord.getC_Commission_Instance_ID()),
 				bpartnerId2commissionShareId.build());
 	}
@@ -85,6 +136,13 @@ public class CommissionInstanceTestRecord
 	@Value
 	public static class CreateCommissionInstanceResult
 	{
+
+		@NonNull
+		ProductId salesProductId;
+
+		@NonNull
+		BPartnerId customerBPartnerId;
+
 		@NonNull
 		CommissionInstanceId commissionInstanceId;
 

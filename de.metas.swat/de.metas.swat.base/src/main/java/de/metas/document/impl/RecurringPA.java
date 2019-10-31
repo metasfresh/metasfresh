@@ -1,5 +1,9 @@
 package de.metas.document.impl;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -26,13 +30,18 @@ package de.metas.document.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 
-import org.adempiere.db.IDatabaseBL;
+import org.adempiere.ad.persistence.TableModelLoader;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Recurring;
 import org.compiere.model.MRecurring;
+import org.compiere.model.PO;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 import de.metas.document.IRecurringPA;
-import de.metas.util.Services;
 
 public final class RecurringPA implements IRecurringPA {
 
@@ -49,14 +58,62 @@ public final class RecurringPA implements IRecurringPA {
 			+ "\n            AND rr.DateDoc=r.DateNextRun::date "//
 			+ "\n    )";
 
+	@Override
 	public Collection<I_C_Recurring> retrieveForToday(final int adClientId,
 			final String trxName) {
 
-		final IDatabaseBL databaseBL = Services.get(IDatabaseBL.class);
-
-		final List<MRecurring> recurrings = databaseBL.retrieveList(SQL_TODAY,
+		final List<MRecurring> recurrings = retrieveList(SQL_TODAY,
 				new Object[] { adClientId }, MRecurring.class, trxName);
 
-		return new ArrayList<I_C_Recurring>(recurrings);
+		return new ArrayList<>(recurrings);
 	}
+	
+	/**
+	 * Executes the given sql (prepared) statement and returns the result as a
+	 * list of {@link PO}s.
+	 * 
+	 * @param sql
+	 *            the sql statement to execute
+	 * @param params
+	 *            prepared statement parameters (its length must correspond to
+	 *            the number of '?'s in the sql)
+	 * @param clazz
+	 *            the class of the returned list elements needs to have a
+	 *            constructor with three parameters:
+	 *            <li>{@link Properties},
+	 *            <li>{@link ResultSet},
+	 *            <li>{@link String}
+	 * @param trxName
+	 */
+	private <T extends PO> List<T> retrieveList(final String sql, final Object[] params, final Class<T> clazz, final String trxName)
+	{
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, trxName);
+			DB.setParameters(pstmt, params);
+			rs = pstmt.executeQuery();
+			
+			final Properties ctx = Env.getCtx();
+			final String tableName = InterfaceWrapperHelper.getTableName(clazz);
+
+			final List<T> result = new ArrayList<>();
+			while (rs.next()) 
+			{
+				final T newPO = TableModelLoader.instance.retrieveModel(ctx, tableName, clazz, rs, trxName);
+				result.add(newPO);
+			}
+			return result;
+		}
+		catch (SQLException e)
+		{
+			throw new DBException(e, sql, params);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
+	}
+
 }

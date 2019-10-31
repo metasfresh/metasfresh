@@ -140,7 +140,7 @@ FROM
 					, ev.ad_client_id
 					, ev.AccountType
 					FROM C_ElementValue ev
-					JOIN C_Element e on e.C_Element_id = ev.C_Element_ID
+					JOIN C_Element e on e.C_Element_id = ev.C_Element_ID and e.IsActive='Y'
 					WHERE ev.isActive = 'Y' and e.IsNaturalAccount='Y'
 				) ev ON (lvl.C_ElementValue_ID = ev.C_ElementValue_ID)
 				LEFT OUTER JOIN AD_ClientInfo ci ON (ci.AD_Client_ID=ev.AD_Client_ID) AND ci.isActive = 'Y'

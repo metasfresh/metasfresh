@@ -46,6 +46,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.ad.window.api.UIElementGroupId;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.I_AD_Tab_Callout;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery.Aggregate;
@@ -152,8 +153,8 @@ public class ADWindowDAO implements IADWindowDAO
 	public void deleteTabsByWindowId(@NonNull final AdWindowId adWindowId)
 	{
 		retrieveTabsQuery(adWindowId)
-				.create()
-				.delete();
+		.create()
+		.delete();
 	}
 
 	private IQueryBuilder<I_AD_Tab> retrieveTabsQuery(final AdWindowId adWindowId)
@@ -394,12 +395,16 @@ public class ADWindowDAO implements IADWindowDAO
 		logger.debug("Copying from: {} to: {}", sourceWindow, targetWindow);
 
 		copy()
-				.setSkipCalculatedColumns(true)
-				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Name)
-				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_InternalName)
-				.setFrom(sourceWindow)
-				.setTo(targetWindow)
-				.copy();
+		.setSkipCalculatedColumns(true)
+		// skip it because other wise the MV will fill the name from the AD_Element of the original window and unique name constraint will be broken
+		.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_AD_Element_ID)
+		.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Name)
+		.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_InternalName)
+		.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Description)
+		.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Help)
+		.setFrom(sourceWindow)
+		.setTo(targetWindow)
+		.copy();
 
 		save(targetWindow);
 
@@ -459,9 +464,9 @@ public class ADWindowDAO implements IADWindowDAO
 		final I_AD_UI_Section targetUISection = existingUISection != null ? existingUISection : newInstance(I_AD_UI_Section.class);
 
 		copy()
-				.setFrom(sourceUISection)
-				.setTo(targetUISection)
-				.copy();
+		.setFrom(sourceUISection)
+		.setTo(targetUISection)
+		.copy();
 
 		targetUISection.setAD_Org_ID(sourceUISection.getAD_Org_ID());
 
@@ -540,9 +545,9 @@ public class ADWindowDAO implements IADWindowDAO
 		final I_AD_UI_ElementGroup targetUIElementGroup = existingUIElementGroup != null ? existingUIElementGroup : newInstance(I_AD_UI_ElementGroup.class);
 
 		copy()
-				.setFrom(sourceUIElementGroup)
-				.setTo(targetUIElementGroup)
-				.copy();
+		.setFrom(sourceUIElementGroup)
+		.setTo(targetUIElementGroup)
+		.copy();
 
 		targetUIElementGroup.setAD_Org_ID(targetUIColumn.getAD_Org_ID());
 		targetUIElementGroup.setAD_UI_Column_ID(targetUIColumn.getAD_UI_Column_ID());
@@ -593,9 +598,9 @@ public class ADWindowDAO implements IADWindowDAO
 		final I_AD_UI_ElementField targetUIElementField = existingTargetElementField != null ? existingTargetElementField : newInstance(I_AD_UI_ElementField.class);
 
 		copy()
-				.setFrom(sourceUIElementField)
-				.setTo(targetUIElementField)
-				.copy();
+		.setFrom(sourceUIElementField)
+		.setTo(targetUIElementField)
+		.copy();
 
 		targetUIElementField.setAD_Org_ID(targetUIElement.getAD_Org_ID());
 		targetUIElementField.setSeqNo(sourceUIElementField.getSeqNo());
@@ -665,9 +670,9 @@ public class ADWindowDAO implements IADWindowDAO
 		final I_AD_UI_Element targetElement = existingTargetElement != null ? existingTargetElement : newInstance(I_AD_UI_Element.class);
 
 		copy()
-				.setFrom(sourceElement)
-				.setTo(targetElement)
-				.copy();
+		.setFrom(sourceElement)
+		.setTo(targetElement)
+		.copy();
 
 		targetElement.setAD_Org_ID(targetElementGroup.getAD_Org_ID());
 		targetElement.setAD_UI_ElementGroup_ID(targetElementGroupId.getRepoId());
@@ -760,10 +765,10 @@ public class ADWindowDAO implements IADWindowDAO
 		final I_AD_UI_Column targetUIColumn = existingUIColumn != null ? existingUIColumn : newInstance(I_AD_UI_Column.class);
 
 		copy()
-				.addTargetColumnNameToSkip(I_AD_UI_Column.COLUMNNAME_SeqNo)
-				.setFrom(sourceUIColumn)
-				.setTo(targetUIColumn)
-				.copy();
+		.addTargetColumnNameToSkip(I_AD_UI_Column.COLUMNNAME_SeqNo)
+		.setFrom(sourceUIColumn)
+		.setTo(targetUIColumn)
+		.copy();
 
 		targetUIColumn.setAD_Org_ID(targetUISection.getAD_Org_ID());
 		targetUIColumn.setAD_UI_Section_ID(targetUISection.getAD_UI_Section_ID());
@@ -798,6 +803,8 @@ public class ADWindowDAO implements IADWindowDAO
 
 		copyTabTrl(targetTab.getAD_Tab_ID(), sourceTab.getAD_Tab_ID());
 
+		copyTabCallouts(targetTab, sourceTab);
+
 		copyFields(targetTab, sourceTab);
 		copyUISections(targetTab, sourceTab);
 	}
@@ -809,9 +816,9 @@ public class ADWindowDAO implements IADWindowDAO
 		final I_AD_Tab targetTab = existingTargetTab != null ? existingTargetTab : newInstance(I_AD_Tab.class);
 
 		copy()
-				.setFrom(sourceTab)
-				.setTo(targetTab)
-				.copy();
+		.setFrom(sourceTab)
+		.setTo(targetTab)
+		.copy();
 
 		targetTab.setAD_Org_ID(targetWindow.getAD_Org_ID());
 		targetTab.setAD_Window_ID(targetWindowId);
@@ -858,6 +865,39 @@ public class ADWindowDAO implements IADWindowDAO
 		logger.debug("AD_Tab_Trl inserted: {}", countInsert);
 	}
 
+	private void copyTabCallouts(final I_AD_Tab targetTab, final I_AD_Tab sourceTab)
+	{
+		final Map<String, I_AD_Tab_Callout> existingTargetTabCallouts = retrieveTabCalloutsQuery(AdTabId.ofRepoId(targetTab.getAD_Tab_ID())).create().map(I_AD_Tab_Callout.class, I_AD_Tab_Callout::getClassname);
+		final Collection<I_AD_Tab_Callout> sourceTabCallouts = retrieveTabCallouts(AdTabId.ofRepoId(sourceTab.getAD_Tab_ID()));
+
+		for (final I_AD_Tab_Callout sourceField : sourceTabCallouts)
+		{
+			final I_AD_Tab_Callout existingTargetTabCallout = existingTargetTabCallouts.get(sourceField.getClassname());
+			copyTabCallout(targetTab, existingTargetTabCallout, sourceField);
+		}
+	}
+
+	private void copyTabCallout(final I_AD_Tab targetTab, final I_AD_Tab_Callout existingTabCallout, final I_AD_Tab_Callout sourceTabCallout)
+	{
+		logger.debug("Copying Tab Callout {} to {}", sourceTabCallout, targetTab);
+
+		final int targetTabId = targetTab.getAD_Tab_ID();
+		final String entityType = targetTab.getEntityType();
+
+		final I_AD_Tab_Callout targetTabCallout = existingTabCallout != null ? existingTabCallout : newInstance(I_AD_Tab_Callout.class);
+
+		copy()
+		.setFrom(sourceTabCallout)
+		.setTo(targetTabCallout)
+		.copy();
+		targetTabCallout.setAD_Org_ID(targetTab.getAD_Org_ID());
+		targetTabCallout.setAD_Tab_ID(targetTabId);
+		targetTabCallout.setEntityType(entityType);
+
+		save(targetTabCallout);
+	}
+
+
 	private void copyFields(final I_AD_Tab targetTab, final I_AD_Tab sourceTab)
 	{
 		final Map<Integer, I_AD_Field> existingTargetFields = retrieveFieldsQuery(targetTab).create().map(I_AD_Field.class, I_AD_Field::getAD_Column_ID);
@@ -868,7 +908,6 @@ public class ADWindowDAO implements IADWindowDAO
 			final I_AD_Field existingTargetField = existingTargetFields.get(sourceField.getAD_Column_ID());
 			copyField(targetTab, existingTargetField, sourceField);
 		}
-
 	}
 
 	private void copyField(final I_AD_Tab targetTab, final I_AD_Field existingTargetField, final I_AD_Field sourceField)
@@ -881,9 +920,9 @@ public class ADWindowDAO implements IADWindowDAO
 		final I_AD_Field targetField = existingTargetField != null ? existingTargetField : newInstance(I_AD_Field.class);
 
 		copy()
-				.setFrom(sourceField)
-				.setTo(targetField)
-				.copy();
+		.setFrom(sourceField)
+		.setTo(targetField)
+		.copy();
 		targetField.setAD_Org_ID(targetTab.getAD_Org_ID());
 		targetField.setAD_Tab_ID(targetTabId);
 		targetField.setEntityType(entityType);
@@ -928,6 +967,24 @@ public class ADWindowDAO implements IADWindowDAO
 		logger.debug("AD_Field_Trl inserted: {}", countInsert);
 	}
 
+
+	@Override
+	@Cached(cacheName = I_AD_Tab_Callout.Table_Name + "#by#" + I_AD_Tab_Callout.COLUMNNAME_AD_Tab_ID)
+	public List<I_AD_Tab_Callout> retrieveTabCallouts(@NonNull AdTabId tabId)
+	{
+		return retrieveTabCalloutsQuery(tabId)
+				.create()
+				.list();
+	}
+
+	private IQueryBuilder<I_AD_Tab_Callout> retrieveTabCalloutsQuery(@NonNull final AdTabId tabId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_AD_Tab_Callout.class)
+				.addEqualsFilter(I_AD_Tab_Callout.COLUMNNAME_AD_Tab_ID, tabId)
+				.orderBy(I_AD_Tab_Callout.COLUMNNAME_AD_Tab_Callout_ID);
+	}
+
 	@Override
 	public List<I_AD_Field> retrieveFields(final I_AD_Tab adTab)
 	{
@@ -953,10 +1010,10 @@ public class ADWindowDAO implements IADWindowDAO
 	public void deleteFieldsByTabId(@NonNull final AdTabId tabId)
 	{
 		Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Field.class)
-				.addEqualsFilter(I_AD_Field.COLUMNNAME_AD_Tab_ID, tabId)
-				.create()
-				.delete();
+		.createQueryBuilder(I_AD_Field.class)
+		.addEqualsFilter(I_AD_Field.COLUMNNAME_AD_Tab_ID, tabId)
+		.create()
+		.delete();
 	}
 
 	@Override
@@ -965,10 +1022,10 @@ public class ADWindowDAO implements IADWindowDAO
 		Check.assumeGreaterThanZero(adColumnId, "adColumnId");
 
 		Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Field.class)
-				.addEqualsFilter(I_AD_Field.COLUMNNAME_AD_Column_ID, adColumnId)
-				.create()
-				.delete();
+		.createQueryBuilder(I_AD_Field.class)
+		.addEqualsFilter(I_AD_Field.COLUMNNAME_AD_Column_ID, adColumnId)
+		.create()
+		.delete();
 	}
 
 	@Override
@@ -988,7 +1045,7 @@ public class ADWindowDAO implements IADWindowDAO
 				.create()
 				.listIds(AdWindowId::ofRepoId);
 	}
-	
+
 	@Override
 	public I_AD_Window getById(@NonNull final AdWindowId adWindowId)
 	{
@@ -1014,9 +1071,9 @@ public class ADWindowDAO implements IADWindowDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		queryBL.createQueryBuilder(I_AD_UI_Element.class)
-				.addEqualsFilter(I_AD_UI_Element.COLUMN_AD_Field_ID, adFieldId)
-				.create()
-				.delete();
+		.addEqualsFilter(I_AD_UI_Element.COLUMN_AD_Field_ID, adFieldId)
+		.create()
+		.delete();
 	}
 
 	@Override
@@ -1024,9 +1081,9 @@ public class ADWindowDAO implements IADWindowDAO
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		queryBL.createQueryBuilder(I_AD_UI_Section.class)
-				.addEqualsFilter(I_AD_UI_Section.COLUMN_AD_Tab_ID, adTabId)
-				.create()
-				.delete();
+		.addEqualsFilter(I_AD_UI_Section.COLUMN_AD_Tab_ID, adTabId)
+		.create()
+		.delete();
 	}
 
 	@Override

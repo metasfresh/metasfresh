@@ -52,13 +52,9 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.ISingletonService;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.lang.Percent;
+import de.metas.util.rest.ExternalHeaderAndLineId;
 import lombok.NonNull;
 
-/**
- *
- * @author metas-dev <dev@metasfresh.com>
- *
- */
 public interface IInvoiceCandBL extends ISingletonService
 {
 	public interface IInvoiceGenerateResult
@@ -119,7 +115,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	IInvoiceCandidateEnqueuer enqueueForInvoicing();
 
 	/**
-	 * Checks if given invoice candadidate is eligible for invoicing.
+	 * Checks if given invoice candidate is eligible for invoicing.
 	 *
 	 * It checks: Processed, IsError, DateToInvoice (if not <code>ignoreInvoiceSchedule</code>).
 	 *
@@ -236,9 +232,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * <p>
 	 * IMPORTANT: as of now we suppose this to be the only way of creating ilas! Please don't create them yourself somewhere in the code.
 	 *
-	 * @param invoiceCand
-	 * @param invoiceLine
-	 * @param qtyInvoiced
 	 * @param note may be null or empty. Use it to provide a user-friendly note that can be displayed to the customer admin/user
 	 * @return returns the invoiceLine allocation that was created or updated never returns <code>null</code>
 	 */
@@ -264,11 +257,9 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * <li>there is at least one not-reversed {@link I_C_InvoiceLine} allocated to the candidate</li>
 	 * </ul>
 	 * The second condition is important because we might e.g. have a <code>C_OrderLine</code> with <code>QtyOrdered=0</code>, either because the order was reactivated, or because the user simply
-	 * needs to document that a Qty or ZERO was ordered for a certain product. In both case don't we want the candidate to be flagged as processed.
+	 * needs to document that a Qty or ZERO was ordered for a certain product. In both case we don't want the candidate to be flagged as processed.
 	 * <p>
 	 * Note that if <code>Processed_Override</code> is set, then its value shall be copied to <code>Processed</code>, no matter what (issue <a href="https://github.com/metasfresh/metasfresh/issues/243">#243</a>).
-	 *
-	 * @param candidate
 	 */
 	void updateProcessedFlag(I_C_Invoice_Candidate candidate);
 
@@ -302,7 +293,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @param ic
 	 * @param errorMsg
 	 * @param note
-	 * @param askForDeleteRegeneration error message will append request to the user asking him/her to delete invoice candidate after problem was fixed and wait for it's regeneration
+	 * @param askForDeleteRegeneration error message will append request to the user asking him/her to delete invoice candidate after problem was fixed and wait for its regeneration
 	 */
 	void setError(I_C_Invoice_Candidate ic, String errorMsg, I_AD_Note note, boolean askForDeleteRegeneration);
 
@@ -351,7 +342,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	Quantity getQtyToInvoiceStockUOM(I_C_Invoice_Candidate ic);
 
 	/**
-	 * Set the QualityDiscountPercent_Override based on the QualityIssuePercentage from the discount schema.
+	 * Set the QualityDiscountPercent_Override based on the QualityIssuePercentage from the discount schema.<br>
 	 * If the value does not exist, leave the field on null.
 	 *
 	 * Note: ic not saved
@@ -395,7 +386,7 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Find out if invoice candidates that were partially invoiced are supposed to be closed
-	 * The decision is bade based on the System Configuration "C_Invoice_Candidate_Close_PartiallyInvoiced"
+	 * The decision is made based on the System Configuration "C_Invoice_Candidate_Close_PartiallyInvoiced"
 	 *
 	 * @return the value of the SYS_Config if found, false by default
 	 */
@@ -424,4 +415,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	OptionalBoolean extractProcessedOverride(I_C_Invoice_Candidate candidate);
 
 	void updateICIOLAssociationFromIOL(I_C_InvoiceCandidate_InOutLine iciol, org.compiere.model.I_M_InOutLine inOutLine);
+
+	int createSelectionForInvoiceCandidates(List<ExternalHeaderAndLineId> headerAndLineIds, PInstanceId pInstanceId);
 }

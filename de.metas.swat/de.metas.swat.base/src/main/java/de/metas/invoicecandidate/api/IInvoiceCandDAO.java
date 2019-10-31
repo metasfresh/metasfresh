@@ -56,19 +56,17 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
+import de.metas.util.rest.ExternalHeaderAndLineId;
 
 public interface IInvoiceCandDAO extends ISingletonService
 {
 	/**
-	 * f * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#COLUMNNAME_HeaderAggregationKey}
-	 *
+	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#COLUMNNAME_HeaderAggregationKey}
 	 * @see #retrieveInvoiceCandidates(IQueryBuilder)
 	 */
 	Iterator<I_C_Invoice_Candidate> retrieveIcForSelection(Properties ctx, PInstanceId pinstanceId, String trxName);
 
 	/**
-	 *
-	 * @param queryBuilder
 	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#COLUMNNAME_HeaderAggregationKey}
 	 */
 	<T extends I_C_Invoice_Candidate> Iterator<T> retrieveInvoiceCandidates(IQueryBuilder<T> queryBuilder);
@@ -79,10 +77,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * Returns those invoice candidates that have been tagged to be recomputed/updated by the given <code>recomputeTag</code>.
 	 *
 	 * This method ALWAYS return non-manual candidates first in the list.
-	 *
-	 * @param recomputeTag
-	 * @param trxName
-	 * @return
 	 */
 	Iterator<I_C_Invoice_Candidate> fetchInvalidInvoiceCandidates(Properties ctx, InvoiceCandRecomputeTag recomputeTag, String trxName);
 
@@ -147,7 +141,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	/**
 	 * Invalidates all candidates that have the same <code>(AD_Table_ID, Record_ID)</code> reference.
 	 *
-	 * @param ic
 	 * @throws AdempiereException if the invoice candidate does not have the AD_Table_ID/Record_ID set
 	 */
 	void invalidateCandsWithSameReference(I_C_Invoice_Candidate ic);
@@ -338,8 +331,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Invalidate all ICs that have the given <code>aggregation</code> as either their <code>HeaderAggregationKeyBuilder_ID</code> or <code>LineAggregationKeyBuilder_ID</code>.
-	 *
-	 * @param aggregation
 	 */
 	void invalidateCandsForAggregationBuilder(I_C_Aggregation aggregation);
 
@@ -388,14 +379,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	String getSQLDefaultFilter(Properties ctx);
 
-	// /**
-	// * Retrieve all the invoice candidates for the given inventoryLine
-	// *
-	// * @param inventoryLine
-	// * @return
-	// */
-	// IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInventoryLineQuery(I_M_InventoryLine inventoryLine);
-
 	Set<String> retrieveOrderDocumentNosForIncompleteGroupsFromSelection(PInstanceId pinstanceId);
 
 	InvoiceCandidateId getFirstInvoiceableInvoiceCandId(OrderId orderId);
@@ -403,4 +386,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
 
 	I_C_Invoice_Candidate getById(InvoiceCandidateId invoiceCandId);
+
+	int createSelectionByHeaderAndLineIds(List<ExternalHeaderAndLineId> headerAndLineIds, PInstanceId pInstanceID);
 }
