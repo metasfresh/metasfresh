@@ -58,3 +58,29 @@ UPDATE AD_Column SET IsSelectionColumn='Y', IsUpdateable='N', SelectionColumnSeq
 UPDATE AD_Column SET AD_Reference_ID=30, IsUpdateable='N',Updated=TO_TIMESTAMP('2019-10-31 16:54:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=12343
 ;
 
+
+
+-- 2019-10-31T15:23:10.666Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET AD_Reference_ID=30, AD_Reference_Value_ID=540750,Updated=TO_TIMESTAMP('2019-10-31 17:23:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=586148
+;
+
+-- 2019-10-31T15:23:41.737Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET AD_Val_Rule_ID=540206,Updated=TO_TIMESTAMP('2019-10-31 17:23:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=586148
+;
+
+-- 2019-10-31T15:23:51.303Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_ID=19, IsUpdateable='N',Updated=TO_TIMESTAMP('2019-10-31 17:23:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=12343
+;
+
+-- 2019-10-31T15:38:14.859Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET AD_Reference_Value_ID=206, AD_Val_Rule_ID=NULL,Updated=TO_TIMESTAMP('2019-10-31 17:38:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=586148
+;
+
+
+
+
+
