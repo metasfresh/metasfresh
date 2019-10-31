@@ -1,16 +1,18 @@
-package de.metas.ui.web.document.process;
+package de.metas.ui.web.accounting.process;
+
+import java.util.Set;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_Fact_Acct;
-import org.compiere.util.Env;
 
-import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
-import de.metas.acct.api.IPostingService;
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.ui.web.accounting.process.FactAcctRepostCommand.DocumentToRepost;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.util.Services;
@@ -37,15 +39,14 @@ import de.metas.util.Services;
  * #L%
  */
 
-public class WEBUI_Fact_Acct_Repost extends ViewBasedProcessTemplate implements IProcessPrecondition
+public class WEBUI_Fact_Acct_Repost_ViewRows extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
-	private final IPostingService postingService = Services.get(IPostingService.class);
 	private final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
 
 	public static final String TABLENAME_RV_UnPosted = "RV_UnPosted";
 
 	@Param(parameterName = "IsEnforcePosting", mandatory = true)
-	private boolean enforce;
+	private boolean forcePosting;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -62,11 +63,27 @@ public class WEBUI_Fact_Acct_Repost extends ViewBasedProcessTemplate implements 
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-		getView().streamByIds(getSelectedRowIds())
+		final Set<DocumentToRepost> documentsToRepost = getDocumentsToRepost();
+		if (documentsToRepost.isEmpty())
+		{
+			return MSG_OK;
+		}
+
+		FactAcctRepostCommand.builder()
+				.forcePosting(forcePosting)
+				.documentsToRepost(documentsToRepost)
+				.build()
+				.execute();
+
+		return MSG_OK;
+	}
+
+	private Set<DocumentToRepost> getDocumentsToRepost()
+	{
+		return getView().streamByIds(getSelectedRowIds())
 				.map(this::extractDocumentToRepost)
 				.distinct()
-				.forEach(this::repost);
-		return MSG_OK;
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private DocumentToRepost extractDocumentToRepost(final IViewRow row)
@@ -108,32 +125,9 @@ public class WEBUI_Fact_Acct_Repost extends ViewBasedProcessTemplate implements 
 				.build();
 	}
 
-	private void repost(final DocumentToRepost doc)
-	{
-		postingService
-				.newPostingRequest()
-				.setClientId(doc.getClientId())
-				.setDocument(doc.getAdTableId(), doc.getRecordId())
-				.setForce(enforce)
-				.setPostImmediate(PostImmediate.Yes)
-				.setFailOnError(true)
-				.onErrorNotifyUser(Env.getLoggedUserId())
-				.postIt();
-	}
-
 	@Override
 	protected void postProcess(final boolean success)
 	{
 		getView().invalidateSelection();
 	}
-
-	@lombok.Value
-	@lombok.Builder
-	private static class DocumentToRepost
-	{
-		int adTableId;
-		int recordId;
-		ClientId clientId;
-	}
-
 }
