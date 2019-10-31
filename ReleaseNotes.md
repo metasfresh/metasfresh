@@ -10,6 +10,11 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.126
+## Features
+* metasfresh-webui-frontend
+  * [#2431](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2431) Remove number field's arrows for changing value
+
 # metasfresh 5.125
 ## Features
 * metasfresh
