@@ -4,12 +4,14 @@ import java.util.List;
 
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse_Type;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.edi.model.I_C_Order;
 import de.metas.i18n.IMsgBL;
 import de.metas.order.OrderId;
+import de.metas.shipping.ShipperId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
@@ -31,12 +33,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -72,6 +74,11 @@ final class PackageableViewFilters
 		final DocumentFilterParamDescriptor.Builder preparationDateParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_PreparationDate)
 				.setWidgetType(DocumentFieldWidgetType.LocalDate);
 
+		final DocumentFilterParamDescriptor.Builder shipperParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_M_Shipper_ID)
+				.setWidgetType(DocumentFieldWidgetType.Lookup)
+				.setLookupDescriptor(SqlLookupDescriptor.searchInTable(I_M_Shipper.Table_Name).provideForFilter());
+
+
 		return DocumentFilterDescriptor.builder()
 				.setFrequentUsed(true)
 				.setFilterId(PackageableViewFilterVO.FILTER_ID)
@@ -81,6 +88,7 @@ final class PackageableViewFilters
 				.addParameter(warehouseTypeParameter)
 				.addParameter(deliveryDateParameter)
 				.addParameter(preparationDateParameter)
+				.addParameter(shipperParameter)
 				.build();
 	}
 
@@ -108,6 +116,7 @@ final class PackageableViewFilters
 				.warehouseTypeId(filter.getParameterValueAsRepoIdOrNull(PackageableViewFilterVO.PARAM_M_Warehouse_Type_ID, WarehouseTypeId::ofRepoIdOrNull))
 				.deliveryDate(filter.getParameterValueAsLocalDateOrNull(PackageableViewFilterVO.PARAM_DeliveryDate))
 				.preparationDate(filter.getParameterValueAsLocalDateOrNull(PackageableViewFilterVO.PARAM_PreparationDate))
+				.shipperId(filter.getParameterValueAsRepoIdOrNull(PackageableViewFilterVO.PARAM_M_Shipper_ID, ShipperId::ofRepoIdOrNull))
 				.build();
 	}
 
