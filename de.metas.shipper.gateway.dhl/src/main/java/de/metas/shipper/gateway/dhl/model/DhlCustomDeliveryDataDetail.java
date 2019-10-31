@@ -24,7 +24,6 @@ package de.metas.shipper.gateway.dhl.model;
 
 import de.metas.util.Check;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -34,7 +33,7 @@ public class DhlCustomDeliveryDataDetail
 {
 	int packageId;
 
-	@NonNull
+	@Nullable
 	DhlSequenceNumber sequenceNumber;
 
 	@Nullable
@@ -54,7 +53,7 @@ public class DhlCustomDeliveryDataDetail
 	@Builder(toBuilder = true)
 	private DhlCustomDeliveryDataDetail(
 			final int packageId,
-			@NonNull final DhlSequenceNumber sequenceNumber,
+			@Nullable final DhlSequenceNumber sequenceNumber,
 			@Nullable final byte[] pdfLabelData,
 			@Nullable final String awb,
 			@Nullable final String trackingUrl,
