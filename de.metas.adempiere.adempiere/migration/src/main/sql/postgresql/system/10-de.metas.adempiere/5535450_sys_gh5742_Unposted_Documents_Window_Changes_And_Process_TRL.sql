@@ -84,3 +84,38 @@ UPDATE AD_Field SET AD_Reference_Value_ID=206, AD_Val_Rule_ID=NULL,Updated=TO_TI
 
 
 
+-- 2019-10-31T16:00:22.244Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Neu verbuchen',Updated=TO_TIMESTAMP('2019-10-31 18:00:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=541209
+;
+
+-- 2019-10-31T16:00:25.783Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Neu verbuchen',Updated=TO_TIMESTAMP('2019-10-31 18:00:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=541209
+;
+
+-- 2019-10-31T16:00:35.871Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Neu verbuchen',Updated=TO_TIMESTAMP('2019-10-31 18:00:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=540911
+;
+
+-- 2019-10-31T16:00:39.703Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Neu verbuchen',Updated=TO_TIMESTAMP('2019-10-31 18:00:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=540911
+;
+
+-- 2019-10-31T16:02:01.146Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='N', Name='Fact Account Repost',Updated=TO_TIMESTAMP('2019-10-31 18:02:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=540911
+;
+
+-- 2019-10-31T16:02:09.099Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2019-10-31 18:02:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=540911
+;
+
+-- 2019-10-31T16:02:14.006Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name='Neu verbuchen',Updated=TO_TIMESTAMP('2019-10-31 18:02:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=540911
+;
+
