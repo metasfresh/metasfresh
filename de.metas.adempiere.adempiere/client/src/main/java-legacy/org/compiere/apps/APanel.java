@@ -75,9 +75,6 @@ import org.adempiere.model.CopyRecordSupportTableInfo;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VPanelUI;
-import org.adempiere.process.event.IProcessEventListener;
-import org.adempiere.process.event.IProcessEventSupport;
-import org.adempiere.process.event.ProcessEvent;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.search.Find;
 import org.compiere.apps.search.FindPanelContainer;
@@ -181,7 +178,7 @@ import de.metas.util.Services;
  */
 // metas: removed final modifier
 public class APanel extends CPanel
-		implements DataStatusListener, ChangeListener, ActionListener, IProcessExecutionListener, IProcessEventListener // metas
+		implements DataStatusListener, ChangeListener, ActionListener, IProcessExecutionListener
 {
 	/**
 	 *
@@ -230,12 +227,10 @@ public class APanel extends CPanel
 		m_curGC.query(m_onlyCurrentRows, m_onlyCurrentDays, GridTabMaxRows.DEFAULT);
 		m_curTab.navigateCurrent();     // updates counter
 		m_curGC.dynamicDisplay(0);
-		Services.get(IProcessEventSupport.class).addListener(this); // metas: add this instance as a listener
 	}
 
 	public APanel(final AWindow window)
 	{
-		super();
 		m_ctx = Env.getCtx();
 		isNested = false;
 		m_window = window;
@@ -252,7 +247,6 @@ public class APanel extends CPanel
 			log.error("", e);
 		}
 		createMenuAndToolbar();
-		Services.get(IProcessEventSupport.class).addListener(this); // metas: add this instance as a listener
 	}	// APanel
 
 	/** Logger */
@@ -322,8 +316,6 @@ public class APanel extends CPanel
 
 		// Prepare GC
 		this.removeAll();
-
-		Services.get(IProcessEventSupport.class).removeListener(this); // metas: remove this instance a a listener
 	}	// dispose
 
 	private VTabbedPane tabPanel = new VTabbedPane(true);
@@ -3530,39 +3522,6 @@ public class APanel extends CPanel
 	public GridWorkbench getGridWorkbench()
 	{
 		return m_mWorkbench;
-	}
-
-	@Override
-	public void processEvent(final ProcessEvent event)
-	{
-
-		if (!ProcessEvent.EventType.trxFinished.equals(event.getType()))
-		{
-			return;
-		}
-		if (!(event.getSource() instanceof PO))
-		{
-			return;
-		}
-		final PO sourcePO = (PO)event.getSource();
-
-		int currentTabAdTableId = -1;
-		try
-		{
-			currentTabAdTableId = m_curTab.getAD_Table_ID();
-		}
-		catch (final NullPointerException e)
-		{
-			// TODO: this the NPE is only thrown if m_curTab.dispose() that been
-			// called. But then, why hasn't this panel's dispose() method been
-			// called as well?
-			return;
-		}
-		if (m_curTab == null || sourcePO.get_Table_ID() != currentTabAdTableId)
-		{
-			return;
-		}
-		cmd_refresh();
 	}
 
 	// metas-2009_0021_AP1_CR064

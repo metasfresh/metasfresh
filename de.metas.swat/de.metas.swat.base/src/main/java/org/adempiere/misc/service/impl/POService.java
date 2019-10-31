@@ -26,7 +26,6 @@ package org.adempiere.misc.service.impl;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.MiscUtils;
-import org.compiere.model.PO;
 
 public final class POService implements IPOService
 {
@@ -34,27 +33,6 @@ public final class POService implements IPOService
 	public void save(final Object po, final String trxName)
 	{
 		InterfaceWrapperHelper.save(po, trxName);
-	}
-
-	/**
-	 * Tries to delete the given po with the given transaction. Throws a {@link RuntimeException}, if
-	 * {@link PO#delete(boolean, String)} returns <code>false</code>.
-	 * 
-	 * @param po
-	 * @param force
-	 *            passed to {@link PO#delete(boolean, String)}
-	 * @param trxName
-	 *            {@link PO#delete(boolean, String)}
-	 * @throws IllegalArgumentException
-	 *             if the given object is not <code>instanceof PO</code>
-	 */
-	@Override
-	public void delete(final Object po, final boolean force, final String trxName)
-	{
-		if (!MiscUtils.asPO(po).delete(force, trxName))
-		{
-			throw new RuntimeException("Unable to delete PO " + po + MiscUtils.loggerMsgs());
-		}
 	}
 
 	/**
@@ -94,19 +72,6 @@ public final class POService implements IPOService
 		}
 	}
 
-	@Override
-	public Object getOldValue(final Object po, final String columnName)
-	{
-		doChecks(po, columnName);
-
-		if (MiscUtils.asPO(po).get_ColumnIndex(columnName) != -1)
-		{
-			return MiscUtils.asPO(po).get_ValueOld(columnName);
-		}
-		// TODO throw an Exception
-		return null;
-	}
-
 	/**
 	 * If the table of the given PO has a column with the given name, the PO's value is set to the given value.
 	 * 
@@ -141,49 +106,5 @@ public final class POService implements IPOService
 	public void copyValue(final Object source, final Object dest, final String columnName)
 	{
 		setValue(dest, columnName, getValue(source, columnName));
-	}
-
-	@Override
-	public void setClientOrg(final Object po, final int adClientId, final int adOrgId)
-	{
-		setValue(po, AD_CLIENT_ID, adClientId);
-		setValue(po, AD_ORG_ID, adOrgId);
-	}
-
-	@Override
-	public void copyClientOrg(final Object source, final Object dest)
-	{
-		copyValue(source, dest, AD_CLIENT_ID);
-		copyValue(source, dest, AD_ORG_ID);
-	}
-
-	@Override
-	public void setIsActive(final Object po, final boolean active)
-	{
-		setValue(po, IS_ACTIVE, active);
-	}
-
-	@Override
-	public String[] getKeyColumns(final Object po)
-	{
-		return MiscUtils.asPO(po).get_KeyColumns();
-	}
-
-	@Override
-	public int getID(final Object po)
-	{
-		return MiscUtils.asPO(po).get_ID();
-	}
-
-	@Override
-	public void copyValues(final Object poFrom, final Object poTo)
-	{
-		PO.copyValues(MiscUtils.asPO(poFrom), MiscUtils.asPO(poTo));
-	}
-
-	@Override
-	public String getTrxName(final Object po)
-	{
-		return MiscUtils.asPO(po).get_TrxName();
 	}
 }
