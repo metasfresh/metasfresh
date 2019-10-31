@@ -154,7 +154,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{VAT_ID} +" "+ $F{vataxid}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isBlankWhenNull="true">
 				<reportElement key="textField-11" x="60" y="60" width="164" height="40" uuid="08f6bb39-dbaf-4f0f-a6a8-c5993a9c7266">
 					<printWhenExpression><![CDATA[new Boolean($F{inout_c_bpartner_id} != $F{c_bpartner_id})]]></printWhenExpression>
 				</reportElement>
