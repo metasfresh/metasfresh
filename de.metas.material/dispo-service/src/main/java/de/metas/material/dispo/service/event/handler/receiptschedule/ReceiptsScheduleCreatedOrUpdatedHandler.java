@@ -54,7 +54,7 @@ abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends AbstractReceipt
 
 	protected final void handleReceiptScheduleEvent(@NonNull final AbstractReceiptScheduleEvent event)
 	{
-		final CandidateBuilder candidateBuilder = createCandidateBuilder(event);
+		final CandidateBuilder supplyCandidateBuilder = createCandidateBuilder(event);
 
 		final PurchaseDetailBuilder purchaseDetailBuilder = PurchaseDetail.builder()
 				.qty(event.getMaterialDescriptor().getQuantity())
@@ -63,7 +63,7 @@ abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends AbstractReceipt
 
 		final PurchaseDetail purchaseDetail = updatePurchaseDetailBuilderFromEvent(purchaseDetailBuilder, event).build();
 
-		final Candidate supplyCandidate = candidateBuilder
+		final Candidate supplyCandidate = supplyCandidateBuilder
 				.businessCaseDetail(purchaseDetail)
 				.build();
 
