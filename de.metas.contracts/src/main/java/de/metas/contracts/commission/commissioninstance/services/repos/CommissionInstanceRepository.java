@@ -5,7 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 
@@ -182,7 +181,7 @@ public class CommissionInstanceRepository
 			final SalesCommissionFact fact = SalesCommissionFact.builder()
 					.points(CommissionPoints.of(factRecord.getCommissionPoints()))
 					.state(SalesCommissionState.valueOf(factRecord.getCommission_Fact_State()))
-					.timestamp(Instant.parse(factRecord.getCommissionFactTimestamp()))
+					.timestamp(TimeUtil.deserializeInstant(factRecord.getCommissionFactTimestamp()))
 					.build();
 			facts.add(fact);
 		}
@@ -336,7 +335,7 @@ public class CommissionInstanceRepository
 		for (final SalesCommissionFact fact : facts)
 		{
 			final I_C_Commission_Fact factRecordOrNull = idAndTypeAndTimestampToFactRecord.get(
-					ArrayKey.of(commissionShareRecordId, fact.getState().toString(), fact.getTimestamp().toString()));
+					ArrayKey.of(commissionShareRecordId, fact.getState().toString(), TimeUtil.serializeInstant(fact.getTimestamp())));
 			if (factRecordOrNull != null)
 			{
 				continue;
@@ -345,7 +344,7 @@ public class CommissionInstanceRepository
 			factRecord.setC_Commission_Share_ID(commissionShareRecordId);
 			factRecord.setCommissionPoints(fact.getPoints().toBigDecimal());
 			factRecord.setCommission_Fact_State(fact.getState().toString());
-			factRecord.setCommissionFactTimestamp(fact.getTimestamp().toString());
+			factRecord.setCommissionFactTimestamp(TimeUtil.serializeInstant(fact.getTimestamp()));
 			saveRecord(factRecord);
 		}
 	}
