@@ -1852,7 +1852,7 @@ public class TimeUtil
 	 * Deserializes a string such as {@code "12345.234567"} into an {@link Instant}.
 	 * <p>
 	 * Notes:
-	 * <li>I didn't want to use jackson because this is not inteded to serialize/deserialize a whole object-tree, but that to play a role in very concrete business logic, so i want it to be more transparent how this is done.
+	 * <li>I didn't want to use jackson because this is not inteded to serialize/deserialize a whole object-tree, but be called from very concrete business logic, so i want it to be more transparent how this is done.
 	 * <li>{@link Instant#toString()} and {@link Instant#parse(CharSequence)} don't preserve the nanos, so they are even less accurate than a "normal" {@link Timestamp}.
 	 */
 	public static Instant deserializeInstant(@NonNull final String instant)
