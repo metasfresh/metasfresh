@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_Shipper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Predicates;
@@ -51,6 +52,9 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 	private final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 	@Autowired
 	private PickingCandidateService pickingCandidatesService;
+
+	@Param(parameterName = I_M_Shipper.COLUMNNAME_M_Shipper_ID, mandatory = true)
+	private int shipperId;
 
 	@Param(parameterName = I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID, mandatory = true)
 	private int shipperTransportationId;
