@@ -3,6 +3,7 @@ package de.metas.shipper.gateway.commons;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -65,13 +66,17 @@ public class ShipperGatewayFacade
 	{
 		final LocalDate pickupDate = request.getPickupDate();
 		final int shipperTransportationId = request.getShipperTransportationId();
+		final LocalTime timeFrom = request.getTimeFrom();
+		final LocalTime timeTo = request.getTimeTo();
 
 		retrievePackagesByIds(request.getPackageIds())
 				.stream()
 				.collect(GuavaCollectors.toImmutableListMultimap(mpackage -> createDeliveryOrderKey(
 						mpackage,
 						shipperTransportationId,
-						pickupDate)))
+						pickupDate,
+						timeFrom,
+						timeTo)))
 				.asMap()
 				.forEach(this::createAndSendDeliveryOrder);
 	}
@@ -88,7 +93,9 @@ public class ShipperGatewayFacade
 	private static DeliveryOrderKey createDeliveryOrderKey(
 			@NonNull final I_M_Package mpackage,
 			final int shipperTransportationId,
-			@NonNull final LocalDate pickupDate)
+			@NonNull final LocalDate pickupDate,
+			@NonNull final LocalTime timeFrom,
+			@NonNull final LocalTime timeTo)
 	{
 		return DeliveryOrderKey.builder()
 				.shipperId(mpackage.getM_Shipper_ID())
@@ -97,6 +104,8 @@ public class ShipperGatewayFacade
 				.deliverToBPartnerId(mpackage.getC_BPartner_ID())
 				.deliverToBPartnerLocationId(mpackage.getC_BPartner_Location_ID())
 				.pickupDate(pickupDate)
+				.timeFrom(timeFrom)
+				.timeTo(timeTo)
 				.build();
 	}
 
@@ -121,8 +130,8 @@ public class ShipperGatewayFacade
 	}
 
 	private void createAndSendDeliveryOrder(
-			final DeliveryOrderKey deliveryOrderKey,
-			final Collection<I_M_Package> mpackages)
+			@NonNull final DeliveryOrderKey deliveryOrderKey,
+			@NonNull final Collection<I_M_Package> mpackages)
 	{
 		final ShipperId shipperId = ShipperId.ofRepoId(deliveryOrderKey.getShipperId());
 		final String shipperGatewayId = retrieveShipperGatewayId(shipperId);

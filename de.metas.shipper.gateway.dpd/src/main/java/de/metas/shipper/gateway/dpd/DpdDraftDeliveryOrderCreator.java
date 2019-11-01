@@ -47,6 +47,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Set;
 
 @Service
@@ -65,8 +66,9 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	 * <p>
 	 * todo: keep in sync with:
 	 */
+	@NonNull
 	@Override
-	public DeliveryOrder createDraftDeliveryOrder(final CreateDraftDeliveryOrderRequest request)
+	public DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
@@ -78,6 +80,8 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(deliveryOrderKey.getFromOrgId());
 		final I_C_Location pickupFromLocation = bpartnerOrgBL.retrieveOrgLocation(OrgId.ofRepoId(deliveryOrderKey.getFromOrgId()));
 		final LocalDate pickupDate = deliveryOrderKey.getPickupDate();
+		final LocalTime timeFrom = deliveryOrderKey.getTimeFrom();
+		final LocalTime timeTo = deliveryOrderKey.getTimeTo();
 
 		final int deliverToBPartnerId = deliveryOrderKey.getDeliverToBPartnerId();
 		final I_C_BPartner deliverToBPartner = InterfaceWrapperHelper.load(deliverToBPartnerId, I_C_BPartner.class);
@@ -98,6 +102,8 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				pickupFromBPartner,
 				pickupFromLocation,
 				pickupDate,
+				timeFrom,
+				timeTo,
 				deliverToBPartner,
 				deliverToBPartnerLocationId,
 				deliverToLocation,
@@ -116,6 +122,8 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			@NonNull final I_C_BPartner pickupFromBPartner,
 			@NonNull final I_C_Location pickupFromLocation,
 			@NonNull final LocalDate pickupDate,
+			@NonNull final LocalTime timeFrom,
+			@NonNull final LocalTime timeTo,
 			@NonNull final I_C_BPartner deliverToBPartner,
 			final int deliverToBPartnerLocationId,
 			@NonNull final I_C_Location deliverToLocation,
@@ -143,8 +151,8 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 						.build())
 				.pickupDate(PickupDate.builder()
 						.date(pickupDate)
-						//						.timeTo() // todo
-						//						.timeFrom() // todo
+						.timeTo(timeFrom)
+						.timeFrom(timeTo)
 						.build())
 				//
 				// Delivery aka Receiver

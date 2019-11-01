@@ -1,13 +1,14 @@
 package de.metas.shipper.gateway.spi;
 
-import java.time.LocalDate;
-import java.util.Set;
-
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Set;
 
 /*
  * #%L
@@ -57,6 +58,8 @@ public interface DraftDeliveryOrderCreator
 		int deliverToBPartnerId;
 		int deliverToBPartnerLocationId;
 		LocalDate pickupDate;
+		LocalTime timeFrom;
+		LocalTime timeTo;
 
 		@Builder
 		public DeliveryOrderKey(
@@ -65,7 +68,9 @@ public interface DraftDeliveryOrderCreator
 				final int fromOrgId,
 				final int deliverToBPartnerId,
 				final int deliverToBPartnerLocationId,
-				@NonNull final LocalDate pickupDate)
+				@NonNull final LocalDate pickupDate,
+				@NonNull final LocalTime timeFrom,
+				@NonNull final LocalTime timeTo)
 		{
 			Check.assume(shipperId > 0, "shipperId > 0");
 			Check.assume(shipperTransportationId > 0, "shipperTransportationId > 0");
@@ -79,6 +84,8 @@ public interface DraftDeliveryOrderCreator
 			this.deliverToBPartnerId = deliverToBPartnerId;
 			this.deliverToBPartnerLocationId = deliverToBPartnerLocationId;
 			this.pickupDate = pickupDate;
+			this.timeFrom = timeFrom;
+			this.timeTo = timeTo;
 		}
 	}
 }
