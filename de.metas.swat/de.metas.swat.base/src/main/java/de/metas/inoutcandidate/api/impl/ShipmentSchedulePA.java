@@ -52,6 +52,7 @@ import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -485,6 +486,16 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.stream()
 				.map(ProductId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public ShipperId getShipperIdOrNull(ShipmentScheduleId schipmentScheduleId)
+	{
+		final I_M_ShipmentSchedule shipmentScheduleRecord = getById(schipmentScheduleId);
+
+		final int shipperId = shipmentScheduleRecord.getM_Shipper_ID();
+
+		return ShipperId.ofRepoIdOrNull(shipperId);
 	}
 
 	@Override
