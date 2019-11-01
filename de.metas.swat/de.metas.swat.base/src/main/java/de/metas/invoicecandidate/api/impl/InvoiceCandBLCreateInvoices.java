@@ -618,7 +618,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 				final List<String> externalIds = candsForIlVO
 						.stream()
-						.map(I_C_Invoice_Candidate::getExternalId)
+						.map(I_C_Invoice_Candidate::getExternalLineId)
 						.filter(Predicates.notNull())
 						.collect(ImmutableList.toImmutableList());
 				invoiceLine.setExternalIds(InvoiceUtil.joinExternalIds(externalIds));
@@ -910,8 +910,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	/**
 	 *
 	 * @param affectedCands the invoice candidates for which an invoice line creation has failed. Note that an aggregator can create one {@link IInvoiceLineRW} from multiple candidates.
-	 * @param error
-	 * @return
 	 */
 	private List<I_AD_Note> createNoticesAndMarkICs(
 			@NonNull final List<I_C_Invoice_Candidate> affectedCands,
@@ -994,7 +992,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					// for the time being, always output the warning, because we don't currently use the AD_Note feature and therefore the note wont be read.
 //					if (developerModeBL.isEnabled())
 //					{
-						logger.warn(error.getLocalizedMessage(), error);
+					logger.warn(error.getLocalizedMessage(), error);
 //					}
 					// @formatter:on
 				}
