@@ -1,6 +1,7 @@
 package de.metas.ui.web.pickingV2.productsToPick.process;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -19,8 +20,11 @@ import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.shipmentschedule.api.HUShippingFacade;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRow;
 import de.metas.util.Services;
@@ -47,7 +51,7 @@ import de.metas.util.Services;
  * #L%
  */
 
-public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBasedProcess
+public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBasedProcess implements IProcessDefaultParametersProvider
 {
 	private final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 	@Autowired
@@ -83,6 +87,28 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 		}
 
 		return ProcessPreconditionsResolution.accept();
+	}
+
+	@Override
+	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
+	{
+		final String parameterName = parameter.getColumnName();
+		if (I_M_Shipper.COLUMNNAME_M_Shipper_ID.equals(parameterName))
+		{
+			final List<ProductsToPickRow> rows = getRowsNotAlreadyProcessed();
+
+			final Optional<ShipperId> suggestedShipperId = rows.stream()
+					.filter(row -> row.getSuggestedShipperId() != null)
+					.map(row -> row.getSuggestedShipperId())
+					.findFirst();
+
+			final ShipperId shipperId = suggestedShipperId.orElse(null);
+
+			return shipperId == null? -1 : shipperId.getRepoId();
+
+		}
+
+		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}
 
 	@Override
