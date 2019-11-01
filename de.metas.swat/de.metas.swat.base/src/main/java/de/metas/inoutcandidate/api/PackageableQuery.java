@@ -7,6 +7,7 @@ import org.adempiere.warehouse.WarehouseTypeId;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.order.OrderId;
+import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.Value;
 
@@ -21,6 +22,7 @@ public class PackageableQuery
 	WarehouseId warehouseId;
 	LocalDate deliveryDate;
 	LocalDate preparationDate;
+	ShipperId shipperId;
 
 	/** retrieve only those packageables which are created from sales order/lines */
 	boolean onlyFromSalesOrder;
