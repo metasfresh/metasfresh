@@ -11,11 +11,10 @@ import com.dpd.common.service.types.shipmentservice._3.ShipmentServiceData;
 import com.dpd.common.service.types.shipmentservice._3.StoreOrders;
 import com.dpd.common.service.types.shipmentservice._3.StoreOrdersResponse;
 import com.dpd.common.service.types.shipmentservice._3.StoreOrdersResponseType;
-import com.dpd.common.ws.authentication.v2_0.types.Authentication;
-import com.dpd.common.ws.authentication.v2_0.types.ObjectFactory;
 import com.dpd.common.ws.loginservice.v2_0.types.GetAuth;
 import com.dpd.common.ws.loginservice.v2_0.types.GetAuthResponse;
 import com.dpd.common.ws.loginservice.v2_0.types.Login;
+import de.metas.shipper.gateway.dpd.model.DPDServiceType;
 import de.metas.shipper.gateway.dpd.util.DpdClientUtil;
 import de.metas.shipper.gateway.dpd.util.DpdSoapHeaderWithAuth;
 import org.apache.commons.lang3.StringUtils;
@@ -30,7 +29,7 @@ import static de.metas.shipper.gateway.dpd.util.DpdClientUtil.SHIPMENT_SERVICE_A
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class Test1
+class DummyTest
 {
 	private static final String DELIS_ID = "sandboxdpd";
 	private static final String DELIS_PASSWORD = "a";
@@ -55,7 +54,7 @@ class Test1
 		final GetAuth getAuthValue = loginServiceOF.createGetAuth();
 		getAuthValue.setDelisId(DELIS_ID);
 		getAuthValue.setPassword(DELIS_PASSWORD);
-		getAuthValue.setMessageLanguage(MESSAGE_LANGUAGE);
+		getAuthValue.setMessageLanguage(DPDConstants.DEFAULT_MESSAGE_LANGUAGE);
 
 		final JAXBElement<GetAuth> getAuth = loginServiceOF.createGetAuth(getAuthValue);
 
@@ -73,23 +72,19 @@ class Test1
 	@Test
 	void _2_createOrder()
 	{
-		final Authentication authentication;
+		final Login login;
 		{
 			// Login
 			final GetAuth getAuthValue = loginServiceOF.createGetAuth();
 			getAuthValue.setDelisId(DELIS_ID);
 			getAuthValue.setPassword(DELIS_PASSWORD);
-			getAuthValue.setMessageLanguage(MESSAGE_LANGUAGE);
+			getAuthValue.setMessageLanguage(DPDConstants.DEFAULT_MESSAGE_LANGUAGE);
 
 			final JAXBElement<GetAuth> getAuth = loginServiceOF.createGetAuth(getAuthValue);
 			//noinspection unchecked
 			final JAXBElement<GetAuthResponse> authenticationElement = (JAXBElement<GetAuthResponse>)webServiceTemplate.marshalSendAndReceive(LOGIN_SERVICE_API_URL, getAuth);
-			final Login login = authenticationElement.getValue().getReturn();
+			login = authenticationElement.getValue().getReturn();
 
-			authentication = new ObjectFactory().createAuthentication();
-			authentication.setDelisId(login.getDelisId());
-			authentication.setAuthToken(login.getAuthToken());
-			authentication.setMessageLanguage(MESSAGE_LANGUAGE);
 		}
 
 		final StoreOrders storeOrders;
@@ -104,7 +99,7 @@ class Test1
 				storeOrders.setPrintOptions(printOptions);
 			}
 			{
-				// ShipmentOrder 1
+				// Shipment Data 1
 				final ShipmentServiceData shipmentServiceData = shipmentServiceOF.createShipmentServiceData();
 				storeOrders.getOrder().add(shipmentServiceData);
 
@@ -112,12 +107,12 @@ class Test1
 					// General Shipment Data
 					final GeneralShipmentData generalShipmentData = shipmentServiceOF.createGeneralShipmentData();
 					shipmentServiceData.setGeneralShipmentData(generalShipmentData);
-					generalShipmentData.setMpsCustomerReferenceNumber1("Article 123"); // what is this? optional?
-					generalShipmentData.setMpsCustomerReferenceNumber2("Order 456"); // what is this? optional?
+					//					generalShipmentData.setMpsCustomerReferenceNumber1("Article 123"); // what is this? optional?
+					//					generalShipmentData.setMpsCustomerReferenceNumber2("Order 456"); // what is this? optional?
 					generalShipmentData.setIdentificationNumber("Article 456"); // what is this? optional?
 					generalShipmentData.setSendingDepot("0112"); // mandatory? (taken from login)
-					generalShipmentData.setProduct("CL"); // this is the DPD product
-					generalShipmentData.setMpsWeight(500L); // what UOM? optional?
+					generalShipmentData.setProduct(DPDServiceType.DPD_CLASSIC.getCode()); // this is the DPD product
+					//					generalShipmentData.setMpsWeight(500L); // optional? uom = decagram (1dag = 10g => 100dag = 1kg)
 
 					{
 						// Sender
@@ -129,14 +124,12 @@ class Test1
 						sender.setName2("TheBestPessimist");
 						sender.setStreet("Schröderstr.");
 						sender.setHouseNo("66");
-						//noinspection ConstantConditions
-						sender.setState(null);
 						sender.setCountry("DE");
 						sender.setZipCode("10115");
 						sender.setCity("Berlin, Mitte");
-						sender.setCustomerNumber("");
-						sender.setContact("");
-						sender.setPhone("");
+						//						sender.setCustomerNumber("");
+						//						sender.setContact("");
+						//						sender.setPhone("");
 					}
 					{
 						// Recipient
@@ -146,14 +139,12 @@ class Test1
 						recipient.setName2("");
 						recipient.setStreet("Wailandtstr.");
 						recipient.setHouseNo("1");
-						//noinspection ConstantConditions
-						recipient.setState(null);
 						recipient.setCountry("DE");
 						recipient.setZipCode("63741");
 						recipient.setCity("Aschaffenburg");
-						recipient.setCustomerNumber("");
-						recipient.setContact("");
-						recipient.setPhone("");
+						//						recipient.setCustomerNumber("");
+						//						recipient.setContact("");
+						//						recipient.setPhone("");
 					}
 				}
 
@@ -161,9 +152,9 @@ class Test1
 					// Parcel 1
 					final Parcel parcel = shipmentServiceOF.createParcel();
 					shipmentServiceData.getParcels().add(parcel);
-					parcel.setCustomerReferenceNumber1("Article 123");    // what is this? optional?
-					parcel.setCustomerReferenceNumber2("Order 456");    // what is this? optional?
-					parcel.setWeight(500);    // what is this? optional? what uom?
+					//					parcel.setCustomerReferenceNumber1("Article 123");    // what is this? optional?
+					//					parcel.setCustomerReferenceNumber2("Order 456");    // what is this? optional?
+					//					parcel.setWeight(500);    // what is this? optional? uom = decagram (1dag = 10g => 100dag = 1kg)
 					parcel.setContent("Smartphones");    // what is this? optional?
 				}
 
@@ -211,7 +202,7 @@ class Test1
 			final JAXBElement<StoreOrders> storeOrdersElement = shipmentServiceOF.createStoreOrders(storeOrders);
 			//noinspection unchecked
 			final JAXBElement<StoreOrdersResponse> storeOrdersResponseElement =
-					(JAXBElement<StoreOrdersResponse>)webServiceTemplate.marshalSendAndReceive(SHIPMENT_SERVICE_API_URL, storeOrdersElement, new DpdSoapHeaderWithAuth(authentication));
+					(JAXBElement<StoreOrdersResponse>)webServiceTemplate.marshalSendAndReceive(SHIPMENT_SERVICE_API_URL, storeOrdersElement, new DpdSoapHeaderWithAuth(login));
 
 			final StoreOrdersResponseType orderResult = storeOrdersResponseElement.getValue().getOrderResult();
 			assertTrue(orderResult.getParcellabelsPDF().length > 2);
@@ -219,6 +210,8 @@ class Test1
 			final ShipmentResponse shipmentResponse = orderResult.getShipmentResponses().get(0);
 			assertEquals("Article 456", shipmentResponse.getIdentificationNumber());
 			assertTrue(shipmentResponse.getMpsId().startsWith("MPS"));
+
+			DpdTestHelper.dumpPdfToDisk(orderResult.getParcellabelsPDF());
 		}
 	}
 }

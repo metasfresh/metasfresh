@@ -1,0 +1,269 @@
+/*
+ * #%L
+ * de.metas.shipper.gateway.dpd
+ * %%
+ * Copyright (C) 2019 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.shipper.gateway.dpd;
+
+import com.dpd.common.service.types.shipmentservice._3.Address;
+import com.dpd.common.service.types.shipmentservice._3.GeneralShipmentData;
+import com.dpd.common.service.types.shipmentservice._3.Notification;
+import com.dpd.common.service.types.shipmentservice._3.Parcel;
+import com.dpd.common.service.types.shipmentservice._3.Pickup;
+import com.dpd.common.service.types.shipmentservice._3.PrintOptions;
+import com.dpd.common.service.types.shipmentservice._3.ProductAndServiceData;
+import com.dpd.common.service.types.shipmentservice._3.ShipmentResponse;
+import com.dpd.common.service.types.shipmentservice._3.ShipmentServiceData;
+import com.dpd.common.service.types.shipmentservice._3.StoreOrders;
+import com.dpd.common.service.types.shipmentservice._3.StoreOrdersResponse;
+import com.dpd.common.service.types.shipmentservice._3.StoreOrdersResponseType;
+import com.dpd.common.ws.loginservice.v2_0.types.GetAuth;
+import com.dpd.common.ws.loginservice.v2_0.types.GetAuthResponse;
+import com.dpd.common.ws.loginservice.v2_0.types.Login;
+import de.metas.shipper.gateway.dpd.model.DPDServiceType;
+import de.metas.shipper.gateway.dpd.model.DpdOrderType;
+import de.metas.shipper.gateway.dpd.util.DpdClientUtil;
+import de.metas.shipper.gateway.dpd.util.DpdSoapHeaderWithAuth;
+import de.metas.shipper.gateway.spi.model.ContactPerson;
+import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.DeliveryPosition;
+import de.metas.shipper.gateway.spi.model.PickupDate;
+import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.ws.client.core.WebServiceTemplate;
+
+import javax.xml.bind.JAXBElement;
+
+import static de.metas.shipper.gateway.dpd.util.DpdClientUtil.LOGIN_SERVICE_API_URL;
+import static de.metas.shipper.gateway.dpd.util.DpdClientUtil.SHIPMENT_SERVICE_API_URL;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class TestApiRequestFromDeliveryOrderDEtoDE
+{
+	private static final String DELIS_ID = "sandboxdpd";
+	private static final String DELIS_PASSWORD = "a";
+	private static final String MESSAGE_LANGUAGE = "en_EN";
+
+	private WebServiceTemplate webServiceTemplate;
+	private com.dpd.common.ws.loginservice.v2_0.types.ObjectFactory loginServiceOF;
+	private com.dpd.common.service.types.shipmentservice._3.ObjectFactory shipmentServiceOF;
+
+	@BeforeEach
+	private void beforeEach()
+	{
+		webServiceTemplate = DpdClientUtil.createWebServiceTemplate();
+		loginServiceOF = new com.dpd.common.ws.loginservice.v2_0.types.ObjectFactory();
+		shipmentServiceOF = new com.dpd.common.service.types.shipmentservice._3.ObjectFactory();
+	}
+
+	@Test
+	void DEtoDE()
+	{
+		final Login login = authenticateRequest();
+
+		final StoreOrders storeOrders = createShipmentOrderRequestFromDeliveryOrder();
+
+		// mandatory to have sending depot
+		storeOrders.getOrder().forEach(it -> it.getGeneralShipmentData().setSendingDepot(login.getDepot()));
+
+		{
+			// Call the Shipment API
+			final JAXBElement<StoreOrders> storeOrdersElement = shipmentServiceOF.createStoreOrders(storeOrders);
+			//noinspection unchecked
+			final JAXBElement<StoreOrdersResponse> storeOrdersResponseElement =
+					(JAXBElement<StoreOrdersResponse>)webServiceTemplate.marshalSendAndReceive(SHIPMENT_SERVICE_API_URL, storeOrdersElement, new DpdSoapHeaderWithAuth(login));
+
+			final StoreOrdersResponseType orderResult = storeOrdersResponseElement.getValue().getOrderResult();
+			assertTrue(orderResult.getShipmentResponses().get(0).getFaults().isEmpty());
+			assertTrue(orderResult.getParcellabelsPDF().length > 2);
+			assertEquals(1, orderResult.getShipmentResponses().size());
+			final ShipmentResponse shipmentResponse = orderResult.getShipmentResponses().get(0);
+			assertEquals("1", shipmentResponse.getIdentificationNumber());
+			assertTrue(StringUtils.isNotBlank(shipmentResponse.getMpsId()));
+
+			DpdTestHelper.dumpPdfToDisk(orderResult.getParcellabelsPDF());
+		}
+	}
+
+	private StoreOrders createShipmentOrderRequestFromDeliveryOrder()
+	{
+		final DeliveryOrder deliveryOrder = DpdTestHelper.createDummyDeliveryOrderDEtoDE();
+		return createStoreOrdersFromDeliveryOrder(deliveryOrder);
+	}
+
+	private StoreOrders createStoreOrdersFromDeliveryOrder(final DeliveryOrder deliveryOrder)
+	{
+		final StoreOrders storeOrders = shipmentServiceOF.createStoreOrders();
+		final PrintOptions printOptions = createPrintOptions();
+		storeOrders.setPrintOptions(printOptions);
+
+		{
+			// Shipment Data 1
+			final ShipmentServiceData shipmentServiceData = shipmentServiceOF.createShipmentServiceData();
+			storeOrders.getOrder().add(shipmentServiceData);
+			{
+				// General Shipment Data
+				final GeneralShipmentData generalShipmentData = shipmentServiceOF.createGeneralShipmentData();
+				shipmentServiceData.setGeneralShipmentData(generalShipmentData);
+				//noinspection ConstantConditions
+				generalShipmentData.setMpsCustomerReferenceNumber1(deliveryOrder.getCustomerReference()); // what is this? optional?
+				generalShipmentData.setIdentificationNumber("1"); // unique metasfresh number for this shipment
+				//			generalShipmentData.setSendingDepot(); // taken from login
+				generalShipmentData.setProduct(DPDServiceType.DPD_CLASSIC.getCode()); // this is the DPD product // todo not hardcoded here
+
+				{
+					// Sender aka Pickup
+					// todo i'm not sure if the following is true, as dpd test doesn't complain if the sender address is different from the one in the login.
+					// 		the sender is hard linked with the location provided to dpd when the account was created.
+					// 		it is not connected though with the pickup address! as in the pickup section there's the mandatory field "CollectionRequestAddress".
+					final Address sender = createAddress(deliveryOrder.getPickupAddress());
+					generalShipmentData.setSender(sender);
+				}
+				{
+					// Recipient aka Delivery
+					final Address recipient = createRecipientAddress(deliveryOrder.getDeliveryAddress(), deliveryOrder.getDeliveryContact());
+					generalShipmentData.setRecipient(recipient);
+				}
+			}
+			{
+				// Parcels aka Packages aka DeliveryPositions
+				final DeliveryPosition deliveryPosition = deliveryOrder.getDeliveryPositions().get(0);
+				assertNotNull(deliveryPosition);
+
+				final Parcel parcel = shipmentServiceOF.createParcel();
+				shipmentServiceData.getParcels().add(parcel);
+				parcel.setContent(deliveryPosition.getContent());
+				parcel.setVolume(DPDConstants.formatVolume(deliveryPosition.getPackageDimensions()));
+				parcel.setWeight(deliveryPosition.getGrossWeightKg() * 100); // uom = decagram (1dag = 10g => 100dag = 1kg)
+				//				parcel.setInternational(); // todo god save us
+			}
+			{
+				// ProductAndService Data
+				final ProductAndServiceData productAndServiceData = shipmentServiceOF.createProductAndServiceData();
+				shipmentServiceData.setProductAndServiceData(productAndServiceData);
+				{
+					// Shipper Product
+					productAndServiceData.setOrderType(DpdOrderType.CONSIGNMENT); // this is somehow related to product: CL; and i think it should always be "consignment" // todo not hardcoded here
+				}
+				{
+					// Predict aka Notification
+					final Notification notification = createNotification(deliveryOrder);
+					productAndServiceData.setPredict(notification);
+				}
+				{
+					// Pickup date and time
+					final Pickup pickup = createPickupDateAndTime(deliveryOrder.getPickupDate(), 1, deliveryOrder.getPickupAddress()); // todo number of packages is hardcoded to 1
+					productAndServiceData.setPickup(pickup);
+				}
+			}
+		}
+		return storeOrders;
+	}
+
+	@NonNull
+	private Pickup createPickupDateAndTime(@NonNull final PickupDate pickupDate, final int numberOfPackages, @NonNull final de.metas.shipper.gateway.spi.model.Address sender)
+	{
+		final Pickup pickup = shipmentServiceOF.createPickup();
+		pickup.setQuantity(numberOfPackages);
+		pickup.setDate(DPDConstants.formatDate(pickupDate.getDate()));
+		pickup.setDay(DPDConstants.getPickupDayOfTheWeek(pickupDate));
+		pickup.setFromTime1(DPDConstants.formatTime(pickupDate.getTimeFrom()));
+		pickup.setToTime1(DPDConstants.formatTime(pickupDate.getTimeTo()));
+		//					pickup.setExtraPickup(true); // optional
+		pickup.setCollectionRequestAddress(createAddress(sender));
+		return pickup;
+	}
+
+	@NonNull
+	private Notification createNotification(@NonNull final DeliveryOrder deliveryOrder)
+	{
+		final Notification notification = shipmentServiceOF.createNotification();
+		notification.setChannel(DPDConstants.DpdNotificationChannel.EMAIL);
+		notification.setValue(deliveryOrder.getDeliveryContact().getEmailAddress());
+		notification.setLanguage(deliveryOrder.getDeliveryAddress().getCountry().getAlpha2());
+		return notification;
+	}
+
+	@NonNull
+	private Address createRecipientAddress(@NonNull final de.metas.shipper.gateway.spi.model.Address deliveryAddress, @NonNull final ContactPerson deliveryContact)
+	{
+		final Address recipient = shipmentServiceOF.createAddress();
+		recipient.setName1(deliveryAddress.getCompanyName1());
+		recipient.setName2(deliveryAddress.getCompanyName2());
+		recipient.setStreet(deliveryAddress.getStreet1());
+		recipient.setHouseNo(deliveryAddress.getHouseNo());
+		recipient.setZipCode(deliveryAddress.getZipCode());
+		recipient.setCity(deliveryAddress.getCity());
+		recipient.setCountry(deliveryAddress.getCountry().getAlpha2());
+		//noinspection ConstantConditions
+		recipient.setPhone(deliveryContact.getPhoneAsStringOrNull());
+		recipient.setEmail(deliveryContact.getEmailAddress());
+		return recipient;
+	}
+
+	@NonNull
+	private Address createAddress(@NonNull final de.metas.shipper.gateway.spi.model.Address pickupAddress)
+	{
+		final Address sender = shipmentServiceOF.createAddress();
+		sender.setName1(pickupAddress.getCompanyName1());
+		sender.setName2(pickupAddress.getCompanyName2());
+		sender.setStreet(pickupAddress.getStreet1());
+		sender.setHouseNo(pickupAddress.getHouseNo());
+		sender.setZipCode(pickupAddress.getZipCode());
+		sender.setCity(pickupAddress.getCity());
+		sender.setCountry(pickupAddress.getCountry().getAlpha2());
+		return sender;
+	}
+
+	@NonNull
+	private PrintOptions createPrintOptions()
+	{
+		// Print Options
+		final PrintOptions printOptions = shipmentServiceOF.createPrintOptions();
+		printOptions.setPaperFormat(DPDConstants.DpdPrinterOptions.PAPER_FORMAT);
+		printOptions.setPrinterLanguage(DPDConstants.DpdPrinterOptions.PRINTER_LANGUAGE);
+		return printOptions;
+	}
+
+	private Login authenticateRequest()
+	{
+		// Login
+		final GetAuth getAuthValue = loginServiceOF.createGetAuth();
+		getAuthValue.setDelisId(DELIS_ID);
+		getAuthValue.setPassword(DELIS_PASSWORD);
+		getAuthValue.setMessageLanguage(MESSAGE_LANGUAGE);
+
+		final JAXBElement<GetAuth> getAuth = loginServiceOF.createGetAuth(getAuthValue);
+		//noinspection unchecked
+		final JAXBElement<GetAuthResponse> authenticationElement = (JAXBElement<GetAuthResponse>)webServiceTemplate.marshalSendAndReceive(LOGIN_SERVICE_API_URL, getAuth);
+		final Login login = authenticationElement.getValue().getReturn();
+
+		assertTrue(StringUtils.isNotBlank(login.getAuthToken()));
+		assertTrue(StringUtils.isNotBlank(login.getDepot()));
+		assertEquals(login.getDelisId(), DELIS_ID);
+		assertEquals(login.getCustomerUid(), DELIS_ID);
+
+		return login;
+	}
+}
