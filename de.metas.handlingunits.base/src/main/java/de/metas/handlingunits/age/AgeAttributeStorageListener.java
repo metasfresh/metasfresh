@@ -1,5 +1,10 @@
 package de.metas.handlingunits.age;
 
+import java.time.LocalDateTime;
+
+import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.springframework.stereotype.Component;
+
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -8,10 +13,6 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.attribute.storage.impl.AbstractHUAttributeStorage;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.springframework.stereotype.Component;
-
-import java.time.LocalDateTime;
 
 /*
  * #%L
@@ -81,7 +82,14 @@ public class AgeAttributeStorageListener implements IAttributeStorageListener
 
 		// actual logic starts here
 		final LocalDateTime productionDate = storage.getValueAsLocalDateTime(HUAttributeConstants.ATTR_ProductionDate);
-		final long age = ageAttributesService.getAgeValues().computeAgeInMonths(productionDate);
-		storage.setValue(HUAttributeConstants.ATTR_Age, String.valueOf(age));
+		if (productionDate != null)
+		{
+			final long age = ageAttributesService.getAgeValues().computeAgeInMonths(productionDate);
+			storage.setValue(HUAttributeConstants.ATTR_Age, String.valueOf(age));
+		}
+		else
+		{
+			storage.setValue(HUAttributeConstants.ATTR_Age, null);
+		}
 	}
 }

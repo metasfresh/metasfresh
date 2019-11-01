@@ -100,6 +100,11 @@ public class PackagingDAO implements IPackagingDAO
 			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMN_PreparationDate, query.getPreparationDate(), DateTruncQueryFilterModifier.DAY);
 		}
 
+		if(query.getShipperId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_M_Shipper_ID, query.getShipperId());
+		}
+
 		//
 		// Filter: only those packageables which are created from sales order/lines
 		if (query.isOnlyFromSalesOrder())
@@ -178,7 +183,7 @@ public class PackagingDAO implements IPackagingDAO
 
 		packageable.deliveryDate(TimeUtil.asZonedDateTime(record.getDeliveryDate())); // 01676
 		packageable.preparationDate(TimeUtil.asZonedDateTime(record.getPreparationDate()));
-		
+
 		packageable.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.optionalOfNullableCode(record.getShipmentAllocation_BestBefore_Policy()));
 
 		packageable.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()));

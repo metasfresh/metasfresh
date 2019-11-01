@@ -215,8 +215,8 @@ class CommissionSettlementShareRepositoryTest
 		assertThat(factRecords).hasSize(2)
 				.extracting("C_Commission_Share_ID", "CommissionFactTimestamp", "Commission_Fact_State", "CommissionPoints")
 				.contains(
-						tuple(salesCommissionShareId.getRepoId(), "2019-09-17T11:49:25Z", "SETTLED", new BigDecimal("22")),
-						tuple(salesCommissionShareId.getRepoId(), "2019-09-17T11:49:35Z", "TO_SETTLE", new BigDecimal("11")));
+						tuple(salesCommissionShareId.getRepoId(), "1568720965.0", "SETTLED", new BigDecimal("22")),
+						tuple(salesCommissionShareId.getRepoId(), "1568720975.0", "TO_SETTLE", new BigDecimal("11")));
 	}
 
 	private long incAndGetTimestamp()
