@@ -23,6 +23,9 @@
 package de.metas.shipper.gateway.dpd.util;
 
 import com.dpd.common.ws.authentication.v2_0.types.Authentication;
+import com.dpd.common.ws.authentication.v2_0.types.ObjectFactory;
+import com.dpd.common.ws.loginservice.v2_0.types.Login;
+import de.metas.shipper.gateway.dpd.DPDConstants;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.ws.WebServiceMessage;
 import org.springframework.ws.client.core.WebServiceMessageCallback;
@@ -34,11 +37,13 @@ import javax.xml.bind.JAXBException;
 
 public class DpdSoapHeaderWithAuth implements WebServiceMessageCallback
 {
-	private final Authentication authentication;
 
-	public DpdSoapHeaderWithAuth(final Authentication authentication)
+	private final Login login;
+
+	public DpdSoapHeaderWithAuth(final Login login)
 	{
-		this.authentication = authentication;
+
+		this.login = login;
 	}
 
 	// thx to https://www.devglan.com/spring-mvc/custom-header-in-spring-soap-request
@@ -48,6 +53,11 @@ public class DpdSoapHeaderWithAuth implements WebServiceMessageCallback
 	{
 		try
 		{
+			final Authentication authentication = new ObjectFactory().createAuthentication();
+			authentication.setDelisId(login.getDelisId());
+			authentication.setAuthToken(login.getAuthToken());
+			authentication.setMessageLanguage(DPDConstants.DEFAULT_MESSAGE_LANGUAGE);
+
 			// add the authentication to header
 			final SoapMessage soapMessage = (SoapMessage)message;
 			final SoapHeader header = soapMessage.getSoapHeader();

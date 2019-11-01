@@ -33,7 +33,12 @@ import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import lombok.experimental.UtilityClass;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @UtilityClass
 class DpdTestHelper
@@ -59,6 +64,8 @@ class DpdTestHelper
 						.build())
 				.pickupDate(PickupDate.builder()
 						.date(LocalDate.now().plusDays(1)) // always tomorrow!
+						.timeFrom(LocalTime.of(12, 34))
+						.timeTo(LocalTime.of(21, 9))
 						.build())
 				// receiver
 				.deliveryAddress(Address.builder()
@@ -85,7 +92,7 @@ class DpdTestHelper
 						.grossWeightKg(1)
 						.build())
 				.customerReference(null)
-				.serviceType(DPDServiceType.CL)
+				.serviceType(DPDServiceType.DPD_CLASSIC)
 				.build();
 	}
 
@@ -105,6 +112,8 @@ class DpdTestHelper
 						.build())
 				.pickupDate(PickupDate.builder()
 						.date(LocalDate.now().plusDays(1)) // always tomorrow!
+						.timeFrom(LocalTime.of(12, 34))
+						.timeTo(LocalTime.of(21, 9))
 						.build())
 				// international outside UE (CH) receiver
 				.deliveryAddress(Address.builder()
@@ -131,7 +140,7 @@ class DpdTestHelper
 						.grossWeightKg(1)
 						.build())
 				.customerReference(null)
-				.serviceType(DPDServiceType.CL)
+				.serviceType(DPDServiceType.DPD_CLASSIC)
 				.build();
 	}
 
@@ -151,6 +160,8 @@ class DpdTestHelper
 						.build())
 				.pickupDate(PickupDate.builder()
 						.date(LocalDate.now().plusDays(1)) // always tomorrow!
+						.timeFrom(LocalTime.of(12, 34))
+						.timeTo(LocalTime.of(21, 9))
 						.build())
 				// international inside UE (AT) receiver
 				.deliveryAddress(Address.builder()
@@ -177,7 +188,20 @@ class DpdTestHelper
 						.grossWeightKg(1)
 						.build())
 				.customerReference(null)
-				.serviceType(DPDServiceType.CL)
+				.serviceType(DPDServiceType.DPD_CLASSIC)
 				.build();
 	}
+
+	static void dumpPdfToDisk(final byte[] pdf)
+	{
+		try
+		{
+			Files.write(Paths.get("C:", "a", Instant.now().toString().replace(":", ".") + ".pdf"), pdf);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+
 }

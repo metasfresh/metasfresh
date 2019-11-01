@@ -24,6 +24,7 @@ package de.metas.shipper.gateway.dpd.model;
 
 import java.util.stream.Stream;
 
+import com.dpd.common.service.types.shipmentservice._3.International;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableMap;
@@ -33,7 +34,6 @@ import de.metas.util.GuavaCollectors;
 import lombok.Getter;
 import lombok.NonNull;
 
-
 /**
  * as of 2019.10.29 there's no way for the customer to change the service type!
  * It is hardcoded inside CreateDraftDeliveryOrder, and that's it.
@@ -41,8 +41,15 @@ import lombok.NonNull;
 public enum DPDServiceType implements ServiceType
 {
 
-	CL("CL"),
-	AnythingElse("???");
+	DPD_CLASSIC("CL"),
+	DPD_8_30("E830"),
+	DPD_10_00("E10"),
+	DPD_12_00("E12"),
+	DPD_18_00("E18"),
+	DPD_EXPRESS("IE2"),
+	DPD_PARCELLetter("PL"),
+	DPD_PARCELLetterPlus("PL+"),
+	DPD_International_Mail("MAIL");
 
 	@Getter
 	private final String code;
