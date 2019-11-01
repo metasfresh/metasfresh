@@ -44,6 +44,7 @@ import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.order.OrderLineId;
@@ -51,6 +52,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.ShipperId;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -91,6 +93,7 @@ class ProductsToPickRowsDataFactory
 	// services
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	final IShipmentSchedulePA shipmentScheduleRepo = Services.get(IShipmentSchedulePA.class);
 	private final IBPartnerBL bpartnersService;
 	private final HUReservationService huReservationService;
 	private final PickingCandidateService pickingCandidateService;
@@ -339,6 +342,8 @@ class ProductsToPickRowsDataFactory
 		final LookupValue locator = pickFromHUId != null ? getLocatorLookupValueByHuId(pickFromHUId) : null;
 		final ImmutableAttributeSet attributes = pickFromHUId != null ? getHUAttributes(pickFromHUId) : ImmutableAttributeSet.EMPTY;
 
+		final ShipperId suggestedShipperId = shipmentScheduleRepo.getShipperIdOrNull(shipmentScheduleId);
+
 		final ProductsToPickRowId rowId = ProductsToPickRowId.builder()
 				.productId(productInfo.getProductId())
 				.shipmentScheduleId(packageable.getShipmentScheduleId())
@@ -361,6 +366,7 @@ class ProductsToPickRowsDataFactory
 				.qty(qty)
 				//
 				.shipmentScheduleId(shipmentScheduleId)
+				.suggestedShipperId(suggestedShipperId)
 				//
 				.build()
 				.withUpdatesFromPickingCandidateIfNotNull(existingPickingCandidate);
