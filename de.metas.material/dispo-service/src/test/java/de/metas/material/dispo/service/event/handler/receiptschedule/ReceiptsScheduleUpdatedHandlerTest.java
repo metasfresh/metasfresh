@@ -29,7 +29,6 @@ import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHa
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
-import de.metas.util.collections.CollectionUtils;
 
 /*
  * #%L
@@ -70,7 +69,6 @@ public class ReceiptsScheduleUpdatedHandlerTest
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(candidateChangeHandlers);
 
 		receiptsScheduleCreatedHandler = new ReceiptsScheduleCreatedHandler(candidateChangeHandler, candidateRepositoryRetrieval);
-
 		receiptsScheduleUpdatedHandler = new ReceiptsScheduleUpdatedHandler(candidateChangeHandler, candidateRepositoryRetrieval);
 	}
 
@@ -78,7 +76,10 @@ public class ReceiptsScheduleUpdatedHandlerTest
 	public void handleEvent_ReceiptScheduleUpdatedEvent()
 	{
 		ReceiptsScheduleCreatedHandlerTest.handleEvent_ReceiptScheduleCreatedEvent_performTest(receiptsScheduleCreatedHandler);
-		assertThat(CollectionUtils.singleElement(DispoTestUtils.filter(CandidateType.SUPPLY)).getDateProjected()).isEqualTo(TimeUtil.asTimestamp(NOW)); // guard
+		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY))
+				.hasSize(1)
+				.element(0)
+				.returns(TimeUtil.asTimestamp(NOW), I_MD_Candidate::getDateProjected);
 
 		final MaterialDescriptor eventMaterialDescriptor = createMaterialDescriptor()
 				.withDate(BEFORE_NOW)
@@ -103,5 +104,4 @@ public class ReceiptsScheduleUpdatedHandlerTest
 		assertThat(supplyCandidate.getDateProjected()).isEqualTo(TimeUtil.asTimestamp(BEFORE_NOW));
 		assertThat(supplyCandidate.getQty()).isEqualByComparingTo("11");
 	}
-
 }
