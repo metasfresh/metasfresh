@@ -105,7 +105,7 @@ stage('Set versions and build metasfresh-webui-frontend')
 		final MvnConf mvnConf = new MvnConf(
 			'pom.xml', // pomFile
 			MAVEN_SETTINGS, // settingsFile
-			"mvn-${MF_UPSTREAM_BRANCH}", // mvnRepoName
+			"mvn-${MF_UPSTREAM_BRANCH}".replace("/", "-"), // mvnRepoName
 			'https://repo.metasfresh.com' // mvnRepoBaseURL - for resolve and deploy
 		)
 		echo "mvnConf=${mvnConf.toString()}"
