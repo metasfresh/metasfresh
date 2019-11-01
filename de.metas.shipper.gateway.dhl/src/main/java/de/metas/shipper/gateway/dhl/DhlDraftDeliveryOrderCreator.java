@@ -113,6 +113,10 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
 
+		final int grossWeightInKg = Math.max(request.getGrossWeightInKg(), 1);
+		final int shipperId = deliveryOrderKey.getShipperId();
+		final int shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
+
 		DhlServiceType detectedServiceType = DhlServiceType.Dhl_Paket;
 		final DhlCustomDeliveryData.DhlCustomDeliveryDataBuilder dataBuilder = DhlCustomDeliveryData.builder();
 
@@ -165,10 +169,6 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			dataBuilder.detail(dataDetailBuilder.build());
 		}
 
-		final int grossWeightInKg = Math.max(request.getGrossWeightInKg(), 1);
-		final int shipperId = deliveryOrderKey.getShipperId();
-		final int shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
-
 		return createDeliveryOrderFromParams(
 				mpackageIds,
 				pickupFromBPartner,
@@ -198,7 +198,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			final int deliverToBPartnerLocationId,
 			@NonNull final I_C_Location deliverToLocation,
 			@Nullable final String deliverToPhoneNumber,
-			@NonNull final DhlServiceType detectedServiceType,
+			@NonNull final DhlServiceType serviceType,
 			final int grossWeightKg,
 			final int shipperId,
 			final String customerReference, final int shipperTransportationId,
@@ -210,7 +210,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.shipperTransportationId(shipperTransportationId)
 				//
 
-				.serviceType(detectedServiceType) // todo this should be made user-selectable. Ref: https://github.com/metasfresh/me03/issues/3128
+				.serviceType(serviceType) // todo this should be made user-selectable. Ref: https://github.com/metasfresh/me03/issues/3128
 				.customerReference(customerReference)
 				.customDeliveryData(customDeliveryData)
 				//
@@ -248,7 +248,16 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 
 	/**
 	 * Assume that all the packages inside a delivery position are of the same type and therefore have the same size.
-	 * <p>
+	 */
+	@NonNull
+	private PackageDimensions getPackageDimensions(@NonNull final Set<Integer> mpackageIds, final int shipperId)
+	{
+		final Integer firstPackageId = mpackageIds.iterator().next();
+		final DhlClientConfig clientConfig = clientConfigRepository.getByShipperId(ShipperId.ofRepoId(shipperId));
+		return getPackageDimensions(firstPackageId, clientConfig.getLengthUomId());
+	}
+
+	/**
 	 * sql:
 	 *
 	 * <pre>{@code
@@ -259,17 +268,15 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	 * WHERE phu.m_package_id = 1000023
 	 * }</pre>
 	 * <p>
-	 * thx to ruxi for this query
+	 * thx to ruxi for transforming this query into "metasfresh"
 	 */
 	@NonNull
-	private PackageDimensions getPackageDimensions(@NonNull final Set<Integer> mpackageIds, final int shipperId)
+	private PackageDimensions getPackageDimensions(final int packageId, @NonNull final UomId toUomId)
 	{
-		final Integer firstPackageId = mpackageIds.iterator().next();
-
-		// packing material is never null
+		// assuming packing material is never null
 		final I_M_HU_PackingMaterial packingMaterial = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Package_HU.class)
-				.addEqualsFilter(I_M_Package_HU.COLUMNNAME_M_Package_ID, firstPackageId)
+				.addEqualsFilter(I_M_Package_HU.COLUMNNAME_M_Package_ID, packageId)
 				//
 
 				.andCollect(I_M_HU.COLUMN_M_HU_ID, I_M_HU.class)
@@ -295,15 +302,14 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			throw new AdempiereException("Package UOM must be set");
 		}
 
-		final DhlClientConfig clientConfig = clientConfigRepository.getByShipperId(ShipperId.ofRepoId(shipperId));
-
 		final I_C_UOM fromUom = InterfaceWrapperHelper.load(uomId, I_C_UOM.class);
-		final I_C_UOM toUom = InterfaceWrapperHelper.load(clientConfig.getLengthUomId(), I_C_UOM.class);
+		final I_C_UOM toUom = InterfaceWrapperHelper.load(toUomId, I_C_UOM.class);
 
+		final IUOMConversionBL iuomConversionBL = Services.get(IUOMConversionBL.class);
 		return PackageDimensions.builder()
-				.heightInCM(Services.get(IUOMConversionBL.class).convert(fromUom, toUom, packingMaterial.getHeight()).get().intValue())
-				.lengthInCM(Services.get(IUOMConversionBL.class).convert(fromUom, toUom, packingMaterial.getLength()).get().intValue())
-				.widthInCM(Services.get(IUOMConversionBL.class).convert(fromUom, toUom, packingMaterial.getWidth()).get().intValue())
+				.heightInCM(iuomConversionBL.convert(fromUom, toUom, packingMaterial.getHeight()).get().intValue())
+				.lengthInCM(iuomConversionBL.convert(fromUom, toUom, packingMaterial.getLength()).get().intValue())
+				.widthInCM(iuomConversionBL.convert(fromUom, toUom, packingMaterial.getWidth()).get().intValue())
 				.build();
 	}
 }
