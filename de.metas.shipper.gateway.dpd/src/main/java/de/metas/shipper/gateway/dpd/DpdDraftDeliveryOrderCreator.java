@@ -22,85 +22,215 @@
 
 package de.metas.shipper.gateway.dpd;
 
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.organization.OrgId;
+import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
+import de.metas.shipper.gateway.dpd.model.DpdServiceType;
+import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
+import de.metas.shipper.gateway.spi.model.ContactPerson;
+import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.DeliveryPosition;
+import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipper.gateway.spi.model.ServiceType;
+import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
-import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.Set;
 
 @Service
 public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
 	private static final Logger logger = LoggerFactory.getLogger(DpdDraftDeliveryOrderCreator.class);
 
-	@Override public String getShipperGatewayId()
+	@Override
+	public String getShipperGatewayId()
 	{
 		return DpdConstants.SHIPPER_GATEWAY_ID;
 	}
 
-	@Override public DeliveryOrder createDraftDeliveryOrder(final CreateDraftDeliveryOrderRequest request)
+	/**
+	 * Create the initial DTO.
+	 * <p>
+	 * todo: keep in sync with:
+	 */
+	@Override
+	public DeliveryOrder createDraftDeliveryOrder(final CreateDraftDeliveryOrderRequest request)
 	{
-		// TODO
-//		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
-//		final Set<Integer> mpackageIds = request.getMpackageIds();
-//
-//		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
-//		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(deliveryOrderKey.getFromOrgId());
-//		final I_C_Location pickupFromLocation = bpartnerOrgBL.retrieveOrgLocation(OrgId.ofRepoId(deliveryOrderKey.getFromOrgId()));
-//		final LocalDate pickupDate = deliveryOrderKey.getPickupDate();
-//
-//		final int deliverToBPartnerId = deliveryOrderKey.getDeliverToBPartnerId();
-//		final I_C_BPartner deliverToBPartner = load(deliverToBPartnerId, I_C_BPartner.class);
-//
-//		final int deliverToBPartnerLocationId = deliveryOrderKey.getDeliverToBPartnerLocationId();
-//		final I_C_BPartner_Location deliverToBPLocation = load(deliverToBPartnerLocationId, I_C_BPartner_Location.class);
-//		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
-//
-//		// todo: implement DHL custom delivery order data, the rest of the code is similar to the 2 other shippers
-//		//		final GoDeliveryOrderData goDeliveryOrderData = GoDeliveryOrderData.builder()
-//		//				.receiptConfirmationPhoneNumber(null)
-//		//				.paidMode(GOPaidMode.Prepaid)
-//		//				.selfPickup(GOSelfPickup.Delivery)
-//		//				.selfDelivery(GOSelfDelivery.Pickup)
-//		//				.build();
-//
-//		return DeliveryOrder.builder()
-//				.shipperId(deliveryOrderKey.getShipperId())
-//				.shipperTransportationId(deliveryOrderKey.getShipperTransportationId())
-//				//
-//				//				todo .serviceType(GOServiceType.Overnight)
-//				//				todo .customDeliveryData(goDeliveryOrderData)
-//				//
-//				// Pickup
-//				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocation(pickupFromLocation)
-//						.companyName1(pickupFromBPartner.getName())
-//						.companyName2(pickupFromBPartner.getName2())
-//						.build())
-//				.pickupDate(PickupDate.builder()
-//						.date(pickupDate)
-//						.build())
-//				//
-//				// Delivery
-//				.deliveryAddress(DeliveryOrderUtil.prepareAddressFromLocation(deliverToLocation)
-//						.companyName1(deliverToBPartner.getName())
-//						.companyName2(deliverToBPartner.getName2())
-//						.companyDepartment("-") // N/A
-//						.bpartnerId(deliverToBPartnerId)
-//						.bpartnerLocationId(deliverToBPartnerLocationId)
-//						.build())
-//				//
-//				// Delivery content
-//				.deliveryPosition(DeliveryPosition.builder()
-//						.numberOfPackages(mpackageIds.size())
-//						.packageIds(mpackageIds)
-//						.grossWeightKg(Math.max(request.getGrossWeightInKg(), 1))
-//						.content(request.getPackageContentDescription())
-//						.build())
-//				// todo if needed .customerReference(null)
-//				//
-//				.build();
-		return null;
 
+		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
+		final Set<Integer> mpackageIds = request.getMpackageIds();
+
+		final String customerReference = ""; // todo what is the customer reference ?
+
+		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
+		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(deliveryOrderKey.getFromOrgId());
+		final I_C_Location pickupFromLocation = bpartnerOrgBL.retrieveOrgLocation(OrgId.ofRepoId(deliveryOrderKey.getFromOrgId()));
+		final LocalDate pickupDate = deliveryOrderKey.getPickupDate();
+
+		final int deliverToBPartnerId = deliveryOrderKey.getDeliverToBPartnerId();
+		final I_C_BPartner deliverToBPartner = InterfaceWrapperHelper.load(deliverToBPartnerId, I_C_BPartner.class);
+
+		final int deliverToBPartnerLocationId = deliveryOrderKey.getDeliverToBPartnerLocationId();
+		final I_C_BPartner_Location deliverToBPLocation = InterfaceWrapperHelper.load(deliverToBPartnerLocationId, I_C_BPartner_Location.class);
+		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
+		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
+
+		final int grossWeightInKg = Math.max(request.getGrossWeightInKg(), 1);
+		final int shipperId = deliveryOrderKey.getShipperId();
+		final int shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
+
+		final DpdServiceType serviceType = DpdServiceType.DPD_CLASSIC;
+
+		return createDeliveryOrderFromParams(
+				mpackageIds,
+				pickupFromBPartner,
+				pickupFromLocation,
+				pickupDate,
+				deliverToBPartner,
+				deliverToBPartnerLocationId,
+				deliverToLocation,
+				deliverToPhoneNumber,
+				serviceType,
+				grossWeightInKg,
+				shipperId,
+				customerReference,
+				shipperTransportationId,
+				getPackageDimensions(mpackageIds, shipperId));
 	}
+
+	@VisibleForTesting
+	DeliveryOrder createDeliveryOrderFromParams(
+			@NonNull final Set<Integer> mpackageIds,
+			@NonNull final I_C_BPartner pickupFromBPartner,
+			@NonNull final I_C_Location pickupFromLocation,
+			@NonNull final LocalDate pickupDate,
+			@NonNull final I_C_BPartner deliverToBPartner,
+			final int deliverToBPartnerLocationId,
+			@NonNull final I_C_Location deliverToLocation,
+			@Nullable final String deliverToPhoneNumber,
+			@NonNull final ServiceType serviceType,
+			final int grossWeightKg,
+			final int shipperId,
+			final String customerReference, final int shipperTransportationId,
+			@NonNull final PackageDimensions packageDimensions)
+	{
+		return DeliveryOrder.builder()
+				.shipperId(shipperId)
+				.shipperTransportationId(shipperTransportationId)
+				//
+				//
+				.serviceType(serviceType)
+				.customerReference(customerReference)
+				//				.customDeliveryData()// todo
+
+				//
+				// Pickup aka Sender
+				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocation(pickupFromLocation)
+						.companyName1(pickupFromBPartner.getName())
+						.companyName2(pickupFromBPartner.getName2())
+						.build())
+				.pickupDate(PickupDate.builder()
+						.date(pickupDate)
+						//						.timeTo() // todo
+						//						.timeFrom() // todo
+						.build())
+				//
+				// Delivery aka Receiver
+				.deliveryAddress(DeliveryOrderUtil.prepareAddressFromLocation(deliverToLocation)
+						.companyName1(deliverToBPartner.getName())
+						.companyName2(deliverToBPartner.getName2())
+						.bpartnerId(deliverToBPartner.getC_BPartner_ID()) // afaics used only for logging
+						.bpartnerLocationId(deliverToBPartnerLocationId) // afaics used only for logging
+						.build())
+				.deliveryContact(ContactPerson.builder()
+						.emailAddress(deliverToBPartner.getEMail())
+						.simplePhoneNumber(deliverToPhoneNumber)
+						.build())
+				//
+				// Delivery content
+				.deliveryPosition(DeliveryPosition.builder()
+						.numberOfPackages(mpackageIds.size())
+						.packageIds(mpackageIds)
+						.grossWeightKg(grossWeightKg)
+						.packageDimensions(packageDimensions)
+						.build())
+				.build();
+	}
+
+	/**
+	 * Assume that all the packages inside a delivery position are of the same type and therefore have the same size.
+	 */
+	@NonNull
+	private PackageDimensions getPackageDimensions(@NonNull final Set<Integer> mpackageIds, final int shipperId)
+	{
+		//		final Integer firstPackageId = mpackageIds.iterator().next();
+		//		final DpdClientConfig clientConfig = clientConfigRepository.getByShipperId(ShipperId.ofRepoId(shipperId));
+		//		return getPackageDimensions(firstPackageId, clientConfig.getLengthUomId());
+
+		// todo don't hardcode
+		// todo ask teo/tobi where to refactor the method which gets the uom from a packageId (copied both here and dhl)
+		return PackageDimensions.builder()
+				.lengthInCM(10)
+				.widthInCM(20)
+				.heightInCM(30)
+				.build();
+	}
+
+	//	/**
+	//	 * sql:
+	//	 *
+	//	 * <pre>{@code
+	//	 * SELECT pack.width
+	//	 * FROM m_package_hu phu
+	//	 * 		INNER JOIN m_hu_item huitem ON phu.m_hu_id = huitem.m_hu_id
+	//	 * 		INNER JOIN m_hu_packingmaterial pack ON huitem.m_hu_packingmaterial_id = pack.m_hu_packingmaterial_id
+	//	 * WHERE phu.m_package_id = 1000023
+	//	 * }</pre>
+	//	 * <p>
+	//	 * thx to ruxi for transforming this query into "metasfresh"
+	//	 */
+	//	@NonNull
+	//	private PackageDimensions getPackageDimensions(final int packageId, @NonNull final UomId toUomId)
+	//	{
+	//		// assuming packing material is never null
+	//		final I_M_HU_PackingMaterial packingMaterial = Services.get(IQueryBL.class)
+	//				.createQueryBuilder(I_M_Package_HU.class)
+	//				.addEqualsFilter(I_M_Package_HU.COLUMNNAME_M_Package_ID, packageId)
+	//				//
+	//
+	//				.andCollect(I_M_HU.COLUMN_M_HU_ID, I_M_HU.class)
+	//				.andCollectChildren(I_M_HU_Item.COLUMN_M_HU_ID)
+	//				.andCollect(I_M_HU_PackingMaterial.COLUMN_M_HU_PackingMaterial_ID, I_M_HU_PackingMaterial.class)
+	//				.create()
+	//				.firstOnly(I_M_HU_PackingMaterial.class);
+	//
+	//		final UomId uomId = UomId.ofRepoIdOrNull(packingMaterial.getC_UOM_Dimension_ID());
+	//
+	//		if (uomId == null)
+	//		{
+	//			throw new AdempiereException("Package UOM must be set");
+	//		}
+	//
+	//		final I_C_UOM fromUom = InterfaceWrapperHelper.load(uomId, I_C_UOM.class);
+	//		final I_C_UOM toUom = InterfaceWrapperHelper.load(toUomId, I_C_UOM.class);
+	//
+	//		final IUOMConversionBL iuomConversionBL = Services.get(IUOMConversionBL.class);
+	//		return PackageDimensions.builder()
+	//				.heightInCM(iuomConversionBL.convert(fromUom, toUom, packingMaterial.getHeight()).get().intValue())
+	//				.lengthInCM(iuomConversionBL.convert(fromUom, toUom, packingMaterial.getLength()).get().intValue())
+	//				.widthInCM(iuomConversionBL.convert(fromUom, toUom, packingMaterial.getWidth()).get().intValue())
+	//				.build();
+	//	}
 }
