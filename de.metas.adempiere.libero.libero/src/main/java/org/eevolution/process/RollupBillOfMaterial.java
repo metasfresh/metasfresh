@@ -155,7 +155,7 @@ public class RollupBillOfMaterial extends JavaProcess
 		final IQueryBuilder<I_M_Product> queryBuilder = queryBL.createQueryBuilder(I_M_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_M_Product.COLUMN_M_Product_ID) // just to have a predictable order
-				.addEqualsFilter(I_M_Product.COLUMN_AD_Client_ID, clientId)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
 				.addEqualsFilter(I_M_Product.COLUMNNAME_IsBOM, true);
 
 		if (productId != null)
@@ -164,7 +164,7 @@ public class RollupBillOfMaterial extends JavaProcess
 		}
 		else if (productCategoryId != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_Product.COLUMN_M_Product_Category_ID, productCategoryId);
+			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_Category_ID, productCategoryId);
 		}
 		if (productId == null && productType != null)
 		{
