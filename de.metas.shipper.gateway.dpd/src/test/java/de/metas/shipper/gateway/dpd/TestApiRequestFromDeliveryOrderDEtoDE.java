@@ -40,6 +40,7 @@ import com.dpd.common.ws.loginservice.v2_0.types.Login;
 import de.metas.shipper.gateway.dpd.model.DPDServiceType;
 import de.metas.shipper.gateway.dpd.model.DpdOrderType;
 import de.metas.shipper.gateway.dpd.util.DpdClientUtil;
+import de.metas.shipper.gateway.dpd.util.DpdConversionUtil;
 import de.metas.shipper.gateway.dpd.util.DpdSoapHeaderWithAuth;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
@@ -154,7 +155,7 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 				final Parcel parcel = shipmentServiceOF.createParcel();
 				shipmentServiceData.getParcels().add(parcel);
 				parcel.setContent(deliveryPosition.getContent());
-				parcel.setVolume(DPDConstants.formatVolume(deliveryPosition.getPackageDimensions()));
+				parcel.setVolume(DpdConversionUtil.formatVolume(deliveryPosition.getPackageDimensions()));
 				parcel.setWeight(deliveryPosition.getGrossWeightKg() * 100); // uom = decagram (1dag = 10g => 100dag = 1kg)
 				//				parcel.setInternational(); // todo god save us
 			}
@@ -186,10 +187,10 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 	{
 		final Pickup pickup = shipmentServiceOF.createPickup();
 		pickup.setQuantity(numberOfPackages);
-		pickup.setDate(DPDConstants.formatDate(pickupDate.getDate()));
-		pickup.setDay(DPDConstants.getPickupDayOfTheWeek(pickupDate));
-		pickup.setFromTime1(DPDConstants.formatTime(pickupDate.getTimeFrom()));
-		pickup.setToTime1(DPDConstants.formatTime(pickupDate.getTimeTo()));
+		pickup.setDate(DpdConversionUtil.formatDate(pickupDate.getDate()));
+		pickup.setDay(DpdConversionUtil.getPickupDayOfTheWeek(pickupDate));
+		pickup.setFromTime1(DpdConversionUtil.formatTime(pickupDate.getTimeFrom()));
+		pickup.setToTime1(DpdConversionUtil.formatTime(pickupDate.getTimeTo()));
 		//					pickup.setExtraPickup(true); // optional
 		pickup.setCollectionRequestAddress(createAddress(sender));
 		return pickup;

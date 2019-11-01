@@ -30,7 +30,6 @@ import org.springframework.ws.client.core.WebServiceTemplate;
 @UtilityClass
 public class DpdClientUtil
 {
-
 	public static final String LOGIN_SERVICE_API_URL = "https://public-ws-stage.dpd.com/services/LoginService/V2_0/";
 	public static final String SHIPMENT_SERVICE_API_URL = "https://public-ws-stage.dpd.com/services/ShipmentService/V3_2/";
 
