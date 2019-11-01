@@ -333,10 +333,10 @@ class CommissionInstanceRepositoryTest
 		assertThat(factRecords1).hasSize(4)
 				.extracting("CommissionFactTimestamp", "Commission_Fact_State", "CommissionPoints")
 				.contains(
-						tuple("2019-09-17T11:49:25Z", "FORECASTED", new BigDecimal("10")),
-						tuple("2019-09-17T11:49:35Z", "FORECASTED", new BigDecimal("-9")),
-						tuple("2019-09-17T11:49:45Z", "INVOICEABLE", new BigDecimal("1.1")),
-						tuple("2019-09-17T11:49:55Z", "INVOICED", new BigDecimal("1.2")));
+						tuple("1568720965.0", "FORECASTED", new BigDecimal("10")),
+						tuple("1568720975.0", "FORECASTED", new BigDecimal("-9")),
+						tuple("1568720985.0", "INVOICEABLE", new BigDecimal("1.1")),
+						tuple("1568720995.0", "INVOICED", new BigDecimal("1.2")));
 
 		final I_C_Commission_Share shareRecord2 = shareRecords.get(1);
 		assertThat(shareRecord2.getLevelHierarchy()).isEqualTo(20); // guard
@@ -344,10 +344,10 @@ class CommissionInstanceRepositoryTest
 		assertThat(factRecords2).hasSize(4)
 				.extracting("CommissionFactTimestamp", "Commission_Fact_State", "CommissionPoints")
 				.contains(
-						tuple("2019-09-17T11:50:05Z", "FORECASTED", new BigDecimal("2")),
-						tuple("2019-09-17T11:50:15Z", "INVOICEABLE", new BigDecimal("2.1")),
-						tuple("2019-09-17T11:50:25Z", "INVOICED", new BigDecimal("10")),
-						tuple("2019-09-17T11:50:35Z", "INVOICED", new BigDecimal("-7.8")));
+						tuple("1568721005.0", "FORECASTED", new BigDecimal("2")),
+						tuple("1568721015.0", "INVOICEABLE", new BigDecimal("2.1")),
+						tuple("1568721025.0", "INVOICED", new BigDecimal("10")),
+						tuple("1568721035.0", "INVOICED", new BigDecimal("-7.8")));
 
 		// final check; load the CommissionInstance from the records we just created and verify that it's equal to the one we got from json
 		final CommissionInstance reloadedInstance = commissionInstanceRepository.getForCommissionInstanceId(result);

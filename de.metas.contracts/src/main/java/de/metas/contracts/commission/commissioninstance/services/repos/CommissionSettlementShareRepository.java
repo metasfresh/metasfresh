@@ -5,9 +5,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import java.time.Instant;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.stereotype.Repository;
 
@@ -81,7 +81,7 @@ public class CommissionSettlementShareRepository
 			final CommissionSettlementFact fact = CommissionSettlementFact.builder()
 					.points(CommissionPoints.of(factRecord.getCommissionPoints()))
 					.state(CommissionSettlementState.valueOf(factRecord.getCommission_Fact_State()))
-					.timestamp(Instant.parse(factRecord.getCommissionFactTimestamp()))
+					.timestamp(TimeUtil.deserializeInstant(factRecord.getCommissionFactTimestamp()))
 					.settlementInvoiceCandidateId(InvoiceCandidateId.ofRepoId(factRecord.getC_Invoice_Candidate_Commission_ID()))
 					.build();
 			facts.add(fact);
@@ -124,7 +124,7 @@ public class CommissionSettlementShareRepository
 		for (final CommissionSettlementFact fact : facts)
 		{
 			final I_C_Commission_Fact factRecordOrNull = idAndTypeAndTimestampToFactRecord.get(
-					ArrayKey.of(commissionShareRecordId, fact.getState().toString(), fact.getTimestamp().toString()));
+					ArrayKey.of(commissionShareRecordId, fact.getState().toString(), TimeUtil.serializeInstant(fact.getTimestamp())));
 			if (factRecordOrNull != null)
 			{
 				continue;
@@ -134,7 +134,7 @@ public class CommissionSettlementShareRepository
 			factRecord.setC_Invoice_Candidate_Commission_ID(fact.getSettlementInvoiceCandidateId().getRepoId());
 			factRecord.setCommissionPoints(fact.getPoints().toBigDecimal());
 			factRecord.setCommission_Fact_State(fact.getState().toString());
-			factRecord.setCommissionFactTimestamp(fact.getTimestamp().toString());
+			factRecord.setCommissionFactTimestamp(TimeUtil.serializeInstant(fact.getTimestamp()));
 			saveRecord(factRecord);
 		}
 	}

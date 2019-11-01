@@ -1839,4 +1839,50 @@ public class TimeUtil
 			return date.toInstant().atZone(zoneId);
 		}
 	}
+
+	/**
+	 * Counterpart of {@link #deserializeInstant(String)}.
+	 */
+	public static String serializeInstant(@NonNull final Instant instant)
+	{
+		return Long.toString(instant.getEpochSecond()) + "." + Long.toString(instant.getNano());
+	}
+
+	/**
+	 * Deserializes a string such as {@code "12345.234567"} into an {@link Instant}.
+	 * <p>
+	 * Notes:
+	 * <li>I didn't want to use jackson because this is not inteded to serialize/deserialize a whole object-tree, but that to play a role in very concrete business logic, so i want it to be more transparent how this is done.
+	 * <li>{@link Instant#toString()} and {@link Instant#parse(CharSequence)} don't preserve the nanos, so they are even less accurate than a "normal" {@link Timestamp}.
+	 */
+	public static Instant deserializeInstant(@NonNull final String instant)
+	{
+		final String[] split = instant.split("\\.");
+		if (split.length != 2)
+		{
+			throw new AdempiereException("The  instant string needs to contain two longs that are delimited by a dot").appendParametersToMessage().setParameter("instant-string", instant);
+		}
+
+		final long seconds;
+		final long nanos;
+		try
+		{
+			seconds = Long.parseLong(split[0]);
+		}
+		catch (NumberFormatException e)
+		{
+			throw new AdempiereException("The 'seconds' part of the given instant string can't be parsed as long", e).appendParametersToMessage().setParameter("instant-string", instant);
+		}
+
+		try
+		{
+			nanos = Long.parseLong(split[1]);
+		}
+		catch (NumberFormatException e)
+		{
+			throw new AdempiereException("The 'nanos' part of the given instant string can't be parsed as long", e).appendParametersToMessage().setParameter("instant-string", instant);
+		}
+		return Instant.ofEpochSecond(seconds, nanos);
+	}
+
 }	// TimeUtil
