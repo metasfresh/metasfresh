@@ -31,13 +31,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class DPDDeliveryOrderRepository implements DeliveryOrderRepository
+public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 {
-	private static final Logger logger = LoggerFactory.getLogger(DPDDeliveryOrderRepository.class);
+	private static final Logger logger = LoggerFactory.getLogger(DpdDeliveryOrderRepository.class);
 
 	@Override public String getShipperGatewayId()
 	{
-		return DPDConstants.SHIPPER_GATEWAY_ID;
+		return DpdConstants.SHIPPER_GATEWAY_ID;
 	}
 
 	@Override public ITableRecordReference toTableRecordReference(final DeliveryOrder deliveryOrder)

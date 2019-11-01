@@ -25,7 +25,7 @@ package de.metas.shipper.gateway.dpd.util;
 import com.dpd.common.ws.authentication.v2_0.types.Authentication;
 import com.dpd.common.ws.authentication.v2_0.types.ObjectFactory;
 import com.dpd.common.ws.loginservice.v2_0.types.Login;
-import de.metas.shipper.gateway.dpd.DPDConstants;
+import de.metas.shipper.gateway.dpd.DpdConstants;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.ws.WebServiceMessage;
 import org.springframework.ws.client.core.WebServiceMessageCallback;
@@ -56,7 +56,7 @@ public class DpdSoapHeaderWithAuth implements WebServiceMessageCallback
 			final Authentication authentication = new ObjectFactory().createAuthentication();
 			authentication.setDelisId(login.getDelisId());
 			authentication.setAuthToken(login.getAuthToken());
-			authentication.setMessageLanguage(DPDConstants.DEFAULT_MESSAGE_LANGUAGE);
+			authentication.setMessageLanguage(DpdConstants.DEFAULT_MESSAGE_LANGUAGE);
 
 			// add the authentication to header
 			final SoapMessage soapMessage = (SoapMessage)message;

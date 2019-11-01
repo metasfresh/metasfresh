@@ -27,7 +27,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.metas.shipper.gateway.dpd.model.DPDClientConfig;
+import de.metas.shipper.gateway.dpd.model.DpdClientConfig;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
@@ -35,14 +35,14 @@ import de.metas.shipper.gateway.spi.model.PackageLabels;
 import lombok.Builder;
 import lombok.NonNull;
 
-public class DPDShipperGatewayClient implements ShipperGatewayClient
+public class DpdShipperGatewayClient implements ShipperGatewayClient
 {
-	private static final Logger logger = LoggerFactory.getLogger(DPDShipperGatewayClient.class);
+	private static final Logger logger = LoggerFactory.getLogger(DpdShipperGatewayClient.class);
 
-	private final DPDClientConfig config;
+	private final DpdClientConfig config;
 
 	@Builder
-	public DPDShipperGatewayClient(@NonNull final DPDClientConfig config)
+	public DpdShipperGatewayClient(@NonNull final DpdClientConfig config)
 	{
 		this.config = config;
 	}
@@ -50,7 +50,7 @@ public class DPDShipperGatewayClient implements ShipperGatewayClient
 	@Override
 	public String getShipperGatewayId()
 	{
-		return DPDConstants.SHIPPER_GATEWAY_ID;
+		return DpdConstants.SHIPPER_GATEWAY_ID;
 	}
 
 	@Override

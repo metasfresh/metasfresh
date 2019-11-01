@@ -20,17 +20,24 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.dpd.model;
+package de.metas.shipper.gateway.dpd;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-@Value
-@Builder
-//todo @ToString(exclude=bla)
-public class DPDClientConfig
+public class DpdConstants
 {
-	@NonNull
-	private final String baseUrl;
+	// TODO
+	public static final String SHIPPER_GATEWAY_ID = "dpd"; // X_M_Shipper.SHIPPERGATEWAY_DPD;
+
+	public static final String DEFAULT_MESSAGE_LANGUAGE = "en_EN";
+
+	public static class DpdPrinterOptions
+	{
+		public static final String PAPER_FORMAT = "A4";
+		public static final String PRINTER_LANGUAGE = "PDF";
+	}
+
+	public static class DpdNotificationChannel
+	{
+		public static int EMAIL = 1;
+		public static int SMS = 3;
+	}
 }

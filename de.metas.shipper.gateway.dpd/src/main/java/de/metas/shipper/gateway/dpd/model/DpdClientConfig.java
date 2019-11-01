@@ -22,8 +22,15 @@
 
 package de.metas.shipper.gateway.dpd.model;
 
-import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-public class DPCustomDeliveryData implements CustomDeliveryData
+@Value
+@Builder
+//todo @ToString(exclude=bla)
+public class DpdClientConfig
 {
+	@NonNull
+	private final String baseUrl;
 }

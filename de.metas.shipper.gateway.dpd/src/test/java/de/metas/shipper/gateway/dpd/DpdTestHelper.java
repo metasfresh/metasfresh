@@ -23,7 +23,7 @@
 package de.metas.shipper.gateway.dpd;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.shipper.gateway.dpd.model.DPDServiceType;
+import de.metas.shipper.gateway.dpd.model.DpdServiceType;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.CountryCode;
@@ -92,7 +92,7 @@ class DpdTestHelper
 						.grossWeightKg(1)
 						.build())
 				.customerReference(null)
-				.serviceType(DPDServiceType.DPD_CLASSIC)
+				.serviceType(DpdServiceType.DPD_CLASSIC)
 				.build();
 	}
 
@@ -140,7 +140,7 @@ class DpdTestHelper
 						.grossWeightKg(1)
 						.build())
 				.customerReference(null)
-				.serviceType(DPDServiceType.DPD_CLASSIC)
+				.serviceType(DpdServiceType.DPD_CLASSIC)
 				.build();
 	}
 
@@ -188,7 +188,7 @@ class DpdTestHelper
 						.grossWeightKg(1)
 						.build())
 				.customerReference(null)
-				.serviceType(DPDServiceType.DPD_CLASSIC)
+				.serviceType(DpdServiceType.DPD_CLASSIC)
 				.build();
 	}
 

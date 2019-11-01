@@ -24,7 +24,6 @@ package de.metas.shipper.gateway.dpd.model;
 
 import java.util.stream.Stream;
 
-import com.dpd.common.service.types.shipmentservice._3.International;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableMap;
@@ -38,7 +37,7 @@ import lombok.NonNull;
  * as of 2019.10.29 there's no way for the customer to change the service type!
  * It is hardcoded inside CreateDraftDeliveryOrder, and that's it.
  */
-public enum DPDServiceType implements ServiceType
+public enum DpdServiceType implements ServiceType
 {
 
 	DPD_CLASSIC("CL"),
@@ -54,15 +53,15 @@ public enum DPDServiceType implements ServiceType
 	@Getter
 	private final String code;
 
-	DPDServiceType(final String code)
+	DpdServiceType(final String code)
 	{
 		this.code = code;
 	}
 
 	@NonNull
-	public DPDServiceType forCode(final String code)
+	public DpdServiceType forCode(final String code)
 	{
-		final DPDServiceType type = code2type.get(code);
+		final DpdServiceType type = code2type.get(code);
 		if (type == null)
 		{
 			throw new AdempiereException("No serviceType for code=" + code + " exists.");
@@ -70,6 +69,6 @@ public enum DPDServiceType implements ServiceType
 		return type;
 	}
 
-	private static final ImmutableMap<String, DPDServiceType> code2type = Stream.of(values())
-			.collect(GuavaCollectors.toImmutableMapByKey(DPDServiceType::getCode));
+	private static final ImmutableMap<String, DpdServiceType> code2type = Stream.of(values())
+			.collect(GuavaCollectors.toImmutableMapByKey(DpdServiceType::getCode));
 }

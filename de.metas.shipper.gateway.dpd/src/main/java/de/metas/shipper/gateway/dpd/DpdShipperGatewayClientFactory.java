@@ -24,17 +24,17 @@ package de.metas.shipper.gateway.dpd;
 
 import org.springframework.stereotype.Service;
 
-import de.metas.shipper.gateway.dpd.model.DPDClientConfig;
-import de.metas.shipper.gateway.dpd.model.DPDClientConfigRepository;
+import de.metas.shipper.gateway.dpd.model.DpdClientConfig;
+import de.metas.shipper.gateway.dpd.model.DpdClientConfigRepository;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
 
 @Service
-public class DPDShipperGatewayClientFactory implements ShipperGatewayClientFactory
+public class DpdShipperGatewayClientFactory implements ShipperGatewayClientFactory
 {
-	private final DPDClientConfigRepository configRepo;
+	private final DpdClientConfigRepository configRepo;
 
-	public DPDShipperGatewayClientFactory(final DPDClientConfigRepository configRepo)
+	public DpdShipperGatewayClientFactory(final DpdClientConfigRepository configRepo)
 	{
 		this.configRepo = configRepo;
 	}
@@ -42,14 +42,14 @@ public class DPDShipperGatewayClientFactory implements ShipperGatewayClientFacto
 	@Override
 	public String getShipperGatewayId()
 	{
-		return DPDConstants.SHIPPER_GATEWAY_ID;
+		return DpdConstants.SHIPPER_GATEWAY_ID;
 	}
 
 	@Override
 	public ShipperGatewayClient newClientForShipperId(final int shipperId)
 	{
-		DPDClientConfig config = configRepo.getByShipperId(shipperId);
-		return DPDShipperGatewayClient.builder()
+		DpdClientConfig config = configRepo.getByShipperId(shipperId);
+		return DpdShipperGatewayClient.builder()
 				.config(config)
 				.build();
 	}

@@ -30,13 +30,13 @@ import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 
 @Service
-public class DPDDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
+public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
-	private static final Logger logger = LoggerFactory.getLogger(DPDDraftDeliveryOrderCreator.class);
+	private static final Logger logger = LoggerFactory.getLogger(DpdDraftDeliveryOrderCreator.class);
 
 	@Override public String getShipperGatewayId()
 	{
-		return DPDConstants.SHIPPER_GATEWAY_ID;
+		return DpdConstants.SHIPPER_GATEWAY_ID;
 	}
 
 	@Override public DeliveryOrder createDraftDeliveryOrder(final CreateDraftDeliveryOrderRequest request)

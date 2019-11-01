@@ -37,7 +37,7 @@ import com.dpd.common.service.types.shipmentservice._3.StoreOrdersResponseType;
 import com.dpd.common.ws.loginservice.v2_0.types.GetAuth;
 import com.dpd.common.ws.loginservice.v2_0.types.GetAuthResponse;
 import com.dpd.common.ws.loginservice.v2_0.types.Login;
-import de.metas.shipper.gateway.dpd.model.DPDServiceType;
+import de.metas.shipper.gateway.dpd.model.DpdServiceType;
 import de.metas.shipper.gateway.dpd.model.DpdOrderType;
 import de.metas.shipper.gateway.dpd.util.DpdClientUtil;
 import de.metas.shipper.gateway.dpd.util.DpdConversionUtil;
@@ -131,7 +131,7 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 				generalShipmentData.setMpsCustomerReferenceNumber1(deliveryOrder.getCustomerReference()); // what is this? optional?
 				generalShipmentData.setIdentificationNumber("1"); // unique metasfresh number for this shipment
 				//			generalShipmentData.setSendingDepot(); // taken from login
-				generalShipmentData.setProduct(DPDServiceType.DPD_CLASSIC.getCode()); // this is the DPD product // todo not hardcoded here
+				generalShipmentData.setProduct(DpdServiceType.DPD_CLASSIC.getCode()); // this is the DPD product // todo not hardcoded here
 
 				{
 					// Sender aka Pickup
@@ -200,7 +200,7 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 	private Notification createNotification(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		final Notification notification = shipmentServiceOF.createNotification();
-		notification.setChannel(DPDConstants.DpdNotificationChannel.EMAIL);
+		notification.setChannel(DpdConstants.DpdNotificationChannel.EMAIL);
 		notification.setValue(deliveryOrder.getDeliveryContact().getEmailAddress());
 		notification.setLanguage(deliveryOrder.getDeliveryAddress().getCountry().getAlpha2());
 		return notification;
@@ -242,8 +242,8 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 	{
 		// Print Options
 		final PrintOptions printOptions = shipmentServiceOF.createPrintOptions();
-		printOptions.setPaperFormat(DPDConstants.DpdPrinterOptions.PAPER_FORMAT);
-		printOptions.setPrinterLanguage(DPDConstants.DpdPrinterOptions.PRINTER_LANGUAGE);
+		printOptions.setPaperFormat(DpdConstants.DpdPrinterOptions.PAPER_FORMAT);
+		printOptions.setPrinterLanguage(DpdConstants.DpdPrinterOptions.PRINTER_LANGUAGE);
 		return printOptions;
 	}
 

@@ -20,24 +20,10 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.dpd;
+package de.metas.shipper.gateway.dpd.model;
 
-public class DPDConstants
+import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
+
+public class DpdCustomDeliveryData implements CustomDeliveryData
 {
-	// TODO
-	public static final String SHIPPER_GATEWAY_ID = "dpd"; // X_M_Shipper.SHIPPERGATEWAY_DPD;
-
-	public static final String DEFAULT_MESSAGE_LANGUAGE = "en_EN";
-
-	public static class DpdPrinterOptions
-	{
-		public static final String PAPER_FORMAT = "A4";
-		public static final String PRINTER_LANGUAGE = "PDF";
-	}
-
-	public static class DpdNotificationChannel
-	{
-		public static int EMAIL = 1;
-		public static int SMS = 3;
-	}
 }

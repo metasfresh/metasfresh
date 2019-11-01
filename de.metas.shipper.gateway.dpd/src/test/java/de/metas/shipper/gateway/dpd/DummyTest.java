@@ -14,7 +14,7 @@ import com.dpd.common.service.types.shipmentservice._3.StoreOrdersResponseType;
 import com.dpd.common.ws.loginservice.v2_0.types.GetAuth;
 import com.dpd.common.ws.loginservice.v2_0.types.GetAuthResponse;
 import com.dpd.common.ws.loginservice.v2_0.types.Login;
-import de.metas.shipper.gateway.dpd.model.DPDServiceType;
+import de.metas.shipper.gateway.dpd.model.DpdServiceType;
 import de.metas.shipper.gateway.dpd.util.DpdClientUtil;
 import de.metas.shipper.gateway.dpd.util.DpdSoapHeaderWithAuth;
 import org.apache.commons.lang3.StringUtils;
@@ -54,7 +54,7 @@ class DummyTest
 		final GetAuth getAuthValue = loginServiceOF.createGetAuth();
 		getAuthValue.setDelisId(DELIS_ID);
 		getAuthValue.setPassword(DELIS_PASSWORD);
-		getAuthValue.setMessageLanguage(DPDConstants.DEFAULT_MESSAGE_LANGUAGE);
+		getAuthValue.setMessageLanguage(DpdConstants.DEFAULT_MESSAGE_LANGUAGE);
 
 		final JAXBElement<GetAuth> getAuth = loginServiceOF.createGetAuth(getAuthValue);
 
@@ -78,7 +78,7 @@ class DummyTest
 			final GetAuth getAuthValue = loginServiceOF.createGetAuth();
 			getAuthValue.setDelisId(DELIS_ID);
 			getAuthValue.setPassword(DELIS_PASSWORD);
-			getAuthValue.setMessageLanguage(DPDConstants.DEFAULT_MESSAGE_LANGUAGE);
+			getAuthValue.setMessageLanguage(DpdConstants.DEFAULT_MESSAGE_LANGUAGE);
 
 			final JAXBElement<GetAuth> getAuth = loginServiceOF.createGetAuth(getAuthValue);
 			//noinspection unchecked
@@ -111,7 +111,7 @@ class DummyTest
 					//					generalShipmentData.setMpsCustomerReferenceNumber2("Order 456"); // what is this? optional?
 					generalShipmentData.setIdentificationNumber("Article 456"); // what is this? optional?
 					generalShipmentData.setSendingDepot("0112"); // mandatory? (taken from login)
-					generalShipmentData.setProduct(DPDServiceType.DPD_CLASSIC.getCode()); // this is the DPD product
+					generalShipmentData.setProduct(DpdServiceType.DPD_CLASSIC.getCode()); // this is the DPD product
 					//					generalShipmentData.setMpsWeight(500L); // optional? uom = decagram (1dag = 10g => 100dag = 1kg)
 
 					{

@@ -25,9 +25,9 @@ package de.metas.shipper.gateway.dpd.model;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class DPDClientConfigRepository
+public class DpdClientConfigRepository
 {
-	public DPDClientConfig getByShipperId(final int shipperId)
+	public DpdClientConfig getByShipperId(final int shipperId)
 	{
 		// todo
 		return null;
