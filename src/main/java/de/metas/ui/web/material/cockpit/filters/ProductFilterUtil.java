@@ -179,7 +179,7 @@ public class ProductFilterUtil
 		final int productCategoryId = productFilterVO.getProductCategoryId();
 		if (productCategoryId > 0)
 		{
-			productFilter.addEqualsFilter(I_M_Product.COLUMN_M_Product_Category_ID, productCategoryId);
+			productFilter.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_Category_ID, productCategoryId);
 			anyRestrictionAdded = true;
 		}
 

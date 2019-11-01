@@ -262,17 +262,28 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			adWindowId = singleDocumentPath.getWindowId().toAdWindowIdOrNull();
 
 			tableName = entityDescriptor.getTableNameOrNull();
+			final DocumentId documentId;
 			if (singleDocumentPath.isRootDocument())
 			{
-				recordId = singleDocumentPath.getDocumentId().toInt();
+				documentId = singleDocumentPath.getDocumentId();
 			}
 			else
 			{
-				recordId = singleDocumentPath.getSingleRowId().toInt();
+				documentId = singleDocumentPath.getSingleRowId();
 			}
+
+			if (documentId.isInt())
+			{
+				recordId = documentId.toInt();
+			}
+			else
+			{
+				recordId = -1;
+			}
+
 			sqlWhereClause = entityDescriptor
 					.getDataBinding(SqlDocumentEntityDataBindingDescriptor.class)
-					.getSqlWhereClauseById(recordId);
+					.getSqlWhereClauseById(documentId);
 		}
 		//
 		// From menu
