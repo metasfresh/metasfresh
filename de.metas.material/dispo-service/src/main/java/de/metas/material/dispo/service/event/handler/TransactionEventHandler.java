@@ -25,6 +25,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
@@ -235,6 +236,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.type(CandidateType.DEMAND)
+				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(event.getMaterialDescriptor()))
 				// only search via demand detail ..it's precise enough; the product and warehouse will also match, but e.g. the date might not!
 				.demandDetailsQuery(demandDetailsQuery)
 				.build();
@@ -252,7 +254,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 					shipmentScheduleId2Qty.getValue());
 
 			final CandidateBuilder builder = createBuilderForNewUnrelatedCandidate(
-					(TransactionCreatedEvent)event,
+					TransactionCreatedEvent.cast(event),
 					shipmentScheduleId2Qty.getValue());
 
 			final Candidate candidate = builder
@@ -302,6 +304,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.type(CandidateType.SUPPLY) // without it we might get stock candidates which we don't want
+				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(event.getMaterialDescriptor()))
 				.purchaseDetailsQuery(purchaseDetailsQuery)
 				.build();
 
@@ -317,12 +320,11 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 					.receiptScheduleRepoId(receiptScheduleId2Qty.getKey())
 					.build();
 
-			final Candidate candidate = createBuilderForNewUnrelatedCandidate(
-					(TransactionCreatedEvent)event,
-					event.getQuantity())
-							.businessCaseDetail(purchaseDetail)
-							.transactionDetail(transactionDetailOfEvent)
-							.build();
+			final Candidate candidate = createBuilderForNewUnrelatedCandidate(TransactionCreatedEvent.cast(event), event.getQuantity())
+					.businessCase(CandidateBusinessCase.PURCHASE)
+					.businessCaseDetail(purchaseDetail)
+					.transactionDetail(transactionDetailOfEvent)
+					.build();
 			candidates = ImmutableList.of(candidate);
 
 		}
@@ -354,6 +356,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 				.build();
 
 		final CandidatesQuery query = CandidatesQuery.builder()
+				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(event.getMaterialDescriptor()))
 				.productionDetailsQuery(productionDetailsQuery)
 				.build();
 
@@ -401,6 +404,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 				.build();
 
 		final CandidatesQuery query = CandidatesQuery.builder()
+				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(event.getMaterialDescriptor()))
 				.distributionDetailsQuery(distributionDetailsQuery) // only search via distribution detail, ..the product and warehouse will also match, but e.g. the date probably won't!
 				.build();
 
