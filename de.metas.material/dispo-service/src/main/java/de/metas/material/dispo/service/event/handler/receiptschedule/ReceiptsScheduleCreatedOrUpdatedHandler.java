@@ -61,6 +61,7 @@ abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends AbstractReceipt
 
 		final Candidate supplyCandidate = supplyCandidateBuilder
 				.businessCaseDetail(createPurchaseDetail(event))
+				.quantity(event.getReservedQuantity())
 				.build();
 
 		candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);

@@ -129,6 +129,15 @@ public class Candidate
 		this.transactionDetails = transactionDetails;
 	}
 
+	public static class CandidateBuilder
+	{
+		public CandidateBuilder quantity(final BigDecimal quantity)
+		{
+			Check.assumeNotNull(materialDescriptor, "Parameter materialDescriptor is not null");
+			return materialDescriptor(materialDescriptor.withQuantity(quantity));
+		}
+	}
+
 	/** we don't call this from the constructor, because some tests don't need a "valid" candidate to get particular aspects. */
 	public Candidate validate()
 	{
