@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.PickRequest;
@@ -92,7 +93,7 @@ public class ProductsToPickRowsService
 			return PickRequest.builder()
 					.shipmentScheduleId(row.getShipmentScheduleId())
 					.qtyToPick(row.getQtyEffective())
-					.pickFromHuId(row.getPickFromHUId())
+					.pickFrom(PickFrom.ofHuId(row.getPickFromHUId()))
 					.autoReview(!isPickingReviewRequired)
 					.build();
 		}
@@ -109,7 +110,7 @@ public class ProductsToPickRowsService
 			return PickRequest.builder()
 					.shipmentScheduleId(row.getShipmentScheduleId())
 					.qtyToPick(row.getQtyEffective())
-					.pickFromPickingOrderId(row.getPickFromPickingOrderId())
+					.pickFrom(PickFrom.ofPickingOrderId(row.getPickFromPickingOrderId()))
 					.issuesToPickingOrder(issues)
 					.autoReview(!isPickingReviewRequired)
 					.build();

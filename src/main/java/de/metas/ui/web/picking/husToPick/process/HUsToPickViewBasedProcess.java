@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.collect.ImmutableMultimap;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
@@ -34,7 +35,6 @@ import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /* package */abstract class HUsToPickViewBasedProcess extends ViewBasedProcessTemplate
@@ -265,7 +265,7 @@ import lombok.NonNull;
 
 		pickingCandidateService.pickHU(PickRequest.builder()
 				.shipmentScheduleId(shipmentScheduleId)
-				.pickFromHuId(huId)
+				.pickFrom(PickFrom.ofHuId(huId))
 				.pickingSlotId(pickingSlotId)
 				.build());
 	}

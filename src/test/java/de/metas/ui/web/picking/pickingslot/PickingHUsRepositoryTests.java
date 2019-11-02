@@ -16,6 +16,7 @@ import com.google.common.collect.ListMultimap;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
@@ -145,7 +146,7 @@ public class PickingHUsRepositoryTests
 				.qtyPicked(Quantity.zero(uom))
 				.shipmentScheduleId(M_SHIPMENT_SCHEDULE_ID)
 				.pickingSlotId(pickingSlotId)
-				.pickFromHuId(huId)
+				.pickFrom(PickFrom.ofHuId(huId))
 				.packedToHuId(PickingCandidateStatus.Draft.equals(processingStatus) ? null : huId)
 				.build());
 
