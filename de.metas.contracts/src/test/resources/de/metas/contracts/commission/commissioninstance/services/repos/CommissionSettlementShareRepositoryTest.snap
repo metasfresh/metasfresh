@@ -1,5 +1,5 @@
 de.metas.contracts.commission.commissioninstance.services.repos.CommissionSettlementShareRepositoryTest.getByInvoiceCandidateId=[ {
-  "salesCommissionShareId" : 100006,
+  "salesCommissionShareId" : 100012,
   "facts" : [ {
     "settlementInvoiceCandidateId" : 100001,
     "timestamp" : "2019-09-17T11:49:25Z",

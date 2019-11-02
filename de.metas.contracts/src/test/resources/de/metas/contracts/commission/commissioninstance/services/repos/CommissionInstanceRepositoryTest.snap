@@ -1,5 +1,5 @@
 de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstanceRepositoryTest.getForInvoiceCandidateId=[ {
-  "id" : 100005,
+  "id" : 100012,
   "currentTriggerData" : {
     "invoiceCandidateId" : 10,
     "invoiceCandidateWasDeleted" : false,
@@ -12,15 +12,15 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
     "@type" : "HierarchyConfig",
     "subtractLowerLevelCommissionFromBase" : true,
     "bpartnerId2HierarchyContracts" : {
-      "20" : {
+      "100004" : {
         "@type" : "HierarchyContract",
-        "id" : 100003,
+        "id" : 100005,
         "pointsPrecision" : 2,
         "commissionPercent" : 10
       },
-      "21" : {
+      "100006" : {
         "@type" : "HierarchyContract",
-        "id" : 100004,
+        "id" : 100007,
         "pointsPrecision" : 2,
         "commissionPercent" : 10
       }
@@ -31,7 +31,7 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
     "id" : null,
     "level" : 10,
     "beneficiary" : {
-      "bPartnerId" : 20
+      "bPartnerId" : 100004
     },
     "facts" : [ {
       "timestamp" : "2019-09-17T11:49:25Z",
@@ -57,7 +57,7 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
     "id" : null,
     "level" : 20,
     "beneficiary" : {
-      "bPartnerId" : 21
+      "bPartnerId" : 100006
     },
     "facts" : [ {
       "timestamp" : "2019-09-17T11:50:25Z",

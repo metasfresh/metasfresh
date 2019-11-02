@@ -1,5 +1,7 @@
 package de.metas.acct.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -43,6 +45,12 @@ import lombok.NonNull;
 
 public class FactAcctDAO implements IFactAcctDAO
 {
+	@Override
+	public I_Fact_Acct getById(final int factAcctId)
+	{
+		return load(factAcctId, I_Fact_Acct.class);
+	}
+
 	@Override
 	public int deleteForDocument(final IDocument document)
 	{
