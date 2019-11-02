@@ -32,6 +32,7 @@ import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
+import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
@@ -372,7 +373,7 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		final PickingCandidate pickingCandidate = PickingCandidate.builder()
 				.processingStatus(PickingCandidateStatus.Processed) // not relevant
 				.qtyPicked(Quantity.zero(uom)) // not relevant
-				.pickFromHuId(packedHUId)
+				.pickFrom(PickFrom.ofHuId(packedHUId))
 				.packedToHuId(packedHUId)
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()))
 				.build();

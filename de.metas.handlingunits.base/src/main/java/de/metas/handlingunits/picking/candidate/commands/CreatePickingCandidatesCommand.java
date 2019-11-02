@@ -2,8 +2,8 @@ package de.metas.handlingunits.picking.candidate.commands;
 
 import org.compiere.model.I_C_UOM;
 
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
@@ -46,7 +46,7 @@ public class CreatePickingCandidatesCommand
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	private final ShipmentScheduleId shipmentScheduleId;
-	private final HuId pickFromHuId;
+	private final PickFrom pickFrom;
 	private final PickingSlotId pickingSlotId;
 
 	@Builder
@@ -57,7 +57,7 @@ public class CreatePickingCandidatesCommand
 		this.pickingCandidateRepository = pickingCandidateRepository;
 
 		this.shipmentScheduleId = request.getShipmentScheduleId();
-		this.pickFromHuId = request.getPickFromHuId();
+		this.pickFrom = request.getPickFrom();
 		this.pickingSlotId = request.getPickingSlotId();
 	}
 
@@ -79,7 +79,7 @@ public class CreatePickingCandidatesCommand
 				.processingStatus(PickingCandidateStatus.Draft)
 				.qtyPicked(Quantity.zero(getShipmentScheduleUOM()))
 				.shipmentScheduleId(shipmentScheduleId)
-				.pickFromHuId(pickFromHuId)
+				.pickFrom(pickFrom)
 				.pickingSlotId(pickingSlotId)
 				.build();
 	}

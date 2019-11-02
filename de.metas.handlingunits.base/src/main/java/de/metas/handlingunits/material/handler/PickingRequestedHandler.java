@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -100,7 +101,7 @@ public class PickingRequestedHandler implements MaterialEventHandler<PickingRequ
 			// NOTE: we are not moving the HU to shipment schedule's locator.
 			pickingCandidateService.pickHU(PickRequest.builder()
 					.shipmentScheduleId(shipmentScheduleId)
-					.pickFromHuId(huIdToPick)
+					.pickFrom(PickFrom.ofHuId(huIdToPick))
 					.pickingSlotId(pickingSlotId)
 					.build());
 		}

@@ -34,6 +34,16 @@ import lombok.Value;
 @Builder
 public class PickFrom
 {
+	public static PickFrom ofHuId(@NonNull final HuId huId)
+	{
+		return builder().huId(huId).build();
+	}
+
+	public static PickFrom ofPickingOrderId(@NonNull final PPOrderId pickingOrderId)
+	{
+		return builder().pickingOrderId(pickingOrderId).build();
+	}
+
 	@Nullable
 	HuId huId;
 
@@ -42,8 +52,8 @@ public class PickFrom
 
 	@Builder
 	private PickFrom(
-			@NonNull HuId huId,
-			@NonNull PPOrderId pickingOrderId)
+			@Nullable HuId huId,
+			@Nullable PPOrderId pickingOrderId)
 	{
 		this.pickingOrderId = pickingOrderId;
 		this.huId = huId;

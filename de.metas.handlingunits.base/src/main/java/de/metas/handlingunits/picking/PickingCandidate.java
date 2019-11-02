@@ -301,4 +301,9 @@ public class PickingCandidate
 	{
 		return getPickFrom().isPickFromPickingOrder();
 	}
+
+	public HuId getPickFromHuId()
+	{
+		return getPickFrom().getHuId();
+	}
 }
