@@ -88,13 +88,7 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		final ImmutableList<InOutId> selectedShipments = context.getSelectedModels(I_M_InOut.class).stream()
-				.map(shipmentRecord -> InOutId.ofRepoId(shipmentRecord.getM_InOut_ID()))
-				.collect(ImmutableList.toImmutableList());
-
-		final boolean foundAtLeastOneUnregisteredShipment = shipmentLinesForCustomsInvoiceRepo.foundAtLeastOneUnregisteredShipment(selectedShipments);
-
-		return ProcessPreconditionsResolution.acceptIf(foundAtLeastOneUnregisteredShipment);
+		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
@@ -144,7 +138,7 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 		final CustomsInvoice customsInvoice = customsInvoiceService.generateCustomsInvoice(customsInvoiceRequest);
 
 		CustomsInvoiceUserNotificationsProducer.newInstance()
-				.notifyGenerated(customsInvoice);
+		.notifyGenerated(customsInvoice);
 
 		if (p_IsComplete)
 		{

@@ -36,6 +36,29 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
+	 * Set Additional Fee.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAdditionalFee (java.math.BigDecimal AdditionalFee);
+
+	/**
+	 * Get Additional Fee.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getAdditionalFee();
+
+    /** Column definition for AdditionalFee */
+    public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object> COLUMN_AdditionalFee = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object>(I_DHL_ShipmentOrder.class, "AdditionalFee", null);
+    /** Column name AdditionalFee */
+    public static final String COLUMNNAME_AdditionalFee = "AdditionalFee";
+
+	/**
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
@@ -128,6 +151,60 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
+	 * Set Zollrechnung.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Customs_Invoice_ID (int C_Customs_Invoice_ID);
+
+	/**
+	 * Get Zollrechnung.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Customs_Invoice_ID();
+
+	public org.compiere.model.I_C_Customs_Invoice getC_Customs_Invoice();
+
+	public void setC_Customs_Invoice(org.compiere.model.I_C_Customs_Invoice C_Customs_Invoice);
+
+    /** Column definition for C_Customs_Invoice_ID */
+    public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, org.compiere.model.I_C_Customs_Invoice> COLUMN_C_Customs_Invoice_ID = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, org.compiere.model.I_C_Customs_Invoice>(I_DHL_ShipmentOrder.class, "C_Customs_Invoice_ID", org.compiere.model.I_C_Customs_Invoice.class);
+    /** Column name C_Customs_Invoice_ID */
+    public static final String COLUMNNAME_C_Customs_Invoice_ID = "C_Customs_Invoice_ID";
+
+	/**
+	 * Set Customs Invoice Line.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Customs_Invoice_Line_ID (int C_Customs_Invoice_Line_ID);
+
+	/**
+	 * Get Customs Invoice Line.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Customs_Invoice_Line_ID();
+
+	public org.compiere.model.I_C_Customs_Invoice_Line getC_Customs_Invoice_Line();
+
+	public void setC_Customs_Invoice_Line(org.compiere.model.I_C_Customs_Invoice_Line C_Customs_Invoice_Line);
+
+    /** Column definition for C_Customs_Invoice_Line_ID */
+    public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, org.compiere.model.I_C_Customs_Invoice_Line> COLUMN_C_Customs_Invoice_Line_ID = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, org.compiere.model.I_C_Customs_Invoice_Line>(I_DHL_ShipmentOrder.class, "C_Customs_Invoice_Line_ID", org.compiere.model.I_C_Customs_Invoice_Line.class);
+    /** Column name C_Customs_Invoice_Line_ID */
+    public static final String COLUMNNAME_C_Customs_Invoice_Line_ID = "C_Customs_Invoice_Line_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -177,6 +254,75 @@ public interface I_DHL_ShipmentOrder
     public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object> COLUMN_CustomerReference = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object>(I_DHL_ShipmentOrder.class, "CustomerReference", null);
     /** Column name CustomerReference */
     public static final String COLUMNNAME_CustomerReference = "CustomerReference";
+
+	/**
+	 * Set Customs Amount.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setCustomsAmount (int CustomsAmount);
+
+	/**
+	 * Get Customs Amount.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCustomsAmount();
+
+    /** Column definition for CustomsAmount */
+    public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object> COLUMN_CustomsAmount = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object>(I_DHL_ShipmentOrder.class, "CustomsAmount", null);
+    /** Column name CustomsAmount */
+    public static final String COLUMNNAME_CustomsAmount = "CustomsAmount";
+
+	/**
+	 * Set Customs Tariff Number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCustomsTariffNumber (java.lang.String CustomsTariffNumber);
+
+	/**
+	 * Get Customs Tariff Number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCustomsTariffNumber();
+
+    /** Column definition for CustomsTariffNumber */
+    public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object> COLUMN_CustomsTariffNumber = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object>(I_DHL_ShipmentOrder.class, "CustomsTariffNumber", null);
+    /** Column name CustomsTariffNumber */
+    public static final String COLUMNNAME_CustomsTariffNumber = "CustomsTariffNumber";
+
+	/**
+	 * Set Customs Value.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCustomsValue (java.math.BigDecimal CustomsValue);
+
+	/**
+	 * Get Customs Value.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getCustomsValue();
+
+    /** Column definition for CustomsValue */
+    public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object> COLUMN_CustomsValue = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object>(I_DHL_ShipmentOrder.class, "CustomsValue", null);
+    /** Column name CustomsValue */
+    public static final String COLUMNNAME_CustomsValue = "CustomsValue";
 
 	/**
 	 * Set Höhe in cm.
@@ -850,6 +996,98 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_DHL_WidthInCm = "DHL_WidthInCm";
 
 	/**
+	 * Set Electronic Export Notification.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setElectronicExportNotification (java.lang.String ElectronicExportNotification);
+
+	/**
+	 * Get Electronic Export Notification.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getElectronicExportNotification();
+
+    /** Column definition for ElectronicExportNotification */
+    public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object> COLUMN_ElectronicExportNotification = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object>(I_DHL_ShipmentOrder.class, "ElectronicExportNotification", null);
+    /** Column name ElectronicExportNotification */
+    public static final String COLUMNNAME_ElectronicExportNotification = "ElectronicExportNotification";
+
+	/**
+	 * Set Export Type.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setExportType (java.lang.String ExportType);
+
+	/**
+	 * Get Export Type.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getExportType();
+
+    /** Column definition for ExportType */
+    public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object> COLUMN_ExportType = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object>(I_DHL_ShipmentOrder.class, "ExportType", null);
+    /** Column name ExportType */
+    public static final String COLUMNNAME_ExportType = "ExportType";
+
+	/**
+	 * Set Export Type Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setExportTypeDescription (java.lang.String ExportTypeDescription);
+
+	/**
+	 * Get Export Type Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getExportTypeDescription();
+
+    /** Column definition for ExportTypeDescription */
+    public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object> COLUMN_ExportTypeDescription = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object>(I_DHL_ShipmentOrder.class, "ExportTypeDescription", null);
+    /** Column name ExportTypeDescription */
+    public static final String COLUMNNAME_ExportTypeDescription = "ExportTypeDescription";
+
+	/**
+	 * Set International Delivery.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setInternationalDelivery (boolean InternationalDelivery);
+
+	/**
+	 * Get International Delivery.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isInternationalDelivery();
+
+    /** Column definition for InternationalDelivery */
+    public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object> COLUMN_InternationalDelivery = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object>(I_DHL_ShipmentOrder.class, "InternationalDelivery", null);
+    /** Column name InternationalDelivery */
+    public static final String COLUMNNAME_InternationalDelivery = "InternationalDelivery";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -925,6 +1163,52 @@ public interface I_DHL_ShipmentOrder
     public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object> COLUMN_M_ShipperTransportation_ID = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object>(I_DHL_ShipmentOrder.class, "M_ShipperTransportation_ID", null);
     /** Column name M_ShipperTransportation_ID */
     public static final String COLUMNNAME_M_ShipperTransportation_ID = "M_ShipperTransportation_ID";
+
+	/**
+	 * Set Net Weight (Kg).
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setNetWeightKg (java.math.BigDecimal NetWeightKg);
+
+	/**
+	 * Get Net Weight (Kg).
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getNetWeightKg();
+
+    /** Column definition for NetWeightKg */
+    public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object> COLUMN_NetWeightKg = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object>(I_DHL_ShipmentOrder.class, "NetWeightKg", null);
+    /** Column name NetWeightKg */
+    public static final String COLUMNNAME_NetWeightKg = "NetWeightKg";
+
+	/**
+	 * Set Package Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPackageDescription (java.lang.String PackageDescription);
+
+	/**
+	 * Get Package Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPackageDescription();
+
+    /** Column definition for PackageDescription */
+    public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object> COLUMN_PackageDescription = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object>(I_DHL_ShipmentOrder.class, "PackageDescription", null);
+    /** Column name PackageDescription */
+    public static final String COLUMNNAME_PackageDescription = "PackageDescription";
 
 	/**
 	 * Set Paket-ID.

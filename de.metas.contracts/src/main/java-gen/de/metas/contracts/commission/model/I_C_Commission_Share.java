@@ -80,7 +80,7 @@ public interface I_C_Commission_Share
     public static final String COLUMNNAME_C_BPartner_SalesRep_ID = "C_BPartner_SalesRep_ID";
 
 	/**
-	 * Set C_Commission_Instance.
+	 * Set Provisionsvorgang.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -89,7 +89,7 @@ public interface I_C_Commission_Share
 	public void setC_Commission_Instance_ID (int C_Commission_Instance_ID);
 
 	/**
-	 * Get C_Commission_Instance.
+	 * Get Provisionsvorgang.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -229,7 +229,7 @@ public interface I_C_Commission_Share
     public static final String COLUMNNAME_LevelHierarchy = "LevelHierarchy";
 
 	/**
-	 * Set Prognostizierte Punktzahl.
+	 * Set Beauftragte Punktzahl.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -238,7 +238,7 @@ public interface I_C_Commission_Share
 	public void setPointsSum_Forecasted (java.math.BigDecimal PointsSum_Forecasted);
 
 	/**
-	 * Get Prognostizierte Punktzahl.
+	 * Get Beauftragte Punktzahl.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -252,7 +252,7 @@ public interface I_C_Commission_Share
     public static final String COLUMNNAME_PointsSum_Forecasted = "PointsSum_Forecasted";
 
 	/**
-	 * Set Gelieferte Punktzahl.
+	 * Set Fakturierbare Punktzahl.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true
@@ -261,7 +261,7 @@ public interface I_C_Commission_Share
 	public void setPointsSum_Invoiceable (java.math.BigDecimal PointsSum_Invoiceable);
 
 	/**
-	 * Get Gelieferte Punktzahl.
+	 * Get Fakturierbare Punktzahl.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: true

@@ -13,15 +13,14 @@ package de.metas.invoicecandidate.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Properties;
@@ -40,14 +39,14 @@ import de.metas.util.Services;
 /* package */final class InvoiceCandidateEnqueueResult implements IInvoiceCandidateEnqueueResult
 {
 	private static final String MSG_INVOICE_CANDIDATE_ENQUEUE = "InvoiceCandidateEnqueue";
-	
+
 	private final int invoiceCandidateEnqueuedCount;
 	private final int workpackageEnqueuedCount;
 	private final int workpackageQueueSizeBeforeEnqueueing;
 	private final BigDecimal totalNetAmtToInvoiceChecksum;
 	private final ILock lock;
 
-	/*package*/ InvoiceCandidateEnqueueResult(final int invoiceCandidateEnqueuedCount,
+	/* package */ InvoiceCandidateEnqueueResult(final int invoiceCandidateEnqueuedCount,
 			final int enqueuedWorkpackageCount,
 			final int workpackageQueueSizeBeforeEnqueueing,
 			final BigDecimal totalNetAmtToInvoiceChecksum,
@@ -62,9 +61,9 @@ import de.metas.util.Services;
 		this.workpackageEnqueuedCount = enqueuedWorkpackageCount;
 
 		this.workpackageQueueSizeBeforeEnqueueing = workpackageQueueSizeBeforeEnqueueing;
-		
+
 		this.totalNetAmtToInvoiceChecksum = totalNetAmtToInvoiceChecksum;
-		
+
 		Check.assumeNotNull(lock, "lock not null");
 		this.lock = lock;
 	}

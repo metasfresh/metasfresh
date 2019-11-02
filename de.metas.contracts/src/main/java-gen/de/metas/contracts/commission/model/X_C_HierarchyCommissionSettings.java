@@ -1,7 +1,6 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.contracts.commission.model;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -15,7 +14,7 @@ public class X_C_HierarchyCommissionSettings extends org.compiere.model.PO imple
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1238116602L;
+	private static final long serialVersionUID = -1839506217L;
 
     /** Standard Constructor */
     public X_C_HierarchyCommissionSettings (Properties ctx, int C_HierarchyCommissionSettings_ID, String trxName)
@@ -26,7 +25,7 @@ public class X_C_HierarchyCommissionSettings extends org.compiere.model.PO imple
 			setC_HierarchyCommissionSettings_ID (0);
 			setIsSubtractLowerLevelCommissionFromBase (true); // Y
 			setName (null);
-			setPercentOfBasePoints (BigDecimal.ZERO);
+			setPointsPrecision (0); // 2
         } */
     }
 
@@ -125,22 +124,25 @@ public class X_C_HierarchyCommissionSettings extends org.compiere.model.PO imple
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
-	/** Set % der Basispunkte.
-		@param PercentOfBasePoints % der Basispunkte	  */
+	/** Set Nachkommapräzision.
+		@param PointsPrecision 
+		Anzahl der Nachkommastellen auf die beim Berechnen der Provisionspounkte gerundet wird.
+	  */
 	@Override
-	public void setPercentOfBasePoints (java.math.BigDecimal PercentOfBasePoints)
+	public void setPointsPrecision (int PointsPrecision)
 	{
-		set_Value (COLUMNNAME_PercentOfBasePoints, PercentOfBasePoints);
+		set_Value (COLUMNNAME_PointsPrecision, Integer.valueOf(PointsPrecision));
 	}
 
-	/** Get % der Basispunkte.
-		@return % der Basispunkte	  */
+	/** Get Nachkommapräzision.
+		@return Anzahl der Nachkommastellen auf die beim Berechnen der Provisionspounkte gerundet wird.
+	  */
 	@Override
-	public java.math.BigDecimal getPercentOfBasePoints () 
+	public int getPointsPrecision () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PercentOfBasePoints);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		Integer ii = (Integer)get_Value(COLUMNNAME_PointsPrecision);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 }

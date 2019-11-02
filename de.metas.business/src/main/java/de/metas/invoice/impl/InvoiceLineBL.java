@@ -364,7 +364,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		if (qtyEntered != null)
 		{
 			final I_C_Invoice invoice = line.getC_Invoice();
-			final int priceListId = invoice.getM_PriceList_ID();
+			final PriceListId priceListId = PriceListId.ofRepoId(invoice.getM_PriceList_ID());
 
 			//
 			// We need to get the quantity in the pricing's UOM (if different)
@@ -372,7 +372,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 			// this code has been borrowed from
 			// org.compiere.model.CalloutOrder.amt
-			final CurrencyPrecision netPrecision = Services.get(IPriceListBL.class).getAmountPrecision(PriceListId.ofRepoId(priceListId));
+			final CurrencyPrecision netPrecision = Services.get(IPriceListBL.class).getAmountPrecision(priceListId);
 
 			BigDecimal lineNetAmt = netPrecision.roundIfNeeded(convertedQty.multiply(line.getPriceActual()));
 			logger.debug("LineNetAmt={}", lineNetAmt);
