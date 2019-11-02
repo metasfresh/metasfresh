@@ -107,7 +107,7 @@ public class EventLogUserService
 	 *
 	 * @param handlerClass the class to be logged in the record.
 	 */
-	public EventLogEntryRequest.EventLogEntryRequestBuilder newLogEntry(@NonNull final Class<?> handlerClass)
+	private EventLogEntryRequest.EventLogEntryRequestBuilder newLogEntry(@NonNull final Class<?> handlerClass)
 	{
 		return EventLogEntryRequest.builder()
 				.eventHandlerClass(handlerClass);
