@@ -163,23 +163,38 @@ public class FlatrateDAO implements IFlatrateDAO
 			final int c_Charge_ID,
 			final @CacheTrx String trxName)
 	{
-		final IQueryBuilder<I_C_Flatrate_Matching> matchingQueryBuilder = queryBL.createQueryBuilder(I_C_Flatrate_Matching.class, ctx, trxName)
-				.addOnlyActiveRecordsFilter();
-		if (m_Product_Category_ID > 0)
+		final boolean filterByProductCategory = m_Product_Category_ID > 0;
+		final boolean filterByCharge = c_Charge_ID > 0;
+		final boolean filterByProduct = m_Product_ID > 0;
+
+		boolean filterByMatchingRecord = filterByProductCategory || filterByProduct || filterByCharge;
+		final IQueryBuilder<I_C_Flatrate_Conditions> fcQueryBuilder;
+		if (filterByMatchingRecord)
 		{
-			matchingQueryBuilder.addInArrayOrAllFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_Category_Matching_ID, null, m_Product_Category_ID);
+			final IQueryBuilder<I_C_Flatrate_Matching> matchingQueryBuilder = queryBL.createQueryBuilder(I_C_Flatrate_Matching.class, ctx, trxName)
+					.addOnlyActiveRecordsFilter();
+			if (filterByProductCategory)
+			{
+				matchingQueryBuilder.addInArrayOrAllFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_Category_Matching_ID, null, m_Product_Category_ID);
+			}
+			if (filterByProduct)
+			{
+				matchingQueryBuilder.addInArrayOrAllFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_ID, null, m_Product_ID);
+			}
+			if (filterByCharge)
+			{
+				matchingQueryBuilder.addInArrayOrAllFilter(I_C_Flatrate_Matching.COLUMNNAME_C_Charge_ID, null, c_Charge_ID);
+			}
+			fcQueryBuilder = matchingQueryBuilder
+					.andCollect(I_C_Flatrate_Conditions.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.class);
 		}
-		if (m_Product_ID > 0)
+		else
 		{
-			matchingQueryBuilder.addInArrayOrAllFilter(I_C_Flatrate_Matching.COLUMNNAME_M_Product_ID, null, m_Product_ID);
-		}
-		if (c_Charge_ID > 0)
-		{
-			matchingQueryBuilder.addInArrayOrAllFilter(I_C_Flatrate_Matching.COLUMNNAME_C_Charge_ID, null, c_Charge_ID);
+			fcQueryBuilder = queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class);
 		}
 
-		final IQuery<I_C_Flatrate_Conditions> fcQuery = matchingQueryBuilder
-				.andCollect(I_C_Flatrate_Conditions.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.class)
+		fcQueryBuilder
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_DocStatus, IDocument.STATUS_Completed)
 				.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
 				.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee)
@@ -191,8 +206,8 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, IDocument.STATUS_Completed)
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, dateOrdered)
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, dateOrdered)
-				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.COLUMN_C_Flatrate_Conditions_ID, fcQuery)
-				.orderBy().addColumn(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID).endOrderBy()
+				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID, I_C_Flatrate_Conditions.COLUMN_C_Flatrate_Conditions_ID, fcQueryBuilder.create())
+				.orderBy(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID)
 				.create()
 				.list();
 	}

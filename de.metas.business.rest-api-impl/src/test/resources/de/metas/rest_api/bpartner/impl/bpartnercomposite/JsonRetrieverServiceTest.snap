@@ -25,9 +25,7 @@ de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retri
         "entries": [ ]
       },
       "customer": true,
-      "externalId": {
-        "value": "fghij"
-      },
+      "externalId": "fghij",
       "groupId": 15,
       "id": 20,
       "name": "bpartnerRecord.name",
@@ -94,9 +92,7 @@ de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retri
           }
         },
         "email": "bpartnerRecord.email",
-        "externalId": {
-          "value": "abcde"
-        },
+        "externalId": "abcde",
         "firstName": "bpartnerRecord.firstName",
         "id": {
           "bpartnerId": 20,
@@ -138,9 +134,7 @@ de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retri
         "city": "locationRecord.city",
         "countryCode": "countryRecord.countryCode",
         "district": "postalRecord.district",
-        "externalId": {
-          "value": "bpartnerLocation.externalId"
-        },
+        "externalId": "bpartnerLocation.externalId",
         "gln": "bpartnerLocationRecord.gln",
         "id": {
           "repoId": 40,

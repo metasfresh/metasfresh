@@ -38,6 +38,7 @@ import lombok.NonNull;
  * #L%
  */
 
+/** Crates a hierarchy of BPartners by recursively following {@code C_BPartner.C_BPartner_SalesRep_ID} references. */
 @Service
 public class CommissionHierarchyFactory
 {
@@ -62,7 +63,7 @@ public class CommissionHierarchyFactory
 		}
 
 		final I_C_BPartner bPartnerRecord = loadOutOfTrx(bPartnerId, I_C_BPartner.class);
-		final BPartnerId parentBPartnerId = BPartnerId.ofRepoIdOrNull(bPartnerRecord.getBPartner_Parent_ID());
+		final BPartnerId parentBPartnerId = BPartnerId.ofRepoIdOrNull(bPartnerRecord.getC_BPartner_SalesRep_ID());
 
 		if (parentBPartnerId == null || seenBPartnerIds.contains(parentBPartnerId))
 		{

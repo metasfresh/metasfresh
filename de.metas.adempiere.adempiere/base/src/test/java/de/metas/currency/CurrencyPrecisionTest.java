@@ -1,10 +1,12 @@
 package de.metas.currency;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -30,47 +32,70 @@ import org.junit.Test;
 
 public class CurrencyPrecisionTest
 {
-	@Test
-	public void test_ofInt_cached()
+	@Nested
+	public class ofInt
 	{
-		for (int i = 0; i <= 12; i++)
+		@Test
+		public void cached()
 		{
-			final CurrencyPrecision precision = CurrencyPrecision.ofInt(i);
-			assertThat(precision.toInt()).isEqualTo(i);
+			for (int i = 0; i <= 12; i++)
+			{
+				final CurrencyPrecision precision = CurrencyPrecision.ofInt(i);
+				assertThat(precision.toInt()).isEqualTo(i);
 
-			// make sure is cached
-			final CurrencyPrecision precision2 = CurrencyPrecision.ofInt(i);
-			assertThat(precision2).isSameAs(precision);
+				// make sure is cached
+				final CurrencyPrecision precision2 = CurrencyPrecision.ofInt(i);
+				assertThat(precision2).isSameAs(precision);
+			}
+		}
+
+		@Test
+		public void notCached()
+		{
+			for (int i = 13; i <= 20; i++)
+			{
+				final CurrencyPrecision precision = CurrencyPrecision.ofInt(i);
+				assertThat(precision.toInt()).isEqualTo(i);
+
+				// make sure is NOT cached
+				final CurrencyPrecision precision2 = CurrencyPrecision.ofInt(i);
+				assertThat(precision2).isNotSameAs(precision);
+			}
+		}
+
+		@Test
+		public void negativeValue()
+		{
+			assertThatThrownBy(() -> CurrencyPrecision.ofInt(-1))
+					.isInstanceOf(RuntimeException.class);
+		}
+	}
+
+	@Nested
+	public class roundIfNeeded
+	{
+		@Test
+		public void rounding_not_needed()
+		{
+			final BigDecimal amt1_1 = new BigDecimal("1.1");
+			assertThat(CurrencyPrecision.ofInt(2).roundIfNeeded(amt1_1)).isSameAs(amt1_1);
+		}
+
+		@Test
+		public void rounding_is_needed()
+		{
+			final BigDecimal amt1_456 = new BigDecimal("1.456");
+			assertThat(CurrencyPrecision.ofInt(2).roundIfNeeded(amt1_456)).isEqualTo(new BigDecimal("1.46"));
 		}
 	}
 
 	@Test
-	public void test_ofInt_notCached()
+	public void test_min()
 	{
-		for (int i = 13; i <= 20; i++)
-		{
-			final CurrencyPrecision precision = CurrencyPrecision.ofInt(i);
-			assertThat(precision.toInt()).isEqualTo(i);
+		final CurrencyPrecision precision_1 = CurrencyPrecision.ofInt(1);
+		final CurrencyPrecision precision_2 = CurrencyPrecision.ofInt(2);
 
-			// make sure is NOT cached
-			final CurrencyPrecision precision2 = CurrencyPrecision.ofInt(i);
-			assertThat(precision2).isNotSameAs(precision);
-		}
-	}
-
-	@Test(expected = RuntimeException.class)
-	public void test_ofInt_negativeValue()
-	{
-		CurrencyPrecision.ofInt(-1);
-	}
-
-	@Test
-	public void test_roundIfNeeded()
-	{
-		final BigDecimal amt1_1 = new BigDecimal("1.1");
-		assertThat(CurrencyPrecision.ofInt(2).roundIfNeeded(amt1_1)).isSameAs(amt1_1);
-
-		final BigDecimal amt1_456 = new BigDecimal("1.456");
-		assertThat(CurrencyPrecision.ofInt(2).roundIfNeeded(amt1_456)).isEqualTo(new BigDecimal("1.46"));
+		assertThat(precision_1.min(precision_2)).isSameAs(precision_1);
+		assertThat(precision_2.min(precision_1)).isSameAs(precision_1);
 	}
 }

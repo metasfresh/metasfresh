@@ -76,6 +76,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -121,6 +122,8 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
+import de.metas.util.rest.ExternalHeaderAndLineId;
+import de.metas.util.rest.ExternalId;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -231,17 +234,17 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	/** Note: no need to save the record; just unset its processed flag to allow deletion if that makes sense. */
 	private void setProcessedToFalseIfIcNotNeeded(@NonNull final I_C_Invoice_Candidate icToDelete)
 	{
-		boolean manuallyFlaggedAsProcessed = icToDelete.isProcessed() && !icToDelete.isProcessed_Calc();
+		final boolean manuallyFlaggedAsProcessed = icToDelete.isProcessed() && !icToDelete.isProcessed_Calc();
 		if (!manuallyFlaggedAsProcessed)
 		{
-			return;			// nothing to do
+			return; // nothing to do
 		}
 
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-		boolean hasInvoiceLines = !invoiceCandDAO.retrieveIlForIc(icToDelete).isEmpty();
+		final boolean hasInvoiceLines = !invoiceCandDAO.retrieveIlForIc(icToDelete).isEmpty();
 		if (hasInvoiceLines)
 		{
-			return;			// nothing to do
+			return; // nothing to do
 		}
 
 		// icToDelete was manually set to "processed" to be out of the way; in this case, we can unprocess and delete it.
@@ -1121,9 +1124,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	{
 		updateColumnForSelection(
 				I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced,    // invoiceCandidateColumnName
-				dateInvoiced,    // value
+				dateInvoiced, // value
 				updateOnlyIfNull, // updateOnlyIfNull
-				selectionId    // selectionId
+				selectionId // selectionId
 		);
 	}
 
@@ -1134,9 +1137,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	{
 		updateColumnForSelection(
 				I_C_Invoice_Candidate.COLUMNNAME_DateAcct,    // invoiceCandidateColumnName
-				dateAcct,    // value
-				false,    // updateOnlyIfNull
-				selectionId    // selectionId
+				dateAcct, // value
+				false, // updateOnlyIfNull
+				selectionId // selectionId
 		);
 	}
 
@@ -1156,9 +1159,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	{
 		updateColumnForSelection(
 				I_C_Invoice_Candidate.COLUMNNAME_POReference,    // invoiceCandidateColumnName
-				poReference,    // value
-				false,    // updateOnlyIfNull
-				selectionId    // selectionId
+				poReference, // value
+				false, // updateOnlyIfNull
+				selectionId // selectionId
 		);
 	}
 
@@ -1433,8 +1436,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				final BigDecimal amtConverted = Services.get(ICurrencyBL.class).convert(
 						amt,
 						currencyId,    // CurFrom_ID,
-						targetCurrencyId,    // CurTo_ID,
-						dateConv,    // ConvDate,
+						targetCurrencyId, // CurTo_ID,
+						dateConv, // ConvDate,
 						conversionTypeId,
 						ClientId.ofRepoId(adClientId),
 						OrgId.ofRepoId(adOrgId));
@@ -1639,5 +1642,42 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false);
 
 		invalidateCandsFor(freightCostCandQueryBuilder);
+	}
+
+	@Override
+	public int createSelectionByHeaderAndLineIds(@NonNull final List<ExternalHeaderAndLineId> headerAndLineIds,
+			@NonNull final PInstanceId pInstanceID)
+	{
+		return createQueryByHeaderAndLineId(headerAndLineIds).createSelection(pInstanceID);
+	}
+
+	@VisibleForTesting
+	IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId(@NonNull final List<ExternalHeaderAndLineId> headerAndLineIds)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
+				.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, false) /* exploding ORs to unions doesn't work with IQuery.createSelection() */
+				.setJoinOr();
+
+		for (final ExternalHeaderAndLineId element : headerAndLineIds)
+		{
+			final String headerIdAsString = element.getExternalHeaderId().getValue();
+
+			final ImmutableList<String> lineIdsAsString = element
+					.getExternalLineIds()
+					.stream()
+					.map(ExternalId::getValue)
+					.collect(ImmutableList.toImmutableList());
+
+			final ICompositeQueryFilter<I_C_Invoice_Candidate> invoiceCandidatesFilter = queryBL
+					.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_ExternalHeaderId, headerIdAsString)
+					.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_ExternalLineId, lineIdsAsString);
+			queryBuilder.filter(invoiceCandidatesFilter);
+		}
+		return queryBuilder.create();
 	}
 }

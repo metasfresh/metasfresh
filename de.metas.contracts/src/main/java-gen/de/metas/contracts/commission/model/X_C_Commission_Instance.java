@@ -15,7 +15,7 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1406819115L;
+	private static final long serialVersionUID = -1479964924L;
 
     /** Standard Constructor */
     public X_C_Commission_Instance (Properties ctx, int C_Commission_Instance_ID, String trxName)
@@ -24,8 +24,8 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
       /** if (C_Commission_Instance_ID == 0)
         {
 			setC_Commission_Instance_ID (0);
-			setC_Invoice_Candidate_ID (0);
 			setMostRecentTriggerTimestamp (new Timestamp( System.currentTimeMillis() ));
+			setM_Product_Order_ID (0);
 			setPointsBase_Forecasted (BigDecimal.ZERO);
 			setPointsBase_Invoiceable (BigDecimal.ZERO);
 			setPointsBase_Invoiced (BigDecimal.ZERO);
@@ -72,8 +72,8 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 		return ii.intValue();
 	}
 
-	/** Set C_Commission_Instance.
-		@param C_Commission_Instance_ID C_Commission_Instance	  */
+	/** Set Provisionsvorgang.
+		@param C_Commission_Instance_ID Provisionsvorgang	  */
 	@Override
 	public void setC_Commission_Instance_ID (int C_Commission_Instance_ID)
 	{
@@ -83,8 +83,8 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 			set_ValueNoCheck (COLUMNNAME_C_Commission_Instance_ID, Integer.valueOf(C_Commission_Instance_ID));
 	}
 
-	/** Get C_Commission_Instance.
-		@return C_Commission_Instance	  */
+	/** Get Provisionsvorgang.
+		@return Provisionsvorgang	  */
 	@Override
 	public int getC_Commission_Instance_ID () 
 	{
@@ -169,16 +169,38 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_MostRecentTriggerTimestamp);
 	}
 
-	/** Set Prognostizierte Basispunktzahl.
-		@param PointsBase_Forecasted Prognostizierte Basispunktzahl	  */
+	/** Set Beauftragtes Produkt.
+		@param M_Product_Order_ID Beauftragtes Produkt	  */
+	@Override
+	public void setM_Product_Order_ID (int M_Product_Order_ID)
+	{
+		if (M_Product_Order_ID < 1) 
+			set_Value (COLUMNNAME_M_Product_Order_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Product_Order_ID, Integer.valueOf(M_Product_Order_ID));
+	}
+
+	/** Get Beauftragtes Produkt.
+		@return Beauftragtes Produkt	  */
+	@Override
+	public int getM_Product_Order_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_Order_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Beauftragte Basispunktzahl.
+		@param PointsBase_Forecasted Beauftragte Basispunktzahl	  */
 	@Override
 	public void setPointsBase_Forecasted (java.math.BigDecimal PointsBase_Forecasted)
 	{
 		set_Value (COLUMNNAME_PointsBase_Forecasted, PointsBase_Forecasted);
 	}
 
-	/** Get Prognostizierte Basispunktzahl.
-		@return Prognostizierte Basispunktzahl	  */
+	/** Get Beauftragte Basispunktzahl.
+		@return Beauftragte Basispunktzahl	  */
 	@Override
 	public java.math.BigDecimal getPointsBase_Forecasted () 
 	{
@@ -188,16 +210,16 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 		return bd;
 	}
 
-	/** Set Abzurechn. Basispunktzahl.
-		@param PointsBase_Invoiceable Abzurechn. Basispunktzahl	  */
+	/** Set Fakturierbare Basispunktzahl.
+		@param PointsBase_Invoiceable Fakturierbare Basispunktzahl	  */
 	@Override
 	public void setPointsBase_Invoiceable (java.math.BigDecimal PointsBase_Invoiceable)
 	{
 		set_Value (COLUMNNAME_PointsBase_Invoiceable, PointsBase_Invoiceable);
 	}
 
-	/** Get Abzurechn. Basispunktzahl.
-		@return Abzurechn. Basispunktzahl	  */
+	/** Get Fakturierbare Basispunktzahl.
+		@return Fakturierbare Basispunktzahl	  */
 	@Override
 	public java.math.BigDecimal getPointsBase_Invoiceable () 
 	{
@@ -207,16 +229,16 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 		return bd;
 	}
 
-	/** Set Abgerechn. Basispunktzahl.
-		@param PointsBase_Invoiced Abgerechn. Basispunktzahl	  */
+	/** Set Fakturierte Basispunktzahl.
+		@param PointsBase_Invoiced Fakturierte Basispunktzahl	  */
 	@Override
 	public void setPointsBase_Invoiced (java.math.BigDecimal PointsBase_Invoiced)
 	{
 		set_Value (COLUMNNAME_PointsBase_Invoiced, PointsBase_Invoiced);
 	}
 
-	/** Get Abgerechn. Basispunktzahl.
-		@return Abgerechn. Basispunktzahl	  */
+	/** Get Fakturierte Basispunktzahl.
+		@return Fakturierte Basispunktzahl	  */
 	@Override
 	public java.math.BigDecimal getPointsBase_Invoiced () 
 	{

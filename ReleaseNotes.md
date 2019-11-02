@@ -10,6 +10,25 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.126
+## Features
+* metasfresh-webui-frontend
+  * [#2431](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2431) Remove number field's arrows for changing value
+
+# metasfresh 5.125
+## Features
+* metasfresh
+  * [#5522](https://github.com/metasfresh/metasfresh/issues/5522) Commission calculation
+  * [#5566](https://github.com/metasfresh/metasfresh/issues/5566) Add integration with Google Maps
+  * [#5611](https://github.com/metasfresh/metasfresh/issues/5611) Add DHL Shipper and DHL integration
+  * [#5683](https://github.com/metasfresh/metasfresh/issues/5683) Empties Saldo report per Day
+
+## Fixes
+* metasfresh
+  * [#5556](https://github.com/metasfresh/metasfresh/issues/5556) Prevent Running Link Organisation Process if Organisation Field is empty
+  * [#5666](https://github.com/metasfresh/metasfresh/issues/5666) Freight Cost invoice candidates bug
+  * [#5687](https://github.com/metasfresh/metasfresh/issues/5687) Assumption failure: There is no active M_Attribute record with M_Attribute.Value=M_Material_Tracking_ID
+  * [#5701](https://github.com/metasfresh/metasfresh/issues/5701) Document no not updated when changing doctype
 
 # metasfresh 5.124
 ## Features
