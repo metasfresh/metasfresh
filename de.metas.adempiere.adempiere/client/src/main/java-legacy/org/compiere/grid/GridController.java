@@ -25,7 +25,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
@@ -60,7 +59,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.tree.IPOTreeSupportFactory;
 import org.adempiere.model.tree.spi.IPOTreeSupport;
 import org.adempiere.plaf.AdempiereTabbedPaneUI;
-import org.adempiere.process.event.IProcessEventSupport;
 import org.adempiere.ui.sideactions.swing.SideActionsGroupsListPanel;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.APanel;
@@ -103,7 +101,6 @@ import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Predicate;
 
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
@@ -194,7 +191,7 @@ public final class GridController extends CPanel
 	 */
 	private static final long serialVersionUID = 7308782933999556880L;
 	
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -324,23 +321,17 @@ public final class GridController extends CPanel
 	 * We use this man-in-the-middle listener because we want to change the {@link #_aPanel} on fly
 	 */
 	// metas: 02553
-	private final ActionListener editor2APanelDelegateListener = new ActionListener()
-	{
-		
-		@Override
-		public void actionPerformed(final ActionEvent e)
+	private final ActionListener editor2APanelDelegateListener = e -> {
+		if (_aPanel != null)
 		{
-			if (_aPanel != null)
-			{
-				_aPanel.actionPerformed(e);
-			}
+			_aPanel.actionPerformed(e);
 		}
 	};
 
 	/**
 	 * @return the underlying grid table (i.e. multi-row display)
 	 */
-	public final VTable getVTable()
+	public VTable getVTable()
 	{
 		return vTable;
 	}
@@ -426,7 +417,9 @@ public final class GridController extends CPanel
 			if (m_mTab.isLoadComplete())
 			{
 				if (m_mTab.needSave(true, false))
+				{
 					m_mTab.dataIgnore();
+				}
 			}
 	
 			//  Listeners
@@ -452,7 +445,9 @@ public final class GridController extends CPanel
 				vEditor.removeVetoableChangeListener(this);
 				final GridField mField = m_mTab.getField(columnName);
 				if (mField != null)
+				{
 					mField.removePropertyChangeListener(vEditor);
+				}
 				vEditor.dispose();
 			}
 		}
@@ -493,8 +488,6 @@ public final class GridController extends CPanel
 		
 		if(treePanel != null)
 		{
-			// metas: remove the tree panel from the event support listeners
-			Services.get(IProcessEventSupport.class).removeListener(treePanel);
 			treePanel = null;
 		}
 		
@@ -555,7 +548,7 @@ public final class GridController extends CPanel
 	 * 	@param mWindow parent Window Model
 	 *  @return true if initialized
 	 */
-	private final boolean initGrid (final GridTab mTab,
+	private boolean initGrid (final GridTab mTab,
 			final boolean onlyMultiRow, 
 			final int WindowNo,
 			final APanel aPanel,
@@ -626,7 +619,7 @@ public final class GridController extends CPanel
 		return true;
 	} // initGrid
 	
-	private final void initIfNeeded()
+	private void initIfNeeded()
 	{
 		if (initialized)
 		{
@@ -701,7 +694,7 @@ public final class GridController extends CPanel
 	 * <li>false if the component was already flagged as initialized
 	 * </ul>
 	 */
-	private static final boolean markComponentInitialized(final JComponent comp)
+	private static boolean markComponentInitialized(final JComponent comp)
 	{
 		if (comp.getClientProperty(PROPERTYNAME_ComponentInitialized) != null)
 		{
@@ -723,7 +716,7 @@ public final class GridController extends CPanel
 	 * 
 	 * If the VPanel was already initialized, this method does nothing, so it's safe to call it as many times as you want.
 	 */
-	private final void setupVPanel()
+	private void setupVPanel()
 	{
 		Check.assumeNotNull(vPanel, "vPanel not null");
 		
@@ -824,11 +817,6 @@ public final class GridController extends CPanel
 		}
 		treePanel.initTree(AD_Tree_ID);
 		
-		// metas: register the tree panel to be informed of records
-		// changed by processes.
-		Services.get(IProcessEventSupport.class).addListener(treePanel);
-		// metas end
-
 		treePanel.addPropertyChangeListener(VTreePanel.PROPERTY_ExecuteNode, this);
 	}
 	
@@ -1162,9 +1150,13 @@ public final class GridController extends CPanel
 	{
 		stopEditor(true);
 		if (m_singleRow)
+		{
 			switchMultiRow();
+		}
 		else
+		{
 			switchSingleRow();
+		}
 	}   //  switchRowPresentation
 
 	/**
@@ -1281,7 +1273,9 @@ public final class GridController extends CPanel
 	{
 		//  no rows
 		if (m_mTab.getRowCount() == 0)
+		{
 			return;
+		}
 
 	//	vTable.stopEditor(graphPanel);
 		int rowTable = vTable.getSelectedRow();
@@ -1411,11 +1405,15 @@ public final class GridController extends CPanel
 	{
 		//	Don't update if multi-row
 		if (!isSingleRow() || m_onlyMultiRow)
+		{
 			return;
+		}
 		
 		// Do nothing if tab is not open yet because there are no fields)
 		if (!m_mTab.isOpen())
+		{
 			return;
+		}
 		
 		//  Selective
 		if (columnIndex > 0)
@@ -1431,8 +1429,10 @@ public final class GridController extends CPanel
 				{
 					boolean mandatoryButMissing = false;
 					final boolean noValue = changedField.getValue() == null || changedField.getValue().toString().length() == 0;
-					if (noValue && changedField.isEditable(true) && changedField.isMandatory(true))    //  check context
+					if (noValue && changedField.isEditable(true) && changedField.isMandatory(true))
+					{
 						mandatoryButMissing = true;
+					}
 					ve.setBackground(mandatoryButMissing || changedField.isError());
 					// start: metas-2009_0021_AP1_CR52
 					// if (ve instanceof VLookup)
@@ -1465,7 +1465,9 @@ public final class GridController extends CPanel
 			if (mField.isDisplayed(true))		// check context
 			{
 				if (!editor.isVisible())
+				 {
 					editor.setVisible(true);		// visibility
+				}
 
 				//
 				// Enable runtime change of VFormat
@@ -1503,7 +1505,9 @@ public final class GridController extends CPanel
 			else
 			{
 				if (editor.isVisible())
+				{
 					editor.setVisible(false);
+				}
 			}
 			
 			// Update label
@@ -1527,7 +1531,9 @@ public final class GridController extends CPanel
 	public void rowChanged (boolean save, int keyID)
 	{
 		if (treePanel == null || keyID <= 0)
+		{
 			return;
+		}
 		
 		final IPOTreeSupport poTreeSupport = Services.get(IPOTreeSupportFactory.class).get(m_mTab.getTableName());
 		final MTreeNode info = poTreeSupport.getNodeInfo(m_mTab);
@@ -1561,14 +1567,14 @@ public final class GridController extends CPanel
 		int oldRow = m_mTab.getCurrentRow();
 		GridField lineField = m_mTab.getField("Line");	
 		
-		for (int i = 0; i < values.length; i++)
+		for (Integer value : values)
 		{
 			if (!m_mTab.dataNew(DataNewCopyMode.Copy))
 			{
 				throw new IllegalStateException("Could not clone tab");
 			}
 			
-			m_mTab.setValue(columnName, values[i]);
+			m_mTab.setValue(columnName, value);
 			
 			if (lineField != null)
 			{
@@ -1746,7 +1752,9 @@ public final class GridController extends CPanel
 			{
 				GridField mField = m_mTab.getField(col);
 				if (mField != null && m_mTab.getCalloutExecutor().hasCallouts(mField))
+				 {
 					m_mTab.processFieldChange(mField);     //  Dependencies & Callout
+				}
 			}
 			
 			if (newValues != null && newValues.length > 0)
@@ -1819,7 +1827,9 @@ public final class GridController extends CPanel
 	public void setMnemonics (boolean set)
 	{
 		if (vPanel != null)
+		{
 			vPanel.setMnemonics(set);
+		}
 	}	//	setMnemonics
 	
 	/**
@@ -1836,7 +1846,9 @@ public final class GridController extends CPanel
 		}
 		
 		if(log.isDebugEnabled())
+		{
 			log.debug("stopEditor: tab={}, TableEditing={}", m_mTab, vTable.isEditing());
+		}
 
 		//  MultiRow - remove editors
 		vTable.stopEditor(saveValue);
@@ -1884,7 +1896,7 @@ public final class GridController extends CPanel
 	{
 		_parentGC = gc;
 	}
-	public final GridController getGCParent()
+	public GridController getGCParent()
 	{
 		return _parentGC;
 	}
@@ -1921,7 +1933,7 @@ public final class GridController extends CPanel
 	}
 
 	/** @return tab's top search panel or <code>null</code> if the tab search is not allowed */
-	public final FindPanelContainer getFindPanel()
+	public FindPanelContainer getFindPanel()
 	{
 		return this.findPanel;
 	}
@@ -1965,7 +1977,9 @@ public final class GridController extends CPanel
 		if (awtColor != null)
 		{
 			if (awtColor == ColorNone)
+			{
 				awtColor = null;
+			}
 			log.trace("color={} (cached)(sql={})", awtColor, sql);
 			return awtColor;
 		}
@@ -2059,7 +2073,7 @@ public final class GridController extends CPanel
 	}
 
 	@Override
-	public final void requestFocus()
+	public void requestFocus()
 	{
 		// Try requesting focus on find panel if possible
 		final FindPanelContainer findPanel = getFindPanelIfFocusable();
@@ -2074,7 +2088,7 @@ public final class GridController extends CPanel
 	}
 	
 	@Override
-	public final boolean requestFocusInWindow()
+	public boolean requestFocusInWindow()
 	{
 		// Try requesting focus on find panel if possible
 		final FindPanelContainer findPanel = getFindPanelIfFocusable();
@@ -2088,7 +2102,7 @@ public final class GridController extends CPanel
 	}
 	
 	/** @return the find panel if exists and it's focusable; <code>null</code> otherwise */
-	private final FindPanelContainer getFindPanelIfFocusable()
+	private FindPanelContainer getFindPanelIfFocusable()
 	{
 		if (!m_singleRow)
 		{
@@ -2126,7 +2140,7 @@ public final class GridController extends CPanel
 	 * @param aPanel
 	 * @task 02553
 	 */
-	final void setAPanel(final APanel aPanel)
+	void setAPanel(final APanel aPanel)
 	{
 		// Do nothing if same APanel
 		if (this._aPanel == aPanel)
@@ -2152,20 +2166,15 @@ public final class GridController extends CPanel
 			// * vTable's ESCAPE-cancel which prevents toolbar's ESCAPE-Ignore => don't remove this because it's fine to have ESC working in JTable
 			// * vTable's F2-startEditing which prevents toolbar's F2-New
 			// * vTable's F8->focusHeader which prevents toolbar's F8-Multi (switch single row layout/grid layout)
-			aPanel.removeAncestorKeyBindingsOf(vTable, new Predicate<KeyStroke>()
-			{
-				@Override
-				public boolean apply(final KeyStroke key)
+			aPanel.removeAncestorKeyBindingsOf(vTable, key -> {
+				// Escape is used in JTable to cancel the current editing and is active only when needed,
+				// so it's safe to left it in place.
+				if (key.getKeyCode() == KeyEvent.VK_ESCAPE)
 				{
-					// Escape is used in JTable to cancel the current editing and is active only when needed,
-					// so it's safe to left it in place.
-					if (key.getKeyCode() == KeyEvent.VK_ESCAPE)
-					{
-						return false; // don't remove
-					}
-					
-					return true; // remove any other key binding
+					return false; // don't remove
 				}
+				
+				return true; // remove any other key binding
 			});
 		}
 	}
@@ -2193,7 +2202,7 @@ public final class GridController extends CPanel
 			return this;
 		}
 		
-		private final GridTab getGridTab()
+		private GridTab getGridTab()
 		{
 			Check.assumeNotNull(gridTab, "gridTab not null");
 			return gridTab;
@@ -2210,17 +2219,17 @@ public final class GridController extends CPanel
 			return this;
 		}
 		
-		private final boolean isIncludedTab()
+		private boolean isIncludedTab()
 		{
 			return includedTab;
 		}
 		
-		private final boolean isGridModeOnly()
+		private boolean isGridModeOnly()
 		{
 			return getGridTab().isGridModeOnly();
 		}
 		
-		private final GridWindow getGridWindow()
+		private GridWindow getGridWindow()
 		{
 			return getGridTab().getGridWindow();
 		}
@@ -2231,19 +2240,19 @@ public final class GridController extends CPanel
 			return this;
 		}
 		
-		private final APanel getAPanel()
+		private APanel getAPanel()
 		{
 			Check.assumeNotNull(aPanel, "aPanel not null");
 			return aPanel;
 		}
 		
-		private final MFColor getBackgroundColor()
+		private MFColor getBackgroundColor()
 		{
 			// use Window level background color
 			return getGridWindow().getColor();
 		}
 		
-		private final AppsAction getIgnoreAction()
+		private AppsAction getIgnoreAction()
 		{
 			return getAPanel().getIgnoreAction();
 		}
@@ -2253,7 +2262,7 @@ public final class GridController extends CPanel
 			return getGridTab().getTabNo();
 		}
 		
-		private final boolean isLazyInitialization()
+		private boolean isLazyInitialization()
 		{
 			// lazy if not first tab
 			return getTabIndex() != 0;
@@ -2265,7 +2274,7 @@ public final class GridController extends CPanel
 			return this;
 		}
 		
-		private final boolean isGoSingleRowLayout()
+		private boolean isGoSingleRowLayout()
 		{
 			return goSingleRowLayout;
 		}

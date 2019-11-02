@@ -141,9 +141,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public static final String SYSCONFIG_C_Invoice_PaymentRule = "de.metas.invoice.C_Invoice_PaymentRule";
 
 	@Override
-	public final I_C_Invoice creditInvoice(final I_C_Invoice invoice, final IInvoiceCreditContext creditCtx)
+	public final I_C_Invoice creditInvoice(@NonNull final I_C_Invoice invoice, final IInvoiceCreditContext creditCtx)
 	{
-		Check.assumeNotNull(invoice, "Param 'invoice' is not null");
 		Check.errorIf(isCreditMemo(invoice), "Param 'invoice'={} may not be a credit memo");
 		Check.errorIf(invoice.isPaid(), "Param 'invoice'={} may not yet be paid");
 

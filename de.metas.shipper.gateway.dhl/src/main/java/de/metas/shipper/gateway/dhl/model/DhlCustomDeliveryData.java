@@ -26,13 +26,14 @@ import com.google.common.collect.ImmutableList;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import lombok.Builder;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
-import java.util.Objects;
+import lombok.Singular;
+import lombok.Value;
 
 @Builder(toBuilder = true)
+@Value
 public class DhlCustomDeliveryData implements CustomDeliveryData
 {
+	@Singular
 	@NonNull
 	private final ImmutableList<DhlCustomDeliveryDataDetail> details;
 
@@ -49,41 +50,17 @@ public class DhlCustomDeliveryData implements CustomDeliveryData
 	}
 
 	@NonNull
-	public DhlSequenceNumber getSequenceNumberByPackageId(int packageId)
+	public DhlCustomDeliveryDataDetail getDetailByPackageId(final int packageId)
 	{
+		//noinspection OptionalGetWithoutIsPresent
 		return details.stream()
 				.filter(it -> it.getPackageId() == packageId)
 				.findFirst()
-				.get()
-				.getSequenceNumber();
+				.get();
 	}
 
 	@NonNull
 	public DhlCustomDeliveryDataDetail getDetailBySequenceNumber(@NonNull final DhlSequenceNumber sequenceNumber)
-	{
-		return getBySequenceNumber(sequenceNumber);
-	}
-
-	@Nullable
-	public byte[] getPdfLabelDataBySequenceNumber(@NonNull final DhlSequenceNumber sequenceNumber)
-	{
-		return getBySequenceNumber(sequenceNumber).getPdfLabelData();
-	}
-
-	@Nullable
-	public String getAwbBySequenceNumber(@NonNull final DhlSequenceNumber sequenceNumber)
-	{
-		return getBySequenceNumber(sequenceNumber).getAwb();
-	}
-
-	@Nullable
-	public String getTrackingUrlBySequenceNumber(@NonNull final DhlSequenceNumber sequenceNumber)
-	{
-		return getBySequenceNumber(sequenceNumber).getTrackingUrl();
-	}
-
-	@NonNull
-	private DhlCustomDeliveryDataDetail getBySequenceNumber(@NonNull final DhlSequenceNumber sequenceNumber)
 	{
 		//noinspection OptionalGetWithoutIsPresent
 		return details.stream()
@@ -91,5 +68,4 @@ public class DhlCustomDeliveryData implements CustomDeliveryData
 				.findFirst()
 				.get();
 	}
-
 }

@@ -67,6 +67,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -108,6 +109,7 @@ import de.metas.logging.LogManager;
 import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
@@ -801,6 +803,13 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
 
+		final boolean isCatchWeight = isCatchWeight(sched);
+		if (!isCatchWeight)
+		{
+			sched.setCatch_UOM_ID(-1);
+			return;
+		}
+
 		final Optional<UomId> catchUOMId = productBL.getCatchUOMId(ProductId.ofRepoId(sched.getM_Product_ID()));
 		final Integer catchUomRepoId = catchUOMId.map(UomId::getRepoId).orElse(0);
 
@@ -1223,6 +1232,26 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		{
 			record.setM_AttributeSetInstance_ID(from.getAsiId().getRepoId());
 		}
+	}
+
+	@Override
+	public boolean isCatchWeight(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
+	{
+		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+
+		final int orderLineId = shipmentScheduleRecord.getC_OrderLine_ID();
+
+		if (orderLineId < 0)
+		{
+			// returning true to keep the old behavior for shipment schedules that are not for sales orders.
+			return true;
+		}
+
+		final I_C_OrderLine orderLineRecord = orderDAO.getOrderLineById(orderLineId);
+
+		final String invoicableQtyBasedOn = orderLineRecord.getInvoicableQtyBasedOn();
+
+		return X_C_OrderLine.INVOICABLEQTYBASEDON_CatchWeight.equals(invoicableQtyBasedOn);
 	}
 
 }

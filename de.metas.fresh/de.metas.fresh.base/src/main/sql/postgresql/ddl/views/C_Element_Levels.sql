@@ -33,7 +33,7 @@ CREATE OR REPLACE VIEW C_Element_levels AS
 		END) AS Label
 		, acctBalance(COALESCE(ev5.C_ElementValue_ID, ev4.C_ElementValue_ID, ev3.C_ElementValue_ID, ev2.C_ElementValue_ID, ev1.C_ElementValue_ID), 1::numeric, 0::numeric) AS Multiplicator
 FROM C_ElementValue ev1
-JOIN C_Element e ON e.C_Element_ID = ev1.C_Element_ID
+JOIN C_Element e ON e.C_Element_ID = ev1.C_Element_ID AND e.isActive='Y'
 JOIN AD_TreeNode tn1 ON tn1.AD_Tree_ID = e.AD_Tree_ID AND tn1.Node_ID = ev1.C_ElementValue_ID AND (tn1.Parent_ID IS NULL OR tn1.Parent_ID = 0::numeric)
 LEFT JOIN AD_TreeNode tn2 ON tn2.AD_Tree_ID = e.AD_Tree_ID AND tn2.Parent_ID = tn1.Node_ID
 LEFT JOIN C_ElementValue ev2 ON ev2.C_ElementValue_ID = tn2.Node_ID
