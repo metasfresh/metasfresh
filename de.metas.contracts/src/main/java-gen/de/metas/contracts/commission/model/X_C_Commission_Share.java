@@ -15,7 +15,7 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -50619823L;
+	private static final long serialVersionUID = -604773283L;
 
     /** Standard Constructor */
     public X_C_Commission_Share (Properties ctx, int C_Commission_Share_ID, String trxName)
@@ -85,8 +85,8 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
 		set_ValueFromPO(COLUMNNAME_C_Commission_Instance_ID, de.metas.contracts.commission.model.I_C_Commission_Instance.class, C_Commission_Instance);
 	}
 
-	/** Set C_Commission_Instance.
-		@param C_Commission_Instance_ID C_Commission_Instance	  */
+	/** Set Provisionsvorgang.
+		@param C_Commission_Instance_ID Provisionsvorgang	  */
 	@Override
 	public void setC_Commission_Instance_ID (int C_Commission_Instance_ID)
 	{
@@ -96,8 +96,8 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
 			set_ValueNoCheck (COLUMNNAME_C_Commission_Instance_ID, Integer.valueOf(C_Commission_Instance_ID));
 	}
 
-	/** Get C_Commission_Instance.
-		@return C_Commission_Instance	  */
+	/** Get Provisionsvorgang.
+		@return Provisionsvorgang	  */
 	@Override
 	public int getC_Commission_Instance_ID () 
 	{
@@ -170,16 +170,16 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
 		return ii.intValue();
 	}
 
-	/** Set Prognostizierte Punktzahl.
-		@param PointsSum_Forecasted Prognostizierte Punktzahl	  */
+	/** Set Beauftragte Punktzahl.
+		@param PointsSum_Forecasted Beauftragte Punktzahl	  */
 	@Override
 	public void setPointsSum_Forecasted (java.math.BigDecimal PointsSum_Forecasted)
 	{
 		set_Value (COLUMNNAME_PointsSum_Forecasted, PointsSum_Forecasted);
 	}
 
-	/** Get Prognostizierte Punktzahl.
-		@return Prognostizierte Punktzahl	  */
+	/** Get Beauftragte Punktzahl.
+		@return Beauftragte Punktzahl	  */
 	@Override
 	public java.math.BigDecimal getPointsSum_Forecasted () 
 	{
@@ -189,16 +189,16 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
 		return bd;
 	}
 
-	/** Set Gelieferte Punktzahl.
-		@param PointsSum_Invoiceable Gelieferte Punktzahl	  */
+	/** Set Fakturierbare Punktzahl.
+		@param PointsSum_Invoiceable Fakturierbare Punktzahl	  */
 	@Override
 	public void setPointsSum_Invoiceable (java.math.BigDecimal PointsSum_Invoiceable)
 	{
 		set_ValueNoCheck (COLUMNNAME_PointsSum_Invoiceable, PointsSum_Invoiceable);
 	}
 
-	/** Get Gelieferte Punktzahl.
-		@return Gelieferte Punktzahl	  */
+	/** Get Fakturierbare Punktzahl.
+		@return Fakturierbare Punktzahl	  */
 	@Override
 	public java.math.BigDecimal getPointsSum_Invoiceable () 
 	{

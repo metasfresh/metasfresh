@@ -1,0 +1,18 @@
+update C_UOM SET AD_Client_ID=0 WHERE C_UOM_ID=1000003 /*TSTK (1000 Stück)*/ AND AD_Client_ID=1000000;
+
+-- 2019-10-31T13:48:14.577Z
+-- URL zum Konzept
+INSERT INTO C_UOM_Conversion (AD_Client_ID,AD_Org_ID,Created,CreatedBy,C_UOM_Conversion_ID,C_UOM_ID,C_UOM_To_ID,DivideRate,IsActive,IsCatchUOMForProduct,MultiplyRate,Updated,UpdatedBy) 
+SELECT 0,0,TO_TIMESTAMP('2019-10-31 14:48:14','YYYY-MM-DD HH24:MI:SS'),100,540014,100,1000003,1000.000000000000,'Y','N',0.001000000000,TO_TIMESTAMP('2019-10-31 14:48:14','YYYY-MM-DD HH24:MI:SS'),100
+WHERE NOT EXISTS (select 1 from C_UOM_Conversion WHERE C_UOM_ID=100 AND C_UOM_To_ID=1000003 AND M_Product_ID IS NULL)
+;
+
+-- since we are here, also add a conversion for a "meter" UOM
+-- 2019-10-31T13:48:45.451Z
+-- URL zum Konzept
+INSERT INTO C_UOM_Conversion (AD_Client_ID,AD_Org_ID,Created,CreatedBy,C_UOM_Conversion_ID,C_UOM_ID,C_UOM_To_ID,DivideRate,IsActive,IsCatchUOMForProduct,MultiplyRate,Updated,UpdatedBy) 
+SELECT 0,0,TO_TIMESTAMP('2019-10-31 14:48:45','YYYY-MM-DD HH24:MI:SS'),100,540015,540010,540028,1000.000000000000,'Y','N',0.001000000000,TO_TIMESTAMP('2019-10-31 14:48:45','YYYY-MM-DD HH24:MI:SS'),100
+WHERE NOT EXISTS (select 1 from C_UOM_Conversion WHERE C_UOM_ID=540010 AND C_UOM_To_ID=540028 AND M_Product_ID IS NULL)
+;
+
+

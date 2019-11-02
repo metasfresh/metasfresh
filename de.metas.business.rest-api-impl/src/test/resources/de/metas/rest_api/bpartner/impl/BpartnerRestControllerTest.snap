@@ -68,9 +68,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
       },
       "companyName": "bPartner.companyName",
       "customer": false,
-      "externalId": {
-        "value": "fghij_2"
-      },
+      "externalId": "fghij_2",
       "groupId": 15,
       "id": 100006,
       "language": {
@@ -86,8 +84,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
             "value": 4
           }
         },
-        "leftToRight": true,
         "decimalPoint": false,
+        "leftToRight": true,
         "baseLanguage": true
       },
       "name": "bPartner.name",
@@ -157,9 +155,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
           }
         },
         "email": "c1_email@email.net",
-        "externalId": {
-          "value": "c1_externalId"
-        },
+        "externalId": "c1_externalId",
         "id": {
           "bpartnerId": 100006,
           "userId": 100011
@@ -227,9 +223,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
           }
         },
         "email": "c2_email@email.net",
-        "externalId": {
-          "value": "c2_externalId"
-        },
+        "externalId": "c2_externalId",
         "id": {
           "bpartnerId": 100006,
           "userId": 100012
@@ -268,9 +262,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         },
         "city": "l1_city",
         "countryCode": "CH",
-        "externalId": {
-          "value": "l1_externalId"
-        },
+        "externalId": "l1_externalId",
         "gln": "l1_gln",
         "id": {
           "repoId": 100008,
@@ -326,9 +318,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         },
         "city": "l2_city",
         "countryCode": "DE",
-        "externalId": {
-          "value": "l2_externalId"
-        },
+        "externalId": "l2_externalId",
         "gln": "l2_gln",
         "id": {
           "repoId": 100010,
@@ -389,9 +379,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
         "entries": [ ]
       },
       "customer": true,
-      "externalId": {
-        "value": "fghij"
-      },
+      "externalId": "fghij",
       "groupId": 15,
       "id": 20,
       "name": "bpartnerRecord.name",
@@ -458,9 +446,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
           }
         },
         "email": "bpartnerRecord.email",
-        "externalId": {
-          "value": "abcde"
-        },
+        "externalId": "abcde",
         "firstName": "bpartnerRecord.firstName",
         "id": {
           "bpartnerId": 20,
@@ -530,9 +516,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
           }
         },
         "email": "newContact-_email@email.net",
-        "externalId": {
-          "value": "newContact-_externalId"
-        },
+        "externalId": "newContact-_externalId",
         "id": {
           "bpartnerId": 20,
           "userId": 100004
@@ -572,9 +556,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
         "city": "locationRecord.city",
         "countryCode": "countryRecord.countryCode",
         "district": "postalRecord.district",
-        "externalId": {
-          "value": "bpartnerLocation.externalId"
-        },
+        "externalId": "bpartnerLocation.externalId",
         "gln": "bpartnerLocationRecord.gln",
         "id": {
           "repoId": 40,
@@ -635,9 +617,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
         "entries": [ ]
       },
       "customer": true,
-      "externalId": {
-        "value": "fghij"
-      },
+      "externalId": "fghij",
       "groupId": 15,
       "id": 20,
       "name": "bpartnerRecord.name",
@@ -704,9 +684,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
           }
         },
         "email": "bpartnerRecord.email",
-        "externalId": {
-          "value": "abcde"
-        },
+        "externalId": "abcde",
         "firstName": "bpartnerRecord.firstName",
         "id": {
           "bpartnerId": 20,
@@ -748,9 +726,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
         "city": "locationRecord.city",
         "countryCode": "countryRecord.countryCode",
         "district": "postalRecord.district",
-        "externalId": {
-          "value": "bpartnerLocation.externalId"
-        },
+        "externalId": "bpartnerLocation.externalId",
         "gln": "bpartnerLocationRecord.gln",
         "id": {
           "repoId": 40,
@@ -806,9 +782,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
         },
         "city": "newLocation-_city",
         "countryCode": "DE",
-        "externalId": {
-          "value": "newLocation-_externalId"
-        },
+        "externalId": "newLocation-_externalId",
         "gln": "newLocation-_gln",
         "id": {
           "repoId": 100006,
