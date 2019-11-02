@@ -7,6 +7,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.model.I_AD_Tab_Callout;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Column;
@@ -78,7 +79,7 @@ public interface IADWindowDAO extends ISingletonService
 	Set<AdTabId> retrieveTabIdsWithMissingADElements();
 
 	Set<AdWindowId> retrieveWindowIdsWithMissingADElements();
-	
+
 	I_AD_Window getById(AdWindowId adWindowId);
 
 	I_AD_Window getWindowByIdInTrx(AdWindowId windowId);
@@ -98,4 +99,6 @@ public interface IADWindowDAO extends ISingletonService
 	 * @return never return {@code null}
 	 */
 	AdWindowId getAdWindowId(String tableName, SOTrx soTrx, AdWindowId defaultValue);
+
+	List<I_AD_Tab_Callout> retrieveTabCallouts(AdTabId tabId);
 }

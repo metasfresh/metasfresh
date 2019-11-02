@@ -206,7 +206,7 @@ public class RollupWorkflow extends JavaProcess
 	{
 		final IQueryBuilder<I_M_Product> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Product.class)
-				.addEqualsFilter(I_M_Product.COLUMN_AD_Client_ID, getAD_Client_ID())
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, getAD_Client_ID())
 				.addEqualsFilter(I_M_Product.COLUMN_ProductType, X_M_Product.PRODUCTTYPE_Item)
 				.addEqualsFilter(I_M_Product.COLUMN_IsBOM, true);
 

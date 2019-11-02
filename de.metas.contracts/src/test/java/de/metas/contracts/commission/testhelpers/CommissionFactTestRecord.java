@@ -8,6 +8,8 @@ import java.time.Instant;
 
 import javax.annotation.Nullable;
 
+import org.compiere.util.TimeUtil;
+
 import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import lombok.Builder;
@@ -56,7 +58,7 @@ public class CommissionFactTestRecord
 	{
 		final I_C_Commission_Fact factRecord = newInstance(I_C_Commission_Fact.class);
 		factRecord.setC_Commission_Share_ID(C_Commission_Share_ID);
-		factRecord.setCommissionFactTimestamp(Instant.ofEpochMilli(timestamp).toString());
+		factRecord.setCommissionFactTimestamp(TimeUtil.serializeInstant(Instant.ofEpochMilli(timestamp)));
 		factRecord.setCommission_Fact_State(state);
 		factRecord.setCommissionPoints(new BigDecimal(commissionPoints));
 		factRecord.setC_Invoice_Candidate_Commission_ID(InvoiceCandidateId.toRepoId(C_Invoice_Candidate_Commission_ID));

@@ -23,9 +23,9 @@
 package de.metas.shipper.gateway.dhl.model;
 
 import lombok.NonNull;
+import lombok.Value;
 
-import java.util.Objects;
-
+@Value
 public class DhlSequenceNumber
 {
 	private final String sequenceNumber;
@@ -35,30 +35,8 @@ public class DhlSequenceNumber
 		this.sequenceNumber = sequenceNumber;
 	}
 
-	public String getSequenceNumber()
-	{
-		return sequenceNumber;
-	}
-
-	@Override
-	public boolean equals(final Object o)
-	{
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
-			return false;
-		final DhlSequenceNumber that = (DhlSequenceNumber)o;
-		return Objects.equals(sequenceNumber, that.sequenceNumber);
-	}
-
-	@Override
-	public int hashCode()
-	{
-		return Objects.hash(sequenceNumber);
-	}
-
 	@NonNull
-	public static DhlSequenceNumber of(int number)
+	public static DhlSequenceNumber of(final int number)
 	{
 		return new DhlSequenceNumber(Integer.toString(number));
 	}

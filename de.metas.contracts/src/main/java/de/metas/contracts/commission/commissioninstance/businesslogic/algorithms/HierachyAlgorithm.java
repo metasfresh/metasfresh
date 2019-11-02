@@ -88,17 +88,14 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 		{
 			final Beneficiary beneficiary = node.getBeneficiary();
 			final HierarchyContract contract = HierarchyContract.cast(config.getContractFor(beneficiary));
-			if (contract == null)
+			if (contract != null)
 			{
-				// current hierarchy member doesn't have a contract; skip it.
-				continue;
-
+				final SalesCommissionShare share = SalesCommissionShare.builder()
+						.beneficiary(beneficiary)
+						.level(currentLevel)
+						.build();
+				shares.add(share);
 			}
-			final SalesCommissionShare share = SalesCommissionShare.builder()
-					.beneficiary(beneficiary)
-					.level(currentLevel)
-					.build();
-			shares.add(share);
 
 			currentLevel = currentLevel.incByOne();
 		}
@@ -162,23 +159,22 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 	}
 
 	private Optional<SalesCommissionFact> createFact(
-			final Instant timestamp,
-			final HierarchyContract contract,
-			final SalesCommissionState state,
-			final CommissionPoints base)
+			@NonNull final Instant timestamp,
+			@NonNull final HierarchyContract contract,
+			@NonNull final SalesCommissionState state,
+			@NonNull final CommissionPoints base)
 	{
-		final CommissionPoints percentage = base.computePercentageOf(
+		final CommissionPoints points = base.computePercentageOf(
 				contract.getCommissionPercent(),
 				contract.getPointsPrecision());
-
-		if (percentage.isZero())
+		if (points.isZero())
 		{
-			return Optional.empty();
+			return Optional.empty(); // a zero-points fact would not change anything, so don't bother creating it
 		}
 
 		final SalesCommissionFact fact = SalesCommissionFact.builder()
 				.state(state)
-				.points(percentage)
+				.points(points)
 				.timestamp(timestamp)
 				.build();
 		return Optional.of(fact);
