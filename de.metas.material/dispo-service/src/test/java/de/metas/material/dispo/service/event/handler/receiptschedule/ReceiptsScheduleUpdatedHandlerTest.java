@@ -11,9 +11,11 @@ import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.google.common.collect.ImmutableList;
 
@@ -51,7 +53,7 @@ import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@ExtendWith(AdempiereTestWatcher.class)
 public class ReceiptsScheduleUpdatedHandlerTest
 {
 	private ReceiptsScheduleCreatedHandler receiptsScheduleCreatedHandler;
