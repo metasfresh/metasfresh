@@ -1,8 +1,10 @@
 
 -- 2019-09-19T19:03:33.502Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO M_Product (AD_Client_ID,AD_Org_ID,Created,CreatedBy,C_UOM_ID,Discontinued,Fresh_CropPlanning,Fresh_WashSampleRequired,GuaranteeDaysMin,IsActive,IsBOM,IsCategoryProduct,IsColdChain,IsDiverse,IsDropShip,IsExcludeAutoDelivery,IsInvoicePrintDetails,IsNarcotic,IsPharmaProduct,IsPickListPrintDetails,IsPrescription,IsPurchased,IsQuotationGroupping,IsSelfService,IsSold,IsStocked,IsSummary,IsTFG,IsVerified,IsWebStoreFeatured,LowLevel,M_Product_Category_ID,M_Product_ID,Name,Processing,ProductType,SalesRep_ID,ShelfDepth,ShelfHeight,ShelfWidth,UnitsPerPack,UnitsPerPallet,Updated,UpdatedBy,Value,Volume,Weight) VALUES 
-(1000000,0,TO_TIMESTAMP('2019-09-19 21:03:33','YYYY-MM-DD HH24:MI:SS'),100,100,'N','N','N',0,'Y','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','N',0,2001603,540420,'Provision','N','S',100,0,0,0,0,0,TO_TIMESTAMP('2019-09-19 21:03:33','YYYY-MM-DD HH24:MI:SS'),100,'COMMISSION',0,0)
+INSERT INTO M_Product (AD_Client_ID,AD_Org_ID,Created,CreatedBy,C_UOM_ID,Discontinued,Fresh_CropPlanning,Fresh_WashSampleRequired,GuaranteeDaysMin,IsActive,IsBOM,IsCategoryProduct,IsColdChain,IsDiverse,IsDropShip,IsExcludeAutoDelivery,IsInvoicePrintDetails,IsNarcotic,IsPharmaProduct,IsPickListPrintDetails,IsPrescription,IsPurchased,IsQuotationGroupping,IsSelfService,IsSold,IsStocked,IsSummary,IsTFG,IsVerified,IsWebStoreFeatured,
+    LowLevel,M_Product_Category_ID,M_Product_ID,Name,Processing,ProductType,SalesRep_ID,ShelfDepth,ShelfHeight,ShelfWidth,UnitsPerPack,UnitsPerPallet,Updated,UpdatedBy,Value,Volume,Weight) VALUES 
+(1000000,0,TO_TIMESTAMP('2019-09-19 21:03:33','YYYY-MM-DD HH24:MI:SS'),100,100,'N','N','N',0,'Y','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','N',
+    0,540037,540420,'Provision','N','S',100,0,0,0,0,0,TO_TIMESTAMP('2019-09-19 21:03:33','YYYY-MM-DD HH24:MI:SS'),100,'COMMISSION',0,0)
 ;
 
 -- 2019-09-19T19:03:33.507Z

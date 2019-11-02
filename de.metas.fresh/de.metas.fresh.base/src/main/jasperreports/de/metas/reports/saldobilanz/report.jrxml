@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-10-05T16:46:29 -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/saldobilanz/report" uuid="8895fecc-00d6-4320-8b0a-ab970c9a09bd">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<parameter name="Date" class="java.util.Date">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
@@ -66,28 +65,28 @@ $P{ExcludeYearEndBooking}
 				<textField>
 					<reportElement x="37" y="0" width="50" height="16" uuid="8f5d025b-00cf-4521-8a58-2afb00cc3aa6"/>
 					<textElement>
-						<font size="12" fontName="Arial" isBold="true" />
+						<font fontName="Arial" size="12" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{parentvalue1}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="87" y="0" width="259" height="16" uuid="cb9623ff-e112-488f-b551-0db839cc73e5"/>
 					<textElement>
-						<font size="12" fontName="Arial" isBold="true" />
+						<font fontName="Arial" size="12" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{parentname1}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00">
 					<reportElement x="353" y="0" width="102" height="16" uuid="4f6c34ca-cfa5-45fe-91f5-9f5b226917bf"/>
 					<textElement textAlignment="Right">
-						<font size="12" fontName="Arial" isBold="true" />
+						<font fontName="Arial" size="12" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{l1_sameyearsum}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00">
 					<reportElement x="455" y="0" width="102" height="16" uuid="f48222ff-5f4f-4a64-8aa8-c80da92700b5"/>
 					<textElement textAlignment="Right">
-						<font size="12" fontName="Arial" isBold="true" />
+						<font fontName="Arial" size="12" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{l1_lastyearsum}]]></textFieldExpression>
 				</textField>
@@ -107,28 +106,28 @@ $P{ExcludeYearEndBooking}
 				<textField isBlankWhenNull="true">
 					<reportElement x="37" y="0" width="50" height="14" uuid="3ac1fd90-d716-42ff-9ad2-edc4a855e32f"/>
 					<textElement>
-						<font size="11" fontName="Arial" isBold="true" />
+						<font fontName="Arial" size="11" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{parentvalue2}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
 					<reportElement x="87" y="0" width="259" height="14" uuid="efc4b743-3a80-46ca-8d4c-5550de68ce35"/>
 					<textElement>
-						<font size="11" fontName="Arial" isBold="true" />
+						<font fontName="Arial" size="11" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{parentname2}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement x="353" y="0" width="102" height="14" uuid="53e0dacb-5311-41ad-a566-3fa80b958378"/>
 					<textElement textAlignment="Right">
-						<font size="11" fontName="Arial" isBold="true" />
+						<font fontName="Arial" size="11" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{l2_sameyearsum}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement x="455" y="0" width="102" height="14" uuid="5b04e4b2-4945-4f65-8cd2-96e6a4e789ad"/>
 					<textElement textAlignment="Right">
-						<font size="11" fontName="Arial" isBold="true" />
+						<font fontName="Arial" size="11" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{l2_lastyearsum}]]></textFieldExpression>
 				</textField>
@@ -148,28 +147,28 @@ $P{ExcludeYearEndBooking}
 				<textField isBlankWhenNull="true">
 					<reportElement x="87" y="0" width="259" height="12" uuid="cee6221f-e3ac-442c-8190-f113b45137c0"/>
 					<textElement>
-						<font size="9" fontName="Arial" isBold="true" />
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{parentname3}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
 					<reportElement x="37" y="0" width="50" height="12" uuid="e065dc22-80c6-45bb-b640-8b1c0329c8f3"/>
 					<textElement>
-						<font size="9" fontName="Arial" isBold="true" />
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{parentvalue3}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement x="353" y="0" width="102" height="12" uuid="f79b0d71-78b6-480e-8f9f-e4b521f0412f"/>
 					<textElement textAlignment="Right">
-						<font size="9" fontName="Arial" isBold="true" />
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{l3_sameyearsum}]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement x="455" y="0" width="102" height="12" uuid="5c4ab886-4c86-4a07-ab7d-c16d1cfe7f29"/>
 					<textElement textAlignment="Right">
-						<font size="9" fontName="Arial" isBold="true" />
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{l3_lastyearsum}]]></textFieldExpression>
 				</textField>
@@ -189,35 +188,35 @@ $P{ExcludeYearEndBooking}
 			<textField>
 				<reportElement x="206" y="10" width="73" height="13" uuid="5ae2e5f1-5733-48e3-802c-73bb5f5a6893"/>
 				<textElement markup="none">
-					<font size="10" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Balance}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="37" y="47" width="50" height="12" uuid="8982ea2c-0e75-4070-beb9-713cc6eedb97"/>
 				<textElement markup="none">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Number}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="87" y="47" width="259" height="12" uuid="21c2a674-61a4-4668-b689-b0264221a282"/>
 				<textElement markup="none">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Name}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="353" y="47" width="102" height="12" uuid="dfad107d-84ff-4ee3-b0d4-477487fad9c2"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{SameYearSum}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="454" y="47" width="102" height="12" uuid="c0c76cb0-674a-4a38-a820-3eecd76b2a74"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{LastYearSum}]]></textFieldExpression>
 			</textField>
@@ -231,7 +230,7 @@ $P{ExcludeYearEndBooking}
 			<textField pattern="dd.MM.yyyy">
 				<reportElement x="279" y="10" width="90" height="13" uuid="68f3a29c-8833-4395-b12e-542c09097be4"/>
 				<textElement>
-					<font fontName="Arial" isBold="true" />
+					<font fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{Date}]]></textFieldExpression>
 			</textField>
@@ -293,9 +292,6 @@ $P{ExcludeYearEndBooking}
 			</textField>
 		</band>
 	</detail>
-	<columnFooter>
-		<band height="45" splitType="Stretch"/>
-	</columnFooter>
 	<pageFooter>
 		<band height="54" splitType="Stretch">
 			<textField pattern="" isBlankWhenNull="false">
