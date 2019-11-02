@@ -195,4 +195,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	ShipmentAllocationBestBeforePolicy getBestBeforePolicy(ShipmentScheduleId id);
 
 	void applyUserChanges(ShipmentScheduleUserChangeRequestsList userChanges);
+
+	boolean isCatchWeight(I_M_ShipmentSchedule shipmentScheduleRecord);
 }

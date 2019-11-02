@@ -20,7 +20,7 @@ import com.google.common.collect.Multimaps;
 
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstanceId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionState;
-import de.metas.contracts.commission.commissioninstance.services.repos.CommissionRecordStagingService.CommissionRecords.CommissionRecordsBuilder;
+import de.metas.contracts.commission.commissioninstance.services.repos.CommissionRecordStagingService.CommissionStagingRecords.CommissionStagingRecordsBuilder;
 import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
@@ -60,62 +60,57 @@ class CommissionRecordStagingService
 {
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	CommissionRecords retrieveRecordsForInstanceId(
-			@NonNull final Collection<CommissionInstanceId> commissionInstanceIds,
-			final boolean onlyActive)
+	CommissionStagingRecords retrieveRecordsForInstanceId(@NonNull final Collection<CommissionInstanceId> commissionInstanceIds)
 	{
-		final IQueryBuilder<I_C_Commission_Instance> instanceQueryBuilder = createInstanceQueryBuilder(onlyActive)
+		final IQueryBuilder<I_C_Commission_Instance> instanceQueryBuilder = createInstanceQueryBuilder()
 				.addInArrayFilter(I_C_Commission_Instance.COLUMN_C_Commission_Instance_ID, commissionInstanceIds);
 
-		return retrieveRecords(instanceQueryBuilder.create(), onlyActive);
+		return retrieveRecords(instanceQueryBuilder.create());
 	}
 
-	CommissionRecords retrieveRecordsForInvoiceCandidateId(
-			@NonNull final Collection<InvoiceCandidateId> invoiceCandidateIds,
-			final boolean onlyActive)
+	CommissionStagingRecords retrieveRecordsForInvoiceCandidateId(@NonNull final Collection<InvoiceCandidateId> invoiceCandidateIds)
 	{
 		// ------------------ I_C_Commission_Instance
-		final IQueryBuilder<I_C_Commission_Instance> instanceQueryBuilder = createInstanceQueryBuilder(onlyActive)
+		final IQueryBuilder<I_C_Commission_Instance> instanceQueryBuilder = createInstanceQueryBuilder()
 				.addInArrayFilter(I_C_Commission_Instance.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateIds);
 
-		return retrieveRecords(instanceQueryBuilder.create(), onlyActive);
+		return retrieveRecords(instanceQueryBuilder.create());
 	}
 
-	private IQueryBuilder<I_C_Commission_Instance> createInstanceQueryBuilder(final boolean onlyActive)
+	private IQueryBuilder<I_C_Commission_Instance> createInstanceQueryBuilder()
 	{
 		final IQueryBuilder<I_C_Commission_Instance> instanceQueryBuilder = queryBL
-				.createQueryBuilder(I_C_Commission_Instance.class);
-		if (onlyActive)
-		{
-			instanceQueryBuilder.addOnlyActiveRecordsFilter();
-		}
+				.createQueryBuilder(I_C_Commission_Instance.class)
+				.addOnlyActiveRecordsFilter();
+
 		return instanceQueryBuilder;
 	}
 
-	private CommissionRecords retrieveRecords(
-			@NonNull final IQuery<I_C_Commission_Instance> instanceRecordQuery,
-			final boolean onlyActive)
+	private CommissionStagingRecords retrieveRecords(@NonNull final IQuery<I_C_Commission_Instance> instanceRecordQuery)
 	{
+		// ------------------ I_C_Commission_Instance
 		final List<I_C_Commission_Instance> instanceRecords = instanceRecordQuery.list();
 
 		final ImmutableListMultimap<Integer, I_C_Commission_Instance> icRecordIdToInstanceRecords = Multimaps.index(instanceRecords, I_C_Commission_Instance::getC_Invoice_Candidate_ID);
 		final ImmutableMap<Integer, I_C_Commission_Instance> instanceRecordIdToInstance = Maps.uniqueIndex(instanceRecords, I_C_Commission_Instance::getC_Commission_Instance_ID);
 		final ImmutableSet<Integer> intanceRecordIds = instanceRecordIdToInstance.keySet();
 
-		final CommissionRecordsBuilder commissionRecords = CommissionRecords.builder()
+		final CommissionStagingRecordsBuilder commissionRecords = CommissionStagingRecords.builder()
 				.icRecordIdToInstanceRecords(icRecordIdToInstanceRecords)
 				.instanceRecordIdToInstance(instanceRecordIdToInstance);
 
 		// ------------------ I_C_Commission_Share
 		final IQueryBuilder<I_C_Commission_Share> shareQueryBuilder = queryBL
 				.createQueryBuilder(I_C_Commission_Share.class)
-				.addInArrayFilter(I_C_Commission_Share.COLUMN_C_Commission_Instance_ID, intanceRecordIds);
-		if (onlyActive)
-		{
-			shareQueryBuilder.addOnlyActiveRecordsFilter();
-		}
-		final List<I_C_Commission_Share> shareRecords = shareQueryBuilder.create().list();
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Commission_Share.COLUMN_C_Commission_Instance_ID, intanceRecordIds)
+				.orderBy(I_C_Commission_Share.COLUMN_LevelHierarchy); // it's very important that we process them in their correct orders
 
+		final List<I_C_Commission_Share> shareRecords = shareQueryBuilder
+				.create()
+				.list();
+
+		// note that the share records' ordering is preserved in the multimap
 		final ImmutableListMultimap<Integer, I_C_Commission_Share> instanceRecordIdToShareRecords = Multimaps.index(shareRecords, I_C_Commission_Share::getC_Commission_Instance_ID);
 		commissionRecords.instanceRecordIdToShareRecords(instanceRecordIdToShareRecords);
 
@@ -124,12 +119,10 @@ class CommissionRecordStagingService
 		// ------------------ I_C_Commission_Fact
 		final IQueryBuilder<I_C_Commission_Fact> factQueryBuilder = queryBL
 				.createQueryBuilder(I_C_Commission_Fact.class)
+				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_Commission_Fact.COLUMN_C_Commission_Share_ID, shareRecordIds)
 				.addInArrayFilter(I_C_Commission_Fact.COLUMN_Commission_Fact_State, SalesCommissionState.allRecordCodes());
-		if (onlyActive)
-		{
-			shareQueryBuilder.addOnlyActiveRecordsFilter();
-		}
+
 		final List<I_C_Commission_Fact> factRecords = factQueryBuilder.create().list();
 
 		final ImmutableListMultimap<Integer, I_C_Commission_Fact> shareRecordIdToFactRecords = Multimaps.index(factRecords, I_C_Commission_Fact::getC_Commission_Share_ID);
@@ -139,9 +132,9 @@ class CommissionRecordStagingService
 	}
 
 	@lombok.Value
-	static class CommissionRecords
+	static class CommissionStagingRecords
 	{
-		final static CommissionRecords EMPTY = CommissionRecords.builder().build();
+		final static CommissionStagingRecords EMPTY = CommissionStagingRecords.builder().build();
 
 		ImmutableListMultimap<Integer, I_C_Commission_Instance> icRecordIdToInstanceRecords;
 		ImmutableMap<Integer, I_C_Commission_Instance> instanceRecordIdToInstance;
@@ -153,7 +146,7 @@ class CommissionRecordStagingService
 		ImmutableListMultimap<Integer, I_C_Commission_Fact> shareRecordIdToSalesFactRecords;
 
 		@Builder
-		private CommissionRecords(
+		private CommissionStagingRecords(
 				@Nullable final ImmutableListMultimap<Integer, I_C_Commission_Instance> icRecordIdToInstanceRecords,
 				@Nullable final ImmutableMap<Integer, I_C_Commission_Instance> instanceRecordIdToInstance,
 				@Nullable final ImmutableListMultimap<Integer, I_C_Commission_Share> instanceRecordIdToShareRecords,

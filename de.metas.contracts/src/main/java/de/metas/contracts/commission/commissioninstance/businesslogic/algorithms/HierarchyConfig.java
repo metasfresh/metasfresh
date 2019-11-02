@@ -89,4 +89,8 @@ public class HierarchyConfig implements CommissionConfig
 		return bpartnerId2HierarchyContracts.get(beneficiary.getBPartnerId().getRepoId());
 	}
 
+	public boolean containsContracts()
+	{
+		return !bpartnerId2HierarchyContracts.isEmpty();
+	}
 }

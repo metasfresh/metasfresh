@@ -38,7 +38,8 @@ import java.util.stream.Stream;
 public enum DhlServiceType implements ServiceType
 {
 
-	V01PAK("V01PAK");
+	Dhl_Paket("V01PAK"),
+	Dhl_PaketInternational("V53WPAK");
 
 	@Getter
 	private final String code;
@@ -49,7 +50,7 @@ public enum DhlServiceType implements ServiceType
 	}
 
 	@NonNull
-	public DhlServiceType forCode(final String code)
+	public static DhlServiceType forCode(final String code)
 	{
 		final DhlServiceType type = code2type.get(code);
 		if (type == null)
