@@ -109,4 +109,9 @@ public final class CurrencyPrecision
 	{
 		return RoundingMode.HALF_UP;
 	}
+
+	public CurrencyPrecision min(final CurrencyPrecision other)
+	{
+		return this.precision <= other.precision ? this : other;
+	}
 }

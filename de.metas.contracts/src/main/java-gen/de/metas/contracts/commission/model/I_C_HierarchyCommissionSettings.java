@@ -206,27 +206,29 @@ public interface I_C_HierarchyCommissionSettings
     public static final String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set % der Basispunkte.
+	 * Set Nachkommapräzision.
+	 * Anzahl der Nachkommastellen auf die beim Berechnen der Provisionspounkte gerundet wird.
 	 *
-	 * <br>Type: Number
+	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPercentOfBasePoints (java.math.BigDecimal PercentOfBasePoints);
+	public void setPointsPrecision (int PointsPrecision);
 
 	/**
-	 * Get % der Basispunkte.
+	 * Get Nachkommapräzision.
+	 * Anzahl der Nachkommastellen auf die beim Berechnen der Provisionspounkte gerundet wird.
 	 *
-	 * <br>Type: Number
+	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getPercentOfBasePoints();
+	public int getPointsPrecision();
 
-    /** Column definition for PercentOfBasePoints */
-    public static final org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object> COLUMN_PercentOfBasePoints = new org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object>(I_C_HierarchyCommissionSettings.class, "PercentOfBasePoints", null);
-    /** Column name PercentOfBasePoints */
-    public static final String COLUMNNAME_PercentOfBasePoints = "PercentOfBasePoints";
+    /** Column definition for PointsPrecision */
+    public static final org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object> COLUMN_PointsPrecision = new org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object>(I_C_HierarchyCommissionSettings.class, "PointsPrecision", null);
+    /** Column name PointsPrecision */
+    public static final String COLUMNNAME_PointsPrecision = "PointsPrecision";
 
 	/**
 	 * Get Aktualisiert.

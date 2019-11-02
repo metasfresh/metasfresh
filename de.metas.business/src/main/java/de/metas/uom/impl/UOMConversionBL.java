@@ -1,7 +1,7 @@
 package de.metas.uom.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 
 /*
  * #%L
@@ -61,6 +61,9 @@ public class UOMConversionBL implements IUOMConversionBL
 {
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IUOMConversionDAO uomConversionsDAO = Services.get(IUOMConversionDAO.class);
+
 	@Override
 	public BigDecimal convertQty(
 			@NonNull final UOMConversionContext conversionCtx /* could technically be nullable, right now I don't see why we should allow it */,
@@ -69,8 +72,8 @@ public class UOMConversionBL implements IUOMConversionBL
 			@NonNull final UomId uomTo)
 	{
 		return convertQty(conversionCtx.getProductId(), qty,
-				loadOutOfTrx(uomFrom, I_C_UOM.class),
-				loadOutOfTrx(uomTo, I_C_UOM.class));
+				uomDAO.getById(uomFrom),
+				uomDAO.getById(uomTo));
 	}
 
 	@Override
@@ -104,7 +107,7 @@ public class UOMConversionBL implements IUOMConversionBL
 	@Override
 	public Quantity convertQuantityTo(@NonNull final Quantity quantity, final UOMConversionContext conversionCtx, @NonNull final UomId uomToId)
 	{
-		final I_C_UOM uomTo = Services.get(IUOMDAO.class).getById(uomToId);
+		final I_C_UOM uomTo = uomDAO.getById(uomToId);
 		return convertQuantityTo(quantity, conversionCtx, uomTo);
 	}
 
@@ -132,7 +135,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		// Convert current quantity to "uomTo"
 		final BigDecimal sourceQtyNew = quantity.toBigDecimal();
 		final int sourceUOMNewId = currentUomId.getRepoId();
-		final I_C_UOM sourceUOMNew = Services.get(IUOMDAO.class).getById(sourceUOMNewId);
+		final I_C_UOM sourceUOMNew = uomDAO.getById(sourceUOMNewId);
 		final BigDecimal qtyNew = convertQty(conversionCtx,
 				sourceQtyNew,
 				sourceUOMNew, // From UOM
@@ -173,9 +176,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			@NonNull final Collection<Quantity> quantities,
 			@NonNull final UomId toUomId)
 	{
-		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
-
-		final I_C_UOM toUomRecord = uomDao.getById(toUomId);
+		final I_C_UOM toUomRecord = uomDAO.getById(toUomId);
 		Quantity resultInTargetUOM = Quantity.zero(toUomRecord);
 
 		for (final Quantity currentQuantity : quantities)
@@ -289,14 +290,12 @@ public class UOMConversionBL implements IUOMConversionBL
 
 	private UOMConversionsMap getProductConversions(@NonNull final ProductId productId)
 	{
-		final IUOMConversionDAO uomConversionsRepo = Services.get(IUOMConversionDAO.class);
-		return uomConversionsRepo.getProductConversions(productId);
+		return uomConversionsDAO.getProductConversions(productId);
 	}
 
 	private UOMConversionsMap getGenericRates()
 	{
-		final IUOMConversionDAO uomConversionsRepo = Services.get(IUOMConversionDAO.class);
-		return uomConversionsRepo.getGenericConversions();
+		return uomConversionsDAO.getGenericConversions();
 	}
 
 	private Optional<UOMConversionRate> getGenericRate(I_C_UOM uomFrom, I_C_UOM uomTo)
@@ -385,7 +384,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		final UOMConversionRate rate = getRateIfExists(productId, fromUomId, toUomId).orElse(null);
 		if (rate != null)
 		{
-			final I_C_UOM toUOM = Services.get(IUOMDAO.class).getById(toUomId);
+			final I_C_UOM toUOM = uomDAO.getById(toUomId);
 			final UOMPrecision precision = extractStandardPrecision(toUOM);
 			return rate.convert(qtyToConvert, precision);
 		}
@@ -428,9 +427,8 @@ public class UOMConversionBL implements IUOMConversionBL
 
 	private Optional<UOMConversionRate> getTimeConversionRate(@NonNull final UomId fromTimeUomId, @NonNull final UomId toTimeUomId)
 	{
-		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
-		final I_C_UOM fromUom = uomsRepo.getById(fromTimeUomId);
-		final I_C_UOM toUom = uomsRepo.getById(toTimeUomId);
+		final I_C_UOM fromUom = uomDAO.getById(fromTimeUomId);
+		final I_C_UOM toUom = uomDAO.getById(toTimeUomId);
 		return getTimeConversionRate(fromUom, toUom);
 	}
 
