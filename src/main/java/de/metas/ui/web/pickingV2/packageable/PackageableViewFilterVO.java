@@ -6,6 +6,7 @@ import org.adempiere.warehouse.WarehouseTypeId;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.order.OrderId;
+import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.Value;
 
@@ -43,10 +44,12 @@ public class PackageableViewFilterVO
 	public static final String PARAM_M_Warehouse_Type_ID = "M_Warehouse_Type_ID";
 	public static final String PARAM_DeliveryDate = "DeliveryDate";
 	public static final String PARAM_PreparationDate = "PreparationDate";
+	public static final String PARAM_M_Shipper_ID = "M_Shipper_ID";
 
 	OrderId salesOrderId;
 	BPartnerId customerId;
 	WarehouseTypeId warehouseTypeId;
 	LocalDate deliveryDate;
 	LocalDate preparationDate;
+	ShipperId shipperId;
 }
