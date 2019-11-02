@@ -1,13 +1,3 @@
-drop function if exists getPriceListVersionsUpToBase
-(
-	/* p_Start_PriceList_Version_ID */ numeric
-);
-drop function if exists getPriceListVersionsUpToBase
-(
-	/* p_M_PriceList_ID */ numeric,
-    /* p_Date */ timestamp with time zone
-);
-
 
 create or replace function getPriceListVersionsUpToBase
 (
@@ -48,37 +38,5 @@ $BODY$
 LANGUAGE SQL
 ;
 COMMENT ON FUNCTION getPriceListVersionsUpToBase(numeric) 
-IS 'Gets an array starting with your given price list version and then recursivelly all base price list versions to fallback for pricing. Robost against loops.';
-
-
-create or replace function getPriceListVersionsUpToBase
-(
-	p_M_PriceList_ID numeric,
-    p_Date timestamp with time zone
-)
-returns numeric[]
-as
-$BODY$
-		SELECT getPriceListVersionsUpToBase(
-			(
-				SELECT M_PriceList_Version.M_PriceList_Version_ID
-				from M_PriceList_Version
-				where M_PriceList_Version.M_PriceList_ID = p_M_PriceList_ID
-				AND M_PriceList_Version.IsActive = 'Y'
-				AND M_PriceList_Version.ValidFrom =
-				(
-					SELECT MAX(M_PriceList_Version.ValidFrom)
-					from M_PriceList_Version
-					where M_PriceList_Version.M_PriceList_ID = p_M_PriceList_ID
-					AND M_PriceList_Version.ValidFrom <=  p_Date
-					GROUP BY M_PriceList_ID
-				)
-			)
-		)
-$BODY$
-LANGUAGE SQL
-;
-
-
-
+IS 'Gets an array starting with your given price list version and then recursively all base price list versions to fallback for pricing. Robost against loops.';
 
