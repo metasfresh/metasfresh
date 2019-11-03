@@ -37,6 +37,13 @@
 			<artifactId>springfox-swagger2</artifactId>
 		</dependency>
 
+		<!-- https://github.com/hoereth/springfox-enum-plugin -->
+		<dependency>
+			<groupId>de.pentabyte</groupId>
+			<artifactId>springfox-enum-plugin</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>

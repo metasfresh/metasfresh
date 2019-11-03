@@ -8,7 +8,9 @@ import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.collect.ImmutableMap;
 
 import io.swagger.annotations.ApiModel;
@@ -44,6 +46,9 @@ public class JsonError
 {
 	String message;
 
+	@JsonInclude(Include.NON_EMPTY)
+	String detail;
+
 	String stackTrace;
 
 	Map<String, String> parameters;
@@ -59,11 +64,13 @@ public class JsonError
 	@Builder
 	private JsonError(
 			@JsonProperty("message") @NonNull final String message,
+			@JsonProperty("detail") @NonNull final String detail,
 			@JsonProperty("stackTrace") @Nullable final String stackTrace,
 			@JsonProperty("parameters") @Nullable final Map<String, String> parameters,
 			@JsonProperty("throwable") @Nullable final Throwable throwable)
 	{
 		this.message = message;
+		this.detail = detail;
 		this.stackTrace = stackTrace;
 		this.parameters = coalesce(parameters, ImmutableMap.of());
 		this.throwable = throwable;

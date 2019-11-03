@@ -1,4 +1,4 @@
-package de.metas.rest_api.bpartner.request;
+package de.metas.rest_api.bpartner.response;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

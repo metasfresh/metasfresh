@@ -622,8 +622,25 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public ProductPrice getPriceActual(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final BigDecimal priceActual = InterfaceWrapperHelper.getValueOverrideOrValue(ic, I_C_Invoice_Candidate.COLUMNNAME_PriceActual);
+		final BigDecimal priceActual;
+		if (InterfaceWrapperHelper.isNull(ic, I_C_Invoice_Candidate.COLUMNNAME_PriceActual_Override))
+		{
+			priceActual = ic.getPriceActual();
+		}
+		else
+		{
+			priceActual = ic.getPriceActual_Override();
+		}
 
+		if (ic.getC_Currency_ID() <= 0 || ic.getC_UOM_ID() <= 0 || ic.getM_Product_ID() <= 0)
+		{
+			throw new AdempiereException("The current C_Invoice_Candidate doesn't have a valid PriceActual")
+					.appendParametersToMessage()
+					.setParameter("C_Currency_ID", ic.getC_Currency_ID())
+					.setParameter("C_UOM_ID", ic.getC_UOM_ID())
+					.setParameter("M_Product_ID", ic.getM_Product_ID())
+					.setParameter("C_Invoice_Candidate", ic);
+		}
 		return ProductPrice.builder()
 				.money(Money.of(priceActual, CurrencyId.ofRepoId(ic.getC_Currency_ID())))
 				.uomId(UomId.ofRepoId(ic.getC_UOM_ID()))
@@ -880,7 +897,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 			final I_M_PriceList pricelist = Services.get(IPriceListBL.class)
 					.getCurrentPricelistOrNull(
-					PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()),
+							PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()),
 							CountryId.ofRepoId(partnerLocation.getC_Location().getC_Country_ID()),
 							date,
 							soTrx);
@@ -1129,7 +1146,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final BigDecimal priceActualOverride = discount
 					.subtractFromBase(
 							priceEntered.toMoney().toBigDecimal(),
-					precision.toInt());
+							precision.toInt());
 			ic.setPriceActual_Override(priceActualOverride);
 		}
 	}

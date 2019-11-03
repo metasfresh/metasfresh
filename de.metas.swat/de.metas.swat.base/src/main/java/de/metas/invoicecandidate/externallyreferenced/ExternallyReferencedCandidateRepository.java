@@ -1,15 +1,15 @@
-package de.metas.rest_api.bpartner;
+package de.metas.invoicecandidate.externallyreferenced;
 
-import org.springframework.http.ResponseEntity;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOrNew;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
-import de.metas.rest_api.bpartner.response.JsonResponseContact;
-import de.metas.rest_api.bpartner.response.JsonResponseContactList;
-import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import lombok.NonNull;
 
 /*
  * #%L
- * de.metas.business.rest-api
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -29,13 +29,12 @@ import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
  * #L%
  */
 
-public interface ContactRestEndpoint
+public class ExternallyReferencedCandidateRepository
 {
-	ResponseEntity<JsonResponseContact> retrieveContact(String contactIdentifier);
-
-	ResponseEntity<JsonResponseContactList> retrieveContactsSince(
-			Long epochTimestampMillis,
-			String next);
-
-	ResponseEntity<JsonResponseUpsert> createOrUpdateContact(JsonRequestContactUpsert contacts);
+	public InvoiceCandidateId save(@NonNull final ExternallyReferencedCandidate manualInvoiceCandidate)
+	{
+		final I_C_Invoice_Candidate icRecord = loadOrNew(manualInvoiceCandidate.getId(), I_C_Invoice_Candidate.class);
+		saveRecord(icRecord);
+		return InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
+	}
 }

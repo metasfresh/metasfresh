@@ -2,8 +2,6 @@ package de.metas.rest_api.invoicecandidates.impl;
 
 import java.util.List;
 
-import org.compiere.util.Env;
-import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,13 +13,13 @@ import org.springframework.web.bind.annotation.RestController;
 import de.metas.Profiles;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
-import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.rest_api.invoicecandidates.IInvoicesRestEndpoint;
 import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
+import de.metas.rest_api.invoicecandidates.request.JsonRequestInvoiceCandidateUpsert;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
-import de.metas.rest_api.utils.JsonErrors;
+import de.metas.rest_api.invoicecandidates.response.JsonResponseInvoiceCandidateUpsert;
 import de.metas.util.Services;
 import de.metas.util.rest.ExternalHeaderAndLineId;
 import io.swagger.annotations.ApiOperation;
@@ -54,9 +52,6 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App)
 class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 {
-
-	private static final Logger logger = LogManager.getLogger(InvoicesRestControllerImpl.class);
-
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final InvoiceJsonConverterService jsonConverter;
@@ -66,34 +61,30 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 		this.jsonConverter = jsonConverter;
 	}
 
+	@PostMapping(path = "createOrUpdateCandidates")
+	@Override
+	public ResponseEntity<JsonResponseInvoiceCandidateUpsert> createOrUpdateInvoiceCandidates(JsonRequestInvoiceCandidateUpsert request)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 	@ApiOperation("Enqueues invoice candidates for invoicing")
 	@PostMapping(path = "enqueueForInvoicing")
 	@Override
 	public ResponseEntity<JsonEnqueueForInvoicingResponse> enqueueForInvoicing(@RequestBody @NonNull final JsonEnqueueForInvoicingRequest request)
 	{
-		try
-		{
-			final PInstanceId pInstanceId = adPInstanceDAO.createSelectionId();
-			final List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(request.getInvoiceCandidates());
-			invoiceCandBL.createSelectionForInvoiceCandidates(headerAndLineIds, pInstanceId);
+		final PInstanceId pInstanceId = adPInstanceDAO.createSelectionId();
+		final List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(request.getInvoiceCandidates());
+		invoiceCandBL.createSelectionForInvoiceCandidates(headerAndLineIds, pInstanceId);
 
-			final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL
-					.enqueueForInvoicing()
-					.setInvoicingParams(jsonConverter.createInvoicingParams(request))
-					.setFailIfNothingEnqueued(true)
-					.enqueueSelection(pInstanceId);
+		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL
+				.enqueueForInvoicing()
+				.setInvoicingParams(jsonConverter.createInvoicingParams(request))
+				.setFailIfNothingEnqueued(true)
+				.enqueueSelection(pInstanceId);
 
-			final JsonEnqueueForInvoicingResponse response = jsonConverter.toJson(enqueueResult);
-			return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
-		}
-		catch (final Exception ex)
-		{
-			logger.warn("Got exception while processing request={}", request, ex);
-
-			final String adLanguage = Env.getADLanguageOrBaseLanguage();
-			return ResponseEntity
-					.badRequest()
-					.body(JsonEnqueueForInvoicingResponse.error(JsonErrors.ofThrowable(ex, adLanguage)));
-		}
+		final JsonEnqueueForInvoicingResponse response = jsonConverter.toJson(enqueueResult);
+		return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
 	}
 }

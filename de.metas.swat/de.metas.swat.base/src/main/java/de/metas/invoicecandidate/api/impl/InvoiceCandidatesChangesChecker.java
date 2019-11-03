@@ -13,15 +13,14 @@ package de.metas.invoicecandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -162,13 +161,10 @@ public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChange
 		private final BigDecimal netAmtToInvoice;
 		private final int taxId;
 
-		public InvoiceCandidateInfo(final I_C_Invoice_Candidate ic)
+		public InvoiceCandidateInfo(@NonNull final I_C_Invoice_Candidate ic)
 		{
-			super();
-			Check.assumeNotNull(ic, "ic not null");
-
-			invoiceCandidateId = ic.getC_Invoice_Candidate_ID();
-			netAmtToInvoice = ic.getNetAmtToInvoice();
+			this.invoiceCandidateId = ic.getC_Invoice_Candidate_ID();
+			this.netAmtToInvoice = ic.getNetAmtToInvoice();
 
 			final int taxId = ic.getC_Tax_ID();
 			this.taxId = taxId <= 0 ? -1 : taxId;
@@ -177,12 +173,7 @@ public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChange
 		@Override
 		public String toString()
 		{
-			return invoiceCandidateId
-					+ ": "
-					+ "@NetAmtToInvoice@: " + netAmtToInvoice
-					+ ", @C_Tax_ID@: " + taxId
-			//
-			;
+			return invoiceCandidateId + ": " + "@NetAmtToInvoice@: " + netAmtToInvoice + ", @C_Tax_ID@: " + taxId;
 		}
 
 		/**

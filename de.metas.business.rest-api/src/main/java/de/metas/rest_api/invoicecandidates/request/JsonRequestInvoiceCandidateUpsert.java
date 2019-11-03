@@ -1,11 +1,11 @@
-package de.metas.rest_api.bpartner;
+package de.metas.rest_api.invoicecandidates.request;
 
-import org.springframework.http.ResponseEntity;
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
 
-import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
-import de.metas.rest_api.bpartner.response.JsonResponseContact;
-import de.metas.rest_api.bpartner.response.JsonResponseContactList;
-import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
+import java.util.List;
+
+import de.metas.rest_api.SyncAdvise;
+import io.swagger.annotations.ApiModelProperty;
 
 /*
  * #%L
@@ -29,13 +29,11 @@ import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
  * #L%
  */
 
-public interface ContactRestEndpoint
+public class JsonRequestInvoiceCandidateUpsert
 {
-	ResponseEntity<JsonResponseContact> retrieveContact(String contactIdentifier);
+	@ApiModelProperty(position = 10)
+	List<JsonRequestInvoiceCandidateUpsertItem> requestItems;
 
-	ResponseEntity<JsonResponseContactList> retrieveContactsSince(
-			Long epochTimestampMillis,
-			String next);
-
-	ResponseEntity<JsonResponseUpsert> createOrUpdateContact(JsonRequestContactUpsert contacts);
+	@ApiModelProperty(position = 20, value = "Sync-advise for individual items.\n" + PARENT_SYNC_ADVISE_DOC)
+	SyncAdvise syncAdvise;
 }

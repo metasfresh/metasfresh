@@ -60,39 +60,35 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 
 	private final static transient Logger logger = InvoiceCandidate_Constants.getLogger(ManualCandidateHandler.class);
 
+	/** @return {@code false}. */
 	@Override
 	public boolean isCreateMissingCandidatesAutomatically()
 	{
 		return false;
 	}
 
+	/** @return {@code false}. */
 	@Override
 	public boolean isCreateMissingCandidatesAutomatically(Object model)
 	{
 		return false;
 	}
 
-	/**
-	 * @return empty iterator
-	 */
+	/** @return empty iterator */
 	@Override
 	public Iterator<Object> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
 		return Collections.emptyIterator();
 	}
 
-	/**
-	 * @return empty result
-	 */
+	/** @return empty result */
 	@Override
 	public InvoiceCandidateGenerateResult createCandidatesFor(final InvoiceCandidateGenerateRequest request)
 	{
 		return InvoiceCandidateGenerateResult.of(this);
 	}
 
-	/**
-	 * Implementation invalidates the credit memo's C_Invoice_Candidate
-	 */
+	/** Does nothing */
 	@Override
 	public void invalidateCandidatesFor(final Object model)
 	{
@@ -100,7 +96,7 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 	}
 
 	/**
-	 * Returns CreditMemo, which is not a real table; the source doesn't exist actually
+	 * @return {@link #MANUAL} (i.e. not a real table name).
 	 */
 	@Override
 	public String getSourceTable()
@@ -108,9 +104,7 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 		return ManualCandidateHandler.MANUAL;
 	}
 
-	/**
-	 * Returns <code>true</code>.
-	 */
+	/** @return {@code true}. */
 	@Override
 	public boolean isUserInChargeUserEditable()
 	{
@@ -118,9 +112,9 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 	}
 
 	/**
-	 * Sets NetAmtToInvoice by using super{@link #setNetAmtToInvoice(I_C_Invoice_Candidate)}.
+	 * Sets NetAmtToInvoice by using super {@link #setNetAmtToInvoice(I_C_Invoice_Candidate)}.
 	 *
-	 * If the amount is negative than we calculate the over all amount of the invoice and we adjust the NetAmtToInvoice in order to get a positive GrandTotal for the invoice
+	 * If the amount is negative then we calculate the over all amount of the invoice and we adjust the NetAmtToInvoice in order to get a positive GrandTotal for the invoice
 	 */
 	@Override
 	public void setNetAmtToInvoice(@NonNull final I_C_Invoice_Candidate icRecord)
@@ -132,7 +126,7 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 		{
 			return; // the superclass already did the job
 		}
-		ManualCandidateHandler.logger.debug("NetAmtToInvoice: {}", netAmtToInvoice);
+		logger.debug("NetAmtToInvoice: {}", netAmtToInvoice);
 
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
@@ -150,10 +144,10 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 		// TODO: handle the case when everything is negative
 
 		final BigDecimal amtOthers = invoiceCandDAO.retrieveInvoicableAmount(ctx, query, targetCurrencyId, adClientId, adOrgId, I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice, trxName);
-		ManualCandidateHandler.logger.debug("Amt on other lines: {}", amtOthers);
+		logger.debug("Amt on other lines: {}", amtOthers);
 
 		final BigDecimal amtTotal = netAmtToInvoice.add(amtOthers);
-		ManualCandidateHandler.logger.debug("Amt on all lines: {}", amtTotal);
+		logger.debug("Amt on all lines: {}", amtTotal);
 
 		final BigDecimal netAmtToInvoiceNew;
 		final BigDecimal splitAmt;
@@ -167,8 +161,8 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 			netAmtToInvoiceNew = amtOthers.negate();
 			splitAmt = netAmtToInvoice.subtract(netAmtToInvoiceNew);
 		}
-		ManualCandidateHandler.logger.debug("NetAmtToInvoiceNew: {}", netAmtToInvoiceNew);
-		ManualCandidateHandler.logger.debug("SplitAmt: {}", splitAmt);
+		logger.debug("NetAmtToInvoiceNew: {}", netAmtToInvoiceNew);
+		logger.debug("SplitAmt: {}", splitAmt);
 
 		//
 		// Validation: In case we need to change the NetAmtToInvoice then we need to enforce that QtyToInvoice=1

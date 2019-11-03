@@ -40,6 +40,11 @@ public class SwaggerDocConstants
 			+ "* or something like `ext-<YourExternalId>`\n"
 			+ "* or something like `gln-<GLN>`\n";
 
+	public static final String PRODUCTIDENTIFIER_DOC = "Identifier of the product in question. Can be\n"
+			+ "* a plain `<M_Product_ID>`\n"
+			+ "* or something like `ext-<YourExternalId>`\n"
+			+ "* or something like `val-<M_Product_ID.Value>`";
+
 	public static final String NEXT_DOC = "Optional identifier for the next page that was provided to the client in the previous page.\n"
 			+ "If provided, any `since` value is ignored";
 

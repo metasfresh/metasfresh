@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.rest_api.JsonDocTypeInfo;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.util.Check;
 import io.swagger.annotations.ApiModelProperty;
@@ -155,19 +156,16 @@ public final class JsonOLCandCreateRequest
 	private BigDecimal price;
 
 	@ApiModelProperty( //
-			allowEmptyValue = true, //
 			value = "If a (manual) <code>price</code> is provided, then also a currencyCode needs be given.")
 	@JsonInclude(Include.NON_NULL)
 	private String currencyCode; // shall come from pricingSystem/priceList
 
 	@ApiModelProperty( //
-			allowEmptyValue = true, //
 			value = "If set, then the order line candidate will be created with a manual (i.e. not coming from metasfresh) discount.")
 	@JsonInclude(Include.NON_NULL)
 	private BigDecimal discount;
 
 	@ApiModelProperty( //
-			allowEmptyValue = false, //
 			value = "External reference (document number) on a remote system. Not neccesarily unique, but but the external user will want to filter recrods using it")
 	private String poReference;
 
@@ -183,7 +181,7 @@ public final class JsonOLCandCreateRequest
 					+ "Therefore, please make sure to have <code>dataDestInternalName='DEST.de.metas.invoicecandidate'</code>.\n"
 					+ "Otherwise, this property will be ignored\n"
 					+ "\n"
-					+ "Note for healthcare-ch users: set <code>docBaseType</code> to <code>ARI</code> (sale sinvoice) "
+					+ "Note for healthcare-ch users: set <code>docBaseType</code> to <code>ARI</code> (sales invoice) "
 					+ "and <code>docSubType</code> to one of <code>EA</code> (\"Patient\"), <code>GM</code> (\"Gemeinde\" or <code>KV</code> (\"Krankenversicherung\"")
 	@JsonInclude(Include.NON_NULL)
 	private JsonDocTypeInfo invoiceDocType;

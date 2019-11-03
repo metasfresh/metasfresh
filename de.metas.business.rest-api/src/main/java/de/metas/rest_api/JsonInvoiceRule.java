@@ -1,15 +1,8 @@
-package de.metas.rest_api.bpartner;
-
-import org.springframework.http.ResponseEntity;
-
-import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
-import de.metas.rest_api.bpartner.response.JsonResponseContact;
-import de.metas.rest_api.bpartner.response.JsonResponseContactList;
-import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
+package de.metas.rest_api;
 
 /*
  * #%L
- * de.metas.business.rest-api
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -29,13 +22,12 @@ import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
  * #L%
  */
 
-public interface ContactRestEndpoint
+public enum JsonInvoiceRule
 {
-	ResponseEntity<JsonResponseContact> retrieveContact(String contactIdentifier);
+	AfterDelivery,
 
-	ResponseEntity<JsonResponseContactList> retrieveContactsSince(
-			Long epochTimestampMillis,
-			String next);
+	CustomerScheduleAfterDelivery,
 
-	ResponseEntity<JsonResponseUpsert> createOrUpdateContact(JsonRequestContactUpsert contacts);
+	Immediate;
+
 }

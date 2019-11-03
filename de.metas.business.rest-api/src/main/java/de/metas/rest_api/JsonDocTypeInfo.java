@@ -1,4 +1,4 @@
-package de.metas.rest_api.ordercandidates.request;
+package de.metas.rest_api;
 
 import javax.annotation.Nullable;
 

@@ -8,6 +8,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import de.pentabyte.springfox.ApiEnum;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
@@ -78,13 +81,13 @@ public class SyncAdvise
 
 	public enum IfExists
 	{
-		/** Insert update data that is specified, but leave additional pre-existing data untouched */
-		UPDATE_MERGE(true, false),
+		@ApiEnum("Insert/update data that is specified in this request entity, but leave *other* pre-existing data untouched")
+		UPDATE_MERGE(true/* updateMerge */, false/* updateRemove */),
 
-		/** Insert update data that is specified, and unset or remove additional pre-existing data */
-		UPDATE_REMOVE(false, true),
+		@ApiEnum("Insert/update data that is specified in this request entity, *and* unset or remove * other* pre-existing data")
+		UPDATE_REMOVE(false/* updateMerge */, true/* updateRemove */),
 
-		DONT_UPDATE(false, false);
+		DONT_UPDATE(false/* updateMerge */, false/* updateRemove */);
 
 		@Getter
 		private final boolean updateMerge;

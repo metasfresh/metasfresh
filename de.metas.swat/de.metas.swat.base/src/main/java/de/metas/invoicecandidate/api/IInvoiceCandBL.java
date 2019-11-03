@@ -190,9 +190,11 @@ public interface IInvoiceCandBL extends ISingletonService
 	Money calculateNetAmt(I_C_Invoice_Candidate ic);
 
 	/**
+	 * Create a copy of the given {@code icRecord}, set the copy's quantities to {@code ONE}, and the copy's prices to the given given {@code icRecord}'s {@code splitAmount}.
+	 *
 	 * @return the newly created, but not yet saved invoice candidate record.
 	 */
-	I_C_Invoice_Candidate splitCandidate(I_C_Invoice_Candidate ic);
+	I_C_Invoice_Candidate splitCandidate(I_C_Invoice_Candidate icRecord);
 
 	InvoiceRule getInvoiceRule(I_C_Invoice_Candidate ic);
 
