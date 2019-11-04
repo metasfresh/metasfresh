@@ -22,10 +22,11 @@
 
 package de.metas.shipper.gateway.dpd;
 
+import org.compiere.model.X_M_Shipper;
+
 public class DpdConstants
 {
-	// TODO
-	public static final String SHIPPER_GATEWAY_ID = "dpd"; // X_M_Shipper.SHIPPERGATEWAY_DPD;
+	public static final String SHIPPER_GATEWAY_ID = X_M_Shipper.SHIPPERGATEWAY_DPD;
 
 	public static final String DEFAULT_MESSAGE_LANGUAGE = "en_EN";
 
