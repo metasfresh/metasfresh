@@ -12,8 +12,24 @@ Here come the actual release notes:
 
 # metasfresh 5.126
 ## Features
+* metasfresh
+  * [#5664](https://github.com/metasfresh/metasfresh/issues/5664) Rest endpoint which allows the client to create invoices
+  * [#5675](https://github.com/metasfresh/metasfresh/issues/5675) Waste (Entsorgung) from Handling Unit Editor and automatic DocType and No
+  * [#5710](https://github.com/metasfresh/metasfresh/issues/5710) Modify process of copying windows to copy the tab callouts as well
+  * [#5724](https://github.com/metasfresh/metasfresh/issues/5724) Add more data to shipment report functions
+  * [#5729](https://github.com/metasfresh/metasfresh/issues/5729) Only show Catch Weight Fields when catch weight calculation (product price)
+  * [#5740](https://github.com/metasfresh/metasfresh/issues/5740) Improve Customs Tariff
+  * [#5746](https://github.com/metasfresh/metasfresh/issues/5746) Fix Jenkinsfile: make sure the maven repo name is legit
+  * [#5754](https://github.com/metasfresh/metasfresh/issues/5754) AD_System.DBVersion: change size to 255
+
 * metasfresh-webui-frontend
+  * [#2401](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2401) Implement Google Maps Integration
   * [#2431](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2431) Remove number field's arrows for changing value
+
+## Fixes
+* metasfresh
+  * [#5749](https://github.com/metasfresh/metasfresh/pull/5749) HU editor: clearing the Production Date field leads to error
+  * [#5735](https://github.com/metasfresh/metasfresh/issues/5735) Linenetamt not rounded to currency precision
 
 # metasfresh 5.125
 ## Features
