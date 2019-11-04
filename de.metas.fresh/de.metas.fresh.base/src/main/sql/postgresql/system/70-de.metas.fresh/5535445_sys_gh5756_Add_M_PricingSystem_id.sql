@@ -145,3 +145,10 @@ UPDATE AD_WINDOW SET Name='Campaign Price', Description=NULL, Help=NULL WHERE AD
 UPDATE AD_Menu SET   Name = 'Campaign Price', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 576099
 ;
 
+
+
+-- 2019-11-04T14:33:28.685Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2019-11-04 16:33:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=569386
+;
+
