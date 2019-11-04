@@ -144,6 +144,9 @@ node('agent && linux')
 				// update the parent pom version
 				mvnUpdateParentPomVersion mvnConf
 
+				// make sure we know which plugin version we run
+				final String versionsPlugin='org.codehaus.mojo:versions-maven-plugin:2.4'
+
 				final inSquaresIfNeeded = { String version -> return version == "LATEST" ? version: "[${version}]"; }
 
 				// the square brackets in "-DnewVersion" are required if we have a concrete version (i.e. not "LATEST"); see https://github.com/mojohaus/versions-maven-plugin/issues/141 for details
@@ -155,16 +158,16 @@ node('agent && linux')
 
 
 				// update the metasfresh.version property. either to the latest version or to the given params.MF_METASFRESH_VERSION.
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshUpdatePropertyParam} versions:update-property"
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshUpdatePropertyParam} ${versionsPlugin}:update-property"
 
 				// gh #968 also update the metasfresh-webui-frontend.version, metasfresh-webui-api.versions and procurement versions.
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshAdminPropertyParam} versions:update-property"
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebFrontEndUpdatePropertyParam} versions:update-property"
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebApiUpdatePropertyParam} versions:update-property"
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshProcurementWebuiUpdatePropertyParam} versions:update-property"
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshAdminPropertyParam} ${versionsPlugin}:update-property"
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebFrontEndUpdatePropertyParam} ${versionsPlugin}:update-property"
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebApiUpdatePropertyParam} ${versionsPlugin}:update-property"
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshProcurementWebuiUpdatePropertyParam} ${versionsPlugin}:update-property"
 
 				// set the artifact version of everything below the parent ${mvnConf.pomFile}
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true ${mvnConf.resolveParams} versions:set"
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true ${mvnConf.resolveParams} ${versionsPlugin}:set"
 
 				// do the actual building and deployment
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
@@ -186,6 +189,7 @@ node('agent && linux')
 				final def mavenProps = readProperties file: 'dist/app.properties'
 				final def urlEncodedMavenProps = misc.urlEncodeMapValues(mavenProps);
 
+				final MF_ARTIFACT_URLS = [:];
 				MF_ARTIFACT_URLS['metasfresh-admin'] = "${mvnConf.resolveRepoURL}/de/metas/admin/metasfresh-admin/${urlEncodedMavenProps['metasfresh-admin.version']}/metasfresh-admin-${urlEncodedMavenProps['metasfresh-admin.version']}.jar"
 				MF_ARTIFACT_URLS['metasfresh-dist'] = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(MF_VERSION)}-dist.tar.gz"
 				MF_ARTIFACT_URLS['metasfresh-dist-sql-only'] = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(MF_VERSION)}-sql-only.tar.gz"
@@ -214,7 +218,7 @@ node('agent && linux')
   <li>metasfresh-webui-frontend: version <b>${mavenProps['metasfresh-webui-frontend.version']}</b></li>
   <li>metasfresh-procurement-webui: version <b>${mavenProps['metasfresh-procurement-webui.version']}</b></li>
   <li>metasfresh-admin webui: version <b>${mavenProps['metasfresh-admin.version']}</b></li>
-	<li>metasfresh base: version <b>${mavenProps['metasfresh.version']}</b></li>
+  <li>metasfresh base: version <b>${mavenProps['metasfresh.version']}</b></li>
   <ul>
 		<li>metasfresh-material-dispo (always the same as metasfresh base): version <b>${mavenProps['metasfresh.version']}</b></li>
   </ul>
