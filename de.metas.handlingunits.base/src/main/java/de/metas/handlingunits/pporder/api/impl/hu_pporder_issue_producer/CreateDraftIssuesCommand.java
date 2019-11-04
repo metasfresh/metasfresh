@@ -13,6 +13,7 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
 import org.slf4j.Logger;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUContext;
@@ -111,13 +112,15 @@ public class CreateDraftIssuesCommand
 		// the candidates are created and processed in one uber-transaction
 		// trxManager.assertThreadInheritedTrxNotExists();
 
-		final List<I_PP_Order_Qty> candidates = huTrxBL.process(huContext -> {
-			return hus.stream()
-					.map(hu -> createCreateDraftIssue_InTrx(huContext, hu))
-					.filter(issueCandidate -> issueCandidate != null)
-					.collect(ImmutableList.toImmutableList());
-		});
-		return candidates;
+		return huTrxBL.process(this::executeInTrx);
+	}
+
+	public List<I_PP_Order_Qty> executeInTrx(final IHUContext huContext)
+	{
+		return hus.stream()
+				.map(hu -> createCreateDraftIssue_InTrx(huContext, hu))
+				.filter(Predicates.notNull())
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private I_PP_Order_Qty createCreateDraftIssue_InTrx(
