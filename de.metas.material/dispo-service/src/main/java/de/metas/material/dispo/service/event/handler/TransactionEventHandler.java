@@ -610,6 +610,10 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		{
 			case SUPPLY:
 				return CandidateType.UNEXPECTED_INCREASE;
+			case UNEXPECTED_INCREASE:
+				return CandidateType.UNEXPECTED_INCREASE;
+			case UNEXPECTED_DECREASE:
+				return CandidateType.UNEXPECTED_DECREASE;
 			case DEMAND:
 				return CandidateType.UNEXPECTED_DECREASE;
 			default:

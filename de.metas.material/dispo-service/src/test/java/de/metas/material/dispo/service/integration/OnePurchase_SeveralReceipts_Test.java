@@ -385,7 +385,7 @@ public class OnePurchase_SeveralReceipts_Test
 						tuple(asTS("2019-10-31T23:59:59Z"), asBD("9999"), AttributesKey.NONE.getAsString(), CandidateType.SUPPLY.getCode()),
 						tuple(asTS("2019-10-31T23:59:59Z"), asBD("9999"), AttributesKey.NONE.getAsString(), CandidateType.STOCK.getCode()),
 
-						tuple(asTS("2019-11-01T13:00:00Z"), asBD("1"), asAttrKeyString(1), CandidateType.UNEXPECTED_DECREASE.getCode()),
+						tuple(asTS("2019-11-01T13:00:00Z"), asBD("1"), asAttrKeyString(1), CandidateType.UNEXPECTED_INCREASE.getCode()),
 						tuple(asTS("2019-11-01T13:00:00Z"), asBD("1"), asAttrKeyString(1), CandidateType.STOCK.getCode()));
 
 		//
@@ -402,10 +402,10 @@ public class OnePurchase_SeveralReceipts_Test
 						tuple(asTS("2019-10-31T23:59:59Z"), asBD("9899"), AttributesKey.NONE.getAsString(), CandidateType.SUPPLY.getCode()),
 						tuple(asTS("2019-10-31T23:59:59Z"), asBD("9899"), AttributesKey.NONE.getAsString(), CandidateType.STOCK.getCode()),
 
-						tuple(asTS("2019-11-01T13:00:00Z"), asBD("1"), asAttrKeyString(1), CandidateType.UNEXPECTED_DECREASE.getCode()),
+						tuple(asTS("2019-11-01T13:00:00Z"), asBD("1"), asAttrKeyString(1), CandidateType.UNEXPECTED_INCREASE.getCode()),
 						tuple(asTS("2019-11-01T13:00:00Z"), asBD("1"), asAttrKeyString(1), CandidateType.STOCK.getCode()), // at this timestamp we have ATP=1
 
-						tuple(asTS("2019-11-01T13:02:00Z"), asBD("100"), asAttrKeyString(1), CandidateType.UNEXPECTED_DECREASE.getCode()),
+						tuple(asTS("2019-11-01T13:02:00Z"), asBD("100"), asAttrKeyString(1), CandidateType.UNEXPECTED_INCREASE.getCode()),
 						tuple(asTS("2019-11-01T13:02:00Z"), asBD("101"), asAttrKeyString(1), CandidateType.STOCK.getCode()) // at this timestamp we have ATP=101
 				);
 	}
@@ -439,7 +439,7 @@ public class OnePurchase_SeveralReceipts_Test
 						tuple(asTS("2019-10-31T23:59:59Z"), asBD("9999"), AttributesKey.NONE.getAsString(), CandidateType.SUPPLY.getCode()),
 						tuple(asTS("2019-10-31T23:59:59Z"), asBD("9999"), AttributesKey.NONE.getAsString(), CandidateType.STOCK.getCode()),
 
-						tuple(asTS("2019-11-01T13:00:00Z"), asBD("1"), asAttrKeyString(1), CandidateType.UNEXPECTED_DECREASE.getCode()),
+						tuple(asTS("2019-11-01T13:00:00Z"), asBD("1"), asAttrKeyString(1), CandidateType.UNEXPECTED_INCREASE.getCode()),
 						tuple(asTS("2019-11-01T13:00:00Z"), asBD("1"), asAttrKeyString(1), CandidateType.STOCK.getCode()));
 
 		//
