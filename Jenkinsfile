@@ -97,6 +97,7 @@ timestamps
 
 	String dbInitDockerImageName; // will be set if and when the docker image is created
 
+	final MF_ARTIFACT_URLS = [:];
 
 	// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
 	final String MF_VERSION = retrieveArtifactVersion(MF_UPSTREAM_BRANCH, env.BUILD_NUMBER)
@@ -188,7 +189,6 @@ node('agent && linux')
 				final def mavenProps = readProperties file: 'dist/app.properties'
 				final def urlEncodedMavenProps = misc.urlEncodeMapValues(mavenProps);
 
-				final MF_ARTIFACT_URLS = [:];
 				MF_ARTIFACT_URLS['metasfresh-admin'] = "${mvnConf.resolveRepoURL}/de/metas/admin/metasfresh-admin/${urlEncodedMavenProps['metasfresh-admin.version']}/metasfresh-admin-${urlEncodedMavenProps['metasfresh-admin.version']}.jar"
 				MF_ARTIFACT_URLS['metasfresh-dist'] = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(MF_VERSION)}-dist.tar.gz"
 				MF_ARTIFACT_URLS['metasfresh-dist-sql-only'] = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(MF_VERSION)}-sql-only.tar.gz"
