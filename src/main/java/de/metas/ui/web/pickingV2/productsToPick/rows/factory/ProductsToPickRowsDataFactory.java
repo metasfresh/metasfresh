@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
@@ -31,6 +32,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
@@ -201,29 +203,41 @@ public final class ProductsToPickRowsDataFactory
 			@NonNull final AllocablePackageable packageable,
 			@NonNull final PickingCandidate existingPickingCandidate)
 	{
-		final Quantity qty;
-
-		final HuId pickFromHUId = existingPickingCandidate.getPickFromHuId();
-		if (pickFromHUId != null)
+		final PickFrom pickFrom = existingPickingCandidate.getPickFrom();
+		if (pickFrom.isPickFromHU())
 		{
-			final ProductId productId = packageable.getProductId();
-			final ReservableStorage storage = storages.getStorage(pickFromHUId, productId);
-			qty = storage.reserve(packageable, existingPickingCandidate.getQtyPicked());
+			final Quantity qty;
+
+			final HuId pickFromHUId = pickFrom.getHuId();
+			if (pickFromHUId != null)
+			{
+				final ProductId productId = packageable.getProductId();
+				final ReservableStorage storage = storages.getStorage(pickFromHUId, productId);
+				qty = storage.reserve(packageable, existingPickingCandidate.getQtyPicked());
+			}
+			else
+			{
+				qty = existingPickingCandidate.getQtyPicked();
+			}
+
+			return prepareRow()
+					.rowType(ProductsToPickRowType.PICK_FROM_HU)
+					.productId(packageable.getProductId())
+					.shipmentScheduleId(packageable.getShipmentScheduleId())
+					.salesOrderLineId(packageable.getSalesOrderLineIdOrNull())
+					.qty(qty)
+					.pickFromHUId(pickFromHUId)
+					.existingPickingCandidate(existingPickingCandidate)
+					.build();
+		}
+		else if (pickFrom.isPickFromPickingOrder())
+		{
+			throw new UnsupportedOperationException("not implemented"); // TODO
 		}
 		else
 		{
-			qty = existingPickingCandidate.getQtyPicked();
+			throw new AdempiereException("Unknown " + pickFrom);
 		}
-
-		return prepareRow()
-				.rowType(ProductsToPickRowType.PICK_FROM_HU)
-				.productId(packageable.getProductId())
-				.shipmentScheduleId(packageable.getShipmentScheduleId())
-				.salesOrderLineId(packageable.getSalesOrderLineIdOrNull())
-				.qty(qty)
-				.pickFromHUId(pickFromHUId)
-				.existingPickingCandidate(existingPickingCandidate)
-				.build();
 	}
 
 	private List<ProductsToPickRow> createRowsFromHUs(final AllocablePackageable packageable)

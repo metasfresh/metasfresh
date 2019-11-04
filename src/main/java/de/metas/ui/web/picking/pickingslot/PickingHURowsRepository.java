@@ -199,7 +199,7 @@ public class PickingHURowsRepository
 				continue;
 			}
 
-			final HuId huId = pickingCandidate.getPickFromHuId();
+			final HuId huId = pickingCandidate.getPickFrom().getHuId();
 			if (huId == null)
 			{
 				logger.warn("Skip {} because huId is null", huId);
