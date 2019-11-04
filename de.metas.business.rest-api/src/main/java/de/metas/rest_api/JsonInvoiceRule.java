@@ -1,5 +1,7 @@
 package de.metas.rest_api;
 
+import de.pentabyte.springfox.ApiEnum;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -24,9 +26,12 @@ package de.metas.rest_api;
 
 public enum JsonInvoiceRule
 {
+	@ApiEnum("Specifies that only *delivered* quanties will be invoiced")
 	AfterDelivery,
 
+	@ApiEnum("Like `AfterDelivery`, but the invoicing date is also set according to the respective bill partner's invoicing schedule (e.g. once per month)")
 	CustomerScheduleAfterDelivery,
 
+	@ApiEnum("The ordered quantity can be invoiced right away")
 	Immediate;
 }

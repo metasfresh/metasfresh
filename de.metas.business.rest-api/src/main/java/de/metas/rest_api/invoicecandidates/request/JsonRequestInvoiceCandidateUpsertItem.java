@@ -84,11 +84,13 @@ public class JsonRequestInvoiceCandidateUpsertItem
 			+ "Note that if this is set, then there also needs to exist a UOM-conversion rule between this UOM and the <code>product</code>'s UOM")
 	String uomCode;
 
-	@ApiModelProperty(position = 100, required = true, value = "Specified if this invoice candidate is about a sales- or purchase-transactions")
+	@ApiModelProperty(position = 100, required = true, //
+			value = "Specifies if this invoice candidate is about a sales- or purchase-transaction."
+					+ "\n Needs to be set if the invoice candidate shall be created")
 	JsonSOTrx soTrx;
 
 	@ApiModelProperty(position = 110, required = false,//
-			value = "Can be set if the invoice's document type is already known from the external system.\n"
+			value = "Can be set if the invoice's target document type is already known from the external system.\n"
 					+ "If specified, the respective doctype needs to be consistent with this instance's `soTrx` value.")
 	JsonDocTypeInfo invoiceDocType;
 
