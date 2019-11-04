@@ -15,7 +15,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1254799178L;
+	private static final long serialVersionUID = -11031599L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (Properties ctx, int M_ShipmentSchedule_ID, String trxName)
@@ -719,8 +719,8 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public static final String DOCSUBTYPE_PrepayOrder = "PR";
 	/** Provisionskorrektur = CC */
 	public static final String DOCSUBTYPE_Provisionskorrektur = "CC";
-	/** Provisionsberechnung = CA */
-	public static final String DOCSUBTYPE_Provisionsberechnung = "CA";
+	/** CommissionSettlement = CA */
+	public static final String DOCSUBTYPE_CommissionSettlement = "CA";
 	/** FlatFee = FF */
 	public static final String DOCSUBTYPE_FlatFee = "FF";
 	/** HoldingFee = HF */
@@ -773,6 +773,10 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public static final String DOCSUBTYPE_SingleHUInventory = "ISH";
 	/** NAR = NAR */
 	public static final String DOCSUBTYPE_NAR = "NAR";
+	/** Cashbook = CB */
+	public static final String DOCSUBTYPE_Cashbook = "CB";
+	/** Bankstatement = BS */
+	public static final String DOCSUBTYPE_Bankstatement = "BS";
 	/** Set Doc Sub Type.
 		@param DocSubType 
 		Document Sub Type
@@ -1124,6 +1128,43 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public int getM_ShipmentSchedule_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShipmentSchedule_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_Shipper getM_Shipper()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class);
+	}
+
+	@Override
+	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class, M_Shipper);
+	}
+
+	/** Set Lieferweg.
+		@param M_Shipper_ID 
+		Methode oder Art der Warenlieferung
+	  */
+	@Override
+	public void setM_Shipper_ID (int M_Shipper_ID)
+	{
+		if (M_Shipper_ID < 1) 
+			set_Value (COLUMNNAME_M_Shipper_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Shipper_ID, Integer.valueOf(M_Shipper_ID));
+	}
+
+	/** Get Lieferweg.
+		@return Methode oder Art der Warenlieferung
+	  */
+	@Override
+	public int getM_Shipper_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Shipper_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
