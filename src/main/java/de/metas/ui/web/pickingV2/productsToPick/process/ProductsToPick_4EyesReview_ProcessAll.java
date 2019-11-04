@@ -19,8 +19,11 @@ import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.shipmentschedule.api.HUShippingFacade;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRow;
 import de.metas.util.Services;
@@ -47,7 +50,7 @@ import de.metas.util.Services;
  * #L%
  */
 
-public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBasedProcess
+public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBasedProcess implements IProcessDefaultParametersProvider
 {
 	private final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 	@Autowired
@@ -83,6 +86,24 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 		}
 
 		return ProcessPreconditionsResolution.accept();
+	}
+
+	@Override
+	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
+	{
+		final String parameterName = parameter.getColumnName();
+		if (I_M_Shipper.COLUMNNAME_M_Shipper_ID.equals(parameterName))
+		{
+			final List<ProductsToPickRow> rows = getRowsNotAlreadyProcessed();
+			return rows.stream()
+					.map(ProductsToPickRow::getShipperId)
+					.filter(Predicates.notNull())
+					.findFirst()
+					.map(ShipperId::getRepoId)
+					.orElse(-1);
+		}
+
+		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}
 
 	@Override
