@@ -35,7 +35,7 @@ final class PickingCandidateIssueToBOMLineKey
 {
 	public static PickingCandidateIssueToBOMLineKey of(final PickingCandidateIssueToBOMLine issue)
 	{
-		return new PickingCandidateIssueToBOMLineKey(issue.getIssueToOrderBOMLine(), issue.getIssueFromHUId());
+		return new PickingCandidateIssueToBOMLineKey(issue.getIssueToOrderBOMLineId(), issue.getIssueFromHUId());
 	}
 
 	public static PickingCandidateIssueToBOMLineKey of(final I_M_Picking_Candidate_IssueToOrder record)

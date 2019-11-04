@@ -38,7 +38,7 @@ import lombok.Value;
 public class PickingCandidateIssueToBOMLine
 {
 	@NonNull
-	PPOrderBOMLineId issueToOrderBOMLine;
+	PPOrderBOMLineId issueToOrderBOMLineId;
 
 	@NonNull
 	HuId issueFromHUId;

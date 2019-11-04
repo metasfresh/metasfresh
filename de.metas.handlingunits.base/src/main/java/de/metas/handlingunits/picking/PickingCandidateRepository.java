@@ -537,7 +537,7 @@ public class PickingCandidateRepository
 		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
 
 		return PickingCandidateIssueToBOMLine.builder()
-				.issueToOrderBOMLine(PPOrderBOMLineId.ofRepoId(record.getPP_Order_BOMLine_ID()))
+				.issueToOrderBOMLineId(PPOrderBOMLineId.ofRepoId(record.getPP_Order_BOMLine_ID()))
 				.issueFromHUId(HuId.ofRepoId(record.getM_HU_ID()))
 				.qtyToIssue(Quantity.of(record.getQtyToIssue(), uom))
 				.costCollectorId(PPCostCollectorId.ofRepoIdOrNull(record.getPP_Cost_Collector_ID()))
@@ -570,7 +570,7 @@ public class PickingCandidateRepository
 			}
 
 			record.setM_Picking_Candidate_ID(pickingCandidateId.getRepoId());
-			record.setM_Picking_Candidate_IssueToOrder_ID(issue.getIssueToOrderBOMLine().getRepoId());
+			record.setM_Picking_Candidate_IssueToOrder_ID(issue.getIssueToOrderBOMLineId().getRepoId());
 			record.setM_HU_ID(issue.getIssueFromHUId().getRepoId());
 			record.setIsActive(true);
 			record.setQtyToIssue(issue.getQtyToIssue().toBigDecimal());
