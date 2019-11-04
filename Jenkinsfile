@@ -95,7 +95,6 @@ timestamps
 	MF_DOCKER_IMAGES['metasfresh-e2e'] = params.MF_METASFRESH_E2E_DOCKER_IMAGE ?: "nexus.metasfresh.com:6001/metasfresh/metasfresh-e2e:${fallbackDockerTag}"
 	MF_DOCKER_IMAGES['metasfresh-edi'] = params.MF_METASFRESH_EDI_DOCKER_IMAGE ?: "nexus.metasfresh.com:6001/metasfresh/de-metas-edi-esb-camel:${fallbackDockerTag}"
 
-	final MF_ARTIFACT_URLS = [:];
 	String dbInitDockerImageName; // will be set if and when the docker image is created
 
 
