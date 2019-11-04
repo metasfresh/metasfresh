@@ -20,7 +20,7 @@ import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
 import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.rest_api.ordercandidates.response.JsonOLCand;
 import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
-import de.metas.rest_api.utils.JsonError;
+import de.metas.rest_api.utils.JsonErrorItem;
 import de.metas.util.JSONObjectMapper;
 import lombok.NonNull;
 
@@ -168,7 +168,7 @@ public class JsonOLCandModelTest
 	{
 		final JSONObjectMapper<JsonOLCandCreateBulkResponse> jsonObjectMapper = JSONObjectMapper.forClass(JsonOLCandCreateBulkResponse.class);
 
-		final JsonOLCandCreateBulkResponse response = JsonOLCandCreateBulkResponse.error(JsonError.builder()
+		final JsonOLCandCreateBulkResponse response = JsonOLCandCreateBulkResponse.error(JsonErrorItem.builder()
 				.message("error message")
 				.stackTrace("error stacktrace")
 				.throwable(null) // REMEMBER: throwable is not serialized
@@ -181,7 +181,7 @@ public class JsonOLCandModelTest
 	{
 		final JSONObjectMapper<JsonOLCandCreateBulkResponse> jsonObjectMapper = JSONObjectMapper.forClass(JsonOLCandCreateBulkResponse.class);
 
-		final JsonOLCandCreateBulkResponse response = JsonOLCandCreateBulkResponse.error(JsonError.builder()
+		final JsonOLCandCreateBulkResponse response = JsonOLCandCreateBulkResponse.error(JsonErrorItem.builder()
 				.message("error message")
 				.stackTrace("error stacktrace")
 				.throwable(new RuntimeException("whatever"))
@@ -189,7 +189,7 @@ public class JsonOLCandModelTest
 
 		final String json = jsonObjectMapper.writeValueAsString(response);
 		final JsonOLCandCreateBulkResponse responseDeserialized = jsonObjectMapper.readValue(json);
-		assertThat(responseDeserialized).isEqualTo(JsonOLCandCreateBulkResponse.error(JsonError.builder()
+		assertThat(responseDeserialized).isEqualTo(JsonOLCandCreateBulkResponse.error(JsonErrorItem.builder()
 				.message("error message")
 				.stackTrace("error stacktrace")
 				.build()));

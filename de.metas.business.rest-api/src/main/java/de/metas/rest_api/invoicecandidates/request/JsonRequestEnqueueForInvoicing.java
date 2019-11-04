@@ -41,11 +41,11 @@ import lombok.Value;
  * #L%
  */
 @Value
-public final class JsonEnqueueForInvoicingRequest
+public final class JsonRequestEnqueueForInvoicing
 {
 	@ApiModelProperty(position = 10, required = true, //
 			value = "Specifies the invoice candidtes to be invoiced.")
-	List<JsonInvoiceCandidate> invoiceCandidates;
+	List<JsonRequestInvoiceCandidate> invoiceCandidates;
 
 	@ApiModelProperty(position = 20, value = "Optional invoices' document date", example = "2019-10-30")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
@@ -78,8 +78,8 @@ public final class JsonEnqueueForInvoicingRequest
 
 	@JsonCreator
 	@Builder(toBuilder = true)
-	private JsonEnqueueForInvoicingRequest(
-			@JsonProperty("invoiceCandidates") @Singular final List<JsonInvoiceCandidate> invoiceCandidates,
+	private JsonRequestEnqueueForInvoicing(
+			@JsonProperty("invoiceCandidates") @Singular final List<JsonRequestInvoiceCandidate> invoiceCandidates,
 			@JsonProperty("dateInvoiced") @Nullable final LocalDate dateInvoiced,
 			@JsonProperty("dateAcct") @Nullable final LocalDate dateAcct,
 			@JsonProperty("poReference") @Nullable final String poReference,

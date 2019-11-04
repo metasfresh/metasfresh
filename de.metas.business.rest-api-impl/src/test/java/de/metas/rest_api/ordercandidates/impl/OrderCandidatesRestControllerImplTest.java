@@ -73,7 +73,7 @@ import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndC
 import de.metas.rest_api.ordercandidates.response.JsonAttachment;
 import de.metas.rest_api.ordercandidates.response.JsonOLCand;
 import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
-import de.metas.rest_api.utils.JsonError;
+import de.metas.rest_api.utils.JsonErrorItem;
 import de.metas.rest_api.utils.PermissionService;
 import de.metas.rest_api.utils.PermissionServiceFactories;
 import de.metas.tax.api.TaxCategoryId;
@@ -369,7 +369,7 @@ public class OrderCandidatesRestControllerImplTest
 		final JsonOLCandCreateBulkResponse responseBody = response.getBody();
 		assertThat(responseBody.isError()).isTrue();
 
-		final JsonError error = responseBody.getError();
+		final JsonErrorItem error = responseBody.getError();
 		assertThat(error.getMessage()).contains("Found no existing BPartner");
 	}
 

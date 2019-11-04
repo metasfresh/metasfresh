@@ -29,5 +29,4 @@ public enum JsonInvoiceRule
 	CustomerScheduleAfterDelivery,
 
 	Immediate;
-
 }

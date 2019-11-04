@@ -9,7 +9,7 @@ import org.compiere.model.Null;
 import org.compiere.util.Trace;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.rest_api.utils.JsonError.JsonErrorBuilder;
+import de.metas.rest_api.utils.JsonErrorItem.JsonErrorItemBuilder;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
@@ -41,21 +41,21 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class JsonErrors
 {
-	public static JsonError ofThrowable(
+	public static JsonErrorItem ofThrowable(
 			@NonNull final Throwable throwable,
 			@NonNull final String adLanguage)
 	{
 		return ofThrowable(throwable, adLanguage, null);
 	}
 
-	public static JsonError ofThrowable(
+	public static JsonErrorItem ofThrowable(
 			@NonNull final Throwable throwable,
 			@NonNull final String adLanguage,
 			@Nullable final ITranslatableString detail)
 	{
 		final Throwable cause = AdempiereException.extractCause(throwable);
 
-		final JsonErrorBuilder builder = JsonError.builder()
+		final JsonErrorItemBuilder builder = JsonErrorItem.builder()
 				.message(AdempiereException.extractMessageTrl(cause).translate(adLanguage))
 				.stackTrace(Trace.toOneLineStackTraceString(cause.getStackTrace()))
 				.parameters(extractParameters(throwable, adLanguage))

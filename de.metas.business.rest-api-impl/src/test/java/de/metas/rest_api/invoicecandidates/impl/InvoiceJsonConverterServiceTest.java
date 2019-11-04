@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidate;
+import de.metas.rest_api.invoicecandidates.request.JsonRequestInvoiceCandidate;
 import de.metas.util.rest.ExternalHeaderAndLineId;
 import de.metas.util.rest.ExternalId;
 
@@ -54,11 +54,11 @@ public class InvoiceJsonConverterServiceTest
 	@Test
 	void checkInvoiceCandidateSelection()
 	{
-		final JsonInvoiceCandidate jic1 = JsonInvoiceCandidate.builder()
+		final JsonRequestInvoiceCandidate jic1 = JsonRequestInvoiceCandidate.builder()
 				.externalHeaderId(EXTERNAL_HEADER_ID1)
 				.build();
 
-		final JsonInvoiceCandidate jic2 = JsonInvoiceCandidate.builder()
+		final JsonRequestInvoiceCandidate jic2 = JsonRequestInvoiceCandidate.builder()
 				.externalHeaderId(EXTERNAL_HEADER_ID2)
 				.externalLineId(EXTERNAL_LINE_ID1)
 				.externalLineId(EXTERNAL_LINE_ID2)

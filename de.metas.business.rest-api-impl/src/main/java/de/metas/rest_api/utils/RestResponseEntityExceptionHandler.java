@@ -117,6 +117,10 @@ public class RestResponseEntityExceptionHandler
 		logger.error(logMessage, e);
 
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
-		return new ResponseEntity<>(JsonErrors.ofThrowable(e, adLanguage, TranslatableStrings.constant(detail)), status);
+
+		final JsonError error = JsonError.builder()
+				.error(JsonErrors.ofThrowable(e, adLanguage, TranslatableStrings.constant(detail)))
+				.build();
+		return new ResponseEntity<>(error, status);
 	}
 }

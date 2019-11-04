@@ -39,7 +39,7 @@ import lombok.Value;
  * #L%
  */
 @Value
-public class JsonInvoiceCandidate
+public class JsonRequestInvoiceCandidate
 {
 	@ApiModelProperty(position = 10, allowEmptyValue = false, dataType = "java.lang.string", example = "abc",//
 			value = "Used to select which invoice candidates should be enqueued.")
@@ -54,12 +54,11 @@ public class JsonInvoiceCandidate
 
 	@JsonCreator
 	@Builder(toBuilder = true)
-	private JsonInvoiceCandidate(
+	private JsonRequestInvoiceCandidate(
 			@JsonProperty("externalLineIds") @Singular @Nullable final List<ExternalId> externalLineIds,
 			@JsonProperty("externalHeaderId") @NonNull final ExternalId externalHeaderId)
 	{
 		this.externalLineIds = externalLineIds == null ? ImmutableList.of() : ImmutableList.copyOf(externalLineIds);
 		this.externalHeaderId = externalHeaderId;
 	}
-
 }

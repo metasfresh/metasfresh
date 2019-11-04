@@ -1,10 +1,9 @@
 package de.metas.rest_api.invoicecandidates.response;
 
-import java.util.List;
-
+import de.metas.rest_api.JsonExternalId;
+import de.metas.rest_api.MetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -31,9 +30,15 @@ import lombok.Value;
 
 @Value
 @Builder
-public class JsonResponseInvoiceCandidateUpsert
+public class JsonResponseInvoiceCandidateUpsertItem
 {
-	@ApiModelProperty(position = 10)
-	@Singular
-	List<JsonResponseInvoiceCandidateUpsertItem> responseItems;
+	@ApiModelProperty(position = 10, dataType = "java.lang.String")
+	JsonExternalId externalHeaderId;
+
+	@ApiModelProperty(position = 10, dataType = "java.lang.String")
+	JsonExternalId externalLineId;
+
+	@ApiModelProperty(value = "The metasfresh-ID of the upserted record",//
+			position = 30, dataType = "java.lang.Long")
+	MetasfreshId metasfreshId;
 }

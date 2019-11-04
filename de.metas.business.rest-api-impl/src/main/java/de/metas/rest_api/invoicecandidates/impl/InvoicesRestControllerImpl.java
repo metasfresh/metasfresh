@@ -16,9 +16,9 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.rest_api.invoicecandidates.IInvoicesRestEndpoint;
-import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
+import de.metas.rest_api.invoicecandidates.request.JsonRequestEnqueueForInvoicing;
 import de.metas.rest_api.invoicecandidates.request.JsonRequestInvoiceCandidateUpsert;
-import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
+import de.metas.rest_api.invoicecandidates.response.JsonResponseEnqueueForInvoicing;
 import de.metas.rest_api.invoicecandidates.response.JsonResponseInvoiceCandidateUpsert;
 import de.metas.util.Services;
 import de.metas.util.rest.ExternalHeaderAndLineId;
@@ -55,24 +55,29 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final InvoiceJsonConverterService jsonConverter;
+	private final JsonInvoiceCandidateUpsertService jsonInvoiceCandidateUpsertService;
 
-	public InvoicesRestControllerImpl(@NonNull final InvoiceJsonConverterService jsonConverter)
+	public InvoicesRestControllerImpl(
+			@NonNull final InvoiceJsonConverterService jsonConverter,
+			@NonNull final JsonInvoiceCandidateUpsertService jsonInvoiceCandidateUpsertService)
 	{
 		this.jsonConverter = jsonConverter;
+		this.jsonInvoiceCandidateUpsertService = jsonInvoiceCandidateUpsertService;
 	}
 
+	@ApiOperation("Create new invoice candidates or update existing invoice candidates")
 	@PostMapping(path = "createOrUpdateCandidates")
 	@Override
-	public ResponseEntity<JsonResponseInvoiceCandidateUpsert> createOrUpdateInvoiceCandidates(JsonRequestInvoiceCandidateUpsert request)
+	public ResponseEntity<JsonResponseInvoiceCandidateUpsert> createOrUpdateInvoiceCandidates(
+			@RequestBody @NonNull final JsonRequestInvoiceCandidateUpsert request)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return ResponseEntity.ok(jsonInvoiceCandidateUpsertService.createOrUpdateInvoiceCandidates(request));
 	}
 
 	@ApiOperation("Enqueues invoice candidates for invoicing")
 	@PostMapping(path = "enqueueForInvoicing")
 	@Override
-	public ResponseEntity<JsonEnqueueForInvoicingResponse> enqueueForInvoicing(@RequestBody @NonNull final JsonEnqueueForInvoicingRequest request)
+	public ResponseEntity<JsonResponseEnqueueForInvoicing> enqueueForInvoicing(@RequestBody @NonNull final JsonRequestEnqueueForInvoicing request)
 	{
 		final PInstanceId pInstanceId = adPInstanceDAO.createSelectionId();
 		final List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(request.getInvoiceCandidates());
@@ -84,7 +89,7 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 				.setFailIfNothingEnqueued(true)
 				.enqueueSelection(pInstanceId);
 
-		final JsonEnqueueForInvoicingResponse response = jsonConverter.toJson(enqueueResult);
+		final JsonResponseEnqueueForInvoicing response = jsonConverter.toJson(enqueueResult);
 		return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
 	}
 }

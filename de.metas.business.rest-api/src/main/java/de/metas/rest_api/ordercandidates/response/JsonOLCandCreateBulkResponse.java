@@ -11,8 +11,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.rest_api.utils.JsonError;
+import de.metas.rest_api.utils.JsonErrorItem;
 import de.metas.util.Check;
+import de.metas.util.collections.CollectionUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
@@ -46,11 +47,11 @@ public final class JsonOLCandCreateBulkResponse
 {
 	public static JsonOLCandCreateBulkResponse ok(@NonNull final List<JsonOLCand> olCands)
 	{
-		final JsonError error = null;
+		final JsonErrorItem error = null;
 		return new JsonOLCandCreateBulkResponse(olCands, error);
 	}
 
-	public static JsonOLCandCreateBulkResponse error(@NonNull final JsonError error)
+	public static JsonOLCandCreateBulkResponse error(@NonNull final JsonErrorItem error)
 	{
 		final List<JsonOLCand> olCands = null;
 		return new JsonOLCandCreateBulkResponse(olCands, error);
@@ -60,46 +61,47 @@ public final class JsonOLCandCreateBulkResponse
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final List<JsonOLCand> result;
 
-	@JsonProperty("error")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final JsonError error;
+	@JsonProperty("errors")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	List<JsonErrorItem> errors;
 
 	@JsonCreator
 	private JsonOLCandCreateBulkResponse(
 			@JsonProperty("result") @Nullable final List<JsonOLCand> olCands,
-			@JsonProperty("error") @Nullable final JsonError error)
+			@JsonProperty("error") @Nullable final JsonErrorItem error)
 	{
-		this.error = error;
 		if (error == null)
 		{
 			result = olCands != null ? ImmutableList.copyOf(olCands) : ImmutableList.of();
+			errors = ImmutableList.of();
 		}
 		else
 		{
 			Check.assume(olCands == null || olCands.isEmpty(), "No olCands shall be provided when error");
 			result = null;
+			this.errors = ImmutableList.of(error);
 		}
 	}
 
 	public boolean isError()
 	{
-		return error != null;
+		return !errors.isEmpty();
 	}
 
-	public JsonError getError()
+	public JsonErrorItem getError()
 	{
-		if (error == null)
+		if (errors.isEmpty())
 		{
 			throw new IllegalStateException("Not an error result: " + this);
 		}
-		return error;
+		return CollectionUtils.singleElement(errors);
 	}
 
 	public List<JsonOLCand> getResult()
 	{
-		if (error != null)
+		if (!errors.isEmpty())
 		{
-			throw new IllegalStateException("Not an successful result: " + this, error.getThrowable());
+			throw new IllegalStateException("Not an successful result: " + this, getError().getThrowable());
 		}
 		return result;
 	}

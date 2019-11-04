@@ -6,6 +6,9 @@ import java.util.List;
 
 import de.metas.rest_api.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
+import lombok.Singular;
+import lombok.Value;
 
 /*
  * #%L
@@ -29,9 +32,12 @@ import io.swagger.annotations.ApiModelProperty;
  * #L%
  */
 
+@Value
+@Builder
 public class JsonRequestInvoiceCandidateUpsert
 {
 	@ApiModelProperty(position = 10)
+	@Singular
 	List<JsonRequestInvoiceCandidateUpsertItem> requestItems;
 
 	@ApiModelProperty(position = 20, value = "Sync-advise for individual items.\n" + PARENT_SYNC_ADVISE_DOC)

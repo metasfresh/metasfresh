@@ -1,10 +1,13 @@
 package de.metas.rest_api.data_import;
 
+import java.util.List;
+
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.google.common.collect.ImmutableList;
 
-import de.metas.rest_api.utils.JsonError;
+import de.metas.rest_api.utils.JsonErrorItem;
 import de.metas.rest_api.utils.JsonErrors;
 import lombok.Value;
 
@@ -18,12 +21,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,7 +39,7 @@ public class JsonDataImportResponseWrapper
 {
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@Nullable
-	JsonError error;
+	List<JsonErrorItem> errors;
 
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@Nullable
@@ -44,14 +47,14 @@ public class JsonDataImportResponseWrapper
 
 	public static JsonDataImportResponseWrapper ok(final JsonDataImportResponse response)
 	{
-		final JsonError error = null;
+		final List<JsonErrorItem> error = null;
 		return new JsonDataImportResponseWrapper(error, response);
 	}
 
 	public static JsonDataImportResponseWrapper error(final Throwable throwable, final String adLanguage)
 	{
-		final JsonError error = JsonErrors.ofThrowable(throwable, adLanguage);
+		final List<JsonErrorItem> errors = ImmutableList.of(JsonErrors.ofThrowable(throwable, adLanguage));
 		final JsonDataImportResponse response = null;
-		return new JsonDataImportResponseWrapper(error, response);
+		return new JsonDataImportResponseWrapper(errors, response);
 	}
 }

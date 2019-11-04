@@ -1,26 +1,14 @@
 package de.metas.rest_api.utils;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import java.util.List;
 
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.google.common.collect.ImmutableMap;
-
-import io.swagger.annotations.ApiModel;
 import lombok.Builder;
-import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.business.rest-api-impl
+ * de.metas.business.rest-api
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -40,40 +28,10 @@ import lombok.Value;
  * #L%
  */
 
-@ApiModel(description = "Error informations")
 @Value
+@Builder
 public class JsonError
 {
-	String message;
-
-	@JsonInclude(Include.NON_EMPTY)
-	String detail;
-
-	String stackTrace;
-
-	Map<String, String> parameters;
-
-	/**
-	 * Local exception.
-	 * It won't be serialized. It's just used for local troubleshooting.
-	 */
-	@JsonIgnore
-	transient Throwable throwable;
-
-	@JsonCreator
-	@Builder
-	private JsonError(
-			@JsonProperty("message") @NonNull final String message,
-			@JsonProperty("detail") @NonNull final String detail,
-			@JsonProperty("stackTrace") @Nullable final String stackTrace,
-			@JsonProperty("parameters") @Nullable final Map<String, String> parameters,
-			@JsonProperty("throwable") @Nullable final Throwable throwable)
-	{
-		this.message = message;
-		this.detail = detail;
-		this.stackTrace = stackTrace;
-		this.parameters = coalesce(parameters, ImmutableMap.of());
-		this.throwable = throwable;
-	}
-
+	@Singular
+	List<JsonErrorItem> errors;
 }
