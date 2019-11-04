@@ -44,7 +44,6 @@ import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.order.OrderLineId;
@@ -93,7 +92,6 @@ class ProductsToPickRowsDataFactory
 	// services
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	final IShipmentSchedulePA shipmentScheduleRepo = Services.get(IShipmentSchedulePA.class);
 	private final IBPartnerBL bpartnersService;
 	private final HUReservationService huReservationService;
 	private final PickingCandidateService pickingCandidateService;
@@ -342,7 +340,7 @@ class ProductsToPickRowsDataFactory
 		final LookupValue locator = pickFromHUId != null ? getLocatorLookupValueByHuId(pickFromHUId) : null;
 		final ImmutableAttributeSet attributes = pickFromHUId != null ? getHUAttributes(pickFromHUId) : ImmutableAttributeSet.EMPTY;
 
-		final ShipperId suggestedShipperId = shipmentScheduleRepo.getShipperIdOrNull(shipmentScheduleId);
+		final ShipperId suggestedShipperId = packageable.getSuggestedShipperId();
 
 		final ProductsToPickRowId rowId = ProductsToPickRowId.builder()
 				.productId(productInfo.getProductId())
@@ -507,6 +505,9 @@ class ProductsToPickRowsDataFactory
 		@Getter
 		private final OrderLineId salesOrderLineIdOrNull;
 
+		@Getter
+		private final ShipperId suggestedShipperId;
+
 		private final Quantity qtyToAllocateTarget;
 		@Getter
 		private Quantity qtyToAllocate;
@@ -520,6 +521,7 @@ class ProductsToPickRowsDataFactory
 			this.bestBeforePolicy = packageable.getBestBeforePolicy();
 			this.warehouseId = packageable.getWarehouseId();
 			this.salesOrderLineIdOrNull = packageable.getSalesOrderLineIdOrNull();
+			this.suggestedShipperId = packageable.getShipperId();
 
 			qtyToAllocateTarget = packageable.getQtyOrdered()
 					.subtract(packageable.getQtyPickedOrDelivered())
