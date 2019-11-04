@@ -144,48 +144,66 @@ public class ProcessPickingCandidatesCommand
 			closeShipmentScheduleAndInvoiceCandidates(shipmentSchedule);
 			packedToHuId = null;
 		}
+		else if (pickingCandidate.getPickFrom().isPickFromHU())
+		{
+			packedToHuId = processInTrx_PickFromHU(pickingCandidate);
+		}
+		else if (pickingCandidate.getPickFrom().isPickFromPickingOrder())
+		{
+			packedToHuId = processInTrx_PickFromPickingOrder(pickingCandidate);
+		}
 		else
 		{
-			final IAllocationSource pickFromSource = HUListAllocationSourceDestination
-					.ofHUId(pickingCandidate.getPickFromHuId())
-					.setDestroyEmptyHUs(true);
-			final IHUProducerAllocationDestination packToDestination = getPackToDestination(pickingCandidate);
-
-			final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing();
-
-			final IAllocationRequest request = createPackToAllocationRequest(pickingCandidate, huContext);
-			HULoader
-					.of(pickFromSource, packToDestination)
-					.load(request);
-
-			packedToHuId = packToDestination.getSingleCreatedHuId();
-			if (packedToHuId == null)
-			{
-				throw new AdempiereException("Nothing packed for " + pickingCandidate);
-			}
-
-			final ProductId productId = getProductId(pickingCandidate);
-
-			final I_M_HU huRecord = packToDestination.getSingleCreatedHU();
-
-			final StockQtyAndUOMQty qtyPicked = CatchWeightHelper.extractQtys(
-					huContext,
-					productId,
-					pickingCandidate.getQtyPicked(),
-					huRecord);
-
-			huShipmentScheduleBL.addQtyPickedAndUpdateHU(
-					pickingCandidate.getShipmentScheduleId(),
-					qtyPicked,
-					packedToHuId,
-					huContext);
+			throw new AdempiereException("Unknow " + pickingCandidate.getPickFrom());
 		}
 
 		pickingCandidate.changeStatusToProcessed(packedToHuId);
 		pickingCandidateRepository.save(pickingCandidate);
 	}
 
+	private HuId processInTrx_PickFromHU(final PickingCandidate pickingCandidate)
+	{
+		final HuId packedToHuId;
+		final IAllocationSource pickFromSource = HUListAllocationSourceDestination
+				.ofHUId(pickingCandidate.getPickFrom().getHuId())
+				.setDestroyEmptyHUs(true);
+		final IHUProducerAllocationDestination packToDestination = getPackToDestination(pickingCandidate);
 
+		final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing();
+
+		final IAllocationRequest request = createPackToAllocationRequest(pickingCandidate, huContext);
+		HULoader
+				.of(pickFromSource, packToDestination)
+				.load(request);
+
+		packedToHuId = packToDestination.getSingleCreatedHuId();
+		if (packedToHuId == null)
+		{
+			throw new AdempiereException("Nothing packed for " + pickingCandidate);
+		}
+
+		final ProductId productId = getProductId(pickingCandidate);
+
+		final I_M_HU huRecord = packToDestination.getSingleCreatedHU();
+
+		final StockQtyAndUOMQty qtyPicked = CatchWeightHelper.extractQtys(
+				huContext,
+				productId,
+				pickingCandidate.getQtyPicked(),
+				huRecord);
+
+		huShipmentScheduleBL.addQtyPickedAndUpdateHU(
+				pickingCandidate.getShipmentScheduleId(),
+				qtyPicked,
+				packedToHuId,
+				huContext);
+		return packedToHuId;
+	}
+
+	private HuId processInTrx_PickFromPickingOrder(final PickingCandidate pickingCandidate)
+	{
+		throw new UnsupportedOperationException("not implemented");
+	}
 
 	private void closeShipmentScheduleAndInvoiceCandidates(final I_M_ShipmentSchedule shipmentSchedule)
 	{
