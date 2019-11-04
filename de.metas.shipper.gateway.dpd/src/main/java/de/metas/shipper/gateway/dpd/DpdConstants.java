@@ -32,7 +32,7 @@ public class DpdConstants
 
 	public static class DpdPrinterOptions
 	{
-		public static final String PAPER_FORMAT = "A4";
+		public static final String PAPER_FORMAT = "A6"; // todo should not be hardcoded: add to shipper configuration
 		public static final String PRINTER_LANGUAGE = "PDF";
 	}
 
