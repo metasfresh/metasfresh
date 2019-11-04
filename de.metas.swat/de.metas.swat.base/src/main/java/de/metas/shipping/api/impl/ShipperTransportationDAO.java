@@ -60,7 +60,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 		final IQueryBuilder<T> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(clazz, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Processed, false)
-				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, X_M_ShipperTransportation.DOCSTATUS_Entwurf) // Drafts
+				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, X_M_ShipperTransportation.DOCSTATUS_Drafted) // Drafts
 		;
 
 		queryBuilder.orderBy()
