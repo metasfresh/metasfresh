@@ -98,3 +98,50 @@ UPDATE AD_Field SET IsDisplayed='Y', SeqNo=110,Updated=TO_TIMESTAMP('2019-11-04 
 UPDATE AD_Field SET IsDisplayed='Y', SeqNo=120,Updated=TO_TIMESTAMP('2019-11-04 10:28:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=574802
 ;
 
+
+
+-- 2019-11-04T12:57:08.271Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Campaign Price',Updated=TO_TIMESTAMP('2019-11-04 14:57:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=576099
+;
+
+-- 2019-11-04T12:57:08.325Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='C_Campaign_Price_ID', Name='Campaign Price', Description=NULL, Help=NULL WHERE AD_Element_ID=576099
+;
+
+-- 2019-11-04T12:57:08.326Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='C_Campaign_Price_ID', Name='Campaign Price', Description=NULL, Help=NULL, AD_Element_ID=576099 WHERE UPPER(ColumnName)='C_CAMPAIGN_PRICE_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2019-11-04T12:57:08.330Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='C_Campaign_Price_ID', Name='Campaign Price', Description=NULL, Help=NULL WHERE AD_Element_ID=576099 AND IsCentrallyMaintained='Y'
+;
+
+-- 2019-11-04T12:57:08.331Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Campaign Price', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=576099) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 576099)
+;
+
+-- 2019-11-04T12:57:08.389Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Aktionspreise', Name='Campaign Price' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=576099)
+;
+
+-- 2019-11-04T12:57:08.394Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Campaign Price', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 576099
+;
+
+-- 2019-11-04T12:57:08.399Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Campaign Price', Description=NULL, Help=NULL WHERE AD_Element_ID = 576099
+;
+
+-- 2019-11-04T12:57:08.401Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Campaign Price', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 576099
+;
+

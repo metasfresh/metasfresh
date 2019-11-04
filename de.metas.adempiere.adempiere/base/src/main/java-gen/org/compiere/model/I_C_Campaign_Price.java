@@ -111,7 +111,7 @@ public interface I_C_Campaign_Price
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set Aktionspreise.
+	 * Set Campaign Price.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -120,7 +120,7 @@ public interface I_C_Campaign_Price
 	public void setC_Campaign_Price_ID (int C_Campaign_Price_ID);
 
 	/**
-	 * Get Aktionspreise.
+	 * Get Campaign Price.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

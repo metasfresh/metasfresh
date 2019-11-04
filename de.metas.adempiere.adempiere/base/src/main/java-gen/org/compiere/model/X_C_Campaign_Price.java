@@ -15,7 +15,7 @@ public class X_C_Campaign_Price extends org.compiere.model.PO implements I_C_Cam
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1222016381L;
+	private static final long serialVersionUID = 240390431L;
 
     /** Standard Constructor */
     public X_C_Campaign_Price (Properties ctx, int C_Campaign_Price_ID, String trxName)
@@ -111,8 +111,8 @@ public class X_C_Campaign_Price extends org.compiere.model.PO implements I_C_Cam
 		return ii.intValue();
 	}
 
-	/** Set Aktionspreise.
-		@param C_Campaign_Price_ID Aktionspreise	  */
+	/** Set Campaign Price.
+		@param C_Campaign_Price_ID Campaign Price	  */
 	@Override
 	public void setC_Campaign_Price_ID (int C_Campaign_Price_ID)
 	{
@@ -122,8 +122,8 @@ public class X_C_Campaign_Price extends org.compiere.model.PO implements I_C_Cam
 			set_ValueNoCheck (COLUMNNAME_C_Campaign_Price_ID, Integer.valueOf(C_Campaign_Price_ID));
 	}
 
-	/** Get Aktionspreise.
-		@return Aktionspreise	  */
+	/** Get Campaign Price.
+		@return Campaign Price	  */
 	@Override
 	public int getC_Campaign_Price_ID () 
 	{
