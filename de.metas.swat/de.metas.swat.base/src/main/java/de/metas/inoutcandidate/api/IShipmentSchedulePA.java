@@ -22,7 +22,6 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
-import de.metas.shipping.ShipperId;
 import de.metas.util.ISingletonService;
 
 /**
@@ -124,6 +123,4 @@ public interface IShipmentSchedulePA extends ISingletonService
 	Set<ProductId> getProductIdsByShipmentScheduleIds(Collection<ShipmentScheduleId> shipmentScheduleIds);
 
 	void save(I_M_ShipmentSchedule record);
-
-	ShipperId getShipperIdOrNull(ShipmentScheduleId schipmentScheduleId);
 }
