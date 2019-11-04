@@ -272,10 +272,9 @@ public class HUShippingFacade
 		final I_M_ShipperTransportation shipperTransportation = load(addToShipperTransportationId, I_M_ShipperTransportation.class);
 
 		final DeliveryOrderCreateRequest request = DeliveryOrderCreateRequest.builder()
-				// todo add these 2 fields to PO and to window
 				.pickupDate(getPickupDate(shipperTransportation))
-				.timeFrom(TimeUtil.asLocalTime(shipperTransportation.getTimeFrom()))
-				.timeTo(TimeUtil.asLocalTime(shipperTransportation.getTimeTo()))
+				.timeFrom(TimeUtil.asLocalTime(shipperTransportation.getPickupTimeFrom()))
+				.timeTo(TimeUtil.asLocalTime(shipperTransportation.getPickupTimeTo()))
 				.packageIds(mpackageIds)
 				.shipperTransportationId(addToShipperTransportationId)
 				.shipperGatewayId(shipperGatewayId)
@@ -285,6 +284,6 @@ public class HUShippingFacade
 
 	public LocalDate getPickupDate(@NonNull final I_M_ShipperTransportation shipperTransportation)
 	{
-		return CoalesceUtil.coalesce(TimeUtil.asLocalDate(shipperTransportation.getFetchDate()), TimeUtil.asLocalDate(shipperTransportation.getDateDoc()));
+		return CoalesceUtil.coalesce(TimeUtil.asLocalDate(shipperTransportation.getDateToBeFetched()), TimeUtil.asLocalDate(shipperTransportation.getDateDoc()));
 	}
 }
