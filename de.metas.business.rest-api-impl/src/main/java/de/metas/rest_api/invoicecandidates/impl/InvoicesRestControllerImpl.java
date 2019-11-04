@@ -14,13 +14,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.Profiles;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.rest_api.invoicecandidates.IInvoicesRestEndpoint;
 import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
+import de.metas.rest_api.invoicecandidates.request.JsonGetInvoiceCandidatesStatusRequest;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
+import de.metas.rest_api.invoicecandidates.response.JsonGetInvoiceCandidatesStatusResponse;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.util.Services;
 import de.metas.util.rest.ExternalHeaderAndLineId;
@@ -59,6 +62,7 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final InvoiceJsonConverterService jsonConverter;
 
 	public InvoicesRestControllerImpl(@NonNull final InvoiceJsonConverterService jsonConverter)
@@ -66,8 +70,31 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 		this.jsonConverter = jsonConverter;
 	}
 
+	@PostMapping("/status")
+	public ResponseEntity<JsonGetInvoiceCandidatesStatusResponse> checkInvoiceCandidatesStatus(@RequestBody @NonNull JsonGetInvoiceCandidatesStatusRequest request)
+	{
+		try
+		{
+			final PInstanceId pInstanceId = adPInstanceDAO.createSelectionId();
+			final List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(request.getInvoiceCandidates());
+		//	invoiceCandDAO.createQueryByHeaderAndLineId(headerAndLineIds); TODO
+
+			final JsonGetInvoiceCandidatesStatusResponse response = null; // TODO
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Got exception while processing request={}", request, ex);
+
+			final String adLanguage = Env.getADLanguageOrBaseLanguage();
+			return ResponseEntity
+					.badRequest()
+					.body(JsonGetInvoiceCandidatesStatusResponse.error(JsonErrors.ofThrowable(ex, adLanguage)));
+		}
+	}
+
 	@ApiOperation("Enqueues invoice candidates for invoicing")
-	@PostMapping(path = "enqueueForInvoicing")
+	@PostMapping("/enqueueForInvoicing")
 	@Override
 	public ResponseEntity<JsonEnqueueForInvoicingResponse> enqueueForInvoicing(@RequestBody @NonNull final JsonEnqueueForInvoicingRequest request)
 	{

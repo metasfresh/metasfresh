@@ -1,10 +1,8 @@
-package de.metas.rest_api.invoicecandidates;
+package de.metas.rest_api.invoicecandidates.response;
 
-import org.springframework.http.ResponseEntity;
+import java.util.List;
 
-import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
-import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
-import de.metas.util.rest.MetasfreshRestAPIConstants;
+import lombok.Value;
 
 /*
  * #%L
@@ -28,10 +26,13 @@ import de.metas.util.rest.MetasfreshRestAPIConstants;
  * #L%
  */
 
-public interface IInvoicesRestEndpoint
+@Value
+public class JsonInvoiceCandidatesResult_StatusInvoiced
 {
-	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/invoices/";
+	private static String statusInvoiced = "Status invoiced";
 
-	ResponseEntity<JsonEnqueueForInvoicingResponse> enqueueForInvoicing(JsonEnqueueForInvoicingRequest request);
+	private List<InvoicesInfo> invoicesInfo;
+
+	// private List<Json>
 
 }
