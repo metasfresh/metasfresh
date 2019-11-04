@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -90,12 +91,22 @@ public class ProcessHUsAndPickingCandidateCommand
 			final boolean allowOverDelivery)
 	{
 		Check.assumeNotEmpty(pickingCandidates, "pickingCandidates is not empty");
-		pickingCandidates.forEach(PickingCandidate::assertDraft);
+		for (PickingCandidate pickingCandidate : pickingCandidates)
+		{
+			pickingCandidate.assertDraft();
+			if (!pickingCandidate.getPickFrom().isPickFromHU())
+			{
+				throw new AdempiereException("Only picking from HU is allowed");
+			}
+		}
 
 		this.sourceHUsRepository = sourceHUsRepository;
 		this.pickingCandidateRepository = pickingCandidateRepository;
 
-		this.pickingCandidatesByPickFromHUId = Multimaps.index(pickingCandidates, PickingCandidate::getPickFromHuId);
+		this.pickingCandidatesByPickFromHUId = Multimaps.index(
+				pickingCandidates,
+				pickingCandidate -> pickingCandidate.getPickFrom().getHuId());
+
 		this.pickFromHuIds = ImmutableSet.<HuId> builder()
 				.addAll(pickingCandidatesByPickFromHUId.keySet())
 				.addAll(additionalPickFromHuIds)
@@ -159,12 +170,12 @@ public class ProcessHUsAndPickingCandidateCommand
 
 	private ImmutableList<PickingCandidate> getPickingCandidatesForHUId(final HuId huId)
 	{
-		return getPickingCandidatesIndexedByHUId().get(huId);
+		return pickingCandidatesByPickFromHUId.get(huId);
 	}
 
-	private ImmutableListMultimap<HuId, PickingCandidate> getPickingCandidatesIndexedByHUId()
+	private ImmutableList<PickingCandidate> getPickingCandidates()
 	{
-		return pickingCandidatesByPickFromHUId;
+		return ImmutableList.copyOf(pickingCandidatesByPickFromHUId.values());
 	}
 
 	private void destroyEmptySourceHUs()
@@ -197,7 +208,7 @@ public class ProcessHUsAndPickingCandidateCommand
 
 	private ImmutableList<PickingCandidate> changeStatusToProcessedAndSave()
 	{
-		final ImmutableList<PickingCandidate> pickingCandidates = ImmutableList.copyOf(getPickingCandidatesIndexedByHUId().values());
+		final ImmutableList<PickingCandidate> pickingCandidates = getPickingCandidates();
 
 		pickingCandidates.forEach(PickingCandidate::changeStatusToProcessed);
 		pickingCandidateRepository.saveAll(pickingCandidates);
