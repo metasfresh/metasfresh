@@ -30,6 +30,7 @@ Here come the actual release notes:
 * metasfresh
   * [#5749](https://github.com/metasfresh/metasfresh/pull/5749) HU editor: clearing the Production Date field leads to error
   * [#5735](https://github.com/metasfresh/metasfresh/issues/5735) Linenetamt not rounded to currency precision
+  * [#5733](https://github.com/metasfresh/metasfresh/issues/5733) Fix importing process
 
 # metasfresh 5.125
 ## Features
