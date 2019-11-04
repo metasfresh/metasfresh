@@ -135,7 +135,7 @@ public class ProductsToPickRow implements IViewRow
 	private final PickingCandidateId pickingCandidateId;
 	@Getter
 	@Nullable
-	private final ShipperId suggestedShipperId;
+	private final ShipperId shipperId;
 
 
 	//
@@ -164,7 +164,7 @@ public class ProductsToPickRow implements IViewRow
 			//
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			final PickingCandidateId pickingCandidateId,
-			final ShipperId suggestedShipperId)
+			final ShipperId shipperId)
 	{
 		this.rowId = rowId;
 
@@ -192,7 +192,7 @@ public class ProductsToPickRow implements IViewRow
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.pickingCandidateId = pickingCandidateId;
 
-		this.suggestedShipperId = suggestedShipperId;
+		this.shipperId = shipperId;
 	}
 
 	@Override

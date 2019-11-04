@@ -340,7 +340,7 @@ class ProductsToPickRowsDataFactory
 		final LookupValue locator = pickFromHUId != null ? getLocatorLookupValueByHuId(pickFromHUId) : null;
 		final ImmutableAttributeSet attributes = pickFromHUId != null ? getHUAttributes(pickFromHUId) : ImmutableAttributeSet.EMPTY;
 
-		final ShipperId suggestedShipperId = packageable.getSuggestedShipperId();
+		final ShipperId shipperId = packageable.getShipperId();
 
 		final ProductsToPickRowId rowId = ProductsToPickRowId.builder()
 				.productId(productInfo.getProductId())
@@ -364,7 +364,7 @@ class ProductsToPickRowsDataFactory
 				.qty(qty)
 				//
 				.shipmentScheduleId(shipmentScheduleId)
-				.suggestedShipperId(suggestedShipperId)
+				.shipperId(shipperId)
 				//
 				.build()
 				.withUpdatesFromPickingCandidateIfNotNull(existingPickingCandidate);
@@ -506,7 +506,7 @@ class ProductsToPickRowsDataFactory
 		private final OrderLineId salesOrderLineIdOrNull;
 
 		@Getter
-		private final ShipperId suggestedShipperId;
+		private final ShipperId shipperId;
 
 		private final Quantity qtyToAllocateTarget;
 		@Getter
@@ -521,7 +521,7 @@ class ProductsToPickRowsDataFactory
 			this.bestBeforePolicy = packageable.getBestBeforePolicy();
 			this.warehouseId = packageable.getWarehouseId();
 			this.salesOrderLineIdOrNull = packageable.getSalesOrderLineIdOrNull();
-			this.suggestedShipperId = packageable.getShipperId();
+			this.shipperId = packageable.getShipperId();
 
 			qtyToAllocateTarget = packageable.getQtyOrdered()
 					.subtract(packageable.getQtyPickedOrDelivered())

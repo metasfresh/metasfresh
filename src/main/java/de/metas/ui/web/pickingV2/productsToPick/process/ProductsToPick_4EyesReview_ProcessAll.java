@@ -98,8 +98,8 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 			final List<ProductsToPickRow> rows = getRowsNotAlreadyProcessed();
 
 			final Optional<ShipperId> suggestedShipperId = rows.stream()
-					.filter(row -> row.getSuggestedShipperId() != null)
-					.map(row -> row.getSuggestedShipperId())
+					.filter(row -> row.getShipperId() != null)
+					.map(row -> row.getShipperId())
 					.findFirst();
 
 			final ShipperId shipperId = suggestedShipperId.orElse(null);
