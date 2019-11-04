@@ -15,7 +15,7 @@ public class X_M_Picking_Candidate_IssueToOrder extends org.compiere.model.PO im
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -617667934L;
+	private static final long serialVersionUID = 250512869L;
 
     /** Standard Constructor */
     public X_M_Picking_Candidate_IssueToOrder (Properties ctx, int M_Picking_Candidate_IssueToOrder_ID, String trxName)
@@ -27,6 +27,7 @@ public class X_M_Picking_Candidate_IssueToOrder extends org.compiere.model.PO im
 			setM_HU_ID (0);
 			setM_Picking_Candidate_ID (0);
 			setM_Picking_Candidate_IssueToOrder_ID (0);
+			setM_Product_ID (0);
 			setPP_Order_BOMLine_ID (0);
 			setQtyToIssue (BigDecimal.ZERO);
         } */
@@ -90,9 +91,9 @@ public class X_M_Picking_Candidate_IssueToOrder extends org.compiere.model.PO im
 	public void setM_HU_ID (int M_HU_ID)
 	{
 		if (M_HU_ID < 1) 
-			set_Value (COLUMNNAME_M_HU_ID, null);
+			set_ValueNoCheck (COLUMNNAME_M_HU_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
+			set_ValueNoCheck (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
 	}
 
 	/** Get Handling Unit.
@@ -162,6 +163,31 @@ public class X_M_Picking_Candidate_IssueToOrder extends org.compiere.model.PO im
 		return ii.intValue();
 	}
 
+	/** Set Produkt.
+		@param M_Product_ID 
+		Produkt, Leistung, Artikel
+	  */
+	@Override
+	public void setM_Product_ID (int M_Product_ID)
+	{
+		if (M_Product_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Product_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+	}
+
+	/** Get Produkt.
+		@return Produkt, Leistung, Artikel
+	  */
+	@Override
+	public int getM_Product_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	@Override
 	public org.eevolution.model.I_PP_Cost_Collector getPP_Cost_Collector()
 	{
@@ -214,9 +240,9 @@ public class X_M_Picking_Candidate_IssueToOrder extends org.compiere.model.PO im
 	public void setPP_Order_BOMLine_ID (int PP_Order_BOMLine_ID)
 	{
 		if (PP_Order_BOMLine_ID < 1) 
-			set_Value (COLUMNNAME_PP_Order_BOMLine_ID, null);
+			set_ValueNoCheck (COLUMNNAME_PP_Order_BOMLine_ID, null);
 		else 
-			set_Value (COLUMNNAME_PP_Order_BOMLine_ID, Integer.valueOf(PP_Order_BOMLine_ID));
+			set_ValueNoCheck (COLUMNNAME_PP_Order_BOMLine_ID, Integer.valueOf(PP_Order_BOMLine_ID));
 	}
 
 	/** Get Manufacturing Order BOM Line.

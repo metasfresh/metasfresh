@@ -50,6 +50,7 @@ import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotQuery;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
@@ -539,6 +540,7 @@ public class PickingCandidateRepository
 		return PickingCandidateIssueToBOMLine.builder()
 				.issueToOrderBOMLineId(PPOrderBOMLineId.ofRepoId(record.getPP_Order_BOMLine_ID()))
 				.issueFromHUId(HuId.ofRepoId(record.getM_HU_ID()))
+				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.qtyToIssue(Quantity.of(record.getQtyToIssue(), uom))
 				.costCollectorId(PPCostCollectorId.ofRepoIdOrNull(record.getPP_Cost_Collector_ID()))
 				.build();
@@ -569,10 +571,11 @@ public class PickingCandidateRepository
 				record = newInstance(I_M_Picking_Candidate_IssueToOrder.class);
 			}
 
+			record.setIsActive(true);
 			record.setM_Picking_Candidate_ID(pickingCandidateId.getRepoId());
 			record.setM_Picking_Candidate_IssueToOrder_ID(issue.getIssueToOrderBOMLineId().getRepoId());
 			record.setM_HU_ID(issue.getIssueFromHUId().getRepoId());
-			record.setIsActive(true);
+			record.setM_Product_ID(issue.getProductId().getRepoId());
 			record.setQtyToIssue(issue.getQtyToIssue().toBigDecimal());
 			record.setC_UOM_ID(issue.getQtyToIssue().getUomId().getRepoId());
 			record.setPP_Cost_Collector_ID(PPCostCollectorId.toRepoId(issue.getCostCollectorId()));

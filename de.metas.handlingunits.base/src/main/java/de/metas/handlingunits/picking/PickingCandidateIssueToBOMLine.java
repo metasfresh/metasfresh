@@ -6,6 +6,7 @@ import org.eevolution.api.PPCostCollectorId;
 
 import de.metas.handlingunits.HuId;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -42,6 +43,9 @@ public class PickingCandidateIssueToBOMLine
 
 	@NonNull
 	HuId issueFromHUId;
+
+	@NonNull
+	ProductId productId;
 
 	@NonNull
 	Quantity qtyToIssue;

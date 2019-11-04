@@ -212,6 +212,29 @@ public interface I_M_Picking_Candidate_IssueToOrder
     public static final String COLUMNNAME_M_Picking_Candidate_IssueToOrder_ID = "M_Picking_Candidate_IssueToOrder_ID";
 
 	/**
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Product_ID();
+
+    /** Column name M_Product_ID */
+    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
 	 * Set Manufacturing Cost Collector.
 	 *
 	 * <br>Type: Search
