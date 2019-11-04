@@ -356,7 +356,7 @@ public class PriceListDAO implements IPriceListDAO
 		if (onlyProcessed)
 		{
 			filter// same processed value
-					.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_Processed, onlyProcessed);
+			.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_Processed, onlyProcessed);
 		}
 
 		// by validFrom, ascending.
@@ -448,7 +448,7 @@ public class PriceListDAO implements IPriceListDAO
 				.addFiltersUnboxed(createPriceProductQueryFilter(date));
 
 		queryBuilder.orderBy()
-				.addColumn(I_M_ProductPrice.COLUMNNAME_M_Product_ID);
+		.addColumn(I_M_ProductPrice.COLUMNNAME_M_Product_ID);
 
 		return queryBuilder.create()
 				.stream()
@@ -565,7 +565,7 @@ public class PriceListDAO implements IPriceListDAO
 		final PriceListVersionId basePriceListVersionId = getBasePriceListVersionIdForPricingCalculationOrNull(priceListVersion);
 		return basePriceListVersionId != null
 				? getPriceListVersionById(basePriceListVersionId)
-				: null;
+						: null;
 	}
 
 	@Override
@@ -573,7 +573,7 @@ public class PriceListDAO implements IPriceListDAO
 	{
 		return priceListVersion.isFallbackToBasePriceListPrices()
 				? PriceListVersionId.ofRepoIdOrNull(priceListVersion.getM_Pricelist_Version_Base_ID())
-				: null;
+						: null;
 	}
 
 	@Override
@@ -649,10 +649,10 @@ public class PriceListDAO implements IPriceListDAO
 		}
 
 		Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ProductPrice.class)
-				.addInArrayFilter(I_M_ProductPrice.COLUMN_M_ProductPrice_ID, productPriceIds)
-				.create()
-				.delete();
+		.createQueryBuilder(I_M_ProductPrice.class)
+		.addInArrayFilter(I_M_ProductPrice.COLUMN_M_ProductPrice_ID, productPriceIds)
+		.create()
+		.delete();
 	}
 
 	@Override
@@ -712,7 +712,7 @@ public class PriceListDAO implements IPriceListDAO
 					ITrx.TRXNAME_ThreadInherited //
 					, "select M_PriceList_Version_CopyFromBase(p_M_PriceList_Version_ID:=?, p_AD_User_ID:=?)" //
 					, new Object[] { newCustomerPLVId, userId.getRepoId() } //
-			);
+					);
 
 		}
 		finally
@@ -724,12 +724,12 @@ public class PriceListDAO implements IPriceListDAO
 	private void cloneASIs(final PriceListVersionId newPLVId)
 	{
 		Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ProductPrice.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
-				.addEqualsFilter(I_M_ProductPrice.COLUMN_M_PriceList_Version_ID, newPLVId)
-				.addEqualsFilter(I_M_ProductPrice.COLUMN_IsAttributeDependant, true)
-				.create()
-				.iterateAndStream()
-				.forEach(this::cloneASI);
+		.createQueryBuilder(I_M_ProductPrice.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+		.addEqualsFilter(I_M_ProductPrice.COLUMN_M_PriceList_Version_ID, newPLVId)
+		.addEqualsFilter(I_M_ProductPrice.COLUMN_IsAttributeDependant, true)
+		.create()
+		.iterateAndStream()
+		.forEach(this::cloneASI);
 	}
 
 	private void cloneASI(final I_M_ProductPrice productPrice)
@@ -811,5 +811,12 @@ public class PriceListDAO implements IPriceListDAO
 	{
 		final I_M_PriceList priceList = getPriceListByPriceListVersionId(priceListVersionId);
 		return TaxCategoryId.optionalOfRepoId(priceList.getDefault_TaxCategory_ID());
+	}
+
+	@Override
+	public PricingSystemId getPricingSystemId(@NonNull final PriceListId priceListId)
+	{
+		final I_M_PriceList priceList = getById(priceListId);
+		return PricingSystemId.ofRepoId(priceList.getM_PricingSystem_ID());
 	}
 }

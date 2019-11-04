@@ -42,6 +42,7 @@ import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.limit.PriceLimitRuleContext;
 import de.metas.pricing.limit.PriceLimitRuleResult;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
@@ -327,8 +328,12 @@ final class OrderLinePriceCalculator
 		//
 		// Pricing System / List / Country / Currency
 		{
-			final PricingSystemId pricingSystemId = request.getPricingSystemIdOverride() != null ? request.getPricingSystemIdOverride() : pricingCtx.getPricingSystemId();
+			PricingSystemId pricingSystemId = request.getPricingSystemIdOverride() != null ? request.getPricingSystemIdOverride() : pricingCtx.getPricingSystemId();
 			final PriceListId priceListId = request.getPriceListIdOverride() != null ? request.getPriceListIdOverride() : orderBL.retrievePriceListId(order, pricingSystemId);
+			if (pricingSystemId == null && priceListId != null)
+			{
+				pricingSystemId = Services.get(IPriceListDAO.class).getPricingSystemId(priceListId);
+			}
 			final CountryId countryId = getCountryIdOrNull(orderLine);
 			pricingCtx.setPricingSystemId(pricingSystemId);
 			pricingCtx.setPriceListId(priceListId);
