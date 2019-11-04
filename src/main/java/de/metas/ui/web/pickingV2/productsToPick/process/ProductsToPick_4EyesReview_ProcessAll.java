@@ -1,7 +1,6 @@
 package de.metas.ui.web.pickingV2.productsToPick.process;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -96,14 +95,12 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 		if (I_M_Shipper.COLUMNNAME_M_Shipper_ID.equals(parameterName))
 		{
 			final List<ProductsToPickRow> rows = getRowsNotAlreadyProcessed();
-
-			final Optional<ShipperId> shipperId = rows.stream()
-					.filter(row -> row.getShipperId() != null)
-					.map(row -> row.getShipperId())
-					.findFirst();
-
-			return shipperId == null ? -1 : shipperId.get().getRepoId();
-
+			return rows.stream()
+					.map(ProductsToPickRow::getShipperId)
+					.filter(Predicates.notNull())
+					.findFirst()
+					.map(ShipperId::getRepoId)
+					.orElse(-1);
 		}
 
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
