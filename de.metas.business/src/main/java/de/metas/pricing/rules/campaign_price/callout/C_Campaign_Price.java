@@ -55,6 +55,11 @@ public class C_Campaign_Price
 	@CalloutMethod(columnNames = I_C_Campaign_Price.COLUMNNAME_C_BPartner_ID, skipIfCopying = true)
 	public void onBPartnerChanged(final I_C_Campaign_Price record)
 	{
+		if (record == null)
+		{
+			return ;
+		}
+
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID());
 		if (bpartnerId == null)
 		{
