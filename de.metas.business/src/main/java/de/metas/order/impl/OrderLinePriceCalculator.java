@@ -48,6 +48,7 @@ import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
@@ -328,8 +329,8 @@ final class OrderLinePriceCalculator
 		//
 		// Pricing System / List / Country / Currency
 		{
-			PricingSystemId pricingSystemId = request.getPricingSystemIdOverride() != null ? request.getPricingSystemIdOverride() : pricingCtx.getPricingSystemId();
-			final PriceListId priceListId = request.getPriceListIdOverride() != null ? request.getPriceListIdOverride() : orderBL.retrievePriceListId(order, pricingSystemId);
+			PricingSystemId pricingSystemId = CoalesceUtil.coalesce(request.getPricingSystemIdOverride(), pricingCtx.getPricingSystemId());
+			final PriceListId priceListId = CoalesceUtil.coalesce(request.getPriceListIdOverride(),orderBL.retrievePriceListId(order, pricingSystemId));
 			if (pricingSystemId == null && priceListId != null)
 			{
 				pricingSystemId = Services.get(IPriceListDAO.class).getPricingSystemId(priceListId);
