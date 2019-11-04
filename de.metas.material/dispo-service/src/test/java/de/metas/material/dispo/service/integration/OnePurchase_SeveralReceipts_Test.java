@@ -4,19 +4,21 @@ import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
-import org.assertj.core.api.AbstractObjectAssert;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.TimeUtil;
@@ -38,6 +40,7 @@ import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
@@ -93,6 +96,8 @@ public class OnePurchase_SeveralReceipts_Test
 	private int receiptScheduleId;
 	private AttributeId monthsUntilExpiryAttributeId;
 	private MaterialDescriptor receiptScheduleMaterialDescriptor;
+
+	private static int M_TransAction_ID = 1;
 
 	@BeforeEach
 	public void init()
@@ -174,41 +179,10 @@ public class OnePurchase_SeveralReceipts_Test
 	{
 		return "id=" + record.getMD_Candidate_ID()
 				+ ", type=" + record.getMD_Candidate_Type()
+				+ ", businesCase=" + record.getMD_Candidate_BusinessCase()
 				+ ", storageAttributesKey=" + record.getStorageAttributesKey()
 				+ ", qty=" + record.getQty()
 				+ ", dateProjected=" + TimeUtil.asInstant(record.getDateProjected());
-	}
-
-	private AbstractObjectAssert<?, I_MD_Candidate> assertStockCandidate(
-			final AttributesKey storageAttributesKey,
-			final String dateProjected)
-	{
-		final Timestamp dateProjectedTS = TimeUtil.asTimestamp(Instant.parse(dateProjected));
-
-		final ArrayList<I_MD_Candidate> result = new ArrayList<>();
-		for (final I_MD_Candidate candidate : DispoTestUtils.retrieveAllRecords())
-		{
-			if (!CandidateType.STOCK.getCode().equals(candidate.getMD_Candidate_Type()))
-			{
-				continue;
-			}
-			if (!storageAttributesKey.getAsString().equals(candidate.getStorageAttributesKey()))
-			{
-				continue;
-			}
-			if (!dateProjectedTS.equals(candidate.getDateProjected()))
-			{
-				continue;
-			}
-
-			result.add(candidate);
-		}
-
-		assertThat(result)
-				.as("candidates for storageAttributesKey=" + storageAttributesKey + " and dateProjected=" + dateProjected)
-				.hasSize(1);
-
-		return assertThat(result.get(0));
 	}
 
 	@Builder(builderMethodName = "prepareMasterdata", buildMethodName = "initialize", builderClassName = "MasterdataBuilder")
@@ -269,13 +243,13 @@ public class OnePurchase_SeveralReceipts_Test
 	private void fireTransactionCreatedEvent(
 			final String date,
 			final int qty,
-			final int monthsUntilExpiry)
+			@Nullable final Integer monthsUntilExpiry)
 	{
 		final BigDecimal qtyBD = BigDecimal.valueOf(qty);
 
 		final ProductDescriptor transactionProductDescriptor = ProductDescriptor.forProductAndAttributes(
 				productId, // productId
-				monthsUntilExpiryAttributesKey(monthsUntilExpiry),
+				monthsUntilExpiry == null ? AttributesKey.NONE : monthsUntilExpiryAttributesKey(monthsUntilExpiry),
 				12345 // dummy ASI
 		);
 
@@ -289,7 +263,7 @@ public class OnePurchase_SeveralReceipts_Test
 						.date(Instant.parse(date))
 						.build())
 				.receiptId(InOutAndLineId.ofRepoId(1, 2))
-				.transactionId(1)
+				.transactionId(M_TransAction_ID++)
 				.receiptScheduleIdsQty(receiptScheduleId, qtyBD)
 				.huOnHandQtyChangeDescriptors(ImmutableList.of(
 						HUDescriptor.builder()
@@ -306,7 +280,7 @@ public class OnePurchase_SeveralReceipts_Test
 	private void fireMaterialReceiptEvents(
 			final String date,
 			final int qtyReceived,
-			final int monthsUntilExpiry,
+			@Nullable final Integer monthsUntilExpiry,
 			final int receiptScheduleRemainingReservedQuantity)
 	{
 		prepareReceiptScheduleUpdatedEvent()
@@ -322,6 +296,121 @@ public class OnePurchase_SeveralReceipts_Test
 	}
 
 	@Test
+	public void receive_1item_then_1item_with_expected_ASI_and_time()
+	{
+		prepareMasterdata()
+				.qtyOrdered(10000)
+				.datePromised("2019-10-31T23:59:59Z")
+				.initialize();
+
+		prepareReceiptScheduleCreatedEvent()
+				.reservedQuantity(10000)
+				.fire();
+		assertThat(POJOLookupMap.get().getRecords(I_MD_Candidate.class)).extracting("DateProjected", "Qty", "StorageAttributesKey", "MD_Candidate_Type")
+				.containsExactlyInAnyOrder(
+						tuple(asTS("2019-10-31T23:59:59Z"), asBD("10000"), AttributesKey.NONE.getAsString(), CandidateType.SUPPLY.getCode()),
+						tuple(asTS("2019-10-31T23:59:59Z"), asBD("10000"), AttributesKey.NONE.getAsString(), CandidateType.STOCK.getCode()));
+
+		//
+		// Receive on 1 item with AttributesKey.NONE
+		prepareMaterialReceiptEvents()
+				// .date("2019-11-01T13:00:00Z")
+				.date("2019-10-31T23:59:59Z")
+				.qtyReceived(1)
+				.receiptScheduleRemainingReservedQuantity(9999)
+				.fire();
+		assertThat(POJOLookupMap.get().getRecords(I_MD_Candidate.class)).extracting("DateProjected", "Qty", "StorageAttributesKey", "MD_Candidate_Type")
+				.containsExactlyInAnyOrder(
+						tuple(asTS("2019-10-31T23:59:59Z"), asBD("10000"), AttributesKey.NONE.getAsString(), CandidateType.SUPPLY.getCode()),
+						tuple(asTS("2019-10-31T23:59:59Z"), asBD("10000"), AttributesKey.NONE.getAsString(), CandidateType.STOCK.getCode()));
+	}
+
+	@Test
+	public void receive_1item_then_1item_with_expected_ASI_and_unexpected_time()
+	{
+		prepareMasterdata()
+				.qtyOrdered(10000)
+				.datePromised("2019-10-31T23:59:59Z")
+				.initialize();
+
+		prepareReceiptScheduleCreatedEvent()
+				.reservedQuantity(10000)
+				.fire();
+		assertThat(POJOLookupMap.get().getRecords(I_MD_Candidate.class)).extracting("DateProjected", "Qty", "StorageAttributesKey", "MD_Candidate_Type")
+				.containsExactlyInAnyOrder(
+						tuple(asTS("2019-10-31T23:59:59Z"), asBD("10000"), AttributesKey.NONE.getAsString(), CandidateType.SUPPLY.getCode()),
+						tuple(asTS("2019-10-31T23:59:59Z"), asBD("10000"), AttributesKey.NONE.getAsString(), CandidateType.STOCK.getCode()));
+
+		//
+		// Receive on 1 item with AttributesKey.NONE
+		prepareMaterialReceiptEvents()
+				.date("2019-11-01T13:00:00Z")
+				.qtyReceived(1)
+				.receiptScheduleRemainingReservedQuantity(9999)
+				.fire();
+		assertThat(POJOLookupMap.get().getRecords(I_MD_Candidate.class)).extracting("DateProjected", "Qty", "StorageAttributesKey", "MD_Candidate_Type")
+				.containsExactlyInAnyOrder(
+						tuple(asTS("2019-10-31T23:59:59Z"), asBD("9999"), AttributesKey.NONE.getAsString(), CandidateType.SUPPLY.getCode()),
+						tuple(asTS("2019-10-31T23:59:59Z"), asBD("9999"), AttributesKey.NONE.getAsString(), CandidateType.STOCK.getCode()),
+
+						tuple(asTS("2019-11-01T13:00:00Z"), asBD("1"), AttributesKey.NONE.getAsString(), CandidateType.UNEXPECTED_INCREASE.getCode()),
+						tuple(asTS("2019-11-01T13:00:00Z"), asBD("10000"), AttributesKey.NONE.getAsString(), CandidateType.STOCK.getCode()));
+	}
+
+	@Test
+	public void receive_1item_then_1item_with_same_ASI()
+	{
+		prepareMasterdata()
+				.qtyOrdered(10000)
+				.datePromised("2019-10-31T23:59:59Z")
+				.initialize();
+		prepareReceiptScheduleCreatedEvent()
+				.reservedQuantity(10000)
+				.fire();
+		assertThat(POJOLookupMap.get().getRecords(I_MD_Candidate.class)).extracting("DateProjected", "Qty", "StorageAttributesKey", "MD_Candidate_Type")
+				.containsExactlyInAnyOrder(
+						tuple(asTS("2019-10-31T23:59:59Z"), asBD("10000"), AttributesKey.NONE.getAsString(), CandidateType.SUPPLY.getCode()),
+						tuple(asTS("2019-10-31T23:59:59Z"), asBD("10000"), AttributesKey.NONE.getAsString(), CandidateType.STOCK.getCode()));
+
+		//
+		// Receive on 1 item with monthsUntilExpiry=1
+		prepareMaterialReceiptEvents()
+				.date("2019-11-01T13:00:00Z")
+				.qtyReceived(1)
+				.monthsUntilExpiry(1)
+				.receiptScheduleRemainingReservedQuantity(9999)
+				.fire();
+		assertThat(POJOLookupMap.get().getRecords(I_MD_Candidate.class)).extracting("DateProjected", "Qty", "StorageAttributesKey", "MD_Candidate_Type")
+				.containsExactlyInAnyOrder(
+						tuple(asTS("2019-10-31T23:59:59Z"), asBD("9999"), AttributesKey.NONE.getAsString(), CandidateType.SUPPLY.getCode()),
+						tuple(asTS("2019-10-31T23:59:59Z"), asBD("9999"), AttributesKey.NONE.getAsString(), CandidateType.STOCK.getCode()),
+
+						tuple(asTS("2019-11-01T13:00:00Z"), asBD("1"), asAttrKeyString(1), CandidateType.UNEXPECTED_DECREASE.getCode()),
+						tuple(asTS("2019-11-01T13:00:00Z"), asBD("1"), asAttrKeyString(1), CandidateType.STOCK.getCode()));
+
+		//
+		// Receive now 100 item with monthsUntilExpiry=1, same date as the first receipt
+		prepareMaterialReceiptEvents()
+				.date("2019-11-01T13:02:00Z")
+				.qtyReceived(100)
+				.monthsUntilExpiry(1)
+				.receiptScheduleRemainingReservedQuantity(9897)
+				.fire();
+		assertThat(POJOLookupMap.get().getRecords(I_MD_Candidate.class))
+				.extracting("DateProjected", "Qty", "StorageAttributesKey", "MD_Candidate_Type")
+				.containsExactlyInAnyOrder(
+						tuple(asTS("2019-10-31T23:59:59Z"), asBD("9899"), AttributesKey.NONE.getAsString(), CandidateType.SUPPLY.getCode()),
+						tuple(asTS("2019-10-31T23:59:59Z"), asBD("9899"), AttributesKey.NONE.getAsString(), CandidateType.STOCK.getCode()),
+
+						tuple(asTS("2019-11-01T13:00:00Z"), asBD("1"), asAttrKeyString(1), CandidateType.UNEXPECTED_DECREASE.getCode()),
+						tuple(asTS("2019-11-01T13:00:00Z"), asBD("1"), asAttrKeyString(1), CandidateType.STOCK.getCode()), // at this timestamp we have ATP=1
+
+						tuple(asTS("2019-11-01T13:02:00Z"), asBD("100"), asAttrKeyString(1), CandidateType.UNEXPECTED_DECREASE.getCode()),
+						tuple(asTS("2019-11-01T13:02:00Z"), asBD("101"), asAttrKeyString(1), CandidateType.STOCK.getCode()) // at this timestamp we have ATP=101
+				);
+	}
+
+	@Test
 	public void receive_1item_then_2items()
 	{
 		prepareMasterdata()
@@ -332,8 +421,10 @@ public class OnePurchase_SeveralReceipts_Test
 		prepareReceiptScheduleCreatedEvent()
 				.reservedQuantity(10000)
 				.fire();
-		assertStockCandidate(AttributesKey.NONE, "2019-10-31T23:59:59Z")
-				.returns(new BigDecimal("10000"), I_MD_Candidate::getQty);
+		assertThat(POJOLookupMap.get().getRecords(I_MD_Candidate.class)).extracting("DateProjected", "Qty", "StorageAttributesKey", "MD_Candidate_Type")
+				.containsExactlyInAnyOrder(
+						tuple(asTS("2019-10-31T23:59:59Z"), asBD("10000"), AttributesKey.NONE.getAsString(), CandidateType.SUPPLY.getCode()),
+						tuple(asTS("2019-10-31T23:59:59Z"), asBD("10000"), AttributesKey.NONE.getAsString(), CandidateType.STOCK.getCode()));
 
 		//
 		// Receive on 1 item with monthsUntilExpiry=1
@@ -343,10 +434,13 @@ public class OnePurchase_SeveralReceipts_Test
 				.monthsUntilExpiry(1)
 				.receiptScheduleRemainingReservedQuantity(9999)
 				.fire();
-		assertStockCandidate(AttributesKey.NONE, "2019-10-31T23:59:59Z")
-				.returns(new BigDecimal("9999"), I_MD_Candidate::getQty);
-		assertStockCandidate(monthsUntilExpiryAttributesKey(1), "2019-11-01T13:00:00Z")
-				.returns(new BigDecimal("1"), I_MD_Candidate::getQty);
+		assertThat(POJOLookupMap.get().getRecords(I_MD_Candidate.class)).extracting("DateProjected", "Qty", "StorageAttributesKey", "MD_Candidate_Type")
+				.containsExactlyInAnyOrder(
+						tuple(asTS("2019-10-31T23:59:59Z"), asBD("9999"), AttributesKey.NONE.getAsString(), CandidateType.SUPPLY.getCode()),
+						tuple(asTS("2019-10-31T23:59:59Z"), asBD("9999"), AttributesKey.NONE.getAsString(), CandidateType.STOCK.getCode()),
+
+						tuple(asTS("2019-11-01T13:00:00Z"), asBD("1"), asAttrKeyString(1), CandidateType.UNEXPECTED_DECREASE.getCode()),
+						tuple(asTS("2019-11-01T13:00:00Z"), asBD("1"), asAttrKeyString(1), CandidateType.STOCK.getCode()));
 
 		//
 		// Receive on 2 items with monthsUntilExpiry=4
@@ -356,23 +450,55 @@ public class OnePurchase_SeveralReceipts_Test
 				.monthsUntilExpiry(4)
 				.receiptScheduleRemainingReservedQuantity(9997)
 				.fire();
-		assertStockCandidate(AttributesKey.NONE, "2019-10-31T23:59:59Z")
-				.returns(new BigDecimal("9997"), I_MD_Candidate::getQty);
-		assertStockCandidate(monthsUntilExpiryAttributesKey(4), "2019-11-01T13:01:00Z")
-				.returns(new BigDecimal("2"), I_MD_Candidate::getQty);
+		assertThat(POJOLookupMap.get().getRecords(I_MD_Candidate_Transaction_Detail.class)).hasSize(2); // make sure that another MD_Candidate_Transaction_Detail was stored, not the first one updated
+		assertThat(POJOLookupMap.get().getRecords(I_MD_Candidate.class)).extracting("DateProjected", "Qty", "StorageAttributesKey", "MD_Candidate_Type")
+				.containsExactlyInAnyOrder(
+						tuple(asTS("2019-10-31T23:59:59Z"), asBD("9997"), AttributesKey.NONE.getAsString(), CandidateType.SUPPLY.getCode()),
+						tuple(asTS("2019-10-31T23:59:59Z"), asBD("9997"), AttributesKey.NONE.getAsString(), CandidateType.STOCK.getCode()),
+
+						tuple(asTS("2019-11-01T13:00:00Z"), asBD("1"), asAttrKeyString(1), CandidateType.UNEXPECTED_INCREASE.getCode()),
+						tuple(asTS("2019-11-01T13:00:00Z"), asBD("1"), asAttrKeyString(1), CandidateType.STOCK.getCode()),
+
+						tuple(asTS("2019-11-01T13:01:00Z"), asBD("2"), asAttrKeyString(4), CandidateType.UNEXPECTED_INCREASE.getCode()),
+						tuple(asTS("2019-11-01T13:01:00Z"), asBD("2"), asAttrKeyString(4), CandidateType.STOCK.getCode()));
 
 		//
 		// Receive on 10 item with monthsUntilExpiry=1, same date as the first receipt
-		// TODO: following case is not working
-		// prepareMaterialReceiptEvents()
-		// .date("2019-11-01T13:00:00Z")
-		// .qtyReceived(100)
-		// .monthsUntilExpiry(1)
-		// .receiptScheduleRemainingReservedQuantity(9897)
-		// .fire();
-		// assertStockCandidate(AttributesKey.NONE, "2019-10-31T23:59:59Z")
-		// .returns(new BigDecimal("9897"), I_MD_Candidate::getQty);
-		// assertStockCandidate(monthsUntilExpiryAttributesKey(1), "2019-11-01T13:00:00Z")
-		// .returns(new BigDecimal("100"), I_MD_Candidate::getQty);
+		prepareMaterialReceiptEvents()
+				.date("2019-11-01T13:02:00Z")
+				.qtyReceived(100)
+				.monthsUntilExpiry(1)
+				.receiptScheduleRemainingReservedQuantity(9897)
+				.fire();
+		assertThat(POJOLookupMap.get().getRecords(I_MD_Candidate.class))
+				.extracting("DateProjected", "Qty", "StorageAttributesKey", "MD_Candidate_Type")
+				.containsExactlyInAnyOrder(
+						tuple(asTS("2019-10-31T23:59:59Z"), asBD("9897"), AttributesKey.NONE.getAsString(), CandidateType.SUPPLY.getCode()),
+						tuple(asTS("2019-10-31T23:59:59Z"), asBD("9897"), AttributesKey.NONE.getAsString(), CandidateType.STOCK.getCode()),
+
+						tuple(asTS("2019-11-01T13:00:00Z"), asBD("1"), asAttrKeyString(1), CandidateType.UNEXPECTED_INCREASE.getCode()),
+						tuple(asTS("2019-11-01T13:00:00Z"), asBD("1"), asAttrKeyString(1), CandidateType.STOCK.getCode()), // at this timestamp we have ATP=1
+
+						tuple(asTS("2019-11-01T13:01:00Z"), asBD("2"), asAttrKeyString(4), CandidateType.UNEXPECTED_INCREASE.getCode()),
+						tuple(asTS("2019-11-01T13:01:00Z"), asBD("2"), asAttrKeyString(4), CandidateType.STOCK.getCode()),
+
+						tuple(asTS("2019-11-01T13:02:00Z"), asBD("100"), asAttrKeyString(1), CandidateType.UNEXPECTED_INCREASE.getCode()),
+						tuple(asTS("2019-11-01T13:02:00Z"), asBD("101"), asAttrKeyString(1), CandidateType.STOCK.getCode()) // at this timestamp we have ATP=101
+				);
+	}
+
+	private String asAttrKeyString(int monthsUntilExpiry)
+	{
+		return monthsUntilExpiryAttributesKey(monthsUntilExpiry).getAsString();
+	}
+
+	private BigDecimal asBD(final String val)
+	{
+		return new BigDecimal(val);
+	}
+
+	private Timestamp asTS(final String timstampStr)
+	{
+		return TimeUtil.asTimestamp(Instant.parse(timstampStr));
 	}
 }

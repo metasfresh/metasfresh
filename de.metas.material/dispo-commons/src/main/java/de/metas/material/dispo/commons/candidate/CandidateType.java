@@ -40,9 +40,18 @@ public enum CandidateType implements ReferenceListAwareEnum
 
 	STOCK_UP(X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK_UP),
 
-	UNRELATED_INCREASE(X_MD_Candidate.MD_CANDIDATE_TYPE_UNRELATED_INCREASE),
+	/**
+	 * Might or might not be related to a {@link #SUPPLY}; at any rate it's attributesKey and/or timestamp are different from any existing record.
+	 * <p>
+	 * Example: you have a supply record for a material receipt schedule with AttributesKey=NONE; then the actual receipt has a different timestamp and ASI, but still belongs to the existing material receipt schedule.
+	 */
+	UNEXPECTED_INCREASE(X_MD_Candidate.MD_CANDIDATE_TYPE_UNEXPECTED_INCREASE),
 
-	UNRELATED_DECREASE(X_MD_Candidate.MD_CANDIDATE_TYPE_UNRELATED_DECREASE),
+	/**
+	 * Analog to {@link #UNEXPECTED_INCREASE}.
+	 * Might or might not be related to a {@link #DEMAND}; at any rate it's attributesKey and/or timestamp are different from any existing record
+	 */
+	UNEXPECTED_DECREASE(X_MD_Candidate.MD_CANDIDATE_TYPE_UNEXPECTED_DECREASE),
 
 	INVENTORY_DOWN(X_MD_Candidate.MD_CANDIDATE_TYPE_INVENTORY_DOWN),
 

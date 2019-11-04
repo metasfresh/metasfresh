@@ -15,7 +15,7 @@ public class X_MD_Candidate_Purchase_Detail extends org.compiere.model.PO implem
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 681925329L;
+	private static final long serialVersionUID = 1931443601L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Purchase_Detail (Properties ctx, int MD_Candidate_Purchase_Detail_ID, String trxName)
@@ -148,28 +148,6 @@ public class X_MD_Candidate_Purchase_Detail extends org.compiere.model.PO implem
 		return false;
 	}
 
-	/** Set Wareneingangsdisposition.
-		@param M_ReceiptSchedule_ID Wareneingangsdisposition	  */
-	@Override
-	public void setM_ReceiptSchedule_ID (int M_ReceiptSchedule_ID)
-	{
-		if (M_ReceiptSchedule_ID < 1) 
-			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, Integer.valueOf(M_ReceiptSchedule_ID));
-	}
-
-	/** Get Wareneingangsdisposition.
-		@return Wareneingangsdisposition	  */
-	@Override
-	public int getM_ReceiptSchedule_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_ReceiptSchedule_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	@Override
 	public de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate()
 	{
@@ -221,6 +199,28 @@ public class X_MD_Candidate_Purchase_Detail extends org.compiere.model.PO implem
 	public int getMD_Candidate_Purchase_Detail_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_MD_Candidate_Purchase_Detail_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Wareneingangsdisposition.
+		@param M_ReceiptSchedule_ID Wareneingangsdisposition	  */
+	@Override
+	public void setM_ReceiptSchedule_ID (int M_ReceiptSchedule_ID)
+	{
+		if (M_ReceiptSchedule_ID < 1) 
+			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, Integer.valueOf(M_ReceiptSchedule_ID));
+	}
+
+	/** Get Wareneingangsdisposition.
+		@return Wareneingangsdisposition	  */
+	@Override
+	public int getM_ReceiptSchedule_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_ReceiptSchedule_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

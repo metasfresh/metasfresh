@@ -236,8 +236,8 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.type(CandidateType.DEMAND)
-				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(event.getMaterialDescriptor()))
-				// only search via demand detail ..it's precise enough; the product and warehouse will also match, but e.g. the date might not!
+				// don't search via material descriptor ..what we have is precise enough; the product and warehouse will also match, but e.g. the date might not!
+				.businessCase(CandidateBusinessCase.SHIPMENT) // without it, we might get other transaction-based ("unrelated") candidates
 				.demandDetailsQuery(demandDetailsQuery)
 				.build();
 		final Candidate existingCandidate = retrieveBestMatchingCandidateOrNull(query, event);
@@ -304,14 +304,14 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.type(CandidateType.SUPPLY) // without it we might get stock candidates which we don't want
-				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(event.getMaterialDescriptor()))
+				.businessCase(CandidateBusinessCase.PURCHASE) // without it, we might get other transaction-based ("unrelated") candidates
 				.purchaseDetailsQuery(purchaseDetailsQuery)
 				.build();
 
 		final Candidate existingCandidate = retrieveBestMatchingCandidateOrNull(query, event);
 
 		final boolean unrelatedNewTransaction = existingCandidate == null && event instanceof TransactionCreatedEvent;
-		if (unrelatedNewTransaction)
+		if (unrelatedNewTransaction) // new transaction that does not belong to any existing record
 		{
 			// prepare the purchase detail with our inoutLineId
 			final PurchaseDetail purchaseDetail = PurchaseDetail.builder()
@@ -356,7 +356,8 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 				.build();
 
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(event.getMaterialDescriptor()))
+				// don't search via material descriptor ..what we have is precise enough; the product and warehouse will also match, but e.g. the date might not!
+				.businessCase(CandidateBusinessCase.PRODUCTION) // without it, we might get other transaction-based ("unrelated") candidates
 				.productionDetailsQuery(productionDetailsQuery)
 				.build();
 
@@ -404,8 +405,9 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 				.build();
 
 		final CandidatesQuery query = CandidatesQuery.builder()
-				.materialDescriptorQuery(MaterialDescriptorQuery.forDescriptor(event.getMaterialDescriptor()))
-				.distributionDetailsQuery(distributionDetailsQuery) // only search via distribution detail, ..the product and warehouse will also match, but e.g. the date probably won't!
+				// don't search via material descriptor ..what we have is precise enough; the product and warehouse will also match, but e.g. the date might not!
+				.businessCase(CandidateBusinessCase.DISTRIBUTION) // without it, we might get other transaction-based ("unrelated") candidates
+				.distributionDetailsQuery(distributionDetailsQuery)
 				.build();
 
 		final Candidate existingCandidate = retrieveBestMatchingCandidateOrNull(query, event);
@@ -544,12 +546,15 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 			@NonNull final Candidate candidate,
 			@NonNull final TransactionDetail changedTransactionDetail)
 	{
-		final boolean transactionMatchesCandidate = Objects
-				.equals(
-						candidate.getMaterialDescriptor().getStorageAttributesKey(),
-						changedTransactionDetail.getStorageAttributesKey());
+		final boolean attributesKeysMatch = Objects.equals(
+				candidate.getMaterialDescriptor().getStorageAttributesKey(),
+				changedTransactionDetail.getStorageAttributesKey());
 
-		if (transactionMatchesCandidate)
+		final boolean datesMatch = Objects.equals(
+				candidate.getMaterialDescriptor().getDate(),
+				changedTransactionDetail.getTransactionDate());
+
+		if (attributesKeysMatch && datesMatch)
 		{
 			final TreeSet<TransactionDetail> newTransactionDetailsSet = extractAllTransactionDetails(candidate, changedTransactionDetail);
 
@@ -559,7 +564,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 					.withTransactionDetails(ImmutableList.copyOf(newTransactionDetailsSet))
 					.withDate(firstTransactionDate);
 			final BigDecimal actualQty = withTransactionDetails.computeActualQty();
-			final BigDecimal detailQty = candidate.getDetailQty();
+			final BigDecimal detailQty = candidate.getBusinessCaseDetailQty();
 
 			return ImmutableList.of(withTransactionDetails.withQuantity(actualQty.max(detailQty)));
 		}
@@ -567,7 +572,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		{
 			// create a copy of candidate, just with
 			// * the transaction's ASI/storage-key
-			// * plannedQty == actualQty == transactionQty
+			// * quantity == transactionQty
 			// * the transactionDetail added to it
 			final MaterialDescriptor newMaterialDescriptor = candidate
 					.getMaterialDescriptor()
@@ -581,6 +586,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 					.toBuilder()
 					.id(null)
 					.parentId(null) // important to make sure a supply new candidate gets a stock record
+					.type(computeCounterCandiateType(candidate))
 					.materialDescriptor(newMaterialDescriptor)
 					.clearTransactionDetails()
 					.transactionDetail(changedTransactionDetail)
@@ -589,12 +595,26 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 			// subtract the transaction's Qty from the candidate;
 			// because we don't expect that quantity anymore. It just came, but with different attributes.
 			final BigDecimal actualQty = candidate.computeActualQty();
-			final BigDecimal plannedQty = candidate.getDetailQty().subtract(changedTransactionDetail.getQuantity());
+			final BigDecimal plannedQty = candidate.getQuantity().subtract(changedTransactionDetail.getQuantity());
 			final BigDecimal updatedQty = actualQty.max(plannedQty);
 			final Candidate updatedCandidate = candidate.withQuantity(updatedQty);
 
 			// return the subtracted-qty-candidate and the copy
 			return ImmutableList.of(newCandidate, updatedCandidate);
+		}
+	}
+
+	private CandidateType computeCounterCandiateType(@NonNull final Candidate candidate)
+	{
+		switch (candidate.getType())
+		{
+			case SUPPLY:
+				return CandidateType.UNEXPECTED_INCREASE;
+			case DEMAND:
+				return CandidateType.UNEXPECTED_DECREASE;
+			default:
+				throw new AdempiereException("Unexpected candidate.type=" + candidate.getType()).appendParametersToMessage()
+						.setParameter("candidate", candidate);
 		}
 	}
 
@@ -636,12 +656,12 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 				.builderForEventDescr(transactionCreatedEvent.getEventDescriptor());
 		if (quantity.signum() <= 0)
 		{
-			return builder.type(CandidateType.UNRELATED_DECREASE)
+			return builder.type(CandidateType.UNEXPECTED_DECREASE)
 					.materialDescriptor(transactionCreatedEvent.getMaterialDescriptor().withQuantity(quantity.negate()));
 		}
 		else
 		{
-			return builder.type(CandidateType.UNRELATED_INCREASE)
+			return builder.type(CandidateType.UNEXPECTED_INCREASE)
 					.materialDescriptor(transactionCreatedEvent.getMaterialDescriptor());
 		}
 	}

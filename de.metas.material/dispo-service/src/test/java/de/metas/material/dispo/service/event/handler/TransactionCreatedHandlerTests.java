@@ -92,11 +92,14 @@ public class TransactionCreatedHandlerTests
 	{
 		final TransactionCreatedEvent event = createTransactionEventBuilderWithQuantity(TEN.negate()).build();
 
-		final Candidate candidate = TransactionEventHandler.createBuilderForNewUnrelatedCandidate(
-				event,
-				event.getQuantity()).build();
+		final Candidate candidate = TransactionEventHandler
+				.createBuilderForNewUnrelatedCandidate(
+						event,
+						event.getQuantity())
+				.transactionDetail(dummyTransactionDetail())
+				.build();
 
-		assertThat(candidate.getType()).isSameAs(CandidateType.UNRELATED_DECREASE);
+		assertThat(candidate.getType()).isSameAs(CandidateType.UNEXPECTED_DECREASE);
 		assertThat(candidate.getQuantity()).isEqualByComparingTo("10");
 	}
 
@@ -105,13 +108,20 @@ public class TransactionCreatedHandlerTests
 	{
 		final TransactionCreatedEvent event = createTransactionEventBuilderWithQuantity(TEN).build();
 
-		final Candidate candidate = TransactionEventHandler.createBuilderForNewUnrelatedCandidate(
-				event,
-				event.getQuantity())
+		final Candidate candidate = TransactionEventHandler
+				.createBuilderForNewUnrelatedCandidate(
+						event,
+						event.getQuantity())
+				.transactionDetail(dummyTransactionDetail())
 				.build();
 
-		assertThat(candidate.getType()).isSameAs(CandidateType.UNRELATED_INCREASE);
+		assertThat(candidate.getType()).isSameAs(CandidateType.UNEXPECTED_INCREASE);
 		assertThat(candidate.getQuantity()).isEqualByComparingTo("10");
+	}
+
+	private TransactionDetail dummyTransactionDetail()
+	{
+		return TransactionDetail.builder().transactionId(1).transactionDate(Instant.now()).complete(true).quantity(ONE).build();
 	}
 
 	@Test
@@ -140,7 +150,7 @@ public class TransactionCreatedHandlerTests
 			assertThat(query.getTransactionDetails().get(0).getTransactionId()).isEqualTo(TRANSACTION_ID);
 		}
 
-		assertThat(candidate.getType()).isEqualTo(CandidateType.UNRELATED_INCREASE);
+		assertThat(candidate.getType()).isEqualTo(CandidateType.UNEXPECTED_INCREASE);
 		assertThat(candidate.getAdditionalDemandDetail()).isNull();
 		assertThat(candidate.getBusinessCaseDetail()).isNull();
 		assertThat(candidate.getTransactionDetails().get(0).getQuantity()).isEqualByComparingTo("10");
@@ -155,7 +165,7 @@ public class TransactionCreatedHandlerTests
 
 		final Candidate exisitingCandidate = Candidate.builder()
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
-				.type(CandidateType.UNRELATED_INCREASE)
+				.type(CandidateType.UNEXPECTED_INCREASE)
 				.id(CandidateId.ofRepoId(11))
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())
@@ -170,8 +180,7 @@ public class TransactionCreatedHandlerTests
 						.transactionDate(date)
 						.complete(true)
 						.build())
-				.build()
-				.validate();
+				.build();
 
 		Mockito.when(candidateRepository.retrieveLatestMatchOrNull(Mockito.any()))
 				.thenReturn(exisitingCandidate);
@@ -194,7 +203,7 @@ public class TransactionCreatedHandlerTests
 			assertThat(query.getTransactionDetails().get(0).getTransactionId()).isEqualTo(TRANSACTION_ID);
 		}
 
-		assertThat(candidate.getType()).isEqualTo(CandidateType.UNRELATED_INCREASE);
+		assertThat(candidate.getType()).isEqualTo(CandidateType.UNEXPECTED_INCREASE);
 		assertThat(candidate.getId().getRepoId()).isEqualTo(11);
 		assertThat(candidate.getQuantity()).isEqualByComparingTo("11");
 		assertThat(candidate.getAdditionalDemandDetail()).isNull();
@@ -238,7 +247,7 @@ public class TransactionCreatedHandlerTests
 			assertDemandDetailQuery(query);
 		}
 
-		assertThat(candidate.getType()).isEqualTo(CandidateType.UNRELATED_DECREASE);
+		assertThat(candidate.getType()).isEqualTo(CandidateType.UNEXPECTED_DECREASE);
 		final DemandDetail demandDetail = DemandDetail.castOrNull(candidate.getBusinessCaseDetail());
 		assertThat(demandDetail).as("created candidate shall have a demand detail").isNotNull();
 		assertThat(demandDetail.getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
@@ -266,8 +275,7 @@ public class TransactionCreatedHandlerTests
 						-1,
 						-1,
 						SIXTY_FOUR))
-				.build()
-				.validate();
+				.build();
 
 		Mockito.when(candidateRepository.retrieveLatestMatchOrNull(Mockito.any()))
 				.thenReturn(exisitingCandidate);

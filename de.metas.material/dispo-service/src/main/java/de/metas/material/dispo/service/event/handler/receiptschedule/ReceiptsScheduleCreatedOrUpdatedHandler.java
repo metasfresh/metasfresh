@@ -1,5 +1,10 @@
 package de.metas.material.dispo.service.event.handler.receiptschedule;
 
+import static java.math.BigDecimal.ZERO;
+
+import java.math.BigDecimal;
+import java.util.List;
+
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -9,6 +14,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail.PurchaseDetailBuilder;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.PurchaseDetailsQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
@@ -59,9 +65,20 @@ abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends AbstractReceipt
 				? existingSupplyCandidate.toBuilder()
 				: prepareInitialSupplyCandidate(event);
 
+		final PurchaseDetail purchaseDetail = createPurchaseDetail(event);
+
+		final List<Candidate> receiptScheduleRecordsWithDifferentAttributes = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(CandidatesQuery.builder()
+				.type(CandidateType.UNEXPECTED_INCREASE) // get all purchaseDetail-candidates that are *not* the *actual* receipt schedule's candidate that we are updating in here
+				.purchaseDetailsQuery(PurchaseDetailsQuery.ofPurchaseDetailOrNull(purchaseDetail))
+				.build());
+		final BigDecimal qtySumWithDifferentAttributes = receiptScheduleRecordsWithDifferentAttributes
+				.stream()
+				.map(Candidate::getQuantity)
+				.reduce(ZERO, BigDecimal::add);
+
 		final Candidate supplyCandidate = supplyCandidateBuilder
-				.businessCaseDetail(createPurchaseDetail(event))
-				.quantity(event.getReservedQuantity())
+				.businessCaseDetail(purchaseDetail)
+				.quantity(event.getMaterialDescriptor().getQuantity().subtract(qtySumWithDifferentAttributes))
 				.build();
 
 		candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
