@@ -1,5 +1,9 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,10 +31,13 @@ import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateId;
+import de.metas.handlingunits.picking.PickingCandidateIssueToBOMLine;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -41,6 +48,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -202,7 +210,41 @@ public class ProcessPickingCandidatesCommand
 
 	private HuId processInTrx_PickFromPickingOrder(final PickingCandidate pickingCandidate)
 	{
-		throw new UnsupportedOperationException("not implemented");
+		//
+		// Process issues
+		final ArrayList<I_PP_Order_Qty> issueCandidates = new ArrayList<>();
+
+		final PPOrderId pickingOrderId = pickingCandidate.getPickFrom().getPickingOrderId();
+		for (final PickingCandidateIssueToBOMLine issueToPickingOrder : pickingCandidate.getIssuesToPickingOrder())
+		{
+			final I_PP_Order_Qty issueCandidate = createOrderIssueCandidate(issueToPickingOrder, pickingOrderId);
+			issueCandidates.add(issueCandidate);
+		}
+		if (!issueCandidates.isEmpty())
+		{
+			HUPPOrderIssueReceiptCandidatesProcessor.newInstance()
+					.setCandidatesToProcess(issueCandidates)
+					.process();
+		}
+
+		//
+		// Receive HU from picking/manufacturing order
+		// pickingCandidate.getQtyPicked()
+		throw new UnsupportedOperationException("not implemented yet"); // TODO
+	}
+
+	private I_PP_Order_Qty createOrderIssueCandidate(
+			@NonNull final PickingCandidateIssueToBOMLine issueToPickingOrder,
+			@NonNull final PPOrderId pickingOrderId)
+	{
+		final I_PP_Order_Qty issueCandidate = newInstance(I_PP_Order_Qty.class);
+		issueCandidate.setPP_Order_ID(pickingOrderId.getRepoId());
+
+		// TODO Auto-generated method stub
+		saveRecord(issueCandidate);
+		// return issueCandidate;
+
+		throw new UnsupportedOperationException("not implemented yet"); // TODO
 	}
 
 	private void closeShipmentScheduleAndInvoiceCandidates(final I_M_ShipmentSchedule shipmentSchedule)
