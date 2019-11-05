@@ -1,6 +1,5 @@
 package de.metas.rest_api.invoicecandidates.response;
 
-import java.time.Instant;
 import java.util.List;
 
 import lombok.Builder;
@@ -31,6 +30,7 @@ import lombok.Value;
 @Builder
 public class JsonInvoiceCandidateResult_StatusEnqueued
 {
-	private List<Instant> workPackagesCreated;
+	private String status = "Status Enqueued";
+	private List<JsonWorkPackageInfo> workPackages;
 	private List<JsonInvoiceCandidateStatusInfo> invoiceCandidates;
 }
