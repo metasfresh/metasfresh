@@ -1,35 +1,32 @@
-
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details ( IN Record_ID numeric, IN AD_Language Character Varying(6) );
 DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details;
 
 CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details
 (
-  Line                    Numeric(10, 0),
-  Name                    Character Varying,
-  Attributes              Text,
-  HUQty                   Numeric,
-  HUName                  Text,
-  qtyEntered              Numeric,
-  movementqty             Numeric,
-  PriceEntered            Numeric,
-  UOMSymbol               Character Varying(10),
-  movementqtyUOMSymbol    Character Varying(10),
-  StdPrecision            Numeric(10, 0),
-  LineNetAmt              Numeric,
-  Discount                Numeric,
-  IsDiscountPrinted       Character(1),
-  QtyPattern              text,
-  Description             Character Varying,
-  bp_product_no           character varying(30),
-  bp_product_name         character varying(100),
-  best_before_date        text,
-  lotno                   character varying,
-  p_value                 character varying(30),
-  p_description           character varying(255),
-  inout_description       character varying(255),
-  iscampaignprice         character(1),
-  qtyordered              Numeric,
-  orderUOMSymbol          Character Varying(10)
+  Line              Numeric(10, 0),
+  Name              Character Varying,
+  Attributes        Text,
+  HUQty             Numeric,
+  HUName            Text,
+  qtyEntered        Numeric,
+  PriceEntered      Numeric,
+  UOMSymbol         Character Varying(10),
+  StdPrecision      Numeric(10, 0),
+  LineNetAmt        Numeric,
+  Discount          Numeric,
+  IsDiscountPrinted Character(1),
+  QtyPattern        text,
+  Description       Character Varying,
+  bp_product_no     character varying(30),
+  bp_product_name   character varying(100),
+  best_before_date  text,
+  lotno             character varying,
+  p_value           character varying(30),
+  p_description     character varying(255),
+  inout_description character varying(255),
+  iscampaignprice   character(1),
+  qtyordered        Numeric,
+  orderUOMSymbol    Character Varying(10)
 );
 
 
@@ -47,17 +44,13 @@ SELECT
   END                                                                                             AS Attributes,
   iol.QtyEnteredTU                                                                                AS HUQty,
   pi.name                                                                                         AS HUName,
-
   (case when qtydeliveredcatch is not null
     then qtydeliveredcatch
-   else iol.QtyEntered * COALESCE(multiplyrate,
-                                  1) end)                                                         AS QtyEntered,
-  iol.movementqty,
+   else iol.QtyEntered * COALESCE(multiplyrate, 1) end)                                           AS QtyEntered,
   COALESCE(ic.PriceEntered_Override, ic.PriceEntered)                                             AS PriceEntered,
   (case when qtydeliveredcatch is not null
     then COALESCE(uomct.UOMSymbol, uomc.UOMSymbol)
    else COALESCE(uomt.UOMSymbol, uom.UOMSymbol) end)                                              AS UOMSymbol,
-   COALESCE(uomt_iol.UOMSymbol, uom_iol.UOMSymbol)                                                AS movementqtyUOMSymbol,
   uom.stdPrecision,
   COALESCE(ic.PriceActual_Override, ic.PriceActual) * iol.MovementQty * COALESCE(multiplyrate, 1) AS linenetamt,
   COALESCE(ic.Discount_Override, ic.Discount)                                                     AS Discount,
@@ -154,11 +147,6 @@ FROM
                                            AND conv.C_UOM_To_ID = ic.Price_UOM_ID
                                            AND iol.M_Product_ID = conv.M_Product_ID
                                            AND conv.isActive = 'Y'
-										   
- -- Unit of measurement and its translation regarding movementqty
-  LEFT OUTER JOIN C_UOM uom_iol ON iol.C_UOM_ID = uom_iol.C_UOM_ID AND uom_iol.isActive = 'Y'
-  LEFT OUTER JOIN C_UOM_Trl uomt_iol ON iol.C_UOM_ID = uomt_iol.C_UOM_ID AND uomt_iol.AD_Language = $2 AND uomt_iol.isActive = 'Y'
-
 
   -- Unit of measurement and its translation for catch weight
   LEFT OUTER JOIN C_UOM uomc ON uomc.C_UOM_ID = iol.catch_uom_id
