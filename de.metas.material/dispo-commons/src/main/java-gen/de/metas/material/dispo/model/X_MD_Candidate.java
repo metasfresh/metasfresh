@@ -15,7 +15,7 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1283178766L;
+	private static final long serialVersionUID = 999941230L;
 
     /** Standard Constructor */
     public X_MD_Candidate (Properties ctx, int MD_Candidate_ID, String trxName)
@@ -24,10 +24,10 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
       /** if (MD_Candidate_ID == 0)
         {
 			setDateProjected (new Timestamp( System.currentTimeMillis() ));
-			setM_Product_ID (0);
-			setM_Warehouse_ID (0);
 			setMD_Candidate_ID (0);
 			setMD_Candidate_Type (null);
+			setM_Product_ID (0);
+			setM_Warehouse_ID (0);
 			setQty (BigDecimal.ZERO);
 			setSeqNo (0);
 			setStorageAttributesKey (null); // -1002
@@ -156,115 +156,6 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	public int getM_AttributeSetInstance_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Forecast getM_Forecast()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Forecast_ID, org.compiere.model.I_M_Forecast.class);
-	}
-
-	@Override
-	public void setM_Forecast(org.compiere.model.I_M_Forecast M_Forecast)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Forecast_ID, org.compiere.model.I_M_Forecast.class, M_Forecast);
-	}
-
-	/** Set Prognose.
-		@param M_Forecast_ID 
-		Vorhersagen zu Material-/Produkt-/Artikelentwicklung
-	  */
-	@Override
-	public void setM_Forecast_ID (int M_Forecast_ID)
-	{
-		if (M_Forecast_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_Forecast_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_M_Forecast_ID, Integer.valueOf(M_Forecast_ID));
-	}
-
-	/** Get Prognose.
-		@return Vorhersagen zu Material-/Produkt-/Artikelentwicklung
-	  */
-	@Override
-	public int getM_Forecast_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Forecast_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Produkt.
-		@param M_Product_ID 
-		Produkt, Leistung, Artikel
-	  */
-	@Override
-	public void setM_Product_ID (int M_Product_ID)
-	{
-		if (M_Product_ID < 1) 
-			set_Value (COLUMNNAME_M_Product_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
-	}
-
-	/** Get Produkt.
-		@return Produkt, Leistung, Artikel
-	  */
-	@Override
-	public int getM_Product_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Lieferdisposition.
-		@param M_ShipmentSchedule_ID Lieferdisposition	  */
-	@Override
-	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID)
-	{
-		if (M_ShipmentSchedule_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ID, Integer.valueOf(M_ShipmentSchedule_ID));
-	}
-
-	/** Get Lieferdisposition.
-		@return Lieferdisposition	  */
-	@Override
-	public int getM_ShipmentSchedule_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShipmentSchedule_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Lager.
-		@param M_Warehouse_ID 
-		Lager oder Ort für Dienstleistung
-	  */
-	@Override
-	public void setM_Warehouse_ID (int M_Warehouse_ID)
-	{
-		if (M_Warehouse_ID < 1) 
-			set_Value (COLUMNNAME_M_Warehouse_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
-	}
-
-	/** Get Lager.
-		@return Lager oder Ort für Dienstleistung
-	  */
-	@Override
-	public int getM_Warehouse_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -428,10 +319,10 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	public static final String MD_CANDIDATE_TYPE_SUPPLY = "SUPPLY";
 	/** STOCK_UP = STOCK_UP */
 	public static final String MD_CANDIDATE_TYPE_STOCK_UP = "STOCK_UP";
-	/** UNRELATED_INCREASE = UNRELATED_INCREASE */
-	public static final String MD_CANDIDATE_TYPE_UNRELATED_INCREASE = "UNRELATED_INCREASE";
-	/** UNRELATED_DECREASE = UNRELATED_DECREASE */
-	public static final String MD_CANDIDATE_TYPE_UNRELATED_DECREASE = "UNRELATED_DECREASE";
+	/** UNEXPECTED_INCREASE = UNEXPECTED_INCREASE */
+	public static final String MD_CANDIDATE_TYPE_UNEXPECTED_INCREASE = "UNEXPECTED_INCREASE";
+	/** UNEXPECTED_DECREASE = UNEXPECTED_DECREASE */
+	public static final String MD_CANDIDATE_TYPE_UNEXPECTED_DECREASE = "UNEXPECTED_DECREASE";
 	/** INVENTORY_UP = INVENTORY_UP */
 	public static final String MD_CANDIDATE_TYPE_INVENTORY_UP = "INVENTORY_UP";
 	/** INVENTORY_DOWN = INVENTORY_DOWN */
@@ -455,6 +346,115 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	public java.lang.String getMD_Candidate_Type () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_MD_Candidate_Type);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Forecast getM_Forecast()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Forecast_ID, org.compiere.model.I_M_Forecast.class);
+	}
+
+	@Override
+	public void setM_Forecast(org.compiere.model.I_M_Forecast M_Forecast)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Forecast_ID, org.compiere.model.I_M_Forecast.class, M_Forecast);
+	}
+
+	/** Set Prognose.
+		@param M_Forecast_ID 
+		Vorhersagen zu Material-/Produkt-/Artikelentwicklung
+	  */
+	@Override
+	public void setM_Forecast_ID (int M_Forecast_ID)
+	{
+		if (M_Forecast_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Forecast_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Forecast_ID, Integer.valueOf(M_Forecast_ID));
+	}
+
+	/** Get Prognose.
+		@return Vorhersagen zu Material-/Produkt-/Artikelentwicklung
+	  */
+	@Override
+	public int getM_Forecast_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Forecast_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Produkt.
+		@param M_Product_ID 
+		Produkt, Leistung, Artikel
+	  */
+	@Override
+	public void setM_Product_ID (int M_Product_ID)
+	{
+		if (M_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+	}
+
+	/** Get Produkt.
+		@return Produkt, Leistung, Artikel
+	  */
+	@Override
+	public int getM_Product_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Lieferdisposition.
+		@param M_ShipmentSchedule_ID Lieferdisposition	  */
+	@Override
+	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID)
+	{
+		if (M_ShipmentSchedule_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ID, Integer.valueOf(M_ShipmentSchedule_ID));
+	}
+
+	/** Get Lieferdisposition.
+		@return Lieferdisposition	  */
+	@Override
+	public int getM_ShipmentSchedule_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShipmentSchedule_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Lager.
+		@param M_Warehouse_ID 
+		Lager oder Ort für Dienstleistung
+	  */
+	@Override
+	public void setM_Warehouse_ID (int M_Warehouse_ID)
+	{
+		if (M_Warehouse_ID < 1) 
+			set_Value (COLUMNNAME_M_Warehouse_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
+	}
+
+	/** Get Lager.
+		@return Lager oder Ort für Dienstleistung
+	  */
+	@Override
+	public int getM_Warehouse_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Menge.
@@ -497,24 +497,6 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 		return bd;
 	}
 
-	/** Set Menge.
-		@param Qty_Planned_Display Menge	  */
-	@Override
-	public void setQty_Planned_Display (java.math.BigDecimal Qty_Planned_Display)
-	{
-		throw new IllegalArgumentException ("Qty_Planned_Display is virtual column");	}
-
-	/** Get Menge.
-		@return Menge	  */
-	@Override
-	public java.math.BigDecimal getQty_Planned_Display () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty_Planned_Display);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
 	/** Set Erledigte Menge.
 		@param QtyFulfilled 
 		Summe der bereits eingetretenden Materialbewegungen
@@ -532,6 +514,24 @@ public class X_MD_Candidate extends org.compiere.model.PO implements I_MD_Candid
 	public java.math.BigDecimal getQtyFulfilled () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyFulfilled);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Menge.
+		@param Qty_Planned_Display Menge	  */
+	@Override
+	public void setQty_Planned_Display (java.math.BigDecimal Qty_Planned_Display)
+	{
+		throw new IllegalArgumentException ("Qty_Planned_Display is virtual column");	}
+
+	/** Get Menge.
+		@return Menge	  */
+	@Override
+	public java.math.BigDecimal getQty_Planned_Display () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty_Planned_Display);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

@@ -14,6 +14,7 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 
 /*
@@ -41,6 +42,11 @@ import lombok.Singular;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class TransactionCreatedEvent extends AbstractTransactionEvent
 {
+	public static TransactionCreatedEvent cast(@NonNull final AbstractTransactionEvent event)
+	{
+		return (TransactionCreatedEvent)event;
+	}
+
 	public static final String TYPE = "TransactionCreatedEvent";
 
 	@JsonCreator

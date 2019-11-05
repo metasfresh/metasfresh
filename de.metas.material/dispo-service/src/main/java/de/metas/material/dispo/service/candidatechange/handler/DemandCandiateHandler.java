@@ -80,7 +80,7 @@ public class DemandCandiateHandler implements CandidateHandler
 	{
 		return ImmutableList.of(
 				CandidateType.DEMAND,
-				CandidateType.UNRELATED_DECREASE,
+				CandidateType.UNEXPECTED_DECREASE,
 				CandidateType.INVENTORY_DOWN,
 				CandidateType.ATTRIBUTES_CHANGED_FROM);
 	}

@@ -15,7 +15,7 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -790441011L;
+	private static final long serialVersionUID = -1925944509L;
 
     /** Standard Constructor */
     public X_MD_Candidate_Transaction_Detail (Properties ctx, int MD_Candidate_Transaction_Detail_ID, String trxName)
@@ -73,73 +73,6 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 	public int getAD_PInstance_ResetStock_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PInstance_ResetStock_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_InOutLine getM_InOutLine()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class);
-	}
-
-	@Override
-	public void setM_InOutLine(org.compiere.model.I_M_InOutLine M_InOutLine)
-	{
-		set_ValueFromPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class, M_InOutLine);
-	}
-
-	/** Set Versand-/Wareneingangsposition.
-		@param M_InOutLine_ID 
-		Position auf Versand- oder Wareneingangsbeleg
-	  */
-	@Override
-	public void setM_InOutLine_ID (int M_InOutLine_ID)
-	{
-		throw new IllegalArgumentException ("M_InOutLine_ID is virtual column");	}
-
-	/** Get Versand-/Wareneingangsposition.
-		@return Position auf Versand- oder Wareneingangsbeleg
-	  */
-	@Override
-	public int getM_InOutLine_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOutLine_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Transaction getM_Transaction()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Transaction_ID, org.compiere.model.I_M_Transaction.class);
-	}
-
-	@Override
-	public void setM_Transaction(org.compiere.model.I_M_Transaction M_Transaction)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Transaction_ID, org.compiere.model.I_M_Transaction.class, M_Transaction);
-	}
-
-	/** Set Bestands-Transaktion.
-		@param M_Transaction_ID Bestands-Transaktion	  */
-	@Override
-	public void setM_Transaction_ID (int M_Transaction_ID)
-	{
-		if (M_Transaction_ID < 1) 
-			set_Value (COLUMNNAME_M_Transaction_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Transaction_ID, Integer.valueOf(M_Transaction_ID));
-	}
-
-	/** Get Bestands-Transaktion.
-		@return Bestands-Transaktion	  */
-	@Override
-	public int getM_Transaction_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Transaction_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -223,6 +156,39 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 		return ii.intValue();
 	}
 
+	@Override
+	public org.compiere.model.I_M_InOutLine getM_InOutLine()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class);
+	}
+
+	@Override
+	public void setM_InOutLine(org.compiere.model.I_M_InOutLine M_InOutLine)
+	{
+		set_ValueFromPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class, M_InOutLine);
+	}
+
+	/** Set Versand-/Wareneingangsposition.
+		@param M_InOutLine_ID 
+		Position auf Versand- oder Wareneingangsbeleg
+	  */
+	@Override
+	public void setM_InOutLine_ID (int M_InOutLine_ID)
+	{
+		throw new IllegalArgumentException ("M_InOutLine_ID is virtual column");	}
+
+	/** Get Versand-/Wareneingangsposition.
+		@return Position auf Versand- oder Wareneingangsbeleg
+	  */
+	@Override
+	public int getM_InOutLine_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOutLine_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Bewegungs-Menge.
 		@param MovementQty 
 		Menge eines bewegten Produktes.
@@ -243,6 +209,40 @@ public class X_MD_Candidate_Transaction_Detail extends org.compiere.model.PO imp
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	@Override
+	public org.compiere.model.I_M_Transaction getM_Transaction()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Transaction_ID, org.compiere.model.I_M_Transaction.class);
+	}
+
+	@Override
+	public void setM_Transaction(org.compiere.model.I_M_Transaction M_Transaction)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Transaction_ID, org.compiere.model.I_M_Transaction.class, M_Transaction);
+	}
+
+	/** Set Bestands-Transaktion.
+		@param M_Transaction_ID Bestands-Transaktion	  */
+	@Override
+	public void setM_Transaction_ID (int M_Transaction_ID)
+	{
+		if (M_Transaction_ID < 1) 
+			set_Value (COLUMNNAME_M_Transaction_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Transaction_ID, Integer.valueOf(M_Transaction_ID));
+	}
+
+	/** Get Bestands-Transaktion.
+		@return Bestands-Transaktion	  */
+	@Override
+	public int getM_Transaction_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Transaction_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Transaktionsdatum.

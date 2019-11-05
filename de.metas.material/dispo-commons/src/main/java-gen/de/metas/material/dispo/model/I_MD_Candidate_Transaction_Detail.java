@@ -139,68 +139,6 @@ public interface I_MD_Candidate_Transaction_Detail
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Versand-/Wareneingangsposition.
-	 * Position auf Versand- oder Wareneingangsbeleg
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setM_InOutLine_ID (int M_InOutLine_ID);
-
-	/**
-	 * Get Versand-/Wareneingangsposition.
-	 * Position auf Versand- oder Wareneingangsbeleg
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	public int getM_InOutLine_ID();
-
-	@Deprecated
-	public org.compiere.model.I_M_InOutLine getM_InOutLine();
-
-	@Deprecated
-	public void setM_InOutLine(org.compiere.model.I_M_InOutLine M_InOutLine);
-
-    /** Column definition for M_InOutLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Transaction_Detail, org.compiere.model.I_M_InOutLine> COLUMN_M_InOutLine_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Transaction_Detail, org.compiere.model.I_M_InOutLine>(I_MD_Candidate_Transaction_Detail.class, "M_InOutLine_ID", org.compiere.model.I_M_InOutLine.class);
-    /** Column name M_InOutLine_ID */
-    public static final String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
-
-	/**
-	 * Set Bestands-Transaktion.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Transaction_ID (int M_Transaction_ID);
-
-	/**
-	 * Get Bestands-Transaktion.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Transaction_ID();
-
-	public org.compiere.model.I_M_Transaction getM_Transaction();
-
-	public void setM_Transaction(org.compiere.model.I_M_Transaction M_Transaction);
-
-    /** Column definition for M_Transaction_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Transaction_Detail, org.compiere.model.I_M_Transaction> COLUMN_M_Transaction_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Transaction_Detail, org.compiere.model.I_M_Transaction>(I_MD_Candidate_Transaction_Detail.class, "M_Transaction_ID", org.compiere.model.I_M_Transaction.class);
-    /** Column name M_Transaction_ID */
-    public static final String COLUMNNAME_M_Transaction_ID = "M_Transaction_ID";
-
-	/**
 	 * Set Dispositionskandidat.
 	 *
 	 * <br>Type: Search
@@ -274,6 +212,41 @@ public interface I_MD_Candidate_Transaction_Detail
     public static final String COLUMNNAME_MD_Stock_ID = "MD_Stock_ID";
 
 	/**
+	 * Set Versand-/Wareneingangsposition.
+	 * Position auf Versand- oder Wareneingangsbeleg
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setM_InOutLine_ID (int M_InOutLine_ID);
+
+	/**
+	 * Get Versand-/Wareneingangsposition.
+	 * Position auf Versand- oder Wareneingangsbeleg
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public int getM_InOutLine_ID();
+
+	@Deprecated
+	public org.compiere.model.I_M_InOutLine getM_InOutLine();
+
+	@Deprecated
+	public void setM_InOutLine(org.compiere.model.I_M_InOutLine M_InOutLine);
+
+    /** Column definition for M_InOutLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Transaction_Detail, org.compiere.model.I_M_InOutLine> COLUMN_M_InOutLine_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Transaction_Detail, org.compiere.model.I_M_InOutLine>(I_MD_Candidate_Transaction_Detail.class, "M_InOutLine_ID", org.compiere.model.I_M_InOutLine.class);
+    /** Column name M_InOutLine_ID */
+    public static final String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
+
+	/**
 	 * Set Bewegungs-Menge.
 	 * Menge eines bewegten Produktes.
 	 *
@@ -297,6 +270,33 @@ public interface I_MD_Candidate_Transaction_Detail
     public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Transaction_Detail, Object> COLUMN_MovementQty = new org.adempiere.model.ModelColumn<I_MD_Candidate_Transaction_Detail, Object>(I_MD_Candidate_Transaction_Detail.class, "MovementQty", null);
     /** Column name MovementQty */
     public static final String COLUMNNAME_MovementQty = "MovementQty";
+
+	/**
+	 * Set Bestands-Transaktion.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Transaction_ID (int M_Transaction_ID);
+
+	/**
+	 * Get Bestands-Transaktion.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Transaction_ID();
+
+	public org.compiere.model.I_M_Transaction getM_Transaction();
+
+	public void setM_Transaction(org.compiere.model.I_M_Transaction M_Transaction);
+
+    /** Column definition for M_Transaction_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Transaction_Detail, org.compiere.model.I_M_Transaction> COLUMN_M_Transaction_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Transaction_Detail, org.compiere.model.I_M_Transaction>(I_MD_Candidate_Transaction_Detail.class, "M_Transaction_ID", org.compiere.model.I_M_Transaction.class);
+    /** Column name M_Transaction_ID */
+    public static final String COLUMNNAME_M_Transaction_ID = "M_Transaction_ID";
 
 	/**
 	 * Set Transaktionsdatum.
