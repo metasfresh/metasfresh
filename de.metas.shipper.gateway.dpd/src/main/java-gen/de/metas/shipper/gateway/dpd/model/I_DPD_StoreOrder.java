@@ -442,20 +442,20 @@ public interface I_DPD_StoreOrder
 	/**
 	 * Set Pickup Date.
 	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPickupDate (java.sql.Timestamp PickupDate);
+	public void setPickupDate (int PickupDate);
 
 	/**
 	 * Get Pickup Date.
 	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getPickupDate();
+	public int getPickupDate();
 
     /** Column definition for PickupDate */
     public static final org.adempiere.model.ModelColumn<I_DPD_StoreOrder, Object> COLUMN_PickupDate = new org.adempiere.model.ModelColumn<I_DPD_StoreOrder, Object>(I_DPD_StoreOrder.class, "PickupDate", null);
@@ -465,20 +465,20 @@ public interface I_DPD_StoreOrder
 	/**
 	 * Set Pickup Day.
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPickupDay (java.lang.String PickupDay);
+	public void setPickupDay (int PickupDay);
 
 	/**
 	 * Get Pickup Day.
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getPickupDay();
+	public int getPickupDay();
 
     /** Column definition for PickupDay */
     public static final org.adempiere.model.ModelColumn<I_DPD_StoreOrder, Object> COLUMN_PickupDay = new org.adempiere.model.ModelColumn<I_DPD_StoreOrder, Object>(I_DPD_StoreOrder.class, "PickupDay", null);
@@ -488,20 +488,20 @@ public interface I_DPD_StoreOrder
 	/**
 	 * Set Pickup Time From.
 	 *
-	 * <br>Type: Time
-	 * <br>Mandatory: false
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPickupTimeFrom (java.sql.Timestamp PickupTimeFrom);
+	public void setPickupTimeFrom (int PickupTimeFrom);
 
 	/**
 	 * Get Pickup Time From.
 	 *
-	 * <br>Type: Time
-	 * <br>Mandatory: false
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getPickupTimeFrom();
+	public int getPickupTimeFrom();
 
     /** Column definition for PickupTimeFrom */
     public static final org.adempiere.model.ModelColumn<I_DPD_StoreOrder, Object> COLUMN_PickupTimeFrom = new org.adempiere.model.ModelColumn<I_DPD_StoreOrder, Object>(I_DPD_StoreOrder.class, "PickupTimeFrom", null);
@@ -511,20 +511,20 @@ public interface I_DPD_StoreOrder
 	/**
 	 * Set Pickup Time To.
 	 *
-	 * <br>Type: Time
-	 * <br>Mandatory: false
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPickupTimeTo (java.sql.Timestamp PickupTimeTo);
+	public void setPickupTimeTo (int PickupTimeTo);
 
 	/**
 	 * Get Pickup Time To.
 	 *
-	 * <br>Type: Time
-	 * <br>Mandatory: false
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getPickupTimeTo();
+	public int getPickupTimeTo();
 
     /** Column definition for PickupTimeTo */
     public static final org.adempiere.model.ModelColumn<I_DPD_StoreOrder, Object> COLUMN_PickupTimeTo = new org.adempiere.model.ModelColumn<I_DPD_StoreOrder, Object>(I_DPD_StoreOrder.class, "PickupTimeTo", null);
@@ -999,27 +999,25 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_Volume = "Volume";
 
 	/**
-	 * Set Gewicht.
-	 * Gewicht eines Produktes
+	 * Set Weight In Kg.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setWeight (int Weight);
+	public void setWeightInKg (int WeightInKg);
 
 	/**
-	 * Get Gewicht.
-	 * Gewicht eines Produktes
+	 * Get Weight In Kg.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getWeight();
+	public int getWeightInKg();
 
-    /** Column definition for Weight */
-    public static final org.adempiere.model.ModelColumn<I_DPD_StoreOrder, Object> COLUMN_Weight = new org.adempiere.model.ModelColumn<I_DPD_StoreOrder, Object>(I_DPD_StoreOrder.class, "Weight", null);
-    /** Column name Weight */
-    public static final String COLUMNNAME_Weight = "Weight";
+    /** Column definition for WeightInKg */
+    public static final org.adempiere.model.ModelColumn<I_DPD_StoreOrder, Object> COLUMN_WeightInKg = new org.adempiere.model.ModelColumn<I_DPD_StoreOrder, Object>(I_DPD_StoreOrder.class, "WeightInKg", null);
+    /** Column name WeightInKg */
+    public static final String COLUMNNAME_WeightInKg = "WeightInKg";
 }

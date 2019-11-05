@@ -14,7 +14,7 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 331693185L;
+	private static final long serialVersionUID = -1942089851L;
 
     /** Standard Constructor */
     public X_DPD_StoreOrder (Properties ctx, int DPD_StoreOrder_ID, String trxName)
@@ -23,8 +23,12 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
       /** if (DPD_StoreOrder_ID == 0)
         {
 			setDPD_StoreOrder_ID (0);
+			setPickupDate (0); // 0
+			setPickupDay (0); // 0
+			setPickupTimeFrom (0); // 0
+			setPickupTimeTo (0); // 0
 			setVolume (0); // 0
-			setWeight (0); // 0
+			setWeightInKg (0); // 0
         } */
     }
 
@@ -321,65 +325,77 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
 	/** Set Pickup Date.
 		@param PickupDate Pickup Date	  */
 	@Override
-	public void setPickupDate (java.sql.Timestamp PickupDate)
+	public void setPickupDate (int PickupDate)
 	{
-		set_Value (COLUMNNAME_PickupDate, PickupDate);
+		set_Value (COLUMNNAME_PickupDate, Integer.valueOf(PickupDate));
 	}
 
 	/** Get Pickup Date.
 		@return Pickup Date	  */
 	@Override
-	public java.sql.Timestamp getPickupDate () 
+	public int getPickupDate () 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_PickupDate);
+		Integer ii = (Integer)get_Value(COLUMNNAME_PickupDate);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Pickup Day.
 		@param PickupDay Pickup Day	  */
 	@Override
-	public void setPickupDay (java.lang.String PickupDay)
+	public void setPickupDay (int PickupDay)
 	{
-		set_Value (COLUMNNAME_PickupDay, PickupDay);
+		set_Value (COLUMNNAME_PickupDay, Integer.valueOf(PickupDay));
 	}
 
 	/** Get Pickup Day.
 		@return Pickup Day	  */
 	@Override
-	public java.lang.String getPickupDay () 
+	public int getPickupDay () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PickupDay);
+		Integer ii = (Integer)get_Value(COLUMNNAME_PickupDay);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Pickup Time From.
 		@param PickupTimeFrom Pickup Time From	  */
 	@Override
-	public void setPickupTimeFrom (java.sql.Timestamp PickupTimeFrom)
+	public void setPickupTimeFrom (int PickupTimeFrom)
 	{
-		set_Value (COLUMNNAME_PickupTimeFrom, PickupTimeFrom);
+		set_Value (COLUMNNAME_PickupTimeFrom, Integer.valueOf(PickupTimeFrom));
 	}
 
 	/** Get Pickup Time From.
 		@return Pickup Time From	  */
 	@Override
-	public java.sql.Timestamp getPickupTimeFrom () 
+	public int getPickupTimeFrom () 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_PickupTimeFrom);
+		Integer ii = (Integer)get_Value(COLUMNNAME_PickupTimeFrom);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Pickup Time To.
 		@param PickupTimeTo Pickup Time To	  */
 	@Override
-	public void setPickupTimeTo (java.sql.Timestamp PickupTimeTo)
+	public void setPickupTimeTo (int PickupTimeTo)
 	{
-		set_Value (COLUMNNAME_PickupTimeTo, PickupTimeTo);
+		set_Value (COLUMNNAME_PickupTimeTo, Integer.valueOf(PickupTimeTo));
 	}
 
 	/** Get Pickup Time To.
 		@return Pickup Time To	  */
 	@Override
-	public java.sql.Timestamp getPickupTimeTo () 
+	public int getPickupTimeTo () 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_PickupTimeTo);
+		Integer ii = (Integer)get_Value(COLUMNNAME_PickupTimeTo);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Printer Language.
@@ -692,23 +708,20 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
 		return ii.intValue();
 	}
 
-	/** Set Gewicht.
-		@param Weight 
-		Gewicht eines Produktes
-	  */
+	/** Set Weight In Kg.
+		@param WeightInKg Weight In Kg	  */
 	@Override
-	public void setWeight (int Weight)
+	public void setWeightInKg (int WeightInKg)
 	{
-		set_Value (COLUMNNAME_Weight, Integer.valueOf(Weight));
+		set_Value (COLUMNNAME_WeightInKg, Integer.valueOf(WeightInKg));
 	}
 
-	/** Get Gewicht.
-		@return Gewicht eines Produktes
-	  */
+	/** Get Weight In Kg.
+		@return Weight In Kg	  */
 	@Override
-	public int getWeight () 
+	public int getWeightInKg () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Weight);
+		Integer ii = (Integer)get_Value(COLUMNNAME_WeightInKg);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
