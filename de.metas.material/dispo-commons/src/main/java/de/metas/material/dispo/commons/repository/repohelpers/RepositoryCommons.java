@@ -431,11 +431,10 @@ public class RepositoryCommons
 			@NonNull final Class<T> modelClass)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IQuery<T> candidateDetailQueryBuilder = queryBL.createQueryBuilder(modelClass)
+		return queryBL.createQueryBuilder(modelClass)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, candidateRecord.getMD_Candidate_ID())
 				.create();
-		return candidateDetailQueryBuilder;
 	}
 
 }

@@ -2,6 +2,7 @@ package de.metas.material.dispo.service.event;
 
 import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static java.math.BigDecimal.ONE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -20,8 +21,10 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
@@ -183,6 +186,8 @@ public class SupplyProposalEvaluatorTests
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.additionalDemandDetail(createDemandDetail())
 				.type(CandidateType.SUPPLY)
+				.businessCase(CandidateBusinessCase.DISTRIBUTION)
+				.businessCaseDetail(DistributionDetail.builder().qty(ONE).build()) // just a dummy detail that currently doesn't play a role in the actual test
 				.materialDescriptor(supplyMaterialDescriptor)
 				.build();
 
@@ -201,6 +206,8 @@ public class SupplyProposalEvaluatorTests
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.parentId(supplyCandidateWithId.getId())
 				.type(CandidateType.DEMAND)
+				.businessCase(CandidateBusinessCase.DISTRIBUTION)
+				.businessCaseDetail(DistributionDetail.builder().qty(ONE).build()) // just a dummy detail that currently doesn't play a role in the actual test
 				.additionalDemandDetail(createDemandDetail())
 				.materialDescriptor(demandDescr)
 				.build();

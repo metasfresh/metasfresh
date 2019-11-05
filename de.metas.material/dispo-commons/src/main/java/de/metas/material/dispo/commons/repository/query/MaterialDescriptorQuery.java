@@ -53,6 +53,12 @@ public class MaterialDescriptorQuery
 		GIVEN_ID_OR_NULL
 	}
 
+	public static MaterialDescriptorQuery forDescriptor(@NonNull final MaterialDescriptor materialDescriptor)
+	{
+		final DateAndSeqNo atTime = null;
+		return forDescriptor(materialDescriptor, atTime);
+	}
+
 	public static MaterialDescriptorQuery forDescriptor(
 			@NonNull final MaterialDescriptor materialDescriptor,
 			@Nullable final DateAndSeqNo atTime)
