@@ -89,6 +89,7 @@ public class OrderLineBLTest
 
 		final I_M_PriceList priceList = InterfaceWrapperHelper.create(ctx, I_M_PriceList.class, ITrx.TRXNAME_None);
 		priceList.setC_Currency_ID(currency.getRepoId());
+		priceList.setM_PricingSystem_ID(1000000);
 		InterfaceWrapperHelper.save(priceList);
 
 		final I_C_Order order = InterfaceWrapperHelper.create(ctx, I_C_Order.class, ITrx.TRXNAME_None);
