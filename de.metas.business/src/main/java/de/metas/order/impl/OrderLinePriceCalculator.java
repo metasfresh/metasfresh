@@ -42,11 +42,13 @@ import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.limit.PriceLimitRuleContext;
 import de.metas.pricing.limit.PriceLimitRuleResult;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
@@ -327,8 +329,12 @@ final class OrderLinePriceCalculator
 		//
 		// Pricing System / List / Country / Currency
 		{
-			final PricingSystemId pricingSystemId = request.getPricingSystemIdOverride() != null ? request.getPricingSystemIdOverride() : pricingCtx.getPricingSystemId();
-			final PriceListId priceListId = request.getPriceListIdOverride() != null ? request.getPriceListIdOverride() : orderBL.retrievePriceListId(order, pricingSystemId);
+			PricingSystemId pricingSystemId = CoalesceUtil.coalesce(request.getPricingSystemIdOverride(), pricingCtx.getPricingSystemId());
+			final PriceListId priceListId = CoalesceUtil.coalesce(request.getPriceListIdOverride(),orderBL.retrievePriceListId(order, pricingSystemId));
+			if (pricingSystemId == null && priceListId != null)
+			{
+				pricingSystemId = Services.get(IPriceListDAO.class).getPricingSystemId(priceListId);
+			}
 			final CountryId countryId = getCountryIdOrNull(orderLine);
 			pricingCtx.setPricingSystemId(pricingSystemId);
 			pricingCtx.setPriceListId(priceListId);
