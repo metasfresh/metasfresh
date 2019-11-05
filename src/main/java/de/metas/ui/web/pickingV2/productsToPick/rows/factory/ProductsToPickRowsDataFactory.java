@@ -48,6 +48,7 @@ import de.metas.order.OrderLineId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.ShipperId;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.pickingV2.productsToPick.rows.ProductInfo;
 import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow;
@@ -225,6 +226,7 @@ public final class ProductsToPickRowsDataFactory
 					.productId(packageable.getProductId())
 					.shipmentScheduleId(packageable.getShipmentScheduleId())
 					.salesOrderLineId(packageable.getSalesOrderLineIdOrNull())
+					.shipperId(packageable.getShipperId())
 					.qty(qty)
 					.pickFromHUId(pickFromHUId)
 					.existingPickingCandidate(existingPickingCandidate)
@@ -350,6 +352,7 @@ public final class ProductsToPickRowsDataFactory
 				.productId(packageable.getProductId())
 				.shipmentScheduleId(packageable.getShipmentScheduleId())
 				.salesOrderLineId(packageable.getSalesOrderLineIdOrNull())
+				.shipperId(packageable.getShipperId())
 				.qty(packageable.getQtyToAllocate().toZero())
 				.pickFromHUId(pickFromHUId)
 				.build();
@@ -365,6 +368,7 @@ public final class ProductsToPickRowsDataFactory
 				.productId(packageable.getProductId())
 				.shipmentScheduleId(packageable.getShipmentScheduleId())
 				.salesOrderLineId(packageable.getSalesOrderLineIdOrNull())
+				.shipperId(packageable.getShipperId())
 				.qty(qty)
 				.build();
 	}
@@ -375,6 +379,7 @@ public final class ProductsToPickRowsDataFactory
 			@NonNull final ProductId productId,
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@Nullable final OrderLineId salesOrderLineId,
+			@Nullable final ShipperId shipperId,
 			@Nullable final PPOrderBOMLineId issueToOrderBOMLineId,
 			@NonNull final Quantity qty,
 			@Nullable final HuId pickFromHUId,
@@ -413,6 +418,8 @@ public final class ProductsToPickRowsDataFactory
 				.repackNumber(attributes.getValueAsStringIfExists(ATTR_RepackNumber).orElse(null))
 				//
 				.qty(qty)
+				//
+				.shipperId(shipperId)
 				//
 				.includedRows(includedRows)
 				//

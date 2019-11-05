@@ -21,6 +21,7 @@ import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.ShipperId;
 import de.metas.ui.web.pickingV2.productsToPick.rows.factory.ProductsToPickRowsDataFactory;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
@@ -142,6 +143,10 @@ public class ProductsToPickRow implements IViewRow
 	@Getter
 	@Nullable
 	private final PickingCandidateId pickingCandidateId;
+	@Getter
+	@Nullable
+	private final ShipperId shipperId;
+
 
 	private final ImmutableList<ProductsToPickRow> includedRows;
 
@@ -172,6 +177,7 @@ public class ProductsToPickRow implements IViewRow
 			final boolean processed,
 			//
 			final PickingCandidateId pickingCandidateId,
+			final ShipperId shipperId,
 			//
 			@Nullable final List<ProductsToPickRow> includedRows)
 	{
@@ -200,6 +206,7 @@ public class ProductsToPickRow implements IViewRow
 		this.processed = processed;
 
 		this.pickingCandidateId = pickingCandidateId;
+		this.shipperId = shipperId;
 
 		this.includedRows = includedRows != null ? ImmutableList.copyOf(includedRows) : ImmutableList.of();
 

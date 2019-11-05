@@ -7,6 +7,7 @@ import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.rules.campaign_price.CampaignPrice;
 import de.metas.pricing.rules.campaign_price.CampaignPriceQuery;
 import de.metas.pricing.rules.campaign_price.CampaignPriceService;
@@ -45,6 +46,7 @@ public class StandardCampaignPriceProvider implements CampaignPriceProvider
 
 	private final BPartnerId bpartnerId;
 	private final BPGroupId bpGroupId;
+	private final PricingSystemId pricingSystemId;
 	private final CountryId countryId;
 	private final CurrencyId currencyId;
 	private final LocalDate date;
@@ -55,6 +57,7 @@ public class StandardCampaignPriceProvider implements CampaignPriceProvider
 			//
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final BPGroupId bpGroupId,
+			@NonNull final PricingSystemId pricingSystemId,
 			@NonNull final CountryId countryId,
 			@NonNull final CurrencyId currencyId,
 			@NonNull final LocalDate date)
@@ -63,6 +66,7 @@ public class StandardCampaignPriceProvider implements CampaignPriceProvider
 
 		this.bpartnerId = bpartnerId;
 		this.bpGroupId = bpGroupId;
+		this.pricingSystemId = pricingSystemId;
 		this.countryId = countryId;
 		this.currencyId = currencyId;
 		this.date = date;
@@ -90,6 +94,7 @@ public class StandardCampaignPriceProvider implements CampaignPriceProvider
 		return CampaignPriceQuery.builder()
 				.bpartnerId(bpartnerId)
 				.bpGroupId(bpGroupId)
+				.pricingSystemId(pricingSystemId)
 				.productId(productId)
 				.countryId(countryId)
 				.currencyId(currencyId)
