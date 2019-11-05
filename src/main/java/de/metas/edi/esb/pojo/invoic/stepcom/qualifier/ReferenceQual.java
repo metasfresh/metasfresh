@@ -36,5 +36,11 @@ public enum ReferenceQual
 	/** despatch advice number (EDI) */
 	DADV,
 
-	INVO, RETN, VATR
+	/** Delivery date */
+	DELV,
+
+	/** Date of invoice */
+	INVO,
+
+	RETN, VATR
 }

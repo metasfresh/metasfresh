@@ -162,9 +162,9 @@ public class StepComXMLInvoicBean
 		currency.setCURRENCYCODE(invoice.getISOCode());
 		headerXrech.getHCURR1().add(currency);
 
-		mapPaymentTerms(invoice, decimalFormat, headerXrech, dateFormat);
+		mapPaymentTerms(invoice, headerXrech, dateFormat, decimalFormat);
 
-		mapAlCh(invoice, decimalFormat, headerXrech);
+		mapAlCh(invoice, headerXrech, decimalFormat);
 
 		mapDetails(invoice, headerXrech, decimalFormat, invoicSettings);
 
@@ -384,7 +384,7 @@ public class StepComXMLInvoicBean
 		}
 	}
 
-	private void mapAlCh(final EDICctopInvoicVType invoice, final DecimalFormat decimalFormat, final HEADERXrech headerXrech)
+	private void mapAlCh(final EDICctopInvoicVType invoice, final HEADERXrech headerXrech, final DecimalFormat decimalFormat)
 	{
 		for (final EDICctop901991VType xmlCctop901991V : invoice.getEDICctop901991V())
 		{
@@ -401,25 +401,23 @@ public class StepComXMLInvoicBean
 
 	}
 
-	private void mapPaymentTerms(final EDICctopInvoicVType invoice, final DecimalFormat decimalFormat, final HEADERXrech headerXrech, final String dateFormat)
+	private void mapPaymentTerms(
+			final EDICctopInvoicVType invoice,
+			final HEADERXrech headerXrech,
+			final String dateFormat,
+			final DecimalFormat decimalFormat)
 	{
 		for (final EDICctop120VType xmlCctop120V : invoice.getEDICctop120V())
 		{
+			// note: looking at the view, we can expect exactly one xmlCctop120V item
 			final HPAYT1 paymentTerm = INVOIC_objectFactory.createHPAYT1();
 			paymentTerm.setDOCUMENTID(headerXrech.getDOCUMENTID());
+			paymentTerm.setTERMSQUAL(TermsQual.FIXD.name());
 			paymentTerm.setTIMEREFERENCE(ReferenceQual.INVO.name());
+			paymentTerm.setTERMSDATEFROM(toFormattedStringDate(toDate(invoice.getDateInvoiced()), dateFormat));
+			paymentTerm.setTIMERELATION(TimeRelation.AFTR.name());
 			paymentTerm.setTIMEPERIODQUANTITY(formatNumber(xmlCctop120V.getNetDays(), decimalFormat));
-			if (xmlCctop120V.getNetdate() != null)
-			{
-				paymentTerm.setTERMSQUAL(TermsQual.FIXD.name());
-				paymentTerm.setTERMSDATEFROM(toFormattedStringDate(toDate(xmlCctop120V.getNetdate()), dateFormat));
-			}
-			else
-			{
-				paymentTerm.setTIMERELATION(TimeRelation.AFTR.name());
-				paymentTerm.setTIMEPERIODTYPE(TimePeriodType.DAYS.name());
-				paymentTerm.setTERMSQUAL(TermsQual.BASE.name());
-			}
+			paymentTerm.setTIMEPERIODTYPE(TimePeriodType.DAYS.name());
 			headerXrech.getHPAYT1().add(paymentTerm);
 		}
 
@@ -429,9 +427,10 @@ public class StepComXMLInvoicBean
 			paymentTerm.setDOCUMENTID(headerXrech.getDOCUMENTID());
 			paymentTerm.setTERMSQUAL(TermsQual.DISC.name());
 			paymentTerm.setTIMEREFERENCE(ReferenceQual.INVO.name());
+			paymentTerm.setTERMSDATEFROM(toFormattedStringDate(toDate(invoice.getDateInvoiced()), dateFormat));
 			paymentTerm.setTIMERELATION(TimeRelation.AFTR.name());
-			paymentTerm.setTIMEPERIODTYPE(TimePeriodType.DAYS.name());
 			paymentTerm.setTIMEPERIODQUANTITY(formatNumber(xmlCctop140V.getDiscountDays(), decimalFormat));
+			paymentTerm.setTIMEPERIODTYPE(TimePeriodType.DAYS.name());
 			paymentTerm.setDISCOUNTPERCENT(formatNumber(xmlCctop140V.getDiscount(), decimalFormat));
 			headerXrech.getHPAYT1().add(paymentTerm);
 		}
