@@ -9,7 +9,6 @@ import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import de.metas.location.CountryId;
 import org.compiere.model.I_C_Campaign_Price;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -22,6 +21,7 @@ import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
+import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
@@ -90,7 +90,7 @@ public class CampaignPriceRepository
 		final ImmutableList<CampaignPrice> prices = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_Campaign_Price.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Campaign_Price.COLUMN_M_Product_ID, key.getProductId())
+				.addEqualsFilter(I_C_Campaign_Price.COLUMNNAME_M_Product_ID, key.getProductId())
 				.addCompareFilter(I_C_Campaign_Price.COLUMN_ValidFrom, Operator.LESS_OR_EQUAL, endDate)
 				.addCompareFilter(I_C_Campaign_Price.COLUMN_ValidTo, Operator.GREATER_OR_EQUAL, startDate)
 				//

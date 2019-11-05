@@ -8,15 +8,14 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.FillMandatoryException;
-import de.metas.location.CountryId;
-import de.metas.location.ICountryDAO;
-
 import org.compiere.model.I_C_Campaign_Price;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 
@@ -30,12 +29,12 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -56,6 +55,11 @@ public class C_Campaign_Price
 	@CalloutMethod(columnNames = I_C_Campaign_Price.COLUMNNAME_C_BPartner_ID, skipIfCopying = true)
 	public void onBPartnerChanged(final I_C_Campaign_Price record)
 	{
+		if (record == null)
+		{
+			return ;
+		}
+
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID());
 		if (bpartnerId == null)
 		{
@@ -68,6 +72,10 @@ public class C_Campaign_Price
 	@CalloutMethod(columnNames = I_C_Campaign_Price.COLUMNNAME_C_BP_Group_ID, skipIfCopying = true)
 	public void onBPGroupChanged(final I_C_Campaign_Price record)
 	{
+		if (record == null)
+		{
+			return;
+		}
 		final BPGroupId bpGroupId = BPGroupId.ofRepoIdOrNull(record.getC_BP_Group_ID());
 		if (bpGroupId == null)
 		{
@@ -94,10 +102,11 @@ public class C_Campaign_Price
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = {I_C_Campaign_Price.COLUMNNAME_C_BPartner_ID, I_C_Campaign_Price.COLUMNNAME_C_BP_Group_ID, I_C_Campaign_Price.COLUMNNAME_M_PricingSystem_ID})
 	public void beforeSave(final I_C_Campaign_Price record)
 	{
-		if (record.getC_BPartner_ID() <= 0 && record.getC_BP_Group_ID() <= 0)
+		if (record.getC_BPartner_ID() <= 0 && record.getC_BP_Group_ID() <= 0 && record.getM_PricingSystem_ID() <= 0)
 		{
 			throw new FillMandatoryException(I_C_Campaign_Price.COLUMNNAME_C_BP_Group_ID);
 		}

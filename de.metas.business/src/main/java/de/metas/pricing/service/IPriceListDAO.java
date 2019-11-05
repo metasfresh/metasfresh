@@ -187,4 +187,6 @@ public interface IPriceListDAO extends ISingletonService
 	void mutateCustomerPrices(PriceListVersionId priceListVersionId, UserId userId);
 
 	Optional<TaxCategoryId> getDefaultTaxCategoryByPriceListVersionId(final PriceListVersionId priceListVersionId);
+
+	PricingSystemId getPricingSystemId(PriceListId priceListId);
 }
