@@ -30,15 +30,6 @@ public class DpdConstants
 
 	public static final String DEFAULT_MESSAGE_LANGUAGE = "en_EN";
 
-	public static class DpdPrinterOptions
-	{
-		public static final String PAPER_FORMAT = "A6"; // todo should not be hardcoded: add to shipper configuration
-		public static final String PRINTER_LANGUAGE = "PDF";
-	}
+	public static final String PRINTER_LANGUAGE = "PDF";
 
-	public static class DpdNotificationChannel
-	{
-		public static int EMAIL = 1;
-		public static int SMS = 3;
-	}
 }

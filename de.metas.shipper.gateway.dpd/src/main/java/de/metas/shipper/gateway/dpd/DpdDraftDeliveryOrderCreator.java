@@ -155,7 +155,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 						.timeFrom(timeTo)
 						.build())
 				//
-				// Delivery aka Receiver
+				// Delivery aka Recipient
 				.deliveryAddress(DeliveryOrderUtil.prepareAddressFromLocation(deliverToLocation)
 						.companyName1(deliverToBPartner.getName())
 						.companyName2(deliverToBPartner.getName2())

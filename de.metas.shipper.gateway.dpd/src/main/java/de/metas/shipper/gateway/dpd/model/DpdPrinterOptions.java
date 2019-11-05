@@ -24,48 +24,38 @@ package de.metas.shipper.gateway.dpd.model;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import de.metas.shipper.gateway.spi.model.ServiceType;
+import de.metas.shipper.gateway.spi.model.PackageLabelType;
+import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Arrays;
 
-/**
- * as of 2019.10.29 there's no way for the customer to change the service type!
- * It is hardcoded inside CreateDraftDeliveryOrder, and that's it.
- */
-public enum DpdServiceType implements ServiceType
+public enum DpdPrinterOptions implements PackageLabelType, ReferenceListAwareEnum
 {
-
-	DPD_CLASSIC("CL"),
-	DPD_8_30("E830"),
-	DPD_10_00("E10"),
-	DPD_12_00("E12"),
-	DPD_18_00("E18"),
-	DPD_EXPRESS("IE2"),
-	DPD_PARCELLetter("PL"),
-	DPD_PARCELLetterPlus("PL+"),
-	DPD_International_Mail("MAIL");
+	PAPER_FORMAT_A6("A6"), // todo should not be hardcoded: add to shipper configuration
+	PAPER_FORMAT_A5("A5"), // todo should not be hardcoded: add to shipper configuration
+	PAPER_FORMAT_A4("A4"); // todo should not be hardcoded: add to shipper configuration
 
 	@Getter
 	private final String code;
 
-	DpdServiceType(final String code)
+	DpdPrinterOptions(final String code)
 	{
 		this.code = code;
 	}
 
-	@NonNull
-	public DpdServiceType forCode(final String code)
+	public static DpdPrinterOptions ofCode(@NonNull final String code)
 	{
-		final DpdServiceType type = code2type.get(code);
+		final DpdPrinterOptions type = typesByCode.get(code);
 		if (type == null)
 		{
-			throw new AdempiereException("No " + DpdServiceType.class + " for code=" + code + " exists.");
+			throw new AdempiereException("No " + DpdPrinterOptions.class + " found for code: " + code);
 		}
 		return type;
 	}
 
-	private static final ImmutableMap<String, DpdServiceType> code2type = Maps.uniqueIndex(Arrays.asList(values()), DpdServiceType::getCode);
+	private static final ImmutableMap<String, DpdPrinterOptions> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), DpdPrinterOptions::getCode);
+
 }
