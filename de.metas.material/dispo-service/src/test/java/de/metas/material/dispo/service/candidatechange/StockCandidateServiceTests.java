@@ -171,7 +171,7 @@ public class StockCandidateServiceTests
 
 		assertThatThrownBy(() -> candidateBuilder.build())
 				.isInstanceOf(NullPointerException.class)
-				.hasMessage("clientAndOrgId");
+				.hasMessageStartingWith("clientAndOrgId");
 	}
 
 	@Test

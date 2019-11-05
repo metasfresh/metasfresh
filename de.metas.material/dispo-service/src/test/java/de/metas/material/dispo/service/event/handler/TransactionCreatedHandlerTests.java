@@ -90,34 +90,44 @@ public class TransactionCreatedHandlerTests
 	@Test
 	public void createCommonCandidateBuilder_negative_qantity()
 	{
-		final TransactionCreatedEvent event = createTransactionEventBuilderWithQuantity(TEN.negate()).build();
+		final TransactionCreatedEvent event = createTransactionEventBuilderWithQuantity(TEN.negate(), Instant.now()).build();
 
-		final Candidate candidate = TransactionEventHandler.createBuilderForNewUnrelatedCandidate(
-				event,
-				event.getQuantity()).build();
+		final Candidate candidate = TransactionEventHandler
+				.createBuilderForNewUnrelatedCandidate(
+						event,
+						event.getQuantity())
+				.transactionDetail(dummyTransactionDetail())
+				.build();
 
-		assertThat(candidate.getType()).isSameAs(CandidateType.UNRELATED_DECREASE);
+		assertThat(candidate.getType()).isSameAs(CandidateType.UNEXPECTED_DECREASE);
 		assertThat(candidate.getQuantity()).isEqualByComparingTo("10");
 	}
 
 	@Test
 	public void createCommonCandidateBuilder_positive_qantity()
 	{
-		final TransactionCreatedEvent event = createTransactionEventBuilderWithQuantity(TEN).build();
+		final TransactionCreatedEvent event = createTransactionEventBuilderWithQuantity(TEN, Instant.now()).build();
 
-		final Candidate candidate = TransactionEventHandler.createBuilderForNewUnrelatedCandidate(
-				event,
-				event.getQuantity())
+		final Candidate candidate = TransactionEventHandler
+				.createBuilderForNewUnrelatedCandidate(
+						event,
+						event.getQuantity())
+				.transactionDetail(dummyTransactionDetail())
 				.build();
 
-		assertThat(candidate.getType()).isSameAs(CandidateType.UNRELATED_INCREASE);
+		assertThat(candidate.getType()).isSameAs(CandidateType.UNEXPECTED_INCREASE);
 		assertThat(candidate.getQuantity()).isEqualByComparingTo("10");
+	}
+
+	private TransactionDetail dummyTransactionDetail()
+	{
+		return TransactionDetail.builder().transactionId(1).transactionDate(Instant.now()).complete(true).quantity(ONE).build();
 	}
 
 	@Test
 	public void createCandidate_unrelated_transaction_no_existing_candiate()
 	{
-		final TransactionCreatedEvent unrelatedEvent = createTransactionEventBuilderWithQuantity(TEN).build();
+		final TransactionCreatedEvent unrelatedEvent = createTransactionEventBuilderWithQuantity(TEN, Instant.now()).build();
 
 		Mockito.when(candidateRepository.retrieveLatestMatchOrNull(Mockito.any()))
 				.thenReturn(null);
@@ -140,7 +150,7 @@ public class TransactionCreatedHandlerTests
 			assertThat(query.getTransactionDetails().get(0).getTransactionId()).isEqualTo(TRANSACTION_ID);
 		}
 
-		assertThat(candidate.getType()).isEqualTo(CandidateType.UNRELATED_INCREASE);
+		assertThat(candidate.getType()).isEqualTo(CandidateType.UNEXPECTED_INCREASE);
 		assertThat(candidate.getAdditionalDemandDetail()).isNull();
 		assertThat(candidate.getBusinessCaseDetail()).isNull();
 		assertThat(candidate.getTransactionDetails().get(0).getQuantity()).isEqualByComparingTo("10");
@@ -149,19 +159,20 @@ public class TransactionCreatedHandlerTests
 	@Test
 	public void createCandidate_unrelated_transaction_already_existing_candiate_with_different_transaction()
 	{
-		final TransactionCreatedEvent unrelatedEvent = createTransactionEventBuilderWithQuantity(TEN).build();
+		final TransactionCreatedEvent unrelatedEvent = createTransactionEventBuilderWithQuantity(TEN, Instant.now()).build();
 
-		final Instant date = SystemTime.asInstant();
+		// final Instant date = SystemTime.asInstant();
+		final Instant date = unrelatedEvent.getMaterialDescriptor().getDate();
 
-		final Candidate exisitingCandidate = Candidate.builder()
+		final Candidate existingCandidate = Candidate.builder()
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
-				.type(CandidateType.UNRELATED_INCREASE)
+				.type(CandidateType.UNEXPECTED_INCREASE)
 				.id(CandidateId.ofRepoId(11))
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
 						.quantity(ONE)
-						.date(date)
+						.date(date) // both attributes *and* date need to match
 						.build())
 				.transactionDetail(TransactionDetail.builder()
 						.quantity(ONE)
@@ -170,11 +181,10 @@ public class TransactionCreatedHandlerTests
 						.transactionDate(date)
 						.complete(true)
 						.build())
-				.build()
-				.validate();
+				.build();
 
 		Mockito.when(candidateRepository.retrieveLatestMatchOrNull(Mockito.any()))
-				.thenReturn(exisitingCandidate);
+				.thenReturn(existingCandidate);
 
 		final List<Candidate> candidates = transactionEventHandler.createCandidatesForTransactionEvent(unrelatedEvent);
 		assertThat(candidates).hasSize(1);
@@ -194,7 +204,7 @@ public class TransactionCreatedHandlerTests
 			assertThat(query.getTransactionDetails().get(0).getTransactionId()).isEqualTo(TRANSACTION_ID);
 		}
 
-		assertThat(candidate.getType()).isEqualTo(CandidateType.UNRELATED_INCREASE);
+		assertThat(candidate.getType()).isEqualTo(CandidateType.UNEXPECTED_INCREASE);
 		assertThat(candidate.getId().getRepoId()).isEqualTo(11);
 		assertThat(candidate.getQuantity()).isEqualByComparingTo("11");
 		assertThat(candidate.getAdditionalDemandDetail()).isNull();
@@ -215,7 +225,7 @@ public class TransactionCreatedHandlerTests
 	@Test
 	public void createCandidate_unrelated_transaction_with_shipmentSchedule()
 	{
-		final TransactionCreatedEvent relatedEvent = createTransactionEventBuilderWithQuantity(TEN.negate())
+		final TransactionCreatedEvent relatedEvent = createTransactionEventBuilderWithQuantity(TEN.negate(), Instant.now())
 				.shipmentScheduleIds2Qty(SHIPMENT_SCHEDULE_ID, TEN.negate()).build();
 
 		Mockito.when(candidateRepository.retrieveLatestMatchOrNull(Mockito.any()))
@@ -238,7 +248,7 @@ public class TransactionCreatedHandlerTests
 			assertDemandDetailQuery(query);
 		}
 
-		assertThat(candidate.getType()).isEqualTo(CandidateType.UNRELATED_DECREASE);
+		assertThat(candidate.getType()).isEqualTo(CandidateType.UNEXPECTED_DECREASE);
 		final DemandDetail demandDetail = DemandDetail.castOrNull(candidate.getBusinessCaseDetail());
 		assertThat(demandDetail).as("created candidate shall have a demand detail").isNotNull();
 		assertThat(demandDetail.getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
@@ -249,6 +259,8 @@ public class TransactionCreatedHandlerTests
 	@Test
 	public void createCandidate_related_transaction_with_shipmentSchedule()
 	{
+		final Instant date = SystemTime.asInstant();
+
 		final Candidate exisitingCandidate = Candidate.builder()
 				.id(CandidateId.ofRepoId(11))
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
@@ -257,22 +269,20 @@ public class TransactionCreatedHandlerTests
 						.productDescriptor(createProductDescriptor())
 						.warehouseId(WAREHOUSE_ID)
 						.quantity(SIXTY_THREE)
-						.date(SystemTime.asInstant())
+						.date(date)
 						.build())
-
 				.businessCase(CandidateBusinessCase.SHIPMENT)
 				.businessCaseDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(
 						SHIPMENT_SCHEDULE_ID,
 						-1,
 						-1,
 						SIXTY_FOUR))
-				.build()
-				.validate();
+				.build();
 
 		Mockito.when(candidateRepository.retrieveLatestMatchOrNull(Mockito.any()))
 				.thenReturn(exisitingCandidate);
 
-		final TransactionCreatedEvent relatedEvent = createTransactionEventBuilderWithQuantity(TEN.negate())
+		final TransactionCreatedEvent relatedEvent = createTransactionEventBuilderWithQuantity(TEN.negate(), date)
 				.shipmentScheduleIds2Qty(SHIPMENT_SCHEDULE_ID, TEN.negate())
 				.transactionId(TRANSACTION_ID)
 				.build();
@@ -317,13 +327,15 @@ public class TransactionCreatedHandlerTests
 		assertThat(query.getTransactionDetails()).as("only search via the demand detail, if we have one").isEmpty();
 	}
 
-	private TransactionCreatedEventBuilder createTransactionEventBuilderWithQuantity(@NonNull final BigDecimal quantity)
+	private TransactionCreatedEventBuilder createTransactionEventBuilderWithQuantity(
+			@NonNull final BigDecimal quantity,
+			@NonNull final Instant date)
 	{
 		return TransactionCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.transactionId(TRANSACTION_ID)
 				.materialDescriptor(MaterialDescriptor.builder()
-						.date(Instant.parse("2017-10-15T00:00:00.00Z"))
+						.date(date)
 						.productDescriptor(createProductDescriptor())
 						.quantity(quantity)
 						.warehouseId(WAREHOUSE_ID)

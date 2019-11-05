@@ -24,7 +24,7 @@ import org.mockito.Mockito;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.event.log.EventLogUserService;
-import de.metas.event.log.EventLogUserService.InvokeHandlerandLogRequest;
+import de.metas.event.log.EventLogUserService.InvokeHandlerAndLogRequest;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -169,7 +169,7 @@ public class MaterialEventHandlerRegistryTests
 	private void setupEventLogUserServiceOnlyInvokesHandler()
 	{
 		Mockito.doAnswer(invocation -> {
-			final InvokeHandlerandLogRequest request = (InvokeHandlerandLogRequest)invocation.getArguments()[0];
+			final InvokeHandlerAndLogRequest request = (InvokeHandlerAndLogRequest)invocation.getArguments()[0];
 			request.getInvokaction().run();
 			return null; // void
 		})

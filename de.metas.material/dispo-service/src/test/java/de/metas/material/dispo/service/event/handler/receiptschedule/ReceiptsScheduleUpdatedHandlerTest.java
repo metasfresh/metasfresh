@@ -1,19 +1,22 @@
 package de.metas.material.dispo.service.event.handler.receiptschedule;
 
-import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
-import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.*;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
 import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Collection;
-import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.google.common.collect.ImmutableList;
 
@@ -21,7 +24,6 @@ import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
@@ -29,7 +31,6 @@ import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHa
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
-import de.metas.util.collections.CollectionUtils;
 
 /*
  * #%L
@@ -52,7 +53,7 @@ import de.metas.util.collections.CollectionUtils;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@ExtendWith(AdempiereTestWatcher.class)
 public class ReceiptsScheduleUpdatedHandlerTest
 {
 	private ReceiptsScheduleCreatedHandler receiptsScheduleCreatedHandler;
@@ -70,18 +71,53 @@ public class ReceiptsScheduleUpdatedHandlerTest
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(candidateChangeHandlers);
 
 		receiptsScheduleCreatedHandler = new ReceiptsScheduleCreatedHandler(candidateChangeHandler, candidateRepositoryRetrieval);
-
 		receiptsScheduleUpdatedHandler = new ReceiptsScheduleUpdatedHandler(candidateChangeHandler, candidateRepositoryRetrieval);
 	}
 
+	/** The update's timestamp is at the same date as the original creation (not sure how realisitic that is) */
 	@Test
-	public void handleEvent_ReceiptScheduleUpdatedEvent()
+	public void handleEvent_ReceiptScheduleUpdatedEvent_update_NOW()
 	{
 		ReceiptsScheduleCreatedHandlerTest.handleEvent_ReceiptScheduleCreatedEvent_performTest(receiptsScheduleCreatedHandler);
-		assertThat(CollectionUtils.singleElement(DispoTestUtils.filter(CandidateType.SUPPLY)).getDateProjected()).isEqualTo(TimeUtil.asTimestamp(NOW)); // guard
+		assertThat(DispoTestUtils.retrieveAllRecords()) // guard
+				.extracting("DateProjected", "Qty", "MD_Candidate_Type")
+				.containsExactly(
+						tuple(TimeUtil.asTimestamp(NOW), TEN, CandidateType.SUPPLY.getCode()),
+						tuple(TimeUtil.asTimestamp(NOW), TEN, CandidateType.STOCK.getCode()));
 
+		final Instant updateTimestamp = NOW;
+		createAndHandleUpdate(updateTimestamp);
+
+		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY))
+				.extracting("DateProjected", "Qty")
+				.containsExactly(tuple(TimeUtil.asTimestamp(NOW), new BigDecimal("11")));
+	}
+
+	/** The update's timestamp is after the original creation. Verify that the actual candidate's the projected data did note change */
+	@Test
+	public void handleEvent_ReceiptScheduleUpdatedEvent_update_AFTER_NOW()
+	{
+		ReceiptsScheduleCreatedHandlerTest.handleEvent_ReceiptScheduleCreatedEvent_performTest(receiptsScheduleCreatedHandler);
+		assertThat(DispoTestUtils.retrieveAllRecords()) // guard
+				.extracting("DateProjected", "Qty", "MD_Candidate_Type")
+				.containsExactly(
+						tuple(TimeUtil.asTimestamp(NOW), TEN, CandidateType.SUPPLY.getCode()),
+						tuple(TimeUtil.asTimestamp(NOW), TEN, CandidateType.STOCK.getCode()));
+
+		final Instant updateTimestamp = AFTER_NOW;
+		createAndHandleUpdate(updateTimestamp);
+
+		assertThat(DispoTestUtils.retrieveAllRecords())
+				.extracting("DateProjected", "Qty", "MD_Candidate_Type")
+				.containsExactly(
+						tuple(TimeUtil.asTimestamp(NOW), new BigDecimal("11"), CandidateType.SUPPLY.getCode()),
+						tuple(TimeUtil.asTimestamp(NOW), new BigDecimal("11"), CandidateType.STOCK.getCode()));
+	}
+
+	private void createAndHandleUpdate(final Instant updateTimestamp)
+	{
 		final MaterialDescriptor eventMaterialDescriptor = createMaterialDescriptor()
-				.withDate(BEFORE_NOW)
+				.withDate(updateTimestamp)
 				.withQuantity(new BigDecimal("11"));
 
 		final ReceiptScheduleUpdatedEvent receiptScheduleUpdatedEvent = ReceiptScheduleUpdatedEvent
@@ -96,12 +132,5 @@ public class ReceiptsScheduleUpdatedHandlerTest
 				.validate();
 
 		receiptsScheduleUpdatedHandler.handleEvent(receiptScheduleUpdatedEvent);
-
-		final List<I_MD_Candidate> supplyCandidates = DispoTestUtils.filter(CandidateType.SUPPLY);
-		assertThat(supplyCandidates).hasSize(1);
-		final I_MD_Candidate supplyCandidate = supplyCandidates.get(0);
-		assertThat(supplyCandidate.getDateProjected()).isEqualTo(TimeUtil.asTimestamp(BEFORE_NOW));
-		assertThat(supplyCandidate.getQty()).isEqualByComparingTo("11");
 	}
-
 }

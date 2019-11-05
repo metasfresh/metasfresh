@@ -134,21 +134,21 @@ public class CandidateChangeHandlerTests
 	public void createMapOfHandlers()
 	{
 		final CandidateHandler handler1 = createHandlerThatSupportsTypes(ImmutableList.of(CandidateType.DEMAND, CandidateType.SUPPLY));
-		final CandidateHandler handler2 = createHandlerThatSupportsTypes(ImmutableList.of(CandidateType.STOCK_UP, CandidateType.UNRELATED_DECREASE));
+		final CandidateHandler handler2 = createHandlerThatSupportsTypes(ImmutableList.of(CandidateType.STOCK_UP, CandidateType.UNEXPECTED_DECREASE));
 
 		final Map<CandidateType, CandidateHandler> result = CandidateChangeService.createMapOfHandlers(ImmutableList.of(handler1, handler2));
 		assertThat(result).hasSize(4);
 		assertThat(result.get(CandidateType.DEMAND)).isSameAs(handler1);
 		assertThat(result.get(CandidateType.SUPPLY)).isSameAs(handler1);
 		assertThat(result.get(CandidateType.STOCK_UP)).isSameAs(handler2);
-		assertThat(result.get(CandidateType.UNRELATED_DECREASE)).isSameAs(handler2);
+		assertThat(result.get(CandidateType.UNEXPECTED_DECREASE)).isSameAs(handler2);
 	}
 
 	@Test
 	public void createMapOfHandlers_when_typeColission_then_exception()
 	{
 		final CandidateHandler handler1 = createHandlerThatSupportsTypes(ImmutableList.of(CandidateType.DEMAND, CandidateType.SUPPLY));
-		final CandidateHandler handler2 = createHandlerThatSupportsTypes(ImmutableList.of(CandidateType.DEMAND, CandidateType.UNRELATED_DECREASE));
+		final CandidateHandler handler2 = createHandlerThatSupportsTypes(ImmutableList.of(CandidateType.DEMAND, CandidateType.UNEXPECTED_DECREASE));
 
 		assertThatThrownBy(() -> CandidateChangeService.createMapOfHandlers(ImmutableList.of(handler1, handler2)))
 				.isInstanceOf(RuntimeException.class);

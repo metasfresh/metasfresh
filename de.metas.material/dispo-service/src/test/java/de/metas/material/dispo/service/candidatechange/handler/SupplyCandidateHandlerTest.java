@@ -246,7 +246,7 @@ public class SupplyCandidateHandlerTest
 	@Test
 	public void increase_stock()
 	{
-		final Candidate candidate = createCandidateWithType(CandidateType.UNRELATED_INCREASE);
+		final Candidate candidate = createCandidateWithType(CandidateType.UNEXPECTED_INCREASE);
 
 		supplyCandiateHandler.onCandidateNewOrChange(candidate);
 
@@ -254,7 +254,7 @@ public class SupplyCandidateHandlerTest
 		assertThat(allRecords).hasSize(2);
 
 		final I_MD_Candidate unrelatedTransactionCandidate = allRecords.get(0);
-		assertThat(unrelatedTransactionCandidate.getMD_Candidate_Type()).isEqualTo(X_MD_Candidate.MD_CANDIDATE_TYPE_UNRELATED_INCREASE);
+		assertThat(unrelatedTransactionCandidate.getMD_Candidate_Type()).isEqualTo(X_MD_Candidate.MD_CANDIDATE_TYPE_UNEXPECTED_INCREASE);
 		assertThat(unrelatedTransactionCandidate.getQty()).isEqualByComparingTo("10");
 
 		final I_MD_Candidate stockCandidate = allRecords.get(1);
