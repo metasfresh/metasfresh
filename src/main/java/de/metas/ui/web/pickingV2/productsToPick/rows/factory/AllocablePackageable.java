@@ -15,6 +15,7 @@ import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -60,6 +61,7 @@ final class AllocablePackageable
 				.bestBeforePolicy(packageable.getBestBeforePolicy())
 				.warehouseId(packageable.getWarehouseId())
 				.salesOrderLineIdOrNull(packageable.getSalesOrderLineIdOrNull())
+				.shipperId(packageable.getShipperId())
 				.qtyToAllocateTarget(qtyToAllocateTarget)
 				.build();
 	}
@@ -71,6 +73,8 @@ final class AllocablePackageable
 	private final Optional<ShipmentAllocationBestBeforePolicy> bestBeforePolicy;
 	private final WarehouseId warehouseId;
 	private final OrderLineId salesOrderLineIdOrNull;
+	private final ShipperId shipperId;
+
 	private final PPOrderBOMLineId issueToOrderBOMLineId;
 
 	private final Quantity qtyToAllocateTarget;
@@ -85,6 +89,7 @@ final class AllocablePackageable
 			@Nullable Optional<ShipmentAllocationBestBeforePolicy> bestBeforePolicy,
 			@NonNull WarehouseId warehouseId,
 			@Nullable OrderLineId salesOrderLineIdOrNull,
+			@Nullable ShipperId shipperId,
 			@Nullable PPOrderBOMLineId issueToOrderBOMLineId,
 			@NonNull Quantity qtyToAllocateTarget)
 	{
@@ -95,6 +100,7 @@ final class AllocablePackageable
 		this.bestBeforePolicy = bestBeforePolicy != null ? bestBeforePolicy : Optional.empty();
 		this.warehouseId = warehouseId;
 		this.salesOrderLineIdOrNull = salesOrderLineIdOrNull;
+		this.shipperId = shipperId;
 		this.issueToOrderBOMLineId = issueToOrderBOMLineId;
 
 		this.qtyToAllocateTarget = qtyToAllocateTarget;
