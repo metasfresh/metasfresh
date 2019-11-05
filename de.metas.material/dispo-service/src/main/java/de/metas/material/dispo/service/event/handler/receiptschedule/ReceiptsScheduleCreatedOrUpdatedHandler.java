@@ -67,6 +67,7 @@ abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends AbstractReceipt
 
 		final PurchaseDetail purchaseDetail = createPurchaseDetail(event);
 
+		// for the "effective quantity" we need to subtract "UNEXPECTED_INSCREASES" (different AttributesKeys/Dates) that are related to the receipt schedule in question
 		final List<Candidate> receiptScheduleRecordsWithDifferentAttributes = candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(CandidatesQuery.builder()
 				.type(CandidateType.UNEXPECTED_INCREASE) // get all purchaseDetail-candidates that are *not* the *actual* receipt schedule's candidate that we are updating in here
 				.purchaseDetailsQuery(PurchaseDetailsQuery.ofPurchaseDetailOrNull(purchaseDetail))

@@ -237,7 +237,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.type(CandidateType.DEMAND)
 				// don't search via material descriptor ..what we have is precise enough; the product and warehouse will also match, but e.g. the date might not!
-				.businessCase(CandidateBusinessCase.SHIPMENT) // without it, we might get other transaction-based ("unrelated") candidates
+				.businessCase(CandidateBusinessCase.SHIPMENT) // without it, we might get other transaction-based ("UNEXPECTED_DECREASE") candidates
 				.demandDetailsQuery(demandDetailsQuery)
 				.build();
 		final Candidate existingCandidate = retrieveBestMatchingCandidateOrNull(query, event);
@@ -357,7 +357,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 		final CandidatesQuery query = CandidatesQuery.builder()
 				// don't search via material descriptor ..what we have is precise enough; the product and warehouse will also match, but e.g. the date might not!
-				.businessCase(CandidateBusinessCase.PRODUCTION) // without it, we might get other transaction-based ("unrelated") candidates
+				.businessCase(CandidateBusinessCase.PRODUCTION) // without it, we might get other transaction-based ("UNEXPECTED_") candidates
 				.productionDetailsQuery(productionDetailsQuery)
 				.build();
 
@@ -406,7 +406,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 		final CandidatesQuery query = CandidatesQuery.builder()
 				// don't search via material descriptor ..what we have is precise enough; the product and warehouse will also match, but e.g. the date might not!
-				.businessCase(CandidateBusinessCase.DISTRIBUTION) // without it, we might get other transaction-based ("unrelated") candidates
+				.businessCase(CandidateBusinessCase.DISTRIBUTION) // without it, we might get other transaction-based ("UNEXPECTED_") candidates
 				.distributionDetailsQuery(distributionDetailsQuery)
 				.build();
 
