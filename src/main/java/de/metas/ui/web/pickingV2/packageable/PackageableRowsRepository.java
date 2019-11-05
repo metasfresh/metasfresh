@@ -1,6 +1,7 @@
 package de.metas.ui.web.pickingV2.packageable;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 import org.adempiere.warehouse.WarehouseTypeId;
@@ -99,6 +100,7 @@ final class PackageableRowsRepository
 				.stream()
 				.map(this::createPackageableRowNoFail)
 				.filter(Predicates.notNull())
+				.sorted(Comparator.comparing(PackageableRow::getPreparationDate).thenComparing(PackageableRow::getOrderDocumentNo))
 				.collect(ImmutableList.toImmutableList());
 	}
 
