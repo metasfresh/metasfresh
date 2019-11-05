@@ -1,21 +1,23 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software, you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program, if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.shipping.model;
+
+import static de.metas.shipping.model.I_M_ShipperTransportation.COLUMNNAME_IsApproved;
 
 /*
  * #%L
@@ -27,14 +29,14 @@ package de.metas.shipping.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -45,11 +47,13 @@ import java.util.Properties;
 
 import org.compiere.util.Env;
 
-/** Generated Model for M_ShipperTransportation
- *  @author Adempiere (generated) 
+/**
+ * Generated Model for M_ShipperTransportation
+ *
+ * @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
-public class X_M_ShipperTransportation extends org.compiere.model.PO implements I_M_ShipperTransportation, org.compiere.model.I_Persistent 
+public class X_M_ShipperTransportation extends org.compiere.model.PO implements I_M_ShipperTransportation, org.compiere.model.I_Persistent
 {
 
 	/**
@@ -57,72 +61,82 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	 */
 	private static final long serialVersionUID = -1239800686L;
 
-    /** Standard Constructor */
-    public X_M_ShipperTransportation (Properties ctx, int M_ShipperTransportation_ID, String trxName)
-    {
-      super (ctx, M_ShipperTransportation_ID, trxName);
-      /** if (M_ShipperTransportation_ID == 0)
-        {
-			setC_DocType_ID (0);
-			setCollectiveBillReport (null);
-			setDateDoc (new Timestamp( System.currentTimeMillis() ));
-// @#Date@
-			setDocAction (null);
-// CO
-			setDocStatus (null);
-// DR
-			setDocumentNo (null);
-			setIsApproved (false);
-			setM_ShipperTransportation_ID (0);
-			setProcessed (false);
-			setShipper_BPartner_ID (0);
-			setShipper_Location_ID (0);
-        } */
-    }
-
-    /** Load Constructor */
-    public X_M_ShipperTransportation (Properties ctx, ResultSet rs, String trxName)
-    {
-      super (ctx, rs, trxName);
-    }
-
-    /** AccessLevel
-      * @return 1 - Org 
-      */
-    @Override
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
-
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
-      return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_M_ShipperTransportation[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
-	/** Set Ladeliste erstellen.
-		@param BillLadingReport Ladeliste erstellen	  */
-	@Override
-	public void setBillLadingReport (java.lang.String BillLadingReport)
+	/** Standard Constructor */
+	public X_M_ShipperTransportation(Properties ctx, int M_ShipperTransportation_ID, String trxName)
 	{
-		set_Value (COLUMNNAME_BillLadingReport, BillLadingReport);
+		super(ctx, M_ShipperTransportation_ID, trxName);
+		/**
+		 * if (M_ShipperTransportation_ID == 0)
+		 * {
+		 * setC_DocType_ID (0);
+		 * setCollectiveBillReport (null);
+		 * setDateDoc (new Timestamp( System.currentTimeMillis() ));
+		 * // @#Date@
+		 * setDocAction (null);
+		 * // CO
+		 * setDocStatus (null);
+		 * // DR
+		 * setDocumentNo (null);
+		 * setIsApproved (false);
+		 * setM_ShipperTransportation_ID (0);
+		 * setProcessed (false);
+		 * setShipper_BPartner_ID (0);
+		 * setShipper_Location_ID (0);
+		 * }
+		 */
 	}
 
-	/** Get Ladeliste erstellen.
-		@return Ladeliste erstellen	  */
+	/** Load Constructor */
+	public X_M_ShipperTransportation(Properties ctx, ResultSet rs, String trxName)
+	{
+		super(ctx, rs, trxName);
+	}
+
+	/**
+	 * AccessLevel
+	 *
+	 * @return 1 - Org
+	 */
 	@Override
-	public java.lang.String getBillLadingReport () 
+	protected int get_AccessLevel()
+	{
+		return accessLevel.intValue();
+	}
+
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(Properties ctx)
+	{
+		org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo(ctx, Table_ID, get_TrxName());
+		return poi;
+	}
+
+	@Override
+	public String toString()
+	{
+		StringBuffer sb = new StringBuffer("X_M_ShipperTransportation[")
+				.append(get_ID()).append("]");
+		return sb.toString();
+	}
+
+	/**
+	 * Set Ladeliste erstellen.
+	 *
+	 * @param BillLadingReport Ladeliste erstellen
+	 */
+	@Override
+	public void setBillLadingReport(java.lang.String BillLadingReport)
+	{
+		set_Value(COLUMNNAME_BillLadingReport, BillLadingReport);
+	}
+
+	/**
+	 * Get Ladeliste erstellen.
+	 *
+	 * @return Ladeliste erstellen
+	 */
+	@Override
+	public java.lang.String getBillLadingReport()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_BillLadingReport);
 	}
@@ -139,103 +153,129 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 		set_ValueFromPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class, C_DocType);
 	}
 
-	/** Set Belegart.
-		@param C_DocType_ID 
-		Belegart oder Verarbeitungsvorgaben
-	  */
+	/**
+	 * Set Belegart.
+	 *
+	 * @param C_DocType_ID
+	 *            Belegart oder Verarbeitungsvorgaben
+	 */
 	@Override
-	public void setC_DocType_ID (int C_DocType_ID)
+	public void setC_DocType_ID(int C_DocType_ID)
 	{
-		if (C_DocType_ID < 0) 
-			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
+		if (C_DocType_ID < 0)
+			set_ValueNoCheck(COLUMNNAME_C_DocType_ID, null);
+		else
+			set_ValueNoCheck(COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
 	}
 
-	/** Get Belegart.
-		@return Belegart oder Verarbeitungsvorgaben
-	  */
+	/**
+	 * Get Belegart.
+	 *
+	 * @return Belegart oder Verarbeitungsvorgaben
+	 */
 	@Override
-	public int getC_DocType_ID () 
+	public int getC_DocType_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Sammelrechnung erstellen.
-		@param CollectiveBillReport Sammelrechnung erstellen	  */
+	/**
+	 * Set Sammelrechnung erstellen.
+	 *
+	 * @param CollectiveBillReport Sammelrechnung erstellen
+	 */
 	@Override
-	public void setCollectiveBillReport (java.lang.String CollectiveBillReport)
+	public void setCollectiveBillReport(java.lang.String CollectiveBillReport)
 	{
-		set_Value (COLUMNNAME_CollectiveBillReport, CollectiveBillReport);
+		set_Value(COLUMNNAME_CollectiveBillReport, CollectiveBillReport);
 	}
 
-	/** Get Sammelrechnung erstellen.
-		@return Sammelrechnung erstellen	  */
+	/**
+	 * Get Sammelrechnung erstellen.
+	 *
+	 * @return Sammelrechnung erstellen
+	 */
 	@Override
-	public java.lang.String getCollectiveBillReport () 
+	public java.lang.String getCollectiveBillReport()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_CollectiveBillReport);
 	}
 
-	/** Set Packstücke erfassen.
-		@param CreateShippingPackages Packstücke erfassen	  */
+	/**
+	 * Set Packstücke erfassen.
+	 *
+	 * @param CreateShippingPackages Packstücke erfassen
+	 */
 	@Override
-	public void setCreateShippingPackages (java.lang.String CreateShippingPackages)
+	public void setCreateShippingPackages(java.lang.String CreateShippingPackages)
 	{
-		set_Value (COLUMNNAME_CreateShippingPackages, CreateShippingPackages);
+		set_Value(COLUMNNAME_CreateShippingPackages, CreateShippingPackages);
 	}
 
-	/** Get Packstücke erfassen.
-		@return Packstücke erfassen	  */
+	/**
+	 * Get Packstücke erfassen.
+	 *
+	 * @return Packstücke erfassen
+	 */
 	@Override
-	public java.lang.String getCreateShippingPackages () 
+	public java.lang.String getCreateShippingPackages()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_CreateShippingPackages);
 	}
 
-	/** Set Belegdatum.
-		@param DateDoc 
-		Datum des Belegs
-	  */
+	/**
+	 * Set Belegdatum.
+	 *
+	 * @param DateDoc
+	 *            Datum des Belegs
+	 */
 	@Override
-	public void setDateDoc (java.sql.Timestamp DateDoc)
+	public void setDateDoc(java.sql.Timestamp DateDoc)
 	{
-		set_Value (COLUMNNAME_DateDoc, DateDoc);
+		set_Value(COLUMNNAME_DateDoc, DateDoc);
 	}
 
-	/** Get Belegdatum.
-		@return Datum des Belegs
-	  */
+	/**
+	 * Get Belegdatum.
+	 *
+	 * @return Datum des Belegs
+	 */
 	@Override
-	public java.sql.Timestamp getDateDoc () 
+	public java.sql.Timestamp getDateDoc()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateDoc);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
+	/**
+	 * Set Beschreibung.
+	 *
+	 * @param Description Beschreibung
+	 */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription(java.lang.String Description)
 	{
-		set_Value (COLUMNNAME_Description, Description);
+		set_Value(COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
+	/**
+	 * Get Beschreibung.
+	 *
+	 * @return Beschreibung
+	 */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** 
+	/**
 	 * DocAction AD_Reference_ID=135
 	 * Reference name: _Document Action
 	 */
-	public static final int DOCACTION_AD_Reference_ID=135;
+	public static final int DOCACTION_AD_Reference_ID = 135;
 	/** Fertigstellen = CO */
 	public static final String DOCACTION_Fertigstellen = "CO";
 	/** Genehmigen = AP */
@@ -264,31 +304,36 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	public static final String DOCACTION_Entsperren = "XL";
 	/** Warten und fertigstellen = WC */
 	public static final String DOCACTION_WartenUndFertigstellen = "WC";
-	/** Set Document Action.
-		@param DocAction 
-		The targeted status of the document
-	  */
+
+	/**
+	 * Set Document Action.
+	 *
+	 * @param DocAction
+	 *            The targeted status of the document
+	 */
 	@Override
-	public void setDocAction (java.lang.String DocAction)
+	public void setDocAction(java.lang.String DocAction)
 	{
 
-		set_Value (COLUMNNAME_DocAction, DocAction);
+		set_Value(COLUMNNAME_DocAction, DocAction);
 	}
 
-	/** Get Document Action.
-		@return The targeted status of the document
-	  */
+	/**
+	 * Get Document Action.
+	 *
+	 * @return The targeted status of the document
+	 */
 	@Override
-	public java.lang.String getDocAction () 
+	public java.lang.String getDocAction()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocAction);
 	}
 
-	/** 
+	/**
 	 * DocStatus AD_Reference_ID=131
 	 * Reference name: _Document Status
 	 */
-	public static final int DOCSTATUS_AD_Reference_ID=131;
+	public static final int DOCSTATUS_AD_Reference_ID = 131;
 	/** Entwurf = DR */
 	public static final String DOCSTATUS_Entwurf = "DR";
 	/** Fertiggestellt = CO */
@@ -313,74 +358,89 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 	public static final String DOCSTATUS_WartenAufZahlung = "WP";
 	/** Warten auf Bestaetigung = WC */
 	public static final String DOCSTATUS_WartenAufBestaetigung = "WC";
-	/** Set Belegstatus.
-		@param DocStatus 
-		The current status of the document
-	  */
+
+	/**
+	 * Set Belegstatus.
+	 *
+	 * @param DocStatus
+	 *            The current status of the document
+	 */
 	@Override
-	public void setDocStatus (java.lang.String DocStatus)
+	public void setDocStatus(java.lang.String DocStatus)
 	{
 
-		set_Value (COLUMNNAME_DocStatus, DocStatus);
+		set_Value(COLUMNNAME_DocStatus, DocStatus);
 	}
 
-	/** Get Belegstatus.
-		@return The current status of the document
-	  */
+	/**
+	 * Get Belegstatus.
+	 *
+	 * @return The current status of the document
+	 */
 	@Override
-	public java.lang.String getDocStatus () 
+	public java.lang.String getDocStatus()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Document No.
-		@param DocumentNo 
-		Document sequence number of the document
-	  */
+	/**
+	 * Set Document No.
+	 *
+	 * @param DocumentNo
+	 *            Document sequence number of the document
+	 */
 	@Override
-	public void setDocumentNo (java.lang.String DocumentNo)
+	public void setDocumentNo(java.lang.String DocumentNo)
 	{
-		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
+		set_Value(COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Document No.
-		@return Document sequence number of the document
-	  */
+	/**
+	 * Get Document No.
+	 *
+	 * @return Document sequence number of the document
+	 */
 	@Override
-	public java.lang.String getDocumentNo () 
+	public java.lang.String getDocumentNo()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public org.compiere.util.KeyNamePair getKeyNamePair() 
-    {
-        return new org.compiere.util.KeyNamePair(get_ID(), getDocumentNo());
-    }
-
-	/** Set Approved.
-		@param IsApproved 
-		Indicates if this document requires approval
-	  */
-	@Override
-	public void setIsApproved (boolean IsApproved)
+	/**
+	 * Get Record ID/ColumnName
+	 *
+	 * @return ID/ColumnName pair
+	 */
+	public org.compiere.util.KeyNamePair getKeyNamePair()
 	{
-		set_Value (COLUMNNAME_IsApproved, Boolean.valueOf(IsApproved));
+		return new org.compiere.util.KeyNamePair(get_ID(), getDocumentNo());
 	}
 
-	/** Get Approved.
-		@return Indicates if this document requires approval
-	  */
+	/**
+	 * Set Approved.
+	 *
+	 * @param IsApproved
+	 *            Indicates if this document requires approval
+	 */
 	@Override
-	public boolean isApproved () 
+	public void setIsApproved(boolean IsApproved)
+	{
+		set_Value(COLUMNNAME_IsApproved, Boolean.valueOf(IsApproved));
+	}
+
+	/**
+	 * Get Approved.
+	 *
+	 * @return Indicates if this document requires approval
+	 */
+	@Override
+	public boolean isApproved()
 	{
 		Object oo = get_Value(COLUMNNAME_IsApproved);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			if (oo instanceof Boolean)
+				return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
@@ -398,138 +458,168 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 		set_ValueFromPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class, M_Shipper);
 	}
 
-	/** Set Lieferweg.
-		@param M_Shipper_ID 
-		Methode oder Art der Warenlieferung
-	  */
+	/**
+	 * Set Lieferweg.
+	 *
+	 * @param M_Shipper_ID
+	 *            Methode oder Art der Warenlieferung
+	 */
 	@Override
-	public void setM_Shipper_ID (int M_Shipper_ID)
+	public void setM_Shipper_ID(int M_Shipper_ID)
 	{
-		if (M_Shipper_ID < 1) 
-			set_Value (COLUMNNAME_M_Shipper_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Shipper_ID, Integer.valueOf(M_Shipper_ID));
+		if (M_Shipper_ID < 1)
+			set_Value(COLUMNNAME_M_Shipper_ID, null);
+		else
+			set_Value(COLUMNNAME_M_Shipper_ID, Integer.valueOf(M_Shipper_ID));
 	}
 
-	/** Get Lieferweg.
-		@return Methode oder Art der Warenlieferung
-	  */
+	/**
+	 * Get Lieferweg.
+	 *
+	 * @return Methode oder Art der Warenlieferung
+	 */
 	@Override
-	public int getM_Shipper_ID () 
+	public int getM_Shipper_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Shipper_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Shipper Transportation.
-		@param M_ShipperTransportation_ID Shipper Transportation	  */
+	/**
+	 * Set Shipper Transportation.
+	 *
+	 * @param M_ShipperTransportation_ID Shipper Transportation
+	 */
 	@Override
-	public void setM_ShipperTransportation_ID (int M_ShipperTransportation_ID)
+	public void setM_ShipperTransportation_ID(int M_ShipperTransportation_ID)
 	{
-		if (M_ShipperTransportation_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_ShipperTransportation_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_M_ShipperTransportation_ID, Integer.valueOf(M_ShipperTransportation_ID));
+		if (M_ShipperTransportation_ID < 1)
+			set_ValueNoCheck(COLUMNNAME_M_ShipperTransportation_ID, null);
+		else
+			set_ValueNoCheck(COLUMNNAME_M_ShipperTransportation_ID, Integer.valueOf(M_ShipperTransportation_ID));
 	}
 
-	/** Get Shipper Transportation.
-		@return Shipper Transportation	  */
+	/**
+	 * Get Shipper Transportation.
+	 *
+	 * @return Shipper Transportation
+	 */
 	@Override
-	public int getM_ShipperTransportation_ID () 
+	public int getM_ShipperTransportation_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShipperTransportation_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
-	/** Set Package Net Total.
-		@param PackageNetTotal Package Net Total	  */
+	/**
+	 * Set Package Net Total.
+	 *
+	 * @param PackageNetTotal Package Net Total
+	 */
 	@Override
-	public void setPackageNetTotal (java.math.BigDecimal PackageNetTotal)
+	public void setPackageNetTotal(java.math.BigDecimal PackageNetTotal)
 	{
-		set_Value (COLUMNNAME_PackageNetTotal, PackageNetTotal);
+		set_Value(COLUMNNAME_PackageNetTotal, PackageNetTotal);
 	}
 
-	/** Get Package Net Total.
-		@return Package Net Total	  */
+	/**
+	 * Get Package Net Total.
+	 *
+	 * @return Package Net Total
+	 */
 	@Override
-	public java.math.BigDecimal getPackageNetTotal () 
+	public java.math.BigDecimal getPackageNetTotal()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PackageNetTotal);
 		if (bd == null)
-			 return Env.ZERO;
+			return Env.ZERO;
 		return bd;
 	}
 
-	/** Set Package Weight.
-		@param PackageWeight 
-		Weight of a package
-	  */
+	/**
+	 * Set Package Weight.
+	 *
+	 * @param PackageWeight
+	 *            Weight of a package
+	 */
 	@Override
-	public void setPackageWeight (java.math.BigDecimal PackageWeight)
+	public void setPackageWeight(java.math.BigDecimal PackageWeight)
 	{
-		set_Value (COLUMNNAME_PackageWeight, PackageWeight);
+		set_Value(COLUMNNAME_PackageWeight, PackageWeight);
 	}
 
-	/** Get Package Weight.
-		@return Weight of a package
-	  */
+	/**
+	 * Get Package Weight.
+	 *
+	 * @return Weight of a package
+	 */
 	@Override
-	public java.math.BigDecimal getPackageWeight () 
+	public java.math.BigDecimal getPackageWeight()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PackageWeight);
 		if (bd == null)
-			 return Env.ZERO;
+			return Env.ZERO;
 		return bd;
 	}
 
-	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
+	/**
+	 * Set Verarbeitet.
+	 *
+	 * @param Processed
+	 *            Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 */
 	@Override
-	public void setProcessed (boolean Processed)
+	public void setProcessed(boolean Processed)
 	{
-		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+		set_Value(COLUMNNAME_Processed, Boolean.valueOf(Processed));
 	}
 
-	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
+	/**
+	 * Get Verarbeitet.
+	 *
+	 * @return Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 */
 	@Override
-	public boolean isProcessed () 
+	public boolean isProcessed()
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			if (oo instanceof Boolean)
+				return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
-	/** Set Process Now.
-		@param Processing Process Now	  */
+	/**
+	 * Set Process Now.
+	 *
+	 * @param Processing Process Now
+	 */
 	@Override
-	public void setProcessing (boolean Processing)
+	public void setProcessing(boolean Processing)
 	{
-		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
+		set_Value(COLUMNNAME_Processing, Boolean.valueOf(Processing));
 	}
 
-	/** Get Process Now.
-		@return Process Now	  */
+	/**
+	 * Get Process Now.
+	 *
+	 * @return Process Now
+	 */
 	@Override
-	public boolean isProcessing () 
+	public boolean isProcessing()
 	{
 		Object oo = get_Value(COLUMNNAME_Processing);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			if (oo instanceof Boolean)
+				return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
@@ -547,28 +637,32 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 		set_ValueFromPO(COLUMNNAME_Shipper_BPartner_ID, org.compiere.model.I_C_BPartner.class, Shipper_BPartner);
 	}
 
-	/** Set Shipper Partner.
-		@param Shipper_BPartner_ID 
-		Business Partner to be used as shipper
-	  */
+	/**
+	 * Set Shipper Partner.
+	 *
+	 * @param Shipper_BPartner_ID
+	 *            Business Partner to be used as shipper
+	 */
 	@Override
-	public void setShipper_BPartner_ID (int Shipper_BPartner_ID)
+	public void setShipper_BPartner_ID(int Shipper_BPartner_ID)
 	{
-		if (Shipper_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_Shipper_BPartner_ID, null);
-		else 
-			set_Value (COLUMNNAME_Shipper_BPartner_ID, Integer.valueOf(Shipper_BPartner_ID));
+		if (Shipper_BPartner_ID < 1)
+			set_Value(COLUMNNAME_Shipper_BPartner_ID, null);
+		else
+			set_Value(COLUMNNAME_Shipper_BPartner_ID, Integer.valueOf(Shipper_BPartner_ID));
 	}
 
-	/** Get Shipper Partner.
-		@return Business Partner to be used as shipper
-	  */
+	/**
+	 * Get Shipper Partner.
+	 *
+	 * @return Business Partner to be used as shipper
+	 */
 	@Override
-	public int getShipper_BPartner_ID () 
+	public int getShipper_BPartner_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Shipper_BPartner_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
 	}
 
@@ -584,28 +678,55 @@ public class X_M_ShipperTransportation extends org.compiere.model.PO implements 
 		set_ValueFromPO(COLUMNNAME_Shipper_Location_ID, org.compiere.model.I_C_BPartner_Location.class, Shipper_Location);
 	}
 
-	/** Set Shipper Location.
-		@param Shipper_Location_ID 
-		Business Partner Location for Shipper
-	  */
+	/**
+	 * Set Shipper Location.
+	 *
+	 * @param Shipper_Location_ID
+	 *            Business Partner Location for Shipper
+	 */
 	@Override
-	public void setShipper_Location_ID (int Shipper_Location_ID)
+	public void setShipper_Location_ID(int Shipper_Location_ID)
 	{
-		if (Shipper_Location_ID < 1) 
-			set_Value (COLUMNNAME_Shipper_Location_ID, null);
-		else 
-			set_Value (COLUMNNAME_Shipper_Location_ID, Integer.valueOf(Shipper_Location_ID));
+		if (Shipper_Location_ID < 1)
+			set_Value(COLUMNNAME_Shipper_Location_ID, null);
+		else
+			set_Value(COLUMNNAME_Shipper_Location_ID, Integer.valueOf(Shipper_Location_ID));
 	}
 
-	/** Get Shipper Location.
-		@return Business Partner Location for Shipper
-	  */
+	/**
+	 * Get Shipper Location.
+	 *
+	 * @return Business Partner Location for Shipper
+	 */
 	@Override
-	public int getShipper_Location_ID () 
+	public int getShipper_Location_ID()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Shipper_Location_ID);
 		if (ii == null)
-			 return 0;
+			return 0;
 		return ii.intValue();
+	}
+
+	/**
+	 * Set Abholung am.
+	 *
+	 * @param DateToBeFetched
+	 *            Date and time to fetch
+	 */
+	@Override
+	public void setDateToBeFetched(java.sql.Timestamp DateToBeFetched)
+	{
+		set_Value(COLUMNNAME_DateToBeFetched, DateToBeFetched);
+	}
+
+	/**
+	 * Get Abholung am.
+	 *
+	 * @return Date and time to fetch
+	 */
+	@Override
+	public java.sql.Timestamp getDateToBeFetched()
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateToBeFetched);
 	}
 }

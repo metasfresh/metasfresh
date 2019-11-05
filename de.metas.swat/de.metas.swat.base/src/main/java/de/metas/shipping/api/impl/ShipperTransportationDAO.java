@@ -79,7 +79,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Processed, false)
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, X_M_ShipperTransportation.DOCSTATUS_Entwurf) // Drafts
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_M_Shipper_ID, shipperId)
-				.orderBy(I_M_ShipperTransportation.COLUMNNAME_DateDoc)
+				.orderBy(I_M_ShipperTransportation.COLUMNNAME_DateToBeFetched)
 
 				.create()
 				.firstId(ShipperTransportationId::ofRepoIdOrNull);
