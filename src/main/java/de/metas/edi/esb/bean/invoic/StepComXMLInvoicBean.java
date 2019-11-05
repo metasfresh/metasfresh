@@ -29,6 +29,7 @@ import static de.metas.edi.esb.commons.Util.normalize;
 import static de.metas.edi.esb.commons.Util.toDate;
 import static de.metas.edi.esb.commons.Util.toFormattedStringDate;
 import static de.metas.edi.esb.commons.Util.trimAndTruncate;
+import static de.metas.edi.esb.commons.ValidationHelper.validateString;
 
 import java.text.DecimalFormat;
 import java.util.Comparator;
@@ -130,12 +131,12 @@ public class StepComXMLInvoicBean
 		final Document document = INVOIC_objectFactory.createDocument();
 		final Xrech4H xrech4H = INVOIC_objectFactory.createXrech4H();
 
-		final StepComInvoicSettings receiverSettings = StepComInvoicSettings.forReceiverGLN(exchange.getContext(), invoice.getReceivergln());
+		final StepComInvoicSettings invoicSettings = StepComInvoicSettings.forReceiverGLN(exchange.getContext(), invoice.getReceivergln());
 
 		final HEADERXrech headerXrech = INVOIC_objectFactory.createHEADERXrech();
-		headerXrech.setTESTINDICATOR(receiverSettings.getTestIndicator());
+		headerXrech.setTESTINDICATOR(invoicSettings.getTestIndicator());
 
-		headerXrech.setPARTNERID(receiverSettings.getPartnerId());
+		headerXrech.setPARTNERID(invoicSettings.getPartnerId());
 		headerXrech.setAPPLICATIONREF(applicationRef);
 		headerXrech.setOWNERID(ownerId);
 		final String documentId = invoice.getInvoiceDocumentno();
@@ -153,7 +154,7 @@ public class StepComXMLInvoicBean
 
 		mapReferences(invoice, headerXrech, dateFormat);
 
-		mapAddresses(invoice, headerXrech);
+		mapAddresses(invoice, headerXrech, invoicSettings);
 
 		final HCURR1 currency = INVOIC_objectFactory.createHCURR1();
 		currency.setDOCUMENTID(documentId);
@@ -165,7 +166,7 @@ public class StepComXMLInvoicBean
 
 		mapAlCh(invoice, decimalFormat, headerXrech);
 
-		mapDetails(invoice, receiverSettings, decimalFormat, headerXrech);
+		mapDetails(invoice, headerXrech, decimalFormat, invoicSettings);
 
 		final TRAILR docTrailer = INVOIC_objectFactory.createTRAILR();
 		docTrailer.setDOCUMENTID(documentId);
@@ -236,9 +237,9 @@ public class StepComXMLInvoicBean
 
 	private void mapDetails(
 			final EDICctopInvoicVType invoice,
-			final StepComInvoicSettings receiverSettings,
+			final HEADERXrech headerXrech,
 			final DecimalFormat decimalFormat,
-			final HEADERXrech headerXrech)
+			final StepComInvoicSettings receiverSettings)
 	{
 		invoice.getEDICctopInvoic500V().sort(Comparator.comparing(EDICctopInvoic500VType::getLine));
 		final String documentId = headerXrech.getDOCUMENTID();
@@ -438,7 +439,8 @@ public class StepComXMLInvoicBean
 
 	private void mapAddresses(
 			@NonNull final EDICctopInvoicVType invoice,
-			@NonNull final HEADERXrech headerXrech)
+			@NonNull final HEADERXrech headerXrech,
+			@NonNull final StepComInvoicSettings settings)
 	{
 		for (final EDICctop119VType xmlCctop119V : invoice.getEDICctop119V())
 		{
@@ -461,9 +463,10 @@ public class StepComXMLInvoicBean
 				throw new RuntimeCamelException(xmlCctop119V + " could not identify address qualifier");
 			}
 			address.setADDRESSQUAL(addressQual.name());
-			address.setPARTYIDGLN(xmlCctop119V.getGLN());
+			address.setPARTYIDGLN(validateAndGetGLN(invoice, xmlCctop119V, settings));
 
-			if (!isEmpty(xmlCctop119V.getAddress1()))
+			final String street1 = validateAndGetStreet1(invoice, xmlCctop119V, settings);
+			if (!isEmpty(street1))
 			{
 				address.setSTREET1(trimAndTruncate(xmlCctop119V.getAddress1(), 35));
 				address.setSTREET2(trimAndTruncate(xmlCctop119V.getAddress2(), 35));
@@ -476,9 +479,11 @@ public class StepComXMLInvoicBean
 				}
 				address.setSTREET1(trimAndTruncate(xmlCctop119V.getAddress2(), 35));
 			}
-			if (!isEmpty(xmlCctop119V.getName()))
+
+			final String addressName1 = validateAndGetAddressName1(invoice, xmlCctop119V, settings);
+			if (!isEmpty(addressName1))
 			{
-				address.setNAME1(trimAndTruncate(xmlCctop119V.getName(), 35));
+				address.setNAME1(trimAndTruncate(addressName1, 35));
 				address.setNAME2(trimAndTruncate(xmlCctop119V.getName2(), 35));
 			}
 			else
@@ -489,8 +494,13 @@ public class StepComXMLInvoicBean
 				}
 				address.setNAME1(normalize(xmlCctop119V.getName2()));
 			}
-			address.setCITY(trimAndTruncate(xmlCctop119V.getCity(), 35));
-			address.setPOSTALCODE(trimAndTruncate(xmlCctop119V.getPostal(), 20));
+
+			final String city = validateAndGetCity(invoice, xmlCctop119V, settings);
+			address.setCITY(trimAndTruncate(city, 35));
+
+			final String postalCode = validateAndGetPostalCode(invoice, xmlCctop119V, settings);
+			address.setPOSTALCODE(trimAndTruncate(postalCode, 20));
+
 			address.setCOUNTRY(trimAndTruncate(xmlCctop119V.getCountryCode(), 20));
 
 			if (addressQual == AddressQual.SUPL && isEmpty(xmlCctop119V.getVATaxID()))
@@ -516,6 +526,114 @@ public class StepComXMLInvoicBean
 
 			headerXrech.getHADRE1().add(address);
 		}
+	}
+
+	private String validateAndGetAddressName1(
+			@NonNull final EDICctopInvoicVType invoice,
+			@NonNull final EDICctop119VType xmlCctop119V,
+			@NonNull final StepComInvoicSettings settings)
+	{
+		final EancomLocationQual eancomLocationQual = EancomLocationQual.valueOf(xmlCctop119V.getEancomLocationtype());
+		final AddressQual addressQual = mapAddressQual(eancomLocationQual);
+
+		final String addressName = xmlCctop119V.getName();
+		if (addressQual == AddressQual.BUYR && settings.isInvoicBUYRAddressName1Required())
+		{
+			validateString(addressName, "@FillMandatory@ @C_Partner_ID@ @C_BPartner_Location_ID@ @Name@: " + xmlCctop119V);
+		}
+		else if (addressQual == AddressQual.IVCE && settings.isInvoicIVCEAddressName1Required())
+		{
+			validateString(addressName, "@FillMandatory@ @Bill_Partner_ID@ @C_BPartner_Location_ID@ @Name@: " + xmlCctop119V);
+		}
+		else // default
+		{
+			validateString(addressName, "@FillMandatory@ @C_BPartner_Location_ID@ @Name@: " + xmlCctop119V);
+		}
+		return addressName;
+	}
+
+	private String validateAndGetGLN(
+			@NonNull final EDICctopInvoicVType invoice,
+			@NonNull final EDICctop119VType xmlCctop119V,
+			@NonNull final StepComInvoicSettings settings)
+	{
+		final EancomLocationQual eancomLocationQual = EancomLocationQual.valueOf(xmlCctop119V.getEancomLocationtype());
+		final AddressQual addressQual = mapAddressQual(eancomLocationQual);
+
+		final String gln = xmlCctop119V.getGLN();
+		if (addressQual == AddressQual.BUYR && settings.isInvoicBUYRGLNRequired())
+		{
+			validateString(gln, "@FillMandatory@ @C_Partner_ID@ @C_BPartner_Location_ID@ @GLN@: " + xmlCctop119V);
+		}
+		else if (addressQual == AddressQual.IVCE && settings.isInvoicIVCEGLNRequired())
+		{
+			validateString(gln, "@FillMandatory@ @Bill_Partner_ID@ @C_BPartner_Location_ID@ @GLN@: " + xmlCctop119V);
+		}
+		else // default
+		{
+			validateString(gln, "@FillMandatory@ @C_BPartner_Location_ID@ @GLN@: " + xmlCctop119V);
+		}
+		return gln;
+	}
+
+	private String validateAndGetStreet1(
+			@NonNull final EDICctopInvoicVType invoice,
+			@NonNull final EDICctop119VType xmlCctop119V,
+			@NonNull final StepComInvoicSettings settings)
+	{
+		final EancomLocationQual eancomLocationQual = EancomLocationQual.valueOf(xmlCctop119V.getEancomLocationtype());
+		final AddressQual addressQual = mapAddressQual(eancomLocationQual);
+
+		final String street1 = xmlCctop119V.getAddress1();
+		if (addressQual == AddressQual.BUYR && settings.isInvoicBUYRStreet1Required())
+		{
+			validateString(street1, "@FillMandatory@ @C_Partner_ID@ @C_BPartner_Location_ID@ @Address1@: " + xmlCctop119V);
+		}
+		else if (addressQual == AddressQual.IVCE && settings.isInvoicIVCEStreet1Required())
+		{
+			validateString(street1, "@FillMandatory@ @Bill_Partner_ID@ @C_BPartner_Location_ID@ @Address1@: " + xmlCctop119V);
+		}
+		return street1;
+	}
+
+	private String validateAndGetPostalCode(
+			@NonNull final EDICctopInvoicVType invoice,
+			@NonNull final EDICctop119VType xmlCctop119V,
+			@NonNull final StepComInvoicSettings settings)
+	{
+		final EancomLocationQual eancomLocationQual = EancomLocationQual.valueOf(xmlCctop119V.getEancomLocationtype());
+		final AddressQual addressQual = mapAddressQual(eancomLocationQual);
+
+		final String postal = xmlCctop119V.getPostal();
+		if (addressQual == AddressQual.BUYR && settings.isInvoicBUYRPostaCodeRequired())
+		{
+			validateString(postal, "@FillMandatory@ @C_Partner_ID@ @C_BPartner_Location_ID@ @Postal@: " + xmlCctop119V);
+		}
+		else if (addressQual == AddressQual.IVCE && settings.isInvoicIVCEStreet1Required())
+		{
+			validateString(postal, "@FillMandatory@ @Bill_Partner_ID@ @C_BPartner_Location_ID@ @Postal@: " + xmlCctop119V);
+		}
+		return postal;
+	}
+
+	private String validateAndGetCity(
+			@NonNull final EDICctopInvoicVType invoice,
+			@NonNull final EDICctop119VType xmlCctop119V,
+			@NonNull final StepComInvoicSettings settings)
+	{
+		final EancomLocationQual eancomLocationQual = EancomLocationQual.valueOf(xmlCctop119V.getEancomLocationtype());
+		final AddressQual addressQual = mapAddressQual(eancomLocationQual);
+
+		final String city = xmlCctop119V.getCity();
+		if (addressQual == AddressQual.BUYR && settings.isInvoicBUYRPostaCodeRequired())
+		{
+			validateString(city, "@FillMandatory@ @C_Partner_ID@ @C_BPartner_Location_ID@ @City@: " + xmlCctop119V);
+		}
+		else if (addressQual == AddressQual.IVCE && settings.isInvoicIVCEStreet1Required())
+		{
+			validateString(city, "@FillMandatory@ @Bill_Partner_ID@ @C_BPartner_Location_ID@ @City@: " + xmlCctop119V);
+		}
+		return city;
 	}
 
 	/** Note: currently doesn't copy the address. */

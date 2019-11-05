@@ -40,6 +40,19 @@ public class StepComInvoicSettings
 				.builder()
 				.partnerId(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".partnerId"))
 				.testIndicator(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.testIndicator", "T"))
+
+				.invoicBUYRAddressName1Required(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.BUYR.AddressName1.required", "true"))
+				.invoicBUYRGLNRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.BUYR.GLN.required", "true"))
+				.invoicBUYRStreet1Required(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.BUYR.Street1.required", "false"))
+				.invoicBUYRCityRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.BUYR.City.required", "false"))
+				.invoicBUYRPostaCodeRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.BUYR.PostalCode.required", "false"))
+
+				.invoicIVCEAddressName1Required(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.IVCE.AddressName1.required", "true"))
+				.invoicIVCEGLNRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.IVCE.GLN.required", "true"))
+				.invoicIVCEStreet1Required(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.IVCE.Street1.required", "false"))
+				.invoicIVCECityRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.IVCE.City.required", "false"))
+				.invoicIVCEPostaCodeRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.IVCE.PostalCode.required", "false"))
+
 				.invoicLineEANCequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.EANC.required", "false"))
 				.build();
 	}
@@ -47,6 +60,18 @@ public class StepComInvoicSettings
 	String partnerId;
 
 	String testIndicator;
+
+	boolean invoicBUYRAddressName1Required;
+	boolean invoicBUYRGLNRequired;
+	boolean invoicBUYRStreet1Required;
+	boolean invoicBUYRCityRequired;
+	boolean invoicBUYRPostaCodeRequired;
+
+	boolean invoicIVCEAddressName1Required;
+	boolean invoicIVCEGLNRequired;
+	boolean invoicIVCEStreet1Required;
+	boolean invoicIVCECityRequired;
+	boolean invoicIVCEPostaCodeRequired;
 
 	boolean invoicLineEANCequired;
 }
