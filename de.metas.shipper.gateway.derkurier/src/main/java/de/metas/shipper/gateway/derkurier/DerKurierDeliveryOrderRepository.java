@@ -27,6 +27,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import de.metas.mpackage.PackageId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -187,7 +188,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 					.get(lineRecord.getDerKurier_DeliveryOrderLine_ID())
 					.stream()
 					.map(I_DerKurier_DeliveryOrderLine_Package::getM_Package_ID)
-					.forEach(deliveryPositionBuilder::packageId);
+					.forEach(packageId -> deliveryPositionBuilder.packageId(PackageId.ofRepoId(packageId)));
 
 			deliverOrderBuilder.deliveryPosition(deliveryPositionBuilder.build());
 
@@ -504,7 +505,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 
 	private void syncPackageAllocationRecords(
 			@NonNull final I_DerKurier_DeliveryOrderLine lineRecord,
-			@NonNull final ImmutableSet<Integer> packageIds)
+			@NonNull final ImmutableSet<PackageId> packageIds)
 	{
 		final List<I_DerKurier_DeliveryOrderLine_Package> preExistingRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_DerKurier_DeliveryOrderLine_Package.class)
@@ -516,8 +517,9 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 				Multimaps.index(preExistingRecords, I_DerKurier_DeliveryOrderLine_Package::getM_Package_ID);
 
 		// create missing records
-		for (final int packageId : packageIds)
+		for (final PackageId packageIdRepo : packageIds)
 		{
+			final int packageId = packageIdRepo.getRepoId();
 			final boolean recordForPackageIdExists = packageId2preExistingRecord.containsKey(packageId);
 			if (recordForPackageIdExists)
 			{

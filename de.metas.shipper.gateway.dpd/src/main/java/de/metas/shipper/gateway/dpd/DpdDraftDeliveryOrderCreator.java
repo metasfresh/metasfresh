@@ -24,6 +24,7 @@ package de.metas.shipper.gateway.dpd;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.mpackage.PackageId;
 import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.dpd.model.DpdCustomDeliveryData;
@@ -76,7 +77,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	{
 
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
-		final Set<Integer> mpackageIds = request.getMpackageIds();
+		final Set<PackageId> mpackageIds = request.getMpackageIds();
 
 		final String customerReference = ""; // todo what is the customer reference ?
 
@@ -95,7 +96,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
 
-		final int grossWeightInKg = Math.max(request.getGrossWeightInKg(), 1);
+		final int grossWeightInKg = Math.max(request.getAllPackagesGrossWeightInKg(), 1);
 		final int shipperId = deliveryOrderKey.getShipperId();
 		final int shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
 
@@ -131,7 +132,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 
 	@VisibleForTesting
 	DeliveryOrder createDeliveryOrderFromParams(
-			@NonNull final Set<Integer> mpackageIds,
+			@NonNull final Set<PackageId> mpackageIds,
 			@NonNull final I_C_BPartner pickupFromBPartner,
 			@NonNull final I_C_Location pickupFromLocation,
 			@NonNull final LocalDate pickupDate,
@@ -196,7 +197,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	 * Assume that all the packages inside a delivery position are of the same type and therefore have the same size.
 	 */
 	@NonNull
-	private PackageDimensions getPackageDimensions(@NonNull final Set<Integer> mpackageIds, final int shipperId)
+	private PackageDimensions getPackageDimensions(@NonNull final Set<PackageId> mpackageIds, final int shipperId)
 	{
 		//		final Integer firstPackageId = mpackageIds.iterator().next();
 		//		final DpdClientConfig clientConfig = clientConfigRepository.getByShipperId(ShipperId.ofRepoId(shipperId));

@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.mpackage.PackageId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Singular;
@@ -46,7 +47,7 @@ public class DeliveryPosition
 	@Nullable
 	CustomDeliveryData customDeliveryData;
 
-	ImmutableSet<Integer> packageIds;
+	ImmutableSet<PackageId> packageIds;
 
 	@Builder(toBuilder = true)
 	private DeliveryPosition(
@@ -56,7 +57,7 @@ public class DeliveryPosition
 			final String content,
 			@Nullable final PackageDimensions packageDimensions,
 			@Nullable final CustomDeliveryData customDeliveryData,
-			@Singular final ImmutableSet<Integer> packageIds)
+			@Singular final ImmutableSet<PackageId> packageIds)
 	{
 		Check.assume(numberOfPackages > 0, "numberOfPackages > 0");
 		Check.assume(grossWeightKg > 0, "grossWeightKg > 0");

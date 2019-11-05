@@ -23,6 +23,7 @@
 package de.metas.shipper.gateway.dhl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.dhl.model.DhlServiceType;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
@@ -34,6 +35,7 @@ import de.metas.shipper.gateway.spi.model.PickupDate;
 import lombok.experimental.UtilityClass;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 
 @UtilityClass
 class DhlTestHelper
@@ -81,7 +83,7 @@ class DhlTestHelper
 								.lengthInCM(10)
 								.widthInCM(10)
 								.build())
-						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
+						.packageIds(createPackageIDs())
 						.grossWeightKg(1)
 						.build())
 				 .customerReference(null)
@@ -127,7 +129,7 @@ class DhlTestHelper
 								.lengthInCM(10)
 								.widthInCM(10)
 								.build())
-						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
+						.packageIds(createPackageIDs())
 						.grossWeightKg(1)
 						.build())
 				 .customerReference(null)
@@ -173,11 +175,19 @@ class DhlTestHelper
 								.lengthInCM(10)
 								.widthInCM(10)
 								.build())
-						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
+						.packageIds(createPackageIDs())
 						.grossWeightKg(1)
 						.build())
 				 .customerReference(null)
 				.serviceType(DhlServiceType.Dhl_PaketInternational)
 				.build();
+	}
+
+	private static Iterable<? extends PackageId> createPackageIDs()
+	{
+		return Arrays.asList(1, 2, 3, 4, 5)
+				.stream()
+				.map(PackageId::ofRepoId)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

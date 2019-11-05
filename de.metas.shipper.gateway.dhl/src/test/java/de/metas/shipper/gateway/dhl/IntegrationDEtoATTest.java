@@ -24,6 +24,7 @@ package de.metas.shipper.gateway.dhl;
 
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.customs.CustomsInvoiceRepository;
+import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfigRepository;
@@ -193,7 +194,7 @@ class IntegrationDEtoATTest
 		final DeliveryPosition deliveryPosition = deliveryOrder.getDeliveryPositions().get(0);
 
 		//
-		final Set<Integer> mpackageIds = deliveryPosition.getPackageIds();
+		final Set<PackageId> mpackageIds = deliveryPosition.getPackageIds();
 
 		//
 		final I_C_BPartner pickupFromBPartner = createBPartner(deliveryOrder.getPickupAddress());

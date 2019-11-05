@@ -46,6 +46,7 @@ import de.dhl.webservices.businesscustomershipping._3.ShipmentNotificationType;
 import de.dhl.webservices.businesscustomershipping._3.ShipmentOrderType;
 import de.dhl.webservices.businesscustomershipping._3.ShipperType;
 import de.dhl.webservices.businesscustomershipping._3.Version;
+import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.dhl.logger.DhlClientLogEvent;
 import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
@@ -279,7 +280,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 
 		for (final DeliveryPosition deliveryPosition : deliveryOrder.getDeliveryPositions()) // only a single delivery position should exist
 		{
-			final ImmutableList<Integer> packageIdsAsList = deliveryPosition.getPackageIds().asList();
+			final ImmutableList<PackageId> packageIdsAsList = deliveryPosition.getPackageIds().asList();
 			for (int i = 0; i < deliveryPosition.getNumberOfPackages(); i++)
 			{
 				// (2.2)  the shipment
@@ -410,7 +411,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 				// (2) create the needed shipment order type
 				final ShipmentOrderType shipmentOrderType = objectFactory.createShipmentOrderType();
 				final DhlCustomDeliveryData dhlCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
-				final DhlCustomDeliveryDataDetail deliveryDetail = dhlCustomDeliveryData.getDetailByPackageId(packageIdsAsList.get(i));
+				final DhlCustomDeliveryDataDetail deliveryDetail = dhlCustomDeliveryData.getDetailByPackageId(packageIdsAsList.get(i).getRepoId());
 				shipmentOrderType.setSequenceNumber(deliveryDetail.getSequenceNumber().getSequenceNumber());
 				shipmentOrderType.setShipment(shipmentOrderTypeShipment);
 				createShipmentOrderRequest.getShipmentOrder().add(shipmentOrderType);

@@ -23,6 +23,7 @@
 package de.metas.shipper.gateway.dpd;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.dpd.model.DpdCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.model.DpdNotificationChannel;
 import de.metas.shipper.gateway.dpd.model.DpdOrderType;
@@ -43,6 +44,7 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Arrays;
 
 @UtilityClass
 class DpdTestHelper
@@ -95,7 +97,7 @@ class DpdTestHelper
 								.lengthInCM(10)
 								.widthInCM(10)
 								.build())
-						.packageIds(ImmutableList.of(11, 22, 33, 44, 55))
+						.packageIds(createPackageIDs())
 						.grossWeightKg(1)
 						.build())
 				.customerReference(null)
@@ -108,6 +110,14 @@ class DpdTestHelper
 						.notificationChannel(DpdNotificationChannel.EMAIL)
 						.build())
 				.build();
+	}
+
+	private static Iterable<? extends PackageId> createPackageIDs()
+	{
+		return Arrays.asList(11, 22, 33, 44, 55)
+				.stream()
+				.map(PackageId::ofRepoId)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	static DeliveryOrder createDummyDeliveryOrderDEtoCH()
@@ -151,7 +161,7 @@ class DpdTestHelper
 								.lengthInCM(10)
 								.widthInCM(10)
 								.build())
-						.packageIds(ImmutableList.of(11, 22, 33, 44, 55))
+						.packageIds(createPackageIDs())
 						.grossWeightKg(1)
 						.build())
 				.customerReference(null)
@@ -207,7 +217,7 @@ class DpdTestHelper
 								.lengthInCM(10)
 								.widthInCM(10)
 								.build())
-						.packageIds(ImmutableList.of(11, 22, 33, 44, 55))
+						.packageIds(createPackageIDs())
 						.grossWeightKg(1)
 						.build())
 				.customerReference(null)

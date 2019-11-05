@@ -3,6 +3,7 @@ package de.metas.shipper.gateway.go;
 import java.util.List;
 import java.util.Set;
 
+import de.metas.mpackage.PackageId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -64,7 +65,7 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 	 */
 	private DeliveryOrder toDeliveryOrder(@NonNull final I_GO_DeliveryOrder orderPO)
 	{
-		final Set<Integer> mpackageIds = retrieveGODeliveryOrderPackageIds(orderPO.getGO_DeliveryOrder_ID());
+		final Set<PackageId> mpackageIds = retrieveGODeliveryOrderPackageIds(orderPO.getGO_DeliveryOrder_ID());
 
 		final GoDeliveryOrderData goDeliveryOrderData = GoDeliveryOrderData.builder()
 				.hwbNumber(HWBNumber.ofNullable(orderPO.getGO_HWBNumber()))
@@ -203,13 +204,13 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 				.firstOnly(I_GO_DeliveryOrder.class);
 	}
 
-	private void saveAssignedPackageIds(final int deliveryOrderRepoId, final Set<Integer> packageIds)
+	private void saveAssignedPackageIds(final int deliveryOrderRepoId, final Set<PackageId> packageIds)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final Set<Integer> prevPackageIds = retrieveGODeliveryOrderPackageIds(deliveryOrderRepoId);
+		final Set<PackageId> prevPackageIds = retrieveGODeliveryOrderPackageIds(deliveryOrderRepoId);
 
-		final Set<Integer> packageIdsToDelete = Sets.difference(prevPackageIds, packageIds);
+		final Set<PackageId> packageIdsToDelete = Sets.difference(prevPackageIds, packageIds);
 		if (!packageIdsToDelete.isEmpty())
 		{
 			queryBL.createQueryBuilder(I_GO_DeliveryOrder_Package.class)
@@ -219,11 +220,11 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 					.delete();
 		}
 
-		final Set<Integer> packageIdsToAdd = Sets.difference(packageIds, prevPackageIds);
-		packageIdsToAdd.forEach(packageId -> createGODeliveryOrderPackage(deliveryOrderRepoId, packageId));
+		final Set<PackageId> packageIdsToAdd = Sets.difference(packageIds, prevPackageIds);
+		packageIdsToAdd.forEach(packageId -> createGODeliveryOrderPackage(deliveryOrderRepoId, packageId.getRepoId()));
 	}
 
-	private Set<Integer> retrieveGODeliveryOrderPackageIds(final int deliveryOrderRepoId)
+	private Set<PackageId> retrieveGODeliveryOrderPackageIds(final int deliveryOrderRepoId)
 	{
 		if (deliveryOrderRepoId <= 0)
 		{
@@ -236,7 +237,10 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 				.create()
 				.listDistinct(I_GO_DeliveryOrder_Package.COLUMNNAME_M_Package_ID, Integer.class);
 
-		return ImmutableSet.copyOf(mpackageIds);
+		final ImmutableSet<PackageId> packageIds = mpackageIds.stream()
+				.map(PackageId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+		return packageIds;
 	}
 
 	private void createGODeliveryOrderPackage(final int deliveryOrderRepoId, final int packageId)

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import de.metas.mpackage.PackageId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
@@ -119,7 +120,7 @@ public class ShipperGatewayFacade
 				.intValueExact();
 	}
 
-	private static String computePackageContentDescription(final Collection<I_M_Package> mpackages)
+	private static String computePackagesContentDescription(final Collection<I_M_Package> mpackages)
 	{
 		final String content = mpackages.stream()
 				.map(I_M_Package::getDescription)
@@ -137,13 +138,13 @@ public class ShipperGatewayFacade
 		final String shipperGatewayId = retrieveShipperGatewayId(shipperId);
 		final DeliveryOrderRepository deliveryOrderRepository = shipperRegistry.getDeliveryOrderRepository(shipperGatewayId);
 
-		final Set<Integer> mpackageIds = mpackages.stream().map(I_M_Package::getM_Package_ID).collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<PackageId> packageIds = mpackages.stream().map(mpackage -> PackageId.ofRepoId(mpackage.getM_Package_ID())).collect(ImmutableSet.toImmutableSet());
 
 		final CreateDraftDeliveryOrderRequest request = CreateDraftDeliveryOrderRequest.builder()
 				.deliveryOrderKey(deliveryOrderKey)
-				.grossWeightInKg(computeGrossWeightInKg(mpackages))
-				.mpackageIds(mpackageIds)
-				.packageContentDescription(computePackageContentDescription(mpackages))
+				.allPackagesGrossWeightInKg(computeGrossWeightInKg(mpackages))
+				.mpackageIds(packageIds)
+				.allPackagesContentDescription(computePackagesContentDescription(mpackages))
 				.build();
 
 		final DraftDeliveryOrderCreator shipperGatewayService = shipperRegistry.getShipperGatewayService(shipperGatewayId);

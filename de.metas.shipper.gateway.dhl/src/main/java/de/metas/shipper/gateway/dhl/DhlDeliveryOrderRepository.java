@@ -25,6 +25,7 @@ package de.metas.shipper.gateway.dhl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
@@ -159,8 +160,8 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 				})
 				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableSet<Integer> packageIds = dhlCustomDeliveryDataDetail.stream()
-				.map(DhlCustomDeliveryDataDetail::getPackageId)
+		final ImmutableSet<PackageId> packageIds = dhlCustomDeliveryDataDetail.stream()
+				.map(dhlCustomDeliveryDataDetail1 -> PackageId.ofRepoId(dhlCustomDeliveryDataDetail1.getPackageId()))
 				.collect(ImmutableSet.toImmutableSet());
 
 		//noinspection UnnecessaryLocalVariable
@@ -228,7 +229,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	@NonNull
 	private Iterable<? extends DeliveryPosition> constructDeliveryPositions(
 			@NonNull final I_DHL_ShipmentOrder firstOrder,
-			@NonNull final ImmutableSet<Integer> packageIds)
+			@NonNull final ImmutableSet<PackageId> packageIds)
 	{
 		final DeliveryPosition singleDeliveryPosition = DeliveryPosition.builder()
 				.packageDimensions(PackageDimensions.builder()
@@ -264,7 +265,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 
 		for (final DeliveryPosition deliveryPosition : deliveryOrder.getDeliveryPositions()) // only a single delivery position should exist
 		{
-			final ImmutableList<Integer> packageIdsAsList = deliveryPosition.getPackageIds().asList();
+			final ImmutableList<PackageId> packageIdsAsList = deliveryPosition.getPackageIds().asList();
 			for (int i = 0; i < deliveryPosition.getNumberOfPackages(); i++)
 			{
 				final ContactPerson deliveryContact = deliveryOrder.getDeliveryContact();
@@ -276,7 +277,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 					// Misc which doesn't fit dhl structure
 					final Address deliveryAddress = deliveryOrder.getDeliveryAddress();
 
-					shipmentOrder.setPackageId(packageIdsAsList.get(i));
+					shipmentOrder.setPackageId(packageIdsAsList.get(i).getRepoId());
 					shipmentOrder.setC_BPartner_ID(deliveryAddress.getBpartnerId());
 					shipmentOrder.setC_BPartner_Location_ID(deliveryAddress.getBpartnerLocationId());
 					shipmentOrder.setM_Shipper_ID(deliveryOrder.getShipperId());
@@ -383,13 +384,13 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	{
 		for (final DeliveryPosition deliveryPosition : deliveryOrder.getDeliveryPositions()) // only a single delivery position should exist
 		{
-			final ImmutableList<Integer> packageIdsAsList = deliveryPosition.getPackageIds().asList();
+			final ImmutableList<PackageId> packageIdsAsList = deliveryPosition.getPackageIds().asList();
 			for (int i = 0; i < deliveryPosition.getNumberOfPackages(); i++)
 			{
 				//noinspection ConstantConditions
 				final DhlCustomDeliveryData customDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
 
-				final I_DHL_ShipmentOrder shipmentOrder = getShipmentOrderByRequestIdAndPackageId(deliveryOrder.getRepoId(), packageIdsAsList.get(i));
+				final I_DHL_ShipmentOrder shipmentOrder = getShipmentOrderByRequestIdAndPackageId(deliveryOrder.getRepoId(), packageIdsAsList.get(i).getRepoId());
 				final DhlCustomDeliveryDataDetail deliveryDetail = customDeliveryData.getDetailBySequenceNumber(DhlSequenceNumber.of(shipmentOrder.getDHL_ShipmentOrder_ID()));
 
 				final String awb = deliveryDetail.getAwb();

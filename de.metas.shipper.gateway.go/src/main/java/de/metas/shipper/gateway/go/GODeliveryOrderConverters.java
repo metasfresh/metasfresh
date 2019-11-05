@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+import de.metas.mpackage.PackageId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
@@ -149,7 +150,7 @@ import lombok.experimental.UtilityClass;
 		orderPO.setGO_DeliverToPhoneNo(deliveryContact != null ? deliveryContact.getPhoneAsStringOrNull() : null);
 	}
 
-	public static DeliveryPosition deliveryPositionFromPO(final I_GO_DeliveryOrder orderPO, final Set<Integer> mpackageIds)
+	public static DeliveryPosition deliveryPositionFromPO(final I_GO_DeliveryOrder orderPO, final Set<PackageId> mpackageIds)
 	{
 		return DeliveryPosition.builder()
 				.numberOfPackages(orderPO.getGO_NumberOfPackages())

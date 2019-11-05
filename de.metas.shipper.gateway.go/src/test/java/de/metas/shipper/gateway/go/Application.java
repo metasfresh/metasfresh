@@ -5,9 +5,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import de.metas.mpackage.PackageId;
 import org.junit.Ignore;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -92,7 +94,7 @@ public class Application
 						.build())
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(5)
-						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
+						.packageIds(createPackageIDs())
 						.grossWeightKg(1)
 						.content("some products")
 						.build())
@@ -178,5 +180,13 @@ public class Application
 			Check.assumeNotNull(countryCode, "countyCode shall exist for '{}' (alpha2)", countryCodeAlpha2);
 			return countryCode;
 		}
+	}
+
+	private static Iterable<? extends PackageId> createPackageIDs()
+	{
+		return Arrays.asList(1, 2, 3, 4, 5)
+				.stream()
+				.map(PackageId::ofRepoId)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

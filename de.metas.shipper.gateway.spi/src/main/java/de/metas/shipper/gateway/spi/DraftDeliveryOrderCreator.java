@@ -1,5 +1,6 @@
 package de.metas.shipper.gateway.spi;
 
+import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -44,9 +45,9 @@ public interface DraftDeliveryOrderCreator
 	{
 		DeliveryOrderKey deliveryOrderKey;
 
-		int grossWeightInKg;
-		String packageContentDescription;
-		Set<Integer> mpackageIds;
+		int allPackagesGrossWeightInKg;
+		String allPackagesContentDescription;
+		Set<PackageId> mpackageIds;
 	}
 
 	@Value

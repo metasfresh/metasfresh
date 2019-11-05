@@ -5,9 +5,11 @@ import static de.metas.shipper.gateway.derkurier.DerKurierConstants.SHIPPER_GATE
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Month;
+import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.derkurier.DerKurierDeliveryData.DerKurierDeliveryDataBuilder;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierServiceType;
 import de.metas.shipper.gateway.derkurier.restapi.models.RequestParticipant;
@@ -62,7 +64,7 @@ public class DerKurierTestTools
 				.shipperTransportationId(M_SHIPPER_TRANSPORTATION_ID)
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(5)
-						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
+						.packageIds(createPackageIDs(ImmutableList.of(1, 2, 3, 4, 5)))
 						.grossWeightKg(1)
 						.customDeliveryData(derKurierDeliveryDataBuilder.parcelNumber("parcelnumber1").build())
 						.build())
@@ -78,13 +80,13 @@ public class DerKurierTestTools
 		final DeliveryOrder deliveryOrder = deliveryOrderBuilder
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(5)
-						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
+						.packageIds(createPackageIDs(ImmutableList.of(1, 2, 3, 4, 5)))
 						.grossWeightKg(1)
 						.customDeliveryData(derKurierDeliveryDataBuilder.parcelNumber("parcelnumber1").build())
 						.build())
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(1)
-						.packageIds(ImmutableList.of(6, 7))
+						.packageIds(createPackageIDs(ImmutableList.of(6, 7)))
 						.grossWeightKg(2)
 						.customDeliveryData(derKurierDeliveryDataBuilder.parcelNumber("parcelnumber2").build())
 						.build())
@@ -191,4 +193,13 @@ public class DerKurierTestTools
 				.timeFrom(LocalTime.of(10, 20, 30, 40)) // here we provide localtime up to the nano-second, but the web-service only wants hour:minute
 				.timeTo(LocalTime.of(11, 21, 31, 41));
 	}
+
+	private static Iterable<? extends PackageId> createPackageIDs(final List<Integer> list)
+	{
+		return list
+				.stream()
+				.map(PackageId::ofRepoId)
+				.collect(ImmutableList.toImmutableList());
+	}
 }
+

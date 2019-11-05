@@ -24,6 +24,7 @@ package de.metas.shipper.gateway.dpd;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.dpd.model.DpdCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrder;
 import de.metas.shipper.gateway.dpd.util.DpdConversionUtil;
@@ -124,8 +125,8 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 				deliveryOrder);
 
 		final DeliveryPosition deliveryPosition = deliveryOrder.getDeliveryPositions().get(0);
-		final ImmutableList<Integer> packageIdsAsList = deliveryPosition.getPackageIds().asList();
-		for (final Integer packageID : packageIdsAsList)
+		final ImmutableList<PackageId> packageIdsAsList = deliveryPosition.getPackageIds().asList();
+		for (final PackageId packageID : packageIdsAsList)
 		{
 			{
 				// Pickup aka Sender
