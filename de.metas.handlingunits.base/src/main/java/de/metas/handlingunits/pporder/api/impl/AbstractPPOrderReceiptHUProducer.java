@@ -36,6 +36,8 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -45,6 +47,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -53,7 +56,6 @@ import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
-import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
@@ -87,6 +89,7 @@ import lombok.NonNull;
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final transient IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	// Parameters
@@ -241,8 +244,8 @@ import lombok.NonNull;
 					true // destroyOldParentIfEmptyStorage
 			);
 
-			final int topLevelHUId = planningHU.getM_HU_ID();
-			final int locatorId = planningHU.getM_Locator_ID();
+			final HuId topLevelHUId = HuId.ofRepoId(planningHU.getM_HU_ID());
+			final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(planningHU.getM_Locator_ID());
 
 			// Stream all product storages
 			// ... and create planning receipt candidates
@@ -291,11 +294,11 @@ import lombok.NonNull;
 		final Date movementDate = getMovementDate();
 
 		final I_PP_Order_Qty candidate = newCandidate();
-		candidate.setM_Locator_ID(request.getLocatorId());
-		candidate.setM_HU_ID(request.getTopLevelHUId());
+		candidate.setM_Locator_ID(request.getLocatorId().getRepoId());
+		candidate.setM_HU_ID(request.getTopLevelHUId().getRepoId());
 		candidate.setM_Product_ID(ProductId.toRepoId(request.getProductId()));
 		candidate.setQty(request.getQty().toBigDecimal());
-		candidate.setC_UOM_ID(request.getQty().getUOMId());
+		candidate.setC_UOM_ID(request.getQty().getUomId().getRepoId());
 		candidate.setMovementDate(TimeUtil.asTimestamp(movementDate));
 		candidate.setProcessed(false);
 		huPPOrderQtyDAO.save(candidate);
@@ -347,14 +350,12 @@ import lombok.NonNull;
 	private final IHUProducerAllocationDestination createAllocationDestination()
 	{
 		final I_M_HU_LUTU_Configuration lutuConfiguration = getCreateLUTUConfiguration();
-		final ILUTUProducerAllocationDestination lutuProducer = lutuConfigurationFactory.createLUTUProducerAllocationDestination(lutuConfiguration);
-		return lutuProducer;
+		return lutuConfigurationFactory.createLUTUProducerAllocationDestination(lutuConfiguration);
 	}
 
 	@Override
-	public final IPPOrderReceiptHUProducer setM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration lutuConfiguration)
+	public final IPPOrderReceiptHUProducer setM_HU_LUTU_Configuration(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
-		Check.assumeNotNull(lutuConfiguration, "Parameter lutuConfiguration is not null");
 		_lutuConfiguration = lutuConfiguration;
 		return this;
 	}
@@ -376,7 +377,7 @@ import lombok.NonNull;
 	 */
 	private static final class CreateReceiptCandidateRequestCollector
 	{
-		private final Map<Integer, CreateReceiptCandidateRequest> requestsByTopLevelHUId = new HashMap<>();
+		private final Map<HuId, CreateReceiptCandidateRequest> requestsByTopLevelHUId = new HashMap<>();
 
 		public Stream<CreateReceiptCandidateRequest> streamRequests()
 		{
@@ -407,12 +408,14 @@ import lombok.NonNull;
 			}
 
 			final I_M_HU topLevelHU = Services.get(IHandlingUnitsBL.class).getTopLevelParent(hu);
-
-			final CreateReceiptCandidateRequest request = requestsByTopLevelHUId.computeIfAbsent(topLevelHU.getM_HU_ID(), topLevelHUId -> CreateReceiptCandidateRequest.builder()
-					.locatorId(huTransaction.getLocatorId().getRepoId())
-					.topLevelHUId(topLevelHUId)
-					.productId(huTransaction.getProductId())
-					.build());
+			
+			final CreateReceiptCandidateRequest request = requestsByTopLevelHUId.computeIfAbsent(
+					HuId.ofRepoId(topLevelHU.getM_HU_ID()),
+					topLevelHUId -> CreateReceiptCandidateRequest.builder()
+							.locatorId(huTransaction.getLocatorId())
+							.topLevelHUId(topLevelHUId)
+							.productId(huTransaction.getProductId())
+							.build());
 			request.addQty(quantity);
 		}
 	}
@@ -421,8 +424,8 @@ import lombok.NonNull;
 	@Builder
 	static final class CreateReceiptCandidateRequest
 	{
-		private final int locatorId;
-		private final int topLevelHUId;
+		private final LocatorId locatorId;
+		private final HuId topLevelHUId;
 		private final ProductId productId;
 		private Quantity qty;
 
