@@ -4,7 +4,6 @@ import static de.metas.util.Check.isEmpty;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -14,8 +13,6 @@ import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.ad.table.RecordChangeLogRepository;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -24,7 +21,6 @@ import de.metas.bpartner.BPGroup;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerComposite;
@@ -44,8 +40,6 @@ import de.metas.dao.selection.pagination.UnknownPageIdentifierException;
 import de.metas.greeting.Greeting;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.Language;
-import de.metas.organization.OrgId;
-import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.bpartner.response.JsonResponseBPartner;
 import de.metas.rest_api.bpartner.response.JsonResponseComposite;
@@ -56,6 +50,7 @@ import de.metas.rest_api.changelog.JsonChangeInfo;
 import de.metas.rest_api.changelog.JsonChangeInfo.JsonChangeInfoBuilder;
 import de.metas.rest_api.changelog.JsonChangeLogItem;
 import de.metas.rest_api.changelog.JsonChangeLogItem.JsonChangeLogItemBuilder;
+import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonConverters;
 import de.metas.user.UserId;
@@ -164,6 +159,7 @@ public class JsonRetrieverService
 			.put(BPartnerLocationType.SHIP_TO_DEFAULT, JsonResponseLocation.SHIP_TO_DEFAULT)
 			.build();
 
+	private final transient BPartnerQueryService bPartnerQueryService;
 	private final transient BPartnerCompositeRepository bpartnerCompositeRepository;
 	private final transient BPGroupRepository bpGroupRepository;
 
@@ -176,12 +172,14 @@ public class JsonRetrieverService
 	private final String identifier;
 
 	public JsonRetrieverService(
+			@NonNull final BPartnerQueryService bPartnerQueryService,
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPGroupRepository bpGroupRepository,
 			@NonNull final GreetingRepository greetingRepository,
 			@NonNull final RecordChangeLogRepository recordChangeLogRepository,
 			@NonNull final String identifier)
 	{
+		this.bPartnerQueryService = bPartnerQueryService;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpGroupRepository = bpGroupRepository;
 		this.greetingRepository = greetingRepository;
@@ -418,22 +416,24 @@ public class JsonRetrieverService
 
 	private ImmutableMap<BPartnerCompositeLookupKey, BPartnerComposite> retrieveBPartnerComposites(@NonNull final Collection<BPartnerCompositeLookupKey> queryLookupKeys)
 	{
-		final OrgId onlyOrgId = Env.getOrgId(); // FIXME avoid using Env.getOrgId();
-		final BPartnerQuery query = createBPartnerQuery(queryLookupKeys, onlyOrgId);
-
-		final List<BPartnerComposite> byQuery = bpartnerCompositeRepository.getByQuery(query);
-		if (byQuery.size() > 1)
+		final BPartnerQuery query = bPartnerQueryService.createQuery(queryLookupKeys);
+		final Optional<BPartnerComposite> byQuery;
+		try
 		{
-			throw new AdempiereException("The given lookup keys needs to yield max one BPartnerComposite; items yielded instead: " + byQuery.size())
+			byQuery = bpartnerCompositeRepository.getSingleByQuery(query);
+		}
+		catch (AdempiereException e)
+		{
+			throw new AdempiereException("The given lookup keys needs to yield max one BPartnerComposite; multiple items yielded instead", e)
 					.appendParametersToMessage()
 					.setParameter("BPartnerIdLookupKeys", queryLookupKeys);
 		}
-		if (byQuery.isEmpty())
+		if (!byQuery.isPresent())
 		{
 			return ImmutableMap.of();
 		}
 
-		final BPartnerComposite singleElement = CollectionUtils.singleElement(byQuery);
+		final BPartnerComposite singleElement = byQuery.get();
 
 		final HashSet<BPartnerCompositeLookupKey> allLookupKeys = new HashSet<>(queryLookupKeys);
 		allLookupKeys.addAll(extractBPartnerLookupKeys(singleElement));
@@ -444,43 +444,6 @@ public class JsonRetrieverService
 			result.put(bpartnerLookupKey, singleElement);
 		}
 		return result.build();
-	}
-
-	private static BPartnerQuery createBPartnerQuery(
-			@NonNull final Collection<BPartnerCompositeLookupKey> bpartnerLookupKeys,
-			@NonNull final OrgId onlyOrgId)
-	{
-		final BPartnerQuery.BPartnerQueryBuilder query = BPartnerQuery.builder()
-				.onlyOrgId(onlyOrgId);
-
-		for (final BPartnerCompositeLookupKey bpartnerLookupKey : bpartnerLookupKeys)
-		{
-			final JsonExternalId jsonExternalId = bpartnerLookupKey.getJsonExternalId();
-			if (jsonExternalId != null)
-			{
-				query.externalId(JsonConverters.fromJsonOrNull(jsonExternalId));
-			}
-
-			final String value = bpartnerLookupKey.getCode();
-			if (!isEmpty(value, true))
-			{
-				query.bpartnerValue(value);
-			}
-
-			final GLN gln = bpartnerLookupKey.getGln();
-			if (gln != null)
-			{
-				query.gln(gln);
-			}
-
-			final MetasfreshId metasfreshId = bpartnerLookupKey.getMetasfreshId();
-			if (metasfreshId != null)
-			{
-				query.bPartnerId(BPartnerId.ofRepoId(metasfreshId.getValue()));
-			}
-		}
-
-		return query.build();
 	}
 
 	private static final Collection<BPartnerCompositeLookupKey> extractBPartnerLookupKeys(@NonNull final BPartnerComposite bPartnerComposite)
