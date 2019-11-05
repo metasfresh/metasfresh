@@ -88,7 +88,7 @@ public final class PackageableRow implements IViewRow
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = "LineNetAmt", seqNo = 80)
 	private final ITranslatableString lineNetAmt;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.ZonedDateTime, captionKey = I_M_Packageable_V.COLUMNNAME_PreparationDate, seqNo = 80)
+	@ViewColumn(widgetType = DocumentFieldWidgetType.ZonedDateTime, captionKey = I_M_Packageable_V.COLUMNNAME_PreparationDate, seqNo = 90)
 	@Getter
 	private final ZonedDateTime preparationDate;
 
