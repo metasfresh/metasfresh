@@ -61,7 +61,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 				.createQueryBuilder(clazz, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Processed, false)
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, X_M_ShipperTransportation.DOCSTATUS_Drafted) // Drafts
-		;
+				;
 
 		queryBuilder.orderBy()
 				.addColumn(I_M_ShipperTransportation.COLUMNNAME_DocumentNo);
@@ -77,7 +77,7 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_ShipperTransportation.class)
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_Processed, false)
-				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, X_M_ShipperTransportation.DOCSTATUS_Entwurf) // Drafts
+				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_DocStatus, X_M_ShipperTransportation.DOCSTATUS_Drafted) // Drafts
 				.addEqualsFilter(I_M_ShipperTransportation.COLUMNNAME_M_Shipper_ID, shipperId)
 				.orderBy(I_M_ShipperTransportation.COLUMNNAME_DateToBeFetched)
 
