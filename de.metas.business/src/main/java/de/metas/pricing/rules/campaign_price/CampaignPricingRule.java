@@ -110,6 +110,7 @@ public class CampaignPricingRule implements IPricingRule
 		return CampaignPriceQuery.builder()
 				.bpartnerId(pricingCtx.getBPartnerId())
 				.bpGroupId(bpartnersRepo.getBPGroupIdByBPartnerId(pricingCtx.getBPartnerId()))
+				.pricingSystemId(pricingCtx.getPricingSystemId())
 				.productId(pricingCtx.getProductId())
 				.countryId(pricingCtx.getCountryId())
 				.currencyId(pricingCtx.getCurrencyId())
