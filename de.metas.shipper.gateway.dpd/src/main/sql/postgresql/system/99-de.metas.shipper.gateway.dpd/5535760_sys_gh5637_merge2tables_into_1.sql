@@ -600,7 +600,7 @@ INSERT INTO t_alter_column values('dpd_storeorder','AD_Client_ID','NUMERIC(10)',
 
 -- 2019-11-04T13:13:50.672Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('DPD_StoreOrder','ALTER TABLE public.DPD_StoreOrder ADD COLUMN PickupTimeTo TIMESTAMP WITHOUT TIME ZONE')
+-- /* DDL */ SELECT public.db_alter_table('DPD_StoreOrder','ALTER TABLE public.DPD_StoreOrder ADD COLUMN PickupTimeTo TIMESTAMP WITHOUT TIME ZONE')
 ;
 
 -- 2019-11-04T13:13:58.185Z
@@ -615,28 +615,30 @@ INSERT INTO t_alter_column values('dpd_storeorder','AD_Org_ID','NUMERIC(10)',nul
 
 -- 2019-11-04T13:14:05.649Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('DPD_StoreOrder','ALTER TABLE public.DPD_StoreOrder ADD COLUMN awb VARCHAR(255)')
+-- /* DDL */ SELECT public.db_alter_table('DPD_StoreOrder','ALTER TABLE public.DPD_StoreOrder ADD COLUMN awb VARCHAR(255)')
 ;
 
 -- 2019-11-04T13:14:08.288Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('DPD_StoreOrder','ALTER TABLE public.DPD_StoreOrder ADD COLUMN C_BPartner_ID NUMERIC(10)')
+-- /* DDL */ SELECT public.db_alter_table('DPD_StoreOrder','ALTER TABLE public.DPD_StoreOrder ADD COLUMN C_BPartner_ID NUMERIC(10)')
 ;
 
 -- 2019-11-04T13:14:08.296Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE DPD_StoreOrder ADD CONSTRAINT CBPartner_DPDStoreOrder FOREIGN KEY (C_BPartner_ID) REFERENCES public.C_BPartner DEFERRABLE INITIALLY DEFERRED
+-- ALTER TABLE DPD_StoreOrder ADD CONSTRAINT CBPartner_DPDStoreOrder FOREIGN KEY (C_BPartner_ID) REFERENCES public.C_BPartner DEFERRABLE INITIALLY DEFERRED
 ;
 
 -- 2019-11-04T13:14:11.414Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('DPD_StoreOrder','ALTER TABLE public.DPD_StoreOrder ADD COLUMN C_BPartner_Location_ID NUMERIC(10)')
+-- /* DDL */ SELECT public.db_alter_table('DPD_StoreOrder','ALTER TABLE public.DPD_StoreOrder ADD COLUMN C_BPartner_Location_ID NUMERIC(10)')
 ;
 
 -- 2019-11-04T13:14:11.425Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE DPD_StoreOrder ADD CONSTRAINT CBPartnerLocation_DPDStoreOrder FOREIGN KEY (C_BPartner_Location_ID) REFERENCES public.C_BPartner_Location DEFERRABLE INITIALLY DEFERRED
+-- ALTER TABLE DPD_StoreOrder ADD CONSTRAINT CBPartnerLocation_DPDStoreOrder FOREIGN KEY (C_BPartner_Location_ID) REFERENCES public.C_BPartner_Location DEFERRABLE INITIALLY DEFERRED
 ;
+
+--DROP TABLE public.DPD_StoreOrder;
 
 -- 2019-11-04T13:14:54.946Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
