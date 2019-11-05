@@ -1,7 +1,10 @@
 package de.metas.rest_api.invoicecandidates.response;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import de.metas.util.rest.ExternalId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -27,15 +30,15 @@ import lombok.Value;
  */
 @Value
 @Builder
-public class InvoicesInfo
+public class JsonInvoiceCandidateStatusInfo
 {
-	 @NonNull
-	 InvoiceId invoiceId;
 
-	@NonNull
-	String documentNo;
+	ExternalId externalHeaderId;
+	ExternalId externalLineId;
 
-	@NonNull
-	DocStatus docStatus;
+	BigDecimal qtyOrdered;
+	BigDecimal qtyInvoiced;
+
+	LocalDate dateToInvoice;
 
 }

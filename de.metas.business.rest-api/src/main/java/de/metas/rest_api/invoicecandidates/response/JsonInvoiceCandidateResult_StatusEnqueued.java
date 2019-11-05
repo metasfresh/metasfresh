@@ -1,7 +1,9 @@
 package de.metas.rest_api.invoicecandidates.response;
 
+import java.time.Instant;
 import java.util.List;
 
+import lombok.Builder;
 import lombok.Value;
 
 /*
@@ -25,14 +27,10 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 @Value
-public class JsonInvoiceCandidatesResult_StatusInvoiced
+@Builder
+public class JsonInvoiceCandidateResult_StatusEnqueued
 {
-	private static String statusInvoiced = "Status invoiced";
-
-	private List<JsonInvoicesInfo> invoicesInfo;
-
+	private List<Instant> workPackagesCreated;
 	private List<JsonInvoiceCandidateStatusInfo> invoiceCandidates;
-
 }

@@ -31,5 +31,8 @@ import lombok.Value;
 @Value
 public class JsonGetInvoiceCandidatesStatusResult
 {
-	JsonInvoiceCandidatesResult_StatusInvoiced statusInvoiced;
+	final JsonInvoiceCandidatesResult_StatusInvoiced statusInvoiced;
+	final JsonInvoiceCandidateResult_StatusEnqueued statusEnqueued;
+	final JsonInvoiceCandidateResult_StatusEnqueuedWithError statusEnqueuedWithError;
+	final JsonInvoiceCandidateResults_StatusNotEnqueued statusNotEnqueued;
 }
