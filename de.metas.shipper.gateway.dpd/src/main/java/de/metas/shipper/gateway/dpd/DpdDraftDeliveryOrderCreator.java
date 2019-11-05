@@ -26,6 +26,10 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
+import de.metas.shipper.gateway.dpd.model.DpdCustomDeliveryData;
+import de.metas.shipper.gateway.dpd.model.DpdNotificationChannel;
+import de.metas.shipper.gateway.dpd.model.DpdOrderType;
+import de.metas.shipper.gateway.dpd.model.DpdPaperFormat;
 import de.metas.shipper.gateway.dpd.model.DpdServiceType;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
@@ -97,6 +101,14 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 
 		final DpdServiceType serviceType = DpdServiceType.DPD_CLASSIC;
 
+		final DpdCustomDeliveryData customDeliveryData = DpdCustomDeliveryData.builder()
+				.orderType(DpdOrderType.CONSIGNMENT)
+				// .sendingDepot()// this is null and only set in the client, after login is done
+				.paperFormat(DpdPaperFormat.PAPER_FORMAT_A6) // todo should be read from shipper config
+				.printerLanguage(DpdConstants.DEFAULT_PRINTER_LANGUAGE)
+				.notificationChannel(DpdNotificationChannel.EMAIL)
+				.build();
+
 		return createDeliveryOrderFromParams(
 				mpackageIds,
 				pickupFromBPartner,
@@ -113,7 +125,8 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				shipperId,
 				customerReference,
 				shipperTransportationId,
-				getPackageDimensions(mpackageIds, shipperId));
+				getPackageDimensions(mpackageIds, shipperId),
+				customDeliveryData);
 	}
 
 	@VisibleForTesting
@@ -131,8 +144,10 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			@NonNull final ServiceType serviceType,
 			final int grossWeightKg,
 			final int shipperId,
-			final String customerReference, final int shipperTransportationId,
-			@NonNull final PackageDimensions packageDimensions)
+			final String customerReference,
+			final int shipperTransportationId,
+			@NonNull final PackageDimensions packageDimensions,
+			@NonNull final DpdCustomDeliveryData customDeliveryData)
 	{
 		return DeliveryOrder.builder()
 				.shipperId(shipperId)
@@ -141,7 +156,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				//
 				.serviceType(serviceType)
 				.customerReference(customerReference)
-				//				.customDeliveryData()// todo
+				.customDeliveryData(customDeliveryData)
 
 				//
 				// Pickup aka Sender

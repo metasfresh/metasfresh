@@ -30,6 +30,6 @@ public class DpdConstants
 
 	public static final String DEFAULT_MESSAGE_LANGUAGE = "en_EN";
 
-	public static final String PRINTER_LANGUAGE = "PDF";
+	public static final String DEFAULT_PRINTER_LANGUAGE = "PDF";
 
 }

@@ -32,7 +32,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Arrays;
 
-public enum DpdPrinterOptions implements PackageLabelType, ReferenceListAwareEnum
+public enum DpdPaperFormat implements PackageLabelType, ReferenceListAwareEnum
 {
 	PAPER_FORMAT_A6("A6"), // todo should not be hardcoded: add to shipper configuration
 	PAPER_FORMAT_A5("A5"), // todo should not be hardcoded: add to shipper configuration
@@ -41,21 +41,21 @@ public enum DpdPrinterOptions implements PackageLabelType, ReferenceListAwareEnu
 	@Getter
 	private final String code;
 
-	DpdPrinterOptions(final String code)
+	DpdPaperFormat(final String code)
 	{
 		this.code = code;
 	}
 
-	public static DpdPrinterOptions ofCode(@NonNull final String code)
+	public static DpdPaperFormat ofCode(@NonNull final String code)
 	{
-		final DpdPrinterOptions type = typesByCode.get(code);
+		final DpdPaperFormat type = typesByCode.get(code);
 		if (type == null)
 		{
-			throw new AdempiereException("No " + DpdPrinterOptions.class + " found for code: " + code);
+			throw new AdempiereException("No " + DpdPaperFormat.class + " found for code: " + code);
 		}
 		return type;
 	}
 
-	private static final ImmutableMap<String, DpdPrinterOptions> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), DpdPrinterOptions::getCode);
+	private static final ImmutableMap<String, DpdPaperFormat> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), DpdPaperFormat::getCode);
 
 }

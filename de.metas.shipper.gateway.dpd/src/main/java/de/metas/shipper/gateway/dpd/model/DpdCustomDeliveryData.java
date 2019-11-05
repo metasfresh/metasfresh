@@ -23,7 +23,24 @@
 package de.metas.shipper.gateway.dpd.model;
 
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
+@Builder
+@Value
 public class DpdCustomDeliveryData implements CustomDeliveryData
 {
+	String orderType;
+	String sendingDepot;
+	String printerLanguage;
+	@NonNull
+	DpdPaperFormat paperFormat;
+	@NonNull
+	DpdNotificationChannel notificationChannel;
+
+	public static DpdCustomDeliveryData cast(@NonNull final CustomDeliveryData customDeliveryData)
+	{
+		return (DpdCustomDeliveryData)customDeliveryData;
+	}
 }

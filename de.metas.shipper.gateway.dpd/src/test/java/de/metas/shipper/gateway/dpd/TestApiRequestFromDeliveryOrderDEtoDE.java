@@ -37,10 +37,7 @@ import com.dpd.common.service.types.shipmentservice._3.StoreOrdersResponseType;
 import com.dpd.common.ws.loginservice.v2_0.types.GetAuth;
 import com.dpd.common.ws.loginservice.v2_0.types.GetAuthResponse;
 import com.dpd.common.ws.loginservice.v2_0.types.Login;
-import de.metas.shipper.gateway.dpd.model.DpdNotificationChannel;
-import de.metas.shipper.gateway.dpd.model.DpdOrderType;
-import de.metas.shipper.gateway.dpd.model.DpdPrinterOptions;
-import de.metas.shipper.gateway.dpd.model.DpdServiceType;
+import de.metas.shipper.gateway.dpd.model.DpdCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.util.DpdClientUtil;
 import de.metas.shipper.gateway.dpd.util.DpdConversionUtil;
 import de.metas.shipper.gateway.dpd.util.DpdSoapHeaderWithAuth;
@@ -116,7 +113,7 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 	private StoreOrders createStoreOrdersFromDeliveryOrder(final DeliveryOrder deliveryOrder)
 	{
 		final StoreOrders storeOrders = shipmentServiceOF.createStoreOrders();
-		final PrintOptions printOptions = createPrintOptions();
+		final PrintOptions printOptions = createPrintOptions(DpdCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()));
 		storeOrders.setPrintOptions(printOptions);
 
 		final ShipmentServiceData shipmentServiceData = createShipmentServiceData(deliveryOrder);
@@ -136,9 +133,9 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 			shipmentServiceData.setGeneralShipmentData(generalShipmentData);
 			//noinspection ConstantConditions
 			generalShipmentData.setMpsCustomerReferenceNumber1(deliveryOrder.getCustomerReference()); // what is this? optional?
-			generalShipmentData.setIdentificationNumber("987654321"); // unique metasfresh number for this shipment
-			//			generalShipmentData.setSendingDepot(); // taken from login
-			generalShipmentData.setProduct(DpdServiceType.DPD_CLASSIC.getCode()); // this is the DPD product // todo not hardcoded here
+			generalShipmentData.setIdentificationNumber(String.valueOf(deliveryOrder.getRepoId())); // unique metasfresh number for this shipment
+			//			generalShipmentData.setSendingDepot(); // not set here, as it's taken from login info
+			generalShipmentData.setProduct(deliveryOrder.getServiceType().getCode()); // this is the DPD product
 
 			{
 				// Sender aka Pickup
@@ -172,7 +169,8 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 			shipmentServiceData.setProductAndServiceData(productAndServiceData);
 			{
 				// Shipper Product
-				productAndServiceData.setOrderType(DpdOrderType.CONSIGNMENT); // this is somehow related to product: CL; and i think it should always be "consignment" // todo not hardcoded here
+
+				productAndServiceData.setOrderType(DpdCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()).getOrderType()); // this is somehow related to product: CL; and i think it should always be "consignment"
 			}
 			{
 				// Predict aka Notification
@@ -206,7 +204,7 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 	private Notification createNotification(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		final Notification notification = shipmentServiceOF.createNotification();
-		notification.setChannel(DpdNotificationChannel.EMAIL.toDpdDataFormat());
+		notification.setChannel(DpdCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()).getNotificationChannel().toDpdDataFormat());
 		notification.setValue(deliveryOrder.getDeliveryContact().getEmailAddress());
 		notification.setLanguage(deliveryOrder.getDeliveryAddress().getCountry().getAlpha2());
 		return notification;
@@ -244,12 +242,12 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 	}
 
 	@NonNull
-	private PrintOptions createPrintOptions()
+	private PrintOptions createPrintOptions(final DpdCustomDeliveryData customDeliveryData)
 	{
 		// Print Options
 		final PrintOptions printOptions = shipmentServiceOF.createPrintOptions();
-		printOptions.setPaperFormat(DpdPrinterOptions.PAPER_FORMAT_A6.getCode()); // todo should not be hardcoded!
-		printOptions.setPrinterLanguage(DpdConstants.PRINTER_LANGUAGE);
+		printOptions.setPaperFormat(customDeliveryData.getPaperFormat().getCode());
+		printOptions.setPrinterLanguage(customDeliveryData.getPrinterLanguage());
 		return printOptions;
 	}
 

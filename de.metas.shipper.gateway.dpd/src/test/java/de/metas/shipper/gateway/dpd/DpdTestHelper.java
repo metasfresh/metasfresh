@@ -23,6 +23,10 @@
 package de.metas.shipper.gateway.dpd;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.shipper.gateway.dpd.model.DpdCustomDeliveryData;
+import de.metas.shipper.gateway.dpd.model.DpdNotificationChannel;
+import de.metas.shipper.gateway.dpd.model.DpdOrderType;
+import de.metas.shipper.gateway.dpd.model.DpdPaperFormat;
 import de.metas.shipper.gateway.dpd.model.DpdServiceType;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
@@ -53,6 +57,7 @@ class DpdTestHelper
 	static DeliveryOrder createDummyDeliveryOrderDEtoDE()
 	{
 		return DeliveryOrder.builder()
+				.repoId(987654321)
 				// shipper
 				.pickupAddress(Address.builder()
 						.companyName1("TheBestPessimist Inc.")
@@ -95,12 +100,20 @@ class DpdTestHelper
 						.build())
 				.customerReference(null)
 				.serviceType(DpdServiceType.DPD_CLASSIC)
+				.customDeliveryData(DpdCustomDeliveryData.builder()
+						.orderType(DpdOrderType.CONSIGNMENT)
+						// .sendingDepot()// this is null and only set in the client, after login is done
+						.paperFormat(DpdPaperFormat.PAPER_FORMAT_A6)
+						.printerLanguage(DpdConstants.DEFAULT_PRINTER_LANGUAGE)
+						.notificationChannel(DpdNotificationChannel.EMAIL)
+						.build())
 				.build();
 	}
 
 	static DeliveryOrder createDummyDeliveryOrderDEtoCH()
 	{
 		return DeliveryOrder.builder()
+				.repoId(987654321)
 				// shipper
 				.pickupAddress(Address.builder()
 						.companyName1("TheBestPessimist Inc.")
@@ -143,12 +156,20 @@ class DpdTestHelper
 						.build())
 				.customerReference(null)
 				.serviceType(DpdServiceType.DPD_CLASSIC)
+				.customDeliveryData(DpdCustomDeliveryData.builder()
+						.orderType(DpdOrderType.CONSIGNMENT)
+						// .sendingDepot()// this is null and only set in the client, after login is done
+						.paperFormat(DpdPaperFormat.PAPER_FORMAT_A6)
+						.printerLanguage(DpdConstants.DEFAULT_PRINTER_LANGUAGE)
+						.notificationChannel(DpdNotificationChannel.EMAIL)
+						.build())
 				.build();
 	}
 
 	static DeliveryOrder createDummyDeliveryOrderDEtoAT()
 	{
 		return DeliveryOrder.builder()
+				.repoId(987654321)
 				// shipper
 				.pickupAddress(Address.builder()
 						.companyName1("TheBestPessimist Inc.")
@@ -191,6 +212,13 @@ class DpdTestHelper
 						.build())
 				.customerReference(null)
 				.serviceType(DpdServiceType.DPD_CLASSIC)
+				.customDeliveryData(DpdCustomDeliveryData.builder()
+						.orderType(DpdOrderType.CONSIGNMENT)
+						// .sendingDepot()// this is null and only set in the client, after login is done
+						.paperFormat(DpdPaperFormat.PAPER_FORMAT_A6)
+						.printerLanguage(DpdConstants.DEFAULT_PRINTER_LANGUAGE)
+						.notificationChannel(DpdNotificationChannel.EMAIL)
+						.build())
 				.build();
 	}
 
