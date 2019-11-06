@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -448,15 +449,15 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	@Override
-	public final I_M_HU getSingleCreatedHU()
+	public final Optional<I_M_HU> getSingleCreatedHU()
 	{
 		if (_createdHUs.isEmpty())
 		{
-			return null;
+			return Optional.empty();
 		}
 		else if (_createdHUs.size() == 1)
 		{
-			return _createdHUs.iterator().next();
+			return Optional.of(_createdHUs.iterator().next());
 		}
 		else
 		{
@@ -465,10 +466,10 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	@Override
-	public final HuId getSingleCreatedHuId()
+	public final Optional<HuId> getSingleCreatedHuId()
 	{
-		I_M_HU hu = getSingleCreatedHU();
-		return hu != null ? HuId.ofRepoId(hu.getM_HU_ID()) : null;
+		return getSingleCreatedHU()
+				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()));
 	}
 
 	@Override
