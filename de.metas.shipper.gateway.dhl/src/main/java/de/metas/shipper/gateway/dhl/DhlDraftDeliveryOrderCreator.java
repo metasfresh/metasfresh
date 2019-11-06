@@ -116,7 +116,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
 
 		final int grossWeightInKg = Math.max(request.getAllPackagesGrossWeightInKg(), 1);
-		final int shipperId = deliveryOrderKey.getShipperId();
+		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 		final ShipperTransportationId shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
 
 		DhlServiceType detectedServiceType = DhlServiceType.Dhl_Paket;
@@ -202,7 +202,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			@Nullable final String deliverToPhoneNumber,
 			@NonNull final DhlServiceType serviceType,
 			final int grossWeightKg,
-			final int shipperId,
+			final ShipperId shipperId,
 			final String customerReference,
 			final ShipperTransportationId shipperTransportationId,
 			@NonNull final PackageDimensions packageDimensions,
@@ -253,10 +253,10 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	 * Assume that all the packages inside a delivery position are of the same type and therefore have the same size.
 	 */
 	@NonNull
-	private PackageDimensions getPackageDimensions(@NonNull final Set<PackageId> mpackageIds, final int shipperId)
+	private PackageDimensions getPackageDimensions(@NonNull final Set<PackageId> mpackageIds, final ShipperId shipperId)
 	{
 		final PackageId firstPackageId = mpackageIds.iterator().next();
-		final DhlClientConfig clientConfig = clientConfigRepository.getByShipperId(ShipperId.ofRepoId(shipperId));
+		final DhlClientConfig clientConfig = clientConfigRepository.getByShipperId(shipperId);
 		return getPackageDimensions(firstPackageId, clientConfig.getLengthUomId());
 	}
 

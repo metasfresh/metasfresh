@@ -39,6 +39,7 @@ import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipper.gateway.spi.model.ServiceType;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
@@ -98,7 +99,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
 
 		final int grossWeightInKg = Math.max(request.getAllPackagesGrossWeightInKg(), 1);
-		final int shipperId = deliveryOrderKey.getShipperId();
+		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 		final ShipperTransportationId shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
 
 		final DpdServiceType serviceType = DpdServiceType.DPD_CLASSIC;
@@ -145,7 +146,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			@Nullable final String deliverToPhoneNumber,
 			@NonNull final ServiceType serviceType,
 			final int grossWeightKg,
-			final int shipperId,
+			final ShipperId shipperId,
 			final String customerReference,
 			final ShipperTransportationId shipperTransportationId,
 			@NonNull final PackageDimensions packageDimensions,
@@ -199,7 +200,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	 * Assume that all the packages inside a delivery position are of the same type and therefore have the same size.
 	 */
 	@NonNull
-	private PackageDimensions getPackageDimensions(@NonNull final Set<PackageId> mpackageIds, final int shipperId)
+	private PackageDimensions getPackageDimensions(@NonNull final Set<PackageId> mpackageIds, final ShipperId shipperId)
 	{
 		//		final Integer firstPackageId = mpackageIds.iterator().next();
 		//		final DpdClientConfig clientConfig = clientConfigRepository.getByShipperId(ShipperId.ofRepoId(shipperId));

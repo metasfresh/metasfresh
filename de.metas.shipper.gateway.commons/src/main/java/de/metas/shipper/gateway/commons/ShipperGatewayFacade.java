@@ -100,7 +100,7 @@ public class ShipperGatewayFacade
 			@NonNull final LocalTime timeTo)
 	{
 		return DeliveryOrderKey.builder()
-				.shipperId(mpackage.getM_Shipper_ID())
+				.shipperId(ShipperId.ofRepoId(mpackage.getM_Shipper_ID()))
 				.shipperTransportationId(shipperTransportationId)
 				.fromOrgId(mpackage.getAD_Org_ID())
 				.deliverToBPartnerId(mpackage.getC_BPartner_ID())
@@ -135,7 +135,7 @@ public class ShipperGatewayFacade
 			@NonNull final DeliveryOrderKey deliveryOrderKey,
 			@NonNull final Collection<I_M_Package> mpackages)
 	{
-		final ShipperId shipperId = ShipperId.ofRepoId(deliveryOrderKey.getShipperId());
+		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 		final String shipperGatewayId = retrieveShipperGatewayId(shipperId);
 		final DeliveryOrderRepository deliveryOrderRepository = shipperRegistry.getDeliveryOrderRepository(shipperGatewayId);
 

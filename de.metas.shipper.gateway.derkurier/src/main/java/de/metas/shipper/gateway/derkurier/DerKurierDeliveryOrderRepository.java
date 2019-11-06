@@ -28,6 +28,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import de.metas.mpackage.PackageId;
+import de.metas.shipping.ShipperId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -168,7 +169,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 		final DeliveryOrderBuilder deliverOrderBuilder = DeliveryOrder
 				.builder()
 				.repoId(headerRecord.getDerKurier_DeliveryOrder_ID())
-				.shipperId(headerRecord.getM_Shipper_ID())
+				.shipperId(ShipperId.ofRepoId(headerRecord.getM_Shipper_ID()))
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(headerRecord.getM_ShipperTransportation_ID()))
 				.serviceType(DerKurierServiceType.OVERNIGHT)
 				.pickupAddress(createPickupAddress(headerRecord))
@@ -359,7 +360,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 			headerRecord = loadAssumeRecordExists(deliveryOrder.getRepoId(), I_DerKurier_DeliveryOrder.class);
 		}
 
-		headerRecord.setM_Shipper_ID(deliveryOrder.getShipperId());
+		headerRecord.setM_Shipper_ID(deliveryOrder.getShipperId().getRepoId());
 		headerRecord.setM_ShipperTransportation_ID(deliveryOrder.getShipperTransportationId().getRepoId());
 
 		storePickupAddressInHeaderRecord(headerRecord, deliveryOrder.getPickupAddress());

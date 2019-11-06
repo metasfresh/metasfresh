@@ -87,7 +87,7 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 
 		final DerKurierShipperConfig config = derKurierShipperConfigRepository
-				.retrieveConfigForShipperId(request.getDeliveryOrderKey().getShipperId());
+				.retrieveConfigForShipperId(request.getDeliveryOrderKey().getShipperId().getRepoId());
 
 		final ParcelNumberGenerator parcelNumberGenerator = config.getParcelNumberGenerator();
 

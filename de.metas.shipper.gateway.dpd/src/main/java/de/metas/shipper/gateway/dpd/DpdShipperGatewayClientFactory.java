@@ -22,6 +22,8 @@
 
 package de.metas.shipper.gateway.dpd;
 
+import de.metas.shipping.ShipperId;
+import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 import de.metas.shipper.gateway.dpd.model.DpdClientConfig;
@@ -46,9 +48,9 @@ public class DpdShipperGatewayClientFactory implements ShipperGatewayClientFacto
 	}
 
 	@Override
-	public ShipperGatewayClient newClientForShipperId(final int shipperId)
+	public ShipperGatewayClient newClientForShipperId(@NonNull final ShipperId shipperId)
 	{
-		DpdClientConfig config = configRepo.getByShipperId(shipperId);
+		DpdClientConfig config = configRepo.getByShipperId(shipperId.getRepoId());
 		return DpdShipperGatewayClient.builder()
 				.config(config)
 				.build();

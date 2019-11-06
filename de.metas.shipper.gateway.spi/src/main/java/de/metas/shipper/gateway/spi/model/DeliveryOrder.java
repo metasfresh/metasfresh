@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.ShipperTransportationId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -37,7 +38,7 @@ import lombok.Value;
 public class DeliveryOrder
 {
 	/**
-	 * No idea what this field does
+	 * No idea what this field does, as there's a {@link de.metas.shipper.gateway.spi.DeliveryOrderId} field as well}
 	 */
 	@Nullable
 	OrderId orderId;
@@ -86,11 +87,12 @@ public class DeliveryOrder
 	 * <p>
 	 * We should update GO, DerKurier and DHL to use deliveryOrderLines as well if possible.
 	 */
-	@Deprecated
 	@NonNull
 	@Singular
+	@Deprecated
 	private ImmutableList<DeliveryPosition> deliveryPositions;
 
+	@NonNull
 	private ImmutableList<DeliveryOrderLine> deliveryOrderLines;
 
 	/**
@@ -104,10 +106,10 @@ public class DeliveryOrder
 	 */
 	private int repoId;
 
-	private int shipperId;
+	private ShipperId shipperId;
 
 	/**
-	 * Transportation order id
+	 * Transportation Order id
 	 */
 	private ShipperTransportationId shipperTransportationId;
 }

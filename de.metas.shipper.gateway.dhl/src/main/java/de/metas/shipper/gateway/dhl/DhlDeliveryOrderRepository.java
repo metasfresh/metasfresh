@@ -41,6 +41,7 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -207,7 +208,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 				.customerReference(firstOrder.getCustomerReference())
 				.serviceType(DhlServiceType.forCode(firstOrder.getDHL_Product()))
 				.deliveryPositions(constructDeliveryPositions(firstOrder, packageIds))
-				.shipperId(firstOrder.getM_Shipper_ID())
+				.shipperId(ShipperId.ofRepoId(firstOrder.getM_Shipper_ID()))
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(firstOrder.getM_ShipperTransportation_ID()))
 				.customDeliveryData(DhlCustomDeliveryData.builder()
 						.details(dhlCustomDeliveryDataDetail)
@@ -281,7 +282,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 					shipmentOrder.setPackageId(packageIdsAsList.get(i).getRepoId());
 					shipmentOrder.setC_BPartner_ID(deliveryAddress.getBpartnerId());
 					shipmentOrder.setC_BPartner_Location_ID(deliveryAddress.getBpartnerLocationId());
-					shipmentOrder.setM_Shipper_ID(deliveryOrder.getShipperId());
+					shipmentOrder.setM_Shipper_ID(deliveryOrder.getShipperId().getRepoId());
 					shipmentOrder.setM_ShipperTransportation_ID(deliveryOrder.getShipperTransportationId().getRepoId());
 				}
 

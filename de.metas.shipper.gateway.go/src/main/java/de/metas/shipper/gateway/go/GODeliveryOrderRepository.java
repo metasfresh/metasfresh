@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import de.metas.mpackage.PackageId;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.ShipperTransportationId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -56,7 +57,6 @@ import lombok.NonNull;
  * Repository used to save and load {@link DeliveryOrder}s.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Repository
 public class GODeliveryOrderRepository implements DeliveryOrderRepository
@@ -78,7 +78,7 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 
 		return DeliveryOrder.builder()
 				.repoId(orderPO.getGO_DeliveryOrder_ID())
-				.shipperId(orderPO.getM_Shipper_ID())
+				.shipperId(ShipperId.ofRepoId(orderPO.getM_Shipper_ID()))
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(orderPO.getM_ShipperTransportation_ID()))
 				//
 				.orderId(GOUtils.createOrderIdOrNull(orderPO.getGO_AX4Number()))
@@ -127,7 +127,7 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 			orderPO = InterfaceWrapperHelper.newInstance(I_GO_DeliveryOrder.class);
 		}
 
-		orderPO.setM_Shipper_ID(order.getShipperId());
+		orderPO.setM_Shipper_ID(order.getShipperId().getRepoId());
 		orderPO.setM_ShipperTransportation_ID(order.getShipperTransportationId().getRepoId());
 
 		final GoDeliveryOrderData goDeliveryOrderData = GoDeliveryOrderData.ofDeliveryOrder(order);
