@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.allocation.IAllocationSource;
@@ -16,15 +15,15 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.organization.OrgId;
-import de.metas.util.Check;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 
 public class CostCollectorCandidateCoProductHUProducer extends AbstractPPOrderReceiptHUProducer
 {
 	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 
-	private final I_PP_Order_BOMLine _ppOrderBOMLine;
-	private final I_M_Product _product;
+	private final I_PP_Order_BOMLine ppOrderBOMLine;
+	private final ProductId productId;
 
 	public CostCollectorCandidateCoProductHUProducer(final org.eevolution.model.I_PP_Order_BOMLine ppOrderBOMLine)
 	{
@@ -33,21 +32,20 @@ public class CostCollectorCandidateCoProductHUProducer extends AbstractPPOrderRe
 		// TODO: validate:
 		// * if is a completed PP_Order
 		// * if is really a receipt (i.e. it's a co/by product line)
-		_ppOrderBOMLine = InterfaceWrapperHelper.create(ppOrderBOMLine, I_PP_Order_BOMLine.class);
+		this.ppOrderBOMLine = InterfaceWrapperHelper.create(ppOrderBOMLine, I_PP_Order_BOMLine.class);
 
-		_product = ppOrderBOMLine.getM_Product();
-		Check.assumeNotNull(_product, "Parameter product is not null");
+		productId = ProductId.ofRepoId(ppOrderBOMLine.getM_Product_ID());
 	}
 
 	private final I_PP_Order_BOMLine getPP_Order_BOMLine()
 	{
-		return _ppOrderBOMLine;
+		return ppOrderBOMLine;
 	}
 
 	@Override
-	protected I_M_Product getM_Product()
+	protected ProductId getProductId()
 	{
-		return _product;
+		return productId;
 	}
 
 	@Override

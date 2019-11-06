@@ -1,5 +1,7 @@
 package de.metas.handlingunits.pporder.api;
 
+import java.time.ZonedDateTime;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -100,7 +102,7 @@ public interface IPPOrderReceiptHUProducer
 	 *
 	 * @param movementDate
 	 */
-	IPPOrderReceiptHUProducer setMovementDate(final java.util.Date movementDate);
+	IPPOrderReceiptHUProducer setMovementDate(final ZonedDateTime movementDate);
 
 	/**
 	 * Sets LU/TU configuration to be used.

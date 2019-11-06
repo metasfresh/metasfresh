@@ -26,7 +26,6 @@ import java.util.ArrayList;
  */
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,9 +37,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -103,7 +100,7 @@ import lombok.Value;
 	// State
 	private final List<I_PP_Order_Qty> createdCandidates = new ArrayList<>();
 
-	protected abstract I_M_Product getM_Product();
+	protected abstract ProductId getProductId();
 
 	protected abstract Object getAllocationRequestReferencedModel();
 
@@ -303,9 +300,9 @@ import lombok.Value;
 	}
 
 	@Override
-	public final IPPOrderReceiptHUProducer setMovementDate(@NonNull final Date movementDate)
+	public final IPPOrderReceiptHUProducer setMovementDate(@NonNull final ZonedDateTime movementDate)
 	{
-		_movementDate = TimeUtil.asZonedDateTime(movementDate);
+		_movementDate = movementDate;
 		return this;
 	}
 
@@ -320,19 +317,17 @@ import lombok.Value;
 
 	private IAllocationRequest createAllocationRequest(final IHUContext huContext, final Quantity qtyToReceive)
 	{
-		final I_M_Product product = getM_Product();
+		final ProductId productId = getProductId();
 		final ZonedDateTime date = getMovementDate();
 		final Object referencedModel = getAllocationRequestReferencedModel();
 
-		final IAllocationRequest allocationRequest = AllocationUtils.createQtyRequest(huContext,
-				product, // product
+		return AllocationUtils.createQtyRequest(huContext,
+				productId, // product
 				qtyToReceive, // the quantity to receive
 				date, // transaction date
 				referencedModel, // referenced model
 				true // forceQtyAllocation: make sure we will transfer the given qty, no matter what
 		);
-
-		return allocationRequest;
 	}
 
 	private final IHUProducerAllocationDestination createAllocationDestination()
