@@ -32,7 +32,7 @@ import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
 import de.metas.shipper.gateway.dhl.model.DhlServiceType;
-import de.metas.shipper.gateway.spi.model.Address;
+import de.metas.shipper.gateway.spi.ShipperTestHelper;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
@@ -41,10 +41,8 @@ import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.uom.UomId;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -198,15 +196,15 @@ class IntegrationDEtoDETest
 		final Set<PackageId> mpackageIds = deliveryPosition.getPackageIds();
 
 		//
-		final I_C_BPartner pickupFromBPartner = createBPartner(deliveryOrder.getPickupAddress());
-		final I_C_Location pickupFromLocation = createLocation(deliveryOrder.getPickupAddress());
+		final I_C_BPartner pickupFromBPartner = ShipperTestHelper.createBPartner(deliveryOrder.getPickupAddress());
+		final I_C_Location pickupFromLocation = ShipperTestHelper.createLocation(deliveryOrder.getPickupAddress());
 		final LocalDate pickupDate = deliveryOrder.getPickupDate().getDate();
 
 		//
-		final I_C_BPartner deliverToBPartner = createBPartner(deliveryOrder.getDeliveryAddress());
+		final I_C_BPartner deliverToBPartner = ShipperTestHelper.createBPartner(deliveryOrder.getDeliveryAddress());
 		//noinspection deprecation,ConstantConditions
 		deliverToBPartner.setEMail(deliveryOrder.getDeliveryContact().getEmailAddress());
-		final I_C_Location deliverToLocation = createLocation(deliveryOrder.getDeliveryAddress());
+		final I_C_Location deliverToLocation = ShipperTestHelper.createLocation(deliveryOrder.getDeliveryAddress());
 		final int deliverToBPartnerLocationId = 0;
 		final String deliverToPhoneNumber = deliveryOrder.getDeliveryContact().getSimplePhoneNumber();
 
@@ -240,28 +238,4 @@ class IntegrationDEtoDETest
 				customDeliveryData);
 	}
 
-	@NonNull
-	private I_C_Location createLocation(@NonNull final Address pickupAddress)
-	{
-		final I_C_Location pickupFromLocation = InterfaceWrapperHelper.newInstance(I_C_Location.class);
-		pickupFromLocation.setAddress1(pickupAddress.getStreet1() + " " + pickupAddress.getHouseNo());
-		pickupFromLocation.setAddress2(pickupAddress.getStreet2());
-		pickupFromLocation.setPostal(pickupAddress.getZipCode());
-		pickupFromLocation.setCity(pickupAddress.getCity());
-		final I_C_Country i_c_country = InterfaceWrapperHelper.newInstance(I_C_Country.class);
-		i_c_country.setCountryCode(pickupAddress.getCountry().getAlpha2());
-		InterfaceWrapperHelper.save(i_c_country);
-		pickupFromLocation.setC_Country(i_c_country);
-
-		return pickupFromLocation;
-	}
-
-	@NonNull
-	private I_C_BPartner createBPartner(@NonNull final Address pickupAddress)
-	{
-		final I_C_BPartner pickupFromBPartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		pickupFromBPartner.setName(pickupAddress.getCompanyName1());
-		pickupFromBPartner.setName2(pickupAddress.getCompanyName2());
-		return pickupFromBPartner;
-	}
 }
