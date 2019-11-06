@@ -10,6 +10,7 @@ CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Generics_BPartner_Report
   address1        text,
   postal          text,
   city            text,
+  country         text,
   AddressBlock    text
 );
 
@@ -28,6 +29,7 @@ SELECT
   x.address1,
   x.postal,
   x.city,
+  x.country,
 
   CASE
   WHEN $2 = 'o'
@@ -72,12 +74,14 @@ FROM
       )                          as org_addressline,
       COALESCE(loc.address1, '') as address1,
       COALESCE(loc.postal, '')   as postal,
-      COALESCE(loc.city, '')     as city
+      COALESCE(loc.city, '')     as city,
+	  c.Name 					 as country
     FROM
       ad_orginfo oi
       JOIN c_bpartner_location org_bpl
         ON org_bpl.c_bpartner_location_ID = oi.orgbp_location_id AND org_bpl.isActive = 'Y'
       JOIN c_location loc ON org_bpl.c_location_id = loc.c_location_id AND loc.isActive = 'Y'
+	  JOIN C_Country c ON loc.C_Country_ID = c.C_Country_ID and c.isActive = 'Y'
       JOIN C_BPartner org_bp on org_bpl.c_bpartner_id = org_bp.c_bpartner_id
     WHERE
       oi.ad_org_id = $1) x
