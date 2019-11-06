@@ -14,7 +14,7 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 859411291L;
+	private static final long serialVersionUID = -1258164607L;
 
     /** Standard Constructor */
     public X_DPD_StoreOrder (Properties ctx, int DPD_StoreOrder_ID, String trxName)
@@ -23,14 +23,10 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
       /** if (DPD_StoreOrder_ID == 0)
         {
 			setDPD_StoreOrder_ID (0);
-			setHeightInCm (0); // 0
-			setLengthInCm (0); // 0
 			setPickupDate (new Timestamp( System.currentTimeMillis() )); // 0
 			setPickupDay (0); // 0
 			setPickupTimeFrom (new Timestamp( System.currentTimeMillis() )); // 0
 			setPickupTimeTo (new Timestamp( System.currentTimeMillis() )); // 0
-			setWeightInKg (0); // 0
-			setWidthInCm (0); // 0
         } */
     }
 
@@ -185,81 +181,6 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
 		return ii.intValue();
 	}
 
-	/** Set Height In Cm.
-		@param HeightInCm Height In Cm	  */
-	@Override
-	public void setHeightInCm (int HeightInCm)
-	{
-		set_Value (COLUMNNAME_HeightInCm, Integer.valueOf(HeightInCm));
-	}
-
-	/** Get Height In Cm.
-		@return Height In Cm	  */
-	@Override
-	public int getHeightInCm () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_HeightInCm);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Length In Cm.
-		@param LengthInCm Length In Cm	  */
-	@Override
-	public void setLengthInCm (int LengthInCm)
-	{
-		set_Value (COLUMNNAME_LengthInCm, Integer.valueOf(LengthInCm));
-	}
-
-	/** Get Length In Cm.
-		@return Length In Cm	  */
-	@Override
-	public int getLengthInCm () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_LengthInCm);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Package getM_Package()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Package_ID, org.compiere.model.I_M_Package.class);
-	}
-
-	@Override
-	public void setM_Package(org.compiere.model.I_M_Package M_Package)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Package_ID, org.compiere.model.I_M_Package.class, M_Package);
-	}
-
-	/** Set Packstück.
-		@param M_Package_ID 
-		Shipment Package
-	  */
-	@Override
-	public void setM_Package_ID (int M_Package_ID)
-	{
-		if (M_Package_ID < 1) 
-			set_Value (COLUMNNAME_M_Package_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Package_ID, Integer.valueOf(M_Package_ID));
-	}
-
-	/** Get Packstück.
-		@return Shipment Package
-	  */
-	@Override
-	public int getM_Package_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Package_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set MpsID.
 		@param MpsID MpsID	  */
 	@Override
@@ -349,22 +270,6 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
 	public java.lang.String getNotificationChannel () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_NotificationChannel);
-	}
-
-	/** Set Package Content.
-		@param PackageContent Package Content	  */
-	@Override
-	public void setPackageContent (java.lang.String PackageContent)
-	{
-		set_Value (COLUMNNAME_PackageContent, PackageContent);
-	}
-
-	/** Get Package Content.
-		@return Package Content	  */
-	@Override
-	public java.lang.String getPackageContent () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_PackageContent);
 	}
 
 	/** Set Paper Format.
@@ -752,43 +657,5 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
 	public java.lang.String getSendingDepot () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_SendingDepot);
-	}
-
-	/** Set Weight In Kg.
-		@param WeightInKg Weight In Kg	  */
-	@Override
-	public void setWeightInKg (int WeightInKg)
-	{
-		set_Value (COLUMNNAME_WeightInKg, Integer.valueOf(WeightInKg));
-	}
-
-	/** Get Weight In Kg.
-		@return Weight In Kg	  */
-	@Override
-	public int getWeightInKg () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_WeightInKg);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Width In Cm.
-		@param WidthInCm Width In Cm	  */
-	@Override
-	public void setWidthInCm (int WidthInCm)
-	{
-		set_Value (COLUMNNAME_WidthInCm, Integer.valueOf(WidthInCm));
-	}
-
-	/** Get Width In Cm.
-		@return Width In Cm	  */
-	@Override
-	public int getWidthInCm () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_WidthInCm);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
 	}
 }
