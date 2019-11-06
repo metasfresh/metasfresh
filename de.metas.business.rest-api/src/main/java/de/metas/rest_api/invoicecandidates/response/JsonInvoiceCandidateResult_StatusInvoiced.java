@@ -32,7 +32,6 @@ import lombok.Value;
 public class JsonInvoiceCandidateResult_StatusInvoiced
 {
 
-	private List<JsonInvoiceInfo> jsonInvoicesInfo;
-	private List<JsonInvoiceCandidateStatusInfo> jsonInvoiceCandidates;
+	private List<JsonInvoiceCandidateStatusInvoiced>  invoiceCandidates;
 
 }

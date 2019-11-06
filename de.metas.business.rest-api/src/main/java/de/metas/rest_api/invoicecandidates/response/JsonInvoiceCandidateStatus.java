@@ -1,11 +1,15 @@
 package de.metas.rest_api.invoicecandidates.response;
 
-import java.time.Instant;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import de.metas.rest_api.MetasfreshId;
+import de.metas.util.rest.ExternalId;
 import lombok.Builder;
 import lombok.Value;
 
@@ -30,19 +34,40 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 @Value
 @Builder
-public class JsonWorkPackageInfo
+public class JsonInvoiceCandidateStatus
 {
-	int workpackageId;
+	ExternalId externalHeaderId;
+	ExternalId externalLineId;
+
+	MetasfreshId metasfreshId;
 
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	String error;
+	BigDecimal qtyEntered;
 
-	Instant enqueued;
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	BigDecimal qtyToInvoice;
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	BigDecimal qtyInvoiced;
 
-	boolean readyForProcessing;
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	LocalDate dateInvoiced;
+
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	LocalDate dateToInvoice;
+
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	List<JsonInvoiceInfo> invoices;
+
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	List<JsonWorkPackageInfo> workPackages;
 
 }

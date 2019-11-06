@@ -30,6 +30,6 @@ import lombok.Value;
 @Builder
 public class JsonInvoiceCandidateResult_StatusEnqueuedWithError
 {
-	private List<JsonWorkPackageInfo> jsonWorkPackages;
-	private List<JsonInvoiceCandidateStatusInfo> jsonInvoiceCandidates;
+
+	private List<JsonInvoiceCandidateStatusEnqueued>  invoiceCandidates;
 }

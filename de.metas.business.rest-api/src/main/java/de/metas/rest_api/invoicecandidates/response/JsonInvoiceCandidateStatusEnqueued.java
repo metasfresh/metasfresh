@@ -26,10 +26,14 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Builder
+
 @Value
-public class JsonInvoiceCandidateResults_StatusNotEnqueued
+@Builder
+public class JsonInvoiceCandidateStatusEnqueued
 {
 
-	private List<JsonInvoiceCandidateStatus>  invoiceCandidates;
+	JsonInvoiceCandidateStatus invoiceCandidate;
+
+	List<JsonWorkPackageInfo> workPackages;
+
 }
