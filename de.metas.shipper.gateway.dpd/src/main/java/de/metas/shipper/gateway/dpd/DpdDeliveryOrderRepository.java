@@ -25,7 +25,7 @@ package de.metas.shipper.gateway.dpd;
 import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.mpackage.PackageId;
-import de.metas.shipper.gateway.dpd.model.DpdCustomDeliveryData;
+import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrder;
 import de.metas.shipper.gateway.dpd.util.DpdConversionUtil;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
@@ -161,7 +161,7 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 				dpdStoreOrder.setRecipientEmailAddress(deliveryContact.getEmailAddress());
 				dpdStoreOrder.setRecipientPhone(deliveryContact.getPhoneAsStringOrNull());
 			}
-			final DpdCustomDeliveryData customDeliveryData = DpdCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
+			final DpdOrderCustomDeliveryData customDeliveryData = DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
 			{
 				// Predict aka Notification
 				dpdStoreOrder.setNotificationChannel(customDeliveryData.getNotificationChannel().getCode());

@@ -29,7 +29,7 @@ import lombok.Value;
 
 @Builder
 @Value
-public class DpdCustomDeliveryData implements CustomDeliveryData
+public class DpdOrderCustomDeliveryData implements CustomDeliveryData
 {
 	String orderType;
 	String sendingDepot;
@@ -39,8 +39,8 @@ public class DpdCustomDeliveryData implements CustomDeliveryData
 	@NonNull
 	DpdNotificationChannel notificationChannel;
 
-	public static DpdCustomDeliveryData cast(@NonNull final CustomDeliveryData customDeliveryData)
+	public static DpdOrderCustomDeliveryData cast(@NonNull final CustomDeliveryData customDeliveryData)
 	{
-		return (DpdCustomDeliveryData)customDeliveryData;
+		return (DpdOrderCustomDeliveryData)customDeliveryData;
 	}
 }

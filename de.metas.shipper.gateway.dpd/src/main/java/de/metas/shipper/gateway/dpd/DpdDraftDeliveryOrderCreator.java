@@ -27,7 +27,7 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.mpackage.PackageId;
 import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
-import de.metas.shipper.gateway.dpd.model.DpdCustomDeliveryData;
+import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.model.DpdNotificationChannel;
 import de.metas.shipper.gateway.dpd.model.DpdOrderType;
 import de.metas.shipper.gateway.dpd.model.DpdPaperFormat;
@@ -102,7 +102,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 
 		final DpdServiceType serviceType = DpdServiceType.DPD_CLASSIC;
 
-		final DpdCustomDeliveryData customDeliveryData = DpdCustomDeliveryData.builder()
+		final DpdOrderCustomDeliveryData customDeliveryData = DpdOrderCustomDeliveryData.builder()
 				.orderType(DpdOrderType.CONSIGNMENT)
 				// .sendingDepot()// this is null and only set in the client, after login is done
 				.paperFormat(DpdPaperFormat.PAPER_FORMAT_A6) // todo should be read from shipper config
@@ -148,7 +148,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			final String customerReference,
 			final int shipperTransportationId,
 			@NonNull final PackageDimensions packageDimensions,
-			@NonNull final DpdCustomDeliveryData customDeliveryData)
+			@NonNull final DpdOrderCustomDeliveryData customDeliveryData)
 	{
 		return DeliveryOrder.builder()
 				.shipperId(shipperId)
@@ -184,6 +184,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 						.build())
 				//
 				// Delivery content
+
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(mpackageIds.size())
 						.packageIds(mpackageIds)

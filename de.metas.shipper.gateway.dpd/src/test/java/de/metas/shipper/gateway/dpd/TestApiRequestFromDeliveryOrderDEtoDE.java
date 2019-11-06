@@ -37,7 +37,7 @@ import com.dpd.common.service.types.shipmentservice._3.StoreOrdersResponseType;
 import com.dpd.common.ws.loginservice.v2_0.types.GetAuth;
 import com.dpd.common.ws.loginservice.v2_0.types.GetAuthResponse;
 import com.dpd.common.ws.loginservice.v2_0.types.Login;
-import de.metas.shipper.gateway.dpd.model.DpdCustomDeliveryData;
+import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.util.DpdClientUtil;
 import de.metas.shipper.gateway.dpd.util.DpdConversionUtil;
 import de.metas.shipper.gateway.dpd.util.DpdSoapHeaderWithAuth;
@@ -113,7 +113,7 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 	private StoreOrders createStoreOrdersFromDeliveryOrder(final DeliveryOrder deliveryOrder)
 	{
 		final StoreOrders storeOrders = shipmentServiceOF.createStoreOrders();
-		final PrintOptions printOptions = createPrintOptions(DpdCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()));
+		final PrintOptions printOptions = createPrintOptions(DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()));
 		storeOrders.setPrintOptions(printOptions);
 
 		final ShipmentServiceData shipmentServiceData = createShipmentServiceData(deliveryOrder);
@@ -170,7 +170,7 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 			{
 				// Shipper Product
 
-				productAndServiceData.setOrderType(DpdCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()).getOrderType()); // this is somehow related to product: CL; and i think it should always be "consignment"
+				productAndServiceData.setOrderType(DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()).getOrderType()); // this is somehow related to product: CL; and i think it should always be "consignment"
 			}
 			{
 				// Predict aka Notification
@@ -204,7 +204,7 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 	private Notification createNotification(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		final Notification notification = shipmentServiceOF.createNotification();
-		notification.setChannel(DpdCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()).getNotificationChannel().toDpdDataFormat());
+		notification.setChannel(DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()).getNotificationChannel().toDpdDataFormat());
 		notification.setValue(deliveryOrder.getDeliveryContact().getEmailAddress());
 		notification.setLanguage(deliveryOrder.getDeliveryAddress().getCountry().getAlpha2());
 		return notification;
@@ -242,7 +242,7 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 	}
 
 	@NonNull
-	private PrintOptions createPrintOptions(final DpdCustomDeliveryData customDeliveryData)
+	private PrintOptions createPrintOptions(@NonNull final DpdOrderCustomDeliveryData customDeliveryData)
 	{
 		// Print Options
 		final PrintOptions printOptions = shipmentServiceOF.createPrintOptions();

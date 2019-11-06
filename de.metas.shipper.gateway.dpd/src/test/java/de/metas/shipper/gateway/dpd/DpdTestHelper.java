@@ -24,7 +24,7 @@ package de.metas.shipper.gateway.dpd;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.mpackage.PackageId;
-import de.metas.shipper.gateway.dpd.model.DpdCustomDeliveryData;
+import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.model.DpdNotificationChannel;
 import de.metas.shipper.gateway.dpd.model.DpdOrderType;
 import de.metas.shipper.gateway.dpd.model.DpdPaperFormat;
@@ -102,7 +102,7 @@ class DpdTestHelper
 						.build())
 				.customerReference(null)
 				.serviceType(DpdServiceType.DPD_CLASSIC)
-				.customDeliveryData(DpdCustomDeliveryData.builder()
+				.customDeliveryData(DpdOrderCustomDeliveryData.builder()
 						.orderType(DpdOrderType.CONSIGNMENT)
 						// .sendingDepot()// this is null and only set in the client, after login is done
 						.paperFormat(DpdPaperFormat.PAPER_FORMAT_A6)
@@ -166,7 +166,7 @@ class DpdTestHelper
 						.build())
 				.customerReference(null)
 				.serviceType(DpdServiceType.DPD_CLASSIC)
-				.customDeliveryData(DpdCustomDeliveryData.builder()
+				.customDeliveryData(DpdOrderCustomDeliveryData.builder()
 						.orderType(DpdOrderType.CONSIGNMENT)
 						// .sendingDepot()// this is null and only set in the client, after login is done
 						.paperFormat(DpdPaperFormat.PAPER_FORMAT_A6)
@@ -222,7 +222,7 @@ class DpdTestHelper
 						.build())
 				.customerReference(null)
 				.serviceType(DpdServiceType.DPD_CLASSIC)
-				.customDeliveryData(DpdCustomDeliveryData.builder()
+				.customDeliveryData(DpdOrderCustomDeliveryData.builder()
 						.orderType(DpdOrderType.CONSIGNMENT)
 						// .sendingDepot()// this is null and only set in the client, after login is done
 						.paperFormat(DpdPaperFormat.PAPER_FORMAT_A6)
