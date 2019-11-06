@@ -22,11 +22,16 @@
 
 package de.metas.shipper.gateway.dpd;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.mpackage.PackageId;
+import de.metas.shipper.gateway.dpd.model.DpdNotificationChannel;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
+import de.metas.shipper.gateway.dpd.model.DpdServiceType;
 import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrder;
 import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrderLine;
 import de.metas.shipper.gateway.dpd.util.DpdConversionUtil;
+import de.metas.shipper.gateway.spi.CountryCodeFactory;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
 import de.metas.shipper.gateway.spi.model.Address;
@@ -36,19 +41,21 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 {
-	private static final Logger logger = LoggerFactory.getLogger(DpdDeliveryOrderRepository.class);
+	// private static final Logger logger = LoggerFactory.getLogger(DpdDeliveryOrderRepository.class);
 	private final AttachmentEntryService attachmentEntryService;
 
 	public DpdDeliveryOrderRepository(final AttachmentEntryService attachmentEntryService)
@@ -156,14 +163,15 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 			dpdStoreOrder.setRecipientEmailAddress(deliveryContact.getEmailAddress());
 			dpdStoreOrder.setRecipientPhone(deliveryContact.getPhoneAsStringOrNull());
 		}
-		final DpdOrderCustomDeliveryData customDeliveryData = DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
 		{
 			// Predict aka Notification
+			final DpdOrderCustomDeliveryData customDeliveryData = DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
 			dpdStoreOrder.setNotificationChannel(customDeliveryData.getNotificationChannel().getCode());
 		}
 		{
 			// General Shipment Data
-			// dpdStoreOrder.identification number // there's no identification number saved. it needs to be created during PO retrieval!
+			// dpdStoreOrder.identification number // there's no identification number saved. it needs to be created in the client during the request creation!
+			final DpdOrderCustomDeliveryData customDeliveryData = DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
 			dpdStoreOrder.setDpdProduct(deliveryOrder.getServiceType().getCode());
 			dpdStoreOrder.setDpdOrderType(customDeliveryData.getOrderType());
 			dpdStoreOrder.setSendingDepot(customDeliveryData.getSendingDepot());
@@ -197,10 +205,88 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 	 * Keep in sync with {@link #createStoreOrderPO(DeliveryOrder)}
 	 */
 	@NonNull
-	private DeliveryOrder toDeliveryOrderFromPO(@NonNull final I_DPD_StoreOrder dpdStoreOrder)
+	private DeliveryOrder toDeliveryOrderFromPO(@NonNull final I_DPD_StoreOrder orderPO)
 	{
 
-		return null;
+		final List<I_DPD_StoreOrderLine> linesPO = retrieveAllOrderLines(orderPO.getDPD_StoreOrder_ID());
+
+		final ImmutableList.Builder<DeliveryOrderLine> deliveryOrderLIneBuilder = ImmutableList.builder();
+		for (final I_DPD_StoreOrderLine linePO : linesPO)
+		{
+			final DeliveryOrderLine line = DeliveryOrderLine.builder()
+					// .repoId()
+					.packageId(PackageId.ofRepoId(linePO.getM_Package_ID()))
+					.packageDimensions(PackageDimensions.builder()
+							.lengthInCM(linePO.getLengthInCm())
+							.widthInCM(linePO.getWidthInCm())
+							.heightInCM(linePO.getHeightInCm())
+							.build())
+					.grossWeightKg(linePO.getWeightInKg())
+					// .customDeliveryData()
+					.content(linePO.getPackageContent())
+					.build();
+			deliveryOrderLIneBuilder.add(line);
+		}
+
+		final CountryCodeFactory countryCodeFactory = new CountryCodeFactory();
+		return DeliveryOrder.builder()
+				.repoId(DeliveryOrderId.ofRepoId(orderPO.getDPD_StoreOrder_ID()))
+				//
+				// Pickup aka Sender
+				.pickupAddress(Address.builder()
+						.companyName1(orderPO.getSenderName1())
+						.companyName2(orderPO.getSenderName2())
+						.street1(orderPO.getSenderStreet())
+						.houseNo(orderPO.getSenderHouseNo())
+						.zipCode(orderPO.getSenderZipCode())
+						.city(orderPO.getSenderCity())
+						.country(countryCodeFactory.getCountryCodeByAlpha2(orderPO.getSenderCountry()))
+						.build())
+				//
+				// Pickup Date and Time
+				.pickupDate(PickupDate.builder()
+						.date(TimeUtil.asLocalDate(orderPO.getPickupDate()))
+						.timeFrom(TimeUtil.asLocalTime(orderPO.getPickupTimeFrom()))
+						.timeTo(TimeUtil.asLocalTime(orderPO.getPickupTimeTo()))
+						.build())
+				//
+				// Delivery aka Recipient
+				.deliveryAddress(Address.builder()
+						.companyName1(orderPO.getRecipientName1())
+						.companyName2(orderPO.getRecipientName2())
+						.street1(orderPO.getRecipientStreet())
+						.houseNo(orderPO.getRecipientHouseNo())
+						.zipCode(orderPO.getRecipientZipCode())
+						.city(orderPO.getRecipientCity())
+						.country(countryCodeFactory.getCountryCodeByAlpha2(orderPO.getRecipientCountry()))
+						.build())
+				.deliveryContact(ContactPerson.builder()
+						.emailAddress(orderPO.getRecipientEmailAddress())
+						.simplePhoneNumber(orderPO.getRecipientPhone())
+						.build())
+				//
+				// Predict aka Notification
+				// General ShipmentData
+				.customDeliveryData(DpdOrderCustomDeliveryData.builder()
+						.notificationChannel(DpdNotificationChannel.ofCode(orderPO.getNotificationChannel()))
+						.orderType(orderPO.getDpdOrderType())
+						.sendingDepot(orderPO.getSendingDepot())
+						.build())
+				.serviceType(DpdServiceType.ofCode(orderPO.getDpdProduct()))
+				//
+				// Parcels aka Packages aka DeliveryOrderLines
+				.deliveryOrderLines(deliveryOrderLIneBuilder.build())
+				.build();
+	}
+
+	private List<I_DPD_StoreOrderLine> retrieveAllOrderLines(final int dpdStoreOrderId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DPD_StoreOrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_DPD_StoreOrderLine.COLUMNNAME_DPD_StoreOrder_ID, dpdStoreOrderId)
+				.create()
+				.list();
 	}
 
 }

@@ -57,7 +57,7 @@ public enum DpdServiceType implements ServiceType
 	}
 
 	@NonNull
-	public DpdServiceType forCode(final String code)
+	public static DpdServiceType ofCode(final String code)
 	{
 		final DpdServiceType type = code2type.get(code);
 		if (type == null)
