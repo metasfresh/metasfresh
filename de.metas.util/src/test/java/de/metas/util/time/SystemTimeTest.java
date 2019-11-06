@@ -1,5 +1,7 @@
 package de.metas.util.time;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.util
@@ -13,17 +15,18 @@ package de.metas.util.time;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.sql.Timestamp;
+import java.time.Month;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
@@ -31,9 +34,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import de.metas.util.time.FixedTimeSource;
-import de.metas.util.time.SystemTime;
 
 public class SystemTimeTest
 {
@@ -64,4 +64,21 @@ public class SystemTimeTest
 		Assert.assertEquals("Invalid Second", 0, cal.get(Calendar.SECOND));
 		Assert.assertEquals("Invalid Millisecond", 0, cal.get(Calendar.MILLISECOND));
 	}
+
+	@Test
+	public void test_asZonedDateTimeAtStartOfDay()
+	{
+		final FixedTimeSource timeSource = new FixedTimeSource(2014, 4, 1, 10, 11, 12);
+		SystemTime.setTimeSource(timeSource);
+
+		final ZonedDateTime dayTS = SystemTime.asZonedDateTimeAtStartOfDay();
+		assertThat(dayTS.getYear()).isEqualTo(2014);
+		assertThat(dayTS.getMonth()).isEqualTo(Month.APRIL);
+		assertThat(dayTS.getDayOfMonth()).isEqualTo(1);
+		assertThat(dayTS.getHour()).isEqualTo(0);
+		assertThat(dayTS.getMinute()).isEqualTo(0);
+		assertThat(dayTS.getSecond()).isEqualTo(0);
+		assertThat(dayTS.getNano()).isEqualTo(0);
+	}
+
 }
