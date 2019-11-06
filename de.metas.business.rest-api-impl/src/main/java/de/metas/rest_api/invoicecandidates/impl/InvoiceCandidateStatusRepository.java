@@ -113,7 +113,7 @@ public class InvoiceCandidateStatusRepository
 		}
 
 		return JsonInvoiceCandidateResult_StatusInvoiced.builder()
-				.jsonInvoiceCandidates(jsonInvoiceCandidatesInvoiced)
+				.invoiceCandidates(jsonInvoiceCandidatesInvoiced)
 				.build();
 	}
 
@@ -313,7 +313,7 @@ public class InvoiceCandidateStatusRepository
 		final BigDecimal qtyInvoiced = invoiceCandidateRecord.getQtyInvoiced();
 
 		return JsonInvoiceCandidateStatus.builder()
-				.qtyEntered(invoiceCandidateRecord.getQtyEntered()))
+				.qtyEntered(invoiceCandidateRecord.getQtyEntered())
 				.dateToInvoice(TimeUtil.asLocalDate(qtyToInvoice.signum() > 0? invoiceCandidateRecord.getDateToInvoice() : null))
 				.dateInvoiced(TimeUtil.asLocalDate(invoiceCandidateRecord.getDateInvoiced()))
 				.externalHeaderId(ExternalId.of(invoiceCandidateRecord.getExternalHeaderId()))
