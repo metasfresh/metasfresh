@@ -14,7 +14,7 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1942089851L;
+	private static final long serialVersionUID = 859411291L;
 
     /** Standard Constructor */
     public X_DPD_StoreOrder (Properties ctx, int DPD_StoreOrder_ID, String trxName)
@@ -23,12 +23,14 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
       /** if (DPD_StoreOrder_ID == 0)
         {
 			setDPD_StoreOrder_ID (0);
-			setPickupDate (0); // 0
+			setHeightInCm (0); // 0
+			setLengthInCm (0); // 0
+			setPickupDate (new Timestamp( System.currentTimeMillis() )); // 0
 			setPickupDay (0); // 0
-			setPickupTimeFrom (0); // 0
-			setPickupTimeTo (0); // 0
-			setVolume (0); // 0
+			setPickupTimeFrom (new Timestamp( System.currentTimeMillis() )); // 0
+			setPickupTimeTo (new Timestamp( System.currentTimeMillis() )); // 0
 			setWeightInKg (0); // 0
+			setWidthInCm (0); // 0
         } */
     }
 
@@ -183,6 +185,81 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
 		return ii.intValue();
 	}
 
+	/** Set Height In Cm.
+		@param HeightInCm Height In Cm	  */
+	@Override
+	public void setHeightInCm (int HeightInCm)
+	{
+		set_Value (COLUMNNAME_HeightInCm, Integer.valueOf(HeightInCm));
+	}
+
+	/** Get Height In Cm.
+		@return Height In Cm	  */
+	@Override
+	public int getHeightInCm () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_HeightInCm);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Length In Cm.
+		@param LengthInCm Length In Cm	  */
+	@Override
+	public void setLengthInCm (int LengthInCm)
+	{
+		set_Value (COLUMNNAME_LengthInCm, Integer.valueOf(LengthInCm));
+	}
+
+	/** Get Length In Cm.
+		@return Length In Cm	  */
+	@Override
+	public int getLengthInCm () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_LengthInCm);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_Package getM_Package()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Package_ID, org.compiere.model.I_M_Package.class);
+	}
+
+	@Override
+	public void setM_Package(org.compiere.model.I_M_Package M_Package)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Package_ID, org.compiere.model.I_M_Package.class, M_Package);
+	}
+
+	/** Set Packstück.
+		@param M_Package_ID 
+		Shipment Package
+	  */
+	@Override
+	public void setM_Package_ID (int M_Package_ID)
+	{
+		if (M_Package_ID < 1) 
+			set_Value (COLUMNNAME_M_Package_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Package_ID, Integer.valueOf(M_Package_ID));
+	}
+
+	/** Get Packstück.
+		@return Shipment Package
+	  */
+	@Override
+	public int getM_Package_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Package_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set MpsID.
 		@param MpsID MpsID	  */
 	@Override
@@ -325,20 +402,17 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
 	/** Set Pickup Date.
 		@param PickupDate Pickup Date	  */
 	@Override
-	public void setPickupDate (int PickupDate)
+	public void setPickupDate (java.sql.Timestamp PickupDate)
 	{
-		set_Value (COLUMNNAME_PickupDate, Integer.valueOf(PickupDate));
+		set_Value (COLUMNNAME_PickupDate, PickupDate);
 	}
 
 	/** Get Pickup Date.
 		@return Pickup Date	  */
 	@Override
-	public int getPickupDate () 
+	public java.sql.Timestamp getPickupDate () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PickupDate);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_PickupDate);
 	}
 
 	/** Set Pickup Day.
@@ -363,39 +437,33 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
 	/** Set Pickup Time From.
 		@param PickupTimeFrom Pickup Time From	  */
 	@Override
-	public void setPickupTimeFrom (int PickupTimeFrom)
+	public void setPickupTimeFrom (java.sql.Timestamp PickupTimeFrom)
 	{
-		set_Value (COLUMNNAME_PickupTimeFrom, Integer.valueOf(PickupTimeFrom));
+		set_Value (COLUMNNAME_PickupTimeFrom, PickupTimeFrom);
 	}
 
 	/** Get Pickup Time From.
 		@return Pickup Time From	  */
 	@Override
-	public int getPickupTimeFrom () 
+	public java.sql.Timestamp getPickupTimeFrom () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PickupTimeFrom);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_PickupTimeFrom);
 	}
 
 	/** Set Pickup Time To.
 		@param PickupTimeTo Pickup Time To	  */
 	@Override
-	public void setPickupTimeTo (int PickupTimeTo)
+	public void setPickupTimeTo (java.sql.Timestamp PickupTimeTo)
 	{
-		set_Value (COLUMNNAME_PickupTimeTo, Integer.valueOf(PickupTimeTo));
+		set_Value (COLUMNNAME_PickupTimeTo, PickupTimeTo);
 	}
 
 	/** Get Pickup Time To.
 		@return Pickup Time To	  */
 	@Override
-	public int getPickupTimeTo () 
+	public java.sql.Timestamp getPickupTimeTo () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PickupTimeTo);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_PickupTimeTo);
 	}
 
 	/** Set Printer Language.
@@ -686,28 +754,6 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
 		return (java.lang.String)get_Value(COLUMNNAME_SendingDepot);
 	}
 
-	/** Set Volumen.
-		@param Volume 
-		Volumen eines Produktes
-	  */
-	@Override
-	public void setVolume (int Volume)
-	{
-		set_Value (COLUMNNAME_Volume, Integer.valueOf(Volume));
-	}
-
-	/** Get Volumen.
-		@return Volumen eines Produktes
-	  */
-	@Override
-	public int getVolume () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Volume);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set Weight In Kg.
 		@param WeightInKg Weight In Kg	  */
 	@Override
@@ -722,6 +768,25 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
 	public int getWeightInKg () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_WeightInKg);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Width In Cm.
+		@param WidthInCm Width In Cm	  */
+	@Override
+	public void setWidthInCm (int WidthInCm)
+	{
+		set_Value (COLUMNNAME_WidthInCm, Integer.valueOf(WidthInCm));
+	}
+
+	/** Get Width In Cm.
+		@return Width In Cm	  */
+	@Override
+	public int getWidthInCm () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_WidthInCm);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
