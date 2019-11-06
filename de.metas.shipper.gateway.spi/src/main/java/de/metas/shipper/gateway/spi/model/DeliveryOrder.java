@@ -35,6 +35,9 @@ import lombok.Value;
 @Value
 public class DeliveryOrder
 {
+	/**
+	 * No idea what this field does
+	 */
 	@Nullable
 	OrderId orderId;
 
@@ -68,15 +71,24 @@ public class DeliveryOrder
 	@Nullable
 	private String customerReference;
 
+	/**
+	 * @deprecated This class has a bad data structure and should not be used in the future. Please use instead {@link #deliveryOrderLines}.
+	 *
+	 * We should update GO, DerKurier and DHL to use deliveryOrderLines as well if possible.
+	 */
+	@Deprecated
 	@NonNull
 	@Singular
 	private ImmutableList<DeliveryPosition> deliveryPositions;
 
+	private ImmutableList<DeliveryOrderLine> deliveryOrderLines;
+
 	@NonNull
 	private ServiceType serviceType;
 
-
-	/** ID in external repository */
+	/**
+	 * ID in external repository
+	 */
 	private int repoId;
 
 	private int shipperId;
