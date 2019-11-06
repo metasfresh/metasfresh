@@ -23,19 +23,20 @@
 package de.metas.shipper.gateway.dpd;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.mpackage.PackageId;
 import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
-import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.model.DpdNotificationChannel;
+import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.model.DpdOrderType;
 import de.metas.shipper.gateway.dpd.model.DpdPaperFormat;
 import de.metas.shipper.gateway.dpd.model.DpdServiceType;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryPosition;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipper.gateway.spi.model.ServiceType;
@@ -48,8 +49,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.compiere.model.I_M_Package;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -60,7 +60,7 @@ import java.util.Set;
 @Service
 public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
-	private static final Logger logger = LoggerFactory.getLogger(DpdDraftDeliveryOrderCreator.class);
+	// private static final Logger logger = LoggerFactory.getLogger(DpdDraftDeliveryOrderCreator.class);
 
 	@Override
 	public String getShipperGatewayId()
@@ -98,7 +98,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
 
-		final int grossWeightInKg = Math.max(request.getAllPackagesGrossWeightInKg(), 1);
+		final int allPackagesGrossWeightInKg = Math.max(request.getAllPackagesGrossWeightInKg(), 1);
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 		final ShipperTransportationId shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
 
@@ -124,17 +124,16 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				deliverToLocation,
 				deliverToPhoneNumber,
 				serviceType,
-				grossWeightInKg,
+				allPackagesGrossWeightInKg,
 				shipperId,
 				customerReference,
 				shipperTransportationId,
-				getPackageDimensions(mpackageIds, shipperId),
 				customDeliveryData);
 	}
 
 	@VisibleForTesting
 	DeliveryOrder createDeliveryOrderFromParams(
-			@NonNull final Set<PackageId> mpackageIds,
+			@NonNull final Set<PackageId> packageIds,
 			@NonNull final I_C_BPartner pickupFromBPartner,
 			@NonNull final I_C_Location pickupFromLocation,
 			@NonNull final LocalDate pickupDate,
@@ -145,13 +144,30 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			@NonNull final I_C_Location deliverToLocation,
 			@Nullable final String deliverToPhoneNumber,
 			@NonNull final ServiceType serviceType,
-			final int grossWeightKg,
+			final int allPackagesGrossWeightKg,
 			final ShipperId shipperId,
 			final String customerReference,
 			final ShipperTransportationId shipperTransportationId,
-			@NonNull final PackageDimensions packageDimensions,
 			@NonNull final DpdOrderCustomDeliveryData customDeliveryData)
 	{
+
+		final ImmutableList.Builder<DeliveryOrderLine> deliveryOrderLinesBuilder = ImmutableList.builder();
+		for (final PackageId packageId : packageIds)
+		{
+			final I_M_Package mPackage = InterfaceWrapperHelper.load(packageId, I_M_Package.class);
+
+			final DeliveryOrderLine deliveryOrderLine = DeliveryOrderLine.builder()
+					// .repoId()
+					.content(mPackage.getDescription())
+					.grossWeightKg(mPackage.getPackageWeight().intValue()) // todo same as in de.metas.shipper.gateway.commons.ShipperGatewayFacade.computeGrossWeightInKg: we assume it's in Kg
+					.packageDimensions(getPackageDimensions(packageId, shipperId))
+					// .customDeliveryData()
+					.packageId(packageId)
+					.build();
+
+			deliveryOrderLinesBuilder.add(deliveryOrderLine);
+		}
+
 		return DeliveryOrder.builder()
 				.shipperId(shipperId)
 				.shipperTransportationId(shipperTransportationId)
@@ -186,23 +202,14 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 						.build())
 				//
 				// Delivery content
-
-				.deliveryPosition(DeliveryPosition.builder()
-						.numberOfPackages(mpackageIds.size())
-						.packageIds(mpackageIds)
-						.grossWeightKg(grossWeightKg)
-						.packageDimensions(packageDimensions)
-						.build())
+				.allPackagesGrossWeightInKg(allPackagesGrossWeightKg)
+				.deliveryOrderLines(deliveryOrderLinesBuilder.build())
 				.build();
 	}
 
-	/**
-	 * Assume that all the packages inside a delivery position are of the same type and therefore have the same size.
-	 */
 	@NonNull
-	private PackageDimensions getPackageDimensions(@NonNull final Set<PackageId> mpackageIds, final ShipperId shipperId)
+	private PackageDimensions getPackageDimensions(@NonNull final PackageId packageId, final ShipperId shipperId)
 	{
-		//		final Integer firstPackageId = mpackageIds.iterator().next();
 		//		final DpdClientConfig clientConfig = clientConfigRepository.getByShipperId(ShipperId.ofRepoId(shipperId));
 		//		return getPackageDimensions(firstPackageId, clientConfig.getLengthUomId());
 

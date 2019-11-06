@@ -11,7 +11,7 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOS E. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
@@ -24,8 +24,8 @@ package de.metas.shipper.gateway.dpd;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.mpackage.PackageId;
-import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.model.DpdNotificationChannel;
+import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.model.DpdOrderType;
 import de.metas.shipper.gateway.dpd.model.DpdPaperFormat;
 import de.metas.shipper.gateway.dpd.model.DpdServiceType;
@@ -33,9 +33,10 @@ import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.CountryCode;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryPosition;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import java.io.IOException;
@@ -44,7 +45,7 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Arrays;
+import java.util.List;
 
 @UtilityClass
 class DpdTestHelper
@@ -90,16 +91,7 @@ class DpdTestHelper
 						.emailAddress("cristian.pasat@metasfresh.com")
 						.simplePhoneNumber("+10-012-345689")
 						.build())
-				.deliveryPosition(DeliveryPosition.builder()
-						.numberOfPackages(5)
-						.packageDimensions(PackageDimensions.builder()
-								.heightInCM(10)
-								.lengthInCM(10)
-								.widthInCM(10)
-								.build())
-						.packageIds(createPackageIDs())
-						.grossWeightKg(1)
-						.build())
+				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
 				.customerReference(null)
 				.serviceType(DpdServiceType.DPD_CLASSIC)
 				.customDeliveryData(DpdOrderCustomDeliveryData.builder()
@@ -110,14 +102,6 @@ class DpdTestHelper
 						.notificationChannel(DpdNotificationChannel.EMAIL)
 						.build())
 				.build();
-	}
-
-	private static Iterable<? extends PackageId> createPackageIDs()
-	{
-		return Arrays.asList(11, 22, 33, 44, 55)
-				.stream()
-				.map(PackageId::ofRepoId)
-				.collect(ImmutableList.toImmutableList());
 	}
 
 	static DeliveryOrder createDummyDeliveryOrderDEtoCH()
@@ -154,16 +138,7 @@ class DpdTestHelper
 						.emailAddress("cristian.pasat@metasfresh.com")
 						.simplePhoneNumber("+10-012-345689")
 						.build())
-				.deliveryPosition(DeliveryPosition.builder()
-						.numberOfPackages(5)
-						.packageDimensions(PackageDimensions.builder()
-								.heightInCM(10)
-								.lengthInCM(10)
-								.widthInCM(10)
-								.build())
-						.packageIds(createPackageIDs())
-						.grossWeightKg(1)
-						.build())
+				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
 				.customerReference(null)
 				.serviceType(DpdServiceType.DPD_CLASSIC)
 				.customDeliveryData(DpdOrderCustomDeliveryData.builder()
@@ -210,16 +185,7 @@ class DpdTestHelper
 						.emailAddress("cristian.pasat@metasfresh.com")
 						.simplePhoneNumber("+10-012-345689")
 						.build())
-				.deliveryPosition(DeliveryPosition.builder()
-						.numberOfPackages(5)
-						.packageDimensions(PackageDimensions.builder()
-								.heightInCM(10)
-								.lengthInCM(10)
-								.widthInCM(10)
-								.build())
-						.packageIds(createPackageIDs())
-						.grossWeightKg(1)
-						.build())
+				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
 				.customerReference(null)
 				.serviceType(DpdServiceType.DPD_CLASSIC)
 				.customDeliveryData(DpdOrderCustomDeliveryData.builder()
@@ -230,6 +196,30 @@ class DpdTestHelper
 						.notificationChannel(DpdNotificationChannel.EMAIL)
 						.build())
 				.build();
+	}
+
+	@NonNull
+	private static List<DeliveryOrderLine> createDeliveryOrderLines(@NonNull final ImmutableList<Integer> packageIds)
+	{
+		final ImmutableList.Builder<DeliveryOrderLine> deliveryOrderLinesBuilder = ImmutableList.builder();
+		for (final Integer packageId : packageIds)
+		{
+			final DeliveryOrderLine deliveryOrderLine = DeliveryOrderLine.builder()
+					// .repoId()
+					.content("the epic package " + packageId + " description")
+					.grossWeightKg(1) // todo same as in de.metas.shipper.gateway.commons.ShipperGatewayFacade.computeGrossWeightInKg: we assume it's in Kg
+					.packageDimensions(PackageDimensions.builder()
+							.heightInCM(10)
+							.lengthInCM(10)
+							.widthInCM(10)
+							.build())
+					// .customDeliveryData()
+					.packageId(PackageId.ofRepoId(packageId))
+					.build();
+
+			deliveryOrderLinesBuilder.add(deliveryOrderLine);
+		}
+		return deliveryOrderLinesBuilder.build();
 	}
 
 	static void dumpPdfToDisk(final byte[] pdf)

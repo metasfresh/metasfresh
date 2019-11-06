@@ -43,7 +43,7 @@ import de.metas.shipper.gateway.dpd.util.DpdConversionUtil;
 import de.metas.shipper.gateway.dpd.util.DpdSoapHeaderWithAuth;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryPosition;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
@@ -54,7 +54,6 @@ import org.springframework.ws.client.core.WebServiceTemplate;
 import javax.xml.bind.JAXBElement;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestApiRequestFromDeliveryOrderDEtoDE
@@ -152,16 +151,17 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 			}
 		}
 		{
-			// Parcels aka Packages aka DeliveryPositions
-			final DeliveryPosition deliveryPosition = deliveryOrder.getDeliveryPositions().get(0);
-			assertNotNull(deliveryPosition);
-
-			final Parcel parcel = shipmentServiceOF.createParcel();
-			shipmentServiceData.getParcels().add(parcel);
-			parcel.setContent(deliveryPosition.getContent());
-			parcel.setVolume(DpdConversionUtil.formatVolume(deliveryPosition.getPackageDimensions()));
-			parcel.setWeight(deliveryPosition.getGrossWeightKg() * 100); // uom = decagram (1dag = 10g => 100dag = 1kg)
-			//				parcel.setInternational(); // todo god save us
+			// Parcels aka Packages aka DeliveryOrderLines
+			for (final DeliveryOrderLine deliveryOrderLine : deliveryOrder.getDeliveryOrderLines())
+			{
+				final Parcel parcel = shipmentServiceOF.createParcel();
+				shipmentServiceData.getParcels().add(parcel);
+				//noinspection ConstantConditions
+				parcel.setContent(deliveryOrderLine.getContent());
+				parcel.setVolume(DpdConversionUtil.formatVolume(deliveryOrderLine.getPackageDimensions()));
+				parcel.setWeight(DpdConversionUtil.convertWeightKgToDag(deliveryOrderLine.getGrossWeightKg()));
+				//				parcel.setInternational(); // todo god save us
+			}
 		}
 		{
 			// ProductAndService Data
@@ -179,7 +179,7 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 			}
 			{
 				// Pickup date and time
-				final Pickup pickup = createPickupDateAndTime(deliveryOrder.getPickupDate(), 1, deliveryOrder.getPickupAddress()); // todo number of packages is hardcoded to 1
+				final Pickup pickup = createPickupDateAndTime(deliveryOrder.getPickupDate(), deliveryOrder.getDeliveryOrderLines().size(), deliveryOrder.getPickupAddress());
 				productAndServiceData.setPickup(pickup);
 			}
 		}

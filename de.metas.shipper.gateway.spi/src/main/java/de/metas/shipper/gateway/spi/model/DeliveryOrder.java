@@ -92,7 +92,11 @@ public class DeliveryOrder
 	@Deprecated
 	private ImmutableList<DeliveryPosition> deliveryPositions;
 
+	/**
+	 * 1 delivery lines represents 1 package
+	 */
 	@NonNull
+	@Singular
 	private ImmutableList<DeliveryOrderLine> deliveryOrderLines;
 
 	/**
@@ -112,4 +116,6 @@ public class DeliveryOrder
 	 * Transportation Order id
 	 */
 	private ShipperTransportationId shipperTransportationId;
+
+	int allPackagesGrossWeightInKg;
 }

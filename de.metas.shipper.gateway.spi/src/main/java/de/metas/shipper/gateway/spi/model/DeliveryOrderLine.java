@@ -25,6 +25,7 @@ package de.metas.shipper.gateway.spi.model;
 import de.metas.mpackage.PackageId;
 import de.metas.util.Check;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -39,7 +40,7 @@ public class DeliveryOrderLine
 
 	private final int grossWeightKg;
 
-	@Nullable
+	@NonNull
 	PackageDimensions packageDimensions;
 
 	@Nullable
@@ -51,9 +52,9 @@ public class DeliveryOrderLine
 	@Builder(toBuilder = true)
 	private DeliveryOrderLine(
 			final int repoId,
-			final int grossWeightKg,
 			@Nullable final String content,
-			@Nullable final PackageDimensions packageDimensions,
+			final int grossWeightKg,
+			@NonNull final PackageDimensions packageDimensions,
 			@Nullable final CustomDeliveryData customDeliveryData,
 			@Nullable final PackageId packageId)
 	{
