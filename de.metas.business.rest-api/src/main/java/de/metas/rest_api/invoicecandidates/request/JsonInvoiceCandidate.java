@@ -41,11 +41,11 @@ import lombok.Value;
 @Value
 public class JsonInvoiceCandidate
 {
-	@ApiModelProperty(position = 10, allowEmptyValue = false, dataType = "java.lang.string", example = "abc",//
+	@ApiModelProperty(position = 10, allowEmptyValue = false, dataType = "java.lang.String", example = "ExternalHeaderId_1",//
 			value = "Used to select which invoice candidates should be enqueued.")
 	ExternalId externalHeaderId;
 
-	@ApiModelProperty(position = 20, allowEmptyValue = true, dataType = "java.lang.string", //
+	@ApiModelProperty(position = 20, allowEmptyValue = true, dataType = "java.lang.String", example = "[\"ExternalLineId_2\", \"ExternalLineId_3\"]", //
 			value = "Optional, used to select which invoice candidates which have these `C_Invoice_candidate.ExternalLineId`s should be enqueued.\n"
 					+ "Inherited from order line candidates.\n"
 					+ "If not specified, then all invoice candidate with the specified `externalHeaderId` are matched")
