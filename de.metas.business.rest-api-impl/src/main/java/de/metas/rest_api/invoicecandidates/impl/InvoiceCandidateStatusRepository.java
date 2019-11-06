@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.compiere.model.I_C_Invoice;
@@ -28,14 +27,8 @@ import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.invoicecandidates.response.JsonGetInvoiceCandidatesStatusResponse;
-import de.metas.rest_api.invoicecandidates.response.JsonGetInvoiceCandidatesStatusResult;
-import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidateResult_StatusEnqueued;
-import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidateResult_StatusEnqueuedWithError;
-import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidateResult_StatusInvoiced;
-import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidateResults_StatusNotEnqueued;
+import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidateResult;
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidateStatus;
-import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidateStatusEnqueued;
-import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidateStatusInvoiced;
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceInfo;
 import de.metas.rest_api.invoicecandidates.response.JsonWorkPackageInfo;
 import de.metas.util.Services;
@@ -75,174 +68,64 @@ public class InvoiceCandidateStatusRepository
 	{
 		final List<InvoiceCandidateId> invoiceCandidateIds = invoiceCandDAO.retrieveByHeaderAndLineId(headerAndLineIds);
 
-		final JsonInvoiceCandidateResult_StatusInvoiced invoiced = createStatusInvoiced(invoiceCandidateIds);
-		final JsonInvoiceCandidateResult_StatusEnqueued enqueued = createStatusEnqueued(invoiceCandidateIds);
-		final JsonInvoiceCandidateResult_StatusEnqueuedWithError enqueuedWithError = createStatusEnqueuedWithError(invoiceCandidateIds);
-		final JsonInvoiceCandidateResults_StatusNotEnqueued notEnqueued = createStatusNotEnqueued(invoiceCandidateIds);
+		final List<JsonInvoiceCandidateStatus> invoiceCandidates = createStatusInvoiced(invoiceCandidateIds);
 
-		final JsonGetInvoiceCandidatesStatusResult result = JsonGetInvoiceCandidatesStatusResult
+		final JsonInvoiceCandidateResult result = JsonInvoiceCandidateResult
 				.builder()
-				.invoiced(invoiced)
-				.enqueued(enqueued)
-				.enqueuedWithError(enqueuedWithError)
-				.notEnqueued(notEnqueued)
+				.invoiceCandidates(invoiceCandidates)
 				.build();
 
 		return JsonGetInvoiceCandidatesStatusResponse.ok(result);
 	}
 
-	private JsonInvoiceCandidateResult_StatusInvoiced createStatusInvoiced(final List<InvoiceCandidateId> invoiceCandidateIds)
+	private List<JsonInvoiceCandidateStatus> createStatusInvoiced(final List<InvoiceCandidateId> invoiceCandidateIds)
 	{
-		final List<JsonInvoiceCandidateStatusInvoiced> jsonInvoiceCandidatesInvoiced = new ArrayList<>();
+		final List<JsonInvoiceCandidateStatus> jsonInvoiceCandidates = new ArrayList<>();
 
 		for (final InvoiceCandidateId invoiceCandidateId : invoiceCandidateIds)
 		{
 			final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandDAO.getById(invoiceCandidateId);
 
 			final List<JsonInvoiceInfo> invoicesInfoForInvoiceCandidate = createJsonInvoicesInfoForInvoiceCandidate(invoiceCandidateRecord);
+			final List<JsonWorkPackageInfo> workPackagesForInvoiceCandidate = createWorkPackagesForInvoiceCandidate(invoiceCandidateRecord);
 
-			if (invoicesInfoForInvoiceCandidate.isEmpty())
-			{
-				continue;
-			}
+			final JsonInvoiceCandidateStatus invoiceCandidateStatus = createInvoiceCandidateStatus(invoiceCandidateRecord, invoicesInfoForInvoiceCandidate, workPackagesForInvoiceCandidate);
 
-			final JsonInvoiceCandidateStatusInvoiced invoiceCandidateStatus = createStatusInvoiced(invoiceCandidateRecord, invoicesInfoForInvoiceCandidate);
-
-			jsonInvoiceCandidatesInvoiced.add(invoiceCandidateStatus);
-
+			jsonInvoiceCandidates.add(invoiceCandidateStatus);
 		}
 
-		return JsonInvoiceCandidateResult_StatusInvoiced.builder()
-				.invoiceCandidates(jsonInvoiceCandidatesInvoiced)
-				.build();
-	}
-
-	private JsonInvoiceCandidateResult_StatusEnqueued createStatusEnqueued(final List<InvoiceCandidateId> invoiceCandidateIds)
-	{
-		final List<JsonInvoiceCandidateStatusEnqueued> invoiceCandidatesEnqueued = new ArrayList<>();
-
-		for (final InvoiceCandidateId invoiceCandidateId : invoiceCandidateIds)
-		{
-			final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandDAO.getById(invoiceCandidateId);
-
-			final List<JsonWorkPackageInfo> packagesForInvoiceCandidate = createWorkPackagesForInvoiceCandidate(
-					invoiceCandidateRecord,
-					false);
-
-			if (packagesForInvoiceCandidate.isEmpty())
-			{
-				continue;
-			}
-
-			final JsonInvoiceCandidateStatusEnqueued invoiceCandidateStatus = createStatusEnqueued(invoiceCandidateRecord, packagesForInvoiceCandidate);
-
-			invoiceCandidatesEnqueued.add(invoiceCandidateStatus);
-
-		}
-
-		return JsonInvoiceCandidateResult_StatusEnqueued.builder()
-				.invoiceCandidates(invoiceCandidatesEnqueued)
-				.build();
-	}
-
-	private JsonInvoiceCandidateResult_StatusEnqueuedWithError createStatusEnqueuedWithError(final List<InvoiceCandidateId> invoiceCandidateIds)
-	{
-
-		final List<JsonInvoiceCandidateStatusEnqueued> jsonInvoiceCandidatesEnqueuedWithError = new ArrayList<>();
-
-		for (final InvoiceCandidateId invoiceCandidateId : invoiceCandidateIds)
-		{
-			final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandDAO.getById(invoiceCandidateId);
-
-			final List<JsonWorkPackageInfo> packagesForInvoiceCandidate = createWorkPackagesForInvoiceCandidate(
-					invoiceCandidateRecord,
-					true);
-
-			if (packagesForInvoiceCandidate.isEmpty())
-			{
-				continue;
-			}
-
-			final JsonInvoiceCandidateStatusEnqueued invoiceCandidateStatus = createStatusEnqueued(invoiceCandidateRecord, packagesForInvoiceCandidate);
-
-			jsonInvoiceCandidatesEnqueuedWithError.add(invoiceCandidateStatus);
-
-		}
-
-		return JsonInvoiceCandidateResult_StatusEnqueuedWithError.builder()
-				.invoiceCandidates(jsonInvoiceCandidatesEnqueuedWithError)
-				.build();
-	}
-
-	private JsonInvoiceCandidateResults_StatusNotEnqueued createStatusNotEnqueued(final List<InvoiceCandidateId> invoiceCandidateIds)
-	{
-		final List<JsonInvoiceCandidateStatus> invoiceCandidatesNotEnqueued = new ArrayList<>();
-
-		for (final InvoiceCandidateId invoiceCandidateId : invoiceCandidateIds)
-		{
-			final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandDAO.getById(invoiceCandidateId);
-
-			final List<JsonWorkPackageInfo> workPackages = createWorkPackagesForInvoiceCandidate(
-					invoiceCandidateRecord, null);
-
-			if (!workPackages.isEmpty())
-			{
-				continue;
-			}
-
-			final JsonInvoiceCandidateStatus invoiceCandidateStatus = createInvoiceCandidateStatus(invoiceCandidateRecord);
-
-			invoiceCandidatesNotEnqueued.add(invoiceCandidateStatus);
-
-		}
-
-		return JsonInvoiceCandidateResults_StatusNotEnqueued.builder()
-				.invoiceCandidates(invoiceCandidatesNotEnqueued)
-				.build();
+		return jsonInvoiceCandidates;
 	}
 
 	private List<JsonWorkPackageInfo> createWorkPackagesForInvoiceCandidate(
-			final I_C_Invoice_Candidate invoiceCandidateRecord,
-			final Boolean isError)
+			final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
 
-		final List<I_C_Queue_WorkPackage> workPackageNoErrorRecords = getWorkProcessesForInvoiceCandidate(invoiceCandidateRecord, isError);
+		final List<I_C_Queue_WorkPackage> workPackageRecords = getWorkProcessesForInvoiceCandidate(invoiceCandidateRecord);
 
-		if (workPackageNoErrorRecords.isEmpty())
+		if (workPackageRecords.isEmpty())
 		{
 
 			return ImmutableList.of();
 		}
 
-		return workPackageNoErrorRecords
+		return workPackageRecords
 				.stream()
 				.map(workPackageRecord -> createJsonForWorkPackage(workPackageRecord))
 				.collect(ImmutableList.toImmutableList());
 
 	}
 
-	private List<I_C_Queue_WorkPackage> getWorkProcessesForInvoiceCandidate(final I_C_Invoice_Candidate invoiceCandidateRecord,
-			final Boolean isError)
+	private List<I_C_Queue_WorkPackage> getWorkProcessesForInvoiceCandidate(final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
 		final int invoiceCandidatesWorkpackageProcessorId = queueDAO.retrievePackageProcessorDefByClass(Env.getCtx(), InvoiceCandWorkpackageProcessor.class).getC_Queue_PackageProcessor_ID();
 		final int invoiceCandidateTableId = getTableId(I_C_Invoice_Candidate.class);
-		final ICompositeQueryFilter<I_C_Queue_WorkPackage> workPackageFilter = queryBL.createCompositeQueryFilter(I_C_Queue_WorkPackage.class)
-				.addNotEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_Processed, true);
-
-		if (isError != null && isError)
-		{
-			workPackageFilter.addNotNull(I_C_Queue_WorkPackage.COLUMNNAME_ErrorMsg);
-		}
-		else if (isError != null)
-		{
-			workPackageFilter.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_ErrorMsg, null);
-		}
 
 		return queryBL.createQueryBuilder(I_C_Queue_Element.class)
 				.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_AD_Table_ID, invoiceCandidateTableId)
 				.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_Record_ID, invoiceCandidateRecord.getC_Invoice_Candidate_ID())
 				.andCollect(I_C_Queue_Element.COLUMN_C_Queue_WorkPackage_ID)
-				.filter(workPackageFilter)
+				.addNotEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_Processed, true)
 				.andCollect(I_C_Queue_WorkPackage.COLUMN_C_Queue_Block_ID)
 				.addEqualsFilter(I_C_Queue_Block.COLUMNNAME_C_Queue_PackageProcessor_ID, invoiceCandidatesWorkpackageProcessorId)
 				.andCollectChildren(I_C_Queue_WorkPackage.COLUMN_C_Queue_Block_ID)
@@ -281,46 +164,24 @@ public class InvoiceCandidateStatusRepository
 
 	}
 
-	private JsonInvoiceCandidateStatusInvoiced createStatusInvoiced(
-			final I_C_Invoice_Candidate invoiceCandidateRecord,
-			final List<JsonInvoiceInfo> invoices)
-	{
-
-		final JsonInvoiceCandidateStatus invoiceCandidate = createInvoiceCandidateStatus(invoiceCandidateRecord);
-
-		return JsonInvoiceCandidateStatusInvoiced.builder()
-				.invoiceCandidate(invoiceCandidate)
-				.invoices(invoices)
-				.build();
-	}
-
-	private JsonInvoiceCandidateStatusEnqueued createStatusEnqueued(
-			final I_C_Invoice_Candidate invoiceCandidateRecord,
-			final List<JsonWorkPackageInfo> workPackages)
-	{
-		final JsonInvoiceCandidateStatus invoiceCandidate = createInvoiceCandidateStatus(invoiceCandidateRecord);
-
-		return JsonInvoiceCandidateStatusEnqueued.builder()
-				.invoiceCandidate(invoiceCandidate)
-				.workPackages(workPackages)
-				.build();
-
-	}
-
-	private JsonInvoiceCandidateStatus createInvoiceCandidateStatus(final I_C_Invoice_Candidate invoiceCandidateRecord)
+	private JsonInvoiceCandidateStatus createInvoiceCandidateStatus(final I_C_Invoice_Candidate invoiceCandidateRecord,
+			List<JsonInvoiceInfo> invoices,
+			List<JsonWorkPackageInfo> workPackages)
 	{
 		final BigDecimal qtyToInvoice = invoiceCandidateRecord.getQtyToInvoice();
 		final BigDecimal qtyInvoiced = invoiceCandidateRecord.getQtyInvoiced();
 
 		return JsonInvoiceCandidateStatus.builder()
 				.qtyEntered(invoiceCandidateRecord.getQtyEntered())
-				.dateToInvoice(TimeUtil.asLocalDate(qtyToInvoice.signum() > 0? invoiceCandidateRecord.getDateToInvoice() : null))
+				.dateToInvoice(TimeUtil.asLocalDate(qtyToInvoice.signum() > 0 ? invoiceCandidateRecord.getDateToInvoice() : null))
 				.dateInvoiced(TimeUtil.asLocalDate(invoiceCandidateRecord.getDateInvoiced()))
 				.externalHeaderId(ExternalId.of(invoiceCandidateRecord.getExternalHeaderId()))
 				.externalLineId(ExternalId.of(invoiceCandidateRecord.getExternalLineId()))
 				.metasfreshId(MetasfreshId.of(invoiceCandidateRecord.getC_Invoice_Candidate_ID()))
-				.qtyInvoiced(qtyInvoiced.signum() > 0? qtyInvoiced : null)
-				.qtyToInvoice(qtyToInvoice.signum() > 0? qtyToInvoice : null)
+				.qtyInvoiced(qtyInvoiced.signum() > 0 ? qtyInvoiced : null)
+				.qtyToInvoice(qtyToInvoice.signum() > 0 ? qtyToInvoice : null)
+				.invoices(invoices)
+				.workPackages(workPackages)
 				.build();
 	}
 

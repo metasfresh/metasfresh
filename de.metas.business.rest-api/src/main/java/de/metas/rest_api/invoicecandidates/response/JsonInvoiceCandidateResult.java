@@ -28,11 +28,8 @@ import lombok.Value;
  */
 @Value
 @Builder
-public class JsonInvoiceCandidateStatusInvoiced
+public class JsonInvoiceCandidateResult
 {
 
-	JsonInvoiceCandidateStatus invoiceCandidate;
-
-	List<JsonInvoiceInfo> invoices;
-
+	private List<JsonInvoiceCandidateStatus> invoiceCandidates;
 }

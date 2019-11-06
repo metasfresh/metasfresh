@@ -43,13 +43,13 @@ public class JsonGetInvoiceCandidatesStatusResponse
 {
 	@JsonProperty("result")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final JsonGetInvoiceCandidatesStatusResult result;
+	private final JsonInvoiceCandidateResult result;
 
 	@JsonProperty("error")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JsonError error;
 
-	public static JsonGetInvoiceCandidatesStatusResponse ok(@NonNull final JsonGetInvoiceCandidatesStatusResult result)
+	public static JsonGetInvoiceCandidatesStatusResponse ok(@NonNull final JsonInvoiceCandidateResult result)
 	{
 		final JsonError error = null;
 		return new JsonGetInvoiceCandidatesStatusResponse(result, error);
@@ -57,13 +57,13 @@ public class JsonGetInvoiceCandidatesStatusResponse
 
 	public static JsonGetInvoiceCandidatesStatusResponse error(@NonNull final JsonError error)
 	{
-		final JsonGetInvoiceCandidatesStatusResult result = null;
+		final JsonInvoiceCandidateResult result = null;
 		return new JsonGetInvoiceCandidatesStatusResponse(result, error);
 	}
 
 	@JsonCreator
 	private JsonGetInvoiceCandidatesStatusResponse(
-			@JsonProperty("result") @Nullable final JsonGetInvoiceCandidatesStatusResult result,
+			@JsonProperty("result") @Nullable final JsonInvoiceCandidateResult result,
 			@JsonProperty("error") @Nullable final JsonError error)
 	{
 		this.error = error;
@@ -92,7 +92,7 @@ public class JsonGetInvoiceCandidatesStatusResponse
 		return error;
 	}
 
-	public JsonGetInvoiceCandidatesStatusResult getResult()
+	public JsonInvoiceCandidateResult getResult()
 	{
 		if (error != null)
 		{
