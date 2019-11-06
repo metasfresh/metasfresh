@@ -36,7 +36,7 @@ public class JsonInvoiceCandidateStatusInfo
 	ExternalId externalHeaderId;
 	ExternalId externalLineId;
 
-	BigDecimal qtyOrdered;
+	BigDecimal qtyToInvoice;
 	BigDecimal qtyInvoiced;
 
 	LocalDate dateToInvoice;

@@ -1680,4 +1680,13 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		}
 		return queryBuilder.create();
 	}
+
+	@Override
+	public List<InvoiceCandidateId> retrieveByHeaderAndLineId(@NonNull final List<ExternalHeaderAndLineId> headerAndLineIds)
+	{
+		return createQueryByHeaderAndLineId(headerAndLineIds)
+				.listIds(InvoiceCandidateId::ofRepoId)
+				.asList();
+
+	}
 }

@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.Profiles;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
@@ -62,12 +61,14 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final InvoiceJsonConverterService jsonConverter;
+	private InvoiceCandidateStatusRepository invoiceCandidateStatusRepo;
 
-	public InvoicesRestControllerImpl(@NonNull final InvoiceJsonConverterService jsonConverter)
+	public InvoicesRestControllerImpl(@NonNull final InvoiceJsonConverterService jsonConverter,
+			@NonNull final InvoiceCandidateStatusRepository invoiceCandidateStatusRepo)
 	{
 		this.jsonConverter = jsonConverter;
+		this.invoiceCandidateStatusRepo = invoiceCandidateStatusRepo;
 	}
 
 	@PostMapping("/status")
@@ -76,11 +77,9 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 	{
 		try
 		{
-			final PInstanceId pInstanceId = adPInstanceDAO.createSelectionId();
 			final List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(request.getInvoiceCandidates());
-		//	invoiceCandDAO.createQueryByHeaderAndLineId(headerAndLineIds); TODO
 
-			final JsonGetInvoiceCandidatesStatusResponse response = null; // TODO
+			final JsonGetInvoiceCandidatesStatusResponse response = invoiceCandidateStatusRepo.getStatusForInvoiceCandidates(headerAndLineIds);
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		}
 		catch (final Exception ex)

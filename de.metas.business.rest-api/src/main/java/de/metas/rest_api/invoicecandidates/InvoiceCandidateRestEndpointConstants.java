@@ -1,9 +1,4 @@
-package de.metas.rest_api.invoicecandidates.response;
-
-import java.util.List;
-
-import lombok.Builder;
-import lombok.Value;
+package de.metas.rest_api.invoicecandidates;
 
 /*
  * #%L
@@ -26,10 +21,14 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Value
-@Builder
-public class JsonInvoiceCandidateResult_StatusEnqueued
+
+public class InvoiceCandidateRestEndpointConstants
 {
-	private List<JsonWorkPackageInfo> jsonWorkPackages;
-	private List<JsonInvoiceCandidateStatusInfo> jsonInvoiceCandidates;
+	public static final String STATUS_INVOICED = "Invoiced";
+
+	public static final String STATUS_ENQUEUED = "Enqueued";
+
+	public static final String STATUS_ENQUEUED_WITH_ERROR = "Enqueued With Error";
+
+	public static final String STATUS_NOT_ENQUEUED = "Not Enqueued";
 }

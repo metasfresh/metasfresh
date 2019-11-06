@@ -2,6 +2,7 @@ package de.metas.rest_api.invoicecandidates.response;
 
 import java.util.List;
 
+import lombok.Builder;
 import lombok.Value;
 
 /*
@@ -27,12 +28,11 @@ import lombok.Value;
  */
 
 @Value
-public class JsonInvoiceCandidatesResult_StatusInvoiced
+@Builder
+public class JsonInvoiceCandidateResult_StatusInvoiced
 {
-	private static String statusInvoiced = "Status invoiced";
 
-	private List<JsonInvoicesInfo> invoicesInfo;
-
-	private List<JsonInvoiceCandidateStatusInfo> invoiceCandidates;
+	private List<JsonInvoiceInfo> jsonInvoicesInfo;
+	private List<JsonInvoiceCandidateStatusInfo> jsonInvoiceCandidates;
 
 }

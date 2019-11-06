@@ -1,0 +1,315 @@
+package de.metas.rest_api.invoicecandidates.impl;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.invoice.service.IInvoiceDAO;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.async.api.IQueueDAO;
+import de.metas.async.model.I_C_Queue_Block;
+import de.metas.async.model.I_C_Queue_Element;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.rest_api.invoicecandidates.response.JsonGetInvoiceCandidatesStatusResponse;
+import de.metas.rest_api.invoicecandidates.response.JsonGetInvoiceCandidatesStatusResult;
+import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidateResult_StatusEnqueued;
+import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidateResult_StatusEnqueuedWithError;
+import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidateResult_StatusInvoiced;
+import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidateResults_StatusNotEnqueued;
+import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidateStatusInfo;
+import de.metas.rest_api.invoicecandidates.response.JsonInvoiceInfo;
+import de.metas.rest_api.invoicecandidates.response.JsonWorkPackageInfo;
+import de.metas.util.Services;
+import de.metas.util.rest.ExternalHeaderAndLineId;
+import de.metas.util.rest.ExternalId;
+
+/*
+ * #%L
+ * de.metas.business.rest-api-impl
+ * %%
+ * Copyright (C) 2019 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+@Repository
+public class InvoiceCandidateStatusRepository
+{
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	public JsonGetInvoiceCandidatesStatusResponse getStatusForInvoiceCandidates(final List<ExternalHeaderAndLineId> headerAndLineIds)
+	{
+		final List<InvoiceCandidateId> invoiceCandidateIds = invoiceCandDAO.retrieveByHeaderAndLineId(headerAndLineIds);
+
+		final JsonInvoiceCandidateResult_StatusInvoiced invoiced = createStatusInvoiced(invoiceCandidateIds);
+		final JsonInvoiceCandidateResult_StatusEnqueued enqueued = createStatusEnqueued(invoiceCandidateIds);
+		final JsonInvoiceCandidateResult_StatusEnqueuedWithError enqueuedWithError = createStatusEnqueuedWithError(invoiceCandidateIds);
+		final JsonInvoiceCandidateResults_StatusNotEnqueued notEnqueued = createStatusNotEnqueued(invoiceCandidateIds);
+
+		final JsonGetInvoiceCandidatesStatusResult result = JsonGetInvoiceCandidatesStatusResult
+				.builder()
+				.invoiced(invoiced)
+				.enqueued(enqueued)
+				.enqueuedWithError(enqueuedWithError)
+				.notEnqueued(notEnqueued)
+				.build();
+
+		return JsonGetInvoiceCandidatesStatusResponse.ok(result);
+	}
+
+	private JsonInvoiceCandidateResult_StatusInvoiced createStatusInvoiced(final List<InvoiceCandidateId> invoiceCandidateIds)
+	{
+
+		final List<JsonInvoiceCandidateStatusInfo> jsonInvoiceCandidatesInvoiced = new ArrayList<>();
+		final List<JsonInvoiceInfo> jsonInvoicesInfo = new ArrayList<>();
+
+		for (final InvoiceCandidateId invoiceCandidateId : invoiceCandidateIds)
+		{
+			final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandDAO.getById(invoiceCandidateId);
+
+			final List<JsonInvoiceInfo> jsonInvoicesInfoForInvoiceCandidate = createJsonInvoicesInfoForInvoiceCandidate(invoiceCandidateRecord);
+
+			if (jsonInvoicesInfoForInvoiceCandidate.isEmpty())
+			{
+				continue;
+			}
+
+			final JsonInvoiceCandidateStatusInfo jsonInvoiceCandidateInfo = createJsonForInvoiceCandidate(invoiceCandidateRecord);
+
+			jsonInvoiceCandidatesInvoiced.add(jsonInvoiceCandidateInfo);
+
+			jsonInvoicesInfo.addAll(jsonInvoicesInfoForInvoiceCandidate);
+
+		}
+
+		return JsonInvoiceCandidateResult_StatusInvoiced.builder()
+				.jsonInvoiceCandidates(jsonInvoiceCandidatesInvoiced)
+				.jsonInvoicesInfo(jsonInvoicesInfo)
+				.build();
+	}
+
+	private JsonInvoiceCandidateResult_StatusEnqueued createStatusEnqueued(final List<InvoiceCandidateId> invoiceCandidateIds)
+	{
+
+		final List<JsonInvoiceCandidateStatusInfo> jsonInvoiceCandidatesEnqueued = new ArrayList<>();
+
+		final List<JsonWorkPackageInfo> jsonWorkPackages = new ArrayList<>();
+
+		for (final InvoiceCandidateId invoiceCandidateId : invoiceCandidateIds)
+		{
+			final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandDAO.getById(invoiceCandidateId);
+
+			final List<JsonWorkPackageInfo> jsonWorkPackagesForInvoiceCandidate = createjsonWorkPackagesForInvoiceCandidate(
+					invoiceCandidateRecord,
+					false);
+
+			if (jsonWorkPackagesForInvoiceCandidate.isEmpty())
+			{
+				continue;
+			}
+
+			final JsonInvoiceCandidateStatusInfo jsonInvoiceCandidateInfo = createJsonForInvoiceCandidate(invoiceCandidateRecord);
+
+			jsonInvoiceCandidatesEnqueued.add(jsonInvoiceCandidateInfo);
+
+			jsonWorkPackages.addAll(jsonWorkPackagesForInvoiceCandidate);
+
+		}
+
+		return JsonInvoiceCandidateResult_StatusEnqueued.builder()
+				.jsonInvoiceCandidates(jsonInvoiceCandidatesEnqueued)
+				.jsonWorkPackages(jsonWorkPackages)
+				.build();
+	}
+
+	private JsonInvoiceCandidateResult_StatusEnqueuedWithError createStatusEnqueuedWithError(final List<InvoiceCandidateId> invoiceCandidateIds)
+	{
+
+		final List<JsonInvoiceCandidateStatusInfo> jsonInvoiceCandidatesEnqueuedWithError = new ArrayList<>();
+
+		final List<JsonWorkPackageInfo> jsonWorkPackages = new ArrayList<>();
+
+		for (final InvoiceCandidateId invoiceCandidateId : invoiceCandidateIds)
+		{
+			final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandDAO.getById(invoiceCandidateId);
+
+			final List<JsonWorkPackageInfo> jsonWorkPackagesWithError = createjsonWorkPackagesForInvoiceCandidate(
+					invoiceCandidateRecord, true);
+
+			if (jsonWorkPackagesWithError.isEmpty())
+			{
+				continue;
+			}
+
+			final JsonInvoiceCandidateStatusInfo jsonInvoiceCandidateInfo = createJsonForInvoiceCandidate(invoiceCandidateRecord);
+
+			jsonInvoiceCandidatesEnqueuedWithError.add(jsonInvoiceCandidateInfo);
+
+			jsonWorkPackages.addAll(jsonWorkPackagesWithError);
+
+		}
+
+		return JsonInvoiceCandidateResult_StatusEnqueuedWithError.builder()
+				.jsonInvoiceCandidates(jsonInvoiceCandidatesEnqueuedWithError)
+				.jsonWorkPackages(jsonWorkPackages)
+				.build();
+	}
+
+	private JsonInvoiceCandidateResults_StatusNotEnqueued createStatusNotEnqueued(final List<InvoiceCandidateId> invoiceCandidateIds)
+	{
+		final List<JsonInvoiceCandidateStatusInfo> jsonInvoiceCandidatesNotEnqueued = new ArrayList<>();
+
+		for (final InvoiceCandidateId invoiceCandidateId : invoiceCandidateIds)
+		{
+			final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandDAO.getById(invoiceCandidateId);
+
+			final List<JsonWorkPackageInfo> jsonWorkPackages = createjsonWorkPackagesForInvoiceCandidate(
+					invoiceCandidateRecord, null);
+
+			if (!jsonWorkPackages.isEmpty())
+			{
+				continue;
+			}
+
+			final JsonInvoiceCandidateStatusInfo jsonInvoiceCandidateInfo = createJsonForInvoiceCandidate(invoiceCandidateRecord);
+
+			jsonInvoiceCandidatesNotEnqueued.add(jsonInvoiceCandidateInfo);
+
+		}
+
+		return JsonInvoiceCandidateResults_StatusNotEnqueued.builder()
+				.jsonInvoiceCandidates(jsonInvoiceCandidatesNotEnqueued)
+				.build();
+	}
+
+	private List<JsonWorkPackageInfo> createjsonWorkPackagesForInvoiceCandidate(
+			final I_C_Invoice_Candidate invoiceCandidateRecord,
+			final Boolean isError)
+	{
+
+		final List<I_C_Queue_WorkPackage> workPackageNoErrorRecords = getWorkProcessesForInvoiceCandidate(invoiceCandidateRecord, isError);
+
+		if (workPackageNoErrorRecords.isEmpty())
+		{
+
+			return ImmutableList.of();
+		}
+
+		return workPackageNoErrorRecords
+				.stream()
+				.map(workPackageRecord -> createJsonForWorkPackage(workPackageRecord))
+				.collect(ImmutableList.toImmutableList());
+
+	}
+
+	private List<I_C_Queue_WorkPackage> getWorkProcessesForInvoiceCandidate(final I_C_Invoice_Candidate invoiceCandidateRecord,
+			final Boolean isError)
+	{
+		final int invoiceCandidatesWorkpackageProcessorId = queueDAO.retrievePackageProcessorDefByClass(Env.getCtx(), InvoiceCandWorkpackageProcessor.class).getC_Queue_PackageProcessor_ID();
+		final int invoiceCandidateTableId = getTableId(I_C_Invoice_Candidate.class);
+		final ICompositeQueryFilter<I_C_Queue_WorkPackage> workPackageFilter = queryBL.createCompositeQueryFilter(I_C_Queue_WorkPackage.class)
+				.addNotEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_Processed, true);
+
+		if (isError != null && isError)
+		{
+			workPackageFilter.addNotNull(I_C_Queue_WorkPackage.COLUMNNAME_ErrorMsg);
+		}
+		else if (isError != null)
+		{
+			workPackageFilter.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_ErrorMsg, null);
+		}
+
+		return queryBL.createQueryBuilder(I_C_Queue_Element.class)
+				.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_AD_Table_ID, invoiceCandidateTableId)
+				.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_Record_ID, invoiceCandidateRecord.getC_Invoice_Candidate_ID())
+				.andCollect(I_C_Queue_Element.COLUMN_C_Queue_WorkPackage_ID)
+				.filter(workPackageFilter)
+				.andCollect(I_C_Queue_WorkPackage.COLUMN_C_Queue_Block_ID)
+				.addEqualsFilter(I_C_Queue_Block.COLUMNNAME_C_Queue_PackageProcessor_ID, invoiceCandidatesWorkpackageProcessorId)
+				.andCollectChildren(I_C_Queue_WorkPackage.COLUMN_C_Queue_Block_ID)
+				.create()
+				.list();
+
+	}
+
+	private JsonWorkPackageInfo createJsonForWorkPackage(final I_C_Queue_WorkPackage workPackageRecord)
+	{
+		return JsonWorkPackageInfo.builder()
+				.error(workPackageRecord.getErrorMsg())
+				.created(TimeUtil.asInstant(workPackageRecord.getCreated()))
+				.readyForProcessing(workPackageRecord.isReadyForProcessing())
+				.build();
+	}
+
+	private List<JsonInvoiceInfo> createJsonInvoicesInfoForInvoiceCandidate(final I_C_Invoice_Candidate invoiceCandidateRecord)
+	{
+
+		final List<I_C_InvoiceLine> invoiceLinesForInvoiceCandidate = invoiceCandDAO.retrieveIlForIc(invoiceCandidateRecord);
+
+		if (invoiceLinesForInvoiceCandidate.isEmpty())
+		{
+
+			return ImmutableList.of();
+		}
+
+		return invoiceLinesForInvoiceCandidate
+				.stream()
+				.map(I_C_InvoiceLine::getC_Invoice_ID)
+				.map(invoiceId -> invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(invoiceId)))
+				.map(invoice -> createJsonForInvoice(invoice))
+				.collect(ImmutableList.toImmutableList());
+
+	}
+
+	private JsonInvoiceCandidateStatusInfo createJsonForInvoiceCandidate(final I_C_Invoice_Candidate invoiceCandidateRecord)
+	{
+		return JsonInvoiceCandidateStatusInfo.builder()
+				.dateToInvoice(TimeUtil.asLocalDate(invoiceCandidateRecord.getDateToInvoice()))
+				.externalHeaderId(ExternalId.of(invoiceCandidateRecord.getExternalHeaderId()))
+				.externalLineId(ExternalId.of(invoiceCandidateRecord.getExternalLineId()))
+				.qtyInvoiced(invoiceCandidateRecord.getQtyInvoiced())
+				.qtyToInvoice(invoiceCandidateRecord.getQtyToInvoice())
+				.build();
+	}
+
+	private JsonInvoiceInfo createJsonForInvoice(final I_C_Invoice invoice)
+	{
+		return JsonInvoiceInfo.builder()
+				.dateInvoiced(TimeUtil.asLocalDate(invoice.getDateInvoiced()))
+				.docStatus(invoice.getDocStatus())
+				.documentNo(invoice.getDocumentNo())
+				.invoiceId(invoice.getC_Invoice_ID())
+				.build();
+	}
+
+}

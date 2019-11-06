@@ -3,6 +3,7 @@ package de.metas.rest_api.invoicecandidates.response;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
+import lombok.Builder;
 import lombok.Value;
 
 /*
@@ -29,10 +30,11 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
+@Builder
 public class JsonGetInvoiceCandidatesStatusResult
 {
-	final JsonInvoiceCandidatesResult_StatusInvoiced statusInvoiced;
-	final JsonInvoiceCandidateResult_StatusEnqueued statusEnqueued;
-	final JsonInvoiceCandidateResult_StatusEnqueuedWithError statusEnqueuedWithError;
-	final JsonInvoiceCandidateResults_StatusNotEnqueued statusNotEnqueued;
+	JsonInvoiceCandidateResult_StatusInvoiced invoiced;
+	JsonInvoiceCandidateResult_StatusEnqueued enqueued;
+	JsonInvoiceCandidateResult_StatusEnqueuedWithError enqueuedWithError;
+	JsonInvoiceCandidateResults_StatusNotEnqueued notEnqueued;
 }

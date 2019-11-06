@@ -1,5 +1,7 @@
 package de.metas.rest_api.invoicecandidates.response;
 
+import java.time.LocalDate;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -27,9 +29,8 @@ import lombok.Value;
  */
 @Value
 @Builder
-public class JsonInvoicesInfo
+public class JsonInvoiceInfo
 {
-
 	int invoiceId;
 
 	@NonNull
@@ -37,5 +38,7 @@ public class JsonInvoicesInfo
 
 	@NonNull
 	String docStatus;
+
+	LocalDate dateInvoiced;
 
 }

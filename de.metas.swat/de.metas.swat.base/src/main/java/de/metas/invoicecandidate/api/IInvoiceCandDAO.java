@@ -388,4 +388,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	I_C_Invoice_Candidate getById(InvoiceCandidateId invoiceCandId);
 
 	int createSelectionByHeaderAndLineIds(List<ExternalHeaderAndLineId> headerAndLineIds, PInstanceId pInstanceID);
+
+	List<InvoiceCandidateId> retrieveByHeaderAndLineId(List<ExternalHeaderAndLineId> headerAndLineIds);
 }
