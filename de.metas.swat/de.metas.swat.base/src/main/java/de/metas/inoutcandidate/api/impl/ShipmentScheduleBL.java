@@ -1241,7 +1241,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		final int orderLineId = shipmentScheduleRecord.getC_OrderLine_ID();
 
-		if (orderLineId < 0)
+		if (orderLineId <= 0)
 		{
 			// returning true to keep the old behavior for shipment schedules that are not for sales orders.
 			return true;
