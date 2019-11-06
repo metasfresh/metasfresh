@@ -1,7 +1,5 @@
 package de.metas.handlingunits.pporder.api;
 
-import java.math.BigDecimal;
-
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -26,7 +24,6 @@ import java.math.BigDecimal;
 
 import java.util.List;
 
-import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
@@ -35,6 +32,7 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.impl.CostCollectorCandidateCoProductHUProducer;
 import de.metas.handlingunits.pporder.api.impl.CostCollectorCandidateFinishedGoodsHUProducer;
+import de.metas.quantity.Quantity;
 
 /**
  * Generates manufacturing receipt candidates ({@link I_PP_Order_Qty}) together with the planning HUs.
@@ -47,13 +45,13 @@ import de.metas.handlingunits.pporder.api.impl.CostCollectorCandidateFinishedGoo
 public interface IPPOrderReceiptHUProducer
 {
 	/** @return new producer for receiving a main product */
-	public static IPPOrderReceiptHUProducer receiveMainProduct(final I_PP_Order ppOrder)
+	static IPPOrderReceiptHUProducer receiveMainProduct(final I_PP_Order ppOrder)
 	{
 		return new CostCollectorCandidateFinishedGoodsHUProducer(ppOrder);
 	}
 
 	/** @return new producer for receiving a by/co product */
-	public static IPPOrderReceiptHUProducer receiveByOrCoProduct(final I_PP_Order_BOMLine ppOrderBOMLine)
+	static IPPOrderReceiptHUProducer receiveByOrCoProduct(final I_PP_Order_BOMLine ppOrderBOMLine)
 	{
 		return new CostCollectorCandidateCoProductHUProducer(ppOrderBOMLine);
 	}
@@ -75,7 +73,7 @@ public interface IPPOrderReceiptHUProducer
 	 * @deprecated To be removed. Needed only for the legacy Swing UI.
 	 */
 	@Deprecated
-	List<I_M_HU> createReceiptCandidatesAndPlanningHUs(BigDecimal qtyToReceive, I_C_UOM uom);
+	List<I_M_HU> createReceiptCandidatesAndPlanningHUs(Quantity qtyToReceive);
 
 	/**
 	 * Create manufacturing receipt candidate(s) for an already existing planning HU.

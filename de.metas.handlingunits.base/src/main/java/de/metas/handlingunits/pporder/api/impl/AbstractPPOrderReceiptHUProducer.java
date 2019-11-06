@@ -153,17 +153,17 @@ import lombok.NonNull;
 				throw new AdempiereException("Quantity to receive was not determined");
 			}
 
-			return createHUsInTrx(qtyCUsTotal.toBigDecimal(), qtyCUsTotal.getUOM());
+			return createHUsInTrx(qtyCUsTotal);
 		});
 	}
 
 	@Override
-	public final List<I_M_HU> createReceiptCandidatesAndPlanningHUs(final BigDecimal qtyToReceive, final I_C_UOM uom)
+	public final List<I_M_HU> createReceiptCandidatesAndPlanningHUs(final Quantity qtyToReceive)
 	{
-		return trxManager.callInNewTrx(() -> createHUsInTrx(qtyToReceive, uom));
+		return trxManager.callInNewTrx(() -> createHUsInTrx(qtyToReceive));
 	}
 
-	private final List<I_M_HU> createHUsInTrx(final BigDecimal qtyToReceive, final I_C_UOM uom)
+	private final List<I_M_HU> createHUsInTrx(final Quantity qtyToReceive)
 	{
 		//
 		// Create HU Context
@@ -185,7 +185,7 @@ import lombok.NonNull;
 
 		//
 		// Create Allocation Request
-		final IAllocationRequest allocationRequest = createAllocationRequest(huContext, qtyToReceive, uom);
+		final IAllocationRequest allocationRequest = createAllocationRequest(huContext, qtyToReceive);
 
 		//
 		// Execute transfer
@@ -329,7 +329,7 @@ import lombok.NonNull;
 		return _movementDate;
 	}
 
-	private IAllocationRequest createAllocationRequest(final IHUContext huContext, final BigDecimal qtyToReceive, final I_C_UOM uom)
+	private IAllocationRequest createAllocationRequest(final IHUContext huContext, final Quantity qtyToReceive)
 	{
 		final I_M_Product product = getM_Product();
 		final Date date = getMovementDate();
@@ -338,7 +338,6 @@ import lombok.NonNull;
 		final IAllocationRequest allocationRequest = AllocationUtils.createQtyRequest(huContext,
 				product, // product
 				qtyToReceive, // the quantity to receive
-				uom,
 				date, // transaction date
 				referencedModel, // referenced model
 				true // forceQtyAllocation: make sure we will transfer the given qty, no matter what
