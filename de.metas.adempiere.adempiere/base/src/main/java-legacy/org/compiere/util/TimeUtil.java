@@ -1687,8 +1687,13 @@ public class TimeUtil
 				: null;
 	}
 
-	public static ZonedDateTime asZonedDateTime(final Object obj)
+	public static ZonedDateTime asZonedDateTime(@Nullable final Object obj)
 	{
+		if(obj == null)
+		{
+			return null;
+		}
+		
 		return asZonedDateTime(obj, SystemTime.zoneId());
 	}
 
