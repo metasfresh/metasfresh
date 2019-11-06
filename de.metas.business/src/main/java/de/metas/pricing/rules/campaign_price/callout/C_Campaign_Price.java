@@ -8,6 +8,7 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_C_Campaign_Price;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -50,6 +51,7 @@ public class C_Campaign_Price
 	public void init()
 	{
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+		CopyRecordFactory.enableForTableName(I_C_Campaign_Price.Table_Name);
 	}
 
 	@CalloutMethod(columnNames = I_C_Campaign_Price.COLUMNNAME_C_BPartner_ID, skipIfCopying = true)
