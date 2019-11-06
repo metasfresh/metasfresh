@@ -29,6 +29,12 @@ import lombok.NonNull;
 public class HUPPOrderBL implements IHUPPOrderBL
 {
 	@Override
+	public I_PP_Order getById(@NonNull final PPOrderId ppOrderId)
+	{
+		return Services.get(IPPOrderDAO.class).getById(ppOrderId, I_PP_Order.class);
+	}
+
+	@Override
 	public IDocumentLUTUConfigurationManager createReceiptLUTUConfigurationManager(@NonNull final org.eevolution.model.I_PP_Order ppOrder)
 	{
 		final de.metas.handlingunits.model.I_PP_Order documentLine = InterfaceWrapperHelper.create(ppOrder, de.metas.handlingunits.model.I_PP_Order.class);
@@ -78,7 +84,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 			.put(PPOrderPlanningStatus.PLANNING, PPOrderPlanningStatus.COMPLETE)
 			.put(PPOrderPlanningStatus.REVIEW, PPOrderPlanningStatus.PLANNING)
 			.put(PPOrderPlanningStatus.REVIEW, PPOrderPlanningStatus.COMPLETE)
-			//.put(PPOrderPlanningStatus.COMPLETE, PPOrderPlanningStatus.PLANNING) // don't allow this transition unless https://github.com/metasfresh/metasfresh/issues/2708 is done
+			// .put(PPOrderPlanningStatus.COMPLETE, PPOrderPlanningStatus.PLANNING) // don't allow this transition unless https://github.com/metasfresh/metasfresh/issues/2708 is done
 			.build();
 
 	@Override
