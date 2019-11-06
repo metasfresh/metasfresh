@@ -124,7 +124,8 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	 * <p>
 	 * keep in sync with {@link #createShipmentOrderRequestPO(DeliveryOrder)} and {@link DhlDraftDeliveryOrderCreator#createDraftDeliveryOrder(de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest)}
 	 */
-	private DeliveryOrder toDeliveryOrderFromPO(final I_DHL_ShipmentOrderRequest requestPo)
+	@NonNull
+	private DeliveryOrder toDeliveryOrderFromPO(@NonNull final I_DHL_ShipmentOrderRequest requestPo)
 	{
 		final List<I_DHL_ShipmentOrder> ordersPo = getAllShipmentOrdersForRequest(requestPo.getDHL_ShipmentOrderRequest_ID());
 

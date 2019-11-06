@@ -46,7 +46,7 @@ public class DeliveryOrderLine
 	@Nullable
 	CustomDeliveryData customDeliveryData;
 
-	@Nullable
+	@NonNull
 	PackageId packageId;
 
 	@Builder(toBuilder = true)
@@ -56,7 +56,7 @@ public class DeliveryOrderLine
 			final int grossWeightKg,
 			@NonNull final PackageDimensions packageDimensions,
 			@Nullable final CustomDeliveryData customDeliveryData,
-			@Nullable final PackageId packageId)
+			@NonNull final PackageId packageId)
 	{
 		Check.assume(grossWeightKg > 0, "grossWeightKg > 0");
 
