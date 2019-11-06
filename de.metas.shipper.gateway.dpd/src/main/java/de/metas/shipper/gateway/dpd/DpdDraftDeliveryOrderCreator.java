@@ -39,6 +39,7 @@ import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipper.gateway.spi.model.ServiceType;
+import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
@@ -98,7 +99,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 
 		final int grossWeightInKg = Math.max(request.getAllPackagesGrossWeightInKg(), 1);
 		final int shipperId = deliveryOrderKey.getShipperId();
-		final int shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
+		final ShipperTransportationId shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
 
 		final DpdServiceType serviceType = DpdServiceType.DPD_CLASSIC;
 
@@ -146,7 +147,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			final int grossWeightKg,
 			final int shipperId,
 			final String customerReference,
-			final int shipperTransportationId,
+			final ShipperTransportationId shipperTransportationId,
 			@NonNull final PackageDimensions packageDimensions,
 			@NonNull final DpdOrderCustomDeliveryData customDeliveryData)
 	{

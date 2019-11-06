@@ -38,6 +38,7 @@ import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.uom.UomId;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -213,7 +214,7 @@ class IntegrationDEtoDETest
 		final DhlServiceType detectedServiceType = (DhlServiceType)deliveryOrder.getServiceType();
 		final int grossWeightInKg = deliveryPosition.getGrossWeightKg();
 		final int shipperId = deliveryOrder.getShipperId();
-		final int shipperTransportationId = deliveryOrder.getShipperTransportationId();
+		final ShipperTransportationId shipperTransportationId = deliveryOrder.getShipperTransportationId();
 		final PackageDimensions packageDimensions = deliveryPosition.getPackageDimensions();
 
 		final CustomDeliveryData customDeliveryData = null;

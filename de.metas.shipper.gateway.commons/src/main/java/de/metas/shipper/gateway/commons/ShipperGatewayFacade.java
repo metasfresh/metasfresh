@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import de.metas.mpackage.PackageId;
+import de.metas.shipping.api.ShipperTransportationId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
@@ -66,7 +67,7 @@ public class ShipperGatewayFacade
 	public void createAndSendDeliveryOrdersForPackages(@NonNull final DeliveryOrderCreateRequest request)
 	{
 		final LocalDate pickupDate = request.getPickupDate();
-		final int shipperTransportationId = request.getShipperTransportationId();
+		final ShipperTransportationId shipperTransportationId = request.getShipperTransportationId();
 		final LocalTime timeFrom = request.getTimeFrom();
 		final LocalTime timeTo = request.getTimeTo();
 
@@ -93,7 +94,7 @@ public class ShipperGatewayFacade
 
 	private static DeliveryOrderKey createDeliveryOrderKey(
 			@NonNull final I_M_Package mpackage,
-			final int shipperTransportationId,
+			final ShipperTransportationId shipperTransportationId,
 			@NonNull final LocalDate pickupDate,
 			@NonNull final LocalTime timeFrom,
 			@NonNull final LocalTime timeTo)

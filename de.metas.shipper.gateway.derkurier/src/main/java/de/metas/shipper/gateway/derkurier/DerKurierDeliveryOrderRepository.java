@@ -125,7 +125,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 	public DeliveryOrder getByRepoId(@NonNull final DeliveryOrderId deliveryOrderId)
 	{
 		final I_DerKurier_DeliveryOrder //
-		orderPO = loadAssumeRecordExists(deliveryOrderId.getRepoId(), I_DerKurier_DeliveryOrder.class);
+				orderPO = loadAssumeRecordExists(deliveryOrderId.getRepoId(), I_DerKurier_DeliveryOrder.class);
 
 		final DeliveryOrder deliveryOrder = toDeliveryOrder(orderPO);
 		return deliveryOrder;
@@ -169,7 +169,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 				.builder()
 				.repoId(headerRecord.getDerKurier_DeliveryOrder_ID())
 				.shipperId(headerRecord.getM_Shipper_ID())
-				.shipperTransportationId(headerRecord.getM_ShipperTransportation_ID())
+				.shipperTransportationId(ShipperTransportationId.ofRepoId(headerRecord.getM_ShipperTransportation_ID()))
 				.serviceType(DerKurierServiceType.OVERNIGHT)
 				.pickupAddress(createPickupAddress(headerRecord))
 				.pickupDate(createPickupDate(headerRecord))
@@ -360,7 +360,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 		}
 
 		headerRecord.setM_Shipper_ID(deliveryOrder.getShipperId());
-		headerRecord.setM_ShipperTransportation_ID(deliveryOrder.getShipperTransportationId());
+		headerRecord.setM_ShipperTransportation_ID(deliveryOrder.getShipperTransportationId().getRepoId());
 
 		storePickupAddressInHeaderRecord(headerRecord, deliveryOrder.getPickupAddress());
 		storePickupDateInHeaderRecord(headerRecord, deliveryOrder.getPickupDate());

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import de.metas.mpackage.PackageId;
+import de.metas.shipping.api.ShipperTransportationId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -78,7 +79,7 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 		return DeliveryOrder.builder()
 				.repoId(orderPO.getGO_DeliveryOrder_ID())
 				.shipperId(orderPO.getM_Shipper_ID())
-				.shipperTransportationId(orderPO.getM_ShipperTransportation_ID())
+				.shipperTransportationId(ShipperTransportationId.ofRepoId(orderPO.getM_ShipperTransportation_ID()))
 				//
 				.orderId(GOUtils.createOrderIdOrNull(orderPO.getGO_AX4Number()))
 				.customDeliveryData(goDeliveryOrderData)
@@ -127,7 +128,7 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 		}
 
 		orderPO.setM_Shipper_ID(order.getShipperId());
-		orderPO.setM_ShipperTransportation_ID(order.getShipperTransportationId());
+		orderPO.setM_ShipperTransportation_ID(order.getShipperTransportationId().getRepoId());
 
 		final GoDeliveryOrderData goDeliveryOrderData = GoDeliveryOrderData.ofDeliveryOrder(order);
 		final HWBNumber hwbNumber = goDeliveryOrderData.getHwbNumber();

@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.shipping.api.ShipperTransportationId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -108,5 +109,5 @@ public class DeliveryOrder
 	/**
 	 * Transportation order id
 	 */
-	private int shipperTransportationId;
+	private ShipperTransportationId shipperTransportationId;
 }

@@ -45,6 +45,7 @@ import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -116,7 +117,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 
 		final int grossWeightInKg = Math.max(request.getAllPackagesGrossWeightInKg(), 1);
 		final int shipperId = deliveryOrderKey.getShipperId();
-		final int shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
+		final ShipperTransportationId shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
 
 		DhlServiceType detectedServiceType = DhlServiceType.Dhl_Paket;
 		final DhlCustomDeliveryData.DhlCustomDeliveryDataBuilder dataBuilder = DhlCustomDeliveryData.builder();
@@ -202,7 +203,8 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			@NonNull final DhlServiceType serviceType,
 			final int grossWeightKg,
 			final int shipperId,
-			final String customerReference, final int shipperTransportationId,
+			final String customerReference,
+			final ShipperTransportationId shipperTransportationId,
 			@NonNull final PackageDimensions packageDimensions,
 			final CustomDeliveryData customDeliveryData)
 	{

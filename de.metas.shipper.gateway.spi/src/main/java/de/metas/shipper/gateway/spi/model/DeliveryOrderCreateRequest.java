@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Set;
 
+import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -36,7 +37,7 @@ import lombok.Value;
 public class DeliveryOrderCreateRequest
 {
 	Set<Integer> packageIds;
-	int shipperTransportationId;
+	ShipperTransportationId shipperTransportationId;
 
 	String shipperGatewayId;
 
@@ -48,7 +49,7 @@ public class DeliveryOrderCreateRequest
 	public DeliveryOrderCreateRequest(
 			@NonNull final LocalDate pickupDate,
 			@NonNull @Singular final Set<Integer> packageIds,
-			final int shipperTransportationId,
+			final ShipperTransportationId shipperTransportationId,
 			@NonNull String shipperGatewayId,
 			@NonNull final LocalTime timeFrom,
 			@NonNull final LocalTime timeTo)

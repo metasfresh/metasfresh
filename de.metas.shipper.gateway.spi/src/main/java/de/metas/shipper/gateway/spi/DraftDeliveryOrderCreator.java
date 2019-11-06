@@ -2,6 +2,7 @@ package de.metas.shipper.gateway.spi;
 
 import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -54,7 +55,7 @@ public interface DraftDeliveryOrderCreator
 	public static final class DeliveryOrderKey
 	{
 		int shipperId;
-		int shipperTransportationId;
+		ShipperTransportationId shipperTransportationId;
 		int fromOrgId;
 		int deliverToBPartnerId;
 		int deliverToBPartnerLocationId;
@@ -65,7 +66,7 @@ public interface DraftDeliveryOrderCreator
 		@Builder
 		public DeliveryOrderKey(
 				final int shipperId,
-				final int shipperTransportationId,
+				final ShipperTransportationId shipperTransportationId,
 				final int fromOrgId,
 				final int deliverToBPartnerId,
 				final int deliverToBPartnerLocationId,
@@ -74,7 +75,7 @@ public interface DraftDeliveryOrderCreator
 				@NonNull final LocalTime timeTo)
 		{
 			Check.assume(shipperId > 0, "shipperId > 0");
-			Check.assume(shipperTransportationId > 0, "shipperTransportationId > 0");
+			Check.assume(shipperTransportationId != null, "shipperTransportationId != null");
 			Check.assume(fromOrgId > 0, "fromOrgId > 0");
 			Check.assume(deliverToBPartnerId > 0, "deliverToBPartnerId > 0");
 			Check.assume(deliverToBPartnerLocationId > 0, "deliverToBPartnerLocationId > 0");

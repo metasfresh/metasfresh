@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.Set;
 
 import de.metas.mpackage.PackageId;
+import de.metas.shipping.api.ShipperTransportationId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
