@@ -53,6 +53,9 @@ public class DeliveryOrder
 	@NonNull
 	private PickupDate pickupDate;
 
+	/**
+	 * Not received from anywhere (in DraftDeliveryOrderCreator)
+	 */
 	@Nullable
 	private String pickupNote;
 
@@ -65,15 +68,21 @@ public class DeliveryOrder
 	@Nullable
 	private DeliveryDate deliveryDate;
 
+	/**
+	 * Not received from anywhere (in DraftDeliveryOrderCreator)
+	 */
 	@Nullable
 	private String deliveryNote;
 
+	/**
+	 * Not received from anywhere (in DraftDeliveryOrderCreator)
+	 */
 	@Nullable
 	private String customerReference;
 
 	/**
 	 * @deprecated This class has a bad data structure and should not be used in the future. Please use instead {@link #deliveryOrderLines}.
-	 *
+	 * <p>
 	 * We should update GO, DerKurier and DHL to use deliveryOrderLines as well if possible.
 	 */
 	@Deprecated
@@ -83,6 +92,9 @@ public class DeliveryOrder
 
 	private ImmutableList<DeliveryOrderLine> deliveryOrderLines;
 
+	/**
+	 * The Shipper Product
+	 */
 	@NonNull
 	private ServiceType serviceType;
 
@@ -92,5 +104,9 @@ public class DeliveryOrder
 	private int repoId;
 
 	private int shipperId;
+
+	/**
+	 * Transportation order id
+	 */
 	private int shipperTransportationId;
 }
