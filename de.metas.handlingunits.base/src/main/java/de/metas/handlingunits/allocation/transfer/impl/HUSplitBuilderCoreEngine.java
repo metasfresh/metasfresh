@@ -306,7 +306,7 @@ public class HUSplitBuilderCoreEngine
 				tuPIItem, 
 				IHandlingUnitsBL.extractBPartnerOrNull(hu), 
 				productId, 
-				SystemTime.asDate());
+				SystemTime.asZonedDateTime());
 		return piip;
 	}
 }

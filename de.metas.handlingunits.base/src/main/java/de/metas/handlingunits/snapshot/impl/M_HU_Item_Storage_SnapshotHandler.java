@@ -24,7 +24,7 @@ package de.metas.handlingunits.snapshot.impl;
 
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Set;
 
@@ -146,7 +146,7 @@ class M_HU_Item_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_I
 		final ProductId productId = ProductId.ofRepoId(model.getM_Product_ID());
 		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(model.getC_UOM_ID());
 		final Quantity quantity = new Quantity(qtyDiff, uom);
-		final Date date = getDateTrx();
+		final ZonedDateTime date = getDateTrx();
 		final Object referencedModel = getReferencedModelOrNull();
 
 		//

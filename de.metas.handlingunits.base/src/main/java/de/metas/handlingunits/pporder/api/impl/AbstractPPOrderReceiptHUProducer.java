@@ -327,7 +327,7 @@ import lombok.Value;
 		final IAllocationRequest allocationRequest = AllocationUtils.createQtyRequest(huContext,
 				product, // product
 				qtyToReceive, // the quantity to receive
-				TimeUtil.asDate(date), // transaction date
+				date, // transaction date
 				referencedModel, // referenced model
 				true // forceQtyAllocation: make sure we will transfer the given qty, no matter what
 		);

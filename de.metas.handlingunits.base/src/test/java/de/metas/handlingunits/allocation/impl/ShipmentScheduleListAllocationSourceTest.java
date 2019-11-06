@@ -89,7 +89,7 @@ public class ShipmentScheduleListAllocationSourceTest extends AbstractHUTest
 		final ShipmentScheduleListAllocationSource source = new ShipmentScheduleListAllocationSource(schedules);
 
 		final IMutableHUContext huContext = helper.getHUContext();
-		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext, pTomato, new BigDecimal("20"), uomEach, helper.getTodayDate());
+		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext, pTomato, new BigDecimal("20"), uomEach, helper.getTodayZonedDateTime());
 		final IAllocationResult result = source.unload(request);
 
 		final List<IHUTransactionCandidate> trxs = new ArrayList<>(result.getTransactions());
@@ -162,7 +162,7 @@ public class ShipmentScheduleListAllocationSourceTest extends AbstractHUTest
 
 		//
 		// Allocation Request
-		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext, pTomato, new BigDecimal("20"), uomEach, helper.getTodayDate());
+		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext, pTomato, new BigDecimal("20"), uomEach, helper.getTodayZonedDateTime());
 
 		//
 		// Execute HU Load

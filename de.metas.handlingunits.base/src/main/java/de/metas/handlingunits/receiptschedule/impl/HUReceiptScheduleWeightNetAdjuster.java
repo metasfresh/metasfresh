@@ -233,14 +233,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 		//
 		// Run in a sub-transaction of the original HUContext if possible
 		final String initialTrxName = getInitialTrxName();
-		trxManager.run(initialTrxName, new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				adjustHUStorageToWeightNet0(vhu, receiptSchedule, localTrxName);
-			}
-		});
+		trxManager.run(initialTrxName, (TrxRunnable)localTrxName -> adjustHUStorageToWeightNet0(vhu, receiptSchedule, localTrxName));
 	}
 
 	private void adjustHUStorageToWeightNet0(final I_M_HU vhu, final I_M_ReceiptSchedule receiptSchedule, final String trxName)
@@ -325,7 +318,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 				huContext,
 				productId,
 				Quantity.of(qtyToAllocate, weightNetUOM),
-				SystemTime.asDate(),
+				SystemTime.asZonedDateTime(),
 				receiptSchedule, // referenceModel
 				true // forceAllocation => we want to transfer that quantity, no matter what
 				);

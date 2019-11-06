@@ -554,7 +554,7 @@ public class HUTransformServiceReceiptCandidatesTests
 			new HUIterator()
 					.setEnableStorageIteration(true)
 					.setHUContext(data.helper.getHUContext())
-					.setDate(SystemTime.asTimestamp())
+					.setDate(SystemTime.asZonedDateTime())
 					.setListener(new HUIteratorListenerAdapter()
 					{
 						@Override

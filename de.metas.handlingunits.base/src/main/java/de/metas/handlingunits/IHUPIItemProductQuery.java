@@ -1,5 +1,7 @@
 package de.metas.handlingunits;
 
+import java.time.ZonedDateTime;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -64,9 +66,9 @@ public interface IHUPIItemProductQuery
 		setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 	}
 
-	void setDate(Date date);
+	void setDate(ZonedDateTime date);
 
-	Date getDate();
+	ZonedDateTime getDate();
 
 	boolean isAllowAnyProduct();
 

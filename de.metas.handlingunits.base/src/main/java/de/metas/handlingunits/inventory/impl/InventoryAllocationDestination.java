@@ -28,8 +28,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  */
 
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -539,7 +539,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 
 	private I_M_Inventory getCreateInventoryHeader(@NonNull final InventoryLineCandidate candidate)
 	{
-		final Date movementDate = candidate.getMovementDate();
+		final ZonedDateTime movementDate = candidate.getMovementDate();
 
 		final String poReference = candidate.getPoReference();
 
@@ -558,7 +558,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 	}
 
 	private I_M_Inventory createInventoryHeader(
-			@NonNull final Date movementDate,
+			@NonNull final ZonedDateTime movementDate,
 			@Nullable final String poReference)
 	{
 		trxManager.assertThreadInheritedTrxExists();
@@ -659,7 +659,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 			if (materialItem != null)
 			{
 				final ProductId productId = inventoryLineCandidate.getProductId();
-				final Date date = inventoryLineCandidate.getMovementDate();
+				final ZonedDateTime date = inventoryLineCandidate.getMovementDate();
 				return huPiItemProductDAO.retrievePIMaterialItemProduct(materialItem, bpartner, productId, date);
 			}
 		}
@@ -765,7 +765,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 	private static class InventoryHeaderKey
 	{
 		@NonNull
-		Date movementDate;
+		ZonedDateTime movementDate;
 
 		@Nullable
 		String poReference;
@@ -791,7 +791,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 	private static class InventoryLineCandidate
 	{
 		@NonNull
-		final Date movementDate;
+		final ZonedDateTime movementDate;
 
 		@NonNull
 		final HuId topLevelHUId;

@@ -148,7 +148,7 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext,
 				cuProductId,
 				Quantity.of(cuQty, cuUOM),
-				helper.getTodayDate(),
+				helper.getTodayZonedDateTime(),
 				referencedModel,
 				false);
 

@@ -72,7 +72,7 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 			Check.assume(X_M_HU_PI_Item.ITEMTYPE_Material.equals(itemDef.getItemType()), "{} item type is Material", itemDef);
 
 			final I_M_HU_PI_Item_Product itemProduct = Services.get(IHUPIItemProductDAO.class)
-					.retrievePIMaterialItemProduct(itemDef, product, SystemTime.asDate());
+					.retrievePIMaterialItemProduct(itemDef, product, SystemTime.asZonedDateTime());
 			if (itemProduct != null && itemProduct.getM_HU_PI_Item_Product_ID() > 0)
 			{
 				result.add(itemProduct);

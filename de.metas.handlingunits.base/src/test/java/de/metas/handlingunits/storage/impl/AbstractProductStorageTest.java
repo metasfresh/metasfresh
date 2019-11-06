@@ -24,7 +24,7 @@ package de.metas.handlingunits.storage.impl;
 
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -46,7 +46,7 @@ import de.metas.util.Services;
 public abstract class AbstractProductStorageTest extends AbstractHUTest
 {
 	protected I_M_Product product;
-	private Date date;
+	private ZonedDateTime date;
 
 	/**
 	 * Create Storage
@@ -62,7 +62,7 @@ public abstract class AbstractProductStorageTest extends AbstractHUTest
 	protected void initialize()
 	{
 		product = pTomato;
-		date = helper.getTodayDate();
+		date = helper.getTodayZonedDateTime();
 	}
 
 	@Test

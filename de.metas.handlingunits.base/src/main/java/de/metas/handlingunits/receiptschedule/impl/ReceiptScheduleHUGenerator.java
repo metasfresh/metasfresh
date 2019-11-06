@@ -458,7 +458,7 @@ public class ReceiptScheduleHUGenerator
 				huContext,
 				getSingleProductId(),
 				qty,
-				SystemTime.asDate(),
+				SystemTime.asZonedDateTime(),
 				receiptSchedule, // referencedModel,
 				forceQtyAllocation);
 

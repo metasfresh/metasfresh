@@ -110,7 +110,7 @@ public class HUProducerDestinationTest
 						helper.createMutableHUContextOutOfTransaction(),
 						productId,
 						Quantity.of(qty, uom),
-						helper.getTodayDate(),
+						helper.getTodayZonedDateTime(),
 						helper.createDummyReferenceModel(),
 						forceQtyAllocation));
 	}

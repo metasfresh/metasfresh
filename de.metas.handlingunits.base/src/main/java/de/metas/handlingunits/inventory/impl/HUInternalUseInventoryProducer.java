@@ -1,6 +1,7 @@
 package de.metas.handlingunits.inventory.impl;
 
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -15,6 +16,7 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -73,7 +75,7 @@ public class HUInternalUseInventoryProducer
 
 	//
 	// Parameters
-	private Timestamp _movementDate;
+	private ZonedDateTime _movementDate;
 	private String _docSubType = X_C_DocType.DOCSUBTYPE_InternalUseInventory;
 	private final List<I_M_HU> _hus = new ArrayList<>();
 
@@ -184,15 +186,15 @@ public class HUInternalUseInventoryProducer
 
 	public HUInternalUseInventoryProducer setMovementDate(@NonNull final Timestamp movementDate)
 	{
-		_movementDate = movementDate;
+		_movementDate = TimeUtil.asZonedDateTime(movementDate);
 		return this;
 	}
 
-	private Timestamp getMovementDate()
+	private ZonedDateTime getMovementDate()
 	{
 		if (_movementDate == null)
 		{
-			_movementDate = Env.getDate(Env.getCtx());
+			_movementDate = Env.getZonedDateTime();
 		}
 		return _movementDate;
 	}

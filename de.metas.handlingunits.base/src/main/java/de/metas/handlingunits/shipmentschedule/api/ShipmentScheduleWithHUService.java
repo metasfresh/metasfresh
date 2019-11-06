@@ -605,7 +605,7 @@ public class ShipmentScheduleWithHUService
 				huContext,
 				loadOutOfTrx(schedule.getM_Product_ID(), I_M_Product.class),
 				qtyToDeliver,
-				SystemTime.asDate(),
+				SystemTime.asZonedDateTime(),
 				schedule,      // reference model
 				false // forceQtyAllocation
 		);

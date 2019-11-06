@@ -23,7 +23,7 @@ package de.metas.handlingunits.storage.impl;
  */
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 import org.compiere.model.I_C_UOM;
 
@@ -49,13 +49,13 @@ import lombok.NonNull;
 	private final IHUItemStorage itemStorage;
 	private final ProductId productId;
 	private final I_C_UOM uom;
-	private final Date date;
+	private final ZonedDateTime date;
 
 	public HUItemProductStorage(
 			@NonNull final IHUItemStorage itemStorage,
 			@NonNull final ProductId productId,
 			@NonNull final I_C_UOM uom,
-			@NonNull final Date date)
+			@NonNull final ZonedDateTime date)
 	{
 		this.itemStorage = itemStorage;
 		this.productId = productId;

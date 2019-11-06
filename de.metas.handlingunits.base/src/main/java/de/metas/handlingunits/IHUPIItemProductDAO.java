@@ -1,5 +1,7 @@
 package de.metas.handlingunits;
 
+import java.time.ZonedDateTime;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -58,7 +60,7 @@ public interface IHUPIItemProductDAO extends ISingletonService
 
 	List<I_M_HU_PI_Item_Product> retrievePIMaterialItemProducts(I_M_HU_PI_Item itemDef);
 
-	I_M_HU_PI_Item_Product retrievePIMaterialItemProduct(I_M_HU_PI_Item itemDef, I_M_Product product, Date date);
+	I_M_HU_PI_Item_Product retrievePIMaterialItemProduct(I_M_HU_PI_Item itemDef, I_M_Product product, ZonedDateTime date);
 
 	/**
 	 * Retrieves a I_M_HU_PI_Item_Product for the given <code>huItem</code>, <code>product</code> and <code>date</code>. If there are multiple records for the given parameters, they are ordered using
@@ -71,7 +73,7 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	 * @param date
 	 * @return
 	 */
-	I_M_HU_PI_Item_Product retrievePIMaterialItemProduct(I_M_HU_Item huItem, ProductId productId, Date date);
+	I_M_HU_PI_Item_Product retrievePIMaterialItemProduct(I_M_HU_Item huItem, ProductId productId, ZonedDateTime date);
 
 	/**
 	 * Retrieves a I_M_HU_PI_Item_Product for the given <code>huItem</code>, <code>product</code> and <code>date</code>. If there are multiple records for the given parameters, they are ordered using
@@ -82,7 +84,7 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	 * @param date
 	 * @return
 	 */
-	I_M_HU_PI_Item_Product retrievePIMaterialItemProduct(I_M_HU_PI_Item itemDef, I_C_BPartner partner, ProductId productId, Date date);
+	I_M_HU_PI_Item_Product retrievePIMaterialItemProduct(I_M_HU_PI_Item itemDef, I_C_BPartner partner, ProductId productId, ZonedDateTime date);
 
 	I_M_HU_PI_Item_Product retrieveVirtualPIMaterialItemProduct(Properties ctx);
 
@@ -97,7 +99,7 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	 * @param allowInfiniteCapacity if false, then the retrieved product is guaranteed to have <code>IsInfiniteCapacity</code> being <code>false</code>.
 	 * @return
 	 */
-	I_M_HU_PI_Item_Product retrieveMaterialItemProduct(ProductId productId, I_C_BPartner bpartner, Date date, String huUnitType, boolean allowInfiniteCapacity);
+	I_M_HU_PI_Item_Product retrieveMaterialItemProduct(ProductId productId, I_C_BPartner bpartner, ZonedDateTime date, String huUnitType, boolean allowInfiniteCapacity);
 
 	/**
 	 * Similar to {@link #retrieveMaterialItemProduct(I_M_Product, I_C_BPartner, Date, String, boolean)}, but with the additional condition that the PIIP also has the given <code>packagingProduct</code>.<br>
@@ -114,7 +116,7 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	 *
 	 * @task https://metasfresh.atlassian.net/browse/FRESH-386
 	 */
-	I_M_HU_PI_Item_Product retrieveMaterialItemProduct(ProductId productId, I_C_BPartner bpartner, Date date, String huUnitType, boolean allowInfiniteCapacity, ProductId packagingProductId);
+	I_M_HU_PI_Item_Product retrieveMaterialItemProduct(ProductId productId, I_C_BPartner bpartner, ZonedDateTime date, String huUnitType, boolean allowInfiniteCapacity, ProductId packagingProductId);
 
 	List<I_M_HU_PI_Item_Product> retrieveHUItemProducts(Properties ctx, IHUPIItemProductQuery queryVO, String trxName);
 

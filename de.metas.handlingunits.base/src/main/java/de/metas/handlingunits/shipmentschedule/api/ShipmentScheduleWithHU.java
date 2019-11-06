@@ -46,7 +46,6 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.Null;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -532,7 +531,7 @@ public class ShipmentScheduleWithHU
 				huPIItem,
 				bPartner,
 				getProductId(),
-				TimeUtil.asDate(preparationDate));
+				preparationDate);
 		if (matchingPiip != null)
 		{
 			return matchingPiip;

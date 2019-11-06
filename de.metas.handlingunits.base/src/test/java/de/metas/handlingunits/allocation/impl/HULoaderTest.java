@@ -102,7 +102,7 @@ public class HULoaderTest extends AbstractHUTest
 				mtrx.getM_Product(),
 				mtrx.getMovementQty(),
 				Services.get(IHandlingUnitsBL.class).getC_UOM(mtrx),
-				helper.getTodayDate(),
+				helper.getTodayZonedDateTime(),
 				mtrx);
 
 		// dumpStatusAfterTest = true;
@@ -156,7 +156,7 @@ public class HULoaderTest extends AbstractHUTest
 				pTomato,
 				qtyRequest,
 				uomKg,
-				helper.getTodayDate(),
+				helper.getTodayZonedDateTime(),
 				referenceModel);
 		final IAllocationResult result = loader.load(unloadRequest);
 
@@ -197,7 +197,7 @@ public class HULoaderTest extends AbstractHUTest
 				pTomato,
 				qtyRequest,
 				uomKg,
-				helper.getTodayDate(),
+				helper.getTodayZonedDateTime(),
 				referenceModel);
 		final IAllocationResult result = loader.load(unloadRequest);
 

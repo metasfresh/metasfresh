@@ -292,7 +292,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			final IAllocationRequest allocationRequest = AllocationUtils.createQtyRequest(huContext //
 					, IHUPPOrderQtyBL.extractProduct(candidate) // product
 					, qtyToIssue // the quantity to issue
-					, SystemTime.asDayTimestamp() // transaction date
+					, SystemTime.asZonedDateTime() // transaction date
 					, null // referenced model: IMPORTANT to be null, else our build won't detect correctly which is the HU transaction and which is the BOMLine-side transaction
 					, true // forceQtyAllocation: yes, we want to transfer exactly how much we specified in the candidate
 			);

@@ -23,9 +23,9 @@ package de.metas.handlingunits.allocation.transfer.impl;
  */
 
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -118,19 +118,14 @@ public class LUTUAssignBuilder
 		final IMutable<I_M_HU> resultLUHU = new Mutable<>(null);
 		final IContextAware contextInitial = getContext();
 		final IHUContextProcessorExecutor executor = huTrxBL.createHUContextProcessorExecutor(contextInitial);
-		executor.run(new IHUContextProcessor()
-		{
-			@Override
-			public IMutableAllocationResult process(final IHUContext huContext)
-			{
-				final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
-				final I_M_HU luHU = createLUHU(huContext, trxAttributesBuilder);
-				assignTUsToLU(huContext, luHU, tusToAssign);
+		executor.run((IHUContextProcessor)huContext -> {
+			final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
+			final I_M_HU luHU = createLUHU(huContext, trxAttributesBuilder);
+			assignTUsToLU(huContext, luHU, tusToAssign);
 
-				resultLUHU.setValue(luHU);
+			resultLUHU.setValue(luHU);
 
-				return NULL_RESULT; // we don't care
-			}
+			return IHUContextProcessor.NULL_RESULT; // we don't care
 		});
 
 		//
@@ -169,7 +164,7 @@ public class LUTUAssignBuilder
 		final IHUBuilder huBuilder = handlingUnitsDAO.createHUBuilder(huContext);
 		huBuilder.setC_BPartner(getC_BPartner());
 		huBuilder.setC_BPartner_Location_ID(getC_BPartner_Location_ID());
-		huBuilder.setDate(SystemTime.asDate());
+		huBuilder.setDate(SystemTime.asZonedDateTime());
 		huBuilder.setLocatorId(getLocatorId());
 		huBuilder.setHUStatus(X_M_HU.HUSTATUS_Planning);
 
@@ -245,7 +240,7 @@ public class LUTUAssignBuilder
 		final I_C_UOM mockUOM = mockProductStorage.getC_UOM();
 		final Quantity mockQuantity = new Quantity(mockQty, mockUOM);
 
-		final Date date = SystemTime.asTimestamp();
+		final ZonedDateTime date = SystemTime.asZonedDateTime();
 		final Object referencedModel = documentLine.getTrxReferencedModel();
 
 		//

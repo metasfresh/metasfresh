@@ -23,7 +23,7 @@ package de.metas.handlingunits.allocation.transfer.impl;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,7 +39,6 @@ import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
-import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.allocation.transfer.ITUMergeBuilder;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -116,21 +115,16 @@ public class TUMergeBuilder implements ITUMergeBuilder
 	@Override
 	public void mergeTUs()
 	{
-		huTrxBL.createHUContextProcessorExecutor(huContextInitial).run(new IHUContextProcessor()
-		{
-			@Override
-			public IMutableAllocationResult process(final IHUContext huContext0)
-			{
-				// Make a copy of the processing context, we will need to modify it
-				final IMutableHUContext huContext = huContext0.copyAsMutable();
+		huTrxBL.createHUContextProcessorExecutor(huContextInitial).run((IHUContextProcessor)huContext0 -> {
+			// Make a copy of the processing context, we will need to modify it
+			final IMutableHUContext huContext = huContext0.copyAsMutable();
 
-				// Register our split HUTrxListener because this "merge" operation is similar with a split
-				// More, this will allow our listeners to execute on-split operations (e.g. linking the newly created VHU to same document as the source VHU).
-				huContext.getTrxListeners().addListener(HUSplitBuilderTrxListener.instance);
+			// Register our split HUTrxListener because this "merge" operation is similar with a split
+			// More, this will allow our listeners to execute on-split operations (e.g. linking the newly created VHU to same document as the source VHU).
+			huContext.getTrxListeners().addListener(HUSplitBuilderTrxListener.instance);
 
-				mergeTUs0(huContext);
-				return NULL_RESULT; // we don't care about the result
-			}
+			mergeTUs0(huContext);
+			return IHUContextProcessor.NULL_RESULT; // we don't care about the result
 		});
 	}
 
@@ -170,7 +164,7 @@ public class TUMergeBuilder implements ITUMergeBuilder
 	 */
 	private IAllocationRequest createMergeAllocationRequest(final IHUContext huContext)
 	{
-		final Timestamp date = SystemTime.asTimestamp();
+		final ZonedDateTime date = SystemTime.asZonedDateTime();
 		return AllocationUtils.createQtyRequest(
 				huContext,
 				cuProductId, // Product

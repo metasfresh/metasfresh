@@ -24,6 +24,7 @@ package de.metas.handlingunits.ddorder.spi.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Forecast;
+import org.compiere.util.TimeUtil;
 
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -62,7 +63,11 @@ public class ForecastLineHUDocumentHandler implements IHUDocumentHandler
 			final I_M_Forecast forecast = forecastLine.getM_Forecast();
 			final String huUnitType = X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit;
 
-			piip = Services.get(IHUPIItemProductDAO.class).retrieveMaterialItemProduct(productId, forecast.getC_BPartner(), forecast.getDatePromised(), huUnitType,
+			piip = Services.get(IHUPIItemProductDAO.class).retrieveMaterialItemProduct(
+					productId, 
+					forecast.getC_BPartner(), 
+					TimeUtil.asZonedDateTime(forecast.getDatePromised()), 
+					huUnitType,
 					false);
 		}
 

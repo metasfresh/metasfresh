@@ -33,6 +33,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.bpartner.BPartnerLocationId;
@@ -203,7 +204,7 @@ public class DesadvBL implements IDesadvBL
 		final I_M_HU_PI_Item_Product materialItemProduct = hupiItemProductDAO.retrieveMaterialItemProduct(
 				productId,
 				buyerBPartner,
-				order.getDateOrdered(),
+				TimeUtil.asZonedDateTime(order.getDateOrdered()),
 				X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit, true/* allowInfiniteCapacity */);
 		if (materialItemProduct != null)
 		{

@@ -25,6 +25,7 @@ package de.metas.handlingunits.ddorder.spi.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 
@@ -77,7 +78,11 @@ public class DDOrderLineHUDocumentHandler implements IHUDocumentHandler
 			final I_DD_Order ddOrder = ddOrderLine.getDD_Order();
 			final String huUnitType = X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit;
 
-			piip = Services.get(IHUPIItemProductDAO.class).retrieveMaterialItemProduct(productId, ddOrder.getC_BPartner(), ddOrder.getDateOrdered(), huUnitType,
+			piip = Services.get(IHUPIItemProductDAO.class).retrieveMaterialItemProduct(
+					productId, 
+					ddOrder.getC_BPartner(), 
+					TimeUtil.asZonedDateTime(ddOrder.getDateOrdered()), 
+					huUnitType,
 					false); // allowInfiniteCapacity = false
 		}
 

@@ -25,9 +25,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  */
 
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -111,7 +111,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	public I_M_HU_PI_Item_Product retrievePIMaterialItemProduct(
 			final I_M_HU_PI_Item itemDef,
 			@NonNull final I_M_Product product,
-			final Date date)
+			final ZonedDateTime date)
 	{
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		final I_C_BPartner partner = null; // N/A
@@ -123,7 +123,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 			@NonNull final I_M_HU_PI_Item itemDef,
 			@Nullable final I_C_BPartner partner,
 			@NonNull final ProductId productId,
-			@Nullable final Date date)
+			@Nullable final ZonedDateTime date)
 	{
 		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();
 		if (partner != null)
@@ -147,7 +147,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	public I_M_HU_PI_Item_Product retrievePIMaterialItemProduct(
 			final I_M_HU_Item huItem,
 			final ProductId productId,
-			final Date date)
+			final ZonedDateTime date)
 	{
 		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();
 		queryVO.setM_Product_ID(productId.getRepoId());
@@ -171,7 +171,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	public I_M_HU_PI_Item_Product retrieveMaterialItemProduct(
 			final ProductId productId,
 			final I_C_BPartner bpartner,
-			final Date date,
+			final ZonedDateTime date,
 			final String huUnitType,
 			final boolean allowInfiniteCapacity)
 	{
@@ -183,7 +183,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	public I_M_HU_PI_Item_Product retrieveMaterialItemProduct(
 			final ProductId productId,
 			final I_C_BPartner bpartner,
-			final Date date,
+			final ZonedDateTime date,
 			final String huUnitType,
 			final boolean allowInfiniteCapacity,
 			final ProductId packagingProductId)
@@ -312,7 +312,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 		//
 		// Valid From/To Filtering (only if Date is specified in query)
-		final Date date = queryVO.getDate();
+		final ZonedDateTime date = queryVO.getDate();
 		if (date != null)
 		{
 			final IQueryFilter<I_M_HU_PI_Item_Product> validDateFromFilter = queryBL.<I_M_HU_PI_Item_Product> createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
@@ -583,7 +583,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 		//
 		// Filter by current date (ValidFrom >= today, ValidTo <= today)
-		final Date currentDate = SystemTime.asDate();
+		final ZonedDateTime currentDate = SystemTime.asZonedDateTime();
 		queryVO.setDate(currentDate);
 
 		//

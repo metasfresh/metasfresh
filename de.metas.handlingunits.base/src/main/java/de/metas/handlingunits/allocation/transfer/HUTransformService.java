@@ -188,7 +188,7 @@ public class HUTransformService
 		final IAllocationRequest allocationRequest = AllocationUtils.createQtyRequest(huContext,
 				cuProduct,
 				qtyCU,
-				SystemTime.asTimestamp(),
+				SystemTime.asZonedDateTime(),
 				null, // referenced model
 				forceAllocation);
 

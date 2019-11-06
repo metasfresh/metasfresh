@@ -23,7 +23,7 @@ package de.metas.handlingunits.allocation.impl;
  */
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Properties;
 
@@ -136,7 +136,7 @@ public final class AllocationUtils
 			final I_M_Product product,
 			final BigDecimal qty,
 			final I_C_UOM uom,
-			final Date date)
+			final ZonedDateTime date)
 	{
 		final Object referenceModel = null;
 		return createQtyRequest(huContext, product, qty, uom, date, referenceModel);
@@ -147,7 +147,7 @@ public final class AllocationUtils
 			final I_M_Product product,
 			final BigDecimal qty,
 			final I_C_UOM uom,
-			final Date date,
+			final ZonedDateTime date,
 			final Object referenceModel)
 	{
 		final boolean forceQtyAllocation = false;
@@ -170,7 +170,7 @@ public final class AllocationUtils
 			final I_M_Product product,
 			final BigDecimal qty,
 			final I_C_UOM uom,
-			final Date date,
+			final ZonedDateTime date,
 			final Object referenceModel,
 			final boolean forceQtyAllocation)
 	{
@@ -182,7 +182,7 @@ public final class AllocationUtils
 			final IHUContext huContext,
 			final I_M_Product product,
 			final Quantity qty,
-			final Date date,
+			final ZonedDateTime date,
 			final Object referenceModel,
 			final boolean forceQtyAllocation)
 	{
@@ -200,7 +200,7 @@ public final class AllocationUtils
 			final IHUContext huContext,
 			final ProductId productId,
 			final Quantity qty,
-			final Date date)
+			final ZonedDateTime date)
 	{
 		return createAllocationRequestBuilder()
 				.setHUContext(huContext)
@@ -216,7 +216,7 @@ public final class AllocationUtils
 			final IHUContext huContext,
 			final ProductId productId,
 			final Quantity qty,
-			final Date date,
+			final ZonedDateTime date,
 			final Object referenceModel,
 			final boolean forceQtyAllocation)
 	{

@@ -1,28 +1,6 @@
 package de.metas.handlingunits.impl;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
@@ -41,7 +19,7 @@ import de.metas.handlingunits.IHUPIItemProductQuery;
 	private int huPIItemId = -1;
 	private int productId = -1;
 	private int bpartnerId = -1;
-	private Date date = null;
+	private ZonedDateTime date = null;
 	private boolean allowAnyProduct = true;
 	private boolean allowInifiniteCapacity = true;
 	private String huUnitType = null;
@@ -156,13 +134,13 @@ import de.metas.handlingunits.IHUPIItemProductQuery;
 	}
 
 	@Override
-	public void setDate(final Date date)
+	public void setDate(final ZonedDateTime date)
 	{
 		this.date = date;
 	}
 
 	@Override
-	public Date getDate()
+	public ZonedDateTime getDate()
 	{
 		return date;
 	}
