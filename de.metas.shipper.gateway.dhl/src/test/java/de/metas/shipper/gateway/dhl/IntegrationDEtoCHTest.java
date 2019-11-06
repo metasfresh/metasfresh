@@ -79,7 +79,7 @@ class IntegrationDEtoCHTest
 		// persist the DO
 		final DeliveryOrder deliveryOrder = deliveryOrderRepository.save(DhlTestHelper.createDummyDeliveryOrderDEtoCH());
 
-		final DeliveryOrderId deliveryOrderRepoId = DeliveryOrderId.ofRepoId(deliveryOrder.getRepoId());
+		final DeliveryOrderId deliveryOrderRepoId = deliveryOrder.getRepoId();
 		final DeliveryOrder deserialisedDO = deliveryOrderRepository.getByRepoId(deliveryOrderRepoId);
 
 		final DeliveryOrder completedDeliveryOrder = client.completeDeliveryOrder(deserialisedDO);

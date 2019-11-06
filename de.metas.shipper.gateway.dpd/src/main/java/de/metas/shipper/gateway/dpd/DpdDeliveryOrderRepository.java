@@ -66,8 +66,8 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 	@Override
 	public ITableRecordReference toTableRecordReference(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		final int deliveryOrderRepoId = deliveryOrder.getRepoId();
-		Check.assume(deliveryOrderRepoId > 0, "deliveryOrderRepoId > 0 for {}", deliveryOrder);
+		final DeliveryOrderId deliveryOrderRepoId = deliveryOrder.getRepoId();
+		Check.assumeNotNull(deliveryOrderRepoId, "DeliveryOrder ID must not be null");
 		return TableRecordReference.of(I_DPD_StoreOrder.Table_Name, deliveryOrderRepoId);
 	}
 
@@ -92,7 +92,7 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 	@NonNull
 	public DeliveryOrder save(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		if (deliveryOrder.getRepoId() >= 1)
+		if (deliveryOrder.getRepoId() != null)
 		{
 
 			return null;
@@ -108,7 +108,7 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 	private DeliveryOrder updateDeliveryOrderRepoId(@NonNull final DeliveryOrder deliveryOrder, @NonNull final I_DPD_StoreOrder storeOrderPO)
 	{
 		return deliveryOrder.toBuilder()
-				.repoId(storeOrderPO.getDPD_StoreOrder_ID())
+				.repoId(DeliveryOrderId.ofRepoId(storeOrderPO.getDPD_StoreOrder_ID()))
 				.build();
 	}
 

@@ -29,6 +29,7 @@ import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.model.DpdOrderType;
 import de.metas.shipper.gateway.dpd.model.DpdPaperFormat;
 import de.metas.shipper.gateway.dpd.model.DpdServiceType;
+import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.CountryCode;
@@ -60,7 +61,7 @@ class DpdTestHelper
 	static DeliveryOrder createDummyDeliveryOrderDEtoDE()
 	{
 		return DeliveryOrder.builder()
-				.repoId(987654321)
+				.repoId(DeliveryOrderId.ofRepoId(987654321))
 				// shipper
 				.pickupAddress(Address.builder()
 						.companyName1("TheBestPessimist Inc.")
@@ -107,7 +108,7 @@ class DpdTestHelper
 	static DeliveryOrder createDummyDeliveryOrderDEtoCH()
 	{
 		return DeliveryOrder.builder()
-				.repoId(987654321)
+				.repoId(DeliveryOrderId.ofRepoId(987654321))
 				// shipper
 				.pickupAddress(Address.builder()
 						.companyName1("TheBestPessimist Inc.")
@@ -154,7 +155,7 @@ class DpdTestHelper
 	static DeliveryOrder createDummyDeliveryOrderDEtoAT()
 	{
 		return DeliveryOrder.builder()
-				.repoId(987654321)
+				.repoId(DeliveryOrderId.ofRepoId(987654321))
 				// shipper
 				.pickupAddress(Address.builder()
 						.companyName1("TheBestPessimist Inc.")

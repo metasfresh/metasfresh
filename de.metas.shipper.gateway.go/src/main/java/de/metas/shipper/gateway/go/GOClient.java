@@ -146,7 +146,7 @@ public class GOClient implements ShipperGatewayClient
 		final Object goResponseObj = sendAndReceive(
 				objectFactory.createGOWebServiceSendungsErstellung(goRequest),
 				"createDeliveryOrder",
-				draftDeliveryOrder.getRepoId());
+				draftDeliveryOrder.getRepoId().getRepoId());
 		final SendungsRueckmeldung goResponse = (SendungsRueckmeldung)goResponseObj;
 		final DeliveryOrder deliveryOrderResponse = createDeliveryOrderFromResponse(goResponse, draftDeliveryOrder, GOOrderStatus.NEW);
 		logger.trace("Delivery order created: {}", deliveryOrderResponse);
@@ -163,7 +163,7 @@ public class GOClient implements ShipperGatewayClient
 		final Object goResponseObj = sendAndReceive(
 				objectFactory.createGOWebServiceSendungsErstellung(goRequest),
 				"completeDeliveryOrder",
-				deliveryOrderRequest.getRepoId());
+				deliveryOrderRequest.getRepoId().getRepoId());
 		final SendungsRueckmeldung goResponse = (SendungsRueckmeldung)goResponseObj;
 		final DeliveryOrder deliveryOrderResponse = createDeliveryOrderFromResponse(goResponse, deliveryOrderRequest, GOOrderStatus.APPROVED);
 		logger.trace("Delivery order completed: {}", deliveryOrderResponse);
@@ -183,7 +183,7 @@ public class GOClient implements ShipperGatewayClient
 		final Object goResponseObj = sendAndReceive(
 				objectFactory.createGOWebServiceSendungsErstellung(goRequest),
 				"voidDeliveryOrder",
-				deliveryOrderRequest.getRepoId());
+				deliveryOrderRequest.getRepoId().getRepoId());
 		final SendungsRueckmeldung goResponse = (SendungsRueckmeldung)goResponseObj;
 		final DeliveryOrder deliveryOrderResponse = createDeliveryOrderFromResponse(goResponse, deliveryOrderRequest, GOOrderStatus.CANCELLATION);
 		logger.trace("Delivery order completed: {}", deliveryOrderResponse);
@@ -201,7 +201,7 @@ public class GOClient implements ShipperGatewayClient
 		final Object goResponseObj = sendAndReceive(
 				objectFactory.createGOWebServiceSendungsnummern(goRequest),
 				"getPackageLabelsList",
-				deliveryOrder.getRepoId());
+				deliveryOrder.getRepoId().getRepoId());
 		if (goResponseObj instanceof Label)
 		{
 			final Label goLabels = (Label)goResponseObj;

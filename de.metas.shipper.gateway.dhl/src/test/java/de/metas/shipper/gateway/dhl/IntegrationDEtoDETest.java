@@ -32,7 +32,6 @@ import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
 import de.metas.shipper.gateway.dhl.model.DhlServiceType;
-import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
@@ -112,7 +111,7 @@ class IntegrationDEtoDETest
 
 		//
 		// check 3: updated Dummy DO <-> retrieved DO from persistence
-		final DeliveryOrder deserialisedDO = orderRepository.getByRepoId(DeliveryOrderId.ofRepoId(updatedDummyDeliveryOrder.getRepoId()));
+		final DeliveryOrder deserialisedDO = orderRepository.getByRepoId(updatedDummyDeliveryOrder.getRepoId());
 		DhlCustomDeliveryData customDeliveryData = DhlCustomDeliveryData.builder()
 				.detail(extractPackageIdAndSequenceNumberFromDO(deserialisedDO, 1))
 				.detail(extractPackageIdAndSequenceNumberFromDO(deserialisedDO, 2))
@@ -149,7 +148,7 @@ class IntegrationDEtoDETest
 
 		//
 		// check 6: retrieve the persisted completed DO. nothing should be modified
-		final DeliveryOrder deserialisedCompletedDeliveryOrder = orderRepository.getByRepoId(DeliveryOrderId.ofRepoId(updatedDummyDeliveryOrder.getRepoId()));
+		final DeliveryOrder deserialisedCompletedDeliveryOrder = orderRepository.getByRepoId(updatedDummyDeliveryOrder.getRepoId());
 		assertEquals("nothing should be modified", updatedDummyDeliveryOrder, deserialisedCompletedDeliveryOrder);
 		assertSizeOfCustomDeliveryData(deserialisedCompletedDeliveryOrder);
 	}

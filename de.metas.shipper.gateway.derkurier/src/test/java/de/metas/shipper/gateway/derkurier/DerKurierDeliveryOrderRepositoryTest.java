@@ -73,7 +73,7 @@ public class DerKurierDeliveryOrderRepositoryTest
 		final DeliveryOrder savedDeliveryOrder = derKurierDeliveryOrderRepository.save(deliveryOrder);
 
 		// test some particular fields; feel free to extend
-		assertThat(savedDeliveryOrder.getRepoId()).isGreaterThan(0);
+		assertThat(savedDeliveryOrder.getRepoId().getRepoId()).isGreaterThan(0);
 		assertThat(savedDeliveryOrder.getShipperId()).isEqualTo(M_SHIPPER_ID);
 		assertThat(savedDeliveryOrder.getShipperTransportationId()).isEqualByComparingTo(M_SHIPPER_TRANSPORTATION_ID);
 
@@ -90,7 +90,7 @@ public class DerKurierDeliveryOrderRepositoryTest
 		assertThat(headerRecord.getDK_DesiredPickupTime_From()).isNull();
 
 		// reload the saved order and verify that it's still the same
-		final DeliveryOrder loadedDeliveryOrder = derKurierDeliveryOrderRepository.getByRepoId(DeliveryOrderId.ofRepoId(savedDeliveryOrder.getRepoId()));
+		final DeliveryOrder loadedDeliveryOrder = derKurierDeliveryOrderRepository.getByRepoId(savedDeliveryOrder.getRepoId());
 		assertThat(loadedDeliveryOrder).isEqualTo(savedDeliveryOrder);
 	}
 

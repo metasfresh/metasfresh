@@ -77,7 +77,7 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 				.build();
 
 		return DeliveryOrder.builder()
-				.repoId(orderPO.getGO_DeliveryOrder_ID())
+				.repoId(DeliveryOrderId.ofRepoId(orderPO.getGO_DeliveryOrder_ID()))
 				.shipperId(ShipperId.ofRepoId(orderPO.getM_Shipper_ID()))
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(orderPO.getM_ShipperTransportation_ID()))
 				//
@@ -111,7 +111,7 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 	private I_GO_DeliveryOrder toDeliveryOrderPO(@NonNull final DeliveryOrder order)
 	{
 		I_GO_DeliveryOrder orderPO = null;
-		if (order.getRepoId() > 0)
+		if (order.getRepoId() != null)
 		{
 			orderPO = InterfaceWrapperHelper.load(order.getRepoId(), I_GO_DeliveryOrder.class);
 		}
@@ -168,8 +168,8 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 	@Override
 	public TableRecordReference toTableRecordReference(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		final int deliveryOrderRepoId = deliveryOrder.getRepoId();
-		Check.assume(deliveryOrderRepoId > 0, "deliveryOrderRepoId > 0 for {}", deliveryOrder);
+		final DeliveryOrderId deliveryOrderRepoId = deliveryOrder.getRepoId();
+		Check.assumeNotNull(deliveryOrderRepoId, "DeliveryOrder ID must not be null");
 		return TableRecordReference.of(I_GO_DeliveryOrder.Table_Name, deliveryOrderRepoId);
 	}
 
@@ -192,7 +192,7 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 		saveAssignedPackageIds(orderPO.getGO_DeliveryOrder_ID(), GOUtils.getSingleDeliveryPosition(order).getPackageIds());
 
 		return order.toBuilder()
-				.repoId(orderPO.getGO_DeliveryOrder_ID())
+				.repoId(DeliveryOrderId.ofRepoId(orderPO.getGO_DeliveryOrder_ID()))
 				.build();
 	}
 
