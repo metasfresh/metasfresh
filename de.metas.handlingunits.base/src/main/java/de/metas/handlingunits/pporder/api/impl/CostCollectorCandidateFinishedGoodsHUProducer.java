@@ -13,9 +13,9 @@ import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order;
-import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.util.Services;
 
@@ -73,16 +73,18 @@ public class CostCollectorCandidateFinishedGoodsHUProducer extends AbstractPPOrd
 	}
 
 	@Override
-	protected I_PP_Order_Qty newCandidate()
+	protected ReceiptCandidateRequestProducer newReceiptCandidateRequestProducer()
 	{
-		final I_PP_Order_Qty ppOrderQty = InterfaceWrapperHelper.newInstance(I_PP_Order_Qty.class);
+		final I_PP_Order order = getPP_Order();
+		final PPOrderId orderId = PPOrderId.ofRepoId(order.getPP_Order_ID());
+		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
 
-		final I_PP_Order ppOrder = getPP_Order();
-		ppOrderQty.setAD_Org_ID(ppOrder.getAD_Org_ID());
-		ppOrderQty.setPP_Order(ppOrder);
-		ppOrderQty.setPP_Order_BOMLine(null);
-
-		return ppOrderQty;
+		return ReceiptCandidateRequestProducer.builder()
+				.orderId(orderId)
+				.orderBOMLineId(null)
+				.orgId(orgId)
+				.date(getMovementDate())
+				.build();
 	}
 
 	@Override

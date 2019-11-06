@@ -1,5 +1,7 @@
 package de.metas.handlingunits.pporder.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+
 import java.util.List;
 import java.util.Properties;
 
@@ -8,6 +10,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.base.Preconditions;
 
@@ -16,7 +19,9 @@ import de.metas.cache.annotation.CacheTrx;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -51,6 +56,25 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 		Preconditions.checkArgument(ppOrderQtyId > 0, "ppOrderQtyId > 0");
 
 		return InterfaceWrapperHelper.load(ppOrderQtyId, I_PP_Order_Qty.class);
+	}
+
+	@Override
+	public I_PP_Order_Qty save(@NonNull final CreateReceiptCandidateRequest request)
+	{
+		final I_PP_Order_Qty record = newInstance(I_PP_Order_Qty.class);
+		record.setPP_Order_ID(request.getOrderId().getRepoId());
+		record.setPP_Order_BOMLine_ID(PPOrderBOMLineId.toRepoId(request.getOrderBOMLineId()));
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setMovementDate(TimeUtil.asTimestamp(request.getDate()));
+		record.setM_Locator_ID(request.getLocatorId().getRepoId());
+		record.setM_HU_ID(request.getTopLevelHUId().getRepoId());
+		record.setM_Product_ID(request.getProductId().getRepoId());
+		record.setQty(request.getQtyToReceive().toBigDecimal());
+		record.setC_UOM_ID(request.getQtyToReceive().getUomId().getRepoId());
+		record.setProcessed(false);
+		save(record);
+
+		return record;
 	}
 
 	@Override

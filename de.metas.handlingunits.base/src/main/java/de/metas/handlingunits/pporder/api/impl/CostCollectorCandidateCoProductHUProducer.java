@@ -12,23 +12,24 @@ import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
-import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
 public class CostCollectorCandidateCoProductHUProducer extends AbstractPPOrderReceiptHUProducer
 {
 	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
-	
+
 	private final I_PP_Order_BOMLine _ppOrderBOMLine;
 	private final I_M_Product _product;
 
 	public CostCollectorCandidateCoProductHUProducer(final org.eevolution.model.I_PP_Order_BOMLine ppOrderBOMLine)
 	{
 		super(PPOrderId.ofRepoId(ppOrderBOMLine.getPP_Order_ID()));
-		
+
 		// TODO: validate:
 		// * if is a completed PP_Order
 		// * if is really a receipt (i.e. it's a co/by product line)
@@ -73,21 +74,22 @@ public class CostCollectorCandidateCoProductHUProducer extends AbstractPPOrderRe
 		final I_PP_Order_BOMLine ppOrderBOMLine = getPP_Order_BOMLine();
 		return huPPOrderBL.createReceiptLUTUConfigurationManager(ppOrderBOMLine);
 	}
-	
-	@Override
-	protected I_PP_Order_Qty newCandidate()
-	{
-		final I_PP_Order_Qty ppOrderQty = InterfaceWrapperHelper.newInstance(I_PP_Order_Qty.class);
-		
-		final I_PP_Order_BOMLine ppOrderBOMLine = getPP_Order_BOMLine();
-		final org.eevolution.model.I_PP_Order ppOrder = ppOrderBOMLine.getPP_Order();
-		ppOrderQty.setAD_Org_ID(ppOrderBOMLine.getAD_Org_ID());
-		ppOrderQty.setPP_Order(ppOrder);
-		ppOrderQty.setPP_Order_BOMLine(ppOrderBOMLine);
-		
-		return ppOrderQty;
-	}
 
+	@Override
+	protected ReceiptCandidateRequestProducer newReceiptCandidateRequestProducer()
+	{
+		final I_PP_Order_BOMLine orderBOMLine = getPP_Order_BOMLine();
+		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID());
+		final PPOrderId orderId = PPOrderId.ofRepoId(orderBOMLine.getPP_Order_ID());
+		final OrgId orgId = OrgId.ofRepoId(orderBOMLine.getAD_Org_ID());
+
+		return ReceiptCandidateRequestProducer.builder()
+				.orderId(orderId)
+				.orderBOMLineId(orderBOMLineId)
+				.orgId(orgId)
+				.date(getMovementDate())
+				.build();
+	}
 
 	@Override
 	protected void setAssignedHUs(final Collection<I_M_HU> hus)

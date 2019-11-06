@@ -33,7 +33,9 @@ import de.metas.util.ISingletonService;
 public interface IHUPPOrderQtyDAO extends ISingletonService
 {
 	I_PP_Order_Qty retrieveById(int ppOrderQtyId);
-	
+
+	I_PP_Order_Qty save(CreateReceiptCandidateRequest request);
+
 	void save(final I_PP_Order_Qty ppOrderQty);
 
 	void delete(I_PP_Order_Qty ppOrderQty);
@@ -48,7 +50,7 @@ public interface IHUPPOrderQtyDAO extends ISingletonService
 	}
 
 	List<I_PP_Order_Qty> retrieveOrderQtys(PPOrderId ppOrderId);
-	
+
 	I_PP_Order_Qty retrieveOrderQtyForCostCollector(PPOrderId ppOrderId, final int costCollectorId);
 
 	default Stream<I_PP_Order_Qty> streamOrderQtys(PPOrderId ppOrderId)
