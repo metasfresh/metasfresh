@@ -55,6 +55,7 @@ import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlCustomsDocument;
 import de.metas.shipper.gateway.dhl.model.DhlPackageLabelType;
 import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
+import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.Address;
@@ -238,13 +239,13 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 				.build();
 	}
 
-	private Object doActualRequest(final Object request, final int deliveryOrderRepoId)
+	private Object doActualRequest(final Object request, @NonNull final DeliveryOrderId deliveryOrderRepoId)
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final DhlClientLogEvent.DhlClientLogEventBuilder logEventBuilder = DhlClientLogEvent.builder()
 				.marshaller(webServiceTemplate.getMarshaller())
 				.requestElement(request)
-				.deliveryOrderRepoId(deliveryOrderRepoId)
+				.deliveryOrderRepoId(deliveryOrderRepoId.getRepoId())
 				.config(config);
 		try
 		{

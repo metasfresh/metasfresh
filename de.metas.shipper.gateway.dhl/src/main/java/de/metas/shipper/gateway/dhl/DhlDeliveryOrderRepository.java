@@ -219,7 +219,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	private static List<I_DHL_ShipmentOrder> getAllShipmentOrdersForRequest(final int requestId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_DHL_ShipmentOrder.class)
+				.createQueryBuilder(I_DHL_ShipmentOrder.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DHL_ShipmentOrder.COLUMNNAME_DHL_ShipmentOrderRequest_ID, requestId)
 				.create()

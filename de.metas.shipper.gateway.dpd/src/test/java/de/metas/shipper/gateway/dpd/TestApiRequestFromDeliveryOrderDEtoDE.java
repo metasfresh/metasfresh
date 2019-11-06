@@ -41,6 +41,7 @@ import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.util.DpdClientUtil;
 import de.metas.shipper.gateway.dpd.util.DpdConversionUtil;
 import de.metas.shipper.gateway.dpd.util.DpdSoapHeaderWithAuth;
+import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
@@ -96,7 +97,7 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 			assertTrue(orderResult.getParcellabelsPDF().length > 2);
 			assertEquals(1, orderResult.getShipmentResponses().size());
 			final ShipmentResponse shipmentResponse = orderResult.getShipmentResponses().get(0);
-			assertEquals("987654321", shipmentResponse.getIdentificationNumber());
+			assertEquals(DeliveryOrderId.ofRepoId(987654321).toString(), shipmentResponse.getIdentificationNumber());
 			assertTrue(StringUtils.isNotBlank(shipmentResponse.getMpsId()));
 
 			DpdTestHelper.dumpPdfToDisk(orderResult.getParcellabelsPDF());
@@ -109,7 +110,8 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 		return createStoreOrdersFromDeliveryOrder(deliveryOrder);
 	}
 
-	private StoreOrders createStoreOrdersFromDeliveryOrder(final DeliveryOrder deliveryOrder)
+	@NonNull
+	private StoreOrders createStoreOrdersFromDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		final StoreOrders storeOrders = shipmentServiceOF.createStoreOrders();
 		final PrintOptions printOptions = createPrintOptions(DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()));

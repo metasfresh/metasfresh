@@ -37,6 +37,8 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.ShipperId;
+import de.metas.shipping.api.ShipperTransportationId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -95,6 +97,8 @@ class DpdTestHelper
 				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
 				.customerReference(null)
 				.serviceType(DpdServiceType.DPD_CLASSIC)
+				.shipperId(ShipperId.ofRepoId(1))
+				.shipperTransportationId(ShipperTransportationId.ofRepoId(1))
 				.customDeliveryData(DpdOrderCustomDeliveryData.builder()
 						.orderType(DpdOrderType.CONSIGNMENT)
 						// .sendingDepot()// this is null and only set in the client, after login is done
@@ -142,6 +146,8 @@ class DpdTestHelper
 				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
 				.customerReference(null)
 				.serviceType(DpdServiceType.DPD_CLASSIC)
+				.shipperId(ShipperId.ofRepoId(1))
+				.shipperTransportationId(ShipperTransportationId.ofRepoId(1))
 				.customDeliveryData(DpdOrderCustomDeliveryData.builder()
 						.orderType(DpdOrderType.CONSIGNMENT)
 						// .sendingDepot()// this is null and only set in the client, after login is done
@@ -189,6 +195,8 @@ class DpdTestHelper
 				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
 				.customerReference(null)
 				.serviceType(DpdServiceType.DPD_CLASSIC)
+				.shipperId(ShipperId.ofRepoId(1))
+				.shipperTransportationId(ShipperTransportationId.ofRepoId(1))
 				.customDeliveryData(DpdOrderCustomDeliveryData.builder()
 						.orderType(DpdOrderType.CONSIGNMENT)
 						// .sendingDepot()// this is null and only set in the client, after login is done

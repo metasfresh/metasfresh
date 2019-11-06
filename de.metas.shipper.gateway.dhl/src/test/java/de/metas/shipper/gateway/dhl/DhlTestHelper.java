@@ -32,6 +32,8 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.ShipperId;
+import de.metas.shipping.api.ShipperTransportationId;
 import lombok.experimental.UtilityClass;
 
 import java.time.LocalDate;
@@ -86,8 +88,10 @@ class DhlTestHelper
 						.packageIds(createPackageIDs())
 						.grossWeightKg(1)
 						.build())
-				 .customerReference(null)
+				.customerReference(null)
 				.serviceType(DhlServiceType.Dhl_Paket)
+				.shipperId(ShipperId.ofRepoId(1))
+				.shipperTransportationId(ShipperTransportationId.ofRepoId(1))
 				.build();
 	}
 
@@ -132,8 +136,10 @@ class DhlTestHelper
 						.packageIds(createPackageIDs())
 						.grossWeightKg(1)
 						.build())
-				 .customerReference(null)
+				.customerReference(null)
 				.serviceType(DhlServiceType.Dhl_PaketInternational)
+				.shipperId(ShipperId.ofRepoId(1))
+				.shipperTransportationId(ShipperTransportationId.ofRepoId(1))
 				.build();
 	}
 
@@ -178,8 +184,10 @@ class DhlTestHelper
 						.packageIds(createPackageIDs())
 						.grossWeightKg(1)
 						.build())
-				 .customerReference(null)
+				.customerReference(null)
 				.serviceType(DhlServiceType.Dhl_PaketInternational)
+				.shipperId(ShipperId.ofRepoId(1))
+				.shipperTransportationId(ShipperTransportationId.ofRepoId(1))
 				.build();
 	}
 
