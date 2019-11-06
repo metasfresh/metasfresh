@@ -12,6 +12,7 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -42,6 +43,11 @@ import lombok.ToString;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class ReceiptScheduleDeletedEvent extends AbstractReceiptScheduleEvent
 {
+	public static ReceiptScheduleDeletedEvent cast(@NonNull final AbstractReceiptScheduleEvent event)
+	{
+		return (ReceiptScheduleDeletedEvent)event;
+	}
+
 	public static final String TYPE = "ReceiptScheduleDeletedEvent";
 
 	@JsonCreator

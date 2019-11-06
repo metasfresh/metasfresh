@@ -276,7 +276,17 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.andCollectChildren(I_M_HU_Item.COLUMN_M_HU_ID)
 				.andCollect(I_M_HU_PackingMaterial.COLUMN_M_HU_PackingMaterial_ID, I_M_HU_PackingMaterial.class)
 				.create()
-				.firstOnly(I_M_HU_PackingMaterial.class);
+				.first(I_M_HU_PackingMaterial.class);
+
+		// if there's no packing material, don't die with NPE, but return a dummy package dimensions and call it a day
+		if (packingMaterial == null)
+		{
+			return PackageDimensions.builder()
+					.heightInCM(10)
+					.lengthInCM(10)
+					.widthInCM(10)
+					.build();
+		}
 
 		final UomId uomId = UomId.ofRepoIdOrNull(packingMaterial.getC_UOM_Dimension_ID());
 

@@ -1,8 +1,5 @@
 package de.metas.material.dispo.service;
 
-import org.junit.extensions.cpsuite.ClasspathSuite;
-import org.junit.runner.RunWith;
-
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
 
@@ -36,7 +33,7 @@ import de.metas.util.Services;
  *
  * Apparently this can't be solved with the <code>@BeforeSuite</code> annotation.
  */
-@RunWith(ClasspathSuite.class)
+//@RunWith(ClasspathSuite.class)
 public class AllTestsFromClassPathRunner
 {
 }

@@ -8,12 +8,9 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
-import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
-import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail.PurchaseDetailBuilder;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
-import de.metas.material.dispo.commons.repository.query.PurchaseDetailsQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleCreatedEvent;
@@ -70,21 +67,7 @@ public class ReceiptsScheduleCreatedHandler
 	protected CandidatesQuery createCandidatesQuery(@NonNull final AbstractReceiptScheduleEvent event)
 	{
 		final ReceiptScheduleCreatedEvent createdEvent = ReceiptScheduleCreatedEvent.cast(event);
-		if (createdEvent.getPurchaseCandidateRepoId() <= 0)
-		{
-			return CandidatesQuery.FALSE;
-		}
-
-		final PurchaseDetailsQuery purchaseDetailsQuery = PurchaseDetailsQuery.builder()
-				.purchaseCandidateRepoId(createdEvent.getPurchaseCandidateRepoId())
-				.orderLineRepoIdMustBeNull(true)
-				.build();
-
-		return CandidatesQuery.builder()
-				.type(CandidateType.SUPPLY)
-				.businessCase(CandidateBusinessCase.PURCHASE)
-				.purchaseDetailsQuery(purchaseDetailsQuery)
-				.build();
+		return ReceiptsScheduleHandlerUtil.queryByPurchaseCandidateId(createdEvent);
 	}
 
 	@Override

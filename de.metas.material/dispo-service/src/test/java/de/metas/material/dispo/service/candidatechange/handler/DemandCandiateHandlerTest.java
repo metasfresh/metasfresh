@@ -179,7 +179,7 @@ public class DemandCandiateHandlerTest
 	@Test
 	public void decrease_stock()
 	{
-		final Candidate candidate = createCandidateWithType(CandidateType.UNRELATED_DECREASE);
+		final Candidate candidate = createCandidateWithType(CandidateType.UNEXPECTED_DECREASE);
 
 		demandCandidateHandler.onCandidateNewOrChange(candidate);
 
@@ -187,7 +187,7 @@ public class DemandCandiateHandlerTest
 		assertThat(allRecords).hasSize(2);
 
 		final I_MD_Candidate unrelatedTransactionCandidate = allRecords.get(0);
-		assertThat(unrelatedTransactionCandidate.getMD_Candidate_Type()).isEqualTo(X_MD_Candidate.MD_CANDIDATE_TYPE_UNRELATED_DECREASE);
+		assertThat(unrelatedTransactionCandidate.getMD_Candidate_Type()).isEqualTo(X_MD_Candidate.MD_CANDIDATE_TYPE_UNEXPECTED_DECREASE);
 		assertThat(unrelatedTransactionCandidate.getQty()).isEqualByComparingTo("10");
 
 		final I_MD_Candidate stockCandidate = allRecords.get(1);
