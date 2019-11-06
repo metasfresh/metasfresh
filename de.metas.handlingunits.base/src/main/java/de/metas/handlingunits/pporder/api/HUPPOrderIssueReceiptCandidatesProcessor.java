@@ -124,6 +124,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	private final transient IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final transient IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+	private final transient IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 
 	//
 	// Parameters
@@ -193,7 +194,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		//
 		// Validate the HU
 		final I_M_HU hu = candidate.getM_HU();
-		Preconditions.checkNotNull(hu, "No HU for %s", candidate);
+		Check.assumeNotNull(hu, "Parameter hu is not null");
 		if (!X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()))
 		{
 			throw new HUException("Only planning HUs can be received")
@@ -201,6 +202,8 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 					.setParameter("HUStatus", hu.getHUStatus())
 					.setParameter("candidate", candidate);
 		}
+		
+		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(candidate.getM_Locator_ID());
 
 		//
 		// Create material receipt and activate the HU
@@ -211,7 +214,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 				.movementDate(TimeUtil.asLocalDateTime(candidate.getMovementDate()))
 				.qtyToReceive(Quantity.of(candidate.getQty(), uom))
 				.productId(ProductId.ofRepoId(candidate.getM_Product_ID()))
-				.locatorId(Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(candidate.getM_Locator_ID()))
+				.locatorId(locatorId)
 				.build();
 		final I_PP_Cost_Collector cc = huPPCostCollectorBL.createReceipt(costCollectorCandidate, hu);
 

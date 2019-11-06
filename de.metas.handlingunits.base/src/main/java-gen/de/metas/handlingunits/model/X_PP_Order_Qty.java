@@ -15,7 +15,7 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1021896382L;
+	private static final long serialVersionUID = -1258170813L;
 
     /** Standard Constructor */
     public X_PP_Order_Qty (Properties ctx, int PP_Order_Qty_ID, String trxName)
@@ -25,7 +25,6 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
         {
 			setC_UOM_ID (0);
 			setM_HU_ID (0);
-			setM_Locator_ID (0);
 			setM_Product_ID (0);
 			setMovementDate (new Timestamp( System.currentTimeMillis() ));
 			setPP_Order_ID (0);

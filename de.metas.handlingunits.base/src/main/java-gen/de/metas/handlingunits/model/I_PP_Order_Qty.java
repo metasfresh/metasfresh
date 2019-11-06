@@ -166,7 +166,7 @@ public interface I_PP_Order_Qty
 	 * Lagerort im Lager
 	 *
 	 * <br>Type: Locator
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setM_Locator_ID (int M_Locator_ID);
@@ -176,7 +176,7 @@ public interface I_PP_Order_Qty
 	 * Lagerort im Lager
 	 *
 	 * <br>Type: Locator
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Locator_ID();
