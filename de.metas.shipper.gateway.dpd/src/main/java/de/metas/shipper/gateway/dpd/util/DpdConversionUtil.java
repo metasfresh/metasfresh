@@ -72,6 +72,16 @@ public class DpdConversionUtil
 	}
 
 	/**
+	 * Dpd weight UOM is Decagrams (Dag).
+	 * <p>
+	 * Conversion is: 1dag = 10g => 100dag = 1kg
+	 */
+	public static int convertWeightKgToDag(final int weightInKg)
+	{
+		return weightInKg * 100;
+	}
+
+	/**
 	 * Return the time as Integer in format `hhmm`
 	 */
 	public static int formatTime(@NonNull final LocalTime time)
