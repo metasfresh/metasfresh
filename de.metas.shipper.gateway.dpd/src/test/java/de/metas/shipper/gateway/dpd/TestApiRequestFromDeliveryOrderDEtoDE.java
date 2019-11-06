@@ -106,7 +106,11 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 
 	private StoreOrders createShipmentOrderRequestFromDeliveryOrder()
 	{
-		final DeliveryOrder deliveryOrder = DpdTestHelper.createDummyDeliveryOrderDEtoDE();
+		DeliveryOrder deliveryOrder = DpdTestHelper.createDummyDeliveryOrderDEtoDE();
+		deliveryOrder = deliveryOrder.toBuilder()
+				.repoId(DeliveryOrderId.ofRepoId(987654321))
+				.build();
+
 		return createStoreOrdersFromDeliveryOrder(deliveryOrder);
 	}
 

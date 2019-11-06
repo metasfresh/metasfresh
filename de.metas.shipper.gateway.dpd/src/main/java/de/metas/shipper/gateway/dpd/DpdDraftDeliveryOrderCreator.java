@@ -55,6 +55,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -77,7 +78,6 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	@Override
 	public DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
-
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
 		final Set<PackageId> mpackageIds = request.getMpackageIds();
 
@@ -112,47 +112,9 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.notificationChannel(DpdNotificationChannel.EMAIL)
 				.build();
 
-		return createDeliveryOrderFromParams(
-				mpackageIds,
-				pickupFromBPartner,
-				pickupFromLocation,
-				pickupDate,
-				timeFrom,
-				timeTo,
-				deliverToBPartner,
-				deliverToBPartnerLocationId,
-				deliverToLocation,
-				deliverToPhoneNumber,
-				serviceType,
-				allPackagesGrossWeightInKg,
-				shipperId,
-				customerReference,
-				shipperTransportationId,
-				customDeliveryData);
-	}
-
-	@VisibleForTesting
-	DeliveryOrder createDeliveryOrderFromParams(
-			@NonNull final Set<PackageId> packageIds,
-			@NonNull final I_C_BPartner pickupFromBPartner,
-			@NonNull final I_C_Location pickupFromLocation,
-			@NonNull final LocalDate pickupDate,
-			@NonNull final LocalTime timeFrom,
-			@NonNull final LocalTime timeTo,
-			@NonNull final I_C_BPartner deliverToBPartner,
-			final int deliverToBPartnerLocationId,
-			@NonNull final I_C_Location deliverToLocation,
-			@Nullable final String deliverToPhoneNumber,
-			@NonNull final ServiceType serviceType,
-			final int allPackagesGrossWeightKg,
-			final ShipperId shipperId,
-			final String customerReference,
-			final ShipperTransportationId shipperTransportationId,
-			@NonNull final DpdOrderCustomDeliveryData customDeliveryData)
-	{
-
+		// Order lines
 		final ImmutableList.Builder<DeliveryOrderLine> deliveryOrderLinesBuilder = ImmutableList.builder();
-		for (final PackageId packageId : packageIds)
+		for (final PackageId packageId : mpackageIds)
 		{
 			final I_M_Package mPackage = InterfaceWrapperHelper.load(packageId, I_M_Package.class);
 
@@ -167,6 +129,44 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 
 			deliveryOrderLinesBuilder.add(deliveryOrderLine);
 		}
+
+		return createDeliveryOrderFromParams(
+				pickupFromBPartner,
+				pickupFromLocation,
+				pickupDate,
+				timeFrom,
+				timeTo,
+				deliverToBPartner,
+				deliverToBPartnerLocationId,
+				deliverToLocation,
+				deliverToPhoneNumber,
+				serviceType,
+				allPackagesGrossWeightInKg,
+				shipperId,
+				shipperTransportationId,
+				customerReference,
+				customDeliveryData,
+				deliveryOrderLinesBuilder.build());
+	}
+
+	@VisibleForTesting
+	DeliveryOrder createDeliveryOrderFromParams(
+			@NonNull final I_C_BPartner pickupFromBPartner,
+			@NonNull final I_C_Location pickupFromLocation,
+			@NonNull final LocalDate pickupDate,
+			@NonNull final LocalTime timeFrom,
+			@NonNull final LocalTime timeTo,
+			@NonNull final I_C_BPartner deliverToBPartner,
+			final int deliverToBPartnerLocationId,
+			@NonNull final I_C_Location deliverToLocation,
+			@Nullable final String deliverToPhoneNumber,
+			@NonNull final ServiceType serviceType,
+			final int allPackagesGrossWeightKg,
+			final ShipperId shipperId,
+			final ShipperTransportationId shipperTransportationId, final String customerReference,
+			@NonNull final DpdOrderCustomDeliveryData customDeliveryData,
+			@NonNull final List<DeliveryOrderLine> deliveryOrderLines)
+	{
 
 		return DeliveryOrder.builder()
 				.shipperId(shipperId)
@@ -185,8 +185,8 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 						.build())
 				.pickupDate(PickupDate.builder()
 						.date(pickupDate)
-						.timeTo(timeFrom)
-						.timeFrom(timeTo)
+						.timeFrom(timeFrom)
+						.timeTo(timeTo)
 						.build())
 				//
 				// Delivery aka Recipient
@@ -203,7 +203,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				//
 				// Delivery content
 				.allPackagesGrossWeightInKg(allPackagesGrossWeightKg)
-				.deliveryOrderLines(deliveryOrderLinesBuilder.build())
+				.deliveryOrderLines(deliveryOrderLines)
 				.build();
 	}
 

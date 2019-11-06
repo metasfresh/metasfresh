@@ -63,7 +63,6 @@ class DpdTestHelper
 	static DeliveryOrder createDummyDeliveryOrderDEtoDE()
 	{
 		return DeliveryOrder.builder()
-				.repoId(DeliveryOrderId.ofRepoId(987654321))
 				// shipper
 				.pickupAddress(Address.builder()
 						.companyName1("TheBestPessimist Inc.")
@@ -95,6 +94,7 @@ class DpdTestHelper
 						.simplePhoneNumber("+10-012-345689")
 						.build())
 				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
+				.allPackagesGrossWeightInKg(5)
 				.customerReference(null)
 				.serviceType(DpdServiceType.DPD_CLASSIC)
 				.shipperId(ShipperId.ofRepoId(1))
@@ -112,7 +112,6 @@ class DpdTestHelper
 	static DeliveryOrder createDummyDeliveryOrderDEtoCH()
 	{
 		return DeliveryOrder.builder()
-				.repoId(DeliveryOrderId.ofRepoId(987654321))
 				// shipper
 				.pickupAddress(Address.builder()
 						.companyName1("TheBestPessimist Inc.")
@@ -144,6 +143,7 @@ class DpdTestHelper
 						.simplePhoneNumber("+10-012-345689")
 						.build())
 				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
+				.allPackagesGrossWeightInKg(5)
 				.customerReference(null)
 				.serviceType(DpdServiceType.DPD_CLASSIC)
 				.shipperId(ShipperId.ofRepoId(1))
@@ -161,7 +161,6 @@ class DpdTestHelper
 	static DeliveryOrder createDummyDeliveryOrderDEtoAT()
 	{
 		return DeliveryOrder.builder()
-				.repoId(DeliveryOrderId.ofRepoId(987654321))
 				// shipper
 				.pickupAddress(Address.builder()
 						.companyName1("TheBestPessimist Inc.")
@@ -193,6 +192,7 @@ class DpdTestHelper
 						.simplePhoneNumber("+10-012-345689")
 						.build())
 				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
+				.allPackagesGrossWeightInKg(5)
 				.customerReference(null)
 				.serviceType(DpdServiceType.DPD_CLASSIC)
 				.shipperId(ShipperId.ofRepoId(1))
