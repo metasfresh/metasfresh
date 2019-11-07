@@ -122,17 +122,8 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 	@NonNull
 	private I_DPD_StoreOrder createStoreOrderPO(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		final I_DPD_StoreOrder orderPO;
-
-		if (deliveryOrder.getRepoId() == null)
-		{
-			orderPO = InterfaceWrapperHelper.newInstance(I_DPD_StoreOrder.class);
-			InterfaceWrapperHelper.save(orderPO);
-		}
-		else
-		{
-			orderPO = InterfaceWrapperHelper.load(deliveryOrder.getRepoId(), I_DPD_StoreOrder.class);
-		}
+		final I_DPD_StoreOrder orderPO = InterfaceWrapperHelper.loadOrNew(deliveryOrder.getRepoId(), I_DPD_StoreOrder.class);
+		InterfaceWrapperHelper.save(orderPO);
 
 		{
 			// Misc
@@ -191,21 +182,27 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 		}
 		{
 			// Parcels aka Packages aka DeliveryOrderLines
+			final List<I_DPD_StoreOrderLine> lines = retrieveAllOrderLines(orderPO.getDPD_StoreOrder_ID());
+
+			// todo @teo: how bad is this?
+			// 		if nothing ever changes for lines, will we write to db nothing?
+			// 		in other words, is what i did here legit (load or new and  then update the fields NO MATTER WHAT!!!) ?
+
 			for (final DeliveryOrderLine deliveryOrderLine : deliveryOrder.getDeliveryOrderLines())
 			{
-				final I_DPD_StoreOrderLine dpdStoreOrderLine = InterfaceWrapperHelper.newInstance(I_DPD_StoreOrderLine.class);
+				final I_DPD_StoreOrderLine orderLinePO = retrieveStoreOrderLinePoByPackageIdOrCreateNew(lines, deliveryOrderLine);
 
-				dpdStoreOrderLine.setPackageContent(deliveryOrderLine.getContent());
-				dpdStoreOrderLine.setWeightInKg(deliveryOrderLine.getGrossWeightKg());
-				dpdStoreOrderLine.setM_Package_ID(deliveryOrderLine.getPackageId().getRepoId());
-				dpdStoreOrderLine.setDPD_StoreOrder_ID(orderPO.getDPD_StoreOrder_ID());
+				orderLinePO.setPackageContent(deliveryOrderLine.getContent());
+				orderLinePO.setWeightInKg(deliveryOrderLine.getGrossWeightKg());
+				orderLinePO.setM_Package_ID(deliveryOrderLine.getPackageId().getRepoId());
+				orderLinePO.setDPD_StoreOrder_ID(orderPO.getDPD_StoreOrder_ID());
 
 				final PackageDimensions packageDimensions = deliveryOrderLine.getPackageDimensions();
-				dpdStoreOrderLine.setLengthInCm(packageDimensions.getLengthInCM());
-				dpdStoreOrderLine.setWidthInCm(packageDimensions.getWidthInCM());
-				dpdStoreOrderLine.setHeightInCm(packageDimensions.getHeightInCM());
+				orderLinePO.setLengthInCm(packageDimensions.getLengthInCM());
+				orderLinePO.setWidthInCm(packageDimensions.getWidthInCM());
+				orderLinePO.setHeightInCm(packageDimensions.getHeightInCM());
 
-				InterfaceWrapperHelper.save(dpdStoreOrderLine);
+				InterfaceWrapperHelper.save(orderLinePO);
 			}
 		}
 		{
@@ -223,6 +220,14 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 		InterfaceWrapperHelper.save(orderPO);
 
 		return orderPO;
+	}
+
+	private I_DPD_StoreOrderLine retrieveStoreOrderLinePoByPackageIdOrCreateNew(final List<I_DPD_StoreOrderLine> lines, final DeliveryOrderLine deliveryOrderLine)
+	{
+		return lines.stream()
+				.filter(it -> it.getM_Package_ID() == deliveryOrderLine.getPackageId().getRepoId())
+				.findFirst()
+				.orElse(InterfaceWrapperHelper.newInstance(I_DPD_StoreOrderLine.class));
 	}
 
 	/**
