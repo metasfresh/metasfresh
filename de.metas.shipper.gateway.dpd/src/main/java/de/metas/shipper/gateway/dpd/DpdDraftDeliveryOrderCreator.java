@@ -162,8 +162,9 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			@Nullable final String deliverToPhoneNumber,
 			@NonNull final ServiceType serviceType,
 			final int allPackagesGrossWeightKg,
-			final ShipperId shipperId,
-			final ShipperTransportationId shipperTransportationId, final String customerReference,
+			@NonNull final ShipperId shipperId,
+			@NonNull final ShipperTransportationId shipperTransportationId,
+			@Nullable final String customerReference,
 			@NonNull final DpdOrderCustomDeliveryData customDeliveryData,
 			@NonNull final List<DeliveryOrderLine> deliveryOrderLines)
 	{

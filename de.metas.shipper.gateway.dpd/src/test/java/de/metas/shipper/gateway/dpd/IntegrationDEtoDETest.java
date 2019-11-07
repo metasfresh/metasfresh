@@ -24,6 +24,7 @@ package de.metas.shipper.gateway.dpd;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.shipper.gateway.dpd.model.DpdClientConfig;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.spi.ShipperTestHelper;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
@@ -47,19 +48,27 @@ import java.time.LocalTime;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 @Disabled("Makes ACTUAL calls to DPD api and needs auth")
 public class IntegrationDEtoDETest
 {
+
 	private final DpdDraftDeliveryOrderCreator draftDeliveryOrderCreator = new DpdDraftDeliveryOrderCreator();
 	private final DpdDeliveryOrderRepository orderRepository = new DpdDeliveryOrderRepository(AttachmentEntryService.createInstanceForUnitTesting());
+	private final DpdShipperGatewayClient client = DpdShipperGatewayClient.builder()
+			.config(DpdClientConfig.builder()
+					.delisID(DpdTestHelper.DELIS_ID)
+					.delisPassword(DpdTestHelper.DELIS_PASSWORD)
+					.loginApiUrl(DpdTestHelper.LOGIN_SERVICE_API_URL)
+					.shipmentServiceApiUrl(DpdTestHelper.SHIPMENT_SERVICE_API_URL)
+					.trackingUrlBase("dummy")
+					.build())
+			.build();
 
 	@BeforeEach
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
-
 	}
 
 	@Test
@@ -70,6 +79,7 @@ public class IntegrationDEtoDETest
 		final DeliveryOrder initialDummyDeliveryOrder = DpdTestHelper.createDummyDeliveryOrderDEtoDE();
 		final DeliveryOrder draftDeliveryOrder = createDraftDeliveryOrderFromDummy(initialDummyDeliveryOrder);
 		assertEquals("nothing should be changed", initialDummyDeliveryOrder, draftDeliveryOrder);
+		assertEquals(5, draftDeliveryOrder.getDeliveryOrderLines().size());
 
 		//
 		// check 2: persisted DO <-> initial dummy DO => create updatedDummy DO
@@ -79,27 +89,45 @@ public class IntegrationDEtoDETest
 				.build();
 		assertNotNull(updatedDummyDeliveryOrder.getCustomDeliveryData());
 		assertEquals("only the repoId should change after the first persistence", updatedDummyDeliveryOrder, persistedDeliveryOrder);
+		assertEquals(5, persistedDeliveryOrder.getDeliveryOrderLines().size());
+		assertEquals(5, updatedDummyDeliveryOrder.getDeliveryOrderLines().size());
 
 		//
 		// check 3: updated Dummy DO <-> retrieved DO from persistence
 		final DeliveryOrder deserialisedDO = orderRepository.getByRepoId(updatedDummyDeliveryOrder.getRepoId());
 		assertEquals("nothing should be changed", updatedDummyDeliveryOrder, deserialisedDO);
+		assertEquals(5, deserialisedDO.getDeliveryOrderLines().size());
 
 		//
 		// check 4: run Client.completeDeliveryOrder
-		// final DeliveryOrder completedDeliveryOrder = client.completeDeliveryOrder(deserialisedDO);
-		// customDeliveryData = DhlCustomDeliveryData.builder()
-		// 		.detail(extractFieldsAfterCompleteDeliveryOrder(customDeliveryData, completedDeliveryOrder, 1))
-		// 		.detail(extractFieldsAfterCompleteDeliveryOrder(customDeliveryData, completedDeliveryOrder, 2))
-		// 		.detail(extractFieldsAfterCompleteDeliveryOrder(customDeliveryData, completedDeliveryOrder, 3))
-		// 		.detail(extractFieldsAfterCompleteDeliveryOrder(customDeliveryData, completedDeliveryOrder, 4))
-		// 		.detail(extractFieldsAfterCompleteDeliveryOrder(customDeliveryData, completedDeliveryOrder, 5))
-		// 		.build();
-		// updatedDummyDeliveryOrder = updatedDummyDeliveryOrder.toBuilder()
-		// 		.customDeliveryData(customDeliveryData)
-		// 		.build();
-		// assertEquals("only awb, pdf label data and tracking url should be modified", updatedDummyDeliveryOrder, completedDeliveryOrder);
-		// assertSizeOfCustomDeliveryData(completedDeliveryOrder);
+		final DeliveryOrder completedDeliveryOrder = client.completeDeliveryOrder(deserialisedDO);
+		assertNotNull(completedDeliveryOrder.getCustomDeliveryData());
+
+		final DpdOrderCustomDeliveryData customDeliveryData = DpdOrderCustomDeliveryData.cast(updatedDummyDeliveryOrder.getCustomDeliveryData())
+				.toBuilder()
+				.pdfData(DpdOrderCustomDeliveryData.cast(completedDeliveryOrder.getCustomDeliveryData()).getPdfData())
+				.build();
+		updatedDummyDeliveryOrder = updatedDummyDeliveryOrder.toBuilder()
+				.trackingNumber(completedDeliveryOrder.getTrackingNumber())
+				.trackingUrl(completedDeliveryOrder.getTrackingUrl())
+				.customDeliveryData(customDeliveryData)
+				.build();
+		assertEquals("only awb, pdf label data and tracking url should be modified", updatedDummyDeliveryOrder, completedDeliveryOrder);
+		assertEquals(5, completedDeliveryOrder.getDeliveryOrderLines().size());
+		assertEquals(5, updatedDummyDeliveryOrder.getDeliveryOrderLines().size());
+
+		//
+		// check 5: persist the completed delivery order: nothing should be modified
+		final DeliveryOrder savedCompletedDeliveryOrder = orderRepository.save(completedDeliveryOrder);
+		assertEquals("nothing should be modified", updatedDummyDeliveryOrder, savedCompletedDeliveryOrder);
+		assertEquals(5, savedCompletedDeliveryOrder.getDeliveryOrderLines().size());
+
+		//
+		// check 6: retrieve the persisted completed DO. nothing should be modified
+		final DeliveryOrder deserialisedCompletedDeliveryOrder = orderRepository.getByRepoId(updatedDummyDeliveryOrder.getRepoId());
+		assertEquals(5, updatedDummyDeliveryOrder.getDeliveryOrderLines().size());
+		assertEquals(5, deserialisedCompletedDeliveryOrder.getDeliveryOrderLines().size());
+		assertEquals("nothing should be modified", updatedDummyDeliveryOrder, deserialisedCompletedDeliveryOrder);
 
 	}
 
@@ -130,12 +158,14 @@ public class IntegrationDEtoDETest
 		//
 		final ImmutableList<DeliveryOrderLine> deliveryOrderLines = deliveryOrder.getDeliveryOrderLines();
 
+		//noinspection OptionalGetWithoutIsPresent
 		final Integer allPackagesGrossWeightKg = deliveryOrderLines.stream().map(DeliveryOrderLine::getGrossWeightKg).reduce(Integer::sum).get();
 
 		//
 		final String customerReference = deliveryOrder.getCustomerReference();
 
 		final CustomDeliveryData customDeliveryData = deliveryOrder.getCustomDeliveryData();
+		assertNotNull(customDeliveryData);
 
 		return draftDeliveryOrderCreator.createDeliveryOrderFromParams(
 				pickupFromBPartner,
