@@ -1,5 +1,7 @@
 package de.metas.handlingunits.pporder.api.impl;
 
+import java.util.Collection;
+
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -9,12 +11,14 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMultimap;
 
+import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
@@ -132,5 +136,19 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		// Update ppOrder's planning status
 		ppOrder.setPlanningStatus(targetPlanningStatus.getCode());
 		InterfaceWrapperHelper.save(ppOrder);
+	}
+
+	@Override
+	public void setAssignedHandlingUnits(@NonNull final I_PP_Order ppOrder, @NonNull final Collection<I_M_HU> hus)
+	{
+		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+		huAssignmentBL.setAssignedHandlingUnits(ppOrder, hus);
+	}
+
+	@Override
+	public void setAssignedHandlingUnits(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine, @NonNull final Collection<I_M_HU> hus)
+	{
+		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+		huAssignmentBL.setAssignedHandlingUnits(ppOrderBOMLine, hus);
 	}
 }

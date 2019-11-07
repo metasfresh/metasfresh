@@ -2,10 +2,8 @@ package de.metas.handlingunits.pporder.api.impl;
 
 import java.util.Collection;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
@@ -93,7 +91,6 @@ public class CostCollectorCandidateCoProductHUProducer extends AbstractPPOrderRe
 	protected void setAssignedHUs(final Collection<I_M_HU> hus)
 	{
 		final I_PP_Order_BOMLine bomLine = getPP_Order_BOMLine();
-		Services.get(IHUAssignmentBL.class).setAssignedHandlingUnits(bomLine, hus, ITrx.TRXNAME_ThreadInherited);
+		huPPOrderBL.setAssignedHandlingUnits(bomLine, hus);
 	}
-
 }
