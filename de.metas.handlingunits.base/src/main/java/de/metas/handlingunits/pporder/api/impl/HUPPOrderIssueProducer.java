@@ -44,7 +44,6 @@ import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcess
 import de.metas.handlingunits.pporder.api.IHUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.PPOrderPlanningStatus;
 import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.CreateDraftIssuesCommand;
-import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.ReverseDraftIssues;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderUtil;
@@ -150,12 +149,6 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 					.setParameter("lines", lines)
 					.appendParametersToMessage();
 		}
-	}
-
-	@Override
-	public void reverseDraftIssue(@NonNull final I_PP_Order_Qty candidate)
-	{
-		new ReverseDraftIssues().reverseDraftIssue(candidate);
 	}
 
 	@Override

@@ -8,9 +8,9 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.ReverseDraftIssues;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.util.Services;
 
@@ -61,9 +61,7 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 
 	private void reverseDraftIssue(final I_PP_Order_Qty candidate)
 	{
-		final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
-		huPPOrderBL.createIssueProducer()
-				.reverseDraftIssue(candidate);
+		new ReverseDraftIssues().reverseDraftIssue(candidate);
 	}
 
 	private void reverseDraftReceipt(final I_PP_Order_Qty candidate)

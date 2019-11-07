@@ -63,8 +63,6 @@ public interface IHUPPOrderIssueProducer
 		return createIssues(ImmutableSet.of(hu));
 	}
 
-	void reverseDraftIssue(final I_PP_Order_Qty candidate);
-
 	IHUPPOrderIssueProducer setOrderId(PPOrderId ppOrderId);
 
 	
