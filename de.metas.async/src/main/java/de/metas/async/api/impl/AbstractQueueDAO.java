@@ -143,7 +143,6 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	@Override
 	public int retrievePackageProcessorIdByClass(@NonNull final Class<? extends IWorkpackageProcessor> packageProcessorClass)
 	{
-		Check.assumeNotNull(packageProcessorClass, "packageProcessorClass not null");
 		return retrievePackageProcessorDefByClass(Env.getCtx(), packageProcessorClass).getC_Queue_PackageProcessor_ID();
 	}
 
@@ -355,12 +354,11 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	@Override
 	public final Set<Integer> retrieveAllItemIds(final I_C_Queue_WorkPackage workPackage)
 	{
-		final List<I_C_Queue_Element> queueElements = retrieveQueueElements(workPackage, false/*skipAlreadyScheduledItems*/);
+		final List<I_C_Queue_Element> queueElements = retrieveQueueElements(workPackage, false/* skipAlreadyScheduledItems */);
 		return queueElements.stream()
 				.map(I_C_Queue_Element::getRecord_ID)
 				.collect(ImmutableSet.toImmutableSet());
 	}
-
 
 	@Override
 	public IQueryOrderBy getQueueOrderBy()
@@ -389,14 +387,19 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 
 		final int workpackageProcessorId = retrievePackageProcessorIdByClass(packageProcessorClass);
 
+		final IQuery<I_C_Queue_Block> blockFilter = queryBL.createQueryBuilder(I_C_Queue_Block.class)
+				.addEqualsFilter(I_C_Queue_Block.COLUMNNAME_C_Queue_PackageProcessor_ID, workpackageProcessorId)
+				.create();
+
 		return queryBL.createQueryBuilder(I_C_Queue_Element.class)
 				.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
 				.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
 				.andCollect(I_C_Queue_Element.COLUMN_C_Queue_WorkPackage_ID)
 				.addNotEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_Processed, true)
-				.andCollect(I_C_Queue_WorkPackage.COLUMN_C_Queue_Block_ID)
-				.addEqualsFilter(I_C_Queue_Block.COLUMNNAME_C_Queue_PackageProcessor_ID, workpackageProcessorId)
-				.andCollectChildren(I_C_Queue_WorkPackage.COLUMN_C_Queue_Block_ID)
+				.addInSubQueryFilter()
+				.matchingColumnNames(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_Block_ID, I_C_Queue_Block.COLUMNNAME_C_Queue_Block_ID)
+				.subQuery(blockFilter)
+				.end()
 				.create()
 				.list();
 	}

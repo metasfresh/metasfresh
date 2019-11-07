@@ -30,6 +30,6 @@ import lombok.Value;
 public class JsonGetInvoiceCandidatesStatusRequest
 {
 	@ApiModelProperty(position = 10, required = true, //
-			value = "Specifies the invoice candidates to be invoiced.")
+			value = "Specifies the invoice candidates to return the invoicing status of.")
 	List<JsonInvoiceCandidateReference> invoiceCandidates;
 }
