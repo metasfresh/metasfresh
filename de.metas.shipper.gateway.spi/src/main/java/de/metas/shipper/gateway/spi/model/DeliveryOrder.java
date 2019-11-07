@@ -123,4 +123,10 @@ public class DeliveryOrder
 	 * Maybe should be deprecated/removed.
 	 */
 	int allPackagesGrossWeightInKg;
+
+	@Nullable
+	String trackingNumber;
+
+	@Nullable
+	String trackingUrl;
 }

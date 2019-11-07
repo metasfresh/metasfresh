@@ -27,7 +27,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-@Builder
+import javax.annotation.Nullable;
+
+@Builder(toBuilder = true)
 @Value
 public class DpdOrderCustomDeliveryData implements CustomDeliveryData
 {
@@ -38,6 +40,9 @@ public class DpdOrderCustomDeliveryData implements CustomDeliveryData
 	DpdPaperFormat paperFormat;
 	@NonNull
 	DpdNotificationChannel notificationChannel;
+
+	@Nullable
+	byte[] pdfData;
 
 	public static DpdOrderCustomDeliveryData cast(@NonNull final CustomDeliveryData customDeliveryData)
 	{

@@ -102,16 +102,8 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 	@NonNull
 	public DeliveryOrder save(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		if (deliveryOrder.getRepoId() != null)
-		{
-
-			return null;
-		}
-		else
-		{
-			final I_DPD_StoreOrder storeOrderPO = createStoreOrderPO(deliveryOrder);
-			return updateDeliveryOrderRepoId(deliveryOrder, storeOrderPO);
-		}
+		final I_DPD_StoreOrder storeOrderPO = createStoreOrderPO(deliveryOrder);
+		return updateDeliveryOrderRepoId(deliveryOrder, storeOrderPO);
 	}
 
 	@NonNull
@@ -130,61 +122,72 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 	@NonNull
 	private I_DPD_StoreOrder createStoreOrderPO(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		final I_DPD_StoreOrder dpdStoreOrder = InterfaceWrapperHelper.newInstance(I_DPD_StoreOrder.class);
-		InterfaceWrapperHelper.save(dpdStoreOrder);
+		final I_DPD_StoreOrder orderPO;
+
+		if (deliveryOrder.getRepoId() == null)
+		{
+			orderPO = InterfaceWrapperHelper.newInstance(I_DPD_StoreOrder.class);
+			InterfaceWrapperHelper.save(orderPO);
+		}
+		else
+		{
+			orderPO = InterfaceWrapperHelper.load(deliveryOrder.getRepoId(), I_DPD_StoreOrder.class);
+		}
 
 		{
 			// Misc
-			dpdStoreOrder.setM_Shipper_ID(deliveryOrder.getShipperId().getRepoId());
-			dpdStoreOrder.setM_ShipperTransportation_ID(deliveryOrder.getShipperTransportationId().getRepoId());
+			orderPO.setM_Shipper_ID(deliveryOrder.getShipperId().getRepoId());
+			orderPO.setM_ShipperTransportation_ID(deliveryOrder.getShipperTransportationId().getRepoId());
 		}
 		{
 			// Pickup aka Sender
 			final Address pickupAddress = deliveryOrder.getPickupAddress();
-			dpdStoreOrder.setSenderName1(pickupAddress.getCompanyName1());
-			dpdStoreOrder.setSenderName2(pickupAddress.getCompanyName2());
-			dpdStoreOrder.setSenderStreet(pickupAddress.getStreet1());
-			dpdStoreOrder.setSenderHouseNo(pickupAddress.getHouseNo());
-			dpdStoreOrder.setSenderZipCode(pickupAddress.getZipCode());
-			dpdStoreOrder.setSenderCity(pickupAddress.getCity());
-			dpdStoreOrder.setSenderCountry(pickupAddress.getCountry().getAlpha2());
+			orderPO.setSenderName1(pickupAddress.getCompanyName1());
+			orderPO.setSenderName2(pickupAddress.getCompanyName2());
+			orderPO.setSenderStreet(pickupAddress.getStreet1());
+			orderPO.setSenderHouseNo(pickupAddress.getHouseNo());
+			orderPO.setSenderZipCode(pickupAddress.getZipCode());
+			orderPO.setSenderCity(pickupAddress.getCity());
+			orderPO.setSenderCountry(pickupAddress.getCountry().getAlpha2());
 		}
 		{
 			// Pickup Date and Time
 			final PickupDate pickupDate = deliveryOrder.getPickupDate();
-			dpdStoreOrder.setPickupDate(TimeUtil.asTimestamp(pickupDate.getDate()));
-			dpdStoreOrder.setPickupDay(DpdConversionUtil.getPickupDayOfTheWeek(pickupDate));
-			dpdStoreOrder.setPickupTimeFrom(TimeUtil.asTimestamp(pickupDate.getTimeFrom()));
-			dpdStoreOrder.setPickupTimeTo(TimeUtil.asTimestamp(pickupDate.getTimeTo()));
+			orderPO.setPickupDate(TimeUtil.asTimestamp(pickupDate.getDate()));
+			orderPO.setPickupDay(DpdConversionUtil.getPickupDayOfTheWeek(pickupDate));
+			orderPO.setPickupTimeFrom(TimeUtil.asTimestamp(pickupDate.getTimeFrom()));
+			orderPO.setPickupTimeTo(TimeUtil.asTimestamp(pickupDate.getTimeTo()));
 		}
 		{
 			// Delivery aka Recipient
 			final Address deliveryAddress = deliveryOrder.getDeliveryAddress();
-			dpdStoreOrder.setRecipientName1(deliveryAddress.getCompanyName1());
-			dpdStoreOrder.setRecipientName2(deliveryAddress.getCompanyName2());
-			dpdStoreOrder.setRecipientStreet(deliveryAddress.getStreet1());
-			dpdStoreOrder.setRecipientHouseNo(deliveryAddress.getHouseNo());
-			dpdStoreOrder.setRecipientZipCode(deliveryAddress.getZipCode());
-			dpdStoreOrder.setRecipientCity(deliveryAddress.getCity());
-			dpdStoreOrder.setRecipientCountry(deliveryAddress.getCountry().getAlpha2());
+			orderPO.setRecipientName1(deliveryAddress.getCompanyName1());
+			orderPO.setRecipientName2(deliveryAddress.getCompanyName2());
+			orderPO.setRecipientStreet(deliveryAddress.getStreet1());
+			orderPO.setRecipientHouseNo(deliveryAddress.getHouseNo());
+			orderPO.setRecipientZipCode(deliveryAddress.getZipCode());
+			orderPO.setRecipientCity(deliveryAddress.getCity());
+			orderPO.setRecipientCountry(deliveryAddress.getCountry().getAlpha2());
 			final ContactPerson deliveryContact = deliveryOrder.getDeliveryContact();
-			dpdStoreOrder.setRecipientEmailAddress(deliveryContact.getEmailAddress());
-			dpdStoreOrder.setRecipientPhone(deliveryContact.getPhoneAsStringOrNull());
+			orderPO.setRecipientEmailAddress(deliveryContact.getEmailAddress());
+			orderPO.setRecipientPhone(deliveryContact.getPhoneAsStringOrNull());
 		}
 		{
 			// Predict aka Notification
+
+			//noinspection ConstantConditions - custom delivery order data is never null for dpd
 			final DpdOrderCustomDeliveryData customDeliveryData = DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
-			dpdStoreOrder.setNotificationChannel(customDeliveryData.getNotificationChannel().getCode());
+			orderPO.setNotificationChannel(customDeliveryData.getNotificationChannel().getCode());
 		}
 		{
 			// General Shipment Data
 			// dpdStoreOrder.identification number // there's no identification number saved. it needs to be created in the client during the request creation!
 			final DpdOrderCustomDeliveryData customDeliveryData = DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
-			dpdStoreOrder.setDpdProduct(deliveryOrder.getServiceType().getCode());
-			dpdStoreOrder.setDpdOrderType(customDeliveryData.getOrderType());
-			dpdStoreOrder.setSendingDepot(customDeliveryData.getSendingDepot());
-			dpdStoreOrder.setPaperFormat(customDeliveryData.getPaperFormat().getCode());
-			dpdStoreOrder.setPrinterLanguage(customDeliveryData.getPrinterLanguage());
+			orderPO.setDpdProduct(deliveryOrder.getServiceType().getCode());
+			orderPO.setDpdOrderType(customDeliveryData.getOrderType());
+			orderPO.setSendingDepot(customDeliveryData.getSendingDepot());
+			orderPO.setPaperFormat(customDeliveryData.getPaperFormat().getCode());
+			orderPO.setPrinterLanguage(customDeliveryData.getPrinterLanguage());
 		}
 		{
 			// Parcels aka Packages aka DeliveryOrderLines
@@ -195,7 +198,7 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 				dpdStoreOrderLine.setPackageContent(deliveryOrderLine.getContent());
 				dpdStoreOrderLine.setWeightInKg(deliveryOrderLine.getGrossWeightKg());
 				dpdStoreOrderLine.setM_Package_ID(deliveryOrderLine.getPackageId().getRepoId());
-				dpdStoreOrderLine.setDPD_StoreOrder_ID(dpdStoreOrder.getDPD_StoreOrder_ID());
+				dpdStoreOrderLine.setDPD_StoreOrder_ID(orderPO.getDPD_StoreOrder_ID());
 
 				final PackageDimensions packageDimensions = deliveryOrderLine.getPackageDimensions();
 				dpdStoreOrderLine.setLengthInCm(packageDimensions.getLengthInCM());
@@ -205,9 +208,21 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 				InterfaceWrapperHelper.save(dpdStoreOrderLine);
 			}
 		}
-		InterfaceWrapperHelper.save(dpdStoreOrder);
+		{
+			// Data related to DeliveryOrder completion
 
-		return dpdStoreOrder;
+			final DpdOrderCustomDeliveryData customDeliveryData = DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
+
+			//noinspection ConstantConditions
+			orderPO.setPdfLabelData(customDeliveryData.getPdfData());
+			//noinspection ConstantConditions
+			orderPO.setawb(deliveryOrder.getTrackingNumber());
+			//noinspection ConstantConditions
+			orderPO.setTrackingURL(deliveryOrder.getTrackingUrl()); // todo
+		}
+		InterfaceWrapperHelper.save(orderPO);
+
+		return orderPO;
 	}
 
 	/**
@@ -226,7 +241,6 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 		for (final I_DPD_StoreOrderLine linePO : linesPO)
 		{
 			final DeliveryOrderLine line = DeliveryOrderLine.builder()
-					// .repoId()
 					.packageId(PackageId.ofRepoId(linePO.getM_Package_ID()))
 					.packageDimensions(PackageDimensions.builder()
 							.lengthInCM(linePO.getLengthInCm())
@@ -234,7 +248,6 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 							.heightInCM(linePO.getHeightInCm())
 							.build())
 					.grossWeightKg(linePO.getWeightInKg())
-					// .customDeliveryData()
 					.content(linePO.getPackageContent())
 					.build();
 			deliveryOrderLIneBuilder.add(line);
@@ -284,17 +297,23 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 				//
 				// Predict aka Notification
 				// General ShipmentData
+				// Data related to DeliveryOrder completion
 				.customDeliveryData(DpdOrderCustomDeliveryData.builder()
 						.notificationChannel(DpdNotificationChannel.ofCode(orderPO.getNotificationChannel()))
 						.orderType(orderPO.getDpdOrderType())
 						.sendingDepot(orderPO.getSendingDepot())
 						.paperFormat(DpdPaperFormat.ofCode(orderPO.getPaperFormat()))
 						.printerLanguage(orderPO.getPrinterLanguage())
+						.pdfData(orderPO.getPdfLabelData())
 						.build())
 				.serviceType(DpdServiceType.ofCode(orderPO.getDpdProduct()))
 				//
 				// Parcels aka Packages aka DeliveryOrderLines
 				.deliveryOrderLines(deliveryOrderLIneBuilder.build())
+				//
+				// Data related to DeliveryOrder completion
+				.trackingNumber(orderPO.getawb())
+				.trackingUrl(orderPO.getTrackingURL())
 				.build();
 	}
 
