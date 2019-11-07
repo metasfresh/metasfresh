@@ -3,7 +3,9 @@ package de.metas.rest_api.invoicecandidates;
 import org.springframework.http.ResponseEntity;
 
 import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
+import de.metas.rest_api.invoicecandidates.request.JsonGetInvoiceCandidatesStatusRequest;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
+import de.metas.rest_api.invoicecandidates.response.JsonGetInvoiceCandidatesStatusResponse;
 import de.metas.util.rest.MetasfreshRestAPIConstants;
 
 /*
@@ -33,4 +35,7 @@ public interface IInvoicesRestEndpoint
 	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/invoices/";
 
 	ResponseEntity<JsonEnqueueForInvoicingResponse> enqueueForInvoicing(JsonEnqueueForInvoicingRequest request);
+
+	ResponseEntity<JsonGetInvoiceCandidatesStatusResponse> checkInvoiceCandidatesStatus(JsonGetInvoiceCandidatesStatusRequest request);
+
 }

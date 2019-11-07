@@ -1,6 +1,7 @@
 package org.adempiere.invoice.service.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
@@ -27,6 +28,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -45,6 +47,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_InOutLine;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -267,7 +271,13 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	@Override
 	public org.compiere.model.I_C_Invoice getByIdInTrx(@NonNull final InvoiceId invoiceId)
 	{
-		return load(invoiceId.getRepoId(), org.compiere.model.I_C_Invoice.class);
+		return load(invoiceId, org.compiere.model.I_C_Invoice.class);
+	}
+
+	@Override
+	public List<org.compiere.model.I_C_Invoice> getByIdsInTrx(@NonNull final Collection<InvoiceId> invoiceIds)
+	{
+		return loadByRepoIdAwares(ImmutableSet.copyOf(invoiceIds), org.compiere.model.I_C_Invoice.class);
 	}
 
 	@Override
