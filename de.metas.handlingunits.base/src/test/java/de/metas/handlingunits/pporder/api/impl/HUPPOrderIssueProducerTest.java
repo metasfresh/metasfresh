@@ -32,12 +32,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
@@ -56,18 +56,10 @@ import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.Profiles;
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
@@ -85,16 +77,10 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.handlingunits.pporder.api.PPOrderPlanningStatus;
-import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderPojoConverter;
-import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
-import de.metas.order.compensationGroup.GroupTemplateRepository;
-import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
-import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -103,27 +89,11 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {
-		StartupListener.class, ShutdownListener.class,
-		/* needed because in MRPTestHelper, we register AdempiereBaseValidator which in turn registers a C_OrderLine interceptor that needs this class. */
-		OrderGroupRepository.class,
-		OrderGroupCompensationChangesHandler.class,
-		GroupTemplateRepository.class,
-		GroupCompensationLineCreateRequestFactory.class,
-		PPOrderPojoConverter.class,
-		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class
-})
-@ActiveProfiles(Profiles.PROFILE_Test)
 public class HUPPOrderIssueProducerTest extends AbstractHUTest
 {
 	private final IUOMConversionBL uomConversionService = Services.get(IUOMConversionBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
-
-	// the bean unused by the code in this class, but needed within the spring context
-	@MockBean
-	private PostMaterialEventService postMaterialEventService;
 
 	private MRPTestDataSimple masterData;
 
@@ -364,7 +334,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 		//
 		// Issue created HU to Folie Order BOM Line
-		final LocalDate movementDate = LocalDate.of(2014, 10, 01);
+		final ZonedDateTime movementDate = LocalDate.of(2014, 10, 01).atStartOfDay(SystemTime.zoneId());
 		final List<I_PP_Cost_Collector> costCollectors;
 		final PPOrderBOMLineId ppOrderBOMLineId_Folie;
 		{

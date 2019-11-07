@@ -1,6 +1,6 @@
 package de.metas.handlingunits.pporder.api.impl;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 /*
  * #%L
@@ -60,7 +60,7 @@ import lombok.NonNull;
 public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 {
 	private PPOrderId _ppOrderId;
-	private LocalDate movementDate;
+	private ZonedDateTime movementDate;
 	private ImmutableList<I_PP_Order_BOMLine> targetOrderBOMLines;
 	private boolean considerIssueMethodForQtyToIssueCalculation = true;
 
@@ -152,7 +152,7 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 	}
 
 	@Override
-	public IHUPPOrderIssueProducer setMovementDate(final LocalDate movementDate)
+	public IHUPPOrderIssueProducer setMovementDate(final ZonedDateTime movementDate)
 	{
 		this.movementDate = movementDate;
 		return this;

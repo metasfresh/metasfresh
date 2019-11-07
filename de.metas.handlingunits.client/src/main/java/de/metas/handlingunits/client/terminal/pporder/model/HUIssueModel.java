@@ -26,7 +26,7 @@ package de.metas.handlingunits.client.terminal.pporder.model;
  */
 
 import java.beans.PropertyChangeListener;
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -318,9 +318,9 @@ public class HUIssueModel implements IDisposable
 	 *
 	 * @return
 	 */
-	private final LocalDate getMovementDate()
+	private final ZonedDateTime getMovementDate()
 	{
-		return SystemTime.asLocalDate();
+		return SystemTime.asZonedDateTime();
 	}
 
 	/**

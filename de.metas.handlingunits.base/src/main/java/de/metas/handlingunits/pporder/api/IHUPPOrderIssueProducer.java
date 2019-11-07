@@ -1,6 +1,6 @@
 package de.metas.handlingunits.pporder.api;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 /*
  * #%L
@@ -71,7 +71,7 @@ public interface IHUPPOrderIssueProducer
 	 *
 	 * @param movementDate may be {@code null} in which case, the current time is used.
 	 */
-	IHUPPOrderIssueProducer setMovementDate(final LocalDate movementDate);
+	IHUPPOrderIssueProducer setMovementDate(final ZonedDateTime movementDate);
 
 	/**
 	 * Sets manufacturing order BOM Lines which needs to be considered when issuing.

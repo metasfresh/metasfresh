@@ -2,7 +2,7 @@ package de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -81,21 +81,21 @@ public class CreateDraftIssuesCommand
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 
 	private final ImmutableList<I_PP_Order_BOMLine> targetOrderBOMLines;
-	private final LocalDate movementDate;
+	private final ZonedDateTime movementDate;
 	private final boolean considerIssueMethodForQtyToIssueCalculation;
 	private final ImmutableList<I_M_HU> hus;
 
 	@Builder
 	private CreateDraftIssuesCommand(
 			final @NonNull List<I_PP_Order_BOMLine> targetOrderBOMLines,
-			final @Nullable LocalDate movementDate,
+			final @Nullable ZonedDateTime movementDate,
 			final boolean considerIssueMethodForQtyToIssueCalculation,
 			@NonNull final Collection<I_M_HU> hus)
 	{
 		Check.assumeNotEmpty(targetOrderBOMLines, "Parameter targetOrderBOMLines is not empty");
 
 		this.targetOrderBOMLines = ImmutableList.copyOf(targetOrderBOMLines);
-		this.movementDate = movementDate != null ? movementDate : SystemTime.asLocalDate();
+		this.movementDate = movementDate != null ? movementDate : SystemTime.asZonedDateTime();
 		this.considerIssueMethodForQtyToIssueCalculation = considerIssueMethodForQtyToIssueCalculation;
 		this.hus = ImmutableList.copyOf(hus);
 	}
