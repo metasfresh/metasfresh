@@ -61,7 +61,6 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 {
 	private static final String DELIS_ID = "sandboxdpd";
 	private static final String DELIS_PASSWORD = "a";
-	private static final String MESSAGE_LANGUAGE = "en_EN";
 
 	private WebServiceTemplate webServiceTemplate;
 	private com.dpd.common.ws.loginservice.v2_0.types.ObjectFactory loginServiceOF;
@@ -210,7 +209,9 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 	private Notification createNotification(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		final Notification notification = shipmentServiceOF.createNotification();
+		//noinspection ConstantConditions - custom delivery order data is never null for dpd
 		notification.setChannel(DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()).getNotificationChannel().toDpdDataFormat());
+		//noinspection ConstantConditions
 		notification.setValue(deliveryOrder.getDeliveryContact().getEmailAddress());
 		notification.setLanguage(deliveryOrder.getDeliveryAddress().getCountry().getAlpha2());
 		return notification;
@@ -219,14 +220,7 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 	@NonNull
 	private Address createRecipientAddress(@NonNull final de.metas.shipper.gateway.spi.model.Address deliveryAddress, @NonNull final ContactPerson deliveryContact)
 	{
-		final Address recipient = shipmentServiceOF.createAddress();
-		recipient.setName1(deliveryAddress.getCompanyName1());
-		recipient.setName2(deliveryAddress.getCompanyName2());
-		recipient.setStreet(deliveryAddress.getStreet1());
-		recipient.setHouseNo(deliveryAddress.getHouseNo());
-		recipient.setZipCode(deliveryAddress.getZipCode());
-		recipient.setCity(deliveryAddress.getCity());
-		recipient.setCountry(deliveryAddress.getCountry().getAlpha2());
+		final Address recipient = createAddress(deliveryAddress);
 		//noinspection ConstantConditions
 		recipient.setPhone(deliveryContact.getPhoneAsStringOrNull());
 		recipient.setEmail(deliveryContact.getEmailAddress());
@@ -263,7 +257,7 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 		final GetAuth getAuthValue = loginServiceOF.createGetAuth();
 		getAuthValue.setDelisId(DELIS_ID);
 		getAuthValue.setPassword(DELIS_PASSWORD);
-		getAuthValue.setMessageLanguage(MESSAGE_LANGUAGE);
+		getAuthValue.setMessageLanguage(DpdConstants.DEFAULT_MESSAGE_LANGUAGE);
 
 		final JAXBElement<GetAuth> getAuth = loginServiceOF.createGetAuth(getAuthValue);
 		//noinspection unchecked

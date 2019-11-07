@@ -23,6 +23,7 @@
 package de.metas.shipper.gateway.dpd;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.spi.ShipperTestHelper;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
@@ -45,11 +46,14 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-@Disabled("Makes ACTUAL calls to dpd api and needs auth")
+@Disabled("Makes ACTUAL calls to DPD api and needs auth")
 public class IntegrationDEtoDETest
 {
-	DpdDraftDeliveryOrderCreator draftDeliveryOrderCreator = new DpdDraftDeliveryOrderCreator();
+	private final DpdDraftDeliveryOrderCreator draftDeliveryOrderCreator = new DpdDraftDeliveryOrderCreator();
+	private final DpdDeliveryOrderRepository orderRepository = new DpdDeliveryOrderRepository(AttachmentEntryService.createInstanceForUnitTesting());
 
 	@BeforeEach
 	void setUp()
@@ -62,9 +66,40 @@ public class IntegrationDEtoDETest
 	@DisplayName("Delivery Order DE -> DE + test persistence after all steps")
 	void DEtoDEDraftDeliveryOrderCreatorAndPersistence()
 	{
+		// check 1: draft DO <->> initial dummy DO
 		final DeliveryOrder initialDummyDeliveryOrder = DpdTestHelper.createDummyDeliveryOrderDEtoDE();
 		final DeliveryOrder draftDeliveryOrder = createDraftDeliveryOrderFromDummy(initialDummyDeliveryOrder);
 		assertEquals("nothing should be changed", initialDummyDeliveryOrder, draftDeliveryOrder);
+
+		//
+		// check 2: persisted DO <-> initial dummy DO => create updatedDummy DO
+		final DeliveryOrder persistedDeliveryOrder = orderRepository.save(draftDeliveryOrder);
+		DeliveryOrder updatedDummyDeliveryOrder = initialDummyDeliveryOrder.toBuilder()
+				.repoId(persistedDeliveryOrder.getRepoId())
+				.build();
+		assertNotNull(updatedDummyDeliveryOrder.getCustomDeliveryData());
+		assertEquals("only the repoId should change after the first persistence", updatedDummyDeliveryOrder, persistedDeliveryOrder);
+
+		//
+		// check 3: updated Dummy DO <-> retrieved DO from persistence
+		final DeliveryOrder deserialisedDO = orderRepository.getByRepoId(updatedDummyDeliveryOrder.getRepoId());
+		assertEquals("nothing should be changed", updatedDummyDeliveryOrder, deserialisedDO);
+
+		//
+		// check 4: run Client.completeDeliveryOrder
+		// final DeliveryOrder completedDeliveryOrder = client.completeDeliveryOrder(deserialisedDO);
+		// customDeliveryData = DhlCustomDeliveryData.builder()
+		// 		.detail(extractFieldsAfterCompleteDeliveryOrder(customDeliveryData, completedDeliveryOrder, 1))
+		// 		.detail(extractFieldsAfterCompleteDeliveryOrder(customDeliveryData, completedDeliveryOrder, 2))
+		// 		.detail(extractFieldsAfterCompleteDeliveryOrder(customDeliveryData, completedDeliveryOrder, 3))
+		// 		.detail(extractFieldsAfterCompleteDeliveryOrder(customDeliveryData, completedDeliveryOrder, 4))
+		// 		.detail(extractFieldsAfterCompleteDeliveryOrder(customDeliveryData, completedDeliveryOrder, 5))
+		// 		.build();
+		// updatedDummyDeliveryOrder = updatedDummyDeliveryOrder.toBuilder()
+		// 		.customDeliveryData(customDeliveryData)
+		// 		.build();
+		// assertEquals("only awb, pdf label data and tracking url should be modified", updatedDummyDeliveryOrder, completedDeliveryOrder);
+		// assertSizeOfCustomDeliveryData(completedDeliveryOrder);
 
 	}
 
