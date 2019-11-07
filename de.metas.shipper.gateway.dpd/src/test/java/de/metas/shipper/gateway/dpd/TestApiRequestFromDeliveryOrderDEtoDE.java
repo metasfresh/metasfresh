@@ -59,9 +59,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestApiRequestFromDeliveryOrderDEtoDE
 {
-	private static final String DELIS_ID = "sandboxdpd";
-	private static final String DELIS_PASSWORD = "a";
-
 	private WebServiceTemplate webServiceTemplate;
 	private com.dpd.common.ws.loginservice.v2_0.types.ObjectFactory loginServiceOF;
 	private com.dpd.common.service.types.shipmentservice._3.ObjectFactory shipmentServiceOF;
@@ -255,8 +252,8 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 	{
 		// Login
 		final GetAuth getAuthValue = loginServiceOF.createGetAuth();
-		getAuthValue.setDelisId(DELIS_ID);
-		getAuthValue.setPassword(DELIS_PASSWORD);
+		getAuthValue.setDelisId(DpdTestHelper.DELIS_ID);
+		getAuthValue.setPassword(DpdTestHelper.DELIS_PASSWORD);
 		getAuthValue.setMessageLanguage(DpdConstants.DEFAULT_MESSAGE_LANGUAGE);
 
 		final JAXBElement<GetAuth> getAuth = loginServiceOF.createGetAuth(getAuthValue);
@@ -266,8 +263,8 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 
 		assertTrue(StringUtils.isNotBlank(login.getAuthToken()));
 		assertTrue(StringUtils.isNotBlank(login.getDepot()));
-		assertEquals(login.getDelisId(), DELIS_ID);
-		assertEquals(login.getCustomerUid(), DELIS_ID);
+		assertEquals(login.getDelisId(), DpdTestHelper.DELIS_ID);
+		assertEquals(login.getCustomerUid(), DpdTestHelper.DELIS_ID);
 
 		return login;
 	}
