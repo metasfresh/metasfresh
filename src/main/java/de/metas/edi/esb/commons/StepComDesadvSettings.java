@@ -37,7 +37,8 @@ public class StepComDesadvSettings
 	{
 		return StepComDesadvSettings
 				.builder()
-				.partnerId(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".partnerId"))
+				.applicationRef(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.applicationRef", "DESADV"))
+				.partnerId(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.partnerId"))
 				.testIndicator(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.testIndicator", "T"))
 				.desadvLinePackagingCodeTURequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.packagingCodeTU.required", "false"))
 				.desadvLineORBU(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.ORBU", "false"))
@@ -46,6 +47,8 @@ public class StepComDesadvSettings
 				.desadvLinePRICRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.PRIC.required", "false"))
 				.build();
 	}
+
+	String applicationRef;
 
 	String partnerId;
 

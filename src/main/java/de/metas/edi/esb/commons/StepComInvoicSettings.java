@@ -38,7 +38,8 @@ public class StepComInvoicSettings
 	{
 		return StepComInvoicSettings
 				.builder()
-				.partnerId(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".partnerId"))
+				.applicationRef(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.applicationRef", "INVOIC"))
+				.partnerId(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.partnerId"))
 				.testIndicator(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.testIndicator", "T"))
 
 				.invoicBUYRAddressName1Required(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.BUYR.AddressName1.required", "true"))
@@ -56,6 +57,8 @@ public class StepComInvoicSettings
 				.invoicLineEANCequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.EANC.required", "false"))
 				.build();
 	}
+
+	String applicationRef;
 
 	String partnerId;
 

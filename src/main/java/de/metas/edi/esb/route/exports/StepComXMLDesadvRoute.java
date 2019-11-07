@@ -54,7 +54,6 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 	public static final String EP_EDI_STEPCOM_XML_DESADV_CONSUMER = "direct:edi.xml.desadv.consumer";
 
 	public static final String EDI_XML_OWNER_ID = "edi.props.stepcom.owner.id";
-	public static final String EDI_XML_APPLICATION_REF = "edi.props.stepcom.application.ref";
 
 	public static final String EDI_XML_SUPPLIER_GLN = "edi.props.desadv.stepcom.supplier.gln";
 
@@ -84,7 +83,6 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 		final String desadvFilenamePattern = Util.resolveProperty(getContext(), StepComXMLDesadvRoute.EDI_DESADV_XML_FILENAME_PATTERN);
 
 		final String ownerId = Util.resolveProperty(getContext(), StepComXMLDesadvRoute.EDI_XML_OWNER_ID);
-		final String applicationRef = Util.resolveProperty(getContext(), StepComXMLDesadvRoute.EDI_XML_APPLICATION_REF);
 		final String supplierGln = Util.resolveProperty(getContext(), StepComXMLDesadvRoute.EDI_XML_SUPPLIER_GLN);
 
 		final String defaultEDIMessageDatePattern = Util.resolveProperty(getContext(), StepComXMLDesadvRoute.EDI_ORDER_EDIMessageDatePattern);
@@ -95,7 +93,6 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 
 				.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
 				.setProperty(StepComXMLDesadvRoute.EDI_XML_OWNER_ID).constant(ownerId)
-				.setProperty(StepComXMLDesadvRoute.EDI_XML_APPLICATION_REF).constant(applicationRef)
 				.setProperty(StepComXMLDesadvRoute.EDI_XML_SUPPLIER_GLN).constant(supplierGln)
 				.setProperty(StepComXMLDesadvRoute.EDI_ORDER_EDIMessageDatePattern).constant(defaultEDIMessageDatePattern)
 

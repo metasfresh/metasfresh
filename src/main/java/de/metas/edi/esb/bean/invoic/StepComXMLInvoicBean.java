@@ -126,7 +126,6 @@ public class StepComXMLInvoicBean
 	{
 		final DecimalFormat decimalFormat = exchange.getProperty(Constants.DECIMAL_FORMAT, DecimalFormat.class);
 		final String ownerId = exchange.getProperty(StepComXMLInvoicRoute.EDI_XML_OWNER_ID, String.class);
-		final String applicationRef = exchange.getProperty(StepComXMLInvoicRoute.EDI_XML_APPLICATION_REF, String.class);
 
 		final Document document = INVOIC_objectFactory.createDocument();
 		final Xrech4H xrech4H = INVOIC_objectFactory.createXrech4H();
@@ -137,7 +136,7 @@ public class StepComXMLInvoicBean
 		headerXrech.setTESTINDICATOR(invoicSettings.getTestIndicator());
 
 		headerXrech.setPARTNERID(invoicSettings.getPartnerId());
-		headerXrech.setAPPLICATIONREF(applicationRef);
+		headerXrech.setAPPLICATIONREF(invoicSettings.getApplicationRef());
 		headerXrech.setOWNERID(ownerId);
 		final String documentId = invoice.getInvoiceDocumentno();
 		headerXrech.setDOCUMENTID(documentId);

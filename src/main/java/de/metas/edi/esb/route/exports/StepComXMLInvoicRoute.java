@@ -54,7 +54,6 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 	public static final String EP_EDI_STEPCOM_XML_INVOICE_CONSUMER = "direct:edi.invoic.stepcom-xml.consumer";
 
 	public static final String EDI_XML_OWNER_ID = "edi.props.stepcom.owner.id";
-	public static final String EDI_XML_APPLICATION_REF = "edi.props.stepcom.application.ref";
 
 	private static final String EDI_INVOICE_SENDER_GLN = "edi.props.000.sender.gln";
 
@@ -84,7 +83,6 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 
 		final String senderGln = Util.resolveProperty(getContext(), EDI_INVOICE_SENDER_GLN);
 		final String ownerId = Util.resolveProperty(getContext(), EDI_XML_OWNER_ID);
-		final String applicationRef = Util.resolveProperty(getContext(), EDI_XML_APPLICATION_REF);
 		final String defaultEDIMessageDatePattern = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern);
 		final String feedbackMessageRoutingKey = Util.resolveProperty(getContext(), Constants.EP_AMQP_TO_AD_DURABLE_ROUTING_KEY);
 
@@ -94,7 +92,6 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 				.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
 				.setProperty(EDI_INVOICE_SENDER_GLN).constant(senderGln)
 				.setProperty(EDI_XML_OWNER_ID).constant(ownerId)
-				.setProperty(EDI_XML_APPLICATION_REF).constant(applicationRef)
 				.setProperty(AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern).constant(defaultEDIMessageDatePattern)
 
 				.log(LoggingLevel.INFO, "EDI: Setting EDI feedback headers...")

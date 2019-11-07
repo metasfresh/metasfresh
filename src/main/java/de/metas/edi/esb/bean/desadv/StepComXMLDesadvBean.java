@@ -103,7 +103,6 @@ public class StepComXMLDesadvBean
 		final String dateFormat = (String)exchange.getProperty(AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern);
 
 		final String ownerId = exchange.getProperty(StepComXMLDesadvRoute.EDI_XML_OWNER_ID, String.class);
-		final String applicationRef = exchange.getProperty(StepComXMLDesadvRoute.EDI_XML_APPLICATION_REF, String.class);
 		final String supplierGln = exchange.getProperty(StepComXMLDesadvRoute.EDI_XML_SUPPLIER_GLN, String.class);
 
 		xmlDesadv.getEDIExpDesadvLine().sort(Comparator.comparing(EDIExpDesadvLineType::getLine));
@@ -121,7 +120,7 @@ public class StepComXMLDesadvBean
 		header.setOWNERID(ownerId);
 		header.setTESTINDICATOR(receiverSettings.getTestIndicator());
 		header.setMESSAGEREF(formatNumber(xmlDesadv.getSequenceNoAttr(), decimalFormat));
-		header.setAPPLICATIONREF(applicationRef);
+		header.setAPPLICATIONREF(receiverSettings.getApplicationRef());
 		header.setDOCUMENTTYP(DocumentType.DADV.toString());
 		header.setDOCUMENTFUNCTION(DocumentFunction.ORIG.toString());
 
