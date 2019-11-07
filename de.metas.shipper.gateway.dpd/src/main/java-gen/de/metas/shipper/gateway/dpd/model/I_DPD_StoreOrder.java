@@ -923,6 +923,31 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_SendingDepot = "SendingDepot";
 
 	/**
+	 * Set Nachverfolgungs-URL.
+	 * URL des Spediteurs um Sendungen zu verfolgen
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTrackingURL (java.lang.String TrackingURL);
+
+	/**
+	 * Get Nachverfolgungs-URL.
+	 * URL des Spediteurs um Sendungen zu verfolgen
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getTrackingURL();
+
+    /** Column definition for TrackingURL */
+    public static final org.adempiere.model.ModelColumn<I_DPD_StoreOrder, Object> COLUMN_TrackingURL = new org.adempiere.model.ModelColumn<I_DPD_StoreOrder, Object>(I_DPD_StoreOrder.class, "TrackingURL", null);
+    /** Column name TrackingURL */
+    public static final String COLUMNNAME_TrackingURL = "TrackingURL";
+
+	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *

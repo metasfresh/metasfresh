@@ -14,7 +14,7 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1258164607L;
+	private static final long serialVersionUID = 1891335214L;
 
     /** Standard Constructor */
     public X_DPD_StoreOrder (Properties ctx, int DPD_StoreOrder_ID, String trxName)
@@ -657,5 +657,24 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
 	public java.lang.String getSendingDepot () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_SendingDepot);
+	}
+
+	/** Set Nachverfolgungs-URL.
+		@param TrackingURL 
+		URL des Spediteurs um Sendungen zu verfolgen
+	  */
+	@Override
+	public void setTrackingURL (java.lang.String TrackingURL)
+	{
+		set_Value (COLUMNNAME_TrackingURL, TrackingURL);
+	}
+
+	/** Get Nachverfolgungs-URL.
+		@return URL des Spediteurs um Sendungen zu verfolgen
+	  */
+	@Override
+	public java.lang.String getTrackingURL () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_TrackingURL);
 	}
 }
