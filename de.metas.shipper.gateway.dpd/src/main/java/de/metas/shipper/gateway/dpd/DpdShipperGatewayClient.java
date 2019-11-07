@@ -22,8 +22,42 @@
 
 package de.metas.shipper.gateway.dpd;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import ch.qos.logback.classic.Level;
+import com.dpd.common.service.types.shipmentservice._3.Address;
+import com.dpd.common.service.types.shipmentservice._3.FaultCodeType;
+import com.dpd.common.service.types.shipmentservice._3.GeneralShipmentData;
+import com.dpd.common.service.types.shipmentservice._3.Notification;
+import com.dpd.common.service.types.shipmentservice._3.Parcel;
+import com.dpd.common.service.types.shipmentservice._3.Pickup;
+import com.dpd.common.service.types.shipmentservice._3.PrintOptions;
+import com.dpd.common.service.types.shipmentservice._3.ProductAndServiceData;
+import com.dpd.common.service.types.shipmentservice._3.ShipmentResponse;
+import com.dpd.common.service.types.shipmentservice._3.ShipmentServiceData;
+import com.dpd.common.service.types.shipmentservice._3.StoreOrders;
+import com.dpd.common.service.types.shipmentservice._3.StoreOrdersResponse;
+import com.dpd.common.service.types.shipmentservice._3.StoreOrdersResponseType;
+import com.dpd.common.ws.loginservice.v2_0.types.GetAuth;
+import com.dpd.common.ws.loginservice.v2_0.types.GetAuthResponse;
+import com.dpd.common.ws.loginservice.v2_0.types.Login;
+import com.google.common.base.Joiner;
+import com.google.common.base.Stopwatch;
+import de.metas.cache.CCache;
+import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
+import de.metas.shipper.gateway.dpd.util.DpdClientUtil;
+import de.metas.shipper.gateway.dpd.util.DpdConversionUtil;
+import de.metas.shipper.gateway.dpd.util.DpdSoapHeaderWithAuth;
+import de.metas.shipper.gateway.spi.DeliveryOrderId;
+import de.metas.shipper.gateway.spi.model.ContactPerson;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
+import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +68,10 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import lombok.Builder;
 import lombok.NonNull;
+import org.springframework.ws.client.core.WebServiceTemplate;
+
+import javax.annotation.Nullable;
+import javax.xml.bind.JAXBElement;
 
 public class DpdShipperGatewayClient implements ShipperGatewayClient
 {
@@ -41,12 +79,29 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 
 	private final DpdClientConfig config;
 
+	// login cache
+	final int LOGIN_CACHE_23_HOURS_EXPIRATION_TIME = (int)Duration.ofHours(23).toMinutes();
+	private final CCache<Integer, Login> loginCache;
+
+	// dpd webservice data
+	private final WebServiceTemplate webServiceTemplate;
+	private final com.dpd.common.ws.loginservice.v2_0.types.ObjectFactory loginServiceOF;
+	private final com.dpd.common.service.types.shipmentservice._3.ObjectFactory shipmentServiceOF;
+
 	@Builder
 	public DpdShipperGatewayClient(@NonNull final DpdClientConfig config)
 	{
 		this.config = config;
+
+		// DPD login token changes every 24 hours and they kindly ask us to login at most 2 times a day, hence this login cache with expiration
+		loginCache = CCache.newCache("DpdShipperGatewayClientAuth", 1, LOGIN_CACHE_23_HOURS_EXPIRATION_TIME);
+
+		webServiceTemplate = DpdClientUtil.createWebServiceTemplate();
+		loginServiceOF = new com.dpd.common.ws.loginservice.v2_0.types.ObjectFactory();
+		shipmentServiceOF = new com.dpd.common.service.types.shipmentservice._3.ObjectFactory();
 	}
 
+	@NonNull
 	@Override
 	public String getShipperGatewayId()
 	{
@@ -60,15 +115,285 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 		throw new ShipperGatewayException("(DRAFT) Delivery Orders shall never be created.");
 	}
 
+	@NonNull
 	@Override
-	public DeliveryOrder completeDeliveryOrder(final DeliveryOrder deliveryOrder) throws ShipperGatewayException
+	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
+	{
+		final Login login = loginCache.getOrLoad(0, this::authenticateRequest);
+
+		final ILoggable epicLogger = getEpicLogger();
+		epicLogger.addLog("Creating shipment order request for {}", deliveryOrder);
+
+		final StoreOrders storeOrders = createStoreOrdersFromDeliveryOrder(deliveryOrder, login.getDepot());
+
+		final JAXBElement<StoreOrders> storeOrdersElement = shipmentServiceOF.createStoreOrders(storeOrders);
+		//noinspection unchecked
+		final JAXBElement<StoreOrdersResponse> storeOrdersResponseElement = (JAXBElement<StoreOrdersResponse>)doActualRequest(config.getShipmentServiceApiUrl(), storeOrdersElement, login, deliveryOrder.getRepoId());
+
+		final StoreOrdersResponseType storeOrdersResponse = storeOrdersResponseElement.getValue().getOrderResult();
+
+		final List<FaultCodeType> faults = storeOrdersResponse.getShipmentResponses().get(0).getFaults();
+		if (!faults.isEmpty())
+		{
+			final String exceptionMessage = faults.stream()
+					.map(it -> it.getFaultCode() + ": " + it.getMessage())
+					.collect(Collectors.joining("; "));
+			throw new ShipperGatewayException(exceptionMessage);
+		}
+
+		final DeliveryOrder completedDeliveryOrder = updateDeliveryOrderFromResponse(deliveryOrder, storeOrdersResponse);
+		epicLogger.addLog("Completed deliveryOrder is {}", completedDeliveryOrder);
+
+		return completedDeliveryOrder;
+	}
+
+	@NonNull
+	@Override
+	public List<PackageLabels> getPackageLabelsList(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
 		return null;
 	}
 
-	@Override
-	public List<PackageLabels> getPackageLabelsList(final DeliveryOrder deliveryOrder) throws ShipperGatewayException
+	@NonNull
+	private DeliveryOrder updateDeliveryOrderFromResponse(@NonNull final DeliveryOrder deliveryOrder, @NonNull final StoreOrdersResponseType storeOrdersResponse)
 	{
-		return null;
+		//noinspection ConstantConditions - custom delivery order data is never null for dpd
+		final DpdOrderCustomDeliveryData customDeliveryData = DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData())
+				.toBuilder()
+				.pdfData(storeOrdersResponse.getParcellabelsPDF())
+				.build();
+
+		final String mpsId = storeOrdersResponse.getShipmentResponses().get(0).getMpsId();
+		return deliveryOrder.toBuilder()
+				.trackingNumber(mpsId)
+				.trackingUrl(config.getTrackingUrlBase() + mpsId)
+				.customDeliveryData(customDeliveryData)
+				.build();
 	}
+
+	private Object doActualRequest(
+			@NonNull final String apiUrl,
+			@NonNull final Object request,
+			@Nullable final Login login,
+			@Nullable final DeliveryOrderId deliveryOrderRepoIdForLogging)
+	{
+		// todo implement database request logging
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		// final DhlClientLogEvent.DhlClientLogEventBuilder logEventBuilder = DhlClientLogEvent.builder()
+		// 		.marshaller(webServiceTemplate.getMarshaller())
+		// 		.requestElement(request)
+		// 		.deliveryOrderRepoId(deliveryOrderRepoIdForLogging.getRepoId())
+		// 		.config(config);
+		try
+		{
+			final Object response;
+			if (login == null)
+			{
+				// this is a login request
+				response = webServiceTemplate.marshalSendAndReceive(apiUrl, request);
+			}
+			else
+			{
+				// this is a normal request
+				response = webServiceTemplate.marshalSendAndReceive(apiUrl, request, new DpdSoapHeaderWithAuth(login));
+			}
+			// databaseLogger.log(logEventBuilder
+			// 		.responseElement(response)
+			// 		.durationMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS))
+			// 		.build());
+			return response;
+		}
+		catch (final Throwable throwable)
+		{
+			final AdempiereException exception = AdempiereException.wrapIfNeeded(throwable);
+			// databaseLogger.log(logEventBuilder
+			// 		.responseException(exception)
+			// 		.durationMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS))
+			// 		.build());
+
+			throw exception;
+		}
+	}
+
+	@NonNull
+	private StoreOrders createStoreOrdersFromDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder, @NonNull final String depot)
+	{
+		final StoreOrders storeOrders = shipmentServiceOF.createStoreOrders();
+		//noinspection ConstantConditions - custom delivery order data is never null for dpd
+		final PrintOptions printOptions = createPrintOptions(DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()));
+		storeOrders.setPrintOptions(printOptions);
+
+		final ShipmentServiceData shipmentServiceData = createShipmentServiceData(deliveryOrder);
+		storeOrders.getOrder().add(shipmentServiceData);
+
+		// set the depot from the login data
+		storeOrders.getOrder().forEach(it -> it.getGeneralShipmentData().setSendingDepot(depot));
+
+		return storeOrders;
+	}
+
+	@NonNull
+	private ShipmentServiceData createShipmentServiceData(
+			@NonNull final DeliveryOrder deliveryOrder)
+	{
+		// Shipment Data 1
+		final ShipmentServiceData shipmentServiceData = shipmentServiceOF.createShipmentServiceData();
+		{
+			// General Shipment Data
+			final GeneralShipmentData generalShipmentData = shipmentServiceOF.createGeneralShipmentData();
+			shipmentServiceData.setGeneralShipmentData(generalShipmentData);
+			//noinspection ConstantConditions
+			generalShipmentData.setMpsCustomerReferenceNumber1(deliveryOrder.getCustomerReference()); // what is this? optional?
+			generalShipmentData.setIdentificationNumber(String.valueOf(deliveryOrder.getRepoId().getRepoId())); // unique metasfresh number for this shipment
+			//			generalShipmentData.setSendingDepot(); // not set here, as it's taken from login info
+			generalShipmentData.setProduct(deliveryOrder.getServiceType().getCode()); // this is the DPD product
+
+			{
+				// Sender aka Pickup
+				// todo i'm not sure if the following is true, as dpd test doesn't complain if the sender address is different from the one in the login.
+				// 		the sender _seems_ hard linked with the location provided to dpd when the account was created.
+				// 		it is not connected, though, with the pickup address! as in the pickup section there's the mandatory field "CollectionRequestAddress".
+				final Address sender = createAddress(deliveryOrder.getPickupAddress());
+				generalShipmentData.setSender(sender);
+			}
+			{
+				// Recipient aka Delivery
+				final Address recipient = createRecipientAddress(deliveryOrder.getDeliveryAddress(), deliveryOrder.getDeliveryContact());
+				generalShipmentData.setRecipient(recipient);
+			}
+		}
+		{
+			// Parcels aka Packages aka DeliveryOrderLines
+			for (final DeliveryOrderLine deliveryOrderLine : deliveryOrder.getDeliveryOrderLines())
+			{
+				final Parcel parcel = shipmentServiceOF.createParcel();
+				shipmentServiceData.getParcels().add(parcel);
+				//noinspection ConstantConditions
+				parcel.setContent(deliveryOrderLine.getContent());
+				parcel.setVolume(DpdConversionUtil.formatVolume(deliveryOrderLine.getPackageDimensions()));
+				parcel.setWeight(DpdConversionUtil.convertWeightKgToDag(deliveryOrderLine.getGrossWeightKg()));
+				//				parcel.setInternational(); // todo god save us
+			}
+		}
+		{
+			// ProductAndService Data
+			final ProductAndServiceData productAndServiceData = shipmentServiceOF.createProductAndServiceData();
+			shipmentServiceData.setProductAndServiceData(productAndServiceData);
+			{
+				// Shipper Product
+
+				//noinspection ConstantConditions - custom delivery order data is never null for dpd
+				productAndServiceData.setOrderType(DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()).getOrderType()); // this is somehow related to product: CL; and i think it should always be "consignment"
+			}
+			{
+				// Predict aka Notification
+				final Notification notification = createNotification(deliveryOrder);
+				productAndServiceData.setPredict(notification);
+			}
+			{
+				// Pickup date and time
+				final Pickup pickup = createPickupDateAndTime(deliveryOrder.getPickupDate(), deliveryOrder.getDeliveryOrderLines().size(), deliveryOrder.getPickupAddress());
+				productAndServiceData.setPickup(pickup);
+			}
+		}
+		return shipmentServiceData;
+	}
+
+	@NonNull
+	private Address createAddress(
+			@NonNull final de.metas.shipper.gateway.spi.model.Address addressFrom)
+	{
+		final Address address = shipmentServiceOF.createAddress();
+		address.setName1(addressFrom.getCompanyName1());
+		address.setName2(addressFrom.getCompanyName2());
+		address.setStreet(addressFrom.getStreet1());
+		address.setHouseNo(addressFrom.getHouseNo());
+		address.setZipCode(addressFrom.getZipCode());
+		address.setCity(addressFrom.getCity());
+		address.setCountry(addressFrom.getCountry().getAlpha2());
+		return address;
+	}
+
+	@NonNull
+	private Address createRecipientAddress(
+			@NonNull final de.metas.shipper.gateway.spi.model.Address deliveryAddress,
+			@NonNull final ContactPerson deliveryContact)
+	{
+		final Address recipient = createAddress(deliveryAddress);
+		//noinspection ConstantConditions
+		recipient.setPhone(deliveryContact.getPhoneAsStringOrNull());
+		recipient.setEmail(deliveryContact.getEmailAddress());
+		return recipient;
+	}
+
+	@NonNull
+	private Notification createNotification(
+			@NonNull final DeliveryOrder deliveryOrder)
+	{
+		final Notification notification = shipmentServiceOF.createNotification();
+		//noinspection ConstantConditions - custom delivery order data is never null for dpd
+		notification.setChannel(DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()).getNotificationChannel().toDpdDataFormat());
+		//noinspection ConstantConditions
+		notification.setValue(deliveryOrder.getDeliveryContact().getEmailAddress());
+		notification.setLanguage(deliveryOrder.getDeliveryAddress().getCountry().getAlpha2());
+		return notification;
+	}
+
+	@NonNull
+	private Pickup createPickupDateAndTime(
+			@NonNull final PickupDate pickupDate, final int numberOfPackages,
+			@NonNull final de.metas.shipper.gateway.spi.model.Address sender)
+	{
+		final Pickup pickup = shipmentServiceOF.createPickup();
+		pickup.setQuantity(numberOfPackages);
+		pickup.setDate(DpdConversionUtil.formatDate(pickupDate.getDate()));
+		pickup.setDay(DpdConversionUtil.getPickupDayOfTheWeek(pickupDate));
+		pickup.setFromTime1(DpdConversionUtil.formatTime(pickupDate.getTimeFrom()));
+		pickup.setToTime1(DpdConversionUtil.formatTime(pickupDate.getTimeTo()));
+		//					pickup.setExtraPickup(true); // optional
+		pickup.setCollectionRequestAddress(createAddress(sender));
+		return pickup;
+	}
+
+	@NonNull
+	private PrintOptions createPrintOptions(
+			@NonNull final DpdOrderCustomDeliveryData customDeliveryData)
+	{
+		final PrintOptions printOptions = shipmentServiceOF.createPrintOptions();
+		printOptions.setPaperFormat(customDeliveryData.getPaperFormat().getCode());
+		printOptions.setPrinterLanguage(customDeliveryData.getPrinterLanguage());
+		return printOptions;
+	}
+
+	private Login authenticateRequest()
+	{
+		// Login
+		final GetAuth getAuthValue = loginServiceOF.createGetAuth();
+		getAuthValue.setDelisId(config.getDelisID());
+		getAuthValue.setPassword(config.getDelisPassword());
+		getAuthValue.setMessageLanguage(DpdConstants.DEFAULT_MESSAGE_LANGUAGE);
+
+		final ILoggable epicLogger = getEpicLogger();
+		epicLogger.addLog("Creating login request");
+
+		final JAXBElement<GetAuth> getAuthElement = loginServiceOF.createGetAuth(getAuthValue);
+		//noinspection unchecked
+		final JAXBElement<GetAuthResponse> authenticationElement = (JAXBElement<GetAuthResponse>)doActualRequest(config.getLoginApiUrl(), getAuthElement, null, null);
+
+		final Login login = authenticationElement.getValue().getReturn();
+
+		epicLogger.addLog("Finished login Request");
+
+		return login;
+	}
+
+	/**
+	 * no idea what this does, but tobias sais it's useful to have this special log, so here it is!
+	 */
+	@NonNull
+	private ILoggable getEpicLogger()
+	{
+		return Loggables.withLogger(logger, Level.TRACE);
+	}
+
 }
