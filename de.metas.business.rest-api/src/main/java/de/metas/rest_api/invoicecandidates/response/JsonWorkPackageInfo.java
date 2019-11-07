@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import de.metas.rest_api.MetasfreshId;
 import lombok.Builder;
 import lombok.Value;
 
@@ -35,7 +36,7 @@ import lombok.Value;
 @Builder
 public class JsonWorkPackageInfo
 {
-	int workpackageId;
+	MetasfreshId metasfreshId;
 
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)

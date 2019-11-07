@@ -41,14 +41,14 @@ class InvoiceJsonConverterService
 {
 	public final JsonEnqueueForInvoicingResponse toJson(@NonNull final IInvoiceCandidateEnqueueResult enqueueResult)
 	{
-		final InvoiceCandEnqueuerResult jsonInvoiceCand = InvoiceCandEnqueuerResult.builder()
+		final InvoiceCandEnqueuerResult invoiceCandidateResult = InvoiceCandEnqueuerResult.builder()
 				.invoiceCandidateEnqueuedCount(enqueueResult.getInvoiceCandidateEnqueuedCount())
 				.summaryTranslated(enqueueResult.getSummaryTranslated(Env.getCtx()))
 				.totalNetAmtToInvoiceChecksum(enqueueResult.getTotalNetAmtToInvoiceChecksum())
 				.workpackageEnqueuedCount(enqueueResult.getWorkpackageEnqueuedCount())
 				.workpackageQueueSizeBeforeEnqueueing(enqueueResult.getWorkpackageQueueSizeBeforeEnqueueing())
 				.build();
-		return JsonEnqueueForInvoicingResponse.ok(jsonInvoiceCand);
+		return JsonEnqueueForInvoicingResponse.ok(invoiceCandidateResult);
 	}
 
 	public List<ExternalHeaderAndLineId> convertJICToExternalHeaderAndLineIds(

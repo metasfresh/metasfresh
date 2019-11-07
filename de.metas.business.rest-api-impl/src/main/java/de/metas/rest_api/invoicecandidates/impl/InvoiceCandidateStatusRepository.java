@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -68,7 +69,7 @@ public class InvoiceCandidateStatusRepository
 	{
 		final List<InvoiceCandidateId> invoiceCandidateIds = invoiceCandDAO.retrieveByHeaderAndLineId(headerAndLineIds);
 
-		final List<JsonInvoiceCandidateStatus> invoiceCandidates = createStatusInvoiced(invoiceCandidateIds);
+		final List<JsonInvoiceCandidateStatus> invoiceCandidates = createStatus(invoiceCandidateIds);
 
 		final JsonInvoiceCandidateResult result = JsonInvoiceCandidateResult
 				.builder()
@@ -78,9 +79,9 @@ public class InvoiceCandidateStatusRepository
 		return JsonGetInvoiceCandidatesStatusResponse.ok(result);
 	}
 
-	private List<JsonInvoiceCandidateStatus> createStatusInvoiced(final List<InvoiceCandidateId> invoiceCandidateIds)
+	private List<JsonInvoiceCandidateStatus> createStatus(final List<InvoiceCandidateId> invoiceCandidateIds)
 	{
-		final List<JsonInvoiceCandidateStatus> jsonInvoiceCandidates = new ArrayList<>();
+		final List<JsonInvoiceCandidateStatus> invoiceCandidatesStatus = new ArrayList<>();
 
 		for (final InvoiceCandidateId invoiceCandidateId : invoiceCandidateIds)
 		{
@@ -91,10 +92,12 @@ public class InvoiceCandidateStatusRepository
 
 			final JsonInvoiceCandidateStatus invoiceCandidateStatus = createInvoiceCandidateStatus(invoiceCandidateRecord, invoicesInfoForInvoiceCandidate, workPackagesForInvoiceCandidate);
 
-			jsonInvoiceCandidates.add(invoiceCandidateStatus);
+			invoiceCandidatesStatus.add(invoiceCandidateStatus);
 		}
 
-		return jsonInvoiceCandidates;
+		return invoiceCandidatesStatus.stream()
+				.sorted(Comparator.comparing(candidate -> candidate.getMetasfreshId().getValue()))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private List<JsonWorkPackageInfo> createWorkPackagesForInvoiceCandidate(
@@ -140,7 +143,7 @@ public class InvoiceCandidateStatusRepository
 				.error(workPackageRecord.getErrorMsg())
 				.enqueued(TimeUtil.asInstant(workPackageRecord.getCreated()))
 				.readyForProcessing(workPackageRecord.isReadyForProcessing())
-				.workpackageId(workPackageRecord.getC_Queue_WorkPackage_ID())
+				.metasfreshId(MetasfreshId.of(workPackageRecord.getC_Queue_WorkPackage_ID()))
 				.build();
 	}
 
@@ -164,9 +167,10 @@ public class InvoiceCandidateStatusRepository
 
 	}
 
-	private JsonInvoiceCandidateStatus createInvoiceCandidateStatus(final I_C_Invoice_Candidate invoiceCandidateRecord,
-			List<JsonInvoiceInfo> invoices,
-			List<JsonWorkPackageInfo> workPackages)
+	private JsonInvoiceCandidateStatus createInvoiceCandidateStatus(
+			final I_C_Invoice_Candidate invoiceCandidateRecord,
+			final List<JsonInvoiceInfo> invoices,
+			final List<JsonWorkPackageInfo> workPackages)
 	{
 		final BigDecimal qtyToInvoice = invoiceCandidateRecord.getQtyToInvoice();
 		final BigDecimal qtyInvoiced = invoiceCandidateRecord.getQtyInvoiced();
@@ -191,7 +195,7 @@ public class InvoiceCandidateStatusRepository
 				.dateInvoiced(TimeUtil.asLocalDate(invoice.getDateInvoiced()))
 				.docStatus(invoice.getDocStatus())
 				.documentNo(invoice.getDocumentNo())
-				.invoiceId(invoice.getC_Invoice_ID())
+				.metasfreshId(MetasfreshId.of(invoice.getC_Invoice_ID()))
 				.build();
 	}
 

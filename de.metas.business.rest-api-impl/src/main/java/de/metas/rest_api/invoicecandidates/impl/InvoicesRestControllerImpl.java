@@ -73,7 +73,7 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 
 	@PostMapping("/status")
 	@Override
-	public ResponseEntity<JsonGetInvoiceCandidatesStatusResponse> checkInvoiceCandidatesStatus(@RequestBody @NonNull JsonGetInvoiceCandidatesStatusRequest request)
+	public ResponseEntity<JsonGetInvoiceCandidatesStatusResponse> checkInvoiceCandidatesStatus(@RequestBody @NonNull final JsonGetInvoiceCandidatesStatusRequest request)
 	{
 		try
 		{

@@ -2,6 +2,7 @@ package de.metas.rest_api.invoicecandidates.response;
 
 import java.time.LocalDate;
 
+import de.metas.rest_api.MetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,7 +32,7 @@ import lombok.Value;
 @Builder
 public class JsonInvoiceInfo
 {
-	int invoiceId;
+	MetasfreshId metasfreshId;
 
 	@NonNull
 	String documentNo;
