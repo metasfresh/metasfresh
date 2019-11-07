@@ -21,7 +21,7 @@ import de.metas.logging.LogManager;
 import de.metas.rest_api.dataentry.impl.dto.JsonDataEntry;
 import de.metas.rest_api.dataentry.impl.dto.JsonDataEntryResponse;
 import de.metas.rest_api.utils.RestApiUtils;
-import de.metas.util.rest.MetasfreshRestAPIConstants;
+import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
 
 /*

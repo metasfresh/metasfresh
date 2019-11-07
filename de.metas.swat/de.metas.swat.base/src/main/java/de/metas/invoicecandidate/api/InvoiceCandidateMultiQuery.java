@@ -1,14 +1,14 @@
-package de.metas.rest_api.invoicecandidates.response;
+package de.metas.invoicecandidate.api;
 
-import de.metas.rest_api.JsonExternalId;
-import de.metas.rest_api.MetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import java.util.List;
+
 import lombok.Builder;
+import lombok.Singular;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.business.rest-api
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -30,23 +30,8 @@ import lombok.Value;
 
 @Value
 @Builder
-public class JsonResponseInvoiceCandidateUpsertItem
+public class InvoiceCandidateMultiQuery
 {
-	public enum Action
-	{
-		INSERTED, UPDATED
-	}
-
-	@ApiModelProperty(position = 10, dataType = "java.lang.String")
-	JsonExternalId externalHeaderId;
-
-	@ApiModelProperty(position = 10, dataType = "java.lang.String")
-	JsonExternalId externalLineId;
-
-	@ApiModelProperty(value = "The metasfresh-ID of the upserted record",//
-			position = 30, dataType = "java.lang.Long")
-	MetasfreshId metasfreshId;
-
-	Action action;
-
+	@Singular
+	List<InvoiceCandidateQuery> queries;
 }

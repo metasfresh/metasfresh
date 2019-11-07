@@ -16,6 +16,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
+import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.cache.CacheIndex;
 import lombok.NonNull;
 

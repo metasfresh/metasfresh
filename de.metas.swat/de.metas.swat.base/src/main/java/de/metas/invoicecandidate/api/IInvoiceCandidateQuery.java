@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -46,12 +46,8 @@ public interface IInvoiceCandidateQuery
 	void setExcludeC_Invoice_Candidate_ID(int excludeC_Invoice_Candidate_ID);
 
 	int getMaxManualC_Invoice_Candidate_ID();
-	
-	/**
-	 * Excludes all <b>manual</b> invoice candidates with an ID greater than <code>maxManualC_Invoice_Candidate_ID</code>
-	 * 
-	 * @param maxManualC_Invoice_Candidate_ID
-	 */
+
+
 	void setMaxManualC_Invoice_Candidate_ID(int maxManualC_Invoice_Candidate_ID);
 
 	Boolean getProcessed();

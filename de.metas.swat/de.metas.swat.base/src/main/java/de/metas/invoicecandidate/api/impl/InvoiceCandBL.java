@@ -41,6 +41,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -66,6 +67,7 @@ import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -115,6 +117,9 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.invoicecandidate.api.IInvoiceGenerator;
+import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
+import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder;
+import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
 import de.metas.invoicecandidate.exceptions.InconsistentUpdateExeption;
@@ -159,8 +164,8 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.lang.Percent;
-import de.metas.util.rest.ExternalHeaderAndLineId;
 import lombok.NonNull;
 
 public class InvoiceCandBL implements IInvoiceCandBL
@@ -1107,8 +1112,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	/**
 	 * Updates all {@link I_C_Invoice_Detail} records linked to {@link I_C_Invoice_Candidate} and sets {@link I_C_Invoice} and {@link I_C_InvoiceLine}.
-	 *
-	 * @param ila
 	 */
 	private void assignInvoiceDetailsToInvoiceLine(final I_C_Invoice_Line_Alloc ila)
 	{
@@ -1140,7 +1143,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		else
 		{
 			final CurrencyPrecision precision = getPrecisionFromPricelist(ic);
-			final ProductPrice priceEntered = getPriceEntered(ic);
+			final ProductPrice priceEntered = getPriceEnteredEffective(ic);
 			final Percent discount = getDiscount(ic);
 
 			final BigDecimal priceActualOverride = discount
@@ -1152,14 +1155,38 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public ProductPrice getPriceEntered(@NonNull final I_C_Invoice_Candidate ic)
+	public ProductPrice getPriceEnteredEffective(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final BigDecimal priceAmount = InterfaceWrapperHelper.getValueOverrideOrValue(ic, I_C_Invoice_Candidate.COLUMNNAME_PriceEntered);
+		if (!InterfaceWrapperHelper.isNullOrEmpty(ic, I_C_Invoice_Candidate.COLUMNNAME_PriceEntered))
+		{
+			return createPrice(ic, ic.getPriceEntered_Override());
+		}
+		return createPrice(ic, ic.getPriceEntered());
+	}
+
+	@Override
+	public Optional<ProductPrice> getPriceEnteredOverride(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		if (InterfaceWrapperHelper.isNullOrEmpty(ic, I_C_Invoice_Candidate.COLUMNNAME_PriceEntered_Override))
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(createPrice(ic, ic.getPriceEntered_Override()));
+	}
+
+	private ProductPrice createPrice(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final BigDecimal priceAmount)
+	{
+		final UomId uomId = UomId.ofRepoId(ic.getC_UOM_ID());
+		final CurrencyId currency = CurrencyId.ofRepoId(ic.getC_Currency_ID());
+		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
 
 		return ProductPrice.builder()
-				.money(Money.of(priceAmount, CurrencyId.ofRepoId(ic.getC_Currency_ID())))
-				.uomId(UomId.ofRepoId(ic.getC_UOM_ID()))
-				.productId(ProductId.ofRepoId(ic.getM_Product_ID()))
+				.money(Money.of(priceAmount, currency))
+				.uomId(uomId)
+				.productId(productId)
 				.build();
 	}
 
@@ -2013,9 +2040,20 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public int createSelectionForInvoiceCandidates(List<ExternalHeaderAndLineId> headerAndLineIds,
-			PInstanceId pInstanceId)
+	public int createSelectionForInvoiceCandidates(
+			@NonNull final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds,
+			@NonNull final PInstanceId pInstanceId)
 	{
-		return Services.get(IInvoiceCandDAO.class).createSelectionByHeaderAndLineIds(headerAndLineIds, pInstanceId);
+		final InvoiceCandidateMultiQueryBuilder multiQuery = InvoiceCandidateMultiQuery.builder();
+		for (final ExternalHeaderIdWithExternalLineIds headerWithLineIds : headerAndLineIds)
+		{
+			multiQuery.query(InvoiceCandidateQuery.builder()
+					.externalIds(headerWithLineIds)
+					.build());
+		}
+
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+		final IQuery<I_C_Invoice_Candidate> retrieveInvoiceCandidates = invoiceCandDAO.convertToIQuery(multiQuery.build());
+		return retrieveInvoiceCandidates.createSelection(pInstanceId);
 	}
 }

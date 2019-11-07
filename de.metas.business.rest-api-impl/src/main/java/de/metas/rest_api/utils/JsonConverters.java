@@ -7,7 +7,7 @@ import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.JsonPagingDescriptor;
 import de.metas.rest_api.JsonPagingDescriptor.JsonPagingDescriptorBuilder;
-import de.metas.util.rest.ExternalId;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 

@@ -49,11 +49,11 @@ public class JsonRequestInvoiceCandidateUpsertItem
 {
 	@ApiModelProperty(position = 10, dataType = "java.lang.String", required = false,//
 			value = "Needs to be set if the invoice candidate shall be created.")
-	JsonExternalId exterhalHeaderId;
+	JsonExternalId externalHeaderId;
 
 	@ApiModelProperty(position = 20, dataType = "java.lang.String", required = false,//
 			value = "Needs to be set if the invoice candidate shall be created.")
-	JsonExternalId exterhalLineId;
+	JsonExternalId externalLineId;
 
 	@ApiModelProperty(position = 30, dataType = "java.lang.Long", required = false,//
 			value = "Needs to be empty if the invoice candidate shall be created.\n"
@@ -115,20 +115,20 @@ public class JsonRequestInvoiceCandidateUpsertItem
 	LocalDate presetDateInvoiced;
 
 	@ApiModelProperty(position = 160, required = false, //
-			value = "Optional value to override the price as computed by metasfresh's own pricing engine for the respective invoice candidate.")
-	BigDecimal priceEnteredOverride;
+			value = "Optional, to override the price-entered (price per unit before discount) as computed by metasfresh's own pricing engine for the respective invoice candidate.")
+	JsonOverride priceEnteredOverride;
 
 	@ApiModelProperty(position = 170, required = false, //
-			value = "Optional value to override the discount as computed by metasfresh's own pricing engine for the respective invoice candidate.")
-	BigDecimal priceDiscountOverride;
+			value = "Optional, to override the discount as computed by metasfresh's own pricing engine for the respective invoice candidate")
+	JsonOverride discountOverride;
 
 	@ApiModelProperty(position = 180, required = false, value = PARENT_SYNC_ADVISE_DOC)
 	SyncAdvise synchAdvise;
 
 	@JsonCreator
 	private JsonRequestInvoiceCandidateUpsertItem(
-			@JsonProperty("exterhalHeaderId") final JsonExternalId exterhalHeaderId,
-			@JsonProperty("exterhalLineId") final JsonExternalId exterhalLineId,
+			@JsonProperty("externalHeaderId") final JsonExternalId externalHeaderId,
+			@JsonProperty("externalLineId") final JsonExternalId externalLineId,
 			@JsonProperty("metasfreshId") final MetasfreshId metasfreshId,
 			@JsonProperty("poReference") final String poReference,
 			@JsonProperty("billPartnerIdentifier") final String billPartnerIdentifier,
@@ -143,12 +143,12 @@ public class JsonRequestInvoiceCandidateUpsertItem
 			@JsonProperty("qtyOrdered") final BigDecimal qtyOrdered,
 			@JsonProperty("qtyDelivered") final BigDecimal qtyDelivered,
 			@JsonProperty("uomCode") final String uomCode,
-			@JsonProperty("priceEnteredOverride") final BigDecimal priceEnteredOverride,
-			@JsonProperty("priceDiscountOverride") final BigDecimal priceDiscountOverride,
+			@JsonProperty("priceEnteredOverride") final JsonOverride priceEnteredOverride,
+			@JsonProperty("discountOverride") final JsonOverride discountOverride,
 			@JsonProperty("synchAdvise") @Nullable final SyncAdvise synchAdvise)
 	{
-		this.exterhalHeaderId = exterhalHeaderId;
-		this.exterhalLineId = exterhalLineId;
+		this.externalHeaderId = externalHeaderId;
+		this.externalLineId = externalLineId;
 		this.metasfreshId = metasfreshId;
 		this.poReference = poReference;
 		this.billPartnerIdentifier = billPartnerIdentifier;
@@ -164,7 +164,7 @@ public class JsonRequestInvoiceCandidateUpsertItem
 		this.qtyDelivered = qtyDelivered;
 		this.uomCode = uomCode;
 		this.priceEnteredOverride = priceEnteredOverride;
-		this.priceDiscountOverride = priceDiscountOverride;
+		this.discountOverride = discountOverride;
 		this.synchAdvise = synchAdvise;
 	}
 }

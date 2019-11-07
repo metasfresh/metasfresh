@@ -10,7 +10,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.util.rest.ExternalId;
+import de.metas.util.lang.ExternalId;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -38,8 +39,9 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+@ApiModel("Specifies a set of invoice candidate via their `C_Invoice_Candidate.ExternalHeaderId` and (optionally) `C_Invoice_Candidate.ExternalLineId`")
 @Value
-public class JsonRequestInvoiceCandidate
+public class JsonRequestInvoiceCandidateExternalIdSpec
 {
 	@ApiModelProperty(position = 10, allowEmptyValue = false, dataType = "java.lang.string", example = "abc",//
 			value = "Used to select which invoice candidates should be enqueued.")
@@ -54,7 +56,7 @@ public class JsonRequestInvoiceCandidate
 
 	@JsonCreator
 	@Builder(toBuilder = true)
-	private JsonRequestInvoiceCandidate(
+	private JsonRequestInvoiceCandidateExternalIdSpec(
 			@JsonProperty("externalLineIds") @Singular @Nullable final List<ExternalId> externalLineIds,
 			@JsonProperty("externalHeaderId") @NonNull final ExternalId externalHeaderId)
 	{

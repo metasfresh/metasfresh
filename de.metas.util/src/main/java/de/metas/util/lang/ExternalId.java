@@ -1,4 +1,4 @@
-package de.metas.util.rest;
+package de.metas.util.lang;
 
 import static de.metas.util.Check.isEmpty;
 

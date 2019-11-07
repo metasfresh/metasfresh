@@ -128,7 +128,7 @@ public class TimeUtil
 	 *
 	 * @param day day 1..31
 	 * @param month month 1..12
-	 * @param year year (if two diguts: < 50 is 2000; > 50 is 1900)
+	 * @param year year (if two digits: < 50 is 2000; > 50 is 1900)
 	 * @return timestamp ** not too reliable
 	 *
 	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.

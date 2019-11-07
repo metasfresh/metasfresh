@@ -56,7 +56,6 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
-import de.metas.util.rest.ExternalHeaderAndLineId;
 
 public interface IInvoiceCandDAO extends ISingletonService
 {
@@ -70,6 +69,9 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#COLUMNNAME_HeaderAggregationKey}
 	 */
 	<T extends I_C_Invoice_Candidate> Iterator<T> retrieveInvoiceCandidates(IQueryBuilder<T> queryBuilder);
+
+	/** Return a list of ICs for each query included in the given {@code multiQuery}. */
+	IQuery<I_C_Invoice_Candidate> convertToIQuery(InvoiceCandidateMultiQuery multiQuery);
 
 	List<I_C_Invoice_Candidate> retrieveIcForIl(I_C_InvoiceLine invoiceLine);
 
@@ -213,12 +215,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	BigDecimal retrieveInvoicableAmount(I_C_BPartner billBPartner, Timestamp date);
 
-	BigDecimal retrieveInvoicableAmount(Properties ctx, IInvoiceCandidateQuery query, CurrencyId targetCurrencyId, int adClientId, int adOrgId, String amountColumnName, String trxName);
-
-	/**
-	 * Creates a new {@link IInvoiceCandidateQuery} instance
-	 */
-	IInvoiceCandidateQuery newInvoiceCandidateQuery();
+	BigDecimal retrieveInvoicableAmount(Properties ctx, InvoiceCandidateQuery query, CurrencyId targetCurrencyId, int adClientId, int adOrgId, String amountColumnName, String trxName);
 
 	List<I_M_InOutLine> retrieveInOutLines(Properties ctx, int C_OrderLine_ID, String trxName);
 
@@ -387,5 +384,5 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	I_C_Invoice_Candidate getById(InvoiceCandidateId invoiceCandId);
 
-	int createSelectionByHeaderAndLineIds(List<ExternalHeaderAndLineId> headerAndLineIds, PInstanceId pInstanceID);
+	// int createSelectionByHeaderAndLineIds(List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds, PInstanceId pInstanceID);
 }

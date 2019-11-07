@@ -155,8 +155,8 @@ public class JsonPersisterService
 			bpartnerComposite = contactIdAndBPartner.getBpartnerComposite();
 
 			contact = bpartnerComposite
-					.getContact(contactIdAndBPartner.getBpartnerContactId())
-					.get();
+					.extractContact(contactIdAndBPartner.getBpartnerContactId())
+					.get(); // it's there, or we wouldn't be in this if-block
 		}
 		else
 		{

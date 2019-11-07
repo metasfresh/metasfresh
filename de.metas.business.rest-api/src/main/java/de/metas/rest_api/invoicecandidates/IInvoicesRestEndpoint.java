@@ -6,7 +6,7 @@ import de.metas.rest_api.invoicecandidates.request.JsonRequestEnqueueForInvoicin
 import de.metas.rest_api.invoicecandidates.request.JsonRequestInvoiceCandidateUpsert;
 import de.metas.rest_api.invoicecandidates.response.JsonResponseEnqueueForInvoicing;
 import de.metas.rest_api.invoicecandidates.response.JsonResponseInvoiceCandidateUpsert;
-import de.metas.util.rest.MetasfreshRestAPIConstants;
+import de.metas.util.web.MetasfreshRestAPIConstants;
 
 /*
  * #%L

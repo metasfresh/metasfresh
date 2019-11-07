@@ -299,7 +299,7 @@ public class AdempiereException extends RuntimeException
 	 *
 	 * @return original message
 	 */
-	protected final ITranslatableString getOriginalMessage()
+	public final ITranslatableString getOriginalMessage()
 	{
 		return messageTrl;
 	}

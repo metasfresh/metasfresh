@@ -9,9 +9,9 @@ import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.rest_api.invoicecandidates.request.JsonRequestInvoiceCandidate;
-import de.metas.util.rest.ExternalHeaderAndLineId;
-import de.metas.util.rest.ExternalId;
+import de.metas.rest_api.invoicecandidates.request.JsonRequestInvoiceCandidateExternalIdSpec;
+import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
+import de.metas.util.lang.ExternalId;
 
 /*
  * #%L
@@ -54,18 +54,18 @@ public class InvoiceJsonConverterServiceTest
 	@Test
 	void checkInvoiceCandidateSelection()
 	{
-		final JsonRequestInvoiceCandidate jic1 = JsonRequestInvoiceCandidate.builder()
+		final JsonRequestInvoiceCandidateExternalIdSpec jic1 = JsonRequestInvoiceCandidateExternalIdSpec.builder()
 				.externalHeaderId(EXTERNAL_HEADER_ID1)
 				.build();
 
-		final JsonRequestInvoiceCandidate jic2 = JsonRequestInvoiceCandidate.builder()
+		final JsonRequestInvoiceCandidateExternalIdSpec jic2 = JsonRequestInvoiceCandidateExternalIdSpec.builder()
 				.externalHeaderId(EXTERNAL_HEADER_ID2)
 				.externalLineId(EXTERNAL_LINE_ID1)
 				.externalLineId(EXTERNAL_LINE_ID2)
 				.build();
 
 		// invoke the method under test
-		final List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(ImmutableList.of(jic1, jic2));
+		final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(ImmutableList.of(jic1, jic2));
 
 		assertThat(headerAndLineIds).hasSize(2);
 		assertThat(headerAndLineIds.get(0).getExternalHeaderId()).isEqualTo(EXTERNAL_HEADER_ID1);

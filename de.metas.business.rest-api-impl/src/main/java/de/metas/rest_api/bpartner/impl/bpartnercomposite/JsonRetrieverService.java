@@ -50,6 +50,7 @@ import de.metas.rest_api.changelog.JsonChangeInfo;
 import de.metas.rest_api.changelog.JsonChangeInfo.JsonChangeInfoBuilder;
 import de.metas.rest_api.changelog.JsonChangeLogItem;
 import de.metas.rest_api.changelog.JsonChangeLogItem.JsonChangeLogItemBuilder;
+import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonConverters;
@@ -493,7 +494,7 @@ public class JsonRetrieverService
 		final BPartnerComposite bpartnerComposite = contactIdAndBPartner.getBpartnerComposite();
 
 		return bpartnerComposite
-				.getContact(contactId)
+				.extractContact(contactId)
 				.map(c -> toJson(c, bpartnerComposite.getBpartner().getLanguage()));
 	}
 

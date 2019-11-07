@@ -14,7 +14,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.GLN;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
-import de.metas.util.rest.ExternalId;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

@@ -32,8 +32,7 @@ public class SwaggerDocConstants
 
 	public static final String CONTACT_IDENTIFIER_DOC = "Identifier of the contact in question. Can be\n"
 			+ "* a plain `<AD_User_ID>`\n"
-			+ "* or something like `ext-<YourExternalId>`\n"
-			+ "* or something like `val-<AD_User_ID.Value>`";
+			+ "* or something like `ext-<YourExternalId>`";
 
 	public static final String LOCATION_IDENTIFIER_DOC = "Identifier of the location in question. Can be\n"
 			+ "* a plain `<C_BPartner_Location_ID>`\n"

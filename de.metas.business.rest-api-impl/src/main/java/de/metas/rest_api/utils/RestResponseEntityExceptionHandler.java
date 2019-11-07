@@ -63,7 +63,7 @@ public class RestResponseEntityExceptionHandler
 	}
 
 	@ExceptionHandler(MissingResourceException.class)
-	public ResponseEntity<JsonError> handleMissingPropertyException(@NonNull final MissingResourceException e)
+	public ResponseEntity<JsonError> handleMissingResourceException(@NonNull final MissingResourceException e)
 	{
 		return logAndCreateError(e, HttpStatus.UNPROCESSABLE_ENTITY);
 	}

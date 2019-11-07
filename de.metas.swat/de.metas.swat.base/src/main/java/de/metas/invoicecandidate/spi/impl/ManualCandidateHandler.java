@@ -3,8 +3,6 @@
  */
 package de.metas.invoicecandidate.spi.impl;
 
-
-
 /*
  * #%L
  * de.metas.swat.base
@@ -18,15 +16,14 @@ package de.metas.invoicecandidate.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -36,8 +33,9 @@ import java.util.Properties;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
 
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.IInvoiceCandidateQuery;
+import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.exceptions.InvalidQtyForPartialAmtToInvoiceException;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -133,10 +131,12 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 		final Properties ctx = InterfaceWrapperHelper.getCtx(icRecord);
 		final String trxName = InterfaceWrapperHelper.getTrxName(icRecord);
 
-		final IInvoiceCandidateQuery query = invoiceCandDAO.newInvoiceCandidateQuery();
-		query.setHeaderAggregationKey(icRecord.getHeaderAggregationKey());
-		query.setMaxManualC_Invoice_Candidate_ID(icRecord.getC_Invoice_Candidate_ID() - 1); // For manual candidates, fetch only those which were created before this one
-		query.setProcessed(false); // only those which are not processed
+		final InvoiceCandidateQuery query = InvoiceCandidateQuery.builder()
+				.headerAggregationKey(icRecord.getHeaderAggregationKey())
+				.maxManualC_Invoice_Candidate_ID(InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID() - 1)) // For manual candidates, fetch only those which were created before this one
+				.processed(false) // only those which are not processed
+				.error(false)
+				.build();
 		final int adClientId = icRecord.getAD_Client_ID();
 		final int adOrgId = icRecord.getAD_Org_ID();
 		final CurrencyId targetCurrencyId = CurrencyId.ofRepoId(icRecord.getC_Currency_ID());

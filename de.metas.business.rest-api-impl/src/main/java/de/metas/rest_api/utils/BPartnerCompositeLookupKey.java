@@ -1,4 +1,4 @@
-package de.metas.rest_api.bpartner.impl.bpartnercomposite;
+package de.metas.rest_api.utils;
 
 import static de.metas.util.Check.assumeNotEmpty;
 
@@ -7,10 +7,8 @@ import org.adempiere.exceptions.AdempiereException;
 import de.metas.bpartner.GLN;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
-import de.metas.rest_api.utils.IdentifierString;
-import de.metas.rest_api.utils.JsonExternalIds;
+import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.RepoIdAware;
-import de.metas.util.rest.ExternalId;
 import lombok.NonNull;
 import lombok.Value;
 

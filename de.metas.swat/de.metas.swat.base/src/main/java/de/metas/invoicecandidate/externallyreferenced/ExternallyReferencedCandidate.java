@@ -3,18 +3,14 @@ package de.metas.invoicecandidate.externallyreferenced;
 import javax.annotation.Nullable;
 
 import de.metas.bpartner.service.BPartnerInfo;
-import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.lang.Percent;
-import de.metas.util.rest.ExternalId;
-import lombok.Builder;
-import lombok.Builder.Default;
+import lombok.Data;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -39,44 +35,45 @@ import lombok.Value;
  */
 
 /** A "manual" IC does not reference another record (e.g. order line or contract). */
-@Value
-@Builder
+@Data
 public class ExternallyReferencedCandidate
 {
-	@Nullable
-	InvoiceCandidateId id;
+	@NonNull
+	private InvoiceCandidateLookupKey lookupKey;
 
 	@NonNull
-	BPartnerInfo billPartnerInfo;
+	private BPartnerInfo billPartnerInfo;
 
 	@NonNull
-	ExternalId externalHeaderId;
+	private ProductId productId;
 
 	@NonNull
-	ExternalId externalLineId;
+	private InvoiceRule invoiceRuleOverride;
 
 	@NonNull
-	ProductId productId;
+	private SOTrx soTrx;
 
 	@NonNull
-	@Default
-	InvoiceRule invoiceRule = InvoiceRule.Immediate;
+	private StockQtyAndUOMQty qtyOrdered;
 
 	@NonNull
-	SOTrx soTrx;
-
-	@NonNull
-	StockQtyAndUOMQty qtyOrdered;
-
-	@NonNull
-	StockQtyAndUOMQty qtyDelivered;
+	private StockQtyAndUOMQty qtyDelivered;
 
 	/** If given, then productId has to match */
 	@Nullable
-	ProductPrice priceEnteredOverride;
+	private ProductPrice priceEnteredOverride;
 
 	@Nullable
-	Percent discountOverride;
+	private Percent discountOverride;
 
 	// TODO: figure something out for tax
+
+	public ExternallyReferencedCandidate()
+	{
+	}
+
+	public boolean isNew()
+	{
+		return lookupKey == null || lookupKey.getInvoiceCandidateId() == null;
+	}
 }

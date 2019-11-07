@@ -45,7 +45,7 @@ public final class JsonRequestEnqueueForInvoicing
 {
 	@ApiModelProperty(position = 10, required = true, //
 			value = "Specifies the invoice candidtes to be invoiced.")
-	List<JsonRequestInvoiceCandidate> invoiceCandidates;
+	List<JsonRequestInvoiceCandidateExternalIdSpec> invoiceCandidates;
 
 	@ApiModelProperty(position = 20, value = "Optional invoices' document date", example = "2019-10-30")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
@@ -79,7 +79,7 @@ public final class JsonRequestEnqueueForInvoicing
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonRequestEnqueueForInvoicing(
-			@JsonProperty("invoiceCandidates") @Singular final List<JsonRequestInvoiceCandidate> invoiceCandidates,
+			@JsonProperty("invoiceCandidates") @Singular final List<JsonRequestInvoiceCandidateExternalIdSpec> invoiceCandidates,
 			@JsonProperty("dateInvoiced") @Nullable final LocalDate dateInvoiced,
 			@JsonProperty("dateAcct") @Nullable final LocalDate dateAcct,
 			@JsonProperty("poReference") @Nullable final String poReference,

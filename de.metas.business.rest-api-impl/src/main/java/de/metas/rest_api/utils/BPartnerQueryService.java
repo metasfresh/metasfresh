@@ -13,7 +13,6 @@ import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
-import de.metas.rest_api.bpartner.impl.bpartnercomposite.BPartnerCompositeLookupKey;
 import lombok.NonNull;
 
 /*

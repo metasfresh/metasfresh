@@ -1,12 +1,16 @@
 package de.metas.rest_api.invoicecandidates.request;
 
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.CREATE_OR_MERGE_SYNC_ADVISE_DOC;
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.util.List;
+
+import javax.annotation.Nullable;
 
 import de.metas.rest_api.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
@@ -33,13 +37,20 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class JsonRequestInvoiceCandidateUpsert
 {
-	@ApiModelProperty(position = 10)
-	@Singular
+	@ApiModelProperty(position = 10, required = true)
 	List<JsonRequestInvoiceCandidateUpsertItem> requestItems;
 
-	@ApiModelProperty(position = 20, value = "Sync-advise for individual items.\n" + PARENT_SYNC_ADVISE_DOC)
+	@ApiModelProperty(position = 20, value = "Sync-advise for individual request items.\n" + CREATE_OR_MERGE_SYNC_ADVISE_DOC)
 	SyncAdvise syncAdvise;
+
+	@Builder
+	private JsonRequestInvoiceCandidateUpsert(
+			@Singular @NonNull final List<JsonRequestInvoiceCandidateUpsertItem> requestItems,
+			@Nullable final SyncAdvise syncAdvise)
+	{
+		this.requestItems = requestItems;
+		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.CREATE_OR_MERGE);
+	}
 }

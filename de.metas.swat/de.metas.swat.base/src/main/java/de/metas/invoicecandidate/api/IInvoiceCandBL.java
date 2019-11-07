@@ -28,6 +28,7 @@ package de.metas.invoicecandidate.api;
 import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -51,8 +52,8 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.ISingletonService;
 import de.metas.util.OptionalBoolean;
+import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.lang.Percent;
-import de.metas.util.rest.ExternalHeaderAndLineId;
 import lombok.NonNull;
 
 public interface IInvoiceCandBL extends ISingletonService
@@ -153,7 +154,9 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	Percent getDiscount(I_C_Invoice_Candidate ic);
 
-	ProductPrice getPriceEntered(I_C_Invoice_Candidate ic);
+	ProductPrice getPriceEnteredEffective(I_C_Invoice_Candidate ic);
+
+	Optional<ProductPrice> getPriceEnteredOverride(I_C_Invoice_Candidate ic);
 
 	boolean isTaxIncluded(I_C_Invoice_Candidate ic);
 
@@ -418,5 +421,5 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	void updateICIOLAssociationFromIOL(I_C_InvoiceCandidate_InOutLine iciol, org.compiere.model.I_M_InOutLine inOutLine);
 
-	int createSelectionForInvoiceCandidates(List<ExternalHeaderAndLineId> headerAndLineIds, PInstanceId pInstanceId);
+	int createSelectionForInvoiceCandidates(List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds, PInstanceId pInstanceId);
 }

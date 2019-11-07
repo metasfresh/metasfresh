@@ -13,7 +13,7 @@ import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.rest_api.product.command.GetProductsCommand;
 import de.metas.rest_api.product.response.JsonGetProductsResponse;
-import de.metas.util.rest.MetasfreshRestAPIConstants;
+import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
 
 /*

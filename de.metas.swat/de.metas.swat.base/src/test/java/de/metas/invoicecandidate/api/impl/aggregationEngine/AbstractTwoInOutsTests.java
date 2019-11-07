@@ -113,7 +113,7 @@ public abstract class AbstractTwoInOutsTests extends AbstractNewAggregationEngin
 
 		if (config_GetPriceEntered_Override() != null)
 		{
-			final ProductPrice priceEntered = invoiceCandBL.getPriceEntered(ic);
+			final ProductPrice priceEntered = invoiceCandBL.getPriceEnteredEffective(ic);
 			assertThat("Invalide priceEntered", priceEntered.toBigDecimal(), comparesEqualTo(config_GetPriceEntered_Override()));
 
 			final ProductPrice priceActual = invoiceCandBL.getPriceActual(ic);

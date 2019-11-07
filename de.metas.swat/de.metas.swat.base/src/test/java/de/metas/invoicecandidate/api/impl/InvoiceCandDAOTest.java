@@ -21,13 +21,15 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
+import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
-import de.metas.util.rest.ExternalHeaderAndLineId;
-import de.metas.util.rest.ExternalId;
+import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 
 /*
@@ -71,7 +73,6 @@ public class InvoiceCandDAOTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-
 		invoiceCandDAO = new InvoiceCandDAO();
 	}
 
@@ -144,23 +145,30 @@ public class InvoiceCandDAOTest
 	}
 
 	@Test
-	public void createQueryByHeaderAndLineId_testInvoiceCandidates()
+	public void asGenericQuery_testInvoiceCandidates()
 	{
 		final InvoiceCandidateId candidateId1_1 = createInvoiceCandidate(EXTERNAL_HEADER_ID1, EXTERNAL_LINE_ID1);
 		final InvoiceCandidateId candidateId2_2 = createInvoiceCandidate(EXTERNAL_HEADER_ID2, EXTERNAL_LINE_ID2);
 		createInvoiceCandidate(EXTERNAL_HEADER_ID3, EXTERNAL_LINE_ID3);
 
-		final List<ExternalHeaderAndLineId> headerAndLineIds = ImmutableList.of(
-				ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID1).externalLineId(EXTERNAL_LINE_ID1).build(),
-				ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID2).externalLineId(EXTERNAL_LINE_ID2).build());
+		final InvoiceCandidateMultiQuery multiQuery = InvoiceCandidateMultiQuery.builder()
+				.query(InvoiceCandidateQuery.builder().externalIds(ExternalHeaderIdWithExternalLineIds.builder()
+						.externalHeaderId(EXTERNAL_HEADER_ID1)
+						.externalLineId(EXTERNAL_LINE_ID1).build())
+						.build())
+				.query(InvoiceCandidateQuery.builder().externalIds(ExternalHeaderIdWithExternalLineIds.builder()
+						.externalHeaderId(EXTERNAL_HEADER_ID2)
+						.externalLineId(EXTERNAL_LINE_ID2).build())
+						.build())
+				.build();
 
 		// invoke the method under test
-		final IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId = invoiceCandDAO.createQueryByHeaderAndLineId(headerAndLineIds);
+		final IQuery<I_C_Invoice_Candidate> asGenericQuery = invoiceCandDAO.convertToIQuery(multiQuery);
 
-		final int size = createQueryByHeaderAndLineId.list().size();
+		final int size = asGenericQuery.list().size();
 		assertThat(size).isEqualTo(2);
 
-		final List<I_C_Invoice_Candidate> records = createQueryByHeaderAndLineId.list();
+		final List<I_C_Invoice_Candidate> records = asGenericQuery.list();
 		assertThat(records)
 				.extracting("C_Invoice_Candidate_ID", "ExternalHeaderId", "ExternalLineId")
 				.containsExactlyInAnyOrder(
@@ -169,57 +177,69 @@ public class InvoiceCandDAOTest
 	}
 
 	@Test
-	public void createQueryByHeaderAndLineId_checkInvoiceCandidatesNotSelected()
+	public void asGenericQuery_checkInvoiceCandidatesNotSelected()
 	{
 		createInvoiceCandidate(EXTERNAL_HEADER_ID1, EXTERNAL_LINE_ID1);
 
-		final ImmutableList<ExternalHeaderAndLineId> headerAndLineIds = ImmutableList.of(
-				ExternalHeaderAndLineId.builder()
-						.externalHeaderId(EXTERNAL_HEADER_ID2)
-						.externalLineId(EXTERNAL_LINE_ID2)
-						.build());
+		final InvoiceCandidateMultiQuery multiQuery = InvoiceCandidateMultiQuery.builder()
+				.query(InvoiceCandidateQuery.builder().externalIds(
+						ExternalHeaderIdWithExternalLineIds.builder()
+								.externalHeaderId(EXTERNAL_HEADER_ID2)
+								.externalLineId(EXTERNAL_LINE_ID2)
+								.build())
+						.build())
+				.build();
 
-		final IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId = invoiceCandDAO.createQueryByHeaderAndLineId(headerAndLineIds);
+		final IQuery<I_C_Invoice_Candidate> asGenericQuery = invoiceCandDAO.convertToIQuery(multiQuery);
 
-		final int selection = createQueryByHeaderAndLineId.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
+		final int selection = asGenericQuery.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
 		assertThat(selection).isEqualTo(0);
 	}
 
 	@Test
-	public void createQueryByHeaderAndLineId_checkEmptyListOfExternalLineIds()
+	public void asGenericQuery_checkEmptyListOfExternalLineIds()
 	{
-		final List<ExternalHeaderAndLineId> headerAndLineIds = ImmutableList.of(
-				ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID3).externalLineId(EXTERNAL_LINE_ID3).build());
+
+		final InvoiceCandidateMultiQuery multiQuery = InvoiceCandidateMultiQuery.builder()
+				.query(InvoiceCandidateQuery.builder().externalIds(
+						ExternalHeaderIdWithExternalLineIds.builder()
+								.externalHeaderId(EXTERNAL_HEADER_ID3)
+								.externalLineId(EXTERNAL_LINE_ID3)
+								.build())
+						.build())
+				.build();
 
 		// invoke the method under test
-		final IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId = invoiceCandDAO.createQueryByHeaderAndLineId(headerAndLineIds);
+		final IQuery<I_C_Invoice_Candidate> asGenericQuery = invoiceCandDAO.convertToIQuery(multiQuery);
 
-		final int selection = createQueryByHeaderAndLineId.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
+		final int selection = asGenericQuery.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
 		assertThat(selection).isEqualTo(0);
 	}
 
 	@Test
-	public void createQueryByHeaderAndLineId_select_lineId_subset()
+	public void asGenericQuery_select_lineId_subset()
 	{
 		final InvoiceCandidateId candidateId1_1 = createInvoiceCandidate(EXTERNAL_HEADER_ID1, EXTERNAL_LINE_ID1);
 		final InvoiceCandidateId candidateId1_2 = createInvoiceCandidate(EXTERNAL_HEADER_ID1, EXTERNAL_LINE_ID2);
 		createInvoiceCandidate(EXTERNAL_HEADER_ID1, EXTERNAL_LINE_ID3);
 		createInvoiceCandidate(EXTERNAL_HEADER_ID2, null);
 
-		final List<ExternalHeaderAndLineId> headerAndLineIds = ImmutableList.of(
-				ExternalHeaderAndLineId.builder()
-						.externalHeaderId(EXTERNAL_HEADER_ID1)
-						.externalLineId(EXTERNAL_LINE_ID1)
-						.externalLineId(EXTERNAL_LINE_ID2)
-						.build());
+		final InvoiceCandidateMultiQuery multiQuery = InvoiceCandidateMultiQuery.builder()
+				.query(InvoiceCandidateQuery.builder().externalIds(
+						ExternalHeaderIdWithExternalLineIds.builder()
+								.externalHeaderId(EXTERNAL_HEADER_ID1)
+								.externalLineId(EXTERNAL_LINE_ID1)
+								.externalLineId(EXTERNAL_LINE_ID2).build())
+						.build())
+				.build();
 
 		// invoke the method under test
-		final IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId = invoiceCandDAO.createQueryByHeaderAndLineId(headerAndLineIds);
+		final IQuery<I_C_Invoice_Candidate> asGenericQuery = invoiceCandDAO.convertToIQuery(multiQuery);
 
-		final int selection = createQueryByHeaderAndLineId.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
+		final int selection = asGenericQuery.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
 		assertThat(selection).isEqualTo(2);
 
-		final List<I_C_Invoice_Candidate> records = createQueryByHeaderAndLineId.list();
+		final List<I_C_Invoice_Candidate> records = asGenericQuery.list();
 		assertThat(records)
 				.extracting("C_Invoice_Candidate_ID", "ExternalHeaderId", "ExternalLineId")
 				.containsExactlyInAnyOrder(
@@ -228,23 +248,26 @@ public class InvoiceCandDAOTest
 	}
 
 	@Test
-	public void createQueryByHeaderAndLineId_select_only_by_headerId()
+	public void asGenericQuery_select_only_by_headerId()
 	{
 		final InvoiceCandidateId candidateId1_1 = createInvoiceCandidate(EXTERNAL_HEADER_ID1, EXTERNAL_LINE_ID1);
 		final InvoiceCandidateId candidateId1_2 = createInvoiceCandidate(EXTERNAL_HEADER_ID1, EXTERNAL_LINE_ID2);
 		final InvoiceCandidateId candidateId1_3 = createInvoiceCandidate(EXTERNAL_HEADER_ID1, EXTERNAL_LINE_ID3);
 		createInvoiceCandidate(EXTERNAL_HEADER_ID2, null);
 
-		final List<ExternalHeaderAndLineId> headerAndLineIds = ImmutableList.of(
-				ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID1).build());
+		final InvoiceCandidateMultiQuery multiQuery = InvoiceCandidateMultiQuery.builder()
+				.query(InvoiceCandidateQuery.builder().externalIds(
+						ExternalHeaderIdWithExternalLineIds.builder().externalHeaderId(EXTERNAL_HEADER_ID1).build())
+						.build())
+				.build();
 
 		// invoke the method under test
-		final IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId = invoiceCandDAO.createQueryByHeaderAndLineId(headerAndLineIds);
+		final IQuery<I_C_Invoice_Candidate> asGenericQuery = invoiceCandDAO.convertToIQuery(multiQuery);
 
-		final int selection = createQueryByHeaderAndLineId.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
+		final int selection = asGenericQuery.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
 		assertThat(selection).isEqualTo(3);
 
-		final List<I_C_Invoice_Candidate> records = createQueryByHeaderAndLineId.list();
+		final List<I_C_Invoice_Candidate> records = asGenericQuery.list();
 		assertThat(records)
 				.extracting("C_Invoice_Candidate_ID", "ExternalHeaderId", "ExternalLineId")
 				.containsExactlyInAnyOrder(
@@ -254,7 +277,7 @@ public class InvoiceCandDAOTest
 	}
 
 	@Test
-	public void createQueryByHeaderAndLineId_select_mixed()
+	public void asGenericQuery_select_mixed()
 	{
 		final InvoiceCandidateId candidateId1_1 = createInvoiceCandidate(EXTERNAL_HEADER_ID1, EXTERNAL_LINE_ID1);
 		final InvoiceCandidateId candidateId1_2 = createInvoiceCandidate(EXTERNAL_HEADER_ID1, EXTERNAL_LINE_ID2);
@@ -263,17 +286,22 @@ public class InvoiceCandDAOTest
 		final InvoiceCandidateId candidateId2_2 = createInvoiceCandidate(EXTERNAL_HEADER_ID2, EXTERNAL_LINE_ID2);
 		final InvoiceCandidateId candidateId2_3 = createInvoiceCandidate(EXTERNAL_HEADER_ID2, EXTERNAL_LINE_ID3);
 
-		final List<ExternalHeaderAndLineId> headerAndLineIds = ImmutableList.of(
-				ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID1).build(), // all with headerId1
-				ExternalHeaderAndLineId.builder().externalHeaderId(EXTERNAL_HEADER_ID2).externalLineId(EXTERNAL_LINE_ID2).externalLineId(EXTERNAL_LINE_ID3).build());
+		final InvoiceCandidateMultiQuery multiQuery = InvoiceCandidateMultiQuery.builder()
+				.query(InvoiceCandidateQuery.builder().externalIds(
+						ExternalHeaderIdWithExternalLineIds.builder().externalHeaderId(EXTERNAL_HEADER_ID1).build() // all with headerId1
+				).build())
+				.query(InvoiceCandidateQuery.builder().externalIds(
+						ExternalHeaderIdWithExternalLineIds.builder().externalHeaderId(EXTERNAL_HEADER_ID2).externalLineId(EXTERNAL_LINE_ID2).externalLineId(EXTERNAL_LINE_ID3).build())
+						.build())
+				.build();
 
 		// invoke the method under test
-		final IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId = invoiceCandDAO.createQueryByHeaderAndLineId(headerAndLineIds);
+		final IQuery<I_C_Invoice_Candidate> asGenericQuery = invoiceCandDAO.convertToIQuery(multiQuery);
 
-		final int selection = createQueryByHeaderAndLineId.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
+		final int selection = asGenericQuery.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
 		assertThat(selection).isEqualTo(5);
 
-		final List<I_C_Invoice_Candidate> records = createQueryByHeaderAndLineId.list();
+		final List<I_C_Invoice_Candidate> records = asGenericQuery.list();
 		assertThat(records)
 				.extracting("C_Invoice_Candidate_ID", "ExternalHeaderId", "ExternalLineId")
 				.containsExactlyInAnyOrder(

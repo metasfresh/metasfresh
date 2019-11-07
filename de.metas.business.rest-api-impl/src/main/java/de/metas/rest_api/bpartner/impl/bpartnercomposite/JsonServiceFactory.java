@@ -7,6 +7,7 @@ import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.greeting.GreetingRepository;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister.JsonPersisterService;
+import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.util.lang.UIDStringUtil;
 import lombok.NonNull;
 
@@ -35,17 +36,20 @@ import lombok.NonNull;
 @Service
 public class JsonServiceFactory
 {
+	private final BPartnerQueryService bpartnerQueryService;
 	private final BPartnerCompositeRepository bpartnerCompositeRepository;
 	private final BPGroupRepository bpGroupRepository;
 	private final RecordChangeLogRepository recordChangeLogRepository;
 	private final GreetingRepository greetingRepository;
 
 	public JsonServiceFactory(
+			@NonNull final BPartnerQueryService bpartnerQueryService,
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPGroupRepository bpGroupRepository,
 			@NonNull final GreetingRepository greetingRepository,
 			@NonNull final RecordChangeLogRepository recordChangeLogRepository)
 	{
+		this.bpartnerQueryService = bpartnerQueryService;
 		this.greetingRepository = greetingRepository;
 		this.recordChangeLogRepository = recordChangeLogRepository;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
@@ -68,6 +72,12 @@ public class JsonServiceFactory
 
 	private JsonRetrieverService createRetrieverService(@NonNull final String identifier)
 	{
-		return new JsonRetrieverService(bpartnerCompositeRepository, bpGroupRepository, greetingRepository, recordChangeLogRepository, identifier);
+		return new JsonRetrieverService(
+				bpartnerQueryService,
+				bpartnerCompositeRepository,
+				bpGroupRepository,
+				greetingRepository,
+				recordChangeLogRepository,
+				identifier);
 	}
 }

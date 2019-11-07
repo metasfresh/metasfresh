@@ -75,13 +75,14 @@ import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
 import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
 import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
+import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.MissingResourceException;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.JSONObjectMapper;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.UIDStringUtil;
-import de.metas.util.rest.ExternalId;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import lombok.Value;
@@ -135,6 +136,7 @@ class BpartnerRestControllerTest
 
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
+				new BPartnerQueryService(),
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),

@@ -21,7 +21,7 @@ import de.metas.rest_api.invoicecandidates.request.JsonRequestInvoiceCandidateUp
 import de.metas.rest_api.invoicecandidates.response.JsonResponseEnqueueForInvoicing;
 import de.metas.rest_api.invoicecandidates.response.JsonResponseInvoiceCandidateUpsert;
 import de.metas.util.Services;
-import de.metas.util.rest.ExternalHeaderAndLineId;
+import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import io.swagger.annotations.ApiOperation;
 import lombok.NonNull;
 
@@ -80,7 +80,7 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 	public ResponseEntity<JsonResponseEnqueueForInvoicing> enqueueForInvoicing(@RequestBody @NonNull final JsonRequestEnqueueForInvoicing request)
 	{
 		final PInstanceId pInstanceId = adPInstanceDAO.createSelectionId();
-		final List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(request.getInvoiceCandidates());
+		final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(request.getInvoiceCandidates());
 		invoiceCandBL.createSelectionForInvoiceCandidates(headerAndLineIds, pInstanceId);
 
 		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL

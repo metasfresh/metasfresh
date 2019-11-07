@@ -51,7 +51,7 @@ import de.metas.rest_api.utils.MissingPropertyException;
 import de.metas.rest_api.utils.PermissionService;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.rest.ExternalId;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import lombok.Value;
 

@@ -19,8 +19,9 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.cache.CacheIndexDataAdapter;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.rest_api.MetasfreshId;
+import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.JsonConverters;
-import de.metas.util.rest.ExternalId;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 
 /*

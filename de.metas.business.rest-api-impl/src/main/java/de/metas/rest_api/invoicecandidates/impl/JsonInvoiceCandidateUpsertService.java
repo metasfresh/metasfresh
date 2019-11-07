@@ -1,22 +1,48 @@
 package de.metas.rest_api.invoicecandidates.impl;
 
+import static de.metas.util.Check.isEmpty;
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
+import java.util.Map.Entry;
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+
 import de.metas.bpartner.composite.BPartnerComposite;
+import de.metas.bpartner.composite.BPartnerContact;
+import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.bpartner.service.BPartnerInfo.BPartnerInfoBuilder;
 import de.metas.bpartner.service.BPartnerQuery;
-import de.metas.rest_api.bpartner.impl.bpartnercomposite.BPartnerCompositeLookupKey;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidate;
+import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
+import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidateLookupKey;
+import de.metas.rest_api.JsonExternalId;
+import de.metas.rest_api.MetasfreshId;
+import de.metas.rest_api.SyncAdvise;
+import de.metas.rest_api.invoicecandidates.request.JsonOverride;
 import de.metas.rest_api.invoicecandidates.request.JsonRequestInvoiceCandidateUpsert;
 import de.metas.rest_api.invoicecandidates.request.JsonRequestInvoiceCandidateUpsertItem;
 import de.metas.rest_api.invoicecandidates.response.JsonResponseInvoiceCandidateUpsert;
 import de.metas.rest_api.invoicecandidates.response.JsonResponseInvoiceCandidateUpsert.JsonResponseInvoiceCandidateUpsertBuilder;
 import de.metas.rest_api.invoicecandidates.response.JsonResponseInvoiceCandidateUpsertItem;
-import de.metas.rest_api.invoicecandidates.response.JsonResponseInvoiceCandidateUpsertItem.JsonResponseInvoiceCandidateUpsertItemBuilder;
+import de.metas.rest_api.invoicecandidates.response.JsonResponseInvoiceCandidateUpsertItem.Action;
+import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.IdentifierString;
+import de.metas.rest_api.utils.InvalidEntityException;
+import de.metas.rest_api.utils.JsonExternalIds;
+import de.metas.rest_api.utils.MissingPropertyException;
+import de.metas.rest_api.utils.MissingResourceException;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
 /*
@@ -46,52 +72,275 @@ public class JsonInvoiceCandidateUpsertService
 {
 
 	// private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final transient BPartnerQueryService bPartnerQueryService;
-	private BPartnerCompositeRepository bpartnerCompositeRepository;
+	private final BPartnerQueryService bPartnerQueryService;
+	private final BPartnerCompositeRepository bpartnerCompositeRepository;
+
+	private final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository;
 
 	private JsonInvoiceCandidateUpsertService(
 			@NonNull final BPartnerQueryService bPartnerQueryService,
-			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository)
+			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
+			final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository)
 	{
 		this.bPartnerQueryService = bPartnerQueryService;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
+		this.externallyReferencedCandidateRepository = externallyReferencedCandidateRepository;
 	}
 
 	public JsonResponseInvoiceCandidateUpsert createOrUpdateInvoiceCandidates(@NonNull final JsonRequestInvoiceCandidateUpsert request)
 	{
-		final JsonResponseInvoiceCandidateUpsertBuilder result = JsonResponseInvoiceCandidateUpsert.builder();
-		for (final JsonRequestInvoiceCandidateUpsertItem item : request.getRequestItems())
+		final ImmutableMap<InvoiceCandidateLookupKey, JsonRequestInvoiceCandidateUpsertItem> lookupKey2Item = Maps.uniqueIndex(request.getRequestItems(), this::createInvoiceCandidateLookupKey);
+
+		// candidates
+		final ImmutableMap<InvoiceCandidateLookupKey, Optional<ExternallyReferencedCandidate>> //
+		key2Candidate = externallyReferencedCandidateRepository.getAllBy(lookupKey2Item.keySet());
+
+		final ImmutableSet<Entry<InvoiceCandidateLookupKey, JsonRequestInvoiceCandidateUpsertItem>> entrySet = lookupKey2Item.entrySet();
+
+		final ImmutableList.Builder<ExternallyReferencedCandidate> candidatesToSave = ImmutableList.builder();
+		for (final Entry<InvoiceCandidateLookupKey, JsonRequestInvoiceCandidateUpsertItem> keyWithItem : lookupKey2Item.entrySet())
 		{
 
-			final IdentifierString bpartnerIdentifier = IdentifierString.of(item.getBillPartnerIdentifier());
-			final BPartnerCompositeLookupKey bpartnerIdLookupKey = BPartnerCompositeLookupKey.ofIdentifierString(bpartnerIdentifier);
-			final BPartnerQuery query = bPartnerQueryService.createQueryFailIfNotExists(bpartnerIdLookupKey);
-
-			final JsonResponseInvoiceCandidateUpsertItemBuilder responseItem = JsonResponseInvoiceCandidateUpsertItem.builder();
-
-			final Optional<BPartnerComposite> bpartnerComposite;
-			try
+			ExternallyReferencedCandidate candidate;
+			final Optional<ExternallyReferencedCandidate> candidateOpt = key2Candidate.get(keyWithItem.getKey());
+			if (candidateOpt.isPresent())
 			{
-				bpartnerComposite = bpartnerCompositeRepository.getSingleByQuery(query);
+				candidate = candidateOpt.get();
 			}
-			catch (AdempiereException e)
+			else
 			{
-				throw new AdempiereException("The given lookup keys needs to yield max one BPartnerComposite; multiple items yielded instead", e)
-						.appendParametersToMessage()
-						.setParameter("BillPartnerIdentifier", item.getBillPartnerIdentifier());
+				if (request.getSyncAdvise().isFailIfNotExists())
+				{
+					throw new MissingResourceException(JsonRequestInvoiceCandidateUpsertItem.class.getSimpleName(), request);
+				}
+				candidate = new ExternallyReferencedCandidate();
 			}
 
-			if(!bpartnerComposite.isPresent())
-			{
-				// TODO we can still update existing ICs, but not create new ones
-				// TODO if we were able to look up an existing IC and item.getBillLocationIdentifier() and/or item.getBillContactIdentifier() are set
+			final JsonRequestInvoiceCandidateUpsertItem item = keyWithItem.getValue();
+			final SyncAdvise effectiveSyncAdvise = coalesce(item.getSynchAdvise(), request.getSyncAdvise());
 
+			if (!candidate.isNew() && !effectiveSyncAdvise.getIfExists().isUpdate())
+			{
+				continue; // candidate existed and we shall not update it
 			}
 
-			result.responseItem(responseItem.build());
+			syncBPartnerToCandidate(candidate, item, effectiveSyncAdvise);
+
+			//syncTargetDocTypeToCandidate(candidate, item, effectiveSyncAdvise);
+
+			syncDiscountOverrideToCandidate(candidate, item.getDiscountOverride(), effectiveSyncAdvise);
+			syncPriceEnteredOverrideToCandidate(candidate, item.getPriceEnteredOverride(), effectiveSyncAdvise);
+
+			//syncAllTheRemainingTrivialStuffToCandidate(candidate, item, effectiveSyncAdvise);
+
+		}
+
+		final JsonResponseInvoiceCandidateUpsertBuilder result = JsonResponseInvoiceCandidateUpsert.builder();
+
+		for (final ExternallyReferencedCandidate candidateToSave : candidatesToSave.build())
+		{
+			final Action action = candidateToSave.isNew() ? Action.INSERTED : Action.UPDATED;
+			final JsonExternalId headerId = JsonExternalIds.ofOrNull(candidateToSave.getLookupKey().getExternalHeaderId());
+			final JsonExternalId lineId = JsonExternalIds.ofOrNull(candidateToSave.getLookupKey().getExternalLineId());
+
+			final InvoiceCandidateId candidateId = externallyReferencedCandidateRepository.save(candidateToSave);
+
+			final JsonResponseInvoiceCandidateUpsertItem responseItem = JsonResponseInvoiceCandidateUpsertItem.builder()
+					.action(action)
+					.externalHeaderId(headerId)
+					.externalLineId(lineId)
+					.metasfreshId(MetasfreshId.of(candidateId))
+					.build();
+			result.responseItem(responseItem);
 		}
 
 		return result.build();
+	}
+
+	private void syncBPartnerToCandidate(
+			@NonNull final ExternallyReferencedCandidate candidate,
+			@NonNull final JsonRequestInvoiceCandidateUpsertItem item,
+			@NonNull final SyncAdvise effectiveSyncAdvise)
+	{
+		final BPartnerQuery query;
+		final boolean noBPartnerIdentifier = isEmpty(item.getBillPartnerIdentifier(), true);
+
+		final BPartnerInfoBuilder bpartnerInfo = candidate.getBillPartnerInfo() == null
+				? BPartnerInfo.builder()
+				: candidate.getBillPartnerInfo().toBuilder();
+
+		if (noBPartnerIdentifier)
+		{
+			if (effectiveSyncAdvise.getIfExists().isUpdateRemove() // the advise wants us to unset the bill-partner, but we can't do that
+					|| candidate.isNew() // we can't create a new candidate without a bill-partner
+			)
+			{
+				throw new MissingPropertyException("billPartnerIdentifier", item);
+			}
+
+			final boolean candidateAlreadyHasBPartner = candidate.getBillPartnerInfo() != null && candidate.getBillPartnerInfo().getBpartnerId() != null;
+			if (!candidateAlreadyHasBPartner)
+			{
+				return;
+			}
+			query = BPartnerQuery.builder().bPartnerId(candidate.getBillPartnerInfo().getBpartnerId()).build();
+		}
+		else
+		{
+			final IdentifierString bpartnerIdentifier = IdentifierString.of(item.getBillPartnerIdentifier());
+			final BPartnerCompositeLookupKey bpartnerIdLookupKey = BPartnerCompositeLookupKey.ofIdentifierString(bpartnerIdentifier);
+			query = bPartnerQueryService.createQueryFailIfNotExists(bpartnerIdLookupKey);
+		}
+
+		final BPartnerComposite bpartnerComposite;
+		try
+		{
+			bpartnerComposite = bpartnerCompositeRepository.getSingleByQuery(query).get();
+		}
+		catch (final AdempiereException e)
+		{
+			throw new MissingResourceException("billPartnerIdentifier", item, e);
+		}
+
+		bpartnerInfo.bpartnerId(bpartnerComposite.getBpartner().getId());
+
+		final IdentifierString billLocationIdentifier = IdentifierString.ofOrNull(item.getBillLocationIdentifier());
+		if (billLocationIdentifier == null)
+		{
+			if (candidate.isNew())
+			{
+				final BPartnerLocation location = bpartnerComposite
+						.extractBillToLocation()
+						.orElseThrow(() -> new MissingResourceException("billLocationIdentifier", item));
+				bpartnerInfo.bpartnerLocationId(location.getId());
+			}
+			else if (effectiveSyncAdvise.getIfExists().isUpdateRemove())
+			{
+				// fail, because we can't remove the billto-location
+				throw new MissingPropertyException("billLocationIdentifier", item);
+			}
+			else
+			{
+				// don't change the candidate's location
+			}
+		}
+		else
+		{
+			final BPartnerLocation location = bpartnerComposite
+					.extractLocation(l -> matches(billLocationIdentifier, l))
+					.orElseThrow(() -> new MissingResourceException("billLocationIdentifier", item));
+			bpartnerInfo.bpartnerLocationId(location.getId());
+		}
+
+		final IdentifierString billContactIdentifier = IdentifierString.ofOrNull(item.getBillContactIdentifier());
+		if (billContactIdentifier == null)
+		{
+			if (effectiveSyncAdvise.getIfExists().isUpdateRemove())
+			{
+				bpartnerInfo.contactId(null); // that's OK, because the contact is not mandatory in C_Invoice_Candidate
+			}
+		}
+		else
+		{
+			// extract the composite's location that has the given billContactIdentifier
+			final BPartnerContact contact = bpartnerComposite
+					.extractContact(c -> matches(billContactIdentifier, c))
+					.orElseThrow(() -> new MissingResourceException("billContactIdentifier", item));
+
+			bpartnerInfo.contactId(contact.getId());
+		}
+
+		candidate.setBillPartnerInfo(bpartnerInfo.build());
+	}
+
+	private boolean matches(final IdentifierString locationIdentifier, final BPartnerLocation location)
+	{
+		switch (locationIdentifier.getType())
+		{
+			case EXTERNAL_ID:
+				return locationIdentifier.asExternalId().equals(location.getExternalId());
+			case GLN:
+				return locationIdentifier.asGLN().equals(location.getGln());
+			case METASFRESH_ID:
+				return locationIdentifier.asMetasfreshId().equals(MetasfreshId.of(location.getId()));
+			case VALUE:
+				throw new AdempiereException("value not supported for locations"); // TODO polish
+			default:
+				throw new AdempiereException("Unexpected type; locationIdentifier=" + locationIdentifier);
+		}
+	}
+
+	private boolean matches(final IdentifierString contactIdentifier, final BPartnerContact contact)
+	{
+		switch (contactIdentifier.getType())
+		{
+			case EXTERNAL_ID:
+				return contactIdentifier.asExternalId().equals(contact.getExternalId());
+			case GLN:
+				throw new AdempiereException("GLN not supported for contacts"); // TODO polish
+			case METASFRESH_ID:
+				return contactIdentifier.asMetasfreshId().equals(MetasfreshId.of(contact.getId()));
+			case VALUE:
+				throw new AdempiereException("Value not supported for contacts"); // TODO polish
+			default:
+				throw new AdempiereException("Unexpected type; contactIdentifier=" + contactIdentifier);
+		}
+	}
+
+	private void syncDiscountOverrideToCandidate(
+			@NonNull final ExternallyReferencedCandidate candidate,
+			@NonNull final JsonOverride discountOverride,
+			@NonNull final SyncAdvise effectiveSyncAdvise)
+	{
+		final boolean unsetValue = discountOverride.computeUnsetValue(effectiveSyncAdvise);
+		if (unsetValue)
+		{
+			candidate.setDiscountOverride(null);
+			return;
+		}
+
+		final boolean setValue = discountOverride.computeSetValue(effectiveSyncAdvise);
+		if (setValue)
+		{
+			candidate.setDiscountOverride(Percent.ofNullable(discountOverride.getValue()));
+			return;
+		}
+	}
+
+	private void syncPriceEnteredOverrideToCandidate(
+			@NonNull final ExternallyReferencedCandidate candidate,
+			@NonNull final JsonOverride discountOverride,
+			@NonNull final SyncAdvise effectiveSyncAdvise)
+	{
+		final boolean unsetValue = discountOverride.computeUnsetValue(effectiveSyncAdvise);
+		if (unsetValue)
+		{
+			candidate.setDiscountOverride(null);
+			return;
+		}
+
+		final boolean setValue = discountOverride.computeSetValue(effectiveSyncAdvise);
+		if (setValue)
+		{
+			candidate.setDiscountOverride(Percent.ofNullable(discountOverride.getValue()));
+			return;
+		}
+	}
+
+	private InvoiceCandidateLookupKey createInvoiceCandidateLookupKey(@NonNull final JsonRequestInvoiceCandidateUpsertItem item)
+	{
+		try
+		{
+			return InvoiceCandidateLookupKey.builder()
+					.invoiceCandidateId(InvoiceCandidateId.ofRepoIdOrNull(MetasfreshId.toValue(item.getMetasfreshId())))
+					.externalHeaderId(JsonExternalIds.toExternalIdOrNull(item.getExternalHeaderId()))
+					.externalLineId(JsonExternalIds.toExternalIdOrNull(item.getExternalLineId()))
+					.build();
+		}
+		catch (final AdempiereException e)
+		{
+			throw InvalidEntityException.wrapIfNeeded(e);
+		}
 	}
 
 }

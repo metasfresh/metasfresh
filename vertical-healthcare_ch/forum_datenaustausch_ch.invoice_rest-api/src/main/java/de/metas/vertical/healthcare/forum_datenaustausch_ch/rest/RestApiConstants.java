@@ -1,6 +1,6 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 
-import de.metas.util.rest.MetasfreshRestAPIConstants;
+import de.metas.util.web.MetasfreshRestAPIConstants;
 
 /*
  * #%L

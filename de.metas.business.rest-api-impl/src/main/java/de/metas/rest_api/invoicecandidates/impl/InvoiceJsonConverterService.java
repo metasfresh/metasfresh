@@ -9,10 +9,10 @@ import org.springframework.stereotype.Service;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.rest_api.invoicecandidates.request.JsonRequestEnqueueForInvoicing;
-import de.metas.rest_api.invoicecandidates.request.JsonRequestInvoiceCandidate;
+import de.metas.rest_api.invoicecandidates.request.JsonRequestInvoiceCandidateExternalIdSpec;
 import de.metas.rest_api.invoicecandidates.response.InvoiceCandEnqueuerResult;
 import de.metas.rest_api.invoicecandidates.response.JsonResponseEnqueueForInvoicing;
-import de.metas.util.rest.ExternalHeaderAndLineId;
+import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import lombok.NonNull;
 
 /*
@@ -51,13 +51,13 @@ class InvoiceJsonConverterService
 		return JsonResponseEnqueueForInvoicing.ok(jsonInvoiceCand);
 	}
 
-	public List<ExternalHeaderAndLineId> convertJICToExternalHeaderAndLineIds(
-			@NonNull final List<JsonRequestInvoiceCandidate> invoiceCandidates)
+	public List<ExternalHeaderIdWithExternalLineIds> convertJICToExternalHeaderAndLineIds(
+			@NonNull final List<JsonRequestInvoiceCandidateExternalIdSpec> invoiceCandidates)
 	{
-		final List<ExternalHeaderAndLineId> headerAndLineIds = new ArrayList<>();
-		for (final JsonRequestInvoiceCandidate cand : invoiceCandidates)
+		final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds = new ArrayList<>();
+		for (final JsonRequestInvoiceCandidateExternalIdSpec cand : invoiceCandidates)
 		{
-			final ExternalHeaderAndLineId headerAndLineId = ExternalHeaderAndLineId.builder()
+			final ExternalHeaderIdWithExternalLineIds headerAndLineId = ExternalHeaderIdWithExternalLineIds.builder()
 					.externalHeaderId(cand.getExternalHeaderId())
 					.externalLineIds(cand.getExternalLineIds())
 					.build();

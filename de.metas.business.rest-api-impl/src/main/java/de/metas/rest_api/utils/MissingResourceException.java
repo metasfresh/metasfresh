@@ -43,6 +43,14 @@ public class MissingResourceException extends AdempiereException
 			@NonNull final String resourceName,
 			@Nullable final Object parentResource)
 	{
+		this(resourceName, parentResource, null);
+	}
+
+	public MissingResourceException(
+			@NonNull final String resourceName,
+			@Nullable final Object parentResource,
+			@Nullable final AdempiereException cause)
+	{
 		super(assumeNotEmpty(resourceName, "Parameter 'resourceName' may not be empty"));
 
 		appendParametersToMessage();
@@ -51,5 +59,4 @@ public class MissingResourceException extends AdempiereException
 			setParameter("parentResource", parentResource);
 		}
 	}
-
 }

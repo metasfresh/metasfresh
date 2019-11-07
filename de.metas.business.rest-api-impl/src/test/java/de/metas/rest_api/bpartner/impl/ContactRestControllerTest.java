@@ -40,6 +40,7 @@ import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseContactList;
 import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
+import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.lang.UIDStringUtil;
@@ -94,6 +95,7 @@ class ContactRestControllerTest
 
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
+				new BPartnerQueryService(),
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),
@@ -233,7 +235,7 @@ class ContactRestControllerTest
 		final BPartnerContactId insertedContactId = BPartnerContactId.ofRepoId(C_BPARTNER_ID, insertedMetasfreshId.getValue());
 
 		final BPartnerComposite persistedResult = bpartnerCompositeRepository.getById(insertedContactId.getBpartnerId());
-		final Optional<BPartnerContact> insertedContact = persistedResult.getContact(insertedContactId);
+		final Optional<BPartnerContact> insertedContact = persistedResult.extractContact(insertedContactId);
 
 		expect(insertedContact.get()).toMatchSnapshot();
 	}

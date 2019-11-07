@@ -1,4 +1,4 @@
-package de.metas.util.rest;
+package de.metas.util.web;
 
 import lombok.experimental.UtilityClass;
 

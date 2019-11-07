@@ -1,8 +1,11 @@
 package de.metas.rest_api.utils;
 
 import static de.metas.util.Check.assumeNotEmpty;
+import static de.metas.util.Check.isEmpty;
 
 import java.util.function.IntFunction;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 
@@ -13,8 +16,8 @@ import de.metas.bpartner.GLN;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.util.Check;
+import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.RepoIdAware;
-import de.metas.util.rest.ExternalId;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -63,6 +66,15 @@ public class IdentifierString
 	public static final String PREFIX_EXTERNAL_ID = "ext-";
 	public static final String PREFIX_VALUE = "val-";
 	public static final String PREFIX_GLN = "gln-";
+
+	public static final IdentifierString ofOrNull(@Nullable final String value)
+	{
+		if (isEmpty(value, true))
+		{
+			return null;
+		}
+		return of(value);
+	}
 
 	@JsonCreator
 	public static final IdentifierString of(@NonNull final String value)

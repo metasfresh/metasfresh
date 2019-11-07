@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.security.UserNotAuthorizedException;
 import de.metas.util.Check;
-import de.metas.util.rest.MetasfreshRestAPIConstants;
+import de.metas.util.web.MetasfreshRestAPIConstants;
 
 /*
  * #%L

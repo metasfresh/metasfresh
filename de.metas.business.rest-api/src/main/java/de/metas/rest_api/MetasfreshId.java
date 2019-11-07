@@ -72,6 +72,15 @@ public class MetasfreshId
 		return id != null ? new MetasfreshId(id.getRepoId()) : null;
 	}
 
+	public static int toValue(@Nullable final MetasfreshId id)
+	{
+		if (id == null)
+		{
+			return -1;
+		}
+		return id.getValue();
+	}
+
 	@JsonCreator
 	private MetasfreshId(final int value)
 	{

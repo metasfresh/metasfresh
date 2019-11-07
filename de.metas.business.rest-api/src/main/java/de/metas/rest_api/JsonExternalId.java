@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-import de.metas.util.rest.ExternalId;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -68,7 +68,6 @@ public class JsonExternalId
 		{
 			return false; // one is null, the other one isn't
 		}
-
 		return Objects.equals(jsonExternalId.getValue(), externalId.getValue());
 	}
 

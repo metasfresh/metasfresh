@@ -30,6 +30,8 @@ import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.greeting.GreetingRepository;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.bpartner.impl.MockLogEntriesRepository;
+import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
+import de.metas.rest_api.utils.BPartnerQueryService;
 
 /*
  * #%L
@@ -77,6 +79,7 @@ class JsonRetrieverServiceTest
 		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
 
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
+				new BPartnerQueryService(),
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),
