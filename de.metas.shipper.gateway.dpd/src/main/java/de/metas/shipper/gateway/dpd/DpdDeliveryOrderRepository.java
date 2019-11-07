@@ -27,6 +27,7 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.dpd.model.DpdNotificationChannel;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
+import de.metas.shipper.gateway.dpd.model.DpdPaperFormat;
 import de.metas.shipper.gateway.dpd.model.DpdServiceType;
 import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrder;
 import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrderLine;
@@ -40,6 +41,8 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.ShipperId;
+import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -131,6 +134,11 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 		InterfaceWrapperHelper.save(dpdStoreOrder);
 
 		{
+			// Misc
+			dpdStoreOrder.setM_Shipper_ID(deliveryOrder.getShipperId().getRepoId());
+			dpdStoreOrder.setM_ShipperTransportation_ID(deliveryOrder.getShipperTransportationId().getRepoId());
+		}
+		{
 			// Pickup aka Sender
 			final Address pickupAddress = deliveryOrder.getPickupAddress();
 			dpdStoreOrder.setSenderName1(pickupAddress.getCompanyName1());
@@ -175,14 +183,14 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 			dpdStoreOrder.setDpdProduct(deliveryOrder.getServiceType().getCode());
 			dpdStoreOrder.setDpdOrderType(customDeliveryData.getOrderType());
 			dpdStoreOrder.setSendingDepot(customDeliveryData.getSendingDepot());
-
+			dpdStoreOrder.setPaperFormat(customDeliveryData.getPaperFormat().getCode());
+			dpdStoreOrder.setPrinterLanguage(customDeliveryData.getPrinterLanguage());
 		}
 		{
 			// Parcels aka Packages aka DeliveryOrderLines
 			for (final DeliveryOrderLine deliveryOrderLine : deliveryOrder.getDeliveryOrderLines())
 			{
 				final I_DPD_StoreOrderLine dpdStoreOrderLine = InterfaceWrapperHelper.newInstance(I_DPD_StoreOrderLine.class);
-				InterfaceWrapperHelper.save(dpdStoreOrderLine);
 
 				dpdStoreOrderLine.setPackageContent(deliveryOrderLine.getContent());
 				dpdStoreOrderLine.setWeightInKg(deliveryOrderLine.getGrossWeightKg());
@@ -193,8 +201,11 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 				dpdStoreOrderLine.setLengthInCm(packageDimensions.getLengthInCM());
 				dpdStoreOrderLine.setWidthInCm(packageDimensions.getWidthInCM());
 				dpdStoreOrderLine.setHeightInCm(packageDimensions.getHeightInCM());
+
+				InterfaceWrapperHelper.save(dpdStoreOrderLine);
 			}
 		}
+		InterfaceWrapperHelper.save(dpdStoreOrder);
 
 		return dpdStoreOrder;
 	}
@@ -207,8 +218,9 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 	@NonNull
 	private DeliveryOrder toDeliveryOrderFromPO(@NonNull final I_DPD_StoreOrder orderPO)
 	{
-
 		final List<I_DPD_StoreOrderLine> linesPO = retrieveAllOrderLines(orderPO.getDPD_StoreOrder_ID());
+
+		int allPackagesGrossWeightInKg = linesPO.stream().map(I_DPD_StoreOrderLine::getWeightInKg).reduce(Integer::sum).get();
 
 		final ImmutableList.Builder<DeliveryOrderLine> deliveryOrderLIneBuilder = ImmutableList.builder();
 		for (final I_DPD_StoreOrderLine linePO : linesPO)
@@ -230,7 +242,12 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 
 		final CountryCodeFactory countryCodeFactory = new CountryCodeFactory();
 		return DeliveryOrder.builder()
+				//
+				// Misc
 				.repoId(DeliveryOrderId.ofRepoId(orderPO.getDPD_StoreOrder_ID()))
+				.shipperId(ShipperId.ofRepoId(orderPO.getM_Shipper_ID()))
+				.shipperTransportationId(ShipperTransportationId.ofRepoId(orderPO.getM_ShipperTransportation_ID()))
+				.allPackagesGrossWeightInKg(allPackagesGrossWeightInKg)
 				//
 				// Pickup aka Sender
 				.pickupAddress(Address.builder()
@@ -271,6 +288,8 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 						.notificationChannel(DpdNotificationChannel.ofCode(orderPO.getNotificationChannel()))
 						.orderType(orderPO.getDpdOrderType())
 						.sendingDepot(orderPO.getSendingDepot())
+						.paperFormat(DpdPaperFormat.ofCode(orderPO.getPaperFormat()))
+						.printerLanguage(orderPO.getPrinterLanguage())
 						.build())
 				.serviceType(DpdServiceType.ofCode(orderPO.getDpdProduct()))
 				//
