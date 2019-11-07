@@ -128,6 +128,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		API_VERSION.setMinorRelease("0");
 	}
 
+	@NonNull
 	@Override
 	public String getShipperGatewayId()
 	{
@@ -140,8 +141,9 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		throw new ShipperGatewayException("(DRAFT) Delivery Orders shall never be created.");
 	}
 
+	@NonNull
 	@Override
-	public DeliveryOrder completeDeliveryOrder(final DeliveryOrder deliveryOrder) throws ShipperGatewayException
+	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
 		final ILoggable epicLogger = getEpicLogger();
 
@@ -166,14 +168,18 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		return completedDeliveryOrder;
 	}
 
+	/**
+	 * no idea what this does, but tobias sais it's useful to have this special log, so here it is!
+	 */
 	@NonNull
 	private ILoggable getEpicLogger()
 	{
 		return Loggables.withLogger(logger, Level.TRACE);
 	}
 
+	@NonNull
 	@Override
-	public List<PackageLabels> getPackageLabelsList(final DeliveryOrder deliveryOrder) throws ShipperGatewayException
+	public List<PackageLabels> getPackageLabelsList(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
 		final ILoggable epicLogger = getEpicLogger();
 		epicLogger.addLog("getPackageLabelsList for {}", deliveryOrder);
@@ -239,13 +245,13 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 				.build();
 	}
 
-	private Object doActualRequest(final Object request, @NonNull final DeliveryOrderId deliveryOrderRepoId)
+	private Object doActualRequest(final Object request, @NonNull final DeliveryOrderId deliveryOrderRepoIdForLogging)
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final DhlClientLogEvent.DhlClientLogEventBuilder logEventBuilder = DhlClientLogEvent.builder()
 				.marshaller(webServiceTemplate.getMarshaller())
 				.requestElement(request)
-				.deliveryOrderRepoId(deliveryOrderRepoId.getRepoId())
+				.deliveryOrderRepoId(deliveryOrderRepoIdForLogging.getRepoId())
 				.config(config);
 		try
 		{

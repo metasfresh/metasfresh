@@ -5,6 +5,7 @@ import java.util.List;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -30,6 +31,7 @@ import de.metas.shipper.gateway.spi.model.PackageLabels;
 
 public interface ShipperGatewayClient
 {
+	@NonNull
 	String getShipperGatewayId();
 
 	/**
@@ -43,7 +45,9 @@ public interface ShipperGatewayClient
 	/**
 	 * Effectively place the given order on the remote endpoint.
 	 */
-	DeliveryOrder completeDeliveryOrder(DeliveryOrder deliveryOrder) throws ShipperGatewayException;
+	@NonNull
+	DeliveryOrder completeDeliveryOrder(@NonNull DeliveryOrder deliveryOrder) throws ShipperGatewayException;
 
-	List<PackageLabels> getPackageLabelsList(DeliveryOrder deliveryOrder) throws ShipperGatewayException;;
+	@NonNull
+	List<PackageLabels> getPackageLabelsList(@NonNull DeliveryOrder deliveryOrder) throws ShipperGatewayException;
 }

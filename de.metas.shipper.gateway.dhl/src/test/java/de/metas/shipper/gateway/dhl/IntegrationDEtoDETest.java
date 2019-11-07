@@ -123,7 +123,7 @@ class IntegrationDEtoDETest
 		assertEquals("only packageId and SequenceNumber should be modified", updatedDummyDeliveryOrder, deserialisedDO);
 
 		//
-		// check 4: run dhlClient.completeDeliveryOrder
+		// check 4: run Client.completeDeliveryOrder
 		final DeliveryOrder completedDeliveryOrder = client.completeDeliveryOrder(deserialisedDO);
 		customDeliveryData = DhlCustomDeliveryData.builder()
 				.detail(extractFieldsAfterCompleteDeliveryOrder(customDeliveryData, completedDeliveryOrder, 1))

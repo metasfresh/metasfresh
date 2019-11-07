@@ -129,6 +129,7 @@ public class GOClient implements ShipperGatewayClient
 				.toString();
 	}
 
+	@NonNull
 	@Override
 	public String getShipperGatewayId()
 	{
@@ -154,6 +155,7 @@ public class GOClient implements ShipperGatewayClient
 		return deliveryOrderResponse;
 	}
 
+	@NonNull
 	@Override
 	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrderRequest)
 	{
@@ -191,6 +193,7 @@ public class GOClient implements ShipperGatewayClient
 		return deliveryOrderResponse;
 	}
 
+	@NonNull
 	@Override
 	public List<PackageLabels> getPackageLabelsList(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
