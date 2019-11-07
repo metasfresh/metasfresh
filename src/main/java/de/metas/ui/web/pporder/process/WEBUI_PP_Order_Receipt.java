@@ -237,7 +237,7 @@ public class WEBUI_PP_Order_Receipt
 
 		// Calculate and set the LU/TU config from packing info params and defaults
 		final I_M_HU_LUTU_Configuration lutuConfig = getPackingInfoParams().createAndSaveNewLUTUConfig();
-		receiptCandidatesProducer.setM_HU_LUTU_Configuration(lutuConfig);
+		receiptCandidatesProducer.packUsingLUTUConfiguration(lutuConfig);
 
 		receiptCandidatesProducer.createReceiptCandidatesAndPlanningHUs();
 
