@@ -367,7 +367,7 @@ import lombok.Value;
 		private final OrgId orgId;
 		private final ZonedDateTime date;
 
-		private final Map<AggregationKey, CreateReceiptCandidateRequest> requestsByTopLevelHUId = new HashMap<>();
+		private final Map<AggregationKey, CreateReceiptCandidateRequest> requests = new HashMap<>();
 
 		@Builder
 		private ReceiptCandidateRequestProducer(
@@ -384,7 +384,7 @@ import lombok.Value;
 
 		public Stream<CreateReceiptCandidateRequest> streamRequests()
 		{
-			return requestsByTopLevelHUId.values()
+			return requests.values()
 					.stream()
 					.filter(candidate -> !candidate.isZeroQty());
 		}
@@ -417,7 +417,7 @@ import lombok.Value;
 					.productId(huTransaction.getProductId())
 					.build();
 
-			final CreateReceiptCandidateRequest request = requestsByTopLevelHUId.computeIfAbsent(key, this::createReceiptCandidateRequest);
+			final CreateReceiptCandidateRequest request = requests.computeIfAbsent(key, this::createReceiptCandidateRequest);
 			request.addQtyToReceive(quantity);
 		}
 
