@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.compiere.util.Env;
-import org.springframework.stereotype.Service;
 
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
-import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidate;
+import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidateReference;
 import de.metas.rest_api.invoicecandidates.response.InvoiceCandEnqueuerResult;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
 import de.metas.util.rest.ExternalHeaderAndLineId;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -36,10 +36,10 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Service
-class InvoiceJsonConverterService
+@UtilityClass
+final class InvoiceJsonConverters
 {
-	public final JsonEnqueueForInvoicingResponse toJson(@NonNull final IInvoiceCandidateEnqueueResult enqueueResult)
+	public static final JsonEnqueueForInvoicingResponse toJson(@NonNull final IInvoiceCandidateEnqueueResult enqueueResult)
 	{
 		final InvoiceCandEnqueuerResult invoiceCandidateResult = InvoiceCandEnqueuerResult.builder()
 				.invoiceCandidateEnqueuedCount(enqueueResult.getInvoiceCandidateEnqueuedCount())
@@ -51,11 +51,10 @@ class InvoiceJsonConverterService
 		return JsonEnqueueForInvoicingResponse.ok(invoiceCandidateResult);
 	}
 
-	public List<ExternalHeaderAndLineId> convertJICToExternalHeaderAndLineIds(
-			@NonNull final List<JsonInvoiceCandidate> invoiceCandidates)
+	public static List<ExternalHeaderAndLineId> fromJson(@NonNull final List<JsonInvoiceCandidateReference> invoiceCandidates)
 	{
 		final List<ExternalHeaderAndLineId> headerAndLineIds = new ArrayList<>();
-		for (final JsonInvoiceCandidate cand : invoiceCandidates)
+		for (final JsonInvoiceCandidateReference cand : invoiceCandidates)
 		{
 			final ExternalHeaderAndLineId headerAndLineId = ExternalHeaderAndLineId.builder()
 					.externalHeaderId(cand.getExternalHeaderId())
@@ -66,7 +65,7 @@ class InvoiceJsonConverterService
 		return headerAndLineIds;
 	}
 
-	public PlainInvoicingParams createInvoicingParams(@NonNull final JsonEnqueueForInvoicingRequest request)
+	public static PlainInvoicingParams createInvoicingParams(@NonNull final JsonEnqueueForInvoicingRequest request)
 	{
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 		invoicingParams.setDateAcct(request.getDateAcct());

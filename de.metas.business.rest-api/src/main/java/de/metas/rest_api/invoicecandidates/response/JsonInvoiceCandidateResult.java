@@ -30,6 +30,5 @@ import lombok.Value;
 @Builder
 public class JsonInvoiceCandidateResult
 {
-
-	private List<JsonInvoiceCandidateStatus> invoiceCandidates;
+	private List<JsonInvoiceCandidateInfo> invoiceCandidates;
 }

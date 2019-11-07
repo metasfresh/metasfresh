@@ -31,5 +31,5 @@ public class JsonGetInvoiceCandidatesStatusRequest
 {
 	@ApiModelProperty(position = 10, required = true, //
 			value = "Specifies the invoice candidates to be invoiced.")
-	List<JsonInvoiceCandidate> invoiceCandidates;
+	List<JsonInvoiceCandidateReference> invoiceCandidates;
 }

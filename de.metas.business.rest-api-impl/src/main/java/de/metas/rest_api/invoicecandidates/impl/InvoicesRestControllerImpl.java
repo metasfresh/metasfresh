@@ -56,19 +56,15 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App)
 class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 {
-
 	private static final Logger logger = LogManager.getLogger(InvoicesRestControllerImpl.class);
 
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-	private final InvoiceJsonConverterService jsonConverter;
-	private InvoiceCandidateStatusRepository invoiceCandidateStatusRepo;
+	private InvoiceCandidateInfoService invoiceCandidateInfoService;
 
-	public InvoicesRestControllerImpl(@NonNull final InvoiceJsonConverterService jsonConverter,
-			@NonNull final InvoiceCandidateStatusRepository invoiceCandidateStatusRepo)
+	public InvoicesRestControllerImpl(@NonNull final InvoiceCandidateInfoService invoiceCandidateInfoService)
 	{
-		this.jsonConverter = jsonConverter;
-		this.invoiceCandidateStatusRepo = invoiceCandidateStatusRepo;
+		this.invoiceCandidateInfoService = invoiceCandidateInfoService;
 	}
 
 	@PostMapping("/status")
@@ -77,9 +73,9 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 	{
 		try
 		{
-			final List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(request.getInvoiceCandidates());
+			final List<ExternalHeaderAndLineId> headerAndLineIds = InvoiceJsonConverters.fromJson(request.getInvoiceCandidates());
 
-			final JsonGetInvoiceCandidatesStatusResponse response = invoiceCandidateStatusRepo.getStatusForInvoiceCandidates(headerAndLineIds);
+			final JsonGetInvoiceCandidatesStatusResponse response = invoiceCandidateInfoService.getStatusForInvoiceCandidates(headerAndLineIds);
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		}
 		catch (final Exception ex)
@@ -101,16 +97,16 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 		try
 		{
 			final PInstanceId pInstanceId = adPInstanceDAO.createSelectionId();
-			final List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(request.getInvoiceCandidates());
+			final List<ExternalHeaderAndLineId> headerAndLineIds = InvoiceJsonConverters.fromJson(request.getInvoiceCandidates());
 			invoiceCandBL.createSelectionForInvoiceCandidates(headerAndLineIds, pInstanceId);
 
 			final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL
 					.enqueueForInvoicing()
-					.setInvoicingParams(jsonConverter.createInvoicingParams(request))
+					.setInvoicingParams(InvoiceJsonConverters.createInvoicingParams(request))
 					.setFailIfNothingEnqueued(true)
 					.enqueueSelection(pInstanceId);
 
-			final JsonEnqueueForInvoicingResponse response = jsonConverter.toJson(enqueueResult);
+			final JsonEnqueueForInvoicingResponse response = InvoiceJsonConverters.toJson(enqueueResult);
 			return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
 		}
 		catch (final Exception ex)

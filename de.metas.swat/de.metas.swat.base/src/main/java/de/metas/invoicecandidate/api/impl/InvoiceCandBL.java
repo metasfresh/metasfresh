@@ -82,7 +82,9 @@ import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IStatefulWorkpackageProcessorFactory;
@@ -880,7 +882,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 			final I_M_PriceList pricelist = Services.get(IPriceListBL.class)
 					.getCurrentPricelistOrNull(
-					PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()),
+							PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()),
 							CountryId.ofRepoId(partnerLocation.getC_Location().getC_Country_ID()),
 							date,
 							soTrx);
@@ -1129,7 +1131,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final BigDecimal priceActualOverride = discount
 					.subtractFromBase(
 							priceEntered.toMoney().toBigDecimal(),
-					precision.toInt());
+							precision.toInt());
 			ic.setPriceActual_Override(priceActualOverride);
 		}
 	}
@@ -2001,4 +2003,15 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		return Services.get(IInvoiceCandDAO.class).createSelectionByHeaderAndLineIds(headerAndLineIds, pInstanceId);
 	}
+
+	@Override
+	public List<I_C_Queue_WorkPackage> getUnprocessedWorkPackagesForInvoiceCandidate(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
+		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+
+		return queueDAO.retrieveUnprocessedWorkPackagesByEnqueuedRecord(
+				InvoiceCandWorkpackageProcessor.class,
+				TableRecordReference.of(I_C_Invoice_Candidate.Table_Name, invoiceCandidateId));
+	}
+
 }

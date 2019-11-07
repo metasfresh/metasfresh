@@ -36,7 +36,7 @@ import lombok.Value;
  */
 @Value
 @Builder
-public class JsonInvoiceCandidateStatus
+public class JsonInvoiceCandidateInfo
 {
 	ExternalId externalHeaderId;
 	ExternalId externalLineId;
