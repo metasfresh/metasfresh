@@ -117,9 +117,10 @@ import lombok.Value;
 
 	@Override
 	@Deprecated
-	public final void setSkipCreateCandidates()
+	public final IPPOrderReceiptHUProducer skipCreatingCandidates()
 	{
 		this._skipCreateCandidates = true;
+		return this;
 	}
 
 	@Deprecated
@@ -300,7 +301,7 @@ import lombok.Value;
 	}
 
 	@Override
-	public final IPPOrderReceiptHUProducer setMovementDate(@NonNull final ZonedDateTime movementDate)
+	public final IPPOrderReceiptHUProducer movementDate(@NonNull final ZonedDateTime movementDate)
 	{
 		_movementDate = movementDate;
 		return this;
@@ -337,7 +338,7 @@ import lombok.Value;
 	}
 
 	@Override
-	public final IPPOrderReceiptHUProducer setM_HU_LUTU_Configuration(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)
+	public final IPPOrderReceiptHUProducer packUsingLUTUConfiguration(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
 		_lutuConfiguration = lutuConfiguration;
 		return this;

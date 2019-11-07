@@ -71,7 +71,6 @@ public interface IPPOrderReceiptHUProducer
 	 * It also creates manufacturing receipt candidates ({@link I_PP_Order_Qty}).
 	 * 
 	 * @param qtyToReceive precise quantity to receive
-	 * @param uom
 	 * @deprecated To be removed. Needed only for the legacy Swing UI.
 	 */
 	@Deprecated
@@ -90,7 +89,7 @@ public interface IPPOrderReceiptHUProducer
 	 * @deprecated To be removed. Needed only for the legacy Swing UI.
 	 */
 	@Deprecated
-	void setSkipCreateCandidates();
+	IPPOrderReceiptHUProducer skipCreatingCandidates();
 
 	/**
 	 * @return created manufacturing receipt candidate
@@ -99,16 +98,12 @@ public interface IPPOrderReceiptHUProducer
 
 	/**
 	 * NOTE: by default current system time is considered.
-	 *
-	 * @param movementDate
 	 */
-	IPPOrderReceiptHUProducer setMovementDate(final ZonedDateTime movementDate);
+	IPPOrderReceiptHUProducer movementDate(final ZonedDateTime movementDate);
 
 	/**
 	 * Sets LU/TU configuration to be used.
 	 * If not set, the PP_Order/BOM line's current configuration will be used.
-	 *
-	 * @param lutuConfiguration
 	 */
-	IPPOrderReceiptHUProducer setM_HU_LUTU_Configuration(I_M_HU_LUTU_Configuration lutuConfiguration);
+	IPPOrderReceiptHUProducer packUsingLUTUConfiguration(I_M_HU_LUTU_Configuration lutuConfiguration);
 }
