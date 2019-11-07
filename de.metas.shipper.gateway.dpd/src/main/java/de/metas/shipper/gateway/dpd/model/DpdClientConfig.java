@@ -23,14 +23,17 @@
 package de.metas.shipper.gateway.dpd.model;
 
 import lombok.Builder;
-import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 
 @Value
 @Builder
-//todo @ToString(exclude=bla)
+@ToString(exclude = { "delisID", "delisPassword" })
 public class DpdClientConfig
 {
-	@NonNull
-	private final String baseUrl;
+	String loginApiUrl;
+	String shipmentServiceApiUrl;
+	String delisID;
+	String delisPassword;
+	String trackingUrlBase;
 }
