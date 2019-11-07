@@ -96,7 +96,7 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 			assertTrue(orderResult.getParcellabelsPDF().length > 2);
 			assertEquals(1, orderResult.getShipmentResponses().size());
 			final ShipmentResponse shipmentResponse = orderResult.getShipmentResponses().get(0);
-			assertEquals(DeliveryOrderId.ofRepoId(987654321).toString(), shipmentResponse.getIdentificationNumber());
+			assertEquals("987654321", shipmentResponse.getIdentificationNumber());
 			assertTrue(StringUtils.isNotBlank(shipmentResponse.getMpsId()));
 
 			DpdTestHelper.dumpPdfToDisk(orderResult.getParcellabelsPDF());
@@ -137,7 +137,7 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 			shipmentServiceData.setGeneralShipmentData(generalShipmentData);
 			//noinspection ConstantConditions
 			generalShipmentData.setMpsCustomerReferenceNumber1(deliveryOrder.getCustomerReference()); // what is this? optional?
-			generalShipmentData.setIdentificationNumber(String.valueOf(deliveryOrder.getRepoId())); // unique metasfresh number for this shipment
+			generalShipmentData.setIdentificationNumber(String.valueOf(deliveryOrder.getRepoId().getRepoId())); // unique metasfresh number for this shipment
 			//			generalShipmentData.setSendingDepot(); // not set here, as it's taken from login info
 			generalShipmentData.setProduct(deliveryOrder.getServiceType().getCode()); // this is the DPD product
 
