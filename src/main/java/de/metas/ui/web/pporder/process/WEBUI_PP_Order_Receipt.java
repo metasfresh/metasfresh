@@ -139,8 +139,10 @@ public class WEBUI_PP_Order_Receipt
 		}
 	}
 
-	private final IPPOrderReceiptHUProducer createReceiptCandidatesProducer(final PPOrderLineRow row)
+	private final IPPOrderReceiptHUProducer newReceiptCandidatesProducer()
 	{
+		final PPOrderLineRow row = getSingleSelectedRow();
+
 		final PPOrderLineType type = row.getType();
 		if (type == PPOrderLineType.MainProduct)
 		{
@@ -232,14 +234,12 @@ public class WEBUI_PP_Order_Receipt
 	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-		final PPOrderLineRow selectedRow = getSingleSelectedRow();
-		final IPPOrderReceiptHUProducer receiptCandidatesProducer = createReceiptCandidatesProducer(selectedRow);
-
 		// Calculate and set the LU/TU config from packing info params and defaults
 		final I_M_HU_LUTU_Configuration lutuConfig = getPackingInfoParams().createAndSaveNewLUTUConfig();
-		receiptCandidatesProducer.packUsingLUTUConfiguration(lutuConfig);
 
-		receiptCandidatesProducer.createReceiptCandidatesAndPlanningHUs();
+		newReceiptCandidatesProducer()
+				.packUsingLUTUConfiguration(lutuConfig)
+				.createReceiptCandidatesAndPlanningHUs();
 
 		return MSG_OK;
 	}
