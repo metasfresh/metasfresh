@@ -15,6 +15,7 @@ import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
@@ -88,6 +89,7 @@ public class DDOrderPojoSupplier
 	public List<DDOrder> supplyPojos0(@NonNull final IMaterialRequest request)
 	{
 		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 		final List<DDOrder.DDOrderBuilder> builders = new ArrayList<>();
 
@@ -121,7 +123,7 @@ public class DDOrderPojoSupplier
 		if (networkLines.isEmpty())
 		{
 			// No network lines were found for our target warehouse
-			final I_M_Warehouse warehouseTo = productPlanningData.getM_Warehouse();
+			final I_M_Warehouse warehouseTo = warehouseDAO.getById(WarehouseId.ofRepoId(productPlanningData.getM_Warehouse_ID()));
 			Loggables.addLog(
 					"DD_NetworkDistribution has no lines for target M_Warehouse_ID={}; {} returns entpy list; "
 							+ "networkDistribution={}"
