@@ -73,6 +73,8 @@ import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndC
 import de.metas.rest_api.ordercandidates.response.JsonAttachment;
 import de.metas.rest_api.ordercandidates.response.JsonOLCand;
 import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
+import de.metas.rest_api.utils.CurrencyService;
+import de.metas.rest_api.utils.DocTypeService;
 import de.metas.rest_api.utils.JsonErrorItem;
 import de.metas.rest_api.utils.PermissionService;
 import de.metas.rest_api.utils.PermissionServiceFactories;
@@ -161,8 +163,12 @@ public class OrderCandidatesRestControllerImplTest
 			testMasterdata.createDataSource(DATA_DEST_INVOICECANDIDATE);
 		}
 
+		final CurrencyService currencyService = new CurrencyService();
+		final DocTypeService docTypeService = new DocTypeService();
+		final JsonConverters jsonConverters = new JsonConverters(currencyService, docTypeService);
+
 		orderCandidatesRestControllerImpl = new OrderCandidatesRestControllerImpl(
-				new JsonConverters(),
+				jsonConverters,
 				new OLCandRepository());
 		orderCandidatesRestControllerImpl.setPermissionServiceFactory(PermissionServiceFactories.singleton(permissionService));
 

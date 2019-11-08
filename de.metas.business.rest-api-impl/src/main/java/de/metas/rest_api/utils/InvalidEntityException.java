@@ -48,6 +48,11 @@ public class InvalidEntityException extends AdempiereException
 
 	}
 
+	public InvalidEntityException(@NonNull final ITranslatableString message)
+	{
+		super(message);
+	}
+
 	public InvalidEntityException(@NonNull final ITranslatableString message, @NonNull final AdempiereException cause)
 	{
 		super(message, cause);

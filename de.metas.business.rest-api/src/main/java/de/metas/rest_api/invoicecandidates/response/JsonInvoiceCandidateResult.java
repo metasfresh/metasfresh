@@ -1,10 +1,8 @@
-package de.metas.rest_api.utils;
+package de.metas.rest_api.invoicecandidates.response;
 
 import java.util.List;
 
 import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -28,16 +26,9 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 @Value
 @Builder
-public class JsonError
+public class JsonInvoiceCandidateResult
 {
-	public static JsonError ofSingleItem(@NonNull final JsonErrorItem item)
-	{
-		return JsonError.builder().error(item).build();
-	}
-
-	@Singular
-	List<JsonErrorItem> errors;
+	private List<JsonInvoiceCandidateInfo> invoiceCandidates;
 }

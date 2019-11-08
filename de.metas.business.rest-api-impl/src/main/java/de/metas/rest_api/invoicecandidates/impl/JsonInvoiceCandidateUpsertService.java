@@ -1,12 +1,16 @@
 package de.metas.rest_api.invoicecandidates.impl;
 
 import static de.metas.util.Check.isEmpty;
+import static de.metas.util.Check.newException;
 import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.util.Map.Entry;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -21,10 +25,16 @@ import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.BPartnerInfo.BPartnerInfoBuilder;
 import de.metas.bpartner.service.BPartnerQuery;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidate;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
 import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidateLookupKey;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgIdNotFoundException;
+import de.metas.organization.OrgQuery;
+import de.metas.rest_api.JsonDocTypeInfo;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.SyncAdvise;
@@ -37,11 +47,15 @@ import de.metas.rest_api.invoicecandidates.response.JsonResponseInvoiceCandidate
 import de.metas.rest_api.invoicecandidates.response.JsonResponseInvoiceCandidateUpsertItem.Action;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
+import de.metas.rest_api.utils.CurrencyService;
+import de.metas.rest_api.utils.DocTypeService;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.InvalidEntityException;
 import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.rest_api.utils.MissingPropertyException;
 import de.metas.rest_api.utils.MissingResourceException;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
@@ -76,14 +90,20 @@ public class JsonInvoiceCandidateUpsertService
 	private final BPartnerCompositeRepository bpartnerCompositeRepository;
 
 	private final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository;
+	private final DocTypeService docTypeService;
+	private final CurrencyService currencyService;
 
 	private JsonInvoiceCandidateUpsertService(
 			@NonNull final BPartnerQueryService bPartnerQueryService,
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
-			final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository)
+			@NonNull final DocTypeService docTypeService,
+			@NonNull final CurrencyService currencyService,
+			@NonNull final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository)
 	{
 		this.bPartnerQueryService = bPartnerQueryService;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
+		this.currencyService = currencyService;
+		this.docTypeService = docTypeService;
 		this.externallyReferencedCandidateRepository = externallyReferencedCandidateRepository;
 	}
 
@@ -100,7 +120,6 @@ public class JsonInvoiceCandidateUpsertService
 		final ImmutableList.Builder<ExternallyReferencedCandidate> candidatesToSave = ImmutableList.builder();
 		for (final Entry<InvoiceCandidateLookupKey, JsonRequestInvoiceCandidateUpsertItem> keyWithItem : lookupKey2Item.entrySet())
 		{
-
 			ExternallyReferencedCandidate candidate;
 			final Optional<ExternallyReferencedCandidate> candidateOpt = key2Candidate.get(keyWithItem.getKey());
 			if (candidateOpt.isPresent())
@@ -124,14 +143,42 @@ public class JsonInvoiceCandidateUpsertService
 				continue; // candidate existed and we shall not update it
 			}
 
+			if (!Check.isEmpty(item.getOrgCode()))
+			{
+				final OrgQuery query = OrgQuery.builder()
+						.orgValue(item.getOrgCode())
+						.failIfNotExists(true)
+						.outOfTrx(true)
+						.build();
+				try
+				{
+					final OrgId orgId = Services.get(IOrgDAO.class)
+							.retrieveOrgIdBy(query)
+							.get();
+					if (!candidate.isNew() && !candidate.getOrgId().equals(orgId))
+					{
+						throw new InvalidEntityException(TranslatableStrings.constant("Request entity has orgId=" + item.getOrgCode() + ", but existing candidate has orgId=" + orgId + ""))
+						.appendParametersToMessage()						;
+					}
+				}
+				catch (OrgIdNotFoundException e)
+				{
+					throw new MissingResourceException("orgCode", item, e);
+				}
+			}
+			else
+			{
+				final OrgId orgId = Env.getOrgId(Env.getCtx());
+			}
+
 			syncBPartnerToCandidate(candidate, item, effectiveSyncAdvise);
 
-			//syncTargetDocTypeToCandidate(candidate, item, effectiveSyncAdvise);
+			syncTargetDocTypeToCandidate(candidate, item.getInvoiceDocType(), effectiveSyncAdvise);
 
 			syncDiscountOverrideToCandidate(candidate, item.getDiscountOverride(), effectiveSyncAdvise);
 			syncPriceEnteredOverrideToCandidate(candidate, item.getPriceEnteredOverride(), effectiveSyncAdvise);
 
-			//syncAllTheRemainingTrivialStuffToCandidate(candidate, item, effectiveSyncAdvise);
+			// syncAllTheRemainingTrivialStuffToCandidate(candidate, item, effectiveSyncAdvise);
 
 		}
 
@@ -155,6 +202,24 @@ public class JsonInvoiceCandidateUpsertService
 		}
 
 		return result.build();
+	}
+
+	private void syncTargetDocTypeToCandidate(
+			@NonNull final ExternallyReferencedCandidate candidate,
+			@Nullable final JsonDocTypeInfo docType,
+			@NonNull final OrgId orgId,
+			@NonNull final SyncAdvise effectiveSyncAdvise)
+	{
+		if (docType == null)
+		{
+			if (effectiveSyncAdvise.getIfExists().isUpdateRemove())
+			{
+				candidate.setInvoiceDocTypeId(null);
+			}
+			return;
+		}
+
+		candidate.setInvoiceDocTypeId(docTypeService.getDocTypeId(docType, orgId));
 	}
 
 	private void syncBPartnerToCandidate(

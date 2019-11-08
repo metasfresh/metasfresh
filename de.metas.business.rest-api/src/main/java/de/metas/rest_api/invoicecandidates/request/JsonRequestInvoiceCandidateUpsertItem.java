@@ -47,6 +47,14 @@ import lombok.Value;
 @Value
 public class JsonRequestInvoiceCandidateUpsertItem
 {
+	@ApiModelProperty(position = 5, required = false,//
+			value = "Optional, to specify the `AD_Org_ID` for a new invoice candidate.\n"
+					+ "If the invoice candidate already exists, and this property is specified, it has to match the existing candidate's organization.\n"
+					+ "If the invoice candidate shall be created, then\n"
+					+ "- this property needs to be set to the `AD_Org.Value` of an organisation that the invoking user is allowed to access\n"
+					+ "- or the invoking user needs to belong to an organisation which is then used.")
+	String orgCode;
+
 	@ApiModelProperty(position = 10, dataType = "java.lang.String", required = false,//
 			value = "Needs to be set if the invoice candidate shall be created.")
 	JsonExternalId externalHeaderId;
@@ -127,6 +135,7 @@ public class JsonRequestInvoiceCandidateUpsertItem
 
 	@JsonCreator
 	private JsonRequestInvoiceCandidateUpsertItem(
+			@JsonProperty("orgCode") final String orgCode,
 			@JsonProperty("externalHeaderId") final JsonExternalId externalHeaderId,
 			@JsonProperty("externalLineId") final JsonExternalId externalLineId,
 			@JsonProperty("metasfreshId") final MetasfreshId metasfreshId,
@@ -147,6 +156,7 @@ public class JsonRequestInvoiceCandidateUpsertItem
 			@JsonProperty("discountOverride") final JsonOverride discountOverride,
 			@JsonProperty("synchAdvise") @Nullable final SyncAdvise synchAdvise)
 	{
+		this.orgCode = orgCode;
 		this.externalHeaderId = externalHeaderId;
 		this.externalLineId = externalLineId;
 		this.metasfreshId = metasfreshId;

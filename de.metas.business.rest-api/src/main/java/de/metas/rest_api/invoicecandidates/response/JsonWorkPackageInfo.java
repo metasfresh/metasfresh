@@ -1,10 +1,13 @@
-package de.metas.rest_api.utils;
+package de.metas.rest_api.invoicecandidates.response;
 
-import java.util.List;
+import java.time.Instant;
 
+import javax.annotation.Nullable;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import de.metas.rest_api.MetasfreshId;
 import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -31,13 +34,16 @@ import lombok.Value;
 
 @Value
 @Builder
-public class JsonError
+public class JsonWorkPackageInfo
 {
-	public static JsonError ofSingleItem(@NonNull final JsonErrorItem item)
-	{
-		return JsonError.builder().error(item).build();
-	}
+	MetasfreshId metasfreshId;
 
-	@Singular
-	List<JsonErrorItem> errors;
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String error;
+
+	Instant enqueued;
+
+	boolean readyForProcessing;
+
 }

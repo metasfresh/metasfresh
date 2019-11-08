@@ -1,15 +1,18 @@
 package de.metas.rest_api.utils;
 
-import java.util.List;
+import javax.annotation.Nullable;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
+import org.springframework.stereotype.Service;
+
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
- * de.metas.business.rest-api
+ * de.metas.business.rest-api-impl
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -29,15 +32,19 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class JsonError
+@Service
+public class CurrencyService
 {
-	public static JsonError ofSingleItem(@NonNull final JsonErrorItem item)
+	public CurrencyId getCurrencyId(@Nullable final String currencyCodeStr)
 	{
-		return JsonError.builder().error(item).build();
-	}
+		if (Check.isEmpty(currencyCodeStr, true))
+		{
+			return null;
+		}
 
-	@Singular
-	List<JsonErrorItem> errors;
+		final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(currencyCodeStr);
+
+		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
+		return currenciesRepo.getByCurrencyCode(currencyCode).getId();
+	}
 }

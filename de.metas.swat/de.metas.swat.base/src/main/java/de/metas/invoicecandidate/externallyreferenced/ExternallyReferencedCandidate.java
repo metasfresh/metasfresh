@@ -3,8 +3,10 @@ package de.metas.invoicecandidate.externallyreferenced;
 import javax.annotation.Nullable;
 
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.document.DocTypeId;
 import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -38,6 +40,8 @@ import lombok.NonNull;
 @Data
 public class ExternallyReferencedCandidate
 {
+	private OrgId orgId;
+
 	@NonNull
 	private InvoiceCandidateLookupKey lookupKey;
 
@@ -65,6 +69,9 @@ public class ExternallyReferencedCandidate
 
 	@Nullable
 	private Percent discountOverride;
+
+	@Nullable
+	private DocTypeId invoiceDocTypeId;
 
 	// TODO: figure something out for tax
 

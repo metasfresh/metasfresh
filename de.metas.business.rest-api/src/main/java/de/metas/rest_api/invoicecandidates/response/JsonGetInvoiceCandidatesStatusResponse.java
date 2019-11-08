@@ -1,7 +1,5 @@
 package de.metas.rest_api.invoicecandidates.response;
 
-import java.util.List;
-
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -9,8 +7,8 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 
+import de.metas.rest_api.utils.JsonError;
 import de.metas.rest_api.utils.JsonErrorItem;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
@@ -39,69 +37,70 @@ import lombok.ToString;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @ToString(doNotUseGetters = true)
 @EqualsAndHashCode(doNotUseGetters = true)
-public final class JsonResponseEnqueueForInvoicing
+public class JsonGetInvoiceCandidatesStatusResponse
 {
 	@JsonProperty("result")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final InvoiceCandEnqueuerResult result;
+	private final JsonInvoiceCandidateResult result;
 
-	@JsonProperty("errors")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final List<JsonErrorItem> errors;
+	@JsonProperty("error")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final JsonError error;
 
-	public static JsonResponseEnqueueForInvoicing ok(@NonNull final InvoiceCandEnqueuerResult iCands)
+	public static JsonGetInvoiceCandidatesStatusResponse ok(@NonNull final JsonInvoiceCandidateResult result)
 	{
-		final JsonErrorItem error = null;
-		return new JsonResponseEnqueueForInvoicing(iCands, error);
+		final JsonError error = null;
+		return new JsonGetInvoiceCandidatesStatusResponse(result, error);
 	}
 
-	public static JsonResponseEnqueueForInvoicing error(@NonNull final JsonErrorItem error)
+	public static JsonGetInvoiceCandidatesStatusResponse error(@NonNull final JsonErrorItem errorItem)
 	{
-		final InvoiceCandEnqueuerResult iCands = null;
-		return new JsonResponseEnqueueForInvoicing(iCands, error);
+		final JsonInvoiceCandidateResult result = null;
+		return new JsonGetInvoiceCandidatesStatusResponse(result, JsonError.ofSingleItem(errorItem));
 	}
 
 	@JsonCreator
-	private JsonResponseEnqueueForInvoicing(
-			@JsonProperty("result") @Nullable final InvoiceCandEnqueuerResult iCands,
-			@JsonProperty("error") @Nullable final JsonErrorItem error)
+	private JsonGetInvoiceCandidatesStatusResponse(
+			@JsonProperty("result") @Nullable final JsonInvoiceCandidateResult result,
+			@JsonProperty("error") @Nullable final JsonError error)
 	{
+		this.error = error;
 		if (error == null)
 		{
-			this.result = iCands;
-			this.errors = ImmutableList.of();
+			this.result = result;
 		}
 		else
 		{
-			Check.assume(iCands == null, "No iCands shall be provided when error");
+			Check.assume(result == null, "No iCands shall be provided when error");
 			this.result = null;
-			this.errors = ImmutableList.of(error);
 		}
 	}
 
 	public boolean isError()
 	{
-		return !errors.isEmpty();
+		return error != null;
 	}
 
-	public JsonErrorItem getError()
+	public JsonError getError()
 	{
-		if (!isError())
+		if (error == null || error.getErrors().isEmpty())
 		{
 			throw new IllegalStateException("Not an error result: " + this);
 		}
-		return CollectionUtils.singleElement(errors);
+		return error;
 	}
 
-	public InvoiceCandEnqueuerResult getResult()
+	public JsonInvoiceCandidateResult getResult()
 	{
-		if (isError())
+		if (error != null && !error.getErrors().isEmpty())
 		{
-			throw new IllegalStateException("Not a successful result: " + this, getError().getThrowable());
+			throw new IllegalStateException("Not a successful result: " + this, CollectionUtils.singleElement(error.getErrors()).getThrowable());
 		}
 		return result;
 	}
+
 }

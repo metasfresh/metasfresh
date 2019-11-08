@@ -110,7 +110,7 @@ public class C_OLCand_Update_IsImportedWithIssues extends JavaProcess
 		if (!validateReplicationTrx(candidatesUpdatedDuringValidation))
 		{
 			// In case one of the candidates with the given EXP_ReplicationTrx_ID, do not solve issues
-			return " @Updated@ # " + candidatesUpdatedDuringValidation.getValue();
+			return "@Invalid@ @Record@ - @Updated@ # " + candidatesUpdatedDuringValidation.getValue();
 		}
 
 		// the validation was OK

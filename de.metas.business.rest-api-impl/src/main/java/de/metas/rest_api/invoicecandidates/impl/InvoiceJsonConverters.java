@@ -4,16 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.compiere.util.Env;
-import org.springframework.stereotype.Service;
 
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
-import de.metas.rest_api.invoicecandidates.request.JsonRequestEnqueueForInvoicing;
-import de.metas.rest_api.invoicecandidates.request.JsonRequestInvoiceCandidateExternalIdSpec;
+import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
+import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidateReference;
 import de.metas.rest_api.invoicecandidates.response.InvoiceCandEnqueuerResult;
-import de.metas.rest_api.invoicecandidates.response.JsonResponseEnqueueForInvoicing;
+import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -36,26 +36,25 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Service
-class InvoiceJsonConverterService
+@UtilityClass
+final class InvoiceJsonConverters
 {
-	public final JsonResponseEnqueueForInvoicing toJson(@NonNull final IInvoiceCandidateEnqueueResult enqueueResult)
+	public static JsonEnqueueForInvoicingResponse toJson(@NonNull final IInvoiceCandidateEnqueueResult enqueueResult)
 	{
-		final InvoiceCandEnqueuerResult jsonInvoiceCand = InvoiceCandEnqueuerResult.builder()
+		final InvoiceCandEnqueuerResult invoiceCandidateResult = InvoiceCandEnqueuerResult.builder()
 				.invoiceCandidateEnqueuedCount(enqueueResult.getInvoiceCandidateEnqueuedCount())
 				.summaryTranslated(enqueueResult.getSummaryTranslated(Env.getCtx()))
 				.totalNetAmtToInvoiceChecksum(enqueueResult.getTotalNetAmtToInvoiceChecksum())
 				.workpackageEnqueuedCount(enqueueResult.getWorkpackageEnqueuedCount())
 				.workpackageQueueSizeBeforeEnqueueing(enqueueResult.getWorkpackageQueueSizeBeforeEnqueueing())
 				.build();
-		return JsonResponseEnqueueForInvoicing.ok(jsonInvoiceCand);
+		return JsonEnqueueForInvoicingResponse.ok(invoiceCandidateResult);
 	}
 
-	public List<ExternalHeaderIdWithExternalLineIds> convertJICToExternalHeaderAndLineIds(
-			@NonNull final List<JsonRequestInvoiceCandidateExternalIdSpec> invoiceCandidates)
+	public static List<ExternalHeaderIdWithExternalLineIds> fromJson(@NonNull final List<JsonInvoiceCandidateReference> invoiceCandidates)
 	{
 		final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds = new ArrayList<>();
-		for (final JsonRequestInvoiceCandidateExternalIdSpec cand : invoiceCandidates)
+		for (final JsonInvoiceCandidateReference cand : invoiceCandidates)
 		{
 			final ExternalHeaderIdWithExternalLineIds headerAndLineId = ExternalHeaderIdWithExternalLineIds.builder()
 					.externalHeaderId(cand.getExternalHeaderId())
@@ -66,7 +65,7 @@ class InvoiceJsonConverterService
 		return headerAndLineIds;
 	}
 
-	public PlainInvoicingParams createInvoicingParams(@NonNull final JsonRequestEnqueueForInvoicing request)
+	public static PlainInvoicingParams createInvoicingParams(@NonNull final JsonEnqueueForInvoicingRequest request)
 	{
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 		invoicingParams.setDateAcct(request.getDateAcct());

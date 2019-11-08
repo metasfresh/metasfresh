@@ -135,9 +135,15 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			= new ModelDynAttributeAccessor<>(IInvoiceCandDAO.class.getName() + "Avoid_Recreate", Boolean.class);
 
 	@Override
-	public I_C_Invoice_Candidate getById(final InvoiceCandidateId invoiceCandId)
+	public I_C_Invoice_Candidate getById(final InvoiceCandidateId invoiceCandidateId)
 	{
-		return InterfaceWrapperHelper.load(invoiceCandId.getRepoId(), I_C_Invoice_Candidate.class);
+		return InterfaceWrapperHelper.load(invoiceCandidateId, I_C_Invoice_Candidate.class);
+	}
+
+	@Override
+	public List<I_C_Invoice_Candidate> getByIds(final Collection<InvoiceCandidateId> invoiceCandidateIds)
+	{
+		return InterfaceWrapperHelper.loadByRepoIdAwares(ImmutableSet.copyOf(invoiceCandidateIds), I_C_Invoice_Candidate.class);
 	}
 
 	@Override
@@ -587,9 +593,16 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public final List<I_C_InvoiceLine> retrieveIlForIc(final I_C_Invoice_Candidate invoiceCand)
 	{
+		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCand.getC_Invoice_Candidate_ID());
+		return retrieveIlForIc(invoiceCandidateId);
+	}
+
+	@Override
+	public final List<I_C_InvoiceLine> retrieveIlForIc(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Invoice_Line_Alloc.class, invoiceCand)
-				.addEqualsFilter(I_C_Invoice_Line_Alloc.COLUMN_C_Invoice_Candidate_ID, invoiceCand.getC_Invoice_Candidate_ID())
+				.createQueryBuilder(I_C_Invoice_Line_Alloc.class)
+				.addEqualsFilter(I_C_Invoice_Line_Alloc.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateId)
 				//
 				// Collect invoice lines
 				.andCollect(I_C_Invoice_Line_Alloc.COLUMN_C_InvoiceLine_ID)
@@ -1653,6 +1666,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		{
 			queryBuilder.filter(toFilter(query));
 		}
+		queryBuilder.orderBy(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID);
 		return queryBuilder.create();
 	}
 

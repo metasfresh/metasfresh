@@ -1,6 +1,7 @@
 package de.metas.invoicecandidate.externallyreferenced;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOrNew;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.Collection;
@@ -14,6 +15,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.document.DocTypeId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -23,6 +25,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -63,9 +66,18 @@ public class ExternallyReferencedCandidateRepository
 
 	public InvoiceCandidateId save(@NonNull final ExternallyReferencedCandidate invoiceCandidate)
 	{
-		final I_C_Invoice_Candidate icRecord = loadOrNew(
-				invoiceCandidate.getLookupKey().getInvoiceCandidateId(),
-				I_C_Invoice_Candidate.class);
+		final InvoiceCandidateId invoiceCandidateId = invoiceCandidate.getLookupKey().getInvoiceCandidateId();
+
+		final I_C_Invoice_Candidate icRecord;
+		if (invoiceCandidateId == null)
+		{
+			icRecord = newInstance(I_C_Invoice_Candidate.class);
+			icRecord.setIsManual(true);
+		}
+		else
+		{
+			icRecord = load(invoiceCandidateId, I_C_Invoice_Candidate.class);
+		}
 
 		saveRecord(icRecord);
 		return InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
@@ -120,12 +132,15 @@ public class ExternallyReferencedCandidateRepository
 
 	private ExternallyReferencedCandidate forRecord(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
+		final ExternallyReferencedCandidate candidate = new ExternallyReferencedCandidate();
+
+		candidate.setOrgId(OrgId.ofRepoId(icRecord.getAD_Org_ID()));
+
 		final InvoiceCandidateLookupKey lookupKey = InvoiceCandidateLookupKey.builder()
 				.invoiceCandidateId(InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID()))
 				.externalHeaderId(ExternalId.ofOrNull(icRecord.getExternalHeaderId()))
 				.externalLineId(ExternalId.ofOrNull(icRecord.getExternalLineId()))
 				.build();
-		final ExternallyReferencedCandidate candidate = new ExternallyReferencedCandidate();
 		candidate.setLookupKey(lookupKey);
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID());
@@ -160,6 +175,8 @@ public class ExternallyReferencedCandidateRepository
 		candidate.setQtyOrdered(qtyOrdered);
 
 		candidate.setSoTrx(SOTrx.ofBoolean(icRecord.isSOTrx()));
+
+		candidate.setInvoiceDocTypeId(DocTypeId.ofRepoIdOrNull(icRecord.getC_DocTypeInvoice_ID()));
 
 		return candidate;
 	}

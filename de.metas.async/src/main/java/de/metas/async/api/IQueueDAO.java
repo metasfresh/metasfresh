@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 
 import de.metas.async.model.I_C_Async_Batch;
@@ -61,6 +62,8 @@ public interface IQueueDAO extends ISingletonService
 	List<I_C_Queue_Processor> retrieveAllProcessors();
 
 	List<I_C_Queue_PackageProcessor> retrieveWorkpackageProcessors(I_C_Queue_Processor processor);
+
+	int retrievePackageProcessorIdByClass(Class<? extends IWorkpackageProcessor> packageProcessorClass);
 
 	I_C_Queue_PackageProcessor retrievePackageProcessorDefByClass(Properties ctx, Class<? extends IWorkpackageProcessor> packageProcessorClass);
 
@@ -102,6 +105,7 @@ public interface IQueueDAO extends ISingletonService
 
 	/**
 	 * return all active POs, even the ones that are caught in other packages
+	 *
 	 * @param workPackage
 	 * @param clazz
 	 * @return
@@ -148,4 +152,5 @@ public interface IQueueDAO extends ISingletonService
 
 	Set<Integer> retrieveAllItemIds(I_C_Queue_WorkPackage workPackage);
 
+	List<I_C_Queue_WorkPackage> retrieveUnprocessedWorkPackagesByEnqueuedRecord(Class<? extends IWorkpackageProcessor> packageProcessorClass, TableRecordReference recordRef);
 }

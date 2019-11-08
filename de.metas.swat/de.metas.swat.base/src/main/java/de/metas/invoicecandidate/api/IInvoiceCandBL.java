@@ -39,8 +39,10 @@ import org.compiere.model.I_C_Tax;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
@@ -422,4 +424,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	void updateICIOLAssociationFromIOL(I_C_InvoiceCandidate_InOutLine iciol, org.compiere.model.I_M_InOutLine inOutLine);
 
 	int createSelectionForInvoiceCandidates(List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds, PInstanceId pInstanceId);
+
+	List<I_C_Queue_WorkPackage> getUnprocessedWorkPackagesForInvoiceCandidate(InvoiceCandidateId invoiceCandidateId);
 }

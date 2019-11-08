@@ -59,6 +59,10 @@ import de.metas.util.ISingletonService;
 
 public interface IInvoiceCandDAO extends ISingletonService
 {
+	I_C_Invoice_Candidate getById(InvoiceCandidateId invoiceCandId);
+
+	List<I_C_Invoice_Candidate> getByIds(Collection<InvoiceCandidateId> invoiceCandidateIds);
+
 	/**
 	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#COLUMNNAME_HeaderAggregationKey}
 	 * @see #retrieveInvoiceCandidates(IQueryBuilder)
@@ -95,6 +99,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 	boolean hasInvalidInvoiceCandidatesForTag(final InvoiceCandRecomputeTag tag);
 
 	List<I_C_InvoiceLine> retrieveIlForIc(I_C_Invoice_Candidate invoiceCand);
+
+	List<I_C_InvoiceLine> retrieveIlForIc(InvoiceCandidateId invoiceCandidateId);
 
 	List<I_C_Invoice_Line_Alloc> retrieveIlaForIc(InvoiceCandidateId invoiceCandidateId);
 
@@ -335,13 +341,10 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Delete given invoice candidate AND it will advice the framework to avoid scheduling a re-create.
-	 *
-	 * @param ic
 	 */
 	void deleteAndAvoidRecreateScheduling(I_C_Invoice_Candidate ic);
 
 	/**
-	 * @param ic invoice candidate
 	 * @return true if re-create scheduling shall be avoided for given invoice candidate
 	 */
 	boolean isAvoidRecreate(I_C_Invoice_Candidate ic);
@@ -355,9 +358,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * <li>Only retrieve invoice candidates the user and role have access to
 	 *
 	 * To be kept in sync with {@link #getSQLDefaultFilter(Properties)}
-	 *
-	 * @param queryBuilder
-	 * @return
 	 */
 	IQueryBuilder<I_C_Invoice_Candidate> applyDefaultFilter(IQueryBuilder<I_C_Invoice_Candidate> queryBuilder);
 
@@ -370,9 +370,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * <li>Only retrieve invoice candidates the user and role have access to.
 	 *
 	 * To be kept in sync with {{@link #applyDefaultFilter(IQueryBuilder)}
-	 *
-	 * @param ctx
-	 * @return
 	 */
 	String getSQLDefaultFilter(Properties ctx);
 
@@ -382,7 +379,5 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
 
-	I_C_Invoice_Candidate getById(InvoiceCandidateId invoiceCandId);
-
-	// int createSelectionByHeaderAndLineIds(List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds, PInstanceId pInstanceID);
+	//int createSelectionByHeaderAndLineIds(List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds, PInstanceId pInstanceID);
 }
