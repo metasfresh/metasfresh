@@ -303,7 +303,7 @@ public class ShipmentScheduleWithHUService
 						productId,
 						catchQtyOverride);
 
-				result.add(huShipmentScheduleBL.addQtyPicked(
+				result.add(huShipmentScheduleBL.addQtyPickedAndUpdateHU(
 						scheduleRecord,
 						qtys,
 						newHURecord,

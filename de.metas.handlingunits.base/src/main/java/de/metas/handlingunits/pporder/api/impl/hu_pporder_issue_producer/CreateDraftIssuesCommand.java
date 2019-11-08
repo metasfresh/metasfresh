@@ -1,14 +1,12 @@
 package de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.compiere.util.TimeUtil;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
 import org.slf4j.Logger;
@@ -16,6 +14,7 @@ import org.slf4j.Logger;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -26,10 +25,13 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.pporder.api.CreateIssueCandidateRequest;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -216,23 +218,22 @@ public class CreateDraftIssuesCommand
 		final ProductId productId = productStorage.getProductId();
 		final I_PP_Order_BOMLine targetBOMLine = getTargetOrderBOMLine(productId);
 
-		final I_PP_Order_Qty candidate = newInstance(I_PP_Order_Qty.class);
-
-		candidate.setPP_Order_ID(targetBOMLine.getPP_Order_ID());
-		candidate.setPP_Order_BOMLine(targetBOMLine);
-
-		candidate.setM_Locator_ID(hu.getM_Locator_ID());
-		candidate.setM_HU_ID(hu.getM_HU_ID());
-		candidate.setM_Product_ID(productId.getRepoId());
-
 		final Quantity qtyToIssue = calculateQtyToIssue(targetBOMLine, productStorage)
 				.switchToSourceIfMorePrecise();
-		candidate.setQty(qtyToIssue.toBigDecimal());
-		candidate.setC_UOM_ID(qtyToIssue.getUomId().getRepoId());
 
-		candidate.setMovementDate(TimeUtil.asTimestamp(movementDate));
-		candidate.setProcessed(false);
-		huPPOrderQtyDAO.save(candidate);
+		final I_PP_Order_Qty candidate = huPPOrderQtyDAO.save(CreateIssueCandidateRequest.builder()
+				.orderId(PPOrderId.ofRepoId(targetBOMLine.getPP_Order_ID()))
+				.orderBOMLineId(PPOrderBOMLineId.ofRepoId(targetBOMLine.getPP_Order_BOMLine_ID()))
+				//
+				.date(movementDate)
+				//
+				.locatorId(Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(hu.getM_Locator_ID()))
+				.issueFromHUId(HuId.ofRepoId(hu.getM_HU_ID()))
+				.productId(productId)
+				//
+				.qtyToIssue(qtyToIssue)
+				//
+				.build());
 
 		ppOrderProductAttributeBL.addPPOrderProductAttributesFromIssueCandidate(candidate);
 		return candidate;

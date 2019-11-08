@@ -59,6 +59,9 @@ import lombok.NonNull;
  */
 public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 {
+	private final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
+	private final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
+
 	private PPOrderId _ppOrderId;
 	private ZonedDateTime movementDate;
 	private ImmutableList<I_PP_Order_BOMLine> targetOrderBOMLines;
@@ -111,7 +114,7 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 			throw new AdempiereException("PPOrderId mismatch. Expected " + ppOrderId + " but BOM lines have " + ppOrderIdFromBOMLines);
 		}
 
-		final I_PP_Order ppOrder = Services.get(IPPOrderDAO.class).getById(ppOrderId);
+		final I_PP_Order ppOrder = ppOrdersRepo.getById(ppOrderId);
 		final PPOrderPlanningStatus orderPlanningStatus = PPOrderPlanningStatus.ofCode(ppOrder.getPlanningStatus());
 
 		final List<I_PP_Order_Qty> candidates = CreateDraftIssuesCommand.builder()
@@ -177,7 +180,6 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 
 	private ImmutableList<I_PP_Order_BOMLine> retrieveIssueOrderBOMLines(final PPOrderId orderId)
 	{
-		final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 		return ppOrderBOMsRepo.retrieveOrderBOMLines(orderId)
 				.stream()
 				.filter(line -> PPOrderUtil.isIssue(BOMComponentType.ofCode(line.getComponentType())))

@@ -60,20 +60,16 @@ public interface IPPOrderReceiptHUProducer
 
 	/**
 	 * Creates planning HUs to be received.
-	 *
 	 * It also creates manufacturing receipt candidates ({@link I_PP_Order_Qty}).
 	 */
-	List<I_M_HU> createReceiptCandidatesAndPlanningHUs();
+	void createReceiptCandidatesAndPlanningHUs();
 
 	/**
 	 * Creates planning HUs to be received.
-	 *
 	 * It also creates manufacturing receipt candidates ({@link I_PP_Order_Qty}).
 	 * 
 	 * @param qtyToReceive precise quantity to receive
-	 * @deprecated To be removed. Needed only for the legacy Swing UI.
 	 */
-	@Deprecated
 	List<I_M_HU> createReceiptCandidatesAndPlanningHUs(Quantity qtyToReceive);
 
 	/**
@@ -89,12 +85,9 @@ public interface IPPOrderReceiptHUProducer
 	 * @deprecated To be removed. Needed only for the legacy Swing UI.
 	 */
 	@Deprecated
-	IPPOrderReceiptHUProducer skipCreatingCandidates();
+	IPPOrderReceiptHUProducer skipCreatingReceiptCandidates();
 
-	/**
-	 * @return created manufacturing receipt candidate
-	 */
-	List<I_PP_Order_Qty> getCreatedCandidates();
+	IPPOrderReceiptHUProducer processReceiptCandidates(boolean processReceiptCandidates);
 
 	/**
 	 * NOTE: by default current system time is considered.

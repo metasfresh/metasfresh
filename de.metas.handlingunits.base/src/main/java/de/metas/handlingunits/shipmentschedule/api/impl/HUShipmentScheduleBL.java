@@ -123,11 +123,11 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		final I_M_HU tuOrVHU = handlingUnitsRepo.getById(tuOrVHUId);
 
-		return addQtyPicked(shipmentSchedule, qtyPicked, tuOrVHU, huContext);
+		return addQtyPickedAndUpdateHU(shipmentSchedule, qtyPicked, tuOrVHU, huContext);
 	}
 
 	@Override
-	public ShipmentScheduleWithHU addQtyPicked(
+	public ShipmentScheduleWithHU addQtyPickedAndUpdateHU(
 			@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule sched,
 			@NonNull final StockQtyAndUOMQty stockQtyAndCatchQty,
 			@NonNull final I_M_HU tuOrVHU,
