@@ -10,6 +10,20 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.127
+## Features
+* metasfresh
+  * [#5551](https://github.com/metasfresh/metasfresh/issues/5551) Batchentry Product Name, Stock, Price, best before + additional Field for bestbefore
+  * [#5756](https://github.com/metasfresh/metasfresh/issues/5756) Allow Action Prices on Pricing System
+  * [#5757](https://github.com/metasfresh/metasfresh/issues/5757) Create endpoint to check the invoice status
+  * [#5761](https://github.com/metasfresh/metasfresh/issues/5761)
+  * [#5767](https://github.com/metasfresh/metasfresh/issues/5767) Sort by preparation date and order docNo in picking terminal 2
+
+## Fixes
+* metasfresh
+  * [#5748](https://github.com/metasfresh/metasfresh/issues/5748) HU editor: clearing the Production Date field leads to error
+  * [#5772](https://github.com/metasfresh/metasfresh/issues/5772) Cleared out how shall be BPartner, BPartnerLocation and C_Location in AD_OrgInf
+
 # metasfresh 5.126
 ## Features
 * metasfresh
