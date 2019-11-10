@@ -1,6 +1,7 @@
 package de.metas.handlingunits.expiry;
 
 import java.time.LocalDate;
+import java.util.OptionalInt;
 
 import javax.annotation.PostConstruct;
 
@@ -77,8 +78,14 @@ public class MonthsUntilExpiryAttributeStorageListener implements IAttributeStor
 		}
 
 		final LocalDate today = SystemTime.asLocalDate();
-		final int monthsUntilExpiry = UpdateMonthsUntilExpiryCommand.computeMonthsUntilExpiry(storage, today);
-
-		storage.setValue(AttributeConstants.ATTR_MonthsUntilExpiry, monthsUntilExpiry);
+		final OptionalInt monthsUntilExpiry = UpdateMonthsUntilExpiryCommand.computeMonthsUntilExpiry(storage, today);
+		if (monthsUntilExpiry.isPresent())
+		{
+			storage.setValue(AttributeConstants.ATTR_MonthsUntilExpiry, monthsUntilExpiry.getAsInt());
+		}
+		else
+		{
+			storage.setValue(AttributeConstants.ATTR_MonthsUntilExpiry, null);
+		}
 	}
 }

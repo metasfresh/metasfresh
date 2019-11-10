@@ -60,6 +60,10 @@ import de.metas.util.rest.ExternalHeaderAndLineId;
 
 public interface IInvoiceCandDAO extends ISingletonService
 {
+	I_C_Invoice_Candidate getById(InvoiceCandidateId invoiceCandId);
+
+	List<I_C_Invoice_Candidate> getByIds(Collection<InvoiceCandidateId> invoiceCandidateIds);
+
 	/**
 	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#COLUMNNAME_HeaderAggregationKey}
 	 * @see #retrieveInvoiceCandidates(IQueryBuilder)
@@ -93,6 +97,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 	boolean hasInvalidInvoiceCandidatesForTag(final InvoiceCandRecomputeTag tag);
 
 	List<I_C_InvoiceLine> retrieveIlForIc(I_C_Invoice_Candidate invoiceCand);
+
+	List<I_C_InvoiceLine> retrieveIlForIc(InvoiceCandidateId invoiceCandidateId);
 
 	List<I_C_Invoice_Line_Alloc> retrieveIlaForIc(InvoiceCandidateId invoiceCandidateId);
 
@@ -385,7 +391,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
 
-	I_C_Invoice_Candidate getById(InvoiceCandidateId invoiceCandId);
-
 	int createSelectionByHeaderAndLineIds(List<ExternalHeaderAndLineId> headerAndLineIds, PInstanceId pInstanceID);
+
+	List<I_C_Invoice_Candidate> retrieveByHeaderAndLineId(List<ExternalHeaderAndLineId> headerAndLineIds);
 }

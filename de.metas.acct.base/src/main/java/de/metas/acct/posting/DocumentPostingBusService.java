@@ -19,7 +19,7 @@ import de.metas.event.IEventListener;
 import de.metas.event.SimpleObjectSerializer;
 import de.metas.event.Topic;
 import de.metas.event.log.EventLogUserService;
-import de.metas.event.log.EventLogUserService.InvokeHandlerandLogRequest;
+import de.metas.event.log.EventLogUserService.InvokeHandlerAndLogRequest;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
@@ -136,7 +136,7 @@ public class DocumentPostingBusService
 
 			try (final IAutoCloseable c = switchCtx(request))
 			{
-				eventLogUserService.invokeHandlerAndLog(InvokeHandlerandLogRequest.builder()
+				eventLogUserService.invokeHandlerAndLog(InvokeHandlerAndLogRequest.builder()
 						.handlerClass(handler.getClass())
 						.invokaction(() -> handleRequest(request))
 						.build());

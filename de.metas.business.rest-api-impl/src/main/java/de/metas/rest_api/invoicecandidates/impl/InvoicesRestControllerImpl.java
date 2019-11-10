@@ -20,7 +20,9 @@ import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.rest_api.invoicecandidates.IInvoicesRestEndpoint;
 import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
+import de.metas.rest_api.invoicecandidates.request.JsonGetInvoiceCandidatesStatusRequest;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
+import de.metas.rest_api.invoicecandidates.response.JsonGetInvoiceCandidatesStatusResponse;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.util.Services;
 import de.metas.util.rest.ExternalHeaderAndLineId;
@@ -54,36 +56,57 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App)
 class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 {
-
 	private static final Logger logger = LogManager.getLogger(InvoicesRestControllerImpl.class);
 
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-	private final InvoiceJsonConverterService jsonConverter;
+	private InvoiceCandidateInfoService invoiceCandidateInfoService;
 
-	public InvoicesRestControllerImpl(@NonNull final InvoiceJsonConverterService jsonConverter)
+	public InvoicesRestControllerImpl(@NonNull final InvoiceCandidateInfoService invoiceCandidateInfoService)
 	{
-		this.jsonConverter = jsonConverter;
+		this.invoiceCandidateInfoService = invoiceCandidateInfoService;
+	}
+
+	@PostMapping("/status")
+	@Override
+	public ResponseEntity<JsonGetInvoiceCandidatesStatusResponse> checkInvoiceCandidatesStatus(@RequestBody @NonNull final JsonGetInvoiceCandidatesStatusRequest request)
+	{
+		try
+		{
+			final List<ExternalHeaderAndLineId> headerAndLineIds = InvoiceJsonConverters.fromJson(request.getInvoiceCandidates());
+
+			final JsonGetInvoiceCandidatesStatusResponse response = invoiceCandidateInfoService.getStatusForInvoiceCandidates(headerAndLineIds);
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Got exception while processing request={}", request, ex);
+
+			final String adLanguage = Env.getADLanguageOrBaseLanguage();
+			return ResponseEntity
+					.badRequest()
+					.body(JsonGetInvoiceCandidatesStatusResponse.error(JsonErrors.ofThrowable(ex, adLanguage)));
+		}
 	}
 
 	@ApiOperation("Enqueues invoice candidates for invoicing")
-	@PostMapping(path = "enqueueForInvoicing")
+	@PostMapping("/enqueueForInvoicing")
 	@Override
 	public ResponseEntity<JsonEnqueueForInvoicingResponse> enqueueForInvoicing(@RequestBody @NonNull final JsonEnqueueForInvoicingRequest request)
 	{
 		try
 		{
 			final PInstanceId pInstanceId = adPInstanceDAO.createSelectionId();
-			final List<ExternalHeaderAndLineId> headerAndLineIds = jsonConverter.convertJICToExternalHeaderAndLineIds(request.getInvoiceCandidates());
+			final List<ExternalHeaderAndLineId> headerAndLineIds = InvoiceJsonConverters.fromJson(request.getInvoiceCandidates());
 			invoiceCandBL.createSelectionForInvoiceCandidates(headerAndLineIds, pInstanceId);
 
 			final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL
 					.enqueueForInvoicing()
-					.setInvoicingParams(jsonConverter.createInvoicingParams(request))
+					.setInvoicingParams(InvoiceJsonConverters.createInvoicingParams(request))
 					.setFailIfNothingEnqueued(true)
 					.enqueueSelection(pInstanceId);
 
-			final JsonEnqueueForInvoicingResponse response = jsonConverter.toJson(enqueueResult);
+			final JsonEnqueueForInvoicingResponse response = InvoiceJsonConverters.toJson(enqueueResult);
 			return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
 		}
 		catch (final Exception ex)

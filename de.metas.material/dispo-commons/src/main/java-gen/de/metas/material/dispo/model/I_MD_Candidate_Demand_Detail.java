@@ -111,29 +111,6 @@ public interface I_MD_Candidate_Demand_Detail
     public static final String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
-	 * Set Abo-Verlauf.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_SubscriptionProgress_ID (int C_SubscriptionProgress_ID);
-
-	/**
-	 * Get Abo-Verlauf.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_SubscriptionProgress_ID();
-
-    /** Column definition for C_SubscriptionProgress_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, Object> COLUMN_C_SubscriptionProgress_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, Object>(I_MD_Candidate_Demand_Detail.class, "C_SubscriptionProgress_ID", null);
-    /** Column name C_SubscriptionProgress_ID */
-    public static final String COLUMNNAME_C_SubscriptionProgress_ID = "C_SubscriptionProgress_ID";
-
-	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -162,6 +139,29 @@ public interface I_MD_Candidate_Demand_Detail
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Abo-Verlauf.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_SubscriptionProgress_ID (int C_SubscriptionProgress_ID);
+
+	/**
+	 * Get Abo-Verlauf.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_SubscriptionProgress_ID();
+
+    /** Column definition for C_SubscriptionProgress_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, Object> COLUMN_C_SubscriptionProgress_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, Object>(I_MD_Candidate_Demand_Detail.class, "C_SubscriptionProgress_ID", null);
+    /** Column name C_SubscriptionProgress_ID */
+    public static final String COLUMNNAME_C_SubscriptionProgress_ID = "C_SubscriptionProgress_ID";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -185,6 +185,56 @@ public interface I_MD_Candidate_Demand_Detail
     public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, Object>(I_MD_Candidate_Demand_Detail.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Dispo-Bedarfsdetail.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setMD_Candidate_Demand_Detail_ID (int MD_Candidate_Demand_Detail_ID);
+
+	/**
+	 * Get Dispo-Bedarfsdetail.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getMD_Candidate_Demand_Detail_ID();
+
+    /** Column definition for MD_Candidate_Demand_Detail_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, Object> COLUMN_MD_Candidate_Demand_Detail_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, Object>(I_MD_Candidate_Demand_Detail.class, "MD_Candidate_Demand_Detail_ID", null);
+    /** Column name MD_Candidate_Demand_Detail_ID */
+    public static final String COLUMNNAME_MD_Candidate_Demand_Detail_ID = "MD_Candidate_Demand_Detail_ID";
+
+	/**
+	 * Set Dispositionskandidat.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setMD_Candidate_ID (int MD_Candidate_ID);
+
+	/**
+	 * Get Dispositionskandidat.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getMD_Candidate_ID();
+
+	public de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate();
+
+	public void setMD_Candidate(de.metas.material.dispo.model.I_MD_Candidate MD_Candidate);
+
+    /** Column definition for MD_Candidate_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, de.metas.material.dispo.model.I_MD_Candidate> COLUMN_MD_Candidate_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, de.metas.material.dispo.model.I_MD_Candidate>(I_MD_Candidate_Demand_Detail.class, "MD_Candidate_ID", de.metas.material.dispo.model.I_MD_Candidate.class);
+    /** Column name MD_Candidate_ID */
+    public static final String COLUMNNAME_MD_Candidate_ID = "MD_Candidate_ID";
 
 	/**
 	 * Set Prognose-Position.
@@ -237,56 +287,6 @@ public interface I_MD_Candidate_Demand_Detail
     public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, Object> COLUMN_M_ShipmentSchedule_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, Object>(I_MD_Candidate_Demand_Detail.class, "M_ShipmentSchedule_ID", null);
     /** Column name M_ShipmentSchedule_ID */
     public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
-
-	/**
-	 * Set Dispo-Bedarfsdetail.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setMD_Candidate_Demand_Detail_ID (int MD_Candidate_Demand_Detail_ID);
-
-	/**
-	 * Get Dispo-Bedarfsdetail.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getMD_Candidate_Demand_Detail_ID();
-
-    /** Column definition for MD_Candidate_Demand_Detail_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, Object> COLUMN_MD_Candidate_Demand_Detail_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, Object>(I_MD_Candidate_Demand_Detail.class, "MD_Candidate_Demand_Detail_ID", null);
-    /** Column name MD_Candidate_Demand_Detail_ID */
-    public static final String COLUMNNAME_MD_Candidate_Demand_Detail_ID = "MD_Candidate_Demand_Detail_ID";
-
-	/**
-	 * Set Dispositionskandidat.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setMD_Candidate_ID (int MD_Candidate_ID);
-
-	/**
-	 * Get Dispositionskandidat.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getMD_Candidate_ID();
-
-	public de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate();
-
-	public void setMD_Candidate(de.metas.material.dispo.model.I_MD_Candidate MD_Candidate);
-
-    /** Column definition for MD_Candidate_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, de.metas.material.dispo.model.I_MD_Candidate> COLUMN_MD_Candidate_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Demand_Detail, de.metas.material.dispo.model.I_MD_Candidate>(I_MD_Candidate_Demand_Detail.class, "MD_Candidate_ID", de.metas.material.dispo.model.I_MD_Candidate.class);
-    /** Column name MD_Candidate_ID */
-    public static final String COLUMNNAME_MD_Candidate_ID = "MD_Candidate_ID";
 
 	/**
 	 * Set Geplante Menge.

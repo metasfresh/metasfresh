@@ -15,7 +15,7 @@ public class X_C_Campaign_Price extends org.compiere.model.PO implements I_C_Cam
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -462736728L;
+	private static final long serialVersionUID = 240390431L;
 
     /** Standard Constructor */
     public X_C_Campaign_Price (Properties ctx, int C_Campaign_Price_ID, String trxName)
@@ -50,7 +50,7 @@ public class X_C_Campaign_Price extends org.compiere.model.PO implements I_C_Cam
     }
 
 	@Override
-	public org.compiere.model.I_C_BP_Group getC_BP_Group() throws RuntimeException
+	public org.compiere.model.I_C_BP_Group getC_BP_Group()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class);
 	}
@@ -84,18 +84,6 @@ public class X_C_Campaign_Price extends org.compiere.model.PO implements I_C_Cam
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
 	}
 
 	/** Set Geschäftspartner.
@@ -146,7 +134,7 @@ public class X_C_Campaign_Price extends org.compiere.model.PO implements I_C_Cam
 	}
 
 	@Override
-	public org.compiere.model.I_C_Country getC_Country() throws RuntimeException
+	public org.compiere.model.I_C_Country getC_Country()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Country_ID, org.compiere.model.I_C_Country.class);
 	}
@@ -182,18 +170,6 @@ public class X_C_Campaign_Price extends org.compiere.model.PO implements I_C_Cam
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
-	}
-
-	@Override
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
-	}
-
 	/** Set Währung.
 		@param C_Currency_ID 
 		Die Währung für diesen Eintrag
@@ -217,18 +193,6 @@ public class X_C_Campaign_Price extends org.compiere.model.PO implements I_C_Cam
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_TaxCategory getC_TaxCategory() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_TaxCategory_ID, org.compiere.model.I_C_TaxCategory.class);
-	}
-
-	@Override
-	public void setC_TaxCategory(org.compiere.model.I_C_TaxCategory C_TaxCategory)
-	{
-		set_ValueFromPO(COLUMNNAME_C_TaxCategory_ID, org.compiere.model.I_C_TaxCategory.class, C_TaxCategory);
 	}
 
 	/** Set Steuerkategorie.
@@ -272,16 +236,29 @@ public class X_C_Campaign_Price extends org.compiere.model.PO implements I_C_Cam
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
+	/** Set Preissystem.
+		@param M_PricingSystem_ID 
+		Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
+	  */
 	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	public void setM_PricingSystem_ID (int M_PricingSystem_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+		if (M_PricingSystem_ID < 1) 
+			set_Value (COLUMNNAME_M_PricingSystem_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_PricingSystem_ID, Integer.valueOf(M_PricingSystem_ID));
 	}
 
+	/** Get Preissystem.
+		@return Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
+	  */
 	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+	public int getM_PricingSystem_ID () 
 	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_PricingSystem_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Produkt.

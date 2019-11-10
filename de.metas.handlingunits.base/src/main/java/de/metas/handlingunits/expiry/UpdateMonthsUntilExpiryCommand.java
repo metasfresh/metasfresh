@@ -3,6 +3,7 @@ package de.metas.handlingunits.expiry;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
+import java.util.OptionalInt;
 
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.compiere.util.Env;
@@ -120,25 +121,39 @@ final class UpdateMonthsUntilExpiryCommand
 			return false;
 		}
 
+		final OptionalInt monthsUntilExpiry = computeMonthsUntilExpiry(huAttributes, today);
 		final int monthsUntilExpiryOld = huAttributes.getValueAsInt(AttributeConstants.ATTR_MonthsUntilExpiry);
-		final int monthsUntilExpiry = computeMonthsUntilExpiry(huAttributes, today);
-		if (monthsUntilExpiry == monthsUntilExpiryOld)
+		if (monthsUntilExpiry.orElse(0) == monthsUntilExpiryOld)
 		{
 			return false;
 		}
 
 		huAttributes.setSaveOnChange(true);
-		huAttributes.setValue(AttributeConstants.ATTR_MonthsUntilExpiry, monthsUntilExpiry);
+		
+		if (monthsUntilExpiry.isPresent())
+		{
+			huAttributes.setValue(AttributeConstants.ATTR_MonthsUntilExpiry, monthsUntilExpiry.getAsInt());
+		}
+		else
+		{
+			huAttributes.setValue(AttributeConstants.ATTR_MonthsUntilExpiry, null);
+		}
+
 		huAttributes.saveChangesIfNeeded();
 
 		return true;
 	}
 
-	static int computeMonthsUntilExpiry(@NonNull final IAttributeStorage huAttributes, @NonNull final LocalDate today)
+	static OptionalInt computeMonthsUntilExpiry(@NonNull final IAttributeStorage huAttributes, @NonNull final LocalDate today)
 	{
 		final LocalDate bestBeforeDate = huAttributes.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate);
+		if (bestBeforeDate == null)
+		{
+			return OptionalInt.empty();
+		}
+
 		final int monthsUntilExpiry = (int)ChronoUnit.MONTHS.between(today, bestBeforeDate);
-		return monthsUntilExpiry;
+		return OptionalInt.of(monthsUntilExpiry);
 	}
 
 	private IAttributeStorage getHUAttributes(@NonNull final HuId huId, @NonNull final IHUContext huContext)

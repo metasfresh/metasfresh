@@ -418,7 +418,7 @@ public class CandiateRepositoryRetrievalTests
 	public void retrieve_with_TransactionDetail()
 	{
 		final I_MD_Candidate record = createCandidateRecordWithWarehouseId(WAREHOUSE_ID);
-		record.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_UNRELATED_DECREASE);
+		record.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_UNEXPECTED_DECREASE);
 		save(record);
 
 		final I_MD_Candidate_Transaction_Detail transactionDetailRecord = newInstance(I_MD_Candidate_Transaction_Detail.class);
