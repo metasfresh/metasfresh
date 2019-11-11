@@ -25,7 +25,6 @@ package de.metas.handlingunits.allocation.impl;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -33,6 +32,7 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -42,7 +42,6 @@ import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.interfaces.I_C_BPartner;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -372,7 +371,7 @@ public final class AllocationUtils
 				.setBaseAllocationRequest(request);
 	}
 
-	private static I_C_BPartner getC_BPartner(final IAllocationRequest request)
+	private static BPartnerId getBPartnerId(final IAllocationRequest request)
 	{
 		final Object referencedModel = AllocationUtils.getReferencedModel(request);
 		if (referencedModel == null)
@@ -381,15 +380,7 @@ public final class AllocationUtils
 		}
 
 		final Integer bpartnerId = InterfaceWrapperHelper.getValueOrNull(referencedModel, I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID);
-		if (bpartnerId == null || bpartnerId <= 0)
-		{
-			return null;
-		}
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(referencedModel);
-		final String trxName = InterfaceWrapperHelper.getTrxName(referencedModel);
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(ctx, bpartnerId, I_C_BPartner.class, trxName);
-		return bpartner;
+		return BPartnerId.ofRepoIdOrNull(bpartnerId);
 	}
 
 	/**
@@ -405,8 +396,7 @@ public final class AllocationUtils
 
 		huBuilder.setDate(request.getDate());
 
-		final I_C_BPartner bpartner = getC_BPartner(request);
-		huBuilder.setC_BPartner(bpartner);
+		huBuilder.setBPartnerId(getBPartnerId(request));
 		// TODO: huBuilder.setC_BPartner_Location if any
 
 		// TODO: set the HU Storage from context to builder

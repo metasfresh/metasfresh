@@ -9,13 +9,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_BPartner;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUContext;
@@ -82,7 +80,6 @@ import lombok.NonNull;
 
 public class ProcessPickingCandidatesCommand
 {
-	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
@@ -332,12 +329,11 @@ public class ProcessPickingCandidatesCommand
 	{
 		final HuPackingInstructionsId packToInstructionsId = key.getPackToInstructionsId();
 		final BPartnerLocationId bpartnerLocationId = key.getBpartnerLocationId();
-		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerLocationId.getBpartnerId());
 		final LocatorId locatorId = key.getLocatorId();
 
 		return HUProducerDestination.of(packToInstructionsId)
 				.setMaxHUsToCreate(1)
-				.setC_BPartner(bpartner)
+				.setBPartnerId(bpartnerLocationId.getBpartnerId())
 				.setC_BPartner_Location_ID(bpartnerLocationId.getRepoId())
 				.setHUStatus(X_M_HU.HUSTATUS_Picked)
 				.setLocatorId(locatorId);

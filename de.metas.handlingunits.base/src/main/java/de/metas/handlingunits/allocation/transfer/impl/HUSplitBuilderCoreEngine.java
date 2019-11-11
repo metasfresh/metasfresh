@@ -11,6 +11,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -100,7 +101,7 @@ public class HUSplitBuilderCoreEngine
 		if (huAllocationDestination != null)
 		{
 			huAllocationDestination.setHUStatus(huToSplit.getHUStatus());
-			huAllocationDestination.setC_BPartner(IHandlingUnitsBL.extractBPartnerOrNull(huToSplit));
+			huAllocationDestination.setBPartnerId(IHandlingUnitsBL.extractBPartnerIdOrNull(huToSplit));
 			huAllocationDestination.setC_BPartner_Location_ID(huToSplit.getC_BPartner_Location_ID());
 			huAllocationDestination.setLocatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(huToSplit.getM_Locator_ID()));
 		}
@@ -304,7 +305,7 @@ public class HUSplitBuilderCoreEngine
 		}
 		final I_M_HU_PI_Item_Product piip = piipDAO.retrievePIMaterialItemProduct(
 				tuPIItem, 
-				IHandlingUnitsBL.extractBPartnerOrNull(hu), 
+				BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID()), 
 				productId, 
 				SystemTime.asZonedDateTime());
 		return piip;

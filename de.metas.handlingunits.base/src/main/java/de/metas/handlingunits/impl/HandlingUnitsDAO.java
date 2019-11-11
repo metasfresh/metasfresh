@@ -363,16 +363,16 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI handlingUnit, final I_C_BPartner partner)
+	public List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI handlingUnit, final BPartnerId bpartnerId)
 	{
 		final I_M_HU_PI_Version version = retrievePICurrentVersion(handlingUnit);
-		return retrievePIItems(version, partner);
+		return retrievePIItems(version, bpartnerId);
 	}
 
 	@Override
 	public List<I_M_HU_PI_Item> retrievePIItems(
 			@NonNull final I_M_HU_PI_Version version,
-			@Nullable final I_C_BPartner partner)
+			@Nullable final BPartnerId bpartnerId)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(version);
 		final String trxName = InterfaceWrapperHelper.getTrxName(version);
@@ -380,7 +380,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 		final List<I_M_HU_PI_Item> piItemsAll = retrieveAllPIItems(ctx, huPIVersionId, trxName);
 
-		final int bpartnerId = partner == null ? -1 : partner.getC_BPartner_ID();
 		final List<I_M_HU_PI_Item> piItems = new ArrayList<>();
 		for (final I_M_HU_PI_Item piItem : piItemsAll)
 		{
@@ -397,17 +396,17 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			// NOTE: we do this checking only in case of HU itemType to preserve the old logic (maybe it would be good to do it in case of any PI Item, not sure)
 			if (X_M_HU_PI_Item.ITEMTYPE_HandlingUnit.equals(itemType))
 			{
-				final int itemBPartnerId = piItem.getC_BPartner_ID();
+				final BPartnerId itemBPartnerId = BPartnerId.ofRepoIdOrNull(piItem.getC_BPartner_ID());
 
 				//
 				// Item is for a specific BPartner
-				if (itemBPartnerId > 0)
+				if (itemBPartnerId != null)
 				{
 					// ... we were asked for a specific partner
-					if (bpartnerId > 0)
+					if (bpartnerId != null)
 					{
 						// ... skip item if BPartners does not match
-						if (itemBPartnerId != bpartnerId)
+						if (!BPartnerId.equals(itemBPartnerId, bpartnerId))
 						{
 							continue;
 						}
@@ -646,12 +645,11 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@NonNull final I_M_HU_PI huPI,
 			@Nullable final String huUnitType,
-			@Nullable final I_C_BPartner bpartner)
+			@Nullable final BPartnerId bpartnerId)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(huPI);
 		final String trxName = InterfaceWrapperHelper.getTrxName(huPI);
 		final HuPackingInstructionsId packingInstructionsId = HuPackingInstructionsId.ofRepoId(huPI.getM_HU_PI_ID());
-		final BPartnerId bpartnerId = bpartner != null ? BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()) : null;
 
 		return retrieveParentPIItemsForParentPI(ctx, packingInstructionsId, huUnitType, bpartnerId, trxName);
 	}
@@ -768,8 +766,10 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public I_M_HU_PackingMaterial retrievePackingMaterial(final I_M_HU_PI_Version piVersion, final I_C_BPartner bpartner)
 	{
+		final BPartnerId bpartnerId = bpartner != null ? BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()) : null;
+		
 		I_M_HU_PI_Item itemPM = null;
-		for (final I_M_HU_PI_Item item : retrievePIItems(piVersion, bpartner))
+		for (final I_M_HU_PI_Item item : retrievePIItems(piVersion, bpartnerId))
 		{
 			final String itemType = item.getItemType();
 			if (X_M_HU_PI_Item.ITEMTYPE_PackingMaterial.equals(itemType))
@@ -868,11 +868,11 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public I_M_HU_PI_Item retrieveDefaultParentPIItem(
 			@NonNull final I_M_HU_PI huPI,
 			@Nullable final String huUnitType,
-			@Nullable final I_C_BPartner bpartner)
+			@Nullable final BPartnerId bpartnerId)
 	{
 		//
 		// Fetch all eligible parent PI Items
-		final List<I_M_HU_PI_Item> parentPIItems = retrieveParentPIItemsForParentPI(huPI, huUnitType, bpartner);
+		final List<I_M_HU_PI_Item> parentPIItems = retrieveParentPIItemsForParentPI(huPI, huUnitType, bpartnerId);
 
 		//
 		// Case: no parent PI items found
@@ -912,7 +912,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 					+ "\n bpartner={}"
 					+ "\n HU PI Items with DefaultLU={}"
 					+ "\n => parent HU PI Items={}",
-					new Object[] { huPI, huUnitType, bpartner, defaultLUPIItems, parentPIItems });
+					new Object[] { huPI, huUnitType, bpartnerId, defaultLUPIItems, parentPIItems });
 
 			return parentPIItems.get(0);
 		}

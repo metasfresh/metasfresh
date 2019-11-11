@@ -13,15 +13,14 @@ package de.metas.handlingunits.allocation.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -84,8 +83,7 @@ public class ShipmentScheduleListAllocationSourceTest extends AbstractHUTest
 		final List<I_M_ShipmentSchedule> schedules = Arrays.asList(
 				shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, new BigDecimal("10"), new BigDecimal("1")),
 				shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, new BigDecimal("10"), new BigDecimal("2")),
-				shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, new BigDecimal("10"), new BigDecimal("3"))
-				);
+				shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, new BigDecimal("10"), new BigDecimal("3")));
 		final ShipmentScheduleListAllocationSource source = new ShipmentScheduleListAllocationSource(schedules);
 
 		final IMutableHUContext huContext = helper.getHUContext();
@@ -120,8 +118,7 @@ public class ShipmentScheduleListAllocationSourceTest extends AbstractHUTest
 					BigDecimal.ZERO, // qtyToAllocate // N/A, not important
 					BigDecimal.ZERO, // qtyAllocated // N/A, not important
 					trxsWithCounterparts,
-					Collections.<IHUTransactionAttribute> emptyList()
-					);
+					Collections.<IHUTransactionAttribute> emptyList());
 			helper.trxBL.createTrx(huContext, allocationResult);
 		}
 
@@ -152,8 +149,7 @@ public class ShipmentScheduleListAllocationSourceTest extends AbstractHUTest
 				// Product / UOM / QtyToDeliver // QtyPickedInitial
 				shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, new BigDecimal("10"), new BigDecimal("1")),
 				shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, new BigDecimal("10"), new BigDecimal("2")),
-				shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, new BigDecimal("10"), new BigDecimal("3"))
-				);
+				shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, new BigDecimal("10"), new BigDecimal("3")));
 		final ShipmentScheduleListAllocationSource source = new ShipmentScheduleListAllocationSource(schedules);
 
 		//
@@ -189,8 +185,8 @@ public class ShipmentScheduleListAllocationSourceTest extends AbstractHUTest
 					result.getTransactions().get(2),
 					// result.getTransactions().get(3), // HU_Item trx
 					result.getTransactions().get(4)
-					// result.getTransactions().get(5), // HU_Item trx
-					);
+			// result.getTransactions().get(5), // HU_Item trx
+			);
 
 			shipmentScheduleHelper.assertValidTransaction(scheduleTrxs.get(0), schedules.get(0), new BigDecimal("-9"), new BigDecimal("10"));
 			//@formatter:off
@@ -300,7 +296,7 @@ public class ShipmentScheduleListAllocationSourceTest extends AbstractHUTest
 
 		final IHUBuilder huBuilder = dao.createHUBuilder(huContext);
 		huBuilder.setM_HU_Item_Parent(null); // no parent
-		huBuilder.setC_BPartner(null); // no BPartner
+		huBuilder.setBPartnerId(null); // no BPartner
 
 		final I_M_HU hu = huBuilder.create(pi);
 

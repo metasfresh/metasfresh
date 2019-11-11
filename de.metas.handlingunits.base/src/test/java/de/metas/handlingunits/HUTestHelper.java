@@ -85,6 +85,7 @@ import org.eevolution.util.DDNetworkBuilder;
 import org.eevolution.util.ProductBOMBuilder;
 import org.junit.Assert;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -1075,10 +1076,21 @@ public class HUTestHelper
 	 * @param bpartner
 	 * @return
 	 */
-	public I_M_HU_PI_Item createHU_PI_Item_IncludedHU(final I_M_HU_PI huDefinition,
+	public I_M_HU_PI_Item createHU_PI_Item_IncludedHU(
+			final I_M_HU_PI huDefinition,
 			final I_M_HU_PI includedHuDefinition,
 			final BigDecimal qty,
 			final I_C_BPartner bpartner)
+	{
+		final BPartnerId bpartnerId = bpartner != null ? BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()) : null;
+		return createHU_PI_Item_IncludedHU(huDefinition, includedHuDefinition, qty, bpartnerId);
+	}
+
+	public I_M_HU_PI_Item createHU_PI_Item_IncludedHU(
+			final I_M_HU_PI huDefinition,
+			final I_M_HU_PI includedHuDefinition,
+			final BigDecimal qty,
+			final BPartnerId bpartnerId)
 	{
 		final I_M_HU_PI_Version version = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersion(huDefinition);
 
@@ -1086,7 +1098,7 @@ public class HUTestHelper
 		itemDefinition.setItemType(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit);
 		itemDefinition.setIncluded_HU_PI(includedHuDefinition);
 		itemDefinition.setM_HU_PI_Version(version);
-		itemDefinition.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
+		itemDefinition.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 		if (!Objects.equals(qty, QTY_NA))
 		{
 			itemDefinition.setQty(qty);

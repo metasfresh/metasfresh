@@ -28,11 +28,11 @@ import java.util.Properties;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Attribute;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
@@ -132,9 +132,9 @@ public class WeightTareAttributeValueCallout
 
 		BigDecimal weightTareTotal = BigDecimal.ZERO;
 
-		final I_C_BPartner partner = null; // FIXME: get context C_BPartner
+		final BPartnerId partnerId = null; // FIXME: get context C_BPartner
 
-		for (final I_M_HU_PI_Item piItem : handlingUnitsDAO.retrievePIItems(piVersion, partner))
+		for (final I_M_HU_PI_Item piItem : handlingUnitsDAO.retrievePIItems(piVersion, partnerId))
 		{
 			final String itemType = piItem.getItemType();
 			if (!X_M_HU_PI_Item.ITEMTYPE_PackingMaterial.equals(itemType))

@@ -35,8 +35,8 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_BPartner;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUIterator;
@@ -81,7 +81,7 @@ import lombok.NonNull;
 	// Services
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 
-	private I_C_BPartner _bpartner = null;
+	private BPartnerId _bpartnerId = null;
 	private int _bpartnerLocationId = -1;
 	private I_M_HU_Item _parentItem = null;
 	private I_M_HU_PI_Item_Product _piip = null;
@@ -107,15 +107,15 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IHUBuilder setC_BPartner(final I_C_BPartner bpartner)
+	public IHUBuilder setBPartnerId(final BPartnerId bpartnerId)
 	{
-		_bpartner = bpartner;
+		_bpartnerId = bpartnerId;
 		return this;
 	}
 
-	protected I_C_BPartner getC_BPartner()
+	protected BPartnerId getBPartnerId()
 	{
-		return _bpartner;
+		return _bpartnerId;
 	}
 
 	@Override
@@ -389,11 +389,11 @@ import lombok.NonNull;
 		}
 		else
 		{
-			final I_C_BPartner bpartner = getC_BPartner();
-			hu.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
+			final BPartnerId bpartnerId = getBPartnerId();
+			hu.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 
 			final int bpartnerLocationId = getC_BPartner_Location_ID();
-			if (bpartner != null && bpartnerLocationId > 0)
+			if (bpartnerId != null && bpartnerLocationId > 0)
 			{
 				hu.setC_BPartner_Location_ID(bpartnerLocationId);
 			}
@@ -500,7 +500,7 @@ import lombok.NonNull;
 					// The goal is that even if e.g. we don't create a full-fledged trade-unit-HU for an IFCO that's below a palet,
 					// we still add the IFCOs' packing instruction to the aggregate 'hu', so the number of included IFCOs can be represented there.
 					final List<I_M_HU_PI_Item> piItems = handlingUnitsDAO
-							.retrievePIItems(invocationPIVersion, getC_BPartner())
+							.retrievePIItems(invocationPIVersion, getBPartnerId())
 							.stream()
 							.filter(pi -> X_M_HU_PI_Item.ITEMTYPE_PackingMaterial.equals(pi.getItemType()))
 							.collect(Collectors.toList());
@@ -522,7 +522,7 @@ import lombok.NonNull;
 
 			// Create "regular" material items and packing-material items that are declared by the PI
 			final I_M_HU_PI_Version piVersion = handlingUnitsBL.getPIVersion(hu);
-			final List<I_M_HU_PI_Item> piItems = handlingUnitsDAO.retrievePIItems(piVersion, getC_BPartner());
+			final List<I_M_HU_PI_Item> piItems = handlingUnitsDAO.retrievePIItems(piVersion, getBPartnerId());
 
 			for (final I_M_HU_PI_Item piItem : piItems)
 			{

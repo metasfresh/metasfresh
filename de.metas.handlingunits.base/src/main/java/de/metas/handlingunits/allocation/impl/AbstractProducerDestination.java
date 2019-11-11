@@ -17,12 +17,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -71,7 +71,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	// Parameters
 	private LocatorId _locatorId = null;
 	private String _huStatus = null;
-	private I_C_BPartner _bpartner = null;
+	private BPartnerId _bpartnerId = null;
 	private int _bpartnerLocationId = -1;
 	private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
 	private boolean _isHUPlanningReceiptOwnerPM = false; // default false
@@ -253,10 +253,10 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		{
 			huBuilder.setHUStatus(huStatus);
 		}
-		final I_C_BPartner bpartner = getC_BPartner();
-		if (bpartner != null)
+		final BPartnerId bpartnerId = getBPartnerId();
+		if (bpartnerId != null)
 		{
-			huBuilder.setC_BPartner(bpartner);
+			huBuilder.setBPartnerId(bpartnerId);
 		}
 		final int bpartnerLocationId = getC_BPartner_Location_ID();
 		if (bpartnerLocationId > 0)
@@ -309,16 +309,16 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	@Override
-	public IHUProducerAllocationDestination setC_BPartner(final I_C_BPartner bpartner)
+	public IHUProducerAllocationDestination setBPartnerId(final BPartnerId bpartnerId)
 	{
 		assertConfigurable();
-		_bpartner = bpartner;
+		_bpartnerId = bpartnerId;
 		return this;
 	}
 
-	protected final I_C_BPartner getC_BPartner()
+	protected final BPartnerId getBPartnerId()
 	{
-		return _bpartner;
+		return _bpartnerId;
 	}
 
 	@Override

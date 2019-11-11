@@ -26,6 +26,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.util.TimeUtil;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_M_ForecastLine;
@@ -65,7 +66,7 @@ public class ForecastLineHUDocumentHandler implements IHUDocumentHandler
 
 			piip = Services.get(IHUPIItemProductDAO.class).retrieveMaterialItemProduct(
 					productId, 
-					forecast.getC_BPartner(), 
+					BPartnerId.ofRepoIdOrNull(forecast.getC_BPartner_ID()), 
 					TimeUtil.asZonedDateTime(forecast.getDatePromised()), 
 					huUnitType,
 					false);

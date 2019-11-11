@@ -31,6 +31,7 @@ import org.compiere.model.I_C_BPartner;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -51,8 +52,8 @@ import de.metas.util.Services;
 public class LULoaderTest extends AbstractHUTest
 {
 	private final I_C_BPartner bpartner_NULL = null;
-	private I_C_BPartner bpartner1;
-	private I_C_BPartner bpartner2;
+	private BPartnerId bpartner1;
+	private BPartnerId bpartner2;
 
 	private I_M_HU_PI tuPI1;
 	private I_M_HU_PI tuPI2;
@@ -67,8 +68,8 @@ public class LULoaderTest extends AbstractHUTest
 	@Override
 	protected void initialize()
 	{
-		bpartner1 = createBPartner("BPartner1");
-		bpartner2 = createBPartner("BPartner2");
+		bpartner1 = BPartnerId.ofRepoId(createBPartner("BPartner1").getC_BPartner_ID());
+		bpartner2 = BPartnerId.ofRepoId(createBPartner("BPartner2").getC_BPartner_ID());
 		createBPartner("BPartner3");
 
 		tuPI1 = helper.createHUDefinition("TU1", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
@@ -92,7 +93,7 @@ public class LULoaderTest extends AbstractHUTest
 	{
 		final BigDecimal luCapacity = new BigDecimal("2");
 		final I_M_HU_PI_Item luPI1_item1 = helper.createHU_PI_Item_IncludedHU(luPI1, tuPI1, luCapacity, bpartner1);
-		final I_M_HU_PI_Item luPI1_item2 = helper.createHU_PI_Item_IncludedHU(luPI1, tuPI1, luCapacity, null);
+		final I_M_HU_PI_Item luPI1_item2 = helper.createHU_PI_Item_IncludedHU(luPI1, tuPI1, luCapacity, (BPartnerId)null);
 
 		helper.createHU_PI_Item_IncludedHU(luPI1, tuPI2, new BigDecimal("10"), bpartner_NULL); // dummy
 
@@ -136,11 +137,11 @@ public class LULoaderTest extends AbstractHUTest
 	 * @param bpartner
 	 * @return
 	 */
-	private final I_M_HU createHU(final I_M_HU_PI huPI, final I_C_BPartner bpartner)
+	private final I_M_HU createHU(final I_M_HU_PI huPI, final BPartnerId bpartnerId)
 	{
 		final I_M_HU_PI_Version piVersion = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersion(huPI);
 		final I_M_HU hu = InterfaceWrapperHelper.newInstance(I_M_HU.class, helper.contextProvider);
-		hu.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
+		hu.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 		hu.setM_HU_PI_Version(piVersion);
 		hu.setHUStatus(X_M_HU.HUSTATUS_Active);
 

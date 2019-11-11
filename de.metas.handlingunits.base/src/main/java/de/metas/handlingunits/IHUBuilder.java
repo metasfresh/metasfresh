@@ -4,8 +4,8 @@ import java.time.ZonedDateTime;
 
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_BPartner;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -67,7 +67,7 @@ public interface IHUBuilder extends IHUIterator
 
 	IHUBuilder setM_HU_PI_Item_Product(I_M_HU_PI_Item_Product piip);
 
-	IHUBuilder setC_BPartner(I_C_BPartner bpartner);
+	IHUBuilder setBPartnerId(BPartnerId bpartnerId);
 
 	IHUBuilder setC_BPartner_Location_ID(int bpartnerLocationId);
 

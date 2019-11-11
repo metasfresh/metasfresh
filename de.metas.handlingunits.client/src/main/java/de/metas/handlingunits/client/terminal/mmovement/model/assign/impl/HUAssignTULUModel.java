@@ -37,6 +37,7 @@ import org.compiere.model.I_M_Locator;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUAssignBuilder;
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
@@ -193,7 +194,7 @@ public class HUAssignTULUModel extends AbstractLTCUModel
 
 	private Collection<I_M_HU_PI_Item> getLUPIItems(final Set<HUKey> huKeys, final String huUnitType)
 	{
-		final I_C_BPartner bpartner = null; // TODO do we want to filter LUs by BP?
+		final BPartnerId bpartnerId = null; // TODO do we want to filter LUs by BP?
 
 		//
 		// Collector for HUs which are not TUs - exception message will be displayed to the user
@@ -216,7 +217,7 @@ public class HUAssignTULUModel extends AbstractLTCUModel
 			}
 
 			final I_M_HU_PI tuPI = handlingUnitsBL.getPI(hu);
-			final List<I_M_HU_PI_Item> subLUPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(tuPI, huUnitType, bpartner);
+			final List<I_M_HU_PI_Item> subLUPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(tuPI, huUnitType, bpartnerId);
 
 			//
 			// Get unique LUs in the map

@@ -29,6 +29,7 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -80,7 +81,7 @@ public class DDOrderLineHUDocumentHandler implements IHUDocumentHandler
 
 			piip = Services.get(IHUPIItemProductDAO.class).retrieveMaterialItemProduct(
 					productId, 
-					ddOrder.getC_BPartner(), 
+					BPartnerId.ofRepoIdOrNull(ddOrder.getC_BPartner_ID()), 
 					TimeUtil.asZonedDateTime(ddOrder.getDateOrdered()), 
 					huUnitType,
 					false); // allowInfiniteCapacity = false

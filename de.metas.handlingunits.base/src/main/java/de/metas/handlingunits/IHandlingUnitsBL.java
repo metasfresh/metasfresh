@@ -419,9 +419,14 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	I_M_HU_PackingMaterial getHUPackingMaterial(I_M_HU_Item huItem);
 
+	static BPartnerId extractBPartnerIdOrNull(final I_M_HU hu)
+	{
+		return BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID());
+	}
+
 	static I_C_BPartner extractBPartnerOrNull(final I_M_HU hu)
 	{
-		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID());
+		final BPartnerId bpartnerId = extractBPartnerIdOrNull(hu);
 		return bpartnerId != null
 				? Services.get(IBPartnerDAO.class).getById(bpartnerId)
 				: null;

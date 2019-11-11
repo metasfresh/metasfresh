@@ -29,10 +29,10 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.KeyNamePair;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -63,8 +63,8 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final List<I_M_HU_PI_Item_Product> result = new ArrayList<>();
 
-		final I_C_BPartner bpartner = null;
-		final List<I_M_HU_PI_Item> versionPIItems = handlingUnitsDAO.retrievePIItems(version, bpartner);
+		final BPartnerId bpartnerId = null;
+		final List<I_M_HU_PI_Item> versionPIItems = handlingUnitsDAO.retrievePIItems(version, bpartnerId);
 
 		final List<I_M_HU_PI_Item> itemDefs = getNestedMaterialPIItems(versionPIItems);
 		for (final I_M_HU_PI_Item itemDef : itemDefs)

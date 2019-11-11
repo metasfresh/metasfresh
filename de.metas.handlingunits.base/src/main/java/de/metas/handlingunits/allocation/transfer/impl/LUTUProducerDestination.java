@@ -680,7 +680,7 @@ public class LUTUProducerDestination
 		// 06902: Make sure we inherit the status and locator.
 		producer.setHUStatus(getHUStatus());
 		producer.setLocatorId(getLocatorId());
-		producer.setC_BPartner(getC_BPartner());
+		producer.setBPartnerId(getBPartnerId());
 		producer.setC_BPartner_Location_ID(getC_BPartner_Location_ID());
 		producer.setIsHUPlanningReceiptOwnerPM(isHUPlanningReceiptOwnerPM());
 

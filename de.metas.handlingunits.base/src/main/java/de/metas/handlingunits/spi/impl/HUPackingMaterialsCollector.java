@@ -42,7 +42,6 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IPair;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Util;
@@ -50,6 +49,7 @@ import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUAssignmentDAO;
@@ -440,8 +440,8 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 			return;
 		}
 
-		final I_C_BPartner bpartner = null;
-		for (final I_M_HU_PI_Item piItem : handlingUnitsDAO.retrievePIItems(huPI, bpartner))
+		final BPartnerId bpartnerId = null;
+		for (final I_M_HU_PI_Item piItem : handlingUnitsDAO.retrievePIItems(huPI, bpartnerId))
 		{
 			final I_M_HU_PackingMaterial huPackingMaterial = piItem.getM_HU_PackingMaterial();
 			if (huPackingMaterial == null || huPackingMaterial.getM_HU_PackingMaterial_ID() <= 0)

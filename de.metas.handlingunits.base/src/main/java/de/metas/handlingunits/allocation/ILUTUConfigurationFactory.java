@@ -28,7 +28,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.exceptions.HUException;
@@ -161,12 +160,9 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 				: null;
 	}
 
-	static I_C_BPartner extractBPartnerOrNull(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)
+	static BPartnerId extractBPartnerIdOrNull(final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
-		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(lutuConfiguration.getC_BPartner_ID());
-		return bpartnerId != null
-				? Services.get(IBPartnerDAO.class).getById(bpartnerId)
-				: null;
+		return BPartnerId.ofRepoIdOrNull(lutuConfiguration.getC_BPartner_ID());
 	}
 
 	static I_M_HU_PI_Item_Product extractHUPIItemProduct(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)

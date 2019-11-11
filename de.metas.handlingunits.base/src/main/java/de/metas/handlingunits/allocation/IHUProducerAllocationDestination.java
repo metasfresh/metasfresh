@@ -27,8 +27,8 @@ import java.util.Optional;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_BPartner;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 
@@ -85,7 +85,7 @@ public interface IHUProducerAllocationDestination extends IAllocationDestination
 	 *
 	 * @param bpartner
 	 */
-	IHUProducerAllocationDestination setC_BPartner(I_C_BPartner bpartner);
+	IHUProducerAllocationDestination setBPartnerId(BPartnerId bpartnerId);
 
 	/**
 	 * Sets BPartner Location to be used for newly created HUs.
