@@ -387,7 +387,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 			Assert.assertEquals("Invalid Cost Collector MovementDate", TimeUtil.asTimestamp(movementDate), costCollector.getMovementDate());
 			Assert.assertEquals("Invalid Cost Collector PP_Order", ppOrder, costCollector.getPP_Order());
 			Assert.assertEquals("Invalid Cost Collector PP_Order_BOMLine", ppOrderBOMLineId_Folie.getRepoId(), costCollector.getPP_Order_BOMLine_ID());
-			Assert.assertEquals("Invalid Cost Collector UOM", uomMillimeter, costCollector.getC_UOM());
+			Assert.assertEquals("Invalid Cost Collector UOM", uomMillimeter.getC_UOM_ID(), costCollector.getC_UOM_ID());
 			Assert.assertThat("Invalid Cost Collector Qty",
 					costCollector.getMovementQty(),
 					Matchers.comparesEqualTo(expectedIssuedQtyOnBOMLine));
