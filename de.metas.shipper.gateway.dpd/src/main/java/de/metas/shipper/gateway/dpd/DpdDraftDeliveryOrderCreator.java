@@ -121,7 +121,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			final DeliveryOrderLine deliveryOrderLine = DeliveryOrderLine.builder()
 					// .repoId()
 					.content(mPackage.getDescription())
-					.grossWeightKg(mPackage.getPackageWeight().intValue()) // todo same as in de.metas.shipper.gateway.commons.ShipperGatewayFacade.computeGrossWeightInKg: we assume it's in Kg
+					.grossWeightKg(getPackageGrossWeightKg(mPackage, 1)) // todo same as in de.metas.shipper.gateway.commons.ShipperGatewayFacade.computeGrossWeightInKg: we assume it's in Kg
 					.packageDimensions(getPackageDimensions(packageId, shipperId))
 					// .customDeliveryData()
 					.packageId(packageId)
@@ -147,6 +147,19 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				customerReference,
 				customDeliveryData,
 				deliveryOrderLinesBuilder.build());
+	}
+
+	private int getPackageGrossWeightKg(@NonNull final I_M_Package mPackage, final int defaultValue)
+	{
+		final int weight = mPackage.getPackageWeight().intValue();
+		if (weight == 0)
+		{
+			return defaultValue;
+		}
+		else
+		{
+			return weight;
+		}
 	}
 
 	@VisibleForTesting

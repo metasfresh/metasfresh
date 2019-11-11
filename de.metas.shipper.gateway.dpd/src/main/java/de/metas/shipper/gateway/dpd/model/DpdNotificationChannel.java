@@ -44,6 +44,7 @@ public enum DpdNotificationChannel implements ReferenceListAwareEnum
 		this.code = code;
 	}
 
+	@NonNull
 	public static DpdNotificationChannel ofCode(@NonNull final String code)
 	{
 		final DpdNotificationChannel type = typesByCode.get(code);
@@ -54,6 +55,7 @@ public enum DpdNotificationChannel implements ReferenceListAwareEnum
 		return type;
 	}
 
+	@NonNull
 	public Integer toDpdDataFormat()
 	{
 		return Integer.valueOf(code);

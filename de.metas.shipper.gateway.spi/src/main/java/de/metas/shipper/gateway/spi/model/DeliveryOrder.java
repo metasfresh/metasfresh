@@ -39,7 +39,7 @@ import lombok.Value;
 public class DeliveryOrder
 {
 	/**
-	 * No idea what this field does, as there's a {@link de.metas.shipper.gateway.spi.DeliveryOrderId} field as well}
+	 * No idea what this field does, as there's a {@link de.metas.shipper.gateway.spi.DeliveryOrderId} field as well}.
 	 */
 	@Nullable
 	OrderId orderId;

@@ -111,14 +111,26 @@ public class ShipperGatewayFacade
 				.build();
 	}
 
-	private static int computeGrossWeightInKg(final Collection<I_M_Package> mpackages)
+	/**
+	 * In case the weight is <= 0, return the default value.
+	 */
+	private static int computeGrossWeightInKg(@NonNull final Collection<I_M_Package> mpackages, int defaultValue)
 	{
-		return mpackages.stream()
+		final int weightInKg = mpackages.stream()
 				.map(I_M_Package::getPackageWeight) // TODO: we assume it's in Kg
 				.filter(weight -> weight != null && weight.signum() > 0)
 				.reduce(BigDecimal.ZERO, BigDecimal::add)
 				.setScale(0, RoundingMode.UP)
 				.intValueExact();
+
+		if (weightInKg <= 0)
+		{
+			return defaultValue;
+		}
+		else
+		{
+			return weightInKg;
+		}
 	}
 
 	private static String computePackagesContentDescription(final Collection<I_M_Package> mpackages)
@@ -143,7 +155,7 @@ public class ShipperGatewayFacade
 
 		final CreateDraftDeliveryOrderRequest request = CreateDraftDeliveryOrderRequest.builder()
 				.deliveryOrderKey(deliveryOrderKey)
-				.allPackagesGrossWeightInKg(computeGrossWeightInKg(mpackages))
+				.allPackagesGrossWeightInKg(computeGrossWeightInKg(mpackages, 1))
 				.mpackageIds(packageIds)
 				.allPackagesContentDescription(computePackagesContentDescription(mpackages))
 				.build();

@@ -46,6 +46,7 @@ import com.dpd.common.ws.loginservice.v2_0.types.GetAuthResponse;
 import com.dpd.common.ws.loginservice.v2_0.types.Login;
 import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.util.DpdClientUtil;
@@ -54,6 +55,8 @@ import de.metas.shipper.gateway.dpd.util.DpdSoapHeaderWithAuth;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
+import de.metas.shipper.gateway.spi.model.OrderId;
+import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -80,8 +83,9 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 	private final DpdClientConfig config;
 
 	// login cache
-	final int LOGIN_CACHE_23_HOURS_EXPIRATION_TIME = (int)Duration.ofHours(23).toMinutes();
-	private final CCache<Integer, Login> loginCache;
+	// DPD login token changes every 24 hours and they kindly ask us to login at most 2 times a day, hence this login cache with expiration
+	private final static int LOGIN_CACHE_23_HOURS_EXPIRATION_TIME = (int)Duration.ofHours(23).toMinutes();
+	private static final CCache<Integer, Login> loginCache = CCache.newCache("DpdShipperGatewayClientAuth", 1, LOGIN_CACHE_23_HOURS_EXPIRATION_TIME);
 
 	// dpd webservice data
 	private final WebServiceTemplate webServiceTemplate;
@@ -92,9 +96,6 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 	public DpdShipperGatewayClient(@NonNull final DpdClientConfig config)
 	{
 		this.config = config;
-
-		// DPD login token changes every 24 hours and they kindly ask us to login at most 2 times a day, hence this login cache with expiration
-		loginCache = CCache.newCache("DpdShipperGatewayClientAuth", 1, LOGIN_CACHE_23_HOURS_EXPIRATION_TIME);
 
 		webServiceTemplate = DpdClientUtil.createWebServiceTemplate();
 		loginServiceOF = new com.dpd.common.ws.loginservice.v2_0.types.ObjectFactory();
@@ -151,7 +152,25 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 	@Override
 	public List<PackageLabels> getPackageLabelsList(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
-		return null;
+		final ILoggable epicLogger = getEpicLogger();
+		epicLogger.addLog("getPackageLabelsList for {}", deliveryOrder);
+
+		final DpdOrderCustomDeliveryData customDeliveryData = DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
+
+		final ImmutableList<PackageLabels> packageLabels = ImmutableList.of(
+				PackageLabels.builder()
+						.orderId(OrderId.of(getShipperGatewayId(), String.valueOf(deliveryOrder.getRepoId().getRepoId())))
+						.defaultLabelType(customDeliveryData.getPaperFormat())
+						.label(PackageLabel.builder()
+								.type(customDeliveryData.getPaperFormat())
+								.labelData(customDeliveryData.getPdfData())
+								.contentType(customDeliveryData.getPrinterLanguage())
+								.build())
+						.build());
+
+		epicLogger.addLog("getPackageLabelsList: labels are {}", packageLabels);
+
+		return packageLabels;
 	}
 
 	@NonNull
@@ -326,14 +345,18 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 		return recipient;
 	}
 
-	@NonNull
+	@Nullable
 	private Notification createNotification(
 			@NonNull final DeliveryOrder deliveryOrder)
 	{
+		if (deliveryOrder.getDeliveryContact() != null && deliveryOrder.getDeliveryContact().getEmailAddress() == null)
+		{
+			return null;
+		}
+
 		final Notification notification = shipmentServiceOF.createNotification();
 		//noinspection ConstantConditions - custom delivery order data is never null for dpd
 		notification.setChannel(DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()).getNotificationChannel().toDpdDataFormat());
-		//noinspection ConstantConditions
 		notification.setValue(deliveryOrder.getDeliveryContact().getEmailAddress());
 		notification.setLanguage(deliveryOrder.getDeliveryAddress().getCountry().getAlpha2());
 		return notification;
