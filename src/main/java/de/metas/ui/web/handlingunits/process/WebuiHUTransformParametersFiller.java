@@ -12,10 +12,10 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.compiere.model.I_AD_Process_Para;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -263,12 +263,12 @@ public class WebuiHUTransformParametersFiller
 	private static LookupValuesList retrieveHUPItemProductsForNewTU(final HUEditorRow cuRow)
 	{
 		final ProductId productId = cuRow.getProductId();
-		final I_C_BPartner bPartner = IHandlingUnitsBL.extractBPartnerOrNull(cuRow.getM_HU());
+		final BPartnerId bpartnerId = IHandlingUnitsBL.extractBPartnerIdOrNull(cuRow.getM_HU());
 
 		return WEBUI_ProcessHelper.retrieveHUPIItemProducts(
 				Env.getCtx(),
 				productId,
-				bPartner,
+				bpartnerId,
 				false); // includeVirtualItem = false..moving a cu onto a "virtual" TU makes no sense. Instead, the user can just leave the CU as it is, or take it out of a physical TU
 	}
 
@@ -434,7 +434,7 @@ public class WebuiHUTransformParametersFiller
 		final List<I_M_HU_PI_Item> luPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(
 				effectivePIVersion.getM_HU_PI(), 
 				null, 
-				IHandlingUnitsBL.extractBPartnerOrNull(tuHU));
+				IHandlingUnitsBL.extractBPartnerIdOrNull(tuHU));
 
 		return luPIItems;
 	}

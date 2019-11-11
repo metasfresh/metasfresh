@@ -10,9 +10,9 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -130,10 +130,10 @@ public class PackingInfoProcessParams
 		final I_M_HU_LUTU_Configuration defaultLUTUConfig = getDefaultLUTUConfig();
 
 		final ProductId productId = ProductId.ofRepoId(defaultLUTUConfig.getM_Product_ID());
-		final I_C_BPartner bPartner = ILUTUConfigurationFactory.extractBPartnerOrNull(defaultLUTUConfig);
+		final BPartnerId bpartnerId = ILUTUConfigurationFactory.extractBPartnerIdOrNull(defaultLUTUConfig);
 
 		final boolean includeVirtualItem = !enforcePhysicalTU;
-		final LookupValuesList huPIItemProducts = WEBUI_ProcessHelper.retrieveHUPIItemProducts(Env.getCtx(), productId, bPartner, includeVirtualItem);
+		final LookupValuesList huPIItemProducts = WEBUI_ProcessHelper.retrieveHUPIItemProducts(Env.getCtx(), productId, bpartnerId, includeVirtualItem);
 
 		return huPIItemProducts;
 	}
@@ -145,7 +145,7 @@ public class PackingInfoProcessParams
 			return LookupValuesList.EMPTY;
 		}
 
-		final List<I_M_HU_PI_Item> luPIItems = getAvailableLuPIItems(pip, ILUTUConfigurationFactory.extractBPartnerOrNull(getDefaultLUTUConfig()));
+		final List<I_M_HU_PI_Item> luPIItems = getAvailableLuPIItems(pip, ILUTUConfigurationFactory.extractBPartnerIdOrNull(getDefaultLUTUConfig()));
 
 		return luPIItems.stream()
 				.map(luPIItem -> IntegerLookupValue.of(luPIItem.getM_HU_PI_Item_ID(), WEBUI_ProcessHelper.buildHUPIItemString(luPIItem)))
@@ -154,7 +154,7 @@ public class PackingInfoProcessParams
 
 	private List<I_M_HU_PI_Item> getAvailableLuPIItems(
 			@NonNull final I_M_HU_PI_Item_Product pip,
-			@Nullable final I_C_BPartner bPartner)
+			@Nullable final BPartnerId bpartnerId)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
@@ -162,7 +162,7 @@ public class PackingInfoProcessParams
 
 		final List<I_M_HU_PI_Item> luPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(piOfCurrentPip,
 				null, // huUnitType
-				bPartner);
+				bpartnerId);
 		return luPIItems;
 	}
 
@@ -218,25 +218,25 @@ public class PackingInfoProcessParams
 
 	private void insertPhysicalFallbackTU(@NonNull final I_M_HU_LUTU_Configuration defaultLUTUConfig)
 	{
-		final I_C_BPartner bpartner = ILUTUConfigurationFactory.extractBPartnerOrNull(defaultLUTUConfig);
+		final BPartnerId bpartnerId = ILUTUConfigurationFactory.extractBPartnerIdOrNull(defaultLUTUConfig);
 		final ProductId productId = ProductId.ofRepoId(defaultLUTUConfig.getM_Product_ID());
 
 		final List<I_M_HU_PI_Item_Product> availableHUPIItemProductRecords = WEBUI_ProcessHelper.retrieveHUPIItemProductRecords(
 				Env.getCtx(),
 				productId,
-				bpartner,
+				bpartnerId,
 				false); // includeVirtualItem == false
 
 		Check.errorIf(availableHUPIItemProductRecords.isEmpty(),
 				"There is no non-virtual M_HU_PI_Item_Product value for the given product and bPartner; product={}; bPartner={}",
-				productId, bpartner);
+				productId, bpartnerId);
 
 		final I_M_HU_PI_Item_Product pip = availableHUPIItemProductRecords.get(0);
 		defaultLUTUConfig.setM_HU_PI_Item_Product_ID(pip.getM_HU_PI_Item_Product_ID());
 		defaultLUTUConfig.setM_TU_HU_PI_ID(pip.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI_ID());
 		defaultLUTUConfig.setQtyCU(pip.getQty());
 
-		final List<I_M_HU_PI_Item> luPIItems = getAvailableLuPIItems(pip, bpartner);
+		final List<I_M_HU_PI_Item> luPIItems = getAvailableLuPIItems(pip, bpartnerId);
 		if (luPIItems.isEmpty())
 		{
 			defaultLUTUConfig.setM_LU_HU_PI_Item(null);
