@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.externallyreferenced;
 
+import java.time.LocalDate;
+
 import javax.annotation.Nullable;
 
 import de.metas.bpartner.service.BPartnerInfo;
@@ -10,9 +12,11 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
-import lombok.Data;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -37,13 +41,17 @@ import lombok.NonNull;
  */
 
 /** A "manual" IC does not reference another record (e.g. order line or contract). */
-@Data
+@Value
+@Builder
 public class ExternallyReferencedCandidate
 {
 	private OrgId orgId;
 
 	@NonNull
 	private InvoiceCandidateLookupKey lookupKey;
+
+	@NonNull
+	private String poReference;
 
 	@NonNull
 	private BPartnerInfo billPartnerInfo;
@@ -57,13 +65,19 @@ public class ExternallyReferencedCandidate
 	@NonNull
 	private SOTrx soTrx;
 
+	private LocalDate dateOrdered;
+
+	private LocalDate presetDateInvoiced;
+
 	@NonNull
 	private StockQtyAndUOMQty qtyOrdered;
 
 	@NonNull
 	private StockQtyAndUOMQty qtyDelivered;
 
-	/** If given, then productId has to match */
+	private UomId invoicingUomId;
+
+	/** If given, then productId and currencyId have to match! */
 	@Nullable
 	private ProductPrice priceEnteredOverride;
 
@@ -73,14 +87,61 @@ public class ExternallyReferencedCandidate
 	@Nullable
 	private DocTypeId invoiceDocTypeId;
 
-	// TODO: figure something out for tax
+	private String lineDescription;
 
-	public ExternallyReferencedCandidate()
-	{
-	}
+	// TODO: figure something out for tax
 
 	public boolean isNew()
 	{
 		return lookupKey == null || lookupKey.getInvoiceCandidateId() == null;
 	}
+
+	private ExternallyReferencedCandidate(
+			@NonNull final OrgId orgId,
+			@NonNull final InvoiceCandidateLookupKey lookupKey,
+			String poReference,
+			@NonNull final BPartnerInfo billPartnerInfo,
+			@NonNull final ProductId productId,
+			InvoiceRule invoiceRuleOverride,
+			@NonNull final SOTrx soTrx,
+			@NonNull final LocalDate dateOrdered,
+			LocalDate presetDateInvoiced,
+			@NonNull final StockQtyAndUOMQty qtyOrdered,
+			@NonNull final StockQtyAndUOMQty qtyDelivered,
+			@NonNull final UomId invoicingUomId,
+			ProductPrice priceEnteredOverride,
+			Percent discountOverride,
+			DocTypeId invoiceDocTypeId,
+			String lineDescription)
+	{
+		this.orgId = orgId;
+		this.lookupKey = lookupKey;
+		this.poReference = poReference;
+		this.billPartnerInfo = billPartnerInfo;
+		this.productId = productId;
+		this.invoiceRuleOverride = invoiceRuleOverride;
+		this.soTrx = soTrx;
+		this.dateOrdered = dateOrdered;
+		this.presetDateInvoiced = presetDateInvoiced;
+		this.qtyOrdered = qtyOrdered;
+		this.qtyDelivered = qtyDelivered;
+		this.invoicingUomId = invoicingUomId;
+		this.priceEnteredOverride = priceEnteredOverride;
+		this.discountOverride = discountOverride;
+		this.invoiceDocTypeId = invoiceDocTypeId;
+		this.lineDescription = lineDescription;
+
+		if (priceEnteredOverride != null)
+		{
+			if (!priceEnteredOverride.getProductId().equals(productId))
+			{
+				// TODO fail
+			}
+			if (!priceEnteredOverride.getUomId().equals(invoicingUomId))
+			{
+				// TODO fail
+			}
+		}
+	}
+
 }

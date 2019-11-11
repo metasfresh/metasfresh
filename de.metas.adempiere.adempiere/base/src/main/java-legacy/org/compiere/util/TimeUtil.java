@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.util;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
@@ -1357,11 +1358,21 @@ public class TimeUtil
 
 	public static Timestamp asTimestamp(@Nullable final LocalDate localDate)
 	{
+		final ZoneId timezone = null;
+		return asTimestamp(localDate, timezone);
+	}
+
+	public static Timestamp asTimestamp(
+			@Nullable final LocalDate localDate,
+			@Nullable final ZoneId timezone)
+	{
 		if (localDate == null)
 		{
 			return null;
 		}
-		final Instant instant = localDate.atStartOfDay(SystemTime.zoneId()).toInstant();
+		final Instant instant = localDate
+				.atStartOfDay(coalesce(timezone, SystemTime.zoneId()))
+				.toInstant();
 		return Timestamp.from(instant);
 	}
 
@@ -1369,15 +1380,26 @@ public class TimeUtil
 			@Nullable final LocalDate localDate,
 			@Nullable final LocalTime localTime)
 	{
+		final ZoneId timezone = null;
+		return asTimestamp(localDate, localTime, timezone);
+	}
+
+	public static Timestamp asTimestamp(
+			@Nullable final LocalDate localDate,
+			@Nullable final LocalTime localTime,
+			@Nullable final ZoneId timezone)
+	{
 		final LocalDate localDateEff = localDate != null ? localDate : LocalDate.now();
+		final ZoneId timezoneEff = coalesce(timezone, SystemTime.zoneId());
+
 		final Instant instant;
 		if (localTime == null)
 		{
-			instant = localDateEff.atStartOfDay(SystemTime.zoneId()).toInstant();
+			instant = localDateEff.atStartOfDay(timezoneEff).toInstant();
 		}
 		else
 		{
-			instant = localDateEff.atTime(localTime).atZone(SystemTime.zoneId()).toInstant();
+			instant = localDateEff.atTime(localTime).atZone(timezoneEff).toInstant();
 		}
 
 		return Timestamp.from(instant);

@@ -1,8 +1,11 @@
 package de.metas.rest_api.utils;
 
 import static de.metas.util.Check.isEmpty;
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.util.Collection;
+
+import javax.annotation.Nullable;
 
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
@@ -48,10 +51,17 @@ public class BPartnerQueryService
 
 	public BPartnerQuery createQueryFailIfNotExists(@NonNull final BPartnerCompositeLookupKey queryLookupKey)
 	{
-		final OrgId onlyOrgId = Env.getOrgId(); // FIXME avoid using Env.getOrgId();
+		return createQueryFailIfNotExists(queryLookupKey, null/* orgId */);
+	}
+
+	public BPartnerQuery createQueryFailIfNotExists(
+			@NonNull final BPartnerCompositeLookupKey queryLookupKey,
+			@Nullable final OrgId orgId)
+	{
+		final OrgId orgIdEff = coalesce(orgId, Env.getOrgId());
 
 		final BPartnerQuery.BPartnerQueryBuilder queryBuilder = BPartnerQuery.builder()
-				.onlyOrgId(onlyOrgId)
+				.onlyOrgId(orgIdEff)
 				.failIfNotExists(true);
 		addKeyToQueryBuilder(queryLookupKey, queryBuilder);
 

@@ -197,7 +197,8 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@ApiResponses(value = {
 			@ApiResponse(code = 201, message = "Successfully created or updated bpartner(s)"),
 			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 422, message = "The request entity could not be processed")
 	})
 	@PutMapping
 	@Override
@@ -232,7 +233,8 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@ApiResponses(value = {
 			@ApiResponse(code = 201, message = "Successfully created or updated location"),
 			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 422, message = "The request entity could not be processed")
 	})
 	@ApiOperation("Create or update a locations for a particular bpartner. If a location exists, then its properties that are *not* specified are left untouched.")
 	@PutMapping("{bpartnerIdentifier}/location")
@@ -260,7 +262,8 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@ApiResponse(code = 201, message = "Successfully created or updated contact"),
 			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
 			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 404, message = "The bpartner you were trying to reach is not found")
+			@ApiResponse(code = 404, message = "The bpartner you were trying to reach is not found"),
+			@ApiResponse(code = 422, message = "The request entity could not be processed")
 	})
 	@ApiOperation("Create or update a contacts for a particular bpartner. If a contact exists, then its properties that are *not* specified are left untouched.")
 	@PutMapping("{bpartnerIdentifier}/contact")

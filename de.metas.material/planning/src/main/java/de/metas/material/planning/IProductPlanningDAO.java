@@ -90,21 +90,12 @@ public interface IProductPlanningDAO extends ISingletonService
 	/**
 	 * Search product plannings to find out which is the plant({@link I_S_Resource}) for given Org/Warehouse/Product.
 	 *
-	 * @param adOrgId
-	 * @param warehouseId
-	 * @param productId
-	 * @return plant
 	 * @throws NoPlantForWarehouseException if there was no plant found or if there was more then one plant found.
 	 */
 	I_S_Resource findPlant(final int adOrgId, final I_M_Warehouse warehouse, final int productId, int attributeSetInstanceId);
 
 	/**
 	 * Retrieve all warehouses which are directly assigned to our Org and Plant.
-	 *
-	 * @param ctx
-	 * @param org
-	 * @param plant
-	 * @return
 	 */
 	List<I_M_Warehouse> retrieveWarehousesForPlant(Properties ctx, I_AD_Org org, I_S_Resource plant);
 

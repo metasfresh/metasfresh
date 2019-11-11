@@ -24,6 +24,8 @@ package de.metas.rest_api.bpartner;
 
 public class SwaggerDocConstants
 {
+	public static final String PROPERTY_NOT_UPDATABLE_DOC = "This property is not updateable: if the invoice candidate already exists, and this property is specified, it has to match the existing candidate's value.";
+
 	public static final String BPARTER_IDENTIFIER_DOC = "Identifier of the bPartner in question. Can be\n"
 			+ "* a plain `<C_BPartner_ID>`\n"
 			+ "* or something like `ext-<YourExternalId>`\n"

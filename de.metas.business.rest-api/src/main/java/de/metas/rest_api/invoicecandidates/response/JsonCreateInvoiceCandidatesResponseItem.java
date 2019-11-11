@@ -4,6 +4,7 @@ import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -30,23 +31,15 @@ import lombok.Value;
 
 @Value
 @Builder
-public class JsonResponseInvoiceCandidateUpsertItem
+public class JsonCreateInvoiceCandidatesResponseItem
 {
-	public enum Action
-	{
-		INSERTED, UPDATED
-	}
-
 	@ApiModelProperty(position = 10, dataType = "java.lang.String")
 	JsonExternalId externalHeaderId;
 
-	@ApiModelProperty(position = 10, dataType = "java.lang.String")
+	@ApiModelProperty(position = 20, dataType = "java.lang.String")
 	JsonExternalId externalLineId;
 
-	@ApiModelProperty(value = "The metasfresh-ID of the upserted record",//
-			position = 30, dataType = "java.lang.Long")
+	@ApiModelProperty(position = 30, dataType = "java.lang.Long", value = "The metasfresh-ID of the upserted record")
+	@NonNull
 	MetasfreshId metasfreshId;
-
-	Action action;
-
 }

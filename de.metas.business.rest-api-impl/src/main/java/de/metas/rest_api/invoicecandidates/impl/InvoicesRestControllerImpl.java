@@ -21,14 +21,16 @@ import de.metas.process.PInstanceId;
 import de.metas.rest_api.invoicecandidates.IInvoicesRestEndpoint;
 import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonGetInvoiceCandidatesStatusRequest;
-import de.metas.rest_api.invoicecandidates.request.JsonRequestInvoiceCandidateUpsert;
+import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonGetInvoiceCandidatesStatusResponse;
-import de.metas.rest_api.invoicecandidates.response.JsonResponseInvoiceCandidateUpsert;
+import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
 
 /*
@@ -63,23 +65,30 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final InvoiceCandidateInfoService invoiceCandidateInfoService;
-	private final JsonInvoiceCandidateUpsertService jsonInvoiceCandidateUpsertService;
+	private final JsonInsertInvoiceCandidateService jsonInsertInvoiceCandidateService;
 
 	public InvoicesRestControllerImpl(
-			@NonNull final JsonInvoiceCandidateUpsertService jsonInvoiceCandidateUpsertService,
+			@NonNull final JsonInsertInvoiceCandidateService jsonInsertInvoiceCandidateService,
 			@NonNull final InvoiceCandidateInfoService invoiceCandidateInfoService)
 	{
-		this.jsonInvoiceCandidateUpsertService = jsonInvoiceCandidateUpsertService;
+		this.jsonInsertInvoiceCandidateService = jsonInsertInvoiceCandidateService;
 		this.invoiceCandidateInfoService = invoiceCandidateInfoService;
 	}
 
-	@ApiOperation("Create new invoice candidates or update existing invoice candidates")
-	@PostMapping(path = "createOrUpdateCandidates")
+	@ApiOperation("Create new invoice candidates")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully created new invoice candidate"),
+			@ApiResponse(code = 401, message = "You are not authorized to create new invoice candidates"),
+			@ApiResponse(code = 403, message = "Accessing a resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 422, message = "The request entity could not be processed")
+	})
+	@PostMapping(path = "/createCandidates")
 	@Override
-	public ResponseEntity<JsonResponseInvoiceCandidateUpsert> createOrUpdateInvoiceCandidates(
-			@RequestBody @NonNull final JsonRequestInvoiceCandidateUpsert request)
+	public ResponseEntity<JsonCreateInvoiceCandidatesResponse> createInvoiceCandidates(
+			@RequestBody @NonNull final JsonCreateInvoiceCandidatesRequest request)
 	{
-		return ResponseEntity.ok(jsonInvoiceCandidateUpsertService.createOrUpdateInvoiceCandidates(request));
+		// TODO make individual IC accessible via URL, then return "created" instead
+		return ResponseEntity.ok(jsonInsertInvoiceCandidateService.createInvoiceCandidates(request));
 	}
 
 	@PostMapping("/status")

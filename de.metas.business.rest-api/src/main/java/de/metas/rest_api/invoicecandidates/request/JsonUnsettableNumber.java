@@ -33,8 +33,10 @@ import lombok.Value;
  */
 
 @Value
-public class JsonOverride
+public class JsonUnsettableNumber
 {
+	public static final JsonUnsettableNumber EMPTY = new JsonUnsettableNumber(null, null);
+
 	@ApiModelProperty(position = 10, required = false, //
 			value = "Optional, to override the value as computed by metasfresh for the respective invoice candidate's property.\n"
 					+ "To unset an existing candiate's override value, you can:\n"

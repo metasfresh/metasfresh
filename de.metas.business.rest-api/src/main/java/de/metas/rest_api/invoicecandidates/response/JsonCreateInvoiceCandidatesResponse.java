@@ -1,10 +1,15 @@
-package de.metas.rest_api;
+package de.metas.rest_api.invoicecandidates.response;
 
-import de.pentabyte.springfox.ApiEnum;
+import java.util.List;
+
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
+import lombok.Singular;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.business.rest-api
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -24,14 +29,11 @@ import de.pentabyte.springfox.ApiEnum;
  * #L%
  */
 
-public enum JsonInvoiceRule
+@Value
+@Builder
+public class JsonCreateInvoiceCandidatesResponse
 {
-	@ApiEnum("Specifies that only *delivered* quanties will be invoiced")
-	AfterDelivery,
-
-	@ApiEnum("Like `AfterDelivery`, but the invoicing date is also set according to the respective bill partner's invoicing schedule (e.g. once per month)")
-	CustomerScheduleAfterDelivery,
-
-	@ApiEnum("Any ordered quantities - delivered or not - can be invoiced right away")
-	Immediate;
+	@ApiModelProperty(position = 10)
+	@Singular
+	List<JsonCreateInvoiceCandidatesResponseItem> responseItems;
 }

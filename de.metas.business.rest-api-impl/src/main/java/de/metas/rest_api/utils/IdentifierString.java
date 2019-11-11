@@ -55,7 +55,11 @@ public class IdentifierString
 		/** Every metasfresh ressource can be identifies via its metasfresh-ID (i.e. the PK of its data base record) */
 		METASFRESH_ID,
 
-		EXTERNAL_ID, VALUE, GLN
+		EXTERNAL_ID,
+
+		VALUE,
+
+		GLN
 	}
 
 	Type type;

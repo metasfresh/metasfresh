@@ -152,8 +152,8 @@ public class ProductDAO implements IProductDAO
 		if (query.isIncludeAnyOrg())
 		{
 			queryBuilder
-			.addInArrayFilter(I_M_Product.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY)
-			.orderByDescending(I_M_Product.COLUMNNAME_AD_Org_ID);
+					.addInArrayFilter(I_M_Product.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY)
+					.orderByDescending(I_M_Product.COLUMNNAME_AD_Org_ID);
 		}
 		else
 		{
@@ -164,9 +164,9 @@ public class ProductDAO implements IProductDAO
 		{
 			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_Value, query.getValue());
 		}
-		if (!isEmpty(query.getExternalId(), true))
+		if (query.getExternalId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_ExternalId, query.getExternalId());
+			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_ExternalId, query.getExternalId().getValue());
 		}
 
 		final int productRepoId = queryBuilder
@@ -385,12 +385,12 @@ public class ProductDAO implements IProductDAO
 	public void deleteProductByResourceId(@NonNull final ResourceId resourceId)
 	{
 		queryBL
-		.createQueryBuilder(I_M_Product.class) // in trx
-		.addEqualsFilter(I_M_Product.COLUMN_S_Resource_ID, resourceId)
-		.addOnlyActiveRecordsFilter()
-		.addOnlyContextClient()
-		.create()
-		.delete();
+				.createQueryBuilder(I_M_Product.class) // in trx
+				.addEqualsFilter(I_M_Product.COLUMN_S_Resource_ID, resourceId)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.create()
+				.delete();
 	}
 
 	@Override

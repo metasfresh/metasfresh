@@ -49,7 +49,7 @@ public interface ITaxBL extends ISingletonService
 			int productId,
 			Timestamp shipDate,
 			OrgId orgId,
-			WarehouseId warehouse,
+			WarehouseId warehoused,
 			int shipC_BPartner_Location_ID,
 			boolean isSOTrx);
 

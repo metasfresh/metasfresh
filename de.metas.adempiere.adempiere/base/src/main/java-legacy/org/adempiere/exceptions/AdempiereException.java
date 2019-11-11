@@ -40,6 +40,8 @@ import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.util.Services;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 
 /**
@@ -236,6 +238,8 @@ public class AdempiereException extends RuntimeException
 	private boolean userValidationError;
 
 	private Map<String, Object> parameters = null;
+
+	@Getter(AccessLevel.PRIVATE)
 	private boolean appendParametersToMessage = false;
 
 	/**
@@ -374,6 +378,16 @@ public class AdempiereException extends RuntimeException
 		if (appendParametersToMessage)
 		{
 			appendParameters(message);
+			final Throwable cause = getCause();
+			if (cause != null && cause instanceof AdempiereException)
+			{
+				AdempiereException metasfreshCause = (AdempiereException)cause;
+
+				if (metasfreshCause.isAppendParametersToMessage())
+				{
+					metasfreshCause.appendParameters(message);
+				}
+			}
 		}
 		return message.build();
 	}
