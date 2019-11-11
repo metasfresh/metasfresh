@@ -29,7 +29,6 @@ import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.model.DpdOrderType;
 import de.metas.shipper.gateway.dpd.model.DpdPaperFormat;
 import de.metas.shipper.gateway.dpd.model.DpdServiceType;
-import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.CountryCode;
@@ -42,10 +41,6 @@ import de.metas.shipping.api.ShipperTransportationId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -232,18 +227,6 @@ class DpdTestHelper
 			deliveryOrderLinesBuilder.add(deliveryOrderLine);
 		}
 		return deliveryOrderLinesBuilder.build();
-	}
-
-	static void dumpPdfToDisk(final byte[] pdf)
-	{
-		try
-		{
-			Files.write(Paths.get("C:", "a", Instant.now().toString().replace(":", ".") + ".pdf"), pdf);
-		}
-		catch (final IOException e)
-		{
-			e.printStackTrace();
-		}
 	}
 
 }

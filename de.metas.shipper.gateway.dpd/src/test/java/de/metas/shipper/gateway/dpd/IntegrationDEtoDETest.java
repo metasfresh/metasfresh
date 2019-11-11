@@ -25,9 +25,9 @@ package de.metas.shipper.gateway.dpd;
 import com.google.common.collect.ImmutableList;
 import com.jgoodies.common.base.Strings;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.shipper.gateway.commons.ShipperTestHelper;
 import de.metas.shipper.gateway.dpd.model.DpdClientConfig;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
-import de.metas.shipper.gateway.spi.ShipperTestHelper;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
@@ -194,5 +194,4 @@ public class IntegrationDEtoDETest
 				deliveryOrderLines
 		);
 	}
-
 }

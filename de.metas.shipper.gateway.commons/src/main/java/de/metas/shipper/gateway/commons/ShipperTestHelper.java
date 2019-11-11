@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.spi
+ * de.metas.shipper.gateway.commons
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.spi;
+package de.metas.shipper.gateway.commons;
 
 import de.metas.shipper.gateway.spi.model.Address;
 import lombok.NonNull;
@@ -28,6 +28,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.Instant;
 
 public class ShipperTestHelper
 {
@@ -54,5 +59,17 @@ public class ShipperTestHelper
 		pickupFromBPartner.setName(pickupAddress.getCompanyName1());
 		pickupFromBPartner.setName2(pickupAddress.getCompanyName2());
 		return pickupFromBPartner;
+	}
+
+	public static void dumpPdfToDisk(final byte[] pdf)
+	{
+		try
+		{
+			Files.write(Paths.get("C:", "a", Instant.now().toString().replace(":", ".") + ".pdf"), pdf);
+		}
+		catch (final IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 }

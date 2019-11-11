@@ -37,6 +37,7 @@ import com.dpd.common.service.types.shipmentservice._3.StoreOrdersResponseType;
 import com.dpd.common.ws.loginservice.v2_0.types.GetAuth;
 import com.dpd.common.ws.loginservice.v2_0.types.GetAuthResponse;
 import com.dpd.common.ws.loginservice.v2_0.types.Login;
+import de.metas.shipper.gateway.commons.ShipperTestHelper;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.util.DpdClientUtil;
 import de.metas.shipper.gateway.dpd.util.DpdConversionUtil;
@@ -96,7 +97,7 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 			assertEquals("987654321", shipmentResponse.getIdentificationNumber());
 			assertTrue(StringUtils.isNotBlank(shipmentResponse.getMpsId()));
 
-			DpdTestHelper.dumpPdfToDisk(orderResult.getParcellabelsPDF());
+			ShipperTestHelper.dumpPdfToDisk(orderResult.getParcellabelsPDF());
 		}
 	}
 
