@@ -155,8 +155,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 
 		final PPOrderId ppOrderId = ppOrderView.getPpOrderId();
 		Services.get(IHUPPOrderBL.class)
-				.createIssueProducer()
-				.setOrderId(ppOrderId)
+				.createIssueProducer(ppOrderId)
 				.considerIssueMethodForQtyToIssueCalculation(false) // issue exactly the CUs we split
 				.createIssues(extractedCUs);
 	}

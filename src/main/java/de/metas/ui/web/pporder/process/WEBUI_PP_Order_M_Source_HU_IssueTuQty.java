@@ -114,8 +114,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueTuQty
 
 		final PPOrderId ppOrderId = ppOrderView.getPpOrderId();
 		Services.get(IHUPPOrderBL.class)
-				.createIssueProducer()
-				.setOrderId(ppOrderId)
+				.createIssueProducer(ppOrderId)
 				.createIssues(extractedTUs);
 
 		getView().invalidateAll();

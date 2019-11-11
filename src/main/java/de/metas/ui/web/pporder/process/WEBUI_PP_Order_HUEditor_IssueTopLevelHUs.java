@@ -80,8 +80,7 @@ public class WEBUI_PP_Order_HUEditor_IssueTopLevelHUs
 		final PPOrderId ppOrderId = ppOrderView.getPpOrderId();
 
 		Services.get(IHUPPOrderBL.class)
-				.createIssueProducer()
-				.setOrderId(ppOrderId)
+				.createIssueProducer(ppOrderId)
 				.createIssues(hus);
 
 		final HUEditorView huEditorView = getView();
