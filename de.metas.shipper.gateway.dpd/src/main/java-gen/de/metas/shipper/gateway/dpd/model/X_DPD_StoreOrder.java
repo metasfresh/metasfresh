@@ -14,7 +14,7 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1891335214L;
+	private static final long serialVersionUID = -1950743136L;
 
     /** Standard Constructor */
     public X_DPD_StoreOrder (Properties ctx, int DPD_StoreOrder_ID, String trxName)
@@ -23,10 +23,10 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
       /** if (DPD_StoreOrder_ID == 0)
         {
 			setDPD_StoreOrder_ID (0);
-			setPickupDate (new Timestamp( System.currentTimeMillis() )); // 0
-			setPickupDay (0); // 0
-			setPickupTimeFrom (new Timestamp( System.currentTimeMillis() )); // 0
-			setPickupTimeTo (new Timestamp( System.currentTimeMillis() )); // 0
+			setPickupDate (new Timestamp( System.currentTimeMillis() ));
+			setPickupDay (0);
+			setPickupTimeFrom (new Timestamp( System.currentTimeMillis() ));
+			setPickupTimeTo (new Timestamp( System.currentTimeMillis() ));
         } */
     }
 
@@ -179,22 +179,6 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set MpsID.
-		@param MpsID MpsID	  */
-	@Override
-	public void setMpsID (java.lang.String MpsID)
-	{
-		set_Value (COLUMNNAME_MpsID, MpsID);
-	}
-
-	/** Get MpsID.
-		@return MpsID	  */
-	@Override
-	public java.lang.String getMpsID () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_MpsID);
 	}
 
 	@Override

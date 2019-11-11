@@ -273,29 +273,6 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set MpsID.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setMpsID (java.lang.String MpsID);
-
-	/**
-	 * Get MpsID.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getMpsID();
-
-    /** Column definition for MpsID */
-    public static final org.adempiere.model.ModelColumn<I_DPD_StoreOrder, Object> COLUMN_MpsID = new org.adempiere.model.ModelColumn<I_DPD_StoreOrder, Object>(I_DPD_StoreOrder.class, "MpsID", null);
-    /** Column name MpsID */
-    public static final String COLUMNNAME_MpsID = "MpsID";
-
-	/**
 	 * Set Lieferweg.
 	 * Methode oder Art der Warenlieferung
 	 *
@@ -926,7 +903,7 @@ public interface I_DPD_StoreOrder
 	 * Set Nachverfolgungs-URL.
 	 * URL des Spediteurs um Sendungen zu verfolgen
 	 *
-	 * <br>Type: String
+	 * <br>Type: URL
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -936,7 +913,7 @@ public interface I_DPD_StoreOrder
 	 * Get Nachverfolgungs-URL.
 	 * URL des Spediteurs um Sendungen zu verfolgen
 	 *
-	 * <br>Type: String
+	 * <br>Type: URL
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
