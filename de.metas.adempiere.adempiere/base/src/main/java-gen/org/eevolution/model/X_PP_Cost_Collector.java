@@ -15,7 +15,7 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2031666214L;
+	private static final long serialVersionUID = 438132355L;
 
     /** Standard Constructor */
     public X_PP_Cost_Collector (Properties ctx, int PP_Cost_Collector_ID, String trxName)
@@ -55,18 +55,6 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_AD_Org getAD_OrgTrx() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_OrgTrx_ID, org.compiere.model.I_AD_Org.class);
-	}
-
-	@Override
-	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_OrgTrx_ID, org.compiere.model.I_AD_Org.class, AD_OrgTrx);
-	}
-
 	/** Set Buchende Organisation.
 		@param AD_OrgTrx_ID 
 		Performing or initiating organization
@@ -92,18 +80,6 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User(org.compiere.model.I_AD_User AD_User)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
-	}
-
 	/** Set Ansprechpartner.
 		@param AD_User_ID 
 		User within the system - Internal or Business Partner Contact
@@ -127,18 +103,6 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Activity getC_Activity() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class);
-	}
-
-	@Override
-	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class, C_Activity);
 	}
 
 	/** Set Kostenstelle.
@@ -167,7 +131,7 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	}
 
 	@Override
-	public org.compiere.model.I_C_Campaign getC_Campaign() throws RuntimeException
+	public org.compiere.model.I_C_Campaign getC_Campaign()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class);
 	}
@@ -203,18 +167,6 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class);
-	}
-
-	@Override
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType)
-	{
-		set_ValueFromPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class, C_DocType);
-	}
-
 	/** Set Belegart.
 		@param C_DocType_ID 
 		Document type or rules
@@ -238,18 +190,6 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_DocType getC_DocTypeTarget() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_DocTypeTarget_ID, org.compiere.model.I_C_DocType.class);
-	}
-
-	@Override
-	public void setC_DocTypeTarget(org.compiere.model.I_C_DocType C_DocTypeTarget)
-	{
-		set_ValueFromPO(COLUMNNAME_C_DocTypeTarget_ID, org.compiere.model.I_C_DocType.class, C_DocTypeTarget);
 	}
 
 	/** Set Zielbelegart.
@@ -277,18 +217,6 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Project getC_Project() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class);
-	}
-
-	@Override
-	public void setC_Project(org.compiere.model.I_C_Project C_Project)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class, C_Project);
-	}
-
 	/** Set Projekt.
 		@param C_Project_ID 
 		Financial Project
@@ -312,18 +240,6 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
 	}
 
 	/** Set Maßeinheit.
@@ -614,7 +530,7 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	}
 
 	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
@@ -648,18 +564,6 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Locator getM_Locator() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class);
-	}
-
-	@Override
-	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class, M_Locator);
 	}
 
 	/** Set Lagerort.
@@ -722,18 +626,6 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
-	}
-
-	@Override
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse);
 	}
 
 	/** Set Lager.
@@ -851,7 +743,7 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Cost_Collector getPP_Cost_Collector_Parent() throws RuntimeException
+	public org.eevolution.model.I_PP_Cost_Collector getPP_Cost_Collector_Parent()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Cost_Collector_Parent_ID, org.eevolution.model.I_PP_Cost_Collector.class);
 	}
@@ -885,7 +777,7 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Order_BOMLine getPP_Order_BOMLine() throws RuntimeException
+	public org.eevolution.model.I_PP_Order_BOMLine getPP_Order_BOMLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Order_BOMLine_ID, org.eevolution.model.I_PP_Order_BOMLine.class);
 	}
@@ -919,7 +811,7 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Order getPP_Order() throws RuntimeException
+	public org.eevolution.model.I_PP_Order getPP_Order()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class);
 	}
@@ -953,7 +845,7 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Order_Node getPP_Order_Node() throws RuntimeException
+	public org.eevolution.model.I_PP_Order_Node getPP_Order_Node()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Order_Node_ID, org.eevolution.model.I_PP_Order_Node.class);
 	}
@@ -1058,7 +950,7 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Cost_Collector getReversal() throws RuntimeException
+	public org.eevolution.model.I_PP_Cost_Collector getReversal()
 	{
 		return get_ValueAsPO(COLUMNNAME_Reversal_ID, org.eevolution.model.I_PP_Cost_Collector.class);
 	}
@@ -1069,7 +961,7 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 		set_ValueFromPO(COLUMNNAME_Reversal_ID, org.eevolution.model.I_PP_Cost_Collector.class, Reversal);
 	}
 
-	/** Set Reversal ID.
+	/** Set Storno-Gegenbeleg.
 		@param Reversal_ID 
 		ID of document reversal
 	  */
@@ -1082,7 +974,7 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 			set_Value (COLUMNNAME_Reversal_ID, Integer.valueOf(Reversal_ID));
 	}
 
-	/** Get Reversal ID.
+	/** Get Storno-Gegenbeleg.
 		@return ID of document reversal
 	  */
 	@Override
@@ -1095,7 +987,7 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	}
 
 	@Override
-	public org.compiere.model.I_S_Resource getS_Resource() throws RuntimeException
+	public org.compiere.model.I_S_Resource getS_Resource()
 	{
 		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
 	}
@@ -1172,18 +1064,6 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 		return bd;
 	}
 
-	@Override
-	public org.compiere.model.I_AD_User getUser1() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_User1_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setUser1(org.compiere.model.I_AD_User User1)
-	{
-		set_ValueFromPO(COLUMNNAME_User1_ID, org.compiere.model.I_AD_User.class, User1);
-	}
-
 	/** Set Nutzer 1.
 		@param User1_ID 
 		User defined list element #1
@@ -1207,18 +1087,6 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_AD_User getUser2() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_User2_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setUser2(org.compiere.model.I_AD_User User2)
-	{
-		set_ValueFromPO(COLUMNNAME_User2_ID, org.compiere.model.I_AD_User.class, User2);
 	}
 
 	/** Set Nutzer 2.

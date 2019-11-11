@@ -32,10 +32,6 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_AD_Client>(I_PP_Cost_Collector.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -43,7 +39,7 @@ public interface I_PP_Cost_Collector
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -53,18 +49,12 @@ public interface I_PP_Cost_Collector
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_AD_Org>(I_PP_Cost_Collector.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -88,12 +78,6 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getAD_OrgTrx_ID();
 
-	public org.compiere.model.I_AD_Org getAD_OrgTrx();
-
-	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx);
-
-    /** Column definition for AD_OrgTrx_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_AD_Org> COLUMN_AD_OrgTrx_ID = new org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_AD_Org>(I_PP_Cost_Collector.class, "AD_OrgTrx_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_OrgTrx_ID */
     public static final String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
 
@@ -117,12 +101,6 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getAD_User_ID();
 
-	public org.compiere.model.I_AD_User getAD_User();
-
-	public void setAD_User(org.compiere.model.I_AD_User AD_User);
-
-    /** Column definition for AD_User_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_AD_User> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_AD_User>(I_PP_Cost_Collector.class, "AD_User_ID", org.compiere.model.I_AD_User.class);
     /** Column name AD_User_ID */
     public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
@@ -146,12 +124,6 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getC_Activity_ID();
 
-	public org.compiere.model.I_C_Activity getC_Activity();
-
-	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity);
-
-    /** Column definition for C_Activity_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_C_Activity> COLUMN_C_Activity_ID = new org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_C_Activity>(I_PP_Cost_Collector.class, "C_Activity_ID", org.compiere.model.I_C_Activity.class);
     /** Column name C_Activity_ID */
     public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
@@ -204,12 +176,6 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getC_DocType_ID();
 
-	public org.compiere.model.I_C_DocType getC_DocType();
-
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
-
-    /** Column definition for C_DocType_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_C_DocType>(I_PP_Cost_Collector.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
     /** Column name C_DocType_ID */
     public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
@@ -233,12 +199,6 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getC_DocTypeTarget_ID();
 
-	public org.compiere.model.I_C_DocType getC_DocTypeTarget();
-
-	public void setC_DocTypeTarget(org.compiere.model.I_C_DocType C_DocTypeTarget);
-
-    /** Column definition for C_DocTypeTarget_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_C_DocType> COLUMN_C_DocTypeTarget_ID = new org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_C_DocType>(I_PP_Cost_Collector.class, "C_DocTypeTarget_ID", org.compiere.model.I_C_DocType.class);
     /** Column name C_DocTypeTarget_ID */
     public static final String COLUMNNAME_C_DocTypeTarget_ID = "C_DocTypeTarget_ID";
 
@@ -262,12 +222,6 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getC_Project_ID();
 
-	public org.compiere.model.I_C_Project getC_Project();
-
-	public void setC_Project(org.compiere.model.I_C_Project C_Project);
-
-    /** Column definition for C_Project_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_C_Project> COLUMN_C_Project_ID = new org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_C_Project>(I_PP_Cost_Collector.class, "C_Project_ID", org.compiere.model.I_C_Project.class);
     /** Column name C_Project_ID */
     public static final String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
@@ -291,12 +245,6 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getC_UOM_ID();
 
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_C_UOM>(I_PP_Cost_Collector.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
     /** Column name C_UOM_ID */
     public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
@@ -350,8 +298,6 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_AD_User>(I_PP_Cost_Collector.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -621,12 +567,6 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getM_Locator_ID();
 
-	public org.compiere.model.I_M_Locator getM_Locator();
-
-	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator);
-
-    /** Column definition for M_Locator_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_M_Locator>(I_PP_Cost_Collector.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);
     /** Column name M_Locator_ID */
     public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
@@ -650,12 +590,6 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
-
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_M_Product>(I_PP_Cost_Collector.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
@@ -679,12 +613,6 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getM_Warehouse_ID();
 
-	public org.compiere.model.I_M_Warehouse getM_Warehouse();
-
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
-
-    /** Column definition for M_Warehouse_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_M_Warehouse>(I_PP_Cost_Collector.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
     /** Column name M_Warehouse_ID */
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
@@ -968,7 +896,7 @@ public interface I_PP_Cost_Collector
     public static final String COLUMNNAME_QtyReject = "QtyReject";
 
 	/**
-	 * Set Reversal ID.
+	 * Set Storno-Gegenbeleg.
 	 * ID of document reversal
 	 *
 	 * <br>Type: Search
@@ -978,7 +906,7 @@ public interface I_PP_Cost_Collector
 	public void setReversal_ID (int Reversal_ID);
 
 	/**
-	 * Get Reversal ID.
+	 * Get Storno-Gegenbeleg.
 	 * ID of document reversal
 	 *
 	 * <br>Type: Search
@@ -1098,8 +1026,6 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_AD_User>(I_PP_Cost_Collector.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
@@ -1123,12 +1049,6 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getUser1_ID();
 
-	public org.compiere.model.I_AD_User getUser1();
-
-	public void setUser1(org.compiere.model.I_AD_User User1);
-
-    /** Column definition for User1_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_AD_User> COLUMN_User1_ID = new org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_AD_User>(I_PP_Cost_Collector.class, "User1_ID", org.compiere.model.I_AD_User.class);
     /** Column name User1_ID */
     public static final String COLUMNNAME_User1_ID = "User1_ID";
 
@@ -1152,12 +1072,6 @@ public interface I_PP_Cost_Collector
 	 */
 	public int getUser2_ID();
 
-	public org.compiere.model.I_AD_User getUser2();
-
-	public void setUser2(org.compiere.model.I_AD_User User2);
-
-    /** Column definition for User2_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_AD_User> COLUMN_User2_ID = new org.adempiere.model.ModelColumn<I_PP_Cost_Collector, org.compiere.model.I_AD_User>(I_PP_Cost_Collector.class, "User2_ID", org.compiere.model.I_AD_User.class);
     /** Column name User2_ID */
     public static final String COLUMNNAME_User2_ID = "User2_ID";
 }

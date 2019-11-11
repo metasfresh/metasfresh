@@ -574,7 +574,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		if (request.getPpOrderBOMLineId() != null)
 		{
 			cc.setPP_Order_BOMLine_ID(request.getPpOrderBOMLineId().getRepoId());
-			cc.setC_UOM(null); // we set the BOM Line UOM on beforeSave
+			cc.setC_UOM_ID(-1); // we set the BOM Line UOM on beforeSave
 		}
 
 		Services.get(IPPCostCollectorDAO.class).save(cc);

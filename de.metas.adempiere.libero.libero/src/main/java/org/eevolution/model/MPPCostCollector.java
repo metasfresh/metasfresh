@@ -81,7 +81,6 @@ import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import de.metas.util.time.DurationUtils;
 
@@ -253,7 +252,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		}
 		else
 		{
-			; // nothing
+			 // nothing
 		}
 		//
 
@@ -609,12 +608,6 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 	private Timestamp getDateFinish()
 	{
 		return getMovementDate();
-	}
-
-	@Override
-	public I_C_UOM getC_UOM()
-	{
-		return Services.get(IUOMDAO.class).getById(getC_UOM_ID());
 	}
 
 	private I_C_UOM getProductStockingUOM()
