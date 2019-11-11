@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoints;
@@ -91,6 +92,7 @@ public class HUTransformServiceReceiptCandidatesTests
 
 	private LUTUProducerDestinationTestSupport data;
 	private BPartnerId bpartnerId;
+	private WarehouseId warehouseId;
 
 	private IHandlingUnitsDAO handlingUnitsDAO;
 	private IHandlingUnitsBL handlingUnitsBL;
@@ -101,6 +103,7 @@ public class HUTransformServiceReceiptCandidatesTests
 	{
 		data = new LUTUProducerDestinationTestSupport();
 		bpartnerId = BPartnerId.ofRepoId(BusinessTestHelper.createBPartner("test").getC_BPartner_ID());
+		warehouseId = WarehouseId.ofRepoId(BusinessTestHelper.createWarehouse("test").getM_Warehouse_ID());
 
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -113,6 +116,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		Check.errorUnless(storages.size() == 1, "Param' cuHU' needs to have *one* storage; storages={}; cuHU={};", storages, cu);
 
 		final I_M_ReceiptSchedule receiptSchedule = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class);
+		receiptSchedule.setM_Warehouse_ID(warehouseId.getRepoId());
 		receiptSchedule.setC_BPartner_ID(bpartnerId.getRepoId());
 		receiptSchedule.setM_Product_ID(storages.get(0).getProductId().getRepoId());
 		receiptSchedule.setC_UOM_ID(storages.get(0).getC_UOM().getC_UOM_ID());
