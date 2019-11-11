@@ -33,6 +33,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
@@ -127,6 +128,8 @@ public interface IReceiptScheduleBL extends ISingletonService
 	 */
 
 	I_C_BPartner_Location getC_BPartner_Location_Effective(I_M_ReceiptSchedule rs);
+
+	BPartnerId getBPartnerEffectiveId(I_M_ReceiptSchedule rs);
 
 	/**
 	 * @param rs

@@ -153,11 +153,9 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct,
 			@NonNull final ProductId cuProductId,
 			@NonNull final I_C_UOM cuUOM,
-			final org.compiere.model.I_C_BPartner bpartner,
+			final BPartnerId bpartnerId,
 			final boolean noLUForVirtualTU)
 	{
-		final BPartnerId bpartnerId = bpartner != null ? BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()) : null;
-		
 		// Services used:
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);

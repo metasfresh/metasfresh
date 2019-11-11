@@ -28,13 +28,11 @@ import java.math.RoundingMode;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.IPPOrderBL;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.impl.AbstractDocumentLUTUConfigurationHandler;
@@ -66,10 +64,6 @@ import lombok.NonNull;
 	public I_M_HU_LUTU_Configuration createNewLUTUConfiguration(@NonNull final I_PP_Order ppOrder)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(ppOrder.getC_BPartner_ID());
-		final I_C_BPartner bpartner = bpartnerId != null
-				? Services.get(IBPartnerDAO.class).getById(bpartnerId)
-				: null;
-				
 		final I_M_HU_PI_Item_Product tuPIItemProduct = getM_HU_PI_Item_Product(ppOrder);
 		final ProductId cuProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
 		final I_C_UOM cuUOM = Services.get(IUOMDAO.class).getById(ppOrder.getC_UOM_ID());
@@ -81,7 +75,7 @@ import lombok.NonNull;
 				tuPIItemProduct,
 				cuProductId,
 				cuUOM,
-				bpartner,
+				bpartnerId,
 				true); // noLUForVirtualTU == true => for a "virtual" TU, we want the LU-part of the lutuconfig to be empty by default
 
 		final BigDecimal cuPerTu = ILUTUConfigurationFactory.extractHUPIItemProduct(lutuConfiguration).getQty();

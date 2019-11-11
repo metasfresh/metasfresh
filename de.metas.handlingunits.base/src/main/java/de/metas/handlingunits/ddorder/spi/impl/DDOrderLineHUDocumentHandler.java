@@ -51,7 +51,7 @@ public class DDOrderLineHUDocumentHandler implements IHUDocumentHandler
 	 * <ul>
 	 * <li><code>null</code> is the line has no product</li>
 	 * <li>the line's current PIIP f the line is new and already has a PIIP</li>
-	 * <li>the result of {@link IHUPIItemProductDAO#retrieveMaterialItemProduct(ProductId, org.compiere.model.I_C_BPartner, java.util.Date, String)} (with type="transport unit")
+	 * <li>the result of {@link IHUPIItemProductDAO#retrieveMaterialItemProduct(ProductId, BPartnerId, java.time.ZonedDateTime, String, boolean) (with type="transport unit")
 	 * otherwise</li>
 	 * </ul>
 	 */

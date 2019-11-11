@@ -31,10 +31,10 @@ import java.util.stream.Collectors;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.junit.Assert;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -215,7 +215,7 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 			final BigDecimal cuQty,
 			final BigDecimal grossWeight)
 	{
-		final I_C_BPartner bpartner = null;
+		final BPartnerId bpartnerId = null;
 		final int bpartnerLocationId = -1;
 
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
@@ -223,9 +223,9 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 				tuPIItemProduct,
 				getCUProductId(),
 				getCUUOM(),
-				bpartner,
+				bpartnerId,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU
-		lutuConfiguration.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
+		lutuConfiguration.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 		lutuConfiguration.setC_BPartner_Location_ID(bpartnerLocationId);
 		lutuConfigurationFactory.save(lutuConfiguration);
 
@@ -317,17 +317,17 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 
 	protected I_M_HU_LUTU_Configuration createM_HU_LUTU_Configuration_ForTU(final I_M_HU_PI_Item_Product tuPIItemProduct)
 	{
-		final I_C_BPartner bpartner = null;
+		final BPartnerId bpartnerId = null;
 		final int bpartnerLocationId = -1;
 
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
-				tuPIItemProduct, 
-				getCUProductId(), 
-				getCUUOM(), 
-				bpartner,
+				tuPIItemProduct,
+				getCUProductId(),
+				getCUUOM(),
+				bpartnerId,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU
-		lutuConfiguration.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
+		lutuConfiguration.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 		lutuConfiguration.setC_BPartner_Location_ID(bpartnerLocationId);
 		lutuConfigurationFactory.save(lutuConfiguration);
 		return lutuConfiguration;

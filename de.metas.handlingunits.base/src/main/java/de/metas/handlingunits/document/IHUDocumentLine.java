@@ -25,7 +25,6 @@ package de.metas.handlingunits.document;
 
 import java.math.BigDecimal;
 
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.allocation.IAllocationSource;
@@ -44,8 +43,6 @@ public interface IHUDocumentLine
 	// IHUDocument getHUDocument();
 
 	String getDisplayName();
-
-	I_C_BPartner getC_BPartner();
 
 	int getC_BPartner_Location_ID();
 

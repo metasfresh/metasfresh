@@ -58,7 +58,6 @@ import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -757,17 +756,15 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public I_M_HU_PackingMaterial retrievePackingMaterial(final I_M_HU_PI pi, final I_C_BPartner bpartner)
+	public I_M_HU_PackingMaterial retrievePackingMaterial(final I_M_HU_PI pi, final BPartnerId bpartnerId)
 	{
 		final I_M_HU_PI_Version piVersion = retrievePICurrentVersion(pi);
-		return retrievePackingMaterial(piVersion, bpartner);
+		return retrievePackingMaterial(piVersion, bpartnerId);
 	}
 
 	@Override
-	public I_M_HU_PackingMaterial retrievePackingMaterial(final I_M_HU_PI_Version piVersion, final I_C_BPartner bpartner)
+	public I_M_HU_PackingMaterial retrievePackingMaterial(final I_M_HU_PI_Version piVersion, final BPartnerId bpartnerId)
 	{
-		final BPartnerId bpartnerId = bpartner != null ? BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()) : null;
-		
 		I_M_HU_PI_Item itemPM = null;
 		for (final I_M_HU_PI_Item item : retrievePIItems(piVersion, bpartnerId))
 		{
@@ -796,8 +793,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		Check.assumeNotNull(hu, "hu not null");
 		final I_M_HU_PI_Version piVersion = Services.get(IHandlingUnitsBL.class).getPIVersion(hu);
-		final I_C_BPartner bpartner = IHandlingUnitsBL.extractBPartnerOrNull(hu);
-		final I_M_HU_PackingMaterial pm = retrievePackingMaterial(piVersion, bpartner);
+		final BPartnerId bpartnerId = IHandlingUnitsBL.extractBPartnerIdOrNull(hu);
+		final I_M_HU_PackingMaterial pm = retrievePackingMaterial(piVersion, bpartnerId);
 		return pm;
 	}
 

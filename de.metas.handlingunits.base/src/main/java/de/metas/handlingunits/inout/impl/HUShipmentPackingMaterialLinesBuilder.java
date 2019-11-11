@@ -33,6 +33,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOut;
 
 import de.metas.adempiere.docline.sort.api.IDocLineSortDAO;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
@@ -230,8 +231,9 @@ public class HUShipmentPackingMaterialLinesBuilder
 				.getM_HU_PI_Item()
 				.getM_HU_PI_Version();
 
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(sourceIol.getM_InOut().getC_BPartner_ID());
 		final I_M_HU_PackingMaterial packingMaterial = Services.get(IHandlingUnitsDAO.class)
-				.retrievePackingMaterial(huPiVersion, sourceIol.getM_InOut().getC_BPartner());
+				.retrievePackingMaterial(huPiVersion, bpartnerId);
 		if (packingMaterial != null && packingMaterial.getM_Product_ID() == packingMaterialLine.getM_Product_ID())
 		{
 			sourceIol.setM_PackingMaterial_InOutLine(packingMaterialLine);

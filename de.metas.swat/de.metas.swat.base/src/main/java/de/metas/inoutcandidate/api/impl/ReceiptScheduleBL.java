@@ -46,6 +46,8 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.inout.model.I_M_InOutLine;
@@ -198,22 +200,29 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	@Override
 	public int getC_BPartner_Effective_ID(final I_M_ReceiptSchedule rs)
 	{
-		final int bPartnerOverrideId = rs.getC_BPartner_Override_ID();
-		if (bPartnerOverrideId > 0)
+		return BPartnerId.toRepoId(getBPartnerEffectiveId(rs));
+	}
+	
+	@Override
+	public BPartnerId getBPartnerEffectiveId(final I_M_ReceiptSchedule rs)
+	{
+		final BPartnerId bPartnerOverrideId = BPartnerId.ofRepoIdOrNull(rs.getC_BPartner_Override_ID());
+		if (bPartnerOverrideId != null)
 		{
 			return bPartnerOverrideId;
 		}
 
-		return rs.getC_BPartner_ID();
+		return BPartnerId.ofRepoId(rs.getC_BPartner_ID());
 	}
 
+
 	@Override
-	public I_C_BPartner getC_BPartner_Effective(final I_M_ReceiptSchedule sched)
+	public I_C_BPartner getC_BPartner_Effective(final I_M_ReceiptSchedule rs)
 	{
-		final I_C_BPartner bPartner = InterfaceWrapperHelper.load(
-				sched.getC_BPartner_Override_ID() <= 0 ? sched.getC_BPartner_ID() : sched.getC_BPartner_Override_ID(),
-				I_C_BPartner.class);
-		return bPartner;
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+		
+		final BPartnerId bpartnerId = getBPartnerEffectiveId(rs);
+		return bpartnersRepo.getById(bpartnerId, I_C_BPartner.class);
 	}
 
 	@Override

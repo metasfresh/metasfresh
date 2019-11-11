@@ -1,7 +1,5 @@
 package de.metas.handlingunits.document.impl;
 
-import org.compiere.model.I_C_BPartner;
-
 import de.metas.handlingunits.document.IHUAllocations;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.storage.IProductStorage;
@@ -29,12 +27,6 @@ import de.metas.util.Check;
 	public I_M_HU_Item getInnerHUItem()
 	{
 		return item;
-	}
-
-	@Override
-	public I_C_BPartner getC_BPartner()
-	{
-		return null; // N/A
 	}
 
 	@Override

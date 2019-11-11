@@ -3,7 +3,6 @@ package de.metas.handlingunits.inout.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Transaction;
@@ -85,13 +84,6 @@ import de.metas.util.Services;
 	private void setReversal(final MInOutLineHUDocumentLine reversalLine)
 	{
 		reversalSourceLine = reversalLine;
-	}
-
-	@Override
-	public I_C_BPartner getC_BPartner()
-	{
-		final I_M_InOut inout = ioLine.getM_InOut();
-		return inout.getC_BPartner();
 	}
 
 	@Override

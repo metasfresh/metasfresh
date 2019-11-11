@@ -36,7 +36,6 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -275,20 +274,14 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	I_M_HU_PI retrieveDefaultLUOrNull(Properties ctx, int adOrgId);
 
 	/**
-	 *
-	 * @param pi
-	 * @param bpartner
 	 * @return packing material or null
 	 */
-	I_M_HU_PackingMaterial retrievePackingMaterial(I_M_HU_PI pi, I_C_BPartner bpartner);
+	I_M_HU_PackingMaterial retrievePackingMaterial(I_M_HU_PI pi, BPartnerId bpartnerId);
 
 	/**
-	 *
-	 * @param piVersion
-	 * @param bpartner
 	 * @return packing material or null
 	 */
-	I_M_HU_PackingMaterial retrievePackingMaterial(I_M_HU_PI_Version piVersion, I_C_BPartner bpartner);
+	I_M_HU_PackingMaterial retrievePackingMaterial(I_M_HU_PI_Version piVersion, BPartnerId bpartnerId);
 
 	/**
 	 * Retrieves packing material of given HU.

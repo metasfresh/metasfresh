@@ -55,6 +55,7 @@ import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.ITerminalLookup;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.lookup.SimpleTableLookup;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.client.terminal.mmovement.exception.MaterialMovementException;
 import de.metas.handlingunits.client.terminal.mmovement.model.impl.AbstractLTCUModel;
@@ -286,7 +287,7 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 				continue;
 			}
 
-			final List<I_M_HU_PackingMaterial> packingMaterials = key.getM_HU_PackingMaterials(getC_BPartner());
+			final List<I_M_HU_PackingMaterial> packingMaterials = key.getM_HU_PackingMaterials(getBPartnerId());
 			if (packingMaterials.isEmpty())
 			{
 				throw new AdempiereException("@NotFound@ @M_HU_PackingMaterial_ID@"
@@ -412,22 +413,22 @@ public class EmptiesShipReceiveModel extends AbstractLTCUModel
 		return _bpartnerKNP;
 	}
 
-	public final int getC_BPartner_ID()
+	private final BPartnerId getBPartnerId()
 	{
 		final KeyNamePair bpartner = getBPartner();
 		if (bpartner == null || bpartner.getKey() <= 0)
 		{
 			throw new FillMandatoryException("C_BPartner_ID");
 		}
-		return bpartner.getKey();
+		return BPartnerId.ofRepoId(bpartner.getKey());
 	}
 
-	public final I_C_BPartner getC_BPartner()
+	private final I_C_BPartner getC_BPartner()
 	{
 		if (_bpartner == null)
 		{
-			final int bpartnerId = getC_BPartner_ID();
-			_bpartner = InterfaceWrapperHelper.create(getCtx(), bpartnerId, I_C_BPartner.class, ITrx.TRXNAME_None);
+			final BPartnerId bpartnerId = getBPartnerId();
+			_bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
 		}
 
 		Check.assumeNotNull(_bpartner, "bpartner not null");

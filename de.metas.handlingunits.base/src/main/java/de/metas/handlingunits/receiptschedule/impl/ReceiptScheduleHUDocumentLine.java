@@ -1,7 +1,5 @@
 package de.metas.handlingunits.receiptschedule.impl;
 
-import org.compiere.model.I_C_BPartner;
-
 import de.metas.handlingunits.document.IHUAllocations;
 import de.metas.handlingunits.document.impl.AbstractHUDocumentLine;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
@@ -60,13 +58,6 @@ public class ReceiptScheduleHUDocumentLine extends AbstractHUDocumentLine
 	public IHUAllocations getHUAllocations()
 	{
 		return huAllocations;
-	}
-
-	@Override
-	public I_C_BPartner getC_BPartner()
-	{
-		final I_M_ReceiptSchedule rs = getM_ReceiptSchedule();
-		return receiptScheduleBL.getC_BPartner_Effective(rs);
 	}
 
 	@Override
