@@ -62,11 +62,12 @@ import de.metas.handlingunits.client.terminal.select.model.WarehouseKey;
 import de.metas.handlingunits.client.terminal.select.model.WarehouseKeyLayout;
 import de.metas.handlingunits.document.impl.NullHUDocumentLineFinder;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_PP_Order_Qty;
-import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
+import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer.ProcessIssueCandidatesPolicy;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.time.SystemTime;
 
 /**
@@ -340,23 +341,19 @@ public class HUIssueModel implements IDisposable
 
 			if (edited)
 			{
+				final ZonedDateTime movementDate = getMovementDate();
+				final List<I_PP_Order_BOMLine> targetBOMLines = orderBOMLineKeyLayout.getOrderBOMLinesForIssuing();
+				final PPOrderId ppOrderId = CollectionUtils.extractSingleElement(targetBOMLines, bomLine -> PPOrderId.ofRepoId(bomLine.getPP_Order_ID()));
 				final Set<I_M_HU> selectedHUs = editorModel.getSelectedHUs();
-				trxManager.runInNewTrx(() -> {
-					//
-					// Create manufacturing issue candidates
-					final List<I_PP_Order_Qty> candidates = huPPOrderBL.createIssueProducer()
-							.setMovementDate(getMovementDate())
-							.setTargetOrderBOMLines(orderBOMLineKeyLayout.getOrderBOMLinesForIssuing())
-							.createIssues(selectedHUs);
 
-					//
-					// Process created manufacturing issue candidates
-					// => Creates Manufacturing Issue Cost Collectors (i.e. transfer all qty from given HUs to selected manufacturing order)
-					HUPPOrderIssueReceiptCandidatesProcessor.newInstance()
-							.setCandidatesToProcess(candidates)
-							.process();
-
-				});
+				//
+				// Create manufacturing issue candidates & process them.
+				// => Creates Manufacturing Issue Cost Collectors (i.e. transfer all qty from given HUs to selected manufacturing order)
+				trxManager.runInNewTrx(() -> huPPOrderBL.createIssueProducer(ppOrderId)
+						.targetOrderBOMLines(targetBOMLines)
+						.movementDate(movementDate)
+						.processCandidates(ProcessIssueCandidatesPolicy.ALWAYS)
+						.createIssues(selectedHUs));
 			}
 		}
 

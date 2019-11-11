@@ -21,9 +21,9 @@ import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
-import de.metas.handlingunits.pporder.api.IHUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.PPOrderPlanningStatus;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.ProductId;
@@ -64,9 +64,9 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	}
 
 	@Override
-	public IHUPPOrderIssueProducer createIssueProducer()
+	public HUPPOrderIssueProducer createIssueProducer(@NonNull final PPOrderId ppOrderId)
 	{
-		return new HUPPOrderIssueProducer();
+		return new HUPPOrderIssueProducer(ppOrderId);
 	}
 
 	@Override

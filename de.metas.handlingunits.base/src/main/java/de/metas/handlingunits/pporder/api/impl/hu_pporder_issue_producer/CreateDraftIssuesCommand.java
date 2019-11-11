@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order_BOMLine;
@@ -81,30 +82,44 @@ public class CreateDraftIssuesCommand
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+	private final transient IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 
+	//
+	// Parameters
 	private final ImmutableList<I_PP_Order_BOMLine> targetOrderBOMLines;
 	private final ZonedDateTime movementDate;
 	private final boolean considerIssueMethodForQtyToIssueCalculation;
-	private final ImmutableList<I_M_HU> hus;
+	private final ImmutableList<I_M_HU> issueFromHUs;
+
+	//
+	// Status
+	private Quantity remainingQtyToIssue;
 
 	@Builder
 	private CreateDraftIssuesCommand(
 			final @NonNull List<I_PP_Order_BOMLine> targetOrderBOMLines,
 			final @Nullable ZonedDateTime movementDate,
+			final @Nullable Quantity fixedQtyToIssue,
 			final boolean considerIssueMethodForQtyToIssueCalculation,
-			@NonNull final Collection<I_M_HU> hus)
+			@NonNull final Collection<I_M_HU> issueFromHUs)
 	{
 		Check.assumeNotEmpty(targetOrderBOMLines, "Parameter targetOrderBOMLines is not empty");
+		if (fixedQtyToIssue != null && fixedQtyToIssue.signum() <= 0)
+		{
+			throw new AdempiereException("fixedQtyToIssue shall be positive or not set at all");
+		}
 
 		this.targetOrderBOMLines = ImmutableList.copyOf(targetOrderBOMLines);
 		this.movementDate = movementDate != null ? movementDate : SystemTime.asZonedDateTime();
 		this.considerIssueMethodForQtyToIssueCalculation = considerIssueMethodForQtyToIssueCalculation;
-		this.hus = ImmutableList.copyOf(hus);
+		this.issueFromHUs = ImmutableList.copyOf(issueFromHUs);
+
+		this.remainingQtyToIssue = fixedQtyToIssue;
 	}
 
 	public List<I_PP_Order_Qty> execute()
 	{
-		if (hus.isEmpty())
+		if (issueFromHUs.isEmpty())
 		{
 			return ImmutableList.of();
 		}
@@ -117,18 +132,31 @@ public class CreateDraftIssuesCommand
 		return huTrxBL.process(this::executeInTrx);
 	}
 
-	public List<I_PP_Order_Qty> executeInTrx(final IHUContext huContext)
+	private List<I_PP_Order_Qty> executeInTrx(final IHUContext huContext)
 	{
-		return hus.stream()
-				.map(hu -> createCreateDraftIssue_InTrx(huContext, hu))
+		final ImmutableList<I_PP_Order_Qty> candidates = issueFromHUs.stream()
+				.map(hu -> createIssueCandidateOrNull(huContext, hu))
 				.filter(Predicates.notNull())
 				.collect(ImmutableList.toImmutableList());
+
+		if (remainingQtyToIssue != null && remainingQtyToIssue.signum() != 0)
+		{
+			throw new AdempiereException("Cannot issue the whole quantity required. " + remainingQtyToIssue + " remained to be issued");
+		}
+
+		return candidates;
 	}
 
-	private I_PP_Order_Qty createCreateDraftIssue_InTrx(
+	private I_PP_Order_Qty createIssueCandidateOrNull(
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_HU hu)
 	{
+		// Stop if we had to issue a fixed quantity and we already issued it
+		if (remainingQtyToIssue != null && remainingQtyToIssue.signum() <= 0)
+		{
+			return null;
+		}
+
 		if (!X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()))
 		{
 			throw new HUException("Parameter 'hu' needs to have the status \"active\", but has HUStatus=" + hu.getHUStatus())
@@ -144,7 +172,11 @@ public class CreateDraftIssuesCommand
 		}
 
 		// Actually create and save the candidate
-		final I_PP_Order_Qty candidate = createIssueCandidate(hu, productStorage);
+		final I_PP_Order_Qty candidate = createIssueCandidateOrNull(hu, productStorage);
+		if (candidate == null)
+		{
+			return null;
+		}
 
 		// update the HU's status so that it's not moved somewhere else etc
 		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Issued);
@@ -211,7 +243,7 @@ public class CreateDraftIssuesCommand
 		return productStorage;
 	}
 
-	private I_PP_Order_Qty createIssueCandidate(
+	private I_PP_Order_Qty createIssueCandidateOrNull(
 			@NonNull final I_M_HU hu,
 			@NonNull final IHUProductStorage productStorage)
 	{
@@ -220,6 +252,10 @@ public class CreateDraftIssuesCommand
 
 		final Quantity qtyToIssue = calculateQtyToIssue(targetBOMLine, productStorage)
 				.switchToSourceIfMorePrecise();
+		if (qtyToIssue.isZero())
+		{
+			return null;
+		}
 
 		final I_PP_Order_Qty candidate = huPPOrderQtyDAO.save(CreateIssueCandidateRequest.builder()
 				.orderId(PPOrderId.ofRepoId(targetBOMLine.getPP_Order_ID()))
@@ -227,7 +263,7 @@ public class CreateDraftIssuesCommand
 				//
 				.date(movementDate)
 				//
-				.locatorId(Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(hu.getM_Locator_ID()))
+				.locatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(hu.getM_Locator_ID()))
 				.issueFromHUId(HuId.ofRepoId(hu.getM_HU_ID()))
 				.productId(productId)
 				//
@@ -236,6 +272,7 @@ public class CreateDraftIssuesCommand
 				.build());
 
 		ppOrderProductAttributeBL.addPPOrderProductAttributesFromIssueCandidate(candidate);
+
 		return candidate;
 	}
 
@@ -252,6 +289,18 @@ public class CreateDraftIssuesCommand
 	/** @return how much quantity to take "from" and issue it to given BOM line */
 	private Quantity calculateQtyToIssue(final I_PP_Order_BOMLine targetBOMLine, final IHUProductStorage from)
 	{
+		//
+		// Case: enforced qty to issue
+		if (remainingQtyToIssue != null)
+		{
+			final Quantity huStorageQty = from.getQty(remainingQtyToIssue.getUOM());
+			final Quantity qtyToIssue = huStorageQty.min(remainingQtyToIssue);
+
+			remainingQtyToIssue = remainingQtyToIssue.subtract(qtyToIssue);
+
+			return qtyToIssue;
+		}
+
 		if (considerIssueMethodForQtyToIssueCalculation)
 		{
 			//

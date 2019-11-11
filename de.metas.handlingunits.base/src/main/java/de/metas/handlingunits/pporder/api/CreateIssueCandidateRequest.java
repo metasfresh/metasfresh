@@ -2,6 +2,8 @@ package de.metas.handlingunits.pporder.api;
 
 import java.time.ZonedDateTime;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.warehouse.LocatorId;
 
 import de.metas.handlingunits.HuId;
@@ -47,7 +49,7 @@ public class CreateIssueCandidateRequest
 	@NonNull
 	ZonedDateTime date;
 
-	@NonNull
+	@Nullable
 	LocatorId locatorId;
 	@NonNull
 	HuId issueFromHUId;

@@ -1,4 +1,4 @@
-package de.metas.handlingunits.pporder.api.impl;
+package de.metas.handlingunits.pporder.api;
 
 import static de.metas.business.BusinessTestHelper.createProduct;
 import static de.metas.business.BusinessTestHelper.createUOM;
@@ -46,7 +46,9 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.CostCollectorType;
+import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -57,7 +59,6 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.IDocument;
@@ -75,12 +76,12 @@ import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
-import de.metas.handlingunits.pporder.api.PPOrderPlanningStatus;
+import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer.ProcessIssueCandidatesPolicy;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -341,18 +342,21 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 			final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
 			ppOrderBOMLineId_Folie = PPOrderBOMLineId.ofRepoId(ppOrderBOMLine_Folie.getPP_Order_BOMLine_ID());
 
-			final List<I_PP_Order_Qty> candidates = new HUPPOrderIssueProducer()
-					.setMovementDate(movementDate)
-					.setTargetOrderBOMLine(ppOrderBOMLine_Folie)
-					.createIssue(hu);
-			System.out.println("Candidates:\n " + Joiner.on("\n").join(candidates));
-			//
-			if (!candidates.isEmpty())
+			final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+
+			final I_PP_Order_Qty candidate = new HUPPOrderIssueProducer(ppOrderId)
+					.targetOrderBOMLine(ppOrderBOMLine_Folie)
+					.movementDate(movementDate)
+					.processCandidates(ProcessIssueCandidatesPolicy.ALWAYS)
+					.createIssue(hu)
+					.orElse(null);
+			System.out.println("Candidates:\n " + candidate);
+
+			if (candidate != null)
 			{
-				costCollectors = HUPPOrderIssueReceiptCandidatesProcessor.newInstance()
-						.setCandidatesToProcess(candidates)
-						.process();
-				System.out.println("Cost collectors: \n" + Joiner.on("\n").join(costCollectors));
+				final PPCostCollectorId costCollectorId = PPCostCollectorId.ofRepoIdOrNull(candidate.getPP_Cost_Collector_ID());
+				final I_PP_Cost_Collector costCollector = Services.get(IPPCostCollectorDAO.class).getById(costCollectorId, I_PP_Cost_Collector.class);
+				costCollectors = ImmutableList.of(costCollector);
 			}
 			else
 			{
@@ -538,14 +542,15 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 	public void createDraftIssues()
 	{
 		final I_PP_Order ppOrder = createPPOrderForSaladFromFolie();
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
 		final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
 
 		final I_M_HU hu1 = createSimpleHuWithFolie("100");
 		final I_M_HU hu2 = createSimpleHuWithFolie("50");
 		final ImmutableList<I_M_HU> hus = ImmutableList.of(hu1, hu2);
 
-		final List<I_PP_Order_Qty> result = new HUPPOrderIssueProducer()
-				.setTargetOrderBOMLine(ppOrderBOMLine_Folie)
+		final List<I_PP_Order_Qty> result = new HUPPOrderIssueProducer(ppOrderId)
+				.targetOrderBOMLine(ppOrderBOMLine_Folie)
 				.createIssues(hus);
 		assertThat(result).hasSize(2);
 
@@ -556,6 +561,42 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		final I_PP_Order_Qty ppOrderQty2 = result.get(1);
 		assertThat(ppOrderQty2.getM_HU_ID()).isEqualTo(hu2.getM_HU_ID());
 		assertThat(ppOrderQty2.getQty()).isEqualByComparingTo("50");
+
+		assertThat(result).allSatisfy(ppOrderQty -> {
+			assertThat(ppOrderQty.getPP_Order_ID()).isEqualTo(ppOrder.getPP_Order_ID());
+			assertThat(ppOrderQty.getPP_Order_BOMLine_ID()).isEqualTo(ppOrderBOMLine_Folie.getPP_Order_BOMLine_ID());
+			assertThat(ppOrderQty.getM_Product_ID()).isEqualTo(pFolie.getM_Product_ID());
+			assertThat(ppOrderQty.getC_UOM_ID()).isEqualTo(uomMillimeter.getC_UOM_ID());
+		});
+
+		hus.forEach(hu -> refresh(hu));
+		assertThat(hus).allSatisfy(hu -> assertThat(hu.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Issued));
+	}
+
+	@Test
+	public void createDraftIssues_using_fixedQtyToIssue()
+	{
+		final I_PP_Order ppOrder = createPPOrderForSaladFromFolie();
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+		final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
+
+		final I_M_HU hu1 = createSimpleHuWithFolie("100");
+		final I_M_HU hu2 = createSimpleHuWithFolie("50");
+		final ImmutableList<I_M_HU> hus = ImmutableList.of(hu1, hu2);
+
+		final List<I_PP_Order_Qty> result = new HUPPOrderIssueProducer(ppOrderId)
+				.targetOrderBOMLine(ppOrderBOMLine_Folie)
+				.fixedQtyToIssue(Quantity.of("101", uomMillimeter))
+				.createIssues(hus);
+		assertThat(result).hasSize(2);
+
+		final I_PP_Order_Qty ppOrderQty1 = result.get(0);
+		assertThat(ppOrderQty1.getM_HU_ID()).isEqualTo(hu1.getM_HU_ID());
+		assertThat(ppOrderQty1.getQty()).isEqualByComparingTo("100");
+
+		final I_PP_Order_Qty ppOrderQty2 = result.get(1);
+		assertThat(ppOrderQty2.getM_HU_ID()).isEqualTo(hu2.getM_HU_ID());
+		assertThat(ppOrderQty2.getQty()).isEqualByComparingTo("1");
 
 		assertThat(result).allSatisfy(ppOrderQty -> {
 			assertThat(ppOrderQty.getPP_Order_ID()).isEqualTo(ppOrder.getPP_Order_ID());

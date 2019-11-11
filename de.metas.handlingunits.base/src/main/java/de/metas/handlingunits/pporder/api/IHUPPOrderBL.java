@@ -46,7 +46,7 @@ public interface IHUPPOrderBL extends ISingletonService
 	 */
 	IAllocationSource createAllocationSourceForPPOrder(de.metas.handlingunits.model.I_PP_Order ppOrder);
 
-	IHUPPOrderIssueProducer createIssueProducer();
+	HUPPOrderIssueProducer createIssueProducer(PPOrderId ppOrderId);
 
 	/**
 	 * Create a query builder that retrieves all HUs that
