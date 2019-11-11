@@ -92,11 +92,9 @@ public abstract class AbstractTrxManager implements ITrxManager
 
 	private ITrxNameGenerator trxNameGenerator = DefaultTrxNameGenerator.instance;
 
-	/**
-	 * Thread level transaction name
-	 */
-	private final InheritableThreadLocal<String> threadLocalTrx = new InheritableThreadLocal<>();
-	private final InheritableThreadLocal<OnRunnableFail> threadLocalOnRunnableFail = new InheritableThreadLocal<>();
+	/** Name of the trx currently associated with this thread */
+	private final ThreadLocal<String> threadLocalTrx = new ThreadLocal<>();
+	private final ThreadLocal<OnRunnableFail> threadLocalOnRunnableFail = new ThreadLocal<>();
 
 	private boolean debugTrxCreateStacktrace = false;
 	private boolean debugTrxCloseStacktrace = false;
@@ -110,8 +108,6 @@ public abstract class AbstractTrxManager implements ITrxManager
 
 	public AbstractTrxManager()
 	{
-		super();
-
 		final JMXTrxManager jmxBean = new JMXTrxManager(this);
 		JMXRegistry.get().registerJMX(jmxBean, OnJMXAlreadyExistsPolicy.Replace);
 	}
@@ -664,7 +660,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 
 			// Set our transaction as currently active thread local transaction
 			restoreThreadLocalTrxName = true;
-			threadLocalTrx.set(trxNameToUse);
+			setThreadInheritedTrxName(trxNameToUse);
 
 			return call0(callable, cfg, trxNameToUse);
 		}
@@ -673,7 +669,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 			// Restore the thread local transaction, in case we changed it.
 			if (restoreThreadLocalTrxName)
 			{
-				threadLocalTrx.set(threadLocalTrxNameOld);
+				setThreadInheritedTrxName(threadLocalTrxNameOld);
 				restoreThreadLocalTrxName = false;
 			}
 
