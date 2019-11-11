@@ -5,6 +5,7 @@ import java.util.Collection;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
@@ -151,4 +152,12 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 		huAssignmentBL.setAssignedHandlingUnits(ppOrderBOMLine, hus);
 	}
+
+	@Override
+	public void closeOrder(@NonNull final PPOrderId ppOrderId)
+	{
+		final IPPOrderBL ppOrdersService = Services.get(IPPOrderBL.class);
+		ppOrdersService.closeOrder(ppOrderId);
+	}
+
 }
