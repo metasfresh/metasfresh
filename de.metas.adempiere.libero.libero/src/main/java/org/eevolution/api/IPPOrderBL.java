@@ -80,6 +80,8 @@ public interface IPPOrderBL extends ISingletonService
 	 */
 	void setDocType(I_PP_Order ppOrder, String docBaseType, String docSubType);
 
+	void closeOrder(PPOrderId ppOrderId);
+
 	/**
 	 * Set QtyOrdered=QtyDelivered, QtyClosed=QtyOrdered(old) - QtyDelivered
 	 *

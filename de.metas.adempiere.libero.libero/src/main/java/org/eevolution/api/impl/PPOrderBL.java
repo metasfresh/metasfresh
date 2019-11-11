@@ -49,6 +49,7 @@ import org.eevolution.model.X_PP_Order;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.WorkingTime;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
@@ -274,6 +275,16 @@ public class PPOrderBL implements IPPOrderBL
 
 		ppOrder.setC_DocTypeTarget_ID(docTypeId.getRepoId());
 		ppOrder.setC_DocType_ID(docTypeId.getRepoId());
+	}
+
+	@Override
+	public void closeOrder(@NonNull final PPOrderId ppOrderId)
+	{
+		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
+		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+
+		I_PP_Order ppOrder = ppOrdersRepo.getById(ppOrderId);
+		documentBL.processEx(ppOrder, X_PP_Order.DOCACTION_Close);
 	}
 
 	@Override
