@@ -148,13 +148,13 @@ public class WEBUI_PP_Order_Receipt
 		{
 			final PPOrderId ppOrderId = row.getOrderId();
 			final I_PP_Order ppOrder = Services.get(IPPOrderDAO.class).getById(ppOrderId, I_PP_Order.class);
-			return IPPOrderReceiptHUProducer.receiveMainProduct(ppOrder);
+			return IPPOrderReceiptHUProducer.receivingMainProduct(ppOrder);
 		}
 		else if (type == PPOrderLineType.BOMLine_ByCoProduct)
 		{
 			final PPOrderBOMLineId ppOrderBOMLineId = row.getOrderBOMLineId();
 			final I_PP_Order_BOMLine ppOrderBOMLine = Services.get(IPPOrderBOMDAO.class).getOrderBOMLineById(ppOrderBOMLineId);
-			return IPPOrderReceiptHUProducer.receiveByOrCoProduct(ppOrderBOMLine);
+			return IPPOrderReceiptHUProducer.receivingByOrCoProduct(ppOrderBOMLine);
 		}
 		else
 		{
@@ -239,7 +239,7 @@ public class WEBUI_PP_Order_Receipt
 
 		newReceiptCandidatesProducer()
 				.packUsingLUTUConfiguration(lutuConfig)
-				.createReceiptCandidatesAndPlanningHUs();
+				.createDraftReceiptCandidatesAndPlanningHUs();
 
 		return MSG_OK;
 	}
