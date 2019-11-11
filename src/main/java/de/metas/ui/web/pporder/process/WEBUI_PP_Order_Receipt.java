@@ -3,7 +3,6 @@ package de.metas.ui.web.pporder.process;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.Adempiere;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
@@ -28,7 +27,6 @@ import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLineType;
 import de.metas.ui.web.pporder.PPOrderLinesView;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
-import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -61,7 +59,6 @@ public class WEBUI_PP_Order_Receipt
 {
 	// services
 	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
-	private final transient IViewsRepository viewsRepo = Adempiere.getBean(IViewsRepository.class);
 
 	// parameters
 	@Param(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID, mandatory = true)
@@ -147,14 +144,12 @@ public class WEBUI_PP_Order_Receipt
 		if (type == PPOrderLineType.MainProduct)
 		{
 			final PPOrderId ppOrderId = row.getOrderId();
-			final I_PP_Order ppOrder = Services.get(IPPOrderDAO.class).getById(ppOrderId, I_PP_Order.class);
-			return IPPOrderReceiptHUProducer.receivingMainProduct(ppOrder);
+			return huPPOrderBL.receivingMainProduct(ppOrderId);
 		}
 		else if (type == PPOrderLineType.BOMLine_ByCoProduct)
 		{
 			final PPOrderBOMLineId ppOrderBOMLineId = row.getOrderBOMLineId();
-			final I_PP_Order_BOMLine ppOrderBOMLine = Services.get(IPPOrderBOMDAO.class).getOrderBOMLineById(ppOrderBOMLineId);
-			return IPPOrderReceiptHUProducer.receivingByOrCoProduct(ppOrderBOMLine);
+			return huPPOrderBL.receivingByOrCoProduct(ppOrderBOMLineId);
 		}
 		else
 		{
@@ -251,6 +246,6 @@ public class WEBUI_PP_Order_Receipt
 		final PPOrderLinesView ppOrderLinesView = getView();
 		ppOrderLinesView.invalidateAll();
 
-		viewsRepo.notifyRecordChanged(I_PP_Order.Table_Name, ppOrderLinesView.getPpOrderId().getRepoId());
+		getViewsRepo().notifyRecordChanged(I_PP_Order.Table_Name, ppOrderLinesView.getPpOrderId().getRepoId());
 	}
 }
