@@ -57,7 +57,6 @@ public final class HUPPOrderReceiptHUEditorPanel extends HUEditorPanel
 				//
 				// Create receipt candidates for our already existing planning HU
 				orderReceiptCUKey.createReceiptCandidatesProducer()
-						.processReceiptCandidates(true)
 						.createReceiptCandidatesFromPlanningHU(selectedHU);
 			}
 		});

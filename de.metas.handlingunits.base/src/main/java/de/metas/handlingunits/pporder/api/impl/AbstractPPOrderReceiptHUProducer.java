@@ -28,7 +28,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -52,6 +53,7 @@ import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HULoader;
+import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
@@ -98,6 +100,7 @@ import lombok.Value;
 	@Deprecated
 	private boolean skipCreatingReceiptCandidates;
 	private boolean processReceiptCandidates;
+	private boolean receiveOneVHU;
 	private PickingCandidateId pickingCandidateId;
 
 	//
@@ -115,28 +118,13 @@ import lombok.Value;
 		this.ppOrderId = ppOrderId;
 	}
 
-	@Override
-	@Deprecated
-	public final IPPOrderReceiptHUProducer skipCreatingReceiptCandidates()
-	{
-		this.skipCreatingReceiptCandidates = true;
-		return this;
-	}
-
-	@Override
-	public IPPOrderReceiptHUProducer processReceiptCandidates(final boolean processReceiptCandidates)
-	{
-		this.processReceiptCandidates = processReceiptCandidates;
-		return this;
-	}
-
 	private PPOrderId getPpOrderId()
 	{
 		return ppOrderId;
 	}
 
 	@Override
-	public final void createReceiptCandidatesAndPlanningHUs()
+	public final void createDraftReceiptCandidatesAndPlanningHUs()
 	{
 		trxManager.callInNewTrx(() -> {
 			final I_M_HU_LUTU_Configuration lutuConfig = getCreateLUTUConfiguration();
@@ -155,12 +143,35 @@ import lombok.Value;
 	}
 
 	@Override
-	public final List<I_M_HU> createReceiptCandidatesAndPlanningHUs(final Quantity qtyToReceive)
+	public List<I_M_HU> createPlanningHUs(@NonNull final Quantity qtyToReceive)
 	{
+		skipCreatingReceiptCandidates = true;
 		return trxManager.callInNewTrx(() -> createReceiptCandidatesAndPlanningHUs_InTrx(qtyToReceive));
 	}
 
-	private final List<I_M_HU> createReceiptCandidatesAndPlanningHUs_InTrx(final Quantity qtyToReceive)
+	@Override
+	public I_M_HU receiveVHU(@NonNull final Quantity qtyToReceive)
+	{
+		this.processReceiptCandidates = true;
+		this.receiveOneVHU = true;
+
+		final List<I_M_HU> vhus = trxManager.callInNewTrx(() -> createReceiptCandidatesAndPlanningHUs_InTrx(qtyToReceive));
+
+		if (vhus.isEmpty())
+		{
+			throw new AdempiereException("No VHU was created for " + qtyToReceive);
+		}
+		else if (vhus.size() == 1)
+		{
+			throw new AdempiereException("More than one VHU was created for " + qtyToReceive + ": " + vhus);
+		}
+		else
+		{
+			return vhus.get(0);
+		}
+	}
+
+	private final List<I_M_HU> createReceiptCandidatesAndPlanningHUs_InTrx(@NonNull final Quantity qtyToReceive)
 	{
 		//
 		// Create HU Context
@@ -239,6 +250,8 @@ import lombok.Value;
 	@Override
 	public final void createReceiptCandidatesFromPlanningHU(@NonNull final I_M_HU planningHU)
 	{
+		processReceiptCandidates = true;
+
 		if (!X_M_HU.HUSTATUS_Planning.equals(planningHU.getHUStatus()))
 		{
 			throw new HUException("HU " + planningHU + " shall have status Planning but it has " + planningHU.getHUStatus());
@@ -337,8 +350,15 @@ import lombok.Value;
 
 	private final IHUProducerAllocationDestination createAllocationDestination()
 	{
-		final I_M_HU_LUTU_Configuration lutuConfiguration = getCreateLUTUConfiguration();
-		return lutuConfigurationFactory.createLUTUProducerAllocationDestination(lutuConfiguration);
+		if (receiveOneVHU)
+		{
+			return HUProducerDestination.ofVirtualPI();
+		}
+		else
+		{
+			final I_M_HU_LUTU_Configuration lutuConfiguration = getCreateLUTUConfiguration();
+			return lutuConfigurationFactory.createLUTUProducerAllocationDestination(lutuConfiguration);
+		}
 	}
 
 	@Override
@@ -371,6 +391,12 @@ import lombok.Value;
 	{
 		return pickingCandidateId;
 	}
+
+	//
+	//
+	//
+	//
+	//
 
 	/**
 	 * Aggregates {@link HUTransactionCandidate}s and creates manufacturing receipt candidates requests.
@@ -405,13 +431,6 @@ import lombok.Value;
 		public ImmutableList<CreateReceiptCandidateRequest> getRequests()
 		{
 			return ImmutableList.copyOf(requests.values());
-		}
-
-		public Stream<CreateReceiptCandidateRequest> streamRequests()
-		{
-			return requests.values()
-					.stream()
-					.filter(candidate -> !candidate.isZeroQty());
 		}
 
 		public void collectAllocationResults(final IHUContext IGNORED, @NonNull final List<IAllocationResult> loadResults)

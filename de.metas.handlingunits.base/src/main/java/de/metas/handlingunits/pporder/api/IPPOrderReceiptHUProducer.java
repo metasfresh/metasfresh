@@ -32,6 +32,7 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.pporder.api.impl.CostCollectorCandidateCoProductHUProducer;
 import de.metas.handlingunits.pporder.api.impl.CostCollectorCandidateFinishedGoodsHUProducer;
 import de.metas.quantity.Quantity;
@@ -47,47 +48,41 @@ import de.metas.quantity.Quantity;
 public interface IPPOrderReceiptHUProducer
 {
 	/** @return new producer for receiving a main product */
-	static IPPOrderReceiptHUProducer receiveMainProduct(final I_PP_Order ppOrder)
+	static IPPOrderReceiptHUProducer receivingMainProduct(final I_PP_Order ppOrder)
 	{
 		return new CostCollectorCandidateFinishedGoodsHUProducer(ppOrder);
 	}
 
 	/** @return new producer for receiving a by/co product */
-	static IPPOrderReceiptHUProducer receiveByOrCoProduct(final I_PP_Order_BOMLine ppOrderBOMLine)
+	static IPPOrderReceiptHUProducer receivingByOrCoProduct(final I_PP_Order_BOMLine ppOrderBOMLine)
 	{
 		return new CostCollectorCandidateCoProductHUProducer(ppOrderBOMLine);
 	}
 
 	/**
 	 * Creates planning HUs to be received.
-	 * It also creates manufacturing receipt candidates ({@link I_PP_Order_Qty}).
+	 * It also creates draft manufacturing receipt candidates ({@link I_PP_Order_Qty}).
 	 */
-	void createReceiptCandidatesAndPlanningHUs();
+	void createDraftReceiptCandidatesAndPlanningHUs();
 
 	/**
 	 * Creates planning HUs to be received.
-	 * It also creates manufacturing receipt candidates ({@link I_PP_Order_Qty}).
+	 * NO manufacturing receipt candidates will be created.
 	 * 
-	 * @param qtyToReceive precise quantity to receive
+	 * @deprecated To be removed. Needed only for the legacy Swing UI.
 	 */
-	List<I_M_HU> createReceiptCandidatesAndPlanningHUs(Quantity qtyToReceive);
+	@Deprecated
+	List<I_M_HU> createPlanningHUs(Quantity qtyToReceive);
+
+	I_M_HU receiveVHU(Quantity qtyToReceive);
 
 	/**
-	 * Create manufacturing receipt candidate(s) for an already existing planning HU.
+	 * Creates & processes manufacturing receipt candidate(s) for an already existing planning HU.
 	 *
-	 * @param planningHU
 	 * @deprecated To be removed. Needed only for the legacy Swing UI.
 	 */
 	@Deprecated
 	void createReceiptCandidatesFromPlanningHU(I_M_HU planningHU);
-
-	/**
-	 * @deprecated To be removed. Needed only for the legacy Swing UI.
-	 */
-	@Deprecated
-	IPPOrderReceiptHUProducer skipCreatingReceiptCandidates();
-
-	IPPOrderReceiptHUProducer processReceiptCandidates(boolean processReceiptCandidates);
 
 	/**
 	 * NOTE: by default current system time is considered.
