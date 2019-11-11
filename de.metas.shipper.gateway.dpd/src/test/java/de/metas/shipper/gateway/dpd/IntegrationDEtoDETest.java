@@ -23,6 +23,7 @@
 package de.metas.shipper.gateway.dpd;
 
 import com.google.common.collect.ImmutableList;
+import com.jgoodies.common.base.Strings;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.shipper.gateway.dpd.model.DpdClientConfig;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
@@ -48,6 +49,7 @@ import java.time.LocalTime;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @Disabled("Makes ACTUAL calls to DPD api and needs auth")
 public class IntegrationDEtoDETest
@@ -115,6 +117,9 @@ public class IntegrationDEtoDETest
 		assertEquals("only awb, pdf label data and tracking url should be modified", updatedDummyDeliveryOrder, completedDeliveryOrder);
 		assertEquals(5, completedDeliveryOrder.getDeliveryOrderLines().size());
 		assertEquals(5, updatedDummyDeliveryOrder.getDeliveryOrderLines().size());
+		assertTrue(Strings.isNotBlank(completedDeliveryOrder.getTrackingNumber()));
+		//noinspection ConstantConditions
+		assertTrue(DpdOrderCustomDeliveryData.cast(completedDeliveryOrder.getCustomDeliveryData()).getPdfData().length > 1);
 
 		//
 		// check 5: persist the completed delivery order: nothing should be modified
@@ -128,6 +133,9 @@ public class IntegrationDEtoDETest
 		assertEquals(5, updatedDummyDeliveryOrder.getDeliveryOrderLines().size());
 		assertEquals(5, deserialisedCompletedDeliveryOrder.getDeliveryOrderLines().size());
 		assertEquals("nothing should be modified", updatedDummyDeliveryOrder, deserialisedCompletedDeliveryOrder);
+		assertTrue(Strings.isNotBlank(deserialisedCompletedDeliveryOrder.getTrackingNumber()));
+		//noinspection ConstantConditions
+		assertTrue(DpdOrderCustomDeliveryData.cast(deserialisedCompletedDeliveryOrder.getCustomDeliveryData()).getPdfData().length > 1);
 
 	}
 
