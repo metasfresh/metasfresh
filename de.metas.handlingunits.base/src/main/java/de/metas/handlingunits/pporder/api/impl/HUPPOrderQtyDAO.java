@@ -22,6 +22,7 @@ import de.metas.cache.annotation.CacheTrx;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.pporder.api.CreateIssueCandidateRequest;
 import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
@@ -85,6 +86,7 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 		record.setQty(request.getQtyToReceive().toBigDecimal());
 		record.setC_UOM_ID(request.getQtyToReceive().getUomId().getRepoId());
 		record.setProcessed(false);
+		record.setM_Picking_Candidate_ID(PickingCandidateId.toRepoId(request.getPickingCandidateId()));
 		save(record);
 
 		return record;
@@ -108,6 +110,9 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 
 		record.setMovementDate(TimeUtil.asTimestamp(request.getDate()));
 		record.setProcessed(false);
+
+		record.setM_Picking_Candidate_ID(PickingCandidateId.toRepoId(request.getPickingCandidateId()));
+
 		save(record);
 
 		return record;

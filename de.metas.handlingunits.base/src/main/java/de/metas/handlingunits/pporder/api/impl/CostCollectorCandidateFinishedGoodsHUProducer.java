@@ -74,6 +74,7 @@ public class CostCollectorCandidateFinishedGoodsHUProducer extends AbstractPPOrd
 				.orderBOMLineId(null)
 				.orgId(orgId)
 				.date(getMovementDate())
+				.pickingCandidateId(getPickingCandidateId())
 				.build();
 	}
 

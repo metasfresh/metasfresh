@@ -62,6 +62,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
@@ -97,6 +98,7 @@ import lombok.Value;
 	@Deprecated
 	private boolean skipCreatingReceiptCandidates;
 	private boolean processReceiptCandidates;
+	private PickingCandidateId pickingCandidateId;
 
 	//
 	// Abstract methods
@@ -358,6 +360,18 @@ import lombok.Value;
 		return _lutuConfiguration;
 	}
 
+	@Override
+	public IPPOrderReceiptHUProducer pickingCandidateId(final PickingCandidateId pickingCandidateId)
+	{
+		this.pickingCandidateId = pickingCandidateId;
+		return this;
+	}
+
+	protected final PickingCandidateId getPickingCandidateId()
+	{
+		return pickingCandidateId;
+	}
+
 	/**
 	 * Aggregates {@link HUTransactionCandidate}s and creates manufacturing receipt candidates requests.
 	 */
@@ -369,6 +383,7 @@ import lombok.Value;
 		private final PPOrderBOMLineId orderBOMLineId;
 		private final OrgId orgId;
 		private final ZonedDateTime date;
+		private final PickingCandidateId pickingCandidateId;
 
 		private final Map<AggregationKey, CreateReceiptCandidateRequest> requests = new HashMap<>();
 
@@ -377,12 +392,14 @@ import lombok.Value;
 				@NonNull final PPOrderId orderId,
 				@NonNull final PPOrderBOMLineId orderBOMLineId,
 				@NonNull final OrgId orgId,
-				@NonNull final ZonedDateTime date)
+				@NonNull final ZonedDateTime date,
+				@Nullable final PickingCandidateId pickingCandidateId)
 		{
 			this.orderId = orderId;
 			this.orderBOMLineId = orderBOMLineId;
 			this.orgId = orgId;
 			this.date = date;
+			this.pickingCandidateId = pickingCandidateId;
 		}
 
 		public ImmutableList<CreateReceiptCandidateRequest> getRequests()
@@ -439,6 +456,7 @@ import lombok.Value;
 					.locatorId(key.getLocatorId())
 					.topLevelHUId(key.getTopLevelHUId())
 					.productId(key.getProductId())
+					.pickingCandidateId(pickingCandidateId)
 					.build();
 		}
 

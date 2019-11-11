@@ -99,4 +99,6 @@ public interface IPPOrderReceiptHUProducer
 	 * If not set, the PP_Order/BOM line's current configuration will be used.
 	 */
 	IPPOrderReceiptHUProducer packUsingLUTUConfiguration(I_M_HU_LUTU_Configuration lutuConfiguration);
+
+	IPPOrderReceiptHUProducer pickingCandidateId(PickingCandidateId pickingCandidateId);
 }

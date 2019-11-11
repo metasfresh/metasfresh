@@ -185,6 +185,33 @@ public interface I_PP_Order_Qty
     public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
 	/**
+	 * Set Picking candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Picking_Candidate_ID (int M_Picking_Candidate_ID);
+
+	/**
+	 * Get Picking candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Picking_Candidate_ID();
+
+	public de.metas.handlingunits.model.I_M_Picking_Candidate getM_Picking_Candidate();
+
+	public void setM_Picking_Candidate(de.metas.handlingunits.model.I_M_Picking_Candidate M_Picking_Candidate);
+
+    /** Column definition for M_Picking_Candidate_ID */
+    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, de.metas.handlingunits.model.I_M_Picking_Candidate> COLUMN_M_Picking_Candidate_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, de.metas.handlingunits.model.I_M_Picking_Candidate>(I_PP_Order_Qty.class, "M_Picking_Candidate_ID", de.metas.handlingunits.model.I_M_Picking_Candidate.class);
+    /** Column name M_Picking_Candidate_ID */
+    public static final String COLUMNNAME_M_Picking_Candidate_ID = "M_Picking_Candidate_ID";
+
+	/**
 	 * Set Produkt.
 	 * Produkt, Leistung, Artikel
 	 *

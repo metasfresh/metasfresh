@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import org.adempiere.warehouse.LocatorId;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.ProductId;
@@ -58,4 +59,7 @@ public class CreateIssueCandidateRequest
 
 	@NonNull
 	Quantity qtyToIssue;
+
+	@Nullable
+	PickingCandidateId pickingCandidateId;
 }

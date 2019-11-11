@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import org.adempiere.warehouse.LocatorId;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.organization.OrgId;
@@ -63,6 +64,9 @@ public final class CreateReceiptCandidateRequest
 
 	@NonNull
 	private Quantity qtyToReceive;
+
+	@Nullable
+	private final PickingCandidateId pickingCandidateId;
 
 	public CreateReceiptCandidateRequest addQtyToReceive(@NonNull final Quantity qtyToAdd)
 	{

@@ -591,16 +591,26 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 		return ii.intValue();
 	}
 
+	/** Set Picking candidate.
+		@param M_Picking_Candidate_ID Picking candidate	  */
 	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	public void setM_Picking_Candidate_ID (int M_Picking_Candidate_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+		if (M_Picking_Candidate_ID < 1) 
+			set_Value (COLUMNNAME_M_Picking_Candidate_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Picking_Candidate_ID, Integer.valueOf(M_Picking_Candidate_ID));
 	}
 
+	/** Get Picking candidate.
+		@return Picking candidate	  */
 	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+	public int getM_Picking_Candidate_ID () 
 	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Picking_Candidate_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Produkt.

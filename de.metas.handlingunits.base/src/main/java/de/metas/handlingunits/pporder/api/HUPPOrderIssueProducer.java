@@ -41,6 +41,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.CreateDraftIssuesCommand;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
@@ -78,6 +79,7 @@ public class HUPPOrderIssueProducer
 	private Quantity fixedQtyToIssue;
 	private boolean considerIssueMethodForQtyToIssueCalculation = true;
 	private ProcessIssueCandidatesPolicy processCandidatesPolicy = ProcessIssueCandidatesPolicy.IF_ORDER_PLANNING_STATUS_IS_COMPLETE;
+	private PickingCandidateId pickingCandidateId;
 
 	public HUPPOrderIssueProducer(@NonNull final PPOrderId ppOrderId)
 	{
@@ -134,6 +136,7 @@ public class HUPPOrderIssueProducer
 				.fixedQtyToIssue(fixedQtyToIssue)
 				.considerIssueMethodForQtyToIssueCalculation(considerIssueMethodForQtyToIssueCalculation)
 				.issueFromHUs(hus)
+				.pickingCandidateId(pickingCandidateId)
 				.build()
 				.execute();
 
@@ -298,5 +301,11 @@ public class HUPPOrderIssueProducer
 		{
 			throw new AdempiereException("Unknown processCandidatesPolicy: " + processCandidatesPolicy);
 		}
+	}
+
+	public HUPPOrderIssueProducer pickingCandidateId(final PickingCandidateId pickingCandidateId)
+	{
+		this.pickingCandidateId = pickingCandidateId;
+		return this;
 	}
 }

@@ -26,6 +26,7 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.pporder.api.CreateIssueCandidateRequest;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.storage.IHUProductStorage;
@@ -90,6 +91,7 @@ public class CreateDraftIssuesCommand
 	private final ZonedDateTime movementDate;
 	private final boolean considerIssueMethodForQtyToIssueCalculation;
 	private final ImmutableList<I_M_HU> issueFromHUs;
+	private final PickingCandidateId pickingCandidateId;
 
 	//
 	// Status
@@ -97,11 +99,13 @@ public class CreateDraftIssuesCommand
 
 	@Builder
 	private CreateDraftIssuesCommand(
-			final @NonNull List<I_PP_Order_BOMLine> targetOrderBOMLines,
-			final @Nullable ZonedDateTime movementDate,
-			final @Nullable Quantity fixedQtyToIssue,
+			@NonNull final List<I_PP_Order_BOMLine> targetOrderBOMLines,
+			@Nullable final ZonedDateTime movementDate,
+			@Nullable final Quantity fixedQtyToIssue,
 			final boolean considerIssueMethodForQtyToIssueCalculation,
-			@NonNull final Collection<I_M_HU> issueFromHUs)
+			@NonNull final Collection<I_M_HU> issueFromHUs,
+			//
+			@Nullable final PickingCandidateId pickingCandidateId)
 	{
 		Check.assumeNotEmpty(targetOrderBOMLines, "Parameter targetOrderBOMLines is not empty");
 		if (fixedQtyToIssue != null && fixedQtyToIssue.signum() <= 0)
@@ -114,7 +118,9 @@ public class CreateDraftIssuesCommand
 		this.considerIssueMethodForQtyToIssueCalculation = considerIssueMethodForQtyToIssueCalculation;
 		this.issueFromHUs = ImmutableList.copyOf(issueFromHUs);
 
-		this.remainingQtyToIssue = fixedQtyToIssue;
+		remainingQtyToIssue = fixedQtyToIssue;
+
+		this.pickingCandidateId = pickingCandidateId;
 	}
 
 	public List<I_PP_Order_Qty> execute()
@@ -268,6 +274,8 @@ public class CreateDraftIssuesCommand
 				.productId(productId)
 				//
 				.qtyToIssue(qtyToIssue)
+				//
+				.pickingCandidateId(pickingCandidateId)
 				//
 				.build());
 
