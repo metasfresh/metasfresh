@@ -1,25 +1,23 @@
 package de.metas.invoicecandidate.externallyreferenced;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static java.math.BigDecimal.ONE;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
+
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
+
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.composite.BPartnerComposite;
-import de.metas.bpartner.composite.BPartnerLocation;
-import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -34,21 +32,20 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.lang.SOTrx;
-import de.metas.location.CountryId;
-import de.metas.location.ICountryDAO;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.pricing.IEditablePricingContext;
-import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListVersionId;
-import de.metas.pricing.exceptions.ProductNotOnPriceListException;
-import de.metas.pricing.service.IPricingBL;
+import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
-import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxId;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
@@ -85,17 +82,11 @@ public class ExternallyReferencedCandidateRepository
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
-
-	private final BPartnerCompositeRepository bPartnerCompositeRepository;
-
-	public ExternallyReferencedCandidateRepository(@NonNull final BPartnerCompositeRepository bPartnerCompositeRepository)
-	{
-		this.bPartnerCompositeRepository = bPartnerCompositeRepository;
-	}
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	public InvoiceCandidateId save(@NonNull final ExternallyReferencedCandidate ic)
 	{
-		final InvoiceCandidateId invoiceCandidateId = ic.getLookupKey().getInvoiceCandidateId();
+		final InvoiceCandidateId invoiceCandidateId = ic.getId();
 		final ZoneId timeZone = orgDAO.getTimeZone(ic.getOrgId());
 
 		final I_C_Invoice_Candidate icRecord;
@@ -118,69 +109,37 @@ public class ExternallyReferencedCandidateRepository
 
 			icRecord.setIsSOTrx(ic.getSoTrx().toBoolean());
 
-			// TODO fire up the pricing engine and also, get the taxId
-			// TODO but it doesn't belong into a repo
-			final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
+			icRecord.setM_PricingSystem_ID(ic.getPricingSystemId().getRepoId());
+			icRecord.setM_PriceList_Version_ID(PriceListVersionId.toRepoId(ic.getPriceListVersionId()));
+			icRecord.setPriceEntered(ic.getPriceEntered().toBigDecimal());
+			icRecord.setC_Currency_ID(ic.getPriceEntered().getCurrencyId().getRepoId());
 
-			final BPartnerComposite bpartnerComp = bPartnerCompositeRepository.getById(ic.getBillPartnerInfo().getBpartnerId());
-			final BPartnerLocation location = bpartnerComp.extractLocation(ic.getBillPartnerInfo().getBpartnerLocationId()).get();
-			final CountryId countryId = countryDAO.getCountryIdByCountryCode(location.getCountryCode());
+			icRecord.setDiscount(ic.getDiscount().toBigDecimal());
 
-			final IPricingBL pricingBL = Services.get(IPricingBL.class);
-			final IEditablePricingContext pricingContext = pricingBL
-					.createInitialContext(
-							ic.getProductId(),
-							ic.getBillPartnerInfo().getBpartnerId(),
-							ic.getQtyOrdered().getStockQty(),
-							ic.getSoTrx())
-					.setCountryId(countryId)
-					.setPriceDate(ic.getDateOrdered());
-			final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
-			if (!pricingResult.isCalculated())
-			{
-				throw ProductNotOnPriceListException.builder()
-						.pricingCtx(pricingContext)
-						.productId(ic.getProductId())
-						.build();
-			}
+			icRecord.setPriceActual(ic.getPriceActual().toBigDecimal());
 
-			icRecord.setM_PricingSystem_ID(pricingResult.getPricingSystemId().getRepoId());
-			icRecord.setM_PriceList_Version_ID(PriceListVersionId.toRepoId(pricingResult.getPriceListVersionId()));
-			icRecord.setPriceEntered(pricingResult.getPriceStd());
-			icRecord.setC_Currency_ID(pricingResult.getCurrencyId().getRepoId());
+			icRecord.setC_Tax_ID(ic.getTaxId().getRepoId());
 
-			icRecord.setDiscount(pricingResult.getDiscount().toBigDecimal());
-
-			final BigDecimal discountPercentage = pricingResult.getDiscount().computePercentageOf(pricingResult.getPriceStd(), pricingResult.getPrecision().toInt());
-			icRecord.setPriceActual(pricingResult.getPriceStd().subtract(discountPercentage));
-
-			final int taxId = Services.get(ITaxBL.class).getTax(
-					Env.getCtx(),
-					ic,
-					pricingResult.getTaxCategoryId(),
-					ic.getProductId().getRepoId(),
-					TimeUtil.asTimestamp(ic.getDateOrdered(), timeZone), // shipDate
-					ic.getOrgId(),
-					ic.getSoTrx().isSales() ? orgDAO.getOrgWarehouseId(ic.getOrgId()) : orgDAO.getOrgPOWarehouseId(ic.getOrgId()),
-					ic.getBillPartnerInfo().getBpartnerLocationId().getRepoId(), // ship location id
-					ic.getSoTrx().toBoolean());
-			icRecord.setC_Tax_ID(taxId);
-
-			final String invoiceRule = coalesce(
-					bpartnerComp.getBpartner().getInvoiceRule(),
-					InvoiceRule.Immediate//
-			).getCode();
-			icRecord.setInvoiceRule(invoiceRule);
+			icRecord.setInvoiceRule(ic.getInvoiceRule().getCode());
 		}
 		else
 		{
 			icRecord = load(invoiceCandidateId, I_C_Invoice_Candidate.class);
 		}
 
-		if (ic.getPriceEnteredOverride() != null)
+		final ProductPrice priceEnteredOverride = ic.getPriceEnteredOverride();
+		if (priceEnteredOverride != null)
 		{
-			// TODO if we have a priceOverride, then verify that its productId, currencyId and priceUomId are the ones of icRecord (no updating)
-			icRecord.setPriceEntered_Override(ic.getPriceEnteredOverride().toBigDecimal());
+			final Quantity oneUnitInPriceUom = Quantitys.create(ONE, priceEnteredOverride.getUomId());
+
+			final UOMConversionContext conversionCtx = UOMConversionContext.of(icRecord.getM_Product_ID());
+			final UomId icRecordUomId = UomId.ofRepoId(icRecord.getC_UOM_ID());
+
+			// example: priceEnteredOverride is 5€ per pound
+			// invoice candidate-UOM is kilo
+			// => priceUnitInCandidateUom := 0.5 => price amount is 2.5
+			final Quantity priceUnitInCandidateUom = uomConversionBL.convertQuantityTo(oneUnitInPriceUom, conversionCtx, icRecordUomId);
+			icRecord.setPriceEntered_Override(priceUnitInCandidateUom.toBigDecimal().multiply(priceEnteredOverride.toBigDecimal()));
 		}
 		else
 		{
@@ -196,14 +155,16 @@ public class ExternallyReferencedCandidateRepository
 		icRecord.setPOReference(ic.getPoReference());
 		icRecord.setPresetDateInvoiced(TimeUtil.asTimestamp(ic.getPresetDateInvoiced(), timeZone));
 
-		icRecord.setExternalHeaderId(ic.getLookupKey().getExternalHeaderId().getValue());
-		icRecord.setExternalLineId(ic.getLookupKey().getExternalLineId().getValue());
+		icRecord.setExternalHeaderId(ExternalId.toValue(ic.getExternalHeaderId()));
+		icRecord.setExternalLineId(ExternalId.toValue(ic.getExternalLineId()));
 
 		saveRecord(icRecord);
 		return InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
 	}
 
-	private void syncBillPartnerToRecord(final ExternallyReferencedCandidate invoiceCandidate, final I_C_Invoice_Candidate icRecord)
+	private void syncBillPartnerToRecord(
+			@NonNull final ExternallyReferencedCandidate invoiceCandidate,
+			@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		icRecord.setBill_BPartner_ID(invoiceCandidate.getBillPartnerInfo().getBpartnerId().getRepoId());
 		icRecord.setBill_Location_ID(invoiceCandidate.getBillPartnerInfo().getBpartnerLocationId().getRepoId());
@@ -226,7 +187,6 @@ public class ExternallyReferencedCandidateRepository
 	public ImmutableList<ExternallyReferencedCandidate> getAllBy(
 			@NonNull final Collection<InvoiceCandidateLookupKey> lookupKeys)
 	{
-
 		final InvoiceCandidateMultiQueryBuilder multiQuery = InvoiceCandidateMultiQuery.builder();
 		for (final InvoiceCandidateLookupKey invoiceCandidateLookupKey : lookupKeys)
 		{
@@ -264,13 +224,10 @@ public class ExternallyReferencedCandidateRepository
 	{
 		final ExternallyReferencedCandidateBuilder candidate = ExternallyReferencedCandidate.builder();
 
-		candidate.orgId(OrgId.ofRepoId(icRecord.getAD_Org_ID()));
-		final InvoiceCandidateLookupKey lookupKey = InvoiceCandidateLookupKey.builder()
-				.invoiceCandidateId(InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID()))
+		candidate.orgId(OrgId.ofRepoId(icRecord.getAD_Org_ID()))
+				.id(InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID()))
 				.externalHeaderId(ExternalId.ofOrNull(icRecord.getExternalHeaderId()))
-				.externalLineId(ExternalId.ofOrNull(icRecord.getExternalLineId()))
-				.build();
-		candidate.lookupKey(lookupKey);
+				.externalLineId(ExternalId.ofOrNull(icRecord.getExternalLineId()));
 
 		candidate.poReference(icRecord.getPOReference());
 
@@ -283,15 +240,27 @@ public class ExternallyReferencedCandidateRepository
 		candidate.billPartnerInfo(bpartnerInfo);
 
 		candidate.dateOrdered(TimeUtil.asLocalDate(icRecord.getDateOrdered()));
+		candidate.presetDateInvoiced(TimeUtil.asLocalDate(icRecord.getPresetDateInvoiced()));
 
-		candidate.discountOverride(Percent.ofNullable(icRecord.getDiscount_Override()));
-		candidate.invoiceRuleOverride(InvoiceRule.ofNullableCode(icRecord.getInvoiceRule_Override()));
+		candidate.invoiceRule(InvoiceRule.ofCode(icRecord.getInvoiceRule()))
+				.invoiceRuleOverride(InvoiceRule.ofNullableCode(icRecord.getInvoiceRule_Override()));
 
 		final ProductId productId = ProductId.ofRepoId(icRecord.getM_Product_ID()); // the column is not mandatory in the DB, but still
 		candidate.productId(productId);
 
+		candidate.pricingSystemId(PricingSystemId.ofRepoId(icRecord.getM_PricingSystem_ID()))
+				.priceListVersionId(PriceListVersionId.ofRepoIdOrNull(icRecord.getM_PriceList_Version_ID()));
+
+		final ProductPrice priceEntered = invoiceCandBL.getPriceEntered(icRecord);
+		candidate.priceEntered(priceEntered);
+
 		final ProductPrice priceEnteredOverride = invoiceCandBL.getPriceEnteredOverride(icRecord).orElse(null);
 		candidate.priceEnteredOverride(priceEnteredOverride);
+
+		candidate.discount(Percent.ofNullable(icRecord.getDiscount()))
+				.discountOverride(Percent.ofNullable(icRecord.getDiscount_Override()));
+
+		candidate.priceActual(invoiceCandBL.getPriceActual(icRecord));
 
 		final StockQtyAndUOMQty qtyDelivered = StockQtyAndUOMQtys.create(
 				icRecord.getQtyDelivered(),
@@ -314,6 +283,8 @@ public class ExternallyReferencedCandidateRepository
 		candidate.invoicingUomId(UomId.ofRepoId(icRecord.getC_UOM_ID()));
 
 		candidate.lineDescription(icRecord.getDescription());
+
+		candidate.taxId(TaxId.ofRepoId(icRecord.getC_Tax_ID()));
 
 		return candidate.build();
 	}

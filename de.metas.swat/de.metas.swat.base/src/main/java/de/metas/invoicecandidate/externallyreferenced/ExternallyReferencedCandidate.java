@@ -4,19 +4,28 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
+import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -40,85 +49,120 @@ import lombok.Value;
  * #L%
  */
 
-/** A "manual" IC does not reference another record (e.g. order line or contract). */
-@Value
-@Builder
+@Data
 public class ExternallyReferencedCandidate
 {
-	private OrgId orgId;
+	public static ExternallyReferencedCandidateBuilder createBuilder(@NonNull final NewExternallyReferencedCandidate newIC)
+	{
+		return ExternallyReferencedCandidate
+				.builder()
+				.billPartnerInfo(newIC.getBillPartnerInfo())
+				.dateOrdered(newIC.getDateOrdered())
+				.discountOverride(newIC.getDiscountOverride())
+				.externalHeaderId(newIC.getExternalHeaderId())
+				.externalLineId(newIC.getExternalLineId())
+				.invoiceDocTypeId(newIC.getInvoiceDocTypeId())
+				.invoiceRuleOverride(newIC.getInvoiceRuleOverride())
+				.invoicingUomId(newIC.getInvoicingUomId())
+				.lineDescription(newIC.getLineDescription())
+				.orgId(newIC.getOrgId())
+				.poReference(newIC.getPoReference())
+				.presetDateInvoiced(newIC.getPresetDateInvoiced())
+				.priceEnteredOverride(newIC.getPriceEnteredOverride())
+				.productId(newIC.getProductId())
+				.qtyDelivered(newIC.getQtyDelivered())
+				.qtyOrdered(newIC.getQtyOrdered())
+				.soTrx(newIC.getSoTrx());
+	}
 
-	@NonNull
-	private InvoiceCandidateLookupKey lookupKey;
+	private final OrgId orgId;
 
-	@NonNull
+	// may be null if this instance was not loaded by the repo
+	private final InvoiceCandidateId id;
+
+	private ExternalId externalHeaderId;
+	private ExternalId externalLineId;
+
 	private String poReference;
 
-	@NonNull
-	private BPartnerInfo billPartnerInfo;
+	private final BPartnerInfo billPartnerInfo;
 
-	@NonNull
-	private ProductId productId;
+	private final ProductId productId;
 
-	@NonNull
+	private final InvoiceRule invoiceRule;
+
 	private InvoiceRule invoiceRuleOverride;
 
-	@NonNull
-	private SOTrx soTrx;
+	private final SOTrx soTrx;
 
 	private LocalDate dateOrdered;
 
 	private LocalDate presetDateInvoiced;
 
-	@NonNull
 	private StockQtyAndUOMQty qtyOrdered;
 
-	@NonNull
 	private StockQtyAndUOMQty qtyDelivered;
 
-	private UomId invoicingUomId;
+	private final UomId invoicingUomId;
+
+	private final PricingSystemId pricingSystemId;
+
+	/** when loaded from DB, come IC records can have an empty priceListVersionId. */
+	private final PriceListVersionId priceListVersionId;
+
+	private final ProductPrice priceEntered;
 
 	/** If given, then productId and currencyId have to match! */
-	@Nullable
 	private ProductPrice priceEnteredOverride;
 
-	@Nullable
+	private final ProductPrice priceActual;
+
+	private final Percent discount;
+
+	private final TaxId taxId;
+
 	private Percent discountOverride;
 
-	@Nullable
 	private DocTypeId invoiceDocTypeId;
 
 	private String lineDescription;
 
-	// TODO: figure something out for tax
-
-	public boolean isNew()
-	{
-		return lookupKey == null || lookupKey.getInvoiceCandidateId() == null;
-	}
-
+	@Builder
 	private ExternallyReferencedCandidate(
 			@NonNull final OrgId orgId,
-			@NonNull final InvoiceCandidateLookupKey lookupKey,
-			String poReference,
+			@Nullable final InvoiceCandidateId id,
+			@Nullable final ExternalId externalHeaderId,
+			@Nullable final ExternalId externalLineId,
+			@Nullable final String poReference,
 			@NonNull final BPartnerInfo billPartnerInfo,
 			@NonNull final ProductId productId,
-			InvoiceRule invoiceRuleOverride,
+			@NonNull final InvoiceRule invoiceRule,
+			@Nullable final InvoiceRule invoiceRuleOverride,
 			@NonNull final SOTrx soTrx,
 			@NonNull final LocalDate dateOrdered,
-			LocalDate presetDateInvoiced,
+			@Nullable final LocalDate presetDateInvoiced,
 			@NonNull final StockQtyAndUOMQty qtyOrdered,
 			@NonNull final StockQtyAndUOMQty qtyDelivered,
 			@NonNull final UomId invoicingUomId,
-			ProductPrice priceEnteredOverride,
-			Percent discountOverride,
-			DocTypeId invoiceDocTypeId,
-			String lineDescription)
+			@NonNull final PricingSystemId pricingSystemId,
+			@Nullable final PriceListVersionId priceListVersionId,
+			@NonNull final ProductPrice priceEntered,
+			@Nullable final ProductPrice priceEnteredOverride,
+			@NonNull final Percent discount,
+			@Nullable final Percent discountOverride,
+			@NonNull final ProductPrice priceActual,
+			@NonNull final TaxId taxId,
+			@Nullable final DocTypeId invoiceDocTypeId,
+			@Nullable final String lineDescription)
 	{
 		this.orgId = orgId;
-		this.lookupKey = lookupKey;
+		this.id = id;
+		this.externalHeaderId = externalHeaderId;
+		this.externalLineId = externalLineId;
 		this.poReference = poReference;
 		this.billPartnerInfo = billPartnerInfo;
 		this.productId = productId;
+		this.invoiceRule = invoiceRule;
 		this.invoiceRuleOverride = invoiceRuleOverride;
 		this.soTrx = soTrx;
 		this.dateOrdered = dateOrdered;
@@ -126,10 +170,21 @@ public class ExternallyReferencedCandidate
 		this.qtyOrdered = qtyOrdered;
 		this.qtyDelivered = qtyDelivered;
 		this.invoicingUomId = invoicingUomId;
+		this.pricingSystemId = pricingSystemId;
+		this.priceListVersionId = priceListVersionId;
+		this.priceEntered = priceEntered;
 		this.priceEnteredOverride = priceEnteredOverride;
+		this.discount = discount;
 		this.discountOverride = discountOverride;
+		this.priceActual = priceActual;
+		this.taxId = taxId;
 		this.invoiceDocTypeId = invoiceDocTypeId;
 		this.lineDescription = lineDescription;
+
+		final CurrencyId currencyId = CollectionUtils
+				.extractSingleElement(
+						ImmutableList.of(priceEntered, priceActual),
+						ProductPrice::getCurrencyId);
 
 		if (priceEnteredOverride != null)
 		{
@@ -141,7 +196,10 @@ public class ExternallyReferencedCandidate
 			{
 				// TODO fail
 			}
+			if(!priceEnteredOverride.getCurrencyId().equals(currencyId))
+			{
+				// TODO fail
+			}
 		}
 	}
-
 }

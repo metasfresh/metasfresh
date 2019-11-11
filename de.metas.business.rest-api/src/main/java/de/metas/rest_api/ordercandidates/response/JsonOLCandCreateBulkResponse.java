@@ -16,6 +16,7 @@ import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.ToString;
 
 /*
@@ -47,39 +48,36 @@ public final class JsonOLCandCreateBulkResponse
 {
 	public static JsonOLCandCreateBulkResponse ok(@NonNull final List<JsonOLCand> olCands)
 	{
-		final JsonErrorItem error = null;
-		return new JsonOLCandCreateBulkResponse(olCands, error);
+		return new JsonOLCandCreateBulkResponse(olCands, null);
 	}
 
 	public static JsonOLCandCreateBulkResponse error(@NonNull final JsonErrorItem error)
 	{
 		final List<JsonOLCand> olCands = null;
-		return new JsonOLCandCreateBulkResponse(olCands, error);
+		return new JsonOLCandCreateBulkResponse(olCands, ImmutableList.of(error));
 	}
 
-	@JsonProperty("result")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final List<JsonOLCand> result;
 
-	@JsonProperty("errors")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	List<JsonErrorItem> errors;
+	private final List<JsonErrorItem> errors;
 
 	@JsonCreator
 	private JsonOLCandCreateBulkResponse(
 			@JsonProperty("result") @Nullable final List<JsonOLCand> olCands,
-			@JsonProperty("error") @Nullable final JsonErrorItem error)
+			@JsonProperty("errors") @Nullable @Singular final List<JsonErrorItem> errors)
 	{
-		if (error == null)
+		if (errors == null || errors.isEmpty())
 		{
-			result = olCands != null ? ImmutableList.copyOf(olCands) : ImmutableList.of();
-			errors = ImmutableList.of();
+			this.result = olCands != null ? ImmutableList.copyOf(olCands) : ImmutableList.of();
+			this.errors = ImmutableList.of();
 		}
 		else
 		{
 			Check.assume(olCands == null || olCands.isEmpty(), "No olCands shall be provided when error");
-			result = null;
-			this.errors = ImmutableList.of(error);
+			this.result = null;
+			this.errors = ImmutableList.copyOf(errors);
 		}
 	}
 

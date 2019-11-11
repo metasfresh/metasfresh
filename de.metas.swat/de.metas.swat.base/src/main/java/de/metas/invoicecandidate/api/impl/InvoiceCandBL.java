@@ -1159,10 +1159,16 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public ProductPrice getPriceEnteredEffective(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		if (!InterfaceWrapperHelper.isNullOrEmpty(ic, I_C_Invoice_Candidate.COLUMNNAME_PriceEntered))
+		if (!InterfaceWrapperHelper.isNullOrEmpty(ic, I_C_Invoice_Candidate.COLUMNNAME_PriceEntered_Override))
 		{
 			return createPrice(ic, ic.getPriceEntered_Override());
 		}
+		return createPrice(ic, ic.getPriceEntered());
+	}
+
+	@Override
+	public ProductPrice getPriceEntered(@NonNull final I_C_Invoice_Candidate ic)
+	{
 		return createPrice(ic, ic.getPriceEntered());
 	}
 

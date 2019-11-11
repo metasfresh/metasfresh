@@ -7,6 +7,7 @@ import static java.math.BigDecimal.ZERO;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map.Entry;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -27,9 +28,11 @@ import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidate;
-import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidate.ExternallyReferencedCandidateBuilder;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
 import de.metas.invoicecandidate.externallyreferenced.InvoiceCandidateLookupKey;
+import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
+import de.metas.invoicecandidate.externallyreferenced.NewExternallyReferencedCandidate;
+import de.metas.invoicecandidate.externallyreferenced.NewExternallyReferencedCandidate.NewExternallyReferencedCandidateBuilder;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -109,18 +112,21 @@ public class JsonInsertInvoiceCandidateService
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository;
+	private final ManualCandidateService manualCandidateService;
 
 	public JsonInsertInvoiceCandidateService(
 			@NonNull final BPartnerQueryService bPartnerQueryService,
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final DocTypeService docTypeService,
 			@NonNull final CurrencyService currencyService,
+			@NonNull final ManualCandidateService manualCandidateService,
 			@NonNull final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository)
 	{
 		this.bPartnerQueryService = bPartnerQueryService;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.currencyService = currencyService;
 		this.docTypeService = docTypeService;
+		this.manualCandidateService = manualCandidateService;
 		this.externallyReferencedCandidateRepository = externallyReferencedCandidateRepository;
 	}
 
@@ -133,22 +139,22 @@ public class JsonInsertInvoiceCandidateService
 		exitingCandidates = externallyReferencedCandidateRepository.getAllBy(lookupKey2Item.keySet());
 		failIfNotEmpty(exitingCandidates);
 
-		final ImmutableList.Builder<ExternallyReferencedCandidate> candidatesToSave = ImmutableList.builder();
+		final ImmutableList.Builder<NewExternallyReferencedCandidate> candidatesToSave = ImmutableList.builder();
 		for (final Entry<InvoiceCandidateLookupKey, JsonCreateInvoiceCandidatesRequestItem> keyWithItem : lookupKey2Item.entrySet())
 		{
 			final JsonCreateInvoiceCandidatesRequestItem item = keyWithItem.getValue();
-			final ExternallyReferencedCandidate candidate = createCandidate(item);
+			final NewExternallyReferencedCandidate candidate = createCandidate(item);
 
 			candidatesToSave.add(candidate);
 		}
 
 		final JsonCreateInvoiceCandidatesResponseBuilder result = JsonCreateInvoiceCandidatesResponse.builder();
-		for (final ExternallyReferencedCandidate candidateToSave : candidatesToSave.build())
+		for (final NewExternallyReferencedCandidate candidateToSave : candidatesToSave.build())
 		{
-			final JsonExternalId headerId = JsonExternalIds.ofOrNull(candidateToSave.getLookupKey().getExternalHeaderId());
-			final JsonExternalId lineId = JsonExternalIds.ofOrNull(candidateToSave.getLookupKey().getExternalLineId());
+			final JsonExternalId headerId = JsonExternalIds.ofOrNull(candidateToSave.getExternalHeaderId());
+			final JsonExternalId lineId = JsonExternalIds.ofOrNull(candidateToSave.getExternalLineId());
 
-			final InvoiceCandidateId candidateId = externallyReferencedCandidateRepository.save(candidateToSave);
+			final InvoiceCandidateId candidateId = externallyReferencedCandidateRepository.save(manualCandidateService.complementCandidate(candidateToSave));
 
 			final JsonCreateInvoiceCandidatesResponseItem responseItem = JsonCreateInvoiceCandidatesResponseItem.builder()
 					.externalHeaderId(headerId)
@@ -165,15 +171,14 @@ public class JsonInsertInvoiceCandidateService
 	{
 		if (!exitingCandidates.isEmpty())
 		{
-			throw new InvalidEntityException(TranslatableStrings.constant("InvoiceCandidate(s) already exists"))
+			throw new InvalidEntityException(TranslatableStrings.constant("InvoiceCandidate(s) already exist"))
 					.appendParametersToMessage();
 		}
 	}
 
-	private ExternallyReferencedCandidate createCandidate(@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
+	private NewExternallyReferencedCandidate createCandidate(@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
 	{
-		final ExternallyReferencedCandidateBuilder candidate = ExternallyReferencedCandidate.builder();
-		// candidate.lookupKey(InvoiceCandidateLookupKey.builder().externalHeaderId(externalHeaderId))
+		final NewExternallyReferencedCandidateBuilder candidate = NewExternallyReferencedCandidate.builder();
 
 		final OrgId orgId = syncOrgIdToCandidate(candidate, item);
 		final ProductId productId = syncProductToCandidate(candidate, orgId, item);
@@ -253,13 +258,15 @@ public class JsonInsertInvoiceCandidateService
 		{
 			candidate.lineDescription(item.getLineDescription().trim());
 		}
+
 		return candidate
-				.lookupKey(createInvoiceCandidateLookupKey(item))
+				.externalHeaderId(JsonExternalIds.toExternalId(item.getExternalHeaderId()))
+				.externalLineId(JsonExternalIds.toExternalId(item.getExternalLineId()))
 				.build();
 	}
 
 	private ProductId syncProductToCandidate(
-			@NonNull final ExternallyReferencedCandidateBuilder candidate,
+			@NonNull final NewExternallyReferencedCandidateBuilder candidate,
 			@NonNull final OrgId orgId,
 			@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
 	{
@@ -299,7 +306,7 @@ public class JsonInsertInvoiceCandidateService
 	}
 
 	private OrgId syncOrgIdToCandidate(
-			@NonNull final ExternallyReferencedCandidateBuilder candidate,
+			@NonNull final NewExternallyReferencedCandidateBuilder candidate,
 			@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
 	{
 		final OrgId orgId;
@@ -336,7 +343,7 @@ public class JsonInsertInvoiceCandidateService
 	}
 
 	private void syncTargetDocTypeToCandidate(
-			@NonNull final ExternallyReferencedCandidateBuilder candidate,
+			@NonNull final NewExternallyReferencedCandidateBuilder candidate,
 			@NonNull final OrgId orgId,
 			@Nullable final JsonDocTypeInfo docType)
 	{
@@ -349,7 +356,7 @@ public class JsonInsertInvoiceCandidateService
 	}
 
 	private void syncBPartnerToCandidate(
-			@NonNull final ExternallyReferencedCandidateBuilder candidate,
+			@NonNull final NewExternallyReferencedCandidateBuilder candidate,
 			@NonNull final OrgId orgId,
 			@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
 	{
@@ -455,14 +462,14 @@ public class JsonInsertInvoiceCandidateService
 	}
 
 	private void syncDiscountOverrideToCandidate(
-			@NonNull final ExternallyReferencedCandidateBuilder candidate,
+			@NonNull final NewExternallyReferencedCandidateBuilder candidate,
 			@Nullable final BigDecimal discountOverride)
 	{
 		candidate.discountOverride(Percent.ofNullable(discountOverride));
 	}
 
 	private void syncInvoiceRuleOverrideToCandidate(
-			@NonNull final ExternallyReferencedCandidateBuilder candidate,
+			@NonNull final NewExternallyReferencedCandidateBuilder candidate,
 			@Nullable final JsonInvoiceRule invoiceRuleOverride)
 	{
 		candidate.invoiceRuleOverride(createInvoiceRule(invoiceRuleOverride));
@@ -493,7 +500,7 @@ public class JsonInsertInvoiceCandidateService
 	}
 
 	private void syncPriceEnteredOverrideToCandidate(
-			@NonNull final ExternallyReferencedCandidateBuilder candidate,
+			@NonNull final NewExternallyReferencedCandidateBuilder candidate,
 			@NonNull final ProductId productId,
 			@NonNull final JsonCreateInvoiceCandidatesRequestItem item)
 	{

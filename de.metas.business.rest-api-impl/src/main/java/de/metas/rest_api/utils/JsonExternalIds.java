@@ -43,6 +43,11 @@ public class JsonExternalIds
 		return ExternalId.of(jsonExternalId.getValue());
 	}
 
+	public ExternalId toExternalId(@NonNull final JsonExternalId jsonExternalId)
+	{
+		return ExternalId.of(jsonExternalId.getValue());
+	}
+
 	public JsonExternalId of(@NonNull final ExternalId externalId)
 	{
 		return JsonExternalId.of(externalId.getValue());

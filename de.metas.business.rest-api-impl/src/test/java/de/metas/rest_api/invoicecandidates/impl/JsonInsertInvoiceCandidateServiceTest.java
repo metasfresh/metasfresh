@@ -33,6 +33,7 @@ import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
+import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
@@ -159,7 +160,8 @@ class JsonInsertInvoiceCandidateServiceTest
 				bpartnerCompositeRepository,
 				new DocTypeService(),
 				new CurrencyService(),
-				new ExternallyReferencedCandidateRepository(bpartnerCompositeRepository));
+				new ManualCandidateService(bpartnerCompositeRepository),
+				new ExternallyReferencedCandidateRepository());
 	}
 
 	@Test

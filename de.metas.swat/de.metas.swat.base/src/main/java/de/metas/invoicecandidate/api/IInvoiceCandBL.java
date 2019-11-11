@@ -158,6 +158,8 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	ProductPrice getPriceEnteredEffective(I_C_Invoice_Candidate ic);
 
+	ProductPrice getPriceEntered(I_C_Invoice_Candidate ic);
+
 	Optional<ProductPrice> getPriceEnteredOverride(I_C_Invoice_Candidate ic);
 
 	boolean isTaxIncluded(I_C_Invoice_Candidate ic);

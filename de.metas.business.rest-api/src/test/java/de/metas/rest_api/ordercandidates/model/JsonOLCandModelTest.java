@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.time.LocalDate;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -226,13 +225,13 @@ public class JsonOLCandModelTest
 			@NonNull final T obj,
 			@NonNull JSONObjectMapper<T> jsonObjectMapper) throws IOException
 	{
-		System.out.println("object: " + obj);
+		//System.out.println("object: " + obj);
 		final String json = jsonObjectMapper.writeValueAsString(obj);
-		System.out.println("json: " + json);
+		//System.out.println("json: " + json);
 
 		final Object objDeserialized = jsonObjectMapper.readValue(json);
-		System.out.println("object deserialized: " + objDeserialized);
+		//System.out.println("object deserialized: " + objDeserialized);
 
-		Assert.assertEquals(obj, objDeserialized);
+		assertThat(objDeserialized).isEqualTo(obj);
 	}
 }
