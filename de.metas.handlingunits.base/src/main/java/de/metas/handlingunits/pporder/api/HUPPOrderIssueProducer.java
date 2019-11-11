@@ -43,6 +43,7 @@ import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.CreateDraftIssuesCommand;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.quantity.Quantity;
@@ -250,6 +251,12 @@ public class HUPPOrderIssueProducer
 	public HUPPOrderIssueProducer targetOrderBOMLine(@NonNull final I_PP_Order_BOMLine targetOrderBOMLine)
 	{
 		return targetOrderBOMLines(ImmutableList.of(targetOrderBOMLine));
+	}
+
+	public HUPPOrderIssueProducer targetOrderBOMLine(@NonNull final PPOrderBOMLineId targetOrderBOMLineId)
+	{
+		final I_PP_Order_BOMLine targetOrderBOMLine = ppOrderBOMsRepo.getOrderBOMLineById(targetOrderBOMLineId);
+		return targetOrderBOMLine(targetOrderBOMLine);
 	}
 
 	public HUPPOrderIssueProducer fixedQtyToIssue(@NonNull final Quantity fixedQtyToIssue)
