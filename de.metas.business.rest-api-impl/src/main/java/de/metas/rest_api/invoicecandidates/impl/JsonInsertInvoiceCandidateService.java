@@ -7,8 +7,6 @@ import static java.math.BigDecimal.ZERO;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map.Entry;
-import java.util.Optional;
-
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -131,15 +129,13 @@ public class JsonInsertInvoiceCandidateService
 		final ImmutableMap<InvoiceCandidateLookupKey, JsonCreateInvoiceCandidatesRequestItem> lookupKey2Item = Maps.uniqueIndex(request.getItems(), this::createInvoiceCandidateLookupKey);
 
 		// candidates
-		final ImmutableMap<InvoiceCandidateLookupKey, Optional<ExternallyReferencedCandidate>> //
-		key2Candidate = externallyReferencedCandidateRepository.getAllBy(lookupKey2Item.keySet());
+		final ImmutableList<ExternallyReferencedCandidate> //
+		exitingCandidates = externallyReferencedCandidateRepository.getAllBy(lookupKey2Item.keySet());
+		failIfNotEmpty(exitingCandidates);
 
 		final ImmutableList.Builder<ExternallyReferencedCandidate> candidatesToSave = ImmutableList.builder();
 		for (final Entry<InvoiceCandidateLookupKey, JsonCreateInvoiceCandidatesRequestItem> keyWithItem : lookupKey2Item.entrySet())
 		{
-			final Optional<ExternallyReferencedCandidate> candidateOpt = key2Candidate.get(keyWithItem.getKey());
-			failIfCandidateExists(keyWithItem.getKey(), candidateOpt.isPresent());
-
 			final JsonCreateInvoiceCandidatesRequestItem item = keyWithItem.getValue();
 			final ExternallyReferencedCandidate candidate = createCandidate(item);
 
@@ -165,15 +161,12 @@ public class JsonInsertInvoiceCandidateService
 		return result.build();
 	}
 
-	private void failIfCandidateExists(
-			@NonNull final InvoiceCandidateLookupKey key,
-			final boolean candidateExists)
+	private void failIfNotEmpty(@NonNull final ImmutableList<ExternallyReferencedCandidate> exitingCandidates)
 	{
-		if (candidateExists)
+		if (!exitingCandidates.isEmpty())
 		{
-			throw new InvalidEntityException(TranslatableStrings.constant("InvoiceCandidate already exists"))
-					.appendParametersToMessage()
-					.setParameter("invoiceCandidateLookupKey", key);
+			throw new InvalidEntityException(TranslatableStrings.constant("InvoiceCandidate(s) already exists"))
+					.appendParametersToMessage();
 		}
 	}
 

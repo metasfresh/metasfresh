@@ -4,6 +4,7 @@ import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
 import java.util.List;
@@ -17,10 +18,13 @@ import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.X_AD_OrgInfo;
+import org.compiere.model.X_C_Tax;
+import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +33,9 @@ import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
+import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.pricing.service.impl.PricingTestHelper;
 import de.metas.pricing.service.impl.ProductPriceBuilder;
 import de.metas.rest_api.JsonExternalId;
@@ -42,8 +48,8 @@ import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesR
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.DocTypeService;
+import de.metas.rest_api.utils.InvalidEntityException;
 import de.metas.user.UserRepository;
-import de.metas.util.JSONObjectMapper;
 import de.metas.util.Services;
 
 /*
@@ -83,6 +89,10 @@ class JsonInsertInvoiceCandidateServiceTest
 		AdempiereTestHelper.get().init();
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository())); // needed in case a ProductNotOnPriceListException shluld be thrown
+
+		final I_C_ILCandHandler manualICHandler = newInstance(I_C_ILCandHandler.class);
+		manualICHandler.setClassname(ManualCandidateHandler.class.getName());
+		saveRecord(manualICHandler);
 
 		final I_AD_Org orgRecord = newInstance(I_AD_Org.class);
 		orgRecord.setValue(ORG_VALUE);
@@ -135,6 +145,14 @@ class JsonInsertInvoiceCandidateServiceTest
 		bpartnerLocationRecord.setIsBillTo(true);
 		saveRecord(bpartnerLocationRecord);
 
+		final I_C_Tax taxRecord = newInstance(I_C_Tax.class);
+		taxRecord.setC_TaxCategory_ID(pricingTestHelper.getTaxCategoryId().getRepoId());
+		taxRecord.setC_Country_ID(pricingTestHelper.getDefaultPriceList().getC_Country_ID());
+		taxRecord.setTo_Country_ID(pricingTestHelper.getDefaultPriceList().getC_Country_ID());
+		taxRecord.setSOPOType(X_C_Tax.SOPOTYPE_Both);
+		taxRecord.setValidFrom(TimeUtil.parseTimestamp("2019-01-01"));
+		saveRecord(taxRecord);
+
 		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
 		jsonInsertInvoiceCandidateService = new JsonInsertInvoiceCandidateService(
 				new BPartnerQueryService(),
@@ -147,19 +165,13 @@ class JsonInsertInvoiceCandidateServiceTest
 	@Test
 	void createInvoiceCandidates()
 	{
-		final JsonCreateInvoiceCandidatesRequestItem minimalItem = JsonCreateInvoiceCandidatesRequestItem.builder()
-				.billPartnerIdentifier("val-" + BILL_PARTNER_VALUE)
-				.externalHeaderId(JsonExternalId.of("externalHeaderId"))
-				.externalLineId(JsonExternalId.of("externalLineId"))
-				.orgCode(ORG_VALUE)
-				.productIdentifier("val-" + PRODUCT_VALUE)
-				.qtyOrdered(TEN)
-				.soTrx(JsonSOTrx.SALES)
-				.build();
-		final JsonCreateInvoiceCandidatesRequest request = JsonCreateInvoiceCandidatesRequest.builder()
-				.item(minimalItem)
-				.build();
-		JSONObjectMapper.forClass(JsonCreateInvoiceCandidatesRequest.class).writeValueAsString(request);
+		createInvoiceCandidates_performTest();
+	}
+
+	private void createInvoiceCandidates_performTest()
+	{
+		final JsonCreateInvoiceCandidatesRequest request = createMinimalRequest();
+		// JSONObjectMapper.forClass(JsonCreateInvoiceCandidatesRequest.class).writeValueAsString(request);
 
 		// invoke the method under test
 		final JsonCreateInvoiceCandidatesResponse result = jsonInsertInvoiceCandidateService.createInvoiceCandidates(request);
@@ -174,6 +186,34 @@ class JsonInsertInvoiceCandidateServiceTest
 				.hasSize(1)
 				.extracting("C_Invoice_Candidate_ID", "ExternalHeaderId", "ExternalLineId")
 				.containsExactly(tuple(resultMetasfreshId.getValue(), "externalHeaderId", "externalLineId"));
+	}
+
+	private JsonCreateInvoiceCandidatesRequest createMinimalRequest()
+	{
+		final JsonCreateInvoiceCandidatesRequestItem minimalItem = JsonCreateInvoiceCandidatesRequestItem.builder()
+				.billPartnerIdentifier("val-" + BILL_PARTNER_VALUE)
+				.externalHeaderId(JsonExternalId.of("externalHeaderId"))
+				.externalLineId(JsonExternalId.of("externalLineId"))
+				.orgCode(ORG_VALUE)
+				.productIdentifier("val-" + PRODUCT_VALUE)
+				.qtyOrdered(TEN)
+				.soTrx(JsonSOTrx.SALES)
+				.build();
+		final JsonCreateInvoiceCandidatesRequest request = JsonCreateInvoiceCandidatesRequest.builder()
+				.item(minimalItem)
+				.build();
+		return request;
+	}
+
+	@Test
+	void createInvoiceCandidates_failIfExists()
+	{
+		createInvoiceCandidates_performTest();
+
+		// invoke the method under test a second time with the same request
+		assertThatThrownBy(() -> jsonInsertInvoiceCandidateService.createInvoiceCandidates(createMinimalRequest()))
+				.isInstanceOf(InvalidEntityException.class);
+
 	}
 
 }

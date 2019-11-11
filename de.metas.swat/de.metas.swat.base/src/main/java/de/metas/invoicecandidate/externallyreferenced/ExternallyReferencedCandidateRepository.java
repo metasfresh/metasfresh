@@ -5,18 +5,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
-
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import com.google.common.collect.ImmutableMap;
-
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -44,6 +41,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
@@ -108,6 +106,7 @@ public class ExternallyReferencedCandidateRepository
 			final I_C_ILCandHandler handlerRecord = invoiceCandidateHandlerDAO.retrieveForClassOneOnly(Env.getCtx(), ManualCandidateHandler.class);
 			icRecord.setC_ILCandHandler_ID(handlerRecord.getC_ILCandHandler_ID());
 			icRecord.setIsManual(true);
+			icRecord.setAD_Table_ID(0);
 			icRecord.setRecord_ID(0);
 
 			icRecord.setAD_Org_ID(ic.getOrgId().getRepoId());
@@ -144,10 +143,16 @@ public class ExternallyReferencedCandidateRepository
 						.productId(ic.getProductId())
 						.build();
 			}
+
+			icRecord.setM_PricingSystem_ID(pricingResult.getPricingSystemId().getRepoId());
+			icRecord.setM_PriceList_Version_ID(PriceListVersionId.toRepoId(pricingResult.getPriceListVersionId()));
 			icRecord.setPriceEntered(pricingResult.getPriceStd());
-			icRecord.setDiscount(pricingResult.getDiscount().toBigDecimal());
-			icRecord.setPriceActual(pricingResult.getDiscount().computePercentageOf(pricingResult.getPriceStd(), pricingResult.getPrecision().toInt()));
 			icRecord.setC_Currency_ID(pricingResult.getCurrencyId().getRepoId());
+
+			icRecord.setDiscount(pricingResult.getDiscount().toBigDecimal());
+
+			final BigDecimal discountPercentage = pricingResult.getDiscount().computePercentageOf(pricingResult.getPriceStd(), pricingResult.getPrecision().toInt());
+			icRecord.setPriceActual(pricingResult.getPriceStd().subtract(discountPercentage));
 
 			final int taxId = Services.get(ITaxBL.class).getTax(
 					Env.getCtx(),
@@ -218,7 +223,7 @@ public class ExternallyReferencedCandidateRepository
 		icRecord.setQtyDeliveredInUOM(ic.getQtyDelivered().getUOMQtyNotNull().toBigDecimal());
 	}
 
-	public ImmutableMap<InvoiceCandidateLookupKey, Optional<ExternallyReferencedCandidate>> getAllBy(
+	public ImmutableList<ExternallyReferencedCandidate> getAllBy(
 			@NonNull final Collection<InvoiceCandidateLookupKey> lookupKeys)
 	{
 
@@ -244,24 +249,14 @@ public class ExternallyReferencedCandidateRepository
 			multiQuery.query(query);
 		}
 
-		final HashSet<InvoiceCandidateLookupKey> keysWithoutCandidate = new HashSet<>(lookupKeys);
-		final ImmutableMap.Builder<InvoiceCandidateLookupKey, Optional<ExternallyReferencedCandidate>> result = ImmutableMap.builder();
+		final ImmutableList.Builder<ExternallyReferencedCandidate> result = ImmutableList.builder();
 
 		final List<I_C_Invoice_Candidate> invoiceCandidateRecords = invoiceCandDAO.convertToIQuery(multiQuery.build()).list();
 		for (final I_C_Invoice_Candidate invoiceCandidateRecord : invoiceCandidateRecords)
 		{
 			final ExternallyReferencedCandidate candidate = forRecord(invoiceCandidateRecord);
-			final InvoiceCandidateLookupKey lookupKey = candidate.getLookupKey();
-
-			result.put(lookupKey, Optional.of(candidate));
-			keysWithoutCandidate.remove(lookupKey);
+			result.add(candidate);
 		}
-
-		for (final InvoiceCandidateLookupKey keyWithoutCandidate : keysWithoutCandidate)
-		{
-			result.put(keyWithoutCandidate, Optional.empty());
-		}
-
 		return result.build();
 	}
 
@@ -283,9 +278,11 @@ public class ExternallyReferencedCandidateRepository
 		final BPartnerInfo bpartnerInfo = BPartnerInfo.builder()
 				.bpartnerId(bpartnerId)
 				.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, icRecord.getBill_Location_ID()))
-				.contactId(BPartnerContactId.ofRepoId(bpartnerId, icRecord.getBill_User_ID()))
+				.contactId(BPartnerContactId.ofRepoIdOrNull(bpartnerId, icRecord.getBill_User_ID()))
 				.build();
 		candidate.billPartnerInfo(bpartnerInfo);
+
+		candidate.dateOrdered(TimeUtil.asLocalDate(icRecord.getDateOrdered()));
 
 		candidate.discountOverride(Percent.ofNullable(icRecord.getDiscount_Override()));
 		candidate.invoiceRuleOverride(InvoiceRule.ofNullableCode(icRecord.getInvoiceRule_Override()));

@@ -124,8 +124,8 @@ import lombok.ToString;
 		if (isPostWithoutServer())
 		{
 			// NOTE: even if we need to post it directly, without contacting the server
-			// we shall do it after the transaction is commited, because some of the Doc* implementations
-			// are realying on the case that dependent objects are accessible out of transaction.
+			// we shall do it after the transaction is committed, because some of the Doc* implementations
+			// are relying on the case that dependent objects are accessible out of transaction.
 			postAfterTrxCommit(this::postIt_Directly);
 			return;
 		}

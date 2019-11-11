@@ -67,7 +67,6 @@ public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChange
 		final Map<Integer, InvoiceCandidateInfo> infosBeforeChanges = getInfosBeforeChanges();
 
 		boolean hasChanges = false;
-
 		for (final InvoiceCandidateInfo infoAfterChange : infosAfterChanges.values())
 		{
 			final int invoiceCandidateId = infoAfterChange.getC_Invoice_Candidate_ID();

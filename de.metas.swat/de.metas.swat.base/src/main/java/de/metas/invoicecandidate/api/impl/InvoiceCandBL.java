@@ -579,31 +579,31 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public void setNetAmtToInvoice(@NonNull final I_C_Invoice_Candidate ic)
+	public void setNetAmtToInvoice(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		// If invoice candidate has IsToClear=Y then we shall not invoice it.
 		// Also we shall set the NetAmtToInvoice to ZERO, to not affect the checksum (when invoicing).
-		if (ic.isToClear())
+		if (icRecord.isToClear())
 		{
-			ic.setNetAmtToInvoice(ZERO);
-			ic.setSplitAmt(ZERO);
+			icRecord.setNetAmtToInvoice(ZERO);
+			icRecord.setSplitAmt(ZERO);
 			return;
 		}
 
 		// If invoice candidate would be skipped when enqueueing to be invoiced then set the NetAmtToInvoice=0 (Mark request)
 		// Reason: if the IC would be skipped we want to have the NetAmtToInvoice=0 because we don't want to affect the overall total that is displayed on window bottom.
 		final boolean ignoreInvoiceSchedule = true; // yes, we ignore the DateToInvoice when checking because that's relative to Today
-		if (isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule))
+		if (isSkipCandidateFromInvoicing(icRecord, ignoreInvoiceSchedule))
 		{
-			ic.setNetAmtToInvoice(ZERO);
-			ic.setSplitAmt(ZERO);
+			icRecord.setNetAmtToInvoice(ZERO);
+			icRecord.setSplitAmt(ZERO);
 			return;
 		}
 
 		final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 
-		invoiceCandidateHandlerBL.setNetAmtToInvoice(ic);
-		invoiceCandidateHandlerBL.setLineNetAmt(ic);
+		invoiceCandidateHandlerBL.setNetAmtToInvoice(icRecord);
+		invoiceCandidateHandlerBL.setLineNetAmt(icRecord);
 	}
 
 	@Override
@@ -747,12 +747,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void invalidateForInvoiceSchedule(final I_C_InvoiceSchedule invoiceSchedule)
 	{
-		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
-		final List<I_C_Invoice_Candidate> candsForBPartner = invoiceCandDB.retrieveForInvoiceSchedule(invoiceSchedule);
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+		final List<I_C_Invoice_Candidate> candsForBPartner = invoiceCandDAO.retrieveForInvoiceSchedule(invoiceSchedule);
 
 		for (final I_C_Invoice_Candidate ic : candsForBPartner)
 		{
-			invoiceCandDB.invalidateCand(ic);
+			invoiceCandDAO.invalidateCand(ic);
 		}
 	}
 

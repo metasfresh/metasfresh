@@ -1490,9 +1490,6 @@ public class TimeUtil
 
 	/**
 	 * Creates a {@link Timestamp} for a string according to the pattern {@code yyyy-MM-dd}.
-	 *
-	 * @param date
-	 * @return
 	 */
 	public static Timestamp parseTimestamp(@NonNull final String date)
 	{
