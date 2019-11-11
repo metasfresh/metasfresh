@@ -4,7 +4,9 @@ import java.time.LocalDate;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.adempiere.warehouse.LocatorId;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
@@ -20,6 +22,14 @@ import de.metas.util.ISingletonService;
 
 public interface IHUShipmentScheduleBL extends ISingletonService
 {
+	I_M_ShipmentSchedule getById(ShipmentScheduleId id);
+
+	LocatorId getDefaultLocatorId(I_M_ShipmentSchedule shipmentSchedule);
+
+	BPartnerLocationId getBPartnerLocationId(I_M_ShipmentSchedule shipmentSchedule);
+
+	void closeShipmentSchedule(I_M_ShipmentSchedule shipmentSchedule);
+
 	/**
 	 * Add QtyPicked to current QtyPicked of given shipment schedule.
 	 *

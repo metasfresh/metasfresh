@@ -108,6 +108,24 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	private static final String DEFAULT_ShipmentConsolidationPeriod = null;
 
 	@Override
+	public I_M_ShipmentSchedule getById(@NonNull final ShipmentScheduleId id)
+	{
+		return Services.get(IShipmentSchedulePA.class).getById(id, I_M_ShipmentSchedule.class);
+	}
+
+	@Override
+	public BPartnerLocationId getBPartnerLocationId(@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
+	{
+		return Services.get(IShipmentScheduleEffectiveBL.class).getBPartnerLocationId(shipmentSchedule);
+	}
+
+	@Override
+	public LocatorId getDefaultLocatorId(@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
+	{
+		return Services.get(IShipmentScheduleEffectiveBL.class).getDefaultLocatorId(shipmentSchedule);
+	}
+
+	@Override
 	public ShipmentScheduleWithHU addQtyPickedAndUpdateHU(
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@NonNull StockQtyAndUOMQty qtyPicked,
@@ -674,5 +692,11 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 		shipmentSchedule.setQtyTU_Calculated(qtyTU_Effective);
 		shipmentSchedule.setQtyOrdered_TU(qtyTU_Effective);
+	}
+
+	@Override
+	public void closeShipmentSchedule(final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
+	{
+		Services.get(IShipmentScheduleBL.class).closeShipmentSchedule(shipmentSchedule);
 	}
 }

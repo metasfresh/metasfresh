@@ -38,9 +38,6 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.util.CatchWeightHelper;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -78,16 +75,12 @@ import lombok.NonNull;
 
 public class ProcessPickingCandidatesCommand
 {
-	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IInvoiceCandBL invoiceCandidatesService = Services.get(IInvoiceCandBL.class);
-
 	private final IHUPPOrderBL ppOrderService = Services.get(IHUPPOrderBL.class);
-
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	private final ImmutableSet<PickingCandidateId> pickingCandidateIds;
@@ -278,7 +271,7 @@ public class ProcessPickingCandidatesCommand
 			return;
 		}
 
-		shipmentScheduleBL.closeShipmentSchedule(shipmentSchedule);
+		huShipmentScheduleBL.closeShipmentSchedule(shipmentSchedule);
 
 		//
 		// Close related invoices candidates too
@@ -305,8 +298,8 @@ public class ProcessPickingCandidatesCommand
 		final int packageNo = packToInstructionsId.isVirtual() ? PACKAGE_NO_SEQUENCE.getAndIncrement() : PACKAGE_NO_ZERO;
 
 		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(pickingCandidate.getShipmentScheduleId());
-		final BPartnerLocationId bpartnerLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(shipmentSchedule);
-		final LocatorId locatorId = shipmentScheduleEffectiveBL.getDefaultLocatorId(shipmentSchedule);
+		final BPartnerLocationId bpartnerLocationId = huShipmentScheduleBL.getBPartnerLocationId(shipmentSchedule);
+		final LocatorId locatorId = huShipmentScheduleBL.getDefaultLocatorId(shipmentSchedule);
 
 		return PackToDestinationKey.builder()
 				.packToInstructionsId(packToInstructionsId)
@@ -332,7 +325,7 @@ public class ProcessPickingCandidatesCommand
 
 	private I_M_ShipmentSchedule getShipmentScheduleById(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		return shipmentSchedulesCache.computeIfAbsent(shipmentScheduleId, shipmentSchedulesRepo::getById);
+		return shipmentSchedulesCache.computeIfAbsent(shipmentScheduleId, huShipmentScheduleBL::getById);
 	}
 
 	@lombok.Value
