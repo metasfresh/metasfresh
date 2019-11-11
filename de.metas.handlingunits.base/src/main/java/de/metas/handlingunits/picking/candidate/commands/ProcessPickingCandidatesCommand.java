@@ -44,8 +44,6 @@ import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
@@ -85,7 +83,6 @@ public class ProcessPickingCandidatesCommand
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
-	private final IInvoiceCandDAO invoiceCandidatesRepo = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceCandBL invoiceCandidatesService = Services.get(IInvoiceCandBL.class);
 
 	private final IHUPPOrderBL ppOrderService = Services.get(IHUPPOrderBL.class);
@@ -285,14 +282,8 @@ public class ProcessPickingCandidatesCommand
 
 		//
 		// Close related invoices candidates too
-		final List<I_C_Invoice_Candidate> invoiceCandidates = getInvoiceCandidatesForShipmentSchedule(shipmentSchedule);
-		invoiceCandidatesService.closeInvoiceCandidates(invoiceCandidates);
-	}
-
-	private List<I_C_Invoice_Candidate> getInvoiceCandidatesForShipmentSchedule(final I_M_ShipmentSchedule shipmentSchedule)
-	{
-		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(shipmentSchedule.getC_OrderLine_ID());
-		return invoiceCandidatesRepo.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
+		final OrderLineId salesOrderLineId = OrderLineId.ofRepoIdOrNull(shipmentSchedule.getC_OrderLine_ID());
+		invoiceCandidatesService.closeInvoiceCandidatesByOrderLineId(salesOrderLineId);
 	}
 
 	private IHUProducerAllocationDestination getPackToDestination(final PickingCandidate pickingCandidate)

@@ -47,6 +47,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.money.Money;
 import de.metas.order.InvoiceRule;
+import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
@@ -55,7 +56,6 @@ import de.metas.util.ISingletonService;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.lang.Percent;
 import de.metas.util.rest.ExternalHeaderAndLineId;
-import lombok.NonNull;
 
 public interface IInvoiceCandBL extends ISingletonService
 {
@@ -359,6 +359,8 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	CurrencyPrecision getPrecisionFromPricelist(I_C_Invoice_Candidate ic);
 
+	void closeInvoiceCandidatesByOrderLineId(OrderLineId orderLineId);
+
 	/**
 	 * Close the given invoice candidate.
 	 * Closing an invoice candidate means setting its Processed_Override to Y and invalidating the invoice candidate.
@@ -372,11 +374,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * Iterate the candidates to close and close them one by one.
 	 */
 	void closeInvoiceCandidates(Iterator<I_C_Invoice_Candidate> candidatesToClose);
-
-	default void closeInvoiceCandidates(@NonNull final Iterable<I_C_Invoice_Candidate> candidatesToClose)
-	{
-		closeInvoiceCandidates(candidatesToClose.iterator());
-	}
 
 	/**
 	 * Find out if invoice candidates with flag IsToCLear are supposed to be closed
