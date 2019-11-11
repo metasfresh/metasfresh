@@ -1,17 +1,17 @@
 package org.adempiere.warehouse.api;
 
-import de.metas.location.CountryId;
-import de.metas.organization.OrgId;
-
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
+import de.metas.location.CountryId;
+import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 
 public interface IWarehouseBL extends ISingletonService
 {
+	I_M_Warehouse getById(WarehouseId warehouseId);
 
 	/**
 	 * @deprecated please use {@link #getDefaultLocatorId(WarehouseId)} instead.

@@ -37,12 +37,13 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
@@ -85,32 +86,29 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	}
 
 	@Override
-	public int getM_Warehouse_Effective_ID(final I_M_ReceiptSchedule rs)
+	public WarehouseId getWarehouseEffectiveId(final I_M_ReceiptSchedule rs)
 	{
-		final int warehouseId = rs.getM_Warehouse_Override_ID();
-		if (warehouseId > 0)
+		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(rs.getM_Warehouse_Override_ID());
+		if (warehouseId != null)
 		{
 			return warehouseId;
 		}
 
-		return rs.getM_Warehouse_ID();
+		return WarehouseId.ofRepoId(rs.getM_Warehouse_ID());
 	}
 
 	@Override
 	public I_M_Warehouse getM_Warehouse_Effective(final I_M_ReceiptSchedule rs)
 	{
-		if (rs.getM_Warehouse_Override_ID() > 0)
-		{
-			return loadOutOfTrx(rs.getM_Warehouse_Override_ID(), I_M_Warehouse.class);
-		}
-		return loadOutOfTrx(rs.getM_Warehouse_ID(), I_M_Warehouse.class);
+		final WarehouseId warehouseId = getWarehouseEffectiveId(rs);
+		return Services.get(IWarehouseBL.class).getById(warehouseId);
 	}
 
 	@Override
-	public I_M_Locator getM_Locator_Effective(final I_M_ReceiptSchedule rs)
+	public LocatorId getLocatorEffectiveId(final I_M_ReceiptSchedule rs)
 	{
-		final I_M_Warehouse warehouse = getM_Warehouse_Effective(rs);
-		return Services.get(IWarehouseBL.class).getDefaultLocator(warehouse);
+		final WarehouseId warehouseId = getWarehouseEffectiveId(rs);
+		return Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
 	}
 
 	@Override
@@ -202,7 +200,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	{
 		return BPartnerId.toRepoId(getBPartnerEffectiveId(rs));
 	}
-	
+
 	@Override
 	public BPartnerId getBPartnerEffectiveId(final I_M_ReceiptSchedule rs)
 	{
@@ -215,12 +213,11 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		return BPartnerId.ofRepoId(rs.getC_BPartner_ID());
 	}
 
-
 	@Override
 	public I_C_BPartner getC_BPartner_Effective(final I_M_ReceiptSchedule rs)
 	{
 		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
-		
+
 		final BPartnerId bpartnerId = getBPartnerEffectiveId(rs);
 		return bpartnersRepo.getById(bpartnerId, I_C_BPartner.class);
 	}

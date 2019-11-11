@@ -27,8 +27,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -117,8 +117,8 @@ import de.metas.util.Services;
 
 		//
 		// Set Locator
-		final I_M_Locator locator = receiptScheduleBL.getM_Locator_Effective(documentLine);
-		lutuConfiguration.setM_Locator_ID(locator.getM_Locator_ID());
+		final LocatorId locatorId = receiptScheduleBL.getLocatorEffectiveId(documentLine);
+		lutuConfiguration.setM_Locator_ID(locatorId.getRepoId());
 
 		//
 		// Set HUStatus=Planning because receipt schedules are always about planning

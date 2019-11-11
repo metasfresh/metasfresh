@@ -101,7 +101,7 @@ public final class ReceiptScheduleHUAssignmentListener extends HUAssignmentListe
 
 		//
 		// Update HU's locator (if needed)
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(Services.get(IReceiptScheduleBL.class).getM_Warehouse_Effective_ID(receiptSchedule));
+		final WarehouseId warehouseId = Services.get(IReceiptScheduleBL.class).getWarehouseEffectiveId(receiptSchedule);
 		final LocatorId locatorId = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
 		hu.setM_Locator_ID(locatorId.getRepoId());
 		InterfaceWrapperHelper.save(hu, trxName);

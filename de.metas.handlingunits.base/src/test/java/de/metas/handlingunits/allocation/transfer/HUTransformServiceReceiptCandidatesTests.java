@@ -28,6 +28,8 @@ import org.w3c.dom.Node;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -88,6 +90,7 @@ public class HUTransformServiceReceiptCandidatesTests
 	public static boolean[] isOwnPackingMaterials = { true, false };
 
 	private LUTUProducerDestinationTestSupport data;
+	private BPartnerId bpartnerId;
 
 	private IHandlingUnitsDAO handlingUnitsDAO;
 	private IHandlingUnitsBL handlingUnitsBL;
@@ -97,6 +100,8 @@ public class HUTransformServiceReceiptCandidatesTests
 	public void init()
 	{
 		data = new LUTUProducerDestinationTestSupport();
+		bpartnerId = BPartnerId.ofRepoId(BusinessTestHelper.createBPartner("test").getC_BPartner_ID());
+
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		huDocumentFactoryService = Services.get(IHUDocumentFactoryService.class);
@@ -108,6 +113,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		Check.errorUnless(storages.size() == 1, "Param' cuHU' needs to have *one* storage; storages={}; cuHU={};", storages, cu);
 
 		final I_M_ReceiptSchedule receiptSchedule = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class);
+		receiptSchedule.setC_BPartner_ID(bpartnerId.getRepoId());
 		receiptSchedule.setM_Product_ID(storages.get(0).getProductId().getRepoId());
 		receiptSchedule.setC_UOM_ID(storages.get(0).getC_UOM().getC_UOM_ID());
 		InterfaceWrapperHelper.save(receiptSchedule);
