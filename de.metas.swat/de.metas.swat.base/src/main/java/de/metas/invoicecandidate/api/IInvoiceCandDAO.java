@@ -61,6 +61,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 {
 	I_C_Invoice_Candidate getById(InvoiceCandidateId invoiceCandId);
 
+	I_C_Invoice_Candidate getByIdOutOfTrx(InvoiceCandidateId invoiceCandidateId);
+
 	List<I_C_Invoice_Candidate> getByIds(Collection<InvoiceCandidateId> invoiceCandidateIds);
 
 	/**
@@ -378,6 +380,4 @@ public interface IInvoiceCandDAO extends ISingletonService
 	InvoiceCandidateId getFirstInvoiceableInvoiceCandId(OrderId orderId);
 
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
-
-	//int createSelectionByHeaderAndLineIds(List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds, PInstanceId pInstanceID);
 }

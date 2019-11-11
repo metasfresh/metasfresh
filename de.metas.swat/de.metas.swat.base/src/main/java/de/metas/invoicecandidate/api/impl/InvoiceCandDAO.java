@@ -135,13 +135,19 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			= new ModelDynAttributeAccessor<>(IInvoiceCandDAO.class.getName() + "Avoid_Recreate", Boolean.class);
 
 	@Override
-	public I_C_Invoice_Candidate getById(final InvoiceCandidateId invoiceCandidateId)
+	public I_C_Invoice_Candidate getById(@NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
 		return InterfaceWrapperHelper.load(invoiceCandidateId, I_C_Invoice_Candidate.class);
 	}
 
 	@Override
-	public List<I_C_Invoice_Candidate> getByIds(final Collection<InvoiceCandidateId> invoiceCandidateIds)
+	public I_C_Invoice_Candidate getByIdOutOfTrx(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
+		return InterfaceWrapperHelper.loadOutOfTrx(invoiceCandidateId, I_C_Invoice_Candidate.class);
+	}
+
+	@Override
+	public List<I_C_Invoice_Candidate> getByIds(@NonNull final Collection<InvoiceCandidateId> invoiceCandidateIds)
 	{
 		return InterfaceWrapperHelper.loadByRepoIdAwares(ImmutableSet.copyOf(invoiceCandidateIds), I_C_Invoice_Candidate.class);
 	}
