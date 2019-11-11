@@ -9,6 +9,7 @@ import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.ISingletonService;
 
@@ -47,6 +48,10 @@ public interface IHUPPOrderBL extends ISingletonService
 	IAllocationSource createAllocationSourceForPPOrder(de.metas.handlingunits.model.I_PP_Order ppOrder);
 
 	HUPPOrderIssueProducer createIssueProducer(PPOrderId ppOrderId);
+
+	IPPOrderReceiptHUProducer receivingMainProduct(PPOrderId ppOrderId);
+
+	IPPOrderReceiptHUProducer receivingByOrCoProduct(PPOrderBOMLineId orderBOMLineId);
 
 	/**
 	 * Create a query builder that retrieves all HUs that

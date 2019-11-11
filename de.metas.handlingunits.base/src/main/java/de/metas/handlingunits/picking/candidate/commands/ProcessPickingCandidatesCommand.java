@@ -27,7 +27,6 @@ import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateId;
@@ -35,7 +34,6 @@ import de.metas.handlingunits.picking.PickingCandidateIssueToBOMLine;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer.ProcessIssueCandidatesPolicy;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
-import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
@@ -255,9 +253,9 @@ public class ProcessPickingCandidatesCommand
 
 	private HuId receiveVHUFromPickingOrder(@NonNull final PickingCandidate pickingCandidate)
 	{
-		final I_PP_Order pickingOrder = ppOrderService.getById(pickingCandidate.getPickFrom().getPickingOrderId());
+		final PPOrderId pickingOrderId = pickingCandidate.getPickFrom().getPickingOrderId();
 
-		final I_M_HU vhu = IPPOrderReceiptHUProducer.receivingMainProduct(pickingOrder)
+		final I_M_HU vhu = ppOrderService.receivingMainProduct(pickingOrderId)
 				.pickingCandidateId(pickingCandidate.getId())
 				.receiveVHU(pickingCandidate.getQtyPicked());
 

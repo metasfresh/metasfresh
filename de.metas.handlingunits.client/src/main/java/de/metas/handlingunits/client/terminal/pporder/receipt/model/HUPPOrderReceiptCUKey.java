@@ -7,9 +7,11 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.ILUTUConfigurationEditor;
 import de.metas.handlingunits.client.terminal.lutuconfig.model.CUKey;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class HUPPOrderReceiptCUKey extends CUKey
 {
@@ -59,22 +61,19 @@ public class HUPPOrderReceiptCUKey extends CUKey
 	{
 		return receiptCostCollectorCandidate;
 	}
-	
+
 	public final IPPOrderReceiptHUProducer createReceiptCandidatesProducer()
 	{
+		final IHUPPOrderBL ppOrdersService = Services.get(IHUPPOrderBL.class);
+
 		final ReceiptCostCollectorCandidate receiptCostCollectorCandidate = getReceiptCostCollectorCandidate();
-		
-		final IPPOrderReceiptHUProducer producer;
 		if (receiptCostCollectorCandidate.getOrderBOMLine() != null)
 		{
-			producer = IPPOrderReceiptHUProducer.receivingByOrCoProduct(receiptCostCollectorCandidate.getOrderBOMLine());
+			return ppOrdersService.receivingByOrCoProduct(receiptCostCollectorCandidate.getOrderBOMLineId());
 		}
-
 		else
 		{
-			producer = IPPOrderReceiptHUProducer.receivingMainProduct(receiptCostCollectorCandidate.getOrder());
+			return ppOrdersService.receivingMainProduct(receiptCostCollectorCandidate.getOrderId());
 		}
-		
-		return producer;
 	}
 }

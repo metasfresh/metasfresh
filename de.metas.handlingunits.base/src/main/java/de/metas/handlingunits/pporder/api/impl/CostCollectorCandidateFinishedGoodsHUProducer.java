@@ -14,7 +14,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 
-public class CostCollectorCandidateFinishedGoodsHUProducer extends AbstractPPOrderReceiptHUProducer
+final class CostCollectorCandidateFinishedGoodsHUProducer extends AbstractPPOrderReceiptHUProducer
 {
 	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 
@@ -31,7 +31,7 @@ public class CostCollectorCandidateFinishedGoodsHUProducer extends AbstractPPOrd
 		productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
 	}
 
-	private final I_PP_Order getPP_Order()
+	private I_PP_Order getPP_Order()
 	{
 		return ppOrder;
 	}

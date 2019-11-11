@@ -25,7 +25,10 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.pporder.api.PPOrderPlanningStatus;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -68,6 +71,21 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	public HUPPOrderIssueProducer createIssueProducer(@NonNull final PPOrderId ppOrderId)
 	{
 		return new HUPPOrderIssueProducer(ppOrderId);
+	}
+
+	@Override
+	public IPPOrderReceiptHUProducer receivingMainProduct(@NonNull final PPOrderId ppOrderId)
+	{
+		final I_PP_Order ppOrder = getById(ppOrderId);
+		return new CostCollectorCandidateFinishedGoodsHUProducer(ppOrder);
+	}
+
+	@Override
+	public IPPOrderReceiptHUProducer receivingByOrCoProduct(@NonNull final PPOrderBOMLineId orderBOMLineId)
+	{
+		final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
+		final I_PP_Order_BOMLine orderBOMLine = ppOrderBOMsRepo.getOrderBOMLineById(orderBOMLineId);
+		return new CostCollectorCandidateCoProductHUProducer(orderBOMLine);
 	}
 
 	@Override

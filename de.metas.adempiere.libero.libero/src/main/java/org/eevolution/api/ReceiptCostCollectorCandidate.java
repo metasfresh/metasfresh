@@ -10,6 +10,8 @@ import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.time.SystemTime;
@@ -68,5 +70,18 @@ public class ReceiptCostCollectorCandidate
 	{
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(order.getM_Warehouse_ID());
 		return LocatorId.ofRepoId(warehouseId, order.getM_Locator_ID());
+	}
+
+	public PPOrderId getOrderId()
+	{
+		return PPOrderId.ofRepoId(getOrder().getPP_Order_ID());
+	}
+
+	public PPOrderBOMLineId getOrderBOMLineId()
+	{
+		final I_PP_Order_BOMLine orderBOMLine = getOrderBOMLine();
+		return orderBOMLine != null
+				? PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID())
+				: null;
 	}
 }
