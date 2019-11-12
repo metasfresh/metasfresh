@@ -58,7 +58,6 @@ import java.util.List;
 @Repository
 public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 {
-	// private static final Logger logger = LoggerFactory.getLogger(DpdDeliveryOrderRepository.class);
 	private final AttachmentEntryService attachmentEntryService;
 
 	public DpdDeliveryOrderRepository(final AttachmentEntryService attachmentEntryService)
@@ -160,13 +159,14 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 			orderPO.setRecipientCity(deliveryAddress.getCity());
 			orderPO.setRecipientCountry(deliveryAddress.getCountry().getAlpha2());
 			final ContactPerson deliveryContact = deliveryOrder.getDeliveryContact();
+			//noinspection ConstantConditions
 			orderPO.setRecipientEmailAddress(deliveryContact.getEmailAddress());
+			//noinspection ConstantConditions
 			orderPO.setRecipientPhone(deliveryContact.getPhoneAsStringOrNull());
 		}
 		{
 			// Predict aka Notification
 
-			//noinspection ConstantConditions - custom delivery order data is never null for dpd
 			final DpdOrderCustomDeliveryData customDeliveryData = DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
 			orderPO.setNotificationChannel(customDeliveryData.getNotificationChannel().getCode());
 		}
@@ -192,6 +192,7 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 			{
 				final I_DPD_StoreOrderLine orderLinePO = retrieveStoreOrderLinePoByPackageIdOrCreateNew(lines, deliveryOrderLine);
 
+				//noinspection ConstantConditions
 				orderLinePO.setPackageContent(deliveryOrderLine.getContent());
 				orderLinePO.setWeightInKg(deliveryOrderLine.getGrossWeightKg());
 				orderLinePO.setM_Package_ID(deliveryOrderLine.getPackageId().getRepoId());
@@ -210,12 +211,22 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 
 			final DpdOrderCustomDeliveryData customDeliveryData = DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
 
+			final String awb = deliveryOrder.getTrackingNumber();
+			final byte[] pdfData = customDeliveryData.getPdfData();
+
 			//noinspection ConstantConditions
-			orderPO.setPdfLabelData(customDeliveryData.getPdfData());
+			orderPO.setPdfLabelData(pdfData);
 			//noinspection ConstantConditions
-			orderPO.setawb(deliveryOrder.getTrackingNumber());
+			orderPO.setawb(awb);
 			//noinspection ConstantConditions
-			orderPO.setTrackingURL(deliveryOrder.getTrackingUrl()); // todo
+			orderPO.setTrackingURL(deliveryOrder.getTrackingUrl());
+
+			final TableRecordReference deliveryOrderRef = TableRecordReference.of(I_DPD_StoreOrder.Table_Name, orderPO.getDPD_StoreOrder_ID());
+
+			if (attachmentEntryService.getByReferencedRecord(deliveryOrderRef).isEmpty() && pdfData != null)
+			{
+				attachmentEntryService.createNewAttachment(deliveryOrderRef, awb + ".pdf", pdfData);
+			}
 		}
 		InterfaceWrapperHelper.save(orderPO);
 
@@ -240,7 +251,7 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 	{
 		final List<I_DPD_StoreOrderLine> linesPO = retrieveAllOrderLines(orderPO.getDPD_StoreOrder_ID());
 
-		int allPackagesGrossWeightInKg = linesPO.stream().map(I_DPD_StoreOrderLine::getWeightInKg).reduce(Integer::sum).get();
+		final int allPackagesGrossWeightInKg = linesPO.stream().map(I_DPD_StoreOrderLine::getWeightInKg).reduce(Integer::sum).orElse(1);
 
 		final ImmutableList.Builder<DeliveryOrderLine> deliveryOrderLIneBuilder = ImmutableList.builder();
 		for (final I_DPD_StoreOrderLine linePO : linesPO)
