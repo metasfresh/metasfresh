@@ -14,7 +14,7 @@ public class X_DPD_Shipper_Config extends org.compiere.model.PO implements I_DPD
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 468320853L;
+	private static final long serialVersionUID = -1475234132L;
 
     /** Standard Constructor */
     public X_DPD_Shipper_Config (Properties ctx, int DPD_Shipper_Config_ID, String trxName)
@@ -24,6 +24,7 @@ public class X_DPD_Shipper_Config extends org.compiere.model.PO implements I_DPD
         {
 			setDPD_Shipper_config_ID (0);
 			setLoginApiUrl (null);
+			setPaperFormat (null); // A6
         } */
     }
 
@@ -147,6 +148,34 @@ public class X_DPD_Shipper_Config extends org.compiere.model.PO implements I_DPD
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * PaperFormat AD_Reference_ID=541073
+	 * Reference name: DpdPaperFormat
+	 */
+	public static final int PAPERFORMAT_AD_Reference_ID=541073;
+	/** A6 = A6 */
+	public static final String PAPERFORMAT_A6 = "A6";
+	/** A5 = A5 */
+	public static final String PAPERFORMAT_A5 = "A5";
+	/** A4 = A4 */
+	public static final String PAPERFORMAT_A4 = "A4";
+	/** Set Paper Format.
+		@param PaperFormat Paper Format	  */
+	@Override
+	public void setPaperFormat (java.lang.String PaperFormat)
+	{
+
+		set_Value (COLUMNNAME_PaperFormat, PaperFormat);
+	}
+
+	/** Get Paper Format.
+		@return Paper Format	  */
+	@Override
+	public java.lang.String getPaperFormat () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PaperFormat);
 	}
 
 	/** Set Shipment Service Api Url.

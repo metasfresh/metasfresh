@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.dpd;
 
+import de.metas.shipper.gateway.dpd.logger.DpdDatabaseClientLogger;
 import de.metas.shipping.ShipperId;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
@@ -53,7 +54,7 @@ public class DpdShipperGatewayClientFactory implements ShipperGatewayClientFacto
 		final DpdClientConfig config = configRepo.getByShipperId(shipperId);
 		return DpdShipperGatewayClient.builder()
 				.config(config)
-				// .databaseLogger(DhlDatabaseClientLogger.instance) // todo
+				.databaseLogger(DpdDatabaseClientLogger.instance)
 				.build();
 	}
 }

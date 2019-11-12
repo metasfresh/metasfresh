@@ -28,10 +28,10 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.mpackage.PackageId;
 import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
+import de.metas.shipper.gateway.dpd.model.DpdClientConfigRepository;
 import de.metas.shipper.gateway.dpd.model.DpdNotificationChannel;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.model.DpdOrderType;
-import de.metas.shipper.gateway.dpd.model.DpdPaperFormat;
 import de.metas.shipper.gateway.dpd.model.DpdServiceType;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
@@ -61,7 +61,12 @@ import java.util.Set;
 @Service
 public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
-	// private static final Logger logger = LoggerFactory.getLogger(DpdDraftDeliveryOrderCreator.class);
+	private final DpdClientConfigRepository clientConfigRepository;
+
+	public DpdDraftDeliveryOrderCreator(final DpdClientConfigRepository clientConfigRepository)
+	{
+		this.clientConfigRepository = clientConfigRepository;
+	}
 
 	@Override
 	public String getShipperGatewayId()
@@ -107,7 +112,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final DpdOrderCustomDeliveryData customDeliveryData = DpdOrderCustomDeliveryData.builder()
 				.orderType(DpdOrderType.CONSIGNMENT)
 				// .sendingDepot()// this is null and only set in the client, after login is done
-				.paperFormat(DpdPaperFormat.PAPER_FORMAT_A6) // todo should be read from shipper config
+				.paperFormat(clientConfigRepository.getByShipperId(shipperId).getPaperFormat())
 				.printerLanguage(DpdConstants.DEFAULT_PRINTER_LANGUAGE)
 				.notificationChannel(DpdNotificationChannel.EMAIL)
 				.build();
@@ -228,7 +233,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		//		return getPackageDimensions(firstPackageId, clientConfig.getLengthUomId());
 
 		// todo don't hardcode
-		// todo ask teo/tobi where to refactor the method which gets the uom from a packageId (copied both here and dhl)
+		// 		ask teo/tobi where to refactor the method which gets the uom from a packageId (copied both here and dhl)
 		return PackageDimensions.builder()
 				.lengthInCM(10)
 				.widthInCM(20)

@@ -233,6 +233,29 @@ public interface I_DPD_Shipper_Config
     public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
+	 * Set Paper Format.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPaperFormat (java.lang.String PaperFormat);
+
+	/**
+	 * Get Paper Format.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPaperFormat();
+
+    /** Column definition for PaperFormat */
+    public static final org.adempiere.model.ModelColumn<I_DPD_Shipper_Config, Object> COLUMN_PaperFormat = new org.adempiere.model.ModelColumn<I_DPD_Shipper_Config, Object>(I_DPD_Shipper_Config.class, "PaperFormat", null);
+    /** Column name PaperFormat */
+    public static final String COLUMNNAME_PaperFormat = "PaperFormat";
+
+	/**
 	 * Set Shipment Service Api Url.
 	 *
 	 * <br>Type: String

@@ -28,6 +28,7 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.shipper.gateway.commons.ShipperTestHelper;
 import de.metas.shipper.gateway.dpd.logger.DpdDatabaseClientLogger;
 import de.metas.shipper.gateway.dpd.model.DpdClientConfig;
+import de.metas.shipper.gateway.dpd.model.DpdClientConfigRepository;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrder;
 import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrder_Log;
@@ -62,7 +63,7 @@ public class IntegrationDEtoDETest
 {
 	private static final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 
-	private final DpdDraftDeliveryOrderCreator draftDeliveryOrderCreator = new DpdDraftDeliveryOrderCreator();
+	private final DpdDraftDeliveryOrderCreator draftDeliveryOrderCreator = new DpdDraftDeliveryOrderCreator(new DpdClientConfigRepository());
 	private final DpdDeliveryOrderRepository orderRepository = new DpdDeliveryOrderRepository(attachmentEntryService);
 	private final DpdShipperGatewayClient client = DpdShipperGatewayClient.builder()
 			.config(DpdClientConfig.builder()
@@ -70,7 +71,7 @@ public class IntegrationDEtoDETest
 					.delisPassword(DpdTestHelper.DELIS_PASSWORD)
 					.loginApiUrl(DpdTestHelper.LOGIN_SERVICE_API_URL)
 					.shipmentServiceApiUrl(DpdTestHelper.SHIPMENT_SERVICE_API_URL)
-					.trackingUrlBase("dummy")
+					.trackingUrlBase(DpdConstants.TRACKING_URL)
 					.build())
 			.databaseLogger(DpdDatabaseClientLogger.instance)
 			.build();

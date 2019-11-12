@@ -64,6 +64,7 @@ public class DpdClientConfigRepository
 				.delisID(configPO.getDelisID())
 				.delisPassword(configPO.getDelisPassword())
 				.trackingUrlBase(retrieveTrackingUrl(configPO.getM_Shipper_ID()))
+				.paperFormat(DpdPaperFormat.ofCode(configPO.getPaperFormat()))
 				.build();
 	}
 

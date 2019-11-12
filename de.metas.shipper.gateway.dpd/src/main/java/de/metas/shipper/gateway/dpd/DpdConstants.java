@@ -32,4 +32,6 @@ public class DpdConstants
 
 	public static final String DEFAULT_PRINTER_LANGUAGE = "PDF";
 
+	public static final String TRACKING_URL = "https://tracking.dpd.de/status/en_US/parcel/";
+
 }

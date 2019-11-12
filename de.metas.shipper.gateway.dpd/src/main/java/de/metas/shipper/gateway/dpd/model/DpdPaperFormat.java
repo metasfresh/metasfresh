@@ -34,9 +34,9 @@ import java.util.Arrays;
 
 public enum DpdPaperFormat implements PackageLabelType, ReferenceListAwareEnum
 {
-	PAPER_FORMAT_A6("A6"), // todo should not be hardcoded: add to shipper configuration
-	PAPER_FORMAT_A5("A5"), // todo should not be hardcoded: add to shipper configuration
-	PAPER_FORMAT_A4("A4"); // todo should not be hardcoded: add to shipper configuration
+	PAPER_FORMAT_A6(X_DPD_Shipper_Config.PAPERFORMAT_A6),
+	PAPER_FORMAT_A5(X_DPD_Shipper_Config.PAPERFORMAT_A5),
+	PAPER_FORMAT_A4(X_DPD_Shipper_Config.PAPERFORMAT_A4);
 
 	@Getter
 	private final String code;

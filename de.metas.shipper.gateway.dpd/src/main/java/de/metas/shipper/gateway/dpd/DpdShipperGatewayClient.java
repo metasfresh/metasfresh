@@ -197,7 +197,6 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 			@Nullable final Login login,
 			@Nullable final DeliveryOrderId deliveryOrderRepoIdForLogging)
 	{
-		// todo implement database request logging
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final DpdClientLogEvent.DpdClientLogEventBuilder logEventBuilder = DpdClientLogEvent.builder()
 				.marshaller(webServiceTemplate.getMarshaller())
@@ -292,7 +291,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 				parcel.setContent(deliveryOrderLine.getContent());
 				parcel.setVolume(DpdConversionUtil.formatVolume(deliveryOrderLine.getPackageDimensions()));
 				parcel.setWeight(DpdConversionUtil.convertWeightKgToDag(deliveryOrderLine.getGrossWeightKg()));
-				//				parcel.setInternational(); // todo god save us
+				//				parcel.setInternational(); // todo god save us -> will be done in a followup, as with dhl
 			}
 		}
 		{

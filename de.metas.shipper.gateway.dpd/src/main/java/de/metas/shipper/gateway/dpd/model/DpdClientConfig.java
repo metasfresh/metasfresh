@@ -36,4 +36,5 @@ public class DpdClientConfig
 	String delisID;
 	String delisPassword;
 	String trackingUrlBase;
+	DpdPaperFormat paperFormat;
 }
