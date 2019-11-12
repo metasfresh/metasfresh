@@ -59,7 +59,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 @Disabled("Makes ACTUAL calls to DPD api and needs auth")
-public class IntegrationDEtoDETest
+public class IntegrationDEtoUSTest
 {
 	private static final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 
@@ -83,11 +83,11 @@ public class IntegrationDEtoDETest
 	}
 
 	@Test
-	@DisplayName("Delivery Order DE -> DE + test persistence after all steps")
+	@DisplayName("Delivery Order DE -> US + test persistence after all steps")
 	void testAllSteps()
 	{
 		// check 1: draft DO <->> initial dummy DO
-		final DeliveryOrder initialDummyDeliveryOrder = DpdTestHelper.createDummyDeliveryOrderDEtoDE();
+		final DeliveryOrder initialDummyDeliveryOrder = DpdTestHelper.createDummyDeliveryOrderDEtoUS();
 		final DeliveryOrder draftDeliveryOrder = createDraftDeliveryOrderFromDummy(initialDummyDeliveryOrder);
 		assertEquals("nothing should be changed", initialDummyDeliveryOrder, draftDeliveryOrder);
 		assertEquals(5, draftDeliveryOrder.getDeliveryOrderLines().size());

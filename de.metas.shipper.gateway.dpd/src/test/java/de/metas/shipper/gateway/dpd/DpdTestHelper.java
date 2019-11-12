@@ -55,8 +55,9 @@ class DpdTestHelper
 	static final String DELIS_PASSWORD = "a";
 
 	private static final CountryCode COUNTRY_CODE_DE = CountryCode.builder().alpha2("DE").alpha3("DEU").build();
-	private static final CountryCode COUNTRY_CODE_CH = CountryCode.builder().alpha2("CH").alpha3("CHE").build();
 	private static final CountryCode COUNTRY_CODE_AT = CountryCode.builder().alpha2("AT").alpha3("AUT").build();
+	private static final CountryCode COUNTRY_CODE_CH = CountryCode.builder().alpha2("CH").alpha3("CHE").build();
+	private static final CountryCode COUNTRY_CODE_US = CountryCode.builder().alpha2("US").alpha3("USA").build();
 
 	static DeliveryOrder createDummyDeliveryOrderDEtoDE()
 	{
@@ -184,6 +185,55 @@ class DpdTestHelper
 						.zipCode("8051")
 						.city("Graz")
 						.country(COUNTRY_CODE_AT)
+						.build())
+				.deliveryContact(ContactPerson.builder()
+						.emailAddress("cristian.pasat@metasfresh.com")
+						.simplePhoneNumber("+10-012-345689")
+						.build())
+				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
+				.allPackagesGrossWeightInKg(5)
+				.customerReference(null)
+				.serviceType(DpdServiceType.DPD_CLASSIC)
+				.shipperId(ShipperId.ofRepoId(1))
+				.shipperTransportationId(ShipperTransportationId.ofRepoId(1))
+				.customDeliveryData(DpdOrderCustomDeliveryData.builder()
+						.orderType(DpdOrderType.CONSIGNMENT)
+						// .sendingDepot()// this is null and only set in the client, after login is done
+						.paperFormat(DpdPaperFormat.PAPER_FORMAT_A6)
+						.printerLanguage(DpdConstants.DEFAULT_PRINTER_LANGUAGE)
+						.notificationChannel(DpdNotificationChannel.EMAIL)
+						.build())
+				.build();
+	}
+
+	static DeliveryOrder createDummyDeliveryOrderDEtoUS()
+	{
+		return DeliveryOrder.builder()
+				// shipper
+				.pickupAddress(Address.builder()
+						.companyName1("TheBestPessimist Inc.")
+						.companyName2("The Second Shipper Company Name")
+						.street1("Eduard-Otto-Straße")
+						.street2(null)
+						.houseNo("10")
+						.zipCode("53129")
+						.city("Bonn")
+						.country(COUNTRY_CODE_DE)
+						.build())
+				.pickupDate(PickupDate.builder()
+						.date(LocalDate.now().plusDays(1)) // always tomorrow!
+						.timeFrom(LocalTime.of(12, 34))
+						.timeTo(LocalTime.of(21, 9))
+						.build())
+				// international outside UE (CH) receiver
+				.deliveryAddress(Address.builder()
+						.companyName1("Howard University")
+						.companyName2("")
+						.street1("Sixth Street NW")
+						.houseNo("2400")
+						.zipCode("20059")
+						.city("Washington DC")
+						.country(COUNTRY_CODE_US)
 						.build())
 				.deliveryContact(ContactPerson.builder()
 						.emailAddress("cristian.pasat@metasfresh.com")
