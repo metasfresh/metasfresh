@@ -19,6 +19,7 @@ import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -550,10 +551,7 @@ public class PickingCandidateRepository
 			@NonNull final PickingCandidateId pickingCandidateId,
 			@NonNull ImmutableList<PickingCandidateIssueToBOMLine> issuesToPickingOrder)
 	{
-		final HashMap<PickingCandidateIssueToBOMLineKey, I_M_Picking_Candidate_IssueToOrder> existingRecordsByKey = queryBL.createQueryBuilder(I_M_Picking_Candidate_IssueToOrder.class)
-				.addEqualsFilter(I_M_Picking_Candidate_IssueToOrder.COLUMNNAME_M_Picking_Candidate_ID, pickingCandidateId)
-				.create()
-				.stream()
+		final HashMap<PickingCandidateIssueToBOMLineKey, I_M_Picking_Candidate_IssueToOrder> existingRecordsByKey = streamIssuesToBOMLineRecords(pickingCandidateId)
 				.collect(GuavaCollectors.toHashMapByKey(PickingCandidateIssueToBOMLineKey::of));
 
 		for (final PickingCandidateIssueToBOMLine issue : issuesToPickingOrder)
@@ -562,7 +560,7 @@ public class PickingCandidateRepository
 			final I_M_Picking_Candidate_IssueToOrder existingRecord = existingRecordsByKey.remove(key);
 
 			final I_M_Picking_Candidate_IssueToOrder record;
-			if (existingRecord == null)
+			if (existingRecord != null)
 			{
 				record = existingRecord;
 			}
@@ -573,7 +571,7 @@ public class PickingCandidateRepository
 
 			record.setIsActive(true);
 			record.setM_Picking_Candidate_ID(pickingCandidateId.getRepoId());
-			record.setM_Picking_Candidate_IssueToOrder_ID(issue.getIssueToOrderBOMLineId().getRepoId());
+			record.setPP_Order_BOMLine_ID(issue.getIssueToOrderBOMLineId().getRepoId());
 			record.setM_HU_ID(issue.getIssueFromHUId().getRepoId());
 			record.setM_Product_ID(issue.getProductId().getRepoId());
 			record.setQtyToIssue(issue.getQtyToIssue().toBigDecimal());
@@ -583,6 +581,14 @@ public class PickingCandidateRepository
 		}
 
 		deleteAll(existingRecordsByKey.values());
+	}
+
+	private Stream<I_M_Picking_Candidate_IssueToOrder> streamIssuesToBOMLineRecords(final PickingCandidateId pickingCandidateId)
+	{
+		return queryBL.createQueryBuilder(I_M_Picking_Candidate_IssueToOrder.class)
+				.addEqualsFilter(I_M_Picking_Candidate_IssueToOrder.COLUMNNAME_M_Picking_Candidate_ID, pickingCandidateId)
+				.create()
+				.stream();
 	}
 
 	private void deleteIssuesToBOMLine(@NonNull final Collection<PickingCandidateId> pickingCandidateIds)
