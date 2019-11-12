@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import de.metas.rest_api.utils.JsonError;
+import de.metas.rest_api.common.JsonErrorItem;
 import de.metas.rest_api.utils.JsonErrors;
 import lombok.Builder;
 import lombok.NonNull;
@@ -45,7 +45,7 @@ public class JsonGetProductsResponse
 	List<JsonProduct> products;
 
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	JsonError error;
+	JsonErrorItem error;
 
 	public static JsonGetProductsResponse error(@NonNull final Throwable throwable, @NonNull final String adLanguage)
 	{

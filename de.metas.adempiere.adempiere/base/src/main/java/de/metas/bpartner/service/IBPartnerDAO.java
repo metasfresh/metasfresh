@@ -54,7 +54,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
-import de.metas.util.rest.ExternalId;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;

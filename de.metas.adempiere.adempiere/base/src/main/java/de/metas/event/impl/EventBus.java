@@ -29,6 +29,7 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -315,7 +316,7 @@ final class EventBus implements IEventBus
 		{
 			if (!Adempiere.isUnitTestMode())
 			{
-				final EventLogUserService eventLogUserService = Adempiere.getBean(EventLogUserService.class);
+				final EventLogUserService eventLogUserService = SpringContextHolder.instance.getBean(EventLogUserService.class);
 				eventLogUserService
 						.newErrorLogEntry(eventListener.getClass(), ex)
 						.createAndStore();

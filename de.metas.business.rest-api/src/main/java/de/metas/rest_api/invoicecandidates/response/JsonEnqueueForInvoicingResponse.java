@@ -1,22 +1,12 @@
 package de.metas.rest_api.invoicecandidates.response;
 
-import java.util.List;
+import java.math.BigDecimal;
 
-import javax.annotation.Nullable;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 
-import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
-import de.metas.rest_api.utils.JsonError;
-import de.metas.util.Check;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
@@ -39,68 +29,33 @@ import lombok.ToString;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@ToString(doNotUseGetters = true)
-@EqualsAndHashCode(doNotUseGetters = true)
-public final class JsonEnqueueForInvoicingResponse
+@Value
+public class JsonEnqueueForInvoicingResponse
 {
-	@JsonProperty("result")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final InvoiceCandEnqueuerResult result;
+	private String summaryTranslated;
 
-	@JsonProperty("error")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final JsonError error;
+	private int invoiceCandidateEnqueuedCount;
 
-	public static JsonEnqueueForInvoicingResponse ok(@NonNull final InvoiceCandEnqueuerResult iCands)
-	{
-		final JsonError error = null;
-		return new JsonEnqueueForInvoicingResponse(iCands, error);
-	}
+	private int workpackageEnqueuedCount;
 
-	public static JsonEnqueueForInvoicingResponse error(@NonNull final JsonError error)
-	{
-		final InvoiceCandEnqueuerResult iCands = null;
-		return new JsonEnqueueForInvoicingResponse(iCands, error);
-	}
+	private int workpackageQueueSizeBeforeEnqueueing;
+
+	private BigDecimal totalNetAmtToInvoiceChecksum;
 
 	@JsonCreator
+	@Builder(toBuilder = true)
 	private JsonEnqueueForInvoicingResponse(
-			@JsonProperty("result") @Nullable final InvoiceCandEnqueuerResult iCands,
-			@JsonProperty("error") @Nullable final JsonError error)
+			@JsonProperty("summaryTranslated") final String summaryTranslated,
+			@JsonProperty("invoiceCandidateEnqueuedCount") int invoiceCandidateEnqueuedCount,
+			@JsonProperty("workpackageEnqueuedCount") int workpackageEnqueuedCount,
+			@JsonProperty("workpackageQueueSizeBeforeEnqueueing") int workpackageQueueSizeBeforeEnqueueing,
+			@JsonProperty("totalNetAmtToInvoiceChecksum") final BigDecimal totalNetAmtToInvoiceChecksum)
 	{
-		this.error = error;
-		if (error == null)
-		{
-			result = iCands;
-		}
-		else
-		{
-			Check.assume(iCands == null, "No iCands shall be provided when error");
-			result = null;
-		}
+		this.summaryTranslated = summaryTranslated;
+		this.invoiceCandidateEnqueuedCount = invoiceCandidateEnqueuedCount;
+		this.workpackageEnqueuedCount = workpackageEnqueuedCount;
+		this.workpackageQueueSizeBeforeEnqueueing = workpackageQueueSizeBeforeEnqueueing;
+		this.totalNetAmtToInvoiceChecksum = totalNetAmtToInvoiceChecksum;
 	}
 
-	public boolean isError()
-	{
-		return error != null;
-	}
-
-	public JsonError getError()
-	{
-		if (error == null)
-		{
-			throw new IllegalStateException("Not an error result: " + this);
-		}
-		return error;
-	}
-
-	public InvoiceCandEnqueuerResult getResult()
-	{
-		if (error != null)
-		{
-			throw new IllegalStateException("Not a successful result: " + this, error.getThrowable());
-		}
-		return result;
-	}
 }

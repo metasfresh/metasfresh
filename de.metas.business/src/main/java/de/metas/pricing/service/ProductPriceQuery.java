@@ -342,10 +342,8 @@ public class ProductPriceQuery
 		return _scalePrice;
 	}
 
-	public ProductPriceQuery matching(final IProductPriceQueryMatcher matcher)
+	public ProductPriceQuery matching(@NonNull final IProductPriceQueryMatcher matcher)
 	{
-		Check.assumeNotNull(matcher, "Parameter matcher is not null");
-
 		if (_additionalMatchers == null)
 		{
 			_additionalMatchers = new LinkedHashMap<>();

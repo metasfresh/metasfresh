@@ -93,12 +93,8 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	public boolean isCreateMissingCandidatesAutomatically(final Object model)
 	{
 		final I_C_OLCand olCandRecord = create(model, I_C_OLCand.class);
-		if (!isEligibleForInvoiceCandidateCreate(olCandRecord))
-		{
-			return false;
-		}
 
-		return true;
+		return isEligibleForInvoiceCandidateCreate(olCandRecord);
 	}
 
 	@Override

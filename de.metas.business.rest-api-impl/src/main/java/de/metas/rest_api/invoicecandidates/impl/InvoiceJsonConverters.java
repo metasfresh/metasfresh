@@ -9,9 +9,9 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidateReference;
-import de.metas.rest_api.invoicecandidates.response.InvoiceCandEnqueuerResult;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
-import de.metas.util.rest.ExternalHeaderAndLineId;
+import de.metas.rest_api.utils.JsonExternalIds;
+import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -39,26 +39,26 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 final class InvoiceJsonConverters
 {
-	public static final JsonEnqueueForInvoicingResponse toJson(@NonNull final IInvoiceCandidateEnqueueResult enqueueResult)
+	public static JsonEnqueueForInvoicingResponse toJson(@NonNull final IInvoiceCandidateEnqueueResult enqueueResult)
 	{
-		final InvoiceCandEnqueuerResult invoiceCandidateResult = InvoiceCandEnqueuerResult.builder()
+		final JsonEnqueueForInvoicingResponse invoiceCandidateResult = JsonEnqueueForInvoicingResponse.builder()
 				.invoiceCandidateEnqueuedCount(enqueueResult.getInvoiceCandidateEnqueuedCount())
 				.summaryTranslated(enqueueResult.getSummaryTranslated(Env.getCtx()))
 				.totalNetAmtToInvoiceChecksum(enqueueResult.getTotalNetAmtToInvoiceChecksum())
 				.workpackageEnqueuedCount(enqueueResult.getWorkpackageEnqueuedCount())
 				.workpackageQueueSizeBeforeEnqueueing(enqueueResult.getWorkpackageQueueSizeBeforeEnqueueing())
 				.build();
-		return JsonEnqueueForInvoicingResponse.ok(invoiceCandidateResult);
+		return invoiceCandidateResult;
 	}
 
-	public static List<ExternalHeaderAndLineId> fromJson(@NonNull final List<JsonInvoiceCandidateReference> invoiceCandidates)
+	public static List<ExternalHeaderIdWithExternalLineIds> fromJson(@NonNull final List<JsonInvoiceCandidateReference> invoiceCandidates)
 	{
-		final List<ExternalHeaderAndLineId> headerAndLineIds = new ArrayList<>();
+		final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds = new ArrayList<>();
 		for (final JsonInvoiceCandidateReference cand : invoiceCandidates)
 		{
-			final ExternalHeaderAndLineId headerAndLineId = ExternalHeaderAndLineId.builder()
-					.externalHeaderId(cand.getExternalHeaderId())
-					.externalLineIds(cand.getExternalLineIds())
+			final ExternalHeaderIdWithExternalLineIds headerAndLineId = ExternalHeaderIdWithExternalLineIds.builder()
+					.externalHeaderId(JsonExternalIds.toExternalId(cand.getExternalHeaderId()))
+					.externalLineIds(JsonExternalIds.toExternalIds(cand.getExternalLineIds()))
 					.build();
 			headerAndLineIds.add(headerAndLineId);
 		}

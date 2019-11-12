@@ -18,8 +18,8 @@ import de.metas.product.IProductDAO;
 import de.metas.product.IProductDAO.ProductQuery;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
-import de.metas.rest_api.SyncAdvise;
-import de.metas.rest_api.SyncAdvise.IfExists;
+import de.metas.rest_api.common.SyncAdvise;
+import de.metas.rest_api.common.SyncAdvise.IfExists;
 import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
 import de.metas.rest_api.utils.PermissionService;
 import de.metas.uom.IUOMDAO;
@@ -27,6 +27,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -56,9 +57,9 @@ import lombok.experimental.Wither;
 
 final class ProductMasterDataProvider
 {
-	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IProductBL productsBL = Services.get(IProductBL.class);
-	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private final ProductCategoryId defaultProductCategoryId = ProductCategoryId.ofRepoId(1000000); // FIXME HARDCODED
 	private PermissionService permissionService;
@@ -164,7 +165,7 @@ final class ProductMasterDataProvider
 
 		productRecord.setM_Product_Category_ID(defaultProductCategoryId.getRepoId());
 
-		final UomId uomId = uomsRepo.getUomIdByX12DE355(jsonProductInfo.getUomCode());
+		final UomId uomId = uomDAO.getUomIdByX12DE355(jsonProductInfo.getUomCode());
 		productRecord.setC_UOM_ID(UomId.toRepoId(uomId));
 
 		permissionService.assertCanCreateOrUpdate(productRecord);
@@ -187,11 +188,11 @@ final class ProductMasterDataProvider
 			@NonNull final OrgId orgId)
 	{
 		final String productValue = json.getCode();
-		final String productExternalId = json.getExternalId();
+		final ExternalId productExternalId = json.getExternalId();
 		final SyncAdvise syncAdvise = json.getSyncAdvise();
 
 		final ProductId existingProductId;
-		if (Check.isEmpty(productValue, true) && Check.isEmpty(productExternalId, true))
+		if (Check.isEmpty(productValue, true) && productExternalId == null)
 		{
 			existingProductId = null;
 		}
@@ -204,7 +205,7 @@ final class ProductMasterDataProvider
 					.includeAnyOrg(true)
 					.outOfTrx(syncAdvise.isLoadReadOnly())
 					.build();
-			existingProductId = productsRepo.retrieveProductIdBy(query);
+			existingProductId = productDAO.retrieveProductIdBy(query);
 		}
 
 		if (existingProductId == null && syncAdvise.getIfNotExists().isFail())
@@ -222,7 +223,7 @@ final class ProductMasterDataProvider
 	{
 		if (!Check.isEmpty(uomCode, true))
 		{
-			return uomsRepo.getUomIdByX12DE355(uomCode);
+			return uomDAO.getUomIdByX12DE355(uomCode);
 		}
 		else
 		{

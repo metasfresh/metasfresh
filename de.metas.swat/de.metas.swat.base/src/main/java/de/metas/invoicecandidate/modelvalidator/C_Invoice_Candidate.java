@@ -274,9 +274,20 @@ public class C_Invoice_Candidate
 	@ModelChange(//
 			timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, //
 			ifColumnsChanged = {
-					I_C_Invoice_Candidate.COLUMNNAME_PriceActual, I_C_Invoice_Candidate.COLUMNNAME_PriceActual_Override, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override, I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Override_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID })
+					I_C_Invoice_Candidate.COLUMNNAME_PriceActual, //
+					I_C_Invoice_Candidate.COLUMNNAME_PriceActual_Override, //
+					I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded, //
+					I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override, //
+					I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID, //
+					I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Override_ID, //
+					I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID //
+			})
 	public void updatePriceActual_Net_Effective(final I_C_Invoice_Candidate candidate)
 	{
+		if (candidate.getC_Currency_ID() <= 0)
+		{
+			return; // the IC is not yet ready for this
+		}
 		Services.get(IInvoiceCandBL.class).setPriceActualNet(candidate);
 	}
 

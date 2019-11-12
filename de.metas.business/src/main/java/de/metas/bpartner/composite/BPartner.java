@@ -15,7 +15,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.util.rest.ExternalId;
+import de.metas.order.InvoiceRule;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.Data;
 
@@ -91,9 +92,11 @@ public class BPartner
 	private String url3;
 
 	private BPGroupId groupId;
-	
+
 	private final boolean vendor;
 	private final boolean customer;
+
+	private InvoiceRule invoiceRule;
 
 	private final RecordChangeLog changeLog;
 
@@ -115,6 +118,7 @@ public class BPartner
 			@Nullable final String url2,
 			@Nullable final String url3,
 			@Nullable final BPGroupId groupId,
+			@Nullable final InvoiceRule invoiceRule,
 			@Nullable final Boolean vendor,
 			@Nullable final Boolean customer,
 			@Nullable final RecordChangeLog changeLog)
@@ -134,6 +138,7 @@ public class BPartner
 		this.url2 = url2;
 		this.url3 = url3;
 		this.groupId = groupId;
+		this.invoiceRule = invoiceRule;
 		this.vendor = coalesce(vendor, false);
 		this.customer = coalesce(customer, false);
 

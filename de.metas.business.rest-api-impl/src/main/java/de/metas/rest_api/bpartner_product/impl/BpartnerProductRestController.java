@@ -17,7 +17,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.rest_api.utils.RestApiUtils;
 import de.metas.util.Services;
-import de.metas.util.rest.MetasfreshRestAPIConstants;
+import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
