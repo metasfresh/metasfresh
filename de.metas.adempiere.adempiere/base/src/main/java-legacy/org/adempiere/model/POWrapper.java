@@ -790,13 +790,8 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		return poCache;
 	}
 
-	public static void save(final Object o)
+	public static void save(@NonNull final Object o)
 	{
-		if (o == null)
-		{
-			throw new IllegalArgumentException("model is null");
-		}
-
 		final PO po = getStrictPO(o);
 		if (po != null)
 		{
@@ -916,7 +911,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		{
 			return true;
 		}
-		
+
 		final POWrapper poWrapper = getPOWrapperOrNull(model);
 		final boolean useOldValues = poWrapper != null && poWrapper.useOldValues;
 

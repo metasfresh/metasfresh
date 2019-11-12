@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-import de.metas.rest_api.MetasfreshId;
+import de.metas.rest_api.common.MetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;

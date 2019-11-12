@@ -19,7 +19,7 @@ import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.util.rest.ExternalId;
+import de.metas.util.lang.ExternalId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;

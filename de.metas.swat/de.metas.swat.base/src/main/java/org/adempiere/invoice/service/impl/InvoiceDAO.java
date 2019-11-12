@@ -26,14 +26,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_LandedCost;
 import org.compiere.model.MInvoice;
@@ -48,7 +45,6 @@ import org.slf4j.Logger;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
 
 public class InvoiceDAO extends AbstractInvoiceDAO
 {
@@ -129,57 +125,6 @@ public class InvoiceDAO extends AbstractInvoiceDAO
 
 		return new Query(ctx, tableName, whereClause, trxName).setParameters(
 				invoiceLineId).setOnlyActiveRecords(true).setClient_ID().list(MInvoiceLine.class);
-
-	}
-
-	@Override
-	public I_C_Invoice retrieveInvoiceByInvoiceNoAndBPartnerID(Properties ctx, String invoiceNo, int bPartnerID)
-	{
-		if (bPartnerID <= 0)
-		{
-			return null;
-		}
-
-		if (invoiceNo == null)
-		{
-			return null;
-		}
-		final String trxName = ITrx.TRXNAME_None;
-
-		final String whereClause = I_C_Invoice.COLUMNNAME_DocumentNo + "=? AND "
-				+ I_C_Invoice.COLUMNNAME_C_BPartner_ID + "=?";
-
-		final I_C_Invoice invoice = new Query(ctx, I_C_Invoice.Table_Name, whereClause, trxName)
-				.setParameters(invoiceNo, bPartnerID)
-				.setClient_ID()
-				.firstOnly(I_C_Invoice.class);
-
-		return invoice;
-	}
-
-	@Override
-	public Iterator<I_C_Invoice> retrieveOpenInvoicesByOrg(final I_AD_Org adOrg)
-	{
-		final int adOrgID = adOrg.getAD_Org_ID();
-		Check.assume(adOrgID > 0, "Valid transactional Org: {}", adOrg);
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(adOrg);
-		final String trxName = InterfaceWrapperHelper.getTrxName(adOrg);
-
-		final StringBuilder whereClause = new StringBuilder();
-		final List<Object> params = new ArrayList<>();
-
-		whereClause.append(I_C_Invoice.COLUMNNAME_AD_Org_ID).append("=?");
-		params.add(adOrgID);
-
-		whereClause.append(" AND ").append(I_C_Invoice.COLUMNNAME_IsPaid).append("=?");
-		params.add(false);
-
-		return new Query(ctx, I_C_Invoice.Table_Name, whereClause.toString(), trxName)
-				.setParameters(params)
-				.setClient_ID()
-				.setOnlyActiveRecords(true)
-				.iterate(I_C_Invoice.class, false);
 	}
 
 	@Override

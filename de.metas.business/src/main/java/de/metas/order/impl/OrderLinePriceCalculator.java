@@ -111,7 +111,7 @@ final class OrderLinePriceCalculator
 		if (!pricingResult.isCalculated())
 		{
 			throw new ProductNotOnPriceListException(pricingCtx, orderLine.getLine())
-			.setParameter("pricingResult", pricingResult);
+					.setParameter("pricingResult", pricingResult);
 		}
 
 		PriceAndDiscount priceAndDiscount = extractPriceAndDiscount(pricingResult, pricingCtx.getSoTrx());
@@ -217,23 +217,23 @@ final class OrderLinePriceCalculator
 
 			paymentDiscount = pricingConditionsBreak != null
 					? pricingConditionsBreak.getPaymentDiscountOverrideOrNull().toBigDecimal()
-							: null;
+					: null;
 
-					if (pricingConditionsBreak != null
-							&& pricingConditionsBreak.getId() != null
-							&& hasSameValues(orderLine, pricingConditionsResult))
-					{
-						final PricingConditionsBreakId pricingConditionsBreakId = pricingConditionsBreak.getId();
-						discountSchemaId = pricingConditionsBreakId.getDiscountSchemaId();
-						discountSchemaBreakId = pricingConditionsBreakId.getDiscountSchemaBreakId();
-						tempPricingConditions = false;
-					}
-					else
-					{
-						discountSchemaId = -1;
-						discountSchemaBreakId = -1;
-						tempPricingConditions = true;
-					}
+			if (pricingConditionsBreak != null
+					&& pricingConditionsBreak.getId() != null
+					&& hasSameValues(orderLine, pricingConditionsResult))
+			{
+				final PricingConditionsBreakId pricingConditionsBreakId = pricingConditionsBreak.getId();
+				discountSchemaId = pricingConditionsBreakId.getDiscountSchemaId();
+				discountSchemaBreakId = pricingConditionsBreakId.getDiscountSchemaBreakId();
+				tempPricingConditions = false;
+			}
+			else
+			{
+				discountSchemaId = -1;
+				discountSchemaBreakId = -1;
+				tempPricingConditions = true;
+			}
 		}
 		else
 		{
@@ -330,7 +330,7 @@ final class OrderLinePriceCalculator
 		// Pricing System / List / Country / Currency
 		{
 			PricingSystemId pricingSystemId = CoalesceUtil.coalesce(request.getPricingSystemIdOverride(), pricingCtx.getPricingSystemId());
-			final PriceListId priceListId = CoalesceUtil.coalesce(request.getPriceListIdOverride(),orderBL.retrievePriceListId(order, pricingSystemId));
+			final PriceListId priceListId = CoalesceUtil.coalesce(request.getPriceListIdOverride(), orderBL.retrievePriceListId(order, pricingSystemId));
 			if (pricingSystemId == null && priceListId != null)
 			{
 				pricingSystemId = Services.get(IPriceListDAO.class).getPricingSystemId(priceListId);

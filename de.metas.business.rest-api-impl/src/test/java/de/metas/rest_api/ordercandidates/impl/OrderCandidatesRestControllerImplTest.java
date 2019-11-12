@@ -58,13 +58,14 @@ import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.rest_api.MetasfreshId;
-import de.metas.rest_api.SyncAdvise;
-import de.metas.rest_api.SyncAdvise.IfNotExists;
 import de.metas.rest_api.attachment.JsonAttachmentType;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
-import de.metas.rest_api.ordercandidates.request.JsonDocTypeInfo;
+import de.metas.rest_api.common.JsonDocTypeInfo;
+import de.metas.rest_api.common.JsonErrorItem;
+import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.common.SyncAdvise;
+import de.metas.rest_api.common.SyncAdvise.IfNotExists;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
@@ -73,7 +74,8 @@ import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndC
 import de.metas.rest_api.ordercandidates.response.JsonAttachment;
 import de.metas.rest_api.ordercandidates.response.JsonOLCand;
 import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
-import de.metas.rest_api.utils.JsonError;
+import de.metas.rest_api.utils.CurrencyService;
+import de.metas.rest_api.utils.DocTypeService;
 import de.metas.rest_api.utils.PermissionService;
 import de.metas.rest_api.utils.PermissionServiceFactories;
 import de.metas.tax.api.TaxCategoryId;
@@ -161,8 +163,12 @@ public class OrderCandidatesRestControllerImplTest
 			testMasterdata.createDataSource(DATA_DEST_INVOICECANDIDATE);
 		}
 
+		final CurrencyService currencyService = new CurrencyService();
+		final DocTypeService docTypeService = new DocTypeService();
+		final JsonConverters jsonConverters = new JsonConverters(currencyService, docTypeService);
+
 		orderCandidatesRestControllerImpl = new OrderCandidatesRestControllerImpl(
-				new JsonConverters(),
+				jsonConverters,
 				new OLCandRepository());
 		orderCandidatesRestControllerImpl.setPermissionServiceFactory(PermissionServiceFactories.singleton(permissionService));
 
@@ -369,7 +375,7 @@ public class OrderCandidatesRestControllerImplTest
 		final JsonOLCandCreateBulkResponse responseBody = response.getBody();
 		assertThat(responseBody.isError()).isTrue();
 
-		final JsonError error = responseBody.getError();
+		final JsonErrorItem error = responseBody.getError();
 		assertThat(error.getMessage()).contains("Found no existing BPartner");
 	}
 

@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.rest_api.SyncAdvise;
+import de.metas.rest_api.common.SyncAdvise;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

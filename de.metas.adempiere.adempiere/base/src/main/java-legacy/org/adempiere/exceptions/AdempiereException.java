@@ -13,6 +13,8 @@
  *****************************************************************************/
 package org.adempiere.exceptions;
 
+import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
+
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
@@ -50,9 +52,6 @@ import lombok.NonNull;
 public class AdempiereException extends RuntimeException
 		implements IIssueReportableAware
 {
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = -1813037338765245293L;
 
 	/**
@@ -236,6 +235,7 @@ public class AdempiereException extends RuntimeException
 	private boolean userValidationError;
 
 	private Map<String, Object> parameters = null;
+
 	private boolean appendParametersToMessage = false;
 
 	/**
@@ -294,11 +294,6 @@ public class AdempiereException extends RuntimeException
 		this.messageTrl = message;
 	}
 
-	/**
-	 * Gets original message
-	 *
-	 * @return original message
-	 */
 	protected final ITranslatableString getOriginalMessage()
 	{
 		return messageTrl;
@@ -374,13 +369,22 @@ public class AdempiereException extends RuntimeException
 		if (appendParametersToMessage)
 		{
 			appendParameters(message);
+			final Throwable cause = getCause();
+			if (cause != null && cause instanceof AdempiereException)
+			{
+				final AdempiereException metasfreshCause = (AdempiereException)cause;
+				if (metasfreshCause.appendParametersToMessage) // also append the cause's parameters
+				{
+					metasfreshCause.appendParameters(message);
+				}
+			}
 		}
 		return message.build();
 	}
 
 	protected final String getADLanguage()
 	{
-		return adLanguage != null ? adLanguage : Env.getAD_Language();
+		return coalesceSuppliers(() -> adLanguage, () -> Env.getAD_Language());
 	}
 
 	/**

@@ -8,8 +8,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.metas.rest_api.MetasfreshId;
-import de.metas.rest_api.bpartner.request.JsonResponseUpsertItem;
+import de.metas.rest_api.common.MetasfreshId;
 import de.metas.util.JSONObjectMapper;
 
 /*

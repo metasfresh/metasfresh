@@ -339,8 +339,6 @@ public interface ITrxManager extends ISingletonService
 	 * </ul>
 	 * this method will return a pseudo- {@link ITrxListenerManager} which automatically commits when a listener is registered.
 	 *
-	 *
-	 * @param trxName
 	 * @return auto-commit {@link ITrxListenerManager}; never returns null
 	 */
 	ITrxListenerManager getTrxListenerManagerOrAutoCommit(String trxName);

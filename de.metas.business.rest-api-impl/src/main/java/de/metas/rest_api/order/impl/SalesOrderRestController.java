@@ -45,7 +45,7 @@ import de.metas.rest_api.order.JsonSalesOrderCreateRequest;
 import de.metas.rest_api.order.JsonSalesOrderLine;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.rest.MetasfreshRestAPIConstants;
+import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
 
 /*

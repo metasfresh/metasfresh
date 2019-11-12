@@ -3,9 +3,9 @@ package de.metas.rest_api.bpartner;
 import org.springframework.http.ResponseEntity;
 
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
-import de.metas.rest_api.bpartner.request.JsonResponseUpsert;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseContactList;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
 
 /*
  * #%L

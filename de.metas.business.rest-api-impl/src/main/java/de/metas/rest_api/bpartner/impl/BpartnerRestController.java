@@ -24,10 +24,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.Profiles;
 import de.metas.bpartner.composite.BPartnerComposite;
-import de.metas.rest_api.MetasfreshId;
-import de.metas.rest_api.SyncAdvise;
-import de.metas.rest_api.SyncAdvise.IfExists;
-import de.metas.rest_api.SyncAdvise.IfNotExists;
 import de.metas.rest_api.bpartner.BPartnerRestEndpoint;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister.JsonPersisterService;
@@ -35,16 +31,20 @@ import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
-import de.metas.rest_api.bpartner.request.JsonResponseUpsert;
-import de.metas.rest_api.bpartner.request.JsonResponseUpsert.JsonResponseUpsertBuilder;
-import de.metas.rest_api.bpartner.request.JsonResponseUpsertItem;
 import de.metas.rest_api.bpartner.response.JsonResponseComposite;
 import de.metas.rest_api.bpartner.response.JsonResponseCompositeList;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsert.JsonResponseUpsertBuilder;
+import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.common.SyncAdvise;
+import de.metas.rest_api.common.SyncAdvise.IfExists;
+import de.metas.rest_api.common.SyncAdvise.IfNotExists;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonErrors;
-import de.metas.util.rest.MetasfreshRestAPIConstants;
+import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -197,7 +197,8 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@ApiResponses(value = {
 			@ApiResponse(code = 201, message = "Successfully created or updated bpartner(s)"),
 			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 422, message = "The request entity could not be processed")
 	})
 	@PutMapping
 	@Override
@@ -232,7 +233,8 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@ApiResponses(value = {
 			@ApiResponse(code = 201, message = "Successfully created or updated location"),
 			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 422, message = "The request entity could not be processed")
 	})
 	@ApiOperation("Create or update a locations for a particular bpartner. If a location exists, then its properties that are *not* specified are left untouched.")
 	@PutMapping("{bpartnerIdentifier}/location")
@@ -260,7 +262,8 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@ApiResponse(code = 201, message = "Successfully created or updated contact"),
 			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
 			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 404, message = "The bpartner you were trying to reach is not found")
+			@ApiResponse(code = 404, message = "The bpartner you were trying to reach is not found"),
+			@ApiResponse(code = 422, message = "The request entity could not be processed")
 	})
 	@ApiOperation("Create or update a contacts for a particular bpartner. If a contact exists, then its properties that are *not* specified are left untouched.")
 	@PutMapping("{bpartnerIdentifier}/contact")

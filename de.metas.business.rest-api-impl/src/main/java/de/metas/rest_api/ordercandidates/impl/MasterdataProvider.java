@@ -1,6 +1,5 @@
 package de.metas.rest_api.ordercandidates.impl;
 
-import static de.metas.util.lang.CoalesceUtil.firstNotEmptyTrimmed;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.util.HashMap;
@@ -18,24 +17,17 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.ICurrencyDAO;
-import de.metas.document.DocTypeId;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
-import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgQuery;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
-import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.bpartner.response.JsonResponseBPartner;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
+import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
-import de.metas.rest_api.ordercandidates.request.JsonDocTypeInfo;
 import de.metas.rest_api.ordercandidates.request.JsonOrganization;
 import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
 import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
@@ -71,8 +63,8 @@ import lombok.NonNull;
 final class MasterdataProvider
 {
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
-	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
-	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 
 	private final PermissionService permissionService;
@@ -143,7 +135,7 @@ final class MasterdataProvider
 					.outOfTrx(orgSyncAdvise.isLoadReadOnly())
 					.build();
 
-			existingOrgId = orgsRepo
+			existingOrgId = orgDAO
 					.retrieveOrgIdBy(query)
 					.orElse(null);
 		}
@@ -151,7 +143,7 @@ final class MasterdataProvider
 		final I_AD_Org orgRecord;
 		if (existingOrgId != null)
 		{
-			orgRecord = orgsRepo.getById(existingOrgId);
+			orgRecord = orgDAO.getById(existingOrgId);
 		}
 		else
 		{
@@ -162,7 +154,7 @@ final class MasterdataProvider
 		{
 			permissionService.assertCanCreateOrUpdate(orgRecord);
 			updateOrgRecord(orgRecord, json);
-			orgsRepo.save(orgRecord);
+			orgDAO.save(orgRecord);
 		}
 
 		final OrgId orgId = OrgId.ofRepoId(orgRecord.getAD_Org_ID());
@@ -182,7 +174,7 @@ final class MasterdataProvider
 
 	public JsonOrganization getJsonOrganizationById(final int orgId)
 	{
-		final I_AD_Org orgRecord = orgsRepo.getById(orgId);
+		final I_AD_Org orgRecord = orgDAO.getById(orgId);
 		if (orgRecord == null)
 		{
 			return null;
@@ -192,45 +184,6 @@ final class MasterdataProvider
 				.code(orgRecord.getValue())
 				.name(orgRecord.getName())
 				.build();
-	}
-
-	public DocTypeId getDocTypeId(
-			@Nullable final JsonDocTypeInfo invoiceDocType,
-			@NonNull final OrgId orgId)
-	{
-		if (invoiceDocType == null)
-		{
-			return null;
-		}
-
-		final String docSubType = firstNotEmptyTrimmed(
-				invoiceDocType.getDocSubType(),
-				DocTypeQuery.DOCSUBTYPE_NONE);
-
-		final I_AD_Org orgRecord = orgsRepo.getById(orgId);
-
-		final DocTypeQuery query = DocTypeQuery
-				.builder()
-				.docBaseType(invoiceDocType.getDocBaseType())
-				.docSubType(docSubType)
-				.adClientId(orgRecord.getAD_Client_ID())
-				.adOrgId(orgRecord.getAD_Org_ID())
-				.build();
-
-		return docTypeDAO.getDocTypeId(query);
-	}
-
-	public CurrencyId getCurrencyId(@Nullable final String currencyCodeStr)
-	{
-		if (Check.isEmpty(currencyCodeStr, true))
-		{
-			return null;
-		}
-
-		final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(currencyCodeStr);
-
-		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
-		return currenciesRepo.getByCurrencyCode(currencyCode).getId();
 	}
 
 	public BPartnerInfo getCreateBPartnerInfo(

@@ -25,12 +25,11 @@ import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.BPartnerContactQuery;
 import de.metas.bpartner.service.BPartnerContactQuery.BPartnerContactQueryBuilder;
 import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgQuery;
-import de.metas.rest_api.MetasfreshId;
-import de.metas.rest_api.SyncAdvise;
-import de.metas.rest_api.SyncAdvise.IfExists;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestComposite;
@@ -40,9 +39,12 @@ import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsertItem;
-import de.metas.rest_api.bpartner.request.JsonResponseUpsert;
-import de.metas.rest_api.bpartner.request.JsonResponseUpsert.JsonResponseUpsertBuilder;
-import de.metas.rest_api.bpartner.request.JsonResponseUpsertItem;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsert.JsonResponseUpsertBuilder;
+import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.common.SyncAdvise;
+import de.metas.rest_api.common.SyncAdvise.IfExists;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.IdentifierString.Type;
 import de.metas.rest_api.utils.InvalidIdentifierException;
@@ -124,10 +126,8 @@ public class JsonPersisterService
 		{
 			if (effectiveSyncAdvise.isFailIfNotExists())
 			{
-				throw new MissingResourceException(
-						"Did not find an existing partner with identifier '" + bpartnerIdentifier + "'",
-						jsonBPartnerComposite)
-								.setParameter("effectiveSyncAdvise", effectiveSyncAdvise);
+				throw MissingResourceException.builder().resourceName("bpartner").resourceIdentifier(bpartnerIdentifier.toJson()).parentResource(jsonBPartnerComposite).build()
+						.setParameter("effectiveSyncAdvise", effectiveSyncAdvise);
 			}
 			// create new aggregation root
 			bpartnerComposite = BPartnerComposite.builder().build();
@@ -155,16 +155,15 @@ public class JsonPersisterService
 			bpartnerComposite = contactIdAndBPartner.getBpartnerComposite();
 
 			contact = bpartnerComposite
-					.getContact(contactIdAndBPartner.getBpartnerContactId())
-					.get();
+					.extractContact(contactIdAndBPartner.getBpartnerContactId())
+					.get(); // it's there, or we wouldn't be in this if-block
 		}
 		else
 		{
 			if (parentSyncAdvise.isFailIfNotExists())
 			{
-				throw new MissingResourceException(
-						"Did not find an existing contact with identifier '" + contactIdentifier + "'")
-								.setParameter("effectiveSyncAdvise", parentSyncAdvise);
+				throw MissingResourceException.builder().resourceName("contact").resourceIdentifier(contactIdentifier.toJson()).parentResource(jsonContact).build()
+						.setParameter("effectiveSyncAdvise", parentSyncAdvise);
 			}
 			if (jsonContact.getMetasfreshBPartnerId() == null)
 			{
@@ -350,7 +349,7 @@ public class JsonPersisterService
 		final BPartner bpartner = bpartnerComposite.getBpartner();
 		if (bpartner == null && effCompositeSyncAdvise.isFailIfNotExists())
 		{
-			throw new MissingResourceException("JsonBPartner");
+			throw MissingResourceException.builder().resourceName("bpartner").parentResource(jsonBPartnerComposite).build();
 		}
 
 		final SyncAdvise effectiveSyncAdvise = coalesce(jsonBPartner.getSyncAdvise(), effCompositeSyncAdvise);
@@ -463,6 +462,16 @@ public class JsonPersisterService
 		else if (isUpdateRemove)
 		{
 			bpartner.setLanguage(null);
+		}
+
+		// invoiceRule
+		if (jsonBPartner.getInvoiceRule() != null)
+		{
+			bpartner.setInvoiceRule(InvoiceRule.ofCode(jsonBPartner.getInvoiceRule().toString()));
+		}
+		else if (isUpdateRemove)
+		{
+			bpartner.setInvoiceRule(null);
 		}
 
 		// metasfreshId - we will never update it
@@ -627,12 +636,14 @@ public class JsonPersisterService
 		{
 			if (parentSyncAdvise.isFailIfNotExists())
 			{
-				throw new MissingResourceException("Missing contact with identifier=" + jsonContact.getContactIdentifier())
+				throw MissingResourceException.builder().resourceName("contact").resourceIdentifier(jsonContact.getContactIdentifier()).parentResource(jsonContact).build()
 						.setParameter("parentSyncAdvise", parentSyncAdvise);
 			}
 			else if (Type.METASFRESH_ID.equals(contactIdentifier.getType()))
 			{
-				throw new MissingResourceException("Missing contact with identifier=" + jsonContact.getContactIdentifier() + "; with this type, only updates are allowed.")
+				throw MissingResourceException.builder().resourceName("contact").resourceIdentifier(jsonContact.getContactIdentifier()).parentResource(jsonContact)
+						.detail(TranslatableStrings.constant("With this type, only updates are allowed."))
+						.build()
 						.setParameter("parentSyncAdvise", parentSyncAdvise);
 			}
 			contact = shortTermIndex.newContact(contactIdentifier);
@@ -846,13 +857,24 @@ public class JsonPersisterService
 		{
 			if (parentSyncAdvise.isFailIfNotExists())
 			{
-				throw new MissingResourceException("Missing location with identifier=" + jsonBPartnerLocation.getLocationIdentifier() + " of type=" + locationIdentifier.getType() + "; sync-advise IfNotExists=" + parentSyncAdvise.getIfNotExists());
+				throw MissingResourceException.builder()
+						.resourceName("location")
+						.resourceIdentifier(jsonBPartnerLocation.getLocationIdentifier())
+						.parentResource(jsonBPartnerLocation)
+						.detail(TranslatableStrings.constant("Type of locationlocationIdentifier=" + locationIdentifier.getType()))
+						.build()
+						.setParameter("effectiveSyncAdvise", parentSyncAdvise);
 			}
 			else if (Type.METASFRESH_ID.equals(locationIdentifier.getType()))
 			{
-				throw new MissingResourceException("Missing location with identifier=" + jsonBPartnerLocation.getLocationIdentifier() + " of type=" + locationIdentifier.getType() + "; with this identifier-type, only updates are allowed.");
+				throw MissingResourceException.builder()
+						.resourceName("location")
+						.resourceIdentifier(jsonBPartnerLocation.getLocationIdentifier())
+						.parentResource(jsonBPartnerLocation)
+						.detail(TranslatableStrings.constant("Type of locationlocationIdentifier=" + locationIdentifier.getType() + "; with this identifier-type, only updates are allowed."))
+						.build()
+						.setParameter("effectiveSyncAdvise", parentSyncAdvise);
 			}
-
 			location = shortTermIndex.newLocation(locationIdentifier);
 		}
 

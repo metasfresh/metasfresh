@@ -276,11 +276,8 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	ICompositeQueryFilter<T> addCoalesceEqualsFilter(Object value, String... columnNames);
 
 	/**
-	 * Add a {@link NotEqualsQueryFilter}
-	 *
-	 * @param columnName
-	 * @param value
-	 * @return this
+	 * Add a {@link NotEqualsQueryFilter}.
+	 * As with all {@link CompareQueryFilter}s: if the filter is about an {@code _ID}, then also {@link RepoIdAware} is supported.
 	 */
 	ICompositeQueryFilter<T> addNotEqualsFilter(String columnName, Object value);
 

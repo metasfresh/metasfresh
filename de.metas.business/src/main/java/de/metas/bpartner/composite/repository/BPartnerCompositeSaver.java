@@ -42,7 +42,7 @@ import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.impl.PostalQueryFilter;
 import de.metas.util.Services;
-import de.metas.util.rest.ExternalId;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 
 /*

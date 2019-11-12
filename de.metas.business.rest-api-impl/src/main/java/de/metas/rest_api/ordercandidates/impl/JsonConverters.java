@@ -24,6 +24,8 @@ import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.response.JsonOLCand;
 import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.ordercandidates.response.JsonResponseBPartnerLocationAndContact;
+import de.metas.rest_api.utils.CurrencyService;
+import de.metas.rest_api.utils.DocTypeService;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -53,6 +55,17 @@ import lombok.NonNull;
 @Service
 class JsonConverters
 {
+	private final CurrencyService currencyService;
+	private final DocTypeService docTypeService;
+
+	public JsonConverters(
+			@NonNull final CurrencyService currencyService,
+			@NonNull final DocTypeService docTypeService)
+	{
+		this.currencyService = currencyService;
+		this.docTypeService = docTypeService;
+	}
+
 	public final OLCandCreateRequestBuilder fromJson(
 			@NonNull final JsonOLCandCreateRequest request,
 			@NonNull final MasterdataProvider masterdataProvider)
@@ -70,7 +83,7 @@ class JsonConverters
 
 		final PricingSystemId pricingSystemId = masterdataProvider.getPricingSystemIdByValue(request.getPricingSystemCode());
 
-		final CurrencyId currencyId = masterdataProvider.getCurrencyId(request.getCurrencyCode());
+		final CurrencyId currencyId = currencyService.getCurrencyId(request.getCurrencyCode());
 
 		final WarehouseId warehouseDestId = !Check.isEmpty(request.getWarehouseDestCode())
 				? masterdataProvider.getWarehouseIdByValue(request.getWarehouseDestCode())
@@ -97,7 +110,7 @@ class JsonConverters
 				.dateOrdered(request.getDateOrdered())
 				.dateRequired(request.getDateRequired())
 				//
-				.docTypeInvoiceId(masterdataProvider.getDocTypeId(request.getInvoiceDocType(), orgId))
+				.docTypeInvoiceId(docTypeService.getDocTypeId(request.getInvoiceDocType(), orgId))
 				.presetDateInvoiced(request.getPresetDateInvoiced())
 				//
 				.presetDateShipped(request.getPresetDateShipped())

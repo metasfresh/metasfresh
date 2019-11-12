@@ -56,11 +56,12 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
-import de.metas.util.rest.ExternalHeaderAndLineId;
 
 public interface IInvoiceCandDAO extends ISingletonService
 {
 	I_C_Invoice_Candidate getById(InvoiceCandidateId invoiceCandId);
+
+	I_C_Invoice_Candidate getByIdOutOfTrx(InvoiceCandidateId invoiceCandidateId);
 
 	List<I_C_Invoice_Candidate> getByIds(Collection<InvoiceCandidateId> invoiceCandidateIds);
 
@@ -74,6 +75,9 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#COLUMNNAME_HeaderAggregationKey}
 	 */
 	<T extends I_C_Invoice_Candidate> Iterator<T> retrieveInvoiceCandidates(IQueryBuilder<T> queryBuilder);
+
+	/** Return a list of ICs for each query included in the given {@code multiQuery}. */
+	IQuery<I_C_Invoice_Candidate> convertToIQuery(InvoiceCandidateMultiQuery multiQuery);
 
 	List<I_C_Invoice_Candidate> retrieveIcForIl(I_C_InvoiceLine invoiceLine);
 
@@ -219,12 +223,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	BigDecimal retrieveInvoicableAmount(I_C_BPartner billBPartner, Timestamp date);
 
-	BigDecimal retrieveInvoicableAmount(Properties ctx, IInvoiceCandidateQuery query, CurrencyId targetCurrencyId, int adClientId, int adOrgId, String amountColumnName, String trxName);
-
-	/**
-	 * Creates a new {@link IInvoiceCandidateQuery} instance
-	 */
-	IInvoiceCandidateQuery newInvoiceCandidateQuery();
+	BigDecimal retrieveInvoicableAmount(Properties ctx, InvoiceCandidateQuery query, CurrencyId targetCurrencyId, int adClientId, int adOrgId, String amountColumnName, String trxName);
 
 	List<I_M_InOutLine> retrieveInOutLines(Properties ctx, int C_OrderLine_ID, String trxName);
 
@@ -344,13 +343,10 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Delete given invoice candidate AND it will advice the framework to avoid scheduling a re-create.
-	 *
-	 * @param ic
 	 */
 	void deleteAndAvoidRecreateScheduling(I_C_Invoice_Candidate ic);
 
 	/**
-	 * @param ic invoice candidate
 	 * @return true if re-create scheduling shall be avoided for given invoice candidate
 	 */
 	boolean isAvoidRecreate(I_C_Invoice_Candidate ic);
@@ -364,9 +360,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * <li>Only retrieve invoice candidates the user and role have access to
 	 *
 	 * To be kept in sync with {@link #getSQLDefaultFilter(Properties)}
-	 *
-	 * @param queryBuilder
-	 * @return
 	 */
 	IQueryBuilder<I_C_Invoice_Candidate> applyDefaultFilter(IQueryBuilder<I_C_Invoice_Candidate> queryBuilder);
 
@@ -379,9 +372,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * <li>Only retrieve invoice candidates the user and role have access to.
 	 *
 	 * To be kept in sync with {{@link #applyDefaultFilter(IQueryBuilder)}
-	 *
-	 * @param ctx
-	 * @return
 	 */
 	String getSQLDefaultFilter(Properties ctx);
 
@@ -390,8 +380,4 @@ public interface IInvoiceCandDAO extends ISingletonService
 	InvoiceCandidateId getFirstInvoiceableInvoiceCandId(OrderId orderId);
 
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
-
-	int createSelectionByHeaderAndLineIds(List<ExternalHeaderAndLineId> headerAndLineIds, PInstanceId pInstanceID);
-
-	List<I_C_Invoice_Candidate> retrieveByHeaderAndLineId(List<ExternalHeaderAndLineId> headerAndLineIds);
 }

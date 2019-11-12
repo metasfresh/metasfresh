@@ -8,9 +8,10 @@ import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidateReference;
-import de.metas.util.rest.ExternalHeaderAndLineId;
-import de.metas.util.rest.ExternalId;
+import de.metas.rest_api.utils.JsonExternalIds;
+import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 
 /*
  * #%L
@@ -36,11 +37,11 @@ import de.metas.util.rest.ExternalId;
 
 public class InvoiceJsonConverterServiceTest
 {
-	private static final ExternalId EXTERNAL_HEADER_ID1 = ExternalId.of("HEADER_1");
-	private static final ExternalId EXTERNAL_LINE_ID1 = ExternalId.of("LINE_1");
+	private static final JsonExternalId EXTERNAL_HEADER_ID1 = JsonExternalId.of("HEADER_1");
+	private static final JsonExternalId EXTERNAL_LINE_ID1 = JsonExternalId.of("LINE_1");
 
-	private static final ExternalId EXTERNAL_HEADER_ID2 = ExternalId.of("HEADER_2");
-	private static final ExternalId EXTERNAL_LINE_ID2 = ExternalId.of("LINE_2");
+	private static final JsonExternalId EXTERNAL_HEADER_ID2 = JsonExternalId.of("HEADER_2");
+	private static final JsonExternalId EXTERNAL_LINE_ID2 = JsonExternalId.of("LINE_2");
 
 	@Test
 	void checkInvoiceCandidateSelection()
@@ -56,13 +57,13 @@ public class InvoiceJsonConverterServiceTest
 				.build();
 
 		// invoke the method under test
-		final List<ExternalHeaderAndLineId> headerAndLineIds = InvoiceJsonConverters.fromJson(ImmutableList.of(jic1, jic2));
+		final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds = InvoiceJsonConverters.fromJson(ImmutableList.of(jic1, jic2));
 
 		assertThat(headerAndLineIds).hasSize(2);
-		assertThat(headerAndLineIds.get(0).getExternalHeaderId()).isEqualTo(EXTERNAL_HEADER_ID1);
+		assertThat(headerAndLineIds.get(0).getExternalHeaderId()).isEqualTo(JsonExternalIds.toExternalId(EXTERNAL_HEADER_ID1));
 		assertThat(headerAndLineIds.get(0).getExternalLineIds()).isEmpty();
 
-		assertThat(headerAndLineIds.get(1).getExternalHeaderId()).isEqualTo(EXTERNAL_HEADER_ID2);
-		assertThat(headerAndLineIds.get(1).getExternalLineIds()).containsExactly(EXTERNAL_LINE_ID1, EXTERNAL_LINE_ID2);
+		assertThat(headerAndLineIds.get(1).getExternalHeaderId()).isEqualTo(JsonExternalIds.toExternalId(EXTERNAL_HEADER_ID2));
+		assertThat(headerAndLineIds.get(1).getExternalLineIds()).containsExactly(JsonExternalIds.toExternalId(EXTERNAL_LINE_ID1), JsonExternalIds.toExternalId(EXTERNAL_LINE_ID2));
 	}
 }
