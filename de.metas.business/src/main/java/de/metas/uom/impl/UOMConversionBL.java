@@ -34,6 +34,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.NoUOMConversionException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.slf4j.Logger;
 
@@ -316,7 +317,7 @@ public class UOMConversionBL implements IUOMConversionBL
 
 		// try to derive
 		return getTimeConversionRate(uomFrom, uomTo);
-	}	// getConversion
+	}    // getConversion
 
 	private UOMConversionRate getRate(
 			@Nullable final ProductId productId,
@@ -394,6 +395,15 @@ public class UOMConversionBL implements IUOMConversionBL
 	}
 
 	@Override
+	public Optional<BigDecimal> convert(@NonNull final UomId fromUomId, @NonNull final UomId toUomId, @NonNull final BigDecimal qty)
+	{
+		final I_C_UOM fromUom = uomDAO.getById(fromUomId);
+		final I_C_UOM toUom = uomDAO.getById(toUomId);
+
+		return convert(fromUom, toUom, qty);
+	}
+
+	@Override
 	public Optional<BigDecimal> convert(
 			@NonNull final I_C_UOM fromUOM, // int C_UOM_ID,
 			@NonNull final I_C_UOM toUOM, // int C_UOM_To_ID,
@@ -422,7 +432,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		{
 			return Optional.empty();
 		}
-	}	// convert
+	}    // convert
 
 	private Optional<UOMConversionRate> getTimeConversionRate(@NonNull final UomId fromTimeUomId, @NonNull final UomId toTimeUomId)
 	{

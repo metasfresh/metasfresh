@@ -417,7 +417,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	I_M_HU_PI getEffectivePI(I_M_HU hu);
 
-	I_M_HU_PackingMaterial getHUPackingMaterial(I_M_HU_Item huItem);
 
 	static I_C_BPartner extractBPartnerOrNull(final I_M_HU hu)
 	{

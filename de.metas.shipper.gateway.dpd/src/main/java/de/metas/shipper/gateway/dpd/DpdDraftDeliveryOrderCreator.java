@@ -25,6 +25,8 @@ package de.metas.shipper.gateway.dpd;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.mpackage.PackageId;
 import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
@@ -42,9 +44,13 @@ import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipper.gateway.spi.model.ServiceType;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.ShipperTransportationId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMConstants;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -125,7 +131,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 					// .repoId()
 					.content(mPackage.getDescription())
 					.grossWeightKg(getPackageGrossWeightKg(mPackage, 1)) // todo same as in de.metas.shipper.gateway.commons.ShipperGatewayFacade.computeGrossWeightInKg: we assume it's in Kg
-					.packageDimensions(getPackageDimensions(packageId, shipperId))
+					.packageDimensions(getPackageDimensions(packageId))
 					// .customDeliveryData()
 					.packageId(packageId)
 					.build();
@@ -225,63 +231,19 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	}
 
 	@NonNull
-	private PackageDimensions getPackageDimensions(@NonNull final PackageId packageId, final ShipperId shipperId)
+	private PackageDimensions getPackageDimensions(@NonNull final PackageId packageId)
 	{
-		//		final DpdClientConfig clientConfig = clientConfigRepository.getByShipperId(ShipperId.ofRepoId(shipperId));
-		//		return getPackageDimensions(firstPackageId, clientConfig.getLengthUomId());
+		final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
+		final I_M_HU_PackingMaterial packingMaterial = packingMaterialDAO.retrievePackingMaterialOrNull(packageId);
 
-		// todo don't hardcode
-		// 		ask teo/tobi where to refactor the method which gets the uom from a packageId (copied both here and dhl)
-		return PackageDimensions.builder()
-				.lengthInCM(10)
-				.widthInCM(20)
-				.heightInCM(30)
-				.build();
+		if (packingMaterial == null)
+		{
+			throw new AdempiereException("There is no packing material for the package: " + packageId + ". Please create a packing material and set its dimensions."); // todo add a nicer message
+		}
+
+		final UomId toUomId = Services.get(IUOMDAO.class).getUomIdByX12DE355(UOMConstants.X12_CENTIMETRE);
+
+		return packingMaterialDAO.preparePackageDimensions(packingMaterial, toUomId);
+
 	}
-
-	//	/**
-	//	 * sql:
-	//	 *
-	//	 * <pre>{@code
-	//	 * SELECT pack.width
-	//	 * FROM m_package_hu phu
-	//	 * 		INNER JOIN m_hu_item huitem ON phu.m_hu_id = huitem.m_hu_id
-	//	 * 		INNER JOIN m_hu_packingmaterial pack ON huitem.m_hu_packingmaterial_id = pack.m_hu_packingmaterial_id
-	//	 * WHERE phu.m_package_id = 1000023
-	//	 * }</pre>
-	//	 * <p>
-	//	 * thx to ruxi for transforming this query into "metasfresh"
-	//	 */
-	//	@NonNull
-	//	private PackageDimensions getPackageDimensions(final int packageId, @NonNull final UomId toUomId)
-	//	{
-	//		// assuming packing material is never null
-	//		final I_M_HU_PackingMaterial packingMaterial = Services.get(IQueryBL.class)
-	//				.createQueryBuilder(I_M_Package_HU.class)
-	//				.addEqualsFilter(I_M_Package_HU.COLUMNNAME_M_Package_ID, packageId)
-	//				//
-	//
-	//				.andCollect(I_M_HU.COLUMN_M_HU_ID, I_M_HU.class)
-	//				.andCollectChildren(I_M_HU_Item.COLUMN_M_HU_ID)
-	//				.andCollect(I_M_HU_PackingMaterial.COLUMN_M_HU_PackingMaterial_ID, I_M_HU_PackingMaterial.class)
-	//				.create()
-	//				.firstOnly(I_M_HU_PackingMaterial.class);
-	//
-	//		final UomId uomId = UomId.ofRepoIdOrNull(packingMaterial.getC_UOM_Dimension_ID());
-	//
-	//		if (uomId == null)
-	//		{
-	//			throw new AdempiereException("Package UOM must be set");
-	//		}
-	//
-	//		final I_C_UOM fromUom = InterfaceWrapperHelper.load(uomId, I_C_UOM.class);
-	//		final I_C_UOM toUom = InterfaceWrapperHelper.load(toUomId, I_C_UOM.class);
-	//
-	//		final IUOMConversionBL iuomConversionBL = Services.get(IUOMConversionBL.class);
-	//		return PackageDimensions.builder()
-	//				.heightInCM(iuomConversionBL.convert(fromUom, toUom, packingMaterial.getHeight()).get().intValue())
-	//				.lengthInCM(iuomConversionBL.convert(fromUom, toUom, packingMaterial.getLength()).get().intValue())
-	//				.widthInCM(iuomConversionBL.convert(fromUom, toUom, packingMaterial.getWidth()).get().intValue())
-	//				.build();
-	//	}
 }

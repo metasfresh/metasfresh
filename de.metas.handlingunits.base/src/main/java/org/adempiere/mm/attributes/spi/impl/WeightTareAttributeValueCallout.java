@@ -10,12 +10,12 @@ package org.adempiere.mm.attributes.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -82,7 +82,7 @@ public class WeightTareAttributeValueCallout
 
 	/**
 	 * Calculates Weight Tare for given HU.
-	 *
+	 * <p>
 	 * NOTE: this method calculates PI's tare weight without considering included HUs because we don't know how many are.
 	 *
 	 * @param piVersion
@@ -92,6 +92,7 @@ public class WeightTareAttributeValueCallout
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 
 		final BigDecimal weightTare;
 		if (handlingUnitsBL.isAggregateHU(hu))
@@ -103,7 +104,7 @@ public class WeightTareAttributeValueCallout
 					.filter(item -> Objects.equals(handlingUnitsBL.getItemType(item), X_M_HU_Item.ITEMTYPE_PackingMaterial))
 
 					// .. get their M_HU_PackingMaterial and Qty, if they have both
-					.map(item -> handlingUnitsBL.getHUPackingMaterial(item))
+					.map(item -> packingMaterialDAO.getHUPackingMaterial(item))
 					.filter(packingmaterial -> packingmaterial != null)
 
 					// multiply their M_HU_PackingMaterial's weight
@@ -156,7 +157,6 @@ public class WeightTareAttributeValueCallout
 	}
 
 	/**
-	 * 
 	 * @param huPackingMaterial
 	 * @return never returns {@code null}.
 	 */

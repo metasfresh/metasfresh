@@ -1,8 +1,5 @@
 package de.metas.shipper.gateway.commons;
 
-import org.adempiere.util.lang.IPair;
-import org.compiere.model.I_C_Location;
-
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.shipper.gateway.spi.model.Address;
@@ -12,6 +9,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.util.lang.IPair;
+import org.compiere.model.I_C_Location;
 
 /*
  * #%L
@@ -59,7 +58,7 @@ public final class DeliveryOrderUtil
 			addressBuilder.street1(location.getAddress1());
 			addressBuilder.houseNo("0");
 		}
-		
+
 		return addressBuilder
 				.street2(location.getAddress2())
 				.zipCode(location.getPostal())

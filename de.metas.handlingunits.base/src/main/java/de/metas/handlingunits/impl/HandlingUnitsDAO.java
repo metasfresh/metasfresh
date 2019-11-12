@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -180,8 +181,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Cached(cacheName = I_M_HU_PI.Table_Name + "#by#" + I_M_HU_PI.COLUMNNAME_M_HU_PI_ID)
-	// NOTE: for caching to work, don't make it final
-	/* package */I_M_HU_PI retrievePI(final @CacheCtx Properties ctx, @NonNull final HuPackingInstructionsId piId)
+		// NOTE: for caching to work, don't make it final
+		/* package */I_M_HU_PI retrievePI(final @CacheCtx Properties ctx, @NonNull final HuPackingInstructionsId piId)
 	{
 		final I_M_HU_PI pi = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_HU_PI.COLUMNNAME_M_HU_PI_ID, piId)
@@ -328,6 +329,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public List<IPair<I_M_HU_PackingMaterial, Integer>> retrievePackingMaterialAndQtys(final I_M_HU hu)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 
 		final List<IPair<I_M_HU_PackingMaterial, Integer>> packingMaterials = new ArrayList<>();
 		final List<I_M_HU_Item> huItems = retrieveItems(hu);
@@ -355,7 +357,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				qty = BigDecimal.ONE;
 			}
 
-			final I_M_HU_PackingMaterial packingMaterial = handlingUnitsBL.getHUPackingMaterial(huItem);
+			final I_M_HU_PackingMaterial packingMaterial = packingMaterialDAO.getHUPackingMaterial(huItem);
 
 			packingMaterials.add(ImmutablePair.of(packingMaterial, qty.intValueExact()));
 		}
@@ -543,7 +545,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			+ "#by"
 			+ "#" + I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_ID
 			+ "#" + I_M_HU_PI_Version.COLUMNNAME_IsCurrent)
-	/* package */I_M_HU_PI_Version retrievePICurrentVersionOrNull(
+		/* package */I_M_HU_PI_Version retrievePICurrentVersionOrNull(
 			final @CacheCtx Properties ctx,
 			final HuPackingInstructionsId piId,
 			final @CacheTrx String trxName)
@@ -907,11 +909,11 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			}
 
 			logger.warn("More then one parent PI Item found. Returing the first one."
-					+ "\n huPI={}"
-					+ "\n huUnitType={}"
-					+ "\n bpartner={}"
-					+ "\n HU PI Items with DefaultLU={}"
-					+ "\n => parent HU PI Items={}",
+							+ "\n huPI={}"
+							+ "\n huUnitType={}"
+							+ "\n bpartner={}"
+							+ "\n HU PI Items with DefaultLU={}"
+							+ "\n => parent HU PI Items={}",
 					new Object[] { huPI, huUnitType, bpartner, defaultLUPIItems, parentPIItems });
 
 			return parentPIItems.get(0);

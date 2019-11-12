@@ -29,6 +29,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.junit.Assert;
@@ -85,7 +86,7 @@ public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectat
 
 		if (_packingMaterial != null)
 		{
-			assertThat(prefix + "PackingMaterial", _packingMaterial, is(Services.get(IHandlingUnitsBL.class).getHUPackingMaterial(huItem)));
+			assertThat(prefix + "PackingMaterial", _packingMaterial, is(Services.get(IHUPackingMaterialDAO.class).getHUPackingMaterial(huItem)));
 		}
 
 		if (includedHUExpectations != null)

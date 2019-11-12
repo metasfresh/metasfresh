@@ -184,10 +184,6 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 			// Parcels aka Packages aka DeliveryOrderLines
 			final List<I_DPD_StoreOrderLine> lines = retrieveAllOrderLines(orderPO.getDPD_StoreOrder_ID());
 
-			// todo @teo: how bad is this?
-			// 		if nothing ever changes for lines, will we write to db nothing?
-			// 		in other words, is what i did here legit (load or new and  then update the fields NO MATTER WHAT!!!) ?
-
 			for (final DeliveryOrderLine deliveryOrderLine : deliveryOrder.getDeliveryOrderLines())
 			{
 				final I_DPD_StoreOrderLine orderLinePO = retrieveStoreOrderLinePoByPackageIdOrCreateNew(lines, deliveryOrderLine);
