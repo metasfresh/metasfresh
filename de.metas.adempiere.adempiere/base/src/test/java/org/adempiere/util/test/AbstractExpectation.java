@@ -13,15 +13,14 @@ package org.adempiere.util.test;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.number.BigDecimalCloseTo.closeTo;
@@ -60,7 +59,7 @@ public class AbstractExpectation<ParentExpectationType>
 	 * Will be in the tostring method
 	 */
 	@SuppressWarnings("unused")
-	private String expectationName= null;
+	private String expectationName = null;
 
 	/**
 	 * BigDecimal comparation with margin used by {@link #assertCloseToExpected(ErrorMessage, BigDecimal, BigDecimal)} methods.
@@ -106,6 +105,7 @@ public class AbstractExpectation<ParentExpectationType>
 
 	/**
 	 * Note: method is final because we want to call it from subclasses' constructors without having to guess which implementation it will pick.
+	 * 
 	 * @param context
 	 */
 	public final void setContext(final IContextAware context)
@@ -296,6 +296,11 @@ public class AbstractExpectation<ParentExpectationType>
 		Assert.assertTrue(ErrorMessage.toString(message), condition);
 	}
 
+	protected void assertEquals(final String message, final Object expected, final Object actual)
+	{
+		Assert.assertEquals(message, expected, actual);
+	}
+
 	protected void assertEquals(final ErrorMessage message, final Object expected, final Object actual)
 	{
 		Assert.assertEquals(ErrorMessage.toString(message), expected, actual);
@@ -309,12 +314,13 @@ public class AbstractExpectation<ParentExpectationType>
 
 	/**
 	 * Set this expectation's name. Can be useful to keep the overview.
+	 * 
 	 * @param expectationName
 	 * @return
 	 */
 	public AbstractExpectation<ParentExpectationType> expectationName(final String expectationName)
 	{
-		this.expectationName=expectationName;
+		this.expectationName = expectationName;
 		return this;
 	}
 }

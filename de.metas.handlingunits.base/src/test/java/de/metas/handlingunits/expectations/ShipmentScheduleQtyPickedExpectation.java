@@ -13,15 +13,14 @@ package de.metas.handlingunits.expectations;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -37,15 +36,18 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.junit.Assert;
 
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Services;
 
 public class ShipmentScheduleQtyPickedExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {
-	private I_M_ShipmentSchedule shipmentSchedule;
+	private ShipmentScheduleId shipmentScheduleId;
 	private IReference<I_M_HU> luHU;
 	private IReference<I_M_HU> tuHU;
 	private IReference<I_M_HU> vhu;
@@ -53,12 +55,7 @@ public class ShipmentScheduleQtyPickedExpectation<ParentExpectationType> extends
 	private I_M_InOutLine inoutLine;
 	private boolean inoutLineSet;
 
-	public ShipmentScheduleQtyPickedExpectation()
-	{
-		this(null);
-	}
-
-	public ShipmentScheduleQtyPickedExpectation(final ParentExpectationType parent)
+	ShipmentScheduleQtyPickedExpectation(final ParentExpectationType parent)
 	{
 		super(parent);
 	}
@@ -66,7 +63,7 @@ public class ShipmentScheduleQtyPickedExpectation<ParentExpectationType> extends
 	public ShipmentScheduleQtyPickedExpectation<ParentExpectationType> assertExpected(final String message, final I_M_ShipmentSchedule_QtyPicked alloc)
 	{
 		String prefix = (message == null ? "" : message)
-				+ "\n Shipment schedule: " + shipmentSchedule
+				+ "\n Shipment schedule: " + shipmentScheduleId
 				+ "\n LU: " + luHU
 				+ "\n TU:" + tuHU
 				+ "\n VHU: " + vhu;
@@ -77,9 +74,9 @@ public class ShipmentScheduleQtyPickedExpectation<ParentExpectationType> extends
 
 		prefix += "\n\nInvalid ";
 
-		if (shipmentSchedule != null)
+		if (shipmentScheduleId != null)
 		{
-			assertModelEquals(prefix + "Shipment schedule", shipmentSchedule, alloc.getM_ShipmentSchedule());
+			assertEquals(prefix + "Shipment schedule", shipmentScheduleId, ShipmentScheduleId.ofRepoId(alloc.getM_ShipmentSchedule_ID()));
 		}
 
 		if (qtyPicked != null)
@@ -118,17 +115,17 @@ public class ShipmentScheduleQtyPickedExpectation<ParentExpectationType> extends
 		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
 
-		if (shipmentSchedule != null)
+		if (shipmentScheduleId != null)
 		{
-			queryBuilder.addEqualsFilter(de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID());
+			queryBuilder.addEqualsFilter(de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId);
 		}
 		if (tuHU != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_TU_HU_ID, tuHU.getValue().getM_HU_ID());
+			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_TU_HU_ID, extractHuIdOrNull(tuHU));
 		}
 		if (vhu != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_VHU_ID, vhu.getValue().getM_HU_ID());
+			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_VHU_ID, extractHuIdOrNull(vhu));
 		}
 
 		final IQuery<I_M_ShipmentSchedule_QtyPicked> query = queryBuilder.create();
@@ -142,6 +139,22 @@ public class ShipmentScheduleQtyPickedExpectation<ParentExpectationType> extends
 		return alloc;
 	}
 
+	private static HuId extractHuIdOrNull(final IReference<I_M_HU> huRef)
+	{
+		if (huRef == null)
+		{
+			return null;
+		}
+
+		I_M_HU hu = huRef.getValue();
+		if (hu == null)
+		{
+			return null;
+		}
+
+		return HuId.ofRepoId(hu.getM_HU_ID());
+	}
+
 	public ShipmentScheduleQtyPickedExpectation<ParentExpectationType> assertExpected_ShipmentScheduleWithHU(
 			final String message,
 			final ShipmentScheduleWithHU candidate)
@@ -152,9 +165,11 @@ public class ShipmentScheduleQtyPickedExpectation<ParentExpectationType> extends
 
 		Assert.assertNotNull(prefix + " candidate not null", candidate);
 
-		if (shipmentSchedule != null)
+		if (shipmentScheduleId != null)
 		{
-			assertModelEquals(prefix + "Shipment schedule", shipmentSchedule, candidate.getM_ShipmentSchedule());
+			assertModelEquals(prefix + "Shipment schedule",
+					shipmentScheduleId,
+					ShipmentScheduleId.ofRepoId(candidate.getM_ShipmentSchedule().getM_ShipmentSchedule_ID()));
 		}
 
 		if (qtyPicked != null)
@@ -186,7 +201,7 @@ public class ShipmentScheduleQtyPickedExpectation<ParentExpectationType> extends
 	public I_M_ShipmentSchedule_QtyPicked createM_ShipmentSchedule_QtyPicked(final IContextAware context)
 	{
 		final I_M_ShipmentSchedule_QtyPicked alloc = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule_QtyPicked.class, context);
-		alloc.setM_ShipmentSchedule(shipmentSchedule);
+		alloc.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(shipmentScheduleId));
 		alloc.setM_LU_HU(luHU == null ? null : luHU.getValue());
 		alloc.setM_TU_HU(tuHU == null ? null : tuHU.getValue());
 		alloc.setVHU(vhu == null ? null : vhu.getValue());
@@ -201,7 +216,12 @@ public class ShipmentScheduleQtyPickedExpectation<ParentExpectationType> extends
 
 	public ShipmentScheduleQtyPickedExpectation<ParentExpectationType> shipmentSchedule(final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		this.shipmentSchedule = shipmentSchedule;
+		return shipmentSchedule(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()));
+	}
+
+	public ShipmentScheduleQtyPickedExpectation<ParentExpectationType> shipmentSchedule(final ShipmentScheduleId shipmentScheduleId)
+	{
+		this.shipmentScheduleId = shipmentScheduleId;
 		return this;
 	}
 
@@ -239,6 +259,11 @@ public class ShipmentScheduleQtyPickedExpectation<ParentExpectationType> extends
 		return this;
 	}
 
+	public ShipmentScheduleQtyPickedExpectation<ParentExpectationType> vhu(final HuId vhuId)
+	{
+		return vhu(Services.get(IHandlingUnitsDAO.class).getById(vhuId));
+	}
+
 	public ShipmentScheduleQtyPickedExpectation<ParentExpectationType> vhu(final I_M_HU vhu)
 	{
 		return vhu(new Mutable<>(vhu));
@@ -269,6 +294,11 @@ public class ShipmentScheduleQtyPickedExpectation<ParentExpectationType> extends
 	public ShipmentScheduleQtyPickedExpectation<ParentExpectationType> qtyPicked(final String qtyPickedStr)
 	{
 		return qtyPicked(new BigDecimal(qtyPickedStr));
+	}
+
+	public ShipmentScheduleQtyPickedExpectation<ParentExpectationType> qtyPicked(final int qtyPicked)
+	{
+		return qtyPicked(BigDecimal.valueOf(qtyPicked));
 	}
 
 	public ShipmentScheduleQtyPickedExpectation<ParentExpectationType> inoutLine(final I_M_InOutLine inoutLine)
