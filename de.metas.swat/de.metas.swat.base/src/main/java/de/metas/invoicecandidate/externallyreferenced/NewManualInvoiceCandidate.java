@@ -4,6 +4,8 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.lang.SOTrx;
@@ -135,11 +137,15 @@ public class NewManualInvoiceCandidate
 		{
 			if (!priceEnteredOverride.getProductId().equals(productId))
 			{
-				// TODO fail
+				throw new AdempiereException("priceEnteredOverride.productId={} is inconsistant with this instance's productId={}")
+						.appendParametersToMessage()
+						.setParameter("newManualInvoiceCandidate", this);
 			}
 			if (!priceEnteredOverride.getUomId().equals(invoicingUomId))
 			{
-				// TODO fail
+				throw new AdempiereException("priceEnteredOverride.uomId={} is inconsistant with this instance's invoicingUomId={}")
+						.appendParametersToMessage()
+						.setParameter("newManualInvoiceCandidate", this);
 			}
 		}
 	}

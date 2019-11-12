@@ -26,22 +26,22 @@ public class SwaggerDocConstants
 {
 	public static final String BPARTER_IDENTIFIER_DOC = "Identifier of the bPartner in question. Can be\n"
 			+ "* a plain `<C_BPartner_ID>`\n"
-			+ "* or something like `ext-<YourExternalId>`\n"
+			+ "* or something like `ext-<C_Bartner.ExternalId>`\n"
 			+ "* or something like `val-<C_Bartner.Value>`\n"
 			+ "* or something like `gln-<C_Bartner_Location.GLN>`\n";
 
 	public static final String CONTACT_IDENTIFIER_DOC = "Identifier of the contact in question. Can be\n"
 			+ "* a plain `<AD_User_ID>`\n"
-			+ "* or something like `ext-<YourExternalId>`";
+			+ "* or something like `ext-<AD_User_ID.ExternalId>`";
 
 	public static final String LOCATION_IDENTIFIER_DOC = "Identifier of the location in question. Can be\n"
 			+ "* a plain `<C_BPartner_Location_ID>`\n"
-			+ "* or something like `ext-<YourExternalId>`\n"
-			+ "* or something like `gln-<GLN>`\n";
+			+ "* or something like `ext-<C_BPartner_Location_ID.ExternalId>`\n"
+			+ "* or something like `gln-<C_BPartner_Location_ID.GLN>`\n";
 
 	public static final String PRODUCTIDENTIFIER_DOC = "Identifier of the product in question. Can be\n"
 			+ "* a plain `<M_Product_ID>`\n"
-			+ "* or something like `ext-<YourExternalId>`\n"
+			+ "* or something like `ext-<M_Product_ID.ExternalId>`\n"
 			+ "* or something like `val-<M_Product_ID.Value>`";
 
 	public static final String NEXT_DOC = "Optional identifier for the next page that was provided to the client in the previous page.\n"
