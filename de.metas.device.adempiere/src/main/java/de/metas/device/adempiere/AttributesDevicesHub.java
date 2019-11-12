@@ -90,7 +90,6 @@ public class AttributesDevicesHub
 		this.deviceConfigPool.addListener(deviceConfigPoolListener);
 	}
 
-
 	@Override
 	public String toString()
 	{
@@ -227,14 +226,17 @@ public class AttributesDevicesHub
 		private final String publicId;
 
 		private AttributeDeviceAccessor( //
-				final String displayName //
-				, @NonNull final IDevice device //
-				, @NonNull final String deviceName //
-				, @NonNull final String attributeCode //
-				, final Set<Integer> assignedWarehouseIds //
-				, @NonNull final IDeviceRequest<ISingleValueResponse> request //
+				final String displayName, //
+				@NonNull final IDevice device, //
+				@NonNull final String deviceName, //
+				@NonNull final String attributeCode, //
+				final Set<Integer> assignedWarehouseIds, //
+				@NonNull final IDeviceRequest<ISingleValueResponse> request //
 		)
 		{
+			Check.assumeNotEmpty(deviceName, "deviceName is not empty");
+			Check.assumeNotEmpty(attributeCode, "attributeCode is not empty");
+
 			this.displayName = displayName;
 			this.device = device;
 			this.assignedWarehouseIds = assignedWarehouseIds;

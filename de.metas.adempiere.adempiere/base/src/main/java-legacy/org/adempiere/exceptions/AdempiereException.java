@@ -294,12 +294,7 @@ public class AdempiereException extends RuntimeException
 		this.messageTrl = message;
 	}
 
-	/**
-	 * Gets original message
-	 *
-	 * @return original message
-	 */
-	public final ITranslatableString getOriginalMessage()
+	protected final ITranslatableString getOriginalMessage()
 	{
 		return messageTrl;
 	}

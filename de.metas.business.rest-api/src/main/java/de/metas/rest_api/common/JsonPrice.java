@@ -32,16 +32,13 @@ import lombok.Value;
 @Value
 public class JsonPrice
 {
-	@ApiModelProperty(position = 10, required = false, //
-			value = "Optional, to override the value as computed by metasfresh for the respective invoice candidate's property.\n"
-					+ "To unset an existing candiate's override value, you can:\n"
-					+ "- either use `SyncAdvice.IfExists.UPDATE_REMOVE` and set this property to `null`"
-					+ "- or (preferred) use `\"unsetValue\" : true`")
+	@ApiModelProperty(position = 10, required = true)
 	BigDecimal value;
 
+	@ApiModelProperty(position = 20, required = true)
 	String currencyCode;
 
-	@ApiModelProperty(position = 20, required = false, //
-			value = "Identify which unit price this about")
+	@ApiModelProperty(position = 30, required = true, //
+			value = "Identify which unit of measurment this about")
 	String priceUomCode;
 }
