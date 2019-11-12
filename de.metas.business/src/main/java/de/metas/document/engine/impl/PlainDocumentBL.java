@@ -231,61 +231,51 @@ public class PlainDocumentBL extends AbstractDocumentBL
 		}
 	}
 
-	public static interface IProcessInterceptor
+	public interface IProcessInterceptor
 	{
 		boolean processIt(final IDocument doc, final String action) throws Exception;
 	}
 
-	public static final IProcessInterceptor PROCESSINTERCEPTOR_DirectCall = new IProcessInterceptor()
-	{
-		@Override
-		public boolean processIt(IDocument doc, String action) throws Exception
-		{
-			return doc.processIt(action);
-		}
-
-	};
+	public static final IProcessInterceptor PROCESSINTERCEPTOR_DirectCall = IDocument::processIt;
 
 	/**
 	 * This processor automatically sets the DocStatus, DocAction and Processed flags based on requested action.
 	 */
-	public static final IProcessInterceptor PROCESSINTERCEPTOR_CompleteDirectly = new IProcessInterceptor()
-	{
-
-		@Override
-		public boolean processIt(IDocument doc, String action) throws Exception
+	public static final IProcessInterceptor PROCESSINTERCEPTOR_CompleteDirectly = (doc, action) -> {
+		if (IDocument.ACTION_Complete.equals(action))
 		{
-			if (IDocument.ACTION_Complete.equals(action))
-			{
-				setDocStatus(doc, IDocument.STATUS_Completed, IDocument.ACTION_Close, true);
-				return true;
-			}
-			if (IDocument.ACTION_Prepare.equals(action))
-			{
-				setDocStatus(doc, IDocument.STATUS_InProgress, IDocument.ACTION_Complete, false);
-				return true;
-			}
-			else if (IDocument.ACTION_Void.equals(action))
-			{
-				setDocStatus(doc, IDocument.STATUS_Voided, IDocument.ACTION_None, true);
-				return true;
-			}
-			else if (IDocument.ACTION_ReActivate.equals(action))
-			{
-				setDocStatus(doc, IDocument.STATUS_InProgress, IDocument.ACTION_Complete, false);
-				return true;
-			}
-			else if (IDocument.ACTION_Reverse_Correct.equals(action))
-			{
-				setDocStatus(doc, IDocument.STATUS_Reversed, IDocument.ACTION_None, true);
-				return true;
-			}
-			else
-			{
-				return PROCESSINTERCEPTOR_DirectCall.processIt(doc, action);
-			}
+			setDocStatus(doc, IDocument.STATUS_Completed, IDocument.ACTION_Close, true);
+			return true;
 		}
-
+		if (IDocument.ACTION_Prepare.equals(action))
+		{
+			setDocStatus(doc, IDocument.STATUS_InProgress, IDocument.ACTION_Complete, false);
+			return true;
+		}
+		else if (IDocument.ACTION_Void.equals(action))
+		{
+			setDocStatus(doc, IDocument.STATUS_Voided, IDocument.ACTION_None, true);
+			return true;
+		}
+		else if (IDocument.ACTION_ReActivate.equals(action))
+		{
+			setDocStatus(doc, IDocument.STATUS_InProgress, IDocument.ACTION_Complete, false);
+			return true;
+		}
+		else if (IDocument.ACTION_Reverse_Correct.equals(action))
+		{
+			setDocStatus(doc, IDocument.STATUS_Reversed, IDocument.ACTION_None, true);
+			return true;
+		}
+		else if (IDocument.ACTION_Close.equals(action))
+		{
+			setDocStatus(doc, IDocument.STATUS_Completed, IDocument.ACTION_None, true);
+			return true;
+		}
+		else
+		{
+			return PROCESSINTERCEPTOR_DirectCall.processIt(doc, action);
+		}
 	};
 
 	@Override
@@ -316,6 +306,5 @@ public class PlainDocumentBL extends AbstractDocumentBL
 		}
 		return null;
 	}
-
 
 }
