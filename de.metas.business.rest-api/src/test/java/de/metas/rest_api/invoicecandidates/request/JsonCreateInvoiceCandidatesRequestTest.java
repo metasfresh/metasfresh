@@ -5,8 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-import de.metas.rest_api.JsonExternalId;
-import de.metas.rest_api.JsonSOTrx;
+import de.metas.rest_api.common.JsonExternalId;
+import de.metas.rest_api.common.JsonSOTrx;
 import de.metas.util.JSONObjectMapper;
 
 /*

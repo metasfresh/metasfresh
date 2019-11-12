@@ -1,12 +1,14 @@
-package de.metas.rest_api;
+package de.metas.rest_api.common;
+
+import javax.annotation.Nullable;
 
 import de.pentabyte.springfox.ApiEnum;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.ordercandidate.rest-api
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,14 +26,31 @@ import de.pentabyte.springfox.ApiEnum;
  * #L%
  */
 
-public enum JsonInvoiceRule
+public enum JsonSOTrx
 {
-	@ApiEnum("Specifies that only *delivered* quanties will be invoiced")
-	AfterDelivery,
+	@ApiEnum("Specify that the given entity is a sales order (SO) transaction entity")
+	SALES,
 
-	@ApiEnum("Like `AfterDelivery`, but the invoicing date is also set according to the respective bill partner's invoicing schedule (e.g. once per month)")
-	CustomerScheduleAfterDelivery,
+	@ApiEnum("Specify that the given entity is a purchase order (PO) transaction entity")
+	PURCHASE;
 
-	@ApiEnum("Any ordered quantities - delivered or not - can be invoiced right away")
-	Immediate;
+	public static JsonSOTrx ofBoolean(@Nullable final Boolean isSOTrx)
+	{
+		if (isSOTrx == null)
+		{
+			return null;
+		}
+		return isSOTrx ? SALES : PURCHASE;
+	}
+
+	public boolean isSales()
+	{
+		return this == SALES;
+	}
+
+	public boolean isPurchase()
+	{
+		return this == PURCHASE;
+	}
+
 }

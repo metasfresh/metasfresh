@@ -1,15 +1,10 @@
-package de.metas.rest_api.invoicecandidates.response;
+package de.metas.rest_api.common;
 
-import java.time.LocalDate;
-
-import de.metas.rest_api.MetasfreshId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.pentabyte.springfox.ApiEnum;
 
 /*
  * #%L
- * de.metas.business.rest-api
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -28,18 +23,15 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Value
-@Builder
-public class JsonInvoiceInfo
+
+public enum JsonInvoiceRule
 {
-	MetasfreshId metasfreshId;
+	@ApiEnum("Specifies that only *delivered* quanties will be invoiced")
+	AfterDelivery,
 
-	@NonNull
-	String documentNo;
+	@ApiEnum("Like `AfterDelivery`, but the invoicing date is also set according to the respective bill partner's invoicing schedule (e.g. once per month)")
+	CustomerScheduleAfterDelivery,
 
-	@NonNull
-	String docStatus;
-
-	LocalDate dateInvoiced;
-
+	@ApiEnum("Any ordered quantities - delivered or not - can be invoiced right away")
+	Immediate;
 }

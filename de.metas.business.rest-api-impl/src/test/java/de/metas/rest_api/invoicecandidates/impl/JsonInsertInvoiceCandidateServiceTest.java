@@ -39,10 +39,10 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.pricing.service.impl.PricingTestHelper;
 import de.metas.pricing.service.impl.ProductPriceBuilder;
-import de.metas.rest_api.JsonExternalId;
-import de.metas.rest_api.JsonSOTrx;
-import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.bpartner.impl.MockLogEntriesRepository;
+import de.metas.rest_api.common.JsonExternalId;
+import de.metas.rest_api.common.JsonSOTrx;
+import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequestItem;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
@@ -51,6 +51,7 @@ import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.DocTypeService;
 import de.metas.rest_api.utils.InvalidEntityException;
 import de.metas.user.UserRepository;
+import de.metas.util.JSONObjectMapper;
 import de.metas.util.Services;
 
 /*
@@ -82,7 +83,7 @@ class JsonInsertInvoiceCandidateServiceTest
 	private static final String PRODUCT_VALUE = "product-123";
 	private static final String BILL_PARTNER_VALUE = "billPartner-123";
 	private static final String ORG_VALUE = "orgCode";
-	private JsonInsertInvoiceCandidateService jsonInsertInvoiceCandidateService;
+	private CreateInvoiceCandidatesService jsonInsertInvoiceCandidateService;
 
 	@BeforeEach
 	void beforeEach()
@@ -155,7 +156,7 @@ class JsonInsertInvoiceCandidateServiceTest
 		saveRecord(taxRecord);
 
 		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
-		jsonInsertInvoiceCandidateService = new JsonInsertInvoiceCandidateService(
+		jsonInsertInvoiceCandidateService = new CreateInvoiceCandidatesService(
 				new BPartnerQueryService(),
 				bpartnerCompositeRepository,
 				new DocTypeService(),
@@ -173,7 +174,7 @@ class JsonInsertInvoiceCandidateServiceTest
 	private void createInvoiceCandidates_performTest()
 	{
 		final JsonCreateInvoiceCandidatesRequest request = createMinimalRequest();
-		// JSONObjectMapper.forClass(JsonCreateInvoiceCandidatesRequest.class).writeValueAsString(request);
+		JSONObjectMapper.forClass(JsonCreateInvoiceCandidatesRequest.class).writeValueAsString(request);
 
 		// invoke the method under test
 		final JsonCreateInvoiceCandidatesResponse result = jsonInsertInvoiceCandidateService.createInvoiceCandidates(request);

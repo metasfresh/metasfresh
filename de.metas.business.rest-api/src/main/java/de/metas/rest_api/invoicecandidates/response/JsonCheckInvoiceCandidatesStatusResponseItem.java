@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import de.metas.rest_api.MetasfreshId;
+import de.metas.rest_api.common.MetasfreshId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.Value;
@@ -36,7 +36,7 @@ import lombok.Value;
  */
 @Value
 @Builder
-public class JsonInvoiceCandidateInfo
+public class JsonCheckInvoiceCandidatesStatusResponseItem
 {
 	ExternalId externalHeaderId;
 	ExternalId externalLineId;
@@ -44,14 +44,12 @@ public class JsonInvoiceCandidateInfo
 	MetasfreshId metasfreshId;
 
 	@Nullable
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	BigDecimal qtyEntered;
 
 	@Nullable
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	BigDecimal qtyToInvoice;
+
 	@Nullable
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	BigDecimal qtyInvoiced;
 
 	@Nullable
@@ -64,10 +62,10 @@ public class JsonInvoiceCandidateInfo
 
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	List<JsonInvoiceInfo> invoices;
+	List<JsonInvoiceStatus> invoices;
 
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	List<JsonWorkPackageInfo> workPackages;
+	List<JsonWorkPackageStatus> workPackages;
 
 }

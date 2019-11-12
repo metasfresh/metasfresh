@@ -5,8 +5,8 @@ import static de.metas.util.Check.assumeNotEmpty;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.bpartner.GLN;
-import de.metas.rest_api.JsonExternalId;
-import de.metas.rest_api.MetasfreshId;
+import de.metas.rest_api.common.JsonExternalId;
+import de.metas.rest_api.common.MetasfreshId;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;

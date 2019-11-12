@@ -9,7 +9,6 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidateReference;
-import de.metas.rest_api.invoicecandidates.response.InvoiceCandEnqueuerResult;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import lombok.NonNull;
@@ -41,14 +40,14 @@ final class InvoiceJsonConverters
 {
 	public static JsonEnqueueForInvoicingResponse toJson(@NonNull final IInvoiceCandidateEnqueueResult enqueueResult)
 	{
-		final InvoiceCandEnqueuerResult invoiceCandidateResult = InvoiceCandEnqueuerResult.builder()
+		final JsonEnqueueForInvoicingResponse invoiceCandidateResult = JsonEnqueueForInvoicingResponse.builder()
 				.invoiceCandidateEnqueuedCount(enqueueResult.getInvoiceCandidateEnqueuedCount())
 				.summaryTranslated(enqueueResult.getSummaryTranslated(Env.getCtx()))
 				.totalNetAmtToInvoiceChecksum(enqueueResult.getTotalNetAmtToInvoiceChecksum())
 				.workpackageEnqueuedCount(enqueueResult.getWorkpackageEnqueuedCount())
 				.workpackageQueueSizeBeforeEnqueueing(enqueueResult.getWorkpackageQueueSizeBeforeEnqueueing())
 				.build();
-		return JsonEnqueueForInvoicingResponse.ok(invoiceCandidateResult);
+		return invoiceCandidateResult;
 	}
 
 	public static List<ExternalHeaderIdWithExternalLineIds> fromJson(@NonNull final List<JsonInvoiceCandidateReference> invoiceCandidates)

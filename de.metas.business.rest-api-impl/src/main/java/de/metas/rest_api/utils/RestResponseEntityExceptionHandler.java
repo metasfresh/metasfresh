@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import de.metas.bpartner.service.BPartnerIdNotFoundException;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
+import de.metas.rest_api.common.JsonError;
 import lombok.NonNull;
 
 /*

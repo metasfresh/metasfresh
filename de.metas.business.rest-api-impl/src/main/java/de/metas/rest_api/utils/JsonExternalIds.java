@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
-import de.metas.rest_api.JsonExternalId;
+import de.metas.rest_api.common.JsonExternalId;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;

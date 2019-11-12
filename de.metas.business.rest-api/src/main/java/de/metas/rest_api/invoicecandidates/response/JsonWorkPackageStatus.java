@@ -1,14 +1,20 @@
-package de.metas.rest_api;
+package de.metas.rest_api.invoicecandidates.response;
+
+import java.time.Instant;
 
 import javax.annotation.Nullable;
 
-import de.pentabyte.springfox.ApiEnum;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import de.metas.rest_api.common.MetasfreshId;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.ordercandidate.rest-api
+ * de.metas.business.rest-api
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,31 +32,18 @@ import de.pentabyte.springfox.ApiEnum;
  * #L%
  */
 
-public enum JsonSOTrx
+@Value
+@Builder
+public class JsonWorkPackageStatus
 {
-	@ApiEnum("Specify that the given entity is a sales order (SO) transaction entity")
-	SALES,
+	MetasfreshId metasfreshId;
 
-	@ApiEnum("Specify that the given entity is a purchase order (PO) transaction entity")
-	PURCHASE;
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String error;
 
-	public static JsonSOTrx ofBoolean(@Nullable final Boolean isSOTrx)
-	{
-		if (isSOTrx == null)
-		{
-			return null;
-		}
-		return isSOTrx ? SALES : PURCHASE;
-	}
+	Instant enqueued;
 
-	public boolean isSales()
-	{
-		return this == SALES;
-	}
-
-	public boolean isPurchase()
-	{
-		return this == PURCHASE;
-	}
+	boolean readyForProcessing;
 
 }

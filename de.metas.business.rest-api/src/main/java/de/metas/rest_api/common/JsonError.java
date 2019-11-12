@@ -1,8 +1,10 @@
-package de.metas.rest_api.invoicecandidates.request;
+package de.metas.rest_api.common;
 
-import java.math.BigDecimal;
+import java.util.List;
 
-import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -28,18 +30,14 @@ import lombok.Value;
  */
 
 @Value
-public class JsonPrice
+@Builder
+public class JsonError
 {
-	@ApiModelProperty(position = 10, required = false, //
-			value = "Optional, to override the value as computed by metasfresh for the respective invoice candidate's property.\n"
-					+ "To unset an existing candiate's override value, you can:\n"
-					+ "- either use `SyncAdvice.IfExists.UPDATE_REMOVE` and set this property to `null`"
-					+ "- or (preferred) use `\"unsetValue\" : true`")
-	BigDecimal value;
+	public static JsonError ofSingleItem(@NonNull final JsonErrorItem item)
+	{
+		return JsonError.builder().error(item).build();
+	}
 
-	String currencyCode;
-
-	@ApiModelProperty(position = 20, required = false, //
-			value = "Identify which unit this about")
-	String priceUomCode;
+	@Singular
+	List<JsonErrorItem> errors;
 }

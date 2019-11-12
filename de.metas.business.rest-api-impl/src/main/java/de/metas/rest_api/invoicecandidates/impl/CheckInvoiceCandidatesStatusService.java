@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -23,13 +24,15 @@ import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.rest_api.MetasfreshId;
-import de.metas.rest_api.invoicecandidates.response.JsonGetInvoiceCandidatesStatusResponse;
-import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidateInfo;
-import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidateInfo.JsonInvoiceCandidateInfoBuilder;
-import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidateResult;
-import de.metas.rest_api.invoicecandidates.response.JsonInvoiceInfo;
-import de.metas.rest_api.invoicecandidates.response.JsonWorkPackageInfo;
+import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.invoicecandidates.request.JsonCheckInvoiceCandidatesStatusRequest;
+import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesStatusResponse;
+import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesStatusResponseItem;
+import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesStatusResponseItem.JsonCheckInvoiceCandidatesStatusResponseItemBuilder;
+import de.metas.rest_api.invoicecandidates.response.JsonInvoiceStatus;
+import de.metas.rest_api.invoicecandidates.response.JsonWorkPackageStatus;
+import de.metas.rest_api.utils.InvalidEntityException;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.lang.ExternalId;
@@ -57,15 +60,21 @@ import lombok.NonNull;
  * #L%
  */
 @Service
-public class InvoiceCandidateInfoService
+public class CheckInvoiceCandidatesStatusService
 {
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
-	public JsonGetInvoiceCandidatesStatusResponse getStatusForInvoiceCandidates(
-			@NonNull final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds)
+	public JsonCheckInvoiceCandidatesStatusResponse getStatusForInvoiceCandidates(
+			@NonNull final JsonCheckInvoiceCandidatesStatusRequest request)
 	{
+		if (request.getInvoiceCandidates().isEmpty())
+		{
+			throw new InvalidEntityException(TranslatableStrings.constant("The request's invoiceCandidates array may not be empty"));
+		}
+		final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds = InvoiceJsonConverters.fromJson(request.getInvoiceCandidates());
+
 		final InvoiceCandidateMultiQueryBuilder multiQuery = InvoiceCandidateMultiQuery.builder();
 		for (final ExternalHeaderIdWithExternalLineIds externalId : headerAndLineIds)
 		{
@@ -74,28 +83,32 @@ public class InvoiceCandidateInfoService
 					.build();
 			multiQuery.query(query);
 		}
-		final List<I_C_Invoice_Candidate> invoiceCandidateRecords = invoiceCandDAO.convertToIQuery(multiQuery.build()).list();
+		final List<I_C_Invoice_Candidate> invoiceCandidateRecords = invoiceCandDAO
+				.convertToIQuery(multiQuery.build())
+				.setRequiredAccess(Access.READ)
+				.list();
 
-		final List<JsonInvoiceCandidateInfo> invoiceCandidates = retrieveStatus(invoiceCandidateRecords);
+		final List<JsonCheckInvoiceCandidatesStatusResponseItem> invoiceCandidates = retrieveStatus(invoiceCandidateRecords);
 
-		final JsonInvoiceCandidateResult result = JsonInvoiceCandidateResult.builder()
+		final JsonCheckInvoiceCandidatesStatusResponse result = JsonCheckInvoiceCandidatesStatusResponse.builder()
 				.invoiceCandidates(invoiceCandidates)
 				.build();
 
-		return JsonGetInvoiceCandidatesStatusResponse.ok(result);
+		return result;
 	}
 
-	private List<JsonInvoiceCandidateInfo> retrieveStatus(final List<I_C_Invoice_Candidate> invoiceCandidateRecords)
+	private List<JsonCheckInvoiceCandidatesStatusResponseItem> retrieveStatus(final List<I_C_Invoice_Candidate> invoiceCandidateRecords)
 	{
-		final List<JsonInvoiceCandidateInfo> invoiceCandidatesStatus = new ArrayList<>();
+		final List<JsonCheckInvoiceCandidatesStatusResponseItem> invoiceCandidatesStatus = new ArrayList<>();
 
 		for (final I_C_Invoice_Candidate invoiceCandidateRecord : invoiceCandidateRecords)
 		{
 			final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidateRecord.getC_Invoice_Candidate_ID());
-			final List<JsonInvoiceInfo> invoicesInfo = retrieveInvoiceInfos(invoiceCandidateId);
-			final List<JsonWorkPackageInfo> workPackagesInfo = retrieveWorkPackageInfo(invoiceCandidateId);
 
-			final JsonInvoiceCandidateInfo invoiceCandidateStatus = prepareInvoiceCandidateStatus(invoiceCandidateRecord)
+			final List<JsonInvoiceStatus> invoicesInfo = retrieveInvoiceInfos(invoiceCandidateId);
+			final List<JsonWorkPackageStatus> workPackagesInfo = retrieveWorkPackageInfo(invoiceCandidateId);
+
+			final JsonCheckInvoiceCandidatesStatusResponseItem invoiceCandidateStatus = prepareInvoiceCandidateStatus(invoiceCandidateRecord)
 					.invoices(invoicesInfo)
 					.workPackages(workPackagesInfo)
 					.build();
@@ -108,7 +121,7 @@ public class InvoiceCandidateInfoService
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private List<JsonWorkPackageInfo> retrieveWorkPackageInfo(final InvoiceCandidateId invoiceCandidateId)
+	private List<JsonWorkPackageStatus> retrieveWorkPackageInfo(final InvoiceCandidateId invoiceCandidateId)
 	{
 		final List<I_C_Queue_WorkPackage> workPackageRecords = invoiceCandBL.getUnprocessedWorkPackagesForInvoiceCandidate(invoiceCandidateId);
 		if (workPackageRecords.isEmpty())
@@ -122,9 +135,9 @@ public class InvoiceCandidateInfoService
 
 	}
 
-	private static JsonWorkPackageInfo toJsonForWorkPackage(final I_C_Queue_WorkPackage workPackageRecord)
+	private static JsonWorkPackageStatus toJsonForWorkPackage(final I_C_Queue_WorkPackage workPackageRecord)
 	{
-		return JsonWorkPackageInfo.builder()
+		return JsonWorkPackageStatus.builder()
 				.error(workPackageRecord.getErrorMsg())
 				.enqueued(TimeUtil.asInstant(workPackageRecord.getCreated()))
 				.readyForProcessing(workPackageRecord.isReadyForProcessing())
@@ -132,7 +145,7 @@ public class InvoiceCandidateInfoService
 				.build();
 	}
 
-	private List<JsonInvoiceInfo> retrieveInvoiceInfos(final InvoiceCandidateId invoiceCandidateId)
+	private List<JsonInvoiceStatus> retrieveInvoiceInfos(final InvoiceCandidateId invoiceCandidateId)
 	{
 		final List<I_C_InvoiceLine> invoiceLinesForInvoiceCandidate = invoiceCandDAO.retrieveIlForIc(invoiceCandidateId);
 		if (invoiceLinesForInvoiceCandidate.isEmpty())
@@ -154,25 +167,25 @@ public class InvoiceCandidateInfoService
 
 	}
 
-	private static JsonInvoiceCandidateInfoBuilder prepareInvoiceCandidateStatus(final I_C_Invoice_Candidate invoiceCandidateRecord)
+	private static JsonCheckInvoiceCandidatesStatusResponseItemBuilder prepareInvoiceCandidateStatus(final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
 		final BigDecimal qtyToInvoice = invoiceCandidateRecord.getQtyToInvoice();
 		final BigDecimal qtyInvoiced = invoiceCandidateRecord.getQtyInvoiced();
 
-		return JsonInvoiceCandidateInfo.builder()
+		return JsonCheckInvoiceCandidatesStatusResponseItem.builder()
 				.qtyEntered(invoiceCandidateRecord.getQtyEntered())
-				.dateToInvoice(TimeUtil.asLocalDate(qtyToInvoice.signum() > 0 ? invoiceCandidateRecord.getDateToInvoice() : null))
+				.dateToInvoice(TimeUtil.asLocalDate(invoiceCandidateRecord.getDateToInvoice()))
 				.dateInvoiced(TimeUtil.asLocalDate(invoiceCandidateRecord.getDateInvoiced()))
 				.externalHeaderId(ExternalId.of(invoiceCandidateRecord.getExternalHeaderId()))
 				.externalLineId(ExternalId.of(invoiceCandidateRecord.getExternalLineId()))
 				.metasfreshId(MetasfreshId.of(invoiceCandidateRecord.getC_Invoice_Candidate_ID()))
-				.qtyInvoiced(qtyInvoiced.signum() > 0 ? qtyInvoiced : null)
-				.qtyToInvoice(qtyToInvoice.signum() > 0 ? qtyToInvoice : null);
+				.qtyInvoiced(qtyInvoiced)
+				.qtyToInvoice(qtyToInvoice);
 	}
 
-	private static JsonInvoiceInfo toJsonInvoiceInfo(final I_C_Invoice invoice)
+	private static JsonInvoiceStatus toJsonInvoiceInfo(final I_C_Invoice invoice)
 	{
-		return JsonInvoiceInfo.builder()
+		return JsonInvoiceStatus.builder()
 				.dateInvoiced(TimeUtil.asLocalDate(invoice.getDateInvoiced()))
 				.docStatus(invoice.getDocStatus())
 				.documentNo(invoice.getDocumentNo())

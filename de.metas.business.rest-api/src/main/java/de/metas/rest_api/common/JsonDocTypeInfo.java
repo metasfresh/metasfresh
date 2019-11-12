@@ -1,4 +1,4 @@
-package de.metas.rest_api;
+package de.metas.rest_api.common;
 
 import javax.annotation.Nullable;
 

@@ -1,10 +1,10 @@
-package de.metas.rest_api.utils;
+package de.metas.rest_api.invoicecandidates.response;
 
-import java.util.List;
+import java.time.LocalDate;
 
+import de.metas.rest_api.common.MetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -28,16 +28,18 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 @Value
 @Builder
-public class JsonError
+public class JsonInvoiceStatus
 {
-	public static JsonError ofSingleItem(@NonNull final JsonErrorItem item)
-	{
-		return JsonError.builder().error(item).build();
-	}
+	MetasfreshId metasfreshId;
 
-	@Singular
-	List<JsonErrorItem> errors;
+	@NonNull
+	String documentNo;
+
+	@NonNull
+	String docStatus;
+
+	LocalDate dateInvoiced;
+
 }

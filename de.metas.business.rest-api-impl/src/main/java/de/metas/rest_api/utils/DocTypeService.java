@@ -12,7 +12,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.rest_api.JsonDocTypeInfo;
+import de.metas.rest_api.common.JsonDocTypeInfo;
 import de.metas.util.Services;
 import lombok.NonNull;
 

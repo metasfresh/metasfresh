@@ -11,8 +11,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.rest_api.JsonDocTypeInfo;
-import de.metas.rest_api.SyncAdvise;
+import de.metas.rest_api.common.JsonDocTypeInfo;
+import de.metas.rest_api.common.SyncAdvise;
 import de.metas.util.Check;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;

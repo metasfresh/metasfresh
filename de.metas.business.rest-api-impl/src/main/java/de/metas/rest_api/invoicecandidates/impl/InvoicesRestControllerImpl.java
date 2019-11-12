@@ -1,9 +1,5 @@
 package de.metas.rest_api.invoicecandidates.impl;
 
-import java.util.List;
-
-import org.compiere.util.Env;
-import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,21 +9,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.Profiles;
-import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
-import de.metas.logging.LogManager;
-import de.metas.process.IADPInstanceDAO;
-import de.metas.process.PInstanceId;
 import de.metas.rest_api.invoicecandidates.IInvoicesRestEndpoint;
 import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
-import de.metas.rest_api.invoicecandidates.request.JsonGetInvoiceCandidatesStatusRequest;
+import de.metas.rest_api.invoicecandidates.request.JsonCheckInvoiceCandidatesStatusRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
-import de.metas.rest_api.invoicecandidates.response.JsonGetInvoiceCandidatesStatusResponse;
+import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesStatusResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
-import de.metas.rest_api.utils.JsonErrors;
-import de.metas.util.Services;
-import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -60,27 +48,26 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App)
 class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 {
-	private static final Logger logger = LogManager.getLogger(InvoicesRestControllerImpl.class);
-
-	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
-	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-	private final InvoiceCandidateInfoService invoiceCandidateInfoService;
-	private final JsonInsertInvoiceCandidateService jsonInsertInvoiceCandidateService;
+	private final CheckInvoiceCandidatesStatusService checkInvoiceCandidatesStatusService;
+	private final CreateInvoiceCandidatesService createInvoiceCandidatesService;
+	private final EnqueueForInvoicingService enqueueForInvoicingService;
 
 	public InvoicesRestControllerImpl(
-			@NonNull final JsonInsertInvoiceCandidateService jsonInsertInvoiceCandidateService,
-			@NonNull final InvoiceCandidateInfoService invoiceCandidateInfoService)
+			@NonNull final CreateInvoiceCandidatesService createInvoiceCandidatesService,
+			@NonNull final CheckInvoiceCandidatesStatusService invoiceCandidateInfoService,
+			@NonNull final EnqueueForInvoicingService enqueueForInvoicingService)
 	{
-		this.jsonInsertInvoiceCandidateService = jsonInsertInvoiceCandidateService;
-		this.invoiceCandidateInfoService = invoiceCandidateInfoService;
+		this.createInvoiceCandidatesService = createInvoiceCandidatesService;
+		this.checkInvoiceCandidatesStatusService = invoiceCandidateInfoService;
+		this.enqueueForInvoicingService = enqueueForInvoicingService;
 	}
 
 	@ApiOperation("Create new invoice candidates")
 	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully created new invoice candidate"),
+			@ApiResponse(code = 200, message = "Successfully created new invoice candidate(s)"),
 			@ApiResponse(code = 401, message = "You are not authorized to create new invoice candidates"),
-			@ApiResponse(code = 403, message = "Accessing a resource you were trying to reach is forbidden"),
-			@ApiResponse(code = 422, message = "The request entity could not be processed")
+			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
+			@ApiResponse(code = 422, message = "The request body could not be processed")
 	})
 	@PostMapping(path = "/createCandidates")
 	@Override
@@ -88,29 +75,21 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 			@RequestBody @NonNull final JsonCreateInvoiceCandidatesRequest request)
 	{
 		// TODO make individual IC accessible via URL, then return "created" instead
-		return ResponseEntity.ok(jsonInsertInvoiceCandidateService.createInvoiceCandidates(request));
+		final JsonCreateInvoiceCandidatesResponse resonse = createInvoiceCandidatesService.createInvoiceCandidates(request);
+		return ResponseEntity.ok(resonse);
 	}
 
 	@PostMapping("/status")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully retrieved status for all matching invoice candidates"),
+			@ApiResponse(code = 401, message = "You are not authorized to retrieve the invoice candidates' status"),
+			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden")
+	})
 	@Override
-	public ResponseEntity<JsonGetInvoiceCandidatesStatusResponse> checkInvoiceCandidatesStatus(@RequestBody @NonNull final JsonGetInvoiceCandidatesStatusRequest request)
+	public ResponseEntity<JsonCheckInvoiceCandidatesStatusResponse> checkInvoiceCandidatesStatus(@RequestBody @NonNull final JsonCheckInvoiceCandidatesStatusRequest request)
 	{
-		try
-		{
-			final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds = InvoiceJsonConverters.fromJson(request.getInvoiceCandidates());
-
-			final JsonGetInvoiceCandidatesStatusResponse response = invoiceCandidateInfoService.getStatusForInvoiceCandidates(headerAndLineIds);
-			return new ResponseEntity<>(response, HttpStatus.OK);
-		}
-		catch (final Exception ex)
-		{
-			logger.warn("Got exception while processing request={}", request, ex);
-
-			final String adLanguage = Env.getADLanguageOrBaseLanguage();
-			return ResponseEntity
-					.badRequest()
-					.body(JsonGetInvoiceCandidatesStatusResponse.error(JsonErrors.ofThrowable(ex, adLanguage)));
-		}
+		final JsonCheckInvoiceCandidatesStatusResponse response = checkInvoiceCandidatesStatusService.getStatusForInvoiceCandidates(request);
+		return ResponseEntity.ok(response);
 	}
 
 	@ApiOperation("Enqueues invoice candidates for invoicing")
@@ -118,17 +97,7 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 	@Override
 	public ResponseEntity<JsonEnqueueForInvoicingResponse> enqueueForInvoicing(@RequestBody @NonNull final JsonEnqueueForInvoicingRequest request)
 	{
-		final PInstanceId pInstanceId = adPInstanceDAO.createSelectionId();
-		final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds = InvoiceJsonConverters.fromJson(request.getInvoiceCandidates());
-		invoiceCandBL.createSelectionForInvoiceCandidates(headerAndLineIds, pInstanceId);
-
-		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL
-				.enqueueForInvoicing()
-				.setInvoicingParams(InvoiceJsonConverters.createInvoicingParams(request))
-				.setFailIfNothingEnqueued(true)
-				.enqueueSelection(pInstanceId);
-
-		final JsonEnqueueForInvoicingResponse response = InvoiceJsonConverters.toJson(enqueueResult);
+		final JsonEnqueueForInvoicingResponse response = enqueueForInvoicingService.enqueueForInvoicing(request);
 		return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
 	}
 }

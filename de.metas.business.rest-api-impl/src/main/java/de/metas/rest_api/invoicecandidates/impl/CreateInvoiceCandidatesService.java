@@ -50,13 +50,13 @@ import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
-import de.metas.rest_api.JsonDocTypeInfo;
-import de.metas.rest_api.JsonExternalId;
-import de.metas.rest_api.JsonInvoiceRule;
-import de.metas.rest_api.MetasfreshId;
+import de.metas.rest_api.common.JsonDocTypeInfo;
+import de.metas.rest_api.common.JsonExternalId;
+import de.metas.rest_api.common.JsonInvoiceRule;
+import de.metas.rest_api.common.JsonPrice;
+import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequestItem;
-import de.metas.rest_api.invoicecandidates.request.JsonPrice;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse.JsonCreateInvoiceCandidatesResponseBuilder;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponseItem;
@@ -99,7 +99,7 @@ import lombok.NonNull;
  */
 
 @Service
-public class JsonInsertInvoiceCandidateService
+public class CreateInvoiceCandidatesService
 {
 	private final BPartnerQueryService bPartnerQueryService;
 	private final BPartnerCompositeRepository bpartnerCompositeRepository;
@@ -114,7 +114,7 @@ public class JsonInsertInvoiceCandidateService
 	private final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository;
 	private final ManualCandidateService manualCandidateService;
 
-	public JsonInsertInvoiceCandidateService(
+	public CreateInvoiceCandidatesService(
 			@NonNull final BPartnerQueryService bPartnerQueryService,
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final DocTypeService docTypeService,
@@ -325,7 +325,7 @@ public class JsonInsertInvoiceCandidateService
 			}
 			catch (final OrgIdNotFoundException e)
 			{
-				throw MissingResourceException.builder().resourceName("organisation").resourceIdentifier("orgCode").parentResource(item).cause(e).build();
+				throw MissingResourceException.builder().resourceName("organisation").resourceIdentifier(item.getOrgCode()).parentResource(item).cause(e).build();
 			}
 		}
 		else
@@ -381,7 +381,7 @@ public class JsonInsertInvoiceCandidateService
 		{
 			throw MissingResourceException.builder()
 					.resourceName("billPartner")
-					.resourceIdentifier("billPartnerIdentifier")
+					.resourceIdentifier(bpartnerIdentifier.toJson())
 					.parentResource(item)
 					.cause(e)
 					.build();
@@ -401,7 +401,7 @@ public class JsonInsertInvoiceCandidateService
 		{
 			final BPartnerLocation location = bpartnerComposite
 					.extractLocation(l -> matches(billLocationIdentifier, l))
-					.orElseThrow(() -> MissingResourceException.builder().resourceName("billLocation").resourceIdentifier("billLocationIdentifier").parentResource(item).build());
+					.orElseThrow(() -> MissingResourceException.builder().resourceName("billLocation").resourceIdentifier(billLocationIdentifier.toJson()).parentResource(item).build());
 			bpartnerInfo.bpartnerLocationId(location.getId());
 		}
 
@@ -415,7 +415,7 @@ public class JsonInsertInvoiceCandidateService
 			// extract the composite's location that has the given billContactIdentifier
 			final BPartnerContact contact = bpartnerComposite
 					.extractContact(c -> matches(billContactIdentifier, c))
-					.orElseThrow(() -> MissingResourceException.builder().resourceName("billContact").resourceIdentifier("billContactIdentifier").parentResource(item).build());
+					.orElseThrow(() -> MissingResourceException.builder().resourceName("billContact").resourceIdentifier(billContactIdentifier.toJson()).parentResource(item).build());
 
 			bpartnerInfo.contactId(contact.getId());
 		}
@@ -539,7 +539,7 @@ public class JsonInsertInvoiceCandidateService
 		final CurrencyId result = currencyService.getCurrencyId(jsonPrice.getPriceUomCode());
 		if (result == null)
 		{
-			throw MissingResourceException.builder().resourceName("uom").resourceIdentifier("priceUomCode").parentResource(jsonPrice).build();
+			throw MissingResourceException.builder().resourceName("uom").resourceIdentifier(jsonPrice.getPriceUomCode()).parentResource(jsonPrice).build();
 		}
 		return result;
 	}

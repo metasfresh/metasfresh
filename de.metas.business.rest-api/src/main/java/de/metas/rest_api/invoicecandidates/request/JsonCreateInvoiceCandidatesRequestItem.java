@@ -15,10 +15,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.rest_api.JsonDocTypeInfo;
-import de.metas.rest_api.JsonExternalId;
-import de.metas.rest_api.JsonInvoiceRule;
-import de.metas.rest_api.JsonSOTrx;
+import de.metas.rest_api.common.JsonDocTypeInfo;
+import de.metas.rest_api.common.JsonExternalId;
+import de.metas.rest_api.common.JsonInvoiceRule;
+import de.metas.rest_api.common.JsonPrice;
+import de.metas.rest_api.common.JsonSOTrx;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;

@@ -9,17 +9,17 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.rest_api.JsonDocTypeInfo;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
+import de.metas.rest_api.common.JsonDocTypeInfo;
+import de.metas.rest_api.common.JsonErrorItem;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
 import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.rest_api.ordercandidates.response.JsonOLCand;
 import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
-import de.metas.rest_api.utils.JsonErrorItem;
 import de.metas.util.JSONObjectMapper;
 import lombok.NonNull;
 

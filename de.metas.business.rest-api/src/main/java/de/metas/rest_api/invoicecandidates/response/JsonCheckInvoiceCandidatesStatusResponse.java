@@ -1,8 +1,8 @@
-package de.metas.rest_api.invoicecandidates.request;
+package de.metas.rest_api.invoicecandidates.response;
 
 import java.util.List;
 
-import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
 import lombok.Value;
 
 /*
@@ -18,18 +18,17 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 @Value
-public class JsonGetInvoiceCandidatesStatusRequest
+@Builder
+public class JsonCheckInvoiceCandidatesStatusResponse
 {
-	@ApiModelProperty(position = 10, required = true, //
-			value = "Specifies the invoice candidates to return the invoicing status of.")
-	List<JsonInvoiceCandidateReference> invoiceCandidates;
+	private List<JsonCheckInvoiceCandidatesStatusResponseItem> invoiceCandidates;
 }

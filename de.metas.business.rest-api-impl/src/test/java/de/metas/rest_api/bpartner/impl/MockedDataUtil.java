@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.fail;
 
 import java.util.UUID;
 
-import de.metas.rest_api.JsonExternalId;
-import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner.JsonRequestBPartnerBuilder;
 import de.metas.rest_api.bpartner.request.JsonRequestComposite;
@@ -17,6 +15,8 @@ import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert.JsonRequestLocationUpsertBuilder;
+import de.metas.rest_api.common.JsonExternalId;
+import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsertItem;
 import de.metas.rest_api.utils.IdentifierString;
 import lombok.NonNull;

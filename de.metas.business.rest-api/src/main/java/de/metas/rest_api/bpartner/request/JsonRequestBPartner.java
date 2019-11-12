@@ -7,12 +7,14 @@ import javax.annotation.Nullable;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import de.metas.rest_api.common.JsonExternalId;
+import de.metas.rest_api.common.JsonInvoiceRule;
+import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.common.SyncAdvise;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.rest_api.JsonExternalId;
-import de.metas.rest_api.JsonInvoiceRule;
-import de.metas.rest_api.MetasfreshId;
-import de.metas.rest_api.SyncAdvise;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;

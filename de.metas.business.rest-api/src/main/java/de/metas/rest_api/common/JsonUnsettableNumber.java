@@ -1,9 +1,10 @@
-package de.metas.rest_api.invoicecandidates.request;
+package de.metas.rest_api.common;
 
 import static de.metas.util.lang.CoalesceUtil.coalesce;
 
-import de.metas.rest_api.SyncAdvise;
-import de.metas.rest_api.SyncAdvise.IfExists;
+import java.math.BigDecimal;
+
+import de.metas.rest_api.common.SyncAdvise.IfExists;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,12 +32,16 @@ import lombok.Value;
  */
 
 @Value
-public class JsonUnsettablePrice
+public class JsonUnsettableNumber
 {
-	public static final JsonUnsettablePrice EMPTY = new JsonUnsettablePrice(null, null);
+	public static final JsonUnsettableNumber EMPTY = new JsonUnsettableNumber(null, null);
 
-	@ApiModelProperty(position = 10, required = false)
-	JsonPrice price;
+	@ApiModelProperty(position = 10, required = false, //
+			value = "Optional, to override the value as computed by metasfresh for the respective invoice candidate's property.\n"
+					+ "To unset an existing candiate's override value, you can:\n"
+					+ "- either use `SyncAdvice.IfExists.UPDATE_REMOVE` and set this property to `null`"
+					+ "- or (preferred) use `\"unsetValue\" : true`")
+	BigDecimal value;
 
 	@ApiModelProperty(position = 20, required = false, //
 			value = "Optional property to *explicitly* unset a candidate's override property.\n"
@@ -51,8 +56,8 @@ public class JsonUnsettablePrice
 			return true;
 		}
 
-		final boolean implicitlyUnsetPrice = this.getPrice() == null && syncAdvise.getIfExists().isUpdateRemove();
-		if (implicitlyUnsetPrice)
+		final boolean implicitlyUnsetDiscount = this.getValue() == null && syncAdvise.getIfExists().isUpdateRemove();
+		if (implicitlyUnsetDiscount)
 		{
 			return true;
 		}
@@ -71,8 +76,8 @@ public class JsonUnsettablePrice
 
 		final boolean dontChangeIfNotSet = dontChangeAtAll || isExistsAdvise.isUpdateMerge();
 
-		final boolean implicitlyDontSetPrice = this.getPrice() == null && dontChangeIfNotSet;
-		if (implicitlyDontSetPrice)
+		final boolean implicitlyDontSetDiscount = this.getValue() == null && dontChangeIfNotSet;
+		if (implicitlyDontSetDiscount)
 		{
 			return false;
 		}

@@ -13,8 +13,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.bpartner.GLN;
-import de.metas.rest_api.JsonExternalId;
-import de.metas.rest_api.MetasfreshId;
+import de.metas.rest_api.common.JsonExternalId;
+import de.metas.rest_api.common.MetasfreshId;
 import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.RepoIdAware;
