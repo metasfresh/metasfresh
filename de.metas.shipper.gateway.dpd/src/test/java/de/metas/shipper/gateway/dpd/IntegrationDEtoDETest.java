@@ -26,8 +26,11 @@ import com.google.common.collect.ImmutableList;
 import com.jgoodies.common.base.Strings;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.shipper.gateway.commons.ShipperTestHelper;
+import de.metas.shipper.gateway.dpd.logger.DpdDatabaseClientLogger;
 import de.metas.shipper.gateway.dpd.model.DpdClientConfig;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
+import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrder;
+import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrder_Log;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
@@ -35,8 +38,11 @@ import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipper.gateway.spi.model.ServiceType;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.ShipperTransportationId;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Location;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,9 +60,10 @@ import static org.junit.Assert.assertTrue;
 @Disabled("Makes ACTUAL calls to DPD api and needs auth")
 public class IntegrationDEtoDETest
 {
+	private static final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 
 	private final DpdDraftDeliveryOrderCreator draftDeliveryOrderCreator = new DpdDraftDeliveryOrderCreator();
-	private final DpdDeliveryOrderRepository orderRepository = new DpdDeliveryOrderRepository(AttachmentEntryService.createInstanceForUnitTesting());
+	private final DpdDeliveryOrderRepository orderRepository = new DpdDeliveryOrderRepository(attachmentEntryService);
 	private final DpdShipperGatewayClient client = DpdShipperGatewayClient.builder()
 			.config(DpdClientConfig.builder()
 					.delisID(DpdTestHelper.DELIS_ID)
@@ -65,6 +72,7 @@ public class IntegrationDEtoDETest
 					.shipmentServiceApiUrl(DpdTestHelper.SHIPMENT_SERVICE_API_URL)
 					.trackingUrlBase("dummy")
 					.build())
+			.databaseLogger(DpdDatabaseClientLogger.instance)
 			.build();
 
 	@BeforeEach
@@ -137,6 +145,17 @@ public class IntegrationDEtoDETest
 		//noinspection ConstantConditions
 		assertTrue(DpdOrderCustomDeliveryData.cast(deserialisedCompletedDeliveryOrder.getCustomDeliveryData()).getPdfData().length > 1);
 
+		//
+		// check 7: check the attachment exists
+		final TableRecordReference deliveryOrderRef = TableRecordReference.of(I_DPD_StoreOrder.Table_Name, deserialisedCompletedDeliveryOrder.getRepoId().getRepoId());
+		assertNotNull(attachmentEntryService.getByFilenameOrNull(deliveryOrderRef, deserialisedCompletedDeliveryOrder.getTrackingNumber() + ".pdf"));
+
+		//
+		// check 8: expect 2 database logs: 1 for login and 2 for createShipment
+		assertEquals("there should be 2 database request logs", 2, Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DPD_StoreOrder_Log.class)
+				.create()
+				.count());
 	}
 
 	@NonNull

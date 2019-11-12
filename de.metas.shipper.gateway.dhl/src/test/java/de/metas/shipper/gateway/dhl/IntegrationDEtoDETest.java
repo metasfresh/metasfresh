@@ -33,6 +33,8 @@ import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
 import de.metas.shipper.gateway.dhl.model.DhlServiceType;
+import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrder;
+import de.metas.shipper.gateway.dhl.model.I_Dhl_ShipmentOrder_Log;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
@@ -40,8 +42,11 @@ import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.uom.UomId;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Location;
 import org.junit.jupiter.api.BeforeEach;
@@ -62,8 +67,10 @@ class IntegrationDEtoDETest
 	private static final String USER_NAME = "a";
 	private static final String PASSWORD = "b";
 
+	private static final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+
 	private DhlDraftDeliveryOrderCreator draftDeliveryOrderCreator;
-	private final DhlDeliveryOrderRepository orderRepository = new DhlDeliveryOrderRepository(AttachmentEntryService.createInstanceForUnitTesting());
+	private final DhlDeliveryOrderRepository orderRepository = new DhlDeliveryOrderRepository(attachmentEntryService);
 	private DhlShipperGatewayClient client;
 
 	private final UomId dummyUom = UomId.ofRepoId(1);
@@ -149,6 +156,24 @@ class IntegrationDEtoDETest
 		final DeliveryOrder deserialisedCompletedDeliveryOrder = orderRepository.getByRepoId(updatedDummyDeliveryOrder.getRepoId());
 		assertEquals("nothing should be modified", updatedDummyDeliveryOrder, deserialisedCompletedDeliveryOrder);
 		assertSizeOfCustomDeliveryData(deserialisedCompletedDeliveryOrder);
+
+		//
+		// check 7: check the attachments exist
+		customDeliveryData.getDetails()
+				.forEach(it -> {
+					final String name = it.getAwb() + ".pdf";
+
+					final I_DHL_ShipmentOrder shipmentOrder = orderRepository.getShipmentOrderByRequestIdAndPackageId(deserialisedCompletedDeliveryOrder.getRepoId().getRepoId(), it.getPackageId());
+					final TableRecordReference deliveryOrderRef = TableRecordReference.of(I_DHL_ShipmentOrder.Table_Name, shipmentOrder.getDHL_ShipmentOrder_ID());
+					assertNotNull(attachmentEntryService.getByFilenameOrNull(deliveryOrderRef, name));
+				});
+
+		//
+		// check 8: expect 1 database log: the one for createShipment
+		assertEquals("there should be 1 database request logs", 1, Services.get(IQueryBL.class)
+				.createQueryBuilder(I_Dhl_ShipmentOrder_Log.class)
+				.create()
+				.count());
 	}
 
 	private void assertSizeOfCustomDeliveryData(@NonNull final DeliveryOrder deliveryOrder)

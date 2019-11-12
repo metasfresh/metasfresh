@@ -25,6 +25,7 @@ package de.metas.shipper.gateway.dhl;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.customs.CustomsInvoiceRepository;
 import de.metas.mpackage.PackageId;
+import de.metas.shipper.gateway.commons.ShipperTestHelper;
 import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfigRepository;
@@ -32,8 +33,8 @@ import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
 import de.metas.shipper.gateway.dhl.model.DhlServiceType;
-import de.metas.shipper.gateway.spi.DeliveryOrderId;
-import de.metas.shipper.gateway.spi.model.Address;
+import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrder;
+import de.metas.shipper.gateway.dhl.model.I_Dhl_ShipmentOrder_Log;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
@@ -41,11 +42,12 @@ import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.uom.UomId;
+import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -65,8 +67,10 @@ class IntegrationDEtoATTest
 	private static final String USER_NAME = "a";
 	private static final String PASSWORD = "b";
 
+	private static final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+
 	private DhlDraftDeliveryOrderCreator draftDeliveryOrderCreator;
-	private final DhlDeliveryOrderRepository orderRepository = new DhlDeliveryOrderRepository(AttachmentEntryService.createInstanceForUnitTesting());
+	private final DhlDeliveryOrderRepository orderRepository = new DhlDeliveryOrderRepository(attachmentEntryService);
 	private DhlShipperGatewayClient client;
 
 	private final UomId dummyUom = UomId.ofRepoId(1);
@@ -126,7 +130,7 @@ class IntegrationDEtoATTest
 		assertEquals("only packageId and SequenceNumber should be modified", updatedDummyDeliveryOrder, deserialisedDO);
 
 		//
-		// check 4: run dhlClient.completeDeliveryOrder
+		// check 4: run Client.completeDeliveryOrder
 		final DeliveryOrder completedDeliveryOrder = client.completeDeliveryOrder(deserialisedDO);
 		customDeliveryData = DhlCustomDeliveryData.builder()
 				.detail(extractFieldsAfterCompleteDeliveryOrder(customDeliveryData, completedDeliveryOrder, 1))
@@ -152,9 +156,27 @@ class IntegrationDEtoATTest
 		final DeliveryOrder deserialisedCompletedDeliveryOrder = orderRepository.getByRepoId(updatedDummyDeliveryOrder.getRepoId());
 		assertEquals("nothing should be modified", updatedDummyDeliveryOrder, deserialisedCompletedDeliveryOrder);
 		assertSizeOfCustomDeliveryData(deserialisedCompletedDeliveryOrder);
+
+		//
+		// check 7: check the attachments exist
+		customDeliveryData.getDetails()
+				.forEach(it -> {
+					final String name = it.getAwb() + ".pdf";
+
+					final I_DHL_ShipmentOrder shipmentOrder = orderRepository.getShipmentOrderByRequestIdAndPackageId(deserialisedCompletedDeliveryOrder.getRepoId().getRepoId(), it.getPackageId());
+					final TableRecordReference deliveryOrderRef = TableRecordReference.of(I_DHL_ShipmentOrder.Table_Name, shipmentOrder.getDHL_ShipmentOrder_ID());
+					assertNotNull(attachmentEntryService.getByFilenameOrNull(deliveryOrderRef, name));
+				});
+
+		//
+		// check 8: expect 1 database log: the one for createShipment
+		assertEquals("there should be 1 database request logs", 1, Services.get(IQueryBL.class)
+				.createQueryBuilder(I_Dhl_ShipmentOrder_Log.class)
+				.create()
+				.count());
 	}
 
-	private void assertSizeOfCustomDeliveryData(final DeliveryOrder deliveryOrder)
+	private void assertSizeOfCustomDeliveryData(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		assertNotNull(deliveryOrder.getCustomDeliveryData());
 		assertEquals(5, DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()).getDetails().size());
@@ -199,15 +221,15 @@ class IntegrationDEtoATTest
 		final Set<PackageId> mpackageIds = deliveryPosition.getPackageIds();
 
 		//
-		final I_C_BPartner pickupFromBPartner = createBPartner(deliveryOrder.getPickupAddress());
-		final I_C_Location pickupFromLocation = createLocation(deliveryOrder.getPickupAddress());
+		final I_C_BPartner pickupFromBPartner = ShipperTestHelper.createBPartner(deliveryOrder.getPickupAddress());
+		final I_C_Location pickupFromLocation = ShipperTestHelper.createLocation(deliveryOrder.getPickupAddress());
 		final LocalDate pickupDate = deliveryOrder.getPickupDate().getDate();
 
 		//
-		final I_C_BPartner deliverToBPartner = createBPartner(deliveryOrder.getDeliveryAddress());
+		final I_C_BPartner deliverToBPartner = ShipperTestHelper.createBPartner(deliveryOrder.getDeliveryAddress());
 		//noinspection deprecation,ConstantConditions
 		deliverToBPartner.setEMail(deliveryOrder.getDeliveryContact().getEmailAddress());
-		final I_C_Location deliverToLocation = createLocation(deliveryOrder.getDeliveryAddress());
+		final I_C_Location deliverToLocation = ShipperTestHelper.createLocation(deliveryOrder.getDeliveryAddress());
 		final int deliverToBPartnerLocationId = 0;
 		final String deliverToPhoneNumber = deliveryOrder.getDeliveryContact().getSimplePhoneNumber();
 
@@ -241,28 +263,4 @@ class IntegrationDEtoATTest
 				customDeliveryData);
 	}
 
-	@NonNull
-	private I_C_Location createLocation(@NonNull final Address pickupAddress)
-	{
-		final I_C_Location pickupFromLocation = InterfaceWrapperHelper.newInstance(I_C_Location.class);
-		pickupFromLocation.setAddress1(pickupAddress.getStreet1() + " " + pickupAddress.getHouseNo());
-		pickupFromLocation.setAddress2(pickupAddress.getStreet2());
-		pickupFromLocation.setPostal(pickupAddress.getZipCode());
-		pickupFromLocation.setCity(pickupAddress.getCity());
-		final I_C_Country i_c_country = InterfaceWrapperHelper.newInstance(I_C_Country.class);
-		i_c_country.setCountryCode(pickupAddress.getCountry().getAlpha2());
-		InterfaceWrapperHelper.save(i_c_country);
-		pickupFromLocation.setC_Country(i_c_country);
-
-		return pickupFromLocation;
-	}
-
-	@NonNull
-	private I_C_BPartner createBPartner(@NonNull final Address pickupAddress)
-	{
-		final I_C_BPartner pickupFromBPartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		pickupFromBPartner.setName(pickupAddress.getCompanyName1());
-		pickupFromBPartner.setName2(pickupAddress.getCompanyName2());
-		return pickupFromBPartner;
-	}
 }

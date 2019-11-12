@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.dhl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.attachments.AttachmentEntryService;
@@ -405,9 +406,9 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 					shipmentOrder.setPdfLabelData(pdfData);
 
 					// save pdf as attachment as well
-					final TableRecordReference salesOrderRef = TableRecordReference.of(I_DHL_ShipmentOrder.Table_Name, shipmentOrder.getDHL_ShipmentOrder_ID());
+					final TableRecordReference deliveryOrderRef = TableRecordReference.of(I_DHL_ShipmentOrder.Table_Name, shipmentOrder.getDHL_ShipmentOrder_ID());
 
-					attachmentEntryService.createNewAttachment(salesOrderRef, awb + ".pdf", pdfData);
+					attachmentEntryService.createNewAttachment(deliveryOrderRef, awb + ".pdf", pdfData);
 				}
 
 				final String trackingUrl = deliveryDetail.getTrackingUrl();
@@ -421,7 +422,8 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 		}
 	}
 
-	private static I_DHL_ShipmentOrder getShipmentOrderByRequestIdAndPackageId(final int requestId, final int packageId)
+	@VisibleForTesting
+	I_DHL_ShipmentOrder getShipmentOrderByRequestIdAndPackageId(final int requestId, final int packageId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_DHL_ShipmentOrder.class)
