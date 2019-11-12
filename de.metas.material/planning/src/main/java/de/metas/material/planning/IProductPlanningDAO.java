@@ -67,7 +67,7 @@ public interface IProductPlanningDAO extends ISingletonService
 				@Nullable final OrgId orgId,
 				@Nullable final WarehouseId warehouseId,
 				@Nullable final ResourceId plantId,
-				@NonNull final ProductId productId,
+				@Nullable final ProductId productId,
 				@NonNull final AttributeSetInstanceId attributeSetInstanceId)
 		{
 			this.orgId = orgId;

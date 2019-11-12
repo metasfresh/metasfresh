@@ -171,8 +171,10 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			queryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_S_Resource_ID, resourceId, null);
 		}
 
-		// Filter by Product
-		queryBuilder.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId);
+		// Filter by Product if provided
+
+			queryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId, null);
+
 
 		// Filter by ASI
 		final ICompositeQueryFilter<I_PP_Product_Planning> attributesFilter = createAttributesFilter(attributeSetInstanceId);
