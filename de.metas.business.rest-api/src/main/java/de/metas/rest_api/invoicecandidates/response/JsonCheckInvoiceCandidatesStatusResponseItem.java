@@ -60,6 +60,8 @@ public class JsonCheckInvoiceCandidatesStatusResponseItem
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	LocalDate dateToInvoice;
 
+	boolean processed;
+
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	List<JsonInvoiceStatus> invoices;
