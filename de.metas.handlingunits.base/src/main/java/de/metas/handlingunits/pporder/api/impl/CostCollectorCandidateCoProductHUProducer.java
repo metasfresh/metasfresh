@@ -84,6 +84,7 @@ final class CostCollectorCandidateCoProductHUProducer extends AbstractPPOrderRec
 				.coByProductOrderBOMLineId(coByProductOrderBOMLineId)
 				.orgId(orgId)
 				.date(getMovementDate())
+				.locatorId(getLocatorId())
 				.pickingCandidateId(getPickingCandidateId())
 				.build();
 	}

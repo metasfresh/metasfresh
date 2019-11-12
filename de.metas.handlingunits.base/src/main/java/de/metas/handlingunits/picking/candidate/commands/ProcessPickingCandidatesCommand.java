@@ -48,6 +48,7 @@ import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 
 /*
  * #%L
@@ -93,7 +94,7 @@ public class ProcessPickingCandidatesCommand
 	private ProcessPickingCandidatesCommand(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			//
-			@NonNull final Set<PickingCandidateId> pickingCandidateIds)
+			@NonNull @Singular final Set<PickingCandidateId> pickingCandidateIds)
 	{
 		Check.assumeNotEmpty(pickingCandidateIds, "pickingCandidateIds is not empty");
 
@@ -253,9 +254,11 @@ public class ProcessPickingCandidatesCommand
 
 	private HuId receiveVHUFromPickingOrder(@NonNull final PickingCandidate pickingCandidate)
 	{
+		final LocatorId shipFromLocatorId = getShipFromLocatorId(pickingCandidate.getShipmentScheduleId());
 		final PPOrderId pickingOrderId = pickingCandidate.getPickFrom().getPickingOrderId();
 
 		final I_M_HU vhu = ppOrderService.receivingMainProduct(pickingOrderId)
+				.locatorId(shipFromLocatorId)
 				.pickingCandidateId(pickingCandidate.getId())
 				.receiveVHU(pickingCandidate.getQtyPicked());
 
@@ -295,14 +298,14 @@ public class ProcessPickingCandidatesCommand
 		// If we deal with some real packing instructions then we pack all candidates with same instructions in same HU.
 		final int packageNo = packToInstructionsId.isVirtual() ? PACKAGE_NO_SEQUENCE.getAndIncrement() : PACKAGE_NO_ZERO;
 
-		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(pickingCandidate.getShipmentScheduleId());
-		final BPartnerLocationId bpartnerLocationId = huShipmentScheduleBL.getBPartnerLocationId(shipmentSchedule);
-		final LocatorId locatorId = huShipmentScheduleBL.getDefaultLocatorId(shipmentSchedule);
+		final ShipmentScheduleId shipmentScheduleId = pickingCandidate.getShipmentScheduleId();
+		final BPartnerLocationId shipToBPLocationId = getShipToBPLocationId(shipmentScheduleId);
+		final LocatorId shipFromLocatorId = getShipFromLocatorId(shipmentScheduleId);
 
 		return PackToDestinationKey.builder()
 				.packToInstructionsId(packToInstructionsId)
-				.bpartnerLocationId(bpartnerLocationId)
-				.locatorId(locatorId)
+				.shipToBPLocationId(shipToBPLocationId)
+				.shipFromLocatorId(shipFromLocatorId)
 				.packageNo(packageNo)
 				.build();
 	}
@@ -310,15 +313,26 @@ public class ProcessPickingCandidatesCommand
 	private IHUProducerAllocationDestination createPackToDestination(final PackToDestinationKey key)
 	{
 		final HuPackingInstructionsId packToInstructionsId = key.getPackToInstructionsId();
-		final BPartnerLocationId bpartnerLocationId = key.getBpartnerLocationId();
-		final LocatorId locatorId = key.getLocatorId();
+		final BPartnerLocationId shipToBPLocationId = key.getShipToBPLocationId();
+		final LocatorId shipFromLocatorId = key.getShipFromLocatorId();
 
 		return HUProducerDestination.of(packToInstructionsId)
 				.setMaxHUsToCreate(1)
-				.setBPartnerId(bpartnerLocationId.getBpartnerId())
-				.setC_BPartner_Location_ID(bpartnerLocationId.getRepoId())
+				.setBPartnerAndLocationId(shipToBPLocationId)
 				.setHUStatus(X_M_HU.HUSTATUS_Picked)
-				.setLocatorId(locatorId);
+				.setLocatorId(shipFromLocatorId);
+	}
+
+	private LocatorId getShipFromLocatorId(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(shipmentScheduleId);
+		return huShipmentScheduleBL.getDefaultLocatorId(shipmentSchedule);
+	}
+
+	private BPartnerLocationId getShipToBPLocationId(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(shipmentScheduleId);
+		return huShipmentScheduleBL.getBPartnerLocationId(shipmentSchedule);
 	}
 
 	private I_M_ShipmentSchedule getShipmentScheduleById(@NonNull final ShipmentScheduleId shipmentScheduleId)
@@ -333,9 +347,9 @@ public class ProcessPickingCandidatesCommand
 		@NonNull
 		final HuPackingInstructionsId packToInstructionsId;
 		@NonNull
-		final BPartnerLocationId bpartnerLocationId;
+		final BPartnerLocationId shipToBPLocationId;
 		@NonNull
-		final LocatorId locatorId;
+		final LocatorId shipFromLocatorId;
 
 		final int packageNo;
 	}

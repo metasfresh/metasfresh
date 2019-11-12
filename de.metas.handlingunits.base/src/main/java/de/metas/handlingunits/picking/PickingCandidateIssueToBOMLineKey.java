@@ -46,7 +46,7 @@ final class PickingCandidateIssueToBOMLineKey
 	}
 
 	@NonNull
-	PPOrderBOMLineId issueToOrderBOMLine;
+	PPOrderBOMLineId issueToOrderBOMLineId;
 
 	@NonNull
 	HuId issueFromHUId;

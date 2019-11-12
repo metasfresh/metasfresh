@@ -68,21 +68,14 @@ public final class CreateReceiptCandidateRequest
 	@Nullable
 	private final PickingCandidateId pickingCandidateId;
 
-	public CreateReceiptCandidateRequest addQtyToReceive(@NonNull final Quantity qtyToAdd)
+	public static class CreateReceiptCandidateRequestBuilder
 	{
-		if (qtyToReceive == null)
+		public CreateReceiptCandidateRequestBuilder addQtyToReceive(@NonNull final Quantity qtyToAdd)
 		{
-			qtyToReceive = qtyToAdd;
+			final Quantity qtyToReceiveNew = qtyToReceive != null
+					? qtyToReceive = qtyToReceive.add(qtyToAdd)
+					: qtyToAdd;
+			return qtyToReceive(qtyToReceiveNew);
 		}
-		else
-		{
-			qtyToReceive = qtyToReceive.add(qtyToAdd);
-		}
-		return this;
-	}
-
-	public boolean isZeroQty()
-	{
-		return qtyToReceive == null || qtyToReceive.isZero();
 	}
 }

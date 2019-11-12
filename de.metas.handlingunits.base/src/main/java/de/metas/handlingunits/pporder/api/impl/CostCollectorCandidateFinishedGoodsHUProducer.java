@@ -71,9 +71,9 @@ final class CostCollectorCandidateFinishedGoodsHUProducer extends AbstractPPOrde
 
 		return ReceiptCandidateRequestProducer.builder()
 				.orderId(orderId)
-				.orderBOMLineId(null)
 				.orgId(orgId)
 				.date(getMovementDate())
+				.locatorId(getLocatorId())
 				.pickingCandidateId(getPickingCandidateId())
 				.build();
 	}

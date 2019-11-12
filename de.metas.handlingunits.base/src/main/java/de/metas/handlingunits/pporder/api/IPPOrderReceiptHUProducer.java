@@ -26,6 +26,8 @@ import java.time.ZonedDateTime;
 
 import java.util.List;
 
+import org.adempiere.warehouse.LocatorId;
+
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
@@ -71,6 +73,8 @@ public interface IPPOrderReceiptHUProducer
 	 * NOTE: by default current system time is considered.
 	 */
 	IPPOrderReceiptHUProducer movementDate(final ZonedDateTime movementDate);
+
+	IPPOrderReceiptHUProducer locatorId(LocatorId locatorId);
 
 	/**
 	 * Sets LU/TU configuration to be used.

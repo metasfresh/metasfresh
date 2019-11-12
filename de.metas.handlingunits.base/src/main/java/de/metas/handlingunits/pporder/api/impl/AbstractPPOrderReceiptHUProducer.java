@@ -66,6 +66,7 @@ import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest;
+import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest.CreateReceiptCandidateRequestBuilder;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
@@ -77,6 +78,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
@@ -97,11 +99,13 @@ import lombok.Value;
 	private final PPOrderId ppOrderId;
 	private transient I_M_HU_LUTU_Configuration _lutuConfiguration;
 	private ZonedDateTime _movementDate;
+	private LocatorId locatorId;
+	private PickingCandidateId pickingCandidateId;
+	//
 	@Deprecated
 	private boolean skipCreatingReceiptCandidates;
 	private boolean processReceiptCandidates;
 	private boolean receiveOneVHU;
-	private PickingCandidateId pickingCandidateId;
 
 	//
 	// Abstract methods
@@ -163,11 +167,11 @@ import lombok.Value;
 		}
 		else if (vhus.size() == 1)
 		{
-			throw new AdempiereException("More than one VHU was created for " + qtyToReceive + ": " + vhus);
+			return vhus.get(0);
 		}
 		else
 		{
-			return vhus.get(0);
+			throw new AdempiereException("More than one VHU was created for " + qtyToReceive + ": " + vhus);
 		}
 	}
 
@@ -302,8 +306,8 @@ import lombok.Value;
 				.locatorId(locatorId)
 				.topLevelHUId(topLevelHUId)
 				.productId(productStorage.getProductId())
-				.build()
-				.addQtyToReceive(productStorage.getQty());
+				.qtyToReceive(productStorage.getQty())
+				.build();
 	}
 
 	private void updateReceivedHUs(final Collection<I_M_HU> hus)
@@ -331,6 +335,18 @@ import lombok.Value;
 			_movementDate = SystemTime.asZonedDateTime();
 		}
 		return _movementDate;
+	}
+
+	@Override
+	public final IPPOrderReceiptHUProducer locatorId(@NonNull final LocatorId locatorId)
+	{
+		this.locatorId = locatorId;
+		return this;
+	}
+
+	protected final LocatorId getLocatorId()
+	{
+		return locatorId;
 	}
 
 	private IAllocationRequest createAllocationRequest(final IHUContext huContext, final Quantity qtyToReceive)
@@ -406,31 +422,37 @@ import lombok.Value;
 		private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 		private final PPOrderId orderId;
-		private final PPOrderBOMLineId orderBOMLineId;
+		private final PPOrderBOMLineId coByProductOrderBOMLineId;
 		private final OrgId orgId;
 		private final ZonedDateTime date;
+		private final LocatorId locatorId;
 		private final PickingCandidateId pickingCandidateId;
 
-		private final Map<AggregationKey, CreateReceiptCandidateRequest> requests = new HashMap<>();
+		private final Map<AggregationKey, CreateReceiptCandidateRequestBuilder> requests = new HashMap<>();
 
 		@Builder
 		private ReceiptCandidateRequestProducer(
 				@NonNull final PPOrderId orderId,
-				@NonNull final PPOrderBOMLineId orderBOMLineId,
+				@Nullable final PPOrderBOMLineId coByProductOrderBOMLineId,
 				@NonNull final OrgId orgId,
 				@NonNull final ZonedDateTime date,
+				@Nullable final LocatorId locatorId,
 				@Nullable final PickingCandidateId pickingCandidateId)
 		{
 			this.orderId = orderId;
-			this.orderBOMLineId = orderBOMLineId;
+			this.coByProductOrderBOMLineId = coByProductOrderBOMLineId;
 			this.orgId = orgId;
 			this.date = date;
+			this.locatorId = locatorId;
 			this.pickingCandidateId = pickingCandidateId;
 		}
 
 		public ImmutableList<CreateReceiptCandidateRequest> getRequests()
 		{
-			return ImmutableList.copyOf(requests.values());
+			return requests.values()
+					.stream()
+					.map(CreateReceiptCandidateRequestBuilder::build)
+					.collect(ImmutableList.toImmutableList());
 		}
 
 		public void collectAllocationResults(final IHUContext IGNORED, @NonNull final List<IAllocationResult> loadResults)
@@ -455,28 +477,41 @@ import lombok.Value;
 			}
 
 			final I_M_HU topLevelHU = handlingUnitsBL.getTopLevelParent(hu);
+
+			final LocatorId effectiveLocatorId = CoalesceUtil.coalesceSuppliers(
+					() -> locatorId,
+					() -> huTransaction.getLocatorId(),
+					() -> IHandlingUnitsBL.extractLocatorIdOrNull(topLevelHU));
+			if (effectiveLocatorId == null)
+			{
+				throw new AdempiereException("Cannot figure out on which locator to receive.")
+						.setParameter("providedLocatorId", locatorId)
+						.setParameter("huTransaction", huTransaction)
+						.setParameter("topLevelHU", topLevelHU)
+						.appendParametersToMessage();
+			}
+
 			final AggregationKey key = AggregationKey.builder()
-					.locatorId(huTransaction.getLocatorId())
+					.locatorId(effectiveLocatorId)
 					.topLevelHUId(HuId.ofRepoId(topLevelHU.getM_HU_ID()))
 					.productId(huTransaction.getProductId())
 					.build();
 
-			final CreateReceiptCandidateRequest request = requests.computeIfAbsent(key, this::createReceiptCandidateRequest);
-			request.addQtyToReceive(quantity);
+			requests.computeIfAbsent(key, this::createReceiptCandidateRequestBuilder)
+					.addQtyToReceive(quantity);
 		}
 
-		private CreateReceiptCandidateRequest createReceiptCandidateRequest(final AggregationKey key)
+		private CreateReceiptCandidateRequestBuilder createReceiptCandidateRequestBuilder(final AggregationKey key)
 		{
 			return CreateReceiptCandidateRequest.builder()
 					.orderId(orderId)
-					.orderBOMLineId(orderBOMLineId)
+					.orderBOMLineId(coByProductOrderBOMLineId)
 					.orgId(orgId)
 					.date(date)
 					.locatorId(key.getLocatorId())
 					.topLevelHUId(key.getTopLevelHUId())
 					.productId(key.getProductId())
-					.pickingCandidateId(pickingCandidateId)
-					.build();
+					.pickingCandidateId(pickingCandidateId);
 		}
 
 		@Builder
