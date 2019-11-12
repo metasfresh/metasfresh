@@ -180,7 +180,8 @@ public class CheckInvoiceCandidatesStatusService
 				.externalLineId(ExternalId.of(invoiceCandidateRecord.getExternalLineId()))
 				.metasfreshId(MetasfreshId.of(invoiceCandidateRecord.getC_Invoice_Candidate_ID()))
 				.qtyInvoiced(qtyInvoiced)
-				.qtyToInvoice(qtyToInvoice);
+				.qtyToInvoice(qtyToInvoice)
+				.processed(invoiceCandidateRecord.isProcessed());
 	}
 
 	private static JsonInvoiceStatus toJsonInvoiceInfo(final I_C_Invoice invoice)
