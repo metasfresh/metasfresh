@@ -82,6 +82,7 @@ public class IntegrationDEtoDETest
 		AdempiereTestHelper.get().init();
 	}
 
+	@Disabled
 	@Test
 	@DisplayName("Delivery Order DE -> DE + test persistence after all steps")
 	void DEtoDEDraftDeliveryOrderCreatorAndPersistence()
