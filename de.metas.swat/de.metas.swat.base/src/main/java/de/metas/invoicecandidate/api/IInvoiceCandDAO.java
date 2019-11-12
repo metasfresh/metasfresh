@@ -76,7 +76,12 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	<T extends I_C_Invoice_Candidate> Iterator<T> retrieveInvoiceCandidates(IQueryBuilder<T> queryBuilder);
 
-	/** Return a list of ICs for each query included in the given {@code multiQuery}. */
+	List<I_C_Invoice_Candidate> getByQuery(InvoiceCandidateMultiQuery multiQuery);
+
+	/**
+	 * @deprecated Please use {@link #getByQuery(InvoiceCandidateMultiQuery)} or introduce another method is internally is calling this one
+	 */
+	@Deprecated
 	IQuery<I_C_Invoice_Candidate> convertToIQuery(InvoiceCandidateMultiQuery multiQuery);
 
 	List<I_C_Invoice_Candidate> retrieveIcForIl(I_C_InvoiceLine invoiceLine);
