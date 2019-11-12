@@ -36,7 +36,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -49,6 +48,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Test;
+
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
@@ -135,17 +135,9 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 	protected IAttributeStorageFactory attributeStorageFactory;
 
 	@Override
-	protected HUTestHelper createHUTestHelper()
+	protected final HUTestHelper createHUTestHelper()
 	{
-		return new HUTestHelper()
-		{
-			@Override
-			protected String createAndStartTransaction()
-			{
-				return ITrx.TRXNAME_None;
-			}
-
-		};
+		return HUTestHelper.newInstanceOutOfTrx();
 	}
 
 	@Override
@@ -430,7 +422,6 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		user.setNotificationType(X_AD_User.NOTIFICATIONTYPE_Notice);
 		save(user);
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_User_ID, user.getAD_User_ID());
-
 
 		// Generate shipments
 		huShippingFacade.generateShippingDocuments();

@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,17 +55,7 @@ public class HUProducerDestinationTest
 	@BeforeEach
 	public void init()
 	{
-		helper = new HUTestHelper()
-		{
-			@Override
-			protected String createAndStartTransaction()
-			{
-				// no transaction by default
-				return ITrx.TRXNAME_None;
-			}
-		};
-
-		helper.init();
+		helper = HUTestHelper.newInstanceOutOfTrx(); 
 
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	}

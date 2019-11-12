@@ -7,7 +7,6 @@ import static de.metas.business.BusinessTestHelper.createUomEach;
 import static de.metas.business.BusinessTestHelper.createUomKg;
 import static de.metas.business.BusinessTestHelper.createUomPCE;
 import static de.metas.business.BusinessTestHelper.createWarehouse;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -168,6 +167,18 @@ import lombok.NonNull;
  */
 public class HUTestHelper
 {
+	public static HUTestHelper newInstanceOutOfTrx()
+	{
+		return new HUTestHelper()
+		{
+			@Override
+			protected String createAndStartTransaction()
+			{
+				return ITrx.TRXNAME_None; // no transaction by default
+			}
+		};
+	}
+
 	//
 	// Initialization flags
 	private boolean initialized = false;
@@ -511,7 +522,7 @@ public class HUTestHelper
 		return createAndStartTransaction(trxNamePrefix);
 	}
 
-	protected String createAndStartTransaction(final String trxNamePrefix)
+	protected final String createAndStartTransaction(final String trxNamePrefix)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final String trxName = trxManager.createTrxName(trxNamePrefix);
@@ -970,7 +981,7 @@ public class HUTestHelper
 
 	public I_M_HU_PackingMaterial createPackingMaterial(final String name, final I_M_Product product)
 	{
-		final I_M_HU_PackingMaterial packingMaterial = newInstanceOutOfTrx(I_M_HU_PackingMaterial.class);
+		final I_M_HU_PackingMaterial packingMaterial = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_PackingMaterial.class);
 		packingMaterial.setName(name);
 		packingMaterial.setM_Product_ID(product != null ? product.getM_Product_ID() : -1);
 		InterfaceWrapperHelper.save(packingMaterial);
