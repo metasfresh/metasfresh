@@ -9,7 +9,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_DocType;
@@ -114,7 +113,7 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 		ddOrderHeader.setDeliveryViaRule(inout.getDeliveryViaRule());
 		ddOrderHeader.setDeliveryRule(inout.getDeliveryRule());
 		ddOrderHeader.setPriorityRule(inout.getPriorityRule());
-		ddOrderHeader.setM_Warehouse(warehouseDAO.getById(WarehouseId.ofRepoId(productPlanning.getM_Warehouse_ID())));
+		ddOrderHeader.setM_Warehouse_ID(productPlanning.getM_Warehouse_ID());
 		ddOrderHeader.setC_DocType_ID(docTypeId);
 		ddOrderHeader.setDocStatus(X_DD_Order.DOCSTATUS_Drafted);
 		ddOrderHeader.setDocAction(X_DD_Order.DOCACTION_Complete);

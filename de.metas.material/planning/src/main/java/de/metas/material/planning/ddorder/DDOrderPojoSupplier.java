@@ -123,7 +123,7 @@ public class DDOrderPojoSupplier
 		if (networkLines.isEmpty())
 		{
 			// No network lines were found for our target warehouse
-			final I_M_Warehouse warehouseTo = warehouseDAO.getById(WarehouseId.ofRepoId(productPlanningData.getM_Warehouse_ID()));
+			final I_M_Warehouse warehouseTo = warehouseDAO.getById(WarehouseId.ofRepoIdOrNull(productPlanningData.getM_Warehouse_ID()));
 			Loggables.addLog(
 					"DD_NetworkDistribution has no lines for target M_Warehouse_ID={}; {} returns entpy list; "
 							+ "networkDistribution={}"
