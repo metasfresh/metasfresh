@@ -442,11 +442,17 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	static LocatorId extractLocatorId(final I_M_HU hu)
 	{
-		final int locatorRepoId = hu.getM_Locator_ID();
-		if (locatorRepoId <= 0)
+		final LocatorId locatorId = extractLocatorIdOrNull(hu);
+		if (locatorId == null)
 		{
 			throw new HUException("Warehouse Locator shall be set for: " + hu);
 		}
+		return locatorId;
+	}
+
+	static LocatorId extractLocatorIdOrNull(final I_M_HU hu)
+	{
+		final int locatorRepoId = hu.getM_Locator_ID();
 		return Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(locatorRepoId);
 	}
 
