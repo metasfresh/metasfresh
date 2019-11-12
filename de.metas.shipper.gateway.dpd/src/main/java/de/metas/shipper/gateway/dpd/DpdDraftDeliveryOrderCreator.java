@@ -45,7 +45,6 @@ import de.metas.shipper.gateway.spi.model.ServiceType;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.UOMConstants;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
@@ -90,7 +89,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
 		final Set<PackageId> mpackageIds = request.getMpackageIds();
 
-		final String customerReference = ""; // todo what is the customer reference ?
+		final String customerReference = ""; // there's no customer reference for now. maybe in the future?
 
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(deliveryOrderKey.getFromOrgId());
@@ -130,7 +129,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			final DeliveryOrderLine deliveryOrderLine = DeliveryOrderLine.builder()
 					// .repoId()
 					.content(mPackage.getDescription())
-					.grossWeightKg(getPackageGrossWeightKg(mPackage, 1)) // todo same as in de.metas.shipper.gateway.commons.ShipperGatewayFacade.computeGrossWeightInKg: we assume it's in Kg
+					.grossWeightKg(getPackageGrossWeightKg(mPackage, 1)) // same as in de.metas.shipper.gateway.commons.ShipperGatewayFacade.computeGrossWeightInKg: we assume it's in Kg
 					.packageDimensions(getPackageDimensions(packageId))
 					// .customDeliveryData()
 					.packageId(packageId)
@@ -241,9 +240,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			throw new AdempiereException("There is no packing material for the package: " + packageId + ". Please create a packing material and set its dimensions."); // todo add a nicer message
 		}
 
-		final UomId toUomId = Services.get(IUOMDAO.class).getUomIdByX12DE355(UOMConstants.X12_CENTIMETRE);
-
+		final UomId toUomId = Services.get(IUOMDAO.class).getUomIdByX12DE355(DpdConstants.DEFAULT_PACKAGE_DIMENSIONS_UOM);
 		return packingMaterialDAO.preparePackageDimensions(packingMaterial, toUomId);
-
 	}
 }

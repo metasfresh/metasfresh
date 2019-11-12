@@ -214,7 +214,7 @@ class DpdTestHelper
 			final DeliveryOrderLine deliveryOrderLine = DeliveryOrderLine.builder()
 					// .repoId()
 					.content("the epic package " + packageId + " description")
-					.grossWeightKg(1) // todo same as in de.metas.shipper.gateway.commons.ShipperGatewayFacade.computeGrossWeightInKg: we assume it's in Kg
+					.grossWeightKg(1) // same as in de.metas.shipper.gateway.commons.ShipperGatewayFacade.computeGrossWeightInKg: we assume it's in Kg
 					.packageDimensions(PackageDimensions.builder()
 							.heightInCM(10)
 							.lengthInCM(10)
