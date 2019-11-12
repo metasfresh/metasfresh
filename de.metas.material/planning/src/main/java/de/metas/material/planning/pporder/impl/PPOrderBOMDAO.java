@@ -32,7 +32,7 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 	}
 
 	@Override
-	public I_PP_Order_BOM getByOrderId(@NonNull final PPOrderId orderId)
+	public I_PP_Order_BOM getByOrderIdOrNull(@NonNull final PPOrderId orderId)
 	{
 		return queryBL
 				.createQueryBuilder(I_PP_Order_BOM.class)
@@ -145,7 +145,7 @@ public class PPOrderBOMDAO implements IPPOrderBOMDAO
 	@Override
 	public void deleteByOrderId(@NonNull final PPOrderId orderId)
 	{
-		I_PP_Order_BOM orderBOM = getByOrderId(orderId);
+		final I_PP_Order_BOM orderBOM = getByOrderIdOrNull(orderId);
 		if (orderBOM != null)
 		{
 			InterfaceWrapperHelper.delete(orderBOM);

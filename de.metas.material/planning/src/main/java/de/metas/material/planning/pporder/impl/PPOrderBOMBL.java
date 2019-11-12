@@ -25,6 +25,7 @@ package de.metas.material.planning.pporder.impl;
 import java.math.BigDecimal;
 import java.util.Optional;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
@@ -488,7 +489,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	@Override
 	public Optional<DocSequenceId> getSerialNoSequenceId(@NonNull final PPOrderId ppOrderId)
 	{
-		final I_PP_Order_BOM orderBOM = orderBOMsRepo.getByOrderId(ppOrderId);
+		final I_PP_Order_BOM orderBOM = orderBOMsRepo.getByOrderIdOrNull(ppOrderId);
 		return DocSequenceId.optionalOfRepoId(orderBOM.getSerialNo_Sequence_ID());
 	}
 
