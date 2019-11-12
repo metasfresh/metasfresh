@@ -31,23 +31,6 @@ public class InvalidEntityException extends AdempiereException
 {
 	private static final long serialVersionUID = 6604967036646252654L;
 
-	public static InvalidEntityException wrapIfNeeded(@NonNull final AdempiereException cause)
-	{
-		if (cause instanceof InvalidEntityException)
-		{
-			return (InvalidEntityException)cause;
-		}
-
-		final AdempiereException newException = new InvalidEntityException(cause.getOriginalMessage(), cause)
-				.appendParametersToMessage();
-
-		cause.getParameters()
-				.entrySet()
-				.forEach(param -> newException.setParameter(param.getKey(), param.getValue()));
-		return (InvalidEntityException)newException;
-
-	}
-
 	public InvalidEntityException(@NonNull final ITranslatableString message)
 	{
 		super(message);

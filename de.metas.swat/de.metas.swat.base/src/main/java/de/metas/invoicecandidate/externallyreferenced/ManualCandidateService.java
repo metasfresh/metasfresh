@@ -62,7 +62,8 @@ public class ManualCandidateService
 		this.bPartnerCompositeRepository = bPartnerCompositeRepository;
 	}
 
-	public ExternallyReferencedCandidate complementCandidate(@NonNull final NewExternallyReferencedCandidate newIC)
+	/** Invokes different metasfresh services to complement additional fields such as the price. */
+	public ExternallyReferencedCandidate createInvoiceCandidate(@NonNull final NewManualInvoiceCandidate newIC)
 	{
 		final ExternallyReferencedCandidateBuilder candidate = ExternallyReferencedCandidate.createBuilder(newIC);
 

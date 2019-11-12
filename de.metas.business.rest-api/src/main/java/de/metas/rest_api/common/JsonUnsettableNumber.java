@@ -1,12 +1,9 @@
 package de.metas.rest_api.common;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
-
 import java.math.BigDecimal;
 
-import de.metas.rest_api.common.SyncAdvise.IfExists;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.NonNull;
+import lombok.EqualsAndHashCode;
 import lombok.Value;
 
 /*
@@ -32,7 +29,8 @@ import lombok.Value;
  */
 
 @Value
-public class JsonUnsettableNumber
+@EqualsAndHashCode(callSuper = false)
+public class JsonUnsettableNumber extends JsonUnsettableValue
 {
 	public static final JsonUnsettableNumber EMPTY = new JsonUnsettableNumber(null, null);
 
@@ -47,40 +45,4 @@ public class JsonUnsettableNumber
 			value = "Optional property to *explicitly* unset a candidate's override property.\n"
 					+ "If set to `true`, it takes precedence to a possibly set `value`")
 	Boolean unsetValue;
-
-	public boolean computeUnsetValue(@NonNull final SyncAdvise syncAdvise)
-	{
-		final boolean explicitlyUnsetDiscount = coalesce(this.getUnsetValue(), false);
-		if (explicitlyUnsetDiscount)
-		{
-			return true;
-		}
-
-		final boolean implicitlyUnsetDiscount = this.getValue() == null && syncAdvise.getIfExists().isUpdateRemove();
-		if (implicitlyUnsetDiscount)
-		{
-			return true;
-		}
-		return false;
-	}
-
-	public boolean computeSetValue(@NonNull final SyncAdvise syncAdvise)
-	{
-		final IfExists isExistsAdvise = syncAdvise.getIfExists();
-
-		final boolean dontChangeAtAll = !isExistsAdvise.isUpdate();
-		if (dontChangeAtAll)
-		{
-			return false;
-		}
-
-		final boolean dontChangeIfNotSet = dontChangeAtAll || isExistsAdvise.isUpdateMerge();
-
-		final boolean implicitlyDontSetDiscount = this.getValue() == null && dontChangeIfNotSet;
-		if (implicitlyDontSetDiscount)
-		{
-			return false;
-		}
-		return true;
-	}
 }

@@ -344,8 +344,6 @@ public class ProductPriceQuery
 
 	public ProductPriceQuery matching(@NonNull final IProductPriceQueryMatcher matcher)
 	{
-		Check.assumeNotNull(matcher, "Parameter matcher is not null"); // TODO remove
-
 		if (_additionalMatchers == null)
 		{
 			_additionalMatchers = new LinkedHashMap<>();

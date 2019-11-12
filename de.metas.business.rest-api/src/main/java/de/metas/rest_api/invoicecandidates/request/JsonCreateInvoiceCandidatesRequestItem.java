@@ -4,8 +4,6 @@ import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_IDENTIFIER_
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.PRODUCTIDENTIFIER_DOC;
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.PROPERTY_NOT_UPDATABLE_DOC;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -50,38 +48,37 @@ import lombok.Value;
 @Value
 public class JsonCreateInvoiceCandidatesRequestItem
 {
-	@ApiModelProperty(position = 10, required = false,//
+	@ApiModelProperty(position = 10, required = false, //
 			value = "Optional, to specify the `AD_Org_ID` for a new invoice candidate.\n"
-					+ PROPERTY_NOT_UPDATABLE_DOC + "\n"
-					+ "If the invoice candidate shall be created, then\n"
-					+ "- this property needs to be set to the `AD_Org.Value` of an organisation that the invoking user is allowed to access\n"
-					+ "- or the invoking user needs to belong to an organisation which is then used.")
+					+ "This property needs to be set to the `AD_Org.Value` of an organisation that the invoking user is allowed to access\n"
+					+ "or the invoking user needs to belong to an organisation, which is then used.")
 	String orgCode;
 
-	@ApiModelProperty(position = 20, dataType = "java.lang.String", required = true,//
+	@ApiModelProperty(position = 20, dataType = "java.lang.String", required = true, //
 			value = "Needs to be set if the invoice candidate shall be created.")
 	JsonExternalId externalHeaderId;
 
-	@ApiModelProperty(position = 30, dataType = "java.lang.String", required = true,//
+	@ApiModelProperty(position = 30, dataType = "java.lang.String", required = true, //
 			value = "Needs to be set if the invoice candidate shall be created.")
 	JsonExternalId externalLineId;
 
-	@ApiModelProperty(position = 40, required = false,//
+	@ApiModelProperty(position = 40, required = false, //
 			value = "External reference (document number) on a remote system. Not neccesarily unique, but but the external user will want to filter recrods using it")
 	String poReference;
 
-	@ApiModelProperty(position = 50, required = true,//
+	@ApiModelProperty(position = 50, required = true, //
 			value = BPARTER_IDENTIFIER_DOC)
 	String billPartnerIdentifier;
 
-	@ApiModelProperty(position = 60, required = true,//
+	@ApiModelProperty(position = 60, required = true, //
 			value = LOCATION_IDENTIFIER_DOC)
 	String billLocationIdentifier;
 
-	@ApiModelProperty(position = 70, required = false, value = CONTACT_IDENTIFIER_DOC)
+	@ApiModelProperty(position = 70, required = false, //
+			value = CONTACT_IDENTIFIER_DOC)
 	String billContactIdentifier;
 
-	@ApiModelProperty(position = 80, required = true,//
+	@ApiModelProperty(position = 80, required = true, //
 			value = PRODUCTIDENTIFIER_DOC)
 	String productIdentifier;
 
@@ -90,23 +87,22 @@ public class JsonCreateInvoiceCandidatesRequestItem
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	LocalDate dateOrdered;
 
-	@ApiModelProperty(position = 140, required = true //
-	)
+	@ApiModelProperty(position = 140, required = true)
 	BigDecimal qtyOrdered;
 
-	@ApiModelProperty(position = 150, required = false,//
+	@ApiModelProperty(position = 150, required = false, //
 			value = "Optional, if not specified, zero is assumed")
 	BigDecimal qtyDelivered;
 
-	@ApiModelProperty(position = 90, required = false, value = "Unit of measurement for the ordered, delivered and invoiced quantites\n"
-			+ "This translates to `C_UOM.X12DE355`.\n"
-			+ "The respective UOM needs to exist in metasfresh and its ID is set as `C_Invoice_candidate.C_UOM_ID`.\n"
-			+ "Note that if this is set, then there also needs to exist a UOM-conversion rule between this UOM and the `product`'s UOM")
+	@ApiModelProperty(position = 90, required = false, //
+			value = "Unit of measurement for the ordered, delivered and invoiced quantites\n"
+					+ "This translates to `C_UOM.X12DE355`.\n"
+					+ "The respective UOM needs to exist in metasfresh and its ID is set as `C_Invoice_candidate.C_UOM_ID`.\n"
+					+ "Note that if this is set, then there also needs to exist a UOM-conversion rule between this UOM and the `product`'s UOM")
 	String uomCode;
 
 	@ApiModelProperty(position = 100, required = true, //
-			value = "Specifies if this invoice candidate is about a sales- or purchase-transaction.\n"
-					+ "Needs to be set if the invoice candidate shall be created")
+			value = "Specifies if this invoice candidate is about a sales- or purchase-transaction.")
 	JsonSOTrx soTrx;
 
 	@ApiModelProperty(position = 110, required = false,//
@@ -131,7 +127,8 @@ public class JsonCreateInvoiceCandidatesRequestItem
 			value = "Optional, to override the discount as computed by metasfresh's own pricing engine for the respective invoice candidate")
 	BigDecimal discountOverride;
 
-	@ApiModelProperty(position = 170, required = false)
+	@ApiModelProperty(position = 180, required = false, //
+			value = "optional invoice line description")
 	String lineDescription;
 
 	@JsonCreator

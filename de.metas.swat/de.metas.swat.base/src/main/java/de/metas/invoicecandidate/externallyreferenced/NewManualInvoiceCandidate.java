@@ -44,7 +44,7 @@ import lombok.Value;
 /** A "manual" IC does not reference another record (e.g. order line or contract). */
 @Value
 @Builder
-public class NewExternallyReferencedCandidate
+public class NewManualInvoiceCandidate
 {
 	private OrgId orgId;
 
@@ -90,7 +90,7 @@ public class NewExternallyReferencedCandidate
 
 	private String lineDescription;
 
-	private NewExternallyReferencedCandidate(
+	private NewManualInvoiceCandidate(
 			@NonNull final OrgId orgId,
 
 			@NonNull final ExternalId externalHeaderId,

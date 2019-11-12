@@ -52,7 +52,7 @@ import lombok.NonNull;
 @Data
 public class ExternallyReferencedCandidate
 {
-	public static ExternallyReferencedCandidateBuilder createBuilder(@NonNull final NewExternallyReferencedCandidate newIC)
+	public static ExternallyReferencedCandidateBuilder createBuilder(@NonNull final NewManualInvoiceCandidate newIC)
 	{
 		return ExternallyReferencedCandidate
 				.builder()

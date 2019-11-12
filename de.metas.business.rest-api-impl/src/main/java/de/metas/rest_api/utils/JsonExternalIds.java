@@ -1,8 +1,11 @@
 package de.metas.rest_api.utils;
 
+import java.util.Collection;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.util.lang.ExternalId;
@@ -46,6 +49,14 @@ public class JsonExternalIds
 	public ExternalId toExternalId(@NonNull final JsonExternalId jsonExternalId)
 	{
 		return ExternalId.of(jsonExternalId.getValue());
+	}
+
+	public ImmutableList<ExternalId> toExternalIds(@NonNull final Collection<JsonExternalId> externalLineIds)
+	{
+		return externalLineIds
+				.stream()
+				.map(JsonExternalIds::toExternalId)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public JsonExternalId of(@NonNull final ExternalId externalId)

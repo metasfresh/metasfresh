@@ -26,6 +26,7 @@ import de.metas.device.api.ISingleValueResponse;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -80,7 +81,7 @@ public class AttributesDevicesHub
 	{
 		this(Services.get(IDeviceConfigPoolFactory.class).getDeviceConfigPool(clientHost, adClientId, adOrgId));
 	}
-	
+
 	@VisibleForTesting
 	public AttributesDevicesHub(final IDeviceConfigPool deviceConfigPool)
 	{
@@ -227,20 +228,13 @@ public class AttributesDevicesHub
 
 		private AttributeDeviceAccessor( //
 				final String displayName //
-				, final IDevice device //
-				, final String deviceName //
-				, final String attributeCode //
+				, @NonNull final IDevice device //
+				, @NonNull final String deviceName //
+				, @NonNull final String attributeCode //
 				, final Set<Integer> assignedWarehouseIds //
-				, final IDeviceRequest<ISingleValueResponse> request //
+				, @NonNull final IDeviceRequest<ISingleValueResponse> request //
 		)
 		{
-			super();
-
-			Check.assumeNotNull(device, "Parameter device is not null");
-			Check.assumeNotNull(request, "Parameter request is not null");
-			Check.assumeNotEmpty(deviceName, "deviceName is not empty");
-			Check.assumeNotEmpty(attributeCode, "attributeCode is not empty");
-
 			this.displayName = displayName;
 			this.device = device;
 			this.assignedWarehouseIds = assignedWarehouseIds;
@@ -302,7 +296,7 @@ public class AttributesDevicesHub
 	@Immutable
 	public static final class AttributeDeviceAccessorsList
 	{
-		private static final AttributeDeviceAccessorsList of(final List<AttributeDeviceAccessor> attributeDeviceAccessors, final String warningMessage)
+		private static AttributeDeviceAccessorsList of(final List<AttributeDeviceAccessor> attributeDeviceAccessors, final String warningMessage)
 		{
 			final String warningMessageNorm = Check.isEmpty(warningMessage, true) ? null : warningMessage;
 			if (attributeDeviceAccessors.isEmpty() && warningMessage == null)

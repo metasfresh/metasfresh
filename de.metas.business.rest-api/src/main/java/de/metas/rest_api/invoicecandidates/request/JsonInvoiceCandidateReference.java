@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.util.lang.ExternalId;
+import de.metas.rest_api.common.JsonExternalId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -43,23 +43,22 @@ public class JsonInvoiceCandidateReference
 {
 	@ApiModelProperty(position = 10, allowEmptyValue = false, dataType = "java.lang.String", example = "ExternalHeaderId_1",//
 			value = "Used to select which invoice candidates should be enqueued.")
-	ExternalId externalHeaderId;
+	JsonExternalId externalHeaderId;
 
 	@ApiModelProperty(position = 20, allowEmptyValue = true, dataType = "java.lang.String", example = "[\"ExternalLineId_2\", \"ExternalLineId_3\"]", //
 			value = "Optional, used to select which invoice candidates which have these `C_Invoice_Candidate.ExternalLineId`s should be enqueued.\n"
 					+ "Inherited from order line candidates.\n"
 					+ "If not specified, then all invoice candidate with the specified `externalHeaderId` are matched")
 	@JsonInclude(Include.NON_EMPTY)
-	List<ExternalId> externalLineIds;
+	List<JsonExternalId> externalLineIds;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonInvoiceCandidateReference(
-			@JsonProperty("externalLineIds") @Singular @Nullable final List<ExternalId> externalLineIds,
-			@JsonProperty("externalHeaderId") @NonNull final ExternalId externalHeaderId)
+			@JsonProperty("externalHeaderId") @NonNull final JsonExternalId externalHeaderId,
+			@JsonProperty("externalLineIds") @Singular @Nullable final List<JsonExternalId> externalLineIds)
 	{
-		this.externalLineIds = externalLineIds == null ? ImmutableList.of() : ImmutableList.copyOf(externalLineIds);
 		this.externalHeaderId = externalHeaderId;
+		this.externalLineIds = externalLineIds == null ? ImmutableList.of() : ImmutableList.copyOf(externalLineIds);
 	}
-
 }

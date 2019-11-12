@@ -14,6 +14,7 @@ public class ExternalHeaderIdWithExternalLineIds
 {
 	ExternalId externalHeaderId;
 
+	/** May be empty. */
 	ImmutableList<ExternalId> externalLineIds;
 
 	@Builder(toBuilder = true)

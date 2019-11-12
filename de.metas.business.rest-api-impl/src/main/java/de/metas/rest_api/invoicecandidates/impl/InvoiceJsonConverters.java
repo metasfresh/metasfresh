@@ -10,6 +10,7 @@ import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidateReference;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
+import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -56,8 +57,8 @@ final class InvoiceJsonConverters
 		for (final JsonInvoiceCandidateReference cand : invoiceCandidates)
 		{
 			final ExternalHeaderIdWithExternalLineIds headerAndLineId = ExternalHeaderIdWithExternalLineIds.builder()
-					.externalHeaderId(cand.getExternalHeaderId())
-					.externalLineIds(cand.getExternalLineIds())
+					.externalHeaderId(JsonExternalIds.toExternalId(cand.getExternalHeaderId()))
+					.externalLineIds(JsonExternalIds.toExternalIds(cand.getExternalLineIds()))
 					.build();
 			headerAndLineIds.add(headerAndLineId);
 		}

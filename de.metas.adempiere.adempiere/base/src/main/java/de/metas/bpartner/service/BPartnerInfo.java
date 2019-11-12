@@ -43,7 +43,7 @@ public final class BPartnerInfo
 	private final BPartnerLocationId bpartnerLocationId;
 	private final BPartnerContactId contactId;
 
-	@Builder(toBuilder = true)
+	@Builder
 	private BPartnerInfo(
 			@Nullable final BPartnerId bpartnerId,
 			@Nullable final BPartnerLocationId bpartnerLocationId,

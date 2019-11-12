@@ -1,10 +1,7 @@
 package de.metas.rest_api.common;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
-
-import de.metas.rest_api.common.SyncAdvise.IfExists;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.NonNull;
+import lombok.EqualsAndHashCode;
 import lombok.Value;
 
 /*
@@ -30,51 +27,16 @@ import lombok.Value;
  */
 
 @Value
-public class JsonUnsettablePrice
+@EqualsAndHashCode(callSuper = false)
+public class JsonUnsettablePrice extends JsonUnsettableValue
 {
 	public static final JsonUnsettablePrice EMPTY = new JsonUnsettablePrice(null, null);
 
 	@ApiModelProperty(position = 10, required = false)
-	JsonPrice price;
+	JsonPrice value;
 
 	@ApiModelProperty(position = 20, required = false, //
 			value = "Optional property to *explicitly* unset a candidate's override property.\n"
 					+ "If set to `true`, it takes precedence to a possibly set `value`")
 	Boolean unsetValue;
-
-	public boolean computeUnsetValue(@NonNull final SyncAdvise syncAdvise)
-	{
-		final boolean explicitlyUnsetDiscount = coalesce(this.getUnsetValue(), false);
-		if (explicitlyUnsetDiscount)
-		{
-			return true;
-		}
-
-		final boolean implicitlyUnsetPrice = this.getPrice() == null && syncAdvise.getIfExists().isUpdateRemove();
-		if (implicitlyUnsetPrice)
-		{
-			return true;
-		}
-		return false;
-	}
-
-	public boolean computeSetValue(@NonNull final SyncAdvise syncAdvise)
-	{
-		final IfExists isExistsAdvise = syncAdvise.getIfExists();
-
-		final boolean dontChangeAtAll = !isExistsAdvise.isUpdate();
-		if (dontChangeAtAll)
-		{
-			return false;
-		}
-
-		final boolean dontChangeIfNotSet = dontChangeAtAll || isExistsAdvise.isUpdateMerge();
-
-		final boolean implicitlyDontSetPrice = this.getPrice() == null && dontChangeIfNotSet;
-		if (implicitlyDontSetPrice)
-		{
-			return false;
-		}
-		return true;
-	}
 }

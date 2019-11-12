@@ -2,6 +2,7 @@ package de.metas.rest_api.common;
 
 import java.math.BigDecimal;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Value;
 
@@ -27,6 +28,7 @@ import lombok.Value;
  * #L%
  */
 
+@ApiModel("Price for one item, in the given unit of measurement and curency")
 @Value
 public class JsonPrice
 {
@@ -40,6 +42,6 @@ public class JsonPrice
 	String currencyCode;
 
 	@ApiModelProperty(position = 20, required = false, //
-			value = "Identify which unit this about")
+			value = "Identify which unit price this about")
 	String priceUomCode;
 }

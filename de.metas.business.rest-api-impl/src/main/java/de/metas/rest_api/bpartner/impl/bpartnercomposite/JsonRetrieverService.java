@@ -40,6 +40,7 @@ import de.metas.dao.selection.pagination.UnknownPageIdentifierException;
 import de.metas.greeting.Greeting;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.rest_api.bpartner.response.JsonResponseBPartner;
 import de.metas.rest_api.bpartner.response.JsonResponseComposite;
 import de.metas.rest_api.bpartner.response.JsonResponseComposite.JsonResponseCompositeBuilder;
@@ -53,6 +54,7 @@ import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.IdentifierString;
+import de.metas.rest_api.utils.InvalidEntityException;
 import de.metas.rest_api.utils.JsonConverters;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
@@ -425,7 +427,8 @@ public class JsonRetrieverService
 		}
 		catch (AdempiereException e)
 		{
-			throw new AdempiereException("The given lookup keys needs to yield max one BPartnerComposite; multiple items yielded instead", e)
+
+			throw new InvalidEntityException(TranslatableStrings.constant("The given lookup keys needs to yield max one BPartnerComposite; multiple items yielded instead"), e)
 					.appendParametersToMessage()
 					.setParameter("BPartnerIdLookupKeys", queryLookupKeys);
 		}

@@ -13,6 +13,8 @@
  *****************************************************************************/
 package org.adempiere.exceptions;
 
+import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
+
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
@@ -40,8 +42,6 @@ import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.util.Services;
-import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.NonNull;
 
 /**
@@ -52,9 +52,6 @@ import lombok.NonNull;
 public class AdempiereException extends RuntimeException
 		implements IIssueReportableAware
 {
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = -1813037338765245293L;
 
 	/**
@@ -239,7 +236,6 @@ public class AdempiereException extends RuntimeException
 
 	private Map<String, Object> parameters = null;
 
-	@Getter(AccessLevel.PRIVATE)
 	private boolean appendParametersToMessage = false;
 
 	/**
@@ -381,9 +377,8 @@ public class AdempiereException extends RuntimeException
 			final Throwable cause = getCause();
 			if (cause != null && cause instanceof AdempiereException)
 			{
-				AdempiereException metasfreshCause = (AdempiereException)cause;
-
-				if (metasfreshCause.isAppendParametersToMessage())
+				final AdempiereException metasfreshCause = (AdempiereException)cause;
+				if (metasfreshCause.appendParametersToMessage) // also append the cause's parameters
 				{
 					metasfreshCause.appendParameters(message);
 				}
@@ -394,7 +389,7 @@ public class AdempiereException extends RuntimeException
 
 	protected final String getADLanguage()
 	{
-		return adLanguage != null ? adLanguage : Env.getAD_Language();
+		return coalesceSuppliers(() -> adLanguage, () -> Env.getAD_Language());
 	}
 
 	/**
