@@ -23,6 +23,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.Singular;
 import lombok.ToString;
 
 /*
@@ -104,7 +105,7 @@ public class PickingCandidate
 			@NonNull ShipmentScheduleId shipmentScheduleId,
 			@Nullable PickingSlotId pickingSlotId,
 			//
-			@Nullable ImmutableList<PickingCandidateIssueToBOMLine> issuesToPickingOrder)
+			@Nullable @Singular("issueToPickingOrder") ImmutableList<PickingCandidateIssueToBOMLine> issuesToPickingOrder)
 	{
 		this.id = id;
 		this.processingStatus = CoalesceUtil.coalesce(processingStatus, PickingCandidateStatus.Draft);
