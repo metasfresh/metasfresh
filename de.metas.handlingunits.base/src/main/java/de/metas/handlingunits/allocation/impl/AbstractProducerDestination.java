@@ -23,6 +23,7 @@ import org.compiere.util.Util.ArrayKey;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -44,6 +45,7 @@ import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.handlingunits.util.HUListCursor;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Contains common BL used when loading from an {@link IAllocationRequest} to an {@link IAllocationResult}
@@ -319,6 +321,14 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	protected final BPartnerId getBPartnerId()
 	{
 		return _bpartnerId;
+	}
+
+	@Override
+	public final IHUProducerAllocationDestination setBPartnerAndLocationId(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		setBPartnerId(bpartnerLocationId.getBpartnerId());
+		setC_BPartner_Location_ID(bpartnerLocationId.getRepoId());
+		return this;
 	}
 
 	@Override

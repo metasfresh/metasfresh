@@ -29,6 +29,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.warehouse.LocatorId;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 
@@ -86,6 +87,8 @@ public interface IHUProducerAllocationDestination extends IAllocationDestination
 	 * @param bpartner
 	 */
 	IHUProducerAllocationDestination setBPartnerId(BPartnerId bpartnerId);
+
+	IHUProducerAllocationDestination setBPartnerAndLocationId(BPartnerLocationId bpartnerLocationId);
 
 	/**
 	 * Sets BPartner Location to be used for newly created HUs.
