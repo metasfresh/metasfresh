@@ -23,8 +23,8 @@
 package de.metas.shipper.gateway.dpd;
 
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import ch.qos.logback.classic.Level;
@@ -36,7 +36,6 @@ import com.dpd.common.service.types.shipmentservice._3.Parcel;
 import com.dpd.common.service.types.shipmentservice._3.Pickup;
 import com.dpd.common.service.types.shipmentservice._3.PrintOptions;
 import com.dpd.common.service.types.shipmentservice._3.ProductAndServiceData;
-import com.dpd.common.service.types.shipmentservice._3.ShipmentResponse;
 import com.dpd.common.service.types.shipmentservice._3.ShipmentServiceData;
 import com.dpd.common.service.types.shipmentservice._3.StoreOrders;
 import com.dpd.common.service.types.shipmentservice._3.StoreOrdersResponse;
@@ -44,10 +43,11 @@ import com.dpd.common.service.types.shipmentservice._3.StoreOrdersResponseType;
 import com.dpd.common.ws.loginservice.v2_0.types.GetAuth;
 import com.dpd.common.ws.loginservice.v2_0.types.GetAuthResponse;
 import com.dpd.common.ws.loginservice.v2_0.types.Login;
-import com.google.common.base.Joiner;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
+import de.metas.shipper.gateway.dpd.logger.DpdClientLogEvent;
+import de.metas.shipper.gateway.dpd.logger.DpdDatabaseClientLogger;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.util.DpdClientUtil;
 import de.metas.shipper.gateway.dpd.util.DpdConversionUtil;
@@ -79,6 +79,7 @@ import javax.xml.bind.JAXBElement;
 public class DpdShipperGatewayClient implements ShipperGatewayClient
 {
 	private static final Logger logger = LoggerFactory.getLogger(DpdShipperGatewayClient.class);
+	private final DpdDatabaseClientLogger databaseLogger;
 
 	private final DpdClientConfig config;
 
@@ -93,9 +94,10 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 	private final com.dpd.common.service.types.shipmentservice._3.ObjectFactory shipmentServiceOF;
 
 	@Builder
-	public DpdShipperGatewayClient(@NonNull final DpdClientConfig config)
+	public DpdShipperGatewayClient(final DpdDatabaseClientLogger databaseLogger, @NonNull final DpdClientConfig config)
 	{
 		this.config = config;
+		this.databaseLogger = databaseLogger;
 
 		webServiceTemplate = DpdClientUtil.createWebServiceTemplate();
 		loginServiceOF = new com.dpd.common.ws.loginservice.v2_0.types.ObjectFactory();
@@ -176,7 +178,6 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 	@NonNull
 	private DeliveryOrder updateDeliveryOrderFromResponse(@NonNull final DeliveryOrder deliveryOrder, @NonNull final StoreOrdersResponseType storeOrdersResponse)
 	{
-		//noinspection ConstantConditions - custom delivery order data is never null for dpd
 		final DpdOrderCustomDeliveryData customDeliveryData = DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData())
 				.toBuilder()
 				.pdfData(storeOrdersResponse.getParcellabelsPDF())
@@ -198,11 +199,11 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 	{
 		// todo implement database request logging
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		// final DhlClientLogEvent.DhlClientLogEventBuilder logEventBuilder = DhlClientLogEvent.builder()
-		// 		.marshaller(webServiceTemplate.getMarshaller())
-		// 		.requestElement(request)
-		// 		.deliveryOrderRepoId(deliveryOrderRepoIdForLogging.getRepoId())
-		// 		.config(config);
+		final DpdClientLogEvent.DpdClientLogEventBuilder logEventBuilder = DpdClientLogEvent.builder()
+				.marshaller(webServiceTemplate.getMarshaller())
+				.requestElement(request)
+				.deliveryOrderRepoId(deliveryOrderRepoIdForLogging == null ? 0 : deliveryOrderRepoIdForLogging.getRepoId())
+				.config(config);
 		try
 		{
 			final Object response;
@@ -216,19 +217,19 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 				// this is a normal request
 				response = webServiceTemplate.marshalSendAndReceive(apiUrl, request, new DpdSoapHeaderWithAuth(login));
 			}
-			// databaseLogger.log(logEventBuilder
-			// 		.responseElement(response)
-			// 		.durationMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS))
-			// 		.build());
+			databaseLogger.log(logEventBuilder
+					.responseElement(response)
+					.durationMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS))
+					.build());
 			return response;
 		}
 		catch (final Throwable throwable)
 		{
 			final AdempiereException exception = AdempiereException.wrapIfNeeded(throwable);
-			// databaseLogger.log(logEventBuilder
-			// 		.responseException(exception)
-			// 		.durationMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS))
-			// 		.build());
+			databaseLogger.log(logEventBuilder
+					.responseException(exception)
+					.durationMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS))
+					.build());
 
 			throw exception;
 		}
@@ -238,7 +239,6 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 	private StoreOrders createStoreOrdersFromDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder, @NonNull final String depot)
 	{
 		final StoreOrders storeOrders = shipmentServiceOF.createStoreOrders();
-		//noinspection ConstantConditions - custom delivery order data is never null for dpd
 		final PrintOptions printOptions = createPrintOptions(DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()));
 		storeOrders.setPrintOptions(printOptions);
 
@@ -277,6 +277,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 			}
 			{
 				// Recipient aka Delivery
+				//noinspection ConstantConditions
 				final Address recipient = createRecipientAddress(deliveryOrder.getDeliveryAddress(), deliveryOrder.getDeliveryContact());
 				generalShipmentData.setRecipient(recipient);
 			}
@@ -300,13 +301,12 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 			shipmentServiceData.setProductAndServiceData(productAndServiceData);
 			{
 				// Shipper Product
-
-				//noinspection ConstantConditions - custom delivery order data is never null for dpd
 				productAndServiceData.setOrderType(DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()).getOrderType()); // this is somehow related to product: CL; and i think it should always be "consignment"
 			}
 			{
 				// Predict aka Notification
 				final Notification notification = createNotification(deliveryOrder);
+				//noinspection ConstantConditions
 				productAndServiceData.setPredict(notification);
 			}
 			{
@@ -355,8 +355,8 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 		}
 
 		final Notification notification = shipmentServiceOF.createNotification();
-		//noinspection ConstantConditions - custom delivery order data is never null for dpd
 		notification.setChannel(DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()).getNotificationChannel().toDpdDataFormat());
+		//noinspection ConstantConditions
 		notification.setValue(deliveryOrder.getDeliveryContact().getEmailAddress());
 		notification.setLanguage(deliveryOrder.getDeliveryAddress().getCountry().getAlpha2());
 		return notification;
