@@ -490,6 +490,10 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	public Optional<DocSequenceId> getSerialNoSequenceId(@NonNull final PPOrderId ppOrderId)
 	{
 		final I_PP_Order_BOM orderBOM = orderBOMsRepo.getByOrderIdOrNull(ppOrderId);
+		if (orderBOM == null)
+		{
+			throw new AdempiereException("@NotFound@ @PP_Order_BOM_ID@: " + ppOrderId);
+		}
 		return DocSequenceId.optionalOfRepoId(orderBOM.getSerialNo_Sequence_ID());
 	}
 
