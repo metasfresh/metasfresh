@@ -17,7 +17,6 @@ import de.metas.rest_api.invoicecandidates.request.JsonCloseInvoiceCandidatesReq
 import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponseItem;
 import de.metas.rest_api.utils.InvalidEntityException;
-import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.lang.ExternalId;
@@ -51,58 +50,56 @@ public class CloseInvoiceCandidatesService
 
 	public JsonCloseInvoiceCandidatesResponse closeInvoiceCandidates(final JsonCloseInvoiceCandidatesRequest request)
 	{
-		{
-			if (request.getInvoiceCandidates().isEmpty())
-			{
-				throw new InvalidEntityException(TranslatableStrings.constant("The request's invoiceCandidates array may not be empty"));
-			}
-			final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds = InvoiceJsonConverters.fromJson(request.getInvoiceCandidates());
+		final InvoiceCandidateMultiQuery multiQuery = toInvoiceCandidateMultiQuery(request);
+		final List<I_C_Invoice_Candidate> invoiceCandidateRecords = invoiceCandDAO.getByQuery(multiQuery);
 
-			final InvoiceCandidateMultiQueryBuilder multiQuery = InvoiceCandidateMultiQuery.builder();
-			for (final ExternalHeaderIdWithExternalLineIds externalId : headerAndLineIds)
-			{
-				final InvoiceCandidateQuery query = InvoiceCandidateQuery.builder()
-						.externalIds(externalId)
-						.build();
-				multiQuery.query(query);
-			}
-			final List<I_C_Invoice_Candidate> invoiceCandidateRecords = invoiceCandDAO
-					.convertToIQuery(multiQuery.build())
-					.setRequiredAccess(Access.READ)
-					.list();
-
-			final List<JsonCloseInvoiceCandidatesResponseItem> invoiceCandidates = closeInvoiceCandidateRecords(invoiceCandidateRecords);
-
-			final JsonCloseInvoiceCandidatesResponse result = JsonCloseInvoiceCandidatesResponse.builder()
-					.invoiceCandidates(invoiceCandidates)
-					.build();
-
-			return result;
-		}
+		return closeInvoiceCandidateRecords(invoiceCandidateRecords);
 	}
 
-	private List<JsonCloseInvoiceCandidatesResponseItem> closeInvoiceCandidateRecords(final List<I_C_Invoice_Candidate> invoiceCandidateRecords)
+	private static InvoiceCandidateMultiQuery toInvoiceCandidateMultiQuery(final JsonCloseInvoiceCandidatesRequest request)
 	{
-		List<JsonCloseInvoiceCandidatesResponseItem> responseItems = new ArrayList<>();
+		if (request.getInvoiceCandidates().isEmpty())
+		{
+			throw new InvalidEntityException(TranslatableStrings.constant("The request's invoiceCandidates array may not be empty"));
+		}
+
+		final InvoiceCandidateMultiQueryBuilder multiQuery = InvoiceCandidateMultiQuery.builder();
+
+		final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds = InvoiceJsonConverters.fromJson(request.getInvoiceCandidates());
+		for (final ExternalHeaderIdWithExternalLineIds externalId : headerAndLineIds)
+		{
+			final InvoiceCandidateQuery query = InvoiceCandidateQuery.builder()
+					.externalIds(externalId)
+					.build();
+			multiQuery.query(query);
+		}
+
+		return multiQuery.build();
+	}
+
+	private JsonCloseInvoiceCandidatesResponse closeInvoiceCandidateRecords(final List<I_C_Invoice_Candidate> invoiceCandidateRecords)
+	{
+		final List<JsonCloseInvoiceCandidatesResponseItem> responseItems = new ArrayList<>();
 
 		for (final I_C_Invoice_Candidate invoiceCandidateRecord : invoiceCandidateRecords)
 		{
 			invoiceCandBL.closeInvoiceCandidate(invoiceCandidateRecord);
-			final JsonCloseInvoiceCandidatesResponseItem responseItem = createCloseInvoiceCandidateResponseItem(invoiceCandidateRecord);
+			final JsonCloseInvoiceCandidatesResponseItem responseItem = toResponseItem(invoiceCandidateRecord);
 			responseItems.add(responseItem);
 		}
 
-		return responseItems;
+		return JsonCloseInvoiceCandidatesResponse.builder()
+				.invoiceCandidates(responseItems)
+				.build();
 	}
 
-	private JsonCloseInvoiceCandidatesResponseItem createCloseInvoiceCandidateResponseItem(final I_C_Invoice_Candidate invoiceCandidateRecord)
+	private static JsonCloseInvoiceCandidatesResponseItem toResponseItem(final I_C_Invoice_Candidate record)
 	{
 		return JsonCloseInvoiceCandidatesResponseItem.builder()
-				.externalHeaderId(ExternalId.of(invoiceCandidateRecord.getExternalHeaderId()))
-				.externalLineId(ExternalId.of(invoiceCandidateRecord.getExternalLineId()))
-				.metasfreshId(MetasfreshId.of(invoiceCandidateRecord.getC_Invoice_Candidate_ID()))
+				.externalHeaderId(ExternalId.of(record.getExternalHeaderId()))
+				.externalLineId(ExternalId.of(record.getExternalLineId()))
+				.metasfreshId(MetasfreshId.of(record.getC_Invoice_Candidate_ID()))
 				.build();
-
 	}
 
 }
