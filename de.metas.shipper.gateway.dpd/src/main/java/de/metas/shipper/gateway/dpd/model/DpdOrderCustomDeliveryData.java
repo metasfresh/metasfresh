@@ -26,6 +26,7 @@ import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
@@ -44,8 +45,13 @@ public class DpdOrderCustomDeliveryData implements CustomDeliveryData
 	@Nullable
 	byte[] pdfData;
 
-	public static DpdOrderCustomDeliveryData cast(@NonNull final CustomDeliveryData customDeliveryData)
+	@NonNull
+	public static DpdOrderCustomDeliveryData cast(@Nullable final CustomDeliveryData customDeliveryData)
 	{
+		if (customDeliveryData == null)
+		{
+			throw new AdempiereException("DPD custom delivery data should not be null");
+		}
 		return (DpdOrderCustomDeliveryData)customDeliveryData;
 	}
 }

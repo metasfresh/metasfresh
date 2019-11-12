@@ -149,7 +149,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				deliveryOrderLinesBuilder.build());
 	}
 
-	private int getPackageGrossWeightKg(@NonNull final I_M_Package mPackage, final int defaultValue)
+	private int getPackageGrossWeightKg(@NonNull final I_M_Package mPackage, @SuppressWarnings("SameParameterValue") final int defaultValue)
 	{
 		final int weight = mPackage.getPackageWeight().intValue();
 		if (weight == 0)
