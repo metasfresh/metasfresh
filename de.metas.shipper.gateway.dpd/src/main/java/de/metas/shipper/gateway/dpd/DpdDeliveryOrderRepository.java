@@ -243,8 +243,6 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 
 	/**
 	 * Retrieves the DPD specific PO and returns the DeliveryOrder DTO.
-	 * <p>
-	 * Keep in sync with {@link #createStoreOrderPO(DeliveryOrder)}
 	 */
 	@NonNull
 	private DeliveryOrder toDeliveryOrderFromPO(@NonNull final I_DPD_StoreOrder orderPO)

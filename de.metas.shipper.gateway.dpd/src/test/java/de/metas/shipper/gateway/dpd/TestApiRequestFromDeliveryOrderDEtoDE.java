@@ -141,9 +141,6 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 
 			{
 				// Sender aka Pickup
-				// todo i'm not sure if the following is true, as dpd test doesn't complain if the sender address is different from the one in the login.
-				// 		the sender _seems_ hard linked with the location provided to dpd when the account was created.
-				// 		it is not connected, though, with the pickup address! as in the pickup section there's the mandatory field "CollectionRequestAddress".
 				final Address sender = createAddress(deliveryOrder.getPickupAddress());
 				generalShipmentData.setSender(sender);
 			}
@@ -163,7 +160,6 @@ public class TestApiRequestFromDeliveryOrderDEtoDE
 				parcel.setContent(deliveryOrderLine.getContent());
 				parcel.setVolume(DpdConversionUtil.formatVolume(deliveryOrderLine.getPackageDimensions()));
 				parcel.setWeight(DpdConversionUtil.convertWeightKgToDag(deliveryOrderLine.getGrossWeightKg()));
-				//				parcel.setInternational(); // todo god save us
 			}
 		}
 		{

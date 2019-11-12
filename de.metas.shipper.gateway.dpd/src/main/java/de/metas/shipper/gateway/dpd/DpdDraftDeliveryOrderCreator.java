@@ -76,8 +76,6 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 
 	/**
 	 * Create the initial DTO.
-	 * <p>
-	 * todo: keep in sync with:
 	 */
 	@NonNull
 	@Override
