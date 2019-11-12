@@ -20,24 +20,25 @@ final class CostCollectorCandidateCoProductHUProducer extends AbstractPPOrderRec
 {
 	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 
-	private final I_PP_Order_BOMLine ppOrderBOMLine;
+	private final I_PP_Order_BOMLine coByProductOrderBOMLine;
 	private final ProductId productId;
 
-	public CostCollectorCandidateCoProductHUProducer(final org.eevolution.model.I_PP_Order_BOMLine ppOrderBOMLine)
+	public CostCollectorCandidateCoProductHUProducer(
+			final org.eevolution.model.I_PP_Order_BOMLine coByProductOrderBOMLine)
 	{
-		super(PPOrderId.ofRepoId(ppOrderBOMLine.getPP_Order_ID()));
+		super(PPOrderId.ofRepoId(coByProductOrderBOMLine.getPP_Order_ID()));
 
 		// TODO: validate:
 		// * if is a completed PP_Order
 		// * if is really a receipt (i.e. it's a co/by product line)
-		this.ppOrderBOMLine = InterfaceWrapperHelper.create(ppOrderBOMLine, I_PP_Order_BOMLine.class);
+		this.coByProductOrderBOMLine = InterfaceWrapperHelper.create(coByProductOrderBOMLine, I_PP_Order_BOMLine.class);
 
-		productId = ProductId.ofRepoId(ppOrderBOMLine.getM_Product_ID());
+		productId = ProductId.ofRepoId(coByProductOrderBOMLine.getM_Product_ID());
 	}
 
-	private I_PP_Order_BOMLine getPP_Order_BOMLine()
+	private I_PP_Order_BOMLine getCoByProductOrderBOMLine()
 	{
-		return ppOrderBOMLine;
+		return coByProductOrderBOMLine;
 	}
 
 	@Override
@@ -49,39 +50,38 @@ final class CostCollectorCandidateCoProductHUProducer extends AbstractPPOrderRec
 	@Override
 	protected Object getAllocationRequestReferencedModel()
 	{
-		return getPP_Order_BOMLine();
+		return getCoByProductOrderBOMLine();
 	}
 
 	@Override
 	protected IAllocationSource createAllocationSource()
 	{
-		final I_PP_Order_BOMLine ppOrderBOMLine = getPP_Order_BOMLine();
-		final PPOrderBOMLineProductStorage ppOrderBOMLineProductStorage = new PPOrderBOMLineProductStorage(ppOrderBOMLine);
-		final IAllocationSource ppOrderAllocationSource = new GenericAllocationSourceDestination(
+		final I_PP_Order_BOMLine coByProductOrderBOMLine = getCoByProductOrderBOMLine();
+		final PPOrderBOMLineProductStorage ppOrderBOMLineProductStorage = new PPOrderBOMLineProductStorage(coByProductOrderBOMLine);
+		return new GenericAllocationSourceDestination(
 				ppOrderBOMLineProductStorage,
-				ppOrderBOMLine // referenced model
+				coByProductOrderBOMLine // referenced model
 		);
-		return ppOrderAllocationSource;
 	}
 
 	@Override
 	protected IDocumentLUTUConfigurationManager createReceiptLUTUConfigurationManager()
 	{
-		final I_PP_Order_BOMLine ppOrderBOMLine = getPP_Order_BOMLine();
-		return huPPOrderBL.createReceiptLUTUConfigurationManager(ppOrderBOMLine);
+		final I_PP_Order_BOMLine coByProductOrderBOMLine = getCoByProductOrderBOMLine();
+		return huPPOrderBL.createReceiptLUTUConfigurationManager(coByProductOrderBOMLine);
 	}
 
 	@Override
 	protected ReceiptCandidateRequestProducer newReceiptCandidateRequestProducer()
 	{
-		final I_PP_Order_BOMLine orderBOMLine = getPP_Order_BOMLine();
-		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID());
-		final PPOrderId orderId = PPOrderId.ofRepoId(orderBOMLine.getPP_Order_ID());
-		final OrgId orgId = OrgId.ofRepoId(orderBOMLine.getAD_Org_ID());
+		final I_PP_Order_BOMLine coByProductOrderBOMLine = getCoByProductOrderBOMLine();
+		final PPOrderBOMLineId coByProductOrderBOMLineId = PPOrderBOMLineId.ofRepoId(coByProductOrderBOMLine.getPP_Order_BOMLine_ID());
+		final PPOrderId orderId = PPOrderId.ofRepoId(coByProductOrderBOMLine.getPP_Order_ID());
+		final OrgId orgId = OrgId.ofRepoId(coByProductOrderBOMLine.getAD_Org_ID());
 
 		return ReceiptCandidateRequestProducer.builder()
 				.orderId(orderId)
-				.orderBOMLineId(orderBOMLineId)
+				.coByProductOrderBOMLineId(coByProductOrderBOMLineId)
 				.orgId(orgId)
 				.date(getMovementDate())
 				.pickingCandidateId(getPickingCandidateId())
@@ -91,7 +91,7 @@ final class CostCollectorCandidateCoProductHUProducer extends AbstractPPOrderRec
 	@Override
 	protected void setAssignedHUs(final Collection<I_M_HU> hus)
 	{
-		final I_PP_Order_BOMLine bomLine = getPP_Order_BOMLine();
+		final I_PP_Order_BOMLine bomLine = getCoByProductOrderBOMLine();
 		huPPOrderBL.setAssignedHandlingUnits(bomLine, hus);
 	}
 }
