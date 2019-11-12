@@ -237,7 +237,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 
 		if (packingMaterial == null)
 		{
-			throw new AdempiereException("There is no packing material for the package: " + packageId + ". Please create a packing material and set its dimensions."); // todo add a nicer message
+			throw new AdempiereException("There is no packing material for the package: " + packageId + ". Please create a packing material and set its correct dimensions.");
 		}
 
 		final UomId toUomId = Services.get(IUOMDAO.class).getUomIdByX12DE355(DpdConstants.DEFAULT_PACKAGE_DIMENSIONS_UOM);
