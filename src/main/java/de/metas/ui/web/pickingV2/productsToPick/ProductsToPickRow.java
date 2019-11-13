@@ -16,6 +16,7 @@ import de.metas.handlingunits.picking.PickingCandidatePickStatus;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.ShipperId;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
@@ -104,7 +105,7 @@ public class ProductsToPickRow implements IViewRow
 	private final Quantity qty;
 
 	static final String FIELD_QtyOverride = "qtyOverride";
-	@ViewColumn(fieldName = FIELD_QtyOverride, widgetType = DocumentFieldWidgetType.Quantity, captionKey = "QtyOverride", widgetSize = WidgetSize.Small, editor = ViewEditorRenderMode.ALWAYS)
+	@ViewColumn(fieldName = FIELD_QtyOverride, widgetType = DocumentFieldWidgetType.Quantity, captionKey = "Qty_Override", widgetSize = WidgetSize.Small, editor = ViewEditorRenderMode.ALWAYS)
 	private final Quantity qtyOverride;
 
 	static final String FIELD_QtyReview = "qtyReview";
@@ -132,6 +133,10 @@ public class ProductsToPickRow implements IViewRow
 	@Getter
 	@Nullable
 	private final PickingCandidateId pickingCandidateId;
+	@Getter
+	@Nullable
+	private final ShipperId shipperId;
+
 
 	//
 	private final ViewRowFieldNameAndJsonValuesHolder<ProductsToPickRow> values = ViewRowFieldNameAndJsonValuesHolder.newInstance(ProductsToPickRow.class);
@@ -158,7 +163,8 @@ public class ProductsToPickRow implements IViewRow
 			final boolean processed,
 			//
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
-			final PickingCandidateId pickingCandidateId)
+			final PickingCandidateId pickingCandidateId,
+			final ShipperId shipperId)
 	{
 		this.rowId = rowId;
 
@@ -185,6 +191,8 @@ public class ProductsToPickRow implements IViewRow
 
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.pickingCandidateId = pickingCandidateId;
+
+		this.shipperId = shipperId;
 	}
 
 	@Override

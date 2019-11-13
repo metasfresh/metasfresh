@@ -858,7 +858,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	}
 
 	@Value
-	@Builder
+	@Builder(toBuilder = true)
 	public static class ProductAndAttributes
 	{
 		@NonNull
@@ -867,6 +867,11 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		@Default
 		@NonNull
 		private final ImmutableAttributeSet attributes = ImmutableAttributeSet.EMPTY;
+
+		public ProductAndAttributes withProductId(@NonNull final ProductId productId)
+		{
+			return toBuilder().productId(productId).build();
+		}
 	}
 
 	private interface I_M_Product_Lookup_V

@@ -22,6 +22,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.rules.campaign_price.CampaignPriceService;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.RelatedProcessDescriptor;
@@ -97,6 +98,7 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 				.allowViewCloseAction(ViewCloseAction.CANCEL)
 				.allowViewCloseAction(ViewCloseAction.DONE)
 				//
+				.setFocusOnFieldName(ProductsProposalRow.FIELD_Qty)
 				.addElementsFromViewRowClassAndFieldNames(
 						ProductsProposalRow.class,
 						key.getViewDataType(),
@@ -153,13 +155,14 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 
 		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 
-		if(!bpartnersRepo.isActionPriceAllowed(bpartnerId))
+		if (!bpartnersRepo.isActionPriceAllowed(bpartnerId))
 		{
 			return CampaignPriceProviders.none();
 		}
 
 		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 		final I_M_PriceList priceList = priceListsRepo.getById(priceListId);
+		final PricingSystemId pricingSystemId = priceListsRepo.getPricingSystemId(priceListId);
 		final CountryId countryId = CountryId.ofRepoIdOrNull(priceList.getC_Country_ID());
 		if (countryId == null)
 		{
@@ -167,13 +170,13 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 		}
 		final CurrencyId currencyId = CurrencyId.ofRepoId(priceList.getC_Currency_ID());
 
-
 		final BPGroupId bpGroupId = bpartnersRepo.getBPGroupIdByBPartnerId(bpartnerId);
 
 		return CampaignPriceProviders.standard()
 				.campaignPriceService(campaignPriceService)
 				.bpartnerId(bpartnerId)
 				.bpGroupId(bpGroupId)
+				.pricingSystemId(pricingSystemId)
 				.countryId(countryId)
 				.currencyId(currencyId)
 				.date(date)
@@ -206,9 +209,9 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 	private void createOrderLines(final ProductsProposalView view)
 	{
 		OrderLinesFromProductProposalsProducer.builder()
-				.orderId(view.getOrderId().get())
-				.rows(view.getRowsWithQtySet())
-				.build()
-				.produce();
+		.orderId(view.getOrderId().get())
+		.rows(view.getRowsWithQtySet())
+		.build()
+		.produce();
 	}
 }

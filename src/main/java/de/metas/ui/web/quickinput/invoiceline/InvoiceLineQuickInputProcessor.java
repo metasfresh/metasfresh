@@ -1,8 +1,12 @@
 package de.metas.ui.web.quickinput.invoiceline;
 
+import java.util.Set;
+
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
@@ -43,7 +47,7 @@ public class InvoiceLineQuickInputProcessor implements IQuickInputProcessor
 {
 
 	@Override
-	public DocumentId process(final QuickInput quickInput)
+	public Set<DocumentId> process(final QuickInput quickInput)
 	{
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
@@ -70,7 +74,8 @@ public class InvoiceLineQuickInputProcessor implements IQuickInputProcessor
 
 		InterfaceWrapperHelper.save(invoiceLine);
 
-		return DocumentId.of(invoiceLine.getC_InvoiceLine_ID());
+		final DocumentId documentId = DocumentId.of(invoiceLine.getC_InvoiceLine_ID());
+		return ImmutableSet.of(documentId);
 	}
 
 }

@@ -107,7 +107,7 @@ public class PricingConditionsView_CopyRowToEditable extends PricingConditionsVi
 
 	private PriceSpecification createBasePricingSystemPrice(final BPartnerId bpartnerId, final SOTrx soTrx)
 	{
-		final PricingSystemId pricingSystemId = bpartnersRepo.retrievePricingSystemId(bpartnerId, soTrx);
+		final PricingSystemId pricingSystemId = bpartnersRepo.retrievePricingSystemIdOrNull(bpartnerId, soTrx);
 		if (pricingSystemId == null)
 		{
 			return PriceSpecification.none();

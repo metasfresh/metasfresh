@@ -2,6 +2,8 @@ package de.metas.ui.web.quickinput.inout;
 
 import java.util.Set;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.edi.model.I_M_InOut;
 import de.metas.handlingunits.empties.EmptiesInOutLinesProducer;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
@@ -34,7 +36,7 @@ public class EmptiesQuickInputProcessor implements IQuickInputProcessor
 {
 
 	@Override
-	public DocumentId process(final QuickInput quickInput)
+	public Set<DocumentId> process(final QuickInput quickInput)
 	{
 		final I_M_InOut inout = quickInput.getRootDocumentAs(I_M_InOut.class);
 		final IEmptiesQuickInput emptiesQuickInput = quickInput.getQuickInputDocumentAs(IEmptiesQuickInput.class);
@@ -44,13 +46,9 @@ public class EmptiesQuickInputProcessor implements IQuickInputProcessor
 				.create()
 				.getAffectedInOutLinesId();
 
-		if (affectedDocumentIds.isEmpty())
-		{
-			return null;
-		}
-
-		// return the first one (we expect only one)
-		return DocumentId.of(affectedDocumentIds.iterator().next());
+		return affectedDocumentIds.stream()
+				.map(DocumentId::of)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 }

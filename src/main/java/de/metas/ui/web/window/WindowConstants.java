@@ -57,6 +57,7 @@ public final class WindowConstants
 	public static final String FIELDNAME_IsActive = "IsActive";
 	public static final String FIELDNAME_DocStatus = "DocStatus";
 	public static final String FIELDNAME_DocAction = "DocAction";
+	public static final String FIELDNAME_Posted = "Posted";
 	public static final String FIELDNAME_IsSOTrx = "IsSOTrx";
 	public static final String FIELDNAME_Processing = "Processing";
 	public static final String FIELDNAME_Processed = "Processed";
