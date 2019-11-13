@@ -25,6 +25,7 @@ package de.metas.invoicecandidate.api.impl;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -32,7 +33,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.service.ClientId;
-import org.compiere.model.IQuery;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
@@ -79,10 +79,10 @@ public class PlainInvoiceCandDAO extends InvoiceCandDAO
 		// Conversion date to be used on currency conversion
 		final LocalDate dateConv = SystemTime.asLocalDate();
 
-		final IQuery<I_C_Invoice_Candidate> genericQuery = convertToIQuery(InvoiceCandidateMultiQuery.builder().query(query).build());
+		final List<I_C_Invoice_Candidate> records = getByQuery(InvoiceCandidateMultiQuery.builder().query(query).build());
 
 		BigDecimal totalAmt = BigDecimal.ZERO;
-		for (final I_C_Invoice_Candidate ic : genericQuery.list())
+		for (final I_C_Invoice_Candidate ic : records)
 		{
 			final BigDecimal netAmtToInvoice = (BigDecimal)POJOWrapper.getWrapper(ic).getValue(amountColumnName, BigDecimal.class);
 			if (netAmtToInvoice == null)

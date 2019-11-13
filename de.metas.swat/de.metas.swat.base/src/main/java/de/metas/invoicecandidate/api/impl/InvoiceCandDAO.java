@@ -1667,6 +1667,13 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.list();
 	}
 
+	@Override
+	public int createSelectionByQuery(InvoiceCandidateMultiQuery multiQuery, @NonNull final PInstanceId pInstanceId)
+	{
+		return convertToIQuery(multiQuery)
+				.createSelection(pInstanceId);
+	}
+
 	private IQuery<I_C_Invoice_Candidate> convertToIQuery(@NonNull final InvoiceCandidateMultiQuery multiQuery)
 	{
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = Services.get(IQueryBL.class)

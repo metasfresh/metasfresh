@@ -78,6 +78,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	List<I_C_Invoice_Candidate> getByQuery(InvoiceCandidateMultiQuery multiQuery);
 
+	int createSelectionByQuery(InvoiceCandidateMultiQuery multiQuery, PInstanceId pInstanceId);
+
 	List<I_C_Invoice_Candidate> retrieveIcForIl(I_C_InvoiceLine invoiceLine);
 
 	/**
