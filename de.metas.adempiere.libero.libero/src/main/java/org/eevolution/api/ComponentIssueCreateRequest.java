@@ -46,6 +46,7 @@ public class ComponentIssueCreateRequest
 	Quantity qtyIssue;
 	Quantity qtyScrap;
 	Quantity qtyReject;
+	int pickingCandidateId;
 
 	@Builder
 	private ComponentIssueCreateRequest(
@@ -55,7 +56,8 @@ public class ComponentIssueCreateRequest
 			@Nullable final LocalDateTime movementDate,
 			@NonNull final Quantity qtyIssue,
 			@Nullable final Quantity qtyScrap,
-			@Nullable final Quantity qtyReject)
+			@Nullable final Quantity qtyReject,
+			final int pickingCandidateId)
 	{
 		this.orderBOMLine = orderBOMLine;
 		this.locatorId = locatorId;
@@ -64,5 +66,6 @@ public class ComponentIssueCreateRequest
 		this.qtyIssue = qtyIssue;
 		this.qtyScrap = qtyScrap != null ? qtyScrap : qtyIssue.toZero();
 		this.qtyReject = qtyReject != null ? qtyReject : qtyIssue.toZero();
+		this.pickingCandidateId = pickingCandidateId > 0 ? pickingCandidateId : -1;
 	}
 }

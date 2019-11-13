@@ -43,6 +43,8 @@ public class ReceiptCostCollectorCandidate
 	LocatorId locatorId;
 	AttributeSetInstanceId attributeSetInstanceId;
 
+	int pickingCandidateId;
+
 	@Builder
 	private ReceiptCostCollectorCandidate(
 			@NonNull final I_PP_Order order,
@@ -53,7 +55,9 @@ public class ReceiptCostCollectorCandidate
 			@Nullable final Quantity qtyScrap,
 			@Nullable final Quantity qtyReject,
 			@Nullable final LocatorId locatorId,
-			@Nullable final AttributeSetInstanceId attributeSetInstanceId)
+			@Nullable final AttributeSetInstanceId attributeSetInstanceId,
+			//
+			final int pickingCandidateId)
 	{
 		this.order = order;
 		this.orderBOMLine = orderBOMLine;
@@ -64,6 +68,7 @@ public class ReceiptCostCollectorCandidate
 		this.qtyReject = qtyReject != null ? qtyReject : qtyToReceive.toZero();
 		this.locatorId = locatorId != null ? locatorId : extractLocatorId(order);
 		this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
+		this.pickingCandidateId = pickingCandidateId > 0 ? pickingCandidateId : -1;
 	}
 
 	private static LocatorId extractLocatorId(I_PP_Order order)

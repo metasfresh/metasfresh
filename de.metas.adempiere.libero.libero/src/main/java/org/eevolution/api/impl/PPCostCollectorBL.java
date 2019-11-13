@@ -170,6 +170,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 						.qty(qtyIssueConv)
 						.qtyScrap(qtyScrapConv)
 						.qtyReject(qtyRejectConv)
+						.pickingCandidateId(request.getPickingCandidateId())
 						.build());
 
 		return cc;
@@ -254,6 +255,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 							.qty(qtyToDeliver)
 							.qtyScrap(qtyScrap)
 							.qtyReject(qtyReject)
+							.pickingCandidateId(candidate.getPickingCandidateId())
 							.build());
 		}
 
@@ -482,6 +484,8 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		private final Quantity qtyReject;
 		private final Duration durationSetup;
 		private final Duration duration;
+		
+		private final int pickingCandidateId;
 
 		@Builder
 		private CostCollectorCreateRequest(
@@ -500,7 +504,9 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 				@Nullable final Quantity qtyReject,
 				//
 				@Nullable final Duration durationSetup,
-				@Nullable final Duration duration)
+				@Nullable final Duration duration,
+				//
+				final int pickingCandidateId)
 		{
 			this.order = order;
 			this.productId = productId;
@@ -518,6 +524,8 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 
 			this.durationSetup = durationSetup != null ? durationSetup : Duration.ZERO;
 			this.duration = duration != null ? duration : Duration.ZERO;
+			
+			this.pickingCandidateId = pickingCandidateId > 0 ? pickingCandidateId : -1;
 		}
 	}
 
@@ -575,6 +583,11 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		{
 			cc.setPP_Order_BOMLine_ID(request.getPpOrderBOMLineId().getRepoId());
 			cc.setC_UOM_ID(-1); // we set the BOM Line UOM on beforeSave
+		}
+		
+		if(request.getPickingCandidateId() > 0)
+		{
+			cc.setM_Picking_Candidate_ID(request.getPickingCandidateId());
 		}
 
 		Services.get(IPPCostCollectorDAO.class).save(cc);

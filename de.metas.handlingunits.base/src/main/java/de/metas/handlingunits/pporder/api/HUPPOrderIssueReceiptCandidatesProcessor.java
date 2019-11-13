@@ -202,7 +202,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 					.setParameter("HUStatus", hu.getHUStatus())
 					.setParameter("candidate", candidate);
 		}
-		
+
 		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(candidate.getM_Locator_ID());
 
 		//
@@ -215,6 +215,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 				.qtyToReceive(Quantity.of(candidate.getQty(), uom))
 				.productId(ProductId.ofRepoId(candidate.getM_Product_ID()))
 				.locatorId(locatorId)
+				.pickingCandidateId(candidate.getM_Picking_Candidate_ID())
 				.build();
 		final I_PP_Cost_Collector cc = huPPCostCollectorBL.createReceipt(costCollectorCandidate, hu);
 
@@ -245,6 +246,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		//
 		final I_PP_Order_BOMLine ppOrderBOMLine = InterfaceWrapperHelper.create(candidate.getPP_Order_BOMLine(), I_PP_Order_BOMLine.class);
 		final Timestamp movementDate = candidate.getMovementDate();
+		final int pickingCandidateId = candidate.getM_Picking_Candidate_ID();
 
 		//
 		// Calculate the quantity to issue.
@@ -265,7 +267,8 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		//
 		// Fully unload the HU
 		final IssueCandidatesBuilder issueCostCollectorsBuilder = new IssueCandidatesBuilder()
-				.setMovementDate(movementDate);
+				.movementDate(movementDate)
+				.pickingCandidateId(pickingCandidateId);
 		final String snapshotId;
 		{
 			//
@@ -368,13 +371,20 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 		// Parameters
 		private LocalDateTime movementDate = null;
+		private int pickingCandidateId = -1;
 
 		// Status
 		private final Map<PPOrderBOMLineId, IssueCandidate> candidatesByOrderBOMLineId = new HashMap<>();
 
-		public IssueCandidatesBuilder setMovementDate(Date movementDate)
+		public IssueCandidatesBuilder movementDate(Date movementDate)
 		{
 			this.movementDate = TimeUtil.asLocalDateTime(movementDate);
+			return this;
+		}
+
+		public IssueCandidatesBuilder pickingCandidateId(final int pickingCandidateId)
+		{
+			this.pickingCandidateId = pickingCandidateId;
 			return this;
 		}
 
@@ -433,7 +443,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			if (materialTrackingOrNull != null)
 			{
 				issueCandidate.addMaterialTracking(materialTrackingOrNull, qtyToIssue);
-		}
+			}
 		}
 
 		private I_PP_Order_BOMLine getOrderBOMLineToIssueOrNull(final IHUTransactionCandidate huTransaction)
@@ -527,6 +537,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 							.attributeSetInstanceId(AttributeSetInstanceId.NONE) // N/A
 							.movementDate(movementDate)
 							.qtyIssue(qtyToIssue)
+							.pickingCandidateId(pickingCandidateId)
 							.build()),
 					I_PP_Cost_Collector.class);
 
@@ -623,7 +634,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 				this.id2materialTracking.put(materialTracking.getM_Material_Tracking_ID(), materialTrackingWithQuantity);
 			}
 			materialTrackingWithQuantity.addQuantity(quantity);
-			}
+		}
 
 		public boolean isZeroQty()
 		{
