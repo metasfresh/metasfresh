@@ -25,7 +25,7 @@ package org.eevolution.api.impl;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_OrderLine;
@@ -370,7 +370,7 @@ public class PPOrderBL implements IPPOrderBL
 
 		final PPOrderRouting orderRouting = orderRoutingsRepo.getByOrderId(orderId);
 		final I_PP_Order orderRecord = ordersRepo.getById(orderId);
-		final LocalDateTime reportDate = SystemTime.asLocalDateTime();
+		final ZonedDateTime reportDate = SystemTime.asZonedDateTime();
 
 		for (final PPOrderRoutingActivity activity : orderRouting.getActivities())
 		{

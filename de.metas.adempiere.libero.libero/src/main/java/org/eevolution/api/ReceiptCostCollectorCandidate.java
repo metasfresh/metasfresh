@@ -1,6 +1,6 @@
 package org.eevolution.api;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
@@ -32,7 +32,7 @@ public class ReceiptCostCollectorCandidate
 	/** manufacturing order's BOM Line if this is a co/by-product receipt; <code>null</code> otherwise */
 	I_PP_Order_BOMLine orderBOMLine;
 
-	LocalDateTime movementDate;
+	ZonedDateTime movementDate;
 
 	ProductId productId;
 
@@ -49,7 +49,7 @@ public class ReceiptCostCollectorCandidate
 	private ReceiptCostCollectorCandidate(
 			@NonNull final I_PP_Order order,
 			@Nullable final I_PP_Order_BOMLine orderBOMLine,
-			@Nullable final LocalDateTime movementDate,
+			@Nullable final ZonedDateTime movementDate,
 			@NonNull final ProductId productId,
 			@NonNull final Quantity qtyToReceive,
 			@Nullable final Quantity qtyScrap,
@@ -61,7 +61,7 @@ public class ReceiptCostCollectorCandidate
 	{
 		this.order = order;
 		this.orderBOMLine = orderBOMLine;
-		this.movementDate = movementDate != null ? movementDate : SystemTime.asLocalDateTime();
+		this.movementDate = movementDate != null ? movementDate : SystemTime.asZonedDateTime();
 		this.productId = productId;
 		this.qtyToReceive = qtyToReceive;
 		this.qtyScrap = qtyScrap != null ? qtyScrap : qtyToReceive.toZero();

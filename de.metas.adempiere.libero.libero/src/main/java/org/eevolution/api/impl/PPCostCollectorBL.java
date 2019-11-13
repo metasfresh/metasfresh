@@ -23,7 +23,7 @@ package org.eevolution.api.impl;
  */
 import java.math.BigDecimal;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.temporal.TemporalUnit;
 
 import javax.annotation.Nullable;
@@ -228,7 +228,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		final Quantity qtyToDeliver = candidate.getQtyToReceive();
 		final Quantity qtyScrap = candidate.getQtyScrap();
 		final Quantity qtyReject = candidate.getQtyReject();
-		final LocalDateTime movementDate = candidate.getMovementDate();
+		final ZonedDateTime movementDate = candidate.getMovementDate();
 
 		if (qtyToDeliver.signum() != 0 || qtyScrap.signum() != 0 || qtyReject.signum() != 0)
 		{
@@ -478,7 +478,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		private final PPOrderBOMLineId ppOrderBOMLineId;
 		private final PPOrderRoutingActivity orderActivity;
 		private final CostCollectorType costCollectorType;
-		private final LocalDateTime movementDate;
+		private final ZonedDateTime movementDate;
 		private final Quantity qty;
 		private final Quantity qtyScrap;
 		private final Quantity qtyReject;
@@ -497,7 +497,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 				final PPOrderBOMLineId ppOrderBOMLineId,
 				@Nullable final PPOrderRoutingActivity orderActivity,
 				@NonNull final CostCollectorType costCollectorType,
-				@Nullable final LocalDateTime movementDate,
+				@Nullable final ZonedDateTime movementDate,
 				//
 				@NonNull final Quantity qty,
 				@Nullable final Quantity qtyScrap,
@@ -516,7 +516,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 			this.ppOrderBOMLineId = ppOrderBOMLineId;
 			this.orderActivity = orderActivity;
 			this.costCollectorType = costCollectorType;
-			this.movementDate = movementDate != null ? movementDate : SystemTime.asLocalDateTime();
+			this.movementDate = movementDate != null ? movementDate : SystemTime.asZonedDateTime();
 
 			this.qty = qty;
 			this.qtyScrap = qtyScrap != null ? qtyScrap : qty.toZero();

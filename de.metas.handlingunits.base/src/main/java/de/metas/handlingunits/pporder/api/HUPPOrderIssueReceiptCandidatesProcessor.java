@@ -1,9 +1,7 @@
 package de.metas.handlingunits.pporder.api;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -211,7 +209,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		final ReceiptCostCollectorCandidate costCollectorCandidate = ReceiptCostCollectorCandidate.builder()
 				.order(candidate.getPP_Order())
 				.orderBOMLine(candidate.getPP_Order_BOMLine())
-				.movementDate(TimeUtil.asLocalDateTime(candidate.getMovementDate()))
+				.movementDate(TimeUtil.asZonedDateTime(candidate.getMovementDate()))
 				.qtyToReceive(Quantity.of(candidate.getQty(), uom))
 				.productId(ProductId.ofRepoId(candidate.getM_Product_ID()))
 				.locatorId(locatorId)
@@ -245,7 +243,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 		//
 		final I_PP_Order_BOMLine ppOrderBOMLine = InterfaceWrapperHelper.create(candidate.getPP_Order_BOMLine(), I_PP_Order_BOMLine.class);
-		final Timestamp movementDate = candidate.getMovementDate();
+		final ZonedDateTime movementDate = TimeUtil.asZonedDateTime(candidate.getMovementDate());
 		final int pickingCandidateId = candidate.getM_Picking_Candidate_ID();
 
 		//
@@ -370,15 +368,15 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		private final transient IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 
 		// Parameters
-		private LocalDateTime movementDate = null;
+		private ZonedDateTime movementDate = null;
 		private int pickingCandidateId = -1;
 
 		// Status
 		private final Map<PPOrderBOMLineId, IssueCandidate> candidatesByOrderBOMLineId = new HashMap<>();
 
-		public IssueCandidatesBuilder movementDate(Date movementDate)
+		public IssueCandidatesBuilder movementDate(ZonedDateTime movementDate)
 		{
-			this.movementDate = TimeUtil.asLocalDateTime(movementDate);
+			this.movementDate = movementDate;
 			return this;
 		}
 
@@ -388,7 +386,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			return this;
 		}
 
-		private LocalDateTime getMovementDate()
+		private ZonedDateTime getMovementDate()
 		{
 			Preconditions.checkNotNull(movementDate, "movementDate");
 			return movementDate;
@@ -524,7 +522,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			}
 
 			final Quantity qtyToIssue = candidate.getQtyToIssue();
-			final LocalDateTime movementDate = getMovementDate();
+			final ZonedDateTime movementDate = getMovementDate();
 			final I_PP_Order_BOMLine ppOrderBOMLine = candidate.getOrderBOMLine();
 			final LocatorId locatorId = Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(ppOrderBOMLine.getM_Locator_ID());
 
