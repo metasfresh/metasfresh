@@ -353,6 +353,7 @@ public final class ProductsToPickRowsDataFactory
 				.shipmentScheduleId(packageable.getShipmentScheduleId())
 				.salesOrderLineId(packageable.getSalesOrderLineIdOrNull())
 				.shipperId(packageable.getShipperId())
+				.issueToOrderBOMLineId(packageable.getIssueToOrderBOMLineId())
 				.qty(packageable.getQtyToAllocate().toZero())
 				.pickFromHUId(pickFromHUId)
 				.build();
@@ -369,6 +370,7 @@ public final class ProductsToPickRowsDataFactory
 				.shipmentScheduleId(packageable.getShipmentScheduleId())
 				.salesOrderLineId(packageable.getSalesOrderLineIdOrNull())
 				.shipperId(packageable.getShipperId())
+				.issueToOrderBOMLineId(packageable.getIssueToOrderBOMLineId())
 				.qty(qty)
 				.build();
 	}
@@ -400,6 +402,7 @@ public final class ProductsToPickRowsDataFactory
 				.productId(productInfo.getProductId())
 				.shipmentScheduleId(shipmentScheduleId)
 				.pickFromHUId(pickFromHUId)
+				.pickFromPickingOrderId(pickFromPickingOrderId)
 				.issueToOrderBOMLineId(issueToOrderBOMLineId)
 				.build();
 
