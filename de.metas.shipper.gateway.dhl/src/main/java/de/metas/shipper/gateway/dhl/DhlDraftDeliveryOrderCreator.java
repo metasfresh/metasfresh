@@ -25,6 +25,7 @@ package de.metas.shipper.gateway.dhl;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.customs.CustomsInvoiceRepository;
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
@@ -47,6 +48,7 @@ import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
@@ -260,59 +262,17 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		return getPackageDimensions(firstPackageId, clientConfig.getLengthUomId());
 	}
 
-	/**
-	 * sql:
-	 *
-	 * <pre>{@code
-	 * SELECT pack.width
-	 * FROM m_package_hu phu
-	 * 		INNER JOIN m_hu_item huitem ON phu.m_hu_id = huitem.m_hu_id
-	 * 		INNER JOIN m_hu_packingmaterial pack ON huitem.m_hu_packingmaterial_id = pack.m_hu_packingmaterial_id
-	 * WHERE phu.m_package_id = 1000023
-	 * }</pre>
-	 * <p>
-	 * thx to ruxi for transforming this query into "metasfresh"
-	 */
 	@NonNull
-	private PackageDimensions getPackageDimensions(final PackageId packageId, @NonNull final UomId toUomId)
+	private PackageDimensions getPackageDimensions(@NonNull final PackageId packageId, @NonNull final UomId toUomId)
 	{
-		// assuming packing material is never null
-		final I_M_HU_PackingMaterial packingMaterial = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Package_HU.class)
-				.addEqualsFilter(I_M_Package_HU.COLUMNNAME_M_Package_ID, packageId)
-				//
+		final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
+		final I_M_HU_PackingMaterial packingMaterial = packingMaterialDAO.retrievePackingMaterialOrNull(packageId);
 
-				.andCollect(I_M_HU.COLUMN_M_HU_ID, I_M_HU.class)
-				.andCollectChildren(I_M_HU_Item.COLUMN_M_HU_ID)
-				.andCollect(I_M_HU_PackingMaterial.COLUMN_M_HU_PackingMaterial_ID, I_M_HU_PackingMaterial.class)
-				.create()
-				.first(I_M_HU_PackingMaterial.class);
-
-		// if there's no packing material, don't die with NPE, but return a dummy package dimensions and call it a day
 		if (packingMaterial == null)
 		{
-			return PackageDimensions.builder()
-					.heightInCM(10)
-					.lengthInCM(10)
-					.widthInCM(10)
-					.build();
+			throw new AdempiereException("There is no packing material for the package: " + packageId + ". Please create a packing material and set its correct dimensions.");
 		}
 
-		final UomId uomId = UomId.ofRepoIdOrNull(packingMaterial.getC_UOM_Dimension_ID());
-
-		if (uomId == null)
-		{
-			throw new AdempiereException("Package UOM must be set");
-		}
-
-		final I_C_UOM fromUom = InterfaceWrapperHelper.load(uomId, I_C_UOM.class);
-		final I_C_UOM toUom = InterfaceWrapperHelper.load(toUomId, I_C_UOM.class);
-
-		final IUOMConversionBL iuomConversionBL = Services.get(IUOMConversionBL.class);
-		return PackageDimensions.builder()
-				.heightInCM(iuomConversionBL.convert(fromUom, toUom, packingMaterial.getHeight()).get().intValue())
-				.lengthInCM(iuomConversionBL.convert(fromUom, toUom, packingMaterial.getLength()).get().intValue())
-				.widthInCM(iuomConversionBL.convert(fromUom, toUom, packingMaterial.getWidth()).get().intValue())
-				.build();
+		return packingMaterialDAO.retrievePackageDimensions(packingMaterial, toUomId);
 	}
 }
