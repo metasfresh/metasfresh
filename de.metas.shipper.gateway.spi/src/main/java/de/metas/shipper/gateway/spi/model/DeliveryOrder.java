@@ -123,13 +123,7 @@ public class DeliveryOrder
 	/**
 	 * Transportation Order id
 	 */
-	private ShipperTransportationId shipperTransportationId;
-
-	/**
-	 * Not necessarily useful since we already store the weight for each package in deliveryOrderLine
-	 * Maybe should be deprecated/removed.
-	 */
-	int allPackagesGrossWeightInKg;
+	ShipperTransportationId shipperTransportationId;
 
 	@Nullable
 	String trackingNumber;

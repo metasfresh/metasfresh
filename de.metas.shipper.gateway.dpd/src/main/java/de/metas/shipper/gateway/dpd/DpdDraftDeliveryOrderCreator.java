@@ -106,7 +106,6 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
 
-		final int allPackagesGrossWeightInKg = Math.max(request.getAllPackagesGrossWeightInKg(), 1);
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 		final ShipperTransportationId shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
 
@@ -149,7 +148,6 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				deliverToLocation,
 				deliverToPhoneNumber,
 				serviceType,
-				allPackagesGrossWeightInKg,
 				shipperId,
 				shipperTransportationId,
 				customerReference,
@@ -182,7 +180,6 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			@NonNull final I_C_Location deliverToLocation,
 			@Nullable final String deliverToPhoneNumber,
 			@NonNull final ServiceType serviceType,
-			final int allPackagesGrossWeightKg,
 			@NonNull final ShipperId shipperId,
 			@NonNull final ShipperTransportationId shipperTransportationId,
 			@Nullable final String customerReference,
@@ -224,7 +221,6 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 						.build())
 				//
 				// Delivery content
-				.allPackagesGrossWeightInKg(allPackagesGrossWeightKg)
 				.deliveryOrderLines(deliveryOrderLines)
 				.build();
 	}

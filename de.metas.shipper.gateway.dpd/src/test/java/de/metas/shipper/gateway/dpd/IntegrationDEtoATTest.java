@@ -208,7 +208,6 @@ public class IntegrationDEtoATTest
 				deliverToLocation,
 				deliverToPhoneNumber,
 				detectedServiceType,
-				allPackagesGrossWeightKg,
 				shipperId,
 				shipperTransportationId,
 				customerReference,

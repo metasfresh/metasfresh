@@ -81,7 +81,8 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 				.andCollectChildren(I_M_HU_Item.COLUMN_M_HU_ID)
 				.andCollect(I_M_HU_PackingMaterial.COLUMN_M_HU_PackingMaterial_ID, I_M_HU_PackingMaterial.class)
 				.create()
-				.first(I_M_HU_PackingMaterial.class);
+				// first only used here because we wanna see (read: blow up) if there are cases with 2 packing materials for a single package. I don't think this could happen, but wht if it does?
+				.firstOnly(I_M_HU_PackingMaterial.class);
 	}
 
 	@Nullable

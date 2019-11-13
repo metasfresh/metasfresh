@@ -75,7 +75,7 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 	@Override
 	public ITableRecordReference toTableRecordReference(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		final DeliveryOrderId deliveryOrderRepoId = deliveryOrder.getRepoId();
+		final DeliveryOrderId deliveryOrderRepoId = deliveryOrder.getId();
 		Check.assumeNotNull(deliveryOrderRepoId, "DeliveryOrder ID must not be null");
 		return TableRecordReference.of(I_DPD_StoreOrder.Table_Name, deliveryOrderRepoId);
 	}
@@ -109,7 +109,7 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 	private DeliveryOrder updateDeliveryOrderRepoId(@NonNull final DeliveryOrder deliveryOrder, @NonNull final I_DPD_StoreOrder storeOrderPO)
 	{
 		return deliveryOrder.toBuilder()
-				.repoId(DeliveryOrderId.ofRepoId(storeOrderPO.getDPD_StoreOrder_ID()))
+				.id(DeliveryOrderId.ofRepoId(storeOrderPO.getDPD_StoreOrder_ID()))
 				.build();
 	}
 
@@ -121,7 +121,7 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 	@NonNull
 	private I_DPD_StoreOrder createStoreOrderPO(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		final I_DPD_StoreOrder orderPO = InterfaceWrapperHelper.loadOrNew(deliveryOrder.getRepoId(), I_DPD_StoreOrder.class);
+		final I_DPD_StoreOrder orderPO = InterfaceWrapperHelper.loadOrNew(deliveryOrder.getId(), I_DPD_StoreOrder.class);
 		InterfaceWrapperHelper.save(orderPO);
 
 		{
@@ -245,8 +245,6 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 	{
 		final List<I_DPD_StoreOrderLine> linesPO = retrieveAllOrderLines(orderPO.getDPD_StoreOrder_ID());
 
-		final int allPackagesGrossWeightInKg = linesPO.stream().map(I_DPD_StoreOrderLine::getWeightInKg).reduce(Integer::sum).orElse(1);
-
 		final ImmutableList.Builder<DeliveryOrderLine> deliveryOrderLIneBuilder = ImmutableList.builder();
 		for (final I_DPD_StoreOrderLine linePO : linesPO)
 		{
@@ -267,10 +265,9 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 		return DeliveryOrder.builder()
 				//
 				// Misc
-				.repoId(DeliveryOrderId.ofRepoId(orderPO.getDPD_StoreOrder_ID()))
+				.id(DeliveryOrderId.ofRepoId(orderPO.getDPD_StoreOrder_ID()))
 				.shipperId(ShipperId.ofRepoId(orderPO.getM_Shipper_ID()))
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(orderPO.getM_ShipperTransportation_ID()))
-				.allPackagesGrossWeightInKg(allPackagesGrossWeightInKg)
 				//
 				// Pickup aka Sender
 				.pickupAddress(Address.builder()
