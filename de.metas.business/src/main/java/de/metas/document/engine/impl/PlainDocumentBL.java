@@ -269,7 +269,7 @@ public class PlainDocumentBL extends AbstractDocumentBL
 		}
 		else if (IDocument.ACTION_Close.equals(action))
 		{
-			setDocStatus(doc, IDocument.STATUS_Completed, IDocument.ACTION_None, true);
+			setDocStatus(doc, IDocument.STATUS_Closed, IDocument.ACTION_None, true);
 			return true;
 		}
 		else
