@@ -10,12 +10,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.Profiles;
 import de.metas.rest_api.invoicecandidates.IInvoicesRestEndpoint;
-import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonCheckInvoiceCandidatesStatusRequest;
+import de.metas.rest_api.invoicecandidates.request.JsonCloseInvoiceCandidatesRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
-import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
+import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
 import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesStatusResponse;
+import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
+import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -51,15 +53,18 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 	private final CheckInvoiceCandidatesStatusService checkInvoiceCandidatesStatusService;
 	private final CreateInvoiceCandidatesService createInvoiceCandidatesService;
 	private final EnqueueForInvoicingService enqueueForInvoicingService;
+	private final CloseInvoiceCandidatesService closeInvoiceCandidatesService;
 
 	public InvoicesRestControllerImpl(
 			@NonNull final CreateInvoiceCandidatesService createInvoiceCandidatesService,
 			@NonNull final CheckInvoiceCandidatesStatusService invoiceCandidateInfoService,
-			@NonNull final EnqueueForInvoicingService enqueueForInvoicingService)
+			@NonNull final EnqueueForInvoicingService enqueueForInvoicingService,
+			@NonNull final CloseInvoiceCandidatesService closeInvoiceCandidatesService)
 	{
 		this.createInvoiceCandidatesService = createInvoiceCandidatesService;
 		this.checkInvoiceCandidatesStatusService = invoiceCandidateInfoService;
 		this.enqueueForInvoicingService = enqueueForInvoicingService;
+		this.closeInvoiceCandidatesService = closeInvoiceCandidatesService;
 	}
 
 	@ApiOperation("Create new invoice candidates")
@@ -99,5 +104,18 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 	{
 		final JsonEnqueueForInvoicingResponse response = enqueueForInvoicingService.enqueueForInvoicing(request);
 		return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
+	}
+
+	@PostMapping("/close")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully closed all matching invoice candidates"),
+			@ApiResponse(code = 401, message = "You are not authorized to close the invoice candidates"),
+			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden")
+	})
+	@Override
+	public ResponseEntity<JsonCloseInvoiceCandidatesResponse> closeInvoiceCandidates(@RequestBody @NonNull final JsonCloseInvoiceCandidatesRequest request)
+	{
+		final JsonCloseInvoiceCandidatesResponse response = closeInvoiceCandidatesService.closeInvoiceCandidates(request);
+		return ResponseEntity.ok(response);
 	}
 }
