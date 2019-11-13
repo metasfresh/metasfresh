@@ -109,7 +109,7 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 	@PostMapping("/close")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Successfully closed all matching invoice candidates"),
-			@ApiResponse(code = 401, message = "You are not close the invoice candidates"),
+			@ApiResponse(code = 401, message = "You are not authorized to close the invoice candidates"),
 			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden")
 	})
 	@Override

@@ -1,7 +1,7 @@
 package de.metas.rest_api.invoicecandidates.response;
 
+import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.MetasfreshId;
-import de.metas.util.lang.ExternalId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -32,10 +32,13 @@ import lombok.Value;
 @Builder
 public class JsonCloseInvoiceCandidatesResponseItem
 {
-	ExternalId externalHeaderId;
-	ExternalId externalLineId;
+	@ApiModelProperty(position = 10, dataType = "java.lang.String")
+	JsonExternalId externalHeaderId;
 
-	@ApiModelProperty(position = 30, dataType = "java.lang.Long", value = "The metasfresh-ID of the closed record")
+	@ApiModelProperty(position = 20, dataType = "java.lang.String")
+	JsonExternalId externalLineId;
+
+	@ApiModelProperty(position = 30, dataType = "java.lang.Long", value = "The metasfresh-ID of the upserted record")
 	@NonNull
 	MetasfreshId metasfreshId;
 }

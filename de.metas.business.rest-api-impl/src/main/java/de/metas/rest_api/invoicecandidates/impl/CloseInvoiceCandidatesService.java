@@ -12,6 +12,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.invoicecandidates.request.JsonCloseInvoiceCandidatesRequest;
 import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponse;
@@ -20,7 +21,6 @@ import de.metas.rest_api.utils.InvalidEntityException;
 import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
-import de.metas.util.lang.ExternalId;
 
 /*
  * #%L
@@ -98,8 +98,8 @@ public class CloseInvoiceCandidatesService
 	private JsonCloseInvoiceCandidatesResponseItem createCloseInvoiceCandidateResponseItem(final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
 		return JsonCloseInvoiceCandidatesResponseItem.builder()
-				.externalHeaderId(ExternalId.of(invoiceCandidateRecord.getExternalHeaderId()))
-				.externalLineId(ExternalId.of(invoiceCandidateRecord.getExternalLineId()))
+				.externalHeaderId(JsonExternalId.of(invoiceCandidateRecord.getExternalHeaderId()))
+				.externalLineId(JsonExternalId.of(invoiceCandidateRecord.getExternalLineId()))
 				.metasfreshId(MetasfreshId.of(invoiceCandidateRecord.getC_Invoice_Candidate_ID()))
 				.build();
 
