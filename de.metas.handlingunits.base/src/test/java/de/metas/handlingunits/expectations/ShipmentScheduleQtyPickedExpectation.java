@@ -167,7 +167,7 @@ public class ShipmentScheduleQtyPickedExpectation<ParentExpectationType> extends
 
 		if (shipmentScheduleId != null)
 		{
-			assertModelEquals(prefix + "Shipment schedule",
+			assertEquals(prefix + "Shipment schedule",
 					shipmentScheduleId,
 					ShipmentScheduleId.ofRepoId(candidate.getM_ShipmentSchedule().getM_ShipmentSchedule_ID()));
 		}
