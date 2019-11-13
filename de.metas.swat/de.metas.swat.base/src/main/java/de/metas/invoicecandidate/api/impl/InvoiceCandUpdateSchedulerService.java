@@ -3,6 +3,7 @@ package de.metas.invoicecandidate.api.impl;
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerRequest;
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerService;
 import de.metas.invoicecandidate.async.spi.impl.UpdateInvalidInvoiceCandidatesWorkpackageProcessor;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -29,7 +30,7 @@ import de.metas.invoicecandidate.async.spi.impl.UpdateInvalidInvoiceCandidatesWo
 public class InvoiceCandUpdateSchedulerService implements IInvoiceCandUpdateSchedulerService
 {
 	@Override
-	public void scheduleForUpdate(final IInvoiceCandUpdateSchedulerRequest request)
+	public void scheduleForUpdate(@NonNull final IInvoiceCandUpdateSchedulerRequest request)
 	{
 		UpdateInvalidInvoiceCandidatesWorkpackageProcessor.schedule(request);
 	}

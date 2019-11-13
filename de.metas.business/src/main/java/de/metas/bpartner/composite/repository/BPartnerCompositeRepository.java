@@ -215,6 +215,18 @@ public class BPartnerCompositeRepository
 		return getByIds(bpartnerIds);
 	}
 
+	public Optional<BPartnerComposite> getSingleByQuery(@NonNull final BPartnerQuery query)
+	{
+		final ImmutableList<BPartnerComposite> byQuery = getByQuery(query);
+		if (byQuery.size() > 1)
+		{
+			throw new AdempiereException("The given query needs to yield max one BPartnerComposite; items yielded instead: " + byQuery.size())
+					.appendParametersToMessage()
+					.setParameter("BPartnerQuery", query);
+		}
+		return Optional.ofNullable(CollectionUtils.singleElementOrNull(byQuery));
+	}
+
 	private ImmutableSet<BPartnerId> getIdsByQuery(@NonNull final BPartnerQuery query)
 	{
 		return bpartnersRepo.retrieveBPartnerIdsBy(query);

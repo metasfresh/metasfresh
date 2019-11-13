@@ -76,7 +76,6 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -98,8 +97,9 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerRequest;
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerService;
-import de.metas.invoicecandidate.api.IInvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandRecomputeTag;
+import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
+import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -122,8 +122,8 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
-import de.metas.util.rest.ExternalHeaderAndLineId;
-import de.metas.util.rest.ExternalId;
+import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
+import de.metas.util.lang.ExternalId;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -135,13 +135,19 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			= new ModelDynAttributeAccessor<>(IInvoiceCandDAO.class.getName() + "Avoid_Recreate", Boolean.class);
 
 	@Override
-	public I_C_Invoice_Candidate getById(final InvoiceCandidateId invoiceCandidateId)
+	public I_C_Invoice_Candidate getById(@NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
 		return InterfaceWrapperHelper.load(invoiceCandidateId, I_C_Invoice_Candidate.class);
 	}
 
 	@Override
-	public List<I_C_Invoice_Candidate> getByIds(final Collection<InvoiceCandidateId> invoiceCandidateIds)
+	public I_C_Invoice_Candidate getByIdOutOfTrx(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
+		return InterfaceWrapperHelper.loadOutOfTrx(invoiceCandidateId, I_C_Invoice_Candidate.class);
+	}
+
+	@Override
+	public List<I_C_Invoice_Candidate> getByIds(@NonNull final Collection<InvoiceCandidateId> invoiceCandidateIds)
 	{
 		return InterfaceWrapperHelper.loadByRepoIdAwares(ImmutableSet.copyOf(invoiceCandidateIds), I_C_Invoice_Candidate.class);
 	}
@@ -260,24 +266,21 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public BigDecimal retrieveInvoicableAmount(final I_C_BPartner billBPartner, final Timestamp date)
 	{
+		final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+
 		final String trxName = InterfaceWrapperHelper.getTrxName(billBPartner);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(billBPartner);
 
-		final IInvoiceCandidateQuery query = newInvoiceCandidateQuery();
-		query.setBill_BPartner_ID(billBPartner.getC_BPartner_ID());
-		query.setDateToInvoice(date);
-
-		final CurrencyId targetCurrencyId = Services.get(ICurrencyBL.class).getBaseCurrency(ctx).getId();
+		final InvoiceCandidateQuery query = InvoiceCandidateQuery.builder()
+				.billBPartnerId(BPartnerId.ofRepoId(billBPartner.getC_BPartner_ID()))
+				.dateToInvoice(date)
+				.error(false)
+				.build();
+		final CurrencyId targetCurrencyId = currencyBL.getBaseCurrency(ctx).getId();
 		final int adClientId = billBPartner.getAD_Client_ID();
 		final int adOrgId = billBPartner.getAD_Org_ID();
 
 		return retrieveInvoicableAmount(ctx, query, targetCurrencyId, adClientId, adOrgId, I_C_Invoice_Candidate.COLUMNNAME_NetAmtToInvoice, trxName);
-	}
-
-	@Override
-	public IInvoiceCandidateQuery newInvoiceCandidateQuery()
-	{
-		return new InvoiceCandidateQuery();
 	}
 
 	@Override
@@ -1323,7 +1326,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	@Override
 	public BigDecimal retrieveInvoicableAmount(
 			final Properties ctx,
-			final IInvoiceCandidateQuery query,
+			@NonNull final InvoiceCandidateQuery query,
 			@NonNull final CurrencyId targetCurrencyId,
 			final int adClientId,
 			final int adOrgId,
@@ -1334,10 +1337,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final List<Object> params = new ArrayList<>();
 
 		// Bill BPartner
-		if (query.getBill_BPartner_ID() > 0)
+		if (query.getBillBPartnerId() != null)
 		{
 			whereClause.append(" AND ").append(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID).append("=?");
-			params.add(query.getBill_BPartner_ID());
+			params.add(query.getBillBPartnerId().getRepoId());
 		}
 
 		// DateToInvoice
@@ -1356,12 +1359,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		}
 
 		// Exclude C_Invoice_Candidate
-		if (query.getExcludeC_Invoice_Candidate_ID() > 0)
+		if (query.getExcludeC_Invoice_Candidate_ID() != null)
 		{
 			whereClause.append(" AND ").append(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID).append("<>?");
-			params.add(query.getExcludeC_Invoice_Candidate_ID());
+			params.add(query.getExcludeC_Invoice_Candidate_ID().getRepoId());
 		}
-		if (query.getMaxManualC_Invoice_Candidate_ID() > 0)
+		if (query.getMaxManualC_Invoice_Candidate_ID() != null)
 		{
 			// either the candidate is *not* manual, or its ID is less or equal than MaxManualC_Invoice_Candidate_ID
 			whereClause.append(" AND (")
@@ -1369,7 +1372,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 					.append(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID).append("<=?");
 			whereClause.append(")");
 			params.add(false);
-			params.add(query.getMaxManualC_Invoice_Candidate_ID());
+			params.add(query.getMaxManualC_Invoice_Candidate_ID().getRepoId());
 		}
 
 		// Processed
@@ -1658,27 +1661,89 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public int createSelectionByHeaderAndLineIds(@NonNull final List<ExternalHeaderAndLineId> headerAndLineIds,
-			@NonNull final PInstanceId pInstanceID)
+	public IQuery<I_C_Invoice_Candidate> convertToIQuery(@NonNull final InvoiceCandidateMultiQuery multiQuery)
 	{
-		return createQueryByHeaderAndLineId(headerAndLineIds).createSelection(pInstanceID);
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, false) /* exploding ORs to unions works only with simple cases, but e.g. currently not if we want to use IQuery.createSelection() down the line */
+				.setJoinOr();
+		final List<InvoiceCandidateQuery> queries = multiQuery.getQueries();
+		for (final InvoiceCandidateQuery query : queries)
+		{
+			queryBuilder.filter(toFilter(query));
+		}
+		queryBuilder.orderBy(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID);
+		return queryBuilder.create();
 	}
 
-	@VisibleForTesting
-	IQuery<I_C_Invoice_Candidate> createQueryByHeaderAndLineId(@NonNull final List<ExternalHeaderAndLineId> headerAndLineIds)
+	private ICompositeQueryFilter<I_C_Invoice_Candidate> toFilter(@NonNull final InvoiceCandidateQuery query)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
-				.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, false) /* exploding ORs to unions doesn't work with IQuery.createSelection() */
-				.setJoinOr();
+		final ICompositeQueryFilter<I_C_Invoice_Candidate> filter = queryBL
+				.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
+				.addOnlyActiveRecordsFilter();
 
-		for (final ExternalHeaderAndLineId element : headerAndLineIds)
+		final InvoiceCandidateId invoiceCandidateId = query.getInvoiceCandidateId();
+		if (invoiceCandidateId != null)
 		{
-			final String headerIdAsString = element.getExternalHeaderId().getValue();
+			filter.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateId);
+		}
 
-			final ImmutableList<String> lineIdsAsString = element
+		final BPartnerId billBPartnerId = query.getBillBPartnerId();
+		if (billBPartnerId != null)
+		{
+			filter.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Bill_BPartner_ID, billBPartnerId);
+		}
+
+		final Timestamp dateToInvoice = query.getDateToInvoice();
+		if (dateToInvoice != null)
+		{
+			// TODO see how to get rid if this getDay shit
+			filter.addCoalesceEqualsFilter(TimeUtil.getDay(dateToInvoice), I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice_Override, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
+		}
+
+		final String headerAggregationKey = query.getHeaderAggregationKey();
+		if (!Check.isEmpty(headerAggregationKey, true))
+		{
+			filter.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_HeaderAggregationKey, headerAggregationKey);
+		}
+
+		final InvoiceCandidateId excludeC_Invoice_Candidate_ID = query.getExcludeC_Invoice_Candidate_ID();
+		if (excludeC_Invoice_Candidate_ID != null)
+		{
+			filter.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, excludeC_Invoice_Candidate_ID);
+		}
+
+		final InvoiceCandidateId maxManualC_Invoice_Candidate_ID = query.getMaxManualC_Invoice_Candidate_ID();
+		if (maxManualC_Invoice_Candidate_ID != null)
+		{
+			final ICompositeQueryFilter<I_C_Invoice_Candidate> manualIcMaxFilter = queryBL
+					.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
+					.setJoinOr()
+					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_IsManual, false)
+					.addCompareFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, Operator.LESS_OR_EQUAL, maxManualC_Invoice_Candidate_ID.getRepoId());
+			filter.addFilter(manualIcMaxFilter);
+		}
+
+		final Boolean processed = query.getProcessed();
+		if (processed != null)
+		{
+			filter.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, processed);
+		}
+
+		final Boolean error = query.getError();
+		if (error != null)
+		{
+			filter.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_IsError, error);
+		}
+
+		final ExternalHeaderIdWithExternalLineIds externalIds = query.getExternalIds();
+		if (externalIds != null)
+		{
+			final String headerIdAsString = externalIds.getExternalHeaderId().getValue();
+
+			final ImmutableList<String> lineIdsAsString = externalIds
 					.getExternalLineIds()
 					.stream()
 					.map(ExternalId::getValue)
@@ -1689,16 +1754,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_ExternalHeaderId, headerIdAsString)
 					.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_ExternalLineId, lineIdsAsString);
-			queryBuilder.filter(invoiceCandidatesFilter);
+			filter.addFilter(invoiceCandidatesFilter);
 		}
-		return queryBuilder.create();
-	}
 
-	@Override
-	public List<I_C_Invoice_Candidate> retrieveByHeaderAndLineId(@NonNull final List<ExternalHeaderAndLineId> headerAndLineIds)
-	{
-		return createQueryByHeaderAndLineId(headerAndLineIds)
-				.list();
+		return filter;
 	}
-
 }

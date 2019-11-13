@@ -10,12 +10,12 @@ package org.adempiere.invoice.service.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,23 +24,19 @@ package org.adempiere.invoice.service.impl;
 
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_LandedCost;
 import org.compiere.model.MInvoiceLine;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyConversionTypeId;
@@ -86,43 +82,6 @@ public class PlainInvoiceDAO extends AbstractInvoiceDAO
 	public Collection<MInvoiceLine> retrieveReferringLines(Properties ctx, int invoiceLineId, String trxName)
 	{
 		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Iterator<I_C_Invoice> retrieveOpenInvoicesByOrg(final I_AD_Org adOrg)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(adOrg);
-
-		final List<I_C_Invoice> result = db.getRecords(I_C_Invoice.class, pojo -> {
-			if (adOrg.getAD_Org_ID() <= 0)
-			{
-				return false;
-			}
-
-			if (pojo.getAD_Org_ID() != adOrg.getAD_Org_ID())
-			{
-				return false;
-			}
-
-			if (pojo.isPaid())
-			{
-				return false;
-			}
-
-			if (pojo.getAD_Client_ID() != 0 && pojo.getAD_Client_ID() != Env.getAD_Client_ID(ctx))
-			{
-				return false;
-			}
-
-			if (!pojo.isActive())
-			{
-				return false;
-			}
-
-			return true;
-		});
-
-		return result.iterator();
 	}
 
 	private List<I_C_AllocationLine> retrieveAllocationLines(final org.compiere.model.I_C_Invoice invoice)
@@ -187,38 +146,5 @@ public class PlainInvoiceDAO extends AbstractInvoiceDAO
 	public List<I_C_InvoiceTax> retrieveTaxes(org.compiere.model.I_C_Invoice invoice)
 	{
 		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public I_C_Invoice retrieveInvoiceByInvoiceNoAndBPartnerID(final Properties ctx, final String invoiceNo, final int bPartnerID)
-	{
-		return db.getFirstOnly(I_C_Invoice.class, pojo -> {
-			if (bPartnerID <= 0)
-			{
-				return false;
-			}
-
-			if (invoiceNo == null)
-			{
-				return false;
-			}
-
-			if (pojo.getDocumentNo() != invoiceNo)
-			{
-				return false;
-			}
-
-			if (pojo.getC_BPartner_ID() != bPartnerID)
-			{
-				return false;
-			}
-
-			if (pojo.getAD_Client_ID() != 0 && pojo.getAD_Client_ID() != Env.getAD_Client_ID(ctx))
-			{
-				return false;
-			}
-
-			return true;
-		});
 	}
 }

@@ -14,6 +14,8 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_CountryArea;
+import org.compiere.model.I_C_CountryArea_Assign;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
@@ -28,6 +30,7 @@ import org.compiere.util.TimeUtil;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.location.ICountryAreaBL;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -91,7 +94,8 @@ public class PricingTestHelper
 	{
 		createPricingRules();
 
-		defaultCountry = createCountry("DE", C_Currency_ID_EUR);
+		defaultCountry = createCountryWithArea("DE", C_Currency_ID_EUR, ICountryAreaBL.COUNTRYAREAKEY_EU);
+
 		defaultPricingSystem = createPricingSystem();
 		defaultPriceList = createPriceList(defaultPricingSystem, defaultCountry);
 		defaultPriceListVerion = createPriceListVersion(defaultPriceList);
@@ -137,14 +141,47 @@ public class PricingTestHelper
 		}
 	}
 
-	public final I_C_Country createCountry(final String countryCode, final int currencyId)
+	/**
+	 * @param countryAreaValue if not {@code null}, then a country area is created and the new country is assigned to it.
+	 */
+	public final I_C_Country createCountry(
+			@NonNull final String countryCode,
+			final int currencyId)
 	{
-		final I_C_Country country = InterfaceWrapperHelper.create(Env.getCtx(), I_C_Country.class, ITrx.TRXNAME_None);
+		final I_C_Country country = newInstance(I_C_Country.class);
 		country.setCountryCode(countryCode);
 		country.setName(countryCode);
 		country.setC_Currency_ID(currencyId);
-		InterfaceWrapperHelper.save(country);
+		saveRecord(country);
+
 		return country;
+	}
+
+	public final I_C_Country createCountryWithArea(
+			@NonNull final String countryCode,
+			final int currencyId,
+			@NonNull final String countryAreaValue)
+	{
+		final I_C_Country country = createCountry(countryCode, currencyId);
+		createArea(country, countryAreaValue);
+
+		return country;
+	}
+
+	private void createArea(
+			@NonNull final I_C_Country country,
+			@NonNull final String countryAreaValue)
+	{
+
+		final I_C_CountryArea countryAreaRecord = newInstance(I_C_CountryArea.class);
+		countryAreaRecord.setValue(countryAreaValue);
+		saveRecord(countryAreaRecord);
+
+		final I_C_CountryArea_Assign countryAreaAssignRecord = newInstance(I_C_CountryArea_Assign.class);
+		countryAreaAssignRecord.setC_Country_ID(country.getC_Country_ID());
+		countryAreaAssignRecord.setValidFrom(TimeUtil.getDay(0L));
+		countryAreaAssignRecord.setC_CountryArea_ID(countryAreaRecord.getC_CountryArea_ID());
+		saveRecord(countryAreaAssignRecord);
 	}
 
 	public final I_M_Product createProduct(

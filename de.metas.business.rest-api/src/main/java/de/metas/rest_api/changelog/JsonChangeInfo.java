@@ -7,9 +7,11 @@ import javax.annotation.Nullable;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import de.metas.rest_api.common.MetasfreshId;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.rest_api.MetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;

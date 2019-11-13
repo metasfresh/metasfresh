@@ -65,6 +65,7 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocTypeDAO;
 import de.metas.inout.InOutId;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -173,7 +174,8 @@ public final class AggregationEngine
 		Check.assume(!ic.isToClear(), "{} has IsToClear='N'", ic);
 		Check.assume(!ic.isProcessed(), "{} not processed", ic);
 
-		final List<I_C_InvoiceCandidate_InOutLine> iciols = invoiceCandDAO.retrieveICIOLAssociationsExclRE(ic);
+		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(ic.getC_Invoice_Candidate_ID());
+		final List<I_C_InvoiceCandidate_InOutLine> iciols = invoiceCandDAO.retrieveICIOLAssociationsExclRE(invoiceCandidateId);
 
 		//
 		// Case: No IC-IOL association found;

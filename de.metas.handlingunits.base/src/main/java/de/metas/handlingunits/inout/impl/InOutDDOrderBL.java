@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.model.I_DD_Order;
@@ -81,6 +82,7 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 	{
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 		final ProductId productId = ProductId.ofRepoId(inOutLine.getM_Product_ID());
 		final OrgId orgId = OrgId.ofRepoId(inOutLine.getAD_Org_ID());
@@ -111,7 +113,7 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 		ddOrderHeader.setDeliveryViaRule(inout.getDeliveryViaRule());
 		ddOrderHeader.setDeliveryRule(inout.getDeliveryRule());
 		ddOrderHeader.setPriorityRule(inout.getPriorityRule());
-		ddOrderHeader.setM_Warehouse(productPlanning.getM_Warehouse());
+		ddOrderHeader.setM_Warehouse_ID(productPlanning.getM_Warehouse_ID());
 		ddOrderHeader.setC_DocType_ID(docTypeId);
 		ddOrderHeader.setDocStatus(X_DD_Order.DOCSTATUS_Drafted);
 		ddOrderHeader.setDocAction(X_DD_Order.DOCACTION_Complete);

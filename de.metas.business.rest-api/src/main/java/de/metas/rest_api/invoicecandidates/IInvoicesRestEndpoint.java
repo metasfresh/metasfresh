@@ -2,11 +2,13 @@ package de.metas.rest_api.invoicecandidates;
 
 import org.springframework.http.ResponseEntity;
 
+import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
-import de.metas.rest_api.invoicecandidates.request.JsonGetInvoiceCandidatesStatusRequest;
+import de.metas.rest_api.invoicecandidates.request.JsonCheckInvoiceCandidatesStatusRequest;
+import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesStatusResponse;
+import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
-import de.metas.rest_api.invoicecandidates.response.JsonGetInvoiceCandidatesStatusResponse;
-import de.metas.util.rest.MetasfreshRestAPIConstants;
+import de.metas.util.web.MetasfreshRestAPIConstants;
 
 /*
  * #%L
@@ -34,8 +36,10 @@ public interface IInvoicesRestEndpoint
 {
 	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/invoices/";
 
+	ResponseEntity<JsonCreateInvoiceCandidatesResponse> createInvoiceCandidates(JsonCreateInvoiceCandidatesRequest request);
+
 	ResponseEntity<JsonEnqueueForInvoicingResponse> enqueueForInvoicing(JsonEnqueueForInvoicingRequest request);
 
-	ResponseEntity<JsonGetInvoiceCandidatesStatusResponse> checkInvoiceCandidatesStatus(JsonGetInvoiceCandidatesStatusRequest request);
+	ResponseEntity<JsonCheckInvoiceCandidatesStatusResponse> checkInvoiceCandidatesStatus(JsonCheckInvoiceCandidatesStatusRequest request);
 
 }

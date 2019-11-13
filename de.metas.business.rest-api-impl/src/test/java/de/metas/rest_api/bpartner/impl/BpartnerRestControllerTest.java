@@ -55,11 +55,6 @@ import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.greeting.GreetingRepository;
-import de.metas.rest_api.JsonExternalId;
-import de.metas.rest_api.MetasfreshId;
-import de.metas.rest_api.SyncAdvise;
-import de.metas.rest_api.SyncAdvise.IfExists;
-import de.metas.rest_api.SyncAdvise.IfNotExists;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsert;
@@ -69,19 +64,25 @@ import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsertItem;
-import de.metas.rest_api.bpartner.request.JsonResponseUpsert;
-import de.metas.rest_api.bpartner.request.JsonResponseUpsertItem;
 import de.metas.rest_api.bpartner.response.JsonResponseComposite;
 import de.metas.rest_api.bpartner.response.JsonResponseCompositeList;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
+import de.metas.rest_api.common.JsonExternalId;
+import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.common.SyncAdvise;
+import de.metas.rest_api.common.SyncAdvise.IfExists;
+import de.metas.rest_api.common.SyncAdvise.IfNotExists;
+import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.MissingResourceException;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.JSONObjectMapper;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.UIDStringUtil;
-import de.metas.util.rest.ExternalId;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import lombok.Value;
@@ -135,6 +136,7 @@ class BpartnerRestControllerTest
 
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
+				new BPartnerQueryService(),
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),

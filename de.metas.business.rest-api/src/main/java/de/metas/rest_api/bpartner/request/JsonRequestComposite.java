@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.rest_api.SyncAdvise;
+import de.metas.rest_api.common.SyncAdvise;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AccessLevel;

@@ -28,6 +28,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
@@ -42,6 +43,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -51,6 +53,7 @@ import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListVersionNotFoundException;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.limit.CompositePriceLimitRule;
@@ -235,11 +238,28 @@ public class PricingBL implements IPricingBL
 		return pricingCtxToUse;
 	}
 
-	private void setupPriceListAndDate(final IEditablePricingContext pricingCtx)
+	private void setupPriceListAndDate(@NonNull final IEditablePricingContext pricingCtx)
 	{
+		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 		final LocalDate priceDate = pricingCtx.getPriceDate();
+
+		// M_PricingSystem_ID from C_BPartner if neccesary
+		if (pricingCtx.getPricingSystemId() == null
+				&& pricingCtx.getPriceListId() == null
+				&& pricingCtx.getPriceListVersionId() == null)
+		{
+			final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemIdOrNull(pricingCtx.getBPartnerId(), pricingCtx.getSoTrx());
+			if (pricingSystemId == null)
+			{
+				throw new AdempiereException("BPartner has no assigned pricing system")
+						.appendParametersToMessage()
+						.setParameter("pricingCtx", pricingCtx);
+			}
+			pricingCtx.setPricingSystemId(pricingSystemId);
+		}
 
 		//
 		// Set M_PriceList_ID and M_PriceList_Version_ID from pricingSystem, date and country, if necessary;
@@ -249,7 +269,6 @@ public class PricingBL implements IPricingBL
 				&& pricingCtx.getProductId() != null
 				&& pricingCtx.getCountryId() != null)
 		{
-			final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 			final I_M_PriceList_Version computedPLV = priceListBL.getCurrentPriceListVersionOrNull(
 					pricingCtx.getPricingSystemId(),
 					pricingCtx.getCountryId(),

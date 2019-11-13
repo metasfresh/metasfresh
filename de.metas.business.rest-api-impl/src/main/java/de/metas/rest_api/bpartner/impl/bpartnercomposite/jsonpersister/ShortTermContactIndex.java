@@ -12,7 +12,7 @@ import de.metas.bpartner.composite.BPartnerContact.BPartnerContactBuilder;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.InvalidIdentifierException;
 import de.metas.user.UserId;
-import de.metas.util.rest.ExternalId;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import lombok.Value;
 

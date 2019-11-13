@@ -37,10 +37,11 @@ import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.order.InvoiceRule;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.util.rest.ExternalId;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -54,12 +55,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -215,6 +216,7 @@ final class BPartnerCompositesLoader
 				.url(bpartnerRecord.getURL())
 				.url2(bpartnerRecord.getURL2())
 				.url3(bpartnerRecord.getURL3())
+				.invoiceRule(InvoiceRule.ofNullableCode(bpartnerRecord.getInvoiceRule()))
 				.vendor(bpartnerRecord.isVendor())
 				.customer(bpartnerRecord.isCustomer())
 				//

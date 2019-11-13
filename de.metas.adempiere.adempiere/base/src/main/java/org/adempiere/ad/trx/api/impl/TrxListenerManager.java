@@ -42,9 +42,6 @@ import lombok.NonNull;
 
 /**
  * Default {@link ITrxListenerManager} implementation
- *
- * @author tsa
- *
  */
 public class TrxListenerManager implements ITrxListenerManager
 {
@@ -52,18 +49,22 @@ public class TrxListenerManager implements ITrxListenerManager
 
 	private volatile WeakList<RegisterListenerRequest> listeners = null;
 
+	/** for debugging */
+	private final String trxName;
+
 	/**
 	 * Never contains {@code null} or {@link TrxEventTiming#UNSPECIFIED}.
 	 */
 	private final AtomicReference<TrxEventTiming> runningWithinTrxEventTiming = new AtomicReference<>(TrxEventTiming.NONE);
 
-	private static enum OnError
+	private enum OnError
 	{
 		ThrowException, LogAndSkip
-	};
+	}
 
-	public TrxListenerManager()
+	public TrxListenerManager(final String trxName)
 	{
+		this.trxName = trxName;
 	}
 
 	@Override
@@ -95,20 +96,22 @@ public class TrxListenerManager implements ITrxListenerManager
 	private void verifyEventTiming(@NonNull final RegisterListenerRequest listener)
 	{
 		final TrxEventTiming eventTimingOfListener = listener.getTiming();
-		final boolean listenerHasProblematicTiming = !eventTimingOfListener.canBeRegisteredWithinOtherTiming(runningWithinTrxEventTiming.get());
 
+		final TrxEventTiming currentTiming = runningWithinTrxEventTiming.get();
+		final boolean listenerHasProblematicTiming = !eventTimingOfListener.canBeRegisteredWithinOtherTiming(currentTiming);
 		if (listenerHasProblematicTiming)
 		{
 			final String message = StringUtils.formatMessage("Registering another listener within a listener's event handling code might be a development error and that other listener might not be fired."
+					+ "\n trxName={}"
 					+ "\n current trx event timing={}"
 					+ "\n listener that is registerd={}",
-					runningWithinTrxEventTiming.get(),
+					this.trxName,
+					currentTiming,
 					listener);
-
 			new AdempiereException(message).throwIfDeveloperModeOrLogWarningElse(logger);
 		}
 	}
-	
+
 	@Override
 	public boolean canRegisterOnTiming(@NonNull final TrxEventTiming timing)
 	{

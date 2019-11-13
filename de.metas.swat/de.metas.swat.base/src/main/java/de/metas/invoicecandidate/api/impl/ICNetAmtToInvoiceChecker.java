@@ -67,9 +67,8 @@ import lombok.ToString;
 	}
 
 	@Override
-	public void add(final I_C_Invoice_Candidate ic)
+	public void add(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		Check.assumeNotNull(ic, "ic not null");
 		final BigDecimal icLineNetAmt = ic.getNetAmtToInvoice();
 		_netAmtToInvoice = _netAmtToInvoice.add(icLineNetAmt);
 		_countInvoiceCandidates++;

@@ -30,15 +30,15 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
-import de.metas.rest_api.JsonExternalId;
-import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner.JsonRequestBPartnerBuilder;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation.JsonRequestLocationBuilder;
+import de.metas.rest_api.common.JsonDocTypeInfo;
+import de.metas.rest_api.common.JsonExternalId;
+import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
-import de.metas.rest_api.ordercandidates.request.JsonDocTypeInfo;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder;

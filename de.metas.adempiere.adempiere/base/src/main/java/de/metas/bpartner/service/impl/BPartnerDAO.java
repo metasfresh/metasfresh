@@ -115,7 +115,7 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import de.metas.util.rest.ExternalId;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 
 public class BPartnerDAO implements IBPartnerDAO
