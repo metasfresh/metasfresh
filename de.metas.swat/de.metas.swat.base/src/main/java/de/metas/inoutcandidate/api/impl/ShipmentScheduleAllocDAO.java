@@ -238,7 +238,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 			@NonNull final Class<T> modelClass)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, modelClass)
+				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID, inoutLineId)
 				.create()
