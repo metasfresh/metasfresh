@@ -68,12 +68,9 @@ public class DerKurierClientFactory implements ShipperGatewayClientFactory
 	}
 
 	@Override
-	public ShipperGatewayClient newClientForShipperId(final ShipperId shipperId)
+	public ShipperGatewayClient newClientForShipperId(@NonNull final ShipperId shipperId)
 	{
-		int shipperIdInt = shipperId.getRepoId();
-		Check.errorIf(shipperIdInt <= 0, "Given parameter shipperIdInt needs to be > 0; shipperIdInt={}", shipperIdInt);
-
-		final DerKurierShipperConfig shipperConfig = derKurierShipperConfigRepository.retrieveConfigForShipperId(shipperIdInt);
+		final DerKurierShipperConfig shipperConfig = derKurierShipperConfigRepository.retrieveConfigForShipperId(shipperId.getRepoId());
 		return createClient(shipperConfig);
 	}
 
@@ -102,7 +99,7 @@ public class DerKurierClientFactory implements ShipperGatewayClientFactory
 	 * Note 2: visible because this is the object mapper we run with; we want our unit tests to use it as well.
 	 */
 	@VisibleForTesting
-	public static ObjectMapper extractAndConfigureObjectMapperOfRestTemplate(final RestTemplate restTemplate)
+	public static ObjectMapper extractAndConfigureObjectMapperOfRestTemplate(@NonNull final RestTemplate restTemplate)
 	{
 		final MappingJackson2HttpMessageConverter messageConverter = restTemplate
 				.getMessageConverters()

@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import de.metas.mpackage.PackageId;
 import de.metas.shipping.api.ShipperTransportationId;
+import de.metas.util.lang.CoalesceUtil;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
@@ -114,7 +115,7 @@ public class ShipperGatewayFacade
 	/**
 	 * In case the weight is <= 0, return the default value.
 	 */
-	private static int computeGrossWeightInKg(@NonNull final Collection<I_M_Package> mpackages, int defaultValue)
+	private static int computeGrossWeightInKg(@NonNull final Collection<I_M_Package> mpackages, @SuppressWarnings("SameParameterValue") final int defaultValue)
 	{
 		final int weightInKg = mpackages.stream()
 				.map(I_M_Package::getPackageWeight) // TODO: we assume it's in Kg
@@ -123,14 +124,7 @@ public class ShipperGatewayFacade
 				.setScale(0, RoundingMode.UP)
 				.intValueExact();
 
-		if (weightInKg <= 0)
-		{
-			return defaultValue;
-		}
-		else
-		{
-			return weightInKg;
-		}
+		return CoalesceUtil.firstGreaterThanZero(weightInKg, defaultValue);
 	}
 
 	private static String computePackagesContentDescription(final Collection<I_M_Package> mpackages)

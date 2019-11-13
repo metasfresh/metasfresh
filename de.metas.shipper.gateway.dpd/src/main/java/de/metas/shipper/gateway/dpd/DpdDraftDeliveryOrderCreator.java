@@ -241,6 +241,6 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		}
 
 		final UomId toUomId = Services.get(IUOMDAO.class).getUomIdByX12DE355(DpdConstants.DEFAULT_PACKAGE_DIMENSIONS_UOM);
-		return packingMaterialDAO.preparePackageDimensions(packingMaterial, toUomId);
+		return packingMaterialDAO.retrievePackageDimensions(packingMaterial, toUomId);
 	}
 }

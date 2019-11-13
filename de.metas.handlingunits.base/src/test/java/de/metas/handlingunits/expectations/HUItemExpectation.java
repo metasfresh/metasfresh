@@ -86,7 +86,7 @@ public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectat
 
 		if (_packingMaterial != null)
 		{
-			assertThat(prefix + "PackingMaterial", _packingMaterial, is(Services.get(IHUPackingMaterialDAO.class).getHUPackingMaterial(huItem)));
+			assertThat(prefix + "PackingMaterial", _packingMaterial, is(Services.get(IHUPackingMaterialDAO.class).retrieveHUPackingMaterialOrNull(huItem)));
 		}
 
 		if (includedHUExpectations != null)

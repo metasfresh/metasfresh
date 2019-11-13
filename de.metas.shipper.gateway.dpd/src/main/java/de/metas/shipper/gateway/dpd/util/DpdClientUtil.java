@@ -40,7 +40,7 @@ public class DpdClientUtil
 		);
 
 		final WebServiceTemplate webServiceTemplate = new WebServiceTemplate();
-		//		webServiceTemplate.setDefaultUri(apiUrl);
+		//		webServiceTemplate.setDefaultUri(apiUrl); // there are different URLs for Login and Shipment creation, so nothing is set here.
 		webServiceTemplate.setMarshaller(marshaller);
 		webServiceTemplate.setUnmarshaller(marshaller);
 		return webServiceTemplate;

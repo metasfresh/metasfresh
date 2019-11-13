@@ -80,7 +80,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	public ITableRecordReference toTableRecordReference(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		final DeliveryOrderId deliveryOrderRepoId = deliveryOrder.getRepoId();
-		Check.assumeNotNull(deliveryOrderRepoId, "DeliveryOrder ID must not be null");
+		Check.assumeNotNull(deliveryOrderRepoId, "DeliveryOrder ID must not be null for deliveryOrder " + deliveryOrder);
 		return TableRecordReference.of(I_DHL_ShipmentOrderRequest.Table_Name, deliveryOrderRepoId);
 	}
 

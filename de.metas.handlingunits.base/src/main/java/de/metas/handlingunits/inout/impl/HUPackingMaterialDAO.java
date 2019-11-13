@@ -9,6 +9,8 @@ import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.mpackage.PackageId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
@@ -84,7 +86,7 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 
 	@Nullable
 	@Override
-	public I_M_HU_PackingMaterial getHUPackingMaterial(@NonNull final I_M_HU_Item huItem)
+	public I_M_HU_PackingMaterial retrieveHUPackingMaterialOrNull(@NonNull final I_M_HU_Item huItem)
 	{
 		final int packingMaterialId = huItem.getM_HU_PackingMaterial_ID();
 		return packingMaterialId > 0 ? loadOutOfTrx(packingMaterialId, I_M_HU_PackingMaterial.class) : null;
@@ -92,15 +94,15 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 
 	@NonNull
 	@Override
-	public PackageDimensions preparePackageDimensions(@NonNull final I_M_HU_PackingMaterial packingMaterial, @NonNull final UomId toUomId)
+	public PackageDimensions retrievePackageDimensions(@NonNull final I_M_HU_PackingMaterial packingMaterial, @NonNull final UomId toUomId)
 	{
 		final UomId fromUomId = UomId.ofRepoId(packingMaterial.getC_UOM_Dimension_ID());
 
 		final IUOMConversionBL iuomConversionBL = Services.get(IUOMConversionBL.class);
 		return PackageDimensions.builder()
-				.heightInCM(iuomConversionBL.convert(fromUomId, toUomId, packingMaterial.getHeight()).orElse(BigDecimal.valueOf(1)).intValue())
-				.lengthInCM(iuomConversionBL.convert(fromUomId, toUomId, packingMaterial.getLength()).orElse(BigDecimal.valueOf(1)).intValue())
-				.widthInCM(iuomConversionBL.convert(fromUomId, toUomId, packingMaterial.getWidth()).orElse(BigDecimal.valueOf(1)).intValue())
+				.heightInCM(iuomConversionBL.convert(fromUomId, toUomId, packingMaterial.getHeight()).orElse(BigDecimal.ONE).intValue())
+				.lengthInCM(iuomConversionBL.convert(fromUomId, toUomId, packingMaterial.getLength()).orElse(BigDecimal.ONE).intValue())
+				.widthInCM(iuomConversionBL.convert(fromUomId, toUomId, packingMaterial.getWidth()).orElse(BigDecimal.ONE).intValue())
 				.build();
 	}
 }

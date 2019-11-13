@@ -104,8 +104,8 @@ public class WeightTareAttributeValueCallout
 					.filter(item -> Objects.equals(handlingUnitsBL.getItemType(item), X_M_HU_Item.ITEMTYPE_PackingMaterial))
 
 					// .. get their M_HU_PackingMaterial and Qty, if they have both
-					.map(item -> packingMaterialDAO.getHUPackingMaterial(item))
-					.filter(packingmaterial -> packingmaterial != null)
+					.map(item -> packingMaterialDAO.retrieveHUPackingMaterialOrNull(item))
+					.filter(Objects::nonNull)
 
 					// multiply their M_HU_PackingMaterial's weight
 					.map(packingmaterial -> getWeightTare(packingmaterial).multiply(qty))

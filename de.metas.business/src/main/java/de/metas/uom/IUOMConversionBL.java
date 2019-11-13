@@ -144,6 +144,14 @@ public interface IUOMConversionBL extends ISingletonService
 	Optional<BigDecimal> convert(@NonNull final UomId fromUomId, @NonNull final UomId toUomId, @NonNull final BigDecimal qty);
 
 	/**
+	 * Convert qty to target UOM and round.
+	 *
+	 * @return converted qty (std precision)
+	 */
+
+	Optional<Quantity> convertQtyTo(Quantity quantity, UomId toUomId);
+
+	/**
 	 * Converts the given qty from the given source UOM to the given product's stocking UOM.
 	 *
 	 * @return the converted qty or <code>null</code> if the product's stocking UOM is different from the given <code>fromUomId</code> and if there is no conversion rate to use.

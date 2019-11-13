@@ -71,11 +71,12 @@ public interface IHUPackingMaterialDAO extends ISingletonService
 	 * sql:
 	 *
 	 * <pre>{@code
-	 * SELECT pack.width
+	 * SELECT pack.*
 	 * FROM m_package_hu phu
 	 * 		INNER JOIN m_hu_item huitem ON phu.m_hu_id = huitem.m_hu_id
 	 * 		INNER JOIN m_hu_packingmaterial pack ON huitem.m_hu_packingmaterial_id = pack.m_hu_packingmaterial_id
 	 * WHERE phu.m_package_id = 1000023
+	 * LIMIT 1;
 	 * }</pre>
 	 * <p>
 	 * thx to ruxi for transforming this sql query into "metasfresh"
@@ -84,7 +85,7 @@ public interface IHUPackingMaterialDAO extends ISingletonService
 	I_M_HU_PackingMaterial retrievePackingMaterialOrNull(@NonNull final PackageId packageId);
 
 	@Nullable
-	I_M_HU_PackingMaterial getHUPackingMaterial(@NonNull I_M_HU_Item huItem);
+	I_M_HU_PackingMaterial retrieveHUPackingMaterialOrNull(@NonNull I_M_HU_Item huItem);
 
 	/**
 	 * Return the dimensions of the packing material, or a default with all dimensions set to 1
@@ -93,6 +94,6 @@ public interface IHUPackingMaterialDAO extends ISingletonService
 	 * However it is here, as adding it there will create a circular dependency between de.metas.handlingunits.base and de.metas.shipper.gateway.commons, because I_M_HU_PackingMaterial must be imported.
 	 */
 	@NonNull
-	PackageDimensions preparePackageDimensions(@NonNull final I_M_HU_PackingMaterial packingMaterial, @NonNull final UomId toUomId);
+	PackageDimensions retrievePackageDimensions(@NonNull final I_M_HU_PackingMaterial packingMaterial, @NonNull final UomId toUomId);
 
 }

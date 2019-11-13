@@ -26,6 +26,7 @@ import com.dpd.common.ws.authentication.v2_0.types.Authentication;
 import com.dpd.common.ws.authentication.v2_0.types.ObjectFactory;
 import com.dpd.common.ws.loginservice.v2_0.types.Login;
 import de.metas.shipper.gateway.dpd.DpdConstants;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.ws.WebServiceMessage;
 import org.springframework.ws.client.core.WebServiceMessageCallback;
@@ -37,12 +38,10 @@ import javax.xml.bind.JAXBException;
 
 public class DpdSoapHeaderWithAuth implements WebServiceMessageCallback
 {
-
 	private final Login login;
 
-	public DpdSoapHeaderWithAuth(final Login login)
+	public DpdSoapHeaderWithAuth(@NonNull final Login login)
 	{
-
 		this.login = login;
 	}
 
@@ -68,7 +67,7 @@ public class DpdSoapHeaderWithAuth implements WebServiceMessageCallback
 		}
 		catch (final JAXBException e)
 		{
-			throw new AdempiereException("Error while setting soap header");
+			throw new AdempiereException("Error while setting soap header", e);
 		}
 	}
 }

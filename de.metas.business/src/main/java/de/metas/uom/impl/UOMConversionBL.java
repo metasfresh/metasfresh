@@ -33,6 +33,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import de.metas.quantity.Quantitys;
 import org.adempiere.exceptions.NoUOMConversionException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
@@ -401,6 +402,15 @@ public class UOMConversionBL implements IUOMConversionBL
 		final I_C_UOM toUom = uomDAO.getById(toUomId);
 
 		return convert(fromUom, toUom, qty);
+	}
+
+	@Override
+	public Optional<Quantity> convertQtyTo(@NonNull final Quantity quantity, @NonNull final UomId toUomId)
+	{
+		final I_C_UOM fromUom = uomDAO.getById(quantity.getUomId());
+		final I_C_UOM toUom = uomDAO.getById(toUomId);
+
+		return convert(fromUom, toUom, quantity.toBigDecimal()).map(bigDecimal -> Quantitys.create(bigDecimal, toUomId));
 	}
 
 	@Override

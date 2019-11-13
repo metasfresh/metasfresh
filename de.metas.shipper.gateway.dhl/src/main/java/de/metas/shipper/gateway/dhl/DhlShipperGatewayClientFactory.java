@@ -48,7 +48,7 @@ public class DhlShipperGatewayClientFactory implements ShipperGatewayClientFacto
 	}
 
 	@Override
-	public ShipperGatewayClient newClientForShipperId(final ShipperId shipperId)
+	public ShipperGatewayClient newClientForShipperId(@NonNull final ShipperId shipperId)
 	{
 		final DhlClientConfig config = configRepo.getByShipperId(shipperId);
 		return DhlShipperGatewayClient.builder()

@@ -357,7 +357,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				qty = BigDecimal.ONE;
 			}
 
-			final I_M_HU_PackingMaterial packingMaterial = packingMaterialDAO.getHUPackingMaterial(huItem);
+			final I_M_HU_PackingMaterial packingMaterial = packingMaterialDAO.retrieveHUPackingMaterialOrNull(huItem);
 
 			packingMaterials.add(ImmutablePair.of(packingMaterial, qty.intValueExact()));
 		}
