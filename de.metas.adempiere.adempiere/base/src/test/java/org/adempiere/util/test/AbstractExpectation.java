@@ -29,6 +29,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
@@ -37,6 +38,8 @@ import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.util.Env;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+
+import de.metas.util.lang.RepoIdAware;
 
 /**
  * This class is the mother and the father, at same time, of all our expectations ;)
@@ -230,6 +233,12 @@ public class AbstractExpectation<ParentExpectationType>
 	protected <T> void assertModelEquals(final String message, final T expected, final T actual)
 	{
 		assertModelEquals(newErrorMessage(message), expected, actual);
+	}
+
+	@Deprecated
+	protected <T extends RepoIdAware> void assertModelEquals(final String message, final T expected, final T actual)
+	{
+		throw new AdempiereException("Avoid using assertModelEquals() for RepoIdAwares. Use assertEquals.");
 	}
 
 	protected <T> void assertModelEquals(final ErrorMessage message, final T expected, final T actual)
