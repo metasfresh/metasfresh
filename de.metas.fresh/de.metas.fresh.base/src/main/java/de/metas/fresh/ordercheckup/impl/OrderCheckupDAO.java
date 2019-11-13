@@ -28,7 +28,8 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -72,6 +73,8 @@ public class OrderCheckupDAO implements IOrderCheckupDAO
 	@Override
 	public I_M_Warehouse retrieveManufacturingWarehouseOrNull(final I_C_OrderLine orderLine)
 	{
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+
 		final I_PP_Product_Planning productPlanning = retrieveProductPlanningOrNull(orderLine);
 		if (productPlanning == null
 				|| productPlanning.getM_Warehouse_ID() < 0)
@@ -79,7 +82,7 @@ public class OrderCheckupDAO implements IOrderCheckupDAO
 			return null; // no warehouse available
 		}
 
-		return InterfaceWrapperHelper.create(productPlanning.getM_Warehouse(), I_M_Warehouse.class);
+		return warehouseDAO.getById(WarehouseId.ofRepoId(productPlanning.getM_Warehouse_ID()), I_M_Warehouse.class);
 	}
 
 	@Override
