@@ -7,6 +7,8 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -146,7 +148,6 @@ public class ProductsToPickRow implements IViewRow
 	@Getter
 	@Nullable
 	private final ShipperId shipperId;
-
 
 	private final ImmutableList<ProductsToPickRow> includedRows;
 
@@ -289,7 +290,12 @@ public class ProductsToPickRow implements IViewRow
 
 	public PPOrderBOMLineId getIssueToOrderBOMLineId()
 	{
-		return rowId.getIssueToOrderBOMLineId();
+		final PPOrderBOMLineId issueToOrderBOMLineId = rowId.getIssueToOrderBOMLineId();
+		if (issueToOrderBOMLineId == null)
+		{
+			throw new AdempiereException("Product " + productName.getDefaultValue() + " is not issueable");
+		}
+		return issueToOrderBOMLineId;
 	}
 
 	public Quantity getQtyEffective()
