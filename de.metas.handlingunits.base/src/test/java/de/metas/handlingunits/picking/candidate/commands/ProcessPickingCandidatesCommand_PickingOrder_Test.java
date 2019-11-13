@@ -5,7 +5,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.util.List;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.LocatorId;
@@ -13,7 +15,9 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order_BOM;
+import org.eevolution.model.X_PP_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,6 +41,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_Warehouse;
+import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.X_M_HU;
@@ -51,6 +56,7 @@ import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -79,6 +85,7 @@ import lombok.NonNull;
 @ExtendWith(AdempiereTestWatcher.class)
 public class ProcessPickingCandidatesCommand_PickingOrder_Test
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private HUTestHelper helper;
 	private PickingCandidateRepository pickingCandidateRepository;
 
@@ -244,6 +251,15 @@ public class ProcessPickingCandidatesCommand_PickingOrder_Test
 		return pickingCandidateId;
 	}
 
+	private List<I_PP_Cost_Collector> getCostCollectors(final PickingCandidateId pickingCandidateId)
+	{
+		return queryBL.createQueryBuilder(I_PP_Cost_Collector.class)
+				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_M_Picking_Candidate_ID, pickingCandidateId)
+				.orderBy(I_PP_Cost_Collector.COLUMNNAME_PP_Cost_Collector_ID)
+				.create()
+				.list();
+	}
+
 	@Test
 	public void pick3_issue6()
 	{
@@ -267,23 +283,50 @@ public class ProcessPickingCandidatesCommand_PickingOrder_Test
 		final HuId packedToHuId = pickingCandidate.getPackedToHuId();
 		assertThat(packedToHuId).isNotNull();
 
-		HUStorageExpectation.newExpectation()
-				.product(christmasBoxProductId)
-				.qty(Quantity.of(3, uomEach))
-				.assertExpected(packedToHuId);
+		final List<I_PP_Cost_Collector> costCollectors = getCostCollectors(pickingCandidateId);
+		assertThat(costCollectors).hasSize(2);
 
-		HUStorageExpectation.newExpectation()
-				.product(chocolateProductId)
-				.qty(Quantity.of(10000 - 6, uomEach))
-				.assertExpected(chocolatesHUId);
+		//
+		// Check the what was received from MO and packed
+		{
+			HUStorageExpectation.newExpectation()
+					.product(christmasBoxProductId)
+					.qty(Quantity.of(3, uomEach))
+					.assertExpected(packedToHuId);
 
-		ShipmentScheduleQtyPickedExpectations.newInstance()
-				.shipmentSchedule(pickingCandidate.getShipmentScheduleId())
-				//
-				.newShipmentScheduleQtyPickedExpectation()
-				.noLU().noTU().vhu(packedToHuId).qtyPicked(3)
-				.endExpectation()
-				//
-				.assertExpected();
+			final I_PP_Cost_Collector costCollector_FinishedGoodReceipt = costCollectors.get(1);
+			assertThat(costCollector_FinishedGoodReceipt.getM_Product_ID()).isEqualTo(christmasBoxProductId.getRepoId());
+			assertThat(costCollector_FinishedGoodReceipt.getMovementQty()).isEqualByComparingTo("3");
+
+			ShipmentScheduleQtyPickedExpectations.newInstance()
+					.shipmentSchedule(pickingCandidate.getShipmentScheduleId())
+					//
+					.newShipmentScheduleQtyPickedExpectation()
+					.noLU().noTU().vhu(packedToHuId).qtyPicked(3)
+					.endExpectation()
+					//
+					.assertExpected();
+		}
+
+		//
+		// Checked what was issued to MO
+		{
+			HUStorageExpectation.newExpectation()
+					.product(chocolateProductId)
+					.qty(Quantity.of(10000 - 6, uomEach))
+					.assertExpected(chocolatesHUId);
+
+			final I_PP_Cost_Collector costCollector_ComponentIssue = costCollectors.get(0);
+			assertThat(costCollector_ComponentIssue.getM_Product_ID()).isEqualTo(chocolateProductId.getRepoId());
+			assertThat(costCollector_ComponentIssue.getMovementQty()).isEqualByComparingTo("6");
+		}
+
+		//
+		// Check the MO
+		{
+			final I_PP_Order pickingOrder = Services.get(IPPOrderDAO.class).getById(pickingCandidate.getPickFrom().getPickingOrderId(), I_PP_Order.class);
+			assertThat(pickingOrder.getDocStatus()).isEqualTo(X_PP_Order.DOCSTATUS_Closed);
+			assertThat(pickingOrder.getDocAction()).isEqualTo(X_PP_Order.DOCACTION_None);
+		}
 	}
 }
