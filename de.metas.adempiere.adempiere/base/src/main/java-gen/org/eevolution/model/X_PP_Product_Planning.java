@@ -15,7 +15,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 280932628L;
+	private static final long serialVersionUID = 1657479232L;
 
     /** Standard Constructor */
     public X_PP_Product_Planning (Properties ctx, int PP_Product_Planning_ID, String trxName)
@@ -28,8 +28,8 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 			setIsDocComplete (false); // N
 			setIsPickDirectlyIfFeasible (false); // N
 			setIsPickingOrder (false); // N
-			setM_Product_ID (0);
 			setPP_Product_Planning_ID (0);
+			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM PP_Product_Planning where PP_Product_Planning.IsActive = 'Y'
         } */
     }
 

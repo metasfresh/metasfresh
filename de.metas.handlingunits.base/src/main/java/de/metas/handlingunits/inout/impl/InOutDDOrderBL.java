@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.model.I_DD_Order;
@@ -81,6 +82,7 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 	{
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 		final ProductId productId = ProductId.ofRepoId(inOutLine.getM_Product_ID());
 		final OrgId orgId = OrgId.ofRepoId(inOutLine.getAD_Org_ID());

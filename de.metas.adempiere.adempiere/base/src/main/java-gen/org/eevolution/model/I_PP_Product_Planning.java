@@ -464,7 +464,7 @@ public interface I_PP_Product_Planning
 	 * Produkt, Leistung, Artikel
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setM_Product_ID (int M_Product_ID);
@@ -474,7 +474,7 @@ public interface I_PP_Product_Planning
 	 * Produkt, Leistung, Artikel
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Product_ID();
@@ -659,7 +659,7 @@ public interface I_PP_Product_Planning
  die kleinste Zahl kommt zuerst
 	 *
 	 * <br>Type: Integer
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setSeqNo (int SeqNo);
@@ -670,7 +670,7 @@ public interface I_PP_Product_Planning
  die kleinste Zahl kommt zuerst
 	 *
 	 * <br>Type: Integer
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getSeqNo();

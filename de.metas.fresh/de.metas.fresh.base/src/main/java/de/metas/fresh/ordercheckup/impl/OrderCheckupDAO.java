@@ -73,6 +73,8 @@ public class OrderCheckupDAO implements IOrderCheckupDAO
 	@Override
 	public I_M_Warehouse retrieveManufacturingWarehouseOrNull(final I_C_OrderLine orderLine)
 	{
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+
 		final I_PP_Product_Planning productPlanning = retrieveProductPlanningOrNull(orderLine);
 		if (productPlanning == null)
 		{
@@ -85,7 +87,7 @@ public class OrderCheckupDAO implements IOrderCheckupDAO
 			return null; // no warehouse available
 		}
 
-		return Services.get(IWarehouseDAO.class).getById(warehouseId, I_M_Warehouse.class);
+		return warehouseDAO.getById(WarehouseId.ofRepoId(productPlanning.getM_Warehouse_ID()), I_M_Warehouse.class);
 	}
 
 	@Override
