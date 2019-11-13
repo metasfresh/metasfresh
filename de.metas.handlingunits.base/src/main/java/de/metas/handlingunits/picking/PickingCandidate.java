@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -84,7 +85,7 @@ public class PickingCandidate
 	private final PickingSlotId pickingSlotId;
 
 	@NonNull
-	private final ImmutableList<PickingCandidateIssueToBOMLine> issuesToPickingOrder;
+	private ImmutableList<PickingCandidateIssueToBOMLine> issuesToPickingOrder;
 
 	@Builder(toBuilder = true)
 	private PickingCandidate(
@@ -301,5 +302,12 @@ public class PickingCandidate
 	public boolean isPickFromPickingOrder()
 	{
 		return getPickFrom().isPickFromPickingOrder();
+	}
+
+	public void issueToPickingOrder(List<PickingCandidateIssueToBOMLine> issuesToPickingOrder)
+	{
+		this.issuesToPickingOrder = issuesToPickingOrder != null
+				? ImmutableList.copyOf(issuesToPickingOrder)
+				: ImmutableList.of();
 	}
 }

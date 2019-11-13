@@ -1,9 +1,5 @@
 package de.metas.handlingunits.picking;
 
-import javax.annotation.Nullable;
-
-import org.eevolution.api.PPCostCollectorId;
-
 import de.metas.handlingunits.HuId;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.product.ProductId;
@@ -49,7 +45,4 @@ public class PickingCandidateIssueToBOMLine
 
 	@NonNull
 	Quantity qtyToIssue;
-
-	@Nullable
-	PPCostCollectorId costCollectorId;
 }

@@ -8,11 +8,13 @@ import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -105,6 +107,12 @@ public class PickRequest
 	{
 		@NonNull
 		PPOrderBOMLineId issueToOrderBOMLineId;
+
+		@NonNull
+		HuId issueFromHUId;
+
+		@NonNull
+		ProductId productId;
 
 		@NonNull
 		Quantity qtyToIssue;

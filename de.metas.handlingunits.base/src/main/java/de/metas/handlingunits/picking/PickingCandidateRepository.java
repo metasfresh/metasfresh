@@ -31,7 +31,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
-import org.eevolution.api.PPCostCollectorId;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Predicates;
@@ -543,7 +542,6 @@ public class PickingCandidateRepository
 				.issueFromHUId(HuId.ofRepoId(record.getM_HU_ID()))
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.qtyToIssue(Quantity.of(record.getQtyToIssue(), uom))
-				.costCollectorId(PPCostCollectorId.ofRepoIdOrNull(record.getPP_Cost_Collector_ID()))
 				.build();
 	}
 
@@ -576,7 +574,6 @@ public class PickingCandidateRepository
 			record.setM_Product_ID(issue.getProductId().getRepoId());
 			record.setQtyToIssue(issue.getQtyToIssue().toBigDecimal());
 			record.setC_UOM_ID(issue.getQtyToIssue().getUomId().getRepoId());
-			record.setPP_Cost_Collector_ID(PPCostCollectorId.toRepoId(issue.getCostCollectorId()));
 			saveRecord(record);
 		}
 
