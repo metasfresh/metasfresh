@@ -8,11 +8,12 @@ import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import lombok.Value;
 
 /*
  * #%L
@@ -36,21 +37,18 @@ import lombok.ToString;
  * #L%
  */
 
-@EqualsAndHashCode
+@Value
 @ToString(of = "documentId")
 public final class ProductsToPickRowId
 {
-	@Getter
-	private final ShipmentScheduleId shipmentScheduleId;
-	@Getter
-	private final HuId pickFromHUId;
+	ProductId productId;
+	ShipmentScheduleId shipmentScheduleId;
+	HuId pickFromHUId;
+	PPOrderId pickFromPickingOrderId;
+	PPOrderBOMLineId issueToOrderBOMLineId;
 
-	@Getter
-	private PPOrderId pickFromPickingOrderId;
-	@Getter
-	private final PPOrderBOMLineId issueToOrderBOMLineId;
-
-	private final DocumentId documentId;
+	@Getter(AccessLevel.NONE)
+	DocumentId documentId;
 
 	@Builder
 	private ProductsToPickRowId(
@@ -60,6 +58,7 @@ public final class ProductsToPickRowId
 			@Nullable final PPOrderId pickFromPickingOrderId,
 			@Nullable final PPOrderBOMLineId issueToOrderBOMLineId)
 	{
+		this.productId = productId;
 		this.shipmentScheduleId = shipmentScheduleId;
 
 		this.pickFromHUId = pickFromHUId;
@@ -68,11 +67,6 @@ public final class ProductsToPickRowId
 		this.issueToOrderBOMLineId = issueToOrderBOMLineId;
 
 		this.documentId = createDocumentId(productId, shipmentScheduleId, pickFromHUId, pickFromPickingOrderId, issueToOrderBOMLineId);
-	}
-
-	public DocumentId toDocumentId()
-	{
-		return documentId;
 	}
 
 	private static DocumentId createDocumentId(
@@ -104,4 +98,8 @@ public final class ProductsToPickRowId
 		return DocumentId.ofString(sb.toString());
 	}
 
+	public DocumentId toDocumentId()
+	{
+		return documentId;
+	}
 }

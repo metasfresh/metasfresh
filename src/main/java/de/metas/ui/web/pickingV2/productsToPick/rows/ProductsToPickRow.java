@@ -22,6 +22,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.ui.web.pickingV2.productsToPick.rows.factory.ProductsToPickRowsDataFactory;
@@ -80,6 +81,7 @@ public class ProductsToPickRow implements IViewRow
 
 	public static final String FIELD_ProductName = "productName";
 	@ViewColumn(fieldName = FIELD_ProductName, widgetType = DocumentFieldWidgetType.Text, captionKey = "ProductName", widgetSize = WidgetSize.Medium)
+	@Getter
 	private final ITranslatableString productName;
 
 	public static final String FIELD_ProductPackageSize = "productPackageSize";
@@ -276,6 +278,11 @@ public class ProductsToPickRow implements IViewRow
 	public ShipmentScheduleId getShipmentScheduleId()
 	{
 		return rowId.getShipmentScheduleId();
+	}
+	
+	public ProductId getProductId()
+	{
+		return rowId.getProductId();
 	}
 
 	public HuId getPickFromHUId()

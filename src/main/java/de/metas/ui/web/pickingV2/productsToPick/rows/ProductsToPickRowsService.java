@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
@@ -101,10 +102,7 @@ public class ProductsToPickRowsService
 		{
 			final ImmutableList<IssueToPickingOrderRequest> issues = row.getIncludedRows()
 					.stream()
-					.map(issueRow -> PickRequest.IssueToPickingOrderRequest.builder()
-							.issueToOrderBOMLineId(issueRow.getIssueToOrderBOMLineId())
-							.qtyToIssue(issueRow.getQtyEffective())
-							.build())
+					.map(issueRow -> toIssueToPickingOrderRequest(issueRow))
 					.collect(ImmutableList.toImmutableList());
 
 			return PickRequest.builder()
@@ -119,6 +117,22 @@ public class ProductsToPickRowsService
 		{
 			throw new AdempiereException("Type not supported: " + rowType);
 		}
+	}
+
+	private static PickRequest.IssueToPickingOrderRequest toIssueToPickingOrderRequest(final ProductsToPickRow issueRow)
+	{
+		final HuId issueFromHUId = issueRow.getPickFromHUId();
+		if (issueFromHUId == null)
+		{
+			throw new AdempiereException("No HU to issue from for product " + issueRow.getProductName().getDefaultValue());
+		}
+
+		return PickRequest.IssueToPickingOrderRequest.builder()
+				.issueToOrderBOMLineId(issueRow.getIssueToOrderBOMLineId())
+				.issueFromHUId(issueFromHUId)
+				.productId(issueRow.getProductId())
+				.qtyToIssue(issueRow.getQtyEffective())
+				.build();
 	}
 
 	public List<PickingCandidate> createPickingCandidates(@NonNull final PackageableRow packageableRow)
