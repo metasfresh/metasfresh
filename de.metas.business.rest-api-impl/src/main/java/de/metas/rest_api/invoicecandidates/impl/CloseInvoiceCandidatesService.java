@@ -18,7 +18,6 @@ import de.metas.rest_api.invoicecandidates.request.JsonCloseInvoiceCandidatesReq
 import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponseItem;
 import de.metas.rest_api.utils.InvalidEntityException;
-import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 
@@ -67,9 +66,7 @@ public class CloseInvoiceCandidatesService
 				multiQuery.query(query);
 			}
 			final List<I_C_Invoice_Candidate> invoiceCandidateRecords = invoiceCandDAO
-					.convertToIQuery(multiQuery.build())
-					.setRequiredAccess(Access.READ)
-					.list();
+					.getByQuery(multiQuery.build());
 
 			final List<JsonCloseInvoiceCandidatesResponseItem> invoiceCandidates = closeInvoiceCandidateRecords(invoiceCandidateRecords);
 

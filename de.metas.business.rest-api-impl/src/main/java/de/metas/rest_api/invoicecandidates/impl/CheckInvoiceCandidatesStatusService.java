@@ -33,7 +33,6 @@ import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesSt
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceStatus;
 import de.metas.rest_api.invoicecandidates.response.JsonWorkPackageStatus;
 import de.metas.rest_api.utils.InvalidEntityException;
-import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import lombok.NonNull;
@@ -84,9 +83,7 @@ public class CheckInvoiceCandidatesStatusService
 			multiQuery.query(query);
 		}
 		final List<I_C_Invoice_Candidate> invoiceCandidateRecords = invoiceCandDAO
-				.convertToIQuery(multiQuery.build())
-				.setRequiredAccess(Access.READ)
-				.list();
+				.getByQuery(multiQuery.build());
 
 		final List<JsonCheckInvoiceCandidatesStatusResponseItem> invoiceCandidates = retrieveStatus(invoiceCandidateRecords);
 

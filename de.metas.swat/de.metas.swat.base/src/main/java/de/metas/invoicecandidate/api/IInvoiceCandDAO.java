@@ -79,14 +79,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	List<I_C_Invoice_Candidate> getByQuery(InvoiceCandidateMultiQuery multiQuery);
 
 	/**
-	 * @deprecated Please use {@link #getByQuery(InvoiceCandidateMultiQuery)} or introduce another method is internally is calling this one
-	 */
-	@Deprecated
-	IQuery<I_C_Invoice_Candidate> convertToIQuery(InvoiceCandidateMultiQuery multiQuery);
-
-	List<I_C_Invoice_Candidate> retrieveIcForIl(I_C_InvoiceLine invoiceLine);
-
-	/**
 	 * Returns those invoice candidates that have been tagged to be recomputed/updated by the given <code>recomputeTag</code>.
 	 *
 	 * This method ALWAYS return non-manual candidates first in the list.
