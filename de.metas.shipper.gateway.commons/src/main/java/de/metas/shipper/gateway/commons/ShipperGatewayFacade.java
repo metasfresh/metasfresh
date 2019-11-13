@@ -159,7 +159,7 @@ public class ShipperGatewayFacade
 		DeliveryOrder deliveryOrder = shipperGatewayService.createDraftDeliveryOrder(request);
 
 		deliveryOrder = deliveryOrderRepository.save(deliveryOrder);
-		DeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(deliveryOrder.getRepoId().getRepoId(), shipperGatewayId);
+		DeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(deliveryOrder.getId().getRepoId(), shipperGatewayId);
 	}
 
 	private String retrieveShipperGatewayId(final ShipperId shipperId)

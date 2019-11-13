@@ -79,7 +79,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	@Override
 	public ITableRecordReference toTableRecordReference(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		final DeliveryOrderId deliveryOrderRepoId = deliveryOrder.getRepoId();
+		final DeliveryOrderId deliveryOrderRepoId = deliveryOrder.getId();
 		Check.assumeNotNull(deliveryOrderRepoId, "DeliveryOrder ID must not be null for deliveryOrder " + deliveryOrder);
 		return TableRecordReference.of(I_DHL_ShipmentOrderRequest.Table_Name, deliveryOrderRepoId);
 	}
@@ -105,7 +105,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	@Override
 	public DeliveryOrder save(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		if (deliveryOrder.getRepoId() != null)
+		if (deliveryOrder.getId() != null)
 		{
 			updateShipmentOrderRequestPO(deliveryOrder);
 			return deliveryOrder;
@@ -115,7 +115,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 			final I_DHL_ShipmentOrderRequest orderRequestPO = createShipmentOrderRequestPO(deliveryOrder);
 			return deliveryOrder
 					.toBuilder()
-					.repoId(DeliveryOrderId.ofRepoId(orderRequestPO.getDHL_ShipmentOrderRequest_ID()))
+					.id(DeliveryOrderId.ofRepoId(orderRequestPO.getDHL_ShipmentOrderRequest_ID()))
 					.build();
 		}
 	}
@@ -169,7 +169,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 				.collect(ImmutableSet.toImmutableSet());
 
 		return DeliveryOrder.builder()
-				.repoId(DeliveryOrderId.ofRepoId(requestPo.getDHL_ShipmentOrderRequest_ID()))
+				.id(DeliveryOrderId.ofRepoId(requestPo.getDHL_ShipmentOrderRequest_ID()))
 				.deliveryAddress(Address.builder()
 						.bpartnerId(firstOrder.getC_BPartner_ID())
 						.bpartnerLocationId(firstOrder.getC_BPartner_Location_ID())
@@ -391,7 +391,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 				//noinspection ConstantConditions
 				final DhlCustomDeliveryData customDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
 
-				final I_DHL_ShipmentOrder shipmentOrder = getShipmentOrderByRequestIdAndPackageId(deliveryOrder.getRepoId().getRepoId(), packageIdsAsList.get(i).getRepoId());
+				final I_DHL_ShipmentOrder shipmentOrder = getShipmentOrderByRequestIdAndPackageId(deliveryOrder.getId().getRepoId(), packageIdsAsList.get(i).getRepoId());
 				final DhlCustomDeliveryDataDetail deliveryDetail = customDeliveryData.getDetailBySequenceNumber(DhlSequenceNumber.of(shipmentOrder.getDHL_ShipmentOrder_ID()));
 
 				final String awb = deliveryDetail.getAwb();

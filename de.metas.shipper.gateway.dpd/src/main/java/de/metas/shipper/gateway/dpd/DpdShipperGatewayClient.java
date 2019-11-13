@@ -131,7 +131,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 
 		final JAXBElement<StoreOrders> storeOrdersElement = shipmentServiceOF.createStoreOrders(storeOrders);
 		//noinspection unchecked
-		final JAXBElement<StoreOrdersResponse> storeOrdersResponseElement = (JAXBElement<StoreOrdersResponse>)doActualRequest(config.getShipmentServiceApiUrl(), storeOrdersElement, login, deliveryOrder.getRepoId());
+		final JAXBElement<StoreOrdersResponse> storeOrdersResponseElement = (JAXBElement<StoreOrdersResponse>)doActualRequest(config.getShipmentServiceApiUrl(), storeOrdersElement, login, deliveryOrder.getId());
 
 		final StoreOrdersResponseType storeOrdersResponse = storeOrdersResponseElement.getValue().getOrderResult();
 
@@ -161,7 +161,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 
 		final ImmutableList<PackageLabels> packageLabels = ImmutableList.of(
 				PackageLabels.builder()
-						.orderId(OrderId.of(getShipperGatewayId(), String.valueOf(deliveryOrder.getRepoId().getRepoId())))
+						.orderId(OrderId.of(getShipperGatewayId(), String.valueOf(deliveryOrder.getId().getRepoId())))
 						.defaultLabelType(customDeliveryData.getPaperFormat())
 						.label(PackageLabel.builder()
 								.type(customDeliveryData.getPaperFormat())
@@ -262,7 +262,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 			shipmentServiceData.setGeneralShipmentData(generalShipmentData);
 			//noinspection ConstantConditions
 			generalShipmentData.setMpsCustomerReferenceNumber1(deliveryOrder.getCustomerReference()); // what is this? optional?
-			generalShipmentData.setIdentificationNumber(String.valueOf(deliveryOrder.getRepoId().getRepoId())); // unique metasfresh number for this shipment
+			generalShipmentData.setIdentificationNumber(String.valueOf(deliveryOrder.getId().getRepoId())); // unique metasfresh number for this shipment
 			//			generalShipmentData.setSendingDepot(); // not set here, as it's taken from login info
 			generalShipmentData.setProduct(deliveryOrder.getServiceType().getCode()); // this is the DPD product
 

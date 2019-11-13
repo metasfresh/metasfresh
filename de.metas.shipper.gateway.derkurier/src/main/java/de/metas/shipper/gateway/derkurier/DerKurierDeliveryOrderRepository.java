@@ -114,7 +114,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 	@Override
 	public ITableRecordReference toTableRecordReference(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		return TableRecordReference.of(I_DerKurier_DeliveryOrder.Table_Name, deliveryOrder.getRepoId());
+		return TableRecordReference.of(I_DerKurier_DeliveryOrder.Table_Name, deliveryOrder.getId());
 	}
 
 	public ITableRecordReference toTableRecordReference(@NonNull final DeliveryPosition deliveryPosition)
@@ -168,7 +168,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 
 		final DeliveryOrderBuilder deliverOrderBuilder = DeliveryOrder
 				.builder()
-				.repoId(DeliveryOrderId.ofRepoId(headerRecord.getDerKurier_DeliveryOrder_ID()))
+				.id(DeliveryOrderId.ofRepoId(headerRecord.getDerKurier_DeliveryOrder_ID()))
 				.shipperId(ShipperId.ofRepoId(headerRecord.getM_Shipper_ID()))
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(headerRecord.getM_ShipperTransportation_ID()))
 				.serviceType(DerKurierServiceType.OVERNIGHT)
@@ -351,13 +351,13 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 	public DeliveryOrder save(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		final I_DerKurier_DeliveryOrder headerRecord;
-		if (deliveryOrder.getRepoId() == null)
+		if (deliveryOrder.getId() == null)
 		{
 			headerRecord = newInstance(I_DerKurier_DeliveryOrder.class);
 		}
 		else
 		{
-			headerRecord = loadAssumeRecordExists(deliveryOrder.getRepoId().getRepoId(), I_DerKurier_DeliveryOrder.class);
+			headerRecord = loadAssumeRecordExists(deliveryOrder.getId().getRepoId(), I_DerKurier_DeliveryOrder.class);
 		}
 
 		headerRecord.setM_Shipper_ID(deliveryOrder.getShipperId().getRepoId());
@@ -369,7 +369,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 
 		final DeliveryOrderBuilder resultBuilder = deliveryOrder
 				.toBuilder()
-				.repoId(DeliveryOrderId.ofRepoId(headerRecord.getDerKurier_DeliveryOrder_ID()))
+				.id(DeliveryOrderId.ofRepoId(headerRecord.getDerKurier_DeliveryOrder_ID()))
 				.orderId(OrderId.of(SHIPPER_GATEWAY_ID, String.valueOf(headerRecord.getDerKurier_DeliveryOrder_ID())))
 				.clearDeliveryPositions();
 

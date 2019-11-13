@@ -33,6 +33,7 @@ import lombok.Value;
  */
 
 @Value
+@Deprecated
 public class DeliveryPosition
 {
 	int repoId;

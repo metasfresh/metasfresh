@@ -33,8 +33,6 @@ import javax.annotation.Nullable;
 @Value
 public class DeliveryOrderLine
 {
-	int repoId;
-
 	@Nullable
 	String content;
 
@@ -51,7 +49,6 @@ public class DeliveryOrderLine
 
 	@Builder(toBuilder = true)
 	private DeliveryOrderLine(
-			final int repoId,
 			@Nullable final String content,
 			final int grossWeightKg,
 			@NonNull final PackageDimensions packageDimensions,
@@ -60,7 +57,6 @@ public class DeliveryOrderLine
 	{
 		Check.assume(grossWeightKg > 0, "grossWeightKg > 0");
 
-		this.repoId = repoId;
 		this.grossWeightKg = grossWeightKg;
 		this.content = content;
 		this.packageDimensions = packageDimensions;

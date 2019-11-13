@@ -109,14 +109,14 @@ class IntegrationDEtoDETest
 		// check 2: persisted DO <-> initial dummy DO => create updatedDummy DO
 		final DeliveryOrder persistedDeliveryOrder = orderRepository.save(draftDeliveryOrder);
 		DeliveryOrder updatedDummyDeliveryOrder = initialDummyDeliveryOrder.toBuilder()
-				.repoId(persistedDeliveryOrder.getRepoId())
+				.id(persistedDeliveryOrder.getId())
 				.build();
 		assertNull(updatedDummyDeliveryOrder.getCustomDeliveryData());
 		assertEquals("only the repoId should change after the first persistence", updatedDummyDeliveryOrder, persistedDeliveryOrder);
 
 		//
 		// check 3: updated Dummy DO <-> retrieved DO from persistence
-		final DeliveryOrder deserialisedDO = orderRepository.getByRepoId(updatedDummyDeliveryOrder.getRepoId());
+		final DeliveryOrder deserialisedDO = orderRepository.getByRepoId(updatedDummyDeliveryOrder.getId());
 		DhlCustomDeliveryData customDeliveryData = DhlCustomDeliveryData.builder()
 				.detail(extractPackageIdAndSequenceNumberFromDO(deserialisedDO, 1))
 				.detail(extractPackageIdAndSequenceNumberFromDO(deserialisedDO, 2))
@@ -153,7 +153,7 @@ class IntegrationDEtoDETest
 
 		//
 		// check 6: retrieve the persisted completed DO. nothing should be modified
-		final DeliveryOrder deserialisedCompletedDeliveryOrder = orderRepository.getByRepoId(updatedDummyDeliveryOrder.getRepoId());
+		final DeliveryOrder deserialisedCompletedDeliveryOrder = orderRepository.getByRepoId(updatedDummyDeliveryOrder.getId());
 		assertEquals("nothing should be modified", updatedDummyDeliveryOrder, deserialisedCompletedDeliveryOrder);
 		assertSizeOfCustomDeliveryData(deserialisedCompletedDeliveryOrder);
 
@@ -163,7 +163,7 @@ class IntegrationDEtoDETest
 				.forEach(it -> {
 					final String name = it.getAwb() + ".pdf";
 
-					final I_DHL_ShipmentOrder shipmentOrder = orderRepository.getShipmentOrderByRequestIdAndPackageId(deserialisedCompletedDeliveryOrder.getRepoId().getRepoId(), it.getPackageId());
+					final I_DHL_ShipmentOrder shipmentOrder = orderRepository.getShipmentOrderByRequestIdAndPackageId(deserialisedCompletedDeliveryOrder.getId().getRepoId(), it.getPackageId());
 					final TableRecordReference deliveryOrderRef = TableRecordReference.of(I_DHL_ShipmentOrder.Table_Name, shipmentOrder.getDHL_ShipmentOrder_ID());
 					assertNotNull(attachmentEntryService.getByFilenameOrNull(deliveryOrderRef, name));
 				});

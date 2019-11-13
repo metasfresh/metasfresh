@@ -96,7 +96,7 @@ public class IntegrationDEtoATTest
 		// check 2: persisted DO <-> initial dummy DO => create updatedDummy DO
 		final DeliveryOrder persistedDeliveryOrder = orderRepository.save(draftDeliveryOrder);
 		DeliveryOrder updatedDummyDeliveryOrder = initialDummyDeliveryOrder.toBuilder()
-				.repoId(persistedDeliveryOrder.getRepoId())
+				.id(persistedDeliveryOrder.getId())
 				.build();
 		assertNotNull(updatedDummyDeliveryOrder.getCustomDeliveryData());
 		assertEquals("only the repoId should change after the first persistence", updatedDummyDeliveryOrder, persistedDeliveryOrder);
@@ -105,7 +105,7 @@ public class IntegrationDEtoATTest
 
 		//
 		// check 3: updated Dummy DO <-> retrieved DO from persistence
-		final DeliveryOrder deserialisedDO = orderRepository.getByRepoId(updatedDummyDeliveryOrder.getRepoId());
+		final DeliveryOrder deserialisedDO = orderRepository.getByRepoId(updatedDummyDeliveryOrder.getId());
 		assertEquals("nothing should be changed", updatedDummyDeliveryOrder, deserialisedDO);
 		assertEquals(5, deserialisedDO.getDeliveryOrderLines().size());
 
@@ -138,7 +138,7 @@ public class IntegrationDEtoATTest
 
 		//
 		// check 6: retrieve the persisted completed DO. nothing should be modified
-		final DeliveryOrder deserialisedCompletedDeliveryOrder = orderRepository.getByRepoId(updatedDummyDeliveryOrder.getRepoId());
+		final DeliveryOrder deserialisedCompletedDeliveryOrder = orderRepository.getByRepoId(updatedDummyDeliveryOrder.getId());
 		assertEquals(5, updatedDummyDeliveryOrder.getDeliveryOrderLines().size());
 		assertEquals(5, deserialisedCompletedDeliveryOrder.getDeliveryOrderLines().size());
 		assertEquals("nothing should be modified", updatedDummyDeliveryOrder, deserialisedCompletedDeliveryOrder);
@@ -148,7 +148,7 @@ public class IntegrationDEtoATTest
 
 		//
 		// check 7: check the attachment exists
-		final TableRecordReference deliveryOrderRef = TableRecordReference.of(I_DPD_StoreOrder.Table_Name, deserialisedCompletedDeliveryOrder.getRepoId().getRepoId());
+		final TableRecordReference deliveryOrderRef = TableRecordReference.of(I_DPD_StoreOrder.Table_Name, deserialisedCompletedDeliveryOrder.getId().getRepoId());
 		assertNotNull(attachmentEntryService.getByFilenameOrNull(deliveryOrderRef, deserialisedCompletedDeliveryOrder.getTrackingNumber() + ".pdf"));
 
 		//

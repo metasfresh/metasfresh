@@ -36,10 +36,8 @@ import de.dhl.webservice.cisbase.ReceiverNativeAddressType;
 import de.dhl.webservices.businesscustomershipping._3.CreateShipmentOrderRequest;
 import de.dhl.webservices.businesscustomershipping._3.CreateShipmentOrderResponse;
 import de.dhl.webservices.businesscustomershipping._3.CreationState;
-import de.dhl.webservices.businesscustomershipping._3.ExportDocumentType;
 import de.dhl.webservices.businesscustomershipping._3.LabelData;
 import de.dhl.webservices.businesscustomershipping._3.ReceiverType;
-import de.dhl.webservices.businesscustomershipping._3.Serviceconfiguration;
 import de.dhl.webservices.businesscustomershipping._3.ShipmentDetailsTypeType;
 import de.dhl.webservices.businesscustomershipping._3.ShipmentItemType;
 import de.dhl.webservices.businesscustomershipping._3.ShipmentNotificationType;
@@ -52,7 +50,6 @@ import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
-import de.metas.shipper.gateway.dhl.model.DhlCustomsDocument;
 import de.metas.shipper.gateway.dhl.model.DhlPackageLabelType;
 import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
@@ -150,7 +147,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		epicLogger.addLog("Creating shipment order request for {}", deliveryOrder);
 		final CreateShipmentOrderRequest dhlRequest = createDHLShipmentOrderRequest(deliveryOrder);
 
-		final CreateShipmentOrderResponse response = (CreateShipmentOrderResponse)doActualRequest(dhlRequest, deliveryOrder.getRepoId());
+		final CreateShipmentOrderResponse response = (CreateShipmentOrderResponse)doActualRequest(dhlRequest, deliveryOrder.getId());
 		if (!BigInteger.ZERO.equals(response.getStatus().getStatusCode()))
 		{
 			final String exceptionMessage = response.getCreationState().stream()

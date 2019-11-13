@@ -156,7 +156,7 @@ public class DerKurierClient implements ShipperGatewayClient
 	{
 		final OrderId orderId = OrderId.of(
 				getShipperGatewayId(),
-				Integer.toString(originalDeliveryOrder.getRepoId().getRepoId()));
+				Integer.toString(originalDeliveryOrder.getId().getRepoId()));
 
 		final DeliveryOrderBuilder builder = originalDeliveryOrder.toBuilder()
 				.orderId(orderId)

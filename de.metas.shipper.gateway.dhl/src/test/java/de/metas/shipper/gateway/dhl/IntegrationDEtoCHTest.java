@@ -22,12 +22,10 @@
 
 package de.metas.shipper.gateway.dhl;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
-import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.uom.UomId;
@@ -35,10 +33,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import static org.junit.Assert.assertEquals;
 
@@ -79,7 +73,7 @@ class IntegrationDEtoCHTest
 		// persist the DO
 		final DeliveryOrder deliveryOrder = deliveryOrderRepository.save(DhlTestHelper.createDummyDeliveryOrderDEtoCH());
 
-		final DeliveryOrderId deliveryOrderRepoId = deliveryOrder.getRepoId();
+		final DeliveryOrderId deliveryOrderRepoId = deliveryOrder.getId();
 		final DeliveryOrder deserialisedDO = deliveryOrderRepository.getByRepoId(deliveryOrderRepoId);
 
 		final DeliveryOrder completedDeliveryOrder = client.completeDeliveryOrder(deserialisedDO);
