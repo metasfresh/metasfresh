@@ -3,6 +3,8 @@ package de.metas.rest_api.invoicecandidates.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import de.metas.i18n.TranslatableStrings;
@@ -17,7 +19,9 @@ import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.invoicecandidates.request.JsonCloseInvoiceCandidatesRequest;
 import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponseItem;
+import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponseItem.JsonCloseInvoiceCandidatesResponseItemBuilder;
 import de.metas.rest_api.utils.InvalidEntityException;
+import de.metas.rest_api.utils.JsonErrors;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 
@@ -50,7 +54,7 @@ public class CloseInvoiceCandidatesService
 
 	public JsonCloseInvoiceCandidatesResponse closeInvoiceCandidates(final JsonCloseInvoiceCandidatesRequest request)
 	{
-		{
+
 			if (request.getInvoiceCandidates().isEmpty())
 			{
 				throw new InvalidEntityException(TranslatableStrings.constant("The request's invoiceCandidates array may not be empty"));
@@ -75,31 +79,43 @@ public class CloseInvoiceCandidatesService
 					.build();
 
 			return result;
-		}
+
 	}
 
 	private List<JsonCloseInvoiceCandidatesResponseItem> closeInvoiceCandidateRecords(final List<I_C_Invoice_Candidate> invoiceCandidateRecords)
 	{
-		List<JsonCloseInvoiceCandidatesResponseItem> responseItems = new ArrayList<>();
+		final List<JsonCloseInvoiceCandidatesResponseItem> responseItems = new ArrayList<>();
 
-		for (final I_C_Invoice_Candidate invoiceCandidateRecord : invoiceCandidateRecords)
+		for(I_C_Invoice_Candidate invoiceCandidateRecord : invoiceCandidateRecords)
 		{
-			invoiceCandBL.closeInvoiceCandidate(invoiceCandidateRecord);
-			final JsonCloseInvoiceCandidatesResponseItem responseItem = createCloseInvoiceCandidateResponseItem(invoiceCandidateRecord);
-			responseItems.add(responseItem);
+			Services.get(ITrxManager.class).runInNewTrx(() -> responseItems.add(closeInvoiceCandidateRecord(invoiceCandidateRecord)));
 		}
 
 		return responseItems;
 	}
 
-	private JsonCloseInvoiceCandidatesResponseItem createCloseInvoiceCandidateResponseItem(final I_C_Invoice_Candidate invoiceCandidateRecord)
+	private JsonCloseInvoiceCandidatesResponseItem closeInvoiceCandidateRecord(final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
-		return JsonCloseInvoiceCandidatesResponseItem.builder()
-				.externalHeaderId(JsonExternalId.of(invoiceCandidateRecord.getExternalHeaderId()))
-				.externalLineId(JsonExternalId.of(invoiceCandidateRecord.getExternalLineId()))
-				.metasfreshId(MetasfreshId.of(invoiceCandidateRecord.getC_Invoice_Candidate_ID()))
-				.build();
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 
+		final JsonCloseInvoiceCandidatesResponseItemBuilder responseItemBuilder = JsonCloseInvoiceCandidatesResponseItem.builder();
+
+		responseItemBuilder.externalHeaderId(JsonExternalId.of(invoiceCandidateRecord.getExternalHeaderId()))
+				.externalLineId(JsonExternalId.of(invoiceCandidateRecord.getExternalLineId()))
+				.metasfreshId(MetasfreshId.of(invoiceCandidateRecord.getC_Invoice_Candidate_ID()));
+
+		try
+		{
+			invoiceCandBL.closeInvoiceCandidate(invoiceCandidateRecord);
+			responseItemBuilder.status(JsonCloseInvoiceCandidatesResponseItem.CloseInvoiceCandidateStatus.Closed);
+		}
+		catch (final Exception ex)
+		{
+			responseItemBuilder.status(JsonCloseInvoiceCandidatesResponseItem.CloseInvoiceCandidateStatus.Error)
+					.error(JsonErrors.ofThrowable(ex, adLanguage));
+		}
+
+		return responseItemBuilder.build();
 	}
 
 }

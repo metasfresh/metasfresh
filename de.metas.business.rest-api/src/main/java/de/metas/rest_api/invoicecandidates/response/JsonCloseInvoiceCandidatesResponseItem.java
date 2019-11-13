@@ -1,9 +1,13 @@
 package de.metas.rest_api.invoicecandidates.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import de.metas.rest_api.common.JsonErrorItem;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.MetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -20,11 +24,11 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -41,4 +45,24 @@ public class JsonCloseInvoiceCandidatesResponseItem
 	@ApiModelProperty(position = 30, dataType = "java.lang.Long", value = "The metasfresh-ID of the upserted record")
 	@NonNull
 	MetasfreshId metasfreshId;
+
+	@ApiModelProperty(position = 40, dataType = "java.lang.String")
+	CloseInvoiceCandidateStatus status;
+
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@ApiModelProperty(position = 50, dataType = "java.lang.String")
+	JsonErrorItem error;
+
+	public enum CloseInvoiceCandidateStatus
+	{
+		Closed("Closed"), Error("Error)");
+
+		@Getter
+		private final String code;
+
+		CloseInvoiceCandidateStatus(final String code)
+		{
+			this.code = code;
+		}
+	}
 }
