@@ -98,7 +98,7 @@ public final class ProductsToPickRowId
 
 		if (issueToOrderBOMLineId != null)
 		{
-			sb.append("_").append("BOM").append(issueToOrderBOMLineId.getRepoId());
+			sb.append("_").append("BOML").append(issueToOrderBOMLineId.getRepoId());
 		}
 
 		return DocumentId.ofString(sb.toString());
