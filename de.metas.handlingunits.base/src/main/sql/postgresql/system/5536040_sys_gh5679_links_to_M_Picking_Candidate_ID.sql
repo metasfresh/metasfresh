@@ -38,3 +38,13 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ALTER TABLE PP_Order_Qty ADD CONSTRAINT MPickingCandidate_PPOrderQty FOREIGN KEY (M_Picking_Candidate_ID) REFERENCES public.M_Picking_Candidate DEFERRABLE INITIALLY DEFERRED
 ;
 
+-- 2019-11-13T12:01:53.924Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('PP_Cost_Collector','ALTER TABLE public.PP_Cost_Collector ADD COLUMN M_Picking_Candidate_ID NUMERIC(10)')
+;
+
+-- 2019-11-13T12:01:54.261Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE PP_Cost_Collector ADD CONSTRAINT MPickingCandidate_PPCostCollector FOREIGN KEY (M_Picking_Candidate_ID) REFERENCES public.M_Picking_Candidate DEFERRABLE INITIALLY DEFERRED
+;
+
