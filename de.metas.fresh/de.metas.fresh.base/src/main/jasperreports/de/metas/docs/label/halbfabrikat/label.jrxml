@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="3.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -47,10 +47,10 @@ ORDER BY value
 $F{value} +
 "&Format=CODE_128&Width=300&Height=60" )]]></imageExpression>
 			</image>
-			<textField pattern="dd.MM.yyyy">
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement x="114" y="7" width="93" height="11" uuid="aa2f9d6c-354d-460b-8b09-0cbf84de7142"/>
 				<textElement markup="none">
-					<font size="8" isBold="false"/>
+					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{created}]]></textFieldExpression>
 			</textField>
@@ -61,10 +61,10 @@ $F{value} +
 				</textElement>
 				<text><![CDATA[HU-Nr.]]></text>
 			</staticText>
-			<textField>
+			<textField isBlankWhenNull="true">
 				<reportElement x="57" y="47" width="150" height="15" uuid="40678aa3-48b0-4931-85a7-ad01df324e6c"/>
 				<textElement textAlignment="Center" verticalAlignment="Top" markup="none">
-					<font size="11" isBold="false"/>
+					<font fontName="Arial" size="11" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
 			</textField>
@@ -75,36 +75,36 @@ $F{value} +
 				</textElement>
 				<text><![CDATA[Artikel]]></text>
 			</staticText>
-			<textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="78" y="61" width="129" height="11" uuid="161366fe-7402-440e-aa7e-167586bc37e1"/>
 				<textElement markup="none">
-					<font size="8" isBold="false"/>
+					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="78" y="71" width="129" height="34" uuid="bffd078e-9054-4b11-8deb-c738df080432"/>
+				<reportElement positionType="Float" x="78" y="71" width="129" height="34" uuid="bffd078e-9054-4b11-8deb-c738df080432"/>
 				<textElement markup="none">
-					<font size="8" isBold="false"/>
+					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{attributes}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="24" y="71" width="54" height="11" uuid="9eb8213e-7bb7-42c5-878f-4b3576baaf3c"/>
+				<reportElement positionType="Float" x="24" y="71" width="54" height="11" uuid="9eb8213e-7bb7-42c5-878f-4b3576baaf3c"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Merkmale]]></text>
 			</staticText>
-			<textField>
-				<reportElement x="78" y="104" width="129" height="11" uuid="22681de0-3133-4b81-9de4-ca722ec8a182"/>
+			<textField isBlankWhenNull="true">
+				<reportElement positionType="Float" x="78" y="104" width="129" height="11" uuid="22681de0-3133-4b81-9de4-ca722ec8a182"/>
 				<textElement markup="none">
-					<font size="8" isBold="false"/>
+					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{weight} + " kg"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="24" y="104" width="54" height="11" uuid="9eb8213e-7bb7-42c5-878f-4b3576baaf3c"/>
+				<reportElement positionType="Float" x="24" y="104" width="54" height="11" uuid="9eb8213e-7bb7-42c5-878f-4b3576baaf3c"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
