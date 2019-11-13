@@ -44,16 +44,20 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 
-@SuppressWarnings("unused")
 public class PriceListBL implements IPriceListBL
 {
-
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
 
 	@Override
 	public CurrencyPrecision getPricePrecision(@NonNull final PriceListId priceListId)
 	{
 		final I_M_PriceList priceList = priceListDAO.getById(priceListId);
+		return getPricePrecision(priceList);
+	}
+
+	private CurrencyPrecision getPricePrecision(final I_M_PriceList priceList)
+	{
 		return CurrencyPrecision.ofInt(priceList.getPricePrecision());
 	}
 
@@ -61,13 +65,17 @@ public class PriceListBL implements IPriceListBL
 	public CurrencyPrecision getAmountPrecision(@NonNull final PriceListId priceListId)
 	{
 		final I_M_PriceList priceList = priceListDAO.getById(priceListId);
+
+		final CurrencyPrecision taxPrecision = getTaxPrecision(priceList);
+
 		if (priceList.isRoundNetAmountToCurrencyPrecision())
 		{
-			return Services.get(ICurrencyDAO.class).getStdPrecision(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
+			return taxPrecision;
 		}
 		else
 		{
-			return CurrencyPrecision.ofInt(priceList.getPricePrecision());
+			final CurrencyPrecision pricePrecision = getPricePrecision(priceList);
+			return pricePrecision.min(taxPrecision);
 		}
 	}
 
@@ -75,10 +83,16 @@ public class PriceListBL implements IPriceListBL
 	public CurrencyPrecision getTaxPrecision(@NonNull final PriceListId priceListId)
 	{
 		final I_M_PriceList priceList = priceListDAO.getById(priceListId);
-		return Services.get(ICurrencyDAO.class).getStdPrecision(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
+		return getTaxPrecision(priceList);
 	}
 
-	@Nullable @Override
+	private CurrencyPrecision getTaxPrecision(@NonNull final I_M_PriceList priceList)
+	{
+		return currenciesRepo.getStdPrecision(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
+	}
+
+	@Nullable
+	@Override
 	public I_M_PriceList getCurrentPricelistOrNull(
 			final PricingSystemId pricingSystemId,
 			final CountryId countryId,
@@ -95,7 +109,9 @@ public class PriceListBL implements IPriceListBL
 		return InterfaceWrapperHelper.create(currentVersion.getM_PriceList(), I_M_PriceList.class);
 	}
 
-	@SuppressWarnings("UnusedAssignment") @Nullable @Override
+	@SuppressWarnings("UnusedAssignment")
+	@Nullable
+	@Override
 	public I_M_PriceList_Version getCurrentPriceListVersionOrNull(
 			final PricingSystemId pricingSystemId,
 			final CountryId countryId,

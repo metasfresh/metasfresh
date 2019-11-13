@@ -43,4 +43,6 @@ public interface IInventoryBL extends ISingletonService
 	Quantity getMovementQtyInStockingUOM(I_M_InventoryLine inventoryLine);
 
 	void assignToInventoryCounters(List<I_M_InventoryLine> inventoryLines, int numberOfCounters);
+
+	void setDefaultInternalChargeId(I_M_InventoryLine inventoryLine);
 }

@@ -214,104 +214,6 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Prognose.
-	 * Vorhersagen zu Material-/Produkt-/Artikelentwicklung
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Forecast_ID (int M_Forecast_ID);
-
-	/**
-	 * Get Prognose.
-	 * Vorhersagen zu Material-/Produkt-/Artikelentwicklung
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Forecast_ID();
-
-	public org.compiere.model.I_M_Forecast getM_Forecast();
-
-	public void setM_Forecast(org.compiere.model.I_M_Forecast M_Forecast);
-
-    /** Column definition for M_Forecast_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_M_Forecast> COLUMN_M_Forecast_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_M_Forecast>(I_MD_Candidate.class, "M_Forecast_ID", org.compiere.model.I_M_Forecast.class);
-    /** Column name M_Forecast_ID */
-    public static final String COLUMNNAME_M_Forecast_ID = "M_Forecast_ID";
-
-	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Product_ID (int M_Product_ID);
-
-	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Product_ID();
-
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
-
-	/**
-	 * Set Lieferdisposition.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false (lazy loading)
-	 */
-	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
-
-	/**
-	 * Get Lieferdisposition.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false (lazy loading)
-	 */
-	public int getM_ShipmentSchedule_ID();
-
-    /** Column definition for M_ShipmentSchedule_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_M_ShipmentSchedule_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "M_ShipmentSchedule_ID", null);
-    /** Column name M_ShipmentSchedule_ID */
-    public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
-
-	/**
-	 * Set Lager.
-	 * Lager oder Ort für Dienstleistung
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Warehouse_ID (int M_Warehouse_ID);
-
-	/**
-	 * Get Lager.
-	 * Lager oder Ort für Dienstleistung
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Warehouse_ID();
-
-    /** Column name M_Warehouse_ID */
-    public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
-
-	/**
 	 * Set Geschäftsvorfall.
 	 *
 	 * <br>Type: List
@@ -454,6 +356,104 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_MD_Candidate_Type = "MD_Candidate_Type";
 
 	/**
+	 * Set Prognose.
+	 * Vorhersagen zu Material-/Produkt-/Artikelentwicklung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Forecast_ID (int M_Forecast_ID);
+
+	/**
+	 * Get Prognose.
+	 * Vorhersagen zu Material-/Produkt-/Artikelentwicklung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Forecast_ID();
+
+	public org.compiere.model.I_M_Forecast getM_Forecast();
+
+	public void setM_Forecast(org.compiere.model.I_M_Forecast M_Forecast);
+
+    /** Column definition for M_Forecast_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_M_Forecast> COLUMN_M_Forecast_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, org.compiere.model.I_M_Forecast>(I_MD_Candidate.class, "M_Forecast_ID", org.compiere.model.I_M_Forecast.class);
+    /** Column name M_Forecast_ID */
+    public static final String COLUMNNAME_M_Forecast_ID = "M_Forecast_ID";
+
+	/**
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Product_ID();
+
+    /** Column name M_Product_ID */
+    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Lieferdisposition.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
+
+	/**
+	 * Get Lieferdisposition.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	public int getM_ShipmentSchedule_ID();
+
+    /** Column definition for M_ShipmentSchedule_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_M_ShipmentSchedule_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "M_ShipmentSchedule_ID", null);
+    /** Column name M_ShipmentSchedule_ID */
+    public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
+
+	/**
+	 * Set Lager.
+	 * Lager oder Ort für Dienstleistung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Warehouse_ID (int M_Warehouse_ID);
+
+	/**
+	 * Get Lager.
+	 * Lager oder Ort für Dienstleistung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Warehouse_ID();
+
+    /** Column name M_Warehouse_ID */
+    public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+
+	/**
 	 * Set Menge.
 	 * Menge
 	 *
@@ -506,6 +506,31 @@ public interface I_MD_Candidate
     public static final String COLUMNNAME_Qty_AvailableToPromise = "Qty_AvailableToPromise";
 
 	/**
+	 * Set Erledigte Menge.
+	 * Summe der bereits eingetretenden Materialbewegungen
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyFulfilled (java.math.BigDecimal QtyFulfilled);
+
+	/**
+	 * Get Erledigte Menge.
+	 * Summe der bereits eingetretenden Materialbewegungen
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyFulfilled();
+
+    /** Column definition for QtyFulfilled */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_QtyFulfilled = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "QtyFulfilled", null);
+    /** Column name QtyFulfilled */
+    public static final String COLUMNNAME_QtyFulfilled = "QtyFulfilled";
+
+	/**
 	 * Set Menge.
 	 *
 	 * <br>Type: Quantity
@@ -531,31 +556,6 @@ public interface I_MD_Candidate
     public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_Qty_Planned_Display = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "Qty_Planned_Display", null);
     /** Column name Qty_Planned_Display */
     public static final String COLUMNNAME_Qty_Planned_Display = "Qty_Planned_Display";
-
-	/**
-	 * Set Erledigte Menge.
-	 * Summe der bereits eingetretenden Materialbewegungen
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setQtyFulfilled (java.math.BigDecimal QtyFulfilled);
-
-	/**
-	 * Get Erledigte Menge.
-	 * Summe der bereits eingetretenden Materialbewegungen
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getQtyFulfilled();
-
-    /** Column definition for QtyFulfilled */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate, Object> COLUMN_QtyFulfilled = new org.adempiere.model.ModelColumn<I_MD_Candidate, Object>(I_MD_Candidate.class, "QtyFulfilled", null);
-    /** Column name QtyFulfilled */
-    public static final String COLUMNNAME_QtyFulfilled = "QtyFulfilled";
 
 	/**
 	 * Set Reihenfolge.

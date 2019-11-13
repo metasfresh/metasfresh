@@ -520,7 +520,7 @@ public class C_Flatrate_Term
 		// services
 		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
-		final boolean overlappingIsOK = flatrateBL.canOverlapWithOtherTerms(term);
+		final boolean overlappingIsOK = flatrateBL.isAllowedToOverlapWithOtherTerms(term);
 		if(overlappingIsOK)
 		{
 			return; // nothing to do

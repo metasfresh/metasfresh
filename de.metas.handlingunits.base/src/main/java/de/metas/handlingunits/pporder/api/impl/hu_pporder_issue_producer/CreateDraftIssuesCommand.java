@@ -258,7 +258,7 @@ public class CreateDraftIssuesCommand
 			final String issueMethod = targetBOMLine.getIssueMethod();
 			if (X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(issueMethod))
 			{
-				return ppOrderBOMBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(targetBOMLine, from.getC_UOM());
+				return ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(targetBOMLine, from.getC_UOM());
 			}
 		}
 

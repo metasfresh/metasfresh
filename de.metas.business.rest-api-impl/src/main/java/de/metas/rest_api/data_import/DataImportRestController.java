@@ -22,7 +22,7 @@ import de.metas.impexp.DataImportResult;
 import de.metas.impexp.DataImportService;
 import de.metas.impexp.config.DataImportConfig;
 import de.metas.logging.LogManager;
-import de.metas.util.rest.MetasfreshRestAPIConstants;
+import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;

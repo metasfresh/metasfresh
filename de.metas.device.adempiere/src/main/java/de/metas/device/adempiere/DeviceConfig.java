@@ -41,7 +41,7 @@ import de.metas.util.Check;
  */
 public final class DeviceConfig
 {
-	public static final DeviceConfig.Builder builder(final String deviceName)
+	public static DeviceConfig.Builder builder(final String deviceName)
 	{
 		return new Builder(deviceName);
 	}
@@ -55,7 +55,6 @@ public final class DeviceConfig
 
 	private DeviceConfig(final DeviceConfig.Builder builder)
 	{
-		super();
 		deviceName = builder.getDeviceName();
 		assignedAttributeCodes = builder.getAssignedAttributeCodes();
 		deviceClassname = builder.getDeviceClassname();
@@ -162,7 +161,7 @@ public final class DeviceConfig
 		}
 
 		@FunctionalInterface
-		public static interface IDeviceParameterValueSupplier
+		public interface IDeviceParameterValueSupplier
 		{
 			String getDeviceParamValue(final String deviceName, final String parameterName, final String defaultValue);
 		}
@@ -180,7 +179,7 @@ public final class DeviceConfig
 		}
 
 		@FunctionalInterface
-		public static interface IDeviceRequestClassnamesSupplier
+		public interface IDeviceRequestClassnamesSupplier
 		{
 			Set<String> getDeviceRequestClassnames(final String deviceName, final String attributeCode);
 		}

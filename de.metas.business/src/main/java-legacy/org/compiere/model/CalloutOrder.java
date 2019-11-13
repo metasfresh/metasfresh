@@ -45,6 +45,7 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
@@ -380,10 +381,24 @@ public class CalloutOrder extends CalloutEngine
 			if (rs.next())
 			{
 				// metas: Auftragsart aus Kunde
-				final Integer docTypeTargetId = rs.getInt("SO_DocTypeTarget_ID");
-				if (IsSOTrx && docTypeTargetId > 0)
+				if (IsSOTrx)
 				{
-					Services.get(IOrderBL.class).setDocTypeTargetIdAndUpdateDescription(order, docTypeTargetId);
+					DocTypeId docTypeTargetId = DocTypeId.ofRepoIdOrNull(rs.getInt("SO_DocTypeTarget_ID"));
+
+					if(docTypeTargetId == null)
+					{
+						docTypeTargetId = Services.get(IDocTypeDAO.class).getDocTypeIdOrNull(DocTypeQuery.builder()
+								.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+								.docSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
+								.adClientId(order.getAD_Client_ID())
+								.adOrgId(order.getAD_Org_ID())
+								.build());
+					}
+
+					if(docTypeTargetId != null)
+					{
+						Services.get(IOrderBL.class).setDocTypeTargetIdAndUpdateDescription(order, docTypeTargetId);
+					}
 				}
 
 				// Sales Rep - If BP has a default SalesRep then default it

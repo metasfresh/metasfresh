@@ -54,7 +54,7 @@ public class DispoTestUtils
 	{
 		final List<I_MD_Candidate> allRecords = retrieveAllRecords();
 		return allRecords.stream()
-				.filter(r -> !r.getMD_Candidate_Type().equals(X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK))
+				.filter(r -> !X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK.equals(r.getMD_Candidate_Type()))
 				.collect(Collectors.toList());
 	}
 

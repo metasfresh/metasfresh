@@ -14,7 +14,7 @@ public class X_C_Doc_Outbound_Config extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1698712297L;
+	private static final long serialVersionUID = -173746834L;
 
     /** Standard Constructor */
     public X_C_Doc_Outbound_Config (Properties ctx, int C_Doc_Outbound_Config_ID, String trxName)
@@ -43,7 +43,7 @@ public class X_C_Doc_Outbound_Config extends org.compiere.model.PO implements I_
     }
 
 	@Override
-	public org.compiere.model.I_AD_PrintFormat getAD_PrintFormat() throws RuntimeException
+	public org.compiere.model.I_AD_PrintFormat getAD_PrintFormat()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_PrintFormat_ID, org.compiere.model.I_AD_PrintFormat.class);
 	}
@@ -77,18 +77,6 @@ public class X_C_Doc_Outbound_Config extends org.compiere.model.PO implements I_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
-	}
-
-	@Override
-	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
 	}
 
 	/** Set DB-Tabelle.
@@ -225,6 +213,12 @@ public class X_C_Doc_Outbound_Config extends org.compiere.model.PO implements I_
 	public static final String DOCBASETYPE_CustomerContract = "CON";
 	/** DunningDoc = DUN */
 	public static final String DOCBASETYPE_DunningDoc = "DUN";
+	/** Shipment Declaration = SDD */
+	public static final String DOCBASETYPE_ShipmentDeclaration = "SDD";
+	/** Shipment Declaration Correction = SDC */
+	public static final String DOCBASETYPE_ShipmentDeclarationCorrection = "SDC";
+	/** Customs Invoice = CUI */
+	public static final String DOCBASETYPE_CustomsInvoice = "CUI";
 	/** Set Dokument Basis Typ.
 		@param DocBaseType Dokument Basis Typ	  */
 	@Override

@@ -14,7 +14,7 @@ The components are:
   * gets events from model interceptors (swing, app etc), not communicating back with swing, app etc; it's one way communication
   * gets recomandations events from PLANNING about the demands events which were send earlier
   * sends a demand event to PLANNING, gets back a recomandation and 
-  * depsends on: commons and event
+  * depends on: commons and event
   
 * planning:
   * gets an demand event from SERVICE, sends back a recomendation
@@ -38,8 +38,8 @@ Candidates have different types:
 * `demand`
 * `supply`
 * `stock-up`
-* `unrelated descrease`
-* `unrelated increase`
+* `unexpected descrease`
+* `unexpected increase`
 
 In addition to its type, the most notable properties of a candidate are
 * date: the (future) time to which the given record relates
@@ -50,8 +50,8 @@ In addition to its type, the most notable properties of a candidate are
 
 Candidates are linked with each other via
 * parentId: 
-  * used to link a supply with its parent stock candidate
-  * also used to link a stock with its parent demand candidate
+  * used to link a **supply** with its parent stock candidate
+  * also used to link a stock with its parent **demand** candidate
 * groupId: used to link supply and demand records with each other. We need this for production orders. There we have e.g. a supply candidate for a "salad" product and multiple demand records for the different ingredients that are needed to supply the salad 
 	
 	
@@ -78,7 +78,7 @@ It *decreases* the quantity of its child's `stock` record. That's because the de
 * note: if the projected quantity sinks below zero, the system will trigger a "material demand event" that should lead to a new supply candidate (e.g. related to a planned production order) to balance the projected stock.
 
 
-Also see the explantion about `stock-up` candidate.
+Also see the explanation about `stock-up` candidate.
 
 ### `supply` candidate
 
@@ -93,7 +93,7 @@ The similariy is that the system will fire a "material demand event" if the stoc
 
 However, the stock-up quantity is not subtracted from the projected quantity.
 
-### `unrelated descrease` and `unrelated increase` candidate
+### `unexpected descrease` and `unexpected increase` candidate
 
 These types are used if the material service is notified about transaction (i.e. `M_Transaction`s) which it did not initiate and "didn't not know about".
 
@@ -104,7 +104,7 @@ These types are used if the material service is notified about transaction (i.e.
  * 23kg Salad
  * Datepromised 2017-03-22
 
-=> the system creates a shipment schedule (no material dispo until here)
+=> the system creates a shipment schedule (no material-dispo until here)
 
 =>the system creates a candidate "1_demand" with
 * link to the shipment schedule

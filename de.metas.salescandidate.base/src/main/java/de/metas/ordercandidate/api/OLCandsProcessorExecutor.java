@@ -227,7 +227,16 @@ public class OLCandsProcessorExecutor
 				|| !Objects.equals(previousCandidate.getHandOverBPartnerInfo(), candidate.getHandOverBPartnerInfo())
 				|| !Objects.equals(previousCandidate.getDropShipBPartnerInfo(), candidate.getDropShipBPartnerInfo())
 				//
-				|| !Objects.equals(previousCandidate.getPricingSystemId(), candidate.getPricingSystemId()))
+				|| !Objects.equals(previousCandidate.getDeliveryRule(), candidate.getDeliveryRule())
+				|| !Objects.equals(previousCandidate.getDeliveryViaRule(), candidate.getDeliveryViaRule())
+				|| !Objects.equals(previousCandidate.getFreightCostRule(), candidate.getFreightCostRule())
+				|| !Objects.equals(previousCandidate.getInvoiceRule(), candidate.getInvoiceRule())
+				|| !Objects.equals(previousCandidate.getPaymentRule(), candidate.getPaymentRule())
+				|| !Objects.equals(previousCandidate.getPaymentTermId(), candidate.getPaymentTermId())
+				|| !Objects.equals(previousCandidate.getPricingSystemId(), candidate.getPricingSystemId())
+				|| !Objects.equals(previousCandidate.getShipperId(), candidate.getShipperId())
+				)
+
 		{
 			return true;
 		}

@@ -46,22 +46,26 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.order.BPartnerOrderParamsRepository;
+import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCandRegistry;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.ordercandidate.api.OLCandValidatorService;
+import de.metas.ordercandidate.api.impl.OLCandBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.impl.DefaultOLCandValidator;
 import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.rest_api.MetasfreshId;
-import de.metas.rest_api.SyncAdvise;
-import de.metas.rest_api.SyncAdvise.IfNotExists;
 import de.metas.rest_api.attachment.JsonAttachmentType;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
-import de.metas.rest_api.ordercandidates.request.JsonDocTypeInfo;
+import de.metas.rest_api.common.JsonDocTypeInfo;
+import de.metas.rest_api.common.JsonErrorItem;
+import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.common.SyncAdvise;
+import de.metas.rest_api.common.SyncAdvise.IfNotExists;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
@@ -70,7 +74,8 @@ import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndC
 import de.metas.rest_api.ordercandidates.response.JsonAttachment;
 import de.metas.rest_api.ordercandidates.response.JsonOLCand;
 import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
-import de.metas.rest_api.utils.JsonError;
+import de.metas.rest_api.utils.CurrencyService;
+import de.metas.rest_api.utils.DocTypeService;
 import de.metas.rest_api.utils.PermissionService;
 import de.metas.rest_api.utils.PermissionServiceFactories;
 import de.metas.tax.api.TaxCategoryId;
@@ -127,10 +132,17 @@ public class OrderCandidatesRestControllerImplTest
 	@Mocked
 	private PermissionService permissionService;
 
+	private OLCandBL olCandBL;
+
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+
+		olCandBL = new OLCandBL(new BPartnerOrderParamsRepository());
+		Services.registerService(IOLCandBL.class, olCandBL);
 
 		{ // create the master data requested to process the data from our json file
 			testMasterdata = new TestMasterdata();
@@ -151,8 +163,12 @@ public class OrderCandidatesRestControllerImplTest
 			testMasterdata.createDataSource(DATA_DEST_INVOICECANDIDATE);
 		}
 
+		final CurrencyService currencyService = new CurrencyService();
+		final DocTypeService docTypeService = new DocTypeService();
+		final JsonConverters jsonConverters = new JsonConverters(currencyService, docTypeService);
+
 		orderCandidatesRestControllerImpl = new OrderCandidatesRestControllerImpl(
-				new JsonConverters(),
+				jsonConverters,
 				new OLCandRepository());
 		orderCandidatesRestControllerImpl.setPermissionServiceFactory(PermissionServiceFactories.singleton(permissionService));
 
@@ -162,12 +178,10 @@ public class OrderCandidatesRestControllerImplTest
 	// NOTE: Shall be called programatically by each test
 	private void startInterceptors()
 	{
-		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
-
 		final OLCandRegistry olCandRegistry = new OLCandRegistry(
 				Optional.empty(),
 				Optional.empty(),
-				Optional.of(ImmutableList.of(new DefaultOLCandValidator())));
+				Optional.of(ImmutableList.of(new DefaultOLCandValidator(olCandBL))));
 		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandRegistry);
 
 		final IModelInterceptorRegistry registry = Services.get(IModelInterceptorRegistry.class);
@@ -361,7 +375,7 @@ public class OrderCandidatesRestControllerImplTest
 		final JsonOLCandCreateBulkResponse responseBody = response.getBody();
 		assertThat(responseBody.isError()).isTrue();
 
-		final JsonError error = responseBody.getError();
+		final JsonErrorItem error = responseBody.getError();
 		assertThat(error.getMessage()).contains("Found no existing BPartner");
 	}
 

@@ -30,7 +30,8 @@ RETURNS TABLE
 	c_order_compensationgroup_id numeric,
 	isgroupcompensationline character(1),
 	groupname  character varying(255),
-	iso_code character(3)  	
+	iso_code character(3),
+	iscampaignprice   character(1)	
 )
 AS
 $$
@@ -74,7 +75,8 @@ SELECT
 	ol.c_order_compensationgroup_id,
 	ol.isgroupcompensationline,
 	cg.name,
-	c.iso_code
+	c.iso_code,
+	ol.iscampaignprice
 FROM
 	C_OrderLine ol
 	INNER JOIN C_Order o 			ON ol.C_Order_ID = o.C_Order_ID AND o.isActive = 'Y'

@@ -38,7 +38,6 @@ public class DeliveryOrder
 	@Nullable
 	OrderId orderId;
 
-	/** optional, can be {@code null} */
 	@Nullable
 	CustomDeliveryData customDeliveryData;
 

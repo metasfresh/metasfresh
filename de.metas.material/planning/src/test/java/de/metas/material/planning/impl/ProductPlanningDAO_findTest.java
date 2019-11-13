@@ -208,8 +208,8 @@ public class ProductPlanningDAO_findTest
 	private I_PP_Product_Planning createAttributeIndependantProductPlanning()
 	{
 		final I_PP_Product_Planning productPlanning = newInstance(I_PP_Product_Planning.class);
-		productPlanning.setM_Product(product);
-		productPlanning.setM_Warehouse(warehouse);
+		productPlanning.setM_Product_ID(product.getM_Product_ID());
+		productPlanning.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 		productPlanning.setS_Resource(plant);
 		productPlanning.setIsAttributeDependant(false);
 		save(productPlanning);

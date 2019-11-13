@@ -171,8 +171,10 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			queryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_S_Resource_ID, resourceId, null);
 		}
 
-		// Filter by Product
-		queryBuilder.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId);
+		// Filter by Product if provided
+
+			queryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId, null);
+
 
 		// Filter by ASI
 		final ICompositeQueryFilter<I_PP_Product_Planning> attributesFilter = createAttributesFilter(attributeSetInstanceId);
@@ -181,8 +183,8 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		return queryBuilder.orderBy()
 				.addColumn(I_PP_Product_Planning.COLUMN_SeqNo, Direction.Ascending, Nulls.First)
 				.addColumnDescending(I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant) // prefer results with IsAttributeDependant='Y'
-				.addColumn(I_PP_Product_Planning.COLUMN_AD_Org_ID, Direction.Descending, Nulls.Last)
-				.addColumn(I_PP_Product_Planning.COLUMN_M_Warehouse_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_PP_Product_Planning.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID, Direction.Descending, Nulls.Last)
 				.addColumn(I_PP_Product_Planning.COLUMN_S_Resource_ID, Direction.Descending, Nulls.Last)
 				.endOrderBy();
 	}
@@ -257,8 +259,8 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	{
 		final List<I_PP_Product_Planning> productPlanningRecords = queryBL
 				.createQueryBuilder(I_PP_Product_Planning.class)
-				.addEqualsFilter(I_PP_Product_Planning.COLUMN_M_Product_ID, productId)
-				.addEqualsFilter(I_PP_Product_Planning.COLUMN_PP_Product_BOM_ID, null)
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOM_ID, null)
 				.create()
 				.list();
 

@@ -110,7 +110,7 @@ import de.metas.util.lang.CoalesceUtil;
 		{
 			final DocTypeSequenceMap newDocTypeSequenceMap = documentSequenceDAO.retrieveDocTypeSequenceMap(newDocType);
 			final DocSequenceId newDocSequenceId = newDocTypeSequenceMap.getDocNoSequenceId(getClientId(), getOrgId());
-			final boolean isNewDocumentNo = isNewDocumentNo() || DocSequenceId.equals(newDocSequenceId, getOldSequenceId());
+			final boolean isNewDocumentNo = isNewDocumentNo() || !DocSequenceId.equals(newDocSequenceId, getOldSequenceId());
 
 			if (isNewDocumentNo)
 			{

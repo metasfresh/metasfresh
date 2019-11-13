@@ -19,7 +19,6 @@ package org.compiere.grid.tree;
 import java.awt.BorderLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -49,14 +48,10 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.misc.service.IPOService;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VTreePanelUI;
-import org.adempiere.process.event.IProcessEventListener;
-import org.adempiere.process.event.ProcessEvent;
 import org.compiere.model.MTree;
 import org.compiere.model.MTreeNode;
-import org.compiere.model.PO;
 import org.compiere.swing.CCheckBox;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
@@ -91,9 +86,6 @@ import net.miginfocom.swing.MigLayout;
  * @author Paul Bowden <li>FR [ 2032092 ] Java 6 improvements to tree drag and drop https://sourceforge.net/tracker/index.php?func=detail&aid=2032092&group_id=176962&atid=879335
  */
 public final class VTreePanel extends CPanel
-		// metas: adding process event support to handle record creation, change
-		// and deletion by processes.
-		implements IProcessEventListener
 {
 	// services
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -143,7 +135,9 @@ public final class VTreePanel extends CPanel
 		public void keyPressed(KeyEvent e)
 		{
 			if (e.getKeyCode() == KeyEvent.VK_ENTER)
+			{
 				m_adaptee.keyPressed(e);
+			}
 		}
 	}   // VTreePanel_keyAdapter
 
@@ -345,14 +339,7 @@ public final class VTreePanel extends CPanel
 			{
 				treeExpand.setText(msgBL.getMsg(Env.getCtx(), "ExpandTree"));
 				treeExpand.setActionCommand("Expand");
-				treeExpand.addActionListener(new ActionListener()
-				{
-					@Override
-					public void actionPerformed(final ActionEvent e)
-					{
-						expandTree();
-					}
-				});
+				treeExpand.addActionListener(e -> expandTree());
 				//
 
 				final CPanel treeToolbar = new CPanel();
@@ -377,16 +364,11 @@ public final class VTreePanel extends CPanel
 
 			if (m_hasBar)
 			{
-				favoritesBar.setListener(new FavoritesListener()
-				{
-					@Override
-					public void onNodeClicked(final MTreeNode node)
-					{
-						final int nodeId = node.getNode_ID();
-						setTreeSelectionPath(nodeId, false);
-						// Select it
-						executeNode(node);
-					}
+				favoritesBar.setListener(node -> {
+					final int nodeId = node.getNode_ID();
+					setTreeSelectionPath(nodeId, false);
+					// Select it
+					executeNode(node);
 				});
 				centerSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 				centerSplitPane.setOpaque(false);
@@ -410,39 +392,19 @@ public final class VTreePanel extends CPanel
 			mFrom.setActionCommand((String)TransferHandler.getCutAction().getValue(Action.NAME));
 			mFrom.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK));
 			mFrom.setMnemonic(KeyEvent.VK_X);
-			mFrom.addActionListener(new ActionListener()
-			{
-				@Override
-				public void actionPerformed(ActionEvent e)
-				{
-					onTreeAction(e.getActionCommand());
-				}
-			});
+			mFrom.addActionListener(e -> onTreeAction(e.getActionCommand()));
 			//
 			mTo.setText(msgBL.getMsg(Env.getCtx(), "ItemInsert"));
 			mTo.setActionCommand((String)TransferHandler.getPasteAction().getValue(Action.NAME));
 			mTo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
 			mTo.setMnemonic(KeyEvent.VK_V);
-			mTo.addActionListener(new ActionListener()
-			{
-				@Override
-				public void actionPerformed(ActionEvent e)
-				{
-					onTreeAction(e.getActionCommand());
-				}
-			});
+			mTo.addActionListener(e -> onTreeAction(e.getActionCommand()));
 
 			mFavoritesBarAdd.setText(msgBL.getMsg(Env.getCtx(), "BarAdd"));
 			mFavoritesBarAdd.setActionCommand("BarAdd");
-			mFavoritesBarAdd.addActionListener(new ActionListener()
-			{
-				
-				@Override
-				public void actionPerformed(ActionEvent e)
-				{
-					final MTreeNode node = getSelectedNode();
-					favoritesBar.addItem(node);
-				}
+			mFavoritesBarAdd.addActionListener(e -> {
+				final MTreeNode node = getSelectedNode();
+				favoritesBar.addItem(node);
 			});
 			//
 			treePopupMenu.setLightWeightPopupEnabled(false);
@@ -564,7 +526,7 @@ public final class VTreePanel extends CPanel
 	 * 
 	 * @return MTreeNode
 	 */
-	private final MTreeNode getSelectedNode()
+	private MTreeNode getSelectedNode()
 	{
 		final TreePath path = tree.getSelectionPath();
 		if(path == null)
@@ -584,8 +546,10 @@ public final class VTreePanel extends CPanel
 	 */
 	public boolean setTreeSelectionPath(final int nodeID)
 	{
-		if (nodeID != -1)				// new is -1
+		if (nodeID != -1)
+		 {
 			return setTreeSelectionPath(nodeID, true);     // show selection
+		}
 		return false;
 	}   // setSelectedNode
 
@@ -599,7 +563,9 @@ public final class VTreePanel extends CPanel
 	private boolean setTreeSelectionPath(final int nodeID, final boolean makeNodeVisible)
 	{
 		if (m_root == null)
+		{
 			return false;
+		}
 		
 		// try to find the node
 		final MTreeNode node = m_root.findNode(nodeID);
@@ -709,7 +675,7 @@ public final class VTreePanel extends CPanel
 		tree.scrollPathToVisible(treePath);
 	}   // nodeChanged
 
-	private final void onTreeAction(final String action)
+	private void onTreeAction(final String action)
 	{
 		final Action a = tree.getActionMap().get(action);
 		if (a != null)
@@ -726,13 +692,17 @@ public final class VTreePanel extends CPanel
 		if (treeExpand.isSelected())
 		{
 			for (int row = 0; row < tree.getRowCount(); row++)
+			{
 				tree.expandRow(row);
+			}
 		}
 		else
 		{
 			// patch: 1654055 +jgubo Changed direction of collapsing the tree nodes
 			for (int row = tree.getRowCount(); row > 0; row--)
+			{
 				tree.collapseRow(row);
+			}
 		}
 	}   // expandTree
 
@@ -741,45 +711,6 @@ public final class VTreePanel extends CPanel
 		final ActionMap map = tree.getActionMap();
 		map.put(TransferHandler.getCutAction().getValue(Action.NAME), TransferHandler.getCutAction());
 		map.put(TransferHandler.getPasteAction().getValue(Action.NAME), TransferHandler.getPasteAction());
-	}
-
-	/**
-	 * Process event support to handle record creation, change and deletion by processes.
-	 */
-	@Override
-	public void processEvent(final ProcessEvent event)
-	{
-		final Object objSource = event.getSource();
-		//
-		// first we figure out if we are interested in the changed object
-		if (!(objSource instanceof PO))
-		{
-			return;
-		}
-		final PO poSource = (PO)objSource;
-		final int poTreeId = MTree.getDefaultAD_Tree_ID(Env.getAD_Client_ID(Env.getCtx()), poSource.get_KeyColumns()[0]);
-		if (poTreeId != m_AD_Tree_ID)
-		{
-			// the source has no tree at all or has a different tree than this
-			// panel.
-			return;
-		}
-
-		final boolean paramSave;
-		if (ProcessEvent.EventType.recordDeleted.equals(event.getType()))
-		{
-			paramSave = false;
-		}
-		else
-		{
-			paramSave = true;
-		}
-
-		final IPOService poService = Services.get(IPOService.class);
-		final String name = (String)poService.getValue(poSource, "name");
-		final String description = (String)poService.getValue(poSource, "description");
-		final MTreeNode info = new MTreeNode(poSource.get_ID(), 0, name, description, -1, false, null, false, null);
-		nodeChanged(paramSave, info);
 	}
 
 	public AdempiereTreeModel getTreeModel()

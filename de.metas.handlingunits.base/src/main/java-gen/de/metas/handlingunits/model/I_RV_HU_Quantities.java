@@ -41,7 +41,7 @@ public interface I_RV_HU_Quantities
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -51,7 +51,7 @@ public interface I_RV_HU_Quantities
 	 * Get Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -109,31 +109,6 @@ public interface I_RV_HU_Quantities
     public static final String COLUMNNAME_ASIKeyName = "ASIKeyName";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_HU_Quantities, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_RV_HU_Quantities, org.compiere.model.I_C_UOM>(I_RV_HU_Quantities.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -162,6 +137,31 @@ public interface I_RV_HU_Quantities
     public static final org.adempiere.model.ModelColumn<I_RV_HU_Quantities, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_RV_HU_Quantities, org.compiere.model.I_AD_User>(I_RV_HU_Quantities.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_RV_HU_Quantities, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_RV_HU_Quantities, org.compiere.model.I_C_UOM>(I_RV_HU_Quantities.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Aktiv.
@@ -279,10 +279,6 @@ public interface I_RV_HU_Quantities
 	 */
 	public int getM_Product_Category_ID();
 
-	public org.compiere.model.I_M_Product_Category getM_Product_Category();
-
-	public void setM_Product_Category(org.compiere.model.I_M_Product_Category M_Product_Category);
-
     /** Column definition for M_Product_Category_ID */
     public static final org.adempiere.model.ModelColumn<I_RV_HU_Quantities, org.compiere.model.I_M_Product_Category> COLUMN_M_Product_Category_ID = new org.adempiere.model.ModelColumn<I_RV_HU_Quantities, org.compiere.model.I_M_Product_Category>(I_RV_HU_Quantities.class, "M_Product_Category_ID", org.compiere.model.I_M_Product_Category.class);
     /** Column name M_Product_Category_ID */
@@ -340,7 +336,8 @@ public interface I_RV_HU_Quantities
 
 	/**
 	 * Set Produktschlüssel.
-	 * Schlüssel des Produktes
+	 * Produkt-Identifikator;
+ "val-<Suchschlüssel>", "ext-<Externe Id>" oder interne M_Product_ID
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -350,7 +347,8 @@ public interface I_RV_HU_Quantities
 
 	/**
 	 * Get Produktschlüssel.
-	 * Schlüssel des Produktes
+	 * Produkt-Identifikator;
+ "val-<Suchschlüssel>", "ext-<Externe Id>" oder interne M_Product_ID
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

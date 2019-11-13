@@ -72,6 +72,7 @@ import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.invoice.InvoiceUtil;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
@@ -618,7 +619,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 				final List<String> externalIds = candsForIlVO
 						.stream()
-						.map(I_C_Invoice_Candidate::getExternalId)
+						.map(I_C_Invoice_Candidate::getExternalLineId)
 						.filter(Predicates.notNull())
 						.collect(ImmutableList.toImmutableList());
 				invoiceLine.setExternalIds(InvoiceUtil.joinExternalIds(externalIds));
@@ -645,14 +646,14 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 						// #870
 						// Make sure the Qty and Price override are set to null when an invoiceline is created
 						{
-							final int invoiceCandidate_ID = candForIlVO.getC_Invoice_Candidate_ID();
+							final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(candForIlVO.getC_Invoice_Candidate_ID());
 
 							Services.get(ITrxManager.class)
 									.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
 									.newEventListener(TrxEventTiming.AFTER_COMMIT)
 									.registerWeakly(false) // register "hard", because that's how it was before
 									.invokeMethodJustOnce(false) // invoke the handling method on *every* commit, because that's how it was and I can't check now if it's really needed
-									.registerHandlingMethod(localTrx -> set_QtyAndPriceOverrideToNull(invoiceCandidate_ID));
+									.registerHandlingMethod(localTrx -> resetQtyAndPriceOverrideOutOfTrx(invoiceCandidateId));
 						}
 					}
 
@@ -693,19 +694,13 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			}
 		}
 
-		/**
-		 * @param invoiceCandidate_ID
-		 */
-		private void set_QtyAndPriceOverrideToNull(final int invoiceCandidate_ID)
+		/** This method is called by a transaction listener. We run it out of trx to avoid any sort or interference this the trx the listener is fired from. */
+		private void resetQtyAndPriceOverrideOutOfTrx(@NonNull final InvoiceCandidateId invoiceCandidateId)
 		{
-
-			final I_C_Invoice_Candidate ic = create(Env.getCtx(), invoiceCandidate_ID, I_C_Invoice_Candidate.class, ITrx.TRXNAME_ThreadInherited);
-
-			ic.setQtyToInvoice_Override(null);
-			ic.setPriceEntered_Override(null);
-
-			invoiceCandDAO.save(ic);
-
+			final I_C_Invoice_Candidate icRecord = invoiceCandDAO.getByIdOutOfTrx(invoiceCandidateId);
+			icRecord.setQtyToInvoice_Override(null);
+			icRecord.setPriceEntered_Override(null);
+			invoiceCandDAO.save(icRecord);
 		}
 
 		private final I_M_AttributeSetInstance createASI(final Set<IInvoiceLineAttribute> invoiceLineAttributes)
@@ -847,10 +842,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	}
 
 	/**
-	 *
 	 * @param aggregationEngine note that this is a {@link de.metas.util.IMultitonService}, i.e. a service with internal state.
 	 */
-	private void aggregateAndInvoice(final AggregationEngine aggregationEngine)
+	private void aggregateAndInvoice(@NonNull final AggregationEngine aggregationEngine)
 	{
 		final List<IInvoiceHeader> aggregationResult = aggregationEngine.aggregate();
 
@@ -910,8 +904,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	/**
 	 *
 	 * @param affectedCands the invoice candidates for which an invoice line creation has failed. Note that an aggregator can create one {@link IInvoiceLineRW} from multiple candidates.
-	 * @param error
-	 * @return
 	 */
 	private List<I_AD_Note> createNoticesAndMarkICs(
 			@NonNull final List<I_C_Invoice_Candidate> affectedCands,
@@ -994,7 +986,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					// for the time being, always output the warning, because we don't currently use the AD_Note feature and therefore the note wont be read.
 //					if (developerModeBL.isEnabled())
 //					{
-						logger.warn(error.getLocalizedMessage(), error);
+					logger.warn(error.getLocalizedMessage(), error);
 //					}
 					// @formatter:on
 				}

@@ -1,7 +1,6 @@
 package de.metas.material.planning.pporder;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Date;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -24,7 +23,6 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -56,55 +54,17 @@ public class PPOrderUtil
 
 	/**
 	 * Calculates how much qty is required (standard) for given BOM Line, considering the given quantity of finished goods.
-	 *
-	 * @param orderBOMLine
-	 * @param qtyFinishedGood
-	 * @return standard quantity required to be issued (standard UOM)
 	 */
-	public BigDecimal calculateQtyRequired(
+	public BigDecimal computeQtyRequired(
 			@NonNull final PPOrderLine ppOrderLinePojo,
 			@NonNull final PPOrder ppOrderPojo,
 			@NonNull final BigDecimal qtyFinishedGood)
 	{
-		final ProductId productId = ProductId.ofRepoId(ppOrderPojo.getProductDescriptor().getProductId());
-		final BigDecimal multiplier = getQtyMultiplier(ppOrderLinePojo, productId);
+		final IProductBOMBL bomsService = Services.get(IProductBOMBL.class);
 
-		final I_PP_Product_BOMLine productBomLine = getProductBomLine(ppOrderLinePojo);
-
-		final BigDecimal qtyRequired;
-		final BOMComponentType componentType = BOMComponentType.ofCode(productBomLine.getComponentType());
-		if (componentType.isTools())
-		{
-			qtyRequired = multiplier;
-		}
-		else
-		{
-			qtyRequired = qtyFinishedGood.multiply(multiplier).setScale(8, RoundingMode.UP);
-		}
-
-		//
-		// Adjust the qtyRequired by adding the scrap percentage to it.
-		final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
-		final Percent qtyScrap = Percent.of(productBomLine.getScrap());
-		final BigDecimal qtyRequiredPlusScrap = productBOMBL.calculateQtyWithScrap(qtyRequired, qtyScrap);
-		return qtyRequiredPlusScrap;
-	}
-
-	/**
-	 * Return Unified BOM Qty Multiplier.
-	 *
-	 * i.e. how much of this component is needed for 1 item of finished good.
-	 *
-	 * @param orderBOMLine
-	 *
-	 * @return If is percentage then QtyBatch / 100 will be returned, else QtyBOM.
-	 */
-	private BigDecimal getQtyMultiplier(
-			@NonNull final PPOrderLine orderBOMLine,
-			@NonNull final ProductId endProductId)
-	{
-		final I_PP_Product_BOMLine productBomLine = getProductBomLine(orderBOMLine);
-		return Services.get(IProductBOMBL.class).getQtyMultiplier(productBomLine, endProductId);
+		final ProductId finishedGoodProductId = ProductId.ofRepoId(ppOrderPojo.getProductDescriptor().getProductId());
+		final I_PP_Product_BOMLine bomLine = getProductBomLine(ppOrderLinePojo);
+		return bomsService.computeQtyRequired(bomLine, finishedGoodProductId, qtyFinishedGood);
 	}
 
 	public boolean isCoProduct(@NonNull final I_PP_Order_BOMLine bomLine)
@@ -237,7 +197,7 @@ public class PPOrderUtil
 
 		return ppOrderProductBOM;
 	}
-	
+
 	public static void updateBOMLineWarehouseAndLocatorFromOrder(@NonNull final I_PP_Order_BOMLine orderBOMLine, @NonNull final I_PP_Order fromOrder)
 	{
 		orderBOMLine.setAD_Org_ID(fromOrder.getAD_Org_ID());

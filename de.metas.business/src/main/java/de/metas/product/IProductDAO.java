@@ -40,6 +40,7 @@ import org.compiere.model.I_M_Product_Category;
 
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -90,8 +91,8 @@ public interface IProductDAO extends ISingletonService
 		/** Applied if not empty. {@code AND}ed with {@code externalId} if given. At least one of {@code value} or {@code externalId} needs to be given. */
 		String value;
 
-		/** Applied if not empty. {@code AND}ed with {@code value} if given. At least one of {@code value} or {@code externalId} needs to be given. */
-		String externalId;
+		/** Applied if not {@code null}. {@code AND}ed with {@code value} if given. At least one of {@code value} or {@code externalId} needs to be given. */
+		ExternalId externalId;
 
 		OrgId orgId;
 
@@ -101,13 +102,13 @@ public interface IProductDAO extends ISingletonService
 		@Builder
 		private ProductQuery(
 				@Nullable final String value,
-				@Nullable final String externalId,
+				@Nullable final ExternalId externalId,
 				@NonNull final OrgId orgId,
 				@Nullable final Boolean includeAnyOrg,
 				@Nullable final Boolean outOfTrx)
 		{
-			final boolean valueIsSet = isEmpty(value, true);
-			final boolean externalIdIsSet = isEmpty(externalId, true);
+			final boolean valueIsSet = !isEmpty(value, true);
+			final boolean externalIdIsSet = externalId != null;
 			assume(valueIsSet || externalIdIsSet, "At least one of value or externalId need to be specified");
 
 			this.value = value;
@@ -148,4 +149,6 @@ public interface IProductDAO extends ISingletonService
 	void deleteProductByResourceId(ResourceId resourceId);
 
 	I_M_Product createProduct(CreateProductRequest request);
+
+	void updateProduct(UpdateProductRequest request);
 }

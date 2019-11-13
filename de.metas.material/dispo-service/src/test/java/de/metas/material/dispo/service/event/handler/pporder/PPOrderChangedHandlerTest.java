@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
@@ -79,6 +80,7 @@ public class PPOrderChangedHandlerTest
 				// .status(CandidateStatus.doc_closed)
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(createMaterialDescriptor())
+				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.businessCaseDetail(ProductionDetail.builder()
 						.qty(TEN)
 						.advised(Flag.FALSE)

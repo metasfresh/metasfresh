@@ -15,7 +15,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 268508805L;
+	private static final long serialVersionUID = 1278266102L;
 
     /** Standard Constructor */
     public X_EDI_DesadvLine (Properties ctx, int EDI_DesadvLine_ID, String trxName)
@@ -288,6 +288,80 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 		return ii.intValue();
 	}
 
+	/** Set LU Verpackungscode.
+		@param M_HU_PackagingCode_LU_ID LU Verpackungscode	  */
+	@Override
+	public void setM_HU_PackagingCode_LU_ID (int M_HU_PackagingCode_LU_ID)
+	{
+		if (M_HU_PackagingCode_LU_ID < 1) 
+			set_Value (COLUMNNAME_M_HU_PackagingCode_LU_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_HU_PackagingCode_LU_ID, Integer.valueOf(M_HU_PackagingCode_LU_ID));
+	}
+
+	/** Get LU Verpackungscode.
+		@return LU Verpackungscode	  */
+	@Override
+	public int getM_HU_PackagingCode_LU_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PackagingCode_LU_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set M_HU_PackagingCode_LU_Text.
+		@param M_HU_PackagingCode_LU_Text M_HU_PackagingCode_LU_Text	  */
+	@Override
+	public void setM_HU_PackagingCode_LU_Text (java.lang.String M_HU_PackagingCode_LU_Text)
+	{
+		throw new IllegalArgumentException ("M_HU_PackagingCode_LU_Text is virtual column");	}
+
+	/** Get M_HU_PackagingCode_LU_Text.
+		@return M_HU_PackagingCode_LU_Text	  */
+	@Override
+	public java.lang.String getM_HU_PackagingCode_LU_Text () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_M_HU_PackagingCode_LU_Text);
+	}
+
+	/** Set TU Verpackungscode.
+		@param M_HU_PackagingCode_TU_ID TU Verpackungscode	  */
+	@Override
+	public void setM_HU_PackagingCode_TU_ID (int M_HU_PackagingCode_TU_ID)
+	{
+		if (M_HU_PackagingCode_TU_ID < 1) 
+			set_Value (COLUMNNAME_M_HU_PackagingCode_TU_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_HU_PackagingCode_TU_ID, Integer.valueOf(M_HU_PackagingCode_TU_ID));
+	}
+
+	/** Get TU Verpackungscode.
+		@return TU Verpackungscode	  */
+	@Override
+	public int getM_HU_PackagingCode_TU_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PackagingCode_TU_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set M_HU_PackagingCode_TU_Text.
+		@param M_HU_PackagingCode_TU_Text M_HU_PackagingCode_TU_Text	  */
+	@Override
+	public void setM_HU_PackagingCode_TU_Text (java.lang.String M_HU_PackagingCode_TU_Text)
+	{
+		throw new IllegalArgumentException ("M_HU_PackagingCode_TU_Text is virtual column");	}
+
+	/** Get M_HU_PackagingCode_TU_Text.
+		@return M_HU_PackagingCode_TU_Text	  */
+	@Override
+	public java.lang.String getM_HU_PackagingCode_TU_Text () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_M_HU_PackagingCode_TU_Text);
+	}
+
 	/** Set Bewegungs-Menge.
 		@param MovementQty 
 		Menge eines bewegten Produktes.
@@ -333,6 +407,28 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Einzelpreis.
+		@param PriceActual 
+		Effektiver Preis
+	  */
+	@Override
+	public void setPriceActual (java.math.BigDecimal PriceActual)
+	{
+		set_Value (COLUMNNAME_PriceActual, PriceActual);
+	}
+
+	/** Get Einzelpreis.
+		@return Effektiver Preis
+	  */
+	@Override
+	public java.math.BigDecimal getPriceActual () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceActual);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Produktbeschreibung.

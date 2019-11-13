@@ -38,6 +38,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
@@ -59,6 +60,7 @@ import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public abstract class AbstractQueueDAO implements IQueueDAO
 {
@@ -130,12 +132,18 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	}
 
 	@Override
-	public I_C_Queue_PackageProcessor retrievePackageProcessorDefByClass(final Properties ctx, final Class<? extends IWorkpackageProcessor> packageProcessorClass)
+	public I_C_Queue_PackageProcessor retrievePackageProcessorDefByClass(@NonNull final Properties ctx, @NonNull final Class<? extends IWorkpackageProcessor> packageProcessorClass)
 	{
 		Check.assumeNotNull(packageProcessorClass, "packageProcessorClass not null");
 
 		final String packageProcessorClassname = packageProcessorClass.getCanonicalName();
 		return retrievePackageProcessorDefByClassname(ctx, packageProcessorClassname);
+	}
+
+	@Override
+	public int retrievePackageProcessorIdByClass(@NonNull final Class<? extends IWorkpackageProcessor> packageProcessorClass)
+	{
+		return retrievePackageProcessorDefByClass(Env.getCtx(), packageProcessorClass).getC_Queue_PackageProcessor_ID();
 	}
 
 	@Override
@@ -346,12 +354,11 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	@Override
 	public final Set<Integer> retrieveAllItemIds(final I_C_Queue_WorkPackage workPackage)
 	{
-		final List<I_C_Queue_Element> queueElements = retrieveQueueElements(workPackage, false/*skipAlreadyScheduledItems*/);
+		final List<I_C_Queue_Element> queueElements = retrieveQueueElements(workPackage, false/* skipAlreadyScheduledItems */);
 		return queueElements.stream()
 				.map(I_C_Queue_Element::getRecord_ID)
 				.collect(ImmutableSet.toImmutableSet());
 	}
-
 
 	@Override
 	public IQueryOrderBy getQueueOrderBy()
@@ -369,5 +376,31 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 				.values()
 				.stream()
 				.anyMatch(packageProcessor -> packageProcessorClassname.equals(packageProcessor.getClassname()));
+	}
+
+	@Override
+	public List<I_C_Queue_WorkPackage> retrieveUnprocessedWorkPackagesByEnqueuedRecord(
+			@NonNull final Class<? extends IWorkpackageProcessor> packageProcessorClass,
+			@NonNull final TableRecordReference recordRef)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final int workpackageProcessorId = retrievePackageProcessorIdByClass(packageProcessorClass);
+
+		final IQuery<I_C_Queue_Block> blockFilter = queryBL.createQueryBuilder(I_C_Queue_Block.class)
+				.addEqualsFilter(I_C_Queue_Block.COLUMNNAME_C_Queue_PackageProcessor_ID, workpackageProcessorId)
+				.create();
+
+		return queryBL.createQueryBuilder(I_C_Queue_Element.class)
+				.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+				.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
+				.andCollect(I_C_Queue_Element.COLUMN_C_Queue_WorkPackage_ID)
+				.addNotEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_Processed, true)
+				.addInSubQueryFilter()
+				.matchingColumnNames(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_Block_ID, I_C_Queue_Block.COLUMNNAME_C_Queue_Block_ID)
+				.subQuery(blockFilter)
+				.end()
+				.create()
+				.list();
 	}
 }

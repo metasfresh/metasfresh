@@ -1,6 +1,7 @@
 package de.metas.product.impl;
 
 import static de.metas.util.Check.isEmpty;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIdsOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
@@ -39,6 +40,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -65,6 +68,7 @@ import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.product.UpdateProductRequest;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -72,7 +76,7 @@ import lombok.NonNull;
 public class ProductDAO implements IProductDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	
+
 	@Override
 	public I_M_Product getById(@NonNull final ProductId productId)
 	{
@@ -148,21 +152,21 @@ public class ProductDAO implements IProductDAO
 		if (query.isIncludeAnyOrg())
 		{
 			queryBuilder
-					.addInArrayFilter(I_M_Product.COLUMN_AD_Org_ID, query.getOrgId(), OrgId.ANY)
-					.orderByDescending(I_M_Product.COLUMN_AD_Org_ID);
+					.addInArrayFilter(I_M_Product.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY)
+					.orderByDescending(I_M_Product.COLUMNNAME_AD_Org_ID);
 		}
 		else
 		{
-			queryBuilder.addEqualsFilter(I_M_Product.COLUMN_AD_Org_ID, query.getOrgId());
+			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Org_ID, query.getOrgId());
 		}
 
 		if (!isEmpty(query.getValue(), true))
 		{
 			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_Value, query.getValue());
 		}
-		if (!isEmpty(query.getExternalId(), true))
+		if (query.getExternalId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_ExternalId, query.getExternalId());
+			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_ExternalId, query.getExternalId().getValue());
 		}
 
 		final int productRepoId = queryBuilder
@@ -217,7 +221,7 @@ public class ProductDAO implements IProductDAO
 		return queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(IProductMappingAware.COLUMNNAME_M_Product_Mapping_ID, productMappingAware.getM_Product_Mapping_ID())
-				.addEqualsFilter(I_M_Product.COLUMN_AD_Org_ID, orgId)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Org_ID, orgId)
 				.create()
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
 	}
@@ -244,7 +248,7 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
-	public ProductCategoryId retrieveProductCategoryByProductId(final ProductId productId)
+	public ProductCategoryId retrieveProductCategoryByProductId(@Nullable final ProductId productId)
 	{
 		if (productId == null)
 		{
@@ -417,5 +421,18 @@ public class ProductDAO implements IProductDAO
 		saveRecord(product);
 
 		return product;
+	}
+
+	@Override
+	public void updateProduct(@NonNull final UpdateProductRequest request)
+	{
+		final I_M_Product product = load(request.getProductId(), I_M_Product.class); // in-trx
+
+		if (request.getIsBOM() != null)
+		{
+			product.setIsBOM(request.getIsBOM());
+		}
+
+		saveRecord(product);
 	}
 }

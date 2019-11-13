@@ -35,6 +35,7 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceCreditContext;
 import org.adempiere.invoice.service.impl.InvoiceCreditContext;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -178,8 +179,10 @@ public class ContractChangeBL implements IContractChangeBL
 		if (currentTerm.isCloseInvoiceCandidate())
 		{
 			// Make sure that no further invoicing takes place
-			final List<I_C_Invoice_Candidate> icOfCurrentTerm = Services.get(IInvoiceCandDAO.class).retrieveReferencing(currentTerm);
-			Services.get(IInvoiceCandBL.class).closeInvoiceCandidates(icOfCurrentTerm.iterator());
+			final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+			final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+			final List<I_C_Invoice_Candidate> icOfCurrentTerm = invoiceCandDAO.retrieveReferencing(TableRecordReference.of(currentTerm));
+			invoiceCandBL.closeInvoiceCandidates(icOfCurrentTerm.iterator());
 		}
 	}
 

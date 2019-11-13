@@ -9,9 +9,9 @@ import org.junit.jupiter.api.Test;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.bpartner.GLN;
-import de.metas.rest_api.MetasfreshId;
+import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.utils.IdentifierString.Type;
-import de.metas.util.rest.ExternalId;
+import de.metas.util.lang.ExternalId;
 
 /*
  * #%L

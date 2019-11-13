@@ -11,7 +11,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.rest_api.SyncAdvise;
+import de.metas.rest_api.common.JsonDocTypeInfo;
+import de.metas.rest_api.common.SyncAdvise;
 import de.metas.util.Check;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -123,9 +124,7 @@ public final class JsonOLCandCreateRequest
 
 	private int flatrateConditionsId;
 
-	@ApiModelProperty( //
-			allowEmptyValue = false, //
-			value = "This translates to <code>C_OLCand.M_Product_ID</code>.")
+	@ApiModelProperty(value = "This translates to <code>C_OLCand.M_Product_ID</code>.")
 	private JsonProductInfo product;
 
 	@JsonInclude(Include.NON_NULL)
@@ -133,17 +132,20 @@ public final class JsonOLCandCreateRequest
 
 	private BigDecimal qty;
 
-	@ApiModelProperty( //
-			allowEmptyValue = true, //
-			value = " This translates to <code>C_UOM.X12DE355</code>.\n"
-					+ "The respective UOM needs to exist in metasfresh and its ID is set as <code>C_OLCand.C_UOM_ID</code>.\n"
-					+ "If not set, then the respective product's UOM is used.\n"
-					+ "Note that if this is set, then there also needs to exist a UOM-conversion rule between this UOM and the <code>product</code>'s UOM")
+	@ApiModelProperty(value = "This translates to <code>C_UOM.X12DE355</code>.\n"
+			+ "The respective UOM needs to exist in metasfresh and its ID is set as <code>C_OLCand.C_UOM_ID</code>.\n"
+			+ "If not set, then the respective product's UOM is used.\n"
+			+ "Note that if this is set, then there also needs to exist a UOM-conversion rule between this UOM and the <code>product</code>'s UOM")
 	@JsonInclude(Include.NON_NULL)
 	private String uomCode;
 
 	private int packingMaterialId;
 
+	@ApiModelProperty(value = "If a new product price needs to be created on the fly and the system can't deduce the respective pricing system from given business partner,\n"
+			+ "then we need this property to specify the `M_PricingSystem.Value` of the pricing system to work with.\n\n"
+			+ "Also note that:n"
+			+ "- the pricing system also needs to have a price list that matches the BPartner's country and that has a default tax category to be used the creating the new price."
+			+ "- if a new business partner is created on the fly, the detault business partner group (to which the new BPartner is added) needs to have this pricing system set; otherwise the order line candidate will be created, but can't be processed.")
 	@JsonInclude(Include.NON_NULL)
 	private String pricingSystemCode;
 
@@ -154,19 +156,16 @@ public final class JsonOLCandCreateRequest
 	private BigDecimal price;
 
 	@ApiModelProperty( //
-			allowEmptyValue = true, //
 			value = "If a (manual) <code>price</code> is provided, then also a currencyCode needs be given.")
 	@JsonInclude(Include.NON_NULL)
 	private String currencyCode; // shall come from pricingSystem/priceList
 
 	@ApiModelProperty( //
-			allowEmptyValue = true, //
 			value = "If set, then the order line candidate will be created with a manual (i.e. not coming from metasfresh) discount.")
 	@JsonInclude(Include.NON_NULL)
 	private BigDecimal discount;
 
 	@ApiModelProperty( //
-			allowEmptyValue = false, //
 			value = "External reference (document number) on a remote system. Not neccesarily unique, but but the external user will want to filter recrods using it")
 	private String poReference;
 
@@ -182,7 +181,7 @@ public final class JsonOLCandCreateRequest
 					+ "Therefore, please make sure to have <code>dataDestInternalName='DEST.de.metas.invoicecandidate'</code>.\n"
 					+ "Otherwise, this property will be ignored\n"
 					+ "\n"
-					+ "Note for healthcare-ch users: set <code>docBaseType</code> to <code>ARI</code> (sale sinvoice) "
+					+ "Note for healthcare-ch users: set <code>docBaseType</code> to <code>ARI</code> (sales invoice) "
 					+ "and <code>docSubType</code> to one of <code>EA</code> (\"Patient\"), <code>GM</code> (\"Gemeinde\" or <code>KV</code> (\"Krankenversicherung\"")
 	@JsonInclude(Include.NON_NULL)
 	private JsonDocTypeInfo invoiceDocType;

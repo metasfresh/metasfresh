@@ -9,9 +9,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
+import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.util.Check;
 import io.swagger.annotations.ApiModel;

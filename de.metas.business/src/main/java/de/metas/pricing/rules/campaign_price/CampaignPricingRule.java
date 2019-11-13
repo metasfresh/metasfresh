@@ -110,6 +110,7 @@ public class CampaignPricingRule implements IPricingRule
 		return CampaignPriceQuery.builder()
 				.bpartnerId(pricingCtx.getBPartnerId())
 				.bpGroupId(bpartnersRepo.getBPGroupIdByBPartnerId(pricingCtx.getBPartnerId()))
+				.pricingSystemId(pricingCtx.getPricingSystemId())
 				.productId(pricingCtx.getProductId())
 				.countryId(pricingCtx.getCountryId())
 				.currencyId(pricingCtx.getCurrencyId())
@@ -125,6 +126,7 @@ public class CampaignPricingRule implements IPricingRule
 		result.setCurrencyId(campaignPrice.getPriceStd().getCurrencyId());
 		result.setTaxCategoryId(campaignPrice.getTaxCategoryId());
 		result.setPrecision(extractPrecisionFromPrice(campaignPrice.getPriceStd()));
+		result.setCampaignPrice(true);
 	}
 
 	private static CurrencyPrecision extractPrecisionFromPrice(final Money amt)

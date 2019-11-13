@@ -14,7 +14,7 @@ public class X_M_HU_PI_Version extends org.compiere.model.PO implements I_M_HU_P
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -29398878L;
+	private static final long serialVersionUID = -277253140L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Version (Properties ctx, int M_HU_PI_Version_ID, String trxName)
@@ -109,6 +109,40 @@ public class X_M_HU_PI_Version extends org.compiere.model.PO implements I_M_HU_P
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_HU_PackagingCode getM_HU_PackagingCode()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_HU_PackagingCode_ID, de.metas.handlingunits.model.I_M_HU_PackagingCode.class);
+	}
+
+	@Override
+	public void setM_HU_PackagingCode(de.metas.handlingunits.model.I_M_HU_PackagingCode M_HU_PackagingCode)
+	{
+		set_ValueFromPO(COLUMNNAME_M_HU_PackagingCode_ID, de.metas.handlingunits.model.I_M_HU_PackagingCode.class, M_HU_PackagingCode);
+	}
+
+	/** Set Verpackungscode.
+		@param M_HU_PackagingCode_ID Verpackungscode	  */
+	@Override
+	public void setM_HU_PackagingCode_ID (int M_HU_PackagingCode_ID)
+	{
+		if (M_HU_PackagingCode_ID < 1) 
+			set_Value (COLUMNNAME_M_HU_PackagingCode_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_HU_PackagingCode_ID, Integer.valueOf(M_HU_PackagingCode_ID));
+	}
+
+	/** Get Verpackungscode.
+		@return Verpackungscode	  */
+	@Override
+	public int getM_HU_PackagingCode_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PackagingCode_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	@Override

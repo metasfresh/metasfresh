@@ -203,4 +203,13 @@ public class InventoryBL implements IInventoryBL
 		});
 
 	}
+
+	@Override
+	public void setDefaultInternalChargeId(final I_M_InventoryLine inventoryLine)
+	{
+		final int defaultChargeId = getDefaultInternalChargeId();
+
+		inventoryLine.setC_Charge_ID(defaultChargeId);
+
+	}
 }

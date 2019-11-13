@@ -79,7 +79,6 @@ import lombok.NonNull;
  * Create Shipments from {@link ShipmentScheduleWithHU} records.
  *
  * @author tsa
- *
  */
 public class InOutProducerFromShipmentScheduleWithHU
 		implements IInOutProducerFromShipmentScheduleWithHU, ITrxItemChunkProcessor<ShipmentScheduleWithHU, InOutGenerateResult>
@@ -125,9 +124,9 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 	/**
 	 * A list of TUs which are assigned to different shipment lines.
-	 *
+	 * <p>
 	 * This list is shared between all shipment lines from all shipments which are produced by this producer.
-	 *
+	 * <p>
 	 * In this way, we {@link I_M_HU_Assignment#setIsTransferPackingMaterials(boolean)} to <code>true</code> only on first assignment.
 	 */
 	private final Set<HuId> tuIdsAlreadyAssignedToShipmentLine = new HashSet<>();
@@ -149,7 +148,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		{
 			final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 			final InOutGenerateResult result = trxItemProcessorExecutorService
-					.<ShipmentScheduleWithHU, InOutGenerateResult> createExecutor()
+					.<ShipmentScheduleWithHU, InOutGenerateResult>createExecutor()
 					.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 					.setProcessor(this)
 					.setExceptionHandler(trxItemExceptionHandler)
@@ -336,6 +335,9 @@ public class InOutProducerFromShipmentScheduleWithHU
 				shipment.setDateOrdered(order.getDateOrdered());
 				shipment.setC_Order_ID(order.getC_Order_ID()); // TODO change if partner allow consolidation too
 				shipment.setPOReference(order.getPOReference());
+
+				shipment.setDeliveryViaRule(order.getDeliveryViaRule());
+				shipment.setM_Shipper_ID((order.getM_Shipper_ID()));
 			}
 		}
 

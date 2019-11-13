@@ -70,6 +70,12 @@ public class CampaignService
 		users.forEach(user -> addToCampaignIfHasMaillAddressOrLocation(user, campaign, defaultAddressType));
 	}
 
+	public void removeContactPersonsFromCampaign(
+			@NonNull final CampaignId campaignId)
+	{
+		campaignRepository.removeAllContactPersonsFromCampaign(campaignId);
+	}
+
 	public void addToCampaignIfHasEmailAddress(
 			@NonNull final User user,
 			@NonNull final CampaignId campaignId)
@@ -139,7 +145,7 @@ public class CampaignService
 
 	}
 
-	public void removeFromCampaign(
+	public void removeUserFromCampaign(
 			@NonNull final User user,
 			@NonNull final CampaignId campaignId)
 	{
@@ -156,4 +162,5 @@ public class CampaignService
 		contactPersonRepository.revokeConsent(savedContactPerson);
 		campaignRepository.removeContactPersonFromCampaign(savedContactPerson, campaign);
 	}
+
 }

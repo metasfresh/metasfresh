@@ -41,6 +41,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -64,7 +65,9 @@ import org.adempiere.util.concurrent.AutoClosableThreadLocalBoolean;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -81,7 +84,9 @@ import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IStatefulWorkpackageProcessorFactory;
@@ -114,10 +119,12 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.invoicecandidate.api.IInvoiceGenerator;
+import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
+import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder;
+import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
 import de.metas.invoicecandidate.exceptions.InconsistentUpdateExeption;
-import de.metas.invoicecandidate.internalbusinesslogic.InvoiceRule;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
@@ -129,6 +136,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.order.IOrderDAO;
+import de.metas.order.InvoiceRule;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
@@ -158,6 +166,7 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
@@ -226,7 +235,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				return computedateToInvoiceBasedOnDeliveryDate(ic);
 
 			case CustomerScheduleAfterDelivery:
-				if (ic.getC_InvoiceSchedule_ID() <= 0)        // that's a paddlin'
+				if (ic.getC_InvoiceSchedule_ID() <= 0) // that's a paddlin'
 				{
 					return DATE_TO_INVOICE_MAX_DATE;
 				}
@@ -570,31 +579,31 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public void setNetAmtToInvoice(@NonNull final I_C_Invoice_Candidate ic)
+	public void setNetAmtToInvoice(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		// If invoice candidate has IsToClear=Y then we shall not invoice it.
 		// Also we shall set the NetAmtToInvoice to ZERO, to not affect the checksum (when invoicing).
-		if (ic.isToClear())
+		if (icRecord.isToClear())
 		{
-			ic.setNetAmtToInvoice(ZERO);
-			ic.setSplitAmt(ZERO);
+			icRecord.setNetAmtToInvoice(ZERO);
+			icRecord.setSplitAmt(ZERO);
 			return;
 		}
 
 		// If invoice candidate would be skipped when enqueueing to be invoiced then set the NetAmtToInvoice=0 (Mark request)
 		// Reason: if the IC would be skipped we want to have the NetAmtToInvoice=0 because we don't want to affect the overall total that is displayed on window bottom.
 		final boolean ignoreInvoiceSchedule = true; // yes, we ignore the DateToInvoice when checking because that's relative to Today
-		if (isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule))
+		if (isSkipCandidateFromInvoicing(icRecord, ignoreInvoiceSchedule))
 		{
-			ic.setNetAmtToInvoice(ZERO);
-			ic.setSplitAmt(ZERO);
+			icRecord.setNetAmtToInvoice(ZERO);
+			icRecord.setSplitAmt(ZERO);
 			return;
 		}
 
 		final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 
-		invoiceCandidateHandlerBL.setNetAmtToInvoice(ic);
-		invoiceCandidateHandlerBL.setLineNetAmt(ic);
+		invoiceCandidateHandlerBL.setNetAmtToInvoice(icRecord);
+		invoiceCandidateHandlerBL.setLineNetAmt(icRecord);
 	}
 
 	@Override
@@ -620,8 +629,25 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public ProductPrice getPriceActual(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final BigDecimal priceActual = InterfaceWrapperHelper.getValueOverrideOrValue(ic, I_C_Invoice_Candidate.COLUMNNAME_PriceActual);
+		final BigDecimal priceActual;
+		if (InterfaceWrapperHelper.isNull(ic, I_C_Invoice_Candidate.COLUMNNAME_PriceActual_Override))
+		{
+			priceActual = ic.getPriceActual();
+		}
+		else
+		{
+			priceActual = ic.getPriceActual_Override();
+		}
 
+		if (ic.getC_Currency_ID() <= 0 || ic.getC_UOM_ID() <= 0 || ic.getM_Product_ID() <= 0)
+		{
+			throw new AdempiereException("The current C_Invoice_Candidate doesn't have a valid PriceActual")
+					.appendParametersToMessage()
+					.setParameter("C_Currency_ID", ic.getC_Currency_ID())
+					.setParameter("C_UOM_ID", ic.getC_UOM_ID())
+					.setParameter("M_Product_ID", ic.getM_Product_ID())
+					.setParameter("C_Invoice_Candidate", ic);
+		}
 		return ProductPrice.builder()
 				.money(Money.of(priceActual, CurrencyId.ofRepoId(ic.getC_Currency_ID())))
 				.uomId(UomId.ofRepoId(ic.getC_UOM_ID()))
@@ -712,7 +738,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			ic.setSchedulerResult(amendment);
 		}
-		else if (!currentVal.contains(amendment))   // this IC might already contain the given amendment
+		else if (!currentVal.contains(amendment)) // this IC might already contain the given amendment
 		{
 			ic.setSchedulerResult(currentVal + "\n" + amendment);
 		}
@@ -721,12 +747,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void invalidateForInvoiceSchedule(final I_C_InvoiceSchedule invoiceSchedule)
 	{
-		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
-		final List<I_C_Invoice_Candidate> candsForBPartner = invoiceCandDB.retrieveForInvoiceSchedule(invoiceSchedule);
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+		final List<I_C_Invoice_Candidate> candsForBPartner = invoiceCandDAO.retrieveForInvoiceSchedule(invoiceSchedule);
 
 		for (final I_C_Invoice_Candidate ic : candsForBPartner)
 		{
-			invoiceCandDB.invalidateCand(ic);
+			invoiceCandDAO.invalidateCand(ic);
 		}
 	}
 
@@ -973,7 +999,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		splitCand.setC_Tax_ID(ic.getC_Tax_ID());
 		splitCand.setC_Tax_Override_ID(ic.getC_Tax_Override_ID());
 
-		splitCand.setExternalId(ic.getExternalId());
+		splitCand.setExternalHeaderId(ic.getExternalHeaderId());
+		splitCand.setExternalLineId(ic.getExternalLineId());
 
 		return splitCand;
 	}
@@ -1087,8 +1114,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	/**
 	 * Updates all {@link I_C_Invoice_Detail} records linked to {@link I_C_Invoice_Candidate} and sets {@link I_C_Invoice} and {@link I_C_InvoiceLine}.
-	 *
-	 * @param ila
 	 */
 	private void assignInvoiceDetailsToInvoiceLine(final I_C_Invoice_Line_Alloc ila)
 	{
@@ -1120,7 +1145,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		else
 		{
 			final CurrencyPrecision precision = getPrecisionFromPricelist(ic);
-			final ProductPrice priceEntered = getPriceEntered(ic);
+			final ProductPrice priceEntered = getPriceEnteredEffective(ic);
 			final Percent discount = getDiscount(ic);
 
 			final BigDecimal priceActualOverride = discount
@@ -1132,14 +1157,44 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
+	public ProductPrice getPriceEnteredEffective(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		if (!InterfaceWrapperHelper.isNullOrEmpty(ic, I_C_Invoice_Candidate.COLUMNNAME_PriceEntered_Override))
+		{
+			return createPrice(ic, ic.getPriceEntered_Override());
+		}
+		return createPrice(ic, ic.getPriceEntered());
+	}
+
+	@Override
 	public ProductPrice getPriceEntered(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final BigDecimal priceAmount = InterfaceWrapperHelper.getValueOverrideOrValue(ic, I_C_Invoice_Candidate.COLUMNNAME_PriceEntered);
+		return createPrice(ic, ic.getPriceEntered());
+	}
+
+	@Override
+	public Optional<ProductPrice> getPriceEnteredOverride(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		if (InterfaceWrapperHelper.isNullOrEmpty(ic, I_C_Invoice_Candidate.COLUMNNAME_PriceEntered_Override))
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(createPrice(ic, ic.getPriceEntered_Override()));
+	}
+
+	private ProductPrice createPrice(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final BigDecimal priceAmount)
+	{
+		final UomId uomId = UomId.ofRepoId(ic.getC_UOM_ID());
+		final CurrencyId currency = CurrencyId.ofRepoId(ic.getC_Currency_ID());
+		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
 
 		return ProductPrice.builder()
-				.money(Money.of(priceAmount, CurrencyId.ofRepoId(ic.getC_Currency_ID())))
-				.uomId(UomId.ofRepoId(ic.getC_UOM_ID()))
-				.productId(ProductId.ofRepoId(ic.getM_Product_ID()))
+				.money(Money.of(priceAmount, currency))
+				.uomId(uomId)
+				.productId(productId)
 				.build();
 	}
 
@@ -1349,10 +1404,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				//
 				// If 'il' has an order line, make sure that this order line also has invoice candidates and that those candidates also refer 'il'
 
-				final I_C_OrderLine ol = InterfaceWrapperHelper.create(il.getC_OrderLine(), I_C_OrderLine.class);
-				final List<I_C_Invoice_Candidate> existingICs = invoiceCandDAO.fetchInvoiceCandidates(ctx, org.compiere.model.I_C_OrderLine.Table_Name, il.getC_OrderLine_ID(), trxName);
+				final TableRecordReference olReference = TableRecordReference.of(I_C_OrderLine.Table_Name, il.getC_OrderLine_ID()); // no need to load the OL just yet
+				final List<I_C_Invoice_Candidate> existingICs = invoiceCandDAO.retrieveReferencing(olReference);
 				if (existingICs.isEmpty())
 				{
+					final I_C_OrderLine ol = InterfaceWrapperHelper.create(il.getC_OrderLine(), I_C_OrderLine.class);
 					// NOTE: in case 'invoice' was not created from invoice candidates, it's a big chance here to get zero existing ICs
 					// so we need to create them now
 
@@ -1916,7 +1972,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			// nothing to do;
 			return;
 		}
-		// boolean hasInvoiceableInvoiceCands = invoiceCandDAO.hasInvoiceableInvoiceCands(orderId);
 
 		final InvoiceCandidateId firstInvoiceableInvoiceCandId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(orderId);
 
@@ -1934,12 +1989,16 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 			ic.setDeliveryDate(firstInvoiceableCandRecord.getDeliveryDate());
 			ic.setQtyToInvoice(ONE);
+			ic.setQtyDelivered(ONE);
+			ic.setQtyToInvoiceInUOM(ONE);
 			set_DateToInvoice_DefaultImpl(ic);
 		}
 
 		else
 		{
 			ic.setQtyToInvoice(ZERO);
+			ic.setQtyDelivered(ZERO);
+			ic.setQtyToInvoiceInUOM(ZERO);
 			set_DateToInvoice_DefaultImpl(ic);
 		}
 	}
@@ -1987,4 +2046,33 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 		saveRecord(iciol);
 	}
+
+	@Override
+	public int createSelectionForInvoiceCandidates(
+			@NonNull final List<ExternalHeaderIdWithExternalLineIds> headerAndLineIds,
+			@NonNull final PInstanceId pInstanceId)
+	{
+		final InvoiceCandidateMultiQueryBuilder multiQuery = InvoiceCandidateMultiQuery.builder();
+		for (final ExternalHeaderIdWithExternalLineIds headerWithLineIds : headerAndLineIds)
+		{
+			multiQuery.query(InvoiceCandidateQuery.builder()
+					.externalIds(headerWithLineIds)
+					.build());
+		}
+
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+		final IQuery<I_C_Invoice_Candidate> retrieveInvoiceCandidates = invoiceCandDAO.convertToIQuery(multiQuery.build());
+		return retrieveInvoiceCandidates.createSelection(pInstanceId);
+	}
+
+	@Override
+	public List<I_C_Queue_WorkPackage> getUnprocessedWorkPackagesForInvoiceCandidate(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
+		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+
+		return queueDAO.retrieveUnprocessedWorkPackagesByEnqueuedRecord(
+				InvoiceCandWorkpackageProcessor.class,
+				TableRecordReference.of(I_C_Invoice_Candidate.Table_Name, invoiceCandidateId));
+	}
+
 }

@@ -54,7 +54,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
-import de.metas.util.rest.ExternalId;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -76,17 +76,15 @@ public interface IBPartnerDAO extends ISingletonService
 
 	<T extends I_C_BPartner> T getById(BPartnerId bpartnerId, Class<T> modelClass);
 
-	BPartnerId getBPartnerIdByValue(final String bpartnerValue);
+	BPartnerId getBPartnerIdByValue(String bpartnerValue);
+
+	Optional<BPartnerId> getBPartnerIdBySalesPartnerCode(String salesPartnerCode);
 
 	I_C_BPartner getByIdInTrx(BPartnerId bpartnerId);
 
 	/**
 	 * Retrieve {@link I_C_BPartner} assigned to given organization
 	 *
-	 * @param ctx
-	 * @param orgId
-	 * @param clazz
-	 * @param trxName
 	 * @return {@link I_C_BPartner}; never return null
 	 * @throws OrgHasNoBPartnerLinkException if no partner was found
 	 */
@@ -130,9 +128,9 @@ public interface IBPartnerDAO extends ISingletonService
 
 	EMailAddress getContactEMail(BPartnerContactId contactId);
 
-	PricingSystemId retrievePricingSystemIdInTrx(BPartnerId bPartnerId, SOTrx soTrx);
+	PricingSystemId retrievePricingSystemIdOrNullInTrx(BPartnerId bPartnerId, SOTrx soTrx);
 
-	PricingSystemId retrievePricingSystemId(BPartnerId bPartnerId, SOTrx soTrx);
+	PricingSystemId retrievePricingSystemIdOrNull(BPartnerId bPartnerId, SOTrx soTrx);
 
 	ShipperId getShipperId(BPartnerId bpartnerId);
 

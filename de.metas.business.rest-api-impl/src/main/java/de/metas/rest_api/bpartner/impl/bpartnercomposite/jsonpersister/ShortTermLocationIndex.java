@@ -12,7 +12,7 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocation.BPartnerLocationBuilder;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.InvalidIdentifierException;
-import de.metas.util.rest.ExternalId;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import lombok.Value;
 

@@ -92,9 +92,9 @@ public class PPProductPlanningBuilder
 		//
 		// Planning segment
 		productPlanning.setAD_Org_ID(warehouse == null ? 0 : warehouse.getAD_Org_ID());
-		productPlanning.setM_Warehouse(warehouse);
+		productPlanning.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 		productPlanning.setS_Resource(plant);
-		productPlanning.setM_Product(product);
+		productPlanning.setM_Product_ID(product.getM_Product_ID());
 
 		//
 		// Common settings
@@ -104,7 +104,7 @@ public class PPProductPlanningBuilder
 		productPlanning.setYield(100);
 
 		productPlanning.setDeliveryTime_Promised(_deliveryTime);
-		productPlanning.setPlanner(null);
+		productPlanning.setPlanner_ID(-1);
 
 		//
 		// Purchasing

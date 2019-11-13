@@ -208,29 +208,6 @@ public interface I_MD_Candidate_Purchase_Detail
     public static final String COLUMNNAME_IsAdvised = "IsAdvised";
 
 	/**
-	 * Set Wareneingangsdisposition.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_ReceiptSchedule_ID (int M_ReceiptSchedule_ID);
-
-	/**
-	 * Get Wareneingangsdisposition.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_ReceiptSchedule_ID();
-
-    /** Column definition for M_ReceiptSchedule_ID */
-    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Purchase_Detail, Object> COLUMN_M_ReceiptSchedule_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Purchase_Detail, Object>(I_MD_Candidate_Purchase_Detail.class, "M_ReceiptSchedule_ID", null);
-    /** Column name M_ReceiptSchedule_ID */
-    public static final String COLUMNNAME_M_ReceiptSchedule_ID = "M_ReceiptSchedule_ID";
-
-	/**
 	 * Set Dispositionskandidat.
 	 *
 	 * <br>Type: Search
@@ -279,6 +256,29 @@ public interface I_MD_Candidate_Purchase_Detail
     public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Purchase_Detail, Object> COLUMN_MD_Candidate_Purchase_Detail_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Purchase_Detail, Object>(I_MD_Candidate_Purchase_Detail.class, "MD_Candidate_Purchase_Detail_ID", null);
     /** Column name MD_Candidate_Purchase_Detail_ID */
     public static final String COLUMNNAME_MD_Candidate_Purchase_Detail_ID = "MD_Candidate_Purchase_Detail_ID";
+
+	/**
+	 * Set Wareneingangsdisposition.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_ReceiptSchedule_ID (int M_ReceiptSchedule_ID);
+
+	/**
+	 * Get Wareneingangsdisposition.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_ReceiptSchedule_ID();
+
+    /** Column definition for M_ReceiptSchedule_ID */
+    public static final org.adempiere.model.ModelColumn<I_MD_Candidate_Purchase_Detail, Object> COLUMN_M_ReceiptSchedule_ID = new org.adempiere.model.ModelColumn<I_MD_Candidate_Purchase_Detail, Object>(I_MD_Candidate_Purchase_Detail.class, "M_ReceiptSchedule_ID", null);
+    /** Column name M_ReceiptSchedule_ID */
+    public static final String COLUMNNAME_M_ReceiptSchedule_ID = "M_ReceiptSchedule_ID";
 
 	/**
 	 * Set Geplante Menge.

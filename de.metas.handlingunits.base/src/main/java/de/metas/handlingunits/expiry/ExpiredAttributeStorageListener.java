@@ -85,10 +85,10 @@ public class ExpiredAttributeStorageListener implements IAttributeStorageListene
 		final LocalDate bestBefore = storage.getValueAsLocalDate(AttributeConstants.ATTR_BestBeforeDate);
 		final int warnInterval = getMinimalWarnIntervalInDays(huAttributeStorage);
 
-		final LocalDateTime warnDate = bestBefore
-				.minusDays(warnInterval)
-				.atStartOfDay();
-		if (warnDate.isBefore(LocalDateTime.now()))
+		final LocalDateTime warnDate = bestBefore != null
+				? bestBefore.minusDays(warnInterval).atStartOfDay()
+				: null;
+		if (warnDate != null && warnDate.isBefore(LocalDateTime.now()))
 		{
 			storage.setValue(HUAttributeConstants.ATTR_Expired, HUAttributeConstants.ATTR_Expired_Value_Expired);
 		}

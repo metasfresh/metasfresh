@@ -362,7 +362,7 @@ import lombok.ToString;
 
 		//
 		// Set/validate overall "PriceEntered"
-		final ProductPrice candPriceEntered = invoiceCandBL.getPriceEntered(cand);
+		final ProductPrice candPriceEntered = invoiceCandBL.getPriceEnteredEffective(cand);
 		setPriceEntered(candPriceEntered);
 
 		//

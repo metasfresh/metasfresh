@@ -10,11 +10,73 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.127
+## Features
+* metasfresh
+  * [#5551](https://github.com/metasfresh/metasfresh/issues/5551) Batchentry Product Name, Stock, Price, best before + additional Field for bestbefore
+  * [#5756](https://github.com/metasfresh/metasfresh/issues/5756) Allow Action Prices on Pricing System
+  * [#5757](https://github.com/metasfresh/metasfresh/issues/5757) Create endpoint to check the invoice status
+  * [#5761](https://github.com/metasfresh/metasfresh/issues/5761)
+  * [#5767](https://github.com/metasfresh/metasfresh/issues/5767) Sort by preparation date and order docNo in picking terminal 2
 
-# metasfresh 5.123
+## Fixes
+* metasfresh
+  * [#5748](https://github.com/metasfresh/metasfresh/issues/5748) HU editor: clearing the Production Date field leads to error
+  * [#5772](https://github.com/metasfresh/metasfresh/issues/5772) Cleared out how shall be BPartner, BPartnerLocation and C_Location in AD_OrgInf
+
+# metasfresh 5.126
+## Features
+* metasfresh
+  * [#5664](https://github.com/metasfresh/metasfresh/issues/5664) Rest endpoint which allows the client to create invoices
+  * [#5675](https://github.com/metasfresh/metasfresh/issues/5675) Waste (Entsorgung) from Handling Unit Editor and automatic DocType and No
+  * [#5710](https://github.com/metasfresh/metasfresh/issues/5710) Modify process of copying windows to copy the tab callouts as well
+  * [#5724](https://github.com/metasfresh/metasfresh/issues/5724) Add more data to shipment report functions
+  * [#5729](https://github.com/metasfresh/metasfresh/issues/5729) Only show Catch Weight Fields when catch weight calculation (product price)
+  * [#5740](https://github.com/metasfresh/metasfresh/issues/5740) Improve Customs Tariff
+  * [#5746](https://github.com/metasfresh/metasfresh/issues/5746) Fix Jenkinsfile: make sure the maven repo name is legit
+  * [#5754](https://github.com/metasfresh/metasfresh/issues/5754) AD_System.DBVersion: change size to 255
+
+* metasfresh-webui-frontend
+  * [#2401](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2401) Implement Google Maps Integration
+  * [#2431](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2431) Remove number field's arrows for changing value
+
+## Fixes
+* metasfresh
+  * [#5749](https://github.com/metasfresh/metasfresh/pull/5749) HU editor: clearing the Production Date field leads to error
+  * [#5735](https://github.com/metasfresh/metasfresh/issues/5735) Linenetamt not rounded to currency precision
+  * [#5733](https://github.com/metasfresh/metasfresh/issues/5733) Fix importing process
+
+# metasfresh 5.125
+## Features
+* metasfresh
+  * [#5522](https://github.com/metasfresh/metasfresh/issues/5522) Commission calculation
+  * [#5566](https://github.com/metasfresh/metasfresh/issues/5566) Add integration with Google Maps
+  * [#5611](https://github.com/metasfresh/metasfresh/issues/5611) Add DHL Shipper and DHL integration
+  * [#5683](https://github.com/metasfresh/metasfresh/issues/5683) Empties Saldo report per Day
+
+## Fixes
+* metasfresh
+  * [#5556](https://github.com/metasfresh/metasfresh/issues/5556) Prevent Running Link Organisation Process if Organisation Field is empty
+  * [#5666](https://github.com/metasfresh/metasfresh/issues/5666) Freight Cost invoice candidates bug
+  * [#5687](https://github.com/metasfresh/metasfresh/issues/5687) Assumption failure: There is no active M_Attribute record with M_Attribute.Value=M_Material_Tracking_ID
+  * [#5701](https://github.com/metasfresh/metasfresh/issues/5701) Document no not updated when changing doctype
+
+# metasfresh 5.124
+## Features
+* metasfresh
+  * [#5602](https://github.com/metasfresh/metasfresh/issues/5602) Cashbook Window
+  * [#5656](https://github.com/metasfresh/metasfresh/issues/5656) EDI-Tweaks
+
 ## Fixes
 * metasfresh-webui-frontend
   * [#2370](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2370) Performance imporovement for Grid Views/ Table Views
+  
+* metasfresh
+  * [#5242](https://github.com/metasfresh/metasfresh/issues/5242) Picking Terminal v2: Cannot fully load AllocationRequest
+  * [#5606](https://github.com/metasfresh/metasfresh/issues/5606) Payment window calculation of skonto yes/ no when adjusting date
+  * [#5628](https://github.com/metasfresh/metasfresh/issues/5628) Partner relations don't work properly in sales order
+  * [#5659](https://github.com/metasfresh/metasfresh/issues/5659) Picklist in Picking Terminal v2 automatically picks, but shall not
+
 
 # metasfresh 5.123
 ## Features
