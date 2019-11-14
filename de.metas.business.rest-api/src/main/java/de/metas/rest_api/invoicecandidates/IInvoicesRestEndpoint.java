@@ -46,4 +46,6 @@ public interface IInvoicesRestEndpoint
 
 	ResponseEntity<JsonCheckInvoiceCandidatesStatusResponse> checkInvoiceCandidatesStatus(JsonCheckInvoiceCandidatesStatusRequest request);
 
+	ResponseEntity<byte[]> getInvoicePDF(int invoiceRecordId);
+
 }

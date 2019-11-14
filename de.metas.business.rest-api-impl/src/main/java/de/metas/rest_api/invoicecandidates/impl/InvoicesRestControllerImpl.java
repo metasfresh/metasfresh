@@ -3,12 +3,16 @@ package de.metas.rest_api.invoicecandidates.impl;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.Profiles;
+import de.metas.invoice.InvoiceId;
+import de.metas.rest_api.invoice.impl.InvoicePDFService;
 import de.metas.rest_api.invoicecandidates.IInvoicesRestEndpoint;
 import de.metas.rest_api.invoicecandidates.request.JsonCheckInvoiceCandidatesStatusRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonCloseInvoiceCandidatesRequest;
@@ -18,7 +22,9 @@ import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesSt
 import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
+import de.metas.util.Check;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
@@ -46,7 +52,7 @@ import lombok.NonNull;
  * Used for managing invoices and invoice candidates(create, query)
  */
 @RestController
-@RequestMapping(value = IInvoicesRestEndpoint.ENDPOINT, consumes = "application/json", produces = "application/json")
+@RequestMapping(value = IInvoicesRestEndpoint.ENDPOINT)
 @Profile(Profiles.PROFILE_App)
 class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 {
@@ -54,17 +60,20 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 	private final CreateInvoiceCandidatesService createInvoiceCandidatesService;
 	private final EnqueueForInvoicingService enqueueForInvoicingService;
 	private final CloseInvoiceCandidatesService closeInvoiceCandidatesService;
+	private final InvoicePDFService invoicePDFService;
 
 	public InvoicesRestControllerImpl(
 			@NonNull final CreateInvoiceCandidatesService createInvoiceCandidatesService,
 			@NonNull final CheckInvoiceCandidatesStatusService invoiceCandidateInfoService,
 			@NonNull final EnqueueForInvoicingService enqueueForInvoicingService,
-			@NonNull final CloseInvoiceCandidatesService closeInvoiceCandidatesService)
+			@NonNull final CloseInvoiceCandidatesService closeInvoiceCandidatesService,
+			@NonNull final InvoicePDFService invoicePDFService)
 	{
 		this.createInvoiceCandidatesService = createInvoiceCandidatesService;
 		this.checkInvoiceCandidatesStatusService = invoiceCandidateInfoService;
 		this.enqueueForInvoicingService = enqueueForInvoicingService;
 		this.closeInvoiceCandidatesService = closeInvoiceCandidatesService;
+		this.invoicePDFService = invoicePDFService;
 	}
 
 	@ApiOperation("Create new invoice candidates")
@@ -74,7 +83,7 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
 			@ApiResponse(code = 422, message = "The request body could not be processed")
 	})
-	@PostMapping(path = "/createCandidates")
+	@PostMapping(path = "/createCandidates", consumes = "application/json", produces = "application/json")
 	@Override
 	public ResponseEntity<JsonCreateInvoiceCandidatesResponse> createInvoiceCandidates(
 			@RequestBody @NonNull final JsonCreateInvoiceCandidatesRequest request)
@@ -84,7 +93,7 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 		return ResponseEntity.ok(resonse);
 	}
 
-	@PostMapping("/status")
+	@PostMapping(value = "/status", consumes = "application/json", produces = "application/json")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Successfully retrieved status for all matching invoice candidates"),
 			@ApiResponse(code = 401, message = "You are not authorized to retrieve the invoice candidates' status"),
@@ -98,7 +107,7 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 	}
 
 	@ApiOperation("Enqueues invoice candidates for invoicing")
-	@PostMapping("/enqueueForInvoicing")
+	@PostMapping(value = "/enqueueForInvoicing", consumes = "application/json", produces = "application/json")
 	@Override
 	public ResponseEntity<JsonEnqueueForInvoicingResponse> enqueueForInvoicing(@RequestBody @NonNull final JsonEnqueueForInvoicingRequest request)
 	{
@@ -106,7 +115,7 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 		return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
 	}
 
-	@PostMapping("/close")
+	@PostMapping(value = "/close", consumes = "application/json", produces = "application/json")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Successfully closed all matching invoice candidates"),
 			@ApiResponse(code = 401, message = "You are not authorized to close the invoice candidates"),
@@ -118,4 +127,29 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 		final JsonCloseInvoiceCandidatesResponse response = closeInvoiceCandidatesService.closeInvoiceCandidates(request);
 		return ResponseEntity.ok(response);
 	}
+
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "PDF retrieved for invoice"),
+			@ApiResponse(code = 401, message = "You are not authorized to see the invoice PDF"),
+			@ApiResponse(code = 404, message = "No archive found for the invoice")
+	})
+	@GetMapping(value = "/{InvoiceId}/pdf")
+	@Override
+	public ResponseEntity<byte[]> getInvoicePDF(
+			@PathVariable("InvoiceId")
+			@ApiParam(required = true, value = "InvoiceId")
+			final int invoiceRecordId)
+	{
+
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceRecordId);
+		final byte[] invoicePDF = invoicePDFService.getInvoicePDF(invoiceId);
+
+		if (Check.isEmpty(invoicePDF))
+		{
+			return ResponseEntity.notFound().build();
+		}
+
+		return ResponseEntity.ok(invoicePDF);
+	}
+
 }
