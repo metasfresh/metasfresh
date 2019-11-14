@@ -23,7 +23,9 @@
 package de.metas.shipper.gateway.dpd;
 
 import de.metas.shipper.gateway.dpd.model.DpdServiceType;
+import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -39,9 +41,24 @@ public class IntegrationDEtoCHTest
 	}
 
 	@Test
-	@DisplayName("Delivery Order DE -> CH + test persistence after all steps")
-	void testAllSteps()
+	@DisplayName("Delivery Order DE -> CH, DPD E12 - fails as next-day delivery doesn't work outside country")
+	void E12()
+	{
+		Assertions.assertThrows(ShipperGatewayException.class,
+				() -> DpdTestHelper.testAllSteps(DpdTestHelper.createDummyDeliveryOrderDEtoCH(DpdServiceType.DPD_E12)));
+	}
+
+	@Test
+	@DisplayName("Delivery Order DE -> CH, DPD Classic")
+	void Classic()
 	{
 		DpdTestHelper.testAllSteps(DpdTestHelper.createDummyDeliveryOrderDEtoCH(DpdServiceType.DPD_CLASSIC));
+	}
+
+	@Test
+	@DisplayName("Delivery Order DE -> CH, DPD Express")
+	void Express()
+	{
+		DpdTestHelper.testAllSteps(DpdTestHelper.createDummyDeliveryOrderDEtoCH(DpdServiceType.DPD_EXPRESS));
 	}
 }
