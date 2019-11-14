@@ -44,6 +44,10 @@ import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_AD_Attachment;
+import org.compiere.model.I_AD_AttachmentEntry;
+import org.compiere.model.I_AD_Attachment_Log;
+import org.compiere.model.I_AD_Attachment_MultiRef;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Column_Access;
 import org.compiere.model.I_AD_Document_Action_Access;
@@ -107,6 +111,10 @@ public class MigrationLogger implements IMigrationLogger
 		final List<String> tablesIgnoreListDefault = Arrays.asList(
 				"AD_ACCESSLOG",
 				"AD_ALERTPROCESSORLOG",
+				I_AD_Attachment.Table_Name.toUpperCase(),
+				I_AD_Attachment_Log.Table_Name.toUpperCase(),
+				I_AD_Attachment_MultiRef.Table_Name.toUpperCase(),
+				I_AD_AttachmentEntry.Table_Name.toUpperCase(),
 				"AD_CHANGELOG",
 				"AD_ISSUE",
 				I_AD_Note.Table_Name.toUpperCase(),
