@@ -99,7 +99,7 @@ import de.metas.invoicecandidate.spi.impl.OrderAndInOutInvoiceCandidateListener;
 import de.metas.logging.LogManager;
 import de.metas.order.document.counterDoc.C_Order_CounterDocHandler;
 import de.metas.report.ReportStarter;
-import de.metas.report.jasper.client.JRClient;
+import de.metas.report.client.ReportsClient;
 import de.metas.request.model.validator.R_Request;
 import de.metas.shipping.model.validator.M_ShipperTransportation;
 import de.metas.util.Check;
@@ -221,7 +221,7 @@ public class SwatValidator implements ModelValidator
 
 		new de.metas.invoicecandidate.modelvalidator.ConfigValidator().initialize(engine, client);
 
-		JRClient.get(); // make sure Jasper client is loaded and initialized
+		ReportsClient.get(); // make sure reports client is loaded and initialized
 
 		Services.get(IValidationRuleFactory.class).registerTableValidationRule(I_M_Warehouse.Table_Name, FilterWarehouseByDocTypeValidationRule.instance);
 

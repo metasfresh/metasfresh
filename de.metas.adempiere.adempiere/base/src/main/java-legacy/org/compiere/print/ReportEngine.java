@@ -82,7 +82,6 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.i18n.Language;
 import de.metas.i18n.Msg;
@@ -92,6 +91,7 @@ import de.metas.print.IPrintService;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
+import de.metas.report.server.ReportConstants;
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
 import de.metas.util.Services;
@@ -1021,7 +1021,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 				.setCtx(ctx)
 				.setAD_Process_ID(getPrintFormat().getJasperProcess_ID())
 				.setRecord(getPrintInfo().getAD_Table_ID(), getPrintInfo().getRecord_ID())
-				.addParameter(JasperConstants.REPORT_PARAM_BARCODE_URL, getBarcodeServlet(ctx))
+				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, getBarcodeServlet(ctx))
 				.addParameter(IPrintService.PARAM_PrintCopies, getPrintInfo().getCopies())
 				.setPrintPreview(true) // don't archive it! just give us the PDF data
 				.buildAndPrepareExecution()
@@ -1033,7 +1033,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 	public static String getBarcodeServlet(@NonNull final Properties ctx)
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		final String barcodeServlet = sysConfigBL.getValue(JasperConstants.SYSCONFIG_BarcodeServlet,
+		final String barcodeServlet = sysConfigBL.getValue(ReportConstants.SYSCONFIG_BarcodeServlet,
 				null,  // defaultValue,
 				Env.getAD_Client_ID(ctx),
 				Env.getAD_Org_ID(ctx));

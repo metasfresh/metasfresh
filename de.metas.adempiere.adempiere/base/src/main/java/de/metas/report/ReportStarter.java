@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 
 import com.google.common.io.Files;
 
-import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
@@ -21,6 +20,7 @@ import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.report.ExecuteReportStrategy.ExecuteReportResult;
+import de.metas.report.server.OutputType;
 import de.metas.util.Check;
 import de.metas.util.FileUtils;
 import de.metas.util.Loggables;

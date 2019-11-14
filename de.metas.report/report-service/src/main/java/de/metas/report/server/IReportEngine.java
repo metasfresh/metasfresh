@@ -1,11 +1,10 @@
-package org.compiere.print;
+package de.metas.report.server;
 
-import de.metas.process.ProcessInfo;
-import de.metas.report.server.OutputType;
+import java.io.OutputStream;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.report.jasper.server.base
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -25,9 +24,9 @@ import de.metas.report.server.OutputType;
  * #L%
  */
 
-public interface JRReportViewerProvider
+public interface IReportEngine
 {
-	public void openViewer(byte[] data, OutputType type, ProcessInfo pi) throws Exception;
 
-	public OutputType getDesiredOutputType();
+	void report(final ReportContext reportContext, OutputStream out);
+
 }
