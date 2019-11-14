@@ -230,7 +230,7 @@ public class PP_Cost_Collector
 			final I_M_HU huToVerify = issueCandidate.getM_HU();
 
 			// "active" might also be fine, depending on whether the HU was issued using a legacy swing client
-			if (!huStatusBL.isStatusIssued(huToVerify) && !huStatusBL.isStatusActive(huToVerify))
+			if (!huStatusBL.isStatusActiveOrIssued(huToVerify))
 			{
 				throw new HUException("Expected the HU's status to be 'issued' (or 'active') again but it wasn't.")
 						.setParameter("HUStatus", huToVerify.getHUStatus())

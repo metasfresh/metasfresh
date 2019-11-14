@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;
@@ -120,6 +121,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	private final transient ITrxItemProcessorExecutorService trxItemProcessorService = Services.get(ITrxItemProcessorExecutorService.class);
 	//
 	private final transient IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final transient IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final transient IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
@@ -229,10 +231,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		//
 		// Validate the HU
 		final I_M_HU hu = candidate.getM_HU();
-		if (!ImmutableSet.of(
-				X_M_HU.HUSTATUS_Active,
-				X_M_HU.HUSTATUS_Issued)
-				.contains(hu.getHUStatus()))
+		if (!huStatusBL.isStatusActiveOrIssued(hu))
 		{
 			// if operated by the swing-ui, this code has to deal with active HUs because the swingUI skips that part of the workflow
 			throw new HUException("Only HUs with status 'issued' and 'active' can be finalized with their PP_Cost_Collector and destroyed")
