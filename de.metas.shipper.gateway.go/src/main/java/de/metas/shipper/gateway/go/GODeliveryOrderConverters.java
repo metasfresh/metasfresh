@@ -77,7 +77,6 @@ import lombok.experimental.UtilityClass;
 				.companyName2(orderPO.getGO_DeliverToCompanyName2())
 				.companyDepartment(orderPO.getGO_DeliverToDepartment())
 				.bpartnerId(orderPO.getGO_DeliverToBPartner_ID())
-				.bpartnerLocationId(orderPO.getGO_DeliverToBPLocation_ID())
 				.build();
 	}
 
@@ -89,7 +88,6 @@ import lombok.experimental.UtilityClass;
 		orderPO.setGO_DeliverToLocation_ID(createC_Location_ID(deliveryAddress));
 
 		orderPO.setGO_DeliverToBPartner_ID(deliveryAddress.getBpartnerId());
-		orderPO.setGO_DeliverToBPLocation_ID(deliveryAddress.getBpartnerLocationId());
 	}
 
 	public static PickupDate pickupDateFromPO(final I_GO_DeliveryOrder orderPO)

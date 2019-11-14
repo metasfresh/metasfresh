@@ -233,7 +233,6 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 						.companyName1(deliverToBPartner.getName())
 						.companyName2(deliverToBPartner.getName2())
 						.bpartnerId(deliverToBPartner.getC_BPartner_ID()) // afaics used only for logging
-						.bpartnerLocationId(deliverToBPartnerLocationId) // afaics used only for logging
 						.build())
 				.deliveryContact(ContactPerson.builder()
 						.emailAddress(deliverToBPartner.getEMail())

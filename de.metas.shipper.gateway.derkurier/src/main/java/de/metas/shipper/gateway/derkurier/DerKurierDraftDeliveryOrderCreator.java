@@ -121,7 +121,6 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 						.companyName2(deliverToBPartner.getName2())
 						//.companyDepartment("-") // N/A
 						.bpartnerId(deliverToBPartnerId)
-						.bpartnerLocationId(deliverToBPartnerLocationId)
 						.build())
 				.deliveryContact(ContactPerson.builder()
 						.emailAddress(deliverToBPartner.getEMail())

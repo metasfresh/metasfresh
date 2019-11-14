@@ -44,7 +44,6 @@ public class Address
 	//
 	// External partner and partner location Id
 	int bpartnerId;
-	int bpartnerLocationId;
 
 	@Builder
 	private Address(
@@ -58,8 +57,7 @@ public class Address
 			final String zipCode,
 			final String city,
 			//
-			int bpartnerId,
-			int bpartnerLocationId)
+			final int bpartnerId)
 	{
 		Check.assumeNotEmpty(companyName1, "companyName1 is not empty");
 		Check.assumeNotEmpty(street1, "street1 is not empty");
@@ -76,8 +74,7 @@ public class Address
 		this.country = country;
 		this.zipCode = zipCode;
 		this.city = city;
-		
+
 		this.bpartnerId = bpartnerId;
-		this.bpartnerLocationId = bpartnerLocationId;
 	}
 }

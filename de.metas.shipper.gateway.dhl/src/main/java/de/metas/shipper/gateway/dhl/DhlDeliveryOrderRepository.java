@@ -172,7 +172,6 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 				.id(DeliveryOrderId.ofRepoId(requestPo.getDHL_ShipmentOrderRequest_ID()))
 				.deliveryAddress(Address.builder()
 						.bpartnerId(firstOrder.getC_BPartner_ID())
-						.bpartnerLocationId(firstOrder.getC_BPartner_Location_ID())
 						.companyName1(firstOrder.getDHL_Receiver_Name1())
 						.companyName2(firstOrder.getDHL_Receiver_Name2())
 						.street1(firstOrder.getDHL_Receiver_StreetName1())
@@ -280,7 +279,6 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 
 					shipmentOrder.setPackageId(packageIdsAsList.get(i).getRepoId());
 					shipmentOrder.setC_BPartner_ID(deliveryAddress.getBpartnerId());
-					shipmentOrder.setC_BPartner_Location_ID(deliveryAddress.getBpartnerLocationId());
 					shipmentOrder.setM_Shipper_ID(deliveryOrder.getShipperId().getRepoId());
 					shipmentOrder.setM_ShipperTransportation_ID(deliveryOrder.getShipperTransportationId().getRepoId());
 				}

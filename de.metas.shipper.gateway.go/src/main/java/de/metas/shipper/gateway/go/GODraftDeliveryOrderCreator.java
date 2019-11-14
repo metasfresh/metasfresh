@@ -104,7 +104,6 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 						.companyName2(deliverToBPartner.getName2())
 						.companyDepartment("-") // N/A
 						.bpartnerId(deliverToBPartnerId)
-						.bpartnerLocationId(deliverToBPartnerLocationId)
 						.build())
 				//
 				// Delivery content
