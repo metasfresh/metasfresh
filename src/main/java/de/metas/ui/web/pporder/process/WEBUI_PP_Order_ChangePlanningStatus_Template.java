@@ -1,10 +1,10 @@
 package de.metas.ui.web.pporder.process;
 
 import org.compiere.Adempiere;
+import org.eevolution.api.PPOrderPlanningStatus;
 
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
-import de.metas.handlingunits.pporder.api.PPOrderPlanningStatus;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;

@@ -85,7 +85,7 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("no unprocessed rows");
 		}
-		if (!rows.stream().allMatch(this::isEligibleForProcessing))
+		if (!rows.stream().allMatch(ProductsToPickRow::isEligibleForProcessing))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not all rows eligible for processing");
 		}
@@ -151,7 +151,7 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 	{
 		final ImmutableSet<PickingCandidateId> pickingCandidateIdsToProcess = getRowsNotAlreadyProcessed()
 				.stream()
-				.filter(this::isEligibleForProcessing)
+				.filter(ProductsToPickRow::isEligibleForProcessing)
 				.map(ProductsToPickRow::getPickingCandidateId)
 				.filter(Predicates.notNull())
 				.collect(ImmutableSet.toImmutableSet());
@@ -188,12 +188,4 @@ public class ProductsToPick_4EyesReview_ProcessAll extends ProductsToPickViewBas
 				.filter(row -> !row.isProcessed())
 				.collect(ImmutableList.toImmutableList());
 	}
-
-	private boolean isEligibleForProcessing(final ProductsToPickRow row)
-	{
-		return !row.isProcessed()
-				&& row.isApproved()
-				&& (row.getPickStatus().isPacked() || row.getPickStatus().isPickRejected());
-	}
-
 }

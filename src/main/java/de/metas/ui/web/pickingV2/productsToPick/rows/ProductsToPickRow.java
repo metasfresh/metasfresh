@@ -1,6 +1,7 @@
 package de.metas.ui.web.pickingV2.productsToPick.rows;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
@@ -130,7 +131,6 @@ public class ProductsToPickRow implements IViewRow
 
 	public static final String FIELD_PickStatus = "pickStatus";
 	@ViewColumn(fieldName = FIELD_PickStatus, captionKey = "PickStatus", widgetType = DocumentFieldWidgetType.List, listReferenceId = PickingCandidatePickStatus.AD_REFERENCE_ID, widgetSize = WidgetSize.Small)
-	@Getter
 	private final PickingCandidatePickStatus pickStatus;
 
 	public static final String FIELD_ApprovalStatus = "approvalStatus";
@@ -204,14 +204,38 @@ public class ProductsToPickRow implements IViewRow
 		this.qtyOverride = qtyOverride;
 		this.qtyReview = qtyReview;
 
-		this.pickStatus = pickStatus != null ? pickStatus : PickingCandidatePickStatus.TO_BE_PICKED;
-		this.approvalStatus = approvalStatus != null ? approvalStatus : PickingCandidateApprovalStatus.TO_BE_APPROVED;
+		if (pickStatus != null)
+		{
+			this.pickStatus = pickStatus;
+		}
+		else
+		{
+			this.pickStatus = rowType.isPickable() ? PickingCandidatePickStatus.TO_BE_PICKED : null;
+		}
+
+		if (approvalStatus != null)
+		{
+			this.approvalStatus = approvalStatus;
+		}
+		else
+		{
+			this.approvalStatus = rowType.isPickable() ? PickingCandidateApprovalStatus.TO_BE_APPROVED : null;
+		}
 		this.processed = processed;
 
 		this.pickingCandidateId = pickingCandidateId;
 		this.shipperId = shipperId;
 
-		this.includedRows = includedRows != null ? ImmutableList.copyOf(includedRows) : ImmutableList.of();
+		if (includedRows != null && !includedRows.isEmpty())
+		{
+			this.includedRows = includedRows.stream()
+					.map(includedRow -> includedRow.withFinishedGoodsQtyOverride(qty, qtyOverride))
+					.collect(ImmutableList.toImmutableList());
+		}
+		else
+		{
+			this.includedRows = ImmutableList.of();
+		}
 
 		this.viewEditorRenderModeByFieldName = buildViewEditorRenderModeByFieldName(rowType);
 	}
@@ -231,7 +255,8 @@ public class ProductsToPickRow implements IViewRow
 	@Override
 	public boolean isProcessed()
 	{
-		return processed;
+		return processed
+				|| !rowType.isPickable();
 	}
 
 	@Override
@@ -279,7 +304,7 @@ public class ProductsToPickRow implements IViewRow
 	{
 		return rowId.getShipmentScheduleId();
 	}
-	
+
 	public ProductId getProductId()
 	{
 		return rowId.getProductId();
@@ -344,11 +369,35 @@ public class ProductsToPickRow implements IViewRow
 		return withQtyOverride(qtyOverride);
 	}
 
-	private ProductsToPickRow withQtyOverride(final Quantity qtyOverride)
+	private ProductsToPickRow withQtyOverride(@Nullable final Quantity qtyOverride)
 	{
 		return Objects.equals(this.qtyOverride, qtyOverride)
 				? this
 				: toBuilder().qtyOverride(qtyOverride).build();
+	}
+
+	private ProductsToPickRow withFinishedGoodsQtyOverride(
+			@NonNull final Quantity finishedGoodsQty,
+			@Nullable final Quantity finishedGoodsQtyOverride)
+	{
+		if (finishedGoodsQtyOverride != null)
+		{
+			Quantity.getCommonUomIdOfAll(finishedGoodsQty, finishedGoodsQtyOverride); // just to make sure
+
+			// qty ............... finishedGoodsQty
+			// qtyOverride ....... finishedGoodsQtyOverride
+			// => qtyOverride = qty * (finishedGoodsQtyOverride / finishedGoodsQty)
+
+			final BigDecimal multiplier = finishedGoodsQtyOverride.toBigDecimal()
+					.divide(finishedGoodsQty.toBigDecimal(), 12, RoundingMode.HALF_UP);
+
+			final Quantity qtyOverride = qty.multiply(multiplier).roundToUOMPrecision();
+			return withQtyOverride(qtyOverride);
+		}
+		else
+		{
+			return withQtyOverride((Quantity)null);
+		}
 	}
 
 	public boolean isQtyOverrideEditableByUser()
@@ -371,37 +420,51 @@ public class ProductsToPickRow implements IViewRow
 
 	public boolean isApproved()
 	{
-		return approvalStatus.isApproved();
+		return approvalStatus != null && approvalStatus.isApproved();
 	}
 
 	private boolean isEligibleForChangingPickStatus()
 	{
 		return !isProcessed()
-				&& !isApproved()
 				&& getType().isPickable();
 	}
 
 	public boolean isEligibleForPicking()
 	{
 		return isEligibleForChangingPickStatus()
-				&& (pickStatus.isToBePicked() || pickStatus.isPickRejected());
+				&& !isApproved()
+				&& pickStatus != null
+				&& pickStatus.isEligibleForPicking();
 	}
 
 	public boolean isEligibleForRejectPicking()
 	{
 		return isEligibleForChangingPickStatus()
-				&& !pickStatus.isPickRejected();
+				&& !isApproved()
+				&& pickStatus != null
+				&& pickStatus.isEligibleForRejectPicking();
 	}
 
 	public boolean isEligibleForPacking()
 	{
-		return !isProcessed() && isApproved() && !pickStatus.isPickRejected();
+		return isEligibleForChangingPickStatus()
+				&& isApproved()
+				&& pickStatus != null
+				&& pickStatus.isEligibleForPacking();
 	}
 
 	public boolean isEligibleForReview()
 	{
-		return !isProcessed()
-				&& (pickStatus.isPicked() || pickStatus.isPickRejected());
+		return isEligibleForChangingPickStatus()
+				&& pickStatus != null
+				&& pickStatus.isEligibleForReview();
+	}
+
+	public boolean isEligibleForProcessing()
+	{
+		return isEligibleForChangingPickStatus()
+				&& pickStatus != null
+				&& pickStatus.isEligibleForProcessing();
 	}
 
 	public String getLocatorName()
