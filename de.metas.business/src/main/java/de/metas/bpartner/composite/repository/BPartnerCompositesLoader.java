@@ -306,7 +306,7 @@ final class BPartnerCompositesLoader
 			@NonNull final I_AD_User contactRecord,
 			@NonNull final CompositeRelatedRecords relatedRecords)
 	{
-		final RecordChangeLog changeLog = ChangeLogUtil.createcontactChangeLog(contactRecord, relatedRecords);
+		final RecordChangeLog changeLog = ChangeLogUtil.createContactChangeLog(contactRecord, relatedRecords);
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(contactRecord.getC_BPartner_ID());
 		return BPartnerContact.builder()

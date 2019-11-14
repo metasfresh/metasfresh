@@ -86,6 +86,14 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		this.olCandBL = olCandBL;
 	}
 
+
+	/** @return {@code 10}; this validator shall be executed first */
+	@Override
+	public int getSeqNo()
+	{
+		return 10;
+	}
+
 	@Override
 	public boolean validate(final I_C_OLCand olCand)
 	{
@@ -310,5 +318,4 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		}
 		return true;
 	}
-
 }
