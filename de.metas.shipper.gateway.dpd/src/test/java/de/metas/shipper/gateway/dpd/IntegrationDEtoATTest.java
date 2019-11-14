@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.dpd;
 
+import de.metas.shipper.gateway.dpd.model.DpdServiceType;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -41,7 +42,7 @@ public class IntegrationDEtoATTest
 	@DisplayName("Delivery Order DE -> AT + test persistence after all steps")
 	void testAllSteps()
 	{
-		DpdTestHelper.testAllSteps(DpdTestHelper.createDummyDeliveryOrderDEtoAT());
+		DpdTestHelper.testAllSteps(DpdTestHelper.createDummyDeliveryOrderDEtoAT(DpdServiceType.DPD_CLASSIC));
 	}
 
 }
