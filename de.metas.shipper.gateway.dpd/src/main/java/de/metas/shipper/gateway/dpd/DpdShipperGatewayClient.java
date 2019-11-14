@@ -295,6 +295,10 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 			final ProductAndServiceData productAndServiceData = shipmentServiceOF.createProductAndServiceData();
 			shipmentServiceData.setProductAndServiceData(productAndServiceData);
 			{
+				// only works with E12 product
+				productAndServiceData.setSaturdayDelivery(DpdServiceType.DPD_E12.equals(deliveryOrder.getServiceType()));
+			}
+			{
 				// Shipper Product
 				productAndServiceData.setOrderType(DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()).getOrderType()); // this is somehow related to product: CL; and i think it should always be "consignment"
 			}
