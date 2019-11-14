@@ -1,5 +1,8 @@
 package org.adempiere.ad.service;
 
+import java.io.File;
+import java.util.Optional;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -34,11 +37,6 @@ import de.metas.util.ISingletonService;
  */
 public interface IDeveloperModeBL extends ISingletonService
 {
-	public interface ContextRunnable
-	{
-		public void run(Properties sysCtx);
-	}
-
 	/**
 	 * Checks if developer mode is enabled.
 	 * 
@@ -48,10 +46,18 @@ public interface IDeveloperModeBL extends ISingletonService
 	 */
 	boolean isEnabled();
 
+	Optional<File> getDevelopmentWorkspaceDir();
+
+	public interface ContextRunnable
+	{
+		void run(Properties sysCtx);
+	}
+
 	/**
 	 * Execute {@link ContextRunnable} in SysAdm context
 	 * 
 	 * @param runnable
 	 */
 	void executeAsSystem(ContextRunnable runnable);
+
 }

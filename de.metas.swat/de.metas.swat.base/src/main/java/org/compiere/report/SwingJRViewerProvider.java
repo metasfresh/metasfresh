@@ -1,6 +1,9 @@
 package org.compiere.report;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.print.JRReportViewerProvider;
@@ -9,9 +12,8 @@ import org.compiere.report.viewer.JasperReportViewerFrame;
 import com.google.common.io.Files;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.process.ProcessInfo;
-import de.metas.report.jasper.client.JRClientUtil;
+import de.metas.report.server.OutputType;
 import de.metas.util.Services;
 
 /*
@@ -58,7 +60,7 @@ public class SwingJRViewerProvider implements JRReportViewerProvider
 
 	public void openViewer_JasperPrint(final byte[] data, final ProcessInfo pi) throws JRException
 	{
-		final JasperPrint jasperPrint = JRClientUtil.toJasperPrint(data);
+		final JasperPrint jasperPrint = toJasperPrint(data);
 
 		//
 		// If the jasper report has no pages, display this error right now and do nothing.
@@ -74,6 +76,25 @@ public class SwingJRViewerProvider implements JRReportViewerProvider
 		jasperViewer.setExtendedState(jasperViewer.getExtendedState() | javax.swing.JFrame.MAXIMIZED_BOTH);
 		jasperViewer.setVisible(true);
 	}
+	
+	private static JasperPrint toJasperPrint(final byte[] data)
+	{
+		try
+		{
+			final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
+			final JasperPrint jasperPrint = (JasperPrint)ois.readObject();
+			return jasperPrint;
+		}
+		catch (IOException e)
+		{
+			throw new AdempiereException(e.getLocalizedMessage(), e);
+		}
+		catch (ClassNotFoundException e)
+		{
+			throw new AdempiereException(e.getLocalizedMessage(), e);
+		}
+	}
+
 
 	@Override
 	public OutputType getDesiredOutputType()

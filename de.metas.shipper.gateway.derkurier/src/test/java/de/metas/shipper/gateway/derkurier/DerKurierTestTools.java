@@ -1,13 +1,8 @@
 package de.metas.shipper.gateway.derkurier;
 
-import static de.metas.shipper.gateway.derkurier.DerKurierConstants.SHIPPER_GATEWAY_ID;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.Month;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.location.CountryCode;
+import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.derkurier.DerKurierDeliveryData.DerKurierDeliveryDataBuilder;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierServiceType;
 import de.metas.shipper.gateway.derkurier.restapi.models.RequestParticipant;
@@ -15,13 +10,21 @@ import de.metas.shipper.gateway.derkurier.restapi.models.RequestParticipant.Requ
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
-import de.metas.shipper.gateway.spi.model.CountryCode;
 import de.metas.shipper.gateway.spi.model.DeliveryDate;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder.DeliveryOrderBuilder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.ShipperId;
+import de.metas.shipping.api.ShipperTransportationId;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.Month;
+import java.util.List;
+
+import static de.metas.shipper.gateway.derkurier.DerKurierConstants.SHIPPER_GATEWAY_ID;
 
 /*
  * #%L
@@ -47,8 +50,8 @@ import de.metas.shipper.gateway.spi.model.PickupDate;
 
 public class DerKurierTestTools
 {
-	public static final int M_SHIPPER_ID = 50;
-	public static final int M_SHIPPER_TRANSPORTATION_ID = 60;
+	public static final ShipperId M_SHIPPER_ID = ShipperId.ofRepoId(50);
+	public static final ShipperTransportationId M_SHIPPER_TRANSPORTATION_ID = ShipperTransportationId.ofRepoId(60);
 
 	private static final CountryCode COUNTRY_CODE_DE = CountryCode.builder().alpha2("DE").alpha3("DEU").build();
 
@@ -62,7 +65,7 @@ public class DerKurierTestTools
 				.shipperTransportationId(M_SHIPPER_TRANSPORTATION_ID)
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(5)
-						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
+						.packageIds(createPackageIDs(ImmutableList.of(1, 2, 3, 4, 5)))
 						.grossWeightKg(1)
 						.customDeliveryData(derKurierDeliveryDataBuilder.parcelNumber("parcelnumber1").build())
 						.build())
@@ -78,13 +81,13 @@ public class DerKurierTestTools
 		final DeliveryOrder deliveryOrder = deliveryOrderBuilder
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(5)
-						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
+						.packageIds(createPackageIDs(ImmutableList.of(1, 2, 3, 4, 5)))
 						.grossWeightKg(1)
 						.customDeliveryData(derKurierDeliveryDataBuilder.parcelNumber("parcelnumber1").build())
 						.build())
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(1)
-						.packageIds(ImmutableList.of(6, 7))
+						.packageIds(createPackageIDs(ImmutableList.of(6, 7)))
 						.grossWeightKg(2)
 						.customDeliveryData(derKurierDeliveryDataBuilder.parcelNumber("parcelnumber2").build())
 						.build())
@@ -191,4 +194,13 @@ public class DerKurierTestTools
 				.timeFrom(LocalTime.of(10, 20, 30, 40)) // here we provide localtime up to the nano-second, but the web-service only wants hour:minute
 				.timeTo(LocalTime.of(11, 21, 31, 41));
 	}
+
+	private static Iterable<? extends PackageId> createPackageIDs(final List<Integer> list)
+	{
+		return list
+				.stream()
+				.map(PackageId::ofRepoId)
+				.collect(ImmutableList.toImmutableList());
+	}
 }
+

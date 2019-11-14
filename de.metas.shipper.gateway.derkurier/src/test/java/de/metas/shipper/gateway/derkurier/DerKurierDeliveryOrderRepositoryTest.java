@@ -18,7 +18,6 @@ import de.metas.shipper.gateway.derkurier.misc.Converters;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierServiceType;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine;
-import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder.DeliveryOrderBuilder;
@@ -73,7 +72,7 @@ public class DerKurierDeliveryOrderRepositoryTest
 		final DeliveryOrder savedDeliveryOrder = derKurierDeliveryOrderRepository.save(deliveryOrder);
 
 		// test some particular fields; feel free to extend
-		assertThat(savedDeliveryOrder.getRepoId()).isGreaterThan(0);
+		assertThat(savedDeliveryOrder.getId().getRepoId()).isGreaterThan(0);
 		assertThat(savedDeliveryOrder.getShipperId()).isEqualTo(M_SHIPPER_ID);
 		assertThat(savedDeliveryOrder.getShipperTransportationId()).isEqualByComparingTo(M_SHIPPER_TRANSPORTATION_ID);
 
@@ -83,14 +82,14 @@ public class DerKurierDeliveryOrderRepositoryTest
 		final I_DerKurier_DeliveryOrder headerRecord = headerRecords.get(0);
 		assertThat(headerRecord.getDK_Sender_Street()).isEqualTo(deliveryOrder.getPickupAddress().getStreet1());
 		assertThat(headerRecord.getDerKurier_DeliveryOrder_ID()).isEqualTo(savedDeliveryOrder.getOrderId().getOrderIdAsInt());
-		assertThat(headerRecord.getM_Shipper_ID()).isEqualTo(M_SHIPPER_ID);
-		assertThat(headerRecord.getM_ShipperTransportation_ID()).isEqualTo(M_SHIPPER_TRANSPORTATION_ID);
+		assertThat(headerRecord.getM_Shipper_ID()).isEqualTo(M_SHIPPER_ID.getRepoId());
+		assertThat(headerRecord.getM_ShipperTransportation_ID()).isEqualTo(M_SHIPPER_TRANSPORTATION_ID.getRepoId());
 
 		assertThat(deliveryOrder.getPickupDate().getTimeFrom()).isNull(); // guard
 		assertThat(headerRecord.getDK_DesiredPickupTime_From()).isNull();
 
 		// reload the saved order and verify that it's still the same
-		final DeliveryOrder loadedDeliveryOrder = derKurierDeliveryOrderRepository.getByRepoId(DeliveryOrderId.ofRepoId(savedDeliveryOrder.getRepoId()));
+		final DeliveryOrder loadedDeliveryOrder = derKurierDeliveryOrderRepository.getByRepoId(savedDeliveryOrder.getId());
 		assertThat(loadedDeliveryOrder).isEqualTo(savedDeliveryOrder);
 	}
 

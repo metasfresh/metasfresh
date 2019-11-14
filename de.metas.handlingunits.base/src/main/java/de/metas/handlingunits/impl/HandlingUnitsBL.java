@@ -712,13 +712,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public I_M_HU_PackingMaterial getHUPackingMaterial(final I_M_HU_Item huItem)
-	{
-		final int packingMaterialId = huItem.getM_HU_PackingMaterial_ID();
-		return packingMaterialId > 0 ? loadOutOfTrx(packingMaterialId, I_M_HU_PackingMaterial.class) : null;
-	}
-
-	@Override
 	public HuPackingInstructionsVersionId getEffectivePIVersionId(final I_M_HU hu)
 	{
 		I_M_HU_PI_Version piVersion = getEffectivePIVersion(hu);

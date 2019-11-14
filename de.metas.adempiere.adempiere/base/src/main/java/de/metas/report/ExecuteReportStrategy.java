@@ -1,7 +1,7 @@
 package de.metas.report;
 
-import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.process.ProcessInfo;
+import de.metas.report.server.OutputType;
 import lombok.ToString;
 import lombok.Value;
 

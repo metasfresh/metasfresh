@@ -14,7 +14,7 @@ public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2064100740L;
+	private static final long serialVersionUID = -102836041L;
 
     /** Standard Constructor */
     public X_M_Shipper (Properties ctx, int M_Shipper_ID, String trxName)
@@ -162,6 +162,8 @@ public class X_M_Shipper extends org.compiere.model.PO implements I_M_Shipper, o
 	public static final String SHIPPERGATEWAY_DerKurier = "derKurier";
 	/** DHL = dhl */
 	public static final String SHIPPERGATEWAY_DHL = "dhl";
+	/** DPD = dpd */
+	public static final String SHIPPERGATEWAY_DPD = "dpd";
 	/** Set Shipper Gateway.
 		@param ShipperGateway Shipper Gateway	  */
 	@Override

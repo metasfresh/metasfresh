@@ -16,11 +16,11 @@ import com.lowagie.text.Document;
 import com.lowagie.text.pdf.PdfCopy;
 import com.lowagie.text.pdf.PdfReader;
 
-import de.metas.adempiere.report.jasper.JasperConstants;
-import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.print.IPrintService;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
+import de.metas.report.server.ReportConstants;
+import de.metas.report.server.OutputType;
 
 /*
  * #%L
@@ -56,7 +56,7 @@ public class ExecuteReportStrategyUtil
 				.setCtx(Env.getCtx())
 				.setAD_Process_ID(jasperProcessId)
 				.setRecord(processInfo.getTable_ID(), processInfo.getRecord_ID())
-				.addParameter(JasperConstants.REPORT_PARAM_BARCODE_URL, ReportEngine.getBarcodeServlet(Env.getCtx()))
+				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, ReportEngine.getBarcodeServlet(Env.getCtx()))
 				.addParameter(IPrintService.PARAM_PrintCopies, 1)
 				.setArchiveReportData(false) // don't archive it! just give us the PDF data
 				.setPrintPreview(false) 

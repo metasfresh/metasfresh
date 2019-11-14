@@ -77,9 +77,9 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	/**
 	 * Standard Constructor
 	 *
-	 * @param ctx context
+	 * @param ctx                        context
 	 * @param M_ShipperTransportation_ID id
-	 * @param trxName transaction
+	 * @param trxName                    transaction
 	 */
 	public MMShipperTransportation(Properties ctx, int M_ShipperTransportation_ID, String trxName)
 	{
@@ -87,8 +87,8 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		if (is_new())
 		{
 			setDateDoc(SystemTime.asDayTimestamp());
-			setDocAction(DOCACTION_Fertigstellen);	// CO
-			setDocStatus(DOCSTATUS_Entwurf);	// DR
+			setDocAction(DOCACTION_Complete);    // CO
+			setDocStatus(DOCSTATUS_Drafted);    // DR
 
 			setAD_Org_ID(Env.getAD_Org_ID(ctx));
 
@@ -97,19 +97,19 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 			setIsApproved(false);
 			super.setProcessed(false);
 		}
-	}	// MMShipperTransportation
+	}    // MMShipperTransportation
 
 	/**
 	 * Load Constructor
 	 *
-	 * @param ctx context
-	 * @param rs result set
+	 * @param ctx     context
+	 * @param rs      result set
 	 * @param trxName transaction
 	 */
 	public MMShipperTransportation(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	// MMShipperTransportation
+	}    // MMShipperTransportation
 
 	/**
 	 * Approve Document
@@ -122,7 +122,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		log.info(toString());
 		setIsApproved(true);
 		return true;
-	}	// approveIt
+	}    // approveIt
 
 	/**
 	 * Close Document.
@@ -142,10 +142,10 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		if (m_processMsg != null)
 			return false;
 
-		setDocAction(DOCACTION_Nichts);
+		setDocAction(DOCACTION_None);
 
 		return true;
-	}	// closeIt
+	}    // closeIt
 
 	/**
 	 * Complete Document
@@ -182,7 +182,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 			final I_M_Package mPackage = shippingPackage.getM_Package();
 			mPackage.setShipDate(getDateDoc());
 			InterfaceWrapperHelper.save(mPackage);
-		}	// for all lines
+		}    // for all lines
 
 		// User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
@@ -193,9 +193,9 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		}
 
 		setProcessed(true);
-		setDocAction(DOCACTION_Reaktivieren); // issue #347
+		setDocAction(DOCACTION_Re_Activate); // issue #347
 		return IDocument.STATUS_Completed;
-	}	// completeIt
+	}    // completeIt
 
 	/**
 	 * Create PDF
@@ -215,7 +215,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 			log.error("Could not create PDF - " + e.getMessage());
 		}
 		return null;
-	}	// getPDF
+	}    // getPDF
 
 	/**
 	 * Create PDF file
@@ -229,7 +229,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		// if (re == null)
 		return null;
 		// return re.getPDF(file);
-	}	// createPDF
+	}    // createPDF
 
 	/**
 	 * Get Document Approval Amount
@@ -240,7 +240,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	public BigDecimal getApprovalAmt()
 	{
 		return BigDecimal.ZERO;
-	}	// getApprovalAmt
+	}    // getApprovalAmt
 
 	/**
 	 * Get Document Currency
@@ -253,7 +253,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		// MPriceList pl = MPriceList.get(getCtx(), getM_PriceList_ID());
 		// return pl.getC_Currency_ID();
 		return 0;
-	}	// getC_Currency_ID
+	}    // getC_Currency_ID
 
 	/**
 	 * Get Document Owner (Responsible)
@@ -264,7 +264,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	public int getDoc_User_ID()
 	{
 		return getUpdatedBy();
-	}	// getDoc_User_ID
+	}    // getDoc_User_ID
 
 	/**
 	 * Get Document Info
@@ -275,7 +275,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	public String getDocumentInfo()
 	{
 		return Services.get(IMsgBL.class).translate(getCtx(), COLUMNNAME_M_ShipperTransportation_ID) + " " + getDocumentNo();
-	}	// getDocumentInfo
+	}    // getDocumentInfo
 
 	/**
 	 * Get Process Message
@@ -286,7 +286,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	public String getProcessMsg()
 	{
 		return m_processMsg;
-	}	// getProcessMsg
+	}    // getProcessMsg
 
 	/*************************************************************************
 	 * Get Summary
@@ -304,7 +304,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		if (getDescription() != null && getDescription().length() > 0)
 			sb.append(" - ").append(getDescription());
 		return sb.toString();
-	}	// getSummary
+	}    // getSummary
 
 	@Override
 	public LocalDate getDocumentDate()
@@ -321,9 +321,9 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 	public boolean invalidateIt()
 	{
 		log.info(toString());
-		setDocAction(DOCACTION_Vorbereiten);
+		setDocAction(DOCACTION_Prepare);
 		return true;
-	}	// invalidateIt
+	}    // invalidateIt
 
 	/**
 	 * Prepare Document
@@ -350,10 +350,10 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 			return IDocument.STATUS_Invalid;
 		//
 		m_justPrepared = true;
-		if (!DOCACTION_Fertigstellen.equals(getDocAction()))
-			setDocAction(DOCACTION_Fertigstellen);
+		if (!DOCACTION_Complete.equals(getDocAction()))
+			setDocAction(DOCACTION_Complete);
 		return IDocument.STATUS_InProgress;
-	}	// prepareIt
+	}    // prepareIt
 
 	@Override
 	public boolean processIt(final String processAction)
@@ -362,9 +362,13 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		return Services.get(IDocumentBL.class).processIt(this, processAction);
 	}
 
-	/** Process Message */
+	/**
+	 * Process Message
+	 */
 	private String m_processMsg = null;
-	/** Just Prepared Flag */
+	/**
+	 * Just Prepared Flag
+	 */
 	private boolean m_justPrepared = false;
 
 	/**
@@ -382,7 +386,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 			return false;
 
 		setProcessed(false);
-		setDocAction(DOCACTION_Fertigstellen);
+		setDocAction(DOCACTION_Complete);
 
 		// metas: When shipping order is reactivated, shipping packages
 		// need to be reactivated, too. MPackages are refreshed.
@@ -406,7 +410,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 			return false;
 
 		return true;
-	}	// reActivateIt
+	}    // reActivateIt
 
 	/**
 	 * Reject Approval
@@ -419,7 +423,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		log.info(toString());
 		setIsApproved(false);
 		return true;
-	}	// rejectIt
+	}    // rejectIt
 
 	/**
 	 * Reverse Accrual - none
@@ -441,7 +445,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 			return false;
 
 		return false;
-	}	// reverseAccrualIt
+	}    // reverseAccrualIt
 
 	/**
 	 * Reverse Correction
@@ -463,7 +467,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 			return false;
 
 		return false;
-	}	// reverseCorrectionIt
+	}    // reverseCorrectionIt
 
 	/**
 	 * Unlock Document.
@@ -476,7 +480,7 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		log.info(toString());
 		setProcessing(false);
 		return true;
-	}	// unlockIt
+	}    // unlockIt
 
 	/**
 	 * Void Document.
@@ -492,20 +496,20 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		if (m_processMsg != null)
 			return false;
 
-		if (DOCSTATUS_Geschlossen.equals(getDocStatus())
-				|| DOCSTATUS_Rueckgaengig.equals(getDocStatus())
-				|| DOCSTATUS_Storniert.equals(getDocStatus()))
+		if (DOCSTATUS_Closed.equals(getDocStatus())
+				|| DOCSTATUS_Reversed.equals(getDocStatus())
+				|| DOCSTATUS_Voided.equals(getDocStatus()))
 		{
 			m_processMsg = "Document Closed: " + getDocStatus();
 			return false;
 		}
 
 		// Not Processed
-		if (DOCSTATUS_Entwurf.equals(getDocStatus())
-				|| DOCSTATUS_Ungueltig.equals(getDocStatus())
-				|| DOCSTATUS_InVerarbeitung.equals(getDocStatus())
-				|| DOCSTATUS_Genehmigt.equals(getDocStatus())
-				|| DOCSTATUS_NichtGenehmigt.equals(getDocStatus()))
+		if (DOCSTATUS_Drafted.equals(getDocStatus())
+				|| DOCSTATUS_Invalid.equals(getDocStatus())
+				|| DOCSTATUS_InProgress.equals(getDocStatus())
+				|| DOCSTATUS_Approved.equals(getDocStatus())
+				|| DOCSTATUS_NotApproved.equals(getDocStatus()))
 		{
 			// Set lines to 0
 			for (I_M_ShippingPackage line : getLines(false))
@@ -526,9 +530,9 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		setPackageWeight(BigDecimal.ZERO);
 		setPackageNetTotal(BigDecimal.ZERO);
 		setProcessed(true);
-		setDocAction(DOCACTION_Nichts);
+		setDocAction(DOCACTION_None);
 		return true;
-	}	// voidIt
+	}    // voidIt
 
 	/**
 	 * String Representation
@@ -542,9 +546,11 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		sb.append(get_ID()).append("-").append(getSummary())
 				.append("]");
 		return sb.toString();
-	}	// toString
+	}    // toString
 
-	/** Package Lines */
+	/**
+	 * Package Lines
+	 */
 	private List<I_M_ShippingPackage> m_lines = null;
 
 	/**
@@ -583,5 +589,5 @@ public class MMShipperTransportation extends X_M_ShipperTransportation implement
 		getLines(false).forEach(InterfaceWrapperHelper::delete);
 
 		return true;
-	}	// beforeDelete
-}	// MMShipperTransportation
+	}    // beforeDelete
+}    // MMShipperTransportation

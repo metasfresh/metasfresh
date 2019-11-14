@@ -83,6 +83,7 @@ import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -179,8 +180,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Cached(cacheName = I_M_HU_PI.Table_Name + "#by#" + I_M_HU_PI.COLUMNNAME_M_HU_PI_ID)
-	// NOTE: for caching to work, don't make it final
-	/* package */I_M_HU_PI retrievePI(final @CacheCtx Properties ctx, @NonNull final HuPackingInstructionsId piId)
+		// NOTE: for caching to work, don't make it final
+		/* package */I_M_HU_PI retrievePI(final @CacheCtx Properties ctx, @NonNull final HuPackingInstructionsId piId)
 	{
 		final I_M_HU_PI pi = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_M_HU_PI.COLUMNNAME_M_HU_PI_ID, piId)
@@ -327,6 +328,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public List<IPair<I_M_HU_PackingMaterial, Integer>> retrievePackingMaterialAndQtys(final I_M_HU hu)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 
 		final List<IPair<I_M_HU_PackingMaterial, Integer>> packingMaterials = new ArrayList<>();
 		final List<I_M_HU_Item> huItems = retrieveItems(hu);
@@ -354,7 +356,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				qty = BigDecimal.ONE;
 			}
 
-			final I_M_HU_PackingMaterial packingMaterial = handlingUnitsBL.getHUPackingMaterial(huItem);
+			final I_M_HU_PackingMaterial packingMaterial = packingMaterialDAO.retrieveHUPackingMaterialOrNull(huItem);
 
 			packingMaterials.add(ImmutablePair.of(packingMaterial, qty.intValueExact()));
 		}
@@ -541,7 +543,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			+ "#by"
 			+ "#" + I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_ID
 			+ "#" + I_M_HU_PI_Version.COLUMNNAME_IsCurrent)
-	/* package */I_M_HU_PI_Version retrievePICurrentVersionOrNull(
+		/* package */I_M_HU_PI_Version retrievePICurrentVersionOrNull(
 			final @CacheCtx Properties ctx,
 			final HuPackingInstructionsId piId,
 			final @CacheTrx String trxName)

@@ -35,7 +35,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
-import de.metas.adempiere.report.jasper.JasperConstants;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -65,6 +64,7 @@ import de.metas.organization.OrgId;
 import de.metas.process.ProcessInfo;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.report.server.ReportConstants;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -459,8 +459,8 @@ public class DesadvBL implements IDesadvBL
 				.setAD_ProcessByValue(AD_PROCESS_VALUE_EDI_DesadvLine_SSCC_Print)
 				//
 				// Parameter: REPORT_SQL_QUERY: provide a different report query which will select from our datasource instead of using the standard query (which is M_HU_ID based).
-				.addParameter(JasperConstants.REPORT_PARAM_SQL_QUERY, "select * from report.fresh_EDI_DesadvLine_SSCC_Label_Report"
-						+ " where AD_PInstance_ID=" + JasperConstants.REPORT_PARAM_SQL_QUERY_AD_PInstance_ID_Placeholder + " "
+				.addParameter(ReportConstants.REPORT_PARAM_SQL_QUERY, "select * from report.fresh_EDI_DesadvLine_SSCC_Label_Report"
+						+ " where AD_PInstance_ID=" + ReportConstants.REPORT_PARAM_SQL_QUERY_AD_PInstance_ID_Placeholder + " "
 						+ " order by EDI_DesadvLine_SSCC_ID")
 				//
 				// Execute the actual printing process
