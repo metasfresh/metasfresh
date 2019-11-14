@@ -34,6 +34,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
+import de.metas.handlingunits.picking.PickingCandidateIssueToBOMLine;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.reservation.HUReservation;
@@ -221,20 +222,28 @@ public final class ProductsToPickRowsDataFactory
 				qty = existingPickingCandidate.getQtyPicked();
 			}
 
-			return prepareRow()
-					.rowType(ProductsToPickRowType.PICK_FROM_HU)
-					.productId(packageable.getProductId())
-					.shipmentScheduleId(packageable.getShipmentScheduleId())
-					.salesOrderLineId(packageable.getSalesOrderLineIdOrNull())
-					.shipperId(packageable.getShipperId())
-					.qty(qty)
+			return prepareRow_PickFromHU(packageable)
 					.pickFromHUId(pickFromHUId)
+					.qty(qty)
 					.existingPickingCandidate(existingPickingCandidate)
 					.build();
 		}
 		else if (pickFrom.isPickFromPickingOrder())
 		{
-			throw new UnsupportedOperationException("not implemented"); // TODO
+			final ImmutableList<ProductsToPickRow> includedRows = existingPickingCandidate.getIssuesToPickingOrder()
+					.stream()
+					.map(issueToBOMLine -> prepareRow_IssueComponentsToPickingOrder(toBOMLineAllocablePackageable(issueToBOMLine, packageable))
+							.pickFromHUId(issueToBOMLine.getIssueFromHUId())
+							.qty(issueToBOMLine.getQtyToIssue())
+							.build())
+					.collect(ImmutableList.toImmutableList());
+
+			return prepareRow_PickFromPickingOrder(packageable)
+					.pickFromPickingOrderId(pickFrom.getPickingOrderId())
+					.qty(existingPickingCandidate.getQtyPicked())
+					.existingPickingCandidate(existingPickingCandidate)
+					.includedRows(includedRows)
+					.build();
 		}
 		else
 		{
@@ -343,20 +352,20 @@ public final class ProductsToPickRowsDataFactory
 
 	private ProductsToPickRow createZeroQtyRowFromHU(@NonNull final AllocablePackageable packageable, @NonNull final HuId pickFromHUId)
 	{
-		final ProductsToPickRowType rowType = packageable.getIssueToOrderBOMLineId() == null
-				? ProductsToPickRowType.PICK_FROM_HU
-				: ProductsToPickRowType.ISSUE_COMPONENTS_TO_PICKING_ORDER;
-
-		return prepareRow()
-				.rowType(rowType)
-				.productId(packageable.getProductId())
-				.shipmentScheduleId(packageable.getShipmentScheduleId())
-				.salesOrderLineId(packageable.getSalesOrderLineIdOrNull())
-				.shipperId(packageable.getShipperId())
-				.issueToOrderBOMLineId(packageable.getIssueToOrderBOMLineId())
-				.qty(packageable.getQtyToAllocate().toZero())
-				.pickFromHUId(pickFromHUId)
-				.build();
+		final boolean isPickFromHU = packageable.getIssueToOrderBOMLineId() == null;
+		if (isPickFromHU)
+		{
+			return prepareRow_PickFromHU(packageable)
+					.pickFromHUId(pickFromHUId)
+					.qty(packageable.getQtyToAllocate().toZero())
+					.build();
+		}
+		else
+		{
+			return prepareRow_IssueComponentsToPickingOrder(packageable)
+					.qty(packageable.getQtyToAllocate().toZero())
+					.build();
+		}
 	}
 
 	private ProductsToPickRow createQtyNotAvailableRowForRemainingQtyToAllocate(@NonNull final AllocablePackageable packageable)
@@ -375,7 +384,39 @@ public final class ProductsToPickRowsDataFactory
 				.build();
 	}
 
-	@Builder(builderMethodName = "prepareRow", builderClassName = "_RowBuilder")
+	private ProductsToPickRowBuilder prepareRow_PickFromHU(@NonNull final AllocablePackageable packageable)
+	{
+		return prepareRow()
+				.rowType(ProductsToPickRowType.PICK_FROM_HU)
+				.productId(packageable.getProductId())
+				.shipmentScheduleId(packageable.getShipmentScheduleId())
+				.salesOrderLineId(packageable.getSalesOrderLineIdOrNull())
+				.shipperId(packageable.getShipperId());
+	}
+
+	private ProductsToPickRowBuilder prepareRow_PickFromPickingOrder(@NonNull final AllocablePackageable finishedGoodPackageable)
+	{
+		return prepareRow()
+				.rowType(ProductsToPickRowType.PICK_FROM_PICKING_ORDER)
+				.productId(finishedGoodPackageable.getProductId())
+				.shipmentScheduleId(finishedGoodPackageable.getShipmentScheduleId())
+				.salesOrderLineId(finishedGoodPackageable.getSalesOrderLineIdOrNull())
+				.shipperId(finishedGoodPackageable.getShipperId());
+	}
+
+	private ProductsToPickRowBuilder prepareRow_IssueComponentsToPickingOrder(@NonNull final AllocablePackageable packageable)
+	{
+		return prepareRow()
+				.rowType(ProductsToPickRowType.ISSUE_COMPONENTS_TO_PICKING_ORDER)
+				.productId(packageable.getProductId())
+				.shipmentScheduleId(packageable.getShipmentScheduleId())
+				.salesOrderLineId(packageable.getSalesOrderLineIdOrNull())
+				.shipperId(packageable.getShipperId())
+				.issueToOrderBOMLineId(packageable.getIssueToOrderBOMLineId());
+
+	}
+
+	@Builder(builderMethodName = "prepareRow", builderClassName = "ProductsToPickRowBuilder")
 	private ProductsToPickRow createRow(
 			@NonNull final ProductsToPickRowType rowType,
 			@NonNull final ProductId productId,
@@ -482,11 +523,12 @@ public final class ProductsToPickRowsDataFactory
 		final Quantity qtyOfFinishedGoods = finishedGoodPackageable.getQtyToAllocate();
 		finishedGoodPackageable.allocateQty(qtyOfFinishedGoods);
 
-		return prepareRow()
-				.rowType(ProductsToPickRowType.PICK_FROM_PICKING_ORDER)
-				.productId(finishedGoodPackageable.getProductId())
-				.shipmentScheduleId(finishedGoodPackageable.getShipmentScheduleId())
-				.salesOrderLineId(finishedGoodPackageable.getSalesOrderLineIdOrNull())
+		return prepareRow_PickFromPickingOrder(finishedGoodPackageable)
+				// return prepareRow()
+				// .rowType(ProductsToPickRowType.PICK_FROM_PICKING_ORDER)
+				// .productId(finishedGoodPackageable.getProductId())
+				// .shipmentScheduleId(finishedGoodPackageable.getShipmentScheduleId())
+				// .salesOrderLineId(finishedGoodPackageable.getSalesOrderLineIdOrNull())
 				.pickFromPickingOrderId(PPOrderId.ofRepoId(pickingOrder.getPP_Order_ID()))
 				.qty(qtyOfFinishedGoods)
 				.includedRows(bomLineRows)
@@ -520,4 +562,14 @@ public final class ProductsToPickRowsDataFactory
 				.issueToOrderBOMLineId(bomLine.getOrderBOMLineId())
 				.build();
 	}
+
+	private AllocablePackageable toBOMLineAllocablePackageable(final PickingCandidateIssueToBOMLine issueToBOMLine, final AllocablePackageable finishedGoodPackageable)
+	{
+		return finishedGoodPackageable.toBuilder()
+				.productId(issueToBOMLine.getProductId())
+				.qtyToAllocateTarget(issueToBOMLine.getQtyToIssue())
+				.issueToOrderBOMLineId(issueToBOMLine.getIssueToOrderBOMLineId())
+				.build();
+	}
+
 }
