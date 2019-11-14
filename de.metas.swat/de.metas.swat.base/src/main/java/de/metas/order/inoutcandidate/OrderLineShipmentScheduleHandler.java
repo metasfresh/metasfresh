@@ -3,7 +3,6 @@ package de.metas.order.inoutcandidate;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -17,6 +16,8 @@ import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.DB;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.DocBaseAndSubType;
@@ -49,14 +50,19 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	public List<I_M_ShipmentSchedule> createCandidatesFor(@NonNull final Object model)
 	{
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
+		final I_M_ShipmentSchedule shipmentSchedule = createCandidatesForOrderLine(orderLine);
+		return ImmutableList.of(shipmentSchedule);
+	}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
-		final String trxName = InterfaceWrapperHelper.getTrxName(model);
+	private I_M_ShipmentSchedule createCandidatesForOrderLine(@NonNull final I_C_OrderLine orderLine)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
+		final String trxName = InterfaceWrapperHelper.getTrxName(orderLine);
 
 		// sanity check ol.getM_Product_ID()
 		if (orderLine.getQtyOrdered().signum() <= 0 || orderLine.getQtyReserved().signum() < 0)
 		{
-			throw new AdempiereException(orderLine.toString() + " has QtyOrdered<=0 or QtyReserved<0");
+			throw new AdempiereException(orderLine + " has QtyOrdered<=0 or QtyReserved<0");
 		}
 
 		final I_C_Order order = InterfaceWrapperHelper.create(orderLine.getC_Order(), I_C_Order.class);
@@ -116,7 +122,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		InterfaceWrapperHelper.save(newSched);
 
 		// Note: AllowConsolidateInOut and PostageFreeAmt is set on the first update of this schedule
-		return Collections.singletonList(newSched);
+		return newSched;
 	}
 
 	private static void updateShipmentScheduleFromOrderLine(
