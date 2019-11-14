@@ -140,7 +140,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		shipmentSchedule.setC_BPartner_Location_ID(orderLine.getC_BPartner_Location_ID());
 		shipmentSchedule.setC_BPartner_ID(orderLine.getC_BPartner_ID());
 
-		Check.assume(orderLine.getM_Product_ID() > 0, orderLine + " has M_Product_ID>0");
+		Check.assume(orderLine.getM_Product_ID() > 0, "{} has M_Product_ID set", orderLine);
 		shipmentSchedule.setM_Product_ID(orderLine.getM_Product_ID());
 
 		shipmentSchedule.setAD_User_ID(orderLine.getAD_User_ID());
