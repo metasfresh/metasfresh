@@ -46,7 +46,10 @@ import de.metas.util.StringUtils;
  * #L%
  */
 
-@SpringBootApplication(scanBasePackages = { "de.metas" })
+@SpringBootApplication(scanBasePackages = {
+		"de.metas",
+		"org.adempiere.ad.modelvalidator" // FIXME: workaround needed for ModuleActivatorDescriptorsRepository to be discovered
+})
 @ServletComponentScan(value = { "de.metas.adempiere.report.jasper.servlet" })
 @Profile(ReportServiceMain.PROFILE_PrintService_Standalone)
 public class ReportServiceMain
