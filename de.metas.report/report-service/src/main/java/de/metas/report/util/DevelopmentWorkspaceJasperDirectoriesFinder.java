@@ -70,6 +70,12 @@ public final class DevelopmentWorkspaceJasperDirectoriesFinder
 	private static boolean isProjectDir(final File dir)
 	{
 		return dir.isDirectory()
-				&& new File(dir, "pom.xml").exists();
+				&& new File(dir, "pom.xml").exists()
+				&& !containsIgnoreReportsFile(dir);
+	}
+
+	public static boolean containsIgnoreReportsFile(final File dir)
+	{
+		return new File(dir, ".ignore-reports").exists();
 	}
 }
