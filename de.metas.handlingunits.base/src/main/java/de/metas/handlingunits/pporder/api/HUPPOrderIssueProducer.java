@@ -80,6 +80,7 @@ public class HUPPOrderIssueProducer
 	private Quantity fixedQtyToIssue;
 	private boolean considerIssueMethodForQtyToIssueCalculation = true;
 	private ProcessIssueCandidatesPolicy processCandidatesPolicy = ProcessIssueCandidatesPolicy.IF_ORDER_PLANNING_STATUS_IS_COMPLETE;
+	private boolean changeHUStatusToIssued = true;
 	private PickingCandidateId pickingCandidateId;
 
 	public HUPPOrderIssueProducer(@NonNull final PPOrderId ppOrderId)
@@ -137,6 +138,7 @@ public class HUPPOrderIssueProducer
 				.fixedQtyToIssue(fixedQtyToIssue)
 				.considerIssueMethodForQtyToIssueCalculation(considerIssueMethodForQtyToIssueCalculation)
 				.issueFromHUs(hus)
+				.changeHUStatusToIssued(changeHUStatusToIssued)
 				.pickingCandidateId(pickingCandidateId)
 				.build()
 				.execute();
@@ -302,6 +304,12 @@ public class HUPPOrderIssueProducer
 		{
 			throw new AdempiereException("Unknown processCandidatesPolicy: " + processCandidatesPolicy);
 		}
+	}
+
+	public HUPPOrderIssueProducer changeHUStatusToIssued(final boolean changeHUStatusToIssued)
+	{
+		this.changeHUStatusToIssued = changeHUStatusToIssued;
+		return this;
 	}
 
 	public HUPPOrderIssueProducer pickingCandidateId(final PickingCandidateId pickingCandidateId)

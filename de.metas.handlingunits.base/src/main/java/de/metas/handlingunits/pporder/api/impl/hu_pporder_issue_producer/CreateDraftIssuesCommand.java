@@ -91,6 +91,7 @@ public class CreateDraftIssuesCommand
 	private final ZonedDateTime movementDate;
 	private final boolean considerIssueMethodForQtyToIssueCalculation;
 	private final ImmutableList<I_M_HU> issueFromHUs;
+	private final boolean changeHUStatusToIssued;
 	private final PickingCandidateId pickingCandidateId;
 
 	//
@@ -104,6 +105,7 @@ public class CreateDraftIssuesCommand
 			@Nullable final Quantity fixedQtyToIssue,
 			final boolean considerIssueMethodForQtyToIssueCalculation,
 			@NonNull final Collection<I_M_HU> issueFromHUs,
+			@Nullable final Boolean changeHUStatusToIssued,
 			//
 			@Nullable final PickingCandidateId pickingCandidateId)
 	{
@@ -117,6 +119,7 @@ public class CreateDraftIssuesCommand
 		this.movementDate = movementDate != null ? movementDate : SystemTime.asZonedDateTime();
 		this.considerIssueMethodForQtyToIssueCalculation = considerIssueMethodForQtyToIssueCalculation;
 		this.issueFromHUs = ImmutableList.copyOf(issueFromHUs);
+		this.changeHUStatusToIssued = changeHUStatusToIssued != null ? changeHUStatusToIssued : true;
 
 		remainingQtyToIssue = fixedQtyToIssue;
 
@@ -185,8 +188,11 @@ public class CreateDraftIssuesCommand
 		}
 
 		// update the HU's status so that it's not moved somewhere else etc
-		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Issued);
-		handlingUnitsDAO.saveHU(hu);
+		if (changeHUStatusToIssued)
+		{
+			huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Issued);
+			handlingUnitsDAO.saveHU(hu);
+		}
 
 		return candidate;
 	}

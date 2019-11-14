@@ -248,6 +248,7 @@ public class ProcessPickingCandidatesCommand
 				.fixedQtyToIssue(issueToPickingOrder.getQtyToIssue())
 				.movementDate(SystemTime.asZonedDateTime())
 				.processCandidates(ProcessIssueCandidatesPolicy.ALWAYS)
+				.changeHUStatusToIssued(false)
 				.pickingCandidateId(pickingCandidateId)
 				.createIssue(issueFromHU);
 	}
