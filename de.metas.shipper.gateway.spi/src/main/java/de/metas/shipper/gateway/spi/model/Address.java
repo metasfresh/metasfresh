@@ -42,7 +42,12 @@ public class Address
 	String city;
 
 	//
-	// External partner and partner location Id
+	// External partner
+	// (partner location id was removed in f429b78d5b0102037ba119347cc3de723756df17)
+	/**
+	 * Only used for logging in {@link de.metas.shipper.gateway.commons.async.DeliveryOrderWorkpackageProcessor#printLabel} and nothing more.
+	 */
+	@SuppressWarnings("JavadocReference")
 	int bpartnerId;
 
 	@Builder
