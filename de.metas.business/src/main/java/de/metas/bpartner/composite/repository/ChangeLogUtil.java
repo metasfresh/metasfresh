@@ -19,6 +19,7 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
 import org.compiere.util.TimeUtil;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -78,7 +79,8 @@ final class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_IsCustomer, BPartner.CUSTOMER)
 			.build();
 
-	private static final ImmutableMap<String, String> AD_USER_COLUMN_MAP = ImmutableMap
+	@VisibleForTesting
+	static final ImmutableMap<String, String> AD_USER_COLUMN_MAP = ImmutableMap
 			.<String, String> builder()
 			.put(I_AD_User.COLUMNNAME_AD_User_ID, BPartnerContact.ID)
 			.put(I_AD_User.COLUMNNAME_C_BPartner_ID, BPartnerContact.BPARTNER_ID)
@@ -104,7 +106,8 @@ final class ChangeLogUtil
 			.put(I_AD_User.COLUMNNAME_C_Greeting_ID, BPartnerContact.GREETING_ID)
 			.build();
 
-	private static final ImmutableMap<String, String> C_BPARTNER_LOCATION_COLUMN_MAP = ImmutableMap
+	@VisibleForTesting
+	static final ImmutableMap<String, String> C_BPARTNER_LOCATION_COLUMN_MAP = ImmutableMap
 			.<String, String> builder()
 			.put(I_C_BPartner_Location.COLUMNNAME_ExternalId, BPartnerLocation.EXTERNAL_ID)
 			.put(I_C_BPartner_Location.COLUMNNAME_GLN, BPartnerLocation.GLN)
@@ -146,53 +149,53 @@ final class ChangeLogUtil
 	{
 		final ImmutableList<RecordChangeLogEntry> bpartnerEntries = changeLogEntries.get(TableRecordReference.of(bpartnerRecord));
 
-		IPair<Instant, UserId> updated = ImmutablePair.of(
+		IPair<Instant, UserId> lastChanged = ImmutablePair.of(
 				TimeUtil.asInstant(bpartnerRecord.getUpdated()),
-				UserId.ofRepoId(bpartnerRecord.getUpdatedBy()));
+				UserId.ofRepoIdOrNull(bpartnerRecord.getUpdatedBy()/* might be -1 */));
 
 		final List<RecordChangeLogEntry> domainEntries = new ArrayList<>();
 		for (final RecordChangeLogEntry bpartnerLocationEntry : bpartnerEntries)
 		{
 			final Optional<RecordChangeLogEntry> entry = entryWithDomainFieldName(bpartnerLocationEntry, BPARTNER_COLUMN_MAP);
-			updated = latestOf(entry, updated);
+			lastChanged = latestOf(entry, lastChanged);
 			entry.ifPresent(domainEntries::add);
 		}
 
 		return RecordChangeLog.builder()
-				.createdByUserId(UserId.ofRepoId(bpartnerRecord.getCreatedBy()))
+				.createdByUserId(UserId.ofRepoIdOrNull(bpartnerRecord.getCreatedBy()/* might be -1 */))
 				.createdTimestamp(TimeUtil.asInstant(bpartnerRecord.getCreated()))
-				.lastChangedByUserId(updated.getRight())
-				.lastChangedTimestamp(updated.getLeft())
+				.lastChangedByUserId(lastChanged.getRight())
+				.lastChangedTimestamp(lastChanged.getLeft())
 				.recordId(ComposedRecordId.singleKey(org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID, bpartnerRecord.getC_BPartner_ID()))
 				.tableName(org.compiere.model.I_C_BPartner.Table_Name)
 				.entries(domainEntries)
 				.build();
 	}
 
-	public static RecordChangeLog createcontactChangeLog(
+	public static RecordChangeLog createContactChangeLog(
 			@NonNull final I_AD_User userRecord,
 			@NonNull final CompositeRelatedRecords relatedRecords)
 	{
 		final ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> recordRef2LogEntries = relatedRecords.getRecordRef2LogEntries();
 		final ImmutableList<RecordChangeLogEntry> userEntries = recordRef2LogEntries.get(TableRecordReference.of(userRecord));
 
-		IPair<Instant, UserId> updated = ImmutablePair.of(
+		IPair<Instant, UserId> lastChanged = ImmutablePair.of(
 				TimeUtil.asInstant(userRecord.getUpdated()),
-				UserId.ofRepoId(userRecord.getUpdatedBy()));
+				UserId.ofRepoIdOrNull(userRecord.getUpdatedBy()/* might be -1 */));
 
 		final List<RecordChangeLogEntry> domainEntries = new ArrayList<>();
 		for (final RecordChangeLogEntry userEntry : userEntries)
 		{
 			final Optional<RecordChangeLogEntry> entry = entryWithDomainFieldName(userEntry, AD_USER_COLUMN_MAP);
-			updated = latestOf(entry, updated);
+			lastChanged = latestOf(entry, lastChanged);
 			entry.ifPresent(domainEntries::add);
 		}
 
 		return RecordChangeLog.builder()
-				.createdByUserId(UserId.ofRepoId(userRecord.getCreatedBy()))
+				.createdByUserId(UserId.ofRepoIdOrNull(userRecord.getCreatedBy()/* might be -1 */))
 				.createdTimestamp(TimeUtil.asInstant(userRecord.getCreated()))
-				.lastChangedByUserId(updated.getRight())
-				.lastChangedTimestamp(updated.getLeft())
+				.lastChangedByUserId(lastChanged.getRight())
+				.lastChangedTimestamp(lastChanged.getLeft())
 				.recordId(ComposedRecordId.singleKey(I_AD_User.COLUMNNAME_AD_User_ID, userRecord.getAD_User_ID()))
 				.tableName(I_AD_User.Table_Name)
 				.entries(domainEntries)
@@ -210,15 +213,15 @@ final class ChangeLogUtil
 		Timestamp created = bpartnerLocationRecord.getCreated();
 		int createdBy = bpartnerLocationRecord.getCreatedBy();
 
-		IPair<Instant, UserId> updated = ImmutablePair.of(
+		IPair<Instant, UserId> lastChanged = ImmutablePair.of(
 				TimeUtil.asInstant(bpartnerLocationRecord.getUpdated()),
-				UserId.ofRepoId(bpartnerLocationRecord.getUpdatedBy()));
+				UserId.ofRepoIdOrNull(bpartnerLocationRecord.getUpdatedBy()/* might be -1 */));
 
 		final ImmutableList<RecordChangeLogEntry> bpartnerLocationEntries = recordRef2LogEntries.get(TableRecordReference.of(bpartnerLocationRecord));
 		for (final RecordChangeLogEntry bpartnerLocationEntry : bpartnerLocationEntries)
 		{
 			final Optional<RecordChangeLogEntry> entry = entryWithDomainFieldName(bpartnerLocationEntry, C_BPARTNER_LOCATION_COLUMN_MAP);
-			updated = latestOf(entry, updated);
+			lastChanged = latestOf(entry, lastChanged);
 			entry.ifPresent(domainEntries::add);
 		}
 
@@ -236,7 +239,7 @@ final class ChangeLogUtil
 		for (final RecordChangeLogEntry countryEntry : countryEntries)
 		{
 			final Optional<RecordChangeLogEntry> entry = entryWithDomainFieldName(countryEntry, C_COUNTRY_COLUMN_MAP);
-			updated = latestOf(entry, updated);
+			lastChanged = latestOf(entry, lastChanged);
 			entry.ifPresent(domainEntries::add);
 		}
 
@@ -248,16 +251,16 @@ final class ChangeLogUtil
 			for (final RecordChangeLogEntry postalEntry : postalEntries)
 			{
 				final Optional<RecordChangeLogEntry> entry = entryWithDomainFieldName(postalEntry, C_POSTAL_COLUMN_MAP);
-				updated = latestOf(entry, updated);
+				lastChanged = latestOf(entry, lastChanged);
 				entry.ifPresent(domainEntries::add);
 			}
 		}
 
 		return RecordChangeLog.builder()
-				.createdByUserId(UserId.ofRepoId(createdBy))
+				.createdByUserId(UserId.ofRepoIdOrNull(createdBy/* might be -1 */))
 				.createdTimestamp(TimeUtil.asInstant(created))
-				.lastChangedByUserId(updated.getRight())
-				.lastChangedTimestamp(updated.getLeft())
+				.lastChangedByUserId(lastChanged.getRight())
+				.lastChangedTimestamp(lastChanged.getLeft())
 				.recordId(ComposedRecordId.singleKey(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, bpartnerLocationRecord.getC_BPartner_Location_ID()))
 				.tableName(I_C_BPartner_Location.Table_Name)
 				.entries(domainEntries)
@@ -282,20 +285,20 @@ final class ChangeLogUtil
 	}
 
 	private static IPair<Instant, UserId> latestOf(
-			@NonNull final Optional<RecordChangeLogEntry> entry,
-			@NonNull final IPair<Instant, UserId> previous)
+			@NonNull final Optional<RecordChangeLogEntry> currentLogEntry,
+			@NonNull final IPair<Instant, UserId> previousLastChanged)
 	{
-		if (!entry.isPresent())
+		if (!currentLogEntry.isPresent())
 		{
-			return previous;
+			return previousLastChanged;
 		}
 
-		final Instant entryTimestamp = entry.get().getChangedTimestamp();
-		if (previous.getLeft().isAfter(entryTimestamp))
+		final Instant entryTimestamp = currentLogEntry.get().getChangedTimestamp();
+		if (previousLastChanged.getLeft().isAfter(entryTimestamp))
 		{
-			return previous;
+			return previousLastChanged;
 		}
 
-		return ImmutablePair.of(entryTimestamp, entry.get().getChangedByUserId());
+		return ImmutablePair.of(entryTimestamp, currentLogEntry.get().getChangedByUserId());
 	}
 }

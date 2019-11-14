@@ -58,7 +58,7 @@ public class BPartnerRecordsUtil
 
 	public static void createBPartnerData(final int idOffSet)
 	{
-		SystemTime.setTimeSource(() -> 1561133544); // Fri, 21 Jun 2019 16:12:24 GMT
+		setupTimeSource();
 
 		final String idOffSetStr = idOffSet == 0 ? "" : "_" + Integer.toString(idOffSet);
 
@@ -135,6 +135,18 @@ public class BPartnerRecordsUtil
 		InterfaceWrapperHelper.setValue(bpartnerLocationRecord, InterfaceWrapperHelper.COLUMNNAME_UpdatedBy, AD_USER_ID + idOffSet);
 		saveRecord(bpartnerLocationRecord);
 
+		resetTimeSource();
+	}
+
+	/** Set time source to one static value so that we know which created/updated timestamps to expect in our created records */
+	public static void setupTimeSource()
+	{
+		SystemTime.setTimeSource(() -> 1561133544); // Fri, 21 Jun 2019 16:12:24 GMT
+	}
+
+	public static void resetTimeSource()
+	{
 		SystemTime.resetTimeSource();
 	}
+
 }

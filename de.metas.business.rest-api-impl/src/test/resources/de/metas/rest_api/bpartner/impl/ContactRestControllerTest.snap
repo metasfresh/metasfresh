@@ -123,6 +123,42 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_id=[
       "lastUpdatedBy": 30
     },
     "sales": false
+    }
+]
+
+
+de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_id_unspecified_CreatedByUpdatedBy=[
+  {
+    "metasfreshId": 30,
+    "externalId": "abcde",
+    "metasfreshBPartnerId": 20,
+    "active": true,
+    "name": "bpartnerRecord.name",
+    "firstName": "bpartnerRecord.firstName",
+    "lastName": "bpartnerRecord.lastName",
+    "email": "bpartnerRecord.email",
+    "phone": "bpartnerRecord.phone",
+    "newsletter": true,
+    "shipToDefault": false,
+    "billToDefault": false,
+    "defaultContact": false,
+    "sales": false,
+    "salesDefault": false,
+    "purchase": false,
+    "purchaseDefault": false,
+    "subjectMatter": false,
+    "changeInfo": {
+      "createdMillis": 1561133544,
+      "lastUpdatedMillis": 1561133544,
+      "changeLogs": [
+        {
+          "fieldName": "name",
+          "updatedMillis": 1561133544,
+          "oldValue": "valueOld",
+          "newValue": "valueNew"
+        }
+      ]
+    }
   }
 ]
 
@@ -153,7 +189,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_val=[
       "lastUpdatedBy": 30
     },
     "sales": false
-  }
+    }
 ]
 
 
@@ -187,7 +223,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
           "createdBy": 30,
           "lastUpdatedMillis": 1561133544,
           "lastUpdatedBy": 30
-        },
+      	},
         "sales": false
       },
       {
@@ -210,7 +246,6 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "subjectMatter": false,
         "changeInfo": {
           "createdMillis": 1561133544,
-          "createdBy": 31,
           "lastUpdatedMillis": 1561133544,
           "lastUpdatedBy": 31
         },
@@ -245,8 +280,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "changeInfo": {
           "createdMillis": 1561133544,
           "createdBy": 32,
-          "lastUpdatedMillis": 1561133544,
-          "lastUpdatedBy": 32
+          "lastUpdatedMillis": 1561133544
         },
         "sales": false
       },
@@ -270,12 +304,10 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "subjectMatter": false,
         "changeInfo": {
           "createdMillis": 1561133544,
-          "createdBy": 33,
-          "lastUpdatedMillis": 1561133544,
-          "lastUpdatedBy": 33
+          "lastUpdatedMillis": 1561133544
         },
         "sales": false
-      }
+        }
     ]
   },
   {
@@ -308,7 +340,7 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
           "lastUpdatedBy": 34
         },
         "sales": false
-      }
+        }
     ]
   }
 ]
