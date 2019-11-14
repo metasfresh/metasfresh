@@ -2,6 +2,7 @@ package de.metas.handlingunits.pporder.api;
 
 import java.util.Collection;
 
+import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import de.metas.handlingunits.IHUQueryBuilder;

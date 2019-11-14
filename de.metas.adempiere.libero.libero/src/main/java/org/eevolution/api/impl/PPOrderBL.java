@@ -38,6 +38,7 @@ import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderCreateRequest;
+import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityStatus;
@@ -283,7 +284,11 @@ public class PPOrderBL implements IPPOrderBL
 		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
 		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
-		I_PP_Order ppOrder = ppOrdersRepo.getById(ppOrderId);
+		final I_PP_Order ppOrder = ppOrdersRepo.getById(ppOrderId);
+
+		ppOrder.setPlanningStatus(PPOrderPlanningStatus.COMPLETE.getCode());
+		ppOrdersRepo.save(ppOrder);
+
 		documentBL.processEx(ppOrder, X_PP_Order.DOCACTION_Close);
 	}
 
