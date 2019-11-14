@@ -22,70 +22,28 @@
 
 package de.metas.shipper.gateway.dhl;
 
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
-import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
-import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
-import de.metas.shipper.gateway.spi.DeliveryOrderId;
-import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.uom.UomId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static de.metas.shipper.gateway.dhl.DhlTestHelper.ACCOUNT_NUMBER_CH;
+import static de.metas.shipper.gateway.dhl.DhlTestHelper.createDummyDeliveryOrderDEtoCH;
 
 @Disabled("makes ACTUAL calls to dhl api and needs auth")
 class IntegrationDEtoCHTest
 {
-	private static final String USER_NAME = "a";
-	private static final String PASSWORD = "b";
-
-	private DhlDeliveryOrderRepository deliveryOrderRepository;
-
-	private DhlShipperGatewayClient client;
-
-	private final UomId dummyUom = UomId.ofRepoId(1);
-
 	@BeforeEach
 	void init()
 	{
-		AdempiereTestHelper.get().init(); // how do i add adempiere Test Helper?
-
-		deliveryOrderRepository = new DhlDeliveryOrderRepository(AttachmentEntryService.createInstanceForUnitTesting());
-		client = new DhlShipperGatewayClient(DhlClientConfig.builder()
-				.baseUrl("https://cig.dhl.de/services/sandbox/soap")
-				.applicationID(USER_NAME)
-				.applicationToken(PASSWORD)
-				.accountNumber("22222222225301") // special account number, depending on target country. why dhl why?????
-				.signature("pass")
-				.username("2222222222_01")
-				.lengthUomId(dummyUom)
-				.trackingUrlBase("dummy")
-				.build(),
-				DhlDatabaseClientLogger.instance);
+		AdempiereTestHelper.get().init();
 	}
 
 	@Test
-	void createDOPersistThenSendItToDHL()
+	@DisplayName("Delivery Order DE -> CH + test persistence after all steps")
+	void testAllSteps()
 	{
-		// persist the DO
-		final DeliveryOrder deliveryOrder = deliveryOrderRepository.save(DhlTestHelper.createDummyDeliveryOrderDEtoCH());
-
-		final DeliveryOrderId deliveryOrderRepoId = deliveryOrder.getId();
-		final DeliveryOrder deserialisedDO = deliveryOrderRepository.getByRepoId(deliveryOrderRepoId);
-
-		final DeliveryOrder completedDeliveryOrder = client.completeDeliveryOrder(deserialisedDO);
-		final DeliveryOrder savedCompletedDeliveryOrder = deliveryOrderRepository.save(completedDeliveryOrder);
-
-		final DhlCustomDeliveryData customDeliveryData = DhlCustomDeliveryData.cast(savedCompletedDeliveryOrder.getCustomDeliveryData());
-
-		//noinspection ConstantConditions
-		assertEquals(5, customDeliveryData.getDetails().size());
-
-		//
-		//		dumpPdfsToDisk(customDeliveryData.getDetails());
+		DhlTestHelper.testAllSteps(createDummyDeliveryOrderDEtoCH(), ACCOUNT_NUMBER_CH);
 	}
-
 }
