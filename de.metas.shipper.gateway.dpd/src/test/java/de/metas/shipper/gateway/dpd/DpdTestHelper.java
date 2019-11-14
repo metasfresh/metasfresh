@@ -22,8 +22,22 @@
 
 package de.metas.shipper.gateway.dpd;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Location;
+
 import com.google.common.collect.ImmutableList;
 import com.jgoodies.common.base.Strings;
+
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.location.CountryCode;
 import de.metas.mpackage.PackageId;
@@ -51,18 +65,6 @@ import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Location;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 @UtilityClass
 class DpdTestHelper
@@ -384,6 +386,7 @@ class DpdTestHelper
 				.count());
 	}
 
+	@SuppressWarnings("deprecation")
 	@NonNull
 	private DeliveryOrder createDraftDeliveryOrderFromDummy(@NonNull final DeliveryOrder deliveryOrder)
 	{
