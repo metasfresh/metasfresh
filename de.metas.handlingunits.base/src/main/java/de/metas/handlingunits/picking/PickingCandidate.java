@@ -243,7 +243,7 @@ public class PickingCandidate
 	{
 		assertDraft();
 
-		if (!pickStatus.isPickedOrPacked())
+		if (!pickStatus.isEligibleForPacking())
 		{
 			throw new AdempiereException("Invalid status when changing packing instructions: " + pickStatus);
 		}
@@ -256,7 +256,7 @@ public class PickingCandidate
 	{
 		assertDraft();
 
-		if (!pickStatus.isPickedOrPacked() && !pickStatus.isPickRejected())
+		if (!pickStatus.isEligibleForReview())
 		{
 			throw new AdempiereException("Picking candidate is not approvable because it's not picked or packed: " + this);
 		}
