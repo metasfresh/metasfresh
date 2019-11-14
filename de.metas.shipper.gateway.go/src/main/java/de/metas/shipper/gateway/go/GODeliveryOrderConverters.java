@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+import de.metas.mpackage.PackageId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
@@ -76,7 +77,6 @@ import lombok.experimental.UtilityClass;
 				.companyName2(orderPO.getGO_DeliverToCompanyName2())
 				.companyDepartment(orderPO.getGO_DeliverToDepartment())
 				.bpartnerId(orderPO.getGO_DeliverToBPartner_ID())
-				.bpartnerLocationId(orderPO.getGO_DeliverToBPLocation_ID())
 				.build();
 	}
 
@@ -88,7 +88,6 @@ import lombok.experimental.UtilityClass;
 		orderPO.setGO_DeliverToLocation_ID(createC_Location_ID(deliveryAddress));
 
 		orderPO.setGO_DeliverToBPartner_ID(deliveryAddress.getBpartnerId());
-		orderPO.setGO_DeliverToBPLocation_ID(deliveryAddress.getBpartnerLocationId());
 	}
 
 	public static PickupDate pickupDateFromPO(final I_GO_DeliveryOrder orderPO)
@@ -149,7 +148,7 @@ import lombok.experimental.UtilityClass;
 		orderPO.setGO_DeliverToPhoneNo(deliveryContact != null ? deliveryContact.getPhoneAsStringOrNull() : null);
 	}
 
-	public static DeliveryPosition deliveryPositionFromPO(final I_GO_DeliveryOrder orderPO, final Set<Integer> mpackageIds)
+	public static DeliveryPosition deliveryPositionFromPO(final I_GO_DeliveryOrder orderPO, final Set<PackageId> mpackageIds)
 	{
 		return DeliveryPosition.builder()
 				.numberOfPackages(orderPO.getGO_NumberOfPackages())

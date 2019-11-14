@@ -1,14 +1,8 @@
-package de.metas.shipper.gateway.spi.model;
-
-import de.metas.util.Check;
-import lombok.Builder;
-import lombok.Value;
-
 /*
  * #%L
- * de.metas.shipper.gateway.api
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,6 +19,12 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.location;
+
+import de.metas.util.Check;
+import lombok.Builder;
+import lombok.Value;
 
 @Value
 public class CountryCode

@@ -1,5 +1,6 @@
 package de.metas.shipper.gateway.derkurier;
 
+import de.metas.shipping.ShipperId;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
@@ -67,11 +68,9 @@ public class DerKurierClientFactory implements ShipperGatewayClientFactory
 	}
 
 	@Override
-	public ShipperGatewayClient newClientForShipperId(final int shipperId)
+	public ShipperGatewayClient newClientForShipperId(@NonNull final ShipperId shipperId)
 	{
-		Check.errorIf(shipperId <= 0, "Given parameter shipperId needs to be > 0; shipperId={}", shipperId);
-
-		final DerKurierShipperConfig shipperConfig = derKurierShipperConfigRepository.retrieveConfigForShipperId(shipperId);
+		final DerKurierShipperConfig shipperConfig = derKurierShipperConfigRepository.retrieveConfigForShipperId(shipperId.getRepoId());
 		return createClient(shipperConfig);
 	}
 
@@ -100,7 +99,7 @@ public class DerKurierClientFactory implements ShipperGatewayClientFactory
 	 * Note 2: visible because this is the object mapper we run with; we want our unit tests to use it as well.
 	 */
 	@VisibleForTesting
-	public static ObjectMapper extractAndConfigureObjectMapperOfRestTemplate(final RestTemplate restTemplate)
+	public static ObjectMapper extractAndConfigureObjectMapperOfRestTemplate(@NonNull final RestTemplate restTemplate)
 	{
 		final MappingJackson2HttpMessageConverter messageConverter = restTemplate
 				.getMessageConverters()

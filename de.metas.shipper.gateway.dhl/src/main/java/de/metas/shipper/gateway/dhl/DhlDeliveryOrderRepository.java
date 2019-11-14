@@ -22,9 +22,12 @@
 
 package de.metas.shipper.gateway.dhl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.location.CountryCode;
+import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
@@ -35,11 +38,12 @@ import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
-import de.metas.shipper.gateway.spi.model.CountryCode;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.ShipperId;
+import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -75,8 +79,8 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	@Override
 	public ITableRecordReference toTableRecordReference(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		final int deliveryOrderRepoId = deliveryOrder.getRepoId();
-		Check.assume(deliveryOrderRepoId > 0, "deliveryOrderRepoId > 0 for {}", deliveryOrder);
+		final DeliveryOrderId deliveryOrderRepoId = deliveryOrder.getId();
+		Check.assumeNotNull(deliveryOrderRepoId, "DeliveryOrder ID must not be null for deliveryOrder " + deliveryOrder);
 		return TableRecordReference.of(I_DHL_ShipmentOrderRequest.Table_Name, deliveryOrderRepoId);
 	}
 
@@ -101,7 +105,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	@Override
 	public DeliveryOrder save(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		if (deliveryOrder.getRepoId() >= 1)
+		if (deliveryOrder.getId() != null)
 		{
 			updateShipmentOrderRequestPO(deliveryOrder);
 			return deliveryOrder;
@@ -111,7 +115,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 			final I_DHL_ShipmentOrderRequest orderRequestPO = createShipmentOrderRequestPO(deliveryOrder);
 			return deliveryOrder
 					.toBuilder()
-					.repoId(orderRequestPO.getDHL_ShipmentOrderRequest_ID())
+					.id(DeliveryOrderId.ofRepoId(orderRequestPO.getDHL_ShipmentOrderRequest_ID()))
 					.build();
 		}
 	}
@@ -121,7 +125,8 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	 * <p>
 	 * keep in sync with {@link #createShipmentOrderRequestPO(DeliveryOrder)} and {@link DhlDraftDeliveryOrderCreator#createDraftDeliveryOrder(de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest)}
 	 */
-	private DeliveryOrder toDeliveryOrderFromPO(final I_DHL_ShipmentOrderRequest requestPo)
+	@NonNull
+	private DeliveryOrder toDeliveryOrderFromPO(@NonNull final I_DHL_ShipmentOrderRequest requestPo)
 	{
 		final List<I_DHL_ShipmentOrder> ordersPo = getAllShipmentOrdersForRequest(requestPo.getDHL_ShipmentOrderRequest_ID());
 
@@ -159,16 +164,14 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 				})
 				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableSet<Integer> packageIds = dhlCustomDeliveryDataDetail.stream()
-				.map(DhlCustomDeliveryDataDetail::getPackageId)
+		final ImmutableSet<PackageId> packageIds = dhlCustomDeliveryDataDetail.stream()
+				.map(dhlCustomDeliveryDataDetail1 -> PackageId.ofRepoId(dhlCustomDeliveryDataDetail1.getPackageId()))
 				.collect(ImmutableSet.toImmutableSet());
 
-		//noinspection UnnecessaryLocalVariable
-		final DeliveryOrder doFromPO = DeliveryOrder.builder()
-				.repoId(requestPo.getDHL_ShipmentOrderRequest_ID())
+		return DeliveryOrder.builder()
+				.id(DeliveryOrderId.ofRepoId(requestPo.getDHL_ShipmentOrderRequest_ID()))
 				.deliveryAddress(Address.builder()
 						.bpartnerId(firstOrder.getC_BPartner_ID())
-						.bpartnerLocationId(firstOrder.getC_BPartner_Location_ID())
 						.companyName1(firstOrder.getDHL_Receiver_Name1())
 						.companyName2(firstOrder.getDHL_Receiver_Name2())
 						.street1(firstOrder.getDHL_Receiver_StreetName1())
@@ -205,20 +208,18 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 				.customerReference(firstOrder.getCustomerReference())
 				.serviceType(DhlServiceType.forCode(firstOrder.getDHL_Product()))
 				.deliveryPositions(constructDeliveryPositions(firstOrder, packageIds))
-				.shipperId(firstOrder.getM_Shipper_ID())
-				.shipperTransportationId(firstOrder.getM_ShipperTransportation_ID())
+				.shipperId(ShipperId.ofRepoId(firstOrder.getM_Shipper_ID()))
+				.shipperTransportationId(ShipperTransportationId.ofRepoId(firstOrder.getM_ShipperTransportation_ID()))
 				.customDeliveryData(DhlCustomDeliveryData.builder()
 						.details(dhlCustomDeliveryDataDetail)
 						.build())
 				.build();
-
-		return doFromPO;
 	}
 
 	private static List<I_DHL_ShipmentOrder> getAllShipmentOrdersForRequest(final int requestId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_DHL_ShipmentOrder.class)
+				.createQueryBuilder(I_DHL_ShipmentOrder.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DHL_ShipmentOrder.COLUMNNAME_DHL_ShipmentOrderRequest_ID, requestId)
 				.create()
@@ -228,7 +229,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	@NonNull
 	private Iterable<? extends DeliveryPosition> constructDeliveryPositions(
 			@NonNull final I_DHL_ShipmentOrder firstOrder,
-			@NonNull final ImmutableSet<Integer> packageIds)
+			@NonNull final ImmutableSet<PackageId> packageIds)
 	{
 		final DeliveryPosition singleDeliveryPosition = DeliveryPosition.builder()
 				.packageDimensions(PackageDimensions.builder()
@@ -264,7 +265,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 
 		for (final DeliveryPosition deliveryPosition : deliveryOrder.getDeliveryPositions()) // only a single delivery position should exist
 		{
-			final ImmutableList<Integer> packageIdsAsList = deliveryPosition.getPackageIds().asList();
+			final ImmutableList<PackageId> packageIdsAsList = deliveryPosition.getPackageIds().asList();
 			for (int i = 0; i < deliveryPosition.getNumberOfPackages(); i++)
 			{
 				final ContactPerson deliveryContact = deliveryOrder.getDeliveryContact();
@@ -276,11 +277,10 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 					// Misc which doesn't fit dhl structure
 					final Address deliveryAddress = deliveryOrder.getDeliveryAddress();
 
-					shipmentOrder.setPackageId(packageIdsAsList.get(i));
+					shipmentOrder.setPackageId(packageIdsAsList.get(i).getRepoId());
 					shipmentOrder.setC_BPartner_ID(deliveryAddress.getBpartnerId());
-					shipmentOrder.setC_BPartner_Location_ID(deliveryAddress.getBpartnerLocationId());
-					shipmentOrder.setM_Shipper_ID(deliveryOrder.getShipperId());
-					shipmentOrder.setM_ShipperTransportation_ID(deliveryOrder.getShipperTransportationId());
+					shipmentOrder.setM_Shipper_ID(deliveryOrder.getShipperId().getRepoId());
+					shipmentOrder.setM_ShipperTransportation_ID(deliveryOrder.getShipperTransportationId().getRepoId());
 				}
 
 				{
@@ -383,13 +383,13 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 	{
 		for (final DeliveryPosition deliveryPosition : deliveryOrder.getDeliveryPositions()) // only a single delivery position should exist
 		{
-			final ImmutableList<Integer> packageIdsAsList = deliveryPosition.getPackageIds().asList();
+			final ImmutableList<PackageId> packageIdsAsList = deliveryPosition.getPackageIds().asList();
 			for (int i = 0; i < deliveryPosition.getNumberOfPackages(); i++)
 			{
 				//noinspection ConstantConditions
 				final DhlCustomDeliveryData customDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
 
-				final I_DHL_ShipmentOrder shipmentOrder = getShipmentOrderByRequestIdAndPackageId(deliveryOrder.getRepoId(), packageIdsAsList.get(i));
+				final I_DHL_ShipmentOrder shipmentOrder = getShipmentOrderByRequestIdAndPackageId(deliveryOrder.getId().getRepoId(), packageIdsAsList.get(i).getRepoId());
 				final DhlCustomDeliveryDataDetail deliveryDetail = customDeliveryData.getDetailBySequenceNumber(DhlSequenceNumber.of(shipmentOrder.getDHL_ShipmentOrder_ID()));
 
 				final String awb = deliveryDetail.getAwb();
@@ -404,9 +404,9 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 					shipmentOrder.setPdfLabelData(pdfData);
 
 					// save pdf as attachment as well
-					final TableRecordReference salesOrderRef = TableRecordReference.of(I_DHL_ShipmentOrder.Table_Name, shipmentOrder.getDHL_ShipmentOrder_ID());
+					final TableRecordReference deliveryOrderRef = TableRecordReference.of(I_DHL_ShipmentOrder.Table_Name, shipmentOrder.getDHL_ShipmentOrder_ID());
 
-					attachmentEntryService.createNewAttachment(salesOrderRef, awb + ".pdf", pdfData);
+					attachmentEntryService.createNewAttachment(deliveryOrderRef, awb + ".pdf", pdfData);
 				}
 
 				final String trackingUrl = deliveryDetail.getTrackingUrl();
@@ -420,7 +420,8 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 		}
 	}
 
-	private static I_DHL_ShipmentOrder getShipmentOrderByRequestIdAndPackageId(final int requestId, final int packageId)
+	@VisibleForTesting
+	I_DHL_ShipmentOrder getShipmentOrderByRequestIdAndPackageId(final int requestId, final int packageId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_DHL_ShipmentOrder.class)

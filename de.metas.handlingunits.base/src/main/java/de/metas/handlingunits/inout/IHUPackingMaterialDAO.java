@@ -25,17 +25,21 @@ package de.metas.handlingunits.inout;
  * #L%
  */
 
-import java.util.List;
-
-import org.compiere.model.I_M_Product;
-
+import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.mpackage.PackageId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_M_Product;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 public interface IHUPackingMaterialDAO extends ISingletonService
 {
@@ -58,4 +62,38 @@ public interface IHUPackingMaterialDAO extends ISingletonService
 				? Services.get(IProductDAO.class).getById(productId)
 				: null;
 	}
+
+	/**
+	 * Retrieve the packing material of a package by package Id.
+	 * <p>
+	 * If there's no packing material, null is returned.
+	 * <p>
+	 * sql:
+	 *
+	 * <pre>{@code
+	 * SELECT pack.*
+	 * FROM m_package_hu phu
+	 * 		INNER JOIN m_hu_item huitem ON phu.m_hu_id = huitem.m_hu_id
+	 * 		INNER JOIN m_hu_packingmaterial pack ON huitem.m_hu_packingmaterial_id = pack.m_hu_packingmaterial_id
+	 * WHERE phu.m_package_id = 1000023
+	 * LIMIT 1;
+	 * }</pre>
+	 * <p>
+	 * thx to ruxi for transforming this sql query into "metasfresh"
+	 */
+	@Nullable
+	I_M_HU_PackingMaterial retrievePackingMaterialOrNull(@NonNull final PackageId packageId);
+
+	@Nullable
+	I_M_HU_PackingMaterial retrieveHUPackingMaterialOrNull(@NonNull I_M_HU_Item huItem);
+
+	/**
+	 * Return the dimensions of the packing material, or a default with all dimensions set to 1
+	 * <p>
+	 * This method should not be here, it should belong to de.metas.shipper.gateway.commons.DeliveryOrderUtil.
+	 * However it is here, as adding it there will create a circular dependency between de.metas.handlingunits.base and de.metas.shipper.gateway.commons, because I_M_HU_PackingMaterial must be imported.
+	 */
+	@NonNull
+	PackageDimensions retrievePackageDimensions(@NonNull final I_M_HU_PackingMaterial packingMaterial, @NonNull final UomId toUomId);
+
 }

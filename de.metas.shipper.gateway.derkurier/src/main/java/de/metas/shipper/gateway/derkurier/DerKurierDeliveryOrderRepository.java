@@ -1,5 +1,55 @@
 package de.metas.shipper.gateway.derkurier;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
+import de.metas.location.CountryCode;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
+import de.metas.mpackage.PackageId;
+import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
+import de.metas.shipper.gateway.derkurier.misc.Converters;
+import de.metas.shipper.gateway.derkurier.misc.DerKurierServiceType;
+import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
+import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine;
+import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine_Package;
+import de.metas.shipper.gateway.spi.DeliveryOrderId;
+import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
+import de.metas.shipper.gateway.spi.model.Address;
+import de.metas.shipper.gateway.spi.model.Address.AddressBuilder;
+import de.metas.shipper.gateway.spi.model.ContactPerson;
+import de.metas.shipper.gateway.spi.model.DeliveryDate;
+import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.DeliveryOrder.DeliveryOrderBuilder;
+import de.metas.shipper.gateway.spi.model.DeliveryPosition;
+import de.metas.shipper.gateway.spi.model.DeliveryPosition.DeliveryPositionBuilder;
+import de.metas.shipper.gateway.spi.model.OrderId;
+import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.ShipperId;
+import de.metas.shipping.api.ShipperTransportationId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Country;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.List;
+
 import static de.metas.shipper.gateway.derkurier.DerKurierConstants.SHIPPER_GATEWAY_ID;
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_C_Country_ID;
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_Consignee_City;
@@ -19,57 +69,6 @@ import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_Reference;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Country;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Repository;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimaps;
-
-import de.metas.location.CountryId;
-import de.metas.location.ICountryDAO;
-import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
-import de.metas.shipper.gateway.derkurier.misc.Converters;
-import de.metas.shipper.gateway.derkurier.misc.DerKurierServiceType;
-import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
-import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine;
-import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine_Package;
-import de.metas.shipper.gateway.spi.DeliveryOrderId;
-import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
-import de.metas.shipper.gateway.spi.model.Address;
-import de.metas.shipper.gateway.spi.model.Address.AddressBuilder;
-import de.metas.shipper.gateway.spi.model.ContactPerson;
-import de.metas.shipper.gateway.spi.model.CountryCode;
-import de.metas.shipper.gateway.spi.model.DeliveryDate;
-import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryOrder.DeliveryOrderBuilder;
-import de.metas.shipper.gateway.spi.model.DeliveryPosition;
-import de.metas.shipper.gateway.spi.model.DeliveryPosition.DeliveryPositionBuilder;
-import de.metas.shipper.gateway.spi.model.OrderId;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
-import de.metas.shipper.gateway.spi.model.PickupDate;
-import de.metas.shipping.api.ShipperTransportationId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -112,7 +111,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 	@Override
 	public ITableRecordReference toTableRecordReference(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		return TableRecordReference.of(I_DerKurier_DeliveryOrder.Table_Name, deliveryOrder.getRepoId());
+		return TableRecordReference.of(I_DerKurier_DeliveryOrder.Table_Name, deliveryOrder.getId());
 	}
 
 	public ITableRecordReference toTableRecordReference(@NonNull final DeliveryPosition deliveryPosition)
@@ -124,7 +123,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 	public DeliveryOrder getByRepoId(@NonNull final DeliveryOrderId deliveryOrderId)
 	{
 		final I_DerKurier_DeliveryOrder //
-		orderPO = loadAssumeRecordExists(deliveryOrderId.getRepoId(), I_DerKurier_DeliveryOrder.class);
+				orderPO = loadAssumeRecordExists(deliveryOrderId.getRepoId(), I_DerKurier_DeliveryOrder.class);
 
 		final DeliveryOrder deliveryOrder = toDeliveryOrder(orderPO);
 		return deliveryOrder;
@@ -166,9 +165,9 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 
 		final DeliveryOrderBuilder deliverOrderBuilder = DeliveryOrder
 				.builder()
-				.repoId(headerRecord.getDerKurier_DeliveryOrder_ID())
-				.shipperId(headerRecord.getM_Shipper_ID())
-				.shipperTransportationId(headerRecord.getM_ShipperTransportation_ID())
+				.id(DeliveryOrderId.ofRepoId(headerRecord.getDerKurier_DeliveryOrder_ID()))
+				.shipperId(ShipperId.ofRepoId(headerRecord.getM_Shipper_ID()))
+				.shipperTransportationId(ShipperTransportationId.ofRepoId(headerRecord.getM_ShipperTransportation_ID()))
 				.serviceType(DerKurierServiceType.OVERNIGHT)
 				.pickupAddress(createPickupAddress(headerRecord))
 				.pickupDate(createPickupDate(headerRecord))
@@ -187,7 +186,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 					.get(lineRecord.getDerKurier_DeliveryOrderLine_ID())
 					.stream()
 					.map(I_DerKurier_DeliveryOrderLine_Package::getM_Package_ID)
-					.forEach(deliveryPositionBuilder::packageId);
+					.forEach(packageId -> deliveryPositionBuilder.packageId(PackageId.ofRepoId(packageId)));
 
 			deliverOrderBuilder.deliveryPosition(deliveryPositionBuilder.build());
 
@@ -349,17 +348,17 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 	public DeliveryOrder save(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		final I_DerKurier_DeliveryOrder headerRecord;
-		if (deliveryOrder.getRepoId() <= 0)
+		if (deliveryOrder.getId() == null)
 		{
 			headerRecord = newInstance(I_DerKurier_DeliveryOrder.class);
 		}
 		else
 		{
-			headerRecord = loadAssumeRecordExists(deliveryOrder.getRepoId(), I_DerKurier_DeliveryOrder.class);
+			headerRecord = loadAssumeRecordExists(deliveryOrder.getId().getRepoId(), I_DerKurier_DeliveryOrder.class);
 		}
 
-		headerRecord.setM_Shipper_ID(deliveryOrder.getShipperId());
-		headerRecord.setM_ShipperTransportation_ID(deliveryOrder.getShipperTransportationId());
+		headerRecord.setM_Shipper_ID(deliveryOrder.getShipperId().getRepoId());
+		headerRecord.setM_ShipperTransportation_ID(deliveryOrder.getShipperTransportationId().getRepoId());
 
 		storePickupAddressInHeaderRecord(headerRecord, deliveryOrder.getPickupAddress());
 		storePickupDateInHeaderRecord(headerRecord, deliveryOrder.getPickupDate());
@@ -367,7 +366,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 
 		final DeliveryOrderBuilder resultBuilder = deliveryOrder
 				.toBuilder()
-				.repoId(headerRecord.getDerKurier_DeliveryOrder_ID())
+				.id(DeliveryOrderId.ofRepoId(headerRecord.getDerKurier_DeliveryOrder_ID()))
 				.orderId(OrderId.of(SHIPPER_GATEWAY_ID, String.valueOf(headerRecord.getDerKurier_DeliveryOrder_ID())))
 				.clearDeliveryPositions();
 
@@ -504,7 +503,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 
 	private void syncPackageAllocationRecords(
 			@NonNull final I_DerKurier_DeliveryOrderLine lineRecord,
-			@NonNull final ImmutableSet<Integer> packageIds)
+			@NonNull final ImmutableSet<PackageId> packageIds)
 	{
 		final List<I_DerKurier_DeliveryOrderLine_Package> preExistingRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_DerKurier_DeliveryOrderLine_Package.class)
@@ -516,8 +515,9 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 				Multimaps.index(preExistingRecords, I_DerKurier_DeliveryOrderLine_Package::getM_Package_ID);
 
 		// create missing records
-		for (final int packageId : packageIds)
+		for (final PackageId packageIdRepo : packageIds)
 		{
+			final int packageId = packageIdRepo.getRepoId();
 			final boolean recordForPackageIdExists = packageId2preExistingRecord.containsKey(packageId);
 			if (recordForPackageIdExists)
 			{

@@ -36,24 +36,23 @@ import de.dhl.webservice.cisbase.ReceiverNativeAddressType;
 import de.dhl.webservices.businesscustomershipping._3.CreateShipmentOrderRequest;
 import de.dhl.webservices.businesscustomershipping._3.CreateShipmentOrderResponse;
 import de.dhl.webservices.businesscustomershipping._3.CreationState;
-import de.dhl.webservices.businesscustomershipping._3.ExportDocumentType;
 import de.dhl.webservices.businesscustomershipping._3.LabelData;
 import de.dhl.webservices.businesscustomershipping._3.ReceiverType;
-import de.dhl.webservices.businesscustomershipping._3.Serviceconfiguration;
 import de.dhl.webservices.businesscustomershipping._3.ShipmentDetailsTypeType;
 import de.dhl.webservices.businesscustomershipping._3.ShipmentItemType;
 import de.dhl.webservices.businesscustomershipping._3.ShipmentNotificationType;
 import de.dhl.webservices.businesscustomershipping._3.ShipmentOrderType;
 import de.dhl.webservices.businesscustomershipping._3.ShipperType;
 import de.dhl.webservices.businesscustomershipping._3.Version;
+import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.dhl.logger.DhlClientLogEvent;
 import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
-import de.metas.shipper.gateway.dhl.model.DhlCustomsDocument;
 import de.metas.shipper.gateway.dhl.model.DhlPackageLabelType;
 import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
+import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.Address;
@@ -126,6 +125,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		API_VERSION.setMinorRelease("0");
 	}
 
+	@NonNull
 	@Override
 	public String getShipperGatewayId()
 	{
@@ -138,15 +138,16 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		throw new ShipperGatewayException("(DRAFT) Delivery Orders shall never be created.");
 	}
 
+	@NonNull
 	@Override
-	public DeliveryOrder completeDeliveryOrder(final DeliveryOrder deliveryOrder) throws ShipperGatewayException
+	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
 		final ILoggable epicLogger = getEpicLogger();
 
 		epicLogger.addLog("Creating shipment order request for {}", deliveryOrder);
 		final CreateShipmentOrderRequest dhlRequest = createDHLShipmentOrderRequest(deliveryOrder);
 
-		final CreateShipmentOrderResponse response = (CreateShipmentOrderResponse)doActualRequest(dhlRequest, deliveryOrder.getRepoId());
+		final CreateShipmentOrderResponse response = (CreateShipmentOrderResponse)doActualRequest(dhlRequest, deliveryOrder.getId());
 		if (!BigInteger.ZERO.equals(response.getStatus().getStatusCode()))
 		{
 			final String exceptionMessage = response.getCreationState().stream()
@@ -164,14 +165,18 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		return completedDeliveryOrder;
 	}
 
+	/**
+	 * no idea what this does, but tobias sais it's useful to have this special log, so here it is!
+	 */
 	@NonNull
 	private ILoggable getEpicLogger()
 	{
 		return Loggables.withLogger(logger, Level.TRACE);
 	}
 
+	@NonNull
 	@Override
-	public List<PackageLabels> getPackageLabelsList(final DeliveryOrder deliveryOrder) throws ShipperGatewayException
+	public List<PackageLabels> getPackageLabelsList(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
 		final ILoggable epicLogger = getEpicLogger();
 		epicLogger.addLog("getPackageLabelsList for {}", deliveryOrder);
@@ -237,13 +242,13 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 				.build();
 	}
 
-	private Object doActualRequest(final Object request, final int deliveryOrderRepoId)
+	private Object doActualRequest(final Object request, @NonNull final DeliveryOrderId deliveryOrderRepoIdForLogging)
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final DhlClientLogEvent.DhlClientLogEventBuilder logEventBuilder = DhlClientLogEvent.builder()
 				.marshaller(webServiceTemplate.getMarshaller())
 				.requestElement(request)
-				.deliveryOrderRepoId(deliveryOrderRepoId)
+				.deliveryOrderRepoId(deliveryOrderRepoIdForLogging.getRepoId())
 				.config(config);
 		try
 		{
@@ -279,7 +284,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 
 		for (final DeliveryPosition deliveryPosition : deliveryOrder.getDeliveryPositions()) // only a single delivery position should exist
 		{
-			final ImmutableList<Integer> packageIdsAsList = deliveryPosition.getPackageIds().asList();
+			final ImmutableList<PackageId> packageIdsAsList = deliveryPosition.getPackageIds().asList();
 			for (int i = 0; i < deliveryPosition.getNumberOfPackages(); i++)
 			{
 				// (2.2)  the shipment
@@ -410,7 +415,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 				// (2) create the needed shipment order type
 				final ShipmentOrderType shipmentOrderType = objectFactory.createShipmentOrderType();
 				final DhlCustomDeliveryData dhlCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
-				final DhlCustomDeliveryDataDetail deliveryDetail = dhlCustomDeliveryData.getDetailByPackageId(packageIdsAsList.get(i));
+				final DhlCustomDeliveryDataDetail deliveryDetail = dhlCustomDeliveryData.getDetailByPackageId(packageIdsAsList.get(i).getRepoId());
 				shipmentOrderType.setSequenceNumber(deliveryDetail.getSequenceNumber().getSequenceNumber());
 				shipmentOrderType.setShipment(shipmentOrderTypeShipment);
 				createShipmentOrderRequest.getShipmentOrder().add(shipmentOrderType);

@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8'?><definitions name="LoginService" targetNamespace="http://dpd.com/common/service/LoginService/2.0" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:jaxws="http://java.sun.com/xml/ns/jaxws" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://dpd.com/common/service/LoginService/2.0" xmlns:types="http://dpd.com/common/service/types/LoginService/2.0" xmlns:types_authentication="http://dpd.com/common/service/types/Authentication/2.0" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <types>
+        <xsd:schema targetNamespace="http://dpd.com/common/service/LoginService/2.0" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:jaxws="http://java.sun.com/xml/ns/jaxws" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://dpd.com/common/service/LoginService/2.0" xmlns:types="http://dpd.com/common/service/types/LoginService/2.0" xmlns:types_authentication="http://dpd.com/common/service/types/Authentication/2.0" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+            <xsd:import namespace="http://dpd.com/common/service/types/LoginService/2.0" schemaLocation="https://public-ws-stage.dpd.com/services/LoginService/V2_0/?xsd=LoginService-Public_2_0.xsd">
+            </xsd:import>
+            <xsd:import namespace="http://dpd.com/common/service/types/Authentication/2.0" schemaLocation="https://public-ws-stage.dpd.com/services/LoginService/V2_0/?xsd=Authentication_2_0.xsd">
+            </xsd:import>
+        </xsd:schema>
+    </types>
+    <message name="LoginException">
+        <part element="types:LoginException" name="fault">
+        </part>
+    </message>
+    <message name="AuthenticationFaultMsg">
+        <part element="types_authentication:authenticationFault" name="fault">
+        </part>
+    </message>
+    <message name="getAuth">
+        <part element="types:getAuth" name="parameters">
+        </part>
+    </message>
+    <message name="getAuthResponse">
+        <part element="types:getAuthResponse" name="parameters">
+        </part>
+    </message>
+    <portType name="LoginService">
+        <operation name="getAuth">
+            <wsdl:documentation>
+                Creates an authentication token for the committed user if user name and password are valid.
+                The authentication token is needed for accessing other DPD Web Services.
+
+                Sample request:
+
+                SOAP:
+                &lt;soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                xmlns:ns="http://dpd.com/common/service/types/LoginService/2.0">
+                &lt;soapenv:Header/>
+                &lt;soapenv:Body>
+                &lt;ns:getAuth>
+                &lt;delisId>&lt;your delisId>&lt;/delisId>
+                &lt;password>&lt;your password>&lt;/password>
+                &lt;messageLanguage>de_DE&lt;/messageLanguage>
+                &lt;/ns:getAuth>
+                &lt;/soapenv:Body>
+                &lt;soapenv:Envelope>
+
+                REST:
+                URL: &lt;server:port>&lt;path>/LoginService/V2_0/getAuth
+                JSON-Data for POST-Request (for GET-Request data must send with parameter "request" and for
+                JSONP the Parameter "jsonpcallback" can be used, to send a padding function name):
+
+                {
+                "delisId" : "&lt;your delisId>",
+                "password": "&lt;your password>",
+                "messageLanguage":"en_EN"
+                }
+
+                REST-Result, without error:
+
+                {
+                "getAuthResponse": {"return":    {
+                "delisId": "&lt;your delisId&gt;",
+                "customerUid": "&lt;your customerUid>",
+                "authToken": "&lt;your authentication token>",
+                "depot": "&lt;your customerUid>"
+                }},
+                "status":    {
+                "type": "OK",
+                "code": "200",
+                "message": "valid"
+                }
+                }
+
+                REST-Result, if an error occurred:
+
+                {"status": {
+                "type": "AuthenticationFault",
+                "code": "&lt;Error code, e.g. LOGIN_8>",
+                "message": "&lt;Error message, e.g. The combination of user and password is invalid.>"
+                }}
+
+                Additional REST-State on system error:
+                Error-Code: 100
+                Error-Type: SystemFault
+                Error-Message: &lt;Message, which describe the error>
+            </wsdl:documentation>
+            <input message="tns:getAuth">
+            </input>
+            <output message="tns:getAuthResponse">
+            </output>
+            <fault message="tns:AuthenticationFaultMsg" name="AuthenticationFault">
+                <wsdl:documentation>Error codes:
+                </wsdl:documentation>
+            </fault>
+        </operation>
+    </portType>
+    <binding name="LoginService_2_0_SOAP" type="tns:LoginService">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <operation name="getAuth">
+            <wsdl:documentation>Creates an authentication token for the committed user if user name and password are
+                valid.
+            </wsdl:documentation>
+            <soap:operation soapAction="http://dpd.com/common/service/LoginService/2.0/getAuth"/>
+            <input>
+                <soap:body use="literal"/>
+            </input>
+            <output>
+                <soap:body use="literal"/>
+            </output>
+            <fault name="AuthenticationFault">
+                <soap:fault name="AuthenticationFault" use="literal"/>
+            </fault>
+        </operation>
+    </binding>
+    <service name="LoginService-Public_2_0">
+        <port binding="tns:LoginService_2_0_SOAP" name="LoginService_2_0_SOAP">
+            <soap:address location="https://public-ws-stage.dpd.com/services/LoginService/V2_0/"/>
+        </port>
+    </service>
+    <jaxws:bindings>
+        <jaxws:package name="com.dpd.common.ws.loginservice.v2_0"/>
+    </jaxws:bindings>
+</definitions>

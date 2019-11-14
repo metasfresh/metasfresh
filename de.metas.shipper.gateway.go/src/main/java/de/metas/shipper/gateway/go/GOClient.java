@@ -129,6 +129,7 @@ public class GOClient implements ShipperGatewayClient
 				.toString();
 	}
 
+	@NonNull
 	@Override
 	public String getShipperGatewayId()
 	{
@@ -146,7 +147,7 @@ public class GOClient implements ShipperGatewayClient
 		final Object goResponseObj = sendAndReceive(
 				objectFactory.createGOWebServiceSendungsErstellung(goRequest),
 				"createDeliveryOrder",
-				draftDeliveryOrder.getRepoId());
+				draftDeliveryOrder.getId().getRepoId());
 		final SendungsRueckmeldung goResponse = (SendungsRueckmeldung)goResponseObj;
 		final DeliveryOrder deliveryOrderResponse = createDeliveryOrderFromResponse(goResponse, draftDeliveryOrder, GOOrderStatus.NEW);
 		logger.trace("Delivery order created: {}", deliveryOrderResponse);
@@ -154,6 +155,7 @@ public class GOClient implements ShipperGatewayClient
 		return deliveryOrderResponse;
 	}
 
+	@NonNull
 	@Override
 	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrderRequest)
 	{
@@ -163,7 +165,7 @@ public class GOClient implements ShipperGatewayClient
 		final Object goResponseObj = sendAndReceive(
 				objectFactory.createGOWebServiceSendungsErstellung(goRequest),
 				"completeDeliveryOrder",
-				deliveryOrderRequest.getRepoId());
+				deliveryOrderRequest.getId().getRepoId());
 		final SendungsRueckmeldung goResponse = (SendungsRueckmeldung)goResponseObj;
 		final DeliveryOrder deliveryOrderResponse = createDeliveryOrderFromResponse(goResponse, deliveryOrderRequest, GOOrderStatus.APPROVED);
 		logger.trace("Delivery order completed: {}", deliveryOrderResponse);
@@ -183,7 +185,7 @@ public class GOClient implements ShipperGatewayClient
 		final Object goResponseObj = sendAndReceive(
 				objectFactory.createGOWebServiceSendungsErstellung(goRequest),
 				"voidDeliveryOrder",
-				deliveryOrderRequest.getRepoId());
+				deliveryOrderRequest.getId().getRepoId());
 		final SendungsRueckmeldung goResponse = (SendungsRueckmeldung)goResponseObj;
 		final DeliveryOrder deliveryOrderResponse = createDeliveryOrderFromResponse(goResponse, deliveryOrderRequest, GOOrderStatus.CANCELLATION);
 		logger.trace("Delivery order completed: {}", deliveryOrderResponse);
@@ -191,6 +193,7 @@ public class GOClient implements ShipperGatewayClient
 		return deliveryOrderResponse;
 	}
 
+	@NonNull
 	@Override
 	public List<PackageLabels> getPackageLabelsList(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
@@ -201,7 +204,7 @@ public class GOClient implements ShipperGatewayClient
 		final Object goResponseObj = sendAndReceive(
 				objectFactory.createGOWebServiceSendungsnummern(goRequest),
 				"getPackageLabelsList",
-				deliveryOrder.getRepoId());
+				deliveryOrder.getId().getRepoId());
 		if (goResponseObj instanceof Label)
 		{
 			final Label goLabels = (Label)goResponseObj;

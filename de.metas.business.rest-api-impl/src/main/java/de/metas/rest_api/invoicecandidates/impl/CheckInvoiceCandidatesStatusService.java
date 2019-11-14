@@ -24,6 +24,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.invoicecandidates.request.JsonCheckInvoiceCandidatesStatusRequest;
 import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesStatusResponse;
@@ -32,10 +33,8 @@ import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesSt
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceStatus;
 import de.metas.rest_api.invoicecandidates.response.JsonWorkPackageStatus;
 import de.metas.rest_api.utils.InvalidEntityException;
-import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
-import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 
 /*
@@ -84,9 +83,7 @@ public class CheckInvoiceCandidatesStatusService
 			multiQuery.query(query);
 		}
 		final List<I_C_Invoice_Candidate> invoiceCandidateRecords = invoiceCandDAO
-				.convertToIQuery(multiQuery.build())
-				.setRequiredAccess(Access.READ)
-				.list();
+				.getByQuery(multiQuery.build());
 
 		final List<JsonCheckInvoiceCandidatesStatusResponseItem> invoiceCandidates = retrieveStatus(invoiceCandidateRecords);
 
@@ -176,11 +173,12 @@ public class CheckInvoiceCandidatesStatusService
 				.qtyEntered(invoiceCandidateRecord.getQtyEntered())
 				.dateToInvoice(TimeUtil.asLocalDate(invoiceCandidateRecord.getDateToInvoice()))
 				.dateInvoiced(TimeUtil.asLocalDate(invoiceCandidateRecord.getDateInvoiced()))
-				.externalHeaderId(ExternalId.of(invoiceCandidateRecord.getExternalHeaderId()))
-				.externalLineId(ExternalId.of(invoiceCandidateRecord.getExternalLineId()))
+				.externalHeaderId(JsonExternalId.of(invoiceCandidateRecord.getExternalHeaderId()))
+				.externalLineId(JsonExternalId.of(invoiceCandidateRecord.getExternalLineId()))
 				.metasfreshId(MetasfreshId.of(invoiceCandidateRecord.getC_Invoice_Candidate_ID()))
 				.qtyInvoiced(qtyInvoiced)
-				.qtyToInvoice(qtyToInvoice);
+				.qtyToInvoice(qtyToInvoice)
+				.processed(invoiceCandidateRecord.isProcessed());
 	}
 
 	private static JsonInvoiceStatus toJsonInvoiceInfo(final I_C_Invoice invoice)

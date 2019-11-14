@@ -57,6 +57,8 @@ public final class UOMConstants
 	/** X12 Element 355 Code Year */
 	public static final String X12_YEAR = "YR";
 
+	public static final String X12_CENTIMETRE = "CM";
+
 	private UOMConstants()
 	{
 		super();

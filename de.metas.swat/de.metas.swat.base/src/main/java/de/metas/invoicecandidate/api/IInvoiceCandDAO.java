@@ -76,8 +76,9 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	<T extends I_C_Invoice_Candidate> Iterator<T> retrieveInvoiceCandidates(IQueryBuilder<T> queryBuilder);
 
-	/** Return a list of ICs for each query included in the given {@code multiQuery}. */
-	IQuery<I_C_Invoice_Candidate> convertToIQuery(InvoiceCandidateMultiQuery multiQuery);
+	List<I_C_Invoice_Candidate> getByQuery(InvoiceCandidateMultiQuery multiQuery);
+
+	int createSelectionByQuery(InvoiceCandidateMultiQuery multiQuery, PInstanceId pInstanceId);
 
 	List<I_C_Invoice_Candidate> retrieveIcForIl(I_C_InvoiceLine invoiceLine);
 

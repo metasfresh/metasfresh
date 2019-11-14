@@ -51,7 +51,7 @@ public class ShipperDAO implements IShipperDAO
 	{
 		final ShipperId shipperId = Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_M_Shipper.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Shipper.COLUMN_C_BPartner_ID, shipperPartnerId)
+				.addEqualsFilter(I_M_Shipper.COLUMNNAME_C_BPartner_ID, shipperPartnerId)
 				.orderByDescending(I_M_Shipper.COLUMNNAME_IsDefault)
 				.create()
 				.firstId(ShipperId::ofRepoIdOrNull);
@@ -68,9 +68,9 @@ public class ShipperDAO implements IShipperDAO
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_M_Shipper.class)
-				.addInArrayFilter(I_M_Shipper.COLUMN_AD_Client_ID, clientId, ClientId.SYSTEM)
+				.addInArrayFilter(I_M_Shipper.COLUMNNAME_AD_Client_ID, clientId, ClientId.SYSTEM)
 				.addEqualsFilter(I_M_Shipper.COLUMN_IsDefault, true)
-				.orderBy(I_M_Shipper.COLUMN_AD_Client_ID)
+				.orderBy(I_M_Shipper.COLUMNNAME_AD_Client_ID)
 				.create()
 				.firstIdOnly(ShipperId::ofRepoIdOrNull);
 	}

@@ -32,7 +32,7 @@ public interface DeliveryOrderRepository
 
 	/**
 	 * @return a reference to the internal {@code AD_Table_ID} and {@code Record_ID} of the record that backs the given {@code deliveryOrder}.
-	 *         Note that the reference's {@code Record_ID} is coming from {@link DeliveryOrder#getRepoId()}.
+	 *         Note that the reference's {@code Record_ID} is coming from {@link DeliveryOrder#getId()}.
 	 */
 	ITableRecordReference toTableRecordReference(DeliveryOrder deliveryOrder);
 

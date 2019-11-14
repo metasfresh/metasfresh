@@ -5,6 +5,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import java.time.LocalDate;
 import java.util.Set;
 
+import de.metas.mpackage.PackageId;
+import de.metas.shipping.api.ShipperTransportationId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -70,7 +72,7 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 			@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
-		final Set<Integer> mpackageIds = request.getMpackageIds();
+		final Set<PackageId> mpackageIds = request.getMpackageIds();
 
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(deliveryOrderKey.getFromOrgId());
@@ -85,7 +87,7 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 
 		final DerKurierShipperConfig config = derKurierShipperConfigRepository
-				.retrieveConfigForShipperId(request.getDeliveryOrderKey().getShipperId());
+				.retrieveConfigForShipperId(request.getDeliveryOrderKey().getShipperId().getRepoId());
 
 		final ParcelNumberGenerator parcelNumberGenerator = config.getParcelNumberGenerator();
 
@@ -119,7 +121,6 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 						.companyName2(deliverToBPartner.getName2())
 						//.companyDepartment("-") // N/A
 						.bpartnerId(deliverToBPartnerId)
-						.bpartnerLocationId(deliverToBPartnerLocationId)
 						.build())
 				.deliveryContact(ContactPerson.builder()
 						.emailAddress(deliverToBPartner.getEMail())
@@ -129,8 +130,8 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(mpackageIds.size())
 						.packageIds(mpackageIds)
-						.grossWeightKg(Math.max(request.getGrossWeightInKg(), 1))
-						.content(request.getPackageContentDescription())
+						.grossWeightKg(Math.max(request.getAllPackagesGrossWeightInKg(), 1))
+						.content(request.getAllPackagesContentDescription())
 						.customDeliveryData(derKurierDeliveryData)
 						.build())
 				// .customerReference(null)
