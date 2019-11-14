@@ -67,7 +67,6 @@ import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -2070,8 +2069,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-		final IQuery<I_C_Invoice_Candidate> retrieveInvoiceCandidates = invoiceCandDAO.convertToIQuery(multiQuery.build());
-		return retrieveInvoiceCandidates.createSelection(pInstanceId);
+
+		return invoiceCandDAO.createSelectionByQuery(multiQuery.build(), pInstanceId);
 	}
 
 	@Override
