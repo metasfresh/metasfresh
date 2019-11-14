@@ -13,7 +13,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_C_PaymentTerm;
 import org.junit.Before;
 import org.junit.Test;
@@ -163,12 +162,8 @@ public class InvoiceCandDAOTest
 				.build();
 
 		// invoke the method under test
-		final IQuery<I_C_Invoice_Candidate> asGenericQuery = invoiceCandDAO.convertToIQuery(multiQuery);
+		final List<I_C_Invoice_Candidate> records = invoiceCandDAO.getByQuery(multiQuery);
 
-		final int size = asGenericQuery.list().size();
-		assertThat(size).isEqualTo(2);
-
-		final List<I_C_Invoice_Candidate> records = asGenericQuery.list();
 		assertThat(records)
 				.extracting("C_Invoice_Candidate_ID", "ExternalHeaderId", "ExternalLineId")
 				.containsExactlyInAnyOrder(
@@ -190,9 +185,8 @@ public class InvoiceCandDAOTest
 						.build())
 				.build();
 
-		final IQuery<I_C_Invoice_Candidate> asGenericQuery = invoiceCandDAO.convertToIQuery(multiQuery);
+		final int selection = invoiceCandDAO.createSelectionByQuery(multiQuery, PInstanceId.ofRepoId(P_INSTANCE_ID));
 
-		final int selection = asGenericQuery.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
 		assertThat(selection).isEqualTo(0);
 	}
 
@@ -210,9 +204,8 @@ public class InvoiceCandDAOTest
 				.build();
 
 		// invoke the method under test
-		final IQuery<I_C_Invoice_Candidate> asGenericQuery = invoiceCandDAO.convertToIQuery(multiQuery);
+		final int selection = invoiceCandDAO.createSelectionByQuery(multiQuery, PInstanceId.ofRepoId(P_INSTANCE_ID));
 
-		final int selection = asGenericQuery.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
 		assertThat(selection).isEqualTo(0);
 	}
 
@@ -234,12 +227,10 @@ public class InvoiceCandDAOTest
 				.build();
 
 		// invoke the method under test
-		final IQuery<I_C_Invoice_Candidate> asGenericQuery = invoiceCandDAO.convertToIQuery(multiQuery);
+		final List<I_C_Invoice_Candidate> records = invoiceCandDAO.getByQuery(multiQuery);
 
-		final int selection = asGenericQuery.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
-		assertThat(selection).isEqualTo(2);
+		assertThat(records.size()).isEqualTo(2);
 
-		final List<I_C_Invoice_Candidate> records = asGenericQuery.list();
 		assertThat(records)
 				.extracting("C_Invoice_Candidate_ID", "ExternalHeaderId", "ExternalLineId")
 				.containsExactlyInAnyOrder(
@@ -262,12 +253,11 @@ public class InvoiceCandDAOTest
 				.build();
 
 		// invoke the method under test
-		final IQuery<I_C_Invoice_Candidate> asGenericQuery = invoiceCandDAO.convertToIQuery(multiQuery);
 
-		final int selection = asGenericQuery.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
-		assertThat(selection).isEqualTo(3);
+		final List<I_C_Invoice_Candidate> records = invoiceCandDAO.getByQuery(multiQuery);
 
-		final List<I_C_Invoice_Candidate> records = asGenericQuery.list();
+		assertThat(records.size()).isEqualTo(3);
+
 		assertThat(records)
 				.extracting("C_Invoice_Candidate_ID", "ExternalHeaderId", "ExternalLineId")
 				.containsExactlyInAnyOrder(
@@ -296,12 +286,10 @@ public class InvoiceCandDAOTest
 				.build();
 
 		// invoke the method under test
-		final IQuery<I_C_Invoice_Candidate> asGenericQuery = invoiceCandDAO.convertToIQuery(multiQuery);
+		final List<I_C_Invoice_Candidate> records = invoiceCandDAO.getByQuery(multiQuery);
 
-		final int selection = asGenericQuery.createSelection(PInstanceId.ofRepoId(P_INSTANCE_ID));
-		assertThat(selection).isEqualTo(5);
+		assertThat(records.size()).isEqualTo(5);
 
-		final List<I_C_Invoice_Candidate> records = asGenericQuery.list();
 		assertThat(records)
 				.extracting("C_Invoice_Candidate_ID", "ExternalHeaderId", "ExternalLineId")
 				.containsExactlyInAnyOrder(

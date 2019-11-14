@@ -211,7 +211,7 @@ public class ExternallyReferencedCandidateRepository
 
 		final ImmutableList.Builder<ExternallyReferencedCandidate> result = ImmutableList.builder();
 
-		final List<I_C_Invoice_Candidate> invoiceCandidateRecords = invoiceCandDAO.convertToIQuery(multiQuery.build()).list();
+		final List<I_C_Invoice_Candidate> invoiceCandidateRecords = invoiceCandDAO.getByQuery(multiQuery.build());
 		for (final I_C_Invoice_Candidate invoiceCandidateRecord : invoiceCandidateRecords)
 		{
 			final ExternallyReferencedCandidate candidate = forRecord(invoiceCandidateRecord);

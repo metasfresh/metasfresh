@@ -1,17 +1,14 @@
 package de.metas.rest_api.invoicecandidates.response;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import de.metas.rest_api.common.JsonErrorItem;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.MetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -37,7 +34,7 @@ import lombok.Value;
  */
 @Value
 @Builder
-public class JsonCheckInvoiceCandidatesStatusResponseItem
+public class JsonCloseInvoiceCandidatesResponseItem
 {
 	@ApiModelProperty(position = 10, dataType = "java.lang.String")
 	JsonExternalId externalHeaderId;
@@ -45,42 +42,27 @@ public class JsonCheckInvoiceCandidatesStatusResponseItem
 	@ApiModelProperty(position = 20, dataType = "java.lang.String")
 	JsonExternalId externalLineId;
 
-	@ApiModelProperty(position = 30, dataType = "java.lang.String")
+	@ApiModelProperty(position = 30, dataType = "java.lang.Long", value = "The metasfresh-ID of the upserted record")
+	@NonNull
 	MetasfreshId metasfreshId;
 
-	@ApiModelProperty(position = 40)
-	@Nullable
-	BigDecimal qtyEntered;
+	@ApiModelProperty(position = 40, dataType = "java.lang.String")
+	CloseInvoiceCandidateStatus status;
 
-	@ApiModelProperty(position = 50)
-	@Nullable
-	BigDecimal qtyToInvoice;
-
-	@ApiModelProperty(position = 60)
-	@Nullable
-	BigDecimal qtyInvoiced;
-
-	@ApiModelProperty(position = 70)
-	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	LocalDate dateInvoiced;
+	@ApiModelProperty(position = 50, dataType = "java.lang.String")
+	JsonErrorItem error;
 
-	@ApiModelProperty(position = 80)
-	@Nullable
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	LocalDate dateToInvoice;
+	public enum CloseInvoiceCandidateStatus
+	{
+		Closed("Closed"), Error("Error)");
 
-	@ApiModelProperty(position = 90)
-	boolean processed;
+		@Getter
+		private final String code;
 
-	@ApiModelProperty(position = 100)
-	@Nullable
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	List<JsonInvoiceStatus> invoices;
-
-	@ApiModelProperty(position = 110)
-	@Nullable
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	List<JsonWorkPackageStatus> workPackages;
-
+		CloseInvoiceCandidateStatus(final String code)
+		{
+			this.code = code;
+		}
+	}
 }
