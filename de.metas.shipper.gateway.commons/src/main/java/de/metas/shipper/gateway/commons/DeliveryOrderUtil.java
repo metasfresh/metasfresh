@@ -4,7 +4,7 @@ import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.Address.AddressBuilder;
-import de.metas.shipper.gateway.spi.model.CountryCode;
+import de.metas.location.CountryCode;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;

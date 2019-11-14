@@ -25,6 +25,7 @@ package de.metas.shipper.gateway.dhl;
 import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.customs.CustomsInvoiceRepository;
+import de.metas.location.CountryCode;
 import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.commons.ShipperTestHelper;
 import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
@@ -38,7 +39,6 @@ import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrder;
 import de.metas.shipper.gateway.dhl.model.I_Dhl_ShipmentOrder_Log;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
-import de.metas.shipper.gateway.spi.model.CountryCode;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
@@ -56,7 +56,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Location;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Stream;
 

@@ -24,6 +24,7 @@ package de.metas.shipper.gateway.dpd;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.location.ICountryCodeFactory;
 import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.dpd.model.DpdNotificationChannel;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
@@ -32,7 +33,6 @@ import de.metas.shipper.gateway.dpd.model.DpdServiceType;
 import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrder;
 import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrderLine;
 import de.metas.shipper.gateway.dpd.util.DpdConversionUtil;
-import de.metas.shipper.gateway.spi.CountryCodeFactory;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
 import de.metas.shipper.gateway.spi.model.Address;
@@ -59,6 +59,7 @@ import java.util.List;
 public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 {
 	private final AttachmentEntryService attachmentEntryService;
+	private final ICountryCodeFactory countryCodeFactory = Services.get(ICountryCodeFactory.class);
 
 	public DpdDeliveryOrderRepository(final AttachmentEntryService attachmentEntryService)
 	{
@@ -261,7 +262,6 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 			deliveryOrderLIneBuilder.add(line);
 		}
 
-		final CountryCodeFactory countryCodeFactory = new CountryCodeFactory();
 		return DeliveryOrder.builder()
 				//
 				// Misc

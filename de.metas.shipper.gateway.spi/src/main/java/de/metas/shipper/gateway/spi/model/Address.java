@@ -1,5 +1,6 @@
 package de.metas.shipper.gateway.spi.model;
 
+import de.metas.location.CountryCode;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Value;

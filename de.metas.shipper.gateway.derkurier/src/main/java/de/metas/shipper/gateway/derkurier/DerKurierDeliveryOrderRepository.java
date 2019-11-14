@@ -1,5 +1,55 @@
 package de.metas.shipper.gateway.derkurier;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
+import de.metas.location.CountryCode;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
+import de.metas.mpackage.PackageId;
+import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
+import de.metas.shipper.gateway.derkurier.misc.Converters;
+import de.metas.shipper.gateway.derkurier.misc.DerKurierServiceType;
+import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
+import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine;
+import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine_Package;
+import de.metas.shipper.gateway.spi.DeliveryOrderId;
+import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
+import de.metas.shipper.gateway.spi.model.Address;
+import de.metas.shipper.gateway.spi.model.Address.AddressBuilder;
+import de.metas.shipper.gateway.spi.model.ContactPerson;
+import de.metas.shipper.gateway.spi.model.DeliveryDate;
+import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.DeliveryOrder.DeliveryOrderBuilder;
+import de.metas.shipper.gateway.spi.model.DeliveryPosition;
+import de.metas.shipper.gateway.spi.model.DeliveryPosition.DeliveryPositionBuilder;
+import de.metas.shipper.gateway.spi.model.OrderId;
+import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.ShipperId;
+import de.metas.shipping.api.ShipperTransportationId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_Country;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.List;
+
 import static de.metas.shipper.gateway.derkurier.DerKurierConstants.SHIPPER_GATEWAY_ID;
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_C_Country_ID;
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_Consignee_City;
@@ -19,59 +69,6 @@ import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder
 import static de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine.COLUMNNAME_DK_Reference;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import de.metas.mpackage.PackageId;
-import de.metas.shipping.ShipperId;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Country;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Repository;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimaps;
-
-import de.metas.location.CountryId;
-import de.metas.location.ICountryDAO;
-import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
-import de.metas.shipper.gateway.derkurier.misc.Converters;
-import de.metas.shipper.gateway.derkurier.misc.DerKurierServiceType;
-import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
-import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine;
-import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine_Package;
-import de.metas.shipper.gateway.spi.DeliveryOrderId;
-import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
-import de.metas.shipper.gateway.spi.model.Address;
-import de.metas.shipper.gateway.spi.model.Address.AddressBuilder;
-import de.metas.shipper.gateway.spi.model.ContactPerson;
-import de.metas.shipper.gateway.spi.model.CountryCode;
-import de.metas.shipper.gateway.spi.model.DeliveryDate;
-import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryOrder.DeliveryOrderBuilder;
-import de.metas.shipper.gateway.spi.model.DeliveryPosition;
-import de.metas.shipper.gateway.spi.model.DeliveryPosition.DeliveryPositionBuilder;
-import de.metas.shipper.gateway.spi.model.OrderId;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
-import de.metas.shipper.gateway.spi.model.PickupDate;
-import de.metas.shipping.api.ShipperTransportationId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L

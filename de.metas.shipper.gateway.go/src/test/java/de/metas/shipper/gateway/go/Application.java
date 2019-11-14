@@ -1,23 +1,8 @@
 package de.metas.shipper.gateway.go;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.Month;
-import java.util.Arrays;
-import java.util.List;
-
-import de.metas.mpackage.PackageId;
-import de.metas.shipper.gateway.spi.CountryCodeFactory;
-import org.junit.Ignore;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.location.ICountryCodeFactory;
+import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.go.schema.GOPaidMode;
 import de.metas.shipper.gateway.go.schema.GOSelfDelivery;
 import de.metas.shipper.gateway.go.schema.GOSelfPickup;
@@ -28,6 +13,20 @@ import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.util.Services;
+import org.junit.Ignore;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.Month;
+import java.util.Arrays;
+import java.util.List;
 
 /*
  * #%L
@@ -65,7 +64,7 @@ public class Application
 	{
 		System.out.println("Using: " + goClient);
 
-		final CountryCodeFactory countryCodeFactory = new CountryCodeFactory();
+		final ICountryCodeFactory countryCodeFactory = Services.get(ICountryCodeFactory.class);
 
 		final DeliveryOrder deliveryOrderCreateRequest = DeliveryOrder.builder()
 				.pickupAddress(Address.builder()

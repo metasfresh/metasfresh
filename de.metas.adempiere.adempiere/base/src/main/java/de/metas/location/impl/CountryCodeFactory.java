@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.spi
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -20,20 +20,21 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.spi;
+package de.metas.location.impl;
 
 import com.google.common.collect.ImmutableMap;
-import de.metas.shipper.gateway.spi.model.CountryCode;
+import de.metas.location.CountryCode;
+import de.metas.location.ICountryCodeFactory;
 import de.metas.util.Check;
 import lombok.NonNull;
 
 import java.util.Locale;
 
-public class CountryCodeFactory
+public class CountryCodeFactory implements ICountryCodeFactory
 {
 	private final ImmutableMap<String, CountryCode> countryCodesByAlpha2;
 
-	public CountryCodeFactory()
+	private CountryCodeFactory()
 	{
 		final ImmutableMap.Builder<String, CountryCode> countryCodesByAlpha2 = ImmutableMap.builder();
 
