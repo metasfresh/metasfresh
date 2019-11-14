@@ -320,6 +320,7 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 		return rowsData.getDocumentIdsToInvalidate(recordRefs);
 	}
 
+	// extends IEditableView.patchViewRow
 	public final void patchViewRow(final RowEditingContext ctx, final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
 		Check.assumeNotEmpty(fieldChangeRequests, "fieldChangeRequests is not empty");
