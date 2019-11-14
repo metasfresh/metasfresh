@@ -227,7 +227,6 @@ public class ProductPlanningDAO_findTest
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(attributeSetInstanceId))
 				.build();
 
-		final I_PP_Product_Planning result = new ProductPlanningDAO().find(query);
-		return result;
+		return new ProductPlanningDAO().find(query).orElse(null);
 	}
 }

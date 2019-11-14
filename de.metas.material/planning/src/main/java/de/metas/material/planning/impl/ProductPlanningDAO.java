@@ -26,6 +26,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -73,7 +74,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	}
 
 	@Override
-	public I_PP_Product_Planning find(@NonNull final ProductPlanningQuery productPlanningQuery)
+	public Optional<I_PP_Product_Planning> find(@NonNull final ProductPlanningQuery productPlanningQuery)
 	{
 		final IQueryBuilder<I_PP_Product_Planning> queryBuilder = createQueryBuilder(
 				productPlanningQuery.getOrgId(),
@@ -85,7 +86,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 		//
 		// Fetch first matching product planning data
 		final I_PP_Product_Planning productPlanningData = queryBuilder.create().first();
-		return productPlanningData;
+		return Optional.ofNullable(productPlanningData);
 	}
 
 	@Override
@@ -172,8 +173,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 
 		// Filter by Product if provided
 
-			queryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId, null);
-
+		queryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId, null);
 
 		// Filter by ASI
 		final ICompositeQueryFilter<I_PP_Product_Planning> attributesFilter = createAttributesFilter(attributeSetInstanceId);

@@ -140,7 +140,7 @@ public class SupplyRequiredHandler implements MaterialEventHandler<SupplyRequire
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(materialDescr.getAttributeSetInstanceId()))
 				.build();
 
-		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(productPlanningQuery);
+		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(productPlanningQuery).orElse(null);
 		if (productPlanning == null)
 		{
 			Loggables.addLog("No PP_Product_Planning record found => nothing to do; query={}", productPlanningQuery);

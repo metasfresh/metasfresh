@@ -256,7 +256,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 				.attributeSetInstanceId(asiId)
 				// no warehouse, no plant
 				.build();
-		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(query);
+		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(query).orElse(null);
 		if (productPlanning == null)
 		{
 			// fallback to old behavior -> a movement is created instead of dd_Order

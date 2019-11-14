@@ -23,6 +23,7 @@ package de.metas.material.planning;
  */
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
@@ -82,10 +83,8 @@ public interface IProductPlanningDAO extends ISingletonService
 
 	/**
 	 * Find best matching product planning.
-	 *
-	 * @return matching product planning or null
 	 */
-	I_PP_Product_Planning find(ProductPlanningQuery productPlanningQuery);
+	Optional<I_PP_Product_Planning> find(ProductPlanningQuery productPlanningQuery);
 
 	/**
 	 * Search product plannings to find out which is the plant({@link I_S_Resource}) for given Org/Warehouse/Product.
