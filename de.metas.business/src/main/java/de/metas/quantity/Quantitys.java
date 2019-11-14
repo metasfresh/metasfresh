@@ -83,7 +83,7 @@ public class Quantitys
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
 		final I_C_UOM stockUomRecord = productBL.getStockUOM(productId);
-	
+
 		return Quantity.zero(stockUomRecord);
 	}
 
@@ -117,7 +117,6 @@ public class Quantitys
 		final Quantity stockQty = uomConversionBL.convertQuantityTo(Quantity.of(qty, nonStockUomRecord), UOMConversionContext.of(productId), stockUomId);
 		return stockQty;
 	}
-
 
 	/**
 	 * @return the sum of the given quantities; the result has the first augent's UOM; conversion is done as required.
@@ -153,6 +152,11 @@ public class Quantitys
 		final Quantity converted = uomConversionBL.convertQuantityTo(qty, conversionCtx, targedUomId);
 
 		return converted;
+	}
+
+	public static Quantity create(final int qty, final UomId repoId)
+	{
+		return create(BigDecimal.valueOf(qty), repoId);
 	}
 
 	public class QuantityDeserializer extends StdDeserializer<Quantity>

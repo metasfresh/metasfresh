@@ -1,35 +1,32 @@
 package de.metas.shipper.gateway.go;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.Month;
-import java.util.List;
-import java.util.Locale;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.location.ICountryCodeFactory;
+import de.metas.mpackage.PackageId;
+import de.metas.shipper.gateway.go.schema.GOPaidMode;
+import de.metas.shipper.gateway.go.schema.GOSelfDelivery;
+import de.metas.shipper.gateway.go.schema.GOSelfPickup;
+import de.metas.shipper.gateway.go.schema.GOServiceType;
+import de.metas.shipper.gateway.spi.model.Address;
+import de.metas.shipper.gateway.spi.model.DeliveryOrder;
+import de.metas.shipper.gateway.spi.model.DeliveryPosition;
+import de.metas.shipper.gateway.spi.model.PackageLabel;
+import de.metas.shipper.gateway.spi.model.PackageLabels;
+import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.util.Services;
 import org.junit.Ignore;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.shipper.gateway.go.schema.GOPaidMode;
-import de.metas.shipper.gateway.go.schema.GOSelfDelivery;
-import de.metas.shipper.gateway.go.schema.GOSelfPickup;
-import de.metas.shipper.gateway.go.schema.GOServiceType;
-import de.metas.shipper.gateway.spi.model.Address;
-import de.metas.shipper.gateway.spi.model.CountryCode;
-import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryPosition;
-import de.metas.shipper.gateway.spi.model.PackageLabel;
-import de.metas.shipper.gateway.spi.model.PackageLabels;
-import de.metas.shipper.gateway.spi.model.PickupDate;
-import de.metas.util.Check;
-import lombok.NonNull;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.Month;
+import java.util.Arrays;
+import java.util.List;
 
 /*
  * #%L
@@ -67,7 +64,7 @@ public class Application
 	{
 		System.out.println("Using: " + goClient);
 
-		final CountryCodeFactory countryCodeFactory = new CountryCodeFactory();
+		final ICountryCodeFactory countryCodeFactory = Services.get(ICountryCodeFactory.class);
 
 		final DeliveryOrder deliveryOrderCreateRequest = DeliveryOrder.builder()
 				.pickupAddress(Address.builder()
@@ -92,7 +89,7 @@ public class Application
 						.build())
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(5)
-						.packageIds(ImmutableList.of(1, 2, 3, 4, 5))
+						.packageIds(createPackageIDs())
 						.grossWeightKg(1)
 						.content("some products")
 						.build())
@@ -147,36 +144,11 @@ public class Application
 		}
 	}
 
-	//
-	//
-	//
-	private static class CountryCodeFactory
+	private static Iterable<? extends PackageId> createPackageIDs()
 	{
-		private final ImmutableMap<String, CountryCode> countryCodesByAlpha2;
-
-		public CountryCodeFactory()
-		{
-			final ImmutableMap.Builder<String, CountryCode> countryCodesByAlpha2 = ImmutableMap.builder();
-
-			for (final String countryCodeAlpha2 : Locale.getISOCountries())
-			{
-				final Locale locale = new Locale("", countryCodeAlpha2);
-				final String countryCodeAlpha3 = locale.getISO3Country();
-				final CountryCode countryCode = CountryCode.builder()
-						.alpha2(countryCodeAlpha2)
-						.alpha3(countryCodeAlpha3)
-						.build();
-				countryCodesByAlpha2.put(countryCodeAlpha2, countryCode);
-			}
-
-			this.countryCodesByAlpha2 = countryCodesByAlpha2.build();
-		}
-
-		public CountryCode getCountryCodeByAlpha2(@NonNull final String countryCodeAlpha2)
-		{
-			final CountryCode countryCode = countryCodesByAlpha2.get(countryCodeAlpha2);
-			Check.assumeNotNull(countryCode, "countyCode shall exist for '{}' (alpha2)", countryCodeAlpha2);
-			return countryCode;
-		}
+		return Arrays.asList(1, 2, 3, 4, 5)
+				.stream()
+				.map(PackageId::ofRepoId)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

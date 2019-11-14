@@ -25,10 +25,12 @@ package de.metas.shipper.gateway.dhl;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.customs.CustomsInvoiceRepository;
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Package_HU;
+import de.metas.mpackage.PackageId;
 import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
@@ -44,7 +46,9 @@ import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
@@ -96,7 +100,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	public DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
-		final Set<Integer> mpackageIds = request.getMpackageIds();
+		final Set<PackageId> mpackageIds = request.getMpackageIds();
 
 		final String customerReference = ""; // todo what is the customer reference ?
 
@@ -113,14 +117,18 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
 
+		final int grossWeightInKg = Math.max(request.getAllPackagesGrossWeightInKg(), 1);
+		final ShipperId shipperId = deliveryOrderKey.getShipperId();
+		final ShipperTransportationId shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
+
 		DhlServiceType detectedServiceType = DhlServiceType.Dhl_Paket;
 		final DhlCustomDeliveryData.DhlCustomDeliveryDataBuilder dataBuilder = DhlCustomDeliveryData.builder();
 
 		// create the customDeliveryDataDetails
-		for (final Integer packageId : mpackageIds)
+		for (final PackageId packageId : mpackageIds)
 		{
 			final DhlCustomDeliveryDataDetail.DhlCustomDeliveryDataDetailBuilder dataDetailBuilder = DhlCustomDeliveryDataDetail.builder();
-			dataDetailBuilder.packageId(packageId);
+			dataDetailBuilder.packageId(packageId.getRepoId());
 
 			// implement handling for DE -> DE and DE -> International packages
 			// currently we only support inside-EU international shipping. For everything else dhl api will error out until the DhlCustomsDocument is properly filled!
@@ -165,10 +173,6 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			dataBuilder.detail(dataDetailBuilder.build());
 		}
 
-		final int grossWeightInKg = Math.max(request.getGrossWeightInKg(), 1);
-		final int shipperId = deliveryOrderKey.getShipperId();
-		final int shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
-
 		return createDeliveryOrderFromParams(
 				mpackageIds,
 				pickupFromBPartner,
@@ -190,7 +194,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 
 	@VisibleForTesting
 	DeliveryOrder createDeliveryOrderFromParams(
-			@NonNull final Set<Integer> mpackageIds,
+			@NonNull final Set<PackageId> mpackageIds,
 			@NonNull final I_C_BPartner pickupFromBPartner,
 			@NonNull final I_C_Location pickupFromLocation,
 			@NonNull final LocalDate pickupDate,
@@ -198,10 +202,11 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			final int deliverToBPartnerLocationId,
 			@NonNull final I_C_Location deliverToLocation,
 			@Nullable final String deliverToPhoneNumber,
-			@NonNull final DhlServiceType detectedServiceType,
+			@NonNull final DhlServiceType serviceType,
 			final int grossWeightKg,
-			final int shipperId,
-			final String customerReference, final int shipperTransportationId,
+			final ShipperId shipperId,
+			final String customerReference,
+			final ShipperTransportationId shipperTransportationId,
 			@NonNull final PackageDimensions packageDimensions,
 			final CustomDeliveryData customDeliveryData)
 	{
@@ -210,7 +215,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.shipperTransportationId(shipperTransportationId)
 				//
 
-				.serviceType(detectedServiceType) // todo this should be made user-selectable. Ref: https://github.com/metasfresh/me03/issues/3128
+				.serviceType(serviceType) // todo this should be made user-selectable. Ref: https://github.com/metasfresh/me03/issues/3128
 				.customerReference(customerReference)
 				.customDeliveryData(customDeliveryData)
 				//
@@ -228,7 +233,6 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 						.companyName1(deliverToBPartner.getName())
 						.companyName2(deliverToBPartner.getName2())
 						.bpartnerId(deliverToBPartner.getC_BPartner_ID()) // afaics used only for logging
-						.bpartnerLocationId(deliverToBPartnerLocationId) // afaics used only for logging
 						.build())
 				.deliveryContact(ContactPerson.builder()
 						.emailAddress(deliverToBPartner.getEMail())
@@ -248,62 +252,26 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 
 	/**
 	 * Assume that all the packages inside a delivery position are of the same type and therefore have the same size.
-	 * <p>
-	 * sql:
-	 *
-	 * <pre>{@code
-	 * SELECT pack.width
-	 * FROM m_package_hu phu
-	 * 		INNER JOIN m_hu_item huitem ON phu.m_hu_id = huitem.m_hu_id
-	 * 		INNER JOIN m_hu_packingmaterial pack ON huitem.m_hu_packingmaterial_id = pack.m_hu_packingmaterial_id
-	 * WHERE phu.m_package_id = 1000023
-	 * }</pre>
-	 * <p>
-	 * thx to ruxi for this query
 	 */
 	@NonNull
-	private PackageDimensions getPackageDimensions(@NonNull final Set<Integer> mpackageIds, final int shipperId)
+	private PackageDimensions getPackageDimensions(@NonNull final Set<PackageId> mpackageIds, final ShipperId shipperId)
 	{
-		final Integer firstPackageId = mpackageIds.iterator().next();
+		final PackageId firstPackageId = mpackageIds.iterator().next();
+		final DhlClientConfig clientConfig = clientConfigRepository.getByShipperId(shipperId);
+		return getPackageDimensions(firstPackageId, clientConfig.getLengthUomId());
+	}
 
-		// packing material is never null
-		final I_M_HU_PackingMaterial packingMaterial = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Package_HU.class)
-				.addEqualsFilter(I_M_Package_HU.COLUMNNAME_M_Package_ID, firstPackageId)
-				//
+	@NonNull
+	private PackageDimensions getPackageDimensions(@NonNull final PackageId packageId, @NonNull final UomId toUomId)
+	{
+		final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
+		final I_M_HU_PackingMaterial packingMaterial = packingMaterialDAO.retrievePackingMaterialOrNull(packageId);
 
-				.andCollect(I_M_HU.COLUMN_M_HU_ID, I_M_HU.class)
-				.andCollectChildren(I_M_HU_Item.COLUMN_M_HU_ID)
-				.andCollect(I_M_HU_PackingMaterial.COLUMN_M_HU_PackingMaterial_ID, I_M_HU_PackingMaterial.class)
-				.create()
-				.first(I_M_HU_PackingMaterial.class);
-
-		// if there's no packing material, don't die with NPE, but return a dummy package dimensions and call it a day
 		if (packingMaterial == null)
 		{
-			return PackageDimensions.builder()
-					.heightInCM(10)
-					.lengthInCM(10)
-					.widthInCM(10)
-					.build();
+			throw new AdempiereException("There is no packing material for the package: " + packageId + ". Please create a packing material and set its correct dimensions.");
 		}
 
-		final UomId uomId = UomId.ofRepoIdOrNull(packingMaterial.getC_UOM_Dimension_ID());
-
-		if (uomId == null)
-		{
-			throw new AdempiereException("Package UOM must be set");
-		}
-
-		final DhlClientConfig clientConfig = clientConfigRepository.getByShipperId(ShipperId.ofRepoId(shipperId));
-
-		final I_C_UOM fromUom = InterfaceWrapperHelper.load(uomId, I_C_UOM.class);
-		final I_C_UOM toUom = InterfaceWrapperHelper.load(clientConfig.getLengthUomId(), I_C_UOM.class);
-
-		return PackageDimensions.builder()
-				.heightInCM(Services.get(IUOMConversionBL.class).convert(fromUom, toUom, packingMaterial.getHeight()).get().intValue())
-				.lengthInCM(Services.get(IUOMConversionBL.class).convert(fromUom, toUom, packingMaterial.getLength()).get().intValue())
-				.widthInCM(Services.get(IUOMConversionBL.class).convert(fromUom, toUom, packingMaterial.getWidth()).get().intValue())
-				.build();
+		return packingMaterialDAO.retrievePackageDimensions(packingMaterial, toUomId);
 	}
 }

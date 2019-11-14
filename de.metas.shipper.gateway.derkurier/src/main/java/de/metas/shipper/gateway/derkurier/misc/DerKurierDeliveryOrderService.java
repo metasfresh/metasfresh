@@ -66,10 +66,10 @@ public class DerKurierDeliveryOrderService
 			@NonNull final List<String> csvLines)
 	{
 		final I_DerKurier_DeliveryOrder record = load(
-				deliveryOrder.getRepoId(),
+				deliveryOrder.getId(),
 				I_DerKurier_DeliveryOrder.class);
 
-		final String attachmentFileName = "DeliveryOrder-" + deliveryOrder.getRepoId() + ".csv";
+		final String attachmentFileName = "DeliveryOrder-" + deliveryOrder.getId() + ".csv";
 
 		return attachCsvToRecord(csvLines, attachmentFileName, record);
 	}

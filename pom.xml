@@ -163,6 +163,7 @@
 		<module>de.metas.shipper.gateway.go</module>
 		<module>de.metas.shipper.gateway.derkurier</module>
 		<module>de.metas.shipper.gateway.dhl</module>
+		<module>de.metas.shipper.gateway.dpd</module>
 		<!-- commented out because we don't include it in any distribution
 		<module>../de.metas.shipper.gateway.dpd-legacy</module> 
 		-->

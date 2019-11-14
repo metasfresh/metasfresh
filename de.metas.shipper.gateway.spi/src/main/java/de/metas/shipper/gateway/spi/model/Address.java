@@ -1,5 +1,6 @@
 package de.metas.shipper.gateway.spi.model;
 
+import de.metas.location.CountryCode;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Value;
@@ -41,9 +42,13 @@ public class Address
 	String city;
 
 	//
-	// External partner and partner location Id
+	// External partner
+	// (partner location id was removed in f429b78d5b0102037ba119347cc3de723756df17)
+	/**
+	 * Only used for logging in {@link de.metas.shipper.gateway.commons.async.DeliveryOrderWorkpackageProcessor#printLabel} and nothing more.
+	 */
+	@SuppressWarnings("JavadocReference")
 	int bpartnerId;
-	int bpartnerLocationId;
 
 	@Builder
 	private Address(
@@ -57,8 +62,7 @@ public class Address
 			final String zipCode,
 			final String city,
 			//
-			int bpartnerId,
-			int bpartnerLocationId)
+			final int bpartnerId)
 	{
 		Check.assumeNotEmpty(companyName1, "companyName1 is not empty");
 		Check.assumeNotEmpty(street1, "street1 is not empty");
@@ -75,8 +79,7 @@ public class Address
 		this.country = country;
 		this.zipCode = zipCode;
 		this.city = city;
-		
+
 		this.bpartnerId = bpartnerId;
-		this.bpartnerLocationId = bpartnerLocationId;
 	}
 }

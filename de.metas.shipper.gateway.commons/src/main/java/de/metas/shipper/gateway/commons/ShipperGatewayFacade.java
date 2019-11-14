@@ -3,11 +3,15 @@ package de.metas.shipper.gateway.commons;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import de.metas.mpackage.PackageId;
+import de.metas.shipping.api.ShipperTransportationId;
+import de.metas.util.lang.CoalesceUtil;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
@@ -64,14 +68,18 @@ public class ShipperGatewayFacade
 	public void createAndSendDeliveryOrdersForPackages(@NonNull final DeliveryOrderCreateRequest request)
 	{
 		final LocalDate pickupDate = request.getPickupDate();
-		final int shipperTransportationId = request.getShipperTransportationId();
+		final ShipperTransportationId shipperTransportationId = request.getShipperTransportationId();
+		final LocalTime timeFrom = request.getTimeFrom();
+		final LocalTime timeTo = request.getTimeTo();
 
 		retrievePackagesByIds(request.getPackageIds())
 				.stream()
 				.collect(GuavaCollectors.toImmutableListMultimap(mpackage -> createDeliveryOrderKey(
 						mpackage,
 						shipperTransportationId,
-						pickupDate)))
+						pickupDate,
+						timeFrom,
+						timeTo)))
 				.asMap()
 				.forEach(this::createAndSendDeliveryOrder);
 	}
@@ -87,30 +95,39 @@ public class ShipperGatewayFacade
 
 	private static DeliveryOrderKey createDeliveryOrderKey(
 			@NonNull final I_M_Package mpackage,
-			final int shipperTransportationId,
-			@NonNull final LocalDate pickupDate)
+			final ShipperTransportationId shipperTransportationId,
+			@NonNull final LocalDate pickupDate,
+			@NonNull final LocalTime timeFrom,
+			@NonNull final LocalTime timeTo)
 	{
 		return DeliveryOrderKey.builder()
-				.shipperId(mpackage.getM_Shipper_ID())
+				.shipperId(ShipperId.ofRepoId(mpackage.getM_Shipper_ID()))
 				.shipperTransportationId(shipperTransportationId)
 				.fromOrgId(mpackage.getAD_Org_ID())
 				.deliverToBPartnerId(mpackage.getC_BPartner_ID())
 				.deliverToBPartnerLocationId(mpackage.getC_BPartner_Location_ID())
 				.pickupDate(pickupDate)
+				.timeFrom(timeFrom)
+				.timeTo(timeTo)
 				.build();
 	}
 
-	private static int computeGrossWeightInKg(final Collection<I_M_Package> mpackages)
+	/**
+	 * In case the weight is <= 0, return the default value.
+	 */
+	private static int computeGrossWeightInKg(@NonNull final Collection<I_M_Package> mpackages, @SuppressWarnings("SameParameterValue") final int defaultValue)
 	{
-		return mpackages.stream()
+		final int weightInKg = mpackages.stream()
 				.map(I_M_Package::getPackageWeight) // TODO: we assume it's in Kg
 				.filter(weight -> weight != null && weight.signum() > 0)
 				.reduce(BigDecimal.ZERO, BigDecimal::add)
 				.setScale(0, RoundingMode.UP)
 				.intValueExact();
+
+		return CoalesceUtil.firstGreaterThanZero(weightInKg, defaultValue);
 	}
 
-	private static String computePackageContentDescription(final Collection<I_M_Package> mpackages)
+	private static String computePackagesContentDescription(final Collection<I_M_Package> mpackages)
 	{
 		final String content = mpackages.stream()
 				.map(I_M_Package::getDescription)
@@ -121,20 +138,20 @@ public class ShipperGatewayFacade
 	}
 
 	private void createAndSendDeliveryOrder(
-			final DeliveryOrderKey deliveryOrderKey,
-			final Collection<I_M_Package> mpackages)
+			@NonNull final DeliveryOrderKey deliveryOrderKey,
+			@NonNull final Collection<I_M_Package> mpackages)
 	{
-		final ShipperId shipperId = ShipperId.ofRepoId(deliveryOrderKey.getShipperId());
+		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 		final String shipperGatewayId = retrieveShipperGatewayId(shipperId);
 		final DeliveryOrderRepository deliveryOrderRepository = shipperRegistry.getDeliveryOrderRepository(shipperGatewayId);
 
-		final Set<Integer> mpackageIds = mpackages.stream().map(I_M_Package::getM_Package_ID).collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<PackageId> packageIds = mpackages.stream().map(mpackage -> PackageId.ofRepoId(mpackage.getM_Package_ID())).collect(ImmutableSet.toImmutableSet());
 
 		final CreateDraftDeliveryOrderRequest request = CreateDraftDeliveryOrderRequest.builder()
 				.deliveryOrderKey(deliveryOrderKey)
-				.grossWeightInKg(computeGrossWeightInKg(mpackages))
-				.mpackageIds(mpackageIds)
-				.packageContentDescription(computePackageContentDescription(mpackages))
+				.allPackagesGrossWeightInKg(computeGrossWeightInKg(mpackages, 1))
+				.mpackageIds(packageIds)
+				.allPackagesContentDescription(computePackagesContentDescription(mpackages))
 				.build();
 
 		final DraftDeliveryOrderCreator shipperGatewayService = shipperRegistry.getShipperGatewayService(shipperGatewayId);
@@ -142,7 +159,7 @@ public class ShipperGatewayFacade
 		DeliveryOrder deliveryOrder = shipperGatewayService.createDraftDeliveryOrder(request);
 
 		deliveryOrder = deliveryOrderRepository.save(deliveryOrder);
-		DeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(deliveryOrder.getRepoId(), shipperGatewayId);
+		DeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(deliveryOrder.getId().getRepoId(), shipperGatewayId);
 	}
 
 	private String retrieveShipperGatewayId(final ShipperId shipperId)

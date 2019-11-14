@@ -1,66 +1,43 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
-/** Generated Model - DO NOT CHANGE */
-package de.metas.shipping.model;
-
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+/** Generated Model - DO NOT CHANGE */
+package de.metas.shipping.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_Persistent;
-import org.compiere.model.MTable;
-import org.compiere.model.PO;
-import org.compiere.model.POInfo;
-import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
-
 /** Generated Model for M_ShippingPackage
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a#381 - $Id$ */
-public class X_M_ShippingPackage extends PO implements I_M_ShippingPackage, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_ShippingPackage, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20101102L;
+	private static final long serialVersionUID = -243393471L;
 
     /** Standard Constructor */
     public X_M_ShippingPackage (Properties ctx, int M_ShippingPackage_ID, String trxName)
@@ -72,7 +49,7 @@ public class X_M_ShippingPackage extends PO implements I_M_ShippingPackage, I_Pe
 			setM_Package_ID (0);
 			setM_ShipperTransportation_ID (0);
 			setM_ShippingPackage_ID (0);
-			setPackageNetTotal (Env.ZERO);
+			setPackageNetTotal (BigDecimal.ZERO);
 			setProcessed (false);
         } */
     }
@@ -83,37 +60,20 @@ public class X_M_ShippingPackage extends PO implements I_M_ShippingPackage, I_Pe
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 1 - Org 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_M_ShippingPackage[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-    {
-		return (org.compiere.model.I_C_BPartner)MTable.get(getCtx(), org.compiere.model.I_C_BPartner.Table_Name)
-			.getPO(getC_BPartner_ID(), get_TrxName());	}
 
 	/** Set Business Partner .
 		@param C_BPartner_ID 
 		Identifies a Business Partner
 	  */
+	@Override
 	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
@@ -125,6 +85,7 @@ public class X_M_ShippingPackage extends PO implements I_M_ShippingPackage, I_Pe
 	/** Get Business Partner .
 		@return Identifies a Business Partner
 	  */
+	@Override
 	public int getC_BPartner_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
@@ -133,15 +94,11 @@ public class X_M_ShippingPackage extends PO implements I_M_ShippingPackage, I_Pe
 		return ii.intValue();
 	}
 
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location() throws RuntimeException
-    {
-		return (org.compiere.model.I_C_BPartner_Location)MTable.get(getCtx(), org.compiere.model.I_C_BPartner_Location.Table_Name)
-			.getPO(getC_BPartner_Location_ID(), get_TrxName());	}
-
 	/** Set Partner Location.
 		@param C_BPartner_Location_ID 
 		Identifies the (ship to) address for this Business Partner
 	  */
+	@Override
 	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID)
 	{
 		if (C_BPartner_Location_ID < 1) 
@@ -153,6 +110,7 @@ public class X_M_ShippingPackage extends PO implements I_M_ShippingPackage, I_Pe
 	/** Get Partner Location.
 		@return Identifies the (ship to) address for this Business Partner
 	  */
+	@Override
 	public int getC_BPartner_Location_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
@@ -161,15 +119,60 @@ public class X_M_ShippingPackage extends PO implements I_M_ShippingPackage, I_Pe
 		return ii.intValue();
 	}
 
-	public org.compiere.model.I_M_InOut getM_InOut() throws RuntimeException
-    {
-		return (org.compiere.model.I_M_InOut)MTable.get(getCtx(), org.compiere.model.I_M_InOut.Table_Name)
-			.getPO(getM_InOut_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Order getC_Order()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
+	}
 
-	/** Set Shipment/Receipt.
+	@Override
+	public void setC_Order(org.compiere.model.I_C_Order C_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
+	}
+
+	/** Set Auftrag.
+		@param C_Order_ID 
+		Auftrag
+	  */
+	@Override
+	public void setC_Order_ID (int C_Order_ID)
+	{
+		if (C_Order_ID < 1) 
+			set_Value (COLUMNNAME_C_Order_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Order_ID, Integer.valueOf(C_Order_ID));
+	}
+
+	/** Get Auftrag.
+		@return Auftrag
+	  */
+	@Override
+	public int getC_Order_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_InOut getM_InOut()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class);
+	}
+
+	@Override
+	public void setM_InOut(org.compiere.model.I_M_InOut M_InOut)
+	{
+		set_ValueFromPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class, M_InOut);
+	}
+
+	/** Set Lieferung/Wareneingang.
 		@param M_InOut_ID 
 		Material Shipment Document
 	  */
+	@Override
 	public void setM_InOut_ID (int M_InOut_ID)
 	{
 		if (M_InOut_ID < 1) 
@@ -178,9 +181,10 @@ public class X_M_ShippingPackage extends PO implements I_M_ShippingPackage, I_Pe
 			set_Value (COLUMNNAME_M_InOut_ID, Integer.valueOf(M_InOut_ID));
 	}
 
-	/** Get Shipment/Receipt.
+	/** Get Lieferung/Wareneingang.
 		@return Material Shipment Document
 	  */
+	@Override
 	public int getM_InOut_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOut_ID);
@@ -189,15 +193,23 @@ public class X_M_ShippingPackage extends PO implements I_M_ShippingPackage, I_Pe
 		return ii.intValue();
 	}
 
-	public org.compiere.model.I_M_Package getM_Package() throws RuntimeException
-    {
-		return (org.compiere.model.I_M_Package)MTable.get(getCtx(), org.compiere.model.I_M_Package.Table_Name)
-			.getPO(getM_Package_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_Package getM_Package()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Package_ID, org.compiere.model.I_M_Package.class);
+	}
+
+	@Override
+	public void setM_Package(org.compiere.model.I_M_Package M_Package)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Package_ID, org.compiere.model.I_M_Package.class, M_Package);
+	}
 
 	/** Set Package.
 		@param M_Package_ID 
 		Shipment Package
 	  */
+	@Override
 	public void setM_Package_ID (int M_Package_ID)
 	{
 		if (M_Package_ID < 1) 
@@ -209,6 +221,7 @@ public class X_M_ShippingPackage extends PO implements I_M_ShippingPackage, I_Pe
 	/** Get Package.
 		@return Shipment Package
 	  */
+	@Override
 	public int getM_Package_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Package_ID);
@@ -217,21 +230,21 @@ public class X_M_ShippingPackage extends PO implements I_M_ShippingPackage, I_Pe
 		return ii.intValue();
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), String.valueOf(getM_Package_ID()));
-    }
+	@Override
+	public de.metas.shipping.model.I_M_ShipperTransportation getM_ShipperTransportation()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_ShipperTransportation_ID, de.metas.shipping.model.I_M_ShipperTransportation.class);
+	}
 
-	public de.metas.shipping.model.I_M_ShipperTransportation getM_ShipperTransportation() throws RuntimeException
-    {
-		return (de.metas.shipping.model.I_M_ShipperTransportation)MTable.get(getCtx(), de.metas.shipping.model.I_M_ShipperTransportation.Table_Name)
-			.getPO(getM_ShipperTransportation_ID(), get_TrxName());	}
+	@Override
+	public void setM_ShipperTransportation(de.metas.shipping.model.I_M_ShipperTransportation M_ShipperTransportation)
+	{
+		set_ValueFromPO(COLUMNNAME_M_ShipperTransportation_ID, de.metas.shipping.model.I_M_ShipperTransportation.class, M_ShipperTransportation);
+	}
 
-	/** Set Shipper Transportation.
-		@param M_ShipperTransportation_ID Shipper Transportation	  */
+	/** Set Transport Auftrag.
+		@param M_ShipperTransportation_ID Transport Auftrag	  */
+	@Override
 	public void setM_ShipperTransportation_ID (int M_ShipperTransportation_ID)
 	{
 		if (M_ShipperTransportation_ID < 1) 
@@ -240,8 +253,9 @@ public class X_M_ShippingPackage extends PO implements I_M_ShippingPackage, I_Pe
 			set_ValueNoCheck (COLUMNNAME_M_ShipperTransportation_ID, Integer.valueOf(M_ShipperTransportation_ID));
 	}
 
-	/** Get Shipper Transportation.
-		@return Shipper Transportation	  */
+	/** Get Transport Auftrag.
+		@return Transport Auftrag	  */
+	@Override
 	public int getM_ShipperTransportation_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShipperTransportation_ID);
@@ -252,6 +266,7 @@ public class X_M_ShippingPackage extends PO implements I_M_ShippingPackage, I_Pe
 
 	/** Set Shipping Package.
 		@param M_ShippingPackage_ID Shipping Package	  */
+	@Override
 	public void setM_ShippingPackage_ID (int M_ShippingPackage_ID)
 	{
 		if (M_ShippingPackage_ID < 1) 
@@ -262,6 +277,7 @@ public class X_M_ShippingPackage extends PO implements I_M_ShippingPackage, I_Pe
 
 	/** Get Shipping Package.
 		@return Shipping Package	  */
+	@Override
 	public int getM_ShippingPackage_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShippingPackage_ID);
@@ -270,20 +286,41 @@ public class X_M_ShippingPackage extends PO implements I_M_ShippingPackage, I_Pe
 		return ii.intValue();
 	}
 
+	/** Set Notiz.
+		@param Note 
+		Optional weitere Information
+	  */
+	@Override
+	public void setNote (java.lang.String Note)
+	{
+		set_Value (COLUMNNAME_Note, Note);
+	}
+
+	/** Get Notiz.
+		@return Optional weitere Information
+	  */
+	@Override
+	public java.lang.String getNote () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Note);
+	}
+
 	/** Set Package Net Total.
 		@param PackageNetTotal Package Net Total	  */
-	public void setPackageNetTotal (BigDecimal PackageNetTotal)
+	@Override
+	public void setPackageNetTotal (java.math.BigDecimal PackageNetTotal)
 	{
 		set_Value (COLUMNNAME_PackageNetTotal, PackageNetTotal);
 	}
 
 	/** Get Package Net Total.
 		@return Package Net Total	  */
-	public BigDecimal getPackageNetTotal () 
+	@Override
+	public java.math.BigDecimal getPackageNetTotal () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PackageNetTotal);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -291,7 +328,8 @@ public class X_M_ShippingPackage extends PO implements I_M_ShippingPackage, I_Pe
 		@param PackageWeight 
 		Weight of a package
 	  */
-	public void setPackageWeight (BigDecimal PackageWeight)
+	@Override
+	public void setPackageWeight (java.math.BigDecimal PackageWeight)
 	{
 		set_Value (COLUMNNAME_PackageWeight, PackageWeight);
 	}
@@ -299,26 +337,29 @@ public class X_M_ShippingPackage extends PO implements I_M_ShippingPackage, I_Pe
 	/** Get Package Weight.
 		@return Weight of a package
 	  */
-	public BigDecimal getPackageWeight () 
+	@Override
+	public java.math.BigDecimal getPackageWeight () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PackageWeight);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Processed.
+	/** Set Verarbeitet.
 		@param Processed 
-		The document has been processed
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
 	  */
+	@Override
 	public void setProcessed (boolean Processed)
 	{
 		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
 	}
 
-	/** Get Processed.
-		@return The document has been processed
+	/** Get Verarbeitet.
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
 	  */
+	@Override
 	public boolean isProcessed () 
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
@@ -329,30 +370,5 @@ public class X_M_ShippingPackage extends PO implements I_M_ShippingPackage, I_Pe
 			return "Y".equals(oo);
 		}
 		return false;
-	}
-
-	@Override
-	public void setC_Order_ID(int C_Order_ID)
-	{
-		if (C_Order_ID < 1) 
-			set_Value (COLUMNNAME_C_Order_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Order_ID, Integer.valueOf(C_Order_ID));
-	}
-
-	@Override
-	public int getC_Order_ID()
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public I_C_Order getC_Order() throws RuntimeException
-	{
-		return (org.compiere.model.I_C_Order)MTable.get(getCtx(), org.compiere.model.I_C_Order.Table_Name)
-				.getPO(getC_Order_ID(), get_TrxName());
 	}
 }

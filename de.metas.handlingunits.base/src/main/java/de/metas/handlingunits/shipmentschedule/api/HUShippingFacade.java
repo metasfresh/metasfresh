@@ -11,6 +11,8 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
+import de.metas.shipping.api.ShipperTransportationId;
+import de.metas.util.lang.CoalesceUtil;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
@@ -75,7 +77,6 @@ import lombok.ToString;
  * Facade which is able to generate shipping documents (generate shipment, add to shipper transportation, generate invoice).
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @ToString(exclude = { "huShipperTransportationBL", "huShipmentScheduleDAO", "huShipmentScheduleBL", "invoiceCandDAO", "invoiceCandBL", "trxManager" })
 public class HUShippingFacade
@@ -97,7 +98,6 @@ public class HUShippingFacade
 	private final boolean completeShipments;
 	private final BillAssociatedInvoiceCandidates invoiceMode;
 	private final boolean createShipperDeliveryOrders;
-	private LocalDate _shipperDeliveryOrderPickupDate = null; // lazy, will be fetched from Shipper Transportation
 	private final ImmutableList<I_M_HU> hus;
 	private final boolean failIfNoShipmentCandidatesFound;
 
@@ -266,25 +266,25 @@ public class HUShippingFacade
 		}
 
 		final Set<Integer> mpackageIds = mpackages.stream()
-				.map(I_M_Package::getM_Package_ID).collect(ImmutableSet.toImmutableSet());
+				.map(I_M_Package::getM_Package_ID)
+				.collect(ImmutableSet.toImmutableSet());
+
+		Check.assume(addToShipperTransportationId > 0, "addToShipperTransportationId > 0");
+		final I_M_ShipperTransportation shipperTransportation = load(addToShipperTransportationId, I_M_ShipperTransportation.class);
 
 		final DeliveryOrderCreateRequest request = DeliveryOrderCreateRequest.builder()
-				.pickupDate(getShipperDeliveryOrderPickupDate())
+				.pickupDate(getPickupDate(shipperTransportation))
+				.timeFrom(TimeUtil.asLocalTime(shipperTransportation.getPickupTimeFrom()))
+				.timeTo(TimeUtil.asLocalTime(shipperTransportation.getPickupTimeTo()))
 				.packageIds(mpackageIds)
-				.shipperTransportationId(addToShipperTransportationId)
+				.shipperTransportationId(ShipperTransportationId.ofRepoId(addToShipperTransportationId))
 				.shipperGatewayId(shipperGatewayId)
 				.build();
 		shipperGatewayFacade.createAndSendDeliveryOrdersForPackages(request);
 	}
 
-	public LocalDate getShipperDeliveryOrderPickupDate()
+	public LocalDate getPickupDate(@NonNull final I_M_ShipperTransportation shipperTransportation)
 	{
-		if (_shipperDeliveryOrderPickupDate == null)
-		{
-			Check.assume(addToShipperTransportationId > 0, "addToShipperTransportationId > 0");
-			final I_M_ShipperTransportation shipperTransportation = load(addToShipperTransportationId, I_M_ShipperTransportation.class);
-			_shipperDeliveryOrderPickupDate = TimeUtil.asLocalDate(shipperTransportation.getDateDoc());
-		}
-		return _shipperDeliveryOrderPickupDate;
+		return CoalesceUtil.coalesce(TimeUtil.asLocalDate(shipperTransportation.getDateToBeFetched()), TimeUtil.asLocalDate(shipperTransportation.getDateDoc()));
 	}
 }
