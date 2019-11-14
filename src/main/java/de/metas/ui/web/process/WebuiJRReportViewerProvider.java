@@ -2,8 +2,8 @@ package de.metas.ui.web.process;
 
 import org.compiere.print.JRReportViewerProvider;
 
-import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.process.ProcessInfo;
+import de.metas.report.server.OutputType;
 import de.metas.util.Check;
 
 /*
