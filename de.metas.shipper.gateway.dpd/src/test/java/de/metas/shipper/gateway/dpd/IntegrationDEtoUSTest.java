@@ -22,8 +22,26 @@
 
 package de.metas.shipper.gateway.dpd;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Location;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
 import com.google.common.collect.ImmutableList;
 import com.jgoodies.common.base.Strings;
+
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.shipper.gateway.commons.ShipperTestHelper;
 import de.metas.shipper.gateway.dpd.logger.DpdDatabaseClientLogger;
@@ -41,22 +59,6 @@ import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Location;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 @Disabled("Makes ACTUAL calls to DPD api and needs auth")
 public class IntegrationDEtoUSTest
@@ -159,6 +161,7 @@ public class IntegrationDEtoUSTest
 				.count());
 	}
 
+	@SuppressWarnings("deprecation")
 	@NonNull
 	private DeliveryOrder createDraftDeliveryOrderFromDummy(@NonNull final DeliveryOrder deliveryOrder)
 	{
@@ -187,6 +190,7 @@ public class IntegrationDEtoUSTest
 		final ImmutableList<DeliveryOrderLine> deliveryOrderLines = deliveryOrder.getDeliveryOrderLines();
 
 		//noinspection OptionalGetWithoutIsPresent
+		@SuppressWarnings("unused")
 		final Integer allPackagesGrossWeightKg = deliveryOrderLines.stream().map(DeliveryOrderLine::getGrossWeightKg).reduce(Integer::sum).get();
 
 		//
