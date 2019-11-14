@@ -48,7 +48,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.ILanguageBL;
@@ -57,6 +56,7 @@ import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
+import de.metas.report.server.OutputType;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;

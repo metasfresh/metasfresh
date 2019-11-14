@@ -1,5 +1,7 @@
 package org.adempiere.ad.service.impl;
 
+import java.io.File;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -13,6 +15,7 @@ import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
@@ -25,13 +28,13 @@ public class DeveloperModeBL implements IDeveloperModeBL
 {
 	public static final DeveloperModeBL instance = new DeveloperModeBL();
 
-	public static final String SYSCONFIG_DeveloperMode = "de.metas.adempiere.debug";
+	private static final String SYSCONFIG_DeveloperMode = "de.metas.adempiere.debug";
+	private static final String SYSCONFIG_DevelopmentWorkspaceDir = "developmentWorkspaceDir";
 
-	private final Logger logger = LogManager.getLogger(getClass());
+	private static final Logger logger = LogManager.getLogger(DeveloperModeBL.class);
 
 	protected DeveloperModeBL()
 	{
-		super();
 	}
 
 	@Override
@@ -60,6 +63,19 @@ public class DeveloperModeBL implements IDeveloperModeBL
 			logger.warn("Failed retrieving the DeveloperMode sysconfig. Considering not enabled.", e);
 			return false;
 		}
+	}
+
+	@Override
+	public Optional<File> getDevelopmentWorkspaceDir()
+	{
+		final String dirStr = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_DevelopmentWorkspaceDir, null);
+		if (Check.isEmpty(dirStr, true) || "-".equals(dirStr.trim()))
+		{
+			return Optional.empty();
+		}
+
+		final File dir = new File(dirStr.trim());
+		return Optional.of(dir);
 	}
 
 	@Override
