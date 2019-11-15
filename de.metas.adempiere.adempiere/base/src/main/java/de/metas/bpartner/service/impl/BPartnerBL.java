@@ -79,6 +79,7 @@ public class BPartnerBL implements IBPartnerBL
 		this.userRepository = userRepository;
 	}
 
+	@Override
 	public I_C_BPartner getById(@NonNull final BPartnerId bpartnerId)
 	{
 		return Services.get(IBPartnerDAO.class).getById(bpartnerId);
@@ -343,6 +344,13 @@ public class BPartnerBL implements IBPartnerBL
 
 		bpLocation.setAddress(address);
 
+	}
+
+	@Override
+	public boolean isAllowConsolidateInOutEffective(@NonNull final BPartnerId bpartnerId, @NonNull final SOTrx soTrx)
+	{
+		I_C_BPartner bpartner = getById(bpartnerId);
+		return isAllowConsolidateInOutEffective(bpartner, soTrx);
 	}
 
 	@Override
