@@ -368,6 +368,7 @@ public final class ProductsToPickRowsDataFactory
 		else
 		{
 			return prepareRow_IssueComponentsToPickingOrder(packageable)
+					.pickFromHUId(pickFromHUId)
 					.qty(packageable.getQtyToAllocate().toZero())
 					.build();
 		}
