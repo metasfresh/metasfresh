@@ -1,8 +1,8 @@
 package de.metas.material.cockpit.stock;
 
-import java.util.Set;
-
 import org.adempiere.warehouse.WarehouseId;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
@@ -40,7 +40,7 @@ public class StockDataQuery
 {
 	/** Empty list means "all warehouses" */
 	@Singular
-	Set<WarehouseId> warehouseIds;
+	ImmutableSet<WarehouseId> warehouseIds;
 
 	@NonNull
 	ProductId productId;

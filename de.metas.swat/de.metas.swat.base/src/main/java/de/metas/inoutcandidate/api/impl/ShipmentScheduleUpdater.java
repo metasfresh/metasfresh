@@ -277,7 +277,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			updateShipmentConstraints(sched);
 		}
 
-		final ShipmentSchedulesDuringUpdate firstRun = generate(ctx, olsAndScheds, null);
+		final ShipmentSchedulesDuringUpdate firstRun = generate_FirstRun(ctx, olsAndScheds);
 		firstRun.updateCompleteStatusAndSetQtyToZeroWhereNeeded();
 
 		final int removeCnt = applyCandidateProcessors(ctx, firstRun);
@@ -301,7 +301,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		}
 
 		// make the second run
-		final IShipmentSchedulesDuringUpdate secondRun = generate(ctx, olsAndScheds, firstRun);
+		final IShipmentSchedulesDuringUpdate secondRun = generate_SecondRun(ctx, olsAndScheds, firstRun);
 
 		// finally update the shipment schedule entries
 		for (final OlAndSched olAndSched : olsAndScheds)
@@ -428,10 +428,26 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		}
 	}
 
-	ShipmentSchedulesDuringUpdate generate(
-			final Properties ctx,
-			final List<OlAndSched> lines,
-			final ShipmentSchedulesDuringUpdate firstRun)
+	ShipmentSchedulesDuringUpdate generate_FirstRun(
+			@NonNull final Properties ctx,
+			@NonNull final List<OlAndSched> lines)
+	{
+		final ShipmentSchedulesDuringUpdate firstRun = new ShipmentSchedulesDuringUpdate();
+		return generate(ctx, lines, firstRun);
+	}
+	
+	ShipmentSchedulesDuringUpdate generate_SecondRun(
+			@NonNull final Properties ctx,
+			@NonNull final List<OlAndSched> lines,
+			@NonNull final ShipmentSchedulesDuringUpdate firstRun)
+	{
+		return generate(ctx, lines, firstRun);
+	}
+
+	private ShipmentSchedulesDuringUpdate generate(
+			@NonNull final Properties ctx,
+			@NonNull final List<OlAndSched> lines,
+			@NonNull final ShipmentSchedulesDuringUpdate candidates)
 	{
 		// services
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveValuesBL = Services.get(IShipmentScheduleEffectiveBL.class);
@@ -439,17 +455,13 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 		final IProductBL productBL = Services.get(IProductBL.class);
 
-		// if firstRun is not null, create a new instance, otherwise use firstRun
-		final ShipmentSchedulesDuringUpdate candidates = mkCandidatesToUse(lines, firstRun);
-
 		//
 		// Load QtyOnHand in scope for our lines
 		// i.e. iterate all lines to cache the required storage info and to subtract the quantities that can't be allocated from the storage allocation.
 		final ShipmentScheduleQtyOnHandStorage qtyOnHands = shipmentScheduleQtyOnHandStorageFactory.ofOlAndScheds(lines);
 
 		//
-		// Iterate again and:
-		// * try to allocate the QtyOnHand
+		// Iterate and try to allocate the QtyOnHand
 		for (final OlAndSched olAndSched : lines)
 		{
 			final I_M_ShipmentSchedule sched = olAndSched.getSched();
@@ -467,7 +479,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			else if (ruleManual)
 			{
 				// lines with ruleManual need to be scheduled explicitly using QtyToDeliver_Override
-				logger.debug("Manual - QtyOverride not set");
 				qtyRequired = BigDecimal.ZERO;
 			}
 			else
@@ -514,29 +525,26 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			final BigDecimal qtyOnHandBeforeAllocation = storages.getQtyOnHand();
 			sched.setQtyOnHand(qtyOnHandBeforeAllocation);
 
-			final CompleteStatus completeStatus = mkCompleteStatus(qtyToDeliver, qtyOnHandBeforeAllocation);
+			final CompleteStatus completeStatus = computeCompleteStatus(qtyToDeliver, qtyOnHandBeforeAllocation);
 			final boolean ruleCompleteOrder = DeliveryRule.COMPLETE_ORDER.equals(deliveryRule);
 			final boolean ruleAvailable = DeliveryRule.AVAILABILITY.equals(deliveryRule);
 			final boolean ruleCompleteLine = DeliveryRule.COMPLETE_LINE.equals(deliveryRule);
 			final boolean ruleForce = DeliveryRule.FORCE.equals(deliveryRule);
 
+			//
+			// Delivery rule: Force
 			if (ruleForce)
 			{
-				// delivery rule force
-				logger.debug("Force - OnHand=" + qtyOnHandBeforeAllocation
-						+ " (QtyPickList=" + qtyPickList + "), ToDeliver=" + qtyToDeliver
-						+ ", Delivering=" + qtyToDeliver);
-
 				createLine(ctx, olAndSched, qtyToDeliver, storages, ruleForce, completeStatus, candidates);
 			}
-			// delivery rules "Complete" and "Availability"
+			//
+			// Delivery rule: Complete Order/Line or Availability or Manual
 			else if (ruleCompleteOrder || ruleCompleteLine || ruleAvailable || ruleManual)
 			{
 				if (qtyOnHandBeforeAllocation.signum() > 0 || qtyToDeliver.signum() < 0)
 				{
 					//
-					// if there is anything at all to deliver, create a new
-					// inOutLine
+					// if there is anything at all to deliver, create a new inOutLine
 					BigDecimal deliver = qtyToDeliver;
 					if (deliver.compareTo(qtyOnHandBeforeAllocation) > 0)
 					{
@@ -548,10 +556,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 					// allocated.
 					// If the created line will make it into a real shipment will be
 					// decided later.
-					logger.debug("CompleteLine - OnHand=" + qtyOnHandBeforeAllocation
-							+ " (QtyPickList=" + qtyPickList + "), ToDeliver=" + qtyToDeliver
-							+ ", FullLine=" + completeStatus);
-
 					createLine(ctx, olAndSched, deliver, storages, ruleForce, completeStatus, candidates);
 				}
 				else
@@ -563,43 +567,23 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			}
 			else
 			{
-				throw new AdempiereException(
-						"Unsupported delivery rule: " + deliveryRule
-								+ " - OnHand=" + qtyOnHandBeforeAllocation + " (PickedNotDelivered=" + qtyPickList + "), ToDeliver=" + qtyToDeliver);
+				throw new AdempiereException("Unsupported delivery rule: " + deliveryRule)
+						.setParameter("qtyOnHandBeforeAllocation", qtyOnHandBeforeAllocation)
+						.setParameter("qtyPickedButNotDelivered", qtyPickList)
+						.setParameter("qtyToDeliver", qtyToDeliver)
+						.appendParametersToMessage();
 			}
 		}
-
-		logger.info("Created " + candidates.size() + " shipment candidates");
 
 		return candidates;
 	} // generate
 
-	private CompleteStatus mkCompleteStatus(final BigDecimal toDeliver, final BigDecimal onHand)
+	private static CompleteStatus computeCompleteStatus(final BigDecimal qtyToDeliver, final BigDecimal atyOnHand)
 	{
-		CompleteStatus completeStatus = CompleteStatus.OK;
-		{
-			// fullLine==true means that we can create a shipment line with
-			// the full (current!) quantity of the current order line
-			final boolean fullLine = onHand.compareTo(toDeliver) >= 0 || toDeliver.signum() <= 0;
-			if (!fullLine)
-			{
-				completeStatus = CompleteStatus.INCOMPLETE_LINE;
-			}
-		}
-		return completeStatus;
-	}
-
-	private ShipmentSchedulesDuringUpdate mkCandidatesToUse(
-			final List<OlAndSched> lines,
-			final ShipmentSchedulesDuringUpdate firstRun)
-	{
-		if (firstRun != null)
-		{
-			return firstRun;
-		}
-
-		return new ShipmentSchedulesDuringUpdate();
-
+		// fullLine==true means that we can create a shipment line with
+		// the full (current!) quantity of the current order line
+		final boolean fullLine = atyOnHand.compareTo(qtyToDeliver) >= 0 || qtyToDeliver.signum() <= 0;
+		return fullLine ? CompleteStatus.OK : CompleteStatus.INCOMPLETE_LINE;
 	}
 
 	/**

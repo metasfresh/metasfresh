@@ -197,10 +197,7 @@ public class ShipmentScheduleUpdater_generate_Test
 		final ImmutableList<OlAndSched> olAndScheds = ShipmentScheduleTestBase.setup(spec);
 
 		// invoke the method under test
-		return shipmentScheduleUpdater.generate(
-				Env.getCtx(),
-				olAndScheds,
-				null/* firstRun */);
+		return shipmentScheduleUpdater.generate_FirstRun(Env.getCtx(), olAndScheds);
 	}
 
 }

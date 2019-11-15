@@ -120,16 +120,12 @@ public class ShipmentScheduleQtyOnHandStorage
 		final WarehouseId shipmentScheduleWarehouseId = shipmentScheduleEffectiveBL.getWarehouseId(sched);
 		final Set<WarehouseId> warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(shipmentScheduleWarehouseId);
 
-		final int productId = sched.getM_Product_ID();
-		// final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(sched);
-		// final Date date = shipmentScheduleEffectiveBL.getPreparationDate(sched);
+		final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
 
-		final StockDataQuery stockQueryBuilder = StockDataQuery.builder()
+		return StockDataQuery.builder()
 				.warehouseIds(warehouseIds)
-				.productId(ProductId.ofRepoId(productId))
+				.productId(productId)
 				.build();
-
-		return stockQueryBuilder;
 	}
 
 	private static final List<ShipmentScheduleAvailableStockDetail> createStockDetails(final Collection<StockDataItem> stockResult)
