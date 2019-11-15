@@ -22,19 +22,7 @@
 
 package de.metas.shipper.gateway.dpd;
 
-import java.time.Duration;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.xml.bind.JAXBElement;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.ws.client.core.WebServiceTemplate;
-
+import ch.qos.logback.classic.Level;
 import com.dpd.common.service.types.shipmentservice._3.Address;
 import com.dpd.common.service.types.shipmentservice._3.FaultCodeType;
 import com.dpd.common.service.types.shipmentservice._3.GeneralShipmentData;
@@ -52,13 +40,12 @@ import com.dpd.common.ws.loginservice.v2_0.types.GetAuthResponse;
 import com.dpd.common.ws.loginservice.v2_0.types.Login;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
-
-import ch.qos.logback.classic.Level;
 import de.metas.cache.CCache;
 import de.metas.shipper.gateway.dpd.logger.DpdClientLogEvent;
 import de.metas.shipper.gateway.dpd.logger.DpdDatabaseClientLogger;
 import de.metas.shipper.gateway.dpd.model.DpdClientConfig;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
+import de.metas.shipper.gateway.dpd.model.DpdServiceType;
 import de.metas.shipper.gateway.dpd.util.DpdClientUtil;
 import de.metas.shipper.gateway.dpd.util.DpdConversionUtil;
 import de.metas.shipper.gateway.dpd.util.DpdSoapHeaderWithAuth;
@@ -76,6 +63,17 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.ws.client.core.WebServiceTemplate;
+
+import javax.annotation.Nullable;
+import javax.xml.bind.JAXBElement;
+import java.time.Duration;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class DpdShipperGatewayClient implements ShipperGatewayClient
 {
@@ -301,14 +299,22 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 			final ProductAndServiceData productAndServiceData = shipmentServiceOF.createProductAndServiceData();
 			shipmentServiceData.setProductAndServiceData(productAndServiceData);
 			{
+				// only works with E12 product
+				productAndServiceData.setSaturdayDelivery(DpdServiceType.DPD_E12.equals(deliveryOrder.getServiceType()));
+			}
+			{
 				// Shipper Product
 				productAndServiceData.setOrderType(DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData()).getOrderType()); // this is somehow related to product: CL; and i think it should always be "consignment"
 			}
 			{
 				// Predict aka Notification
-				final Notification notification = createNotification(deliveryOrder);
-				//noinspection ConstantConditions
-				productAndServiceData.setPredict(notification);
+				//
+				// For some reason, notifications of any kind only work with DpdServiceType classic. All the rest will throw error.
+				// There i no explanation of what's going on, and what combinations are functional.
+				// Because of this all notifications are disabled for now.
+
+				// final Notification notification = createNotification(deliveryOrder);
+				// productAndServiceData.setPredict(notification);
 			}
 			{
 				// Pickup date and time

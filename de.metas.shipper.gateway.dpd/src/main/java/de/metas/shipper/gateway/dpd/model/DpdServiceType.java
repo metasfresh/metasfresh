@@ -39,10 +39,10 @@ public enum DpdServiceType implements ServiceType
 {
 
 	DPD_CLASSIC("CL"),
-	DPD_8_30("E830"),
-	DPD_10_00("E10"),
-	DPD_12_00("E12"),
-	DPD_18_00("E18"),
+	DPD_E830("E830"),
+	DPD_E10("E10"),
+	DPD_E12("E12"),
+	DPD_E18("E18"),
 	DPD_EXPRESS("IE2"),
 	DPD_PARCELLetter("PL"),
 	DPD_PARCELLetterPlus("PL+"),
