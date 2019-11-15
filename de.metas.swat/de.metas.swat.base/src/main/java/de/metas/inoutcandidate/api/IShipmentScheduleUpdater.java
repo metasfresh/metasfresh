@@ -26,6 +26,7 @@ package de.metas.inoutcandidate.api;
 import java.util.Properties;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 
@@ -37,11 +38,16 @@ import de.metas.util.ISingletonService;
  */
 public interface IShipmentScheduleUpdater extends ISingletonService
 {
+	void registerCandidateProcessor(IShipmentSchedulesAfterFirstPassUpdater processor);
 
 	/**
 	 * Call {@link #updateShipmentSchedule(Properties, int, int, boolean, String)} with <code>updateOnlyLocked == false</code>.
 	 */
-	int updateShipmentSchedule(Properties ctx, int adUserId, PInstanceId adPInstanceId);
+	default int updateShipmentSchedule(final Properties ctx, final int adUserId, final PInstanceId adPInstanceId)
+	{
+		final boolean updateOnlyLocked = false;
+		return updateShipmentSchedule(ctx, adUserId, adPInstanceId, updateOnlyLocked);
+	}
 
 	/**
 	 *
@@ -61,4 +67,6 @@ public interface IShipmentScheduleUpdater extends ISingletonService
 	 * @return true if updater is currently running in this thread
 	 */
 	boolean isRunning();
+
+	boolean isChangedByUpdateProcess(I_M_ShipmentSchedule sched);
 }

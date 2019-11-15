@@ -17,10 +17,10 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.cache.CacheMgt;
 import de.metas.inoutcandidate.agg.key.impl.ShipmentScheduleKeyValueHandler;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.impl.DefaultCandidateProcessor;
@@ -89,10 +89,9 @@ public final class InOutCandidateValidator implements ModelValidator
 		// This fix a problem where another module calls "Services.get(IShipmentScheduleBL.class)"
 		// and then this validator overwrites the already configured IShipmentScheduleBL with a new instance
 		Check.assume(Services.isAutodetectServices(), "Assuming that Services.isAutodetectServices() is true");
-		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-
-		shipmentScheduleBL.registerCandidateProcessor(new DefaultCandidateProcessor());
-		shipmentScheduleBL.registerCandidateProcessor(new OnlyOneOpenInvoiceCandProcessor());
+		final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
+		shipmentScheduleUpdater.registerCandidateProcessor(new DefaultCandidateProcessor());
+		shipmentScheduleUpdater.registerCandidateProcessor(new OnlyOneOpenInvoiceCandProcessor());
 
 		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(OrderLineShipmentScheduleHandler.class);
 

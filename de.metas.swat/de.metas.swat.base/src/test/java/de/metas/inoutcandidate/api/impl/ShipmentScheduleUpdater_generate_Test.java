@@ -4,18 +4,15 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import lombok.NonNull;
-
 import java.math.BigDecimal;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 
@@ -32,6 +29,7 @@ import de.metas.inoutcandidate.api.impl.ShipmentScheduleTestBase.UomSpec;
 import de.metas.order.DeliveryRule;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -55,15 +53,15 @@ import de.metas.util.Services;
  * #L%
  */
 
-public class ShipmentScheduleBL_generateTest
+public class ShipmentScheduleUpdater_generate_Test
 {
 
 	private static final BigDecimal THREE = new BigDecimal("3");
 	private static final BigDecimal FOUR = new BigDecimal("4");
 
-	private ShipmentScheduleBL shipmentScheduleBL;
+	private ShipmentScheduleUpdater shipmentScheduleUpdater;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -71,7 +69,7 @@ public class ShipmentScheduleBL_generateTest
 		final BPartnerBL bPartnerBL = new BPartnerBL(new UserRepository());
 		Services.registerService(IBPartnerBL.class, bPartnerBL);
 
-		this.shipmentScheduleBL = ShipmentScheduleBL.newInstanceForUnitTesting();
+		this.shipmentScheduleUpdater = ShipmentScheduleUpdater.newInstanceForUnitTesting();
 	}
 
 	/**
@@ -199,12 +197,10 @@ public class ShipmentScheduleBL_generateTest
 		final ImmutableList<OlAndSched> olAndScheds = ShipmentScheduleTestBase.setup(spec);
 
 		// invoke the method under test
-		final ShipmentSchedulesDuringUpdate result = shipmentScheduleBL.generate(
+		return shipmentScheduleUpdater.generate(
 				Env.getCtx(),
 				olAndScheds,
-				null/* firstRun */,
-				ITrx.TRXNAME_None);
-		return result;
+				null/* firstRun */);
 	}
 
 }

@@ -31,7 +31,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.tourplanning.TourPlanningTestBase;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
