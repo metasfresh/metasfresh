@@ -4,15 +4,20 @@ import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.*;
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
 
+import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.ad.table.RecordChangeLogRepository;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_SysConfig;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.AfterAll;
@@ -30,6 +35,7 @@ import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.greeting.GreetingRepository;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
@@ -74,6 +80,8 @@ class ContactRestControllerTest
 
 	private BPartnerCompositeRepository bpartnerCompositeRepository;
 
+	private MockLogEntriesRepository recordChangeLogRepository;
+
 	@BeforeAll
 	static void initStatic()
 	{
@@ -91,9 +99,11 @@ class ContactRestControllerTest
 	{
 		AdempiereTestHelper.get().init();
 
-		Services.registerService(IBPartnerBL.class,new BPartnerBL(new UserRepository()));
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
-		bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
+		recordChangeLogRepository = new MockLogEntriesRepository();
+
+		bpartnerCompositeRepository = new BPartnerCompositeRepository(recordChangeLogRepository);
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new BPartnerQueryService(),
 				bpartnerCompositeRepository,
@@ -125,6 +135,20 @@ class ContactRestControllerTest
 		createBPartnerData(2);
 		createBPartnerData(3);
 		createBPartnerData(4);
+
+		setupTimeSource();
+		// set some AD_Users' CreatedBy and UpdatedBy to -1 to check if this is handeled gracefully too
+		final I_AD_User userRecord1 = load(AD_USER_ID + 1, I_AD_User.class);
+		InterfaceWrapperHelper.setValue(userRecord1, I_AD_User.COLUMNNAME_CreatedBy, -1);
+		saveRecord(userRecord1);
+		final I_AD_User userRecord2 = load(AD_USER_ID + 2, I_AD_User.class);
+		InterfaceWrapperHelper.setValue(userRecord2, I_AD_User.COLUMNNAME_UpdatedBy, -1);
+		saveRecord(userRecord2);
+		final I_AD_User userRecord3 = load(AD_USER_ID + 3, I_AD_User.class);
+		InterfaceWrapperHelper.setValue(userRecord3, I_AD_User.COLUMNNAME_CreatedBy, -1);
+		InterfaceWrapperHelper.setValue(userRecord3, I_AD_User.COLUMNNAME_UpdatedBy, -1);
+		saveRecord(userRecord3);
+		resetTimeSource();
 
 		SystemTime.setTimeSource(() -> 1561014385); // Thu, 20 Jun 2019 07:06:25 GMT
 		UIDStringUtil.setRandomUUIDSource(() -> "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1");
@@ -184,6 +208,36 @@ class ContactRestControllerTest
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseContact resultBody = result.getBody();
+
+		expect(resultBody).toMatchSnapshot();
+	}
+
+	@Test
+	void retrieveContact_id_unspecified_CreatedByUpdatedBy()
+	{
+		setupTimeSource();
+		final I_AD_User userRecord = load(AD_USER_ID, I_AD_User.class);
+		InterfaceWrapperHelper.setValue(userRecord, I_AD_User.COLUMNNAME_CreatedBy, -1);
+		InterfaceWrapperHelper.setValue(userRecord, I_AD_User.COLUMNNAME_UpdatedBy, -1);
+		saveRecord(userRecord);
+
+		recordChangeLogRepository.add(TableRecordReference.of(userRecord), RecordChangeLogEntry.builder()
+				.changedByUserId(null)
+				.changedTimestamp(SystemTime.asInstant())
+				.columnName(I_AD_User.COLUMNNAME_Name)
+				.columnDisplayName(TranslatableStrings.constant("columnDisplayName"))
+				.valueOld("valueOld")
+				.valueNew("valueNew")
+				.build());
+		resetTimeSource();
+
+		// invoke the method under test
+		final ResponseEntity<JsonResponseContact> result = contactRestController.retrieveContact(Integer.toString(AD_USER_ID));
+
+		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		final JsonResponseContact resultBody = result.getBody();
+
+		assertThat(resultBody.getChangeInfo().getChangeLogs()).isNotEmpty();
 
 		expect(resultBody).toMatchSnapshot();
 	}

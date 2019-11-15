@@ -22,8 +22,22 @@
 
 package de.metas.shipper.gateway.dpd;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
+
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Location;
+
 import com.google.common.collect.ImmutableList;
 import com.jgoodies.common.base.Strings;
+
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.location.CountryCode;
 import de.metas.mpackage.PackageId;
@@ -51,18 +65,6 @@ import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Location;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 @UtilityClass
 class DpdTestHelper
@@ -93,7 +95,7 @@ class DpdTestHelper
 			.databaseLogger(DpdDatabaseClientLogger.instance)
 			.build();
 
-	static DeliveryOrder createDummyDeliveryOrderDEtoDE()
+	static DeliveryOrder createDummyDeliveryOrderDEtoDE(final DpdServiceType serviceType)
 	{
 		return DeliveryOrder.builder()
 				// shipper
@@ -128,7 +130,7 @@ class DpdTestHelper
 						.build())
 				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
 				.customerReference(null)
-				.serviceType(DpdServiceType.DPD_CLASSIC)
+				.serviceType(serviceType)
 				.shipperId(ShipperId.ofRepoId(1))
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(1))
 				.customDeliveryData(DpdOrderCustomDeliveryData.builder()
@@ -141,7 +143,7 @@ class DpdTestHelper
 				.build();
 	}
 
-	static DeliveryOrder createDummyDeliveryOrderDEtoCH()
+	static DeliveryOrder createDummyDeliveryOrderDEtoCH(final DpdServiceType serviceType)
 	{
 		return DeliveryOrder.builder()
 				// shipper
@@ -176,7 +178,7 @@ class DpdTestHelper
 						.build())
 				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
 				.customerReference(null)
-				.serviceType(DpdServiceType.DPD_CLASSIC)
+				.serviceType(serviceType)
 				.shipperId(ShipperId.ofRepoId(1))
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(1))
 				.customDeliveryData(DpdOrderCustomDeliveryData.builder()
@@ -189,7 +191,7 @@ class DpdTestHelper
 				.build();
 	}
 
-	static DeliveryOrder createDummyDeliveryOrderDEtoAT()
+	static DeliveryOrder createDummyDeliveryOrderDEtoAT(final DpdServiceType serviceType)
 	{
 		return DeliveryOrder.builder()
 				// shipper
@@ -224,7 +226,7 @@ class DpdTestHelper
 						.build())
 				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
 				.customerReference(null)
-				.serviceType(DpdServiceType.DPD_CLASSIC)
+				.serviceType(serviceType)
 				.shipperId(ShipperId.ofRepoId(1))
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(1))
 				.customDeliveryData(DpdOrderCustomDeliveryData.builder()
@@ -384,6 +386,7 @@ class DpdTestHelper
 				.count());
 	}
 
+	@SuppressWarnings("deprecation")
 	@NonNull
 	private DeliveryOrder createDraftDeliveryOrderFromDummy(@NonNull final DeliveryOrder deliveryOrder)
 	{
@@ -400,7 +403,6 @@ class DpdTestHelper
 		//noinspection deprecation,ConstantConditions
 		deliverToBPartner.setEMail(deliveryOrder.getDeliveryContact().getEmailAddress());
 		final I_C_Location deliverToLocation = ShipperTestHelper.createLocation(deliveryOrder.getDeliveryAddress());
-		final int deliverToBPartnerLocationId = 0;
 		final String deliverToPhoneNumber = deliveryOrder.getDeliveryContact().getSimplePhoneNumber();
 
 		//
@@ -424,7 +426,6 @@ class DpdTestHelper
 				timeFrom,
 				timeTo,
 				deliverToBPartner,
-				deliverToBPartnerLocationId,
 				deliverToLocation,
 				deliverToPhoneNumber,
 				detectedServiceType,

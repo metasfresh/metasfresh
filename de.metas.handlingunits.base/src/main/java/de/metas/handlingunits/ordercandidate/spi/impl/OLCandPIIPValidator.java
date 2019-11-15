@@ -45,6 +45,7 @@ import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandValidator;
+import de.metas.ordercandidate.spi.impl.DefaultOLCandValidator;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
@@ -61,6 +62,15 @@ import de.metas.util.Services;
 @Component
 public class OLCandPIIPValidator implements IOLCandValidator
 {
+
+	/** @return {@code 20}; needs to run after {@link DefaultOLCandValidator} because it needs that valdators */
+	@Override
+	public int getSeqNo()
+	{
+		// TODO Auto-generated method stub
+		return 20;
+	}
+
 	/**
 	 * Validates
 	 * <ul>
