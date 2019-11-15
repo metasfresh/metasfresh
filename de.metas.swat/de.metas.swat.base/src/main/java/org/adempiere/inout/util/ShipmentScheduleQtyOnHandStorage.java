@@ -1,7 +1,5 @@
 package org.adempiere.inout.util;
 
-import lombok.NonNull;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +26,7 @@ import de.metas.material.cockpit.stock.StockDataQuery;
 import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Loads stock details which are relevant to given {@link I_M_ShipmentSchedule}s.
@@ -192,15 +191,17 @@ public class ShipmentScheduleQtyOnHandStorage
 		return !stockDetails.isEmpty();
 	}
 
-	public List<ShipmentScheduleAvailableStockDetail> getStockDetailsMatching(@NonNull final I_M_ShipmentSchedule sched)
+	public ShipmentScheduleAvailableStockDetailList getStockDetailsMatching(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		if (!hasStockDetails())
 		{
-			return ImmutableList.of();
+			return ShipmentScheduleAvailableStockDetailList.of();
 		}
 
 		final StockDataQuery materialQuery = getMaterialQuery(sched);
-		return streamStockDetailsMatching(materialQuery)
+		final ImmutableList<ShipmentScheduleAvailableStockDetail> list = streamStockDetailsMatching(materialQuery)
 				.collect(ImmutableList.toImmutableList());
+
+		return ShipmentScheduleAvailableStockDetailList.of(list);
 	}
 }

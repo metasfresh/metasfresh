@@ -1,10 +1,5 @@
 package org.adempiere.inout.util;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -28,13 +23,16 @@ import lombok.ToString;
  */
 
 import java.math.BigDecimal;
-import java.util.Collection;
 
 import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.material.cockpit.stock.StockDataItem;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Stock detail with mutable qtyOnHand.
@@ -48,23 +46,16 @@ public class ShipmentScheduleAvailableStockDetail
 		return builder()
 				.productId(result.getProductId())
 				.warehouseId(result.getWarehouseId())
-				//.bpartnerId(result.getBpartnerId())
+				// .bpartnerId(result.getBpartnerId())
 				.storageAttributesKey(result.getStorageAttributesKey())
 				.qtyOnHand(result.getQtyOnHand())
 				.build();
 	}
 
-	public static BigDecimal calculateQtyOnHandSum(final Collection<ShipmentScheduleAvailableStockDetail> storageRecords)
-	{
-		return storageRecords.stream()
-				.map(ShipmentScheduleAvailableStockDetail::getQtyOnHand)
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
-	}
-
 	private final ProductId productId;
 	private final WarehouseId warehouseId;
 	private final AttributesKey storageAttributesKey;
-//	private final int bpartnerId;
+	// private final int bpartnerId;
 	private BigDecimal qtyOnHand;
 
 	@Builder
@@ -72,13 +63,13 @@ public class ShipmentScheduleAvailableStockDetail
 			final ProductId productId,
 			final WarehouseId warehouseId,
 			@NonNull final AttributesKey storageAttributesKey,
-//			final int bpartnerId,
+			// final int bpartnerId,
 			@NonNull final BigDecimal qtyOnHand)
 	{
 		this.productId = productId;
 		this.warehouseId = warehouseId;
 		this.storageAttributesKey = storageAttributesKey;
-	//	this.bpartnerId = bpartnerId;
+		// this.bpartnerId = bpartnerId;
 		this.qtyOnHand = qtyOnHand;
 	}
 

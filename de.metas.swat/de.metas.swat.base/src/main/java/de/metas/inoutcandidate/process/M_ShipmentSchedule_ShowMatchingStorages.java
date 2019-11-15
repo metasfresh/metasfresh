@@ -23,15 +23,15 @@ package de.metas.inoutcandidate.process;
  */
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetail;
+import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetailList;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.cockpit.stock.StockDataQuery;
@@ -42,7 +42,7 @@ public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 	private I_M_ShipmentSchedule shipmentSchedule;
 
 	private final transient ShipmentScheduleQtyOnHandStorageFactory //
-	shipmentScheduleQtyOnHandStorageFactory = Adempiere.getBean(ShipmentScheduleQtyOnHandStorageFactory.class);
+	shipmentScheduleQtyOnHandStorageFactory = SpringContextHolder.instance.getBean(ShipmentScheduleQtyOnHandStorageFactory.class);
 
 	@Override
 	protected void prepare()
@@ -62,9 +62,9 @@ public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 		}
 
 		final ShipmentScheduleQtyOnHandStorage storagesContainer = shipmentScheduleQtyOnHandStorageFactory.ofShipmentSchedule(shipmentSchedule);
-		final List<ShipmentScheduleAvailableStockDetail> storageRecords = storagesContainer.getStockDetailsMatching(shipmentSchedule);
+		final ShipmentScheduleAvailableStockDetailList storageRecords = storagesContainer.getStockDetailsMatching(shipmentSchedule);
 
-		final BigDecimal qtyOnHandTotal = ShipmentScheduleAvailableStockDetail.calculateQtyOnHandSum(storageRecords);
+		final BigDecimal qtyOnHandTotal = storageRecords.getQtyOnHand();
 		addLog("@QtyOnHand@ (@Total@): " + qtyOnHandTotal);
 
 		for (final ShipmentScheduleAvailableStockDetail storage : storageRecords)

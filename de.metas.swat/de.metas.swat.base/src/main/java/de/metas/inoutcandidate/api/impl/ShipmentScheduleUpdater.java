@@ -1,6 +1,5 @@
 package de.metas.inoutcandidate.api.impl;
 
-
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
@@ -41,6 +40,7 @@ import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
 import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetail;
+import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetailList;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
 import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
@@ -423,7 +423,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				sched.setPreparationDate_Override(TimeUtil.asTimestamp(preparationDate));
 
 			}
-			
+
 			shipmentSchedulePA.save(sched);
 		}
 	}
@@ -497,8 +497,11 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			if (!productBL.isStocked(productId))
 			{
 				// product not stocked => don't concern ourselves with the storage; just deliver what was ordered
-				createLine(ctx, olAndSched, qtyToDeliver,
-						null/* storages */,
+				createLine(
+						ctx,
+						olAndSched,
+						qtyToDeliver,
+						ShipmentScheduleAvailableStockDetailList.of(),
 						true/* force */,
 						CompleteStatus.OK,
 						candidates);
@@ -507,8 +510,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 			//
 			// Get the QtyOnHand storages suitable for our order line
-			final List<ShipmentScheduleAvailableStockDetail> storages = qtyOnHands.getStockDetailsMatching(sched);
-			final BigDecimal qtyOnHandBeforeAllocation = ShipmentScheduleAvailableStockDetail.calculateQtyOnHandSum(storages);
+			final ShipmentScheduleAvailableStockDetailList storages = qtyOnHands.getStockDetailsMatching(sched);
+			final BigDecimal qtyOnHandBeforeAllocation = storages.getQtyOnHand();
 			sched.setQtyOnHand(qtyOnHandBeforeAllocation);
 
 			final CompleteStatus completeStatus = mkCompleteStatus(qtyToDeliver, qtyOnHandBeforeAllocation);
@@ -605,13 +608,13 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	 * @param qty the quantity all created inOutLines' qtyEntered will sum up to
 	 */
 	private void createLine(
-			final Properties ctx,
-			final OlAndSched olAndSched,
-			final BigDecimal qty,
-			final List<ShipmentScheduleAvailableStockDetail> storages,
+			@NonNull final Properties ctx,
+			@NonNull final OlAndSched olAndSched,
+			@NonNull final BigDecimal qty,
+			@NonNull final ShipmentScheduleAvailableStockDetailList storages,
 			final boolean force,
-			final CompleteStatus completeStatus,
-			final ShipmentSchedulesDuringUpdate candidates)
+			@NonNull final CompleteStatus completeStatus,
+			@NonNull final ShipmentSchedulesDuringUpdate candidates)
 	{
 		final I_M_ShipmentSchedule sched = olAndSched.getSched();
 
@@ -717,7 +720,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	{
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		
+
 		final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(sched);
 
 		final ShipmentScheduleReferencedLine scheduleSourceDoc = shipmentScheduleReferencedLineFactory.createFor(sched);
@@ -794,7 +797,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	private void updateShipmentConstraints(final I_M_ShipmentSchedule sched)
 	{
 		final IShipmentConstraintsBL shipmentConstraintsBL = Services.get(IShipmentConstraintsBL.class);
-		
+
 		final int billBPartnerId = sched.getBill_BPartner_ID();
 		final int deliveryStopShipmentConstraintId = shipmentConstraintsBL.getDeliveryStopShipmentConstraintId(billBPartnerId);
 		final boolean isDeliveryStop = deliveryStopShipmentConstraintId > 0;
@@ -830,7 +833,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		}
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		
+
 		// final de.metas.interfaces.I_C_OrderLine olEx = InterfaceWrapperHelper.create(ol, de.metas.interfaces.I_C_OrderLine.class);
 		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(
 				olAndSched.getProductId(),
