@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.base.Optional;
+
 import de.metas.Profiles;
 import de.metas.invoice.InvoiceId;
 import de.metas.rest_api.invoice.impl.InvoicePDFService;
@@ -22,7 +24,6 @@ import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesSt
 import de.metas.rest_api.invoicecandidates.response.JsonCloseInvoiceCandidatesResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
-import de.metas.util.Check;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -136,20 +137,25 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 	@GetMapping(value = "/{InvoiceId}/pdf")
 	@Override
 	public ResponseEntity<byte[]> getInvoicePDF(
-			@PathVariable("InvoiceId")
-			@ApiParam(required = true, value = "InvoiceId")
-			final int invoiceRecordId)
+			@PathVariable("InvoiceId") @ApiParam(required = true, value = "InvoiceId") final int invoiceRecordId)
 	{
+		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(invoiceRecordId);
 
-		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceRecordId);
-		final byte[] invoicePDF = invoicePDFService.getInvoicePDF(invoiceId);
-
-		if (Check.isEmpty(invoicePDF))
+		if (invoiceId == null)
 		{
 			return ResponseEntity.notFound().build();
 		}
 
-		return ResponseEntity.ok(invoicePDF);
+		final Optional<byte[]> invoicePDF = invoicePDFService.getInvoicePDF(invoiceId);
+
+		if (invoicePDF.isPresent())
+		{
+
+			return ResponseEntity.ok(invoicePDF.get());
+		}
+
+		return ResponseEntity.notFound().build();
+
 	}
 
 }

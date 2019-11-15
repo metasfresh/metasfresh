@@ -26,6 +26,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.rest_api.common.JsonExternalId;
 import de.metas.rest_api.common.MetasfreshId;
+import de.metas.rest_api.invoice.impl.InvoicePDFService;
 import de.metas.rest_api.invoicecandidates.request.JsonCheckInvoiceCandidatesStatusRequest;
 import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesStatusResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesStatusResponseItem;
@@ -64,6 +65,14 @@ public class CheckInvoiceCandidatesStatusService
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+
+	private final InvoicePDFService invoicePDFService;
+
+	public CheckInvoiceCandidatesStatusService(@NonNull final InvoicePDFService invoicePDFService)
+	{
+
+		this.invoicePDFService = invoicePDFService;
+	}
 
 	public JsonCheckInvoiceCandidatesStatusResponse getStatusForInvoiceCandidates(
 			@NonNull final JsonCheckInvoiceCandidatesStatusRequest request)
@@ -181,13 +190,15 @@ public class CheckInvoiceCandidatesStatusService
 				.processed(invoiceCandidateRecord.isProcessed());
 	}
 
-	private static JsonInvoiceStatus toJsonInvoiceInfo(final I_C_Invoice invoice)
+	private JsonInvoiceStatus toJsonInvoiceInfo(final I_C_Invoice invoice)
 	{
+
 		return JsonInvoiceStatus.builder()
 				.dateInvoiced(TimeUtil.asLocalDate(invoice.getDateInvoiced()))
 				.docStatus(invoice.getDocStatus())
 				.documentNo(invoice.getDocumentNo())
 				.metasfreshId(MetasfreshId.of(invoice.getC_Invoice_ID()))
+				.isPDFAvailable(invoicePDFService.hasArchive(InvoiceId.ofRepoId(invoice.getC_Invoice_ID())))
 				.build();
 	}
 

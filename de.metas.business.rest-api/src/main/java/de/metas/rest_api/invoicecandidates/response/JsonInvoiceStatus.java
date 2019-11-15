@@ -42,4 +42,6 @@ public class JsonInvoiceStatus
 
 	LocalDate dateInvoiced;
 
+	boolean isPDFAvailable ;
+
 }

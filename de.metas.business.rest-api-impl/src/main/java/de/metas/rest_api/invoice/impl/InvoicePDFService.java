@@ -11,7 +11,10 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
+import com.google.common.base.Optional;
+
 import de.metas.invoice.InvoiceId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -44,13 +47,33 @@ public class InvoicePDFService
 	final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 	final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 
-	public byte[] getInvoicePDF(@NonNull final InvoiceId invoiceId)
+	public Optional<byte[]> getInvoicePDF(@NonNull final InvoiceId invoiceId)
 	{
-		I_C_Invoice invoiceRecord = invoiceDAO.getByIdInTrx(invoiceId);
+		final Optional<I_AD_Archive> lastArchive = getLastArchive(invoiceId);
+
+		return lastArchive.isPresent() ? Optional.of(archiveBL.getBinaryData(lastArchive.get())) : Optional.absent();
+	}
+
+	public boolean hasArchive(@NonNull final InvoiceId invoiceId)
+	{
+		return getLastArchive(invoiceId).isPresent();
+	}
+
+	private Optional<I_AD_Archive> getLastArchive(@NonNull final InvoiceId invoiceId)
+	{
+		final I_C_Invoice invoiceRecord = invoiceDAO.getByIdInTrx(invoiceId);
+
+		if (invoiceRecord == null)
+		{
+			return Optional.absent();
+		}
 
 		List<I_AD_Archive> lastArchive = archiveDAO.retrieveLastArchives(Env.getCtx(), TableRecordReference.of(invoiceRecord), 1);
-
-		return lastArchive.isEmpty()? null : archiveBL.getBinaryData(lastArchive.get(0));
+		if (Check.isEmpty(lastArchive))
+		{
+			return Optional.absent();
+		}
+		return Optional.of(lastArchive.get(0));
 	}
 
 }
