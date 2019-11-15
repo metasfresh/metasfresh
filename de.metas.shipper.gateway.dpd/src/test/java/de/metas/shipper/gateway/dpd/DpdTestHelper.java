@@ -403,7 +403,6 @@ class DpdTestHelper
 		//noinspection deprecation,ConstantConditions
 		deliverToBPartner.setEMail(deliveryOrder.getDeliveryContact().getEmailAddress());
 		final I_C_Location deliverToLocation = ShipperTestHelper.createLocation(deliveryOrder.getDeliveryAddress());
-		final int deliverToBPartnerLocationId = 0;
 		final String deliverToPhoneNumber = deliveryOrder.getDeliveryContact().getSimplePhoneNumber();
 
 		//
@@ -427,7 +426,6 @@ class DpdTestHelper
 				timeFrom,
 				timeTo,
 				deliverToBPartner,
-				deliverToBPartnerLocationId,
 				deliverToLocation,
 				deliverToPhoneNumber,
 				detectedServiceType,

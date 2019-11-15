@@ -109,7 +109,17 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 		final ShipperTransportationId shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
 
-		final DpdServiceType serviceType = DpdServiceType.DPD_CLASSIC;
+		final DpdServiceType serviceType;
+		if (pickupFromLocation.getC_Country_ID() == deliverToLocation.getC_Country_ID())
+		{
+			// inside same country we want "next-day" delivery
+			serviceType = DpdServiceType.DPD_E12;
+		}
+		else
+		{
+			// international shipping only works with classic delivery (or express)
+			serviceType = DpdServiceType.DPD_CLASSIC;
+		}
 
 		final DpdOrderCustomDeliveryData customDeliveryData = DpdOrderCustomDeliveryData.builder()
 				.orderType(DpdOrderType.CONSIGNMENT)
@@ -144,7 +154,6 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				timeFrom,
 				timeTo,
 				deliverToBPartner,
-				deliverToBPartnerLocationId,
 				deliverToLocation,
 				deliverToPhoneNumber,
 				serviceType,
@@ -176,7 +185,6 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			@NonNull final LocalTime timeFrom,
 			@NonNull final LocalTime timeTo,
 			@NonNull final I_C_BPartner deliverToBPartner,
-			final int deliverToBPartnerLocationId,
 			@NonNull final I_C_Location deliverToLocation,
 			@Nullable final String deliverToPhoneNumber,
 			@NonNull final ServiceType serviceType,
