@@ -115,7 +115,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				shipmentScheduleReferencedLineFactory);
 	}
 
-	private static final String DYNATTR_ProcessedByBackgroundProcess = IShipmentScheduleBL.class.getName() + "#ProcessedByBackgroundProcess";
+	private static final String DYNATTR_ProcessedByBackgroundProcess = IShipmentScheduleUpdater.class.getName() + "#ProcessedByBackgroundProcess";
 
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleUpdater.class);
 	private final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
@@ -168,7 +168,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			{
 				//
 				// Create and invalidate missing shipment schedules
-				final List<I_M_ShipmentSchedule> shipmentSchedulesNew = Services.get(IShipmentScheduleHandlerBL.class).createMissingCandidates(ctx, ITrx.TRXNAME_ThreadInherited);
+				final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
+				final List<I_M_ShipmentSchedule> shipmentSchedulesNew = shipmentScheduleHandlerBL.createMissingCandidates(ctx, ITrx.TRXNAME_ThreadInherited);
 				final Set<ShipmentScheduleId> shipmentSchedulesNewIds = shipmentSchedulesNew.stream().map(s -> ShipmentScheduleId.ofRepoId(s.getM_ShipmentSchedule_ID())).collect(ImmutableSet.toImmutableSet());
 				invalidSchedulesRepo.invalidateShipmentSchedules(shipmentSchedulesNewIds);
 			}
@@ -208,7 +209,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 	private final List<OlAndSched> retrieveOlsAndSchedsToProcess(final PInstanceId adPinstanceId)
 	{
-		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 		final List<OlAndSched> olsAndScheds = shipmentSchedulePA.retrieveInvalid(adPinstanceId);
 
 		if (olsAndScheds.isEmpty())
@@ -748,7 +748,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			final ShipmentScheduleReferencedLine scheduleSourceDoc,
 			final I_M_ShipmentSchedule sched)
 	{
-
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 		return DeliveryGroupCandidate.builder()
