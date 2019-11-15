@@ -339,6 +339,11 @@ public final class ProductsToPickRowsDataFactory
 		}
 
 		final HuId pickFromHUId = row.getPickFromHUId();
+		if (pickFromHUId == null)
+		{
+			throw new AdempiereException("No pickFromHUId set for " + row);
+		}
+
 		final ProductId productId = packageable.getProductId();
 		final ReservableStorage storage = storages.getStorage(pickFromHUId, productId);
 		final Quantity qty = storage.reserve(packageable);
