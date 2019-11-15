@@ -43,33 +43,37 @@ import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
 import de.metas.shipper.gateway.dpd.logger.DpdClientLogEvent;
 import de.metas.shipper.gateway.dpd.logger.DpdDatabaseClientLogger;
+import de.metas.shipper.gateway.dpd.model.DpdClientConfig;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
+import de.metas.shipper.gateway.dpd.model.DpdServiceType;
 import de.metas.shipper.gateway.dpd.util.DpdClientUtil;
 import de.metas.shipper.gateway.dpd.util.DpdConversionUtil;
 import de.metas.shipper.gateway.dpd.util.DpdSoapHeaderWithAuth;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
+import de.metas.shipper.gateway.spi.ShipperGatewayClient;
+import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
+import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
 import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
+import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
+import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import de.metas.shipper.gateway.dpd.model.DpdClientConfig;
-import de.metas.shipper.gateway.spi.ShipperGatewayClient;
-import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
-import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.PackageLabels;
-import lombok.Builder;
-import lombok.NonNull;
 import org.springframework.ws.client.core.WebServiceTemplate;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.JAXBElement;
+import java.time.Duration;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class DpdShipperGatewayClient implements ShipperGatewayClient
 {
