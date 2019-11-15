@@ -62,7 +62,6 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.document.engine.DocStatus;
-import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -307,7 +306,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		for (final OlAndSched olAndSched : olsAndScheds)
 		{
 			final I_M_ShipmentSchedule sched = olAndSched.getSched();
-			final IDeliverRequest deliverRequest = olAndSched.getDeliverRequest();
 			final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(sched); // task 08756: we don't really care for the ol's partner, but for the partner who will actually receive the shipment.
 
 			sched.setAllowConsolidateInOut(bpartnerBL.isAllowConsolidateInOutEffective(bpartnerId, SOTrx.SALES));
@@ -323,7 +321,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			// task 09869: don't rely on ol anyways
 			final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
 			sched.setQtyDelivered(qtyDelivered);
-			sched.setQtyReserved(BigDecimal.ZERO.max(deliverRequest.getQtyOrdered().subtract(sched.getQtyDelivered())));
+			sched.setQtyReserved(BigDecimal.ZERO.max(olAndSched.getQtyOrdered().subtract(sched.getQtyDelivered())));
 
 			updateLineNetAmt(olAndSched);
 
@@ -435,7 +433,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		final ShipmentSchedulesDuringUpdate firstRun = new ShipmentSchedulesDuringUpdate();
 		return generate(ctx, lines, firstRun);
 	}
-	
+
 	ShipmentSchedulesDuringUpdate generate_SecondRun(
 			@NonNull final Properties ctx,
 			@NonNull final List<OlAndSched> lines,
@@ -465,18 +463,17 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		for (final OlAndSched olAndSched : lines)
 		{
 			final I_M_ShipmentSchedule sched = olAndSched.getSched();
-			final IDeliverRequest deliverRequest = olAndSched.getDeliverRequest();
 
 			final DeliveryRule deliveryRule = shipmentScheduleEffectiveValuesBL.getDeliveryRule(sched);
 
-			final boolean ruleManual = DeliveryRule.MANUAL.equals(deliveryRule);
-
+			//
+			// QtyRequired
 			final BigDecimal qtyRequired;
 			if (olAndSched.getQtyOverride() != null)
 			{
-				qtyRequired = olAndSched.getQtyOverride().subtract(ShipmentScheduleQtysHelper.mkQtyToDeliverOverrideFulFilled(olAndSched));
+				qtyRequired = olAndSched.getQtyOverride().subtract(ShipmentScheduleQtysHelper.computeQtyToDeliverOverrideFulFilled(olAndSched));
 			}
-			else if (ruleManual)
+			else if (deliveryRule.isManual())
 			{
 				// lines with ruleManual need to be scheduled explicitly using QtyToDeliver_Override
 				qtyRequired = BigDecimal.ZERO;
@@ -484,15 +481,13 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			else
 			{
 				final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
-				qtyRequired = deliverRequest.getQtyOrdered().subtract(qtyDelivered);
+				qtyRequired = olAndSched.getQtyOrdered().subtract(qtyDelivered);
 			}
 
 			//
 			// QtyPickList (i.e. qtyUnconfirmedShipments) is the sum of
 			// * MovementQtys from all draft shipment lines which are pointing to shipment schedule's order line
 			// * QtyPicked from QtyPicked records
-			final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
-
 			final BigDecimal qtyPickList;
 			{
 				// task 08123: we also take those numbers into account that are *not* on an M_InOutLine yet, but are nonetheless picked
@@ -503,8 +498,9 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				sched.setQtyPickList(qtyPickList);
 			}
 
-			final BigDecimal qtyToDeliver = ShipmentScheduleQtysHelper.mkQtyToDeliver(qtyRequired, qtyPickList);
+			final BigDecimal qtyToDeliver = ShipmentScheduleQtysHelper.computeQtyToDeliver(qtyRequired, qtyPickList);
 
+			final ProductId productId = olAndSched.getProductId();
 			if (!productBL.isStocked(productId))
 			{
 				// product not stocked => don't concern ourselves with the storage; just deliver what was ordered
@@ -526,29 +522,34 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			sched.setQtyOnHand(qtyOnHandBeforeAllocation);
 
 			final CompleteStatus completeStatus = computeCompleteStatus(qtyToDeliver, qtyOnHandBeforeAllocation);
-			final boolean ruleCompleteOrder = DeliveryRule.COMPLETE_ORDER.equals(deliveryRule);
-			final boolean ruleAvailable = DeliveryRule.AVAILABILITY.equals(deliveryRule);
-			final boolean ruleCompleteLine = DeliveryRule.COMPLETE_LINE.equals(deliveryRule);
-			final boolean ruleForce = DeliveryRule.FORCE.equals(deliveryRule);
 
 			//
 			// Delivery rule: Force
-			if (ruleForce)
+			if (deliveryRule.isForce())
 			{
-				createLine(ctx, olAndSched, qtyToDeliver, storages, ruleForce, completeStatus, candidates);
+				createLine(
+						ctx,
+						olAndSched,
+						qtyToDeliver,
+						storages,
+						true, // force
+						completeStatus,
+						candidates);
 			}
 			//
 			// Delivery rule: Complete Order/Line or Availability or Manual
-			else if (ruleCompleteOrder || ruleCompleteLine || ruleAvailable || ruleManual)
+			else if (deliveryRule.isCompleteOrderOrLine()
+					|| deliveryRule.isAvailability()
+					|| deliveryRule.isManual())
 			{
 				if (qtyOnHandBeforeAllocation.signum() > 0 || qtyToDeliver.signum() < 0)
 				{
 					//
 					// if there is anything at all to deliver, create a new inOutLine
-					BigDecimal deliver = qtyToDeliver;
-					if (deliver.compareTo(qtyOnHandBeforeAllocation) > 0)
+					BigDecimal qtyToDeliverEffective = qtyToDeliver;
+					if (qtyToDeliverEffective.compareTo(qtyOnHandBeforeAllocation) > 0)
 					{
-						deliver = qtyOnHandBeforeAllocation;
+						qtyToDeliverEffective = qtyOnHandBeforeAllocation;
 					}
 
 					// we invoke createLine even if ruleComplete is true and
@@ -556,7 +557,14 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 					// allocated.
 					// If the created line will make it into a real shipment will be
 					// decided later.
-					createLine(ctx, olAndSched, deliver, storages, ruleForce, completeStatus, candidates);
+					createLine(
+							ctx,
+							olAndSched,
+							qtyToDeliverEffective,
+							storages,
+							false, // force
+							completeStatus,
+							candidates);
 				}
 				else
 				{

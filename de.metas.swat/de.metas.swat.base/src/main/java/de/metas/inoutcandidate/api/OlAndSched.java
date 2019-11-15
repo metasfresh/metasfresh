@@ -78,10 +78,10 @@ public final class OlAndSched
 	{
 		return shipmentSchedule + "/" + salesOrderLine.orElse(null);
 	}
-
-	public IDeliverRequest getDeliverRequest()
+	
+	public BigDecimal getQtyOrdered()
 	{
-		return deliverRequest;
+		return deliverRequest.getQtyOrdered();
 	}
 
 	public boolean hasSalesOrderLine()
