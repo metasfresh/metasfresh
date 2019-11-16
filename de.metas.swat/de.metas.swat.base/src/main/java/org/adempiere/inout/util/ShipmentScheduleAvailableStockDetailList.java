@@ -2,7 +2,6 @@ package org.adempiere.inout.util;
 
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.Iterator;
 
 import com.google.common.collect.ImmutableList;
 
@@ -32,7 +31,7 @@ import lombok.ToString;
  */
 
 @ToString
-public class ShipmentScheduleAvailableStockDetailList implements Iterable<ShipmentScheduleAvailableStockDetail>
+public class ShipmentScheduleAvailableStockDetailList
 {
 	public static ShipmentScheduleAvailableStockDetailList of(@NonNull final Collection<ShipmentScheduleAvailableStockDetail> list)
 	{
@@ -55,7 +54,7 @@ public class ShipmentScheduleAvailableStockDetailList implements Iterable<Shipme
 		this.list = ImmutableList.copyOf(list);
 	}
 
-	public BigDecimal getQtyOnHand()
+	public BigDecimal getTotalQtyOnHand()
 	{
 		return list.stream()
 				.map(ShipmentScheduleAvailableStockDetail::getQtyOnHand)
@@ -72,14 +71,18 @@ public class ShipmentScheduleAvailableStockDetailList implements Iterable<Shipme
 		return list.size();
 	}
 
-	public ShipmentScheduleAvailableStockDetail get(final int index)
+	public BigDecimal getQtyOnHand(final int storageIndex)
 	{
-		return list.get(index);
+		return getStorageDetail(storageIndex).getQtyOnHand();
 	}
 
-	@Override
-	public Iterator<ShipmentScheduleAvailableStockDetail> iterator()
+	public void subtractQtyOnHand(final int storageIndex, @NonNull final BigDecimal qtyOnHandToRemove)
 	{
-		return list.iterator();
+		getStorageDetail(storageIndex).subtractQtyOnHand(qtyOnHandToRemove);
+	}
+
+	public ShipmentScheduleAvailableStockDetail getStorageDetail(final int storageIndex)
+	{
+		return list.get(storageIndex);
 	}
 }

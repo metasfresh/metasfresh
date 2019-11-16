@@ -38,7 +38,6 @@ import org.adempiere.inout.util.DeliveryGroupCandidateGroupId;
 import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
-import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetail;
 import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetailList;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
@@ -515,7 +514,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				//
 				// Get the QtyOnHand storages suitable for our order line
 				final ShipmentScheduleAvailableStockDetailList storages = qtyOnHands.getStockDetailsMatching(sched);
-				final BigDecimal qtyOnHandBeforeAllocation = storages.getQtyOnHand();
+				final BigDecimal qtyOnHandBeforeAllocation = storages.getTotalQtyOnHand();
 				sched.setQtyOnHand(qtyOnHandBeforeAllocation);
 
 				final CompleteStatus completeStatus = computeCompleteStatus(qtyToDeliver, qtyOnHandBeforeAllocation);
@@ -629,7 +628,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			//
 			// Iterate QtyOnHand storage records and try to allocate on current shipment schedule/order line.
 			BigDecimal qtyRemainingToDeliver = qty; // how much still needs to be delivered; initially it's the whole qty required
-			for (int i = 0; i < storages.size(); i++)
+			for (int storageIndex = 0; storageIndex < storages.size(); storageIndex++)
 			{
 				// Stop here is there is nothing remaining to be delivered
 				if (qtyRemainingToDeliver.signum() == 0)
@@ -637,18 +636,17 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 					break;
 				}
 
-				final ShipmentScheduleAvailableStockDetail storage = storages.get(i);
 				BigDecimal qtyToDeliver = qtyRemainingToDeliver; // initially try to deliver the entire quantity remaining to be delivered
 
 				//
 				// Adjust the quantity that can be delivered from this storage line
 				// Check: Not enough On Hand
-				final BigDecimal qtyOnHandAvailable = storage.getQtyOnHand();
+				final BigDecimal qtyOnHandAvailable = storages.getQtyOnHand(storageIndex);
 				if (qtyToDeliver.compareTo(qtyOnHandAvailable) > 0
 						&& qtyOnHandAvailable.signum() >= 0)         // positive storage
 				{
 					if (!force // Adjust to OnHand Qty
-							|| force && i + 1 != storages.size())         // if force not on last location
+							|| force && storageIndex + 1 != storages.size())         // if force not on last location
 					{
 						qtyToDeliver = qtyOnHandAvailable;
 					}
@@ -695,7 +693,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 				qtyRemainingToDeliver = qtyRemainingToDeliver.subtract(qtyToDeliver);
 
-				storage.subtractQtyOnHand(qtyToDeliver);
+				storages.subtractQtyOnHand(storageIndex, qtyToDeliver);
 			}    // for each storage record
 		}
 	}

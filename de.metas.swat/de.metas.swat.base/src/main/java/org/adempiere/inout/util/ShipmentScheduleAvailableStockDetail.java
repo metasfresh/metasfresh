@@ -29,6 +29,7 @@ import org.adempiere.warehouse.WarehouseId;
 import de.metas.material.cockpit.stock.StockDataItem;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -38,7 +39,7 @@ import lombok.ToString;
  * Stock detail with mutable qtyOnHand.
  */
 @ToString
-@Getter
+@Getter(AccessLevel.PACKAGE)
 public class ShipmentScheduleAvailableStockDetail
 {
 	public static ShipmentScheduleAvailableStockDetail of(final StockDataItem result)
@@ -78,7 +79,7 @@ public class ShipmentScheduleAvailableStockDetail
 		return qtyOnHand;
 	}
 
-	public void subtractQtyOnHand(@NonNull final BigDecimal qtyOnHandToRemove)
+	void subtractQtyOnHand(@NonNull final BigDecimal qtyOnHandToRemove)
 	{
 		this.qtyOnHand = qtyOnHand.subtract(qtyOnHandToRemove);
 	}
