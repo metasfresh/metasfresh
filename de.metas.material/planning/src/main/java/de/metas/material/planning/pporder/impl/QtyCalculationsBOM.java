@@ -2,9 +2,13 @@ package de.metas.material.planning.pporder.impl;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import com.google.common.collect.ImmutableList;
 
+import de.metas.material.planning.pporder.PPOrderId;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -30,15 +34,25 @@ import lombok.Value;
  * #L%
  */
 
+/**
+ * A BOM useful for quantity calculations
+ */
 @Value
 public class QtyCalculationsBOM
 {
-	private final ImmutableList<QtyCalculationsBOMLine> lines;
+	ImmutableList<QtyCalculationsBOMLine> lines;
+
+	// References
+	@Getter
+	PPOrderId orderId;
 
 	@Builder
 	private QtyCalculationsBOM(
-			@NonNull final List<QtyCalculationsBOMLine> lines)
+			@NonNull final List<QtyCalculationsBOMLine> lines,
+			//
+			@Nullable final PPOrderId orderId)
 	{
 		this.lines = ImmutableList.copyOf(lines);
+		this.orderId = orderId;
 	}
 }

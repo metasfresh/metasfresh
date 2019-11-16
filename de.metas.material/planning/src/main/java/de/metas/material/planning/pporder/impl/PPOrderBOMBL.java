@@ -507,6 +507,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 		return QtyCalculationsBOM.builder()
 				.lines(lines)
+				.orderId(PPOrderId.ofRepoIdOrNull(order.getPP_Order_ID()))
 				.build();
 	}
 }
