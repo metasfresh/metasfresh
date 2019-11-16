@@ -26,11 +26,13 @@ import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Loads stock details which are relevant to given {@link I_M_ShipmentSchedule}s.
  * Allows to change (in memory!) the qtyOnHand.
  */
+@ToString(of = "stockDetails")
 public class ShipmentScheduleQtyOnHandStorage
 {
 	// services
@@ -45,14 +47,6 @@ public class ShipmentScheduleQtyOnHandStorage
 			@NonNull final StockRepository stockRepository)
 	{
 		stockDetails = createStockDetailsFromShipmentSchedules(shipmentSchedules, stockRepository);
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add("storageRecords", stockDetails)
-				.toString();
 	}
 
 	private final List<ShipmentScheduleAvailableStockDetail> createStockDetailsFromShipmentSchedules(
@@ -161,7 +155,7 @@ public class ShipmentScheduleQtyOnHandStorage
 	{
 		//
 		// Product
-		if (!Objects.equals(query.getProductId(), stockDetail.getProductId()))
+		if (!ProductId.equals(query.getProductId(), stockDetail.getProductId()))
 		{
 			return false;
 		}
@@ -174,8 +168,10 @@ public class ShipmentScheduleQtyOnHandStorage
 			return false;
 		}
 
+		//
+		// Attributes
 		final boolean queryMatchesAll = query.getStorageAttributesKey().isAll();
-		final boolean queryMatchesStockDetail = Objects.equals(query.getStorageAttributesKey(), stockDetail.getStorageAttributesKey());
+		final boolean queryMatchesStockDetail = AttributesKey.equals(query.getStorageAttributesKey(), stockDetail.getStorageAttributesKey());
 		if (!queryMatchesAll && !queryMatchesStockDetail)
 		{
 			return false;
@@ -195,8 +191,10 @@ public class ShipmentScheduleQtyOnHandStorage
 		{
 			return ShipmentScheduleAvailableStockDetailList.of();
 		}
-
-		final StockDataQuery materialQuery = getMaterialQuery(sched);
-		return getStockDetailsMatching(materialQuery);
+		else
+		{
+			final StockDataQuery materialQuery = getMaterialQuery(sched);
+			return getStockDetailsMatching(materialQuery);
+		}
 	}
 }
