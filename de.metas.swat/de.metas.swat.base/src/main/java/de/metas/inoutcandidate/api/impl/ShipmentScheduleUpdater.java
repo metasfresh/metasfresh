@@ -629,33 +629,33 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 			//
 			// Iterate QtyOnHand storage records and try to allocate on current shipment schedule/order line.
-			BigDecimal toDeliverTargetQty = qty; // how much still needs to be delivered; initially it's the whole qty required
+			BigDecimal qtyRemainingToDeliver = qty; // how much still needs to be delivered; initially it's the whole qty required
 			for (int i = 0; i < storages.size(); i++)
 			{
 				// Stop here is there is nothing remaining to be delivered
-				if (toDeliverTargetQty.signum() == 0)
+				if (qtyRemainingToDeliver.signum() == 0)
 				{
 					break;
 				}
 
 				final ShipmentScheduleAvailableStockDetail storage = storages.get(i);
-				BigDecimal toDeliverCurrentQty = toDeliverTargetQty; // initially try to deliver the entire quantity remaining to be delivered
+				BigDecimal qtyToDeliver = qtyRemainingToDeliver; // initially try to deliver the entire quantity remaining to be delivered
 
 				//
 				// Adjust the quantity that can be delivered from this storage line
 				// Check: Not enough On Hand
 				final BigDecimal qtyOnHandAvailable = storage.getQtyOnHand();
-				if (toDeliverCurrentQty.compareTo(qtyOnHandAvailable) > 0
+				if (qtyToDeliver.compareTo(qtyOnHandAvailable) > 0
 						&& qtyOnHandAvailable.signum() >= 0)         // positive storage
 				{
 					if (!force // Adjust to OnHand Qty
 							|| force && i + 1 != storages.size())         // if force not on last location
 					{
-						toDeliverCurrentQty = qtyOnHandAvailable;
+						qtyToDeliver = qtyOnHandAvailable;
 					}
 				}
 				// Skip if we cannot deliver something for current storage line
-				if (toDeliverCurrentQty.signum() == 0)
+				if (qtyToDeliver.signum() == 0)
 				{
 					// zero deliver
 					continue;
@@ -679,7 +679,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				{
 					lineCandidate = groupCandidate.createAndAddLineCandidate(sched, completeStatus);
 
-					lineCandidate.setQtyToDeliver(toDeliverCurrentQty);
+					lineCandidate.setQtyToDeliver(qtyToDeliver);
 
 					deliveryLines.add(lineCandidate);
 					candidates.addLine(lineCandidate);
@@ -690,13 +690,13 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				else
 				{
 					final BigDecimal inoutLineQtyOld = lineCandidate.getQtyToDeliver();
-					final BigDecimal inoutLineQtyNew = inoutLineQtyOld.add(toDeliverCurrentQty);
+					final BigDecimal inoutLineQtyNew = inoutLineQtyOld.add(qtyToDeliver);
 					lineCandidate.setQtyToDeliver(inoutLineQtyNew);
 				}
 
-				toDeliverTargetQty = toDeliverTargetQty.subtract(toDeliverCurrentQty);
+				qtyRemainingToDeliver = qtyRemainingToDeliver.subtract(qtyToDeliver);
 
-				storage.subtractQtyOnHand(toDeliverCurrentQty);
+				storage.subtractQtyOnHand(qtyToDeliver);
 			}    // for each storage record
 		}
 	}
