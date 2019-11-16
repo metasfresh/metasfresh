@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_OrderLine;
@@ -58,6 +59,8 @@ import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
+import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -205,7 +208,8 @@ public class PPOrderBL implements IPPOrderBL
 	@Override
 	public Quantity getQtyReceived(@NonNull final PPOrderId ppOrderId)
 	{
-		final I_PP_Order ppOrder = Services.get(IPPOrderDAO.class).getById(ppOrderId);
+		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
+		final I_PP_Order ppOrder = ppOrdersRepo.getById(ppOrderId);
 		return getQtyReceived(ppOrder);
 	}
 
@@ -416,6 +420,16 @@ public class PPOrderBL implements IPPOrderBL
 		final PPOrderRouting orderRouting = orderRoutingRepo.getByOrderId(orderId);
 		orderRouting.voidIt();
 		orderRoutingRepo.save(orderRouting);
+	}
+
+	@Override
+	public Optional<QtyCalculationsBOM> getOpenPickingOrderBOMForSalesOrderLine(@NonNull final OrderLineId salesOrderLineId)
+	{
+		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
+		final IPPOrderBOMBL ppOrderBOMsService = Services.get(IPPOrderBOMBL.class);
+
+		return ppOrdersRepo.retrieveOpenPickingOrderForSalesOrderLine(salesOrderLineId)
+				.map(ppOrderBOMsService::getQtyCalculationsBOM);
 	}
 
 }
