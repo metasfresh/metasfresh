@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
@@ -148,11 +147,14 @@ public class ShipmentScheduleQtyOnHandStorage
 				.build();
 	}
 
-	private Stream<ShipmentScheduleAvailableStockDetail> streamStockDetailsMatching(final StockDataQuery materialQuery)
+	private ShipmentScheduleAvailableStockDetailList getStockDetailsMatching(final StockDataQuery materialQuery)
 	{
-		return stockDetails
+		final ImmutableList<ShipmentScheduleAvailableStockDetail> matchedStockDetails = stockDetails
 				.stream()
-				.filter(stockDetail -> matching(materialQuery, stockDetail));
+				.filter(stockDetail -> matching(materialQuery, stockDetail))
+				.collect(ImmutableList.toImmutableList());
+
+		return ShipmentScheduleAvailableStockDetailList.of(matchedStockDetails);
 	}
 
 	private static boolean matching(final StockDataQuery query, final ShipmentScheduleAvailableStockDetail stockDetail)
@@ -195,9 +197,6 @@ public class ShipmentScheduleQtyOnHandStorage
 		}
 
 		final StockDataQuery materialQuery = getMaterialQuery(sched);
-		final ImmutableList<ShipmentScheduleAvailableStockDetail> list = streamStockDetailsMatching(materialQuery)
-				.collect(ImmutableList.toImmutableList());
-
-		return ShipmentScheduleAvailableStockDetailList.of(list);
+		return getStockDetailsMatching(materialQuery);
 	}
 }
