@@ -214,9 +214,9 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 		return inOut;
 	}
 
-	public DeliveryLineCandidate getInOutLineFor(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	public boolean hasDeliveryLineCandidateFor(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		return getLineCandidateForShipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID());
+		return getLineCandidateForShipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID()) != null;
 	}
 
 	/**

@@ -26,7 +26,6 @@ import java.time.ZonedDateTime;
  */
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -210,7 +209,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		if (olsAndScheds.isEmpty())
 		{
 			logger.debug("There are no shipment schedule entries to update");
-			return Collections.emptyList();
+			return ImmutableList.of();
 		}
 		logger.debug("Found {} invalid shipment schedule entries", olsAndScheds.size());
 
@@ -337,11 +336,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 						&& sched.getQtyDelivered().signum() == 0 // also don't try to delete if there is already a picked or delivered Qty.
 						&& sched.getQtyPickList().signum() == 0)
 				{
-					logger.debug("QtyToDeliver_Override=" + sched.getQtyToDeliver_Override()
-							+ "; QtyReserved=" + sched.getQtyReserved()
-							+ "; DocStatus=" + orderDocStatus
-							+ "; => Deleting " + sched);
-
 					InterfaceWrapperHelper.delete(sched);
 					continue;
 				}
@@ -498,6 +492,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				sched.setQtyPickList(qtyPickList);
 			}
 
+			//
+			// QtyToDeliver: qtyRequired - qtyPickList (non negative!)
 			final BigDecimal qtyToDeliver = ShipmentScheduleQtysHelper.computeQtyToDeliver(qtyRequired, qtyPickList);
 
 			final ProductId productId = olAndSched.getProductId();
@@ -514,83 +510,82 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 						candidates);
 				continue;
 			}
-
-			//
-			// Get the QtyOnHand storages suitable for our order line
-			final ShipmentScheduleAvailableStockDetailList storages = qtyOnHands.getStockDetailsMatching(sched);
-			final BigDecimal qtyOnHandBeforeAllocation = storages.getQtyOnHand();
-			sched.setQtyOnHand(qtyOnHandBeforeAllocation);
-
-			final CompleteStatus completeStatus = computeCompleteStatus(qtyToDeliver, qtyOnHandBeforeAllocation);
-
-			//
-			// Delivery rule: Force
-			if (deliveryRule.isForce())
+			else
 			{
-				createLine(
-						ctx,
-						olAndSched,
-						qtyToDeliver,
-						storages,
-						true, // force
-						completeStatus,
-						candidates);
-			}
-			//
-			// Delivery rule: Complete Order/Line or Availability or Manual
-			else if (deliveryRule.isCompleteOrderOrLine()
-					|| deliveryRule.isAvailability()
-					|| deliveryRule.isManual())
-			{
-				if (qtyOnHandBeforeAllocation.signum() > 0 || qtyToDeliver.signum() < 0)
+				//
+				// Get the QtyOnHand storages suitable for our order line
+				final ShipmentScheduleAvailableStockDetailList storages = qtyOnHands.getStockDetailsMatching(sched);
+				final BigDecimal qtyOnHandBeforeAllocation = storages.getQtyOnHand();
+				sched.setQtyOnHand(qtyOnHandBeforeAllocation);
+
+				final CompleteStatus completeStatus = computeCompleteStatus(qtyToDeliver, qtyOnHandBeforeAllocation);
+
+				//
+				// Delivery rule: Force
+				if (deliveryRule.isForce())
 				{
-					//
-					// if there is anything at all to deliver, create a new inOutLine
-					BigDecimal qtyToDeliverEffective = qtyToDeliver;
-					if (qtyToDeliverEffective.compareTo(qtyOnHandBeforeAllocation) > 0)
-					{
-						qtyToDeliverEffective = qtyOnHandBeforeAllocation;
-					}
-
-					// we invoke createLine even if ruleComplete is true and
-					// fullLine is false, because we want the quantity to be
-					// allocated.
-					// If the created line will make it into a real shipment will be
-					// decided later.
 					createLine(
 							ctx,
 							olAndSched,
-							qtyToDeliverEffective,
+							qtyToDeliver,
 							storages,
-							false, // force
+							true, // force
 							completeStatus,
 							candidates);
 				}
+				//
+				// Delivery rule: Complete Order/Line or Availability or Manual
+				else if (deliveryRule.isCompleteOrderOrLine()
+						|| deliveryRule.isAvailability()
+						|| deliveryRule.isManual())
+				{
+					if (qtyOnHandBeforeAllocation.signum() > 0 || qtyToDeliver.signum() < 0)
+					{
+						//
+						// if there is anything at all to deliver, create a new inOutLine
+						final BigDecimal qtyToDeliverEffective = qtyToDeliver.min(qtyOnHandBeforeAllocation);
+
+						// we invoke createLine even if ruleComplete is true and fullLine is false,
+						// because we want the quantity to be allocated.
+						// If the created line will make it into a real shipment will be decided later.
+						createLine(
+								ctx,
+								olAndSched,
+								qtyToDeliverEffective,
+								storages,
+								false, // force
+								completeStatus,
+								candidates);
+					}
+					else
+					{
+						logger.debug("No qtyOnHand to deliver[SKIP] - OnHand={} (QtyPickList={}), ToDeliver={}, FullLine={}",
+								qtyOnHandBeforeAllocation, qtyPickList, qtyToDeliver, completeStatus);
+					}
+				}
+				//
+				// Unknown delivery rule
 				else
 				{
-					logger.debug("No qtyOnHand to deliver[SKIP] - OnHand=" + qtyOnHandBeforeAllocation
-							+ " (QtyPickList=" + qtyPickList + "), ToDeliver=" + qtyToDeliver
-							+ ", FullLine=" + completeStatus);
+					throw new AdempiereException("Unsupported delivery rule: " + deliveryRule)
+							.setParameter("qtyOnHandBeforeAllocation", qtyOnHandBeforeAllocation)
+							.setParameter("qtyPickedButNotDelivered", qtyPickList)
+							.setParameter("qtyToDeliver", qtyToDeliver)
+							.appendParametersToMessage();
 				}
-			}
-			else
-			{
-				throw new AdempiereException("Unsupported delivery rule: " + deliveryRule)
-						.setParameter("qtyOnHandBeforeAllocation", qtyOnHandBeforeAllocation)
-						.setParameter("qtyPickedButNotDelivered", qtyPickList)
-						.setParameter("qtyToDeliver", qtyToDeliver)
-						.appendParametersToMessage();
 			}
 		}
 
 		return candidates;
 	} // generate
 
-	private static CompleteStatus computeCompleteStatus(final BigDecimal qtyToDeliver, final BigDecimal atyOnHand)
+	private static CompleteStatus computeCompleteStatus(final BigDecimal qtyToDeliver, final BigDecimal qtyOnHand)
 	{
 		// fullLine==true means that we can create a shipment line with
 		// the full (current!) quantity of the current order line
-		final boolean fullLine = atyOnHand.compareTo(qtyToDeliver) >= 0 || qtyToDeliver.signum() <= 0;
+		final boolean fullLine = qtyToDeliver.signum() <= 0
+				|| qtyOnHand.compareTo(qtyToDeliver) >= 0;
+
 		return fullLine ? CompleteStatus.OK : CompleteStatus.INCOMPLETE_LINE;
 	}
 
@@ -609,16 +604,15 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			@NonNull final ShipmentSchedulesDuringUpdate candidates)
 	{
 		final I_M_ShipmentSchedule sched = olAndSched.getSched();
-
-		if (candidates.getInOutLineFor(sched) != null)
+		if (candidates.hasDeliveryLineCandidateFor(sched))
 		{
-			logger.debug("candidates contains already an inoutLine for M_ShipmentSchedule {}", sched);
+			logger.debug("candidates contains already an delivery line candidate for M_ShipmentSchedule {}", sched);
 			return;
 		}
 
 		final DeliveryGroupCandidate groupCandidate = getOrCreateGroupCandidateForShipmentSchedule(sched, candidates);
 
-		if (storages == null || storages.isEmpty())
+		if (storages.isEmpty())
 		{
 			final DeliveryLineCandidate deliveryLineCandidate = groupCandidate.createAndAddLineCandidate(sched, completeStatus);
 			if (force) // Case: no Quantity on Hand storages and force => no need for allocations etc
@@ -628,82 +622,83 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			candidates.addLine(deliveryLineCandidate);
 			return;
 		}
-
-		// Shipment Lines (i.e. candidate lines)
-		final List<DeliveryLineCandidate> inoutLines = new ArrayList<>();
-
-		//
-		// Iterate QtyOnHand storage records and try to allocate on current shipment schedule/order line.
-		BigDecimal toDeliverTargetQty = qty; // how much still needs to be delivered; initially it's the whole qty required
-		for (int i = 0; i < storages.size(); i++)
+		else
 		{
-			// Stop here is there is nothing remaining to be delivered
-			if (toDeliverTargetQty.signum() == 0)
-			{
-				break;
-			}
-
-			final ShipmentScheduleAvailableStockDetail storage = storages.get(i);
-			BigDecimal toDeliverCurrentQty = toDeliverTargetQty; // initially try to deliver the entire quantity remaining to be delivered
+			// Shipment Lines (i.e. candidate lines)
+			final List<DeliveryLineCandidate> deliveryLines = new ArrayList<>();
 
 			//
-			// Adjust the quantity that can be delivered from this storage line
-			// Check: Not enough On Hand
-			final BigDecimal qtyOnHandAvailable = storage.getQtyOnHand();
-			if (toDeliverCurrentQty.compareTo(qtyOnHandAvailable) > 0
-					&& qtyOnHandAvailable.signum() >= 0)         // positive storage
+			// Iterate QtyOnHand storage records and try to allocate on current shipment schedule/order line.
+			BigDecimal toDeliverTargetQty = qty; // how much still needs to be delivered; initially it's the whole qty required
+			for (int i = 0; i < storages.size(); i++)
 			{
-				if (!force // Adjust to OnHand Qty
-						|| force && i + 1 != storages.size())         // if force not on last location
+				// Stop here is there is nothing remaining to be delivered
+				if (toDeliverTargetQty.signum() == 0)
 				{
-					toDeliverCurrentQty = qtyOnHandAvailable;
+					break;
 				}
-			}
-			// Skip if we cannot deliver something for current storage line
-			if (toDeliverCurrentQty.signum() == 0)
-			{
-				// zero deliver
-				continue;
-			}
 
-			// Find existing lineCandidate that was added in a previous iteration
-			DeliveryLineCandidate lineCandidate = null;
-			for (final DeliveryLineCandidate existingLineCandidate : inoutLines)
-			{
-				// skip if it's for a different order line
-				if (existingLineCandidate.getShipmentScheduleId() != sched.getM_ShipmentSchedule_ID())
+				final ShipmentScheduleAvailableStockDetail storage = storages.get(i);
+				BigDecimal toDeliverCurrentQty = toDeliverTargetQty; // initially try to deliver the entire quantity remaining to be delivered
+
+				//
+				// Adjust the quantity that can be delivered from this storage line
+				// Check: Not enough On Hand
+				final BigDecimal qtyOnHandAvailable = storage.getQtyOnHand();
+				if (toDeliverCurrentQty.compareTo(qtyOnHandAvailable) > 0
+						&& qtyOnHandAvailable.signum() >= 0)         // positive storage
 				{
+					if (!force // Adjust to OnHand Qty
+							|| force && i + 1 != storages.size())         // if force not on last location
+					{
+						toDeliverCurrentQty = qtyOnHandAvailable;
+					}
+				}
+				// Skip if we cannot deliver something for current storage line
+				if (toDeliverCurrentQty.signum() == 0)
+				{
+					// zero deliver
 					continue;
 				}
-				lineCandidate = existingLineCandidate;
-			}
 
-			// Case: No InOutLine found
-			// => create a new InOutLine
-			if (lineCandidate == null)
-			{
-				lineCandidate = groupCandidate.createAndAddLineCandidate(sched, completeStatus);
+				// Find existing lineCandidate that was added in a previous iteration
+				DeliveryLineCandidate lineCandidate = null;
+				for (final DeliveryLineCandidate existingLineCandidate : deliveryLines)
+				{
+					// skip if it's for a different order line
+					if (existingLineCandidate.getShipmentScheduleId() != sched.getM_ShipmentSchedule_ID())
+					{
+						continue;
+					}
+					lineCandidate = existingLineCandidate;
+				}
 
-				lineCandidate.setQtyToDeliver(toDeliverCurrentQty);
+				// Case: No InOutLine found
+				// => create a new InOutLine
+				if (lineCandidate == null)
+				{
+					lineCandidate = groupCandidate.createAndAddLineCandidate(sched, completeStatus);
 
-				inoutLines.add(lineCandidate);
-				candidates.addLine(lineCandidate);
-			}
-			//
-			// Case: existing InOutLine found
-			// => adjust the quantity
-			else
-			{
-				final BigDecimal inoutLineQtyOld = lineCandidate.getQtyToDeliver();
-				final BigDecimal inoutLineQtyNew = inoutLineQtyOld.add(toDeliverCurrentQty);
-				lineCandidate.setQtyToDeliver(inoutLineQtyNew);
-			}
+					lineCandidate.setQtyToDeliver(toDeliverCurrentQty);
 
-			logger.debug("ToDeliver=" + qty + "/" + toDeliverCurrentQty + " - " + lineCandidate);
-			toDeliverTargetQty = toDeliverTargetQty.subtract(toDeliverCurrentQty);
+					deliveryLines.add(lineCandidate);
+					candidates.addLine(lineCandidate);
+				}
+				//
+				// Case: existing InOutLine found
+				// => adjust the quantity
+				else
+				{
+					final BigDecimal inoutLineQtyOld = lineCandidate.getQtyToDeliver();
+					final BigDecimal inoutLineQtyNew = inoutLineQtyOld.add(toDeliverCurrentQty);
+					lineCandidate.setQtyToDeliver(inoutLineQtyNew);
+				}
 
-			storage.subtractQtyOnHand(toDeliverCurrentQty);
-		}    // for each storage record
+				toDeliverTargetQty = toDeliverTargetQty.subtract(toDeliverCurrentQty);
+
+				storage.subtractQtyOnHand(toDeliverCurrentQty);
+			}    // for each storage record
+		}
 	}
 
 	private DeliveryGroupCandidate getOrCreateGroupCandidateForShipmentSchedule(
