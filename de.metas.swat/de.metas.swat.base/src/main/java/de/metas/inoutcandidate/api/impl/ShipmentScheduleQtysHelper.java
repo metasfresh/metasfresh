@@ -54,14 +54,13 @@ import lombok.experimental.UtilityClass;
 			@NonNull final IShipmentSchedulesDuringUpdate shipmentCandidates)
 	{
 		final I_M_ShipmentSchedule sched = olAndSched.getSched();
-
 		if (sched.isClosed() || sched.isDeliveryStop())
 		{
 			setZeroQtyToDeliverAndRelatedStatuses(sched);
 			return;
 		}
 
-		final DeliveryLineCandidate lineCandidate = shipmentCandidates.getLineCandidateForShipmentScheduleId(sched.getM_ShipmentSchedule_ID());
+		final DeliveryLineCandidate lineCandidate = shipmentCandidates.getLineCandidateForShipmentScheduleId(olAndSched.getShipmentScheduleId());
 		if (lineCandidate == null)
 		{
 			ShipmentScheduleQtysHelper.setQtyToDeliverForDiscardedShipmentSchedule(sched);

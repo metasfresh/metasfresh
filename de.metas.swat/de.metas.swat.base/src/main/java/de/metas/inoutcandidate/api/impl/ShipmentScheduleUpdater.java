@@ -603,18 +603,17 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			@NonNull final CompleteStatus completeStatus,
 			@NonNull final ShipmentSchedulesDuringUpdate candidates)
 	{
-		final I_M_ShipmentSchedule sched = olAndSched.getSched();
-		if (candidates.hasDeliveryLineCandidateFor(sched))
+		if (candidates.hasDeliveryLineCandidateFor(olAndSched.getShipmentScheduleId()))
 		{
-			logger.debug("candidates contains already an delivery line candidate for M_ShipmentSchedule {}", sched);
+			logger.debug("candidates contains already an delivery line candidate for {}", olAndSched);
 			return;
 		}
 
-		final DeliveryGroupCandidate groupCandidate = getOrCreateGroupCandidateForShipmentSchedule(sched, candidates);
+		final DeliveryGroupCandidate groupCandidate = getOrCreateGroupCandidateForShipmentSchedule(olAndSched.getSched(), candidates);
 
 		if (storages.isEmpty())
 		{
-			final DeliveryLineCandidate deliveryLineCandidate = groupCandidate.createAndAddLineCandidate(sched, completeStatus);
+			final DeliveryLineCandidate deliveryLineCandidate = groupCandidate.createAndAddLineCandidate(olAndSched.getSched(), completeStatus);
 			if (force) // Case: no Quantity on Hand storages and force => no need for allocations etc
 			{
 				deliveryLineCandidate.setQtyToDeliver(qty);
@@ -666,18 +665,18 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				for (final DeliveryLineCandidate existingLineCandidate : deliveryLines)
 				{
 					// skip if it's for a different order line
-					if (existingLineCandidate.getShipmentScheduleId() != sched.getM_ShipmentSchedule_ID())
+					if (existingLineCandidate.getShipmentScheduleId().equals(olAndSched.getShipmentScheduleId()))
 					{
-						continue;
+						lineCandidate = existingLineCandidate;
+						break;
 					}
-					lineCandidate = existingLineCandidate;
 				}
 
 				// Case: No InOutLine found
 				// => create a new InOutLine
 				if (lineCandidate == null)
 				{
-					lineCandidate = groupCandidate.createAndAddLineCandidate(sched, completeStatus);
+					lineCandidate = groupCandidate.createAndAddLineCandidate(olAndSched.getSched(), completeStatus);
 
 					lineCandidate.setQtyToDeliver(qtyToDeliver);
 

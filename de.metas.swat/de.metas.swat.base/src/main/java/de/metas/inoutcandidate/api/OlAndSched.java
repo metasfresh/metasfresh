@@ -78,7 +78,7 @@ public final class OlAndSched
 	{
 		return shipmentSchedule + "/" + salesOrderLine.orElse(null);
 	}
-	
+
 	public BigDecimal getQtyOrdered()
 	{
 		return deliverRequest.getQtyOrdered();
@@ -123,6 +123,11 @@ public final class OlAndSched
 	public I_M_ShipmentSchedule getSched()
 	{
 		return shipmentSchedule;
+	}
+
+	public ShipmentScheduleId getShipmentScheduleId()
+	{
+		return ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
 	}
 
 	/**
