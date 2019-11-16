@@ -35,7 +35,7 @@ import lombok.Value;
  */
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class StockDataQuery
 {
 	/** Empty list means "all warehouses" */
