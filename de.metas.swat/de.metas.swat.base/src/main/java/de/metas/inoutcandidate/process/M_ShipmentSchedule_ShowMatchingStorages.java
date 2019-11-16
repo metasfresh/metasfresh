@@ -70,7 +70,7 @@ public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 		for (final ShipmentScheduleAvailableStockDetail storage : storageRecords)
 		{
 			addLog("------------------------------------------------------------");
-			addLog(storage.getSummary());
+			addLog(storage.toString());
 		}
 
 		//

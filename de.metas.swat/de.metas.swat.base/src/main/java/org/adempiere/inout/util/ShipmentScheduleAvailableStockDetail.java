@@ -73,20 +73,10 @@ public class ShipmentScheduleAvailableStockDetail
 		this.qtyOnHand = qtyOnHand;
 	}
 
-	public String getSummary()
-	{
-		return toString();
-	}
-
-	private void setQtyOnHand(@NonNull final BigDecimal qtyOnHand)
-	{
-		this.qtyOnHand = qtyOnHand;
-	}
-
 	public void subtractQtyOnHand(final BigDecimal qtyOnHandToRemove)
 	{
 		final BigDecimal qtyOnHandOld = getQtyOnHand();
 		final BigDecimal qtyOnHandNew = qtyOnHandOld.subtract(qtyOnHandToRemove);
-		setQtyOnHand(qtyOnHandNew);
+		this.qtyOnHand = qtyOnHandNew;
 	}
 }
