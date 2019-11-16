@@ -9,6 +9,8 @@ import org.compiere.model.I_C_UOM;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.ProductBOMQtys;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -141,7 +143,8 @@ public final class QtyCalculationsBOMLine
 		return Quantity.of(qtyRequiredPlusScrap, uom);
 	}
 
-	public BigDecimal getFinishedGoodQtyMultiplier()
+	@VisibleForTesting
+	BigDecimal getFinishedGoodQtyMultiplier()
 	{
 		if (qtyPercentage)
 		{
