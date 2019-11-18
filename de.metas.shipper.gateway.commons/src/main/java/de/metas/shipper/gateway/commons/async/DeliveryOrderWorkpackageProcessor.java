@@ -3,6 +3,7 @@ package de.metas.shipper.gateway.commons.async;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.util.lang.CoalesceUtil;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
@@ -145,7 +146,7 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 		final IArchiveStorageFactory archiveStorageFactory = Services.get(IArchiveStorageFactory.class);
 
 		final String fileExtWithDot = MimeType.getExtensionByType(packageLabel.getContentType());
-		final String fileName = packageLabel.getType().toString() + fileExtWithDot;
+		final String fileName = CoalesceUtil.firstNotEmptyTrimmed(packageLabel.getFileName(), packageLabel.getType().toString()) + fileExtWithDot;
 		final byte[] labelData = packageLabel.getLabelData();
 
 		final Properties ctx = Env.getCtx();

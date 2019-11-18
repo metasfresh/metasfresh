@@ -185,7 +185,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 
 		//noinspection ConstantConditions
 		final ImmutableList<PackageLabels> packageLabels = customDeliveryData.getDetails().stream()
-				.map(detail -> createPackageLabel(detail.getPdfLabelData(), detail.getAwb()))
+				.map(detail -> createPackageLabel(detail.getPdfLabelData(), detail.getAwb(), String.valueOf(deliveryOrder.getId().getRepoId())))
 				.collect(ImmutableList.toImmutableList());
 
 		epicLogger.addLog("getPackageLabelsList: labels are {}", packageLabels);
@@ -194,15 +194,16 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	}
 
 	@NonNull
-	private static PackageLabels createPackageLabel(@NonNull final byte[] labelData, @NonNull final String awb)
+	private static PackageLabels createPackageLabel(@NonNull final byte[] labelData, @NonNull final String awb, final String deliveryOrderIdAsString)
 	{
 		return PackageLabels.builder()
-				.orderId(OrderId.of(DhlConstants.SHIPPER_GATEWAY_ID, awb))
+				.orderId(OrderId.of(DhlConstants.SHIPPER_GATEWAY_ID, deliveryOrderIdAsString))
 				.defaultLabelType(DhlPackageLabelType.GUI)
 				.label(PackageLabel.builder()
 						.type(DhlPackageLabelType.GUI)
 						.labelData(labelData)
 						.contentType(PackageLabel.CONTENTTYPE_PDF)
+						.fileName(awb)
 						.build())
 				.build();
 	}
