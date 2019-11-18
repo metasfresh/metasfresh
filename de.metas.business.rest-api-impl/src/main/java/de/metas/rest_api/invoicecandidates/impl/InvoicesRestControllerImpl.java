@@ -1,5 +1,7 @@
 package de.metas.rest_api.invoicecandidates.impl;
 
+import java.util.Optional;
+
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,8 +11,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.google.common.base.Optional;
 
 import de.metas.Profiles;
 import de.metas.invoice.InvoiceId;
@@ -94,7 +94,7 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 		return ResponseEntity.ok(resonse);
 	}
 
-	@PostMapping(value = "/status", consumes = "application/json", produces = "application/json")
+	@PostMapping(path = "/status", consumes = "application/json", produces = "application/json")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Successfully retrieved status for all matching invoice candidates"),
 			@ApiResponse(code = 401, message = "You are not authorized to retrieve the invoice candidates' status"),
@@ -108,7 +108,7 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 	}
 
 	@ApiOperation("Enqueues invoice candidates for invoicing")
-	@PostMapping(value = "/enqueueForInvoicing", consumes = "application/json", produces = "application/json")
+	@PostMapping(path = "/enqueueForInvoicing", consumes = "application/json", produces = "application/json")
 	@Override
 	public ResponseEntity<JsonEnqueueForInvoicingResponse> enqueueForInvoicing(@RequestBody @NonNull final JsonEnqueueForInvoicingRequest request)
 	{
@@ -116,7 +116,7 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 		return new ResponseEntity<>(response, HttpStatus.ACCEPTED);
 	}
 
-	@PostMapping(value = "/close", consumes = "application/json", produces = "application/json")
+	@PostMapping(path = "/close", consumes = "application/json", produces = "application/json")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Successfully closed all matching invoice candidates"),
 			@ApiResponse(code = 401, message = "You are not authorized to close the invoice candidates"),
@@ -134,7 +134,7 @@ class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 			@ApiResponse(code = 401, message = "You are not authorized to see the invoice PDF"),
 			@ApiResponse(code = 404, message = "No archive found for the invoice")
 	})
-	@GetMapping(value = "/{InvoiceId}/pdf")
+	@GetMapping(path = "/{InvoiceId}/pdf")
 	@Override
 	public ResponseEntity<byte[]> getInvoicePDF(
 			@PathVariable("InvoiceId") @ApiParam(required = true, value = "InvoiceId") final int invoiceRecordId)

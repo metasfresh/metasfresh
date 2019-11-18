@@ -192,13 +192,12 @@ public class CheckInvoiceCandidatesStatusService
 
 	private JsonInvoiceStatus toJsonInvoiceInfo(final I_C_Invoice invoice)
 	{
-
 		return JsonInvoiceStatus.builder()
 				.dateInvoiced(TimeUtil.asLocalDate(invoice.getDateInvoiced()))
 				.docStatus(invoice.getDocStatus())
 				.documentNo(invoice.getDocumentNo())
 				.metasfreshId(MetasfreshId.of(invoice.getC_Invoice_ID()))
-				.isPDFAvailable(invoicePDFService.hasArchive(InvoiceId.ofRepoId(invoice.getC_Invoice_ID())))
+				.pdfAvailable(invoicePDFService.hasArchive(InvoiceId.ofRepoId(invoice.getC_Invoice_ID())))
 				.build();
 	}
 

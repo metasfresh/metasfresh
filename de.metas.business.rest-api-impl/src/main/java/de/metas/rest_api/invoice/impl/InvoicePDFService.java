@@ -1,6 +1,7 @@
 package de.metas.rest_api.invoice.impl;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.archive.api.IArchiveDAO;
@@ -10,8 +11,6 @@ import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
-
-import com.google.common.base.Optional;
 
 import de.metas.invoice.InvoiceId;
 import de.metas.util.Check;
@@ -51,7 +50,7 @@ public class InvoicePDFService
 	{
 		final Optional<I_AD_Archive> lastArchive = getLastArchive(invoiceId);
 
-		return lastArchive.isPresent() ? Optional.of(archiveBL.getBinaryData(lastArchive.get())) : Optional.absent();
+		return lastArchive.isPresent() ? Optional.of(archiveBL.getBinaryData(lastArchive.get())) : Optional.empty();
 	}
 
 	public boolean hasArchive(@NonNull final InvoiceId invoiceId)
@@ -65,13 +64,13 @@ public class InvoicePDFService
 
 		if (invoiceRecord == null)
 		{
-			return Optional.absent();
+			return Optional.empty();
 		}
 
 		List<I_AD_Archive> lastArchive = archiveDAO.retrieveLastArchives(Env.getCtx(), TableRecordReference.of(invoiceRecord), 1);
 		if (Check.isEmpty(lastArchive))
 		{
-			return Optional.absent();
+			return Optional.empty();
 		}
 		return Optional.of(lastArchive.get(0));
 	}

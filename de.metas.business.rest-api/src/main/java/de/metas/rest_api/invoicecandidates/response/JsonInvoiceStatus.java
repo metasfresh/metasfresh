@@ -2,6 +2,9 @@ package de.metas.rest_api.invoicecandidates.response;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+
 import de.metas.rest_api.common.MetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -30,6 +33,7 @@ import lombok.Value;
  */
 @Value
 @Builder
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JsonInvoiceStatus
 {
 	MetasfreshId metasfreshId;
@@ -42,6 +46,6 @@ public class JsonInvoiceStatus
 
 	LocalDate dateInvoiced;
 
-	boolean isPDFAvailable ;
+	boolean pdfAvailable ;
 
 }
