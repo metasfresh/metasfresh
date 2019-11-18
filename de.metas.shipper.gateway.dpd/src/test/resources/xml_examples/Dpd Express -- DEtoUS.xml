@@ -1,0 +1,84 @@
+<!--
+  ~ #%L
+  ~ de.metas.shipper.gateway.dpd
+  ~ %%
+  ~ Copyright (C) 2019 metas GmbH
+  ~ %%
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 2 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public
+  ~ License along with this program. If not, see
+  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
+  ~ #L%
+  -->
+
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://dpd.com/common/service/types/Authentication/2.0" xmlns:ns1="http://dpd.com/common/service/types/ShipmentService/3.2">
+    <soapenv:Header>
+        <ns:authentication>
+            <delisId>your DELIS ID</delisId>
+            <authToken>your auth token</authToken>
+            <messageLanguage>de_DE</messageLanguage>
+        </ns:authentication>
+    </soapenv:Header>
+    <soapenv:Body>
+    <ns1:storeOrders>
+        <printOptions>
+            <printerLanguage>PDF</printerLanguage>
+            <paperFormat>A6</paperFormat>
+        </printOptions>
+        <order>
+            <generalShipmentData>
+                <mpsCustomerReferenceNumber1>xxx</mpsCustomerReferenceNumber1>
+                <sendingDepot>0998</sendingDepot>
+                <product>IE2</product>
+                <sender>
+                    <name1>TheBestPessimist Inc.</name1>
+                    <street>Eduard-Otto-Straße</street>
+                    <houseNo>10</houseNo>
+                    <country>DE</country>
+                    <zipCode>53129</zipCode>
+                    <city>Bonn</city>
+                </sender>
+                <recipient>
+                    <name1>xxx</name1>
+                    <name2>xxx</name2>
+                    <street>xxx</street>
+                    <houseNo>xxx</houseNo>
+                    <country>xxx</country>
+                    <zipCode>xxx</zipCode>
+                    <city>xxx</city>
+                        <phone>xxx</phone>
+                        <email>xxx</email>
+                </recipient>
+            </generalShipmentData>
+            <parcels>
+                <international>
+                    <parcelType>false</parcelType>
+                    <customsAmount>xxx</customsAmount>
+                    <customsCurrency>xxx</customsCurrency>
+                    <customsTerms>xxx</customsTerms>
+                    <customsContent>xxx</customsContent>
+                    <commercialInvoiceConsignee>
+                        <name1>xxx</name1>
+                        <name2>xxx</name2>
+                        <street>xxx</street>
+                        <country>xxx</country>
+                        <zipCode>xxx</zipCode>
+                        <city>xxx</city>
+                    </commercialInvoiceConsignee>
+                </international>
+            </parcels>
+            <productAndServiceData>
+                <orderType>xxx</orderType>
+            </productAndServiceData>
+        </order>
+    </ns1:storeOrders>
+</soapenv:Envelope>

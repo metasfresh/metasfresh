@@ -95,7 +95,7 @@ class DpdTestHelper
 			.databaseLogger(DpdDatabaseClientLogger.instance)
 			.build();
 
-	static DeliveryOrder createDummyDeliveryOrderDEtoDE()
+	static DeliveryOrder createDummyDeliveryOrderDEtoDE(final DpdServiceType serviceType)
 	{
 		return DeliveryOrder.builder()
 				// shipper
@@ -130,7 +130,7 @@ class DpdTestHelper
 						.build())
 				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
 				.customerReference(null)
-				.serviceType(DpdServiceType.DPD_CLASSIC)
+				.serviceType(serviceType)
 				.shipperId(ShipperId.ofRepoId(1))
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(1))
 				.customDeliveryData(DpdOrderCustomDeliveryData.builder()
@@ -143,7 +143,7 @@ class DpdTestHelper
 				.build();
 	}
 
-	static DeliveryOrder createDummyDeliveryOrderDEtoCH()
+	static DeliveryOrder createDummyDeliveryOrderDEtoCH(final DpdServiceType serviceType)
 	{
 		return DeliveryOrder.builder()
 				// shipper
@@ -178,7 +178,7 @@ class DpdTestHelper
 						.build())
 				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
 				.customerReference(null)
-				.serviceType(DpdServiceType.DPD_CLASSIC)
+				.serviceType(serviceType)
 				.shipperId(ShipperId.ofRepoId(1))
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(1))
 				.customDeliveryData(DpdOrderCustomDeliveryData.builder()
@@ -191,7 +191,7 @@ class DpdTestHelper
 				.build();
 	}
 
-	static DeliveryOrder createDummyDeliveryOrderDEtoAT()
+	static DeliveryOrder createDummyDeliveryOrderDEtoAT(final DpdServiceType serviceType)
 	{
 		return DeliveryOrder.builder()
 				// shipper
@@ -226,7 +226,7 @@ class DpdTestHelper
 						.build())
 				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
 				.customerReference(null)
-				.serviceType(DpdServiceType.DPD_CLASSIC)
+				.serviceType(serviceType)
 				.shipperId(ShipperId.ofRepoId(1))
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(1))
 				.customDeliveryData(DpdOrderCustomDeliveryData.builder()
@@ -403,7 +403,6 @@ class DpdTestHelper
 		//noinspection deprecation,ConstantConditions
 		deliverToBPartner.setEMail(deliveryOrder.getDeliveryContact().getEmailAddress());
 		final I_C_Location deliverToLocation = ShipperTestHelper.createLocation(deliveryOrder.getDeliveryAddress());
-		final int deliverToBPartnerLocationId = 0;
 		final String deliverToPhoneNumber = deliveryOrder.getDeliveryContact().getSimplePhoneNumber();
 
 		//
@@ -427,7 +426,6 @@ class DpdTestHelper
 				timeFrom,
 				timeTo,
 				deliverToBPartner,
-				deliverToBPartnerLocationId,
 				deliverToLocation,
 				deliverToPhoneNumber,
 				detectedServiceType,
