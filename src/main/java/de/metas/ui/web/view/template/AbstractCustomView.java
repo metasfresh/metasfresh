@@ -1,8 +1,7 @@
-package de.metas.ui.web.view;
+package de.metas.ui.web.view.template;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -15,7 +14,6 @@ import org.compiere.util.Evaluatee;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
@@ -24,6 +22,11 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
+import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewResult;
+import de.metas.ui.web.view.ViewRowsOrderBy;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -61,9 +64,8 @@ import lombok.NonNull;
  */
 
 /**
- *
- * @author metas-dev <dev@metasfresh.com>
- *
+ * Convenient template to be used for all other {@link IView} custom implementations.
+ * 
  * @param <T> type of the {@link IViewRow}s that this instance deals with e.g. in {@link #getRows()}.
  */
 public abstract class AbstractCustomView<T extends IViewRow> implements IView
@@ -318,6 +320,7 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 		return rowsData.getDocumentIdsToInvalidate(recordRefs);
 	}
 
+	// extends IEditableView.patchViewRow
 	public final void patchViewRow(final RowEditingContext ctx, final List<JSONDocumentChangedEvent> fieldChangeRequests)
 	{
 		Check.assumeNotEmpty(fieldChangeRequests, "fieldChangeRequests is not empty");
@@ -331,83 +334,5 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 		{
 			throw new AdempiereException("View is not editable");
 		}
-	}
-
-	private static class RowsDataTool
-	{
-		private static <T extends IViewRow> Map<DocumentId, T> extractAllRows(Collection<T> topLevelRows)
-		{
-			final ImmutableMap.Builder<DocumentId, T> allRows = ImmutableMap.builder();
-			topLevelRows.forEach(topLevelRow -> {
-
-				allRows.put(topLevelRow.getId(), topLevelRow);
-				allRows.putAll(extractAllIncludedRows(topLevelRow));
-			});
-
-			return allRows.build();
-		}
-
-		private static <T extends IViewRow> Map<DocumentId, T> extractAllIncludedRows(@NonNull final T topLevelRow)
-		{
-			@SuppressWarnings("unchecked")
-			final List<T> includedRows = (List<T>)topLevelRow.getIncludedRows();
-
-			final ImmutableMap.Builder<DocumentId, T> resultOfThisInvocation = ImmutableMap.builder();
-			for (final T includedRow : includedRows)
-			{
-				resultOfThisInvocation.put(includedRow.getId(), includedRow);
-				resultOfThisInvocation.putAll(extractAllIncludedRows(includedRow));
-			}
-
-			return resultOfThisInvocation.build();
-		}
-	}
-
-	public interface IRowsData<T extends IViewRow>
-	{
-		/* protected */ Map<DocumentId, T> getDocumentId2TopLevelRows();
-
-		DocumentIdsSelection getDocumentIdsToInvalidate(TableRecordReferenceSet recordRefs);
-
-		void invalidateAll();
-
-		default int size()
-		{
-			return getDocumentId2TopLevelRows().size();
-		}
-
-		/* private */default Map<DocumentId, T> getDocumentId2AllRows()
-		{
-			return RowsDataTool.extractAllRows(getDocumentId2TopLevelRows().values());
-		}
-
-		/** @return all rows (top level and included ones) */
-		default Collection<T> getAllRows()
-		{
-			return getDocumentId2AllRows().values();
-		}
-
-		default Collection<T> getTopLevelRows()
-		{
-			return getDocumentId2TopLevelRows().values();
-		}
-
-		/** @return top level or include row */
-		default T getById(final DocumentId rowId) throws EntityNotFoundException
-		{
-			final T row = getDocumentId2AllRows().get(rowId);
-			if (row == null)
-			{
-				throw new EntityNotFoundException("Row not found")
-						.appendParametersToMessage()
-						.setParameter("rowId", rowId);
-			}
-			return row;
-		}
-	}
-
-	public interface IEditableRowsData<T extends IViewRow> extends IRowsData<T>
-	{
-		void patchRow(RowEditingContext ctx, List<JSONDocumentChangedEvent> fieldChangeRequests);
 	}
 }

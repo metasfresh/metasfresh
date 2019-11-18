@@ -8,9 +8,9 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -63,10 +63,10 @@ public class WEBUI_ProcessHelper
 	public LookupValuesList retrieveHUPIItemProducts(
 			@NonNull final Properties ctx,
 			@NonNull final ProductId productId,
-			@Nullable final I_C_BPartner bPartner,
+			@Nullable final BPartnerId bpartnerId,
 			final boolean includeVirtualItem)
 	{
-		final List<I_M_HU_PI_Item_Product> list = retrieveHUPIItemProductRecords(ctx, productId, bPartner, includeVirtualItem);
+		final List<I_M_HU_PI_Item_Product> list = retrieveHUPIItemProductRecords(ctx, productId, bpartnerId, includeVirtualItem);
 
 		return list.stream()
 				.sorted(Comparator.comparing(I_M_HU_PI_Item_Product::getName))
@@ -77,7 +77,7 @@ public class WEBUI_ProcessHelper
 	public List<I_M_HU_PI_Item_Product> retrieveHUPIItemProductRecords(
 			@NonNull final Properties ctx,
 			@NonNull final ProductId productId,
-			@Nullable final I_C_BPartner bPartner,
+			@Nullable final BPartnerId bpartnerId,
 			final boolean includeVirtualItem)
 	{
 		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
@@ -87,7 +87,7 @@ public class WEBUI_ProcessHelper
 				Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 
 		final List<I_M_HU_PI_Item_Product> list = hupiItemProductDAO
-				.retrieveTUs(ctx, productId, bPartner, allowInfiniteCapacity);
+				.retrieveTUs(ctx, productId, bpartnerId, allowInfiniteCapacity);
 
 		if (includeVirtualItem)
 		{

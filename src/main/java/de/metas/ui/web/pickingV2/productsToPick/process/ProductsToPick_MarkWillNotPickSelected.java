@@ -8,7 +8,7 @@ import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.candidate.commands.RejectPickingResult;
 import de.metas.handlingunits.picking.requests.RejectPickingRequest;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRow;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow;
 
 /*
  * #%L
@@ -72,7 +72,7 @@ public class ProductsToPick_MarkWillNotPickSelected extends ProductsToPickViewBa
 		final RejectPickingResult result = pickingCandidatesService.rejectPicking(RejectPickingRequest.builder()
 				.shipmentScheduleId(row.getShipmentScheduleId())
 				.qtyToReject(row.getQtyEffective())
-				.rejectPickingFromHuId(row.getHuId())
+				.rejectPickingFromHuId(row.getPickFromHUId())
 				.existingPickingCandidateId(row.getPickingCandidateId())
 				.build());
 

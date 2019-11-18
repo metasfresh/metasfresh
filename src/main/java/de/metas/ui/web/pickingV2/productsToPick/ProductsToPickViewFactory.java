@@ -14,6 +14,9 @@ import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_MarkWillN
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_PickSelected;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_Request4EyesReview;
 import de.metas.ui.web.pickingV2.productsToPick.process.ProductsToPick_SetPackingInstructions;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsData;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsService;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.IViewsRepository;
@@ -58,7 +61,7 @@ public class ProductsToPickViewFactory implements IViewFactory
 	private static final String MSG_ReviewCaption = "de.metas.ui.web.pickingV2.productsToPick.Review.caption";
 
 	@Autowired
-	private ProductsToPickRowsRepository rowsRepository;
+	private ProductsToPickRowsService rowsService;
 	private IViewsRepository viewsRepository;
 
 	@Override
@@ -76,7 +79,7 @@ public class ProductsToPickViewFactory implements IViewFactory
 		// Reviewer layout profile
 		if (PickingConstantsV2.PROFILE_ID_ProductsToPickView_Review.equals(profileId))
 		{
-			return ViewLayout.builder()
+			return newViewLayout()
 					.setWindowId(PickingConstantsV2.WINDOWID_ProductsToPickView)
 					.setCaption(msgBL.translatable(MSG_ReviewCaption))
 					.addElementsFromViewRowClassAndFieldNames(
@@ -98,7 +101,7 @@ public class ProductsToPickViewFactory implements IViewFactory
 		// Picker layout profile
 		else
 		{
-			return ViewLayout.builder()
+			return newViewLayout()
 					.setWindowId(PickingConstantsV2.WINDOWID_ProductsToPickView)
 					.setCaption(msgBL.translatable(MSG_PickCaption))
 					.addElementsFromViewRowClassAndFieldNames(
@@ -120,6 +123,15 @@ public class ProductsToPickViewFactory implements IViewFactory
 		}
 	}
 
+	private static ViewLayout.Builder newViewLayout()
+	{
+		return ViewLayout.builder()
+				//
+				.setHasTreeSupport(true)
+				.setTreeCollapsible(false)
+				.setTreeExpandedDepth(Integer.MAX_VALUE);
+	}
+
 	@Override
 	public ProductsToPickView createView(final CreateViewRequest request)
 	{
@@ -130,7 +142,7 @@ public class ProductsToPickViewFactory implements IViewFactory
 	{
 		final ViewId viewId = ViewId.random(PickingConstantsV2.WINDOWID_ProductsToPickView);
 
-		final ProductsToPickRowsData rowsData = rowsRepository.createProductsToPickRowsData(packageableRow);
+		final ProductsToPickRowsData rowsData = rowsService.createProductsToPickRowsData(packageableRow);
 
 		final ProductsToPickView view = ProductsToPickView.builder()
 				.viewId(viewId)

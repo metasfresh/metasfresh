@@ -13,8 +13,8 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.pickingV2.PickingConstantsV2;
 import de.metas.ui.web.pickingV2.config.PickingConfigRepositoryV2;
 import de.metas.ui.web.pickingV2.config.PickingConfigV2;
-import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRow;
 import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickView;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -99,7 +99,7 @@ public abstract class ProductsToPickViewBasedProcess extends ViewBasedProcessTem
 
 	protected void updateViewRowFromPickingCandidate(@NonNull final DocumentId rowId, @NonNull final PickingCandidate pickingCandidate)
 	{
-		getView().changeRow(rowId, row -> row.withUpdatesFromPickingCandidate(pickingCandidate));
+		getView().updateViewRowFromPickingCandidate(rowId, pickingCandidate);
 	}
 
 }

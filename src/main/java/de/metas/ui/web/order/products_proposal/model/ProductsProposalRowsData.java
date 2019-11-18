@@ -30,8 +30,8 @@ import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProvi
 import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.RowUpdate;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.UserChange;
-import de.metas.ui.web.view.AbstractCustomView.IEditableRowsData;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
+import de.metas.ui.web.view.template.IEditableRowsData;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdIntSequence;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;

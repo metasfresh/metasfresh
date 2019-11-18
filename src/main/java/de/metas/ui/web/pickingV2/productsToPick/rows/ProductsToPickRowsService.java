@@ -1,20 +1,25 @@
-package de.metas.ui.web.pickingV2.productsToPick;
+package de.metas.ui.web.pickingV2.productsToPick.rows;
 
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Locator;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.requests.PickHURequest;
+import de.metas.handlingunits.picking.requests.PickRequest;
+import de.metas.handlingunits.picking.requests.PickRequest.IssueToPickingOrderRequest;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.ui.web.pickingV2.config.PickingConfigRepositoryV2;
 import de.metas.ui.web.pickingV2.config.PickingConfigV2;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
+import de.metas.ui.web.pickingV2.productsToPick.rows.factory.ProductsToPickRowsDataFactory;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import lombok.NonNull;
 
@@ -40,15 +45,15 @@ import lombok.NonNull;
  * #L%
  */
 
-@Repository
-public class ProductsToPickRowsRepository
+@Service
+public class ProductsToPickRowsService
 {
 	private final PickingConfigRepositoryV2 pickingConfigRepo;
 	private final IBPartnerBL bpartnersService;
 	private final HUReservationService huReservationService;
 	private final PickingCandidateService pickingCandidateService;
 
-	public ProductsToPickRowsRepository(
+	public ProductsToPickRowsService(
 			@NonNull final PickingConfigRepositoryV2 pickingConfigRepo,
 			@NonNull final IBPartnerBL bpartnersService,
 			@NonNull final HUReservationService huReservationService,
@@ -81,13 +86,52 @@ public class ProductsToPickRowsRepository
 				.build();
 	}
 
-	public PickHURequest createPickHURequest(@NonNull final ProductsToPickRow row, boolean isPickingReviewRequired)
+	public PickRequest createPickRequest(@NonNull final ProductsToPickRow row, boolean isPickingReviewRequired)
 	{
-		return PickHURequest.builder()
-				.shipmentScheduleId(row.getShipmentScheduleId())
-				.qtyToPick(row.getQtyEffective())
-				.pickFromHuId(row.getHuId())
-				.autoReview(!isPickingReviewRequired)
+		final ProductsToPickRowType rowType = row.getType();
+		if (ProductsToPickRowType.PICK_FROM_HU.equals(rowType))
+		{
+			return PickRequest.builder()
+					.shipmentScheduleId(row.getShipmentScheduleId())
+					.qtyToPick(row.getQtyEffective())
+					.pickFrom(PickFrom.ofHuId(row.getPickFromHUId()))
+					.autoReview(!isPickingReviewRequired)
+					.build();
+		}
+		else if (ProductsToPickRowType.PICK_FROM_PICKING_ORDER.equals(rowType))
+		{
+			final ImmutableList<IssueToPickingOrderRequest> issues = row.getIncludedRows()
+					.stream()
+					.map(issueRow -> toIssueToPickingOrderRequest(issueRow))
+					.collect(ImmutableList.toImmutableList());
+
+			return PickRequest.builder()
+					.shipmentScheduleId(row.getShipmentScheduleId())
+					.qtyToPick(row.getQtyEffective())
+					.pickFrom(PickFrom.ofPickingOrderId(row.getPickFromPickingOrderId()))
+					.issuesToPickingOrder(issues)
+					.autoReview(!isPickingReviewRequired)
+					.build();
+		}
+		else
+		{
+			throw new AdempiereException("Type not supported: " + rowType);
+		}
+	}
+
+	private static PickRequest.IssueToPickingOrderRequest toIssueToPickingOrderRequest(final ProductsToPickRow issueRow)
+	{
+		final HuId issueFromHUId = issueRow.getPickFromHUId();
+		if (issueFromHUId == null)
+		{
+			throw new AdempiereException("No HU to issue from for product " + issueRow.getProductName().getDefaultValue());
+		}
+
+		return PickRequest.IssueToPickingOrderRequest.builder()
+				.issueToOrderBOMLineId(issueRow.getIssueToOrderBOMLineId())
+				.issueFromHUId(issueFromHUId)
+				.productId(issueRow.getProductId())
+				.qtyToIssue(issueRow.getQtyEffective())
 				.build();
 	}
 
@@ -95,7 +139,7 @@ public class ProductsToPickRowsRepository
 	{
 		final ProductsToPickRowsData productsToPickRowsData = createProductsToPickRowsData(packageableRow);
 		return productsToPickRowsData.getAllRows().stream()
-				.map(productsToPickRow -> pickingCandidateService.createAndSavePickingCandidates(createPickHURequest(productsToPickRow, false/* isPickingReviewRequired */)))
+				.map(productsToPickRow -> pickingCandidateService.createAndSavePickingCandidates(createPickRequest(productsToPickRow, false/* isPickingReviewRequired */)))
 				.map(pickHUResult -> pickHUResult.getPickingCandidate())
 				.collect(ImmutableList.toImmutableList());
 	}

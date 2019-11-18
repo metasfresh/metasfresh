@@ -264,7 +264,7 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 				.setHUContext(huContext)
 				.setProduct(productId)
 				.setQuantity(getQtyCU(), uom)
-				.setDate(SystemTime.asDate())
+				.setDate(SystemTime.asZonedDateTime())
 				.setFromReferencedModel(null) // N/A
 				.setForceQtyAllocation(false)
 				.create();

@@ -16,7 +16,7 @@ import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
-import de.metas.ui.web.pickingV2.productsToPick.ProductsToPickRow;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*

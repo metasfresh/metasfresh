@@ -16,6 +16,7 @@ import com.google.common.collect.ListMultimap;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateStatus;
@@ -132,7 +133,7 @@ public class PickingHUsRepositoryTests
 		test_retrieveHUsIndexedByPickingSlotId(PickingCandidateStatus.Closed, RACK_SYSTEM_PICKINGSLOT_NO);
 	}
 
-	private void test_retrieveHUsIndexedByPickingSlotId(@NonNull final PickingCandidateStatus pickingCandidateStatus, final boolean pickingRackSystem)
+	private void test_retrieveHUsIndexedByPickingSlotId(@NonNull final PickingCandidateStatus processingStatus, final boolean pickingRackSystem)
 	{
 		final I_C_UOM uom = createUOM();
 
@@ -141,12 +142,12 @@ public class PickingHUsRepositoryTests
 
 		final PickingCandidateRepository pickingCandidatesRepo = new PickingCandidateRepository();
 		pickingCandidatesRepo.save(PickingCandidate.builder()
-				.status(pickingCandidateStatus)
+				.processingStatus(processingStatus)
 				.qtyPicked(Quantity.zero(uom))
 				.shipmentScheduleId(M_SHIPMENT_SCHEDULE_ID)
 				.pickingSlotId(pickingSlotId)
-				.pickFromHuId(huId)
-				.packedToHuId(PickingCandidateStatus.Draft.equals(pickingCandidateStatus) ? null : huId)
+				.pickFrom(PickFrom.ofHuId(huId))
+				.packedToHuId(PickingCandidateStatus.Draft.equals(processingStatus) ? null : huId)
 				.build());
 
 		final HUEditorRow huEditorRow = HUEditorRow
@@ -156,7 +157,7 @@ public class PickingHUsRepositoryTests
 				.setTopLevel(true)
 				.build();
 
-		final boolean expectNoRows = PickingCandidateStatus.Closed.equals(pickingCandidateStatus) && pickingRackSystem;
+		final boolean expectNoRows = PickingCandidateStatus.Closed.equals(processingStatus) && pickingRackSystem;
 		final MockedHUEditorViewRepository huEditorViewRepository = new MockedHUEditorViewRepository();
 		if (!expectNoRows)
 		{
@@ -182,7 +183,7 @@ public class PickingHUsRepositoryTests
 			assertThat(result.size()).isEqualTo(1);
 			assertThat(result.get(pickingSlotId)).hasSize(1);
 
-			final boolean expectedProcessed = !PickingCandidateStatus.Draft.equals(pickingCandidateStatus);
+			final boolean expectedProcessed = !PickingCandidateStatus.Draft.equals(processingStatus);
 
 			final PickedHUEditorRow resultRow = result.get(pickingSlotId).get(0);
 			final PickedHUEditorRow expectedRow = new PickedHUEditorRow(huEditorRow, expectedProcessed);

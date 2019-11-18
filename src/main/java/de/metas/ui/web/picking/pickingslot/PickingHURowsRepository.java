@@ -199,7 +199,7 @@ public class PickingHURowsRepository
 				continue;
 			}
 
-			final HuId huId = pickingCandidate.getPickFromHuId();
+			final HuId huId = pickingCandidate.getPickFrom().getHuId();
 			if (huId == null)
 			{
 				logger.warn("Skip {} because huId is null", huId);
@@ -231,7 +231,7 @@ public class PickingHURowsRepository
 
 	private static boolean isPickingCandidateProcessed(@NonNull final PickingCandidate pc)
 	{
-		final PickingCandidateStatus status = pc.getStatus();
+		final PickingCandidateStatus status = pc.getProcessingStatus();
 		if (PickingCandidateStatus.Closed.equals(status))
 		{
 			return true;

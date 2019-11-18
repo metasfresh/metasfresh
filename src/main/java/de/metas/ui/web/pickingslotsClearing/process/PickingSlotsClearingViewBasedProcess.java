@@ -1,7 +1,5 @@
 package de.metas.ui.web.pickingslotsClearing.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
@@ -10,11 +8,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_BPartner;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -206,8 +204,7 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 			@NonNull final PickingSlotRow pickingRow,
 			@NonNull final I_M_HU_PI targetHUPI)
 	{
-		final int bpartnerId = pickingRow.getBPartnerId();
-		final I_C_BPartner bpartner = bpartnerId > 0 ? load(bpartnerId, I_C_BPartner.class) : null;
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(pickingRow.getBPartnerId());
 		final int bpartnerLocationId = pickingRow.getBPartnerLocationId();
 
 		final LocatorId locatorId = pickingRow.getPickingSlotLocatorId();
@@ -218,7 +215,7 @@ public abstract class PickingSlotsClearingViewBasedProcess extends ViewBasedProc
 		}
 
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
-		lutuProducer.setC_BPartner(bpartner)
+		lutuProducer.setBPartnerId(bpartnerId)
 				.setC_BPartner_Location_ID(bpartnerLocationId)
 				.setLocatorId(locatorId)
 				.setHUStatus(X_M_HU.HUSTATUS_Picked);

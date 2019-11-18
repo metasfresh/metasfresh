@@ -10,7 +10,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.view.AbstractCustomView.IRowsData;
+import de.metas.ui.web.view.template.IRowsData;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.Builder;
