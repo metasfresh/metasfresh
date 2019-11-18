@@ -3,7 +3,7 @@ package de.metas.inoutcandidate.process;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetail;
-import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetailList;
+import org.adempiere.inout.util.ShipmentScheduleAvailableStock;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -38,9 +38,9 @@ public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 		}
 
 		final ShipmentScheduleQtyOnHandStorage storagesContainer = shipmentScheduleQtyOnHandStorageFactory.ofShipmentSchedule(shipmentSchedule);
-		final ShipmentScheduleAvailableStockDetailList storageDetails = storagesContainer.getStockDetailsMatching(shipmentSchedule);
+		final ShipmentScheduleAvailableStock storageDetails = storagesContainer.getStockDetailsMatching(shipmentSchedule);
 
-		addLog("@QtyOnHand@ (@Total@): " + storageDetails.getTotalQtyOnHand());
+		addLog("@QtyOnHand@ (@Total@): " + storageDetails.getTotalQtyAvailable());
 
 		for (int storageIndex = 0; storageIndex < storageDetails.size(); storageIndex++)
 		{
@@ -53,7 +53,7 @@ public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 		//
 		// Also show the Storage Query
 		{
-			final StockDataQuery materialQuery = storagesContainer.getMaterialQuery(shipmentSchedule);
+			final StockDataQuery materialQuery = storagesContainer.toQuery(shipmentSchedule);
 			addLog("------------------------------------------------------------");
 			addLog("Storage Query:");
 			addLog(String.valueOf(materialQuery));

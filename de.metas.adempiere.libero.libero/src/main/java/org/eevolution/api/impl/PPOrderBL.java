@@ -51,6 +51,7 @@ import org.eevolution.model.X_PP_Order;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.WorkingTime;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -60,7 +61,6 @@ import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
-import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -423,13 +423,19 @@ public class PPOrderBL implements IPPOrderBL
 	}
 
 	@Override
-	public Optional<QtyCalculationsBOM> getOpenPickingOrderBOMForSalesOrderLine(@NonNull final OrderLineId salesOrderLineId)
+	public Optional<QtyCalculationsBOM> getOpenPickingOrderBOM(@NonNull final PPOrderId pickingOrderId)
 	{
 		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
 		final IPPOrderBOMBL ppOrderBOMsService = Services.get(IPPOrderBOMBL.class);
 
-		return ppOrdersRepo.retrieveOpenPickingOrderForSalesOrderLine(salesOrderLineId)
-				.map(ppOrderBOMsService::getQtyCalculationsBOM);
+		final I_PP_Order pickingOrder = ppOrdersRepo.getById(pickingOrderId);
+		final DocStatus pickingOrderDocStatus = DocStatus.ofCode(pickingOrder.getDocStatus());
+		if (!pickingOrderDocStatus.isCompleted())
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(ppOrderBOMsService.getQtyCalculationsBOM(pickingOrder));
 	}
 
 }

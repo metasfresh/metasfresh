@@ -38,7 +38,7 @@ import org.adempiere.inout.util.DeliveryGroupCandidateGroupId;
 import org.adempiere.inout.util.DeliveryLineCandidate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate;
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
-import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetailList;
+import org.adempiere.inout.util.ShipmentScheduleAvailableStock;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
 import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
@@ -503,7 +503,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 						ctx,
 						olAndSched,
 						qtyToDeliver,
-						ShipmentScheduleAvailableStockDetailList.of(),
+						ShipmentScheduleAvailableStock.of(),
 						true/* force */,
 						CompleteStatus.OK,
 						candidates);
@@ -513,8 +513,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			{
 				//
 				// Get the QtyOnHand storages suitable for our order line
-				final ShipmentScheduleAvailableStockDetailList storages = qtyOnHands.getStockDetailsMatching(sched);
-				final BigDecimal qtyOnHandBeforeAllocation = storages.getTotalQtyOnHand();
+				final ShipmentScheduleAvailableStock storages = qtyOnHands.getStockDetailsMatching(sched);
+				final BigDecimal qtyOnHandBeforeAllocation = storages.getTotalQtyAvailable();
 				sched.setQtyOnHand(qtyOnHandBeforeAllocation);
 
 				final CompleteStatus completeStatus = computeCompleteStatus(qtyToDeliver, qtyOnHandBeforeAllocation);
@@ -597,7 +597,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			@NonNull final Properties ctx,
 			@NonNull final OlAndSched olAndSched,
 			@NonNull final BigDecimal qty,
-			@NonNull final ShipmentScheduleAvailableStockDetailList storages,
+			@NonNull final ShipmentScheduleAvailableStock storages,
 			final boolean force,
 			@NonNull final CompleteStatus completeStatus,
 			@NonNull final ShipmentSchedulesDuringUpdate candidates)
@@ -641,14 +641,14 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				//
 				// Adjust the quantity that can be delivered from this storage line
 				// Check: Not enough On Hand
-				final BigDecimal qtyOnHandAvailable = storages.getQtyOnHand(storageIndex);
-				if (qtyToDeliver.compareTo(qtyOnHandAvailable) > 0
-						&& qtyOnHandAvailable.signum() >= 0)         // positive storage
+				final BigDecimal qtyAvailable = storages.getQtyAvailable(storageIndex);
+				if (qtyToDeliver.compareTo(qtyAvailable) > 0
+						&& qtyAvailable.signum() >= 0)         // positive storage
 				{
 					if (!force // Adjust to OnHand Qty
 							|| force && storageIndex + 1 != storages.size())         // if force not on last location
 					{
-						qtyToDeliver = qtyOnHandAvailable;
+						qtyToDeliver = qtyAvailable;
 					}
 				}
 				// Skip if we cannot deliver something for current storage line

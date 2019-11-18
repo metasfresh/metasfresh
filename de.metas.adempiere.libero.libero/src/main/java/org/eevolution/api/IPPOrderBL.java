@@ -9,7 +9,6 @@ import org.eevolution.model.I_PP_Order;
 import de.metas.document.IDocTypeDAO;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
-import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 
@@ -103,5 +102,5 @@ public interface IPPOrderBL extends ISingletonService
 
 	void voidOrderRouting(PPOrderId orderId);
 
-	Optional<QtyCalculationsBOM> getOpenPickingOrderBOMForSalesOrderLine(OrderLineId salesOrderLineId);
+	Optional<QtyCalculationsBOM> getOpenPickingOrderBOM(PPOrderId pickingOrderId);
 }

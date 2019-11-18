@@ -31,33 +31,38 @@ import lombok.ToString;
  */
 
 @ToString
-public class ShipmentScheduleAvailableStockDetailList
+public class ShipmentScheduleAvailableStock
 {
-	public static ShipmentScheduleAvailableStockDetailList of(@NonNull final Collection<ShipmentScheduleAvailableStockDetail> list)
+	public static ShipmentScheduleAvailableStock of(@NonNull final Collection<ShipmentScheduleAvailableStockDetail> list)
 	{
 		return !list.isEmpty()
-				? new ShipmentScheduleAvailableStockDetailList(list)
+				? new ShipmentScheduleAvailableStock(list)
 				: EMPTY;
 	}
 
-	public static ShipmentScheduleAvailableStockDetailList of()
+	public static ShipmentScheduleAvailableStock of()
 	{
 		return EMPTY;
 	}
 
-	private static final ShipmentScheduleAvailableStockDetailList EMPTY = new ShipmentScheduleAvailableStockDetailList(ImmutableList.of());
+	private static final ShipmentScheduleAvailableStock EMPTY = new ShipmentScheduleAvailableStock();
 
 	private final ImmutableList<ShipmentScheduleAvailableStockDetail> list;
 
-	private ShipmentScheduleAvailableStockDetailList(@NonNull final Collection<ShipmentScheduleAvailableStockDetail> list)
+	private ShipmentScheduleAvailableStock(@NonNull final Collection<ShipmentScheduleAvailableStockDetail> list)
 	{
 		this.list = ImmutableList.copyOf(list);
 	}
 
-	public BigDecimal getTotalQtyOnHand()
+	private ShipmentScheduleAvailableStock()
+	{
+		this.list = ImmutableList.of();
+	}
+
+	public BigDecimal getTotalQtyAvailable()
 	{
 		return list.stream()
-				.map(ShipmentScheduleAvailableStockDetail::getQtyOnHand)
+				.map(ShipmentScheduleAvailableStockDetail::getQtyAvailable)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
@@ -71,9 +76,9 @@ public class ShipmentScheduleAvailableStockDetailList
 		return list.size();
 	}
 
-	public BigDecimal getQtyOnHand(final int storageIndex)
+	public BigDecimal getQtyAvailable(final int storageIndex)
 	{
-		return getStorageDetail(storageIndex).getQtyOnHand();
+		return getStorageDetail(storageIndex).getQtyAvailable();
 	}
 
 	public void subtractQtyOnHand(final int storageIndex, @NonNull final BigDecimal qtyOnHandToRemove)

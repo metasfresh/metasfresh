@@ -164,6 +164,11 @@ public final class QtyCalculationsBOMLine
 		}
 	}
 
+	public Quantity computeQtyOfFinishedGoodsForComponentQty(@NonNull final BigDecimal componentsQty)
+	{
+		return computeQtyOfFinishedGoodsForComponentQty(Quantity.of(componentsQty, uom));
+	}
+
 	public Quantity computeQtyOfFinishedGoodsForComponentQty(@NonNull final Quantity componentsQty)
 	{
 		final BigDecimal qtyForOneFinishedGoodMultiplier = getFinishedGoodQtyMultiplier();

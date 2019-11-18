@@ -274,6 +274,5 @@ public class QtyCalculationsBOMLineTest
 			assertThat(bomLine.computeQtyOfFinishedGoodsForComponentQty(Quantity.of("1", uomKg)))
 					.isEqualTo(Quantity.of("3", uomEach));
 		}
-
 	}
 }

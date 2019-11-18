@@ -28,6 +28,7 @@ import de.metas.inoutcandidate.api.Packageable.PackageableBuilder;
 import de.metas.inoutcandidate.api.PackageableQuery;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
@@ -100,7 +101,7 @@ public class PackagingDAO implements IPackagingDAO
 			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMN_PreparationDate, query.getPreparationDate(), DateTruncQueryFilterModifier.DAY);
 		}
 
-		if(query.getShipperId() != null)
+		if (query.getShipperId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_M_Shipper_ID, query.getShipperId());
 		}
@@ -203,6 +204,8 @@ public class PackagingDAO implements IPackagingDAO
 		}
 
 		packageable.freightCostRule(record.getFreightCostRule());
+
+		packageable.pickFromOrderId(PPOrderId.ofRepoIdOrNull(record.getPickFrom_Order_ID()));
 
 		final UserId lockedBy = !InterfaceWrapperHelper.isNull(record, I_M_Packageable_V.COLUMNNAME_LockedBy_User_ID) ? UserId.ofRepoId(record.getLockedBy_User_ID()) : null;
 		packageable.lockedBy(lockedBy);

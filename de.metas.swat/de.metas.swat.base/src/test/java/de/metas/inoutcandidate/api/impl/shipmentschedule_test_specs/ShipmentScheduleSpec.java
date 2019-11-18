@@ -1,21 +1,18 @@
-package de.metas.material.planning.pporder.impl;
+package de.metas.inoutcandidate.api.impl.shipmentschedule_test_specs;
 
-import java.util.List;
+import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.order.DeliveryRule;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
+import lombok.experimental.Wither;
 
 /*
  * #%L
- * metasfresh-material-planning
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -35,25 +32,26 @@ import lombok.Value;
  * #L%
  */
 
-/**
- * A BOM useful for quantity calculations
- */
 @Value
-public class QtyCalculationsBOM
+@Builder
+@Wither
+public class ShipmentScheduleSpec
 {
-	ImmutableList<QtyCalculationsBOMLine> lines;
+	@NonNull
+	String product;
 
-	// References
-	@Getter
-	PPOrderId orderId;
+	@Nullable
+	String order;
 
-	@Builder
-	private QtyCalculationsBOM(
-			@NonNull @Singular final List<QtyCalculationsBOMLine> lines,
-			//
-			@Nullable final PPOrderId orderId)
-	{
-		this.lines = ImmutableList.copyOf(lines);
-		this.orderId = orderId;
-	}
+	@Nullable
+	String orderLine;
+
+	@NonNull
+	BigDecimal qtyOrdered;
+
+	@NonNull
+	DeliveryRule deliveryRule;
+
+	@Nullable
+	PickFromOrderSpec pickFromOrder;
 }

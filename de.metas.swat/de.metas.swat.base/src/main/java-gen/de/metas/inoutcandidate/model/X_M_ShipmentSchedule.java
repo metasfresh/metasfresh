@@ -15,7 +15,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -11031599L;
+	private static final long serialVersionUID = 767230369L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (Properties ctx, int M_ShipmentSchedule_ID, String trxName)
@@ -1233,6 +1233,40 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public int getM_Warehouse_Override_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_Override_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_Order getPickFrom_Order()
+	{
+		return get_ValueAsPO(COLUMNNAME_PickFrom_Order_ID, org.eevolution.model.I_PP_Order.class);
+	}
+
+	@Override
+	public void setPickFrom_Order(org.eevolution.model.I_PP_Order PickFrom_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_PickFrom_Order_ID, org.eevolution.model.I_PP_Order.class, PickFrom_Order);
+	}
+
+	/** Set Pick From Order.
+		@param PickFrom_Order_ID Pick From Order	  */
+	@Override
+	public void setPickFrom_Order_ID (int PickFrom_Order_ID)
+	{
+		if (PickFrom_Order_ID < 1) 
+			set_Value (COLUMNNAME_PickFrom_Order_ID, null);
+		else 
+			set_Value (COLUMNNAME_PickFrom_Order_ID, Integer.valueOf(PickFrom_Order_ID));
+	}
+
+	/** Get Pick From Order.
+		@return Pick From Order	  */
+	@Override
+	public int getPickFrom_Order_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PickFrom_Order_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

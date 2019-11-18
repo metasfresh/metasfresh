@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
@@ -23,6 +25,7 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.api.ProductBOMId;
+import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_Planning;
 
 import com.google.common.collect.ImmutableList;
@@ -40,6 +43,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.ProductPlanningId;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
@@ -71,13 +75,15 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	{
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
 
-		createPickingOrderIfNeeded(orderLine);
+		final PPOrderId pickingOrderId = createPickingOrderIfNeeded(orderLine);
 
-		final I_M_ShipmentSchedule shipmentSchedule = createShipmentScheduleForOrderLine(orderLine);
+		final I_M_ShipmentSchedule shipmentSchedule = createShipmentScheduleForOrderLine(orderLine, pickingOrderId);
 		return ImmutableList.of(shipmentSchedule);
 	}
 
-	private I_M_ShipmentSchedule createShipmentScheduleForOrderLine(@NonNull final I_C_OrderLine orderLine)
+	private I_M_ShipmentSchedule createShipmentScheduleForOrderLine(
+			@NonNull final I_C_OrderLine orderLine,
+			@Nullable final PPOrderId pickingOrderId)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
 		final String trxName = InterfaceWrapperHelper.getTrxName(orderLine);
@@ -141,6 +147,8 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		// only display item products
 		final boolean display = Services.get(IProductBL.class).isItem(productId);
 		newSched.setIsDisplayed(display);
+
+		newSched.setPickFrom_Order_ID(PPOrderId.toRepoId(pickingOrderId));
 
 		InterfaceWrapperHelper.save(newSched);
 
@@ -284,7 +292,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		return salesOrderLine::getQtyOrdered;
 	}
 
-	private void createPickingOrderIfNeeded(final I_C_OrderLine salesOrderLine)
+	private PPOrderId createPickingOrderIfNeeded(final I_C_OrderLine salesOrderLine)
 	{
 		final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
 		final IPPOrderBL ppOrdersService = Services.get(IPPOrderBL.class);
@@ -305,15 +313,15 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 				.orElse(null);
 		if (productPlanning == null)
 		{
-			return;
+			return null;
 		}
 		if (!StringUtils.toBoolean(productPlanning.getIsManufactured()))
 		{
-			return;
+			return null;
 		}
 		if (!productPlanning.isPickingOrder())
 		{
-			return;
+			return null;
 		}
 
 		final ResourceId plantId = ResourceId.ofRepoIdOrNull(productPlanning.getS_Resource_ID());
@@ -335,7 +343,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		final I_C_UOM stockUOM = productsService.getStockUOM(productId);
 		final Quantity qtyOrdered = Quantity.of(salesOrderLine.getQtyOrdered(), stockUOM);
 
-		ppOrdersService.createOrder(PPOrderCreateRequest.builder()
+		final I_PP_Order ppOrder = ppOrdersService.createOrder(PPOrderCreateRequest.builder()
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(salesOrderLine.getAD_Client_ID(), salesOrderLine.getAD_Org_ID()))
 				.productPlanningId(ProductPlanningId.ofRepoId(productPlanning.getPP_Product_Planning_ID()))
 				// .materialDispoGroupId(null)
@@ -361,5 +369,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 				.completeDocument(true)
 				//
 				.build());
+
+		return PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
 	}
 }

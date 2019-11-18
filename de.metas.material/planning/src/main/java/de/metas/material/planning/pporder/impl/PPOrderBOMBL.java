@@ -130,7 +130,8 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 	void setQtyRequired(final I_PP_Order_BOMLine orderBOMLine, final Quantity qtyFinishedGood)
 	{
-		final Quantity qtyRequired = toQtyCalculationsBOMLine(orderBOMLine).computeQtyRequired(qtyFinishedGood.toBigDecimal());
+		final I_PP_Order order = orderBOMLine.getPP_Order();
+		final Quantity qtyRequired = toQtyCalculationsBOMLine(order, orderBOMLine).computeQtyRequired(qtyFinishedGood);
 		orderBOMLine.setQtyRequiered(qtyRequired.toBigDecimal());
 	}
 
@@ -156,7 +157,8 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 		//
 		// Calculate how much we can issue at max, based on how much finish goods we delivered
-		final Quantity qtyToIssueTarget = toQtyCalculationsBOMLine(orderBOMLine).computeQtyRequired(qtyDelivered_FinishedGood);
+		final I_PP_Order order = orderBOMLine.getPP_Order();
+		final Quantity qtyToIssueTarget = toQtyCalculationsBOMLine(order, orderBOMLine).computeQtyRequired(qtyDelivered_FinishedGood);
 		if (qtyToIssueTarget.signum() <= 0)
 		{
 			return Quantity.zero(uom);
@@ -207,10 +209,10 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	}
 
 	@VisibleForTesting
-	QtyCalculationsBOMLine toQtyCalculationsBOMLine(@NonNull final I_PP_Order_BOMLine orderBOMLine)
+	QtyCalculationsBOMLine toQtyCalculationsBOMLine(
+			@NonNull final I_PP_Order order,
+			@NonNull final I_PP_Order_BOMLine orderBOMLine)
 	{
-		final I_PP_Order order = orderBOMLine.getPP_Order();
-
 		return QtyCalculationsBOMLine.builder()
 				.bomProductId(ProductId.ofRepoId(order.getM_Product_ID()))
 				.bomProductUOM(uomsRepo.getById(order.getC_UOM_ID()))
@@ -502,7 +504,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	{
 		final ImmutableList<QtyCalculationsBOMLine> lines = orderBOMsRepo.retrieveOrderBOMLines(order)
 				.stream()
-				.map(this::toQtyCalculationsBOMLine)
+				.map(orderBOMLineRecord -> toQtyCalculationsBOMLine(order, orderBOMLineRecord))
 				.collect(ImmutableList.toImmutableList());
 
 		return QtyCalculationsBOM.builder()
