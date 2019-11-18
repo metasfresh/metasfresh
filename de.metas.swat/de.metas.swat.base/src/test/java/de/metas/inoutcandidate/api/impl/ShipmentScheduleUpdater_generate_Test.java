@@ -12,6 +12,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -66,82 +67,9 @@ public class ShipmentScheduleUpdater_generate_Test
 	{
 		AdempiereTestHelper.get().init();
 
-		final BPartnerBL bPartnerBL = new BPartnerBL(new UserRepository());
-		Services.registerService(IBPartnerBL.class, bPartnerBL);
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
 		this.shipmentScheduleUpdater = ShipmentScheduleUpdater.newInstanceForUnitTesting();
-	}
-
-	/**
-	 * Verifies that with delivery-rule = "force", qtyToDeliver is the ordered quantity, no matter whether the product is stocked or not.
-	 */
-	@Test
-	public void generate_emptyStock_force()
-	{
-		final UomSpec uom = UomSpec.builder().name("stockUom").build();
-		final ProductSpec nonStockedProduct = ProductSpec.builder().value("prod1").uomValue("stockUom").stocked(false).build();
-
-		final TestSetupSpec spec = TestSetupSpec.builder()
-				.uom(uom)
-				.product(nonStockedProduct)
-				.order(OrderSpec.builder().value("order1").build())
-				.orderLine(OrderLineSpec.builder().value("ol11").product("prod1").order("order1").qtyOrdered(TEN).build())
-				.shipmentSchedule(ShipmentScheduleSpec.builder().product("prod1").order("order1").orderLine("ol11").qtyOrdered(TEN).deliveryRule(DeliveryRule.FORCE).build())
-				.build();
-
-		final ShipmentSchedulesDuringUpdate result1 = setupAndInvoke(spec);
-		assertOneResultWithQtyToDeliver(result1, TEN);
-
-		final TestSetupSpec changedSpec = spec.withProduct(nonStockedProduct.withStocked(true));
-
-		final ShipmentSchedulesDuringUpdate result2 = setupAndInvoke(changedSpec);
-		assertOneResultWithQtyToDeliver(result2, TEN);
-	}
-
-	@Test
-	public void generate_emptyStock_availability()
-	{
-		final UomSpec uom = UomSpec.builder().name("stockUom").build();
-		final ProductSpec nonStockedProduct = ProductSpec.builder().value("prod1").uomValue("stockUom").stocked(false).build();
-		final TestSetupSpec spec = specOneScheduleAvailabilityWithoutStock(uom, nonStockedProduct);
-
-		final ShipmentSchedulesDuringUpdate result1 = setupAndInvoke(spec);
-		assertOneResultWithQtyToDeliver(result1, TEN); // not stocked;
-
-		final TestSetupSpec changedSpec = spec.withProduct(nonStockedProduct.withStocked(true));
-
-		final ShipmentSchedulesDuringUpdate result2 = setupAndInvoke(changedSpec);
-		assertThat(result2.getAllLines()).isEmpty(); // product is stocked, but there is nothing on stock
-	}
-
-	/** If the product's type is not "item", then deliver the ordered quantity */
-	@Test
-	public void generate_emptyStock_availability_nonitem()
-	{
-		final ImmutableList<String> nonItemTypes = ImmutableList.of(
-				X_M_Product.PRODUCTTYPE_ExpenseType,
-				X_M_Product.PRODUCTTYPE_Online,
-				X_M_Product.PRODUCTTYPE_Resource,
-				X_M_Product.PRODUCTTYPE_Service);
-		for (final String productType : nonItemTypes)
-		{
-			generate_emptyStock_availability_nonitem_performTestWithProductType(productType);
-		}
-	}
-
-	private void generate_emptyStock_availability_nonitem_performTestWithProductType(final String productType)
-	{
-		final UomSpec uom = UomSpec.builder().name("stockUom").build();
-		final ProductSpec nonStockedProduct = ProductSpec.builder().value("prod1").uomValue("stockUom").stocked(false).productType(productType).build();
-		final TestSetupSpec spec = specOneScheduleAvailabilityWithoutStock(uom, nonStockedProduct);
-
-		final ShipmentSchedulesDuringUpdate result1 = setupAndInvoke(spec);
-		assertOneResultWithQtyToDeliver(result1, TEN); // not stocked;
-
-		final TestSetupSpec changedSpec = spec.withProduct(nonStockedProduct.withStocked(true));
-
-		final ShipmentSchedulesDuringUpdate result2 = setupAndInvoke(changedSpec);
-		assertOneResultWithQtyToDeliver(result2, TEN); // treated as not stocked, because it's not an item;
 	}
 
 	private TestSetupSpec specOneScheduleAvailabilityWithoutStock(
@@ -155,31 +83,6 @@ public class ShipmentScheduleUpdater_generate_Test
 				.orderLine(OrderLineSpec.builder().value("ol11").product("prod1").order("order1").qtyOrdered(TEN).build())
 				.shipmentSchedule(ShipmentScheduleSpec.builder().product("prod1").order("order1").orderLine("ol11").qtyOrdered(TEN).deliveryRule(DeliveryRule.AVAILABILITY).build())
 				.build();
-	}
-
-	@Test
-	public void generate_partialStock_availability()
-	{
-		final UomSpec uom = UomSpec.builder().name("stockUom").build();
-		final ProductSpec nonStockedProduct = ProductSpec.builder().value("prod1").uomValue("stockUom").stocked(false).build();
-
-		final TestSetupSpec spec = TestSetupSpec.builder()
-				.uom(uom)
-				.product(nonStockedProduct)
-				.stock(StockSpec.builder().product("prod1").qtyStock(ONE).build())
-				.stock(StockSpec.builder().product("prod1").qtyStock(THREE).build())
-				.order(OrderSpec.builder().value("order1").build())
-				.orderLine(OrderLineSpec.builder().value("ol11").product("prod1").order("order1").qtyOrdered(TEN).build())
-				.shipmentSchedule(ShipmentScheduleSpec.builder().product("prod1").order("order1").orderLine("ol11").qtyOrdered(TEN).deliveryRule(DeliveryRule.AVAILABILITY).build())
-				.build();
-
-		final ShipmentSchedulesDuringUpdate result1 = setupAndInvoke(spec);
-		assertOneResultWithQtyToDeliver(result1, TEN); // not stocked;
-
-		final TestSetupSpec changedSpec = spec.withProduct(nonStockedProduct.withStocked(true));
-
-		final ShipmentSchedulesDuringUpdate result2 = setupAndInvoke(changedSpec);
-		assertOneResultWithQtyToDeliver(result2, FOUR); // product is stocked, and the qty-on-hand sums up to 4
 	}
 
 	private void assertOneResultWithQtyToDeliver(
@@ -200,4 +103,108 @@ public class ShipmentScheduleUpdater_generate_Test
 		return shipmentScheduleUpdater.generate_FirstRun(Env.getCtx(), olAndScheds);
 	}
 
+	@Nested
+	public class emptyStock
+	{
+		/**
+		 * Verifies that with delivery-rule = "force", qtyToDeliver is the ordered quantity, no matter whether the product is stocked or not.
+		 */
+		@Test
+		public void force()
+		{
+			final UomSpec uom = UomSpec.builder().name("stockUom").build();
+			final ProductSpec nonStockedProduct = ProductSpec.builder().value("prod1").uomValue("stockUom").stocked(false).build();
+
+			final TestSetupSpec spec = TestSetupSpec.builder()
+					.uom(uom)
+					.product(nonStockedProduct)
+					.order(OrderSpec.builder().value("order1").build())
+					.orderLine(OrderLineSpec.builder().value("ol11").product("prod1").order("order1").qtyOrdered(TEN).build())
+					.shipmentSchedule(ShipmentScheduleSpec.builder().product("prod1").order("order1").orderLine("ol11").qtyOrdered(TEN).deliveryRule(DeliveryRule.FORCE).build())
+					.build();
+
+			final ShipmentSchedulesDuringUpdate result1 = setupAndInvoke(spec);
+			assertOneResultWithQtyToDeliver(result1, TEN);
+
+			final TestSetupSpec changedSpec = spec.withProduct(nonStockedProduct.withStocked(true));
+
+			final ShipmentSchedulesDuringUpdate result2 = setupAndInvoke(changedSpec);
+			assertOneResultWithQtyToDeliver(result2, TEN);
+		}
+
+		@Test
+		public void availability()
+		{
+			final UomSpec uom = UomSpec.builder().name("stockUom").build();
+			final ProductSpec nonStockedProduct = ProductSpec.builder().value("prod1").uomValue("stockUom").stocked(false).build();
+			final TestSetupSpec spec = specOneScheduleAvailabilityWithoutStock(uom, nonStockedProduct);
+
+			final ShipmentSchedulesDuringUpdate result1 = setupAndInvoke(spec);
+			assertOneResultWithQtyToDeliver(result1, TEN); // not stocked;
+
+			final TestSetupSpec changedSpec = spec.withProduct(nonStockedProduct.withStocked(true));
+
+			final ShipmentSchedulesDuringUpdate result2 = setupAndInvoke(changedSpec);
+			assertThat(result2.getAllLines()).isEmpty(); // product is stocked, but there is nothing on stock
+		}
+
+		/** If the product's type is not "item", then deliver the ordered quantity */
+		@Test
+		public void availability_nonitem()
+		{
+			final ImmutableList<String> nonItemTypes = ImmutableList.of(
+					X_M_Product.PRODUCTTYPE_ExpenseType,
+					X_M_Product.PRODUCTTYPE_Online,
+					X_M_Product.PRODUCTTYPE_Resource,
+					X_M_Product.PRODUCTTYPE_Service);
+			for (final String productType : nonItemTypes)
+			{
+				availability_nonitem_performTestWithProductType(productType);
+			}
+		}
+
+		private void availability_nonitem_performTestWithProductType(final String productType)
+		{
+			final UomSpec uom = UomSpec.builder().name("stockUom").build();
+			final ProductSpec nonStockedProduct = ProductSpec.builder().value("prod1").uomValue("stockUom").stocked(false).productType(productType).build();
+			final TestSetupSpec spec = specOneScheduleAvailabilityWithoutStock(uom, nonStockedProduct);
+
+			final ShipmentSchedulesDuringUpdate result1 = setupAndInvoke(spec);
+			assertOneResultWithQtyToDeliver(result1, TEN); // not stocked;
+
+			final TestSetupSpec changedSpec = spec.withProduct(nonStockedProduct.withStocked(true));
+
+			final ShipmentSchedulesDuringUpdate result2 = setupAndInvoke(changedSpec);
+			assertOneResultWithQtyToDeliver(result2, TEN); // treated as not stocked, because it's not an item;
+		}
+	}
+
+	@Nested
+	public class partialStock
+	{
+		@Test
+		public void availability()
+		{
+			final UomSpec uom = UomSpec.builder().name("stockUom").build();
+			final ProductSpec nonStockedProduct = ProductSpec.builder().value("prod1").uomValue("stockUom").stocked(false).build();
+
+			final TestSetupSpec spec = TestSetupSpec.builder()
+					.uom(uom)
+					.product(nonStockedProduct)
+					.stock(StockSpec.builder().product("prod1").qtyStock(ONE).build())
+					.stock(StockSpec.builder().product("prod1").qtyStock(THREE).build())
+					.order(OrderSpec.builder().value("order1").build())
+					.orderLine(OrderLineSpec.builder().value("ol11").product("prod1").order("order1").qtyOrdered(TEN).build())
+					.shipmentSchedule(ShipmentScheduleSpec.builder().product("prod1").order("order1").orderLine("ol11").qtyOrdered(TEN).deliveryRule(DeliveryRule.AVAILABILITY).build())
+					.build();
+
+			final ShipmentSchedulesDuringUpdate result1 = setupAndInvoke(spec);
+			assertOneResultWithQtyToDeliver(result1, TEN); // not stocked;
+
+			final TestSetupSpec changedSpec = spec.withProduct(nonStockedProduct.withStocked(true));
+
+			final ShipmentSchedulesDuringUpdate result2 = setupAndInvoke(changedSpec);
+			assertOneResultWithQtyToDeliver(result2, FOUR); // product is stocked, and the qty-on-hand sums up to 4
+		}
+	}
 }
