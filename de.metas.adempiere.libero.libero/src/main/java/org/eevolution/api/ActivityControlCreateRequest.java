@@ -1,7 +1,7 @@
 package org.eevolution.api;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
@@ -41,7 +41,7 @@ public class ActivityControlCreateRequest
 {
 	I_PP_Order order;
 	PPOrderRoutingActivity orderActivity;
-	LocalDateTime movementDate;
+	ZonedDateTime movementDate;
 	Quantity qtyMoved;
 	Duration durationSetup;
 	Duration duration;
@@ -50,7 +50,7 @@ public class ActivityControlCreateRequest
 	private ActivityControlCreateRequest(
 			@NonNull final I_PP_Order order,
 			@NonNull final PPOrderRoutingActivity orderActivity,
-			@Nullable final LocalDateTime movementDate,
+			@Nullable final ZonedDateTime movementDate,
 			@NonNull final Quantity qtyMoved,
 			@NonNull final Duration durationSetup,
 			@NonNull final Duration duration)
@@ -60,7 +60,7 @@ public class ActivityControlCreateRequest
 
 		this.order = order;
 		this.orderActivity = orderActivity;
-		this.movementDate = movementDate != null ? movementDate : SystemTime.asLocalDateTime();
+		this.movementDate = movementDate != null ? movementDate : SystemTime.asZonedDateTime();
 		this.qtyMoved = qtyMoved;
 		this.durationSetup = durationSetup;
 		this.duration = duration;

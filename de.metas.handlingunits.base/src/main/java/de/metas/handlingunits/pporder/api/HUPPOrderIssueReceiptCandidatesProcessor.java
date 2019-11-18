@@ -1,9 +1,7 @@
 package de.metas.handlingunits.pporder.api;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +30,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;
@@ -122,8 +121,10 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	private final transient ITrxItemProcessorExecutorService trxItemProcessorService = Services.get(ITrxItemProcessorExecutorService.class);
 	//
 	private final transient IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final transient IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+	private final transient IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 
 	//
 	// Parameters
@@ -193,7 +194,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		//
 		// Validate the HU
 		final I_M_HU hu = candidate.getM_HU();
-		Preconditions.checkNotNull(hu, "No HU for %s", candidate);
+		Check.assumeNotNull(hu, "Parameter hu is not null");
 		if (!X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()))
 		{
 			throw new HUException("Only planning HUs can be received")
@@ -202,16 +203,19 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 					.setParameter("candidate", candidate);
 		}
 
+		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(candidate.getM_Locator_ID());
+
 		//
 		// Create material receipt and activate the HU
 		final I_C_UOM uom = IHUPPOrderQtyBL.extractUOM(candidate);
 		final ReceiptCostCollectorCandidate costCollectorCandidate = ReceiptCostCollectorCandidate.builder()
 				.order(candidate.getPP_Order())
 				.orderBOMLine(candidate.getPP_Order_BOMLine())
-				.movementDate(TimeUtil.asLocalDateTime(candidate.getMovementDate()))
+				.movementDate(TimeUtil.asZonedDateTime(candidate.getMovementDate()))
 				.qtyToReceive(Quantity.of(candidate.getQty(), uom))
 				.productId(ProductId.ofRepoId(candidate.getM_Product_ID()))
-				.locatorId(Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(candidate.getM_Locator_ID()))
+				.locatorId(locatorId)
+				.pickingCandidateId(candidate.getM_Picking_Candidate_ID())
 				.build();
 		final I_PP_Cost_Collector cc = huPPCostCollectorBL.createReceipt(costCollectorCandidate, hu);
 
@@ -227,10 +231,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		//
 		// Validate the HU
 		final I_M_HU hu = candidate.getM_HU();
-		if (!ImmutableSet.of(
-				X_M_HU.HUSTATUS_Active,
-				X_M_HU.HUSTATUS_Issued)
-				.contains(hu.getHUStatus()))
+		if (!huStatusBL.isStatusActiveOrIssued(hu))
 		{
 			// if operated by the swing-ui, this code has to deal with active HUs because the swingUI skips that part of the workflow
 			throw new HUException("Only HUs with status 'issued' and 'active' can be finalized with their PP_Cost_Collector and destroyed")
@@ -241,7 +242,8 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 		//
 		final I_PP_Order_BOMLine ppOrderBOMLine = InterfaceWrapperHelper.create(candidate.getPP_Order_BOMLine(), I_PP_Order_BOMLine.class);
-		final Timestamp movementDate = candidate.getMovementDate();
+		final ZonedDateTime movementDate = TimeUtil.asZonedDateTime(candidate.getMovementDate());
+		final int pickingCandidateId = candidate.getM_Picking_Candidate_ID();
 
 		//
 		// Calculate the quantity to issue.
@@ -262,7 +264,8 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		//
 		// Fully unload the HU
 		final IssueCandidatesBuilder issueCostCollectorsBuilder = new IssueCandidatesBuilder()
-				.setMovementDate(movementDate);
+				.movementDate(movementDate)
+				.pickingCandidateId(pickingCandidateId);
 		final String snapshotId;
 		{
 			//
@@ -289,7 +292,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			final IAllocationRequest allocationRequest = AllocationUtils.createQtyRequest(huContext //
 					, IHUPPOrderQtyBL.extractProduct(candidate) // product
 					, qtyToIssue // the quantity to issue
-					, SystemTime.asDayTimestamp() // transaction date
+					, SystemTime.asZonedDateTime() // transaction date
 					, null // referenced model: IMPORTANT to be null, else our build won't detect correctly which is the HU transaction and which is the BOMLine-side transaction
 					, true // forceQtyAllocation: yes, we want to transfer exactly how much we specified in the candidate
 			);
@@ -364,18 +367,25 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		private final transient IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 
 		// Parameters
-		private LocalDateTime movementDate = null;
+		private ZonedDateTime movementDate = null;
+		private int pickingCandidateId = -1;
 
 		// Status
 		private final Map<PPOrderBOMLineId, IssueCandidate> candidatesByOrderBOMLineId = new HashMap<>();
 
-		public IssueCandidatesBuilder setMovementDate(Date movementDate)
+		public IssueCandidatesBuilder movementDate(ZonedDateTime movementDate)
 		{
-			this.movementDate = TimeUtil.asLocalDateTime(movementDate);
+			this.movementDate = movementDate;
 			return this;
 		}
 
-		private LocalDateTime getMovementDate()
+		public IssueCandidatesBuilder pickingCandidateId(final int pickingCandidateId)
+		{
+			this.pickingCandidateId = pickingCandidateId;
+			return this;
+		}
+
+		private ZonedDateTime getMovementDate()
 		{
 			Preconditions.checkNotNull(movementDate, "movementDate");
 			return movementDate;
@@ -430,7 +440,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			if (materialTrackingOrNull != null)
 			{
 				issueCandidate.addMaterialTracking(materialTrackingOrNull, qtyToIssue);
-		}
+			}
 		}
 
 		private I_PP_Order_BOMLine getOrderBOMLineToIssueOrNull(final IHUTransactionCandidate huTransaction)
@@ -511,7 +521,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			}
 
 			final Quantity qtyToIssue = candidate.getQtyToIssue();
-			final LocalDateTime movementDate = getMovementDate();
+			final ZonedDateTime movementDate = getMovementDate();
 			final I_PP_Order_BOMLine ppOrderBOMLine = candidate.getOrderBOMLine();
 			final LocatorId locatorId = Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(ppOrderBOMLine.getM_Locator_ID());
 
@@ -524,6 +534,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 							.attributeSetInstanceId(AttributeSetInstanceId.NONE) // N/A
 							.movementDate(movementDate)
 							.qtyIssue(qtyToIssue)
+							.pickingCandidateId(pickingCandidateId)
 							.build()),
 					I_PP_Cost_Collector.class);
 
@@ -620,7 +631,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 				this.id2materialTracking.put(materialTracking.getM_Material_Tracking_ID(), materialTrackingWithQuantity);
 			}
 			materialTrackingWithQuantity.addQuantity(quantity);
-			}
+		}
 
 		public boolean isZeroQty()
 		{

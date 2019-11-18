@@ -23,11 +23,10 @@ package de.metas.handlingunits.allocation;
  */
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.ZonedDateTime;
 
-import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.product.ProductId;
@@ -49,14 +48,9 @@ public interface IAllocationRequest
 	/**
 	 * @return allocation date
 	 */
-	Date getDate();
+	ZonedDateTime getDate();
 
-	I_M_Product getProduct();
-
-	default ProductId getProductId()
-	{
-		return ProductId.ofRepoId(getProduct().getM_Product_ID());
-	}
+	ProductId getProductId();
 
 	BigDecimal getQty();
 
@@ -87,7 +81,7 @@ public interface IAllocationRequest
 	 *
 	 * @return referenced model (e.g. a document line)
 	 */
-	ITableRecordReference getReference();
+	TableRecordReference getReference();
 
 	/**
 	 *

@@ -157,7 +157,7 @@ import lombok.NonNull;
 				.productId(ProductId.ofRepoId(attributeSetInstanceAware.getM_Product_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(attributeSetInstanceAware.getM_AttributeSetInstance_ID()))
 				.build();
-		productPlanning = productPlanningDAO.find(query);
+		productPlanning = productPlanningDAO.find(query).orElse(null);
 		if (productPlanning == null)
 		{
 			notValidReasons.add("@NotFound@ @PP_Product_Planning_ID@");

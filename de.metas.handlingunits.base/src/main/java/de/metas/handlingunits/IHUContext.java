@@ -1,5 +1,7 @@
 package de.metas.handlingunits;
 
+import java.time.ZonedDateTime;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -85,7 +87,7 @@ public interface IHUContext extends IContextAware, IPropertiesContainer
 	/**
 	 * @return processing date to be used
 	 */
-	Date getDate();
+	ZonedDateTime getDate();
 
 	/**
 	 * Returns the collector that is supposed to be used to keep track of packaging material that was allocated/"picked up" during the creation of new HUs, and the packaging material that was

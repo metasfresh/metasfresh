@@ -1,5 +1,6 @@
 package de.metas.handlingunits.pporder.api;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -33,7 +34,13 @@ import de.metas.util.ISingletonService;
 public interface IHUPPOrderQtyDAO extends ISingletonService
 {
 	I_PP_Order_Qty retrieveById(int ppOrderQtyId);
-	
+
+	I_PP_Order_Qty save(CreateIssueCandidateRequest request);
+
+	I_PP_Order_Qty save(CreateReceiptCandidateRequest request);
+
+	List<I_PP_Order_Qty> saveAll(Collection<CreateReceiptCandidateRequest> requests);
+
 	void save(final I_PP_Order_Qty ppOrderQty);
 
 	void delete(I_PP_Order_Qty ppOrderQty);
@@ -48,7 +55,7 @@ public interface IHUPPOrderQtyDAO extends ISingletonService
 	}
 
 	List<I_PP_Order_Qty> retrieveOrderQtys(PPOrderId ppOrderId);
-	
+
 	I_PP_Order_Qty retrieveOrderQtyForCostCollector(PPOrderId ppOrderId, final int costCollectorId);
 
 	default Stream<I_PP_Order_Qty> streamOrderQtys(PPOrderId ppOrderId)

@@ -48,6 +48,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPIItemProductBL;
@@ -286,7 +287,7 @@ public abstract class AbstractHUDDOrderProcessIntegrationTest extends AbstractHU
 
 	protected List<I_M_HU> generateLUs(final I_M_HU_PI_Item_Product tuPIItemProduct, final LocatorId locatorId, final int totalQtyCU)
 	{
-		final I_C_BPartner bpartner = null;
+		final BPartnerId bpartnerId = null;
 		final int bpartnerLocationId = 1;
 
 		final ProductId cuProductId = ProductId.ofRepoId(tuPIItemProduct.getM_Product_ID());
@@ -296,9 +297,9 @@ public abstract class AbstractHUDDOrderProcessIntegrationTest extends AbstractHU
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(tuPIItemProduct,
 				cuProductId,
 				cuUOM,
-				bpartner,
+				bpartnerId,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU
-		lutuConfiguration.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
+		lutuConfiguration.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 		lutuConfiguration.setC_BPartner_Location_ID(bpartnerLocationId);
 		lutuConfigurationFactory.save(lutuConfiguration);
 

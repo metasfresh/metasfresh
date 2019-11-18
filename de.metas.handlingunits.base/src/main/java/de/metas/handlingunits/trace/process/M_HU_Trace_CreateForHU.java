@@ -132,14 +132,14 @@ public class M_HU_Trace_CreateForHU extends JavaProcess
 
 		final ICompositeQueryFilter<I_M_HU_Assignment> filter = queryBL.createCompositeQueryFilter(I_M_HU_Assignment.class)
 				.setJoinOr()
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_M_HU_ID, hu.getM_HU_ID())
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_M_LU_HU_ID, hu.getM_HU_ID())
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_M_TU_HU_ID, hu.getM_HU_ID())
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_VHU_ID, hu.getM_HU_ID());
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_LU_HU_ID, hu.getM_HU_ID())
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_TU_HU_ID, hu.getM_HU_ID())
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_VHU_ID, hu.getM_HU_ID());
 
 		final List<T> result = queryBL.createQueryBuilder(I_M_HU_Assignment.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, InterfaceWrapperHelper.getTableId(clazz))
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getTableId(clazz))
 				.filter(filter)
 				.create()
 				.stream()

@@ -22,6 +22,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.junit.Assert;
 import org.w3c.dom.Node;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUXmlConverter;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -85,6 +86,7 @@ public class HUTransformTestsBase
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 		final I_C_BPartner bpartner = createBPartner("testVendor");
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
 		final I_C_BPartner_Location bPartnerLocation = createBPartnerLocation(bpartner);
 
 		final I_M_Warehouse warehouse = createWarehouse("testWarehouse");
@@ -99,7 +101,7 @@ public class HUTransformTestsBase
 
 			lutuProducer.setNoLU();
 			lutuProducer.setTUPI(data.piTU_IFCO);
-			lutuProducer.setC_BPartner(bpartner);
+			lutuProducer.setBPartnerId(bpartnerId);
 			lutuProducer.setLocatorId(locatorId);
 			lutuProducer.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 
@@ -146,7 +148,7 @@ public class HUTransformTestsBase
 		Assert.assertThat(newCUXML, not(hasXPath("HU-VirtualPI/M_HU_Item_Parent_ID"))); // verify that there is no parent HU
 		Assert.assertThat(newCUXML, hasXPath("count(HU-VirtualPI[@HUStatus='A'])", is("1")));
 		Assert.assertThat(newCUXML, hasXPath("count(HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])", is("1")));
-		Assert.assertThat(newCUXML, hasXPath("string(HU-VirtualPI/@C_BPartner_ID)", is(Integer.toString(bpartner.getC_BPartner_ID())))); // verify that the bpartner is propagated
+		Assert.assertThat(newCUXML, hasXPath("string(HU-VirtualPI/@C_BPartner_ID)", is(Integer.toString(bpartnerId.getRepoId())))); // verify that the bpartner is propagated
 		Assert.assertThat(newCUXML, hasXPath("string(HU-VirtualPI/@C_BPartner_Location_ID)", is(Integer.toString(bPartnerLocation.getC_BPartner_Location_ID())))); // verify that the bpartner location is propagated
 		Assert.assertThat(newCUXML, hasXPath("string(HU-VirtualPI/@M_Locator_ID)", is(Integer.toString(locatorId.getRepoId())))); // verify that the locator is propagated
 

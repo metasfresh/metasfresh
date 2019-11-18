@@ -24,9 +24,9 @@ package de.metas.handlingunits.allocation.impl;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 import org.adempiere.util.lang.IMutable;
@@ -358,7 +358,7 @@ public class HUListAllocationSourceDestination implements IAllocationSource, IAl
 			@Override
 			public Result afterHUItemStorage(final IHUItemStorage itemStorage)
 			{
-				final Date date = getHUIterator().getDate();
+				final ZonedDateTime date = getHUIterator().getDate();
 				final I_M_HU_Item huItem = itemStorage.getM_HU_Item();
 				final I_M_HU_Item referenceModel = huItem;
 

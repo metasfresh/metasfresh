@@ -25,9 +25,11 @@ package de.metas.handlingunits.ddorder.spi.impl;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -49,7 +51,7 @@ public class DDOrderLineHUDocumentHandler implements IHUDocumentHandler
 	 * <ul>
 	 * <li><code>null</code> is the line has no product</li>
 	 * <li>the line's current PIIP f the line is new and already has a PIIP</li>
-	 * <li>the result of {@link IHUPIItemProductDAO#retrieveMaterialItemProduct(ProductId, org.compiere.model.I_C_BPartner, java.util.Date, String)} (with type="transport unit")
+	 * <li>the result of {@link IHUPIItemProductDAO#retrieveMaterialItemProduct(ProductId, BPartnerId, java.time.ZonedDateTime, String, boolean) (with type="transport unit")
 	 * otherwise</li>
 	 * </ul>
 	 */
@@ -77,7 +79,11 @@ public class DDOrderLineHUDocumentHandler implements IHUDocumentHandler
 			final I_DD_Order ddOrder = ddOrderLine.getDD_Order();
 			final String huUnitType = X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit;
 
-			piip = Services.get(IHUPIItemProductDAO.class).retrieveMaterialItemProduct(productId, ddOrder.getC_BPartner(), ddOrder.getDateOrdered(), huUnitType,
+			piip = Services.get(IHUPIItemProductDAO.class).retrieveMaterialItemProduct(
+					productId, 
+					BPartnerId.ofRepoIdOrNull(ddOrder.getC_BPartner_ID()), 
+					TimeUtil.asZonedDateTime(ddOrder.getDateOrdered()), 
+					huUnitType,
 					false); // allowInfiniteCapacity = false
 		}
 

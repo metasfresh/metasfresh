@@ -33,6 +33,7 @@ import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.IProductLowLevelUpdater;
+import org.eevolution.api.ProductBOMQtys;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
@@ -112,22 +113,6 @@ public class ProductBOMBL implements IProductBOMBL
 		return new ProductLowLevelUpdater();
 	}
 
-	public BigDecimal computeQtyWithScrap(final BigDecimal qty, @NonNull final Percent scrapPercent)
-	{
-		if (qty == null || qty.signum() == 0)
-		{
-			return BigDecimal.ZERO;
-		}
-
-		if (scrapPercent.isZero())
-		{
-			return qty;
-		}
-
-		final int precision = 8;
-		return scrapPercent.addToBase(qty, precision);
-	}
-
 	@Override
 	public boolean isValidVariantGroup(final I_PP_Product_BOMLine bomLine)
 	{
@@ -175,7 +160,7 @@ public class ProductBOMBL implements IProductBOMBL
 		//
 		// Adjust the qtyRequired by adding the scrap percentage to it.
 		final Percent qtyScrap = Percent.of(bomLine.getScrap());
-		final BigDecimal qtyRequiredPlusScrap = computeQtyWithScrap(qtyRequired, qtyScrap);
+		final BigDecimal qtyRequiredPlusScrap = ProductBOMQtys.computeQtyWithScrap(qtyRequired, qtyScrap);
 		return qtyRequiredPlusScrap;
 	}
 
@@ -254,7 +239,7 @@ public class ProductBOMBL implements IProductBOMBL
 		if (includeScrapQty)
 		{
 			final Percent scrap = Percent.of(bomLine.getScrap());
-			qty = computeQtyWithScrap(qty, scrap);
+			qty = ProductBOMQtys.computeQtyWithScrap(qty, scrap);
 		}
 		//
 		if (qty.scale() > precision)

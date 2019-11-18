@@ -23,8 +23,8 @@ package de.metas.handlingunits.storage.impl;
  */
 
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -210,7 +210,7 @@ public class HUItemStorage implements IHUItemStorage
 	public CapacityInterface getCapacity(
 			@NonNull final ProductId productId,
 			@NonNull final I_C_UOM uom,
-			@NonNull final Date date)
+			@NonNull final ZonedDateTime date)
 	{
 		//
 		// In case there is a custom capacity set, we use that right away
@@ -267,7 +267,7 @@ public class HUItemStorage implements IHUItemStorage
 	public CapacityInterface getAvailableCapacity(
 			@NonNull final ProductId productId,
 			@NonNull final I_C_UOM uom,
-			@NonNull final Date date)
+			@NonNull final ZonedDateTime date)
 	{
 		final CapacityInterface capacity = getCapacity(productId, uom, date);
 		if (handlingUnitsBL.isAggregateHU(getM_HU_Item().getM_HU()))
@@ -501,13 +501,13 @@ public class HUItemStorage implements IHUItemStorage
 	}
 
 	@Override
-	public IProductStorage getProductStorage(final ProductId productId, final I_C_UOM uom, final Date date)
+	public IProductStorage getProductStorage(final ProductId productId, final I_C_UOM uom, final ZonedDateTime date)
 	{
 		return new HUItemProductStorage(this, productId, uom, date);
 	}
 
 	@Override
-	public List<IProductStorage> getProductStorages(final Date date)
+	public List<IProductStorage> getProductStorages(final ZonedDateTime date)
 	{
 		final List<I_M_HU_Item_Storage> storages = dao.retrieveItemStorages(item);
 		final List<IProductStorage> result = new ArrayList<>(storages.size());

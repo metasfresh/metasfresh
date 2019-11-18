@@ -13,15 +13,14 @@ package de.metas.inoutcandidate.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -30,10 +29,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
-import org.compiere.util.Env;
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.business.BusinessTestHelper;
 import de.metas.inoutcandidate.expectations.ReceiptScheduleExpectation;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
@@ -49,14 +50,19 @@ public class ReceiptScheduleQtysHandlerTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		context = new PlainContextAware(Env.getCtx());
+		context = PlainContextAware.newOutOfTrx();
 
 		Services.get(IModelInterceptorRegistry.class)
 				.addModelInterceptor(ReceiptScheduleValidator.instance);
 
 		//
 		// Master data
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(BusinessTestHelper.createBPartner("test").getC_BPartner_ID());
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(BusinessTestHelper.createWarehouse("test").getM_Warehouse_ID());
+
 		this.receiptSchedule = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class, context);
+		receiptSchedule.setM_Warehouse_ID(warehouseId.getRepoId());
+		receiptSchedule.setC_BPartner_ID(bpartnerId.getRepoId());
 		InterfaceWrapperHelper.save(receiptSchedule);
 	}
 

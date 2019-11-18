@@ -119,6 +119,8 @@ public interface IHUQueryBuilder
 	 */
 	<T> List<T> collect(ModelColumn<I_M_HU, T> huColumn);
 
+	<T> List<T> collect(String columnName, Class<T> modelType);
+
 	/**
 	 * Set the context in which the query will run. Optional, see {@link #setContext(Object)}.
 	 *

@@ -25,6 +25,7 @@ package org.adempiere.util.api;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 public interface IRangeAwareParams extends IParams
 {
@@ -58,6 +59,11 @@ public interface IRangeAwareParams extends IParams
 	 * @return {@link LocalDate} or <code>null</code> if parameter is missing
 	 */
 	LocalDate getParameter_ToAsLocalDate(String parameterName);
+
+	/**
+	 * @return {@link ZonedDateTime} or <code>null</code> if parameter is missing
+	 */
+	ZonedDateTime getParameter_ToAsZonedDateTime(String parameterName);
 
 	/**
 	 * @param parameterName

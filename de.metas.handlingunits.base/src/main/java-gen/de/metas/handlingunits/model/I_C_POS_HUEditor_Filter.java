@@ -32,8 +32,6 @@ public interface I_C_POS_HUEditor_Filter
 	 */
 	public int getAD_Client_ID();
 
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, org.compiere.model.I_AD_Client>(I_C_POS_HUEditor_Filter.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -80,8 +78,6 @@ public interface I_C_POS_HUEditor_Filter
 	 */
 	public int getAD_Org_ID();
 
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, org.compiere.model.I_AD_Org>(I_C_POS_HUEditor_Filter.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -144,6 +140,29 @@ public interface I_C_POS_HUEditor_Filter
     public static final String COLUMNNAME_AD_Reference_Value_ID = "AD_Reference_Value_ID";
 
 	/**
+	 * Set POS HU Editor Filter.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_POS_HUEditor_Filter_ID (int C_POS_HUEditor_Filter_ID);
+
+	/**
+	 * Get POS HU Editor Filter.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_POS_HUEditor_Filter_ID();
+
+    /** Column definition for C_POS_HUEditor_Filter_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object> COLUMN_C_POS_HUEditor_Filter_ID = new org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object>(I_C_POS_HUEditor_Filter.class, "C_POS_HUEditor_Filter_ID", null);
+    /** Column name C_POS_HUEditor_Filter_ID */
+    public static final String COLUMNNAME_C_POS_HUEditor_Filter_ID = "C_POS_HUEditor_Filter_ID";
+
+	/**
 	 * Set Spaltenname.
 	 * Name der Spalte in der Datenbank
 	 *
@@ -167,29 +186,6 @@ public interface I_C_POS_HUEditor_Filter
     public static final org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object> COLUMN_ColumnName = new org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object>(I_C_POS_HUEditor_Filter.class, "ColumnName", null);
     /** Column name ColumnName */
     public static final String COLUMNNAME_ColumnName = "ColumnName";
-
-	/**
-	 * Set POS HU Editor Filter.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_POS_HUEditor_Filter_ID (int C_POS_HUEditor_Filter_ID);
-
-	/**
-	 * Get POS HU Editor Filter.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_POS_HUEditor_Filter_ID();
-
-    /** Column definition for C_POS_HUEditor_Filter_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object> COLUMN_C_POS_HUEditor_Filter_ID = new org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object>(I_C_POS_HUEditor_Filter.class, "C_POS_HUEditor_Filter_ID", null);
-    /** Column name C_POS_HUEditor_Filter_ID */
-    public static final String COLUMNNAME_C_POS_HUEditor_Filter_ID = "C_POS_HUEditor_Filter_ID";
 
 	/**
 	 * Get Erstellt.
@@ -216,8 +212,6 @@ public interface I_C_POS_HUEditor_Filter
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, org.compiere.model.I_AD_User>(I_C_POS_HUEditor_Filter.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -271,8 +265,6 @@ public interface I_C_POS_HUEditor_Filter
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, org.compiere.model.I_AD_User>(I_C_POS_HUEditor_Filter.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

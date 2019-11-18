@@ -25,9 +25,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  */
 
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -48,11 +48,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
+import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -111,25 +111,24 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	public I_M_HU_PI_Item_Product retrievePIMaterialItemProduct(
 			final I_M_HU_PI_Item itemDef,
 			@NonNull final I_M_Product product,
-			final Date date)
+			final ZonedDateTime date)
 	{
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
-		final I_C_BPartner partner = null; // N/A
+		final BPartnerId partner = null; // N/A
 		return retrievePIMaterialItemProduct(itemDef, partner, productId, date);
 	}
 
 	@Override
 	public I_M_HU_PI_Item_Product retrievePIMaterialItemProduct(
 			@NonNull final I_M_HU_PI_Item itemDef,
-			@Nullable final I_C_BPartner partner,
+			@Nullable final BPartnerId partnerId,
 			@NonNull final ProductId productId,
-			@Nullable final Date date)
+			@Nullable final ZonedDateTime date)
 	{
 		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();
-		if (partner != null)
+		if (partnerId != null)
 		{
-			final int partnerId = partner.getC_BPartner_ID();
-			queryVO.setC_BPartner_ID(partnerId);
+			queryVO.setC_BPartner_ID(partnerId.getRepoId());
 		}
 		queryVO.setM_Product_ID(productId.getRepoId());
 		queryVO.setAllowAnyProduct(true);
@@ -147,7 +146,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	public I_M_HU_PI_Item_Product retrievePIMaterialItemProduct(
 			final I_M_HU_Item huItem,
 			final ProductId productId,
-			final Date date)
+			final ZonedDateTime date)
 	{
 		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();
 		queryVO.setM_Product_ID(productId.getRepoId());
@@ -170,27 +169,27 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	@Override
 	public I_M_HU_PI_Item_Product retrieveMaterialItemProduct(
 			final ProductId productId,
-			final I_C_BPartner bpartner,
-			final Date date,
+			final BPartnerId bpartnerId,
+			final ZonedDateTime date,
 			final String huUnitType,
 			final boolean allowInfiniteCapacity)
 	{
 		final ProductId packagingProductId = null;
-		return retrieveMaterialItemProduct(productId, bpartner, date, huUnitType, allowInfiniteCapacity, packagingProductId);
+		return retrieveMaterialItemProduct(productId, bpartnerId, date, huUnitType, allowInfiniteCapacity, packagingProductId);
 	}
 
 	@Override
 	public I_M_HU_PI_Item_Product retrieveMaterialItemProduct(
 			final ProductId productId,
-			final I_C_BPartner bpartner,
-			final Date date,
+			final BPartnerId bpartnerId,
+			final ZonedDateTime date,
 			final String huUnitType,
 			final boolean allowInfiniteCapacity,
 			final ProductId packagingProductId)
 	{
 		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();
 
-		queryVO.setC_BPartner_ID(bpartner == null ? 0 : bpartner.getC_BPartner_ID()); // guarding against empty partner & product
+		queryVO.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 		queryVO.setM_Product_ID(productId == null ? 0 : productId.getRepoId());
 		queryVO.setAllowAnyProduct(false); // 06566
 		queryVO.setDate(date);
@@ -312,7 +311,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 		//
 		// Valid From/To Filtering (only if Date is specified in query)
-		final Date date = queryVO.getDate();
+		final ZonedDateTime date = queryVO.getDate();
 		if (date != null)
 		{
 			final IQueryFilter<I_M_HU_PI_Item_Product> validDateFromFilter = queryBL.<I_M_HU_PI_Item_Product> createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
@@ -412,7 +411,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		{
 
 			final IQuery<I_M_HU_PI_Item> packingMaterialQuery = queryBL.createQueryBuilder(I_M_HU_PackingMaterial.class, ctx, trxName)
-					.addEqualsFilter(I_M_HU_PackingMaterial.COLUMN_M_Product_ID, queryVO.getM_Product_Packaging_ID())
+					.addEqualsFilter(I_M_HU_PackingMaterial.COLUMNNAME_M_Product_ID, queryVO.getM_Product_Packaging_ID())
 					.addOnlyActiveRecordsFilter()
 					.andCollectChildren(I_M_HU_PI_Item.COLUMN_M_HU_PackingMaterial_ID, I_M_HU_PI_Item.class)
 					.addEqualsFilter(I_M_HU_PI_Item.COLUMN_ItemType, X_M_HU_PI_Item.ITEMTYPE_PackingMaterial) // when we query PI_Items, we make sure that they have the correct type, just as a failsafe measure
@@ -546,18 +545,18 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	@Override
 	public List<I_M_HU_PI_Item_Product> retrieveTUs(final Properties ctx,
 			final ProductId cuProductId,
-			final I_C_BPartner bpartner)
+			final BPartnerId bpartnerId)
 	{
 		//
 		// Filter out infinite capacity configurations
 		final boolean allowInfiniteCapacity = false;
-		return retrieveTUs(ctx, cuProductId, bpartner, allowInfiniteCapacity);
+		return retrieveTUs(ctx, cuProductId, bpartnerId, allowInfiniteCapacity);
 	}
 
 	@Override
 	public List<I_M_HU_PI_Item_Product> retrieveTUs(final Properties ctx,
 			@NonNull final ProductId cuProductId,
-			final I_C_BPartner bpartner,
+			final BPartnerId bpartnerId,
 			final boolean allowInfiniteCapacity)
 	{
 		final IHUPIItemProductQuery queryVO = createHUPIItemProductQuery();
@@ -574,16 +573,16 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 		// Filter by BPartner, if there is a BPartner specified.
 		// We expect to get ALL PI Item Product records which match this
-		if (bpartner != null && bpartner.getC_BPartner_ID() > 0)
+		if (bpartnerId != null)
 		{
-			queryVO.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+			queryVO.setC_BPartner_ID(bpartnerId.getRepoId());
 		}
 
 		queryVO.setAllowInfiniteCapacity(allowInfiniteCapacity);
 
 		//
 		// Filter by current date (ValidFrom >= today, ValidTo <= today)
-		final Date currentDate = SystemTime.asDate();
+		final ZonedDateTime currentDate = SystemTime.asZonedDateTime();
 		queryVO.setDate(currentDate);
 
 		//
@@ -600,9 +599,9 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		// In case we have a specific BPartner, retrieve the default PI Item Product for that BPartner
 		// and keep only that in our PI Item Products list (at first position).
 		// The PI Item products which are for same PI, Product, Qty will be removed.
-		if (bpartner != null && bpartner.getC_BPartner_ID() > 0)
+		if (bpartnerId != null)
 		{
-			final I_M_HU_PI_Item_Product originalHUPIItemProduct = retrieveMaterialItemProduct(cuProductId, bpartner, currentDate, huUnitType,
+			final I_M_HU_PI_Item_Product originalHUPIItemProduct = retrieveMaterialItemProduct(cuProductId, bpartnerId, currentDate, huUnitType,
 					false); // allowInfiniteCapacity = false
 			if (originalHUPIItemProduct != null)     // kindda redundant check
 			{

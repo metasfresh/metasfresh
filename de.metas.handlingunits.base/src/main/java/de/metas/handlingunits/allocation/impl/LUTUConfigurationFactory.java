@@ -37,6 +37,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -135,7 +136,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 
 		//
 		// Misc configuration
-		luProducerDestination.setC_BPartner(ILUTUConfigurationFactory.extractBPartnerOrNull(lutuConfiguration));
+		luProducerDestination.setBPartnerId(ILUTUConfigurationFactory.extractBPartnerIdOrNull(lutuConfiguration));
 		luProducerDestination.setC_BPartner_Location_ID(lutuConfiguration.getC_BPartner_Location_ID());
 		luProducerDestination.setHUStatus(lutuConfiguration.getHUStatus());
 
@@ -152,7 +153,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct,
 			@NonNull final ProductId cuProductId,
 			@NonNull final I_C_UOM cuUOM,
-			final org.compiere.model.I_C_BPartner bpartner,
+			final BPartnerId bpartnerId,
 			final boolean noLUForVirtualTU)
 	{
 		// Services used:
@@ -177,7 +178,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		//
 		// LU/TU configuration (draft)
 		final I_M_HU_LUTU_Configuration lutuConfiguration = InterfaceWrapperHelper.newInstance(I_M_HU_LUTU_Configuration.class, contextProvider);
-		lutuConfiguration.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
+		lutuConfiguration.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 		lutuConfiguration.setIsActive(true);
 
 		//
@@ -209,7 +210,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		}
 		else
 		{
-			luPIItem = handlingUnitsDAO.retrieveDefaultParentPIItem(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, bpartner);
+			luPIItem = handlingUnitsDAO.retrieveDefaultParentPIItem(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, bpartnerId);
 		}
 
 		if (luPIItem != null)

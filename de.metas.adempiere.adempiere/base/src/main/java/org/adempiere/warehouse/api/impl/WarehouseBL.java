@@ -26,7 +26,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.List;
 
-import de.metas.location.CountryId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -37,6 +36,7 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.slf4j.Logger;
 
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
@@ -46,6 +46,12 @@ import lombok.NonNull;
 public class WarehouseBL implements IWarehouseBL
 {
 	private final transient Logger logger = LogManager.getLogger(getClass());
+
+	@Override
+	public I_M_Warehouse getById(@NonNull final WarehouseId warehouseId)
+	{
+		return Services.get(IWarehouseDAO.class).getById(warehouseId);
+	}
 
 	@Override
 	public I_M_Locator getDefaultLocator(@NonNull final I_M_Warehouse warehouse)

@@ -198,7 +198,7 @@ public class PP_Order extends CalloutEngine
 				.productId(ProductId.ofRepoId(ppOrder.getM_Product_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(ppOrder.getM_AttributeSetInstance_ID()))
 				.build();
-		I_PP_Product_Planning pp = Services.get(IProductPlanningDAO.class).find(query);
+		I_PP_Product_Planning pp = Services.get(IProductPlanningDAO.class).find(query).orElse(null);
 
 		if (pp == null)
 		{

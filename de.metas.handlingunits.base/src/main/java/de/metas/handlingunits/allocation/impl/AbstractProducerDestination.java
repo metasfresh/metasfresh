@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -16,12 +17,13 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -43,6 +45,7 @@ import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.handlingunits.util.HUListCursor;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Contains common BL used when loading from an {@link IAllocationRequest} to an {@link IAllocationResult}
@@ -70,7 +73,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	// Parameters
 	private LocatorId _locatorId = null;
 	private String _huStatus = null;
-	private I_C_BPartner _bpartner = null;
+	private BPartnerId _bpartnerId = null;
 	private int _bpartnerLocationId = -1;
 	private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
 	private boolean _isHUPlanningReceiptOwnerPM = false; // default false
@@ -252,10 +255,10 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		{
 			huBuilder.setHUStatus(huStatus);
 		}
-		final I_C_BPartner bpartner = getC_BPartner();
-		if (bpartner != null)
+		final BPartnerId bpartnerId = getBPartnerId();
+		if (bpartnerId != null)
 		{
-			huBuilder.setC_BPartner(bpartner);
+			huBuilder.setBPartnerId(bpartnerId);
 		}
 		final int bpartnerLocationId = getC_BPartner_Location_ID();
 		if (bpartnerLocationId > 0)
@@ -308,16 +311,24 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	@Override
-	public IHUProducerAllocationDestination setC_BPartner(final I_C_BPartner bpartner)
+	public IHUProducerAllocationDestination setBPartnerId(final BPartnerId bpartnerId)
 	{
 		assertConfigurable();
-		_bpartner = bpartner;
+		_bpartnerId = bpartnerId;
 		return this;
 	}
 
-	protected final I_C_BPartner getC_BPartner()
+	protected final BPartnerId getBPartnerId()
 	{
-		return _bpartner;
+		return _bpartnerId;
+	}
+
+	@Override
+	public final IHUProducerAllocationDestination setBPartnerAndLocationId(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		setBPartnerId(bpartnerLocationId.getBpartnerId());
+		setC_BPartner_Location_ID(bpartnerLocationId.getRepoId());
+		return this;
 	}
 
 	@Override
@@ -448,15 +459,15 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	@Override
-	public final I_M_HU getSingleCreatedHU()
+	public final Optional<I_M_HU> getSingleCreatedHU()
 	{
 		if (_createdHUs.isEmpty())
 		{
-			return null;
+			return Optional.empty();
 		}
 		else if (_createdHUs.size() == 1)
 		{
-			return _createdHUs.iterator().next();
+			return Optional.of(_createdHUs.iterator().next());
 		}
 		else
 		{
@@ -465,10 +476,10 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	@Override
-	public final HuId getSingleCreatedHuId()
+	public final Optional<HuId> getSingleCreatedHuId()
 	{
-		I_M_HU hu = getSingleCreatedHU();
-		return hu != null ? HuId.ofRepoId(hu.getM_HU_ID()) : null;
+		return getSingleCreatedHU()
+				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()));
 	}
 
 	@Override

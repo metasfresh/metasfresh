@@ -92,9 +92,9 @@ public class PPProductPlanningBuilder
 		//
 		// Planning segment
 		productPlanning.setAD_Org_ID(warehouse == null ? 0 : warehouse.getAD_Org_ID());
-		productPlanning.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
-		productPlanning.setS_Resource(plant);
-		productPlanning.setM_Product_ID(product.getM_Product_ID());
+		productPlanning.setM_Warehouse_ID(warehouse != null ? warehouse.getM_Warehouse_ID() : -1);
+		productPlanning.setS_Resource_ID(plant != null ? plant.getS_Resource_ID() : -1);
+		productPlanning.setM_Product_ID(product != null ? product.getM_Product_ID() : -1);
 
 		//
 		// Common settings

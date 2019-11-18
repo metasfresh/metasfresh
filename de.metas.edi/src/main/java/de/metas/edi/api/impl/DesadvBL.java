@@ -33,7 +33,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
@@ -134,7 +136,8 @@ public class DesadvBL implements IDesadvBL
 		}
 
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-		final org.compiere.model.I_C_BPartner buyerBPartner = bpartnerDAO.getById(order.getC_BPartner_ID());
+		BPartnerId buyerBPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final org.compiere.model.I_C_BPartner buyerBPartner = bpartnerDAO.getById(buyerBPartnerId);
 
 		final I_EDI_DesadvLine newDesadvLine = InterfaceWrapperHelper.newInstance(I_EDI_DesadvLine.class, order);
 		newDesadvLine.setEDI_Desadv(desadv);
@@ -202,8 +205,8 @@ public class DesadvBL implements IDesadvBL
 		// set infos from M_HU_PI_Item_Product
 		final I_M_HU_PI_Item_Product materialItemProduct = hupiItemProductDAO.retrieveMaterialItemProduct(
 				productId,
-				buyerBPartner,
-				order.getDateOrdered(),
+				buyerBPartnerId,
+				TimeUtil.asZonedDateTime(order.getDateOrdered()),
 				X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit, true/* allowInfiniteCapacity */);
 		if (materialItemProduct != null)
 		{

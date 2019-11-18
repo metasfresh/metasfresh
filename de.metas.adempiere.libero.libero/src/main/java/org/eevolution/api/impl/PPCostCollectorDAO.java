@@ -1,6 +1,7 @@
 package org.eevolution.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
@@ -30,6 +31,7 @@ import java.time.Duration;
  */
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -53,7 +55,25 @@ public class PPCostCollectorDAO implements IPPCostCollectorDAO
 	@Override
 	public I_PP_Cost_Collector getById(@NonNull final PPCostCollectorId costCollectorId)
 	{
-		return load(costCollectorId, I_PP_Cost_Collector.class);
+		return getById(costCollectorId, I_PP_Cost_Collector.class);
+	}
+
+	@Override
+	public <T extends I_PP_Cost_Collector> T getById(@NonNull final PPCostCollectorId costCollectorId, @NonNull final Class<T> modelClass)
+	{
+		return load(costCollectorId, modelClass);
+	}
+
+	@Override
+	public List<I_PP_Cost_Collector> getByIds(@NonNull final Set<PPCostCollectorId> costCollectorIds)
+	{
+		return getByIds(costCollectorIds, I_PP_Cost_Collector.class);
+	}
+
+	@Override
+	public <T extends I_PP_Cost_Collector> List<T> getByIds(@NonNull final Set<PPCostCollectorId> costCollectorIds, @NonNull final Class<T> modelClass)
+	{
+		return loadByRepoIdAwares(costCollectorIds, modelClass);
 	}
 
 	@Override

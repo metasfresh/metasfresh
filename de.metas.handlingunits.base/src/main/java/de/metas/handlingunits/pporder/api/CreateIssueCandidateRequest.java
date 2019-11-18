@@ -1,11 +1,16 @@
-package de.metas.handlingunits.picking.requests;
+package de.metas.handlingunits.pporder.api;
+
+import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.warehouse.LocatorId;
+
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
-import de.metas.picking.api.PickingSlotId;
+import de.metas.handlingunits.picking.PickingCandidateId;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -15,18 +20,18 @@ import lombok.Value;
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,21 +40,26 @@ import lombok.Value;
 
 @Value
 @Builder
-public class PickHURequest
+public class CreateIssueCandidateRequest
 {
 	@NonNull
-	ShipmentScheduleId shipmentScheduleId;
+	PPOrderId orderId;
 	@NonNull
-	HuId pickFromHuId;
-	@Nullable
-	HuPackingInstructionsId packToId;
+	PPOrderBOMLineId orderBOMLineId;
+
+	@NonNull
+	ZonedDateTime date;
 
 	@Nullable
-	PickingSlotId pickingSlotId;
+	LocatorId locatorId;
+	@NonNull
+	HuId issueFromHUId;
+	@NonNull
+	ProductId productId;
 
-	/** Quantity to be picked. If not set, the whole HU shall be picked */
+	@NonNull
+	Quantity qtyToIssue;
+
 	@Nullable
-	Quantity qtyToPick;
-
-	boolean autoReview;
+	PickingCandidateId pickingCandidateId;
 }

@@ -32,8 +32,6 @@ public interface I_PP_Order_Qty
 	 */
 	public int getAD_Client_ID();
 
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.compiere.model.I_AD_Client>(I_PP_Order_Qty.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -57,10 +55,31 @@ public interface I_PP_Order_Qty
 	 */
 	public int getAD_Org_ID();
 
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.compiere.model.I_AD_Org>(I_PP_Order_Qty.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Get Erstellt.
@@ -87,35 +106,8 @@ public interface I_PP_Order_Qty
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.compiere.model.I_AD_User>(I_PP_Order_Qty.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.compiere.model.I_C_UOM>(I_PP_Order_Qty.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Aktiv.
@@ -174,7 +166,7 @@ public interface I_PP_Order_Qty
 	 * Lagerort im Lager
 	 *
 	 * <br>Type: Locator
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setM_Locator_ID (int M_Locator_ID);
@@ -184,15 +176,63 @@ public interface I_PP_Order_Qty
 	 * Lagerort im Lager
 	 *
 	 * <br>Type: Locator
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Locator_ID();
 
-    /** Column definition for M_Locator_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.compiere.model.I_M_Locator>(I_PP_Order_Qty.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);
     /** Column name M_Locator_ID */
     public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
+
+	/**
+	 * Set Picking candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Picking_Candidate_ID (int M_Picking_Candidate_ID);
+
+	/**
+	 * Get Picking candidate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Picking_Candidate_ID();
+
+	public de.metas.handlingunits.model.I_M_Picking_Candidate getM_Picking_Candidate();
+
+	public void setM_Picking_Candidate(de.metas.handlingunits.model.I_M_Picking_Candidate M_Picking_Candidate);
+
+    /** Column definition for M_Picking_Candidate_ID */
+    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, de.metas.handlingunits.model.I_M_Picking_Candidate> COLUMN_M_Picking_Candidate_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, de.metas.handlingunits.model.I_M_Picking_Candidate>(I_PP_Order_Qty.class, "M_Picking_Candidate_ID", de.metas.handlingunits.model.I_M_Picking_Candidate.class);
+    /** Column name M_Picking_Candidate_ID */
+    public static final String COLUMNNAME_M_Picking_Candidate_ID = "M_Picking_Candidate_ID";
+
+	/**
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Product_ID();
+
+    /** Column name M_Product_ID */
+    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Bewegungsdatum.
@@ -218,31 +258,6 @@ public interface I_PP_Order_Qty
     public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, Object> COLUMN_MovementDate = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, Object>(I_PP_Order_Qty.class, "MovementDate", null);
     /** Column name MovementDate */
     public static final String COLUMNNAME_MovementDate = "MovementDate";
-
-	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Product_ID (int M_Product_ID);
-
-	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Product_ID();
-
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.compiere.model.I_M_Product>(I_PP_Order_Qty.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Manufacturing Cost Collector.
@@ -423,8 +438,6 @@ public interface I_PP_Order_Qty
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.compiere.model.I_AD_User>(I_PP_Order_Qty.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

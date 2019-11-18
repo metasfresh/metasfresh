@@ -1,5 +1,7 @@
 package de.metas.handlingunits.snapshot.impl;
 
+import java.time.ZonedDateTime;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -39,6 +41,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.base.Function;
 
@@ -58,18 +61,11 @@ abstract class AbstractSnapshotHandler<ModelType, SnapshotModelType, ParentModel
 	@ToStringBuilder(skip = true)
 	private final AbstractSnapshotHandler<?, ?, ?> _parentHandler;
 	private IContextAware _context;
-	private Date _dateTrx;
+	private ZonedDateTime _dateTrx;
 	private Object _referencedModel;
 	private String _snapshotId;
 
-	protected final Function<SnapshotModelType, Integer> snapshot2ModelIdFunction = new Function<SnapshotModelType, Integer>()
-	{
-		@Override
-		public Integer apply(final SnapshotModelType huItemSnapshot)
-		{
-			return getModelId(huItemSnapshot);
-		}
-	};
+	protected final Function<SnapshotModelType, Integer> snapshot2ModelIdFunction = huItemSnapshot -> getModelId(huItemSnapshot);
 
 	AbstractSnapshotHandler(final AbstractSnapshotHandler<?, ?, ?> parentHandler)
 	{
@@ -88,12 +84,12 @@ abstract class AbstractSnapshotHandler<ModelType, SnapshotModelType, ParentModel
 	@Override
 	public ISnapshotHandler<ModelType, SnapshotModelType, ParentModelType> setDateTrx(final Date dateTrx)
 	{
-		this._dateTrx = dateTrx;
+		this._dateTrx = TimeUtil.asZonedDateTime(dateTrx);
 		return this;
 	}
 
 	/** @return transaction date; never null */
-	protected final Date getDateTrx()
+	protected final ZonedDateTime getDateTrx()
 	{
 		if (_dateTrx != null)
 		{

@@ -320,7 +320,8 @@ public class UOMConversionBL implements IUOMConversionBL
 		return getTimeConversionRate(uomFrom, uomTo);
 	}    // getConversion
 
-	private UOMConversionRate getRate(
+	@Override
+	public UOMConversionRate getRate(
 			@Nullable final ProductId productId,
 			@NonNull final UomId fromUomId,
 			@NonNull final UomId toUomId)

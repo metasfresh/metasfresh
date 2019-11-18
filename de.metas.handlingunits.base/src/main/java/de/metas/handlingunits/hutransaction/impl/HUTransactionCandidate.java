@@ -1,28 +1,6 @@
 package de.metas.handlingunits.hutransaction.impl;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -75,7 +53,7 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 	private final String id;
 
 	@Getter
-	private final Date date;
+	private final ZonedDateTime date;
 
 	private IHUTransactionCandidate counterpartTrx;
 
@@ -107,7 +85,7 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 			final I_M_HU_Item vhuItem,
 			final ProductId productId,
 			final Quantity quantity,
-			final Date date)
+			final ZonedDateTime date)
 	{
 		this(model,
 				huItem,
@@ -124,7 +102,7 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 			final I_M_HU_Item vhuItem,
 			@NonNull final ProductId productId,
 			@NonNull final Quantity quantity,
-			@NonNull final Date date,
+			@NonNull final ZonedDateTime date,
 			final LocatorId locatorId,
 			final String huStatus)
 	{
@@ -289,7 +267,7 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 	}
 
 	@Override
-	public final I_M_HU getVHU()
+	public I_M_HU getVHU()
 	{
 		if (vhuItem == null)
 		{

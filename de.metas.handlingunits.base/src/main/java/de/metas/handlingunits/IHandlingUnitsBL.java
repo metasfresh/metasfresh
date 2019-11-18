@@ -418,9 +418,14 @@ public interface IHandlingUnitsBL extends ISingletonService
 	I_M_HU_PI getEffectivePI(I_M_HU hu);
 
 
+	static BPartnerId extractBPartnerIdOrNull(final I_M_HU hu)
+	{
+		return BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID());
+	}
+
 	static I_C_BPartner extractBPartnerOrNull(final I_M_HU hu)
 	{
-		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID());
+		final BPartnerId bpartnerId = extractBPartnerIdOrNull(hu);
 		return bpartnerId != null
 				? Services.get(IBPartnerDAO.class).getById(bpartnerId)
 				: null;
@@ -436,11 +441,17 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	static LocatorId extractLocatorId(final I_M_HU hu)
 	{
-		final int locatorRepoId = hu.getM_Locator_ID();
-		if (locatorRepoId <= 0)
+		final LocatorId locatorId = extractLocatorIdOrNull(hu);
+		if (locatorId == null)
 		{
 			throw new HUException("Warehouse Locator shall be set for: " + hu);
 		}
+		return locatorId;
+	}
+
+	static LocatorId extractLocatorIdOrNull(final I_M_HU hu)
+	{
+		final int locatorRepoId = hu.getM_Locator_ID();
 		return Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(locatorRepoId);
 	}
 

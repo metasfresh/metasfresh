@@ -19,6 +19,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
+import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
@@ -159,7 +160,7 @@ public class AddQtyToHUCommand
 		final PickingCandidate newCandidate = PickingCandidate.builder()
 				.qtyPicked(qtyToPack.toZero())
 				.shipmentScheduleId(shipmentScheduleId)
-				.pickFromHuId(packToHuId) // TODO use source HU ID
+				.pickFrom(PickFrom.ofHuId(packToHuId)) // TODO use source HU ID
 				.packedToHuId(packToHuId)
 				.pickingSlotId(pickingSlotId)
 				.build();

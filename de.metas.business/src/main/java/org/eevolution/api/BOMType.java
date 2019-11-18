@@ -34,13 +34,13 @@ public enum BOMType implements ReferenceListAwareEnum
 {
 	CurrentActive(X_PP_Product_BOM.BOMTYPE_CurrentActive), //
 	MakeToOrder(X_PP_Product_BOM.BOMTYPE_Make_To_Order), //
-	Previous(X_PP_Product_BOM.BOMTYPE_Previous), //
-	PreviousSpare(X_PP_Product_BOM.BOMTYPE_PreviousSpare), //
-	Future(X_PP_Product_BOM.BOMTYPE_Future), //
-	Verwaltung(X_PP_Product_BOM.BOMTYPE_Verwaltung), //
-	Repair(X_PP_Product_BOM.BOMTYPE_Repair), //
-	ProductConfigure(X_PP_Product_BOM.BOMTYPE_ProductConfigure), //
-	MakeToKit(X_PP_Product_BOM.BOMTYPE_Make_To_Kit) //
+	// Previous(X_PP_Product_BOM.BOMTYPE_Previous), //
+	// PreviousSpare(X_PP_Product_BOM.BOMTYPE_PreviousSpare), //
+	// Future(X_PP_Product_BOM.BOMTYPE_Future), //
+	// Verwaltung(X_PP_Product_BOM.BOMTYPE_Verwaltung), //
+	// Repair(X_PP_Product_BOM.BOMTYPE_Repair), //
+	// ProductConfigure(X_PP_Product_BOM.BOMTYPE_ProductConfigure), //
+	// MakeToKit(X_PP_Product_BOM.BOMTYPE_Make_To_Kit) //
 	;
 
 	@Getter

@@ -80,6 +80,8 @@ public interface IHUStatusBL extends ISingletonService
 
 	boolean isStatusIssued(I_M_HU huRecord);
 
+	boolean isStatusActiveOrIssued(I_M_HU huRecord);
+
 	boolean isStatusDestroyed(I_M_HU huRecord);
 
 	boolean isStatusShipped(I_M_HU huRecord);
@@ -125,5 +127,4 @@ public interface IHUStatusBL extends ISingletonService
 	 * Activate the HU (assuming it was Planning)
 	 */
 	void setHUStatusActive(Collection<I_M_HU> hus);
-
 }

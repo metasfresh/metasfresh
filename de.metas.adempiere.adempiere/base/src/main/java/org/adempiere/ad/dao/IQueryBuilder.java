@@ -305,6 +305,8 @@ public interface IQueryBuilder<T>
 			ModelColumn<ParentModelType, CollectedBaseType> column,
 			Class<CollectedType> collectedType);
 
+	<CollectedType> IQueryBuilder<CollectedType> andCollect(String columnName, Class<CollectedType> collectedType);
+
 	/**
 	 * Returns a query to retrieve those records that reference the result of the query which was specified so far.<br>
 	 * Example: first, configure a query builder to select a certain kind of <code>M_InOuts</code>. then use this method to retrieve not the specified inOuts, but its M_InOutLines:
@@ -368,6 +370,8 @@ public interface IQueryBuilder<T>
 	 */
 	<TargetModelType> IQueryAggregateBuilder<T, TargetModelType> aggregateOnColumn(ModelColumn<T, TargetModelType> column);
 
+	<TargetModelType> IQueryAggregateBuilder<T, TargetModelType> aggregateOnColumn(String collectOnColumnName, Class<TargetModelType> targetModelType);
+
 	IQueryBuilder<T> addBetweenFilter(final ModelColumn<T, ?> column, final Object valueFrom, final Object valueTo, final IQueryFilterModifier modifier);
 
 	IQueryBuilder<T> addBetweenFilter(final String columnName, final Object valueFrom, final Object valueTo, final IQueryFilterModifier modifier);
@@ -388,5 +392,4 @@ public interface IQueryBuilder<T>
 	IQueryBuilder<T> addValidFromToMatchesFilter(ModelColumn<T, ?> validFromColumn, ModelColumn<T, ?> validToColumn, Date dateToMatch);
 
 	String getModelTableName();
-
 }

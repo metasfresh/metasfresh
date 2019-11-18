@@ -1,6 +1,6 @@
 package de.metas.fresh.picking;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -45,7 +45,7 @@ public class PackingDetailsModel
 					.appendParametersToMessage();
 		}
 
-		final Date date = SystemTime.asDayTimestamp();
+		final ZonedDateTime date = SystemTime.asZonedDateTimeAtStartOfDay();
 		final PackingMaterialKeyBuilder packingMaterialKeysBuilder = new PackingMaterialKeyBuilder(terminalContext, date);
 		final PickingSlotKeyBuilder pickingSlotKeysBuilder = new PickingSlotKeyBuilder(terminalContext);
 		for (final IPackingItem freshPackingItem : this.unallocatedLines)

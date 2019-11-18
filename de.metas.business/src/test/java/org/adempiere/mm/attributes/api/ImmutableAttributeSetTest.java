@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Month;
@@ -254,4 +255,26 @@ public class ImmutableAttributeSetTest
 
 		assertThat(attributeSet.getValueAsLocalDate(attributeKey)).isEqualTo(expectedValue);
 	}
+
+	@Test
+	public void testValueAsBigDecimal()
+	{
+		final I_M_Attribute attribute = attributesTestHelper.createM_Attribute("number", X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+
+		assertValueAsBigDecimal(attribute, null, null);
+		assertValueAsBigDecimal(attribute, "", null);
+		assertValueAsBigDecimal(attribute, 123, new BigDecimal("123"));
+		assertValueAsBigDecimal(attribute, new BigDecimal("123.45"), new BigDecimal("123.45"));
+	}
+
+	private void assertValueAsBigDecimal(final I_M_Attribute attribute, Object inputValue, BigDecimal expectedValue)
+	{
+		final String attributeKey = attribute.getValue();
+		final ImmutableAttributeSet attributeSet = ImmutableAttributeSet.builder()
+				.attributeValue(attribute, inputValue)
+				.build();
+
+		assertThat(attributeSet.getValueAsBigDecimal(attributeKey)).isEqualTo(expectedValue);
+	}
+
 }

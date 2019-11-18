@@ -198,7 +198,7 @@ import lombok.NonNull;
 	 * @param candidate
 	 * @return true if we can append to current shipment line
 	 */
-	public boolean canAdd(final ShipmentScheduleWithHU candidate)
+	boolean canAdd(final ShipmentScheduleWithHU candidate)
 	{
 		// If there were no candidates added so far, obviously we allow our first candidate
 		if (isEmpty())
@@ -213,7 +213,7 @@ import lombok.NonNull;
 		}
 
 		// Check: same product
-		if (!Objects.equals(productId, candidate.getProductId()))
+		if (!ProductId.equals(productId, candidate.getProductId()))
 		{
 			return false;
 		}

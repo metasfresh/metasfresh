@@ -49,15 +49,7 @@ public class HU2PackingItemTestCommons
 
 	public static HUTestHelper commonCreateHUTestHelper()
 	{
-		return new HUTestHelper()
-		{
-			@Override
-			protected String createAndStartTransaction()
-			{
-				// no transaction by default
-				return ITrx.TRXNAME_None;
-			}
-		};
+		return HUTestHelper.newInstanceOutOfTrx();
 	}
 
 	public static I_M_HU_PI_Item_Product createHuDefIFCO(@NonNull final HUTestHelper helper, final int cuQty)

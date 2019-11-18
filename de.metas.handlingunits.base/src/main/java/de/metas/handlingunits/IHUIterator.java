@@ -1,5 +1,7 @@
 package de.metas.handlingunits;
 
+import java.time.ZonedDateTime;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -23,7 +25,6 @@ package de.metas.handlingunits;
  */
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.Properties;
 
 import de.metas.handlingunits.impl.HUIterator;
@@ -78,9 +79,9 @@ public interface IHUIterator
 
 	IHUIterator setCtx(Properties ctx);
 
-	Date getDate();
+	ZonedDateTime getDate();
 
-	IHUIterator setDate(final Date date);
+	IHUIterator setDate(final ZonedDateTime date);
 
 	void setStorageFactory(final IHUStorageFactory storageFactory);
 

@@ -119,7 +119,7 @@ public class RollupWorkflow extends JavaProcess
 
 			if (para.getParameter() == null)
 			{
-				;
+				
 			}
 			else if (name.equals(I_M_Cost.COLUMNNAME_AD_Org_ID))
 			{
@@ -179,10 +179,13 @@ public class RollupWorkflow extends JavaProcess
 		}
 		if (routingId == null)
 		{
-			productPlanning = Services.get(IProductPlanningDAO.class).find(ProductPlanningQuery.builder()
-					.orgId(p_AD_Org_ID)
-					.productId(productId)
-					.build());
+			final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
+			productPlanning = productPlanningsRepo
+					.find(ProductPlanningQuery.builder()
+							.orgId(p_AD_Org_ID)
+							.productId(productId)
+							.build())
+					.orElse(null);
 			if (productPlanning != null)
 			{
 				routingId = PPRoutingId.ofRepoIdOrNull(productPlanning.getAD_Workflow_ID());

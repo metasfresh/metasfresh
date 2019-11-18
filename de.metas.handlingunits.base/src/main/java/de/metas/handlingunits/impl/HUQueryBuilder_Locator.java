@@ -102,19 +102,19 @@ final class HUQueryBuilder_Locator
 			}
 
 			final IQuery<I_M_Locator> locatorsQuery = locatorsQueryBuilder.create();
-			filters.addInSubQueryFilter(I_M_HU.COLUMN_M_Locator_ID, I_M_Locator.COLUMN_M_Locator_ID, locatorsQuery);
+			filters.addInSubQueryFilter(I_M_HU.COLUMNNAME_M_Locator_ID, I_M_Locator.COLUMNNAME_M_Locator_ID, locatorsQuery);
 		}
 
 		if (notInAnyWarehouse)
 		{
-			filters.addEqualsFilter(I_M_HU.COLUMN_M_Locator_ID, null);
+			filters.addEqualsFilter(I_M_HU.COLUMNNAME_M_Locator_ID, null);
 		}
 
 		//
 		// Filter by Locators
 		if (!onlyInLocatorIds.isEmpty())
 		{
-			filters.addInArrayFilter(I_M_HU.COLUMN_M_Locator_ID, onlyInLocatorIds);
+			filters.addInArrayFilter(I_M_HU.COLUMNNAME_M_Locator_ID, onlyInLocatorIds);
 		}
 
 		return filters;

@@ -32,8 +32,6 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 */
 	public int getAD_Client_ID();
 
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_AD_Client>(I_RV_M_Material_Tracking_HU_Details.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -57,10 +55,31 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 */
 	public int getAD_Org_ID();
 
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_AD_Org>(I_RV_M_Material_Tracking_HU_Details.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Get Erstellt.
@@ -87,35 +106,8 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_AD_User>(I_RV_M_Material_Tracking_HU_Details.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_C_UOM>(I_RV_M_Material_Tracking_HU_Details.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Gebinde Status.
@@ -314,8 +306,6 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 */
 	public int getM_Locator_ID();
 
-    /** Column definition for M_Locator_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_M_Locator>(I_RV_M_Material_Tracking_HU_Details.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);
     /** Column name M_Locator_ID */
     public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
@@ -362,8 +352,6 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 */
 	public int getM_Product_ID();
 
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_M_Product>(I_RV_M_Material_Tracking_HU_Details.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
@@ -408,8 +396,6 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 */
 	public int getPP_Order_Issue_DocType_ID();
 
-    /** Column definition for PP_Order_Issue_DocType_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_C_DocType> COLUMN_PP_Order_Issue_DocType_ID = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_C_DocType>(I_RV_M_Material_Tracking_HU_Details.class, "PP_Order_Issue_DocType_ID", org.compiere.model.I_C_DocType.class);
     /** Column name PP_Order_Issue_DocType_ID */
     public static final String COLUMNNAME_PP_Order_Issue_DocType_ID = "PP_Order_Issue_DocType_ID";
 
@@ -481,8 +467,6 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 */
 	public int getPP_Order_Receipt_DocType_ID();
 
-    /** Column definition for PP_Order_Receipt_DocType_ID */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_C_DocType> COLUMN_PP_Order_Receipt_DocType_ID = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_C_DocType>(I_RV_M_Material_Tracking_HU_Details.class, "PP_Order_Receipt_DocType_ID", org.compiere.model.I_C_DocType.class);
     /** Column name PP_Order_Receipt_DocType_ID */
     public static final String COLUMNNAME_PP_Order_Receipt_DocType_ID = "PP_Order_Receipt_DocType_ID";
 
@@ -609,8 +593,6 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_AD_User>(I_RV_M_Material_Tracking_HU_Details.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

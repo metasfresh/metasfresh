@@ -7,9 +7,9 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_DocType;
 import org.eevolution.model.I_DD_Order;
@@ -27,7 +27,6 @@ import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -82,7 +81,6 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 	{
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 		final ProductId productId = ProductId.ofRepoId(inOutLine.getM_Product_ID());
 		final OrgId orgId = OrgId.ofRepoId(inOutLine.getAD_Org_ID());
@@ -94,8 +92,8 @@ public class InOutDDOrderBL implements IInOutDDOrderBL
 				.attributeSetInstanceId(asiId)
 				// no warehouse, no plant
 				.build();
-		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(query);
-		Check.errorIf(productPlanning == null, "No Product Planning found for {}", query);
+		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(query)
+				.orElseThrow(() -> new AdempiereException("No Product Planning found for " + query));
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_DistributionOrder)

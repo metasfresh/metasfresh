@@ -1,5 +1,7 @@
 package de.metas.handlingunits.impl;
 
+import java.time.ZonedDateTime;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -24,7 +26,6 @@ package de.metas.handlingunits.impl;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -70,7 +71,7 @@ public abstract class AbstractHUIterator implements IHUIterator
 	// Context
 	private Properties ctx = null;
 	private IHUContext _huContext = null;
-	private Date _date = null;
+	private ZonedDateTime _date = null;
 	private IHUStorageFactory _storageFactory = null;
 
 	//
@@ -88,7 +89,7 @@ public abstract class AbstractHUIterator implements IHUIterator
 	protected I_M_HU_Item currentHUItem = null;
 	protected IHUItemStorage currentHUItemStorage = null;
 
-	protected static enum HUIteratorStatus
+	protected enum HUIteratorStatus
 	{
 		NeverStarted, Running, Stopped, Finished,
 	}
@@ -175,16 +176,16 @@ public abstract class AbstractHUIterator implements IHUIterator
 	}
 
 	@Override
-	public IHUIterator setDate(final Date date)
+	public IHUIterator setDate(final ZonedDateTime date)
 	{
-		_date = (Date)date.clone();
+		_date = date;
 		return this;
 	}
 
 	@Override
-	public final Date getDate()
+	public final ZonedDateTime getDate()
 	{
-		final Date date = getHUContext().getDate();
+		final ZonedDateTime date = getHUContext().getDate();
 		Check.assumeNotNull(date, "date not null");
 		return date;
 	}
@@ -537,7 +538,7 @@ public abstract class AbstractHUIterator implements IHUIterator
 		{
 			return getNodeIteratorOrNull(I_M_HU_Item.class);
 		}
-	};
+	}
 
 	protected class HUItemNodeIterator extends AbstractNodeIterator<I_M_HU_Item>
 	{
@@ -630,7 +631,7 @@ public abstract class AbstractHUIterator implements IHUIterator
 				return Collections.emptyList();
 			}
 		}
-	};
+	}
 
 	protected class HUItemStorageNodeIterator extends AbstractNodeIterator<IHUItemStorage>
 	{
@@ -669,7 +670,7 @@ public abstract class AbstractHUIterator implements IHUIterator
 		{
 			throw new IllegalStateException("Shall not be called because we don't have a downstream node iterator");
 		}
-	};
+	}
 
 	@Override
 	public void setDepthMax(final int depthMax)

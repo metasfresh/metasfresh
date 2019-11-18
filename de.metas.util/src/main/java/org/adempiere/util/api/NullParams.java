@@ -25,6 +25,7 @@ package org.adempiere.util.api;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -80,6 +81,12 @@ import java.util.Collections;
 
 	@Override
 	public LocalDate getParameterAsLocalDate(final String parameterName)
+	{
+		return null;
+	}
+
+	@Override
+	public ZonedDateTime getParameterAsZonedDateTime(final String parameterName)
 	{
 		return null;
 	}

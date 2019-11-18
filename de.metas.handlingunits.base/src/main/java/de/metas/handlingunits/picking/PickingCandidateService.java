@@ -32,7 +32,7 @@ import de.metas.handlingunits.picking.candidate.commands.SetHuPackingInstruction
 import de.metas.handlingunits.picking.candidate.commands.UnProcessPickingCandidateCommand;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.handlingunits.picking.requests.CloseForShipmentSchedulesRequest;
-import de.metas.handlingunits.picking.requests.PickHURequest;
+import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.picking.requests.RejectPickingRequest;
 import de.metas.handlingunits.picking.requests.RemoveQtyFromHURequest;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
@@ -105,7 +105,7 @@ public class PickingCandidateService
 	}
 
 
-	public PickHUResult pickHU(final PickHURequest request)
+	public PickHUResult pickHU(final PickRequest request)
 	{
 		return PickHUCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
@@ -270,7 +270,7 @@ public class PickingCandidateService
 
 	}
 
-	public PickHUResult createAndSavePickingCandidates(@NonNull final PickHURequest request)
+	public PickHUResult createAndSavePickingCandidates(@NonNull final PickRequest request)
 	{
 		return CreatePickingCandidatesCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)

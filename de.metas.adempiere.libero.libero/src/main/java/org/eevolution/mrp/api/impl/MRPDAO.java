@@ -39,13 +39,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_MRP_Alloc;
 import org.eevolution.model.I_PP_MRP_Alternative;
@@ -53,11 +51,9 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.api.IMRPQueryBuilder;
-import org.slf4j.Logger;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.logging.LogManager;
 import de.metas.material.planning.IMRPSegment;
 import de.metas.material.planning.IResourceDAO;
 import de.metas.organization.IOrgDAO;
@@ -67,8 +63,6 @@ import lombok.NonNull;
 
 public class MRPDAO implements IMRPDAO
 {
-	private static final transient Logger logger = LogManager.getLogger(MRPDAO.class);
-
 	@Override
 	public IMRPQueryBuilder createMRPQueryBuilder()
 	{
@@ -130,50 +124,6 @@ public class MRPDAO implements IMRPDAO
 				.setSkipIfMRPExcluded(false)
 				//
 				.firstOnly();
-	}
-
-	@Override
-	public void deleteMRP(final Object model)
-	{
-		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
-		final String keyColumnName = tableName + "_ID";
-		if (!InterfaceWrapperHelper.hasColumnName(I_PP_MRP.class, keyColumnName))
-		{
-			logger.info("There is PP_MRP.{} column. Skip deleting related MRP records for {}", new Object[] { keyColumnName, model });
-			return;
-		}
-
-		//
-		// Delete MRP records which reference given "model"
-		createMRPQueryBuilder()
-				.setSkipIfMRPExcluded(false) // delete ALL
-				.setContextProvider(model)
-				.setReferencedModel(model)
-				.setOnlyActiveRecords(false) // delete ALL records no matter if they are active or not
-				.deleteMRPRecords();
-
-		//
-		// Delete generated manufacturing orders which are linked to this order line
-		// NOTE: initially this method was used for deleting the Make-to-Order generated manufacturing orders but now we are doing it for all orders
-		if (InterfaceWrapperHelper.isInstanceOf(model, I_C_OrderLine.class))
-		{
-			final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
-			final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
-
-			final List<I_PP_Order> ppOrders = ppOrderDAO.retrieveAllForOrderLine(orderLine);
-			for (final I_PP_Order ppOrder : ppOrders)
-			{
-				// Skip those which are processed
-				if (ppOrder.isProcessed())
-				{
-					continue;
-				}
-
-				//
-				// Delete the order
-				InterfaceWrapperHelper.delete(ppOrder);
-			}
-		}
 	}
 
 	@Override

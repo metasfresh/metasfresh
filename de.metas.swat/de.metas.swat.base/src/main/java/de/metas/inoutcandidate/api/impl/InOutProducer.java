@@ -37,11 +37,11 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
@@ -470,8 +470,8 @@ public class InOutProducer implements IInOutProducer
 		//
 		// Warehouse
 		{
-			final int warehouseId = receiptScheduleBL.getM_Warehouse_Effective_ID(rs);
-			receiptHeader.setM_Warehouse_ID(warehouseId);
+			final WarehouseId warehouseId = receiptScheduleBL.getWarehouseEffectiveId(rs);
+			receiptHeader.setM_Warehouse_ID(warehouseId.getRepoId());
 		}
 
 		//
@@ -542,9 +542,9 @@ public class InOutProducer implements IInOutProducer
 		//
 		// Line Warehouse & Locator
 		{
-			final I_M_Warehouse warehouse = inout.getM_Warehouse();
-			final I_M_Locator locator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse);
-			line.setM_Locator_ID(locator.getM_Locator_ID());
+			final WarehouseId warehouseId = WarehouseId.ofRepoId(inout.getM_Warehouse_ID());
+			final LocatorId locatorId = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
+			line.setM_Locator_ID(locatorId.getRepoId());
 		}
 
 		//

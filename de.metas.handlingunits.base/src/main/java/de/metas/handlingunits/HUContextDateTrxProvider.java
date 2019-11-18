@@ -1,5 +1,7 @@
 package de.metas.handlingunits;
 
+import java.time.ZonedDateTime;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,20 +15,21 @@ package de.metas.handlingunits;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Date;
 
-import de.metas.util.Check;
+import org.compiere.util.TimeUtil;
+
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /**
  * Provider used to get the initial DateTrx when an {@link IHUContext} is created.
@@ -36,14 +39,13 @@ import de.metas.util.time.SystemTime;
  */
 public class HUContextDateTrxProvider
 {
-	public static interface ITemporaryDateTrx extends AutoCloseable
+	public interface ITemporaryDateTrx extends AutoCloseable
 	{
-		@Override
-		public void close();
+		@Override void close();
 	}
 
 	/** Thread Local used to hold the DateTrx overrides */
-	private final ThreadLocal<Date> dateRef = new ThreadLocal<>();
+	private final ThreadLocal<ZonedDateTime> dateRef = new ThreadLocal<>();
 
 	/**
 	 * Gets DateTrx.
@@ -52,14 +54,14 @@ public class HUContextDateTrxProvider
 	 * 
 	 * @return date trx;
 	 */
-	public Date getDateTrx()
+	public ZonedDateTime getDateTrx()
 	{
-		final Date date = dateRef.get();
+		final ZonedDateTime date = dateRef.get();
 		if (date != null)
 		{
 			return date;
 		}
-		return SystemTime.asDate();
+		return SystemTime.asZonedDateTime();
 	}
 
 	/**
@@ -68,22 +70,18 @@ public class HUContextDateTrxProvider
 	 * @param date
 	 * @return
 	 */
-	public ITemporaryDateTrx temporarySet(final Date date)
+	public ITemporaryDateTrx temporarySet(@NonNull final Date date)
 	{
-		Check.assumeNotNull(date, "date not null");
+		return temporarySet(TimeUtil.asZonedDateTime(date));
+	}
 
-		final Date dateOld = dateRef.get() == null ? null : (Date)dateRef.get().clone();
-		dateRef.set((Date)date.clone());
+	public ITemporaryDateTrx temporarySet(@NonNull final ZonedDateTime date)
+	{
+		final ZonedDateTime dateOld = dateRef.get();
 
-		return new ITemporaryDateTrx()
-		{
+		dateRef.set(date);
 
-			@Override
-			public void close()
-			{
-				dateRef.set(dateOld);
-			}
-		};
+		return () -> dateRef.set(dateOld);
 
 	}
 }

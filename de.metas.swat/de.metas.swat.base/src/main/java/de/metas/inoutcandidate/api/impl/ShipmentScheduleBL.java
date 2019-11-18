@@ -1165,7 +1165,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	public ZonedDateTime getPreparationDate(I_M_ShipmentSchedule schedule)
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		return TimeUtil.asZonedDateTime(shipmentScheduleEffectiveBL.getPreparationDate(schedule));
+		return shipmentScheduleEffectiveBL.getPreparationDate(schedule);
 	}
 
 	@Override

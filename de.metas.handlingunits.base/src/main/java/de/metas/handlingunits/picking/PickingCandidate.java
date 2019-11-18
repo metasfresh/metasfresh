@@ -2,12 +2,14 @@ package de.metas.handlingunits.picking;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
@@ -15,13 +17,14 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.quantity.Quantity;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Builder.Default;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.Singular;
 import lombok.ToString;
 
 /*
@@ -46,7 +49,6 @@ import lombok.ToString;
  * #L%
  */
 
-@Builder(toBuilder = true)
 @EqualsAndHashCode(of = "id")
 @ToString
 @Getter
@@ -56,24 +58,18 @@ public class PickingCandidate
 	private PickingCandidateId id;
 
 	@NonNull
-	@Default
 	@Setter(AccessLevel.PRIVATE)
-	private PickingCandidateStatus status = PickingCandidateStatus.Draft;
+	private PickingCandidateStatus processingStatus;
+	@NonNull
+	private PickingCandidatePickStatus pickStatus;
+	@NonNull
+	private PickingCandidateApprovalStatus approvalStatus;
 
 	@NonNull
-	@Default
-	private PickingCandidatePickStatus pickStatus = PickingCandidatePickStatus.TO_BE_PICKED;
-
-	@NonNull
-	@Default
-	private PickingCandidateApprovalStatus approvalStatus = PickingCandidateApprovalStatus.TO_BE_APPROVED;
-
-	@Nullable
-	private final HuId pickFromHuId;
+	private final PickFrom pickFrom;
 
 	@NonNull
 	private Quantity qtyPicked;
-
 	@Nullable
 	private BigDecimal qtyReview;
 
@@ -87,6 +83,49 @@ public class PickingCandidate
 	private final ShipmentScheduleId shipmentScheduleId;
 	@Nullable
 	private final PickingSlotId pickingSlotId;
+
+	@NonNull
+	private ImmutableList<PickingCandidateIssueToBOMLine> issuesToPickingOrder;
+
+	@Builder(toBuilder = true)
+	private PickingCandidate(
+			@Nullable PickingCandidateId id,
+			//
+			@Nullable PickingCandidateStatus processingStatus,
+			@Nullable PickingCandidatePickStatus pickStatus,
+			@Nullable PickingCandidateApprovalStatus approvalStatus,
+			//
+			@NonNull PickFrom pickFrom,
+			//
+			@NonNull Quantity qtyPicked,
+			@Nullable BigDecimal qtyReview,
+			//
+			@Nullable HuPackingInstructionsId packToInstructionsId,
+			@Nullable HuId packedToHuId,
+			//
+			@NonNull ShipmentScheduleId shipmentScheduleId,
+			@Nullable PickingSlotId pickingSlotId,
+			//
+			@Nullable @Singular("issueToPickingOrder") ImmutableList<PickingCandidateIssueToBOMLine> issuesToPickingOrder)
+	{
+		this.id = id;
+		this.processingStatus = CoalesceUtil.coalesce(processingStatus, PickingCandidateStatus.Draft);
+		this.pickStatus = CoalesceUtil.coalesce(pickStatus, PickingCandidatePickStatus.TO_BE_PICKED);
+		this.approvalStatus = CoalesceUtil.coalesce(approvalStatus, PickingCandidateApprovalStatus.TO_BE_APPROVED);
+
+		this.pickFrom = pickFrom;
+		this.pickingSlotId = pickingSlotId;
+
+		this.qtyPicked = qtyPicked;
+		this.qtyReview = qtyReview;
+
+		this.packToInstructionsId = packToInstructionsId;
+		this.packedToHuId = packedToHuId;
+
+		this.shipmentScheduleId = shipmentScheduleId;
+
+		this.issuesToPickingOrder = issuesToPickingOrder != null ? issuesToPickingOrder : ImmutableList.of();
+	}
 
 	public static ImmutableSet<PickingSlotId> extractPickingSlotIds(@NonNull final Collection<PickingCandidate> candidates)
 	{
@@ -124,7 +163,7 @@ public class PickingCandidate
 
 	public boolean isDraft()
 	{
-		return PickingCandidateStatus.Draft.equals(getStatus());
+		return PickingCandidateStatus.Draft.equals(getProcessingStatus());
 	}
 
 	public void assertProcessed()
@@ -138,7 +177,7 @@ public class PickingCandidate
 
 	public boolean isProcessed()
 	{
-		return PickingCandidateStatus.Processed.equals(getStatus());
+		return PickingCandidateStatus.Processed.equals(getProcessingStatus());
 	}
 
 	public boolean isRejectedToPick()
@@ -163,23 +202,23 @@ public class PickingCandidate
 
 	public void changeStatusToDraft()
 	{
-		setStatus(PickingCandidateStatus.Draft);
+		setProcessingStatus(PickingCandidateStatus.Draft);
 	}
 
 	public void changeStatusToProcessed()
 	{
-		changeStatusToProcessed(getPickFromHuId());
+		changeStatusToProcessed(getPickFrom().getHuId());
 	}
 
 	public void changeStatusToProcessed(@Nullable final HuId packedToHuId)
 	{
 		setPackedToHuId(packedToHuId);
-		setStatus(PickingCandidateStatus.Processed);
+		setProcessingStatus(PickingCandidateStatus.Processed);
 	}
 
 	public void changeStatusToClosed()
 	{
-		setStatus(PickingCandidateStatus.Closed);
+		setProcessingStatus(PickingCandidateStatus.Closed);
 	}
 
 	public void pick(@NonNull final Quantity qtyPicked)
@@ -204,7 +243,7 @@ public class PickingCandidate
 	{
 		assertDraft();
 
-		if (!pickStatus.isPickedOrPacked())
+		if (!pickStatus.isEligibleForPacking())
 		{
 			throw new AdempiereException("Invalid status when changing packing instructions: " + pickStatus);
 		}
@@ -217,7 +256,7 @@ public class PickingCandidate
 	{
 		assertDraft();
 
-		if (!pickStatus.isPickedOrPacked() && !pickStatus.isPickRejected())
+		if (!pickStatus.isEligibleForReview())
 		{
 			throw new AdempiereException("Picking candidate is not approvable because it's not picked or packed: " + this);
 		}
@@ -258,5 +297,17 @@ public class PickingCandidate
 	private static PickingCandidatePickStatus computePickOrPackStatus(final HuPackingInstructionsId packToInstructionsId)
 	{
 		return packToInstructionsId != null ? PickingCandidatePickStatus.PACKED : PickingCandidatePickStatus.PICKED;
+	}
+
+	public boolean isPickFromPickingOrder()
+	{
+		return getPickFrom().isPickFromPickingOrder();
+	}
+
+	public void issueToPickingOrder(List<PickingCandidateIssueToBOMLine> issuesToPickingOrder)
+	{
+		this.issuesToPickingOrder = issuesToPickingOrder != null
+				? ImmutableList.copyOf(issuesToPickingOrder)
+				: ImmutableList.of();
 	}
 }

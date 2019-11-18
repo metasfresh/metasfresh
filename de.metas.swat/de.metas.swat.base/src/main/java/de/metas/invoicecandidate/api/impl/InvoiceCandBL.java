@@ -137,6 +137,7 @@ import de.metas.money.MoneyService;
 import de.metas.order.IOrderDAO;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PricingConditions;
@@ -1823,6 +1824,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final BigDecimal qualityDiscountPercentage = appliedBreak != null ? appliedBreak.getQualityDiscountPercentage() : null;
 		ic.setQualityDiscountPercent_Override(qualityDiscountPercentage);
+	}
+
+	@Override
+	public void closeInvoiceCandidatesByOrderLineId(@NonNull final OrderLineId orderLineId)
+	{
+		final IInvoiceCandDAO invoiceCandidatesRepo = Services.get(IInvoiceCandDAO.class);
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidatesRepo.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
+		closeInvoiceCandidates(invoiceCandidates.iterator());
 	}
 
 	@Override

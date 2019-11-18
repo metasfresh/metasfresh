@@ -94,7 +94,7 @@ public class HULoader_WithPartner_Tests extends AbstractHUTest
 				pTomato,
 				new BigDecimal(qty), // qtyRequest,
 				uomKg,
-				helper.getTodayDate(),
+				helper.getTodayZonedDateTime(),
 				referencedModel);
 	}
 

@@ -1,4 +1,4 @@
-package de.metas.handlingunits.pporder.api.impl;
+package de.metas.handlingunits.pporder.api;
 
 import static de.metas.business.BusinessTestHelper.createProduct;
 import static de.metas.business.BusinessTestHelper.createUOM;
@@ -32,12 +32,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
@@ -46,7 +46,10 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.CostCollectorType;
+import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -56,18 +59,9 @@ import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.Profiles;
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
@@ -83,18 +77,12 @@ import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
-import de.metas.handlingunits.pporder.api.PPOrderPlanningStatus;
-import de.metas.material.event.PostMaterialEventService;
+import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer.ProcessIssueCandidatesPolicy;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderPojoConverter;
-import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
-import de.metas.order.compensationGroup.GroupTemplateRepository;
-import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
-import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -103,27 +91,11 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {
-		StartupListener.class, ShutdownListener.class,
-		/* needed because in MRPTestHelper, we register AdempiereBaseValidator which in turn registers a C_OrderLine interceptor that needs this class. */
-		OrderGroupRepository.class,
-		OrderGroupCompensationChangesHandler.class,
-		GroupTemplateRepository.class,
-		GroupCompensationLineCreateRequestFactory.class,
-		PPOrderPojoConverter.class,
-		ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory.class
-})
-@ActiveProfiles(Profiles.PROFILE_Test)
 public class HUPPOrderIssueProducerTest extends AbstractHUTest
 {
 	private final IUOMConversionBL uomConversionService = Services.get(IUOMConversionBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
-
-	// the bean unused by the code in this class, but needed within the spring context
-	@MockBean
-	private PostMaterialEventService postMaterialEventService;
 
 	private MRPTestDataSimple masterData;
 
@@ -364,25 +336,28 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 		//
 		// Issue created HU to Folie Order BOM Line
-		final LocalDate movementDate = LocalDate.of(2014, 10, 01);
+		final ZonedDateTime movementDate = LocalDate.of(2014, 10, 01).atStartOfDay(SystemTime.zoneId());
 		final List<I_PP_Cost_Collector> costCollectors;
 		final PPOrderBOMLineId ppOrderBOMLineId_Folie;
 		{
 			final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
 			ppOrderBOMLineId_Folie = PPOrderBOMLineId.ofRepoId(ppOrderBOMLine_Folie.getPP_Order_BOMLine_ID());
 
-			final List<I_PP_Order_Qty> candidates = new HUPPOrderIssueProducer()
-					.setMovementDate(movementDate)
-					.setTargetOrderBOMLine(ppOrderBOMLine_Folie)
-					.createIssue(hu);
-			System.out.println("Candidates:\n " + Joiner.on("\n").join(candidates));
-			//
-			if (!candidates.isEmpty())
+			final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+
+			final I_PP_Order_Qty candidate = new HUPPOrderIssueProducer(ppOrderId)
+					.targetOrderBOMLine(ppOrderBOMLine_Folie)
+					.movementDate(movementDate)
+					.processCandidates(ProcessIssueCandidatesPolicy.ALWAYS)
+					.createIssue(hu)
+					.orElse(null);
+			System.out.println("Candidates:\n " + candidate);
+
+			if (candidate != null)
 			{
-				costCollectors = HUPPOrderIssueReceiptCandidatesProcessor.newInstance()
-						.setCandidatesToProcess(candidates)
-						.process();
-				System.out.println("Cost collectors: \n" + Joiner.on("\n").join(costCollectors));
+				final PPCostCollectorId costCollectorId = PPCostCollectorId.ofRepoIdOrNull(candidate.getPP_Cost_Collector_ID());
+				final I_PP_Cost_Collector costCollector = Services.get(IPPCostCollectorDAO.class).getById(costCollectorId, I_PP_Cost_Collector.class);
+				costCollectors = ImmutableList.of(costCollector);
 			}
 			else
 			{
@@ -413,7 +388,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 			Assert.assertEquals("Invalid Cost Collector MovementDate", TimeUtil.asTimestamp(movementDate), costCollector.getMovementDate());
 			Assert.assertEquals("Invalid Cost Collector PP_Order", ppOrder, costCollector.getPP_Order());
 			Assert.assertEquals("Invalid Cost Collector PP_Order_BOMLine", ppOrderBOMLineId_Folie.getRepoId(), costCollector.getPP_Order_BOMLine_ID());
-			Assert.assertEquals("Invalid Cost Collector UOM", uomMillimeter, costCollector.getC_UOM());
+			Assert.assertEquals("Invalid Cost Collector UOM", uomMillimeter.getC_UOM_ID(), costCollector.getC_UOM_ID());
 			Assert.assertThat("Invalid Cost Collector Qty",
 					costCollector.getMovementQty(),
 					Matchers.comparesEqualTo(expectedIssuedQtyOnBOMLine));
@@ -568,14 +543,15 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 	public void createDraftIssues()
 	{
 		final I_PP_Order ppOrder = createPPOrderForSaladFromFolie();
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
 		final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
 
 		final I_M_HU hu1 = createSimpleHuWithFolie("100");
 		final I_M_HU hu2 = createSimpleHuWithFolie("50");
 		final ImmutableList<I_M_HU> hus = ImmutableList.of(hu1, hu2);
 
-		final List<I_PP_Order_Qty> result = new HUPPOrderIssueProducer()
-				.setTargetOrderBOMLine(ppOrderBOMLine_Folie)
+		final List<I_PP_Order_Qty> result = new HUPPOrderIssueProducer(ppOrderId)
+				.targetOrderBOMLine(ppOrderBOMLine_Folie)
 				.createIssues(hus);
 		assertThat(result).hasSize(2);
 
@@ -586,6 +562,42 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		final I_PP_Order_Qty ppOrderQty2 = result.get(1);
 		assertThat(ppOrderQty2.getM_HU_ID()).isEqualTo(hu2.getM_HU_ID());
 		assertThat(ppOrderQty2.getQty()).isEqualByComparingTo("50");
+
+		assertThat(result).allSatisfy(ppOrderQty -> {
+			assertThat(ppOrderQty.getPP_Order_ID()).isEqualTo(ppOrder.getPP_Order_ID());
+			assertThat(ppOrderQty.getPP_Order_BOMLine_ID()).isEqualTo(ppOrderBOMLine_Folie.getPP_Order_BOMLine_ID());
+			assertThat(ppOrderQty.getM_Product_ID()).isEqualTo(pFolie.getM_Product_ID());
+			assertThat(ppOrderQty.getC_UOM_ID()).isEqualTo(uomMillimeter.getC_UOM_ID());
+		});
+
+		hus.forEach(hu -> refresh(hu));
+		assertThat(hus).allSatisfy(hu -> assertThat(hu.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Issued));
+	}
+
+	@Test
+	public void createDraftIssues_using_fixedQtyToIssue()
+	{
+		final I_PP_Order ppOrder = createPPOrderForSaladFromFolie();
+		final PPOrderId ppOrderId = PPOrderId.ofRepoId(ppOrder.getPP_Order_ID());
+		final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
+
+		final I_M_HU hu1 = createSimpleHuWithFolie("100");
+		final I_M_HU hu2 = createSimpleHuWithFolie("50");
+		final ImmutableList<I_M_HU> hus = ImmutableList.of(hu1, hu2);
+
+		final List<I_PP_Order_Qty> result = new HUPPOrderIssueProducer(ppOrderId)
+				.targetOrderBOMLine(ppOrderBOMLine_Folie)
+				.fixedQtyToIssue(Quantity.of("101", uomMillimeter))
+				.createIssues(hus);
+		assertThat(result).hasSize(2);
+
+		final I_PP_Order_Qty ppOrderQty1 = result.get(0);
+		assertThat(ppOrderQty1.getM_HU_ID()).isEqualTo(hu1.getM_HU_ID());
+		assertThat(ppOrderQty1.getQty()).isEqualByComparingTo("100");
+
+		final I_PP_Order_Qty ppOrderQty2 = result.get(1);
+		assertThat(ppOrderQty2.getM_HU_ID()).isEqualTo(hu2.getM_HU_ID());
+		assertThat(ppOrderQty2.getQty()).isEqualByComparingTo("1");
 
 		assertThat(result).allSatisfy(ppOrderQty -> {
 			assertThat(ppOrderQty.getPP_Order_ID()).isEqualTo(ppOrder.getPP_Order_ID());

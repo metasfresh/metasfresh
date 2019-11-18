@@ -30,10 +30,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
 import org.junit.Assert;
 import org.junit.Test;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
@@ -73,10 +73,10 @@ public class HandlingUnitsDAOTest extends AbstractHUTest
 	@Test
 	public void test_retrivePIItems()
 	{
-		final I_C_BPartner bpartner_NULL = null;
-		final I_C_BPartner bpartner1 = createBPartner("BP1");
-		final I_C_BPartner bpartner2 = createBPartner("BP2");
-		final I_C_BPartner bpartner3 = createBPartner("BP3");
+		final BPartnerId bpartner_NULL = null;
+		final BPartnerId bpartner1 = BPartnerId.ofRepoId(createBPartner("BP1").getC_BPartner_ID());
+		final BPartnerId bpartner2 = BPartnerId.ofRepoId(createBPartner("BP2").getC_BPartner_ID());
+		final BPartnerId bpartner3 = BPartnerId.ofRepoId(createBPartner("BP3").getC_BPartner_ID());
 		final I_M_HU_PI piIncluded = null; // not relevant
 		final I_M_HU_PI pi = helper.createHUDefinition("PI", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 

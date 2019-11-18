@@ -360,6 +360,29 @@ public interface I_PP_Product_Planning
     public static final String COLUMNNAME_IsPickDirectlyIfFeasible = "IsPickDirectlyIfFeasible";
 
 	/**
+	 * Set Kommissionierauftrag.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsPickingOrder (boolean IsPickingOrder);
+
+	/**
+	 * Get Kommissionierauftrag.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isPickingOrder();
+
+    /** Column definition for IsPickingOrder */
+    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsPickingOrder = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "IsPickingOrder", null);
+    /** Column name IsPickingOrder */
+    public static final String COLUMNNAME_IsPickingOrder = "IsPickingOrder";
+
+	/**
 	 * Set Wird Eingekauft.
 	 *
 	 * <br>Type: List
@@ -381,6 +404,31 @@ public interface I_PP_Product_Planning
     public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsPurchased = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "IsPurchased", null);
     /** Column name IsPurchased */
     public static final String COLUMNNAME_IsPurchased = "IsPurchased";
+
+	/**
+	 * Set Wird gehandelt (Bestellkontrolle).
+	 * Legt fest, ob mit dem bestreffenden Produkt gehandelt wird.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setIsTraded (java.lang.String IsTraded);
+
+	/**
+	 * Get Wird gehandelt (Bestellkontrolle).
+	 * Legt fest, ob mit dem bestreffenden Produkt gehandelt wird.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getIsTraded();
+
+    /** Column definition for IsTraded */
+    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsTraded = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "IsTraded", null);
+    /** Column name IsTraded */
+    public static final String COLUMNNAME_IsTraded = "IsTraded";
 
 	/**
 	 * Set Merkmale.
@@ -611,7 +659,7 @@ public interface I_PP_Product_Planning
  die kleinste Zahl kommt zuerst
 	 *
 	 * <br>Type: Integer
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setSeqNo (int SeqNo);
@@ -622,7 +670,7 @@ public interface I_PP_Product_Planning
  die kleinste Zahl kommt zuerst
 	 *
 	 * <br>Type: Integer
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getSeqNo();

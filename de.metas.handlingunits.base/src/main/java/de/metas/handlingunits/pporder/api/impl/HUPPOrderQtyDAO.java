@@ -1,5 +1,8 @@
 package de.metas.handlingunits.pporder.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
@@ -7,17 +10,25 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.handlingunits.picking.PickingCandidateId;
+import de.metas.handlingunits.pporder.api.CreateIssueCandidateRequest;
+import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -51,6 +62,60 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 		Preconditions.checkArgument(ppOrderQtyId > 0, "ppOrderQtyId > 0");
 
 		return InterfaceWrapperHelper.load(ppOrderQtyId, I_PP_Order_Qty.class);
+	}
+
+	@Override
+	public List<I_PP_Order_Qty> saveAll(@NonNull final Collection<CreateReceiptCandidateRequest> requests)
+	{
+		return requests.stream()
+				.map(this::save)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public I_PP_Order_Qty save(@NonNull final CreateReceiptCandidateRequest request)
+	{
+		final I_PP_Order_Qty record = newInstance(I_PP_Order_Qty.class);
+		record.setPP_Order_ID(request.getOrderId().getRepoId());
+		record.setPP_Order_BOMLine_ID(PPOrderBOMLineId.toRepoId(request.getOrderBOMLineId()));
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setMovementDate(TimeUtil.asTimestamp(request.getDate()));
+		record.setM_Locator_ID(request.getLocatorId().getRepoId());
+		record.setM_HU_ID(request.getTopLevelHUId().getRepoId());
+		record.setM_Product_ID(request.getProductId().getRepoId());
+		record.setQty(request.getQtyToReceive().toBigDecimal());
+		record.setC_UOM_ID(request.getQtyToReceive().getUomId().getRepoId());
+		record.setProcessed(false);
+		record.setM_Picking_Candidate_ID(PickingCandidateId.toRepoId(request.getPickingCandidateId()));
+		save(record);
+
+		return record;
+	}
+
+	@Override
+	public I_PP_Order_Qty save(@NonNull final CreateIssueCandidateRequest request)
+	{
+		final I_PP_Order_Qty record = newInstance(I_PP_Order_Qty.class);
+
+		record.setPP_Order_ID(request.getOrderId().getRepoId());
+		record.setPP_Order_BOMLine_ID(request.getOrderBOMLineId().getRepoId());
+
+		record.setM_Locator_ID(LocatorId.toRepoId(request.getLocatorId()));
+		record.setM_HU_ID(request.getIssueFromHUId().getRepoId());
+		record.setM_Product_ID(request.getProductId().getRepoId());
+
+		final Quantity qtyToIssue = request.getQtyToIssue();
+		record.setQty(qtyToIssue.toBigDecimal());
+		record.setC_UOM_ID(qtyToIssue.getUomId().getRepoId());
+
+		record.setMovementDate(TimeUtil.asTimestamp(request.getDate()));
+		record.setProcessed(false);
+
+		record.setM_Picking_Candidate_ID(PickingCandidateId.toRepoId(request.getPickingCandidateId()));
+
+		save(record);
+
+		return record;
 	}
 
 	@Override

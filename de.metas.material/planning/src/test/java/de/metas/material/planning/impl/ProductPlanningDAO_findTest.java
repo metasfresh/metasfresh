@@ -210,7 +210,7 @@ public class ProductPlanningDAO_findTest
 		final I_PP_Product_Planning productPlanning = newInstance(I_PP_Product_Planning.class);
 		productPlanning.setM_Product_ID(product.getM_Product_ID());
 		productPlanning.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
-		productPlanning.setS_Resource(plant);
+		productPlanning.setS_Resource_ID(plant.getS_Resource_ID());
 		productPlanning.setIsAttributeDependant(false);
 		save(productPlanning);
 
@@ -227,7 +227,6 @@ public class ProductPlanningDAO_findTest
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(attributeSetInstanceId))
 				.build();
 
-		final I_PP_Product_Planning result = new ProductPlanningDAO().find(query);
-		return result;
+		return new ProductPlanningDAO().find(query).orElse(null);
 	}
 }

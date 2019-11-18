@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.function.Function;
 
 import org.compiere.util.DisplayType;
@@ -272,6 +273,16 @@ public final class ProcessInfoParameter implements Serializable
 	public LocalDate getParameter_ToAsLocalDate()
 	{
 		return TimeUtil.asLocalDate(m_Parameter_To);
+	}
+
+	public ZonedDateTime getParameterAsZonedDateTime()
+	{
+		return TimeUtil.asZonedDateTime(m_Parameter);
+	}
+
+	public ZonedDateTime getParameter_ToAsZonedDateTime()
+	{
+		return TimeUtil.asZonedDateTime(m_Parameter_To);
 	}
 
 	public BigDecimal getParameterAsBigDecimal()

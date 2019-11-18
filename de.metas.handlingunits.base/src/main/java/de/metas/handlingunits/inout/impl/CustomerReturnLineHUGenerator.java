@@ -444,7 +444,7 @@ public class CustomerReturnLineHUGenerator
 				huContext,
 				getSingleProductId(),
 				qty,
-				SystemTime.asDate(),
+				SystemTime.asZonedDateTime(),
 				inOutLine, // referencedModel,
 				forceQtyAllocation);
 

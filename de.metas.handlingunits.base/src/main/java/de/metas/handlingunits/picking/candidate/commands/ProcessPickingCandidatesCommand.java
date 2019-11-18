@@ -9,16 +9,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_BPartner;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
@@ -30,24 +30,25 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateId;
+import de.metas.handlingunits.picking.PickingCandidateIssueToBOMLine;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer.ProcessIssueCandidatesPolicy;
+import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.util.CatchWeightHelper;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
-import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 
 /*
  * #%L
@@ -73,16 +74,12 @@ import lombok.NonNull;
 
 public class ProcessPickingCandidatesCommand
 {
-	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
-	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
-	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
-	private final IInvoiceCandDAO invoiceCandidatesRepo = Services.get(IInvoiceCandDAO.class);
-	private final IInvoiceCandBL invoiceCandidatesService = Services.get(IInvoiceCandBL.class);
-
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+
+	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+	private final IInvoiceCandBL invoiceCandidatesService = Services.get(IInvoiceCandBL.class);
+	private final IHUPPOrderBL ppOrderService = Services.get(IHUPPOrderBL.class);
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	private final ImmutableSet<PickingCandidateId> pickingCandidateIds;
@@ -97,7 +94,7 @@ public class ProcessPickingCandidatesCommand
 	private ProcessPickingCandidatesCommand(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
 			//
-			@NonNull final Set<PickingCandidateId> pickingCandidateIds)
+			@NonNull @Singular final Set<PickingCandidateId> pickingCandidateIds)
 	{
 		Check.assumeNotEmpty(pickingCandidateIds, "pickingCandidateIds is not empty");
 
@@ -144,48 +141,130 @@ public class ProcessPickingCandidatesCommand
 			closeShipmentScheduleAndInvoiceCandidates(shipmentSchedule);
 			packedToHuId = null;
 		}
+		else if (pickingCandidate.getPickFrom().isPickFromHU())
+		{
+			final HuId pickFromHUId = pickingCandidate.getPickFrom().getHuId();
+
+			packedToHuId = packToHU(pickingCandidate, pickFromHUId);
+		}
+		else if (pickingCandidate.getPickFrom().isPickFromPickingOrder())
+		{
+			final PPOrderId pickingOrderId = pickingCandidate.getPickFrom().getPickingOrderId();
+
+			issueRawProductsToPickingOrder(
+					pickingOrderId,
+					pickingCandidate.getIssuesToPickingOrder(),
+					pickingCandidate.getId());
+
+			final HuId vhuId = receiveVHUFromPickingOrder(pickingCandidate);
+
+			packedToHuId = packToHU(pickingCandidate, vhuId);
+
+			ppOrderService.closeOrder(pickingOrderId);
+		}
 		else
 		{
-			final IAllocationSource pickFromSource = HUListAllocationSourceDestination
-					.ofHUId(pickingCandidate.getPickFromHuId())
-					.setDestroyEmptyHUs(true);
-			final IHUProducerAllocationDestination packToDestination = getPackToDestination(pickingCandidate);
-
-			final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing();
-
-			final IAllocationRequest request = createPackToAllocationRequest(pickingCandidate, huContext);
-			HULoader
-					.of(pickFromSource, packToDestination)
-					.load(request);
-
-			packedToHuId = packToDestination.getSingleCreatedHuId();
-			if (packedToHuId == null)
-			{
-				throw new AdempiereException("Nothing packed for " + pickingCandidate);
-			}
-
-			final ProductId productId = getProductId(pickingCandidate);
-
-			final I_M_HU huRecord = packToDestination.getSingleCreatedHU();
-
-			final StockQtyAndUOMQty qtyPicked = CatchWeightHelper.extractQtys(
-					huContext,
-					productId,
-					pickingCandidate.getQtyPicked(),
-					huRecord);
-
-			huShipmentScheduleBL.addQtyPickedAndUpdateHU(
-					pickingCandidate.getShipmentScheduleId(),
-					qtyPicked,
-					packedToHuId,
-					huContext);
+			throw new AdempiereException("Unknow " + pickingCandidate.getPickFrom());
 		}
 
 		pickingCandidate.changeStatusToProcessed(packedToHuId);
 		pickingCandidateRepository.save(pickingCandidate);
 	}
 
+	private HuId packToHU(
+			@NonNull final PickingCandidate pickingCandidate,
+			@NonNull final HuId pickFromHUId)
+	{
+		final IAllocationSource pickFromSource = HUListAllocationSourceDestination.ofHUId(pickFromHUId)
+				.setDestroyEmptyHUs(true);
+		final IHUProducerAllocationDestination packToDestination = getPackToDestination(pickingCandidate);
 
+		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(pickingCandidate.getShipmentScheduleId());
+		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
+
+		final Quantity qtyPicked = pickingCandidate.getQtyPicked();
+
+		final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing();
+		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
+				.setHUContext(huContext)
+				.setProduct(productId)
+				.setQuantity(qtyPicked)
+				.setFromReferencedTableRecord(pickingCandidate.getId().toTableRecordReference())
+				.setForceQtyAllocation(true)
+				.create();
+
+		HULoader.of(pickFromSource, packToDestination).load(request);
+		final I_M_HU packedToHU = packToDestination.getSingleCreatedHU()
+				.orElseThrow(() -> new AdempiereException("Nothing packed for " + pickingCandidate));
+
+		addShipmentScheduleQtyPickedAndUpdateHU(shipmentSchedule, packedToHU, qtyPicked, huContext);
+
+		return HuId.ofRepoId(packedToHU.getM_HU_ID());
+	}
+
+	private void addShipmentScheduleQtyPickedAndUpdateHU(
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
+			@NonNull final I_M_HU hu,
+			@NonNull final Quantity qtyPicked,
+			@NonNull final IHUContext huContext)
+	{
+		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
+
+		huShipmentScheduleBL.addQtyPickedAndUpdateHU(
+				shipmentSchedule,
+				CatchWeightHelper.extractQtys(
+						huContext,
+						productId,
+						qtyPicked,
+						hu),
+				hu,
+				huContext);
+	}
+
+	private void issueRawProductsToPickingOrder(
+			@NonNull final PPOrderId pickingOrderId,
+			@NonNull final ImmutableList<PickingCandidateIssueToBOMLine> issuesToPickingOrder,
+			@NonNull final PickingCandidateId pickingCandidateId)
+	{
+		for (final PickingCandidateIssueToBOMLine issueToPickingOrder : issuesToPickingOrder)
+		{
+			issueRawProductsToPickingOrder(pickingOrderId, issueToPickingOrder, pickingCandidateId);
+		}
+	}
+
+	private void issueRawProductsToPickingOrder(
+			@NonNull final PPOrderId pickingOrderId,
+			@NonNull final PickingCandidateIssueToBOMLine issueToPickingOrder,
+			@NonNull final PickingCandidateId pickingCandidateId)
+	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUPPOrderBL ppOrderBL = Services.get(IHUPPOrderBL.class);
+
+		final HuId issueFromHUId = issueToPickingOrder.getIssueFromHUId();
+		final I_M_HU issueFromHU = handlingUnitsBL.getById(issueFromHUId);
+
+		ppOrderBL.createIssueProducer(pickingOrderId)
+				.targetOrderBOMLine(issueToPickingOrder.getIssueToOrderBOMLineId())
+				.fixedQtyToIssue(issueToPickingOrder.getQtyToIssue())
+				.movementDate(SystemTime.asZonedDateTime())
+				.processCandidates(ProcessIssueCandidatesPolicy.ALWAYS)
+				.changeHUStatusToIssued(false)
+				.pickingCandidateId(pickingCandidateId)
+				.createIssue(issueFromHU);
+	}
+
+	private HuId receiveVHUFromPickingOrder(@NonNull final PickingCandidate pickingCandidate)
+	{
+		final LocatorId shipFromLocatorId = getShipFromLocatorId(pickingCandidate.getShipmentScheduleId());
+		final PPOrderId pickingOrderId = pickingCandidate.getPickFrom().getPickingOrderId();
+
+		final I_M_HU vhu = ppOrderService.receivingMainProduct(pickingOrderId)
+				.locatorId(shipFromLocatorId)
+				.pickingCandidateId(pickingCandidate.getId())
+				.receiveVHU(pickingCandidate.getQtyPicked());
+
+		return HuId.ofRepoId(vhu.getM_HU_ID());
+	}
 
 	private void closeShipmentScheduleAndInvoiceCandidates(final I_M_ShipmentSchedule shipmentSchedule)
 	{
@@ -194,31 +273,12 @@ public class ProcessPickingCandidatesCommand
 			return;
 		}
 
-		shipmentScheduleBL.closeShipmentSchedule(shipmentSchedule);
+		huShipmentScheduleBL.closeShipmentSchedule(shipmentSchedule);
 
 		//
 		// Close related invoices candidates too
-		final List<I_C_Invoice_Candidate> invoiceCandidates = getInvoiceCandidatesForShipmentSchedule(shipmentSchedule);
-		invoiceCandidatesService.closeInvoiceCandidates(invoiceCandidates);
-	}
-
-	private List<I_C_Invoice_Candidate> getInvoiceCandidatesForShipmentSchedule(final I_M_ShipmentSchedule shipmentSchedule)
-	{
-		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(shipmentSchedule.getC_OrderLine_ID());
-		return invoiceCandidatesRepo.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
-	}
-
-	private IAllocationRequest createPackToAllocationRequest(
-			@NonNull final PickingCandidate pc,
-			@NonNull final IHUContext huContext)
-	{
-		return AllocationUtils.createAllocationRequestBuilder()
-				.setHUContext(huContext)
-				.setProduct(getProductId(pc))
-				.setQuantity(pc.getQtyPicked())
-				.setFromReferencedTableRecord(pc.getId().toTableRecordReference())
-				.setForceQtyAllocation(true)
-				.create();
+		final OrderLineId salesOrderLineId = OrderLineId.ofRepoIdOrNull(shipmentSchedule.getC_OrderLine_ID());
+		invoiceCandidatesService.closeInvoiceCandidatesByOrderLineId(salesOrderLineId);
 	}
 
 	private IHUProducerAllocationDestination getPackToDestination(final PickingCandidate pickingCandidate)
@@ -239,14 +299,14 @@ public class ProcessPickingCandidatesCommand
 		// If we deal with some real packing instructions then we pack all candidates with same instructions in same HU.
 		final int packageNo = packToInstructionsId.isVirtual() ? PACKAGE_NO_SEQUENCE.getAndIncrement() : PACKAGE_NO_ZERO;
 
-		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(pickingCandidate.getShipmentScheduleId());
-		final BPartnerLocationId bpartnerLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(shipmentSchedule);
-		final LocatorId locatorId = shipmentScheduleEffectiveBL.getDefaultLocatorId(shipmentSchedule);
+		final ShipmentScheduleId shipmentScheduleId = pickingCandidate.getShipmentScheduleId();
+		final BPartnerLocationId shipToBPLocationId = getShipToBPLocationId(shipmentScheduleId);
+		final LocatorId shipFromLocatorId = getShipFromLocatorId(shipmentScheduleId);
 
 		return PackToDestinationKey.builder()
 				.packToInstructionsId(packToInstructionsId)
-				.bpartnerLocationId(bpartnerLocationId)
-				.locatorId(locatorId)
+				.shipToBPLocationId(shipToBPLocationId)
+				.shipFromLocatorId(shipFromLocatorId)
 				.packageNo(packageNo)
 				.build();
 	}
@@ -254,27 +314,31 @@ public class ProcessPickingCandidatesCommand
 	private IHUProducerAllocationDestination createPackToDestination(final PackToDestinationKey key)
 	{
 		final HuPackingInstructionsId packToInstructionsId = key.getPackToInstructionsId();
-		final BPartnerLocationId bpartnerLocationId = key.getBpartnerLocationId();
-		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerLocationId.getBpartnerId());
-		final LocatorId locatorId = key.getLocatorId();
+		final BPartnerLocationId shipToBPLocationId = key.getShipToBPLocationId();
+		final LocatorId shipFromLocatorId = key.getShipFromLocatorId();
 
 		return HUProducerDestination.of(packToInstructionsId)
 				.setMaxHUsToCreate(1)
-				.setC_BPartner(bpartner)
-				.setC_BPartner_Location_ID(bpartnerLocationId.getRepoId())
+				.setBPartnerAndLocationId(shipToBPLocationId)
 				.setHUStatus(X_M_HU.HUSTATUS_Picked)
-				.setLocatorId(locatorId);
+				.setLocatorId(shipFromLocatorId);
+	}
+
+	private LocatorId getShipFromLocatorId(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(shipmentScheduleId);
+		return huShipmentScheduleBL.getDefaultLocatorId(shipmentSchedule);
+	}
+
+	private BPartnerLocationId getShipToBPLocationId(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(shipmentScheduleId);
+		return huShipmentScheduleBL.getBPartnerLocationId(shipmentSchedule);
 	}
 
 	private I_M_ShipmentSchedule getShipmentScheduleById(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		return shipmentSchedulesCache.computeIfAbsent(shipmentScheduleId, shipmentSchedulesRepo::getById);
-	}
-
-	private ProductId getProductId(final PickingCandidate pc)
-	{
-		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(pc.getShipmentScheduleId());
-		return ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
+		return shipmentSchedulesCache.computeIfAbsent(shipmentScheduleId, huShipmentScheduleBL::getById);
 	}
 
 	@lombok.Value
@@ -284,9 +348,9 @@ public class ProcessPickingCandidatesCommand
 		@NonNull
 		final HuPackingInstructionsId packToInstructionsId;
 		@NonNull
-		final BPartnerLocationId bpartnerLocationId;
+		final BPartnerLocationId shipToBPLocationId;
 		@NonNull
-		final LocatorId locatorId;
+		final LocatorId shipFromLocatorId;
 
 		final int packageNo;
 	}

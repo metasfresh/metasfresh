@@ -53,15 +53,6 @@ public interface IProductBOMBL extends ISingletonService
 	IProductLowLevelUpdater updateProductLowLevels();
 
 	/**
-	 * Calculates Qty + Scrap
-	 *
-	 * @param qty qty (without scrap)
-	 * @param scrapPercent scrap percent (between 0..100)
-	 * @return qty * (1 + qtyScrap/100)
-	 */
-	BigDecimal computeQtyWithScrap(BigDecimal qty, Percent scrapPercent);
-
-	/**
 	 * Checks if a BOMLine which is a <code>X_PP_Product_BOMLine.COMPONENTTYPE_Variant</code> has a valid VariantGroup<br>
 	 *
 	 * Valid variant group means that exists at least one other BOMLine which has Component Type <code>X_PP_Order_BOMLine.COMPONENTTYPE_Component</code>

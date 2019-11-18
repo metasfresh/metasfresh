@@ -25,7 +25,7 @@ package org.eevolution.api.impl;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_OrderLine;
@@ -37,6 +37,8 @@ import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderRoutingRepository;
+import org.eevolution.api.PPOrderCreateRequest;
+import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityStatus;
@@ -48,6 +50,7 @@ import org.eevolution.model.X_PP_Order;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.WorkingTime;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
@@ -58,9 +61,6 @@ import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UOMPrecision;
-import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -68,6 +68,16 @@ import lombok.NonNull;
 
 public class PPOrderBL implements IPPOrderBL
 {
+
+	@Override
+	public I_PP_Order createOrder(@NonNull final PPOrderCreateRequest request)
+	{
+		return CreateOrderCommand.builder()
+				.request(request)
+				.build()
+				.execute();
+	}
+
 	@Override
 	public void setDefaults(final I_PP_Order ppOrder)
 	{
@@ -88,50 +98,6 @@ public class PPOrderBL implements IPPOrderBL
 		ppOrder.setDocStatus(X_PP_Order.DOCSTATUS_Drafted);
 		ppOrder.setDocAction(X_PP_Order.DOCACTION_Complete);
 	}
-
-	/**
-	 * Set Qty Entered - enforce entered UOM
-	 *
-	 * @param QtyEntered
-	 */
-	@Override
-	public void setQtyEntered(final I_PP_Order order, final BigDecimal QtyEntered)
-	{
-		final BigDecimal qtyEnteredToUse;
-		final UomId uomId = UomId.ofRepoIdOrNull(order.getC_UOM_ID());
-		if (QtyEntered != null && uomId != null)
-		{
-			final UOMPrecision precision = Services.get(IUOMDAO.class).getStandardPrecision(uomId);
-			qtyEnteredToUse = precision.round(QtyEntered);
-		}
-		else
-		{
-			qtyEnteredToUse = QtyEntered;
-		}
-		order.setQtyEntered(qtyEnteredToUse);
-	}	// setQtyEntered
-
-	/**
-	 * Set Qty Ordered - enforce Product UOM
-	 *
-	 * @param qtyOrdered
-	 */
-	@Override
-	public void setQtyOrdered(final I_PP_Order order, final BigDecimal qtyOrdered)
-	{
-		final BigDecimal qtyOrderedToUse;
-		if (qtyOrdered != null)
-		{
-			final ProductId productId = ProductId.ofRepoId(order.getM_Product_ID());
-			final UOMPrecision precision = Services.get(IProductBL.class).getUOMPrecision(productId);
-			qtyOrderedToUse = precision.round(qtyOrdered);
-		}
-		else
-		{
-			qtyOrderedToUse = qtyOrdered;
-		}
-		order.setQtyOrdered(qtyOrderedToUse);
-	}	// setQtyOrdered
 
 	@Override
 	public void addDescription(final I_PP_Order order, final String description)
@@ -313,13 +279,27 @@ public class PPOrderBL implements IPPOrderBL
 	}
 
 	@Override
+	public void closeOrder(@NonNull final PPOrderId ppOrderId)
+	{
+		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
+		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+
+		final I_PP_Order ppOrder = ppOrdersRepo.getById(ppOrderId);
+
+		ppOrder.setPlanningStatus(PPOrderPlanningStatus.COMPLETE.getCode());
+		ppOrdersRepo.save(ppOrder);
+
+		documentBL.processEx(ppOrder, X_PP_Order.DOCACTION_Close);
+	}
+
+	@Override
 	public void closeQtyOrdered(final I_PP_Order ppOrder)
 	{
 		final BigDecimal qtyOrderedOld = ppOrder.getQtyOrdered();
 		final BigDecimal qtyDelivered = ppOrder.getQtyDelivered();
 
 		ppOrder.setQtyBeforeClose(qtyOrderedOld);
-		setQtyOrdered(ppOrder, qtyDelivered);
+		ppOrder.setQtyOrdered(qtyDelivered);
 
 		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
 		ppOrdersRepo.save(ppOrder);
@@ -395,7 +375,7 @@ public class PPOrderBL implements IPPOrderBL
 
 		final PPOrderRouting orderRouting = orderRoutingsRepo.getByOrderId(orderId);
 		final I_PP_Order orderRecord = ordersRepo.getById(orderId);
-		final LocalDateTime reportDate = SystemTime.asLocalDateTime();
+		final ZonedDateTime reportDate = SystemTime.asZonedDateTime();
 
 		for (final PPOrderRoutingActivity activity : orderRouting.getActivities())
 		{

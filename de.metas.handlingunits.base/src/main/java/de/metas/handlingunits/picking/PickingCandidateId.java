@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.NonNull;
 import lombok.Value;
 
@@ -74,6 +73,11 @@ public class PickingCandidateId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static int toRepoId(final PickingCandidateId id)
+	{
+		return id != null ? id.getRepoId() : -1;
 	}
 
 	public static boolean equals(final PickingCandidateId o1, final PickingCandidateId o2)

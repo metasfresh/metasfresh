@@ -1,6 +1,6 @@
 package org.eevolution.api;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
@@ -42,27 +42,30 @@ public class ComponentIssueCreateRequest
 	I_PP_Order_BOMLine orderBOMLine;
 	LocatorId locatorId;
 	AttributeSetInstanceId attributeSetInstanceId;
-	LocalDateTime movementDate;
+	ZonedDateTime movementDate;
 	Quantity qtyIssue;
 	Quantity qtyScrap;
 	Quantity qtyReject;
+	int pickingCandidateId;
 
 	@Builder
 	private ComponentIssueCreateRequest(
 			@NonNull final I_PP_Order_BOMLine orderBOMLine,
 			@NonNull final LocatorId locatorId,
 			@Nullable final AttributeSetInstanceId attributeSetInstanceId,
-			@Nullable final LocalDateTime movementDate,
+			@Nullable final ZonedDateTime movementDate,
 			@NonNull final Quantity qtyIssue,
 			@Nullable final Quantity qtyScrap,
-			@Nullable final Quantity qtyReject)
+			@Nullable final Quantity qtyReject,
+			final int pickingCandidateId)
 	{
 		this.orderBOMLine = orderBOMLine;
 		this.locatorId = locatorId;
 		this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
-		this.movementDate = movementDate != null ? movementDate : SystemTime.asLocalDateTime();
+		this.movementDate = movementDate != null ? movementDate : SystemTime.asZonedDateTime();
 		this.qtyIssue = qtyIssue;
 		this.qtyScrap = qtyScrap != null ? qtyScrap : qtyIssue.toZero();
 		this.qtyReject = qtyReject != null ? qtyReject : qtyIssue.toZero();
+		this.pickingCandidateId = pickingCandidateId > 0 ? pickingCandidateId : -1;
 	}
 }

@@ -345,20 +345,20 @@ import lombok.NonNull;
 		// Enforce M_HU.C_BPartner_ID to be set
 		if (onlyIfAssignedToBPartner)
 		{
-			filters.addNotEqualsFilter(I_M_HU.COLUMN_C_BPartner_ID, null);
+			filters.addNotEqualsFilter(I_M_HU.COLUMNNAME_C_BPartner_ID, null);
 		}
 		//
 		// Filter by C_BPartner_ID
 		final Set<BPartnerId> onlyWithBPartnerIds = getOnlyInBPartnerIds();
 		if (!onlyWithBPartnerIds.isEmpty())
 		{
-			filters.addInArrayOrAllFilter(I_M_HU.COLUMN_C_BPartner_ID, onlyWithBPartnerIds);
+			filters.addInArrayOrAllFilter(I_M_HU.COLUMNNAME_C_BPartner_ID, onlyWithBPartnerIds);
 		}
 
 		// Filter by C_BPartner_Location_ID
 		if (!_onlyWithBPartnerLocationIds.isEmpty())
 		{
-			filters.addInArrayOrAllFilter(I_M_HU.COLUMN_C_BPartner_Location_ID, _onlyWithBPartnerLocationIds);
+			filters.addInArrayOrAllFilter(I_M_HU.COLUMNNAME_C_BPartner_Location_ID, _onlyWithBPartnerLocationIds);
 		}
 
 		//
@@ -368,7 +368,7 @@ import lombok.NonNull;
 		{
 			final IQueryBuilder<I_M_HU_Storage> huStoragesQueryBuilder = queryBL.createQueryBuilder(I_M_HU_Storage.class, getContextProvider())
 					.addOnlyActiveRecordsFilter()
-					.addInArrayOrAllFilter(I_M_HU_Storage.COLUMN_M_Product_ID, onlyWithProductIds);
+					.addInArrayOrAllFilter(I_M_HU_Storage.COLUMNNAME_M_Product_ID, onlyWithProductIds);
 
 			if (!_allowEmptyStorage)
 			{
@@ -616,6 +616,15 @@ import lombok.NonNull;
 	{
 		return createQueryBuilder()
 				.andCollect(huColumn)
+				.create()
+				.list();
+	}
+
+	@Override
+	public <T> List<T> collect(final String columnName, final Class<T> modelType)
+	{
+		return createQueryBuilder()
+				.andCollect(columnName, modelType)
 				.create()
 				.list();
 	}

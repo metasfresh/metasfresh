@@ -23,7 +23,7 @@ package de.metas.handlingunits.impl;
  */
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -114,7 +114,7 @@ public class HUCapacityBL implements IHUCapacityBL
 			@NonNull final I_M_HU_Item huItem,
 			final ProductId productId,
 			final I_C_UOM uom,
-			final Date date)
+			final ZonedDateTime date)
 	{
 		final I_M_HU_PI_Item_Product itemDefProduct = Services.get(IHUPIItemProductDAO.class).retrievePIMaterialItemProduct(huItem, productId, date);
 		if (itemDefProduct == null)
@@ -131,7 +131,7 @@ public class HUCapacityBL implements IHUCapacityBL
 			@NonNull final I_M_HU_Item huItem,
 			final I_M_Product product,
 			final I_C_UOM uom,
-			final Date date)
+			final ZonedDateTime date)
 	{
 		final ProductId productId = ProductId.ofRepoIdOrNull(product != null ? product.getM_Product_ID() : -1);
 		return getCapacity(huItem, productId, uom, date);

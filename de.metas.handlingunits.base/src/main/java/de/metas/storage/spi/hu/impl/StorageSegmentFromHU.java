@@ -13,15 +13,14 @@ package de.metas.storage.spi.hu.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -31,6 +30,7 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
@@ -93,7 +93,7 @@ public class StorageSegmentFromHU implements IStorageSegment
 			productIdsRO = Collections.emptySet();
 		}
 	}
-	
+
 	@Override
 	public String toString()
 	{
@@ -118,8 +118,8 @@ public class StorageSegmentFromHU implements IStorageSegment
 		// Extract affected products
 		final List<Integer> productIdsList = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_HU_Storage.class, Env.getCtx(), ITrx.TRXNAME_None)
-				.addEqualsFilter(I_M_HU_Storage.COLUMN_M_HU_ID, huId)
-				.andCollect(I_M_HU_Storage.COLUMN_M_Product_ID)
+				.addEqualsFilter(I_M_HU_Storage.COLUMNNAME_M_HU_ID, huId)
+				.andCollect(I_M_HU_Storage.COLUMNNAME_M_Product_ID, I_M_Product.class)
 				.create()
 				.listIds();
 		productIdsRO = Collections.unmodifiableSet(new HashSet<>(productIdsList));

@@ -23,11 +23,13 @@ package de.metas.handlingunits.allocation;
  */
 
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_BPartner;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 
@@ -54,10 +56,10 @@ public interface IHUProducerAllocationDestination extends IAllocationDestination
 	int getCreatedHUsCount();
 
 	/** @return single created HU or null if no HUs were created */
-	I_M_HU getSingleCreatedHU();
+	Optional<I_M_HU> getSingleCreatedHU();
 
 	/** @return single created HU or null if no HUs were created */
-	HuId getSingleCreatedHuId();
+	Optional<HuId> getSingleCreatedHuId();
 
 	/**
 	 * Sets HUStatus to be used for newly created HUs.
@@ -84,7 +86,9 @@ public interface IHUProducerAllocationDestination extends IAllocationDestination
 	 *
 	 * @param bpartner
 	 */
-	IHUProducerAllocationDestination setC_BPartner(I_C_BPartner bpartner);
+	IHUProducerAllocationDestination setBPartnerId(BPartnerId bpartnerId);
+
+	IHUProducerAllocationDestination setBPartnerAndLocationId(BPartnerLocationId bpartnerLocationId);
 
 	/**
 	 * Sets BPartner Location to be used for newly created HUs.

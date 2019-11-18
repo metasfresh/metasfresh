@@ -13,8 +13,6 @@ import de.metas.handlingunits.client.terminal.lutuconfig.model.CUKey;
 import de.metas.handlingunits.client.terminal.pporder.receipt.model.HUPPOrderReceiptCUKey;
 import de.metas.handlingunits.client.terminal.pporder.receipt.model.HUPPOrderReceiptHUEditorModel;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
-import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.util.Services;
 
 public final class HUPPOrderReceiptHUEditorPanel extends HUEditorPanel
@@ -31,7 +29,7 @@ public final class HUPPOrderReceiptHUEditorPanel extends HUEditorPanel
 	}
 
 	@Override
-	protected final void onDialogOkAfterSave(final ITerminalDialog dialog)
+	protected void onDialogOkAfterSave(final ITerminalDialog dialog)
 	{
 		//
 		// Run super first, to make sure model is saved
@@ -58,15 +56,8 @@ public final class HUPPOrderReceiptHUEditorPanel extends HUEditorPanel
 
 				//
 				// Create receipt candidates for our already existing planning HU
-				final IPPOrderReceiptHUProducer producer = orderReceiptCUKey.createReceiptCandidatesProducer();
-				producer.createReceiptCandidatesFromPlanningHU(selectedHU);
-
-				//
-				// Process the receipt candidates we just created
-				// => HU will be activated, a receipt cost collector will be generated, 
-				HUPPOrderIssueReceiptCandidatesProcessor.newInstance()
-						.setCandidatesToProcess(producer.getCreatedCandidates())
-						.process();
+				orderReceiptCUKey.createReceiptCandidatesProducer()
+						.createReceiptCandidatesFromPlanningHU(selectedHU);
 			}
 		});
 	}

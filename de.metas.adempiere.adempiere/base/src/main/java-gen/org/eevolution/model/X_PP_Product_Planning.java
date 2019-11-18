@@ -15,7 +15,7 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1394461433L;
+	private static final long serialVersionUID = 1657479232L;
 
     /** Standard Constructor */
     public X_PP_Product_Planning (Properties ctx, int PP_Product_Planning_ID, String trxName)
@@ -27,7 +27,9 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 			setIsCreatePlan (true); // Y
 			setIsDocComplete (false); // N
 			setIsPickDirectlyIfFeasible (false); // N
+			setIsPickingOrder (false); // N
 			setPP_Product_Planning_ID (0);
+			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM PP_Product_Planning where PP_Product_Planning.IsActive = 'Y'
         } */
     }
 
@@ -314,6 +316,29 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 		return false;
 	}
 
+	/** Set Kommissionierauftrag.
+		@param IsPickingOrder Kommissionierauftrag	  */
+	@Override
+	public void setIsPickingOrder (boolean IsPickingOrder)
+	{
+		set_Value (COLUMNNAME_IsPickingOrder, Boolean.valueOf(IsPickingOrder));
+	}
+
+	/** Get Kommissionierauftrag.
+		@return Kommissionierauftrag	  */
+	@Override
+	public boolean isPickingOrder () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPickingOrder);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** 
 	 * IsPurchased AD_Reference_ID=319
 	 * Reference name: _YesNo
@@ -338,6 +363,35 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	public java.lang.String getIsPurchased () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_IsPurchased);
+	}
+
+	/** 
+	 * IsTraded AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISTRADED_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISTRADED_Yes = "Y";
+	/** No = N */
+	public static final String ISTRADED_No = "N";
+	/** Set Wird gehandelt (Bestellkontrolle).
+		@param IsTraded 
+		Legt fest, ob mit dem bestreffenden Produkt gehandelt wird. 
+	  */
+	@Override
+	public void setIsTraded (java.lang.String IsTraded)
+	{
+
+		set_Value (COLUMNNAME_IsTraded, IsTraded);
+	}
+
+	/** Get Wird gehandelt (Bestellkontrolle).
+		@return Legt fest, ob mit dem bestreffenden Produkt gehandelt wird. 
+	  */
+	@Override
+	public java.lang.String getIsTraded () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_IsTraded);
 	}
 
 	@Override

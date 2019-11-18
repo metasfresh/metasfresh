@@ -25,11 +25,11 @@ import java.time.LocalDateTime;
  */
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_PP_Order;
 
@@ -47,20 +47,14 @@ public interface IPPOrderDAO extends ISingletonService
 	List<I_PP_Order> getByIds(Set<PPOrderId> orderIds);
 
 	/**
-	 * Retrieve all manufacturing orders which are linked to given order line AND they have the product from order line.
-	 * 
-	 * @param line
-	 * @return
-	 */
-	List<I_PP_Order> retrieveAllForOrderLine(I_C_OrderLine line);
-
-	/**
 	 * Gets released manufacturing orders based on {@link I_M_Warehouse}s.
 	 * 
 	 * @param warehouseId
 	 * @return manufacturing orders
 	 */
 	List<I_PP_Order> retrieveReleasedManufacturingOrdersForWarehouse(WarehouseId warehouseId);
+
+	Optional<I_PP_Order> retrieveOpenPickingOrderForSalesOrderLine(OrderLineId salesOrderLineId);
 
 	/**
 	 * @param orderLineId

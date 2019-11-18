@@ -15,7 +15,7 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1316344370L;
+	private static final long serialVersionUID = -1274929792L;
 
     /** Standard Constructor */
     public X_PP_Order_Qty (Properties ctx, int PP_Order_Qty_ID, String trxName)
@@ -25,9 +25,8 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
         {
 			setC_UOM_ID (0);
 			setM_HU_ID (0);
-			setM_Locator_ID (0);
-			setMovementDate (new Timestamp( System.currentTimeMillis() ));
 			setM_Product_ID (0);
+			setMovementDate (new Timestamp( System.currentTimeMillis() ));
 			setPP_Order_ID (0);
 			setPP_Order_Qty_ID (0);
 			setProcessed (false); // N
@@ -134,23 +133,38 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 		return ii.intValue();
 	}
 
-	/** Set Bewegungsdatum.
-		@param MovementDate 
-		Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	  */
 	@Override
-	public void setMovementDate (java.sql.Timestamp MovementDate)
+	public de.metas.handlingunits.model.I_M_Picking_Candidate getM_Picking_Candidate()
 	{
-		set_ValueNoCheck (COLUMNNAME_MovementDate, MovementDate);
+		return get_ValueAsPO(COLUMNNAME_M_Picking_Candidate_ID, de.metas.handlingunits.model.I_M_Picking_Candidate.class);
 	}
 
-	/** Get Bewegungsdatum.
-		@return Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	  */
 	@Override
-	public java.sql.Timestamp getMovementDate () 
+	public void setM_Picking_Candidate(de.metas.handlingunits.model.I_M_Picking_Candidate M_Picking_Candidate)
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_MovementDate);
+		set_ValueFromPO(COLUMNNAME_M_Picking_Candidate_ID, de.metas.handlingunits.model.I_M_Picking_Candidate.class, M_Picking_Candidate);
+	}
+
+	/** Set Picking candidate.
+		@param M_Picking_Candidate_ID Picking candidate	  */
+	@Override
+	public void setM_Picking_Candidate_ID (int M_Picking_Candidate_ID)
+	{
+		if (M_Picking_Candidate_ID < 1) 
+			set_Value (COLUMNNAME_M_Picking_Candidate_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Picking_Candidate_ID, Integer.valueOf(M_Picking_Candidate_ID));
+	}
+
+	/** Get Picking candidate.
+		@return Picking candidate	  */
+	@Override
+	public int getM_Picking_Candidate_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Picking_Candidate_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Produkt.
@@ -176,6 +190,25 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Bewegungsdatum.
+		@param MovementDate 
+		Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	  */
+	@Override
+	public void setMovementDate (java.sql.Timestamp MovementDate)
+	{
+		set_ValueNoCheck (COLUMNNAME_MovementDate, MovementDate);
+	}
+
+	/** Get Bewegungsdatum.
+		@return Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	  */
+	@Override
+	public java.sql.Timestamp getMovementDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_MovementDate);
 	}
 
 	@Override

@@ -284,7 +284,7 @@ public class HUTracerInstance
 
 		//
 		// Product level storages
-		final List<IProductStorage> productStorages = storage.getProductStorages(SystemTime.asDayTimestamp());
+		final List<IProductStorage> productStorages = storage.getProductStorages(SystemTime.asZonedDateTimeAtStartOfDay());
 		for (final IProductStorage productStorage : productStorages)
 		{
 			dump(out, linePrefix + linePrefixIncrement, productStorage);

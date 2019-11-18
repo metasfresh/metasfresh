@@ -1,16 +1,14 @@
 package de.metas.handlingunits.inout.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.math.BigDecimal;
 
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.impl.AbstractDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -18,6 +16,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -83,14 +82,14 @@ public class CustomerReturnLUTUConfigurationHandler
 
 		final I_M_HU_PI_Item_Product tuPIItemProduct = getM_HU_PI_Item_Product(documentLine);
 		final ProductId cuProductId = ProductId.ofRepoIdOrNull(documentLine.getM_Product_ID());
-		final I_C_UOM cuUOM = loadOutOfTrx(documentLine.getC_UOM_ID(), I_C_UOM.class);
+		final I_C_UOM cuUOM = Services.get(IUOMDAO.class).getById(documentLine.getC_UOM_ID());
 
-		final I_C_BPartner bpartner = documentLine.getM_InOut().getC_BPartner();
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(documentLine.getM_InOut().getC_BPartner_ID());
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuFactory.createLUTUConfiguration(
 				tuPIItemProduct,
 				cuProductId,
 				cuUOM,
-				bpartner,
+				bpartnerId,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU
 
 		//
@@ -108,9 +107,9 @@ public class CustomerReturnLUTUConfigurationHandler
 		final I_M_InOut customerReturn = documentLine.getM_InOut();
 		//
 		// Set BPartner / Location to be used
-		final I_C_BPartner bpartner = customerReturn.getC_BPartner();
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(customerReturn.getC_BPartner_ID());
 		final int bpartnerLocationId = customerReturn.getC_BPartner_Location_ID();
-		lutuConfiguration.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
+		lutuConfiguration.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 		lutuConfiguration.setC_BPartner_Location_ID(bpartnerLocationId);
 
 		//
