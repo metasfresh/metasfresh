@@ -1,5 +1,7 @@
 package de.metas.allocation.api.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -22,10 +24,6 @@ package de.metas.allocation.api.impl;
  * #L%
  */
 
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertThat;
-
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -43,14 +41,14 @@ public class AllocationBuilderTest
 	static IContextAware ctxProvider;
 
 	@BeforeAll
-	public static void staticInit()
+	public static void beforeAll()
 	{
 		AdempiereTestHelper.get().staticInit();
 		ctxProvider = InterfaceWrapperHelper.getContextAware(InterfaceWrapperHelper.create(Env.getCtx(), I_C_Greeting.class, "trxName"));
 	}
 
 	@BeforeEach
-	public void enableUnitTestMode()
+	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 
@@ -62,7 +60,7 @@ public class AllocationBuilderTest
 		final AllocationBL allocationBL = new AllocationBL();
 
 		final IAllocationBuilder builder = allocationBL.newBuilder(ctxProvider);
-		assertThat(builder, instanceOf(DefaultAllocationBuilder.class));
+		assertThat(builder).isInstanceOf(DefaultAllocationBuilder.class);
 	}
 
 	static class CustomAllocationBuilderInclClass extends DefaultAllocationBuilder
@@ -70,7 +68,7 @@ public class AllocationBuilderTest
 		public CustomAllocationBuilderInclClass(IContextAware contextProvider)
 		{
 			super(contextProvider);
-			assertThat(contextProvider, sameInstance(ctxProvider));
+			assertThat(contextProvider).isInstanceOf(ctxProvider.getClass());
 		}
 	}
 
@@ -80,7 +78,6 @@ public class AllocationBuilderTest
 		final AllocationBL allocationBL = new AllocationBL();
 
 		final IAllocationBuilder builder = allocationBL.newBuilder(ctxProvider, CustomAllocationBuilderInclClass.class);
-		assertThat(builder, instanceOf(CustomAllocationBuilderInclClass.class));
-
+		assertThat(builder).isInstanceOf(CustomAllocationBuilderInclClass.class);
 	}
 }
