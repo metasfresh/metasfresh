@@ -233,11 +233,10 @@ class DhlTestHelper
 	{
 		//
 		// create all structures
-		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 
 		final DhlClientConfigRepository clientConfigRepository = new DhlClientConfigRepository();
 		final DhlDraftDeliveryOrderCreator draftDeliveryOrderCreator = new DhlDraftDeliveryOrderCreator(clientConfigRepository, new CustomsInvoiceRepository());
-		final DhlDeliveryOrderRepository orderRepository = new DhlDeliveryOrderRepository(attachmentEntryService);
+		final DhlDeliveryOrderRepository orderRepository = new DhlDeliveryOrderRepository();
 
 		final UomId dummyUom = UomId.ofRepoId(1);
 		final DhlShipperGatewayClient client = new DhlShipperGatewayClient(DhlClientConfig.builder()
@@ -310,22 +309,14 @@ class DhlTestHelper
 		assertSizeOfCustomDeliveryData(deserialisedCompletedDeliveryOrder);
 
 		//
-		// check 7: check the attachments exist
-		customDeliveryData.getDetails()
-				.forEach(it -> {
-					final String name = it.getAwb() + ".pdf";
-
-					final I_DHL_ShipmentOrder shipmentOrder = orderRepository.getShipmentOrderByRequestIdAndPackageId(deserialisedCompletedDeliveryOrder.getId().getRepoId(), it.getPackageId());
-					final TableRecordReference deliveryOrderRef = TableRecordReference.of(I_DHL_ShipmentOrder.Table_Name, shipmentOrder.getDHL_ShipmentOrder_ID());
-					assertNotNull(attachmentEntryService.getByFilenameOrNull(deliveryOrderRef, name));
-				});
-
-		//
-		// check 8: expect 1 database log: the one for createShipment
+		// check 7: expect 1 database log: the one for createShipment
 		assertEquals("there should be 1 database request logs", 1, Services.get(IQueryBL.class)
 				.createQueryBuilder(I_Dhl_ShipmentOrder_Log.class)
 				.create()
 				.count());
+
+		//
+		// check 8: there's no way to test that label printing => create attachment works. :(
 	}
 
 	private void assertSizeOfCustomDeliveryData(@NonNull final DeliveryOrder deliveryOrder)

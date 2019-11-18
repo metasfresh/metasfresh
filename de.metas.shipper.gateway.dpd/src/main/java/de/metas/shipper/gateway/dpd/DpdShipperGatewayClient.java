@@ -167,7 +167,6 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 								.labelData(customDeliveryData.getPdfData())
 								.contentType(customDeliveryData.getPrinterLanguage())
 								.fileName(deliveryOrder.getTrackingNumber())
-								// make dpd and dhl no longer use the attachment service, as shit is already saved when printing the pdf's
 								.build())
 						.build());
 

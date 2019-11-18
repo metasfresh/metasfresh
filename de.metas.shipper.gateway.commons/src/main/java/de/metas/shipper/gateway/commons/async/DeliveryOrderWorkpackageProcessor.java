@@ -1,18 +1,5 @@
 package de.metas.shipper.gateway.commons.async;
 
-import java.util.List;
-import java.util.Properties;
-
-import de.metas.util.lang.CoalesceUtil;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.archive.api.IArchiveStorageFactory;
-import org.adempiere.archive.spi.IArchiveStorage;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.util.Env;
-import org.compiere.util.MimeType;
-
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
@@ -26,7 +13,18 @@ import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.archive.api.IArchiveStorageFactory;
+import org.adempiere.archive.spi.IArchiveStorage;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.util.Env;
+import org.compiere.util.MimeType;
+
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -78,10 +76,11 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 
 	private final ShipperGatewayServicesRegistry shipperRegistry;
 
-	public DeliveryOrderWorkpackageProcessor()
+	public DeliveryOrderWorkpackageProcessor(@NonNull final ShipperGatewayServicesRegistry shipperRegistry)
 	{
-		shipperRegistry = Adempiere.getBean(ShipperGatewayServicesRegistry.class);
+		// shipperRegistry = Adempiere.getBean(ShipperGatewayServicesRegistry.class);
 
+		this.shipperRegistry = shipperRegistry;
 	}
 
 	@Override

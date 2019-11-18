@@ -25,7 +25,6 @@ package de.metas.shipper.gateway.dhl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.attachments.AttachmentEntryService;
 import de.metas.location.CountryCode;
 import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
@@ -62,13 +61,6 @@ import java.util.List;
 @Repository
 public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 {
-	private final AttachmentEntryService attachmentEntryService;
-
-	public DhlDeliveryOrderRepository(@NonNull final AttachmentEntryService attachmentEntryService)
-	{
-		this.attachmentEntryService = attachmentEntryService;
-	}
-
 	@Override
 	public String getShipperGatewayId()
 	{
@@ -402,11 +394,6 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 				if (pdfData != null)
 				{
 					shipmentOrder.setPdfLabelData(pdfData);
-
-					// save pdf as attachment as well
-					final TableRecordReference deliveryOrderRef = TableRecordReference.of(I_DHL_ShipmentOrder.Table_Name, shipmentOrder.getDHL_ShipmentOrder_ID());
-
-					attachmentEntryService.createNewAttachment(deliveryOrderRef, awb + ".pdf", pdfData);
 				}
 
 				final String trackingUrl = deliveryDetail.getTrackingUrl();

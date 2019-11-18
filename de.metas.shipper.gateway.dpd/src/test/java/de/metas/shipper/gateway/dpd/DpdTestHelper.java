@@ -22,23 +22,8 @@
 
 package de.metas.shipper.gateway.dpd;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Location;
-
 import com.google.common.collect.ImmutableList;
 import com.jgoodies.common.base.Strings;
-
-import de.metas.attachments.AttachmentEntryService;
 import de.metas.location.CountryCode;
 import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.commons.ShipperTestHelper;
@@ -50,7 +35,6 @@ import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.model.DpdOrderType;
 import de.metas.shipper.gateway.dpd.model.DpdPaperFormat;
 import de.metas.shipper.gateway.dpd.model.DpdServiceType;
-import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrder;
 import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrder_Log;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
@@ -65,6 +49,17 @@ import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Location;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @UtilityClass
 class DpdTestHelper
@@ -80,10 +75,8 @@ class DpdTestHelper
 	private static final CountryCode COUNTRY_CODE_CH = CountryCode.builder().alpha2("CH").alpha3("CHE").build();
 	private static final CountryCode COUNTRY_CODE_US = CountryCode.builder().alpha2("US").alpha3("USA").build();
 
-	private static final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
-
 	private final DpdDraftDeliveryOrderCreator draftDeliveryOrderCreator = new DpdDraftDeliveryOrderCreator(new DpdClientConfigRepository());
-	private final DpdDeliveryOrderRepository orderRepository = new DpdDeliveryOrderRepository(attachmentEntryService);
+	private final DpdDeliveryOrderRepository orderRepository = new DpdDeliveryOrderRepository();
 	private final DpdShipperGatewayClient client = DpdShipperGatewayClient.builder()
 			.config(DpdClientConfig.builder()
 					.delisID(DpdTestHelper.DELIS_ID)
@@ -374,16 +367,14 @@ class DpdTestHelper
 		assertTrue(DpdOrderCustomDeliveryData.cast(deserialisedCompletedDeliveryOrder.getCustomDeliveryData()).getPdfData().length > 1);
 
 		//
-		// check 7: check the attachment exists
-		final TableRecordReference deliveryOrderRef = TableRecordReference.of(I_DPD_StoreOrder.Table_Name, deserialisedCompletedDeliveryOrder.getId().getRepoId());
-		assertNotNull(attachmentEntryService.getByFilenameOrNull(deliveryOrderRef, deserialisedCompletedDeliveryOrder.getTrackingNumber() + ".pdf"));
-
-		//
-		// check 8: expect 2 database logs: 1 for login and 2 for createShipment
+		// check 7: expect 2 database logs: 1 for login and 2 for createShipment
 		assertEquals("there should be 2 database request logs", 2, Services.get(IQueryBL.class)
 				.createQueryBuilder(I_DPD_StoreOrder_Log.class)
 				.create()
 				.count());
+
+		//
+		// check 8: there's no way to test that label printing => create attachment works. :(
 	}
 
 	@SuppressWarnings("deprecation")
