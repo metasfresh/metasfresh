@@ -1,3 +1,4 @@
+
 CREATE OR REPLACE FUNCTION public.altercolumn(
 	tablename name,
 	columnname name,
@@ -79,16 +80,16 @@ begin
 						RAISE INFO 'Exception dropping view:';
 						RAISE INFO 'Error Name:%',SQLERRM;
 						RAISE INFO 'Error State:%', SQLSTATE;
-						RAISE INFO 'Will attempt to recover what we dropped so far';
+						RAISE INFO 'Will attempt to restore what we dropped so far';
 						i := array_upper(dropviews, 1);
 						if i > 0 then
 							for j in reverse i .. 1 loop
-								raise notice '    Recovery: creating view %', viewname[j];
+								raise notice '    Creating(recovery) view %', viewname[j];
 								command := 'create or replace view ' || viewname[j] || ' as ' || viewtext[j];
 								execute command;
 							end loop;
 						end if;
-						raise exception 'Failed to drop dependent view';
+						raise exception 'Failed to drop dependent view: % (SQL: %)', viewname[j], viewtext[j];
 				end;
 			end if;
 
