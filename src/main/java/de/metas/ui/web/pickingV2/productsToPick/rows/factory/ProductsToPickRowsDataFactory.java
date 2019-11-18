@@ -179,13 +179,10 @@ public final class ProductsToPickRowsDataFactory
 
 	private Optional<QtyCalculationsBOM> getPickingOrderBOM(final AllocablePackageable packageable)
 	{
-		final OrderLineId salesOrderLineId = packageable.getSalesOrderLineIdOrNull();
-		if (salesOrderLineId == null)
-		{
-			return Optional.empty();
-		}
-
-		return ppOrdersBL.getOpenPickingOrderBOMForSalesOrderLine(salesOrderLineId);
+		final PPOrderId pickFromOrderId = packageable.getPickFromOrderId();
+		return pickFromOrderId != null
+				? ppOrdersBL.getOpenPickingOrderBOM(pickFromOrderId)
+				: Optional.empty();
 	}
 
 	private List<ProductsToPickRow> createRowsFromExistingPickingCandidates(final AllocablePackageable packageable)
