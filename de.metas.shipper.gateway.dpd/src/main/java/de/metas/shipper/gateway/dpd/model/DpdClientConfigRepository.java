@@ -35,7 +35,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class DpdClientConfigRepository
 {
-	private final CCache<Integer, DpdClientConfig> cache = CCache.newCache(I_DPD_Shipper_Config.Table_Name, 1, CCache.EXPIREMINUTES_Never);
+	private final CCache<Integer, DpdClientConfig> cache = CCache.newCache(I_DPD_Shipper_Config.Table_Name, 10, CCache.EXPIREMINUTES_Never);
 
 	@NonNull
 	public DpdClientConfig getByShipperId(@NonNull final ShipperId shipperId)
@@ -65,6 +65,7 @@ public class DpdClientConfigRepository
 				.delisPassword(configPO.getDelisPassword())
 				.trackingUrlBase(retrieveTrackingUrl(configPO.getM_Shipper_ID()))
 				.paperFormat(DpdPaperFormat.ofCode(configPO.getPaperFormat()))
+				.shipperProduct(DpdShipperProduct.ofCode(configPO.getShipperProduct()))
 				.build();
 	}
 

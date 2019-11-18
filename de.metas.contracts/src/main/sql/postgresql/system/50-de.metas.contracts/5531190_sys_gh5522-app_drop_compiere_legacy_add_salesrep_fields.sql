@@ -331,8 +331,7 @@ UPDATE AD_Column SET DefaultValue='N',Updated=TO_TIMESTAMP('2019-09-19 15:10:38'
 
 -- 2019-09-19T13:10:41.628Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('c_bpartner','IsSalesRep','CHAR(1)',null,'N')
-;
+ALTER TABLE C_BPartner ALTER COLUMN IsSalesRep SET DEFAULT 'N';
 
 -- 2019-09-19T13:10:42.483Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

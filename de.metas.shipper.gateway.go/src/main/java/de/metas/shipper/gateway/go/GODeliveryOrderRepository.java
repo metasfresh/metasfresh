@@ -20,7 +20,7 @@ import de.metas.shipper.gateway.go.schema.GOOrderStatus;
 import de.metas.shipper.gateway.go.schema.GOPaidMode;
 import de.metas.shipper.gateway.go.schema.GOSelfDelivery;
 import de.metas.shipper.gateway.go.schema.GOSelfPickup;
-import de.metas.shipper.gateway.go.schema.GOServiceType;
+import de.metas.shipper.gateway.go.schema.GOShipperProduct;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
@@ -85,7 +85,7 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 				.customDeliveryData(goDeliveryOrderData)
 				.orderStatus(GOOrderStatus.forNullableCode(orderPO.getGO_OrderStatus()))
 				//
-				.serviceType(GOServiceType.forCode(orderPO.getGO_ServiceType()))
+				.shipperProduct(GOShipperProduct.forCode(orderPO.getGO_ServiceType()))
 				//
 				// Pickup
 				.pickupAddress(GODeliveryOrderConverters.pickupAddressFromPO(orderPO))
@@ -139,7 +139,7 @@ public class GODeliveryOrderRepository implements DeliveryOrderRepository
 		orderPO.setGO_OrderStatus(orderStatus != null ? orderStatus.getCode() : null);
 		orderPO.setProcessed(orderStatus != null && orderStatus.isFinalState());
 
-		orderPO.setGO_ServiceType(order.getServiceType().getCode());
+		orderPO.setGO_ServiceType(order.getShipperProduct().getCode());
 		orderPO.setGO_PaidMode(goDeliveryOrderData.getPaidMode().getCode());
 
 		//

@@ -23,7 +23,7 @@
 package de.metas.shipper.gateway.dhl.model;
 
 import com.google.common.collect.ImmutableMap;
-import de.metas.shipper.gateway.spi.model.ServiceType;
+import de.metas.shipper.gateway.spi.model.ShipperProduct;
 import de.metas.util.GuavaCollectors;
 import lombok.Getter;
 import lombok.NonNull;
@@ -35,7 +35,7 @@ import java.util.stream.Stream;
  * as of 2019.10.18 there's no way for the customer to change the service type!
  * It is hardcoded inside CreateDraftDeliveryOrder, and that's it.
  */
-public enum DhlServiceType implements ServiceType
+public enum DhlShipperProduct implements ShipperProduct
 {
 
 	Dhl_Paket("V01PAK"),
@@ -44,15 +44,15 @@ public enum DhlServiceType implements ServiceType
 	@Getter
 	private final String code;
 
-	DhlServiceType(final String code)
+	DhlShipperProduct(final String code)
 	{
 		this.code = code;
 	}
 
 	@NonNull
-	public static DhlServiceType forCode(final String code)
+	public static DhlShipperProduct forCode(final String code)
 	{
-		final DhlServiceType type = code2type.get(code);
+		final DhlShipperProduct type = code2type.get(code);
 		if (type == null)
 		{
 			throw new AdempiereException("No serviceType for code=" + code + " exists.");
@@ -60,6 +60,6 @@ public enum DhlServiceType implements ServiceType
 		return type;
 	}
 
-	private static final ImmutableMap<String, DhlServiceType> code2type = Stream.of(values())
-			.collect(GuavaCollectors.toImmutableMapByKey(DhlServiceType::getCode));
+	private static final ImmutableMap<String, DhlShipperProduct> code2type = Stream.of(values())
+			.collect(GuavaCollectors.toImmutableMapByKey(DhlShipperProduct::getCode));
 }

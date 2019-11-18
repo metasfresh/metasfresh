@@ -22,7 +22,7 @@
 
 package de.metas.shipper.gateway.dpd;
 
-import de.metas.shipper.gateway.dpd.model.DpdServiceType;
+import de.metas.shipper.gateway.dpd.model.DpdShipperProduct;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.Assertions;
@@ -45,20 +45,20 @@ public class IntegrationDEtoCHTest
 	void E12()
 	{
 		Assertions.assertThrows(ShipperGatewayException.class,
-				() -> DpdTestHelper.testAllSteps(DpdTestHelper.createDummyDeliveryOrderDEtoCH(DpdServiceType.DPD_E12)));
+				() -> DpdTestHelper.testAllSteps(DpdTestHelper.createDummyDeliveryOrderDEtoCH(DpdShipperProduct.DPD_E12)));
 	}
 
 	@Test
 	@DisplayName("Delivery Order DE -> CH, DPD Classic")
 	void Classic()
 	{
-		DpdTestHelper.testAllSteps(DpdTestHelper.createDummyDeliveryOrderDEtoCH(DpdServiceType.DPD_CLASSIC));
+		DpdTestHelper.testAllSteps(DpdTestHelper.createDummyDeliveryOrderDEtoCH(DpdShipperProduct.DPD_CLASSIC));
 	}
 
 	@Test
 	@DisplayName("Delivery Order DE -> CH, DPD Express")
 	void Express()
 	{
-		DpdTestHelper.testAllSteps(DpdTestHelper.createDummyDeliveryOrderDEtoCH(DpdServiceType.DPD_EXPRESS));
+		DpdTestHelper.testAllSteps(DpdTestHelper.createDummyDeliveryOrderDEtoCH(DpdShipperProduct.DPD_EXPRESS));
 	}
 }

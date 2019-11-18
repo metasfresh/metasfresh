@@ -12,7 +12,7 @@ import de.metas.location.ICountryDAO;
 import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.derkurier.misc.Converters;
-import de.metas.shipper.gateway.derkurier.misc.DerKurierServiceType;
+import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperProduct;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine_Package;
@@ -168,7 +168,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 				.id(DeliveryOrderId.ofRepoId(headerRecord.getDerKurier_DeliveryOrder_ID()))
 				.shipperId(ShipperId.ofRepoId(headerRecord.getM_Shipper_ID()))
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(headerRecord.getM_ShipperTransportation_ID()))
-				.serviceType(DerKurierServiceType.OVERNIGHT)
+				.shipperProduct(DerKurierShipperProduct.OVERNIGHT)
 				.pickupAddress(createPickupAddress(headerRecord))
 				.pickupDate(createPickupDate(headerRecord))
 				.customerReference(recordId)

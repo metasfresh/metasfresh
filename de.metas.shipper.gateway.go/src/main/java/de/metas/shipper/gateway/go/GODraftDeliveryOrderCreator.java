@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.util.Set;
 
 import de.metas.mpackage.PackageId;
-import de.metas.shipping.api.ShipperTransportationId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -18,7 +17,7 @@ import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.go.schema.GOPaidMode;
 import de.metas.shipper.gateway.go.schema.GOSelfDelivery;
 import de.metas.shipper.gateway.go.schema.GOSelfPickup;
-import de.metas.shipper.gateway.go.schema.GOServiceType;
+import de.metas.shipper.gateway.go.schema.GOShipperProduct;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
@@ -86,7 +85,7 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.shipperId(deliveryOrderKey.getShipperId())
 				.shipperTransportationId(deliveryOrderKey.getShipperTransportationId())
 				//
-				.serviceType(GOServiceType.Overnight)
+				.shipperProduct(GOShipperProduct.Overnight)
 				.customDeliveryData(goDeliveryOrderData)
 				//
 				// Pickup

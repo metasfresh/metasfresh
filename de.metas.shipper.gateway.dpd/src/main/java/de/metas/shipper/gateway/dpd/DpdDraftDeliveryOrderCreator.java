@@ -34,14 +34,15 @@ import de.metas.shipper.gateway.dpd.model.DpdClientConfigRepository;
 import de.metas.shipper.gateway.dpd.model.DpdNotificationChannel;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.model.DpdOrderType;
-import de.metas.shipper.gateway.dpd.model.DpdServiceType;
+import de.metas.shipper.gateway.dpd.model.DpdShipperProduct;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
+import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
-import de.metas.shipper.gateway.spi.model.ServiceType;
+import de.metas.shipper.gateway.spi.model.ShipperProduct;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.uom.IUOMDAO;
@@ -109,16 +110,13 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 		final ShipperTransportationId shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
 
-		final DpdServiceType serviceType;
-		if (pickupFromLocation.getC_Country_ID() == deliverToLocation.getC_Country_ID())
+		// inside same country we want "next-day" delivery
+		// while international shipping only works with classic delivery (or express).
+		// it's up to the customer to select the proper shipper (which has the correct ShipperProduct)
+		final DpdShipperProduct serviceType = clientConfigRepository.getByShipperId(shipperId).getShipperProduct();
+		if (pickupFromLocation.getC_Country_ID() != deliverToLocation.getC_Country_ID() && !serviceType.equals(DpdShipperProduct.DPD_CLASSIC))
 		{
-			// inside same country we want "next-day" delivery
-			serviceType = DpdServiceType.DPD_E12;
-		}
-		else
-		{
-			// international shipping only works with classic delivery (or express)
-			serviceType = DpdServiceType.DPD_CLASSIC;
+			throw new ShipperGatewayException("Please use product " + DpdShipperProduct.DPD_CLASSIC.getCode() + " for international orders.");
 		}
 
 		final DpdOrderCustomDeliveryData customDeliveryData = DpdOrderCustomDeliveryData.builder()
@@ -187,7 +185,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			@NonNull final I_C_BPartner deliverToBPartner,
 			@NonNull final I_C_Location deliverToLocation,
 			@Nullable final String deliverToPhoneNumber,
-			@NonNull final ServiceType serviceType,
+			@NonNull final ShipperProduct shipperProduct,
 			@NonNull final ShipperId shipperId,
 			@NonNull final ShipperTransportationId shipperTransportationId,
 			@Nullable final String customerReference,
@@ -200,7 +198,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.shipperTransportationId(shipperTransportationId)
 				//
 				//
-				.serviceType(serviceType)
+				.shipperProduct(shipperProduct)
 				.customerReference(customerReference)
 				.customDeliveryData(customDeliveryData)
 

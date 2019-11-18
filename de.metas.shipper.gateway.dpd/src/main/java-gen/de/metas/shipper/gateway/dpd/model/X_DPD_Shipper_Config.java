@@ -14,7 +14,7 @@ public class X_DPD_Shipper_Config extends org.compiere.model.PO implements I_DPD
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1475234132L;
+	private static final long serialVersionUID = 405095589L;
 
     /** Standard Constructor */
     public X_DPD_Shipper_Config (Properties ctx, int DPD_Shipper_Config_ID, String trxName)
@@ -59,24 +59,24 @@ public class X_DPD_Shipper_Config extends org.compiere.model.PO implements I_DPD
 		return (java.lang.String)get_Value(COLUMNNAME_DelisID);
 	}
 
-	/** Set Delis Password.
-		@param DelisPassword Delis Password	  */
+	/** Set Delis Passwort.
+		@param DelisPassword Delis Passwort	  */
 	@Override
 	public void setDelisPassword (java.lang.String DelisPassword)
 	{
 		set_Value (COLUMNNAME_DelisPassword, DelisPassword);
 	}
 
-	/** Get Delis Password.
-		@return Delis Password	  */
+	/** Get Delis Passwort.
+		@return Delis Passwort	  */
 	@Override
 	public java.lang.String getDelisPassword () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DelisPassword);
 	}
 
-	/** Set DPD Shipper Configuration.
-		@param DPD_Shipper_config_ID DPD Shipper Configuration	  */
+	/** Set DPD Konfiguration.
+		@param DPD_Shipper_config_ID DPD Konfiguration	  */
 	@Override
 	public void setDPD_Shipper_config_ID (int DPD_Shipper_config_ID)
 	{
@@ -86,8 +86,8 @@ public class X_DPD_Shipper_Config extends org.compiere.model.PO implements I_DPD
 			set_ValueNoCheck (COLUMNNAME_DPD_Shipper_config_ID, Integer.valueOf(DPD_Shipper_config_ID));
 	}
 
-	/** Get DPD Shipper Configuration.
-		@return DPD Shipper Configuration	  */
+	/** Get DPD Konfiguration.
+		@return DPD Konfiguration	  */
 	@Override
 	public int getDPD_Shipper_config_ID () 
 	{
@@ -97,16 +97,16 @@ public class X_DPD_Shipper_Config extends org.compiere.model.PO implements I_DPD
 		return ii.intValue();
 	}
 
-	/** Set Login Api Url.
-		@param LoginApiUrl Login Api Url	  */
+	/** Set URL Api Login.
+		@param LoginApiUrl URL Api Login	  */
 	@Override
 	public void setLoginApiUrl (java.lang.String LoginApiUrl)
 	{
 		set_Value (COLUMNNAME_LoginApiUrl, LoginApiUrl);
 	}
 
-	/** Get Login Api Url.
-		@return Login Api Url	  */
+	/** Get URL Api Login.
+		@return URL Api Login	  */
 	@Override
 	public java.lang.String getLoginApiUrl () 
 	{
@@ -161,8 +161,8 @@ public class X_DPD_Shipper_Config extends org.compiere.model.PO implements I_DPD
 	public static final String PAPERFORMAT_A5 = "A5";
 	/** A4 = A4 */
 	public static final String PAPERFORMAT_A4 = "A4";
-	/** Set Paper Format.
-		@param PaperFormat Paper Format	  */
+	/** Set Papierformat.
+		@param PaperFormat Papierformat	  */
 	@Override
 	public void setPaperFormat (java.lang.String PaperFormat)
 	{
@@ -170,27 +170,43 @@ public class X_DPD_Shipper_Config extends org.compiere.model.PO implements I_DPD
 		set_Value (COLUMNNAME_PaperFormat, PaperFormat);
 	}
 
-	/** Get Paper Format.
-		@return Paper Format	  */
+	/** Get Papierformat.
+		@return Papierformat	  */
 	@Override
 	public java.lang.String getPaperFormat () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_PaperFormat);
 	}
 
-	/** Set Shipment Service Api Url.
-		@param ShipmentServiceApiUrl Shipment Service Api Url	  */
+	/** Set URL Api Shipment Service.
+		@param ShipmentServiceApiUrl URL Api Shipment Service	  */
 	@Override
 	public void setShipmentServiceApiUrl (java.lang.String ShipmentServiceApiUrl)
 	{
 		set_Value (COLUMNNAME_ShipmentServiceApiUrl, ShipmentServiceApiUrl);
 	}
 
-	/** Get Shipment Service Api Url.
-		@return Shipment Service Api Url	  */
+	/** Get URL Api Shipment Service.
+		@return URL Api Shipment Service	  */
 	@Override
 	public java.lang.String getShipmentServiceApiUrl () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ShipmentServiceApiUrl);
+	}
+
+	/** Set Shipper Product.
+		@param ShipperProduct Shipper Product	  */
+	@Override
+	public void setShipperProduct (java.lang.String ShipperProduct)
+	{
+		set_Value (COLUMNNAME_ShipperProduct, ShipperProduct);
+	}
+
+	/** Get Shipper Product.
+		@return Shipper Product	  */
+	@Override
+	public java.lang.String getShipperProduct () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ShipperProduct);
 	}
 }

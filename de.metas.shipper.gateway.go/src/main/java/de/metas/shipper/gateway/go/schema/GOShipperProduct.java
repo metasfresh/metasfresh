@@ -5,7 +5,7 @@ import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.shipper.gateway.spi.model.ServiceType;
+import de.metas.shipper.gateway.spi.model.ShipperProduct;
 import de.metas.util.GuavaCollectors;
 import lombok.Getter;
 import lombok.NonNull;
@@ -32,21 +32,21 @@ import lombok.NonNull;
  * #L%
  */
 
-public enum GOServiceType implements ServiceType
+public enum GOShipperProduct implements ShipperProduct
 {
 	Overnight("0"), OvernightLetter("1"), International("2"), InternationalLetter("3");
 
 	@Getter
 	private final String code;
 
-	private GOServiceType(final String code)
+	private GOShipperProduct(final String code)
 	{
 		this.code = code;
 	}
 
-	public static GOServiceType forCode(@NonNull final String code)
+	public static GOShipperProduct forCode(@NonNull final String code)
 	{
-		final GOServiceType type = code2type.get(code);
+		final GOShipperProduct type = code2type.get(code);
 		if (type == null)
 		{
 			throw new NoSuchElementException("No element found for code=" + code);
@@ -54,6 +54,6 @@ public enum GOServiceType implements ServiceType
 		return type;
 	}
 
-	private static final ImmutableMap<String, GOServiceType> code2type = Stream.of(values())
-			.collect(GuavaCollectors.toImmutableMapByKey(GOServiceType::getCode));
+	private static final ImmutableMap<String, GOShipperProduct> code2type = Stream.of(values())
+			.collect(GuavaCollectors.toImmutableMapByKey(GOShipperProduct::getCode));
 }

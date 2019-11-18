@@ -10,6 +10,22 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.128
+## Features
+* metasfresh 
+  * [#5430](https://github.com/metasfresh/metasfresh/issues/5430) report server: autodetect and use workspace jasperreports folders
+  * [#5637](https://github.com/metasfresh/metasfresh/issues/5637) Add DPD Shipper and DPD integration
+  * [#5755](https://github.com/metasfresh/metasfresh/issues/5755) Create endpoint to directly insert invoice candidates
+  * [#5774](https://github.com/metasfresh/metasfresh/issues/5774) Invoice candidates sometimes remain "ToUpdate" after the invoice was created
+  * [#5776](https://github.com/metasfresh/metasfresh/issues/5776) Distribution Network from Main-Warehouse to Picking Warehouse
+  * [#5782](https://github.com/metasfresh/metasfresh/issues/5782) Endpoint: Close Invoice Candidates
+  * [#5784](https://github.com/metasfresh/metasfresh/issues/5784) Adjust LU Label
+  * [#5789](https://github.com/metasfresh/metasfresh/issues/5789) Don't log migration scripts for AD_Attachment tables
+## Fixes
+* metasfresh
+  * [#5778](https://github.com/metasfresh/metasfresh/issues/5778) Fix potential threadLocalTrxName leakage
+  * [#5787](https://github.com/metasfresh/metasfresh/issues/5787) BPartner API error if CreatedBy or UpdatedBy == -1
+
 # metasfresh 5.127
 ## Features
 * metasfresh
