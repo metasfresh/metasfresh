@@ -298,7 +298,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 					final PickupDate pickupDate = deliveryOrder.getPickupDate();
 
 					final ShipmentDetailsTypeType shipmentDetailsTypeType = objectFactory.createShipmentDetailsTypeType();
-					shipmentDetailsTypeType.setProduct(deliveryOrder.getServiceType().getCode());
+					shipmentDetailsTypeType.setProduct(deliveryOrder.getShipperProduct().getCode());
 					shipmentDetailsTypeType.setAccountNumber(config.getAccountNumber());
 					//noinspection ConstantConditions
 					shipmentDetailsTypeType.setCustomerReference(deliveryOrder.getCustomerReference());

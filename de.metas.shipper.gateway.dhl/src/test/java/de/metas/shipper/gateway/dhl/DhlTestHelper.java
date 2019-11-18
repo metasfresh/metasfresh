@@ -23,7 +23,6 @@
 package de.metas.shipper.gateway.dhl;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.attachments.AttachmentEntryService;
 import de.metas.customs.CustomsInvoiceRepository;
 import de.metas.location.CountryCode;
 import de.metas.mpackage.PackageId;
@@ -34,8 +33,7 @@ import de.metas.shipper.gateway.dhl.model.DhlClientConfigRepository;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
-import de.metas.shipper.gateway.dhl.model.DhlServiceType;
-import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrder;
+import de.metas.shipper.gateway.dhl.model.DhlShipperProduct;
 import de.metas.shipper.gateway.dhl.model.I_Dhl_ShipmentOrder_Log;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
@@ -51,7 +49,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Location;
 
@@ -120,7 +117,7 @@ class DhlTestHelper
 						.grossWeightKg(1)
 						.build())
 				.customerReference(null)
-				.serviceType(DhlServiceType.Dhl_Paket)
+				.shipperProduct(DhlShipperProduct.Dhl_Paket)
 				.shipperId(ShipperId.ofRepoId(1))
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(1))
 				.build();
@@ -168,7 +165,7 @@ class DhlTestHelper
 						.grossWeightKg(1)
 						.build())
 				.customerReference(null)
-				.serviceType(DhlServiceType.Dhl_PaketInternational)
+				.shipperProduct(DhlShipperProduct.Dhl_PaketInternational)
 				.shipperId(ShipperId.ofRepoId(1))
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(1))
 				.build();
@@ -216,7 +213,7 @@ class DhlTestHelper
 						.grossWeightKg(1)
 						.build())
 				.customerReference(null)
-				.serviceType(DhlServiceType.Dhl_PaketInternational)
+				.shipperProduct(DhlShipperProduct.Dhl_PaketInternational)
 				.shipperId(ShipperId.ofRepoId(1))
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(1))
 				.build();
@@ -377,7 +374,7 @@ class DhlTestHelper
 		final String deliverToPhoneNumber = deliveryOrder.getDeliveryContact().getSimplePhoneNumber();
 
 		//
-		final DhlServiceType detectedServiceType = (DhlServiceType)deliveryOrder.getServiceType();
+		final DhlShipperProduct detectedServiceType = (DhlShipperProduct)deliveryOrder.getShipperProduct();
 		final int grossWeightInKg = deliveryPosition.getGrossWeightKg();
 		final ShipperId shipperId = deliveryOrder.getShipperId();
 		final ShipperTransportationId shipperTransportationId = deliveryOrder.getShipperTransportationId();

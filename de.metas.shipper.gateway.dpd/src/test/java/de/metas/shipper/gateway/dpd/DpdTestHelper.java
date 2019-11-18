@@ -34,7 +34,7 @@ import de.metas.shipper.gateway.dpd.model.DpdNotificationChannel;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.model.DpdOrderType;
 import de.metas.shipper.gateway.dpd.model.DpdPaperFormat;
-import de.metas.shipper.gateway.dpd.model.DpdServiceType;
+import de.metas.shipper.gateway.dpd.model.DpdShipperProduct;
 import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrder_Log;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
@@ -43,7 +43,7 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
-import de.metas.shipper.gateway.spi.model.ServiceType;
+import de.metas.shipper.gateway.spi.model.ShipperProduct;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.util.Services;
@@ -88,7 +88,7 @@ class DpdTestHelper
 			.databaseLogger(DpdDatabaseClientLogger.instance)
 			.build();
 
-	static DeliveryOrder createDummyDeliveryOrderDEtoDE(final DpdServiceType serviceType)
+	static DeliveryOrder createDummyDeliveryOrderDEtoDE(final DpdShipperProduct serviceType)
 	{
 		return DeliveryOrder.builder()
 				// shipper
@@ -123,7 +123,7 @@ class DpdTestHelper
 						.build())
 				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
 				.customerReference(null)
-				.serviceType(serviceType)
+				.shipperProduct(serviceType)
 				.shipperId(ShipperId.ofRepoId(1))
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(1))
 				.customDeliveryData(DpdOrderCustomDeliveryData.builder()
@@ -136,7 +136,7 @@ class DpdTestHelper
 				.build();
 	}
 
-	static DeliveryOrder createDummyDeliveryOrderDEtoCH(final DpdServiceType serviceType)
+	static DeliveryOrder createDummyDeliveryOrderDEtoCH(final DpdShipperProduct serviceType)
 	{
 		return DeliveryOrder.builder()
 				// shipper
@@ -171,7 +171,7 @@ class DpdTestHelper
 						.build())
 				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
 				.customerReference(null)
-				.serviceType(serviceType)
+				.shipperProduct(serviceType)
 				.shipperId(ShipperId.ofRepoId(1))
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(1))
 				.customDeliveryData(DpdOrderCustomDeliveryData.builder()
@@ -184,7 +184,7 @@ class DpdTestHelper
 				.build();
 	}
 
-	static DeliveryOrder createDummyDeliveryOrderDEtoAT(final DpdServiceType serviceType)
+	static DeliveryOrder createDummyDeliveryOrderDEtoAT(final DpdShipperProduct serviceType)
 	{
 		return DeliveryOrder.builder()
 				// shipper
@@ -219,7 +219,7 @@ class DpdTestHelper
 						.build())
 				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
 				.customerReference(null)
-				.serviceType(serviceType)
+				.shipperProduct(serviceType)
 				.shipperId(ShipperId.ofRepoId(1))
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(1))
 				.customDeliveryData(DpdOrderCustomDeliveryData.builder()
@@ -267,7 +267,7 @@ class DpdTestHelper
 						.build())
 				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
 				.customerReference(null)
-				.serviceType(DpdServiceType.DPD_CLASSIC)
+				.shipperProduct(DpdShipperProduct.DPD_CLASSIC)
 				.shipperId(ShipperId.ofRepoId(1))
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(1))
 				.customDeliveryData(DpdOrderCustomDeliveryData.builder()
@@ -397,7 +397,7 @@ class DpdTestHelper
 		final String deliverToPhoneNumber = deliveryOrder.getDeliveryContact().getSimplePhoneNumber();
 
 		//
-		final ServiceType detectedServiceType = deliveryOrder.getServiceType();
+		final ShipperProduct detectedShipperProduct = deliveryOrder.getShipperProduct();
 		final ShipperId shipperId = deliveryOrder.getShipperId();
 		final ShipperTransportationId shipperTransportationId = deliveryOrder.getShipperTransportationId();
 
@@ -419,7 +419,7 @@ class DpdTestHelper
 				deliverToBPartner,
 				deliverToLocation,
 				deliverToPhoneNumber,
-				detectedServiceType,
+				detectedShipperProduct,
 				shipperId,
 				shipperTransportationId,
 				customerReference,

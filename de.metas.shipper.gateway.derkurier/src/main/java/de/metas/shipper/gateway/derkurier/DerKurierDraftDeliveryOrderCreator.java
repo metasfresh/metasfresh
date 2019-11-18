@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.util.Set;
 
 import de.metas.mpackage.PackageId;
-import de.metas.shipping.api.ShipperTransportationId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -15,7 +14,7 @@ import org.springframework.stereotype.Service;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
-import de.metas.shipper.gateway.derkurier.misc.DerKurierServiceType;
+import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperProduct;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
 import de.metas.shipper.gateway.derkurier.misc.ParcelNumberGenerator;
@@ -102,7 +101,7 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 						.build();
 
 		return DeliveryOrder.builder()
-				.serviceType(DerKurierServiceType.OVERNIGHT)
+				.shipperProduct(DerKurierShipperProduct.OVERNIGHT)
 				.shipperId(deliveryOrderKey.getShipperId())
 				.shipperTransportationId(deliveryOrderKey.getShipperTransportationId())
 				//

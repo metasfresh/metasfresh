@@ -1,10 +1,13 @@
-package de.metas.shipper.gateway.spi.model;
+package de.metas.shipper.gateway.derkurier.misc;
+
+import de.metas.shipper.gateway.spi.model.ShipperProduct;
+import lombok.Getter;
 
 /*
  * #%L
- * de.metas.shipper.gateway.api
+ * de.metas.shipper.gateway.derkurier
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,10 +25,15 @@ package de.metas.shipper.gateway.spi.model;
  * #L%
  */
 
-/**
- * The Shipper Product (eg. EXPRESS, CLASSIC, overnight, next-day-until-12, etc.)
- */
-public interface ServiceType
+public enum DerKurierShipperProduct implements ShipperProduct
 {
-	String getCode();
+	OVERNIGHT("overnight");
+
+	@Getter
+	private final String code;
+
+	private DerKurierShipperProduct(final String code)
+	{
+		this.code = code;
+	}
 }

@@ -310,7 +310,7 @@ public class GOClient implements ShipperGatewayClient
 		goRequest.setZustelldatum(createGODeliveryDateOrNull(request.getDeliveryDate())); // Delivery date (not mandatory)
 		goRequest.setZustellhinweise(request.getDeliveryNote()); // Delivery note (an128, not mandatory)
 
-		goRequest.setService(request.getServiceType().getCode()); // Service type (mandatory)
+		goRequest.setService(request.getShipperProduct().getCode()); // Service type (mandatory)
 		goRequest.setUnfrei(goDeliveryOrderData.getPaidMode().getCode()); // Flag unpaid (mandatory)
 		goRequest.setSelbstanlieferung(goDeliveryOrderData.getSelfDelivery().getCode()); // Flag self delivery (mandatory)
 		goRequest.setSelbstabholung(goDeliveryOrderData.getSelfPickup().getCode()); // Flag self pickup (mandatory)

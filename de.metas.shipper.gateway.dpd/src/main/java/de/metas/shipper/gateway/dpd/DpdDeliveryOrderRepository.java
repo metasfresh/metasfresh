@@ -28,7 +28,7 @@ import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.dpd.model.DpdNotificationChannel;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.model.DpdPaperFormat;
-import de.metas.shipper.gateway.dpd.model.DpdServiceType;
+import de.metas.shipper.gateway.dpd.model.DpdShipperProduct;
 import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrder;
 import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrderLine;
 import de.metas.shipper.gateway.dpd.util.DpdConversionUtil;
@@ -168,7 +168,7 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 			// General Shipment Data
 			// dpdStoreOrder.identification number // there's no identification number saved. it needs to be created in the client during the request creation!
 			final DpdOrderCustomDeliveryData customDeliveryData = DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
-			orderPO.setDpdProduct(deliveryOrder.getServiceType().getCode());
+			orderPO.setDpdProduct(deliveryOrder.getShipperProduct().getCode());
 			orderPO.setDpdOrderType(customDeliveryData.getOrderType());
 			orderPO.setSendingDepot(customDeliveryData.getSendingDepot());
 			orderPO.setPaperFormat(customDeliveryData.getPaperFormat().getCode());
@@ -299,7 +299,7 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 						.printerLanguage(orderPO.getPrinterLanguage())
 						.pdfData(orderPO.getPdfLabelData())
 						.build())
-				.serviceType(DpdServiceType.ofCode(orderPO.getDpdProduct()))
+				.shipperProduct(DpdShipperProduct.ofCode(orderPO.getDpdProduct()))
 				//
 				// Parcels aka Packages aka DeliveryOrderLines
 				.deliveryOrderLines(deliveryOrderLIneBuilder.build())

@@ -111,7 +111,7 @@ public class DeliveryOrder
 	 * The Shipper Product
 	 */
 	@NonNull
-	ServiceType serviceType;
+	ShipperProduct shipperProduct;
 
 	/**
 	 * ID in external repository

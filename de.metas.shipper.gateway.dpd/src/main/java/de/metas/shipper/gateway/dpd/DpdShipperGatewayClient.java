@@ -45,7 +45,7 @@ import de.metas.shipper.gateway.dpd.logger.DpdClientLogEvent;
 import de.metas.shipper.gateway.dpd.logger.DpdDatabaseClientLogger;
 import de.metas.shipper.gateway.dpd.model.DpdClientConfig;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
-import de.metas.shipper.gateway.dpd.model.DpdServiceType;
+import de.metas.shipper.gateway.dpd.model.DpdShipperProduct;
 import de.metas.shipper.gateway.dpd.util.DpdClientUtil;
 import de.metas.shipper.gateway.dpd.util.DpdConversionUtil;
 import de.metas.shipper.gateway.dpd.util.DpdSoapHeaderWithAuth;
@@ -264,7 +264,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 			generalShipmentData.setMpsCustomerReferenceNumber1(deliveryOrder.getCustomerReference()); // what is this? optional?
 			generalShipmentData.setIdentificationNumber(String.valueOf(deliveryOrder.getId().getRepoId())); // unique metasfresh number for this shipment
 			//			generalShipmentData.setSendingDepot(); // not set here, as it's taken from login info
-			generalShipmentData.setProduct(deliveryOrder.getServiceType().getCode()); // this is the DPD product
+			generalShipmentData.setProduct(deliveryOrder.getShipperProduct().getCode()); // this is the DPD product
 
 			{
 				// Sender aka Pickup
@@ -301,7 +301,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 			shipmentServiceData.setProductAndServiceData(productAndServiceData);
 			{
 				// only works with E12 product
-				productAndServiceData.setSaturdayDelivery(DpdServiceType.DPD_E12.equals(deliveryOrder.getServiceType()));
+				productAndServiceData.setSaturdayDelivery(DpdShipperProduct.DPD_E12.equals(deliveryOrder.getShipperProduct()));
 			}
 			{
 				// Shipper Product

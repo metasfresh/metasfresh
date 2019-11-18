@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperProduct;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Country;
@@ -15,7 +16,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.shipper.gateway.derkurier.misc.Converters;
-import de.metas.shipper.gateway.derkurier.misc.DerKurierServiceType;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine;
 import de.metas.shipper.gateway.spi.model.Address;
@@ -115,7 +115,7 @@ public class DerKurierDeliveryOrderRepositoryTest
 		final DeliveryOrderBuilder builder = DeliveryOrder.builder()
 				.pickupAddress(pickupAddress) // pickupAddress is mandatory, but not coming from I_DerKurier_DeliveryOrderLine
 				.pickupDate(pickupDate) // same as pickupAddress
-				.serviceType(DerKurierServiceType.OVERNIGHT);
+				.shipperProduct(DerKurierShipperProduct.OVERNIGHT);
 
 		// invoke the method under test
 		derKurierDeliveryOrderRepository.addLineRecordDataToDeliveryOrderBuilder(

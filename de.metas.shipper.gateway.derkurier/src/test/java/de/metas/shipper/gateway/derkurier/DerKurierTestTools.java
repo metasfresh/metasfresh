@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.location.CountryCode;
 import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.derkurier.DerKurierDeliveryData.DerKurierDeliveryDataBuilder;
-import de.metas.shipper.gateway.derkurier.misc.DerKurierServiceType;
+import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperProduct;
 import de.metas.shipper.gateway.derkurier.restapi.models.RequestParticipant;
 import de.metas.shipper.gateway.derkurier.restapi.models.RequestParticipant.RequestParticipantBuilder;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
@@ -111,7 +111,7 @@ public class DerKurierTestTools
 	{
 		final DeliveryOrderBuilder deliveryOrderBuilder = DeliveryOrder.builder()
 				.orderId(OrderId.of(SHIPPER_GATEWAY_ID, "1234"))
-				.serviceType(DerKurierServiceType.OVERNIGHT)
+				.shipperProduct(DerKurierShipperProduct.OVERNIGHT)
 				.pickupAddress(createPickupAddress())
 				.pickupDate(createPickupDate())
 				.deliveryDate(DeliveryDate.builder()

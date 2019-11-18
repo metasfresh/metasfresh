@@ -26,10 +26,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.customs.CustomsInvoiceRepository;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.mpackage.PackageId;
 import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
@@ -37,7 +34,7 @@ import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfigRepository;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
-import de.metas.shipper.gateway.dhl.model.DhlServiceType;
+import de.metas.shipper.gateway.dhl.model.DhlShipperProduct;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
@@ -47,19 +44,15 @@ import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.ShipperTransportationId;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_UOM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -121,7 +114,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 		final ShipperTransportationId shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
 
-		DhlServiceType detectedServiceType = DhlServiceType.Dhl_Paket;
+		DhlShipperProduct detectedServiceType = DhlShipperProduct.Dhl_Paket;
 		final DhlCustomDeliveryData.DhlCustomDeliveryDataBuilder dataBuilder = DhlCustomDeliveryData.builder();
 
 		// create the customDeliveryDataDetails
@@ -134,7 +127,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			// currently we only support inside-EU international shipping. For everything else dhl api will error out until the DhlCustomsDocument is properly filled!
 			if (deliverToLocation.getC_Country_ID() != pickupFromLocation.getC_Country_ID())
 			{
-				detectedServiceType = DhlServiceType.Dhl_PaketInternational;
+				detectedServiceType = DhlShipperProduct.Dhl_PaketInternational;
 
 				// "{ }" for easier method extraction later on
 				//				{
@@ -202,7 +195,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			final int deliverToBPartnerLocationId,
 			@NonNull final I_C_Location deliverToLocation,
 			@Nullable final String deliverToPhoneNumber,
-			@NonNull final DhlServiceType serviceType,
+			@NonNull final DhlShipperProduct serviceType,
 			final int grossWeightKg,
 			final ShipperId shipperId,
 			final String customerReference,
@@ -215,7 +208,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.shipperTransportationId(shipperTransportationId)
 				//
 
-				.serviceType(serviceType) // todo this should be made user-selectable. Ref: https://github.com/metasfresh/me03/issues/3128
+				.shipperProduct(serviceType) // todo this should be made user-selectable. Ref: https://github.com/metasfresh/me03/issues/3128
 				.customerReference(customerReference)
 				.customDeliveryData(customDeliveryData)
 				//

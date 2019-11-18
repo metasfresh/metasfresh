@@ -22,7 +22,7 @@
 
 package de.metas.shipper.gateway.dpd;
 
-import de.metas.shipper.gateway.dpd.model.DpdServiceType;
+import de.metas.shipper.gateway.dpd.model.DpdShipperProduct;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -42,20 +42,20 @@ public class IntegrationDEtoDETest
 	@DisplayName("Delivery Order DE -> DE, DPD E12")
 	void E12()
 	{
-		DpdTestHelper.testAllSteps(DpdTestHelper.createDummyDeliveryOrderDEtoDE(DpdServiceType.DPD_E12));
+		DpdTestHelper.testAllSteps(DpdTestHelper.createDummyDeliveryOrderDEtoDE(DpdShipperProduct.DPD_E12));
 	}
 
 	@Test
 	@DisplayName("Delivery Order DE -> DE, DPD Classic")
 	void Classic()
 	{
-		DpdTestHelper.testAllSteps(DpdTestHelper.createDummyDeliveryOrderDEtoDE(DpdServiceType.DPD_CLASSIC));
+		DpdTestHelper.testAllSteps(DpdTestHelper.createDummyDeliveryOrderDEtoDE(DpdShipperProduct.DPD_CLASSIC));
 	}
 
 	@Test
 	@DisplayName("Delivery Order DE -> DE, DPD Express")
 	void Express()
 	{
-		DpdTestHelper.testAllSteps(DpdTestHelper.createDummyDeliveryOrderDEtoDE(DpdServiceType.DPD_EXPRESS));
+		DpdTestHelper.testAllSteps(DpdTestHelper.createDummyDeliveryOrderDEtoDE(DpdShipperProduct.DPD_EXPRESS));
 	}
 }

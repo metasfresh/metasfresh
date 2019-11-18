@@ -30,7 +30,7 @@ import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
-import de.metas.shipper.gateway.dhl.model.DhlServiceType;
+import de.metas.shipper.gateway.dhl.model.DhlShipperProduct;
 import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrder;
 import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
@@ -198,7 +198,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 						.build())
 				// other
 				.customerReference(firstOrder.getCustomerReference())
-				.serviceType(DhlServiceType.forCode(firstOrder.getDHL_Product()))
+				.shipperProduct(DhlShipperProduct.forCode(firstOrder.getDHL_Product()))
 				.deliveryPositions(constructDeliveryPositions(firstOrder, packageIds))
 				.shipperId(ShipperId.ofRepoId(firstOrder.getM_Shipper_ID()))
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(firstOrder.getM_ShipperTransportation_ID()))
@@ -277,7 +277,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 
 				{
 					// (2.2.1) Shipment Details aka PackageDetails
-					shipmentOrder.setDHL_Product(deliveryOrder.getServiceType().getCode());
+					shipmentOrder.setDHL_Product(deliveryOrder.getShipperProduct().getCode());
 					//noinspection ConstantConditions
 					shipmentOrder.setCustomerReference(deliveryOrder.getCustomerReference());
 					shipmentOrder.setDHL_ShipmentDate(deliveryOrder.getPickupDate().getDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
