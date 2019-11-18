@@ -41,7 +41,7 @@ public class DeliveryOrder
 	/**
 	 * No idea what this field does, as there's a {@link de.metas.shipper.gateway.spi.DeliveryOrderId} field as well}.
 	 *
-	 * @deprecated Not sure if it's correct to deprecate this, but i believe we should use {@link #id} instead
+	 * @deprecated Not sure if it's correct to deprecate this, but i believe we should use {@link #id} instead when persisting the DeliveryOrder
 	 */
 	@Deprecated
 	@Nullable
@@ -111,7 +111,7 @@ public class DeliveryOrder
 	 * The Shipper Product
 	 */
 	@NonNull
-	ServiceType serviceType;
+	ShipperProduct shipperProduct;
 
 	/**
 	 * ID in external repository

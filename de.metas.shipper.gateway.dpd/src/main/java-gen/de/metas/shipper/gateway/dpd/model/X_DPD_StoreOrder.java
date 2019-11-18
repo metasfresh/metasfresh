@@ -14,7 +14,7 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1950743136L;
+	private static final long serialVersionUID = -1851456000L;
 
     /** Standard Constructor */
     public X_DPD_StoreOrder (Properties ctx, int DPD_StoreOrder_ID, String trxName)
@@ -127,32 +127,32 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
 		return (java.lang.String)get_Value(COLUMNNAME_CustomerReference);
 	}
 
-	/** Set Dpd Order Type.
-		@param DpdOrderType Dpd Order Type	  */
+	/** Set DPD Auftragsart.
+		@param DpdOrderType DPD Auftragsart	  */
 	@Override
 	public void setDpdOrderType (java.lang.String DpdOrderType)
 	{
 		set_Value (COLUMNNAME_DpdOrderType, DpdOrderType);
 	}
 
-	/** Get Dpd Order Type.
-		@return Dpd Order Type	  */
+	/** Get DPD Auftragsart.
+		@return DPD Auftragsart	  */
 	@Override
 	public java.lang.String getDpdOrderType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DpdOrderType);
 	}
 
-	/** Set Dpd Product.
-		@param DpdProduct Dpd Product	  */
+	/** Set DPD Produkt.
+		@param DpdProduct DPD Produkt	  */
 	@Override
 	public void setDpdProduct (java.lang.String DpdProduct)
 	{
 		set_Value (COLUMNNAME_DpdProduct, DpdProduct);
 	}
 
-	/** Get Dpd Product.
-		@return Dpd Product	  */
+	/** Get DPD Produkt.
+		@return DPD Produkt	  */
 	@Override
 	public java.lang.String getDpdProduct () 
 	{
@@ -240,80 +240,80 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
 		return ii.intValue();
 	}
 
-	/** Set Notification Channel.
-		@param NotificationChannel Notification Channel	  */
+	/** Set Benachrichtigungsart.
+		@param NotificationChannel Benachrichtigungsart	  */
 	@Override
 	public void setNotificationChannel (java.lang.String NotificationChannel)
 	{
 		set_Value (COLUMNNAME_NotificationChannel, NotificationChannel);
 	}
 
-	/** Get Notification Channel.
-		@return Notification Channel	  */
+	/** Get Benachrichtigungsart.
+		@return Benachrichtigungsart	  */
 	@Override
 	public java.lang.String getNotificationChannel () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_NotificationChannel);
 	}
 
-	/** Set Paper Format.
-		@param PaperFormat Paper Format	  */
+	/** Set Papierformat.
+		@param PaperFormat Papierformat	  */
 	@Override
 	public void setPaperFormat (java.lang.String PaperFormat)
 	{
 		set_Value (COLUMNNAME_PaperFormat, PaperFormat);
 	}
 
-	/** Get Paper Format.
-		@return Paper Format	  */
+	/** Get Papierformat.
+		@return Papierformat	  */
 	@Override
 	public java.lang.String getPaperFormat () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_PaperFormat);
 	}
 
-	/** Set PdfLabelData.
-		@param PdfLabelData PdfLabelData	  */
+	/** Set Paketscheindaten PDF.
+		@param PdfLabelData Paketscheindaten PDF	  */
 	@Override
 	public void setPdfLabelData (byte[] PdfLabelData)
 	{
 		set_Value (COLUMNNAME_PdfLabelData, PdfLabelData);
 	}
 
-	/** Get PdfLabelData.
-		@return PdfLabelData	  */
+	/** Get Paketscheindaten PDF.
+		@return Paketscheindaten PDF	  */
 	@Override
 	public byte[] getPdfLabelData () 
 	{
 		return (byte[])get_Value(COLUMNNAME_PdfLabelData);
 	}
 
-	/** Set Pickup Date.
-		@param PickupDate Pickup Date	  */
+	/** Set Datum der Abholung.
+		@param PickupDate Datum der Abholung	  */
 	@Override
 	public void setPickupDate (java.sql.Timestamp PickupDate)
 	{
 		set_Value (COLUMNNAME_PickupDate, PickupDate);
 	}
 
-	/** Get Pickup Date.
-		@return Pickup Date	  */
+	/** Get Datum der Abholung.
+		@return Datum der Abholung	  */
 	@Override
 	public java.sql.Timestamp getPickupDate () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PickupDate);
 	}
 
-	/** Set Pickup Day.
-		@param PickupDay Pickup Day	  */
+	/** Set Tag der Abholung.
+		@param PickupDay Tag der Abholung	  */
 	@Override
 	public void setPickupDay (int PickupDay)
 	{
 		set_Value (COLUMNNAME_PickupDay, Integer.valueOf(PickupDay));
 	}
 
-	/** Get Pickup Day.
-		@return Pickup Day	  */
+	/** Get Tag der Abholung.
+		@return Tag der Abholung	  */
 	@Override
 	public int getPickupDay () 
 	{
@@ -323,320 +323,320 @@ public class X_DPD_StoreOrder extends org.compiere.model.PO implements I_DPD_Sto
 		return ii.intValue();
 	}
 
-	/** Set Pickup Time From.
-		@param PickupTimeFrom Pickup Time From	  */
+	/** Set Abhoung Uhrzeit ab.
+		@param PickupTimeFrom Abhoung Uhrzeit ab	  */
 	@Override
 	public void setPickupTimeFrom (java.sql.Timestamp PickupTimeFrom)
 	{
 		set_Value (COLUMNNAME_PickupTimeFrom, PickupTimeFrom);
 	}
 
-	/** Get Pickup Time From.
-		@return Pickup Time From	  */
+	/** Get Abhoung Uhrzeit ab.
+		@return Abhoung Uhrzeit ab	  */
 	@Override
 	public java.sql.Timestamp getPickupTimeFrom () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PickupTimeFrom);
 	}
 
-	/** Set Pickup Time To.
-		@param PickupTimeTo Pickup Time To	  */
+	/** Set Abholung Uhrzeit bis.
+		@param PickupTimeTo Abholung Uhrzeit bis	  */
 	@Override
 	public void setPickupTimeTo (java.sql.Timestamp PickupTimeTo)
 	{
 		set_Value (COLUMNNAME_PickupTimeTo, PickupTimeTo);
 	}
 
-	/** Get Pickup Time To.
-		@return Pickup Time To	  */
+	/** Get Abholung Uhrzeit bis.
+		@return Abholung Uhrzeit bis	  */
 	@Override
 	public java.sql.Timestamp getPickupTimeTo () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PickupTimeTo);
 	}
 
-	/** Set Printer Language.
-		@param PrinterLanguage Printer Language	  */
+	/** Set Sprache Paketschein.
+		@param PrinterLanguage Sprache Paketschein	  */
 	@Override
 	public void setPrinterLanguage (java.lang.String PrinterLanguage)
 	{
 		set_Value (COLUMNNAME_PrinterLanguage, PrinterLanguage);
 	}
 
-	/** Get Printer Language.
-		@return Printer Language	  */
+	/** Get Sprache Paketschein.
+		@return Sprache Paketschein	  */
 	@Override
 	public java.lang.String getPrinterLanguage () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_PrinterLanguage);
 	}
 
-	/** Set Recipient City.
-		@param RecipientCity Recipient City	  */
+	/** Set Ort Empfänger.
+		@param RecipientCity Ort Empfänger	  */
 	@Override
 	public void setRecipientCity (java.lang.String RecipientCity)
 	{
 		set_Value (COLUMNNAME_RecipientCity, RecipientCity);
 	}
 
-	/** Get Recipient City.
-		@return Recipient City	  */
+	/** Get Ort Empfänger.
+		@return Ort Empfänger	  */
 	@Override
 	public java.lang.String getRecipientCity () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_RecipientCity);
 	}
 
-	/** Set Recipient Country.
-		@param RecipientCountry Recipient Country	  */
+	/** Set Land Empfänger.
+		@param RecipientCountry Land Empfänger	  */
 	@Override
 	public void setRecipientCountry (java.lang.String RecipientCountry)
 	{
 		set_Value (COLUMNNAME_RecipientCountry, RecipientCountry);
 	}
 
-	/** Get Recipient Country.
-		@return Recipient Country	  */
+	/** Get Land Empfänger.
+		@return Land Empfänger	  */
 	@Override
 	public java.lang.String getRecipientCountry () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_RecipientCountry);
 	}
 
-	/** Set Recipient Email Address.
-		@param RecipientEmailAddress Recipient Email Address	  */
+	/** Set E-Mail-Adresse Empfänger.
+		@param RecipientEmailAddress E-Mail-Adresse Empfänger	  */
 	@Override
 	public void setRecipientEmailAddress (java.lang.String RecipientEmailAddress)
 	{
 		set_Value (COLUMNNAME_RecipientEmailAddress, RecipientEmailAddress);
 	}
 
-	/** Get Recipient Email Address.
-		@return Recipient Email Address	  */
+	/** Get E-Mail-Adresse Empfänger.
+		@return E-Mail-Adresse Empfänger	  */
 	@Override
 	public java.lang.String getRecipientEmailAddress () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_RecipientEmailAddress);
 	}
 
-	/** Set Recipient House No.
-		@param RecipientHouseNo Recipient House No	  */
+	/** Set Haus-Nr. Empfänger.
+		@param RecipientHouseNo Haus-Nr. Empfänger	  */
 	@Override
 	public void setRecipientHouseNo (java.lang.String RecipientHouseNo)
 	{
 		set_Value (COLUMNNAME_RecipientHouseNo, RecipientHouseNo);
 	}
 
-	/** Get Recipient House No.
-		@return Recipient House No	  */
+	/** Get Haus-Nr. Empfänger.
+		@return Haus-Nr. Empfänger	  */
 	@Override
 	public java.lang.String getRecipientHouseNo () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_RecipientHouseNo);
 	}
 
-	/** Set Recipient Name 1.
-		@param RecipientName1 Recipient Name 1	  */
+	/** Set Name 1 Empfänger.
+		@param RecipientName1 Name 1 Empfänger	  */
 	@Override
 	public void setRecipientName1 (java.lang.String RecipientName1)
 	{
 		set_Value (COLUMNNAME_RecipientName1, RecipientName1);
 	}
 
-	/** Get Recipient Name 1.
-		@return Recipient Name 1	  */
+	/** Get Name 1 Empfänger.
+		@return Name 1 Empfänger	  */
 	@Override
 	public java.lang.String getRecipientName1 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_RecipientName1);
 	}
 
-	/** Set Recipient Name 2.
-		@param RecipientName2 Recipient Name 2	  */
+	/** Set Name 2 Empfänger.
+		@param RecipientName2 Name 2 Empfänger	  */
 	@Override
 	public void setRecipientName2 (java.lang.String RecipientName2)
 	{
 		set_Value (COLUMNNAME_RecipientName2, RecipientName2);
 	}
 
-	/** Get Recipient Name 2.
-		@return Recipient Name 2	  */
+	/** Get Name 2 Empfänger.
+		@return Name 2 Empfänger	  */
 	@Override
 	public java.lang.String getRecipientName2 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_RecipientName2);
 	}
 
-	/** Set Recipient Phone.
-		@param RecipientPhone Recipient Phone	  */
+	/** Set Telefon Empfänger.
+		@param RecipientPhone Telefon Empfänger	  */
 	@Override
 	public void setRecipientPhone (java.lang.String RecipientPhone)
 	{
 		set_Value (COLUMNNAME_RecipientPhone, RecipientPhone);
 	}
 
-	/** Get Recipient Phone.
-		@return Recipient Phone	  */
+	/** Get Telefon Empfänger.
+		@return Telefon Empfänger	  */
 	@Override
 	public java.lang.String getRecipientPhone () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_RecipientPhone);
 	}
 
-	/** Set Recipient Street.
-		@param RecipientStreet Recipient Street	  */
+	/** Set Straße Empfänger.
+		@param RecipientStreet Straße Empfänger	  */
 	@Override
 	public void setRecipientStreet (java.lang.String RecipientStreet)
 	{
 		set_Value (COLUMNNAME_RecipientStreet, RecipientStreet);
 	}
 
-	/** Get Recipient Street.
-		@return Recipient Street	  */
+	/** Get Straße Empfänger.
+		@return Straße Empfänger	  */
 	@Override
 	public java.lang.String getRecipientStreet () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_RecipientStreet);
 	}
 
-	/** Set Recipient Zip Code.
-		@param RecipientZipCode Recipient Zip Code	  */
+	/** Set PLZ Empfänger.
+		@param RecipientZipCode PLZ Empfänger	  */
 	@Override
 	public void setRecipientZipCode (java.lang.String RecipientZipCode)
 	{
 		set_Value (COLUMNNAME_RecipientZipCode, RecipientZipCode);
 	}
 
-	/** Get Recipient Zip Code.
-		@return Recipient Zip Code	  */
+	/** Get PLZ Empfänger.
+		@return PLZ Empfänger	  */
 	@Override
 	public java.lang.String getRecipientZipCode () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_RecipientZipCode);
 	}
 
-	/** Set Sender City.
-		@param SenderCity Sender City	  */
+	/** Set Ort Absender.
+		@param SenderCity Ort Absender	  */
 	@Override
 	public void setSenderCity (java.lang.String SenderCity)
 	{
 		set_Value (COLUMNNAME_SenderCity, SenderCity);
 	}
 
-	/** Get Sender City.
-		@return Sender City	  */
+	/** Get Ort Absender.
+		@return Ort Absender	  */
 	@Override
 	public java.lang.String getSenderCity () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_SenderCity);
 	}
 
-	/** Set Sender Country.
-		@param SenderCountry Sender Country	  */
+	/** Set Land Absender.
+		@param SenderCountry Land Absender	  */
 	@Override
 	public void setSenderCountry (java.lang.String SenderCountry)
 	{
 		set_Value (COLUMNNAME_SenderCountry, SenderCountry);
 	}
 
-	/** Get Sender Country.
-		@return Sender Country	  */
+	/** Get Land Absender.
+		@return Land Absender	  */
 	@Override
 	public java.lang.String getSenderCountry () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_SenderCountry);
 	}
 
-	/** Set Sender House No.
-		@param SenderHouseNo Sender House No	  */
+	/** Set Haus-Nr. Absender.
+		@param SenderHouseNo Haus-Nr. Absender	  */
 	@Override
 	public void setSenderHouseNo (java.lang.String SenderHouseNo)
 	{
 		set_Value (COLUMNNAME_SenderHouseNo, SenderHouseNo);
 	}
 
-	/** Get Sender House No.
-		@return Sender House No	  */
+	/** Get Haus-Nr. Absender.
+		@return Haus-Nr. Absender	  */
 	@Override
 	public java.lang.String getSenderHouseNo () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_SenderHouseNo);
 	}
 
-	/** Set Sender Name 1.
-		@param SenderName1 Sender Name 1	  */
+	/** Set Name 1 Absender.
+		@param SenderName1 Name 1 Absender	  */
 	@Override
 	public void setSenderName1 (java.lang.String SenderName1)
 	{
 		set_Value (COLUMNNAME_SenderName1, SenderName1);
 	}
 
-	/** Get Sender Name 1.
-		@return Sender Name 1	  */
+	/** Get Name 1 Absender.
+		@return Name 1 Absender	  */
 	@Override
 	public java.lang.String getSenderName1 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_SenderName1);
 	}
 
-	/** Set Sender Name 2.
-		@param SenderName2 Sender Name 2	  */
+	/** Set Name 2 Absender.
+		@param SenderName2 Name 2 Absender	  */
 	@Override
 	public void setSenderName2 (java.lang.String SenderName2)
 	{
 		set_Value (COLUMNNAME_SenderName2, SenderName2);
 	}
 
-	/** Get Sender Name 2.
-		@return Sender Name 2	  */
+	/** Get Name 2 Absender.
+		@return Name 2 Absender	  */
 	@Override
 	public java.lang.String getSenderName2 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_SenderName2);
 	}
 
-	/** Set Sender Street.
-		@param SenderStreet Sender Street	  */
+	/** Set Straße Absender.
+		@param SenderStreet Straße Absender	  */
 	@Override
 	public void setSenderStreet (java.lang.String SenderStreet)
 	{
 		set_Value (COLUMNNAME_SenderStreet, SenderStreet);
 	}
 
-	/** Get Sender Street.
-		@return Sender Street	  */
+	/** Get Straße Absender.
+		@return Straße Absender	  */
 	@Override
 	public java.lang.String getSenderStreet () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_SenderStreet);
 	}
 
-	/** Set Sender Zip Code.
-		@param SenderZipCode Sender Zip Code	  */
+	/** Set PLZ Absender.
+		@param SenderZipCode PLZ Absender	  */
 	@Override
 	public void setSenderZipCode (java.lang.String SenderZipCode)
 	{
 		set_Value (COLUMNNAME_SenderZipCode, SenderZipCode);
 	}
 
-	/** Get Sender Zip Code.
-		@return Sender Zip Code	  */
+	/** Get PLZ Absender.
+		@return PLZ Absender	  */
 	@Override
 	public java.lang.String getSenderZipCode () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_SenderZipCode);
 	}
 
-	/** Set Sending Depot.
-		@param SendingDepot Sending Depot	  */
+	/** Set Versandlager.
+		@param SendingDepot Versandlager	  */
 	@Override
 	public void setSendingDepot (java.lang.String SendingDepot)
 	{
 		set_Value (COLUMNNAME_SendingDepot, SendingDepot);
 	}
 
-	/** Get Sending Depot.
-		@return Sending Depot	  */
+	/** Get Versandlager.
+		@return Versandlager	  */
 	@Override
 	public java.lang.String getSendingDepot () 
 	{

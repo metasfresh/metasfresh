@@ -23,13 +23,12 @@
 package de.metas.shipper.gateway.dpd;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.attachments.AttachmentEntryService;
 import de.metas.location.ICountryCodeFactory;
 import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.dpd.model.DpdNotificationChannel;
 import de.metas.shipper.gateway.dpd.model.DpdOrderCustomDeliveryData;
 import de.metas.shipper.gateway.dpd.model.DpdPaperFormat;
-import de.metas.shipper.gateway.dpd.model.DpdServiceType;
+import de.metas.shipper.gateway.dpd.model.DpdShipperProduct;
 import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrder;
 import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrderLine;
 import de.metas.shipper.gateway.dpd.util.DpdConversionUtil;
@@ -58,13 +57,7 @@ import java.util.List;
 @Repository
 public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 {
-	private final AttachmentEntryService attachmentEntryService;
 	private final ICountryCodeFactory countryCodeFactory = Services.get(ICountryCodeFactory.class);
-
-	public DpdDeliveryOrderRepository(final AttachmentEntryService attachmentEntryService)
-	{
-		this.attachmentEntryService = attachmentEntryService;
-	}
 
 	@Override
 	public String getShipperGatewayId()
@@ -175,7 +168,7 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 			// General Shipment Data
 			// dpdStoreOrder.identification number // there's no identification number saved. it needs to be created in the client during the request creation!
 			final DpdOrderCustomDeliveryData customDeliveryData = DpdOrderCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
-			orderPO.setDpdProduct(deliveryOrder.getServiceType().getCode());
+			orderPO.setDpdProduct(deliveryOrder.getShipperProduct().getCode());
 			orderPO.setDpdOrderType(customDeliveryData.getOrderType());
 			orderPO.setSendingDepot(customDeliveryData.getSendingDepot());
 			orderPO.setPaperFormat(customDeliveryData.getPaperFormat().getCode());
@@ -217,20 +210,13 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 			orderPO.setawb(awb);
 			//noinspection ConstantConditions
 			orderPO.setTrackingURL(deliveryOrder.getTrackingUrl());
-
-			final TableRecordReference deliveryOrderRef = TableRecordReference.of(I_DPD_StoreOrder.Table_Name, orderPO.getDPD_StoreOrder_ID());
-
-			if (attachmentEntryService.getByReferencedRecord(deliveryOrderRef).isEmpty() && pdfData != null)
-			{
-				attachmentEntryService.createNewAttachment(deliveryOrderRef, awb + ".pdf", pdfData);
-			}
 		}
 		InterfaceWrapperHelper.save(orderPO);
 
 		return orderPO;
 	}
 
-	private I_DPD_StoreOrderLine retrieveStoreOrderLinePoByPackageIdOrCreateNew(final List<I_DPD_StoreOrderLine> lines, final DeliveryOrderLine deliveryOrderLine)
+	private I_DPD_StoreOrderLine retrieveStoreOrderLinePoByPackageIdOrCreateNew(@NonNull final List<I_DPD_StoreOrderLine> lines, final DeliveryOrderLine deliveryOrderLine)
 	{
 		return lines.stream()
 				.filter(it -> it.getM_Package_ID() == deliveryOrderLine.getPackageId().getRepoId())
@@ -313,7 +299,7 @@ public class DpdDeliveryOrderRepository implements DeliveryOrderRepository
 						.printerLanguage(orderPO.getPrinterLanguage())
 						.pdfData(orderPO.getPdfLabelData())
 						.build())
-				.serviceType(DpdServiceType.ofCode(orderPO.getDpdProduct()))
+				.shipperProduct(DpdShipperProduct.ofCode(orderPO.getDpdProduct()))
 				//
 				// Parcels aka Packages aka DeliveryOrderLines
 				.deliveryOrderLines(deliveryOrderLIneBuilder.build())

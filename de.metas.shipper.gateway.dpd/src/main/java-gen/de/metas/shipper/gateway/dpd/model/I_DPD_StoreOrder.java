@@ -179,7 +179,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_CustomerReference = "CustomerReference";
 
 	/**
-	 * Set Dpd Order Type.
+	 * Set DPD Auftragsart.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -188,7 +188,7 @@ public interface I_DPD_StoreOrder
 	public void setDpdOrderType (java.lang.String DpdOrderType);
 
 	/**
-	 * Get Dpd Order Type.
+	 * Get DPD Auftragsart.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -202,7 +202,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_DpdOrderType = "DpdOrderType";
 
 	/**
-	 * Set Dpd Product.
+	 * Set DPD Produkt.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -211,7 +211,7 @@ public interface I_DPD_StoreOrder
 	public void setDpdProduct (java.lang.String DpdProduct);
 
 	/**
-	 * Get Dpd Product.
+	 * Get DPD Produkt.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -325,7 +325,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_M_ShipperTransportation_ID = "M_ShipperTransportation_ID";
 
 	/**
-	 * Set Notification Channel.
+	 * Set Benachrichtigungsart.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -334,7 +334,7 @@ public interface I_DPD_StoreOrder
 	public void setNotificationChannel (java.lang.String NotificationChannel);
 
 	/**
-	 * Get Notification Channel.
+	 * Get Benachrichtigungsart.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -348,7 +348,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_NotificationChannel = "NotificationChannel";
 
 	/**
-	 * Set Paper Format.
+	 * Set Papierformat.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -357,7 +357,7 @@ public interface I_DPD_StoreOrder
 	public void setPaperFormat (java.lang.String PaperFormat);
 
 	/**
-	 * Get Paper Format.
+	 * Get Papierformat.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -371,7 +371,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_PaperFormat = "PaperFormat";
 
 	/**
-	 * Set PdfLabelData.
+	 * Set Paketscheindaten PDF.
 	 *
 	 * <br>Type: Binary
 	 * <br>Mandatory: false
@@ -380,7 +380,7 @@ public interface I_DPD_StoreOrder
 	public void setPdfLabelData (byte[] PdfLabelData);
 
 	/**
-	 * Get PdfLabelData.
+	 * Get Paketscheindaten PDF.
 	 *
 	 * <br>Type: Binary
 	 * <br>Mandatory: false
@@ -394,7 +394,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_PdfLabelData = "PdfLabelData";
 
 	/**
-	 * Set Pickup Date.
+	 * Set Datum der Abholung.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
@@ -403,7 +403,7 @@ public interface I_DPD_StoreOrder
 	public void setPickupDate (java.sql.Timestamp PickupDate);
 
 	/**
-	 * Get Pickup Date.
+	 * Get Datum der Abholung.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
@@ -417,7 +417,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_PickupDate = "PickupDate";
 
 	/**
-	 * Set Pickup Day.
+	 * Set Tag der Abholung.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -426,7 +426,7 @@ public interface I_DPD_StoreOrder
 	public void setPickupDay (int PickupDay);
 
 	/**
-	 * Get Pickup Day.
+	 * Get Tag der Abholung.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -440,7 +440,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_PickupDay = "PickupDay";
 
 	/**
-	 * Set Pickup Time From.
+	 * Set Abhoung Uhrzeit ab.
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: true
@@ -449,7 +449,7 @@ public interface I_DPD_StoreOrder
 	public void setPickupTimeFrom (java.sql.Timestamp PickupTimeFrom);
 
 	/**
-	 * Get Pickup Time From.
+	 * Get Abhoung Uhrzeit ab.
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: true
@@ -463,7 +463,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_PickupTimeFrom = "PickupTimeFrom";
 
 	/**
-	 * Set Pickup Time To.
+	 * Set Abholung Uhrzeit bis.
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: true
@@ -472,7 +472,7 @@ public interface I_DPD_StoreOrder
 	public void setPickupTimeTo (java.sql.Timestamp PickupTimeTo);
 
 	/**
-	 * Get Pickup Time To.
+	 * Get Abholung Uhrzeit bis.
 	 *
 	 * <br>Type: Time
 	 * <br>Mandatory: true
@@ -486,7 +486,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_PickupTimeTo = "PickupTimeTo";
 
 	/**
-	 * Set Printer Language.
+	 * Set Sprache Paketschein.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -495,7 +495,7 @@ public interface I_DPD_StoreOrder
 	public void setPrinterLanguage (java.lang.String PrinterLanguage);
 
 	/**
-	 * Get Printer Language.
+	 * Get Sprache Paketschein.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -509,7 +509,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_PrinterLanguage = "PrinterLanguage";
 
 	/**
-	 * Set Recipient City.
+	 * Set Ort Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -518,7 +518,7 @@ public interface I_DPD_StoreOrder
 	public void setRecipientCity (java.lang.String RecipientCity);
 
 	/**
-	 * Get Recipient City.
+	 * Get Ort Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -532,7 +532,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_RecipientCity = "RecipientCity";
 
 	/**
-	 * Set Recipient Country.
+	 * Set Land Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -541,7 +541,7 @@ public interface I_DPD_StoreOrder
 	public void setRecipientCountry (java.lang.String RecipientCountry);
 
 	/**
-	 * Get Recipient Country.
+	 * Get Land Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -555,7 +555,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_RecipientCountry = "RecipientCountry";
 
 	/**
-	 * Set Recipient Email Address.
+	 * Set E-Mail-Adresse Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -564,7 +564,7 @@ public interface I_DPD_StoreOrder
 	public void setRecipientEmailAddress (java.lang.String RecipientEmailAddress);
 
 	/**
-	 * Get Recipient Email Address.
+	 * Get E-Mail-Adresse Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -578,7 +578,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_RecipientEmailAddress = "RecipientEmailAddress";
 
 	/**
-	 * Set Recipient House No.
+	 * Set Haus-Nr. Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -587,7 +587,7 @@ public interface I_DPD_StoreOrder
 	public void setRecipientHouseNo (java.lang.String RecipientHouseNo);
 
 	/**
-	 * Get Recipient House No.
+	 * Get Haus-Nr. Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -601,7 +601,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_RecipientHouseNo = "RecipientHouseNo";
 
 	/**
-	 * Set Recipient Name 1.
+	 * Set Name 1 Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -610,7 +610,7 @@ public interface I_DPD_StoreOrder
 	public void setRecipientName1 (java.lang.String RecipientName1);
 
 	/**
-	 * Get Recipient Name 1.
+	 * Get Name 1 Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -624,7 +624,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_RecipientName1 = "RecipientName1";
 
 	/**
-	 * Set Recipient Name 2.
+	 * Set Name 2 Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -633,7 +633,7 @@ public interface I_DPD_StoreOrder
 	public void setRecipientName2 (java.lang.String RecipientName2);
 
 	/**
-	 * Get Recipient Name 2.
+	 * Get Name 2 Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -647,7 +647,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_RecipientName2 = "RecipientName2";
 
 	/**
-	 * Set Recipient Phone.
+	 * Set Telefon Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -656,7 +656,7 @@ public interface I_DPD_StoreOrder
 	public void setRecipientPhone (java.lang.String RecipientPhone);
 
 	/**
-	 * Get Recipient Phone.
+	 * Get Telefon Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -670,7 +670,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_RecipientPhone = "RecipientPhone";
 
 	/**
-	 * Set Recipient Street.
+	 * Set Straße Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -679,7 +679,7 @@ public interface I_DPD_StoreOrder
 	public void setRecipientStreet (java.lang.String RecipientStreet);
 
 	/**
-	 * Get Recipient Street.
+	 * Get Straße Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -693,7 +693,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_RecipientStreet = "RecipientStreet";
 
 	/**
-	 * Set Recipient Zip Code.
+	 * Set PLZ Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -702,7 +702,7 @@ public interface I_DPD_StoreOrder
 	public void setRecipientZipCode (java.lang.String RecipientZipCode);
 
 	/**
-	 * Get Recipient Zip Code.
+	 * Get PLZ Empfänger.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -716,7 +716,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_RecipientZipCode = "RecipientZipCode";
 
 	/**
-	 * Set Sender City.
+	 * Set Ort Absender.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -725,7 +725,7 @@ public interface I_DPD_StoreOrder
 	public void setSenderCity (java.lang.String SenderCity);
 
 	/**
-	 * Get Sender City.
+	 * Get Ort Absender.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -739,7 +739,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_SenderCity = "SenderCity";
 
 	/**
-	 * Set Sender Country.
+	 * Set Land Absender.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -748,7 +748,7 @@ public interface I_DPD_StoreOrder
 	public void setSenderCountry (java.lang.String SenderCountry);
 
 	/**
-	 * Get Sender Country.
+	 * Get Land Absender.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -762,7 +762,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_SenderCountry = "SenderCountry";
 
 	/**
-	 * Set Sender House No.
+	 * Set Haus-Nr. Absender.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -771,7 +771,7 @@ public interface I_DPD_StoreOrder
 	public void setSenderHouseNo (java.lang.String SenderHouseNo);
 
 	/**
-	 * Get Sender House No.
+	 * Get Haus-Nr. Absender.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -785,7 +785,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_SenderHouseNo = "SenderHouseNo";
 
 	/**
-	 * Set Sender Name 1.
+	 * Set Name 1 Absender.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -794,7 +794,7 @@ public interface I_DPD_StoreOrder
 	public void setSenderName1 (java.lang.String SenderName1);
 
 	/**
-	 * Get Sender Name 1.
+	 * Get Name 1 Absender.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -808,7 +808,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_SenderName1 = "SenderName1";
 
 	/**
-	 * Set Sender Name 2.
+	 * Set Name 2 Absender.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -817,7 +817,7 @@ public interface I_DPD_StoreOrder
 	public void setSenderName2 (java.lang.String SenderName2);
 
 	/**
-	 * Get Sender Name 2.
+	 * Get Name 2 Absender.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -831,7 +831,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_SenderName2 = "SenderName2";
 
 	/**
-	 * Set Sender Street.
+	 * Set Straße Absender.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -840,7 +840,7 @@ public interface I_DPD_StoreOrder
 	public void setSenderStreet (java.lang.String SenderStreet);
 
 	/**
-	 * Get Sender Street.
+	 * Get Straße Absender.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -854,7 +854,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_SenderStreet = "SenderStreet";
 
 	/**
-	 * Set Sender Zip Code.
+	 * Set PLZ Absender.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -863,7 +863,7 @@ public interface I_DPD_StoreOrder
 	public void setSenderZipCode (java.lang.String SenderZipCode);
 
 	/**
-	 * Get Sender Zip Code.
+	 * Get PLZ Absender.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -877,7 +877,7 @@ public interface I_DPD_StoreOrder
     public static final String COLUMNNAME_SenderZipCode = "SenderZipCode";
 
 	/**
-	 * Set Sending Depot.
+	 * Set Versandlager.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -886,7 +886,7 @@ public interface I_DPD_StoreOrder
 	public void setSendingDepot (java.lang.String SendingDepot);
 
 	/**
-	 * Get Sending Depot.
+	 * Get Versandlager.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

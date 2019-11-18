@@ -110,7 +110,7 @@ public interface I_DPD_Shipper_Config
     public static final String COLUMNNAME_DelisID = "DelisID";
 
 	/**
-	 * Set Delis Password.
+	 * Set Delis Passwort.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -119,7 +119,7 @@ public interface I_DPD_Shipper_Config
 	public void setDelisPassword (java.lang.String DelisPassword);
 
 	/**
-	 * Get Delis Password.
+	 * Get Delis Passwort.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -133,7 +133,7 @@ public interface I_DPD_Shipper_Config
     public static final String COLUMNNAME_DelisPassword = "DelisPassword";
 
 	/**
-	 * Set DPD Shipper Configuration.
+	 * Set DPD Konfiguration.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -142,7 +142,7 @@ public interface I_DPD_Shipper_Config
 	public void setDPD_Shipper_config_ID (int DPD_Shipper_config_ID);
 
 	/**
-	 * Get DPD Shipper Configuration.
+	 * Get DPD Konfiguration.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -181,7 +181,7 @@ public interface I_DPD_Shipper_Config
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Login Api Url.
+	 * Set URL Api Login.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -190,7 +190,7 @@ public interface I_DPD_Shipper_Config
 	public void setLoginApiUrl (java.lang.String LoginApiUrl);
 
 	/**
-	 * Get Login Api Url.
+	 * Get URL Api Login.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -233,7 +233,7 @@ public interface I_DPD_Shipper_Config
     public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
-	 * Set Paper Format.
+	 * Set Papierformat.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -242,7 +242,7 @@ public interface I_DPD_Shipper_Config
 	public void setPaperFormat (java.lang.String PaperFormat);
 
 	/**
-	 * Get Paper Format.
+	 * Get Papierformat.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -256,7 +256,7 @@ public interface I_DPD_Shipper_Config
     public static final String COLUMNNAME_PaperFormat = "PaperFormat";
 
 	/**
-	 * Set Shipment Service Api Url.
+	 * Set URL Api Shipment Service.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -265,7 +265,7 @@ public interface I_DPD_Shipper_Config
 	public void setShipmentServiceApiUrl (java.lang.String ShipmentServiceApiUrl);
 
 	/**
-	 * Get Shipment Service Api Url.
+	 * Get URL Api Shipment Service.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -277,6 +277,29 @@ public interface I_DPD_Shipper_Config
     public static final org.adempiere.model.ModelColumn<I_DPD_Shipper_Config, Object> COLUMN_ShipmentServiceApiUrl = new org.adempiere.model.ModelColumn<I_DPD_Shipper_Config, Object>(I_DPD_Shipper_Config.class, "ShipmentServiceApiUrl", null);
     /** Column name ShipmentServiceApiUrl */
     public static final String COLUMNNAME_ShipmentServiceApiUrl = "ShipmentServiceApiUrl";
+
+	/**
+	 * Set Shipper Product.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setShipperProduct (java.lang.String ShipperProduct);
+
+	/**
+	 * Get Shipper Product.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getShipperProduct();
+
+    /** Column definition for ShipperProduct */
+    public static final org.adempiere.model.ModelColumn<I_DPD_Shipper_Config, Object> COLUMN_ShipperProduct = new org.adempiere.model.ModelColumn<I_DPD_Shipper_Config, Object>(I_DPD_Shipper_Config.class, "ShipperProduct", null);
+    /** Column name ShipperProduct */
+    public static final String COLUMNNAME_ShipperProduct = "ShipperProduct";
 
 	/**
 	 * Get Aktualisiert.

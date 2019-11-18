@@ -6,7 +6,7 @@ import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.go.schema.GOPaidMode;
 import de.metas.shipper.gateway.go.schema.GOSelfDelivery;
 import de.metas.shipper.gateway.go.schema.GOSelfPickup;
-import de.metas.shipper.gateway.go.schema.GOServiceType;
+import de.metas.shipper.gateway.go.schema.GOShipperProduct;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
@@ -94,7 +94,7 @@ public class Application
 						.content("some products")
 						.build())
 				.customerReference("some info for customer")
-				.serviceType(GOServiceType.Overnight)
+				.shipperProduct(GOShipperProduct.Overnight)
 				.customDeliveryData(GoDeliveryOrderData
 						.builder()
 						.receiptConfirmationPhoneNumber("+40-746-010203")

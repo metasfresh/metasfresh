@@ -30,6 +30,9 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 
+/**
+ * 1 DeliveryOrderLine represents 1 Package
+ */
 @Value
 public class DeliveryOrderLine
 {
