@@ -16,9 +16,9 @@ import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.google.common.collect.ImmutableList;
 
@@ -52,17 +52,15 @@ import de.metas.material.event.forecast.ForecastLine;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+@ExtendWith(AdempiereTestWatcher.class)
 public class M_ForecastEventCreatorTest
 {
 	private static final BPartnerId BPARTNER_ID_OF_FORECAST = BPartnerId.ofRepoId(50);
 	private static final BPartnerId BPARTNER_ID_OF_FIRST_FORECAST_LINE = BPartnerId.ofRepoId(51);
 
-	@Rule
-	public final AdempiereTestWatcher watcher = new AdempiereTestWatcher();
-
 	private M_ForecastEventCreator forecastEventCreator;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

@@ -17,9 +17,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.OlAndSched;
@@ -57,7 +56,7 @@ public class ShipmentScheduleQtysHelperTest
 
 	private String closedStatusMessage;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -95,7 +94,7 @@ public class ShipmentScheduleQtysHelperTest
 		I_M_ShipmentSchedule sched = createShipmentSchedule(new BigDecimal("14"));
 		sched.setQtyToDeliver_Override(new BigDecimal("10"));
 		ShipmentScheduleQtysHelper.setQtyToDeliverForDiscardedShipmentSchedule(sched);
-		Assert.assertEquals("Invalid qtyToDeliver", BigDecimal.ZERO, sched.getQtyToDeliver());
+		assertThat(sched.getQtyToDeliver()).as("qtyToDeliver").isZero();
 	}
 
 	/**
@@ -108,7 +107,7 @@ public class ShipmentScheduleQtysHelperTest
 		sched.setQtyToDeliver_Override(new BigDecimal("10"));
 		sched.setDeliveryRule(DeliveryRule.FORCE.getCode());
 		ShipmentScheduleQtysHelper.setQtyToDeliverForDiscardedShipmentSchedule(sched);
-		Assert.assertEquals("Invalid qtyToDeliver", BigDecimal.valueOf(10), sched.getQtyToDeliver());
+		assertThat(sched.getQtyToDeliver()).as("qtyToDeliver").isEqualByComparingTo("10");
 	}
 
 	/**
@@ -120,7 +119,7 @@ public class ShipmentScheduleQtysHelperTest
 		I_M_ShipmentSchedule sched = createShipmentSchedule(new BigDecimal("14"));
 		sched.setDeliveryRule(DeliveryRule.FORCE.getCode());
 		ShipmentScheduleQtysHelper.setQtyToDeliverForDiscardedShipmentSchedule(sched);
-		Assert.assertEquals("Invalid qtyToDeliver", BigDecimal.valueOf(14), sched.getQtyToDeliver());
+		assertThat(sched.getQtyToDeliver()).as("qtyToDeliver").isEqualByComparingTo("14");
 	}
 
 	/**
@@ -132,7 +131,7 @@ public class ShipmentScheduleQtysHelperTest
 		I_M_ShipmentSchedule sched = createShipmentSchedule(new BigDecimal("14"));
 		sched.setQtyToDeliver_Override(new BigDecimal("10"));
 		ShipmentScheduleQtysHelper.setQtyToDeliverForDiscardedShipmentSchedule(sched);
-		Assert.assertEquals("Invalid qtyToDeliver", BigDecimal.valueOf(0), sched.getQtyToDeliver());
+		assertThat(sched.getQtyToDeliver()).as("qtyToDeliver").isZero();
 	}
 
 	@Test

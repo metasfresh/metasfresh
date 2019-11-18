@@ -16,7 +16,7 @@ import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Product;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.inout.IInOutDAO;

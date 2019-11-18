@@ -30,7 +30,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.IQuery;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.util.Services;

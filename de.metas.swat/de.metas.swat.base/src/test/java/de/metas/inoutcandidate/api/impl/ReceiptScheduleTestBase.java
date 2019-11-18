@@ -1,7 +1,5 @@
 package de.metas.inoutcandidate.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -23,6 +21,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -48,10 +48,11 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
 
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
@@ -65,16 +66,11 @@ import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
-import mockit.Expectations;
-import mockit.Mocked;
 
+@ExtendWith(AdempiereTestWatcher.class)
 public abstract class ReceiptScheduleTestBase
 {
-	/** Watches current test and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
-	@BeforeClass
+	@BeforeAll
 	public final static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
@@ -91,8 +87,7 @@ public abstract class ReceiptScheduleTestBase
 
 	// 07629 just adding to fix existing tests; TODO extend the tests
 	// Background: the actual implementation makes a DB test, that's why we use jmockit here
-	@Mocked
-	protected IProductAcctDAO productAcctDAO; // 07629
+	private IProductAcctDAO productAcctDAO; // 07629
 
 	protected Properties ctx;
 	/** Today (date+time) */
@@ -121,8 +116,8 @@ public abstract class ReceiptScheduleTestBase
 	public I_M_Attribute attr_LotNumberDate;
 	public I_M_Attribute attr_LotNumber;
 
-	@Before
-	public void init()
+	@BeforeEach
+	public final void init()
 	{
 		AdempiereTestHelper.get().init(); // need to init this now
 
@@ -166,22 +161,17 @@ public abstract class ReceiptScheduleTestBase
 		saveRecord(priceUOM);
 
 		// 07629 just adding to fix existing tests; TODO extend the tests
+		productAcctDAO = Mockito.spy(IProductAcctDAO.class);
 		Services.registerService(IProductAcctDAO.class, productAcctDAO);
+		//
 		final I_C_Activity activity = InterfaceWrapperHelper.newInstance(I_C_Activity.class, org);
 		saveRecord(activity);
 		final ActivityId activityId = ActivityId.ofRepoId(activity.getC_Activity_ID());
-		//@formatter:off
-		new Expectations()
-		{{
-			productAcctDAO.retrieveActivityForAcct(
-					(ClientId)any,
-					orgId,
-					(ProductId)any);
-
-			minTimes=0;
-			result = activityId;
-		}};
-		//@formatter:on
+		Mockito.when(productAcctDAO.retrieveActivityForAcct(
+				(ClientId)Matchers.any(),
+				Matchers.eq(orgId),
+				(ProductId)Matchers.any()))
+				.thenReturn(activityId);
 
 		// #653
 		attr_LotNumberDate = createM_Attribute(LotNumberDateAttributeDAO.ATTR_LotNumberDate, X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
@@ -267,7 +257,7 @@ public abstract class ReceiptScheduleTestBase
 		receiptSchedule.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 
 		receiptSchedule.setM_Product_ID(product.getM_Product_ID());
-		//receiptSchedule.setC_UOM(productUOM);
+		// receiptSchedule.setC_UOM(productUOM);
 
 		receiptSchedule.setQtyOrdered(qtyBD);
 		receiptSchedule.setQtyToMove(qtyBD);
