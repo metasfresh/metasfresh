@@ -20,6 +20,7 @@ import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
 
@@ -76,11 +77,9 @@ public class DeliveryOrderWorkpackageProcessor extends WorkpackageProcessorAdapt
 
 	private final ShipperGatewayServicesRegistry shipperRegistry;
 
-	public DeliveryOrderWorkpackageProcessor(@NonNull final ShipperGatewayServicesRegistry shipperRegistry)
+	public DeliveryOrderWorkpackageProcessor()
 	{
-		// shipperRegistry = Adempiere.getBean(ShipperGatewayServicesRegistry.class);
-
-		this.shipperRegistry = shipperRegistry;
+		shipperRegistry = Adempiere.getBean(ShipperGatewayServicesRegistry.class);
 	}
 
 	@Override
