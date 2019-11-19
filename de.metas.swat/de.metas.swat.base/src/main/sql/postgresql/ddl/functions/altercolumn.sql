@@ -47,12 +47,11 @@ begin
 			-- Fetch dependent views
 			i := 0;
 			
-	-- use the "new" db_dependent_views view instead of teh old db_dependents view
-	-- trigger for the change:
-	--   db_dependents returns materialized views as if they were normal views; that fails when we try to drop them
-	--   db_dependent_views does not return them at all; 
-	--   TODO (maybe, later, if needed): extend db_dependent_views to return materialized views, too, but make sure (=>new return-column) that the caller has a change to identify them and deal with them property.
-			--for v in (select view_name as full_view_name, depth FROM db_dependents('public.'||tablename::regclass) order by depth desc)
+	-- use the "new" db_dependent_views view instead of the deprecated db_dependents view
+	-- trigger for this change:
+	--   db_dependents returns materialized views as if they were normal views; therefore this function fails when we try to drop them
+	--   db_dependent_views does not return materialized views; 
+	--   TODO (maybe, later, if needed): extend db_dependent_views to return materialized views, too. But make sure (=>new return-column) that the caller can identify them and deal with them property.
 			for v in (select distinct '"'||view_schema||'".'||view_name as full_view_name, depth FROM db_dependent_views(tablename) order by depth desc)
 			loop
 				if (viewname @> array[v.full_view_name::text]) then
@@ -132,4 +131,4 @@ begin
 end;
 $BODY$;
 COMMENT ON FUNCTION public.altercolumn(name, name, name, character varying, character varying)
-    IS 'Performs DDL changes on tables that may also be part of a view. Assumes that the given table is always in the "public" schema';
+    IS 'Performs DDL changes on tables that may also be part of a view, by dropping and re-creating those views. Assumes that the given table is always in the "public" schema';
