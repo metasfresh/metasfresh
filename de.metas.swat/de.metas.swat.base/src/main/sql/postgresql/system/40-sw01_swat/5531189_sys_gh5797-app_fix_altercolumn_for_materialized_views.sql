@@ -1,4 +1,3 @@
-
 CREATE OR REPLACE FUNCTION public.altercolumn(
 	tablename name,
 	columnname name,
@@ -48,12 +47,11 @@ begin
 			-- Fetch dependent views
 			i := 0;
 			
-	-- use the "new" db_dependent_views view instead of teh old db_dependents view
-	-- trigger for the change:
-	--   db_dependents returns materialized views as if they were normal views; that fails when we try to drop them
-	--   db_dependent_views does not return them at all; 
-	--   TODO (maybe, later, if needed): extend db_dependent_views to return materialized views, too, but make sure (=>new return-column) that the caller has a change to identify them and deal with them property.
-			--for v in (select view_name as full_view_name, depth FROM db_dependents('public.'||tablename::regclass) order by depth desc)
+	-- use the "new" db_dependent_views view instead of the deprecated db_dependents view
+	-- trigger for this change:
+	--   db_dependents returns materialized views as if they were normal views; therefore this function fails when we try to drop them
+	--   db_dependent_views does not return materialized views; 
+	--   TODO (maybe, later, if needed): extend db_dependent_views to return materialized views, too. But make sure (=>new return-column) that the caller can identify them and deal with them property.
 			for v in (select distinct '"'||view_schema||'".'||view_name as full_view_name, depth FROM db_dependent_views(tablename) order by depth desc)
 			loop
 				if (viewname @> array[v.full_view_name::text]) then
@@ -80,16 +78,16 @@ begin
 						RAISE INFO 'Exception dropping view:';
 						RAISE INFO 'Error Name:%',SQLERRM;
 						RAISE INFO 'Error State:%', SQLSTATE;
-						RAISE INFO 'Will attempt to restore what we dropped so far';
+						RAISE INFO 'Will attempt to recover what we dropped so far';
 						i := array_upper(dropviews, 1);
 						if i > 0 then
 							for j in reverse i .. 1 loop
-								raise notice '    Creating(recovery) view %', viewname[j];
+								raise notice '    Recovery: creating view %', viewname[j];
 								command := 'create or replace view ' || viewname[j] || ' as ' || viewtext[j];
 								execute command;
 							end loop;
 						end if;
-						raise exception 'Failed to drop dependent view: % (SQL: %)', viewname[j], viewtext[j];
+						raise exception 'Failed to drop dependent view';
 				end;
 			end if;
 
@@ -133,4 +131,4 @@ begin
 end;
 $BODY$;
 COMMENT ON FUNCTION public.altercolumn(name, name, name, character varying, character varying)
-    IS 'Performs DDL changes on tables that may also be part of a view. Assumes that the given table is always in the "public" schema';
+    IS 'Performs DDL changes on tables that may also be part of a view, by dropping and re-creating those views. Assumes that the given table is always in the "public" schema';
