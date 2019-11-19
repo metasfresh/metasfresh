@@ -13,15 +13,14 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -30,11 +29,8 @@ import org.compiere.model.I_M_InOutLine;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
-import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.storage.IStorageBL;
 import de.metas.storage.IStorageSegment;
 import de.metas.storage.IStorageSegmentBuilder;
 import de.metas.util.Services;
@@ -48,12 +44,11 @@ import de.metas.util.Services;
  */
 public class HUShipmentScheduleInvalidateBL extends ShipmentScheduleInvalidateBL
 {
+	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+
 	@Override
 	protected IStorageSegment createSegmentForInOutLine(final int bPartnerId, final I_M_InOutLine inoutLine)
 	{
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-		final IStorageBL storageBL = Services.get(IStorageBL.class);
-
 		final IStorageSegmentBuilder storageSegmentBuilder = storageBL.createStorageSegmentBuilder();
 		storageSegmentBuilder
 				.addM_Product_ID(inoutLine.getM_Product_ID())
@@ -78,10 +73,6 @@ public class HUShipmentScheduleInvalidateBL extends ShipmentScheduleInvalidateBL
 	@Override
 	protected IStorageSegment createSegmentForShipmentSchedule(final I_M_ShipmentSchedule schedule)
 	{
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final IStorageBL storageBL = Services.get(IStorageBL.class);
-		final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
-		
 		boolean maybeCanRestrictToCertainPartners = false; // we will set this to true if there is any TU assigned to the shipment schedule
 
 		final IStorageSegmentBuilder storageSegmentBuilder = storageBL.createStorageSegmentBuilder();

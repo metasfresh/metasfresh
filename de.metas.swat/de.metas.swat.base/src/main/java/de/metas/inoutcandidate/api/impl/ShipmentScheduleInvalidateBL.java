@@ -55,10 +55,18 @@ import lombok.NonNull;
 
 public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidateBL
 {
+	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	private final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
+	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	protected final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+	protected final IStorageBL storageBL = Services.get(IStorageBL.class);
+	private final IStorageListeners storageListeners = Services.get(IStorageListeners.class);
+	private final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
+	protected final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+
 	@Override
 	public boolean isInvalid(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
 		return invalidSchedulesRepo.isInvalid(shipmentScheduleId);
 	}
 
@@ -71,16 +79,13 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	@Override
 	public void invalidateShipmentSchedules(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
-		final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
 		invalidSchedulesRepo.invalidateShipmentSchedules(shipmentScheduleIds);
 	}
 
 	@Override
 	public void invalidateJustForLines(final I_M_InOut shipment)
 	{
-		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-
-		final Set<ShipmentScheduleId> shipmentScheduleIds = inOutDAO.retrieveLines(shipment)
+		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = inOutDAO.retrieveLines(shipment)
 				.stream()
 				.flatMap(this::streamShipmentScheduleIdsForInOutLine)
 				.collect(ImmutableSet.toImmutableSet());
@@ -91,7 +96,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	@Override
 	public void invalidateJustForLine(final I_M_InOutLine shipmentLine)
 	{
-		final Set<ShipmentScheduleId> shipmentScheduleIds = streamShipmentScheduleIdsForInOutLine(shipmentLine)
+		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = streamShipmentScheduleIdsForInOutLine(shipmentLine)
 				.collect(ImmutableSet.toImmutableSet());
 
 		invalidateShipmentSchedules(shipmentScheduleIds);
@@ -99,35 +104,29 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 
 	private Stream<ShipmentScheduleId> streamShipmentScheduleIdsForInOutLine(@NonNull final I_M_InOutLine inoutLine)
 	{
-		final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
-
 		return shipmentScheduleAllocDAO.retrieveAllForInOutLine(inoutLine, I_M_ShipmentSchedule_QtyPicked.class)
 				.stream()
 				.map(alloc -> ShipmentScheduleId.ofRepoIdOrNull(alloc.getM_ShipmentSchedule_ID()))
-				.filter(Predicates.notNull()) // shall not happen
-		;
+				.filter(Predicates.notNull()); // shall not happen
 	}
 
 	@Override
 	public void invalidateSegmentsForLines(final I_M_InOut shipment)
 	{
-		final IStorageListeners storageListeners = Services.get(IStorageListeners.class);
-
 		final List<IStorageSegment> storageSegments = new ArrayList<>();
 
-		for (final I_M_InOutLine inoutLine : Services.get(IInOutDAO.class).retrieveLines(shipment))
+		for (final I_M_InOutLine inoutLine : inOutDAO.retrieveLines(shipment))
 		{
 			final IStorageSegment storageSegment = createSegmentForInOutLine(shipment.getC_BPartner_ID(), inoutLine);
 			storageSegments.add(storageSegment);
 		}
+
 		storageListeners.notifyStorageSegmentsChanged(storageSegments);
 	}
 
 	@Override
 	public void invalidateSegmentForLine(final I_M_InOutLine shipmentLine)
 	{
-		final IStorageListeners storageListeners = Services.get(IStorageListeners.class);
-
 		final IStorageSegment storageSegment = createSegmentForInOutLine(shipmentLine.getM_InOut().getC_BPartner_ID(), shipmentLine);
 		storageListeners.notifyStorageSegmentChanged(storageSegment);
 	}
@@ -138,17 +137,13 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	 */
 	protected IStorageSegment createSegmentForInOutLine(final int bPartnerId, @NonNull final I_M_InOutLine inoutLine)
 	{
-		final IStorageBL storageBL = Services.get(IStorageBL.class);
-
-		final IStorageSegmentBuilder storageSegmentBuilder = storageBL.createStorageSegmentBuilder();
-		final IStorageSegment storageSegment = storageSegmentBuilder
+		return storageBL.createStorageSegmentBuilder()
 				.addC_BPartner_ID(0) // we can't restrict the segment to the inOut-partner, because we don't know if the qty could in theory be reallocated to a *different* partner.
 				// So we have to notify *all* partners' segments.
 				.addM_Product_ID(inoutLine.getM_Product_ID())
 				.addM_Locator_ID(inoutLine.getM_Locator_ID())
 				.addM_AttributeSetInstance_ID(inoutLine.getM_AttributeSetInstance_ID())
 				.build();
-		return storageSegment;
 	}
 
 	@Override
@@ -157,12 +152,11 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		//
 		// If shipment schedule updater is currently running in this thread, it means that updater changed this record
 		// so there is NO need to invalidate it again.
-		if (Services.get(IShipmentScheduleUpdater.class).isRunning())
+		if (shipmentScheduleUpdater.isRunning())
 		{
 			return;
 		}
 
-		final IStorageListeners storageListeners = Services.get(IStorageListeners.class);
 		final IStorageSegment storageSegment = createSegmentForShipmentSchedule(schedule);
 		storageListeners.notifyStorageSegmentChanged(storageSegment);
 	}
@@ -173,29 +167,21 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	 */
 	protected IStorageSegment createSegmentForShipmentSchedule(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-
-		final IStorageBL storageBL = Services.get(IStorageBL.class);
-		final IStorageSegmentBuilder storageSegmentBuilder = storageBL.createStorageSegmentBuilder();
-
 		// we can't restrict the segment to the sched's bpartner, because we don't know if the qty could in theory be reallocated to a *different* partner.
 		// So we have to notify *all* partners' segments.
 		final int bpartnerId = 0;
-		final IStorageSegment storageSegment = storageSegmentBuilder
+
+		return storageBL.createStorageSegmentBuilder()
 				.addC_BPartner_ID(bpartnerId)
 				.addM_Product_ID(schedule.getM_Product_ID())
 				.addWarehouseId(shipmentScheduleEffectiveBL.getWarehouseId(schedule))
 				.addM_AttributeSetInstance_ID(schedule.getM_AttributeSetInstance_ID())
 				.build();
-		return storageSegment;
 	}
 
 	@Override
 	public void invalidateSegmentForOrderLine(@NonNull final I_C_OrderLine orderLine)
 	{
-		final IStorageListeners storageListeners = Services.get(IStorageListeners.class);
-		final IStorageBL storageBL = Services.get(IStorageBL.class);
-
 		final IStorageSegmentBuilder storageSegmentBuilder = storageBL.createStorageSegmentBuilder();
 
 		// we can't restrict the segment to the sched's bpartner, because we don't know if the qty could in theory be reallocated to a *different* partner.
@@ -213,7 +199,6 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	@Override
 	public void invalidateJustForOrderLine(@NonNull final I_C_OrderLine orderLine)
 	{
-		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
 		final ShipmentScheduleId shipmentScheduleId = shipmentSchedulePA.getShipmentScheduleIdByOrderLineId(orderLineId);
 		if (shipmentScheduleId == null)

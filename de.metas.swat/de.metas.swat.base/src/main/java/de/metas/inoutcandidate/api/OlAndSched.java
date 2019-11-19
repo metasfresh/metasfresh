@@ -28,6 +28,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.document.engine.DocStatus;
@@ -97,6 +98,11 @@ public final class OlAndSched
 	public ProductId getProductId()
 	{
 		return ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
+	}
+
+	public WarehouseId getWarehouseId()
+	{
+		return Services.get(IShipmentScheduleEffectiveBL.class).getWarehouseId(shipmentSchedule);
 	}
 
 	public I_C_UOM getOrderPriceUOM()

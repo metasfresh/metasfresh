@@ -1,6 +1,7 @@
 package de.metas.material.planning;
 
 import java.util.Optional;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -71,4 +72,6 @@ public interface IProductPlanningDAO extends ISingletonService
 	void save(I_PP_Product_Planning productPlanningRecord);
 
 	void setProductBOMIdIfAbsent(ProductId productId, ProductBOMId bomId);
+	
+	Set<ProductBOMId> retrieveAllPickingBOMIds();
 }

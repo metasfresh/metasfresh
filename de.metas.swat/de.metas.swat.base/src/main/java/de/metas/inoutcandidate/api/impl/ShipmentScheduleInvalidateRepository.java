@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -247,6 +249,15 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	@Override
 	public void invalidateStorageSegments(final Collection<IStorageSegment> storageSegments)
 	{
+		final PInstanceId addToSelectionId = null;
+		invalidateStorageSegments(storageSegments, addToSelectionId);
+	}
+
+	@Override
+	public void invalidateStorageSegments(
+			@Nullable final Collection<IStorageSegment> storageSegments,
+			@Nullable final PInstanceId addToSelectionId)
+	{
 		if (storageSegments == null || storageSegments.isEmpty())
 		{
 			return;
@@ -256,9 +267,10 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		final StringBuilder sqlWhereClause = new StringBuilder();
 		final List<Object> sqlParams = new ArrayList<>();
 
-		// Description
+		// SELECT part: Description and AD_PInstance_ID
 		final String description = truncInvalidateDescription("" + storageSegments.size() + " storage segments: " + storageSegments);
 		sqlParams.add(description);
+		sqlParams.add(addToSelectionId);
 
 		// Not Processed
 		sqlWhereClause.append(ssAlias + I_M_ShipmentSchedule.COLUMNNAME_Processed).append("=?");
@@ -298,8 +310,8 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 		//
 		// Build INSERT SQL
-		final String sql = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description) "
-				+ "\n SELECT " + I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ", ?"
+		final String sql = "INSERT INTO " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " (M_ShipmentSchedule_ID, Description, AD_PInstance_ID) "
+				+ "\n SELECT " + I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ", ?, ?"
 				+ " FROM " + I_M_ShipmentSchedule.Table_Name
 				+ " WHERE "
 				+ "\n" + sqlWhereClause;

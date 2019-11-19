@@ -62,13 +62,19 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 	void invalidateShipmentSchedules(Set<ShipmentScheduleId> shipmentScheduleIds);
 
 	/**
+	 * Same {@link #invalidateStorageSegments(Collection, PInstanceId)} but the invalidated records won't be added to any selection.
+	 */
+	void invalidateStorageSegments(Collection<IStorageSegment> storageSegments);
+
+	/**
 	 * Invalidates shipment schedules for the given storage segments.
 	 * <p>
 	 * <b>IMPORTANT:</b> won't invalidate any processed schedules.
 	 *
 	 * @param storageSegments
+	 * @param addToSelectionId if not null will add the invalidated records to given selection
 	 */
-	void invalidateStorageSegments(Collection<IStorageSegment> storageSegments);
+	void invalidateStorageSegments(Collection<IStorageSegment> storageSegments, PInstanceId addToSelectionId);
 
 	void invalidateSchedulesForSelection(PInstanceId pinstanceId);
 

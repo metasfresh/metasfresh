@@ -37,7 +37,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.swing.SwingUtilities;
@@ -50,7 +49,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.minigrid.IMiniTable;
-import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
 
@@ -69,6 +67,7 @@ import de.metas.fresh.picking.form.SwingPickingTerminalPanel.ResetFilters;
 import de.metas.handlingunits.client.terminal.ddorder.form.DDOrderHUSelectForm;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidRequest;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
@@ -393,16 +392,10 @@ public class SwingPickingOKPanel extends TerminalSubPanel
 
 	private void updateShipmentSchedulesInTrx()
 	{
-		final Properties ctx = getCtx();
-		final int adUserId = Env.getAD_User_ID(ctx);
-		final PInstanceId adPInstanceId = getADPInstanceId();
-		final boolean updateOnlyLocked = true;
-
-		shipmentScheduleUpdater.updateShipmentSchedule(
-				ctx,
-				adUserId,
-				adPInstanceId,
-				updateOnlyLocked);
+		shipmentScheduleUpdater.updateShipmentSchedule(ShipmentScheduleUpdateInvalidRequest.builder()
+				.ctx(getCtx())
+				.selectionId(getADPInstanceId())
+				.build());
 	}
 
 	private final synchronized PInstanceId getADPInstanceId()

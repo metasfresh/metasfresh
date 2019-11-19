@@ -52,4 +52,6 @@ public interface IProductBOMDAO extends ISingletonService
 	ProductBOMId createBOM(BOMCreateRequest request);
 
 	ProductId getBOMProductId(ProductBOMId bomId);
+
+	PickingBOMsReversedIndex retrievePickingBOMsReversedIndex(Collection<ProductBOMId> bomIds);
 }

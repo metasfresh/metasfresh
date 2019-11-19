@@ -26,10 +26,13 @@ import java.time.ZonedDateTime;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -44,10 +47,18 @@ import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
 import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.PickingBOMsReversedIndex;
+import org.eevolution.api.ProductBOMId;
+import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.model.I_PP_Product_BOMLine;
+import org.eevolution.model.I_PP_Product_Planning;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -59,6 +70,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.cache.CCache;
 import de.metas.document.engine.DocStatus;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
@@ -71,6 +83,7 @@ import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidRequest;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
@@ -80,12 +93,15 @@ import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderReferenceProvider;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.material.cockpit.stock.StockRepository;
+import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.order.DeliveryRule;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.storage.IStorageSegment;
+import de.metas.storage.impl.ImmutableStorageSegment;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IShipmentScheduleDeliveryDayBL;
 import de.metas.uom.IUOMConversionBL;
@@ -112,20 +128,40 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	private static final String DYNATTR_ProcessedByBackgroundProcess = IShipmentScheduleUpdater.class.getName() + "#ProcessedByBackgroundProcess";
 
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleUpdater.class);
+	private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
 	private final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IShipmentScheduleDeliveryDayBL shipmentScheduleDeliveryDayBL = Services.get(IShipmentScheduleDeliveryDayBL.class);
+	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+	private final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
+	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+	private final IShipmentConstraintsBL shipmentConstraintsBL = Services.get(IShipmentConstraintsBL.class);
 	private final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory;
 	private final ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory;
 
+	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+	private final IDeliveryDayBL deliveryDayBL = Services.get(IDeliveryDayBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IProductBL productsService = Services.get(IProductBL.class);
+	private final IBPartnerProductDAO bpartnerProductDAO = Services.get(IBPartnerProductDAO.class);
+	private final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
+	private final IProductBOMDAO bomsRepo = Services.get(IProductBOMDAO.class);
+
 	private final CompositeCandidateProcessor candidateProcessors = new CompositeCandidateProcessor();
+
+	private final CCache<Integer, PickingBOMsReversedIndex> pickingBOMsReversedIndexCache = CCache.<Integer, PickingBOMsReversedIndex> builder()
+			.additionalTableNameToResetFor(I_PP_Product_Planning.Table_Name)
+			.additionalTableNameToResetFor(I_PP_Product_BOM.Table_Name)
+			.additionalTableNameToResetFor(I_PP_Product_BOMLine.Table_Name)
+			.build();
 
 	/**
 	 * Flag which is set to true when shipment schedule updater is running.
 	 *
 	 * This information is stored on thread level.
 	 */
-	private final InheritableThreadLocal<Boolean> running = new InheritableThreadLocal<>();
+	private final ThreadLocal<Boolean> running = new ThreadLocal<>();
 
 	public ShipmentScheduleUpdater(
 			@NonNull final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory,
@@ -135,6 +171,14 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		this.shipmentScheduleReferencedLineFactory = shipmentScheduleReferencedLineFactory;
 	}
 
+	private boolean isAllowConsolidateShipment(@NonNull final BPartnerId bpartnerId)
+	{
+		// NOTE: we cannot declare de service on top because BPartnerBL is a spring bean which will fail in JUnit tests.
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+
+		return bpartnerBL.isAllowConsolidateInOutEffective(bpartnerId, SOTrx.SALES);
+	}
+
 	@Override
 	public void registerCandidateProcessor(final IShipmentSchedulesAfterFirstPassUpdater processor)
 	{
@@ -142,42 +186,41 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	}
 
 	@Override
-	public int updateShipmentSchedule(
-			final Properties ctx,
-			final int adUserId,
-			final PInstanceId adPInstanceId,
-			final boolean updateOnlyLocked)
+	public int updateShipmentSchedule(@NonNull final ShipmentScheduleUpdateInvalidRequest request)
 	{
-		// services
-		final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
+		final PInstanceId selectionId = request.getSelectionId();
 
 		final Boolean running = this.running.get();
-		Check.assume(running == null || running == false, "updateShipmentSchedule is not already running");
+		if (running != null && running)
+		{
+			throw new AdempiereException("updateShipmentSchedule is not already running");
+		}
 		this.running.set(true);
 
 		try
 		{
 			shipmentSchedulePA.deleteSchedulesWithoutOrderLines();
 
-			if (!updateOnlyLocked)
+			//
+			// Create and invalidate missing shipment schedules, if asked
+			if (request.isCreateMissingShipmentSchedules())
 			{
-				//
-				// Create and invalidate missing shipment schedules
-				final List<I_M_ShipmentSchedule> shipmentSchedulesNew = shipmentScheduleHandlerBL.createMissingCandidates(ctx, ITrx.TRXNAME_ThreadInherited);
-				final Set<ShipmentScheduleId> shipmentSchedulesNewIds = shipmentSchedulesNew.stream().map(s -> ShipmentScheduleId.ofRepoId(s.getM_ShipmentSchedule_ID())).collect(ImmutableSet.toImmutableSet());
+				final List<I_M_ShipmentSchedule> shipmentSchedulesNew = shipmentScheduleHandlerBL.createMissingCandidates(request.getCtx(), ITrx.TRXNAME_ThreadInherited);
+				final Set<ShipmentScheduleId> shipmentSchedulesNewIds = extractShipmentScheduleIds(shipmentSchedulesNew);
 				invalidSchedulesRepo.invalidateShipmentSchedules(shipmentSchedulesNewIds);
 			}
 
-			final List<OlAndSched> collectResult = retrieveOlsAndSchedsToProcess(adPInstanceId);
+			final List<OlAndSched> olsAndScheds = retrieveOlsAndSchedsToProcess(selectionId);
 
-			logger.debug("Invoking shipmentScheduleBL to update {} shipment schedule entries.", collectResult.size());
-			updateSchedules(ctx, collectResult);
+			invalidatePickingBOMProducts(olsAndScheds, selectionId);
+
+			updateSchedules(request.getCtx(), olsAndScheds);
 
 			// cleanup the marker/pointer tables
-			invalidSchedulesRepo.deleteRecomputeMarkersOutOfTrx(adPInstanceId);
+			invalidSchedulesRepo.deleteRecomputeMarkersOutOfTrx(selectionId);
 
 			logger.debug("Done");
-			return collectResult.size();
+			return olsAndScheds.size();
 		}
 		finally
 		{
@@ -185,13 +228,20 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			{
 				// Make sure the recompute tag is released, just in case any error occurs.
 				// Usually zero records will be released because, if everything goes fine, the tagged recompute records were already deleted.
-				invalidSchedulesRepo.releaseRecomputeMarkerOutOfTrx(adPInstanceId);
+				invalidSchedulesRepo.releaseRecomputeMarkerOutOfTrx(selectionId);
 			}
 			finally
 			{
 				this.running.set(false);
 			}
 		}
+	}
+
+	private static ImmutableSet<ShipmentScheduleId> extractShipmentScheduleIds(final Collection<I_M_ShipmentSchedule> shipmentSchedules)
+	{
+		return shipmentSchedules.stream()
+				.map(sched -> ShipmentScheduleId.ofRepoId(sched.getM_ShipmentSchedule_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override
@@ -201,22 +251,11 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		return running != null && running == true;
 	}
 
-	private final List<OlAndSched> retrieveOlsAndSchedsToProcess(final PInstanceId adPinstanceId)
+	private final List<OlAndSched> retrieveOlsAndSchedsToProcess(@NonNull final PInstanceId selectionId)
 	{
-		final List<OlAndSched> olsAndScheds = shipmentSchedulePA.retrieveInvalid(adPinstanceId);
-
-		if (olsAndScheds.isEmpty())
-		{
-			logger.debug("There are no shipment schedule entries to update");
-			return ImmutableList.of();
-		}
-		logger.debug("Found {} invalid shipment schedule entries", olsAndScheds.size());
-
-		final List<OlAndSched> collectResult = new ArrayList<>();
-		collectResult.addAll(olsAndScheds);
-
-		logger.debug("Found additional {} schedule entries to update", (collectResult.size() - olsAndScheds.size()));
-		return collectResult;
+		final List<OlAndSched> olsAndScheds = shipmentSchedulePA.retrieveInvalid(selectionId);
+		logger.debug("Found {} invalid shipment schedule entries and tagged them with {}", olsAndScheds.size(), selectionId);
+		return olsAndScheds;
 	}
 
 	/**
@@ -244,16 +283,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		{
 			return;
 		}
-
-		//
-		// Services
-		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
-		final IProductBL productsService = Services.get(IProductBL.class);
-		final IShipmentScheduleDeliveryDayBL shipmentScheduleDeliveryDayBL = Services.get(IShipmentScheduleDeliveryDayBL.class);
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
-		final IBPartnerProductDAO bpartnerProductDAO = Services.get(IBPartnerProductDAO.class);
-		final IDeliveryDayBL deliveryDayBL = Services.get(IDeliveryDayBL.class);
 
 		//
 		// Briefly update our shipment schedules:
@@ -306,7 +335,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			final I_M_ShipmentSchedule sched = olAndSched.getSched();
 			final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(sched); // task 08756: we don't really care for the ol's partner, but for the partner who will actually receive the shipment.
 
-			sched.setAllowConsolidateInOut(bpartnerBL.isAllowConsolidateInOutEffective(bpartnerId, SOTrx.SALES));
+			sched.setAllowConsolidateInOut(isAllowConsolidateShipment(bpartnerId));
 
 			updatePreparationAndDeliveryDate(sched);
 
@@ -440,12 +469,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			@NonNull final List<OlAndSched> lines,
 			@NonNull final ShipmentSchedulesDuringUpdate candidates)
 	{
-		// services
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveValuesBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
-		final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
-		final IProductBL productBL = Services.get(IProductBL.class);
-
 		//
 		// Load QtyOnHand in scope for our lines
 		// i.e. iterate all lines to cache the required storage info and to subtract the quantities that can't be allocated from the storage allocation.
@@ -457,7 +480,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		{
 			final I_M_ShipmentSchedule sched = olAndSched.getSched();
 
-			final DeliveryRule deliveryRule = shipmentScheduleEffectiveValuesBL.getDeliveryRule(sched);
+			final DeliveryRule deliveryRule = shipmentScheduleEffectiveBL.getDeliveryRule(sched);
 
 			//
 			// QtyRequired
@@ -496,7 +519,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			final BigDecimal qtyToDeliver = ShipmentScheduleQtysHelper.computeQtyToDeliver(qtyRequired, qtyPickList);
 
 			final ProductId productId = olAndSched.getProductId();
-			if (!productBL.isStocked(productId))
+			if (!productsService.isStocked(productId))
 			{
 				// product not stocked => don't concern ourselves with the storage; just deliver what was ordered
 				createLine(
@@ -702,9 +725,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			@NonNull final I_M_ShipmentSchedule sched,
 			final IShipmentSchedulesDuringUpdate candidates)
 	{
-		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-
 		final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(sched);
 
 		final ShipmentScheduleReferencedLine scheduleSourceDoc = shipmentScheduleReferencedLineFactory.createFor(sched);
@@ -713,8 +733,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		DeliveryGroupCandidate candidate = null;
 
 		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(sched);
-		final boolean consolidateAllowed = bpartnerBL.isAllowConsolidateInOutEffective(bpartnerId, SOTrx.SALES);
-		if (consolidateAllowed)
+		if (isAllowConsolidateShipment(bpartnerId))
 		{
 			// see if there is an existing shipment for this location and shipper
 			candidate = candidates.getInOutForShipper(scheduleSourceDoc.getShipperId(), warehouseId, bpartnerAddress);
@@ -739,8 +758,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			final ShipmentScheduleReferencedLine scheduleSourceDoc,
 			final I_M_ShipmentSchedule sched)
 	{
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-
 		return DeliveryGroupCandidate.builder()
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(sched))
 				.bPartnerAddress(sched.getBPartnerAddress_Override())
@@ -780,8 +797,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 	private void updateShipmentConstraints(final I_M_ShipmentSchedule sched)
 	{
-		final IShipmentConstraintsBL shipmentConstraintsBL = Services.get(IShipmentConstraintsBL.class);
-
 		final int billBPartnerId = sched.getBill_BPartner_ID();
 		final int deliveryStopShipmentConstraintId = shipmentConstraintsBL.getDeliveryStopShipmentConstraintId(billBPartnerId);
 		final boolean isDeliveryStop = deliveryStopShipmentConstraintId > 0;
@@ -815,8 +830,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		{
 			return BigDecimal.ZERO;
 		}
-
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 		// final de.metas.interfaces.I_C_OrderLine olEx = InterfaceWrapperHelper.create(ol, de.metas.interfaces.I_C_OrderLine.class);
 		final BigDecimal qtyReservedInPriceUOM = uomConversionBL.convertFromProductUOM(
@@ -860,8 +873,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 	private void updateCatchUomId(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final IProductBL productBL = Services.get(IProductBL.class);
-
 		final boolean isCatchWeight = shipmentScheduleBL.isCatchWeight(sched);
 		if (!isCatchWeight)
 		{
@@ -869,7 +880,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			return;
 		}
 
-		final Optional<UomId> catchUOMId = productBL.getCatchUOMId(ProductId.ofRepoId(sched.getM_Product_ID()));
+		final Optional<UomId> catchUOMId = productsService.getCatchUOMId(ProductId.ofRepoId(sched.getM_Product_ID()));
 		final Integer catchUomRepoId = catchUOMId.map(UomId::getRepoId).orElse(0);
 
 		sched.setCatch_UOM_ID(catchUomRepoId);
@@ -887,4 +898,68 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		InterfaceWrapperHelper.setDynAttribute(sched, DYNATTR_ProcessedByBackgroundProcess, Boolean.TRUE);
 	}
 
+	private void invalidatePickingBOMProducts(final List<OlAndSched> olsAndScheds, final PInstanceId addToSelectionId)
+	{
+		if (olsAndScheds.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableSet<IStorageSegment> pickingBOMsSegments = olsAndScheds.stream()
+				.flatMap(this::extractPickingBOMsStorageSegments)
+				.collect(ImmutableSet.toImmutableSet());
+		if (pickingBOMsSegments.isEmpty())
+		{
+			return;
+		}
+
+		invalidSchedulesRepo.invalidateStorageSegments(pickingBOMsSegments, addToSelectionId);
+	}
+
+	private Stream<IStorageSegment> extractPickingBOMsStorageSegments(final OlAndSched olAndSched)
+	{
+		final PickingBOMsReversedIndex pickingBOMsReversedIndex = getPickingBOMsReversedIndex();
+
+		final ProductId componentId = olAndSched.getProductId();
+		final ImmutableSet<ProductId> pickingBOMProductIds = pickingBOMsReversedIndex.getBOMProductIdsByComponentId(componentId);
+		if (pickingBOMProductIds.isEmpty())
+		{
+			return Stream.empty();
+		}
+
+		final Set<WarehouseId> warehouseIds = warehousesRepo.getWarehouseIdsOfSamePickingGroup(olAndSched.getWarehouseId());
+
+		final LinkedHashSet<IStorageSegment> segments = new LinkedHashSet<>();
+		for (final WarehouseId warehouseId : warehouseIds)
+		{
+			final Set<Integer> locatorRepoIds = warehousesRepo.getLocatorIds(warehouseId)
+					.stream()
+					.map(LocatorId::getRepoId)
+					.collect(ImmutableSet.toImmutableSet());
+
+			for (final ProductId pickingBOMProductId : pickingBOMProductIds)
+			{
+				final ImmutableStorageSegment segment = ImmutableStorageSegment.builder()
+						.anyC_BPartner_ID()
+						.M_Product_ID(pickingBOMProductId.getRepoId())
+						.M_Locator_IDs(locatorRepoIds)
+						.build();
+
+				segments.add(segment);
+			}
+		}
+
+		return segments.stream();
+	}
+
+	private PickingBOMsReversedIndex getPickingBOMsReversedIndex()
+	{
+		return pickingBOMsReversedIndexCache.getOrLoad(0, this::retrievePickingBOMsReversedIndex);
+	}
+
+	private PickingBOMsReversedIndex retrievePickingBOMsReversedIndex()
+	{
+		final Set<ProductBOMId> pickingBOMIds = productPlanningsRepo.retrieveAllPickingBOMIds();
+		return bomsRepo.retrievePickingBOMsReversedIndex(pickingBOMIds);
+	}
 }

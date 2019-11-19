@@ -32,9 +32,9 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
+import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidRequest;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.IADPInstanceDAO;
-import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 
@@ -56,12 +56,11 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 	{
 		SCHEDULER.schedule(PlainContextAware.newWithTrxName(ctx, trxName));
 	}
-	
+
 	public static final void schedule()
 	{
 		SCHEDULER.schedule(PlainContextAware.newWithThreadInheritedTrx());
 	}
-
 
 	private static final WorkpackagesOnCommitSchedulerTemplate<IContextAware> //
 	SCHEDULER = WorkpackagesOnCommitSchedulerTemplate.newContextAwareSchedulerNoCollect(UpdateInvalidShipmentSchedulesWorkpackageProcessor.class);
@@ -72,17 +71,15 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName_NOTUSED)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
+		final ShipmentScheduleUpdateInvalidRequest request = ShipmentScheduleUpdateInvalidRequest.builder()
+				.ctx(InterfaceWrapperHelper.getCtx(workpackage))
+				.selectionId(Services.get(IADPInstanceDAO.class).createSelectionId())
+				.createMissingShipmentSchedules(false) // don't create missing schedules; for that we have CreateMissingShipmentSchedulesWorkpackageProcessor
+				.build();
 
-		final int adUserId = workpackage.getCreatedBy();
-		final PInstanceId pinstanceId = Services.get(IADPInstanceDAO.class).createSelectionId();
+		final int updatedCount = shipmentScheduleUpdater.updateShipmentSchedule(request);
 
-		final boolean updateOnlyLocked = true; // don't create missing schedules; for that we have CreateMissingShipmentSchedulesWorkpackageProcessor
-		final int updatedCount = shipmentScheduleUpdater.updateShipmentSchedule(ctx, adUserId, pinstanceId, updateOnlyLocked);
-
-		Loggables.addLog("Updated {} shipment schedule entries", updatedCount);
-		
-		Loggables.addLog("AD_PInstance_ID  = {}", pinstanceId);
+		Loggables.addLog("Updated {} shipment schedule entries for {}", updatedCount, request);
 
 		return Result.SUCCESS;
 	}
