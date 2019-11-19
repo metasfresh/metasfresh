@@ -2,6 +2,7 @@ package de.metas.handlingunits.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -26,7 +27,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -38,9 +38,8 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_Test;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
@@ -63,7 +62,7 @@ public class HUAssignmentBLTest
 	private I_Test record;
 	private I_M_HU hu;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -120,9 +119,7 @@ public class HUAssignmentBLTest
 	private void assertHUAssigned()
 	{
 		final List<I_M_HU> husAssignedActual = huAssignmentDAO.retrieveTopLevelHUsForModel(record);
-		final List<I_M_HU> husAssignedExpected = Arrays.asList(hu);
-
-		Assert.assertEquals("Assigned HUs does not match", husAssignedExpected, husAssignedActual);
+		assertThat(husAssignedActual).containsExactly(hu);
 	}
 
 	/**
@@ -131,9 +128,7 @@ public class HUAssignmentBLTest
 	private void assertNoHUsAssigned()
 	{
 		final List<I_M_HU> husAssignedActual = huAssignmentDAO.retrieveTopLevelHUsForModel(record);
-		final List<I_M_HU> husAssignedExpected = Collections.emptyList();
-
-		Assert.assertEquals("Assigned HUs does not match", husAssignedExpected, husAssignedActual);
+		assertThat(husAssignedActual).isEmpty();
 	}
 
 	/**
