@@ -61,8 +61,15 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	protected final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	protected final IStorageBL storageBL = Services.get(IStorageBL.class);
 	private final IStorageListeners storageListeners = Services.get(IStorageListeners.class);
-	private final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
 	protected final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+
+	private boolean isShipmentScheduleUpdaterRunning()
+	{
+		// NOTE: cannot declare on top as field because it's a spring bean and it would make junit tests fail
+		final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
+
+		return shipmentScheduleUpdater.isRunning();
+	}
 
 	@Override
 	public boolean isInvalid(@NonNull final ShipmentScheduleId shipmentScheduleId)
@@ -152,7 +159,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		//
 		// If shipment schedule updater is currently running in this thread, it means that updater changed this record
 		// so there is NO need to invalidate it again.
-		if (shipmentScheduleUpdater.isRunning())
+		if (isShipmentScheduleUpdaterRunning())
 		{
 			return;
 		}

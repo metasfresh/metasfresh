@@ -1,8 +1,9 @@
-package de.metas.adempiere.util.cache;
+package de.metas;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -51,7 +52,7 @@ import lombok.Value;
  * #L%
  */
 
-public class AvailableSingletonServicesTest
+public class AllAvailableSingletonServicesTest
 {
 	private static final SkipRules skipRules = new SkipRules()
 			.skipServiceInterface(org.adempiere.inout.replenish.service.IReplenishForFutureQty.class, "is registered programmatically")
@@ -83,7 +84,7 @@ public class AvailableSingletonServicesTest
 
 	@ParameterizedTest
 	@ArgumentsSource(SingletonServiceInterfacesArgumentsProvider.class)
-	public void test(final Class<? extends ISingletonService> serviceInterfaceClass)
+	public void instantiateAndValidateSingletonService(final Class<? extends ISingletonService> serviceInterfaceClass)
 	{
 		skipRules.assumeNotSkipped(serviceInterfaceClass);
 
@@ -166,7 +167,8 @@ public class AvailableSingletonServicesTest
 
 			return reflections.getSubTypesOf(ISingletonService.class)
 					.stream()
-					.filter(Class::isInterface);
+					.filter(Class::isInterface)
+					.sorted(Comparator.comparing(Class::getName));
 		}
 	}
 
