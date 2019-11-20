@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="start cypress remote" type="js.build_tools.npm">
+    <package-json value="$PROJECT_DIR$/metasfresh-e2e/package.json" />
+    <command value="run" />
+    <scripts>
+      <script value="cypress:open" />
+    </scripts>
+    <node-interpreter value="project" />
+    <envs>
+      <env name="CYPRESS_baseUrl" value="https://dev832.metasfresh.com:443" />
+    </envs>
+    <method v="2" />
+  </configuration>
+</component>

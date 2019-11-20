@@ -23,5 +23,11 @@
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
       <jdbc-url>jdbc:postgresql://localhost:15432/metasfresh</jdbc-url>
     </data-source>
+    <data-source source="LOCAL" name="sp80 -- erpit via x2go tunel" uuid="67c38c2a-f4a5-41d2-aaaf-ee422b0e6489">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://erpit:5432/metasfresh</jdbc-url>
+    </data-source>
   </component>
 </project>

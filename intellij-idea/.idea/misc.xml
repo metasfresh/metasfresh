@@ -1,15 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="EntryPointsManager">
-    <list size="1">
-      <item index="0" class="java.lang.String" itemvalue="org.adempiere.ad.modelvalidator.annotations.ModelChange" />
+    <list size="5">
+      <item index="0" class="java.lang.String" itemvalue="de.metas.process.Param" />
+      <item index="1" class="java.lang.String" itemvalue="mockit.Injectable" />
+      <item index="2" class="java.lang.String" itemvalue="org.adempiere.ad.modelvalidator.annotations.ModelChange" />
+      <item index="3" class="java.lang.String" itemvalue="org.junit.jupiter.api.BeforeEach" />
+      <item index="4" class="java.lang.String" itemvalue="org.springframework.stereotype.Service" />
     </list>
     <writeAnnotations>
       <writeAnnotation name="de.metas.process.Param" />
+      <writeAnnotation name="mockit.Tested" />
+      <writeAnnotation name="mockit.Injectable" />
     </writeAnnotations>
   </component>
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="FrameworkDetectionExcludesConfiguration">
     <file type="gwt" url="file://$PROJECT_DIR$/metasfresh-procurement-webui" />
+  </component>
+  <component name="JavaScriptSettings">
+    <option name="languageLevel" value="ES6" />
   </component>
   <component name="MavenProjectsManager">
     <option name="originalFiles">
@@ -23,6 +33,8 @@
         <option value="$PROJECT_DIR$/metasfresh-parent/pom.xml" />
         <option value="$PROJECT_DIR$/metasfresh-webui-api/pom.xml" />
         <option value="$PROJECT_DIR$/metasfresh-procurement-webui/pom.xml" />
+        <option value="$PROJECT_DIR$/metasfresh/de.metas.shipper.gateway.dhl/pom.xml" />
+        <option value="$PROJECT_DIR$/metasfresh/de.metas.shipper.gateway.dpd/pom.xml" />
       </list>
     </option>
   </component>

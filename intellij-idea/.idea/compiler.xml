@@ -7,50 +7,53 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="de.metas.payment.paypal" />
         <module name="metasfresh-dlm-swingui" />
-        <module name="de.metas.materialtracking" />
-        <module name="de.metas.util.web" />
+        <module name="de.metas.jax.rs" />
+        <module name="de.metas.document.archive.base" />
+        <module name="metasfresh-pharma.securpharm" />
+        <module name="de.metas.banking.swingui" />
         <module name="de.metas.util" />
         <module name="metasfresh-pharma" />
-        <module name="de.metas.adempiere.adempiere.serverRoot.base" />
+        <module name="de.metas.shipper.gateway.dhl" />
         <module name="metasfresh-material-dispo-commons" />
         <module name="de.metas.handlingunits.client" />
         <module name="de.metas.acct.base" />
+        <module name="de.metas.printing.base" />
         <module name="metasfresh-creditscore-creditpass" />
-        <module name="de.metas.business.rest-api" />
+        <module name="de.metas.shipper.gateway.spi" />
         <module name="de.metas.shipper.gateway.commons" />
-        <module name="de.metas.printing.api" />
+        <module name="de.metas.payment.esr" />
         <module name="metasfresh-pharma.msv3.server-peer-metasfresh" />
         <module name="de.metas.report.jasper.client" />
         <module name="de.metas.elasticsearch" />
+        <module name="de.metas.ui.web.base" />
         <module name="de.metas.fresh.swingui" />
         <module name="metasfresh-pharma.msv3.commons" />
-        <module name="de.metas.printing.base" />
+        <module name="de.metas.procurement.sync-api" />
         <module name="de.metas.device.api" />
         <module name="de.metas.printing.rest-api-impl" />
-        <module name="metasfresh-pharma.msv3.server-peer" />
+        <module name="de.metas.adempiere.libero.liberoHR" />
         <module name="de.metas.purchasecandidate.base" />
-        <module name="de.metas.procurement.sync-api" />
+        <module name="de.metas.business.rest-api-impl" />
         <module name="metasfresh-dunning_gateway.spi" />
-        <module name="metasfresh-pharma.msv3.schema.v2" />
+        <module name="vertical-healthcare_ch.forum_datenaustausch_ch.invoice_440.response" />
         <module name="de.metas.vendor.gateway.api" />
         <module name="metasfresh-datev" />
-        <module name="metasfresh-dunning_gateway.api" />
         <module name="de.metas.fresh.base" />
         <module name="de.metas.banking.base" />
         <module name="de.metas.document.refid" />
         <module name="metasfresh-assemblies" />
         <module name="metasfresh-dist-base" />
-        <module name="vertical-healthcare_ch.forum_datenaustausch_ch.invoice_440.request" />
-        <module name="metasfresh-material-event" />
-        <module name="de.metas.migration.cli" />
-        <module name="de.metas.report.jasper.commons" />
+        <module name="de.metas.util.web" />
+        <module name="metasfresh-dunning_gateway.api" />
         <module name="marketing-cleverreach" />
         <module name="de.metas.rfq" />
         <module name="de.metas.adempiere.adempiere.patched-ecs" />
         <module name="de.metas.device.scales" />
-        <module name="de.metas.ordercandidate.rest-api" />
-        <module name="vertical-healthcare_ch.forum_datenaustausch_ch.invoice_440.response" />
+        <module name="de.metas.migration.cli" />
+        <module name="metasfresh-pharma.msv3.server-peer" />
+        <module name="de.metas.printing.api" />
         <module name="vertical-healthcare_ch.forum_datenaustausch_ch.invoice_xversion" />
         <module name="report-service" />
         <module name="de.metas.aggregation" />
@@ -58,204 +61,64 @@
         <module name="de.metas.edi" />
         <module name="de.metas.adempiere.adempiere.migration-sql" />
         <module name="de.metas.elasticsearch.server" />
-        <module name="de.metas.shipper.gateway.go" />
         <module name="de.metas.device.adempiere" />
-        <module name="metasfresh-pharma.msv3.server" />
-        <module name="de.metas.adempiere.libero.liberoHR" />
+        <module name="de.metas.shipper.gateway.derkurier" />
+        <module name="de.metas.adempiere.libero.libero" />
         <module name="metasfresh-dist-swingui" />
         <module name="marketing-serialletter" />
-        <module name="de.metas.printing.embedded-client" />
-        <module name="de.metas.inbound.mail" />
+        <module name="de.metas.adempiere.adempiere.base" />
+        <module name="metasfresh-material-dispo-service" />
+        <module name="de.metas.shipper.gateway.dpd" />
         <module name="vertical-healthcare_ch.forum_datenaustausch_ch.invoice_450.response" />
         <module name="de.metas.handlingunits.base" />
         <module name="metasfresh-invoice_gateway.spi" />
+        <module name="de.metas.business.rest-api" />
         <module name="de.metas.storage" />
         <module name="metasfresh-material-planning" />
         <module name="de.metas.assemblies" />
-        <module name="de.metas.ordercandidate.rest-api-impl" />
-        <module name="de.metas.invoice.rest-api" />
         <module name="metasfresh-pharma.vendor.gateway.msv3" />
-        <module name="de.metas.document.archive.base" />
-        <module name="de.metas.shipper.gateway.spi" />
+        <module name="metasfresh-pharma.msv3.server" />
         <module name="de.metas.swat.base" />
-        <module name="de.metas.migration.base" />
+        <module name="de.metas.shipper.gateway.go" />
         <module name="de.metas.dimension" />
-        <module name="de.metas.order.rest-api" />
         <module name="vertical-healthcare_ch.forum_datenaustausch_ch.invoice_450.request" />
         <module name="vertical-healthcare_ch.forum_datenaustausch_ch.invoice_rest-api" />
-        <module name="de.metas.jax.rs" />
+        <module name="metasfresh-dlm-base" />
         <module name="vertical-healthcare_ch.forum_datenaustausch_ch.invoice_commons" />
-        <module name="de.metas.contracts" />
+        <module name="metasfresh-material-event" />
         <module name="marketing-base" />
         <module name="metasfresh-invoice_gateway.api" />
         <module name="de.metas.documentation" />
         <module name="metasfresh-creditscore-base" />
         <module name="de.metas.payment.sepa" />
-        <module name="de.metas.adempiere.libero.libero" />
-        <module name="de.metas.dunning" />
-        <module name="de.metas.ui.web.base" />
-        <module name="de.metas.payment.esr" />
+        <module name="de.metas.adempiere.adempiere.serverRoot.base" />
+        <module name="metasfresh-webui-api" />
+        <module name="de.metas.adempiere.adempiere.client" />
         <module name="metasfresh-material-commons" />
+        <module name="de.metas.materialtracking" />
         <module name="vertical-healthcare_ch.forum_datenaustausch_ch.invoice_base" />
         <module name="de.metas.business" />
-        <module name="de.metas.adempiere.adempiere.client" />
-        <module name="de.metas.shipper.gateway.derkurier" />
+        <module name="de.metas.dunning" />
         <module name="de.metas.procurement.base" />
         <module name="de.metas.document.archive.api" />
-        <module name="de.metas.salescandidate.base" />
+        <module name="vertical-healthcare_ch.forum_datenaustausch_ch.invoice_440.request" />
         <module name="de.metas.shipper.gateway.dpd-legacy" />
-        <module name="metasfresh-material-dispo-service" />
-        <module name="metasfresh-dlm-base" />
+        <module name="de.metas.report.jasper.commons" />
+        <module name="de.metas.contracts" />
         <module name="metasfresh-dist-serverRoot" />
         <module name="de.metas.procurement.webui" />
         <module name="de.metas.async" />
         <module name="de.metas.printing.client" />
-        <module name="metasfresh-webui-api" />
+        <module name="metasfresh-pharma.msv3.schema.v2" />
         <module name="metasfresh-pharma.msv3.schema.v1" />
-        <module name="de.metas.banking.swingui" />
+        <module name="de.metas.migration.base" />
+        <module name="de.metas.inbound.mail" />
+        <module name="de.metas.printing.embedded-client" />
         <module name="metasfresh-dist-ait" />
         <module name="de.metas.monitoring" />
-        <module name="de.metas.adempiere.adempiere.base" />
+        <module name="de.metas.salescandidate.base" />
         <module name="metasfresh-material-cockpit" />
       </profile>
-      <profile name="Annotation profile for Unknown" enabled="true">
-        <sourceOutputDir name="../../../../target/generated-sources/annotations" />
-        <sourceTestOutputDir name="../../../../target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <module name="maven-archiver (252)" />
-      </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="de.metas.acct.base" target="1.8" />
-      <module name="de.metas.adempiere.adempiere" target="1.5" />
-      <module name="de.metas.adempiere.adempiere.base" target="1.8" />
-      <module name="de.metas.adempiere.adempiere.client" target="1.8" />
-      <module name="de.metas.adempiere.adempiere.migration-sql" target="1.8" />
-      <module name="de.metas.adempiere.adempiere.patched-ecs" target="1.8" />
-      <module name="de.metas.adempiere.adempiere.serverRoot" target="1.5" />
-      <module name="de.metas.adempiere.adempiere.serverRoot.base" target="1.8" />
-      <module name="de.metas.adempiere.libero.libero" target="1.8" />
-      <module name="de.metas.adempiere.libero.liberoHR" target="1.8" />
-      <module name="de.metas.aggregation" target="1.8" />
-      <module name="de.metas.assemblies" target="1.8" />
-      <module name="de.metas.async" target="1.8" />
-      <module name="de.metas.banking" target="1.5" />
-      <module name="de.metas.banking.base" target="1.8" />
-      <module name="de.metas.banking.swingui" target="1.8" />
-      <module name="de.metas.business" target="1.8" />
-      <module name="de.metas.business.rest-api" target="1.8" />
-      <module name="de.metas.contracts" target="1.8" />
-      <module name="de.metas.device.adempiere" target="1.8" />
-      <module name="de.metas.device.api" target="1.8" />
-      <module name="de.metas.device.scales" target="1.8" />
-      <module name="de.metas.dimension" target="1.8" />
-      <module name="de.metas.document.archive" target="1.5" />
-      <module name="de.metas.document.archive.api" target="1.8" />
-      <module name="de.metas.document.archive.base" target="1.8" />
-      <module name="de.metas.document.refid" target="1.8" />
-      <module name="de.metas.documentation" target="1.8" />
-      <module name="de.metas.dunning" target="1.8" />
-      <module name="de.metas.edi" target="1.8" />
-      <module name="de.metas.elasticsearch" target="1.8" />
-      <module name="de.metas.elasticsearch.server" target="1.8" />
-      <module name="de.metas.fresh" target="1.5" />
-      <module name="de.metas.fresh.base" target="1.8" />
-      <module name="de.metas.fresh.swingui" target="1.8" />
-      <module name="de.metas.handlingunits.base" target="1.8" />
-      <module name="de.metas.handlingunits.client" target="1.8" />
-      <module name="de.metas.inbound.mail" target="1.8" />
-      <module name="de.metas.invoice.rest-api" target="1.8" />
-      <module name="de.metas.jax.rs" target="1.8" />
-      <module name="de.metas.marketing" target="1.5" />
-      <module name="de.metas.materialtracking" target="1.8" />
-      <module name="de.metas.migration" target="1.5" />
-      <module name="de.metas.migration.base" target="1.8" />
-      <module name="de.metas.migration.cli" target="1.8" />
-      <module name="de.metas.monitoring" target="1.8" />
-      <module name="de.metas.order.rest-api" target="1.8" />
-      <module name="de.metas.ordercandidate.rest-api" target="1.8" />
-      <module name="de.metas.ordercandidate.rest-api-impl" target="1.8" />
-      <module name="de.metas.parent" target="1.5" />
-      <module name="de.metas.parent.general" target="1.5" />
-      <module name="de.metas.payment.esr" target="1.8" />
-      <module name="de.metas.payment.sepa" target="1.8" />
-      <module name="de.metas.printing" target="1.5" />
-      <module name="de.metas.printing.api" target="1.7" />
-      <module name="de.metas.printing.base" target="1.8" />
-      <module name="de.metas.printing.client" target="1.8" />
-      <module name="de.metas.printing.common" target="1.7" />
-      <module name="de.metas.printing.embedded-client" target="1.8" />
-      <module name="de.metas.printing.esb.base" target="1.7" />
-      <module name="de.metas.printing.rest-api-impl" target="1.8" />
-      <module name="de.metas.procurement.base" target="1.8" />
-      <module name="de.metas.procurement.sync-api" target="1.8" />
-      <module name="de.metas.procurement.webui" target="1.8" />
-      <module name="de.metas.purchasecandidate.base" target="1.8" />
-      <module name="de.metas.report.jasper.client" target="1.8" />
-      <module name="de.metas.report.jasper.commons" target="1.8" />
-      <module name="de.metas.rfq" target="1.8" />
-      <module name="de.metas.salescandidate.base" target="1.8" />
-      <module name="de.metas.scripts.rollout" target="1.5" />
-      <module name="de.metas.shipper.gateway.commons" target="1.8" />
-      <module name="de.metas.shipper.gateway.derkurier" target="1.8" />
-      <module name="de.metas.shipper.gateway.dpd-legacy" target="1.8" />
-      <module name="de.metas.shipper.gateway.go" target="1.8" />
-      <module name="de.metas.shipper.gateway.spi" target="1.8" />
-      <module name="de.metas.storage" target="1.8" />
-      <module name="de.metas.swat" target="1.5" />
-      <module name="de.metas.swat.base" target="1.8" />
-      <module name="de.metas.ui.web.base" target="1.8" />
-      <module name="de.metas.util" target="1.8" />
-      <module name="de.metas.util.web" target="1.8" />
-      <module name="de.metas.vendor.gateway.api" target="1.8" />
-      <module name="de.metas.vertical.creditscore" target="1.5" />
-      <module name="marketing-base" target="1.8" />
-      <module name="marketing-cleverreach" target="1.8" />
-      <module name="marketing-serialletter" target="1.8" />
-      <module name="metasfresh-assemblies" target="1.8" />
-      <module name="metasfresh-creditscore-base" target="1.8" />
-      <module name="metasfresh-creditscore-creditpass" target="1.8" />
-      <module name="metasfresh-datev" target="1.8" />
-      <module name="metasfresh-dist" target="1.5" />
-      <module name="metasfresh-dist-ait" target="1.8" />
-      <module name="metasfresh-dist-base" target="1.8" />
-      <module name="metasfresh-dist-dist" target="1.5" />
-      <module name="metasfresh-dist-serverRoot" target="1.8" />
-      <module name="metasfresh-dist-swingui" target="1.8" />
-      <module name="metasfresh-dlm" target="1.5" />
-      <module name="metasfresh-dlm-base" target="1.8" />
-      <module name="metasfresh-dlm-swingui" target="1.8" />
-      <module name="metasfresh-dunning_gateway.api" target="1.8" />
-      <module name="metasfresh-dunning_gateway.spi" target="1.8" />
-      <module name="metasfresh-invoice_gateway.api" target="1.8" />
-      <module name="metasfresh-invoice_gateway.spi" target="1.8" />
-      <module name="metasfresh-material" target="1.5" />
-      <module name="metasfresh-material-cockpit" target="1.8" />
-      <module name="metasfresh-material-commons" target="1.8" />
-      <module name="metasfresh-material-dispo-commons" target="1.8" />
-      <module name="metasfresh-material-dispo-service" target="1.8" />
-      <module name="metasfresh-material-event" target="1.8" />
-      <module name="metasfresh-material-planning" target="1.8" />
-      <module name="metasfresh-pharma" target="1.8" />
-      <module name="metasfresh-pharma.msv3.commons" target="1.8" />
-      <module name="metasfresh-pharma.msv3.schema.v1" target="1.8" />
-      <module name="metasfresh-pharma.msv3.schema.v2" target="1.8" />
-      <module name="metasfresh-pharma.msv3.server" target="1.8" />
-      <module name="metasfresh-pharma.msv3.server-peer" target="1.8" />
-      <module name="metasfresh-pharma.msv3.server-peer-metasfresh" target="1.8" />
-      <module name="metasfresh-pharma.vendor.gateway.msv3" target="1.8" />
-      <module name="metasfresh-report" target="1.5" />
-      <module name="metasfresh-webui-api" target="1.8" />
-      <module name="report-service" target="1.8" />
-      <module name="vertical-healthcare_ch" target="1.5" />
-      <module name="vertical-healthcare_ch.forum_datenaustausch_ch.invoice_440.request" target="1.8" />
-      <module name="vertical-healthcare_ch.forum_datenaustausch_ch.invoice_440.response" target="1.8" />
-      <module name="vertical-healthcare_ch.forum_datenaustausch_ch.invoice_450.request" target="1.8" />
-      <module name="vertical-healthcare_ch.forum_datenaustausch_ch.invoice_450.response" target="1.8" />
-      <module name="vertical-healthcare_ch.forum_datenaustausch_ch.invoice_base" target="1.8" />
-      <module name="vertical-healthcare_ch.forum_datenaustausch_ch.invoice_commons" target="1.8" />
-      <module name="vertical-healthcare_ch.forum_datenaustausch_ch.invoice_rest-api" target="1.8" />
-      <module name="vertical-healthcare_ch.forum_datenaustausch_ch.invoice_xversion" target="1.8" />
-    </bytecodeTargetLevel>
   </component>
 </project>
