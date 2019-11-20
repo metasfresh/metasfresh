@@ -167,7 +167,7 @@ class ClientSetup
 		InterfaceWrapperHelper.save(orgBPartner, ITrx.TRXNAME_ThreadInherited);
 
 		InterfaceWrapperHelper.disableReadOnlyColumnCheck(orgBPartnerLocation); // disable it because AD_Org_ID is not updateable
-		orgBPartnerLocation.setAD_Org(adOrg); // FRESH-211
+		orgBPartnerLocation.setAD_Org_ID(adOrg.getAD_Org_ID()); // FRESH-211
 		InterfaceWrapperHelper.save(orgBPartnerLocation, ITrx.TRXNAME_ThreadInherited);
 
 		InterfaceWrapperHelper.save(orgContact, ITrx.TRXNAME_ThreadInherited);

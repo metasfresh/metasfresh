@@ -289,7 +289,7 @@ public abstract class TourPlanningTestBase
 	{
 		final I_M_DeliveryDay deliveryDay = InterfaceWrapperHelper.newInstance(I_M_DeliveryDay.class, contextProvider);
 		deliveryDay.setIsActive(true);
-		deliveryDay.setC_BPartner(bpLocation.getC_BPartner());
+		deliveryDay.setC_BPartner_ID(bpLocation.getC_BPartner_ID());
 		deliveryDay.setC_BPartner_Location(bpLocation);
 		deliveryDay.setDeliveryDate(toDateTimeTimestamp(deliveryDateTimeStr));
 		deliveryDay.setBufferHours(bufferHours);

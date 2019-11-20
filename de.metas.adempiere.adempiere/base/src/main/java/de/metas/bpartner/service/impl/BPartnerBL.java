@@ -336,7 +336,7 @@ public class BPartnerBL implements IBPartnerBL
 	{
 		final String address = Services.get(ILocationBL.class).mkAddress(
 				bpLocation.getC_Location(),
-				bpLocation.getC_BPartner(),
+				InterfaceWrapperHelper.load(bpLocation.getC_BPartner_ID(), I_C_BPartner.class),
 				"",  // bPartnerBlock
 				"" // userBlock
 		);
@@ -460,7 +460,7 @@ public class BPartnerBL implements IBPartnerBL
 		//
 		// BPartner location
 		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, bpartner);
-		bpLocation.setC_BPartner(bpartner);
+		bpLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		bpLocation.setC_Location_ID(template.getC_Location_ID());
 		bpLocation.setIsBillTo(true);
 		bpLocation.setIsBillToDefault(true);

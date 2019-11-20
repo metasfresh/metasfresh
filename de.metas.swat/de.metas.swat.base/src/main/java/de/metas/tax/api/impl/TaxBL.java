@@ -1,6 +1,5 @@
 package de.metas.tax.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -173,7 +172,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			final boolean isSOTrx,
 			final boolean throwEx)
 	{
-		final I_C_BPartner bPartner = create(bpLocTo.getC_BPartner(), I_C_BPartner.class);
+		final I_C_BPartner bPartner = loadOutOfTrx(bpLocTo.getC_BPartner_ID(), I_C_BPartner.class);
 
 		final boolean hasTaxCertificate = !Check.isEmpty(bPartner.getVATaxID());
 
