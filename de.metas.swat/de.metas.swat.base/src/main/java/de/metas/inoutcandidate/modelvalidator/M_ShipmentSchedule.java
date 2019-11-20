@@ -48,7 +48,7 @@ import org.compiere.model.ModelValidator;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -308,8 +308,8 @@ public class M_ShipmentSchedule
 		}
 
 		final I_C_Order order = orderLine.getC_Order();
-		final boolean orderNotCompleted = !Services.get(IDocumentBL.class).isDocumentCompleted(order);
-		if (orderNotCompleted)
+		final DocStatus orderDocStatus = DocStatus.ofNullableCodeOrUnknown(order.getDocStatus());
+		if (!orderDocStatus.isCompleted())
 		{
 			// issue https://github.com/metasfresh/metasfresh/issues/3815
 			return; // don't update e.g. an order that was closed just now, while the async shipment-schedule creation took place.
