@@ -151,6 +151,11 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 	public void invalidateCandidatesFor(@NonNull final Object model)
 	{
 		final I_C_SubscriptionProgress subscriptionLine = InterfaceWrapperHelper.create(model, I_C_SubscriptionProgress.class);
+		invalidateCandidatesForSubscriptionLine(subscriptionLine);
+	}
+
+	private void invalidateCandidatesForSubscriptionLine(final I_C_SubscriptionProgress subscriptionLine)
+	{
 		if (subscriptionLine.getM_ShipmentSchedule_ID() >= 0)
 		{
 			return;
