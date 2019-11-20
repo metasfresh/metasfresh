@@ -1,9 +1,10 @@
-package de.metas.material.planning;
+package de.metas.inoutcandidate.picking_bom;
 
 import javax.annotation.Nullable;
 
 import org.eevolution.api.ProductBOMId;
 
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.product.ResourceId;
 import de.metas.user.UserId;
 import lombok.Builder;

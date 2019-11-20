@@ -35,7 +35,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.warehouse.WarehouseId;
@@ -53,15 +52,12 @@ import de.metas.material.commons.attributes.AttributesKeyQueryHelper;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IResourceDAO;
-import de.metas.material.planning.PickingOrderConfig;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
-import de.metas.user.UserId;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 public class ProductPlanningDAO implements IProductPlanningDAO
@@ -253,63 +249,5 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.stream()
 				.map(ProductBOMId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	@Override
-	public Optional<PickingOrderConfig> getPickingOrderConfig(
-			final OrgId orgId,
-			final WarehouseId warehouseId,
-			final ProductId productId,
-			final AttributeSetInstanceId asiId)
-	{
-		final ProductPlanningQuery productPlanningQuery = ProductPlanningQuery.builder()
-				.orgId(orgId)
-				.warehouseId(warehouseId)
-				.productId(productId)
-				.attributeSetInstanceId(asiId)
-				.build();
-		final I_PP_Product_Planning productPlanning = find(productPlanningQuery).orElse(null);
-		if (productPlanning == null)
-		{
-			return Optional.empty();
-		}
-
-		return extractPickingOrderConfig(productPlanning);
-	}
-
-	@Override
-	public Optional<PickingOrderConfig> extractPickingOrderConfig(@NonNull final I_PP_Product_Planning productPlanning)
-	{
-		if (!StringUtils.toBoolean(productPlanning.getIsManufactured()))
-		{
-			return Optional.empty();
-		}
-		if (!productPlanning.isPickingOrder())
-		{
-			return Optional.empty();
-		}
-
-		final ResourceId plantId = ResourceId.ofRepoIdOrNull(productPlanning.getS_Resource_ID());
-		if (plantId == null)
-		{
-			throw new FillMandatoryException("PP_Plant_ID")
-					.setParameter("productPlanning", productPlanning)
-					.appendParametersToMessage();
-		}
-
-		final ProductBOMId bomId = ProductBOMId.ofRepoIdOrNull(productPlanning.getPP_Product_BOM_ID());
-		if (bomId == null)
-		{
-			throw new FillMandatoryException("PP_Product_BOM_ID")
-					.setParameter("productPlanning", productPlanning)
-					.appendParametersToMessage();
-		}
-
-		return Optional.of(PickingOrderConfig.builder()
-				.productPlanningId(ProductPlanningId.ofRepoId(productPlanning.getPP_Product_Planning_ID()))
-				.plantId(plantId)
-				.bomId(bomId)
-				.plannerId(UserId.ofRepoIdOrNull(productPlanning.getPlanner_ID()))
-				.build());
 	}
 }

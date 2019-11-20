@@ -1,5 +1,6 @@
 package org.eevolution.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -24,16 +25,12 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMCreateRequest;
 import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.api.PickingBOMsReversedIndex;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.SetMultimap;
 
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
@@ -77,6 +74,21 @@ public class ProductBOMDAO implements IProductBOMDAO
 
 		return queryBuilder.create().list();
 	}	// getLines
+
+	@Override
+	public List<I_PP_Product_BOMLine> retrieveLinesByBOMIds(@NonNull final Collection<ProductBOMId> bomIds)
+	{
+		if (bomIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		return queryBL.createQueryBuilderOutOfTrx(I_PP_Product_BOMLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, bomIds)
+				.create()
+				.list();
+
+	}
 
 	@Override
 	public Optional<ProductBOMId> getDefaultBOMIdByProductId(@NonNull final ProductId productId)
@@ -127,6 +139,12 @@ public class ProductBOMDAO implements IProductBOMDAO
 	public I_PP_Product_BOM getById(@NonNull final ProductBOMId bomId)
 	{
 		return retrieveById(Env.getCtx(), bomId);
+	}
+
+	@Override
+	public List<I_PP_Product_BOM> getByIds(@NonNull final Collection<ProductBOMId> bomIds)
+	{
+		return loadByRepoIdAwaresOutOfTrx(bomIds, I_PP_Product_BOM.class);
 	}
 
 	@Cached(cacheName = I_PP_Product_BOM.Table_Name + "#by#" + I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID)
@@ -292,51 +310,5 @@ public class ProductBOMDAO implements IProductBOMDAO
 	{
 		final I_PP_Product_BOM bom = getById(bomId);
 		return ProductId.ofRepoId(bom.getM_Product_ID());
-	}
-
-	@Override
-	public PickingBOMsReversedIndex retrievePickingBOMsReversedIndex(final Collection<ProductBOMId> bomIds)
-	{
-		if (bomIds.isEmpty())
-		{
-			return PickingBOMsReversedIndex.EMPTY;
-		}
-
-		final ImmutableMap<ProductBOMId, I_PP_Product_BOM> bomsById = queryBL
-				.createQueryBuilderOutOfTrx(I_PP_Product_BOM.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID, bomIds)
-				.create()
-				.stream()
-				.collect(ImmutableMap.toImmutableMap(
-						record -> ProductBOMId.ofRepoId(record.getPP_Product_BOM_ID()),
-						record -> record));
-		if (bomsById.isEmpty())
-		{
-			return PickingBOMsReversedIndex.EMPTY;
-		}
-
-		final List<I_PP_Product_BOMLine> bomLines = queryBL
-				.createQueryBuilderOutOfTrx(I_PP_Product_BOMLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, bomIds)
-				.create()
-				.list();
-		if (bomLines.isEmpty())
-		{
-			return PickingBOMsReversedIndex.EMPTY;
-		}
-
-		final SetMultimap<ProductId, ProductId> bomProductIdsByComponentId = HashMultimap.create();
-		for (final I_PP_Product_BOMLine bomLine : bomLines)
-		{
-			final ProductId componentId = ProductId.ofRepoId(bomLine.getM_Product_ID());
-			final ProductBOMId bomId = ProductBOMId.ofRepoId(bomLine.getPP_Product_BOM_ID());
-			final I_PP_Product_BOM bom = bomsById.get(bomId);
-			ProductId bomProductId = ProductId.ofRepoId(bom.getM_Product_ID());
-			bomProductIdsByComponentId.put(componentId, bomProductId);
-		}
-
-		return PickingBOMsReversedIndex.ofBOMProductIdsByComponentId(bomProductIdsByComponentId);
 	}
 }

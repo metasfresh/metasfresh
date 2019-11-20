@@ -17,6 +17,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.DB;
@@ -35,10 +36,10 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.picking_bom.PickingBOMService;
+import de.metas.inoutcandidate.picking_bom.PickingOrderConfig;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.PickingOrderConfig;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderDAO;
@@ -287,7 +288,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 
 	private PPOrderId createPickingOrderIfNeeded(final I_C_OrderLine salesOrderLine)
 	{
-		final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
+		final PickingBOMService pickingBOMService = SpringContextHolder.instance.getBean(PickingBOMService.class);
 		final IPPOrderBL ppOrdersService = Services.get(IPPOrderBL.class);
 		final IProductBL productsService = Services.get(IProductBL.class);
 
@@ -295,7 +296,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		final WarehouseId warehouseId = getWarehouseId(salesOrderLine);
 		final ProductId productId = ProductId.ofRepoId(salesOrderLine.getM_Product_ID());
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(salesOrderLine.getM_AttributeSetInstance_ID());
-		final PickingOrderConfig config = productPlanningsRepo.getPickingOrderConfig(orgId, warehouseId, productId, asiId).orElse(null);
+		final PickingOrderConfig config = pickingBOMService.getPickingOrderConfig(orgId, warehouseId, productId, asiId).orElse(null);
 		if (config == null)
 		{
 			return null;

@@ -1,4 +1,4 @@
-package org.eevolution.api;
+package de.metas.inoutcandidate.picking_bom;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;

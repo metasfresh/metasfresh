@@ -52,12 +52,6 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
-import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.api.PickingBOMsReversedIndex;
-import org.eevolution.api.ProductBOMId;
-import org.eevolution.model.I_PP_Product_BOM;
-import org.eevolution.model.I_PP_Product_BOMLine;
-import org.eevolution.model.I_PP_Product_Planning;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -69,7 +63,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
-import de.metas.cache.CCache;
 import de.metas.document.engine.DocStatus;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
@@ -86,6 +79,8 @@ import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepositor
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.picking_bom.PickingBOMService;
+import de.metas.inoutcandidate.picking_bom.PickingBOMsReversedIndex;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineFactory;
@@ -94,7 +89,6 @@ import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderReferenceProvider;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.material.cockpit.stock.StockRepository;
-import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.order.DeliveryRule;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
@@ -118,10 +112,12 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		final StockRepository stockRepository = new StockRepository();
 		final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory = new ShipmentScheduleQtyOnHandStorageFactory(stockRepository);
 		final ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory = new ShipmentScheduleReferencedLineFactory(Optional.of(ImmutableList.of(new ShipmentScheduleOrderReferenceProvider())));
+		final PickingBOMService pickingBOMService = new PickingBOMService();
 
 		return new ShipmentScheduleUpdater(
 				shipmentScheduleQtyOnHandStorageFactory,
-				shipmentScheduleReferencedLineFactory);
+				shipmentScheduleReferencedLineFactory,
+				pickingBOMService);
 	}
 
 	private static final String DYNATTR_ProcessedByBackgroundProcess = IShipmentScheduleUpdater.class.getName() + "#ProcessedByBackgroundProcess";
@@ -138,22 +134,15 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	private final IShipmentConstraintsBL shipmentConstraintsBL = Services.get(IShipmentConstraintsBL.class);
 	private final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory;
 	private final ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory;
+	private final PickingBOMService pickingBOMService;
 
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final IDeliveryDayBL deliveryDayBL = Services.get(IDeliveryDayBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IProductBL productsService = Services.get(IProductBL.class);
 	private final IBPartnerProductDAO bpartnerProductDAO = Services.get(IBPartnerProductDAO.class);
-	private final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
-	private final IProductBOMDAO bomsRepo = Services.get(IProductBOMDAO.class);
 
 	private final CompositeCandidateProcessor candidateProcessors = new CompositeCandidateProcessor();
-
-	private final CCache<Integer, PickingBOMsReversedIndex> pickingBOMsReversedIndexCache = CCache.<Integer, PickingBOMsReversedIndex> builder()
-			.additionalTableNameToResetFor(I_PP_Product_Planning.Table_Name)
-			.additionalTableNameToResetFor(I_PP_Product_BOM.Table_Name)
-			.additionalTableNameToResetFor(I_PP_Product_BOMLine.Table_Name)
-			.build();
 
 	/**
 	 * Flag which is set to true when shipment schedule updater is running.
@@ -164,10 +153,12 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 	public ShipmentScheduleUpdater(
 			@NonNull final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory,
-			@NonNull final ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory)
+			@NonNull final ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory,
+			@NonNull final PickingBOMService pickingBOMService)
 	{
 		this.shipmentScheduleQtyOnHandStorageFactory = shipmentScheduleQtyOnHandStorageFactory;
 		this.shipmentScheduleReferencedLineFactory = shipmentScheduleReferencedLineFactory;
+		this.pickingBOMService = pickingBOMService;
 	}
 
 	private boolean isAllowConsolidateShipment(@NonNull final BPartnerId bpartnerId)
@@ -903,7 +894,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 	private Stream<IShipmentScheduleSegment> extractPickingBOMsStorageSegments(final OlAndSched olAndSched)
 	{
-		final PickingBOMsReversedIndex pickingBOMsReversedIndex = getPickingBOMsReversedIndex();
+		final PickingBOMsReversedIndex pickingBOMsReversedIndex = pickingBOMService.getPickingBOMsReversedIndex();
 
 		final ProductId componentId = olAndSched.getProductId();
 		final ImmutableSet<ProductId> pickingBOMProductIds = pickingBOMsReversedIndex.getBOMProductIdsByComponentId(componentId);
@@ -935,16 +926,5 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		}
 
 		return segments.stream();
-	}
-
-	private PickingBOMsReversedIndex getPickingBOMsReversedIndex()
-	{
-		return pickingBOMsReversedIndexCache.getOrLoad(0, this::retrievePickingBOMsReversedIndex);
-	}
-
-	private PickingBOMsReversedIndex retrievePickingBOMsReversedIndex()
-	{
-		final Set<ProductBOMId> pickingBOMIds = productPlanningsRepo.retrieveAllPickingBOMIds();
-		return bomsRepo.retrievePickingBOMsReversedIndex(pickingBOMIds);
 	}
 }
