@@ -235,7 +235,7 @@ public class M_ShipmentSchedule
 
 		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
 		invalidSchedulesService.invalidateShipmentSchedule(shipmentScheduleId); // 08746: make sure that at any rate, the sched itself is invalidated
-		invalidSchedulesService.invalidateSegmentForShipmentSchedule(schedule);
+		invalidSchedulesService.notifySegmentChangedForShipmentSchedule(schedule);
 	}
 
 	@ModelChange( //

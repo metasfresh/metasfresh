@@ -131,7 +131,7 @@ public class M_InOutLine
 
 		final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
 		shipmentScheduleInvalidateBL.invalidateJustForLine(inOutLine); // task 08749: the segment invalidation might not invalidate the sched(s) for this line
-		shipmentScheduleInvalidateBL.invalidateSegmentForLine(inOutLine);
+		shipmentScheduleInvalidateBL.notifySegmentChangedForShipmentLine(inOutLine);
 	}
 
 	private void createOrUpdateShipmentScheduleQtyPicked(

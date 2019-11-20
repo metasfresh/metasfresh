@@ -5,7 +5,7 @@ import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.ModelValidator;
 
-import de.metas.storage.IStorageListeners;
+import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.storage.IStorageSegment;
 import de.metas.storage.impl.ImmutableStorageAttributeSegment;
 import de.metas.storage.impl.ImmutableStorageSegment;
@@ -35,6 +35,6 @@ public class M_AttributeInstance
 				.attributeSegment(attributeSegment)
 				.build();
 
-		Services.get(IStorageListeners.class).notifyStorageSegmentChanged(storageSegment);
+		Services.get(IShipmentScheduleInvalidateBL.class).notifySegmentChanged(storageSegment);
 	}
 }

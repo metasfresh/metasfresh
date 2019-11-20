@@ -55,6 +55,6 @@ public class C_OrderLine_ShipmentSchedule
 
 		final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
 		shipmentScheduleInvalidateBL.invalidateJustForOrderLine(ol);
-		shipmentScheduleInvalidateBL.invalidateSegmentForOrderLine(ol);
+		shipmentScheduleInvalidateBL.notifySegmentChangedForOrderLine(ol);
 	}
 }

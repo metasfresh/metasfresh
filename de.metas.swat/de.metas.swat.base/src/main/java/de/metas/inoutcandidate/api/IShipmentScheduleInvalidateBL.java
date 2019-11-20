@@ -48,9 +48,9 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 	void invalidateJustForLine(I_M_InOutLine shipmentLine);
 
 	/**
-	 * See {@link #invalidateSegmentForLine(I_M_InOutLine)}.
+	 * See {@link #notifySegmentChangedForShipmentLine(I_M_InOutLine)}.
 	 */
-	void invalidateSegmentsForLines(I_M_InOut shipment);
+	void notifySegmentsChangedForShipment(I_M_InOut shipment);
 
 	/**
 	 * Invalidates all shipment schedules that have the same product, bPartner, ASI and locator as the given line<br>
@@ -65,18 +65,18 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 	 * @param shipmentLine
 	 * @see IShipmentSchedulePA#invalidateStorageSegments(java.util.Collection)
 	 */
-	void invalidateSegmentForLine(I_M_InOutLine shipmentLine);
+	void notifySegmentChangedForShipmentLine(I_M_InOutLine shipmentLine);
 
 	/**
 	 * For the given <code>schedule</code>, invalidate all shipment schedules that have the same product and warehouse and a matching ASI.
 	 */
-	void invalidateSegmentForShipmentSchedule(I_M_ShipmentSchedule schedule);
+	void notifySegmentChangedForShipmentSchedule(I_M_ShipmentSchedule schedule);
 
 	/**
 	 * For the given <code>orderLine</code>, invalidate all shipment schedules that have the same product and warehouse and a matching ASI.
 	 * and <b>that that do not have "force" as delivery rule</b>.<br>
 	 */
-	void invalidateSegmentForOrderLine(I_C_OrderLine orderLine);
+	void notifySegmentChangedForOrderLine(I_C_OrderLine orderLine);
 
 	/**
 	 * Invalidate the shipment schedule referencing the given <code>orderLine</code>.
@@ -100,5 +100,13 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 	 * @param headerAggregationKeys
 	 */
 	void invalidateForHeaderAggregationKeys(Set<String> headerAggregationKeys);
+	
+	void notifySegmentChanged(IStorageSegment storageSegment);
 
+	/**
+	 * Notify the registered listeners that a a bunch of segments changed. Maybe they can gain a performance benefit from processing them all at once.
+	 * 
+	 * @param storageSegments
+	 */
+	void notifySegmentsChanged(Collection<IStorageSegment> storageSegments);
 }

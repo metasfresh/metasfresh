@@ -27,7 +27,7 @@ import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.model.I_M_HU_Storage;
-import de.metas.storage.IStorageListeners;
+import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.storage.IStorageSegment;
 import de.metas.storage.spi.hu.impl.StorageSegmentFromHUStorage;
 import de.metas.util.Services;
@@ -39,7 +39,7 @@ public class M_HU_Storage
 
 	private M_HU_Storage()
 	{
-	};
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE }, ifColumnsChanged = {
 			I_M_HU_Storage.COLUMNNAME_IsActive,
@@ -51,9 +51,8 @@ public class M_HU_Storage
 	{
 		// TODO: notify segment changed only after transaction is commited.
 		// And in this case, it would be nice if we could aggregate the notifications and fire them all together at once.
-		final IStorageListeners storageListeners = Services.get(IStorageListeners.class);
 
 		final IStorageSegment storageSegment = new StorageSegmentFromHUStorage(huStorage);
-		storageListeners.notifyStorageSegmentChanged(storageSegment);
+		Services.get(IShipmentScheduleInvalidateBL.class).notifySegmentChanged(storageSegment);
 	}
 }

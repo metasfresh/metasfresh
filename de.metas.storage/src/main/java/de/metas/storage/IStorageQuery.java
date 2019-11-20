@@ -35,8 +35,6 @@ import de.metas.product.ProductId;
 
 /**
  * Used to retrieve {@link IStorageRecord}s. Use {@link IStorageEngine#newStorageQuery()} to get an instance.
- * <p>
- * Also see {@link IStorageSegment}.
  */
 public interface IStorageQuery
 {

@@ -231,13 +231,13 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 			for (final I_C_OrderLine ol : Services.get(IOrderDAO.class).retrieveOrderLines(order, I_C_OrderLine.class))
 			{
 				shipmentScheduleInvalidateBL.invalidateJustForOrderLine(ol);
-				shipmentScheduleInvalidateBL.invalidateSegmentForOrderLine(ol);
+				shipmentScheduleInvalidateBL.notifySegmentChangedForOrderLine(ol);
 			}
 		}
 		else
 		{
 			shipmentScheduleInvalidateBL.invalidateJustForOrderLine(orderLine);
-			shipmentScheduleInvalidateBL.invalidateSegmentForOrderLine(orderLine);
+			shipmentScheduleInvalidateBL.notifySegmentChangedForOrderLine(orderLine);
 		}
 	}
 

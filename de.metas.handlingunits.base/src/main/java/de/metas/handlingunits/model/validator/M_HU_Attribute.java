@@ -29,7 +29,7 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
-import de.metas.storage.IStorageListeners;
+import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.storage.IStorageSegment;
 import de.metas.storage.spi.hu.impl.StorageSegmentFromHUAttribute;
 import de.metas.util.Services;
@@ -55,7 +55,7 @@ public class M_HU_Attribute
 	{
 		// NOTE: Fire just notifying about the segment change and later on it will be determined if this attribute change really affects the storage.
 		final IStorageSegment storageSegment = new StorageSegmentFromHUAttribute(huAttribute);
-		Services.get(IStorageListeners.class).notifyStorageSegmentChanged(storageSegment);
+		Services.get(IShipmentScheduleInvalidateBL.class).notifySegmentChanged(storageSegment);
 	}
 
 }

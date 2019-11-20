@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
@@ -52,7 +53,6 @@ import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.storage.IStorageBL;
-import de.metas.storage.IStorageListeners;
 import de.metas.storage.IStorageSegment;
 import de.metas.storage.IStorageSegmentBuilder;
 import de.metas.util.Services;
@@ -65,7 +65,6 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	protected final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	protected final IStorageBL storageBL = Services.get(IStorageBL.class);
-	private final IStorageListeners storageListeners = Services.get(IStorageListeners.class);
 	protected final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 	private boolean isShipmentScheduleUpdaterRunning()
@@ -145,24 +144,25 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	}
 
 	@Override
-	public void invalidateSegmentsForLines(final I_M_InOut shipment)
+	public void notifySegmentsChangedForShipment(final I_M_InOut shipment)
 	{
 		final List<IStorageSegment> storageSegments = new ArrayList<>();
 
+		final int bpartnerId = shipment.getC_BPartner_ID();
 		for (final I_M_InOutLine inoutLine : inOutDAO.retrieveLines(shipment))
 		{
-			final IStorageSegment storageSegment = createSegmentForInOutLine(shipment.getC_BPartner_ID(), inoutLine);
+			final IStorageSegment storageSegment = createSegmentForInOutLine(bpartnerId, inoutLine);
 			storageSegments.add(storageSegment);
 		}
 
-		storageListeners.notifyStorageSegmentsChanged(storageSegments);
+		notifySegmentsChanged(storageSegments);
 	}
 
 	@Override
-	public void invalidateSegmentForLine(final I_M_InOutLine shipmentLine)
+	public void notifySegmentChangedForShipmentLine(final I_M_InOutLine shipmentLine)
 	{
 		final IStorageSegment storageSegment = createSegmentForInOutLine(shipmentLine.getM_InOut().getC_BPartner_ID(), shipmentLine);
-		storageListeners.notifyStorageSegmentChanged(storageSegment);
+		notifySegmentChanged(storageSegment);
 	}
 
 	/**
@@ -181,7 +181,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	}
 
 	@Override
-	public void invalidateSegmentForShipmentSchedule(@NonNull final I_M_ShipmentSchedule schedule)
+	public void notifySegmentChangedForShipmentSchedule(@NonNull final I_M_ShipmentSchedule schedule)
 	{
 		//
 		// If shipment schedule updater is currently running in this thread, it means that updater changed this record
@@ -192,7 +192,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		}
 
 		final IStorageSegment storageSegment = createSegmentForShipmentSchedule(schedule);
-		storageListeners.notifyStorageSegmentChanged(storageSegment);
+		notifySegmentChanged(storageSegment);
 	}
 
 	/**
@@ -214,7 +214,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	}
 
 	@Override
-	public void invalidateSegmentForOrderLine(@NonNull final I_C_OrderLine orderLine)
+	public void notifySegmentChangedForOrderLine(@NonNull final I_C_OrderLine orderLine)
 	{
 		final IStorageSegmentBuilder storageSegmentBuilder = storageBL.createStorageSegmentBuilder();
 
@@ -227,7 +227,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 				.addWarehouseIdIfNotNull(WarehouseId.ofRepoIdOrNull(orderLine.getM_Warehouse_ID()))
 				.addM_AttributeSetInstance_ID(orderLine.getM_AttributeSetInstance_ID())
 				.build();
-		storageListeners.notifyStorageSegmentChanged(storageSegment);
+		notifySegmentChanged(storageSegment);
 	}
 
 	@Override
@@ -253,5 +253,33 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	public void invalidateForHeaderAggregationKeys(@NonNull final Set<String> headerAggregationKeys)
 	{
 		invalidSchedulesRepo.invalidateForHeaderAggregationKeys(headerAggregationKeys);
+	}
+
+	@Override
+	public void notifySegmentChanged(@NonNull final IStorageSegment storageSegment)
+	{
+		notifySegmentsChanged(ImmutableSet.of(storageSegment));
+	}
+
+	@Override
+	public void notifySegmentsChanged(@NonNull final Collection<IStorageSegment> storageSegments)
+	{
+		if (storageSegments.isEmpty())
+		{
+			return;
+		}
+
+		final ShipmentScheduleSegmentChangedProcessor collector = ShipmentScheduleSegmentChangedProcessor.getOrCreateIfThreadInheritedElseNull(this);
+		if (collector != null)
+		{
+			collector.addSegments(storageSegments);
+		}
+		else
+		{
+			final ITaskExecutorService taskExecutorService = Services.get(ITaskExecutorService.class);
+			taskExecutorService.submit(
+					() -> invalidateStorageSegments(storageSegments),
+					this.getClass().getSimpleName());
+		}
 	}
 }

@@ -1,7 +1,5 @@
 package de.metas.inoutcandidate.modelvalidator;
 
-import java.util.Collection;
-
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -28,9 +26,6 @@ import de.metas.inoutcandidate.spi.impl.OnlyOneOpenInvoiceCandProcessor;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.storage.IStorageListeners;
-import de.metas.storage.IStorageSegment;
-import de.metas.storage.StorageListenerAdapter;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -94,16 +89,6 @@ public final class InOutCandidateValidator implements ModelValidator
 		shipmentScheduleUpdater.registerCandidateProcessor(new OnlyOneOpenInvoiceCandProcessor());
 
 		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(OrderLineShipmentScheduleHandler.class);
-
-		Services.get(IStorageListeners.class).addStorageListener(new StorageListenerAdapter()
-		{
-			@Override
-			public void onStorageSegmentChanged(final Collection<IStorageSegment> storageSegments)
-			{
-				final IShipmentScheduleInvalidateBL invalidSchedulesInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
-				invalidSchedulesInvalidator.invalidateStorageSegments(storageSegments);
-			}
-		});
 
 		setupCaching();
 	}

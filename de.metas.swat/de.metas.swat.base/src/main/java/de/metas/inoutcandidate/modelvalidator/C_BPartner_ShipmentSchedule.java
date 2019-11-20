@@ -54,6 +54,6 @@ public class C_BPartner_ShipmentSchedule
 		// note that we do not need to invalidate the current sched explicitly..
 		// it will be updated as part of the segment, unless it has delivery rule force..
 		// and if it has that rule, then the partner change makes no difference to it, anyways.
-		Services.get(IShipmentScheduleInvalidateBL.class).invalidateSegmentForShipmentSchedule(sched);
+		Services.get(IShipmentScheduleInvalidateBL.class).notifySegmentChangedForShipmentSchedule(sched);
 	}
 }
