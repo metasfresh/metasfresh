@@ -6,6 +6,7 @@ import java.util.Set;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 /*
@@ -31,7 +32,8 @@ import lombok.Value;
  */
 
 @Value
-public class PricingConditionsId
+// todo maybe this shouldn't be made repo id aware, but i wanna see with my eyes why it doesn't work!
+public class PricingConditionsId implements RepoIdAware
 {
 	public static final PricingConditionsId ofDiscountSchemaId(final int discountSchemaId)
 	{
@@ -63,5 +65,11 @@ public class PricingConditionsId
 	{
 		Check.assumeGreaterThanZero(discountSchemaId, "discountSchemaId");
 		this.discountSchemaId = discountSchemaId;
+	}
+
+	@Override
+	public int getRepoId()
+	{
+		return discountSchemaId;
 	}
 }
