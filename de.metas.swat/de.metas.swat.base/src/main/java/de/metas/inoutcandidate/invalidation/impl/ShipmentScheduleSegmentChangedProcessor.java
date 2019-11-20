@@ -9,7 +9,7 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 
-import de.metas.storage.IStorageSegment;
+import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
@@ -83,7 +83,7 @@ final class ShipmentScheduleSegmentChangedProcessor
 		return processor;
 	}
 
-	private final List<IStorageSegment> segments = new ArrayList<>();
+	private final List<IShipmentScheduleSegment> segments = new ArrayList<>();
 	private final ShipmentScheduleInvalidateBL shipmentScheduleInvalidator;
 
 	private ShipmentScheduleSegmentChangedProcessor(@NonNull final ShipmentScheduleInvalidateBL shipmentScheduleInvalidator)
@@ -98,13 +98,13 @@ final class ShipmentScheduleSegmentChangedProcessor
 			return;
 		}
 
-		final List<IStorageSegment> segmentsCopy = new ArrayList<>(segments);
+		final List<IShipmentScheduleSegment> segmentsCopy = new ArrayList<>(segments);
 		segments.clear();
 
 		shipmentScheduleInvalidator.invalidateStorageSegments(segmentsCopy);
 	}
 
-	public void addSegment(final IStorageSegment segment)
+	public void addSegment(final IShipmentScheduleSegment segment)
 	{
 		if (segment == null)
 		{
@@ -114,7 +114,7 @@ final class ShipmentScheduleSegmentChangedProcessor
 		this.segments.add(segment);
 	}
 
-	public void addSegments(final Collection<IStorageSegment> segments)
+	public void addSegments(final Collection<IShipmentScheduleSegment> segments)
 	{
 		if (segments == null || segments.isEmpty())
 		{

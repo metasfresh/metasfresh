@@ -10,9 +10,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
+import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 import de.metas.inoutcandidate.model.I_M_Shipment_Constraint;
-import de.metas.storage.IStorageSegment;
-import de.metas.storage.impl.ImmutableStorageSegment;
 import de.metas.util.Services;
 
 /*
@@ -43,7 +43,7 @@ public class M_Shipment_Constraint
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE })
 	public void invalidateShipmentSchedules(final I_M_Shipment_Constraint constraint, final ModelChangeType changeType)
 	{
-		final Set<IStorageSegment> affectedStorageSegments = extractAffectedStorageSegments(constraint, changeType);
+		final Set<IShipmentScheduleSegment> affectedStorageSegments = extractAffectedStorageSegments(constraint, changeType);
 		if (affectedStorageSegments.isEmpty())
 		{
 			return;
@@ -53,9 +53,9 @@ public class M_Shipment_Constraint
 		invalidSchedulesInvalidator.invalidateStorageSegments(affectedStorageSegments);
 	}
 
-	private static final Set<IStorageSegment> extractAffectedStorageSegments(final I_M_Shipment_Constraint constraint, final ModelChangeType changeType)
+	private static final Set<IShipmentScheduleSegment> extractAffectedStorageSegments(final I_M_Shipment_Constraint constraint, final ModelChangeType changeType)
 	{
-		final Set<IStorageSegment> storageSegments = new LinkedHashSet<>();
+		final Set<IShipmentScheduleSegment> storageSegments = new LinkedHashSet<>();
 		if (changeType.isNewOrChange())
 		{
 			if (constraint.isActive())
@@ -75,9 +75,9 @@ public class M_Shipment_Constraint
 		return storageSegments;
 	}
 
-	private static IStorageSegment createStorageSegment(final I_M_Shipment_Constraint constraint)
+	private static IShipmentScheduleSegment createStorageSegment(final I_M_Shipment_Constraint constraint)
 	{
-		return ImmutableStorageSegment.builder()
+		return ImmutableShipmentScheduleSegment.builder()
 				.anyC_BPartner_ID()
 				.Bill_BPartner_ID(constraint.getBill_BPartner_ID())
 				.anyM_Product_ID()

@@ -1,4 +1,4 @@
-package de.metas.storage.spi.hu.impl;
+package de.metas.handlingunits.shipmentschedule.segments;
 
 /*
  * #%L
@@ -38,11 +38,11 @@ import com.google.common.base.MoreObjects;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
-import de.metas.storage.IStorageSegment;
-import de.metas.util.Check;
+import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.util.Services;
+import lombok.NonNull;
 
-public class StorageSegmentFromHU implements IStorageSegment
+public class ShipmentScheduleSegmentFromHU implements IShipmentScheduleSegment
 {
 	// services
 	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
@@ -58,11 +58,8 @@ public class StorageSegmentFromHU implements IStorageSegment
 	private final int huId;
 	private final boolean hasQtyOnHandChanges;
 
-	public StorageSegmentFromHU(final I_M_HU hu)
+	public ShipmentScheduleSegmentFromHU(@NonNull final I_M_HU hu)
 	{
-		super();
-
-		Check.assumeNotNull(hu, "hu not null");
 		huId = hu.getM_HU_ID();
 		final I_M_HU huOld = InterfaceWrapperHelper.createOld(hu, I_M_HU.class);
 

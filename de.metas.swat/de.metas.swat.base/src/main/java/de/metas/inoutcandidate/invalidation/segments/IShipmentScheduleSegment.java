@@ -1,4 +1,4 @@
-package de.metas.storage;
+package de.metas.inoutcandidate.invalidation.segments;
 
 /*
  * #%L
@@ -26,6 +26,9 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.storage.IStorageQuery;
+import de.metas.storage.IStorageRecord;
+
 /**
  * A storage segment can identify a set of concrete storage records.
  * <p>
@@ -38,7 +41,7 @@ import com.google.common.collect.ImmutableSet;
  * </ul>
  *
  */
-public interface IStorageSegment
+public interface IShipmentScheduleSegment
 {
 	Integer ANY = null;
 
@@ -53,7 +56,7 @@ public interface IStorageSegment
 		return ImmutableSet.of();
 	}
 
-	default Set<IStorageAttributeSegment> getAttributes()
+	default Set<ShipmentScheduleAttributeSegment> getAttributes()
 	{
 		return ImmutableSet.of();
 	}

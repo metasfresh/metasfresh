@@ -1,4 +1,4 @@
-package de.metas.storage.impl;
+package de.metas.inoutcandidate.invalidation.segments;
 
 /*
  * #%L
@@ -26,33 +26,29 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Locator;
 
-import de.metas.storage.IStorageAttributeSegment;
-import de.metas.storage.IStorageSegment;
-import de.metas.storage.IStorageSegmentBuilder;
 import de.metas.util.Services;
 import lombok.NonNull;
 
-public class StorageSegmentBuilder implements IStorageSegmentBuilder
+public final class ShipmentScheduleSegmentBuilder
 {
 	private final Set<Integer> productIds = new HashSet<>();
 	private final Set<Integer> bpartnerIds = new HashSet<>();
 	private final Set<Integer> locatorIds = new HashSet<>();
-	private final Set<IStorageAttributeSegment> attributeSegments = new HashSet<>();
+	private final Set<ShipmentScheduleAttributeSegment> attributeSegments = new HashSet<>();
 
-	public StorageSegmentBuilder()
+	public ShipmentScheduleSegmentBuilder()
 	{
-		super();
 	}
 
-	@Override
-	public IStorageSegment build()
+	public ImmutableShipmentScheduleSegment build()
 	{
-		return ImmutableStorageSegment.builder()
+		return ImmutableShipmentScheduleSegment.builder()
 				.M_Product_IDs(productIds)
 				.M_Locator_IDs(locatorIds)
 				.C_BPartner_IDs(bpartnerIds)
@@ -60,29 +56,25 @@ public class StorageSegmentBuilder implements IStorageSegmentBuilder
 				.build();
 	}
 
-	@Override
-	public IStorageSegmentBuilder addM_Product_ID(final int productId)
+	public ShipmentScheduleSegmentBuilder addM_Product_ID(final int productId)
 	{
 		productIds.add(productId);
 		return this;
 	}
 
-	@Override
-	public IStorageSegmentBuilder addC_BPartner_ID(final int bpartnerId)
+	public ShipmentScheduleSegmentBuilder addC_BPartner_ID(final int bpartnerId)
 	{
 		bpartnerIds.add(bpartnerId);
 		return this;
 	}
 
-	@Override
-	public IStorageSegmentBuilder addM_Locator_ID(final int locatorId)
+	public ShipmentScheduleSegmentBuilder addM_Locator_ID(final int locatorId)
 	{
 		locatorIds.add(locatorId);
 		return this;
 	}
 
-	@Override
-	public IStorageSegmentBuilder addM_Locator(final I_M_Locator locator)
+	public ShipmentScheduleSegmentBuilder addM_Locator(final I_M_Locator locator)
 	{
 		if (locator == null)
 		{
@@ -92,8 +84,7 @@ public class StorageSegmentBuilder implements IStorageSegmentBuilder
 		return this;
 	}
 
-	@Override
-	public IStorageSegmentBuilder addWarehouseId(@NonNull final WarehouseId warehouseId)
+	public ShipmentScheduleSegmentBuilder addWarehouseId(@NonNull final WarehouseId warehouseId)
 	{
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
@@ -106,10 +97,20 @@ public class StorageSegmentBuilder implements IStorageSegmentBuilder
 		return this;
 	}
 
-	@Override
-	public IStorageSegmentBuilder addM_AttributeSetInstance_ID(final int M_AttributeSetInstance_ID)
+	public ShipmentScheduleSegmentBuilder addWarehouseIdIfNotNull(WarehouseId warehouseId)
 	{
-		attributeSegments.add(new ImmutableStorageAttributeSegment(M_AttributeSetInstance_ID, 0));
+		if (warehouseId == null)
+		{
+			return this;
+		}
+		return addWarehouseId(warehouseId);
+	}
+
+	public ShipmentScheduleSegmentBuilder addM_AttributeSetInstance_ID(final int M_AttributeSetInstance_ID)
+	{
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(M_AttributeSetInstance_ID);
+		final ShipmentScheduleAttributeSegment attributeSegment = ShipmentScheduleAttributeSegment.ofAttributeSetInstanceId(asiId);
+		attributeSegments.add(attributeSegment);
 		return this;
 	}
 }

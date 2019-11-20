@@ -16,6 +16,8 @@ import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_Locator;
 import org.compiere.util.DB;
@@ -30,13 +32,13 @@ import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.async.UpdateInvalidShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
+import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
+import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleAttributeSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
-import de.metas.storage.IStorageAttributeSegment;
-import de.metas.storage.IStorageSegment;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -248,7 +250,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 	@Override
 	public void invalidateStorageSegments(
-			@Nullable final Collection<IStorageSegment> storageSegments,
+			@Nullable final Collection<IShipmentScheduleSegment> storageSegments,
 			@Nullable final PInstanceId addToSelectionId)
 	{
 		if (storageSegments == null || storageSegments.isEmpty())
@@ -272,7 +274,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		//
 		// Filter shipment schedules by segments
 		final StringBuilder sqlWhereClause_AllSegments = new StringBuilder();
-		for (final IStorageSegment storageSegment : storageSegments)
+		for (final IShipmentScheduleSegment storageSegment : storageSegments)
 		{
 			final String sqlWhereClause_Segment = buildShipmentScheduleWhereClause(ssAlias, storageSegment, sqlParams);
 			if (sqlWhereClause_Segment == null)
@@ -330,7 +332,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	 * @param sqlParams output SQL parameters
 	 * @return where clause or <code>null</code>
 	 */
-	private String buildShipmentScheduleWhereClause(final String ssAlias, final IStorageSegment storageSegment, final List<Object> sqlParams)
+	private String buildShipmentScheduleWhereClause(final String ssAlias, final IShipmentScheduleSegment storageSegment, final List<Object> sqlParams)
 	{
 		final Set<Integer> productIds = storageSegment.getM_Product_IDs();
 		if (productIds == null || productIds.isEmpty())
@@ -355,7 +357,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 		//
 		// Products
-		final boolean resetAllProducts = productIds.contains(0) || productIds.contains(-1) || productIds.contains(IStorageSegment.ANY);
+		final boolean resetAllProducts = productIds.contains(0) || productIds.contains(-1) || productIds.contains(IShipmentScheduleSegment.ANY);
 		if (!resetAllProducts)
 		{
 			final String productColumnName = ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID;
@@ -367,7 +369,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		// BPartners
 		// NOTE: If we were asked to reset for BPartner=none (i.e. value 0, -1 or null) then we shall reset for all of them,
 		// because the QOH from this segment could be used by ALL
-		final boolean resetAllBPartners = bpartnerIds.contains(0) || bpartnerIds.contains(-1) || bpartnerIds.contains(IStorageSegment.ANY);
+		final boolean resetAllBPartners = bpartnerIds.contains(0) || bpartnerIds.contains(-1) || bpartnerIds.contains(IShipmentScheduleSegment.ANY);
 		if (!resetAllBPartners)
 		{
 			final String bpartnerColumnName = "COALESCE(" + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Override_ID + ", " + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_ID + ")";
@@ -378,7 +380,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		//
 		// Bill BPartners
 		final Set<Integer> billBPartnerIds = storageSegment.getBill_BPartner_IDs();
-		final boolean resetAllBillBPartners = billBPartnerIds.isEmpty() || billBPartnerIds.contains(0) || billBPartnerIds.contains(-1) || billBPartnerIds.contains(IStorageSegment.ANY);
+		final boolean resetAllBillBPartners = billBPartnerIds.isEmpty() || billBPartnerIds.contains(0) || billBPartnerIds.contains(-1) || billBPartnerIds.contains(IShipmentScheduleSegment.ANY);
 		if (!resetAllBillBPartners)
 		{
 			final String billBPartnerColumnName = ssAlias + I_M_ShipmentSchedule.COLUMNNAME_Bill_BPartner_ID;
@@ -389,7 +391,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		//
 		// Locators
 		// NOTE: same as for bPartners if no particular locator is specified, it means "all of them"
-		final boolean resetAllLocators = locatorIds.contains(0) || locatorIds.contains(-1) || locatorIds.contains(IStorageSegment.ANY);
+		final boolean resetAllLocators = locatorIds.contains(0) || locatorIds.contains(-1) || locatorIds.contains(IShipmentScheduleSegment.ANY);
 		if (!resetAllLocators)
 		{
 			final String warehouseColumnName = "COALESCE(" + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID + ", " + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID + ")";
@@ -403,7 +405,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 		//
 		// Attributes (if any)
-		final Set<IStorageAttributeSegment> attributeSegments = storageSegment.getAttributes();
+		final Set<ShipmentScheduleAttributeSegment> attributeSegments = storageSegment.getAttributes();
 		final String attributeSegmentsWhereClause = buildAttributeInstanceWhereClause(attributeSegments, sqlParams);
 		if (!Check.isEmpty(attributeSegmentsWhereClause, true))
 		{
@@ -437,7 +439,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	 * @param sqlParams
 	 * @return where clause or <code>null</code>
 	 */
-	private String buildAttributeInstanceWhereClause(final Set<IStorageAttributeSegment> attributeSegments, final List<Object> sqlParams)
+	private String buildAttributeInstanceWhereClause(final Set<ShipmentScheduleAttributeSegment> attributeSegments, final List<Object> sqlParams)
 	{
 		if (Check.isEmpty(attributeSegments))
 		{
@@ -445,7 +447,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		}
 
 		final StringBuilder attributeSegmentsWhereClause = new StringBuilder();
-		for (final IStorageAttributeSegment attributeSegment : attributeSegments)
+		for (final ShipmentScheduleAttributeSegment attributeSegment : attributeSegments)
 		{
 			final String attributeSegmentWhereClause = buildAttributeInstanceWhereClause(attributeSegment, sqlParams);
 			if (Check.isEmpty(attributeSegmentWhereClause, true))
@@ -480,7 +482,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	 * @param sqlParams
 	 * @return where clause or <code>null</code>
 	 */
-	private String buildAttributeInstanceWhereClause(final IStorageAttributeSegment attributeSegment, final List<Object> sqlParams)
+	private String buildAttributeInstanceWhereClause(final ShipmentScheduleAttributeSegment attributeSegment, final List<Object> sqlParams)
 	{
 		if (attributeSegment == null)
 		{
@@ -491,8 +493,8 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 		//
 		// Filter by M_AttributeSetInstance_ID
-		final int attributeSetInstanceId = attributeSegment.getM_AttributeSetInstance_ID();
-		if (attributeSetInstanceId > 0)
+		final AttributeSetInstanceId attributeSetInstanceId = attributeSegment.getAttributeSetInstanceId();
+		if (attributeSetInstanceId.isRegular())
 		{
 			if (whereClause.length() > 0)
 			{
@@ -504,8 +506,8 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 		//
 		// Filter by M_Attribute_ID
-		final int attributeId = attributeSegment.getM_Attribute_ID();
-		if (attributeId > 0)
+		final AttributeId attributeId = attributeSegment.getAttributeId();
+		if (attributeId != null)
 		{
 			if (whereClause.length() > 0)
 			{

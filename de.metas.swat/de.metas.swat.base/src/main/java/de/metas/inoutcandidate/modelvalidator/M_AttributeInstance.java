@@ -2,20 +2,22 @@ package de.metas.inoutcandidate.modelvalidator;
 
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.ModelValidator;
 
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
-import de.metas.storage.IStorageSegment;
-import de.metas.storage.impl.ImmutableStorageAttributeSegment;
-import de.metas.storage.impl.ImmutableStorageSegment;
+import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
+import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
+import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleAttributeSegment;
 import de.metas.util.Services;
 
 @Validator(I_M_AttributeInstance.class)
 public class M_AttributeInstance
 {
 	/**
-	 * Fire {@link IStorageSegment} changed when an {@link I_M_AttributeInstance} is changed.
+	 * Fire {@link IShipmentScheduleSegment} changed when an {@link I_M_AttributeInstance} is changed.
 	 *
 	 * NOTE: there is no point to trigger this on AFTER_NEW because then an segment change will be fired on other level.
 	 *
@@ -29,9 +31,11 @@ public class M_AttributeInstance
 	})
 	public void fireAttributeChangeForAllProductsPartnersAndLocators(final I_M_AttributeInstance ai)
 	{
-		final ImmutableStorageAttributeSegment attributeSegment = new ImmutableStorageAttributeSegment(ai.getM_AttributeSetInstance_ID(), ai.getM_Attribute_ID());
+		final ShipmentScheduleAttributeSegment attributeSegment = ShipmentScheduleAttributeSegment.of(
+				AttributeSetInstanceId.ofRepoId(ai.getM_AttributeSetInstance_ID()),
+				AttributeId.ofRepoId(ai.getM_Attribute_ID()));
 
-		final ImmutableStorageSegment storageSegment = ImmutableStorageSegment.builder()
+		final ImmutableShipmentScheduleSegment storageSegment = ImmutableShipmentScheduleSegment.builder()
 				.attributeSegment(attributeSegment)
 				.build();
 

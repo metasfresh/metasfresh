@@ -9,10 +9,10 @@ import org.compiere.model.I_M_InOutLine;
 
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
-import de.metas.storage.IStorageSegment;
 import de.metas.util.ISingletonService;
 
 public interface IShipmentScheduleInvalidateBL extends ISingletonService
@@ -23,9 +23,9 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 
 	void invalidateShipmentSchedules(Set<ShipmentScheduleId> shipmentScheduleIds);
 
-	void invalidateStorageSegment(IStorageSegment storageSegment);
+	void invalidateStorageSegment(IShipmentScheduleSegment storageSegment);
 
-	void invalidateStorageSegments(Collection<IStorageSegment> storageSegments);
+	void invalidateStorageSegments(Collection<IShipmentScheduleSegment> storageSegments);
 
 	/**
 	 * Invalidates shipment schedules for the given storage segments.
@@ -35,7 +35,7 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 	 * @param storageSegments
 	 * @param addToSelectionId if not null will add the invalidated records to given selection
 	 */
-	void invalidateStorageSegments(Collection<IStorageSegment> storageSegments, PInstanceId addToSelectionId);
+	void invalidateStorageSegments(Collection<IShipmentScheduleSegment> storageSegments, PInstanceId addToSelectionId);
 
 	/**
 	 * Invalidate just the shipment schedules that directly reference the given <code>shipment</code>'s lines.<br>
@@ -103,12 +103,12 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 	 */
 	void invalidateForHeaderAggregationKeys(Set<String> headerAggregationKeys);
 	
-	void notifySegmentChanged(IStorageSegment storageSegment);
+	void notifySegmentChanged(IShipmentScheduleSegment storageSegment);
 
 	/**
 	 * Notify the registered listeners that a a bunch of segments changed. Maybe they can gain a performance benefit from processing them all at once.
 	 * 
 	 * @param storageSegments
 	 */
-	void notifySegmentsChanged(Collection<IStorageSegment> storageSegments);
+	void notifySegmentsChanged(Collection<IShipmentScheduleSegment> storageSegments);
 }

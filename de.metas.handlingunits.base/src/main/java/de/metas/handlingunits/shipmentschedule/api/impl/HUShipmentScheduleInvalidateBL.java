@@ -30,9 +30,10 @@ import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inoutcandidate.invalidation.impl.ShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
+import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
+import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegmentBuilder;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.storage.IStorageSegment;
-import de.metas.storage.IStorageSegmentBuilder;
 import de.metas.util.Services;
 
 /**
@@ -47,9 +48,9 @@ public class HUShipmentScheduleInvalidateBL extends ShipmentScheduleInvalidateBL
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 
 	@Override
-	protected IStorageSegment createSegmentForInOutLine(final int bPartnerId, final I_M_InOutLine inoutLine)
+	protected IShipmentScheduleSegment createSegmentForInOutLine(final int bPartnerId, final I_M_InOutLine inoutLine)
 	{
-		final IStorageSegmentBuilder storageSegmentBuilder = storageBL.createStorageSegmentBuilder();
+		final ShipmentScheduleSegmentBuilder storageSegmentBuilder = ShipmentScheduleSegments.builder();
 		storageSegmentBuilder
 				.addM_Product_ID(inoutLine.getM_Product_ID())
 				.addM_Locator_ID(inoutLine.getM_Locator_ID())
@@ -66,16 +67,16 @@ public class HUShipmentScheduleInvalidateBL extends ShipmentScheduleInvalidateBL
 			storageSegmentBuilder.addC_BPartner_ID(hu.getC_BPartner_ID());
 		}
 
-		final IStorageSegment storageSegment = storageSegmentBuilder.build();
+		final IShipmentScheduleSegment storageSegment = storageSegmentBuilder.build();
 		return storageSegment;
 	}
 
 	@Override
-	protected IStorageSegment createSegmentForShipmentSchedule(final I_M_ShipmentSchedule schedule)
+	protected IShipmentScheduleSegment createSegmentForShipmentSchedule(final I_M_ShipmentSchedule schedule)
 	{
 		boolean maybeCanRestrictToCertainPartners = false; // we will set this to true if there is any TU assigned to the shipment schedule
 
-		final IStorageSegmentBuilder storageSegmentBuilder = storageBL.createStorageSegmentBuilder();
+		final ShipmentScheduleSegmentBuilder storageSegmentBuilder = ShipmentScheduleSegments.builder();
 
 		final List<I_M_ShipmentSchedule_QtyPicked> pickedNotDeliveredRecords = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineRecords(schedule, I_M_ShipmentSchedule_QtyPicked.class);
 		for (final I_M_ShipmentSchedule_QtyPicked pickedNotDeliveredRecord : pickedNotDeliveredRecords)
@@ -97,7 +98,7 @@ public class HUShipmentScheduleInvalidateBL extends ShipmentScheduleInvalidateBL
 		}
 
 		// finalize the builder and create the segment
-		final IStorageSegment storageSegment = storageSegmentBuilder
+		final IShipmentScheduleSegment storageSegment = storageSegmentBuilder
 				.addM_Product_ID(schedule.getM_Product_ID())
 				.addWarehouseId(shipmentScheduleEffectiveBL.getWarehouseId(schedule))
 				.addM_AttributeSetInstance_ID(schedule.getM_AttributeSetInstance_ID())

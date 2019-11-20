@@ -83,6 +83,8 @@ import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidRequest;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
+import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
+import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
@@ -99,8 +101,6 @@ import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.storage.IStorageSegment;
-import de.metas.storage.impl.ImmutableStorageSegment;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IShipmentScheduleDeliveryDayBL;
 import de.metas.uom.IUOMConversionBL;
@@ -890,7 +890,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			return;
 		}
 
-		final ImmutableSet<IStorageSegment> pickingBOMsSegments = olsAndScheds.stream()
+		final ImmutableSet<IShipmentScheduleSegment> pickingBOMsSegments = olsAndScheds.stream()
 				.flatMap(this::extractPickingBOMsStorageSegments)
 				.collect(ImmutableSet.toImmutableSet());
 		if (pickingBOMsSegments.isEmpty())
@@ -901,7 +901,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		invalidSchedulesRepo.invalidateStorageSegments(pickingBOMsSegments, addToSelectionId);
 	}
 
-	private Stream<IStorageSegment> extractPickingBOMsStorageSegments(final OlAndSched olAndSched)
+	private Stream<IShipmentScheduleSegment> extractPickingBOMsStorageSegments(final OlAndSched olAndSched)
 	{
 		final PickingBOMsReversedIndex pickingBOMsReversedIndex = getPickingBOMsReversedIndex();
 
@@ -914,7 +914,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 		final Set<WarehouseId> warehouseIds = warehousesRepo.getWarehouseIdsOfSamePickingGroup(olAndSched.getWarehouseId());
 
-		final LinkedHashSet<IStorageSegment> segments = new LinkedHashSet<>();
+		final LinkedHashSet<IShipmentScheduleSegment> segments = new LinkedHashSet<>();
 		for (final WarehouseId warehouseId : warehouseIds)
 		{
 			final Set<Integer> locatorRepoIds = warehousesRepo.getLocatorIds(warehouseId)
@@ -924,7 +924,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 			for (final ProductId pickingBOMProductId : pickingBOMProductIds)
 			{
-				final ImmutableStorageSegment segment = ImmutableStorageSegment.builder()
+				final ImmutableShipmentScheduleSegment segment = ImmutableShipmentScheduleSegment.builder()
 						.anyC_BPartner_ID()
 						.M_Product_ID(pickingBOMProductId.getRepoId())
 						.M_Locator_IDs(locatorRepoIds)

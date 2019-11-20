@@ -27,9 +27,9 @@ import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.model.I_M_HU_Storage;
+import de.metas.handlingunits.shipmentschedule.segments.ShipmentScheduleSegmentFromHUStorage;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
-import de.metas.storage.IStorageSegment;
-import de.metas.storage.spi.hu.impl.StorageSegmentFromHUStorage;
+import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.util.Services;
 
 @Validator(I_M_HU_Storage.class)
@@ -52,7 +52,7 @@ public class M_HU_Storage
 		// TODO: notify segment changed only after transaction is commited.
 		// And in this case, it would be nice if we could aggregate the notifications and fire them all together at once.
 
-		final IStorageSegment storageSegment = new StorageSegmentFromHUStorage(huStorage);
+		final IShipmentScheduleSegment storageSegment = new ShipmentScheduleSegmentFromHUStorage(huStorage);
 		Services.get(IShipmentScheduleInvalidateBL.class).notifySegmentChanged(storageSegment);
 	}
 }

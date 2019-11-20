@@ -7,10 +7,10 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryFilter;
 
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
-import de.metas.storage.IStorageSegment;
 import de.metas.util.ISingletonService;
 
 /*
@@ -70,7 +70,7 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 	 * @param storageSegments
 	 * @param addToSelectionId if not null will add the invalidated records to given selection
 	 */
-	void invalidateStorageSegments(Collection<IStorageSegment> storageSegments, PInstanceId addToSelectionId);
+	void invalidateStorageSegments(Collection<IShipmentScheduleSegment> storageSegments, PInstanceId addToSelectionId);
 
 	void invalidateSchedulesForSelection(PInstanceId pinstanceId);
 

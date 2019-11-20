@@ -1,22 +1,20 @@
-package de.metas.storage.impl;
+package de.metas.inoutcandidate.invalidation.segments;
 
 import java.util.Set;
 
-import de.metas.storage.IStorageAttributeSegment;
-import de.metas.storage.IStorageSegment;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 
 /**
- * Plain Immutable {@link IStorageSegment} implementation.
+ * Plain Immutable {@link IShipmentScheduleSegment} implementation.
  *
  * @author tsa
  *
  */
 @Builder
 @Value
-public class ImmutableStorageSegment implements IStorageSegment
+public class ImmutableShipmentScheduleSegment implements IShipmentScheduleSegment
 {
 	/**
 	 * Never {@code null}. Empty collection means "not constrained on any products".
@@ -43,23 +41,23 @@ public class ImmutableStorageSegment implements IStorageSegment
 	 * Never {@code null}. Empty collection means "not constrained on any attributes".
 	 */
 	@Singular
-	private final Set<IStorageAttributeSegment> attributeSegments;
+	private final Set<ShipmentScheduleAttributeSegment> attributeSegments;
 
-	public static class ImmutableStorageSegmentBuilder
+	public static class ImmutableShipmentScheduleSegmentBuilder
 	{
-		public ImmutableStorageSegmentBuilder anyC_BPartner_ID()
+		public ImmutableShipmentScheduleSegmentBuilder anyC_BPartner_ID()
 		{
 			C_BPartner_ID(ANY);
 			return this;
 		}
 
-		public ImmutableStorageSegmentBuilder anyM_Product_ID()
+		public ImmutableShipmentScheduleSegmentBuilder anyM_Product_ID()
 		{
 			M_Product_ID(ANY);
 			return this;
 		}
 
-		public ImmutableStorageSegmentBuilder anyM_Locator_ID()
+		public ImmutableShipmentScheduleSegmentBuilder anyM_Locator_ID()
 		{
 			M_Locator_ID(ANY);
 			return this;

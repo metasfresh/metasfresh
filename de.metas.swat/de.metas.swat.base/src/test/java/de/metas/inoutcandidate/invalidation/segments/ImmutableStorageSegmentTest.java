@@ -1,8 +1,10 @@
-package de.metas.storage.impl;
+package de.metas.inoutcandidate.invalidation.segments;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
+
+import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 
 /*
  * #%L
@@ -31,7 +33,7 @@ public class ImmutableStorageSegmentTest
 	@Test
 	public void testEmptyBuilderDoesntReturnNull()
 	{
-		final ImmutableStorageSegment segment = ImmutableStorageSegment.builder().build();
+		final ImmutableShipmentScheduleSegment segment = ImmutableShipmentScheduleSegment.builder().build();
 		assertThat(segment.getAttributes()).isEmpty();
 		assertThat(segment.getC_BPartner_IDs()).isEmpty();
 		assertThat(segment.getM_Locator_IDs()).isEmpty();

@@ -55,11 +55,11 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
+import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.storage.IStorageBL;
-import de.metas.storage.IStorageSegment;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -192,8 +192,7 @@ public class M_ShipmentSchedule
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final BPartnerId newBPartnerId = shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule);
 
-		final IStorageBL storageBL = Services.get(IStorageBL.class);
-		final IStorageSegment storageSegment = storageBL.createStorageSegmentBuilder()
+		final IShipmentScheduleSegment storageSegment = ShipmentScheduleSegments.builder()
 				.addM_Product_ID(shipmentSchedule.getM_Product_ID())
 				.addC_BPartner_ID(BPartnerId.toRepoId(newBPartnerId))
 				.addC_BPartner_ID(BPartnerId.toRepoId(oldBpartnerId))

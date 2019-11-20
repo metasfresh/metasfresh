@@ -1,4 +1,4 @@
-package de.metas.storage.spi.hu.impl;
+package de.metas.handlingunits.shipmentschedule.segments;
 
 /*
  * #%L
@@ -25,34 +25,39 @@ package de.metas.storage.spi.hu.impl;
 import java.util.Collections;
 import java.util.Set;
 
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Storage;
-import de.metas.storage.IStorageSegment;
-import de.metas.util.Check;
+import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
+import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleAttributeSegment;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
 import lombok.ToString;
 
-@ToString(exclude = "huStorage")
-public class StorageSegmentFromHUStorage implements IStorageSegment
+@ToString
+public class ShipmentScheduleSegmentFromHUAttribute implements IShipmentScheduleSegment
 {
-	private final I_M_HU_Storage huStorage;
+	private final int huId;
 
 	private Set<Integer> productIds = Collections.emptySet();
 	private Set<Integer> bpartnerIds = Collections.emptySet();
 	private Set<Integer> locatorIds = Collections.emptySet();
 	private boolean loaded = false;
 
-	public StorageSegmentFromHUStorage(final I_M_HU_Storage huStorage)
+	private final Set<ShipmentScheduleAttributeSegment> attributeSegments;
+
+	public ShipmentScheduleSegmentFromHUAttribute(@NonNull final I_M_HU_Attribute huAttribute)
 	{
-		super();
-		Check.assumeNotNull(huStorage, "huStorage not null");
-		this.huStorage = huStorage;
+		huId = huAttribute.getM_HU_ID();
+
+		final AttributeId attributeId = AttributeId.ofRepoId(huAttribute.getM_Attribute_ID());
+		final ShipmentScheduleAttributeSegment attributeSegment = ShipmentScheduleAttributeSegment.ofAttributeId(attributeId);
+		attributeSegments = ImmutableSet.of(attributeSegment);
 	}
 
 	private final void loadIfNeeded()
@@ -74,25 +79,24 @@ public class StorageSegmentFromHUStorage implements IStorageSegment
 		// NOTE: instead of getting the HU by using huStorage.getM_HU() we are loading it directly because the huStorage's transaction is already closed,
 		// and our ModelCacheService will log a WARNING about this.
 		// see ModelCacheService (line ~194): "No transaction was found for " + trxName + ". Skip cache."
-		final int huId = huStorage.getM_HU_ID();
 		if (huId <= 0)
 		{
 			loaded = true;
 			return;
 		}
-		final I_M_HU hu = InterfaceWrapperHelper.create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_None);
+		final I_M_HU hu = InterfaceWrapperHelper.load(huId, I_M_HU.class);
 		if (hu == null)
 		{
 			return;
 		}
 
-		// Fire only for top-level HUs to minimize the number of events
-		if (!Services.get(IHandlingUnitsBL.class).isTopLevel(hu))
+		// Fire only VHUs because those attributes counts for us
+		if (Services.get(IHandlingUnitsBL.class).isVirtual(hu))
 		{
 			return;
 		}
 
-		final StorageSegmentFromHU huSegment = new StorageSegmentFromHU(hu);
+		final ShipmentScheduleSegmentFromHU huSegment = new ShipmentScheduleSegmentFromHU(hu);
 
 		// If this HU does not contain QtyOnHand storages, there is no point to go forward
 		// because actually nothing changed from QOH perspective
@@ -101,7 +105,7 @@ public class StorageSegmentFromHUStorage implements IStorageSegment
 			return;
 		}
 
-		productIds = CollectionUtils.asSet(huStorage.getM_Product_ID());
+		productIds = huSegment.getM_Product_IDs();
 		bpartnerIds = huSegment.getC_BPartner_IDs();
 		locatorIds = huSegment.getM_Locator_IDs();
 	}
@@ -125,6 +129,13 @@ public class StorageSegmentFromHUStorage implements IStorageSegment
 	{
 		loadIfNeeded();
 		return locatorIds;
+	}
+
+	@Override
+	public Set<ShipmentScheduleAttributeSegment> getAttributes()
+	{
+		loadIfNeeded();
+		return attributeSegments;
 	}
 
 }

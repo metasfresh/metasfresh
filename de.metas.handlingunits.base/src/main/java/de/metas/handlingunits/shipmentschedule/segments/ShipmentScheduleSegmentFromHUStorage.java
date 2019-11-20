@@ -1,4 +1,4 @@
-package de.metas.storage.spi.hu.impl;
+package de.metas.handlingunits.shipmentschedule.segments;
 
 /*
  * #%L
@@ -13,53 +13,44 @@ package de.metas.storage.spi.hu.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Collections;
 import java.util.Set;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
 
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Attribute;
-import de.metas.storage.IStorageAttributeSegment;
-import de.metas.storage.IStorageSegment;
-import de.metas.storage.impl.ImmutableStorageAttributeSegment;
-import de.metas.util.Check;
+import de.metas.handlingunits.model.I_M_HU_Storage;
+import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
 import lombok.ToString;
 
-@ToString
-public class StorageSegmentFromHUAttribute implements IStorageSegment
+@ToString(exclude = "huStorage")
+public class ShipmentScheduleSegmentFromHUStorage implements IShipmentScheduleSegment
 {
-	private final int huId;
+	private final I_M_HU_Storage huStorage;
 
 	private Set<Integer> productIds = Collections.emptySet();
 	private Set<Integer> bpartnerIds = Collections.emptySet();
 	private Set<Integer> locatorIds = Collections.emptySet();
 	private boolean loaded = false;
 
-	private final Set<IStorageAttributeSegment> attributeSegments;
-
-	public StorageSegmentFromHUAttribute(final I_M_HU_Attribute huAttribute)
+	public ShipmentScheduleSegmentFromHUStorage(@NonNull final I_M_HU_Storage huStorage)
 	{
-		super();
-		Check.assumeNotNull(huAttribute, "huAttribute not null");
-		huId = huAttribute.getM_HU_ID();
-
-		final IStorageAttributeSegment attributeSegment = new ImmutableStorageAttributeSegment(
-				-1, // attributeSetInstanceId
-				huAttribute.getM_Attribute_ID());
-		attributeSegments = Collections.singleton(attributeSegment);
+		this.huStorage = huStorage;
 	}
 
 	private final void loadIfNeeded()
@@ -81,24 +72,25 @@ public class StorageSegmentFromHUAttribute implements IStorageSegment
 		// NOTE: instead of getting the HU by using huStorage.getM_HU() we are loading it directly because the huStorage's transaction is already closed,
 		// and our ModelCacheService will log a WARNING about this.
 		// see ModelCacheService (line ~194): "No transaction was found for " + trxName + ". Skip cache."
+		final int huId = huStorage.getM_HU_ID();
 		if (huId <= 0)
 		{
 			loaded = true;
 			return;
 		}
-		final I_M_HU hu = InterfaceWrapperHelper.load(huId, I_M_HU.class);
+		final I_M_HU hu = InterfaceWrapperHelper.create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_None);
 		if (hu == null)
 		{
 			return;
 		}
 
-		// Fire only VHUs because those attributes counts for us
-		if (Services.get(IHandlingUnitsBL.class).isVirtual(hu))
+		// Fire only for top-level HUs to minimize the number of events
+		if (!Services.get(IHandlingUnitsBL.class).isTopLevel(hu))
 		{
 			return;
 		}
 
-		final StorageSegmentFromHU huSegment = new StorageSegmentFromHU(hu);
+		final ShipmentScheduleSegmentFromHU huSegment = new ShipmentScheduleSegmentFromHU(hu);
 
 		// If this HU does not contain QtyOnHand storages, there is no point to go forward
 		// because actually nothing changed from QOH perspective
@@ -107,7 +99,7 @@ public class StorageSegmentFromHUAttribute implements IStorageSegment
 			return;
 		}
 
-		productIds = huSegment.getM_Product_IDs();
+		productIds = CollectionUtils.asSet(huStorage.getM_Product_ID());
 		bpartnerIds = huSegment.getC_BPartner_IDs();
 		locatorIds = huSegment.getM_Locator_IDs();
 	}
@@ -131,13 +123,6 @@ public class StorageSegmentFromHUAttribute implements IStorageSegment
 	{
 		loadIfNeeded();
 		return locatorIds;
-	}
-
-	@Override
-	public Set<IStorageAttributeSegment> getAttributes()
-	{
-		loadIfNeeded();
-		return attributeSegments;
 	}
 
 }

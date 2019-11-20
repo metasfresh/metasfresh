@@ -41,12 +41,12 @@ import de.metas.document.model.IDocumentLocation;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.product.IProductBL;
-import de.metas.storage.impl.ImmutableStorageSegment;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -160,14 +160,14 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 			return;
 		}
 
-		final ImmutableStorageSegment segment = createStorageSegmentFor(subscriptionLine);
+		final ImmutableShipmentScheduleSegment segment = createStorageSegmentFor(subscriptionLine);
 
 		final IShipmentScheduleInvalidateBL invalidSchedulesInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
 		invalidSchedulesInvalidator.invalidateStorageSegment(segment);
 
 	}
 
-	private ImmutableStorageSegment createStorageSegmentFor(@NonNull final I_C_SubscriptionProgress subscriptionLine)
+	private ImmutableShipmentScheduleSegment createStorageSegmentFor(@NonNull final I_C_SubscriptionProgress subscriptionLine)
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
@@ -175,7 +175,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(subscriptionLine.getM_ShipmentSchedule());
 		final List<LocatorId> locatorIds = warehouseDAO.getLocatorIds(warehouseId);
 
-		final ImmutableStorageSegment segment = ImmutableStorageSegment.builder()
+		final ImmutableShipmentScheduleSegment segment = ImmutableShipmentScheduleSegment.builder()
 				.M_Product_ID(subscriptionLine.getC_Flatrate_Term().getM_Product_ID())
 				.C_BPartner_ID(subscriptionLine.getDropShip_BPartner_ID())
 				.M_Locator_IDs(LocatorId.toRepoIds(locatorIds))

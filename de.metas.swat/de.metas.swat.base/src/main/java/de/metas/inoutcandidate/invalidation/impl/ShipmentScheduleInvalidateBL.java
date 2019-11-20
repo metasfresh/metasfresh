@@ -47,14 +47,13 @@ import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
+import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
+import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
-import de.metas.storage.IStorageBL;
-import de.metas.storage.IStorageSegment;
-import de.metas.storage.IStorageSegmentBuilder;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -64,7 +63,6 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	private final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	protected final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
-	protected final IStorageBL storageBL = Services.get(IStorageBL.class);
 	protected final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 	private boolean isShipmentScheduleUpdaterRunning()
@@ -94,14 +92,14 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	}
 
 	@Override
-	public void invalidateStorageSegment(@NonNull final IStorageSegment storageSegment)
+	public void invalidateStorageSegment(@NonNull final IShipmentScheduleSegment storageSegment)
 	{
 		final PInstanceId addToSelectionId = null;
 		invalidSchedulesRepo.invalidateStorageSegments(ImmutableSet.of(storageSegment), addToSelectionId);
 	}
 
 	@Override
-	public void invalidateStorageSegments(final Collection<IStorageSegment> storageSegments)
+	public void invalidateStorageSegments(final Collection<IShipmentScheduleSegment> storageSegments)
 	{
 		final PInstanceId addToSelectionId = null;
 		invalidSchedulesRepo.invalidateStorageSegments(storageSegments, addToSelectionId);
@@ -109,7 +107,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 
 	@Override
 	public void invalidateStorageSegments(
-			@Nullable final Collection<IStorageSegment> storageSegments,
+			@Nullable final Collection<IShipmentScheduleSegment> storageSegments,
 			@Nullable final PInstanceId addToSelectionId)
 	{
 		invalidSchedulesRepo.invalidateStorageSegments(storageSegments, addToSelectionId);
@@ -146,12 +144,12 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	@Override
 	public void notifySegmentsChangedForShipment(final I_M_InOut shipment)
 	{
-		final List<IStorageSegment> storageSegments = new ArrayList<>();
+		final List<IShipmentScheduleSegment> storageSegments = new ArrayList<>();
 
 		final int bpartnerId = shipment.getC_BPartner_ID();
 		for (final I_M_InOutLine inoutLine : inOutDAO.retrieveLines(shipment))
 		{
-			final IStorageSegment storageSegment = createSegmentForInOutLine(bpartnerId, inoutLine);
+			final IShipmentScheduleSegment storageSegment = createSegmentForInOutLine(bpartnerId, inoutLine);
 			storageSegments.add(storageSegment);
 		}
 
@@ -161,7 +159,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	@Override
 	public void notifySegmentChangedForShipmentLine(final I_M_InOutLine shipmentLine)
 	{
-		final IStorageSegment storageSegment = createSegmentForInOutLine(shipmentLine.getM_InOut().getC_BPartner_ID(), shipmentLine);
+		final IShipmentScheduleSegment storageSegment = createSegmentForInOutLine(shipmentLine.getM_InOut().getC_BPartner_ID(), shipmentLine);
 		notifySegmentChanged(storageSegment);
 	}
 
@@ -169,9 +167,9 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	 * Note that this method is overridden in the de.metas.handlingunits.base module!
 	 * TODO: don't override this whole method, there are plenty of better ways
 	 */
-	protected IStorageSegment createSegmentForInOutLine(final int bPartnerId, @NonNull final I_M_InOutLine inoutLine)
+	protected IShipmentScheduleSegment createSegmentForInOutLine(final int bPartnerId, @NonNull final I_M_InOutLine inoutLine)
 	{
-		return storageBL.createStorageSegmentBuilder()
+		return ShipmentScheduleSegments.builder()
 				.addC_BPartner_ID(0) // we can't restrict the segment to the inOut-partner, because we don't know if the qty could in theory be reallocated to a *different* partner.
 				// So we have to notify *all* partners' segments.
 				.addM_Product_ID(inoutLine.getM_Product_ID())
@@ -191,7 +189,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 			return;
 		}
 
-		final IStorageSegment storageSegment = createSegmentForShipmentSchedule(schedule);
+		final IShipmentScheduleSegment storageSegment = createSegmentForShipmentSchedule(schedule);
 		notifySegmentChanged(storageSegment);
 	}
 
@@ -199,13 +197,13 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	 * Note that this method is overridden in the de.metas.handlingunits.base module!
 	 * TODO: don't override this whole method, there are plenty of better ways
 	 */
-	protected IStorageSegment createSegmentForShipmentSchedule(@NonNull final I_M_ShipmentSchedule schedule)
+	protected IShipmentScheduleSegment createSegmentForShipmentSchedule(@NonNull final I_M_ShipmentSchedule schedule)
 	{
 		// we can't restrict the segment to the sched's bpartner, because we don't know if the qty could in theory be reallocated to a *different* partner.
 		// So we have to notify *all* partners' segments.
 		final int bpartnerId = 0;
 
-		return storageBL.createStorageSegmentBuilder()
+		return ShipmentScheduleSegments.builder()
 				.addC_BPartner_ID(bpartnerId)
 				.addM_Product_ID(schedule.getM_Product_ID())
 				.addWarehouseId(shipmentScheduleEffectiveBL.getWarehouseId(schedule))
@@ -216,12 +214,11 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	@Override
 	public void notifySegmentChangedForOrderLine(@NonNull final I_C_OrderLine orderLine)
 	{
-		final IStorageSegmentBuilder storageSegmentBuilder = storageBL.createStorageSegmentBuilder();
 
 		// we can't restrict the segment to the sched's bpartner, because we don't know if the qty could in theory be reallocated to a *different* partner.
 		// So we have to notify *all* partners' segments.
 		final int bpartnerId = 0;
-		final IStorageSegment storageSegment = storageSegmentBuilder
+		final IShipmentScheduleSegment storageSegment = ShipmentScheduleSegments.builder()
 				.addC_BPartner_ID(bpartnerId)
 				.addM_Product_ID(orderLine.getM_Product_ID())
 				.addWarehouseIdIfNotNull(WarehouseId.ofRepoIdOrNull(orderLine.getM_Warehouse_ID()))
@@ -256,13 +253,13 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	}
 
 	@Override
-	public void notifySegmentChanged(@NonNull final IStorageSegment storageSegment)
+	public void notifySegmentChanged(@NonNull final IShipmentScheduleSegment storageSegment)
 	{
 		notifySegmentsChanged(ImmutableSet.of(storageSegment));
 	}
 
 	@Override
-	public void notifySegmentsChanged(@NonNull final Collection<IStorageSegment> storageSegments)
+	public void notifySegmentsChanged(@NonNull final Collection<IShipmentScheduleSegment> storageSegments)
 	{
 		if (storageSegments.isEmpty())
 		{
