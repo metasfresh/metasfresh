@@ -392,7 +392,7 @@ public class SwingPickingOKPanel extends TerminalSubPanel
 
 	private void updateShipmentSchedulesInTrx()
 	{
-		shipmentScheduleUpdater.updateShipmentSchedule(ShipmentScheduleUpdateInvalidRequest.builder()
+		shipmentScheduleUpdater.updateShipmentSchedules(ShipmentScheduleUpdateInvalidRequest.builder()
 				.ctx(getCtx())
 				.selectionId(getADPInstanceId())
 				.build());

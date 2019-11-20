@@ -24,7 +24,7 @@ public final class UpdateShipmentScheds extends JavaProcess
 			invalidSchedulesRepo.invalidateAll(getCtx());
 		}
 
-		final int result = shipmentScheduleUpdater.updateShipmentSchedule(ShipmentScheduleUpdateInvalidRequest.builder()
+		final int result = shipmentScheduleUpdater.updateShipmentSchedules(ShipmentScheduleUpdateInvalidRequest.builder()
 				.ctx(getCtx())
 				.selectionId(getPinstanceId())
 				.createMissingShipmentSchedules(true)

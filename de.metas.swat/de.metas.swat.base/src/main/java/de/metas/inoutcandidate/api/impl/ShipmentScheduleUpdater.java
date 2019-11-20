@@ -26,7 +26,6 @@ import java.time.ZonedDateTime;
  */
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -186,7 +185,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	}
 
 	@Override
-	public int updateShipmentSchedule(@NonNull final ShipmentScheduleUpdateInvalidRequest request)
+	public int updateShipmentSchedules(@NonNull final ShipmentScheduleUpdateInvalidRequest request)
 	{
 		final PInstanceId selectionId = request.getSelectionId();
 
@@ -205,12 +204,12 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			// Create and invalidate missing shipment schedules, if asked
 			if (request.isCreateMissingShipmentSchedules())
 			{
-				final List<I_M_ShipmentSchedule> shipmentSchedulesNew = shipmentScheduleHandlerBL.createMissingCandidates(request.getCtx(), ITrx.TRXNAME_ThreadInherited);
-				final Set<ShipmentScheduleId> shipmentSchedulesNewIds = extractShipmentScheduleIds(shipmentSchedulesNew);
+				final Set<ShipmentScheduleId> shipmentSchedulesNewIds = shipmentScheduleHandlerBL.createMissingCandidates(request.getCtx());
 				invalidSchedulesRepo.invalidateShipmentSchedules(shipmentSchedulesNewIds);
 			}
 
-			final List<OlAndSched> olsAndScheds = retrieveOlsAndSchedsToProcess(selectionId);
+			final List<OlAndSched> olsAndScheds = shipmentSchedulePA.retrieveInvalid(selectionId);
+			logger.debug("Found {} invalid shipment schedule entries and tagged them with {}", olsAndScheds.size(), selectionId);
 
 			invalidatePickingBOMProducts(olsAndScheds, selectionId);
 
@@ -237,25 +236,11 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		}
 	}
 
-	private static ImmutableSet<ShipmentScheduleId> extractShipmentScheduleIds(final Collection<I_M_ShipmentSchedule> shipmentSchedules)
-	{
-		return shipmentSchedules.stream()
-				.map(sched -> ShipmentScheduleId.ofRepoId(sched.getM_ShipmentSchedule_ID()))
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
 	@Override
 	public boolean isRunning()
 	{
 		final Boolean running = this.running.get();
 		return running != null && running == true;
-	}
-
-	private final List<OlAndSched> retrieveOlsAndSchedsToProcess(@NonNull final PInstanceId selectionId)
-	{
-		final List<OlAndSched> olsAndScheds = shipmentSchedulePA.retrieveInvalid(selectionId);
-		logger.debug("Found {} invalid shipment schedule entries and tagged them with {}", olsAndScheds.size(), selectionId);
-		return olsAndScheds;
 	}
 
 	/**

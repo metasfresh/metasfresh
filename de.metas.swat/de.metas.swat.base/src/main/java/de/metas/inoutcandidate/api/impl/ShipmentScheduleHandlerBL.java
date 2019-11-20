@@ -5,7 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.getId;
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -32,14 +32,17 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_C_OrderLine;
 import org.slf4j.Logger;
 
@@ -50,6 +53,7 @@ import de.metas.cache.CCache;
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -106,7 +110,7 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 			handlerRecord.setClassname(handler.getClass().getName());
 			handlerRecord.setAD_Org_ID(0);
 			handlerRecord.setTableName(handler.getSourceTable());
-			save(handlerRecord);
+			saveRecord(handlerRecord);
 
 			existingRecordId = handlerRecord.getM_IolCandHandler_ID();
 		}
@@ -152,12 +156,9 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 	}
 
 	@Override
-	public List<I_M_ShipmentSchedule> createMissingCandidates(final Properties ctx, final String trxName)
+	public Set<ShipmentScheduleId> createMissingCandidates(@NonNull final Properties ctx)
 	{
-		Check.errorIf(Check.isEmpty(trxName), "Param 'trxName' may not be empty");
-		Check.errorIf(trxName.startsWith("POSave"), "Param 'trxName'={} may not start with 'POSave'", trxName);
-
-		final List<I_M_ShipmentSchedule> result = new ArrayList<>();
+		final LinkedHashSet<ShipmentScheduleId> result = new LinkedHashSet<>();
 
 		for (final String tableName : tableName2Handler.keySet())
 		{
@@ -168,7 +169,7 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 					handlerClassName,
 					() -> retrieveHandlerRecordOrNull(handler.getClass().getName()));
 
-			final Iterator<? extends Object> missingCandidateModels = handler.retrieveModelsWithMissingCandidates(ctx, trxName);
+			final Iterator<? extends Object> missingCandidateModels = handler.retrieveModelsWithMissingCandidates(ctx, ITrx.TRXNAME_ThreadInherited);
 			while (missingCandidateModels.hasNext())
 			{
 				final Object model = missingCandidateModels.next();
@@ -194,10 +195,10 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 					for (final I_M_ShipmentSchedule newSched : candidatesForModel)
 					{
 						newSched.setM_IolCandHandler_ID(handlerRecord.getM_IolCandHandler_ID());
-						save(newSched);
+						saveRecord(newSched);
+						
+						result.add(ShipmentScheduleId.ofRepoId(newSched.getM_ShipmentSchedule_ID()));
 					}
-
-					result.addAll(candidatesForModel);
 
 					saveHandlerLog(handlerRecord, model,
 							msgBL.getMsg(ctx, MSG_RECORDS_CREATED_1P,
@@ -255,7 +256,7 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 		logRecord.setM_IolCandHandler_ID(handlerRecord.getM_IolCandHandler_ID());
 		logRecord.setStatus(status);
 
-		save(logRecord);
+		saveRecord(logRecord);
 	}
 
 	@Override

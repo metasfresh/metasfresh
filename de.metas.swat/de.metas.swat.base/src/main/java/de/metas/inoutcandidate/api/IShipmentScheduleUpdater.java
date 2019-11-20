@@ -17,7 +17,7 @@ public interface IShipmentScheduleUpdater extends ISingletonService
 	/**
 	 * @return the number of updated schedule entries.
 	 */
-	int updateShipmentSchedule(ShipmentScheduleUpdateInvalidRequest request);
+	int updateShipmentSchedules(ShipmentScheduleUpdateInvalidRequest request);
 
 	/**
 	 *

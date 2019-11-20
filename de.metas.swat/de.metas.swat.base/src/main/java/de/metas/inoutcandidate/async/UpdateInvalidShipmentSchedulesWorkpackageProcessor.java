@@ -77,7 +77,7 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 				.createMissingShipmentSchedules(false) // don't create missing schedules; for that we have CreateMissingShipmentSchedulesWorkpackageProcessor
 				.build();
 
-		final int updatedCount = shipmentScheduleUpdater.updateShipmentSchedule(request);
+		final int updatedCount = shipmentScheduleUpdater.updateShipmentSchedules(request);
 
 		Loggables.addLog("Updated {} shipment schedule entries for {}", updatedCount, request);
 
