@@ -28,7 +28,7 @@ import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSe
  * #L%
  */
 
-public class ImmutableStorageSegmentTest
+public class ImmutableShipmentScheduleSegmentTest
 {
 	@Test
 	public void testEmptyBuilderDoesntReturnNull()
