@@ -29,7 +29,7 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
-import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.util.Services;
 
 @Interceptor(I_M_InOut.class)

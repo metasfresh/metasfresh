@@ -1,8 +1,8 @@
 package de.metas.inoutcandidate.process;
 
-import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidRequest;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.util.Services;

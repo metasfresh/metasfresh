@@ -1,4 +1,4 @@
-package de.metas.inoutcandidate.api;
+package de.metas.inoutcandidate.invalidation;
 
 import java.util.Collection;
 import java.util.Set;
@@ -7,6 +7,8 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;

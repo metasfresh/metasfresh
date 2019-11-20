@@ -1,4 +1,4 @@
-package de.metas.inoutcandidate.api;
+package de.metas.inoutcandidate.invalidation;
 
 import java.util.Collection;
 import java.util.Properties;
@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryFilter;
 
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;

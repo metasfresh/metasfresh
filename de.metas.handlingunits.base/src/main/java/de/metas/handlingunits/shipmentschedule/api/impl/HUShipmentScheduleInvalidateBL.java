@@ -29,7 +29,7 @@ import org.compiere.model.I_M_InOutLine;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.inoutcandidate.api.impl.ShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.invalidation.impl.ShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.storage.IStorageSegment;
 import de.metas.storage.IStorageSegmentBuilder;

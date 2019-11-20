@@ -29,7 +29,7 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
-import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.storage.IStorageSegment;
 import de.metas.storage.spi.hu.impl.StorageSegmentFromHUAttribute;
 import de.metas.util.Services;

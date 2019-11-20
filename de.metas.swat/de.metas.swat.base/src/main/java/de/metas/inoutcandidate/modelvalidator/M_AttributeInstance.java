@@ -5,7 +5,7 @@ import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.ModelValidator;
 
-import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.storage.IStorageSegment;
 import de.metas.storage.impl.ImmutableStorageAttributeSegment;
 import de.metas.storage.impl.ImmutableStorageSegment;

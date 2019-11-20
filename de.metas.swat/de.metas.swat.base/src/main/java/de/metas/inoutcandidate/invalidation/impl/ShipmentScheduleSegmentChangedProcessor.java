@@ -1,4 +1,4 @@
-package de.metas.inoutcandidate.api.impl;
+package de.metas.inoutcandidate.invalidation.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
