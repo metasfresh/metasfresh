@@ -113,6 +113,7 @@ public class ProductDAO implements IProductDAO
 		return productId != null ? getById(productId) : null;
 	}
 
+	@Nullable
 	@Override
 	public ProductId retrieveProductIdByValue(@NonNull final String value)
 	{
@@ -175,6 +176,20 @@ public class ProductDAO implements IProductDAO
 				.firstId();
 
 		return ProductId.ofRepoIdOrNull(productRepoId);
+	}
+
+	@Nullable
+	@Override
+	public ProductCategoryId retrieveProductCategoryIdByCategoryValueOrNull(final String categoryValue)
+	{
+		final int productCategoryRepoId = queryBL
+				.createQueryBuilder(I_M_Product_Category.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product_Category.COLUMNNAME_Value, categoryValue)
+				.create()
+				.firstIdOnly();
+
+		return ProductCategoryId.ofRepoIdOrNull(productCategoryRepoId);
 	}
 
 	@Override
