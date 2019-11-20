@@ -53,6 +53,7 @@ public class ShipmentScheduleQtyOnHandStorage
 
 	private final ImmutableList<ShipmentScheduleAvailableStockDetail> stockDetails;
 	private final Map<ArrayKey, StockDataQuery> cachedMaterialQueries = new HashMap<>();
+	private final Map<PPOrderId, Optional<QtyCalculationsBOM>> cachedPickingBOMs = new HashMap<>();
 
 	public ShipmentScheduleQtyOnHandStorage(
 			@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules,
@@ -179,7 +180,7 @@ public class ShipmentScheduleQtyOnHandStorage
 	private Optional<QtyCalculationsBOM> getPickingBOM(@Nullable final PPOrderId pickingOrderId)
 	{
 		return pickingOrderId != null
-				? ppOrdersBL.getOpenPickingOrderBOM(pickingOrderId)
+				? cachedPickingBOMs.computeIfAbsent(pickingOrderId, ppOrdersBL::getOpenPickingOrderBOM)
 				: Optional.empty();
 	}
 
