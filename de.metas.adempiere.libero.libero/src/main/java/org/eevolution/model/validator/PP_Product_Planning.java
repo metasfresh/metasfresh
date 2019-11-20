@@ -4,10 +4,15 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.eevolution.model.I_PP_Product_Planning;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -35,18 +40,30 @@ import lombok.NonNull;
 @Interceptor(I_PP_Product_Planning.class)
 public class PP_Product_Planning
 {
-	public static final PP_Product_Planning INSTANCE = new PP_Product_Planning();
-
-	@ModelChange( //
-			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
-			ifColumnsChanged = I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID //
-	)
-	public void updateStorageAttributesKey(@NonNull final I_PP_Product_Planning productPlanning)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void beforeSave(@NonNull final I_PP_Product_Planning productPlanning)
 	{
-		AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(productPlanning.getM_AttributeSetInstance_ID());
-		final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiId)
-				.orElse(AttributesKey.NONE);
+		if (InterfaceWrapperHelper.isValueChanged(productPlanning, I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID))
+		{
+			final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(productPlanning.getM_AttributeSetInstance_ID());
+			final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiId).orElse(AttributesKey.NONE);
+			productPlanning.setStorageAttributesKey(attributesKey.getAsString());
+		}
 
+		//
+		// Make sure the picking order configuration, if any, is valid
+		if (productPlanning.isPickingOrder())
+		{
+			final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
+			productPlanningsRepo.extractPickingOrderConfig(productPlanning); // extract it just to validate
+		}
+	}
+
+	@VisibleForTesting
+	void updateStorageAttributesKey(@NonNull final I_PP_Product_Planning productPlanning)
+	{
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(productPlanning.getM_AttributeSetInstance_ID());
+		final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiId).orElse(AttributesKey.NONE);
 		productPlanning.setStorageAttributesKey(attributesKey.getAsString());
 	}
 }

@@ -72,6 +72,10 @@ public interface IProductPlanningDAO extends ISingletonService
 	void save(I_PP_Product_Planning productPlanningRecord);
 
 	void setProductBOMIdIfAbsent(ProductId productId, ProductBOMId bomId);
-	
+
 	Set<ProductBOMId> retrieveAllPickingBOMIds();
+
+	Optional<PickingOrderConfig> getPickingOrderConfig(OrgId orgId, WarehouseId warehouseId, ProductId productId, AttributeSetInstanceId asiId);
+
+	Optional<PickingOrderConfig> extractPickingOrderConfig(I_PP_Product_Planning productPlanning);
 }

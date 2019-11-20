@@ -12,7 +12,6 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -24,9 +23,7 @@ import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderCreateRequest;
-import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Product_Planning;
 
 import com.google.common.collect.ImmutableList;
 
@@ -41,8 +38,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
-import de.metas.material.planning.ProductPlanningId;
+import de.metas.material.planning.PickingOrderConfig;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderDAO;
@@ -51,14 +47,11 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
-import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -302,42 +295,10 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		final WarehouseId warehouseId = getWarehouseId(salesOrderLine);
 		final ProductId productId = ProductId.ofRepoId(salesOrderLine.getM_Product_ID());
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(salesOrderLine.getM_AttributeSetInstance_ID());
-
-		final I_PP_Product_Planning productPlanning = productPlanningsRepo.find(ProductPlanningQuery.builder()
-				.orgId(orgId)
-				.warehouseId(warehouseId)
-				// .plantId(plantId)
-				.productId(productId)
-				.attributeSetInstanceId(asiId)
-				.build())
-				.orElse(null);
-		if (productPlanning == null)
+		final PickingOrderConfig config = productPlanningsRepo.getPickingOrderConfig(orgId, warehouseId, productId, asiId).orElse(null);
+		if (config == null)
 		{
 			return null;
-		}
-		if (!StringUtils.toBoolean(productPlanning.getIsManufactured()))
-		{
-			return null;
-		}
-		if (!productPlanning.isPickingOrder())
-		{
-			return null;
-		}
-
-		final ResourceId plantId = ResourceId.ofRepoIdOrNull(productPlanning.getS_Resource_ID());
-		if (plantId == null)
-		{
-			throw new FillMandatoryException("PP_Plant_ID")
-					.setParameter("productPlanning", productPlanning)
-					.appendParametersToMessage();
-		}
-
-		final ProductBOMId bomId = ProductBOMId.ofRepoIdOrNull(productPlanning.getPP_Product_BOM_ID());
-		if (bomId == null)
-		{
-			throw new FillMandatoryException("PP_Product_BOM_ID")
-					.setParameter("productPlanning", productPlanning)
-					.appendParametersToMessage();
 		}
 
 		final I_C_UOM stockUOM = productsService.getStockUOM(productId);
@@ -345,14 +306,14 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		final I_PP_Order ppOrder = ppOrdersService.createOrder(PPOrderCreateRequest.builder()
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(salesOrderLine.getAD_Client_ID(), salesOrderLine.getAD_Org_ID()))
-				.productPlanningId(ProductPlanningId.ofRepoId(productPlanning.getPP_Product_Planning_ID()))
+				.productPlanningId(config.getProductPlanningId())
 				// .materialDispoGroupId(null)
 				//
-				.plantId(plantId)
+				.plantId(config.getPlantId())
 				.warehouseId(warehouseId)
-				.plannerId(UserId.ofRepoIdOrNull(productPlanning.getPlanner_ID()))
+				.plannerId(config.getPlannerId())
 				//
-				.bomId(bomId)
+				.bomId(config.getBomId())
 				.productId(productId)
 				.attributeSetInstanceId(asiId)
 				.qtyRequired(qtyOrdered)
