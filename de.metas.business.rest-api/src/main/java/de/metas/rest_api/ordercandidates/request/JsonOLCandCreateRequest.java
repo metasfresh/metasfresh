@@ -16,6 +16,7 @@ import de.metas.rest_api.common.SyncAdvise;
 import de.metas.util.Check;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -200,6 +201,21 @@ public final class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	private LocalDate presetDateShipped;
 
+	@ApiModelProperty(value = "A C_Payment entry will be created based on the info here")
+	private JsonPaymentInfo paymentInfo;
+
+	@ApiModelProperty(value = "Specifies if the created order will be a normal Sales Order or a Prepaid Sales Order")
+	private OrderDocType orderDocType;
+
+	@ApiModelProperty(value = "Specifies the payment rule that will propagate to the created order")
+	private JSONPaymentRule paymentRule;
+
+	@ApiModelProperty(value = "Specifies the value for the sales rep that will propagate to the created order")
+	private String salesPartnerCode;
+
+	@ApiModelProperty(value = "Specifies the value for the shipper that will propagate to the created order")
+	private String shipper;
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonOLCandCreateRequest(
@@ -228,7 +244,12 @@ public final class JsonOLCandCreateRequest
 			@JsonProperty("warehouseDestCode") final @Nullable String warehouseDestCode,
 			@JsonProperty("invoiceDocType") final @Nullable JsonDocTypeInfo invoiceDocType,
 			@JsonProperty("presetDateInvoiced") final @Nullable LocalDate presetDateInvoiced,
-			@JsonProperty("presetDateShipped") final @Nullable LocalDate presetDateShipped)
+			@JsonProperty("presetDateShipped") final @Nullable LocalDate presetDateShipped,
+			@JsonProperty("paymentInfo") final @Nullable JsonPaymentInfo paymentInfo,
+			@JsonProperty("OrderDocType") final @Nullable OrderDocType orderDocType,
+			@JsonProperty("PaymentRule") final @Nullable JSONPaymentRule paymentRule,
+			@JsonProperty("salesPartnerCode") final @Nullable String salesPartnerCode,
+			@JsonProperty("shipper") final @Nullable String shipper)
 	{
 		this.org = org;
 		this.externalLineId = externalLineId;
@@ -256,6 +277,12 @@ public final class JsonOLCandCreateRequest
 		this.invoiceDocType = invoiceDocType;
 		this.presetDateInvoiced = presetDateInvoiced;
 		this.presetDateShipped = presetDateShipped;
+
+		this.paymentInfo = paymentInfo;
+		this.orderDocType = orderDocType;
+		this.paymentRule = paymentRule;
+		this.salesPartnerCode = salesPartnerCode;
+		this.shipper = shipper;
 	}
 
 	/**
@@ -343,5 +370,18 @@ public final class JsonOLCandCreateRequest
 		return toBuilder()
 				.product(getProduct().toBuilder().syncAdvise(syncAdvise).build())
 				.build();
+	}
+
+	public enum OrderDocType
+	{
+		SalesOrder("SalesOrder"), PrepayOrder("PrepayOrder");
+
+		@Getter
+		private final String code;
+
+		OrderDocType(final String code)
+		{
+			this.code = code;
+		}
 	}
 }
