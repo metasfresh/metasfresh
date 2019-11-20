@@ -38,6 +38,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 public interface ITaxDAO extends ISingletonService
 {
 	int C_TAX_ID_NO_TAX_FOUND = 100;
@@ -52,7 +54,6 @@ public interface ITaxDAO extends ISingletonService
 
 	/**
 	 * getDefaultTax Get the default tax id associated with this tax category
-	 *
 	 */
 	I_C_Tax getDefaultTax(I_C_TaxCategory taxCategory);
 
@@ -77,6 +78,9 @@ public interface ITaxDAO extends ISingletonService
 	I_C_TaxCategory getTaxCategoryById(TaxCategoryId id);
 
 	ITranslatableString getTaxCategoryNameById(TaxCategoryId id);
+
+	@Nullable
+	TaxCategoryId getTaxCategoryIdByNameOrNull(@Nullable String name);
 
 	@Builder
 	@Value

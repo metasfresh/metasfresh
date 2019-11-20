@@ -56,6 +56,9 @@ import lombok.NonNull;
 
 public class TaxDAO implements ITaxDAO
 {
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	public I_C_Tax getTaxById(final int taxRepoId)
 	{
@@ -134,7 +137,7 @@ public class TaxDAO implements ITaxDAO
 	@Cached(cacheName = I_C_Tax.Table_Name + "#NoTaxFound")
 	public I_C_Tax retrieveNoTaxFound(@CacheCtx final Properties ctx)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Tax.class, ctx, ITrx.TRXNAME_None)
+		return queryBL.createQueryBuilder(I_C_Tax.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Tax.COLUMNNAME_C_Tax_ID, C_TAX_ID_NO_TAX_FOUND)
 				.create()
@@ -145,7 +148,7 @@ public class TaxDAO implements ITaxDAO
 	@Cached(cacheName = I_C_TaxCategory.Table_Name + "#NoTaxFound")
 	public I_C_TaxCategory retrieveNoTaxCategoryFound(@CacheCtx final Properties ctx)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_TaxCategory.class, ctx, ITrx.TRXNAME_None)
+		return queryBL.createQueryBuilder(I_C_TaxCategory.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID, TaxCategoryId.NOT_FOUND)
 				.create()
@@ -155,7 +158,7 @@ public class TaxDAO implements ITaxDAO
 	@Override
 	public int findTaxCategoryId(@NonNull final TaxCategoryQuery query)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQueryBL queryBL = this.queryBL;
 
 		final IQueryBuilder<I_C_TaxCategory> queryBuilder = queryBL.createQueryBuilder(I_C_TaxCategory.class);
 
@@ -195,5 +198,20 @@ public class TaxDAO implements ITaxDAO
 
 		return InterfaceWrapperHelper.getModelTranslationMap(taxCategory)
 				.getColumnTrl(I_C_TaxCategory.COLUMNNAME_Name, taxCategory.getName());
+	}
+
+	@Nullable
+	@Override
+	public TaxCategoryId getTaxCategoryIdByNameOrNull(@Nullable final String name)
+	{
+		if (name == null)
+		{
+			return null;
+		}
+
+		return queryBL.createQueryBuilder(I_C_TaxCategory.class)
+				.addEqualsFilter(I_C_TaxCategory.COLUMN_Name, name)
+				.create()
+				.firstId(TaxCategoryId::ofRepoIdOrNull);
 	}
 }
