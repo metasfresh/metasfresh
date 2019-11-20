@@ -45,9 +45,7 @@ public class PP_Product_Planning
 	{
 		if (InterfaceWrapperHelper.isValueChanged(productPlanning, I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID))
 		{
-			final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(productPlanning.getM_AttributeSetInstance_ID());
-			final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiId).orElse(AttributesKey.NONE);
-			productPlanning.setStorageAttributesKey(attributesKey.getAsString());
+			updateStorageAttributesKey(productPlanning);
 		}
 
 		//
