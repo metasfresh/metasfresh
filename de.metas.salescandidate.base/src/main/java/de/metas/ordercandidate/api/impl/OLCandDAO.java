@@ -60,11 +60,11 @@ public class OLCandDAO implements IOLCandDAO
 
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_OLCand.class, ctx, trxName)
-				.addEqualsFilter(I_C_OLCand.COLUMN_AD_Table_ID, tableId)
-				.addEqualsFilter(I_C_OLCand.COLUMN_Record_ID, recordId)
+				.addEqualsFilter(I_C_OLCand.COLUMNNAME_AD_Table_ID, tableId)
+				.addEqualsFilter(I_C_OLCand.COLUMNNAME_Record_ID, recordId)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.orderBy(I_C_OLCand.COLUMN_C_OLCand_ID)
+				.orderBy(I_C_OLCand.COLUMNNAME_C_OLCand_ID)
 				.create()
 				.list(I_C_OLCand.class);
 	}
