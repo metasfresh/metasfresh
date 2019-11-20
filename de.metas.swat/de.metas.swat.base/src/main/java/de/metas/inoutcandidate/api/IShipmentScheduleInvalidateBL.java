@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.api;
 
+import java.util.Collection;
 import java.util.Set;
 
 import org.compiere.model.I_C_OrderLine;
@@ -7,6 +8,9 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.process.PInstanceId;
+import de.metas.product.ProductId;
+import de.metas.storage.IStorageSegment;
 import de.metas.util.ISingletonService;
 
 public interface IShipmentScheduleInvalidateBL extends ISingletonService
@@ -16,6 +20,20 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 	void invalidateShipmentSchedule(ShipmentScheduleId shipmentScheduleId);
 
 	void invalidateShipmentSchedules(Set<ShipmentScheduleId> shipmentScheduleIds);
+
+	void invalidateStorageSegment(IStorageSegment storageSegment);
+
+	void invalidateStorageSegments(Collection<IStorageSegment> storageSegments);
+
+	/**
+	 * Invalidates shipment schedules for the given storage segments.
+	 * <p>
+	 * <b>IMPORTANT:</b> won't invalidate any processed schedules.
+	 *
+	 * @param storageSegments
+	 * @param addToSelectionId if not null will add the invalidated records to given selection
+	 */
+	void invalidateStorageSegments(Collection<IStorageSegment> storageSegments, PInstanceId addToSelectionId);
 
 	/**
 	 * Invalidate just the shipment schedules that directly reference the given <code>shipment</code>'s lines.<br>
@@ -66,4 +84,21 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 	 * @param orderLine
 	 */
 	void invalidateJustForOrderLine(I_C_OrderLine orderLine);
+	
+	/**
+	 * Sets the {@link I_M_ShipmentSchedule#COLUMNNAME_IsValid} column to <code>'N'</code> for all shipment schedule entries whose order line has the given product id.
+	 *
+	 * @param productId
+	 * @deprecated please be more selective with the invalidation, using storage segments
+	 */
+	@Deprecated
+	void invalidateForProduct(ProductId productId);
+	
+	/**
+	 * Invalidates all shipment schedules which have one of the given <code>headerAggregationKeys</code>.
+	 *
+	 * @param headerAggregationKeys
+	 */
+	void invalidateForHeaderAggregationKeys(Set<String> headerAggregationKeys);
+
 }

@@ -53,7 +53,6 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
@@ -202,8 +201,8 @@ public class M_ShipmentSchedule
 				.addWarehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
 				.build();
 
-		final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
-		invalidSchedulesRepo.invalidateStorageSegments(ImmutableList.of(storageSegment));
+		final IShipmentScheduleInvalidateBL invalidSchedulesInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
+		invalidSchedulesInvalidator.invalidateStorageSegment(storageSegment);
 	}
 
 	/**
@@ -256,8 +255,8 @@ public class M_ShipmentSchedule
 		headerAggregationKeys.add(scheduleOld.getHeaderAggregationKey());
 		headerAggregationKeys.add(schedule.getHeaderAggregationKey());
 
-		final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
-		invalidSchedulesRepo.invalidateForHeaderAggregationKeys(headerAggregationKeys);
+		final IShipmentScheduleInvalidateBL invalidSchedulesInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
+		invalidSchedulesInvalidator.invalidateForHeaderAggregationKeys(headerAggregationKeys);
 	}
 
 	/**

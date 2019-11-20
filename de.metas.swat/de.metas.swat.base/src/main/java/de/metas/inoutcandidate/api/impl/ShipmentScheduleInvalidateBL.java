@@ -23,9 +23,12 @@ package de.metas.inoutcandidate.api.impl;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
@@ -46,6 +49,8 @@ import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.order.OrderLineId;
+import de.metas.process.PInstanceId;
+import de.metas.product.ProductId;
 import de.metas.storage.IStorageBL;
 import de.metas.storage.IStorageListeners;
 import de.metas.storage.IStorageSegment;
@@ -87,6 +92,28 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	public void invalidateShipmentSchedules(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		invalidSchedulesRepo.invalidateShipmentSchedules(shipmentScheduleIds);
+	}
+
+	@Override
+	public void invalidateStorageSegment(@NonNull final IStorageSegment storageSegment)
+	{
+		final PInstanceId addToSelectionId = null;
+		invalidSchedulesRepo.invalidateStorageSegments(ImmutableSet.of(storageSegment), addToSelectionId);
+	}
+
+	@Override
+	public void invalidateStorageSegments(final Collection<IStorageSegment> storageSegments)
+	{
+		final PInstanceId addToSelectionId = null;
+		invalidSchedulesRepo.invalidateStorageSegments(storageSegments, addToSelectionId);
+	}
+
+	@Override
+	public void invalidateStorageSegments(
+			@Nullable final Collection<IStorageSegment> storageSegments,
+			@Nullable final PInstanceId addToSelectionId)
+	{
+		invalidSchedulesRepo.invalidateStorageSegments(storageSegments, addToSelectionId);
 	}
 
 	@Override
@@ -216,4 +243,15 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		invalidateShipmentSchedule(shipmentScheduleId);
 	}
 
+	@Override
+	public void invalidateForProduct(@NonNull final ProductId productId)
+	{
+		invalidSchedulesRepo.invalidateForProduct(productId);
+	}
+
+	@Override
+	public void invalidateForHeaderAggregationKeys(@NonNull final Set<String> headerAggregationKeys)
+	{
+		invalidSchedulesRepo.invalidateForHeaderAggregationKeys(headerAggregationKeys);
+	}
 }

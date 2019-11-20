@@ -18,7 +18,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.cache.CacheMgt;
 import de.metas.inoutcandidate.agg.key.impl.ShipmentScheduleKeyValueHandler;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateRepository;
+import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
@@ -100,8 +100,8 @@ public final class InOutCandidateValidator implements ModelValidator
 			@Override
 			public void onStorageSegmentChanged(final Collection<IStorageSegment> storageSegments)
 			{
-				final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
-				invalidSchedulesRepo.invalidateStorageSegments(storageSegments);
+				final IShipmentScheduleInvalidateBL invalidSchedulesInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
+				invalidSchedulesInvalidator.invalidateStorageSegments(storageSegments);
 			}
 		});
 
@@ -172,8 +172,8 @@ public final class InOutCandidateValidator implements ModelValidator
 				final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 				shipmentSchedulePA.setIsDiplayedForProduct(productId, display);
 
-				final IShipmentScheduleInvalidateRepository shipmentScheduleInvalidateRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
-				shipmentScheduleInvalidateRepo.invalidateForProduct(productId);
+				final IShipmentScheduleInvalidateBL shipmentScheduleInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
+				shipmentScheduleInvalidator.invalidateForProduct(productId);
 			}
 		}
 	}

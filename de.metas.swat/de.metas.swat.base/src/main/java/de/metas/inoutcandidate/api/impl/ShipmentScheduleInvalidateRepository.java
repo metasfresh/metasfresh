@@ -247,13 +247,6 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	}
 
 	@Override
-	public void invalidateStorageSegments(final Collection<IStorageSegment> storageSegments)
-	{
-		final PInstanceId addToSelectionId = null;
-		invalidateStorageSegments(storageSegments, addToSelectionId);
-	}
-
-	@Override
 	public void invalidateStorageSegments(
 			@Nullable final Collection<IStorageSegment> storageSegments,
 			@Nullable final PInstanceId addToSelectionId)
