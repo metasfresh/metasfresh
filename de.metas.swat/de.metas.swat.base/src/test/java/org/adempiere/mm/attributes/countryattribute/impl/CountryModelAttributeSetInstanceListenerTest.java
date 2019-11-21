@@ -13,15 +13,14 @@ package org.adempiere.mm.attributes.countryattribute.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.mm.attributes.api.AttributeAction;
 import org.adempiere.mm.attributes.api.impl.ModelAttributeSetInstanceListenerTestHelper;
@@ -31,8 +30,8 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_InOutLine;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -43,9 +42,9 @@ import de.metas.util.Services;
 /**
  * Tests:
  * <ul>
- * <li> {@link OrderLineCountryModelAttributeSetInstanceListener}
- * <li> {@link InvoiceLineCountryModelAttributeSetInstanceListener}
- * <li> {@link InOutLineCountryModelAttributeSetInstanceListener}
+ * <li>{@link OrderLineCountryModelAttributeSetInstanceListener}
+ * <li>{@link InvoiceLineCountryModelAttributeSetInstanceListener}
+ * <li>{@link InOutLineCountryModelAttributeSetInstanceListener}
  * </ul>
  * 
  * @author tsa
@@ -59,7 +58,7 @@ public class CountryModelAttributeSetInstanceListenerTest
 
 	private static final String EXPECT_NoAttributeValue = null;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

@@ -26,7 +26,7 @@ import java.time.LocalDate;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.tourplanning.TourPlanningTestBase;
@@ -42,9 +42,8 @@ import de.metas.tourplanning.model.I_M_DeliveryDay;
  */
 public class DeliveryDayDAO_retrieveDeliveryDay_Test extends TourPlanningTestBase
 {
-
 	@Override
-	protected void afterInit()
+	public void afterInit()
 	{
 		tour = createTour("tour01");
 		tourVersion = createTourVersion(tour, LocalDate.of(2014, 1, 1));

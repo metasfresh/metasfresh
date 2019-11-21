@@ -47,8 +47,8 @@ import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.impexp.processing.IImportProcessFactory;
 import de.metas.inout.api.IMaterialBalanceConfigBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.util.Services;
 
@@ -101,7 +101,7 @@ public class MainValidator extends AbstractModuleInterceptor
 		Services.get(IShipmentScheduleHandlerBL.class).registerVetoer(new ShipmentScheduleFromSubscriptionOrderLineVetoer(), I_C_OrderLine.Table_Name);
 		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(SubscriptionShipmentScheduleHandler.class);
 
-		Services.get(IShipmentScheduleBL.class).registerCandidateProcessor(new ShipmentScheduleSubscriptionProcessor());
+		Services.get(IShipmentScheduleUpdater.class).registerCandidateProcessor(new ShipmentScheduleSubscriptionProcessor());
 
 		// material balance matcher
 		Services.get(IMaterialBalanceConfigBL.class).addMaterialBalanceConfigMather(new FlatrateMaterialBalanceConfigMatcher());

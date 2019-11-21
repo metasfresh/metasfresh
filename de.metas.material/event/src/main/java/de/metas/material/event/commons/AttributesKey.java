@@ -1,8 +1,11 @@
 package de.metas.material.event.commons;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
@@ -246,5 +249,10 @@ public final class AttributesKey
 		}
 
 		throw new AdempiereException("Attribute `" + attributeId + "` was not found in `" + this + "`");
+	}
+
+	public static boolean equals(@Nullable final AttributesKey k1, @Nullable final AttributesKey k2)
+	{
+		return Objects.equals(k1, k2);
 	}
 }

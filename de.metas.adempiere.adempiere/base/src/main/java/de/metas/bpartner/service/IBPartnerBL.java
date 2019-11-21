@@ -52,6 +52,8 @@ import lombok.Value;
 
 public interface IBPartnerBL extends ISingletonService
 {
+	I_C_BPartner getById(BPartnerId bpartnerId);
+	
 	String getBPartnerValue(final BPartnerId bpartnerId);
 
 	String getBPartnerName(final BPartnerId bpartnerId);
@@ -100,8 +102,11 @@ public interface IBPartnerBL extends ISingletonService
 	I_AD_User createDraftContact(I_C_BPartner bpartner);
 
 	/**
-	 * @param partner the partner to check for. Internally working with {@link de.metas.interfaces.I_C_BPartner}.
-	 * @param isSOTrx
+	 * @return true if InOut consolidation is allowed for given partner
+	 */
+	boolean isAllowConsolidateInOutEffective(BPartnerId bpartnerId, SOTrx soTrx);
+
+	/**
 	 * @return true if InOut consolidation is allowed for given partner
 	 */
 	boolean isAllowConsolidateInOutEffective(I_C_BPartner partner, SOTrx soTrx);

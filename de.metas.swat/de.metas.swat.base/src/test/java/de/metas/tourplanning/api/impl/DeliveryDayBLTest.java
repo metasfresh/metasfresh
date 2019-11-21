@@ -6,7 +6,7 @@ import java.time.ZonedDateTime;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.lang.SOTrx;
@@ -36,9 +36,8 @@ import de.metas.tourplanning.TourPlanningTestBase;
 
 public class DeliveryDayBLTest extends TourPlanningTestBase
 {
-
 	@Override
-	protected void afterInit()
+	public void afterInit()
 	{
 		tour = createTour("tour01");
 		tourVersion = createTourVersion(tour, LocalDate.of(2017, 1, 1));

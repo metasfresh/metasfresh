@@ -21,8 +21,8 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.inout.IInOutDAO;
@@ -62,7 +62,7 @@ public class InOutMovementBLTest
 	private I_M_Locator locatorForIssues;
 	private InOutMovementBL inOutMovementBL;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

@@ -9,10 +9,13 @@ import org.compiere.model.I_C_UOM;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.ProductBOMQtys;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UOMConversionRate;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -141,7 +144,8 @@ public final class QtyCalculationsBOMLine
 		return Quantity.of(qtyRequiredPlusScrap, uom);
 	}
 
-	public BigDecimal getFinishedGoodQtyMultiplier()
+	@VisibleForTesting
+	BigDecimal getFinishedGoodQtyMultiplier()
 	{
 		if (qtyPercentage)
 		{
@@ -158,5 +162,28 @@ public final class QtyCalculationsBOMLine
 		{
 			return qtyForOneFinishedGood;
 		}
+	}
+
+	public Quantity computeQtyOfFinishedGoodsForComponentQty(@NonNull final BigDecimal componentsQty)
+	{
+		return computeQtyOfFinishedGoodsForComponentQty(Quantity.of(componentsQty, uom));
+	}
+
+	public Quantity computeQtyOfFinishedGoodsForComponentQty(@NonNull final Quantity componentsQty)
+	{
+		final BigDecimal qtyForOneFinishedGoodMultiplier = getFinishedGoodQtyMultiplier();
+
+		final Quantity componentsQtyConverted = uomConversionService.convertQuantityTo(componentsQty,
+				UOMConversionContext.of(productId),
+				uom);
+
+		final BigDecimal qtyOfFinishedGoodsBD = componentsQtyConverted
+				.toBigDecimal()
+				.divide(
+						qtyForOneFinishedGoodMultiplier,
+						bomProductUOM.getStdPrecision(),
+						RoundingMode.DOWN); // IMPORTANT to round DOWN because we need complete products.
+
+		return Quantity.of(qtyOfFinishedGoodsBD, bomProductUOM);
 	}
 }

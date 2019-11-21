@@ -40,7 +40,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.inout.model.I_M_InOut;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.shipping.ShipperId;
@@ -61,7 +61,7 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 
 	private final Map<DeliveryLineCandidate, StringBuilder> line2StatusInfo = new HashMap<>();
 
-	private final Map<Integer, DeliveryLineCandidate> shipmentScheduleId2DeliveryLineCandidate = new HashMap<>();
+	private final Map<ShipmentScheduleId, DeliveryLineCandidate> shipmentScheduleId2DeliveryLineCandidate = new HashMap<>();
 
 	private final Set<DeliveryLineCandidate> deliveryLineCandidates = new HashSet<>();
 
@@ -141,7 +141,7 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 
 	public void removeLine(@NonNull final DeliveryLineCandidate deliveryLineCandidate)
 	{
-		final int shipmentScheduleId = deliveryLineCandidate.getShipmentScheduleId();
+		final ShipmentScheduleId shipmentScheduleId = deliveryLineCandidate.getShipmentScheduleId();
 		boolean success = shipmentScheduleId2DeliveryLineCandidate.remove(shipmentScheduleId) != null;
 		if (!success)
 		{
@@ -214,9 +214,9 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 		return inOut;
 	}
 
-	public DeliveryLineCandidate getInOutLineFor(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	public boolean hasDeliveryLineCandidateFor(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		return getLineCandidateForShipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID());
+		return getLineCandidateForShipmentScheduleId(shipmentScheduleId) != null;
 	}
 
 	/**
@@ -331,7 +331,7 @@ public class ShipmentSchedulesDuringUpdate implements IShipmentSchedulesDuringUp
 	}
 
 	@Override
-	public DeliveryLineCandidate getLineCandidateForShipmentScheduleId(final int shipmentScheduleId)
+	public DeliveryLineCandidate getLineCandidateForShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		return shipmentScheduleId2DeliveryLineCandidate.get(shipmentScheduleId);
 	}

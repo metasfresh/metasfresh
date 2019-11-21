@@ -1,37 +1,13 @@
 package de.metas.inoutcandidate.process;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.util.List;
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetail;
+import org.adempiere.inout.util.ShipmentScheduleAvailableStock;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.cockpit.stock.StockDataQuery;
@@ -42,7 +18,7 @@ public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 	private I_M_ShipmentSchedule shipmentSchedule;
 
 	private final transient ShipmentScheduleQtyOnHandStorageFactory //
-	shipmentScheduleQtyOnHandStorageFactory = Adempiere.getBean(ShipmentScheduleQtyOnHandStorageFactory.class);
+	shipmentScheduleQtyOnHandStorageFactory = SpringContextHolder.instance.getBean(ShipmentScheduleQtyOnHandStorageFactory.class);
 
 	@Override
 	protected void prepare()
@@ -62,21 +38,22 @@ public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 		}
 
 		final ShipmentScheduleQtyOnHandStorage storagesContainer = shipmentScheduleQtyOnHandStorageFactory.ofShipmentSchedule(shipmentSchedule);
-		final List<ShipmentScheduleAvailableStockDetail> storageRecords = storagesContainer.getStockDetailsMatching(shipmentSchedule);
+		final ShipmentScheduleAvailableStock storageDetails = storagesContainer.getStockDetailsMatching(shipmentSchedule);
 
-		final BigDecimal qtyOnHandTotal = ShipmentScheduleAvailableStockDetail.calculateQtyOnHandSum(storageRecords);
-		addLog("@QtyOnHand@ (@Total@): " + qtyOnHandTotal);
+		addLog("@QtyOnHand@ (@Total@): " + storageDetails.getTotalQtyAvailable());
 
-		for (final ShipmentScheduleAvailableStockDetail storage : storageRecords)
+		for (int storageIndex = 0; storageIndex < storageDetails.size(); storageIndex++)
 		{
+			final ShipmentScheduleAvailableStockDetail storageDetail = storageDetails.getStorageDetail(storageIndex);
+
 			addLog("------------------------------------------------------------");
-			addLog(storage.getSummary());
+			addLog(storageDetail.toString());
 		}
 
 		//
 		// Also show the Storage Query
 		{
-			final StockDataQuery materialQuery = storagesContainer.getMaterialQuery(shipmentSchedule);
+			final StockDataQuery materialQuery = storagesContainer.toQuery(shipmentSchedule);
 			addLog("------------------------------------------------------------");
 			addLog("Storage Query:");
 			addLog(String.valueOf(materialQuery));

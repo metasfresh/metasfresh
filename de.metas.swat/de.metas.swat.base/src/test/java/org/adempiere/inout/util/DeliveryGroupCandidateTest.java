@@ -1,6 +1,7 @@
 package org.adempiere.inout.util;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
@@ -8,8 +9,8 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.shipping.ShipperId;
@@ -38,7 +39,7 @@ import de.metas.shipping.ShipperId;
 
 public class DeliveryGroupCandidateTest
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -56,7 +57,10 @@ public class DeliveryGroupCandidateTest
 				.bPartnerAddress("bPartnerAddress")
 				.build();
 
-		group.createAndAddLineCandidate(newInstance(I_M_ShipmentSchedule.class), CompleteStatus.OK);
+		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
+		saveRecord(shipmentSchedule);
+
+		group.createAndAddLineCandidate(shipmentSchedule, CompleteStatus.OK);
 
 		assertThat(group.toString()).isNotEmpty();
 		group.hashCode(); // throws no exception

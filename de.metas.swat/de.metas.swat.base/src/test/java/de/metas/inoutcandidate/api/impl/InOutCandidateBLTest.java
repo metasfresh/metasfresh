@@ -32,8 +32,8 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.expectations.InOutLineExpectation;
@@ -52,7 +52,7 @@ public class InOutCandidateBLTest
 	private UomId stockUomId;
 	private ProductId productId;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
