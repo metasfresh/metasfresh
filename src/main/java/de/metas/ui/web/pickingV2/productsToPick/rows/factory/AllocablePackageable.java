@@ -12,6 +12,7 @@ import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -62,6 +63,7 @@ final class AllocablePackageable
 				.warehouseId(packageable.getWarehouseId())
 				.salesOrderLineIdOrNull(packageable.getSalesOrderLineIdOrNull())
 				.shipperId(packageable.getShipperId())
+				.pickFromOrderId(packageable.getPickFromOrderId())
 				.qtyToAllocateTarget(qtyToAllocateTarget)
 				.build();
 	}
@@ -75,6 +77,7 @@ final class AllocablePackageable
 	private final OrderLineId salesOrderLineIdOrNull;
 	private final ShipperId shipperId;
 
+	private final PPOrderId pickFromOrderId;
 	private final PPOrderBOMLineId issueToOrderBOMLineId;
 
 	private final Quantity qtyToAllocateTarget;
@@ -82,16 +85,17 @@ final class AllocablePackageable
 
 	@Builder(toBuilder = true)
 	private AllocablePackageable(
-			@NonNull BPartnerId customerId,
-			@NonNull ProductId productId,
-			@Nullable AttributeSetInstanceId asiId,
-			@NonNull ShipmentScheduleId shipmentScheduleId,
-			@Nullable Optional<ShipmentAllocationBestBeforePolicy> bestBeforePolicy,
-			@NonNull WarehouseId warehouseId,
-			@Nullable OrderLineId salesOrderLineIdOrNull,
-			@Nullable ShipperId shipperId,
-			@Nullable PPOrderBOMLineId issueToOrderBOMLineId,
-			@NonNull Quantity qtyToAllocateTarget)
+			@NonNull final BPartnerId customerId,
+			@NonNull final ProductId productId,
+			@Nullable final AttributeSetInstanceId asiId,
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@Nullable final Optional<ShipmentAllocationBestBeforePolicy> bestBeforePolicy,
+			@NonNull final WarehouseId warehouseId,
+			@Nullable final OrderLineId salesOrderLineIdOrNull,
+			@Nullable final ShipperId shipperId,
+			@Nullable final PPOrderId pickFromOrderId,
+			@Nullable final PPOrderBOMLineId issueToOrderBOMLineId,
+			@NonNull final Quantity qtyToAllocateTarget)
 	{
 		this.customerId = customerId;
 		this.productId = productId;
@@ -101,6 +105,7 @@ final class AllocablePackageable
 		this.warehouseId = warehouseId;
 		this.salesOrderLineIdOrNull = salesOrderLineIdOrNull;
 		this.shipperId = shipperId;
+		this.pickFromOrderId = pickFromOrderId;
 		this.issueToOrderBOMLineId = issueToOrderBOMLineId;
 
 		this.qtyToAllocateTarget = qtyToAllocateTarget;
