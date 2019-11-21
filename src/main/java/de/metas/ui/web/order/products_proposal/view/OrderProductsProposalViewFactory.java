@@ -159,7 +159,7 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 			return CampaignPriceProviders.none();
 		}
 
-		if (!bpartnersRepo.isActionPriceAllowed(bpartnerId))
+		if (!bpartnersRepo.isCampaignPriceAllowed(bpartnerId))
 		{
 			return CampaignPriceProviders.none();
 		}
