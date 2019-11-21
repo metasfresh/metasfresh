@@ -1,4 +1,7 @@
 /* 
+* Here is a link with an sql that shows how to create product prices http://docs.metasfresh.org/sql_collection/m_productprice.html
+*
+* 
 * Creates M_ProductPrice records with price 0, for the given M_PriceList_Version_ID and C_TaxCategory_ID
 * The default values are for plv Testpreise Kunden (Deutschland) Deutschland EUR and tax category Normaler Steuersatz 19% (Deutschland)
 */
