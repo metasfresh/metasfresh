@@ -477,7 +477,7 @@ public class AddressBuilder
 		{
 			// task https://github.com/metasfresh/metasfresh/issues/5804
 			// prefer BPartner name from location if is set
-			if (bplocation != null && !Check.isEmpty(bplocation.getBPartnerName(), true))
+			if (!Check.isEmpty(bplocation.getBPartnerName(), true))
 			{
 				bpName = bplocation.getBPartnerName();
 				bpName2 = null;
