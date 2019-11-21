@@ -146,6 +146,7 @@ import de.metas.handlingunits.test.HUListAssertsBuilder;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
+import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.materialtransaction.MTransactionUtil;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -472,7 +473,7 @@ public class HUTestHelper
 	{
 		//
 		// Handling units model validator
-		new de.metas.handlingunits.model.validator.Main().registerFactories();
+		newHandlingUnitsModelInterceptor().registerFactories();
 
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
 
@@ -496,7 +497,12 @@ public class HUTestHelper
 	protected final void setupModuleInterceptors_HU_Full()
 	{
 		Services.get(IModelInterceptorRegistry.class)
-				.addModelInterceptor(new de.metas.handlingunits.model.validator.Main());
+				.addModelInterceptor(newHandlingUnitsModelInterceptor());
+	}
+
+	private de.metas.handlingunits.model.validator.Main newHandlingUnitsModelInterceptor()
+	{
+		return new de.metas.handlingunits.model.validator.Main(new PickingBOMService());
 	}
 
 	/**

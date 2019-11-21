@@ -126,7 +126,7 @@ public class BPartnerRecordsUtil
 		final I_C_BPartner_Location bpartnerLocationRecord = newInstance(I_C_BPartner_Location.class);
 		bpartnerLocationRecord.setAD_Org_ID(AD_ORG_ID);
 		bpartnerLocationRecord.setC_BPartner_Location_ID(C_BBPARTNER_LOCATION_ID + idOffSet);
-		bpartnerLocationRecord.setC_BPartner(bpartnerRecord);
+		bpartnerLocationRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
 		bpartnerLocationRecord.setC_Location(locationRecord);
 		bpartnerLocationRecord.setGLN(C_BPARTNER_LOCATION_GLN + idOffSetStr);
 		bpartnerLocationRecord.setExternalId(C_BPARTNER_LOCATION_EXTERNAL_ID + idOffSetStr);

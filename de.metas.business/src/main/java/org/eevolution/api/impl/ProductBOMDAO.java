@@ -1,5 +1,6 @@
 package org.eevolution.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -42,6 +43,9 @@ import lombok.NonNull;
 
 public class ProductBOMDAO implements IProductBOMDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
+
 	@Override
 	public List<I_PP_Product_BOMLine> retrieveLines(final I_PP_Product_BOM productBOM)
 	{
@@ -52,12 +56,12 @@ public class ProductBOMDAO implements IProductBOMDAO
 	}
 
 	@Cached(cacheName = I_PP_Product_BOMLine.Table_Name + "#by#" + I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID)
-	/* package */ List<I_PP_Product_BOMLine> retrieveLines(
+	List<I_PP_Product_BOMLine> retrieveLines(
 			@CacheCtx final Properties ctx,
 			final int productBOM_ID,
 			@CacheTrx final String trxName)
 	{
-		final IQueryBuilder<I_PP_Product_BOMLine> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_PP_Product_BOMLine> queryBuilder = queryBL
 				.createQueryBuilder(I_PP_Product_BOMLine.class, ctx, trxName);
 
 		final ICompositeQueryFilter<I_PP_Product_BOMLine> filters = queryBuilder.getCompositeFilter();
@@ -72,9 +76,23 @@ public class ProductBOMDAO implements IProductBOMDAO
 	}	// getLines
 
 	@Override
+	public List<I_PP_Product_BOMLine> retrieveLinesByBOMIds(@NonNull final Collection<ProductBOMId> bomIds)
+	{
+		if (bomIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		return queryBL.createQueryBuilderOutOfTrx(I_PP_Product_BOMLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, bomIds)
+				.create()
+				.list();
+
+	}
+
+	@Override
 	public Optional<ProductBOMId> getDefaultBOMIdByProductId(@NonNull final ProductId productId)
 	{
-		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 		final I_M_Product product = productsRepo.getById(productId);
 
 		return getDefaultBOM(product)
@@ -84,7 +102,6 @@ public class ProductBOMDAO implements IProductBOMDAO
 	@Override
 	public Optional<I_PP_Product_BOM> getDefaultBOMByProductId(@NonNull final ProductId productId)
 	{
-		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 		final I_M_Product product = productsRepo.getById(productId);
 		return getDefaultBOM(product);
 	}
@@ -107,7 +124,6 @@ public class ProductBOMDAO implements IProductBOMDAO
 			final String productValue,
 			@CacheTrx final String trxName)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final I_PP_Product_BOM bom = queryBL
 				.createQueryBuilder(I_PP_Product_BOM.class, ctx, trxName)
 				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_M_Product_ID, productId)
@@ -125,6 +141,12 @@ public class ProductBOMDAO implements IProductBOMDAO
 		return retrieveById(Env.getCtx(), bomId);
 	}
 
+	@Override
+	public List<I_PP_Product_BOM> getByIds(@NonNull final Collection<ProductBOMId> bomIds)
+	{
+		return loadByRepoIdAwaresOutOfTrx(bomIds, I_PP_Product_BOM.class);
+	}
+
 	@Cached(cacheName = I_PP_Product_BOM.Table_Name + "#by#" + I_PP_Product_BOM.COLUMNNAME_PP_Product_BOM_ID)
 	public I_PP_Product_BOM retrieveById(@CacheCtx final Properties ctx, final ProductBOMId productBomId)
 	{
@@ -134,8 +156,6 @@ public class ProductBOMDAO implements IProductBOMDAO
 	@Override
 	public boolean hasBOMs(final ProductId productId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		// IMPORTANT: fetch in current trx because this pice of code can be called from some PP_Product_BOM model interceptor!
 		return queryBL.createQueryBuilder(I_PP_Product_BOM.class)
 				.addOnlyActiveRecordsFilter()
@@ -154,7 +174,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 	@Override
 	public IQuery<I_PP_Product_BOMLine> retrieveBOMLinesForProductQuery(final Properties ctx, final int productId, final String trxName)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_PP_Product_BOMLine.class, ctx, trxName)
 				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID, productId)
 				.addOnlyActiveRecordsFilter()
@@ -165,7 +185,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 	@Override
 	public int retrieveLastLineNo(final int ppProductBOMId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_PP_Product_BOMLine.class)
 				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, ppProductBOMId)
 				.create()
@@ -175,7 +195,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 	@Override
 	public List<I_PP_Product_BOM> retrieveBOMsContainingExactProducts(final Collection<Integer> productIds)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilderOutOfTrx(I_PP_Product_BOM.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(MatchBOMProductsFilter.exactProducts(productIds))
@@ -277,7 +297,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 		bomLineRecord.setAD_Org_ID(orgId.getRepoId());
 		bomLineRecord.setPP_Product_BOM_ID(bomId.getRepoId());
 		bomLineRecord.setM_Product_ID(line.getProductId().getRepoId());
-		bomLineRecord.setC_UOM_ID(line.getQty().getUOMId());
+		bomLineRecord.setC_UOM_ID(line.getQty().getUomId().getRepoId());
 		bomLineRecord.setQtyBOM(line.getQty().toBigDecimal());
 		bomLineRecord.setIsQtyPercentage(false);
 		bomLineRecord.setComponentType(line.getComponentType().getCode());

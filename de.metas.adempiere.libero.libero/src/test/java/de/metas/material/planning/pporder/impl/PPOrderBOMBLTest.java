@@ -158,7 +158,7 @@ public class PPOrderBOMBLTest
 			final I_PP_Order_BOMLine ppOrderBOMLine_Carrot = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pCarrot);
 			assertUOM(uomKillogram, ppOrderBOMLine_Carrot);
 
-			final BigDecimal multipliedQty = ppOrderBOMBL.toQtyCalculationsBOMLine(ppOrderBOMLine_Carrot).getFinishedGoodQtyMultiplier(); // lineCarrot
+			final BigDecimal multipliedQty = ppOrderBOMBL.toQtyCalculationsBOMLine(ppOrder, ppOrderBOMLine_Carrot).getFinishedGoodQtyMultiplier(); // lineCarrot
 			
 			// qty ordered = 100, qty batch = 44 (percentaje) -> 0,44 per one stuck
 			// one stuck = 0,25 kg -> the qty shall be 0,44 * 0,25 = 0,11
@@ -171,7 +171,7 @@ public class PPOrderBOMBLTest
 			final I_PP_Order_BOMLine ppOrderBOMLine_Frisee = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFrisee);
 			assertUOM(uomKillogram, ppOrderBOMLine_Frisee);
 
-			final BigDecimal multipliedQty = ppOrderBOMBL.toQtyCalculationsBOMLine(ppOrderBOMLine_Frisee).getFinishedGoodQtyMultiplier(); // lineFrisee
+			final BigDecimal multipliedQty = ppOrderBOMBL.toQtyCalculationsBOMLine(ppOrder, ppOrderBOMLine_Frisee).getFinishedGoodQtyMultiplier(); // lineFrisee
 			assertThat(multipliedQty).isEqualByComparingTo("0.09");
 		}
 
@@ -181,7 +181,7 @@ public class PPOrderBOMBLTest
 			final I_PP_Order_BOMLine ppOrderBOMLine_Radiesli = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pRadiesli);
 			assertUOM(uomKillogram, ppOrderBOMLine_Radiesli);
 
-			final BigDecimal multipliedQty = ppOrderBOMBL.toQtyCalculationsBOMLine(ppOrderBOMLine_Radiesli).getFinishedGoodQtyMultiplier(); // lineRadisli
+			final BigDecimal multipliedQty = ppOrderBOMBL.toQtyCalculationsBOMLine(ppOrder, ppOrderBOMLine_Radiesli).getFinishedGoodQtyMultiplier(); // lineRadisli
 			assertThat(multipliedQty).isEqualByComparingTo("0.05");
 		}
 
@@ -191,7 +191,7 @@ public class PPOrderBOMBLTest
 			final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
 			assertUOM(uomMillimeter, ppOrderBOMLine_Folie);
 
-			final BigDecimal multipliedQty = ppOrderBOMBL.toQtyCalculationsBOMLine(ppOrderBOMLine_Folie).getFinishedGoodQtyMultiplier(); // lineFolie
+			final BigDecimal multipliedQty = ppOrderBOMBL.toQtyCalculationsBOMLine(ppOrder, ppOrderBOMLine_Folie).getFinishedGoodQtyMultiplier(); // lineFolie
 			assertThat(multipliedQty).isEqualByComparingTo("260");
 		}
 	}

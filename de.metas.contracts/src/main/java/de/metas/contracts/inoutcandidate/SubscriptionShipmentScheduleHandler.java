@@ -31,7 +31,6 @@ import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -41,13 +40,13 @@ import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateRepository;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.product.IProductBL;
-import de.metas.storage.impl.ImmutableStorageSegment;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -151,18 +150,24 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 	public void invalidateCandidatesFor(@NonNull final Object model)
 	{
 		final I_C_SubscriptionProgress subscriptionLine = InterfaceWrapperHelper.create(model, I_C_SubscriptionProgress.class);
+		invalidateCandidatesForSubscriptionLine(subscriptionLine);
+	}
+
+	private void invalidateCandidatesForSubscriptionLine(final I_C_SubscriptionProgress subscriptionLine)
+	{
 		if (subscriptionLine.getM_ShipmentSchedule_ID() >= 0)
 		{
 			return;
 		}
 
-		final ImmutableStorageSegment segment = createStorageSegmentFor(subscriptionLine);
+		final ImmutableShipmentScheduleSegment segment = createStorageSegmentFor(subscriptionLine);
 
-		final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
-		invalidSchedulesRepo.invalidateStorageSegments(ImmutableSet.of(segment));
+		final IShipmentScheduleInvalidateBL invalidSchedulesInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
+		invalidSchedulesInvalidator.invalidateStorageSegment(segment);
+
 	}
 
-	private ImmutableStorageSegment createStorageSegmentFor(@NonNull final I_C_SubscriptionProgress subscriptionLine)
+	private ImmutableShipmentScheduleSegment createStorageSegmentFor(@NonNull final I_C_SubscriptionProgress subscriptionLine)
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
@@ -170,10 +175,10 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(subscriptionLine.getM_ShipmentSchedule());
 		final List<LocatorId> locatorIds = warehouseDAO.getLocatorIds(warehouseId);
 
-		final ImmutableStorageSegment segment = ImmutableStorageSegment.builder()
-				.M_Product_ID(subscriptionLine.getC_Flatrate_Term().getM_Product_ID())
-				.C_BPartner_ID(subscriptionLine.getDropShip_BPartner_ID())
-				.M_Locator_IDs(LocatorId.toRepoIds(locatorIds))
+		final ImmutableShipmentScheduleSegment segment = ImmutableShipmentScheduleSegment.builder()
+				.productId(subscriptionLine.getC_Flatrate_Term().getM_Product_ID())
+				.bpartnerId(subscriptionLine.getDropShip_BPartner_ID())
+				.locatorIds(LocatorId.toRepoIds(locatorIds))
 				.build();
 		return segment;
 	}

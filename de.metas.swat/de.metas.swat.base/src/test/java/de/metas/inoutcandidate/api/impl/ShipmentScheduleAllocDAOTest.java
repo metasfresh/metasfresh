@@ -1,37 +1,11 @@
 package de.metas.inoutcandidate.api.impl;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import static org.assertj.core.api.Assertions.assertThat;
 
-
-import java.util.Arrays;
-
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -48,7 +22,7 @@ public class ShipmentScheduleAllocDAOTest
 {
 	private ShipmentScheduleAllocDAO dao;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -60,7 +34,7 @@ public class ShipmentScheduleAllocDAOTest
 	 * Some simple tests on
 	 * <ul>
 	 * <li>{@link IShipmentScheduleAllocDAO#retrieveNotOnShipmentLineRecords(I_M_ShipmentSchedule, Class)}
-	 * <li> {@link IShipmentScheduleAllocDAO#retrieveOnShipmentLineRecordsQuery(I_M_ShipmentSchedule)}
+	 * <li>{@link IShipmentScheduleAllocDAO#retrieveOnShipmentLineRecordsQuery(I_M_ShipmentSchedule)}
 	 * </ul>
 	 *
 	 * to make sure:
@@ -72,37 +46,34 @@ public class ShipmentScheduleAllocDAOTest
 	@Test
 	public void test_retrievePickedNotDeliveredRecords()
 	{
-		final I_M_ShipmentSchedule ss = createM_ShipmentSchedule();
+		final I_M_ShipmentSchedule ss = createShipmentSchedule();
 		final I_M_ShipmentSchedule_QtyPicked qp1 = createShipmentScheduleQtyPickedRecord(ss, 0);
 		final I_M_ShipmentSchedule_QtyPicked qp2 = createShipmentScheduleQtyPickedRecord(ss, 1);
 		final I_M_ShipmentSchedule_QtyPicked qp3 = createShipmentScheduleQtyPickedRecord(ss, 0);
 		final I_M_ShipmentSchedule_QtyPicked qp4 = createShipmentScheduleQtyPickedRecord(ss, 2);
 
-		Assert.assertEquals(
-				"Expected picked but not delivered",
-				Arrays.asList(qp1, qp3),
-				dao.retrieveNotOnShipmentLineRecords(ss, I_M_ShipmentSchedule_QtyPicked.class));
+		assertThat(dao.retrieveNotOnShipmentLineRecords(ss, I_M_ShipmentSchedule_QtyPicked.class))
+				.as("Expected picked but not delivered")
+				.containsExactly(qp1, qp3);
 
-		Assert.assertEquals(
-				"Expected picked AND delivered",
-				Arrays.asList(qp2, qp4),
-				dao.retrieveOnShipmentLineRecordsQuery(ss).create().list());
-
+		assertThat(dao.retrieveOnShipmentLineRecordsQuery(ss).create().list())
+				.as("Expected picked AND delivered")
+				.containsExactly(qp2, qp4);
 	}
 
-	private final I_M_ShipmentSchedule createM_ShipmentSchedule()
+	private final I_M_ShipmentSchedule createShipmentSchedule()
 	{
-		final I_M_ShipmentSchedule ss = InterfaceWrapperHelper.create(Env.getCtx(), I_M_ShipmentSchedule.class, ITrx.TRXNAME_None);
-		InterfaceWrapperHelper.save(ss);
-		return ss;
+		final I_M_ShipmentSchedule sched = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class);
+		InterfaceWrapperHelper.saveRecord(sched);
+		return sched;
 	}
 
 	private final I_M_ShipmentSchedule_QtyPicked createShipmentScheduleQtyPickedRecord(final I_M_ShipmentSchedule ss, final int inoutLineId)
 	{
-		final I_M_ShipmentSchedule_QtyPicked record = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule_QtyPicked.class, ss);
-		record.setM_ShipmentSchedule(ss);
+		final I_M_ShipmentSchedule_QtyPicked record = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule_QtyPicked.class);
+		record.setM_ShipmentSchedule_ID(ss.getM_ShipmentSchedule_ID());
 		record.setM_InOutLine_ID(inoutLineId);
-		InterfaceWrapperHelper.save(record);
+		InterfaceWrapperHelper.saveRecord(record);
 		return record;
 	}
 }

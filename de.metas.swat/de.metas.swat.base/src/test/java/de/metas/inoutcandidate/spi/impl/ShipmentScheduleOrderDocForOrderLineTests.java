@@ -16,8 +16,8 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -51,7 +51,7 @@ public class ShipmentScheduleOrderDocForOrderLineTests
 	private WarehouseId warehouseId;
 	private BPartnerId billBPartnerId;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -137,5 +137,4 @@ public class ShipmentScheduleOrderDocForOrderLineTests
 		assertThat(result.getDeliveryDate()).isEqualTo(date_2019_09_03);
 		assertThat(result.getPreparationDate()).isNull();
 	}
-
 }

@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -76,7 +77,7 @@ public class Packageable
 
 	ZonedDateTime deliveryDate;
 	ZonedDateTime preparationDate;
-	
+
 	@NonNull
 	@Default
 	Optional<ShipmentAllocationBestBeforePolicy> bestBeforePolicy = Optional.empty();
@@ -101,6 +102,9 @@ public class Packageable
 	OrderLineId salesOrderLineIdOrNull;
 	@Nullable
 	Money salesOrderLineNetAmt;
+
+	@Nullable
+	PPOrderId pickFromOrderId;
 
 	@Nullable
 	UserId lockedBy;

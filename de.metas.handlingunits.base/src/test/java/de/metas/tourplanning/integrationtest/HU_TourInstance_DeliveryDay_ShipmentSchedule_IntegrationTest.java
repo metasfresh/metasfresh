@@ -13,15 +13,14 @@ package de.metas.tourplanning.integrationtest;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 
@@ -30,6 +29,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.tourplanning.model.I_M_DeliveryDay_Alloc;
 import de.metas.handlingunits.tourplanning.spi.impl.HUShipmentScheduleDeliveryDayHandlerTest;
+import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 
 public class HU_TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extends TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest
@@ -39,7 +39,7 @@ public class HU_TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extend
 	{
 		super.afterInit();
 
-		new de.metas.handlingunits.model.validator.Main().setupTourPlanning();
+		new de.metas.handlingunits.model.validator.Main(new PickingBOMService()).setupTourPlanning();
 	}
 
 	@Override
@@ -62,8 +62,7 @@ public class HU_TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extend
 	{
 		final de.metas.tourplanning.model.I_M_DeliveryDay_Alloc alloc = super.assertDeliveryDayAlloc(
 				deliveryDayExpected,
-				InterfaceWrapperHelper.create(shipmentSchedule, de.metas.tourplanning.model.I_M_ShipmentSchedule.class)
-				);
+				InterfaceWrapperHelper.create(shipmentSchedule, de.metas.tourplanning.model.I_M_ShipmentSchedule.class));
 
 		final I_M_DeliveryDay_Alloc huAlloc = InterfaceWrapperHelper.create(alloc, I_M_DeliveryDay_Alloc.class);
 		final I_M_ShipmentSchedule huShipmentSchedule = InterfaceWrapperHelper.create(shipmentSchedule, I_M_ShipmentSchedule.class);

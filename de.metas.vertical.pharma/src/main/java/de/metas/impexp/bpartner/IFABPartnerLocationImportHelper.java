@@ -208,8 +208,8 @@ import lombok.experimental.UtilityClass;
 		{
 			final I_C_BPartner bpartner = importRecord.getC_BPartner();
 			final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, bpartner);
-			bpartnerLocation.setC_BPartner(bpartner);
-
+			bpartnerLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+			
 			if (isCountryAndCityFilled(importRecord))
 			{
 				updateExistingBPartnerLocation(importRecord, bpartnerLocation);

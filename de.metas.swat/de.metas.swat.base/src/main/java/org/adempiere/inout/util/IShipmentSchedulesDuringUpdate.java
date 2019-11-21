@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 
+import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.shipping.ShipperId;
 
 public interface IShipmentSchedulesDuringUpdate
@@ -13,9 +14,7 @@ public interface IShipmentSchedulesDuringUpdate
 
 	public enum CompleteStatus
 	{
-		OK,
-		INCOMPLETE_LINE,
-		INCOMPLETE_ORDER
+		OK, INCOMPLETE_LINE, INCOMPLETE_ORDER
 	}
 
 	/**
@@ -43,7 +42,7 @@ public interface IShipmentSchedulesDuringUpdate
 
 	void addLine(DeliveryLineCandidate deliveryLineCandidate);
 
-	DeliveryLineCandidate getLineCandidateForShipmentScheduleId(int shipmentScheduleId);
+	DeliveryLineCandidate getLineCandidateForShipmentScheduleId(ShipmentScheduleId shipmentScheduleId);
 
 	/**
 	 * Adds a custom status info for the given iol. Usally the info explains, why an open order line won't be delivered this time.

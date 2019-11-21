@@ -31,7 +31,7 @@ import java.util.List;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.model.I_M_InOut;

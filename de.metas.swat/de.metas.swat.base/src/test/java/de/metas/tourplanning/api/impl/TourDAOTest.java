@@ -29,7 +29,7 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import de.metas.tourplanning.TourPlanningTestBase;
 import de.metas.tourplanning.api.ITourVersionRange;
