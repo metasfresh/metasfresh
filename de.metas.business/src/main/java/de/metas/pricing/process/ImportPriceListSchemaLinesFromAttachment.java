@@ -69,14 +69,14 @@ public class ImportPriceListSchemaLinesFromAttachment extends JavaProcess implem
 
 	private static final int INDEX_SeqNo = 0;
 	private static final int INDEX_Product = 1;
-	private static final int INDEX_Product_Category = 2;
-	private static final int INDEX_Business_Partner = 3;
-	private static final int INDEX_Tax_Category = 4;
-	private static final int INDEX_Std_Price_Surcharge_Amt = 5;
-	private static final int INDEX_Standard_Price_Rounding = 6;
-	private static final int INDEX_Target_Taxcategory = 7;
+	private static final int INDEX_Product_Category = 3;
+	private static final int INDEX_Business_Partner = 5;
+	private static final int INDEX_Tax_Category = 7;
+	private static final int INDEX_Std_Price_Surcharge_Amt = 8;
+	private static final int INDEX_Standard_Price_Rounding = 9;
+	private static final int INDEX_Target_Taxcategory = 10;
 
-	private static final int EXPECTED_NUMBER_OF_COLUMNS = 8;
+	private static final int EXPECTED_NUMBER_OF_COLUMNS = 11;
 
 	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 	private final PriceListSchemaRepository priceListSchemaRepository = SpringContextHolder.instance.getBean(PriceListSchemaRepository.class);
