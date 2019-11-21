@@ -54,6 +54,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
+import lombok.NonNull;
 
 public class AddressBuilder
 {
@@ -463,7 +464,7 @@ public class AddressBuilder
 	 * @param user
 	 * @return
 	 */
-	private String buildBPartnerBlock(@Nullable final org.compiere.model.I_C_BPartner bPartner, @Nullable final I_AD_User user, @Nullable final I_C_BPartner_Location bplocation)
+	private String buildBPartnerBlock(@NonNull final org.compiere.model.I_C_BPartner bPartner, @Nullable final I_AD_User user, @NonNull final I_C_BPartner_Location bplocation)
 	{
 		// Name, Name2
 		String bpName = "";
