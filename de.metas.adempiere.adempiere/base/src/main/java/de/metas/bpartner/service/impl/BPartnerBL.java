@@ -336,7 +336,7 @@ public class BPartnerBL implements IBPartnerBL
 	{
 		final String address = Services.get(ILocationBL.class).mkAddress(
 				bpLocation.getC_Location(),
-				InterfaceWrapperHelper.load(bpLocation.getC_BPartner_ID(), I_C_BPartner.class),
+				Services.get(IBPartnerDAO.class).getById(bpLocation.getC_BPartner_ID()),
 				"",  // bPartnerBlock
 				"" // userBlock
 		);

@@ -172,7 +172,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			final boolean isSOTrx,
 			final boolean throwEx)
 	{
-		final I_C_BPartner bPartner = loadOutOfTrx(bpLocTo.getC_BPartner_ID(), I_C_BPartner.class);
+		final I_C_BPartner bPartner = Services.get(IBPartnerDAO.class).getById(bpLocTo.getC_BPartner_ID());
 
 		final boolean hasTaxCertificate = !Check.isEmpty(bPartner.getVATaxID());
 

@@ -175,7 +175,7 @@ public class DocumentLocationBL implements IDocumentLocationBL
 		}
 
 		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.create(warehouse.getC_BPartner_Location(), I_C_BPartner_Location.class);
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.load(bpLocation.getC_BPartner_ID(), I_C_BPartner.class);
+		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpLocation.getC_BPartner_ID());
 
 		// There is no contact available for warehouse
 		final de.metas.adempiere.model.I_AD_User bpContact = null;
