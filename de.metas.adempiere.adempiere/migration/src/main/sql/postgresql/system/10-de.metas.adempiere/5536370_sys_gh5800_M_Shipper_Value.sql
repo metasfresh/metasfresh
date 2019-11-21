@@ -94,3 +94,28 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP(
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2019-11-19 13:01:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=547695
 ;
 
+-- 2019-11-21T10:40:47.621Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy,WhereClause) VALUES (0,540510,0,253,TO_TIMESTAMP('2019-11-21 12:40:47','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Y','M_Shipper_UniqueValue','N',TO_TIMESTAMP('2019-11-21 12:40:47','YYYY-MM-DD HH24:MI:SS'),100,'IsActive = ''Y''')
+;
+
+-- 2019-11-21T10:40:47.641Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Index_Table_ID, t.ErrorMsg, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Index_Table t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Index_Table_ID=540510 AND NOT EXISTS (SELECT 1 FROM AD_Index_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Index_Table_ID=t.AD_Index_Table_ID)
+;
+
+-- 2019-11-21T10:41:01.792Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,569631,540976,540510,0,TO_TIMESTAMP('2019-11-21 12:41:01','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',10,TO_TIMESTAMP('2019-11-21 12:41:01','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2019-11-21T10:41:46.635Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,2079,540977,540510,0,TO_TIMESTAMP('2019-11-21 12:41:46','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',20,TO_TIMESTAMP('2019-11-21 12:41:46','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2019-11-21T10:41:47.980Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+CREATE UNIQUE INDEX M_Shipper_UniqueValue ON M_Shipper (Value,AD_Org_ID) WHERE IsActive = 'Y'
+;
+
