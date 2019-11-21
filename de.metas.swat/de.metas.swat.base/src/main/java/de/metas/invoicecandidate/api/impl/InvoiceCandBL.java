@@ -1350,10 +1350,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	/**
 	 * Set the qtyToInvoice_Override and Price_Entered_Override in the invoice candidate given by its ID
-	 *
-	 * @param invoiceCandidateId
-	 * @param qtyToInvoiceOverride
-	 * @param priceEnteredOverride
 	 */
 	private static void setQtyAndPriceOverride(final int invoiceCandidateId, final BigDecimal qtyToInvoiceOverride, final BigDecimal priceEnteredOverride)
 	{

@@ -19,9 +19,11 @@ import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandValidator;
+import de.metas.ordercandidate.spi.IOLCandWithUOMForTUsCapacityProvider;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
@@ -67,6 +69,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 
 	private final IOLCandBL olCandBL;
+	private final IOLCandWithUOMForTUsCapacityProvider olCandCapacityProvider;
 
 	// error messages
 	private static final String ERR_Bill_Location_Inactive = "ERR_Bill_Location_Inactive";
@@ -81,11 +84,13 @@ public class DefaultOLCandValidator implements IOLCandValidator
 	 */
 	private static final ModelDynAttributeAccessor<I_C_OLCand, IPricingResult> DYNATTR_OLCAND_PRICEVALIDATOR_PRICING_RESULT = new ModelDynAttributeAccessor<>(DefaultOLCandValidator.class.getSimpleName() + "#pricingResult", IPricingResult.class);
 
-	public DefaultOLCandValidator(@NonNull final IOLCandBL olCandBL)
+	public DefaultOLCandValidator(
+			@NonNull final IOLCandBL olCandBL,
+			@NonNull final IOLCandWithUOMForTUsCapacityProvider olCandCapacityProvider)
 	{
+		this.olCandCapacityProvider = olCandCapacityProvider;
 		this.olCandBL = olCandBL;
 	}
-
 
 	/** @return {@code 10}; this validator shall be executed first */
 	@Override
@@ -95,14 +100,25 @@ public class DefaultOLCandValidator implements IOLCandValidator
 	}
 
 	@Override
-	public boolean validate(final I_C_OLCand olCand)
+	public void validate(@NonNull final I_C_OLCand olCand)
 	{
-		return validateLocation(olCand)
-				&& validatePrice(olCand)
-				&& validateUOM(olCand);
+		handleUOMForTUIfRequired(olCand); // get QtyItemCapacity from de.metas.handlingunit if required
+
+		validateLocation(olCand);
+		validatePrice(olCand);
+		validateUOM(olCand);
 	}
 
-	private boolean validateLocation(final I_C_OLCand olCand)
+	private void handleUOMForTUIfRequired(@NonNull final I_C_OLCand olCand)
+	{
+		if (olCandCapacityProvider.isProviderNeededForOLCand(olCand))
+		{
+			final Quantity qtyItemCapacity = olCandCapacityProvider.computeQtyItemCapacity(olCand);
+			olCand.setQtyItemCapacity(qtyItemCapacity.toBigDecimal());
+		}
+	}
+
+	private void validateLocation(@NonNull final I_C_OLCand olCand)
 	{
 		// Error messages about which of the locations are not active
 		final StringBuilder msg = new StringBuilder();
@@ -153,52 +169,36 @@ public class DefaultOLCandValidator implements IOLCandValidator
 
 		if (!isValid)
 		{
-			olCand.setIsError(true);
-			olCand.setErrorMsg(msgBL.parseTranslation(ctx, msg.toString()));
-			return false;
+			throw new AdempiereException(msgBL.parseTranslatableString(msg.toString()));
 		}
-
-		return true;
 	}
 
-	private boolean validatePrice(final I_C_OLCand olCand)
+	private void validatePrice(@NonNull final I_C_OLCand olCand)
 	{
-		olCand.setErrorMsg(null);
-		olCand.setIsError(false);
-
 		if (olCand.isManualPrice())
 		{
 			// Set the price actual as the price entered
 			olCand.setPriceActual(olCand.getPriceEntered());
 
-			final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
-
 			// still, make sure that we have a currency set
 			if (olCand.getC_Currency_ID() <= 0)
 			{
-				olCand.setIsError(true);
 				final String msg = "@NotFound@ @C_Currency@";
-
-				olCand.setErrorMsg(msgBL.parseTranslation(ctx, msg));
-				return false;
+				throw new AdempiereException(msgBL.parseTranslatableString(msg));
 			}
 
 			final IPricingResult pricingResult = getPricingResult(olCand);
 			if (pricingResult == null || pricingResult.getPricingSystemId() == null || pricingResult.getPricingSystemId().isNone())
 			{
-				olCand.setIsError(true);
 				final String msg = "@NotFound@ @M_PricingSystem_ID@";
-				olCand.setErrorMsg(msgBL.parseTranslation(ctx, msg));
-				return false;
+				throw new AdempiereException(msgBL.parseTranslatableString(msg));
 			}
 			olCand.setM_PricingSystem_ID(pricingResult.getPricingSystemId().getRepoId());
 
 			if (pricingResult == null || pricingResult.getTaxCategoryId() == null)
 			{
-				olCand.setIsError(true);
 				final String msg = "@NotFound@ @C_TaxCategory_ID@";
-				olCand.setErrorMsg(msgBL.parseTranslation(ctx, msg));
-				return false;
+				throw new AdempiereException(msgBL.parseTranslatableString(msg));
 			}
 			else
 			{
@@ -209,15 +209,9 @@ public class DefaultOLCandValidator implements IOLCandValidator
 				olCand.setPrice_UOM_Internal_ID(UomId.toRepoId(pricingResult.getPriceUomId()));
 
 				// further validation on manual price is not needed
-				return true;
+				return;
 			}
 		}
-
-		// task 08072
-		// before validating, unset the isserror and set the error message on null.
-		// this way they will be up to date after validation
-		olCand.setIsError(false);
-		olCand.setErrorMsg(null);
 
 		// task 08803: reset the ASI because we do *not* want a pre-existing ASI (from a pre-existing validation) to influence the price.
 		// As it is now, the price (incl. pricing ASI) shall be determined only by the product, packaging, and the pricing master data, but not by the OLcand's current ASI values.
@@ -225,19 +219,13 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		olCand.setM_AttributeSetInstance(null);
 
 		final IPricingResult pricingResult = getPricingResult(olCand);
-		if (pricingResult == null)
-		{
-			return false;
-		}
-
 		final BigDecimal priceInternal = pricingResult.getPriceStd();
 		final UomId priceUOMInternalId = pricingResult.getPriceUomId();
 
 		// FIXME: move this part to handlingUnits !!!
-		if (priceUOMInternalId != null
-				&& "TU".equals(uomsRepo.getX12DE355ById(priceUOMInternalId)))
+		if (priceUOMInternalId != null && uomsRepo.isUOMForTUs(priceUOMInternalId))
 		{
-			// this olCand has a TU/Gebinde price-UOMthat mean that despite the imported UOM may be PCE, we import UOM="TU" into our order line.
+			// this olCand has a TU/Gebinde price-UOM; that mean that despite the imported UOM may be PCE, we import UOM="TU" into our order line.
 			olCand.setC_UOM_Internal_ID(priceUOMInternalId.getRepoId());
 		}
 		else
@@ -262,8 +250,6 @@ public class DefaultOLCandValidator implements IOLCandValidator
 
 		// task 08803: we provide the pricing result and expect that OLCandPricingASIListener will keep the ASI up to date
 		DYNATTR_OLCAND_PRICEVALIDATOR_PRICING_RESULT.setValue(olCand, pricingResult);
-
-		return true;
 	}
 
 	private IPricingResult getPricingResult(@NonNull final I_C_OLCand olCand)
@@ -278,21 +264,17 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		}
 		catch (final AdempiereException e)
 		{
-			olCand.setErrorMsg(e.getLocalizedMessage());
-			olCand.setIsError(true);
-
 			// Warn developer that something went wrong.
 			// In this way he/she can early see the issue and where it happened.
 			if (developerModeBL.isEnabled())
 			{
 				logger.warn(e.getLocalizedMessage(), e);
 			}
-
+			throw e;
 		}
-		return null;
 	}
 
-	public static IPricingResult getPreviouslyCalculatedPricingResultOrNull(final I_C_OLCand olCand)
+	public static IPricingResult getPreviouslyCalculatedPricingResultOrNull(@NonNull final I_C_OLCand olCand)
 	{
 		return DYNATTR_OLCAND_PRICEVALIDATOR_PRICING_RESULT.getValue(olCand);
 	}
@@ -308,7 +290,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 			uomConversionBL.convertToProductUOM(
 					productId,
 					olCandEffectiveValuesBL.getC_UOM_Effective(olCand),
-					olCand.getQty());
+					olCand.getQtyEntered());
 		}
 		catch (AdempiereException e)
 		{

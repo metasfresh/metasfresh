@@ -11,6 +11,8 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -45,6 +47,8 @@ import lombok.NonNull;
  */
 public class OrderLineBuilder
 {
+	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
 	private final OrderFactory parent;
 	private boolean built = false;
 
@@ -76,8 +80,10 @@ public class OrderLineBuilder
 		orderLine.setM_AttributeSetInstance_ID(asiId);
 
 		orderLine.setQtyEntered(qty.toBigDecimal());
-		orderLine.setQtyOrdered(qty.toBigDecimal());
-		orderLine.setC_UOM_ID(qty.getUOMId());
+		orderLine.setC_UOM_ID(qty.getUomId().getRepoId());
+
+		final Quantity qtyOrdered = uomConversionBL.convertToProductUOM(qty, productId);
+		orderLine.setQtyOrdered(qtyOrdered.toBigDecimal());
 
 		if (manualPrice != null)
 		{
@@ -149,11 +155,6 @@ public class OrderLineBuilder
 		return this;
 	}
 
-	// public int getUomId()
-	// {
-	// return qty.getUOMId();
-	// }
-
 	public OrderLineBuilder manualPrice(final BigDecimal manualPrice)
 	{
 		assertNotBuilt();
@@ -168,15 +169,15 @@ public class OrderLineBuilder
 		return this;
 	}
 
-	public boolean isProductAndUomMatching(final ProductId productId, final int uomId)
+	public boolean isProductAndUomMatching(final ProductId productId, final UomId uomId)
 	{
 		return Objects.equals(getProductId(), productId)
-				&& getUomId() == uomId;
+				&& Objects.equals(getUomId(), uomId);
 	}
 
-	private int getUomId()
+	private UomId getUomId()
 	{
-		return qty != null ? qty.getUOMId() : -1;
+		return qty != null ? qty.getUomId() : null;
 	}
 
 }

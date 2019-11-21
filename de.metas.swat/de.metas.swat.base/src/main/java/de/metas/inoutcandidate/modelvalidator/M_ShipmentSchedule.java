@@ -308,7 +308,7 @@ public class M_ShipmentSchedule
 		}
 
 		final I_C_Order order = orderLine.getC_Order();
-		final boolean orderNotCompleted = !Services.get(IDocumentBL.class).isDocumentCompleted(order);
+		final boolean orderNotCompleted = !Services.get(IDocumentBL.class).getDocStatusOrNull(order).isCompleted();
 		if (orderNotCompleted)
 		{
 			// issue https://github.com/metasfresh/metasfresh/issues/3815

@@ -36,6 +36,7 @@ import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegist
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMailAddress;
 import de.metas.email.mailboxes.UserEMailConfig;
@@ -199,8 +200,10 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		// Services
 		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
-		final int adTableId = archiveRecord.getAD_Table_ID();
-		final int recordId = archiveRecord.getRecord_ID();
+		final TableRecordReference reference = TableRecordReference.ofReferenced(archiveRecord);
+
+		final int adTableId = reference.getAD_Table_ID();
+		final int recordId = reference.getRecord_ID();
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(archiveRecord);
 
@@ -216,8 +219,8 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docOutboundLogRecord.setDateLastEMail(null);
 		docOutboundLogRecord.setDateLastPrint(null);
 
-		final String docStatus = docActionBL.getDocStatusOrNull(ctx, adTableId, recordId);
-		docOutboundLogRecord.setDocStatus(docStatus);
+		final DocStatus docStatus = docActionBL.getDocStatusOrNull(reference);
+		docOutboundLogRecord.setDocStatus(docStatus.getCode());
 
 		docOutboundLogRecord.setDocumentNo(archiveRecord.getName());
 

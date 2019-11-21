@@ -13,15 +13,14 @@ package de.metas.document.engine.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -29,6 +28,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
@@ -45,10 +45,10 @@ import de.metas.util.Services;
 
 public class DocumentBLTest
 {
-	private static interface INonDocumentWithDocumentNo
+	private interface INonDocumentWithDocumentNo
 	{
 		@SuppressWarnings("unused")
-		public static final String Table_Name = "NonDocumentWithDocumentNo";
+		String Table_Name = "NonDocumentWithDocumentNo";
 
 		int getNonDocumentWithDocumentNo_ID();
 
@@ -57,10 +57,10 @@ public class DocumentBLTest
 		void setDocumentNo(String documentNo);
 	}
 
-	private static interface INonDocumentWithValueAndName
+	private interface INonDocumentWithValueAndName
 	{
 		@SuppressWarnings("unused")
-		public static final String Table_Name = "NonDocumentWithValueAndName";
+		String Table_Name = "NonDocumentWithValueAndName";
 
 		int getNonDocumentWithValueAndName_ID();
 
@@ -195,7 +195,7 @@ public class DocumentBLTest
 		final int recordId = InterfaceWrapperHelper.getId(invoice);
 		Assert.assertTrue("Invalid recordId=" + recordId, recordId > 0);
 
-		Assert.assertEquals("Invalid DocStatus", IDocument.STATUS_InProgress, documentBL.getDocStatusOrNull(ctx, adTableId, recordId));
+		Assert.assertEquals("Invalid DocStatus", IDocument.STATUS_InProgress, documentBL.getDocStatusOrNull(invoice).getCode());
 	}
 
 	public void test_getDocStatusOrNull_NonDocument()
@@ -210,15 +210,13 @@ public class DocumentBLTest
 		final int recordId = InterfaceWrapperHelper.getId(record);
 		Assert.assertTrue("Invalid recordId=" + recordId, recordId > 0);
 
-		Assert.assertNull("Invalid DocStatus", documentBL.getDocStatusOrNull(ctx, adTableId, recordId));
+		Assert.assertNull("Invalid DocStatus", documentBL.getDocStatusOrNull(record));
 	}
 
 	public void test_getDocStatusOrNull_InvalidParameters()
 	{
-		final Properties ctx = Env.getCtx();
-		Assert.assertNull("Invalid DocStatus", documentBL.getDocStatusOrNull(ctx, -1, -1));
-		Assert.assertNull("Invalid DocStatus", documentBL.getDocStatusOrNull(ctx, 318, -1));
-		Assert.assertNull("Invalid DocStatus", documentBL.getDocStatusOrNull(ctx, -1, 1000));
+		Assert.assertNull("Invalid DocStatus", documentBL.getDocStatusOrNull(TableRecordReference.of(-1, -1)));
+		Assert.assertNull("Invalid DocStatus", documentBL.getDocStatusOrNull(TableRecordReference.of(318, -1)));
+		Assert.assertNull("Invalid DocStatus", documentBL.getDocStatusOrNull(TableRecordReference.of(-1, 1000)));
 	}
-
 }

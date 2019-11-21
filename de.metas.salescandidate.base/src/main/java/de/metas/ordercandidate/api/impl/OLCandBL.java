@@ -42,8 +42,6 @@ import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
-
 import de.metas.freighcost.FreightCostRule;
 
 import de.metas.lang.SOTrx;
@@ -306,7 +304,7 @@ public class OLCandBL implements IOLCandBL
 		final BPartnerLocationId dropShipLocationId = effectiveValuesBL.getDropShipLocationEffectiveId(olCand);
 
 
-		final BigDecimal qty = qtyOverride != null ? qtyOverride : olCand.getQty();
+		final BigDecimal qty = qtyOverride != null ? qtyOverride : olCand.getQtyEntered();
 
 		final BPartnerOrderParams bPartnerOrderParams = getBPartnerOrderParams(olCand);
 

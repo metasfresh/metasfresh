@@ -27,6 +27,8 @@ import java.math.BigDecimal;
 import org.compiere.apps.search.IInfoSimple;
 
 import de.metas.adempiere.gui.search.impl.PlainHUPackingAware;
+import de.metas.quantity.Capacity;
+import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 
 /**
@@ -39,8 +41,6 @@ public interface IHUPackingAwareBL extends ISingletonService
 {
 	/**
 	 * Creates a plain (not database coupled) {@link IHUPackingAware} POJO implementation.
-	 *
-	 * @return
 	 */
 	IHUPackingAware createPlain();
 
@@ -60,9 +60,6 @@ public interface IHUPackingAwareBL extends ISingletonService
 
 	/**
 	 * Copies all fields from one {@link IHUPackingAware} to another.
-	 *
-	 * @param to
-	 * @param from
 	 */
 	default void copy(final IHUPackingAware to, final IHUPackingAware from)
 	{
@@ -71,36 +68,29 @@ public interface IHUPackingAwareBL extends ISingletonService
 
 	/**
 	 * Calls {@link #calculateQtyTU(IHUPackingAware)}. Note: doesn't save.
-	 *
-	 * @param record
 	 */
 	void setQtyTU(IHUPackingAware record);
 
 	/**
 	 * Computes the number of TUs required for the given <code>huPackingWare</code>.
-	 *
-	 * @param huPackingWare
-	 * @return
 	 */
 	BigDecimal calculateQtyTU(IHUPackingAware huPackingWare);
 
+	Capacity calculateCapacity(IHUPackingAware record);
+
 	/**
-	 * Sets Qty CU.
+	 * Sets Qty CU from packing instructions and {@code qtyPacks}
 	 *
-	 * @param record
-	 * @param qtyPacks aka Qty TUs
+	 * @param qtyPacks a.k.ak Qty TUs
 	 */
 	void setQtyCUFromQtyTU(IHUPackingAware record, int qtyPacks);
 
 	/**
 	 * This method verifies if the qtyCU given as parameter fits the qtyPacks. If it does, the record will not be updated.
 	 * In case the QtyCU is too big or too small to fit in the QtyPacks, it will be changed to the maximum capacity required by the QtyPacks and the M_HU_PI_Item_Product of the record
-	 *
-	 * @param record
-	 * @param qtyPacks
-	 * @param qtyCU
 	 */
-	void updateQtyIfNeeded(IHUPackingAware record, int qtyPacks, BigDecimal qtyCU);
+	void updateQtyIfNeeded(IHUPackingAware record, int qtyPacks, Quantity qtyCU);
 
 	void computeAndSetQtysForNewHuPackingAware(final PlainHUPackingAware huPackingAware, final BigDecimal quickInputQty);
+
 }

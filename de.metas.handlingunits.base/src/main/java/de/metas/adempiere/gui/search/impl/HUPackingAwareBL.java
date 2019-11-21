@@ -37,12 +37,17 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.CapacityInterface;
+import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 public class HUPackingAwareBL implements IHUPackingAwareBL
 {
+	private final transient IHUPIItemProductBL piPIItemProductBL = Services.get(IHUPIItemProductBL.class);
+	private final transient IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
+	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
 	@Override
 	public IHUPackingAware create(final IInfoSimple infoWindow, final int rowIndexModel)
 	{
@@ -56,63 +61,56 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 	}
 
 	@Override
-	public void setQtyCUFromQtyTU(final IHUPackingAware record, final int qtyPacks)
+	public void setQtyCUFromQtyTU(@NonNull final IHUPackingAware record, final int qtyPacks)
 	{
-		final BigDecimal qty = calculateQty(record, qtyPacks);
+		final Quantity qty = calculateQty(record, qtyPacks);
 		if (qty == null)
 		{
 			return;
 		}
 
-		record.setQty(qty);
-		// record.setQtyPacks(qtyPacks); // we assume was already set
+		record.setQty(qty.toBigDecimal());
+		record.setC_UOM_ID(qty.getUomId().getRepoId());
 	}
 
 	@Override
-	public void updateQtyIfNeeded(final IHUPackingAware record, final int qtyTU, final BigDecimal qtyCU)
+	public void updateQtyIfNeeded(final IHUPackingAware record, final int qtyTU, final Quantity qtyCU)
 	{
-		final BigDecimal maxQty = calculateQty(record, qtyTU);
-
+		final Quantity maxQty = calculateQty(record, qtyTU);
 		if (maxQty == null)
 		{
 			return;
 		}
 
 		if (maxQty.compareTo(qtyCU) <= 0)
-
 		{
-			record.setQty(maxQty);
-
+			record.setQty(maxQty.toBigDecimal());
+			record.setC_UOM_ID(maxQty.getUomId().getRepoId());
 			return;
 		}
 
-		final BigDecimal minQty = calculateQty(record, qtyTU - 1);
+		final Quantity minQty = calculateQty(record, qtyTU - 1);
 
 		if (qtyCU.compareTo(minQty) <= 0)
 		{
-			record.setQty(maxQty);
-
+			record.setQty(maxQty.toBigDecimal());
+			record.setC_UOM_ID(maxQty.getUomId().getRepoId());
 			return;
 		}
 	}
 
-	private BigDecimal calculateQty(final IHUPackingAware record, final int qtyPacks)
+	private Quantity calculateQty(@NonNull final IHUPackingAware record, final int qtyPacks)
 	{
 		if (qtyPacks < 0)
 		{
 			throw new AdempiereException("@QtyPacks@ < 0");
 		}
 
-		final I_M_HU_PI_Item_Product huPIItemProduct = extractHUPIItemProductOrNull(record);
-		if (huPIItemProduct == null)
+		final Capacity capacity = calculateCapacity(record);
+		if (capacity == null)
 		{
 			return null;
 		}
-
-		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
-		final I_C_UOM uom = extractUOMOrNull(record);
-		final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
-		final Capacity capacity = capacityBL.getCapacity(huPIItemProduct, productId, uom);
 		final CapacityInterface capacityMult = capacity.multiply(qtyPacks);
 
 		if (capacityMult.isInfiniteCapacity())
@@ -120,7 +118,7 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 			return null;
 		}
 
-		return capacityMult.toBigDecimal();
+		return capacityMult.toQuantity();
 	}
 
 	@Override
@@ -139,7 +137,25 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 	}
 
 	@Override
-	public BigDecimal calculateQtyTU(final IHUPackingAware record)
+	public BigDecimal calculateQtyTU(@NonNull final IHUPackingAware record)
+	{
+		final Capacity capacity = calculateCapacity(record);
+		if (capacity == null)
+		{
+			return null;
+		}
+
+		final Integer qtyTU = capacity.calculateQtyTU(record.getQty(), extractUOMOrNull(record));
+		if (qtyTU == null)
+		{
+			return null;
+		}
+
+		return BigDecimal.valueOf(qtyTU);
+	}
+
+	@Override
+	public Capacity calculateCapacity(@NonNull final IHUPackingAware record)
 	{
 		final BigDecimal qty = record.getQty();
 		if (qty == null || qty.signum() <= 0)
@@ -168,16 +184,9 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 			return null;
 		}
 
-		final IHUCapacityBL capacityBL = Services.get(IHUCapacityBL.class);
 		final Capacity capacityDef = capacityBL.getCapacity(huPiItemProduct, productId, uom);
 
-		final Integer qtyTU = capacityDef.calculateQtyTU(qty, uom);
-		if (qtyTU == null)
-		{
-			return null;
-		}
-
-		return BigDecimal.valueOf(qtyTU);
+		return capacityDef;
 	}
 
 	@Override
@@ -187,7 +196,6 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 	{
 		final I_M_HU_PI_Item_Product piItemProduct = extractHUPIItemProductOrNull(huPackingAware);
 
-		final IHUPIItemProductBL piPIItemProductBL = Services.get(IHUPIItemProductBL.class);
 		if (piItemProduct == null || piPIItemProductBL.isVirtualHUPIItemProduct(piItemProduct) || piItemProduct.isInfiniteCapacity())
 		{
 			huPackingAware.setQty(quickInputQty);
@@ -201,21 +209,19 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		}
 	}
 
-	private I_M_HU_PI_Item_Product extractHUPIItemProductOrNull(final IHUPackingAware huPackingAware)
+	private I_M_HU_PI_Item_Product extractHUPIItemProductOrNull(@NonNull final IHUPackingAware huPackingAware)
 	{
-		final IHUPIItemProductBL piPIItemProductBL = Services.get(IHUPIItemProductBL.class);
-
 		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(huPackingAware.getM_HU_PI_Item_Product_ID());
 		return piItemProductId != null
 				? piPIItemProductBL.getById(piItemProductId)
 				: null;
 	}
 
-	private I_C_UOM extractUOMOrNull(final IHUPackingAware huPackingAware)
+	private I_C_UOM extractUOMOrNull(@NonNull final IHUPackingAware huPackingAware)
 	{
 		final int uomId = huPackingAware.getC_UOM_ID();
 		return uomId > 0
-				? Services.get(IUOMDAO.class).getById(uomId)
+				? uomDAO.getById(uomId)
 				: null;
 	}
 }
