@@ -2,6 +2,8 @@ package de.metas.shipping.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+import java.util.Optional;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -35,7 +37,6 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 public class ShipperDAO implements IShipperDAO
@@ -81,5 +82,18 @@ public class ShipperDAO implements IShipperDAO
 		final I_M_Shipper shipper = getById(shipperId);
 		return InterfaceWrapperHelper.getModelTranslationMap(shipper)
 				.getColumnTrl(I_M_Shipper.COLUMNNAME_Name, shipper.getName());
+	}
+
+	@Override
+	public Optional<ShipperId> getShipperIdByValue(final String value)
+	{
+		final ShipperId shipperId = Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_M_Shipper.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Shipper.COLUMNNAME_Value, value)
+				.orderByDescending(I_M_Shipper.COLUMNNAME_IsDefault)
+				.create()
+				.firstIdOnly(ShipperId::ofRepoIdOrNull);
+
+		return Optional.of(shipperId);
 	}
 }

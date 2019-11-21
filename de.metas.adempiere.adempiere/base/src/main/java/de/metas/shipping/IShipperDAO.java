@@ -1,5 +1,7 @@
 package de.metas.shipping;
 
+import java.util.Optional;
+
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_Shipper;
 
@@ -8,9 +10,9 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.util.ISingletonService;
 
 /**
- * 
+ *
  * @author tsa
- * 
+ *
  */
 public interface IShipperDAO extends ISingletonService
 {
@@ -25,5 +27,7 @@ public interface IShipperDAO extends ISingletonService
 	ITranslatableString getShipperName(ShipperId shipperId);
 
 	I_M_Shipper getById(ShipperId id);
+
+	Optional<ShipperId> getShipperIdByValue(String asValue);
 
 }
