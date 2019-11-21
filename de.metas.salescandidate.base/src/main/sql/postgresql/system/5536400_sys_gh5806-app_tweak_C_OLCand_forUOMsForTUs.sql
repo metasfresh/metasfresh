@@ -136,3 +136,8 @@ UPDATE AD_Field SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2019-11-21 14:47:05','
 UPDATE AD_Field SET DisplayLogic='@IsManualDiscount/''N''@=''Y''',Updated=TO_TIMESTAMP('2019-11-21 14:47:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=550287
 ;
 
+-- 2019-11-21T16:07:38.629Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET DisplayLogic='@PriceDifference/null@!=null',Updated=TO_TIMESTAMP('2019-11-21 17:07:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=555186
+;
+
