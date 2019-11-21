@@ -469,20 +469,24 @@ public class AddressBuilder
 		String bpName = "";
 		String bpName2 = "";
 
-		// task https://github.com/metasfresh/metasfresh/issues/5804
-		// prefer BPartner name from location if is set
-		if (bplocation != null && !Check.isEmpty(bplocation.getBPartnerName(), true))
-		{
-			bpName = bplocation.getBPartnerName();
-			bpName2 = null;
-		}
-		else if (bPartner.isCompany()
+		
+		if (bPartner.isCompany()
 				|| user == null
 				|| user.getAD_User_ID() == 0
 				|| Check.isEmpty(user.getLastname(), true))
 		{
-			bpName = bPartner.getName();
-			bpName2 = bPartner.getName2();
+			// task https://github.com/metasfresh/metasfresh/issues/5804
+			// prefer BPartner name from location if is set
+			if (bplocation != null && !Check.isEmpty(bplocation.getBPartnerName(), true))
+			{
+				bpName = bplocation.getBPartnerName();
+				bpName2 = null;
+			}
+			else
+			{
+				bpName = bPartner.getName();
+				bpName2 = bPartner.getName2();
+			}
 		}
 
 		final StringBuilder sbBPartner = new StringBuilder();
