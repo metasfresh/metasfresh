@@ -42,18 +42,18 @@ import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.commons.io.IOUtils;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_AttachmentEntry;
-import org.compiere.util.TimeUtil;
+import org.compiere.model.X_M_DiscountSchemaLine;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -75,31 +75,15 @@ public class ImportPriceListSchemaLinesFromAttachment extends JavaProcess implem
 	private static final int INDEX_Std_Price_Surcharge_Amt = 5;
 	private static final int INDEX_Standard_Price_Rounding = 6;
 	private static final int INDEX_Target_Taxcategory = 7;
-	private static final int INDEX_List_price_Base = 8;
-	private static final int INDEX_Conversiontype = 9;
-	private static final int INDEX_Limit_price_Surcharge_Amount = 10;
-	private static final int INDEX_Limit_price_Base = 11;
-	private static final int INDEX_Limit_price_Discount = 12;
-	private static final int INDEX_Limit_price_max_Margin = 13;
-	private static final int INDEX_Limit_price_min_Margin = 14;
-	private static final int INDEX_Limit_price_Rounding = 15;
-	private static final int INDEX_List_price_Surcharge_Amount = 16;
-	private static final int INDEX_List_price_Discount = 17;
-	private static final int INDEX_List_price_max_Margin = 18;
-	private static final int INDEX_List_price_min_Margin = 19;
-	private static final int INDEX_List_price_Rounding = 20;
-	private static final int INDEX_Standard_price_Base = 21;
-	private static final int INDEX_Standard_price_Discount = 22;
-	private static final int INDEX_Standard_max_Margin = 23;
-	private static final int INDEX_Standard_price_min_Margin = 24;
 
-	private static final int EXPECTED_NUMBER_OF_COLUMNS = 25;
+	private static final int EXPECTED_NUMBER_OF_COLUMNS = 8;
 
 	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 	private final PriceListSchemaRepository priceListSchemaRepository = SpringContextHolder.instance.getBean(PriceListSchemaRepository.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final CurrencyConversionTypeId DEFAULT_CONVERSION_TYPE_ID = CurrencyConversionTypeId.ofRepoId(114); // no idea from where this 114 comes, but this is what i've got
 
 	@Override
 	protected String doIt() throws Exception
@@ -127,28 +111,28 @@ public class ImportPriceListSchemaLinesFromAttachment extends JavaProcess implem
 					.std_Rounding(split[INDEX_Standard_Price_Rounding])
 					.taxCategoryTargetId(getTaxCategoryId(split[INDEX_Target_Taxcategory]))
 
-					// default values are just copied
-					.conversionDate(TimeUtil.asTimestamp(LocalDate.now()))
-					.list_Base(split[INDEX_List_price_Base])
+					// mandatory fields where the default value is set
+					.conversionDate(SystemTime.asTimestamp())
+					.list_Base(X_M_DiscountSchemaLine.LIST_BASE_Listenpreis)
 
-					.c_ConversionType_ID(CurrencyConversionTypeId.ofRepoId(getIntValue(split[INDEX_Conversiontype])))
-					.limit_AddAmt(getDecimalValue(split[INDEX_Limit_price_Surcharge_Amount]))
-					.limit_Base(split[INDEX_Limit_price_Base])
-					.limit_Discount(getDecimalValue(split[INDEX_Limit_price_Discount]))
-					.limit_MaxAmt(getDecimalValue(split[INDEX_Limit_price_max_Margin]))
-					.limit_MinAmt(getDecimalValue(split[INDEX_Limit_price_min_Margin]))
-					.limit_Rounding(split[INDEX_Limit_price_Rounding])
+					.c_ConversionType_ID(DEFAULT_CONVERSION_TYPE_ID)
+					.limit_AddAmt(BigDecimal.ZERO)
+					.limit_Base(X_M_DiscountSchemaLine.LIMIT_BASE_Mindestpreis)
+					.limit_Discount(BigDecimal.ZERO)
+					.limit_MaxAmt(BigDecimal.ZERO)
+					.limit_MinAmt(BigDecimal.ZERO)
+					.limit_Rounding(X_M_DiscountSchemaLine.LIMIT_ROUNDING_CurrencyPrecision)
 
-					.list_AddAmt(getDecimalValue(split[INDEX_List_price_Surcharge_Amount]))
-					.list_Discount(getDecimalValue(split[INDEX_List_price_Discount]))
-					.list_MaxAmt(getDecimalValue(split[INDEX_List_price_max_Margin]))
-					.list_MinAmt(getDecimalValue(split[INDEX_List_price_min_Margin]))
-					.list_Rounding(split[INDEX_List_price_Rounding])
+					.list_AddAmt(BigDecimal.ZERO)
+					.list_Discount(BigDecimal.ZERO)
+					.list_MaxAmt(BigDecimal.ZERO)
+					.list_MinAmt(BigDecimal.ZERO)
+					.list_Rounding(X_M_DiscountSchemaLine.LIST_ROUNDING_CurrencyPrecision)
 
-					.std_Base(split[INDEX_Standard_price_Base])
-					.std_Discount(getDecimalValue(split[INDEX_Standard_price_Discount]))
-					.std_MaxAmt(getDecimalValue(split[INDEX_Standard_max_Margin]))
-					.std_MinAmt(getDecimalValue(split[INDEX_Standard_price_min_Margin]))
+					.std_Base(X_M_DiscountSchemaLine.STD_BASE_Standardpreis)
+					.std_Discount(BigDecimal.ZERO)
+					.std_MaxAmt(BigDecimal.ZERO)
+					.std_MinAmt(BigDecimal.ZERO)
 					.build();
 
 			priceListSchemaRepository.createPriceListSchemaLine(priceListSchemaRequest);
