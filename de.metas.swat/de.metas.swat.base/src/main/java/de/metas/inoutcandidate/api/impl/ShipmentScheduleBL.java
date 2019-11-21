@@ -132,7 +132,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		return onCloseCreateMissingScheds;
 	}
 
-
 	@Override
 	public void updateHeaderAggregationKey(@NonNull final I_M_ShipmentSchedule sched)
 	{
@@ -182,7 +181,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		return oldQtyOrdered;
 	}
-	
+
 	@Override
 	public boolean isChangedByUpdateProcess(final I_M_ShipmentSchedule sched)
 	{
@@ -260,7 +259,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	{
 		return new ShipmentScheduleHeaderAggregationKeyBuilder();
 	}
-
 
 	@Override
 	public void closeShipmentSchedule(@NonNull final I_M_ShipmentSchedule schedule)
@@ -433,6 +431,14 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	public Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIdsOutOfTrx(final Set<ShipmentScheduleId> ids)
 	{
 		return Services.get(IShipmentSchedulePA.class).getByIdsOutOfTrx(ids);
+	}
+
+	@Override
+	public <T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIdsOutOfTrx(
+			@NonNull final Set<ShipmentScheduleId> ids,
+			@NonNull final Class<T> modelType)
+	{
+		return Services.get(IShipmentSchedulePA.class).getByIdsOutOfTrx(ids, modelType);
 	}
 
 	@Override
