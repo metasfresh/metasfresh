@@ -58,21 +58,30 @@ public class ImmutableShipmentScheduleSegment implements IShipmentScheduleSegmen
 	{
 		public ImmutableShipmentScheduleSegmentBuilder anyBPartner()
 		{
-			bpartnerIds.clear();
+			if (bpartnerIds != null)
+			{
+				bpartnerIds.clear();
+			}
 			bpartnerId(ANY);
 			return this;
 		}
 
 		public ImmutableShipmentScheduleSegmentBuilder anyProduct()
 		{
-			productIds.clear();
+			if (productIds != null)
+			{
+				productIds.clear();
+			}
 			productId(ANY);
 			return this;
 		}
 
 		public ImmutableShipmentScheduleSegmentBuilder anyLocator()
 		{
-			locatorIds.clear();
+			if (locatorIds != null)
+			{
+				locatorIds.clear();
+			}
 			locatorId(ANY);
 			return this;
 		}
