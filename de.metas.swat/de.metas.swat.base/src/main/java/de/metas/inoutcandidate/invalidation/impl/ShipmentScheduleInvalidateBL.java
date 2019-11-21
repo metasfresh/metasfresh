@@ -32,10 +32,10 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.service.ITaskExecutorService;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.springframework.stereotype.Component;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
@@ -62,6 +62,7 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+@Component
 public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidateBL
 {
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
@@ -69,7 +70,12 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	protected final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	protected final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-	private PickingBOMService pickingBOMService = SpringContextHolder.instance.getBean(PickingBOMService.class);
+	private final PickingBOMService pickingBOMService;
+
+	public ShipmentScheduleInvalidateBL(final PickingBOMService pickingBOMService)
+	{
+		this.pickingBOMService = pickingBOMService;
+	}
 
 	private boolean isShipmentScheduleUpdaterRunning()
 	{

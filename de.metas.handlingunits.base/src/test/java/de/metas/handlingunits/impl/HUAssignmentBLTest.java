@@ -48,6 +48,7 @@ import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.util.Services;
 
 public class HUAssignmentBLTest
@@ -70,7 +71,7 @@ public class HUAssignmentBLTest
 
 		//
 		// Make sure Main handling units interceptor is registered
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new de.metas.handlingunits.model.validator.Main());
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new de.metas.handlingunits.model.validator.Main(new PickingBOMService()));
 
 		//
 		// BL under test

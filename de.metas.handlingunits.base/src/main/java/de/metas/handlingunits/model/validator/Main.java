@@ -38,6 +38,7 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.eevolution.model.I_DD_OrderLine;
+import org.springframework.stereotype.Component;
 
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.impl.HUOrderFastInputHandler;
@@ -89,6 +90,7 @@ import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.impl.HUShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.inoutcandidate.spi.impl.HUReceiptScheduleProducer;
 import de.metas.invoicecandidate.facet.IInvoiceCandidateFacetCollectorFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -105,8 +107,16 @@ import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+@Component
 public final class Main extends AbstractModuleInterceptor
 {
+	private final PickingBOMService pickingBOMService;
+
+	public Main(@NonNull final PickingBOMService pickingBOMService)
+	{
+		this.pickingBOMService = pickingBOMService;
+	}
+
 	@Override
 	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
@@ -181,8 +191,9 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked(), client);
 
 		programaticCalloutProvider.registerAnnotatedCallout(de.metas.handlingunits.inout.callout.M_InOutLine.instance);
+
 		// replace the default implementation with our own HU-aware one
-		Services.registerService(IShipmentScheduleInvalidateBL.class, new HUShipmentScheduleInvalidateBL());
+		Services.registerService(IShipmentScheduleInvalidateBL.class, new HUShipmentScheduleInvalidateBL(pickingBOMService));
 
 		// invoice line callout
 		programaticCalloutProvider.registerAnnotatedCallout(de.metas.handlingunits.callout.C_InvoiceLine.instance);

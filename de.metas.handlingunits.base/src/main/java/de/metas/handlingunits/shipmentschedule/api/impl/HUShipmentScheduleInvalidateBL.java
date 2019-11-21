@@ -31,10 +31,12 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inoutcandidate.invalidation.impl.ShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
-import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegmentBuilder;
+import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Subclass of {@link ShipmentScheduleInvalidateBL} with HU-aware code. The concrete benefit of this is that we can create BPartner-specific storage segments which in turn allow us to invalidate less
@@ -46,6 +48,11 @@ import de.metas.util.Services;
 public class HUShipmentScheduleInvalidateBL extends ShipmentScheduleInvalidateBL
 {
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+
+	public HUShipmentScheduleInvalidateBL(@NonNull final PickingBOMService pickingBOMService)
+	{
+		super(pickingBOMService);
+	}
 
 	@Override
 	protected IShipmentScheduleSegment createSegmentForInOutLine(final int bPartnerId, final I_M_InOutLine inoutLine)
