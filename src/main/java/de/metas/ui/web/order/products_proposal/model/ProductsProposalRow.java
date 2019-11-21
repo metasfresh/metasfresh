@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.i18n.ITranslatableString;
 import de.metas.pricing.ProductPriceId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
@@ -64,32 +65,37 @@ public class ProductsProposalRow implements IViewRow
 	@Getter
 	private final LookupValue product;
 
-	public static final String FIELD_ASI = "asi";
-	@ViewColumn(seqNo = 20, fieldName = FIELD_ASI, captionKey = "M_AttributeSetInstance_ID", widgetType = DocumentFieldWidgetType.Text)
-	@Getter
-	private final ProductASIDescription asiDescription;
-
-	public static final String FIELD_IsCampaignPrice = "isCampaignPrice";
-	@ViewColumn(displayed = false, fieldName = FIELD_IsCampaignPrice, captionKey = "IsCampaignPrice", widgetType = DocumentFieldWidgetType.YesNo)
-	private final boolean isCampaignPrice;
-
-	public static final String FIELD_Price = "price";
-	@ViewColumn(seqNo = 40, fieldName = FIELD_Price, captionKey = "Price", widgetType = DocumentFieldWidgetType.Amount)
-	private final BigDecimal userEnteredPrice;
-
-	public static final String FIELD_Currency = "currency";
-	@ViewColumn(seqNo = 50, fieldName = FIELD_Currency, captionKey = "C_Currency_ID", widgetType = DocumentFieldWidgetType.Text)
-	private final String currencyCodeStr;
-
 	public static final String FIELD_Qty = "qty";
-	@ViewColumn(seqNo = 60, fieldName = FIELD_Qty, captionKey = "Qty", widgetType = DocumentFieldWidgetType.Quantity, editor = ViewEditorRenderMode.ALWAYS)
+	@ViewColumn(seqNo = 20, fieldName = FIELD_Qty, captionKey = "Qty", widgetType = DocumentFieldWidgetType.Quantity, editor = ViewEditorRenderMode.ALWAYS)
 	@Getter
 	private final BigDecimal qty;
 
+	public static final String FIELD_PackDescription = "PackDescription";
+	@ViewColumn(seqNo = 30, fieldName = FIELD_PackDescription, widgetType = DocumentFieldWidgetType.Text)
+	@Getter
+	private final ITranslatableString packingDescription;
+
+	public static final String FIELD_ASI = "asi";
+	@ViewColumn(seqNo = 40, fieldName = FIELD_ASI, captionKey = "M_AttributeSetInstance_ID", widgetType = DocumentFieldWidgetType.Text)
+	@Getter
+	private final ProductASIDescription asiDescription;
+
 	public static final String FIELD_LastShipmentDays = "lastShipmentDays";
-	@ViewColumn(seqNo = 70, fieldName = FIELD_LastShipmentDays, captionKey = "LastShipmentDays", widgetType = DocumentFieldWidgetType.Integer)
+	@ViewColumn(seqNo = 50, fieldName = FIELD_LastShipmentDays, captionKey = "LastShipmentDays", widgetType = DocumentFieldWidgetType.Integer)
 	@Getter
 	private final Integer lastShipmentDays;
+
+	public static final String FIELD_Price = "price";
+	@ViewColumn(seqNo = 60, fieldName = FIELD_Price, captionKey = "Price", widgetType = DocumentFieldWidgetType.Amount)
+	private final BigDecimal userEnteredPrice;
+
+	public static final String FIELD_Currency = "currency";
+	@ViewColumn(seqNo = 61, fieldName = FIELD_Currency, captionKey = "C_Currency_ID", widgetType = DocumentFieldWidgetType.Text)
+	private final String currencyCodeStr;
+
+	public static final String FIELD_IsCampaignPrice = "isCampaignPrice";
+	@ViewColumn(seqNo = 70, fieldName = FIELD_IsCampaignPrice, captionKey = "IsCampaignPrice", widgetType = DocumentFieldWidgetType.YesNo)
+	private final boolean isCampaignPrice;
 
 	public static final String FIELD_BPartner = "bpartner";
 	@ViewColumn(displayed = false, fieldName = FIELD_BPartner, captionKey = "C_BPartner_ID", widgetType = DocumentFieldWidgetType.Lookup)
@@ -121,6 +127,7 @@ public class ProductsProposalRow implements IViewRow
 			@NonNull final DocumentId id,
 			@Nullable final LookupValue bpartner,
 			@NonNull final LookupValue product,
+			@Nullable final ITranslatableString packingDescription,
 			@Nullable final HUPIItemProductId packingMaterialId,
 			@Nullable final ProductASIDescription asiDescription,
 			@NonNull final ProductProposalPrice price,
@@ -135,6 +142,7 @@ public class ProductsProposalRow implements IViewRow
 		this.bpartner = bpartner;
 
 		this.product = product;
+		this.packingDescription = packingDescription;
 		this.packingMaterialId = packingMaterialId;
 		this.asiDescription = asiDescription != null ? asiDescription : ProductASIDescription.NONE;
 

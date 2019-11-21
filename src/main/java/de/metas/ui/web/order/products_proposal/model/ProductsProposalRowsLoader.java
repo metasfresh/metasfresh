@@ -26,7 +26,10 @@ import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_ProductPrice;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
@@ -75,6 +78,7 @@ public final class ProductsProposalRowsLoader
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
 	private final BPartnerProductStatsService bpartnerProductStatsService;
+	private final IHUPIItemProductBL packingMaterialsService = Services.get(IHUPIItemProductBL.class);
 	private final CampaignPriceProvider campaignPriceProvider;
 	private final LookupDataSource productLookup;
 	private final DocumentIdIntSequence nextRowIdSequence = DocumentIdIntSequence.newInstance();
@@ -168,10 +172,16 @@ public final class ProductsProposalRowsLoader
 			return null;
 		}
 
+		final HUPIItemProductId packingMaterialId = HUPIItemProductId.ofRepoIdOrNull(record.getM_HU_PI_Item_Product_ID());
+		final ITranslatableString packingDescription = packingMaterialId != null
+				? packingMaterialsService.getDisplayName(packingMaterialId)
+				: TranslatableStrings.empty();
+
 		return ProductsProposalRow.builder()
 				.id(nextRowIdSequence.nextDocumentId())
 				.product(product)
-				.packingMaterialId(HUPIItemProductId.ofRepoIdOrNull(record.getM_HU_PI_Item_Product_ID()))
+				.packingMaterialId(packingMaterialId)
+				.packingDescription(packingDescription)
 				.asiDescription(extractProductASIDescription(record))
 				.price(extractProductProposalPrice(record))
 				.qty(null)
