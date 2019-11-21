@@ -1,5 +1,7 @@
 package de.metas.inoutcandidate.picking_bom;
 
+import java.util.Collection;
+
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
@@ -58,4 +60,19 @@ public final class PickingBOMsReversedIndex
 	{
 		return bomProductIdsByComponentId.get(componentId);
 	}
+
+	public ImmutableSet<ProductId> getBOMProductIdsByComponentIds(@NonNull final Collection<ProductId> componentIds)
+	{
+		if (!componentIds.isEmpty())
+		{
+			return componentIds.stream()
+					.flatMap(componentId -> getBOMProductIdsByComponentId(componentId).stream())
+					.collect(ImmutableSet.toImmutableSet());
+		}
+		else
+		{
+			return ImmutableSet.of();
+		}
+	}
+
 }

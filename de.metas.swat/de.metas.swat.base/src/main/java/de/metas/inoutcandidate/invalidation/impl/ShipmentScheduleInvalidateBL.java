@@ -36,7 +36,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.slf4j.Logger;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
@@ -51,11 +50,12 @@ import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
+import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
-import de.metas.logging.LogManager;
+import de.metas.inoutcandidate.picking_bom.PickingBOMsReversedIndex;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
@@ -64,7 +64,6 @@ import lombok.NonNull;
 
 public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidateBL
 {
-	private static final Logger logger = LogManager.getLogger(ShipmentScheduleInvalidateBL.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
@@ -274,12 +273,11 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		}
 
 		final ImmutableList<IShipmentScheduleSegment> segmentsEffective = segments.stream()
+				.filter(segment -> !segment.isInvalid())
 				.flatMap(this::explodeByPickingBOMs)
 				.collect(ImmutableList.toImmutableList());
 		if (segmentsEffective.isEmpty())
 		{
-			// shall not happen
-			logger.warn("Nothing to notify because segments were exploded to empty list: {}", segments);
 			return;
 		}
 
@@ -299,30 +297,26 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 
 	private Stream<IShipmentScheduleSegment> explodeByPickingBOMs(final IShipmentScheduleSegment segment)
 	{
-		if (segment.isInvalid())
-		{
-			return Stream.empty();
-		}
-
 		if (segment.isAnyProduct())
 		{
 			return Stream.of(segment);
 		}
 
-		// TODO
-		return Stream.of(segment);
-//		
-//		final Set<IShipmentScheduleSegment> result = new HashSet<>();
-//		result.add(segment);
-//
-//		final PickingBOMsReversedIndex pickingBOMsReversedIndex = pickingBOMService.getPickingBOMsReversedIndex();
-//		for(final Integer productRepoId : segment.getProductIds())
-//		{
-//			final ProductId productId = ProductId.ofRepoId(productRepoId);
-//			
-////			return ImmutableShipmentScheduleSegment.builder()
-////					.pro
-//		}
+		final PickingBOMsReversedIndex pickingBOMsReversedIndex = pickingBOMService.getPickingBOMsReversedIndex();
+		final Set<ProductId> componentIds = ProductId.ofRepoIds(segment.getProductIds());
+		final ImmutableSet<ProductId> pickingBOMProductIds = pickingBOMsReversedIndex.getBOMProductIdsByComponentIds(componentIds);
+		if (pickingBOMProductIds.isEmpty())
+		{
+			return Stream.of(segment);
+		}
+
+		final ImmutableShipmentScheduleSegment pickingBOMsSegment = ImmutableShipmentScheduleSegment.builder()
+				.productIds(ProductId.toRepoIds(pickingBOMProductIds))
+				.anyBPartner()
+				.locatorIds(segment.getLocatorIds())
+				.build();
+
+		return Stream.of(segment, pickingBOMsSegment);
 	}
 
 }
