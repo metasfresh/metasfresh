@@ -73,6 +73,9 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 	public static final String WINDOW_ID_STRING = "orderProductsProposal";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
+	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
+	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final BPartnerProductStatsService bpartnerProductStatsService;
 	private final CampaignPriceService campaignPriceService;
 
@@ -117,12 +120,13 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 	@Override
 	protected ProductsProposalRowsLoader createRowsLoaderFromRecord(@NonNull final TableRecordReference recordRef)
 	{
-		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
-		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
-
 		recordRef.assertTableName(I_C_Order.Table_Name);
 		final OrderId orderId = OrderId.ofRepoId(recordRef.getRecord_ID());
+		return createRowsLoaderFromOrderId(orderId);
+	}
 
+	private ProductsProposalRowsLoader createRowsLoaderFromOrderId(@NonNull final OrderId orderId)
+	{
 		final I_C_Order orderRecord = ordersRepo.getById(orderId);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID());
 		final SOTrx soTrx = SOTrx.ofBoolean(orderRecord.isSOTrx());
@@ -136,6 +140,7 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 		return ProductsProposalRowsLoader.builder()
 				.bpartnerProductStatsService(bpartnerProductStatsService)
 				.campaignPriceProvider(campaignPriceProvider)
+				//
 				.priceListVersionId(priceListVersionId)
 				.orderId(orderId)
 				.bpartnerId(bpartnerId)
@@ -154,14 +159,11 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 			return CampaignPriceProviders.none();
 		}
 
-		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
-
 		if (!bpartnersRepo.isActionPriceAllowed(bpartnerId))
 		{
 			return CampaignPriceProviders.none();
 		}
 
-		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 		final I_M_PriceList priceList = priceListsRepo.getById(priceListId);
 		final PricingSystemId pricingSystemId = priceListsRepo.getPricingSystemId(priceListId);
 		final CountryId countryId = CountryId.ofRepoIdOrNull(priceList.getC_Country_ID());

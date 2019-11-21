@@ -125,9 +125,8 @@ abstract class ProductsProposalViewFactoryTemplate implements IViewFactory, IVie
 	private final ProductsProposalRowsData loadRowsData(final CreateViewRequest request)
 	{
 		final TableRecordReference recordRef = getRecordReference(request);
-		final ProductsProposalRowsLoader loader = createRowsLoaderFromRecord(recordRef);
-
-		return loader.load();
+		return createRowsLoaderFromRecord(recordRef)
+				.load();
 	}
 
 	private final TableRecordReference getRecordReference(final CreateViewRequest request)
