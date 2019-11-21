@@ -12,9 +12,12 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.ITranslatableString;
+import de.metas.order.OrderLineId;
 import de.metas.pricing.ProductPriceId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
+import de.metas.ui.web.order.products_proposal.service.Order;
+import de.metas.ui.web.order.products_proposal.service.OrderLine;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
@@ -116,6 +119,9 @@ public class ProductsProposalRow implements IViewRow
 	@Getter
 	private final ProductProposalPrice price;
 
+	@Getter
+	private OrderLineId existingOrderLineId;
+
 	private final ViewRowFieldNameAndJsonValuesHolder<ProductsProposalRow> values;
 	private static final ImmutableMap<String, ViewEditorRenderMode> EDITOR_RENDER_MODES = ImmutableMap.<String, ViewEditorRenderMode> builder()
 			.put(FIELD_Qty, ViewEditorRenderMode.ALWAYS)
@@ -135,7 +141,8 @@ public class ProductsProposalRow implements IViewRow
 			@Nullable final Integer lastShipmentDays,
 			@Nullable final LocalDate lastSalesInvoiceDate,
 			@Nullable final ProductPriceId productPriceId,
-			@Nullable final ProductPriceId copiedFromProductPriceId)
+			@Nullable final ProductPriceId copiedFromProductPriceId,
+			@Nullable final OrderLineId existingOrderLineId)
 	{
 		this.id = id;
 
@@ -158,6 +165,8 @@ public class ProductsProposalRow implements IViewRow
 
 		this.productPriceId = productPriceId;
 		this.copiedFromProductPriceId = copiedFromProductPriceId;
+
+		this.existingOrderLineId = existingOrderLineId;
 
 		this.values = ViewRowFieldNameAndJsonValuesHolder.builder(ProductsProposalRow.class)
 				.viewEditorRenderModeByFieldName(EDITOR_RENDER_MODES)
@@ -254,5 +263,26 @@ public class ProductsProposalRow implements IViewRow
 		}
 
 		return true;
+	}
+
+	public ProductsProposalRow withExistingOrderLine(@Nullable final Order order)
+	{
+		if (order == null)
+		{
+			return this;
+		}
+
+		final OrderLine existingOrderLine = order.getFirstMatchingOrderLine(getProductId(), getPackingMaterialId()).orElse(null);
+		if (existingOrderLine == null)
+		{
+			return this;
+		}
+
+		return toBuilder()
+				.qty(existingOrderLine.isPackingMaterialWithInfiniteCapacity()
+						? existingOrderLine.getQtyEnteredCU()
+						: BigDecimal.valueOf(existingOrderLine.getQtyEnteredTU()))
+				.existingOrderLineId(existingOrderLine.getOrderLineId())
+				.build();
 	}
 }

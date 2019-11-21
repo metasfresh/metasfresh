@@ -99,7 +99,6 @@ public class BasePLVProductsProposalViewFactory extends ProductsProposalViewFact
 				.productIdsToExclude(parentView.getProductIds())
 				.bpartnerId(parentView.getBpartnerId().orElse(null))
 				.soTrx(parentView.getSoTrx())
-				.orderId(parentView.getOrderId().orElse(null))
 				//
 				.build().load();
 
