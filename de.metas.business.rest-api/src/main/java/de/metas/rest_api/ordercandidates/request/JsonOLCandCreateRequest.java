@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.rest_api.common.JsonDocTypeInfo;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.util.Check;
+import de.pentabyte.springfox.ApiEnum;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Getter;
@@ -51,29 +52,29 @@ import lombok.Value;
 @Value
 public final class JsonOLCandCreateRequest
 {
-	JsonOrganization org;
+	private JsonOrganization org;
 
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
 			value = "This translates to <code>C_OLCand.externalLineId</code>.\n"
 					+ "<code>externalLineId</code> and <code>dataSourceInternalName</code> together need to be unique.")
-	String externalLineId;
+	private String externalLineId;
 
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
 			value = "This translates to <code>C_OLCand.externalHeaderId</code>.\n"
 					+ "<code>externalHeaderId</code> and <code>dataSourceInternalName</code> together denote the unique group of olCands that were added in one bulk.")
-	String externalHeaderId;
+	private String externalHeaderId;
 
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
-			value = "Internal name of the <code>AD_InputDataSource</code> record that tells where this OLCand came from.")
-	String dataSourceInternalName;
+			value = "Identifier for data source.")
+	private String dataSource;
 
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
 			value = "Internal name of the <code>AD_InputDataSource</code> record that tells what shall be happen with this OLCand.")
-	private String dataDestInternalName;
+	private String dataDest;
 
 	@ApiModelProperty( //
 			allowEmptyValue = false, //
@@ -222,8 +223,8 @@ public final class JsonOLCandCreateRequest
 			@JsonProperty("org") final JsonOrganization org,
 			@JsonProperty("externalLineId") final String externalLineId,
 			@JsonProperty("externalHeaderId") final String externalHeaderId,
-			@JsonProperty("dataSourceInternalName") final @NonNull String dataSourceInternalName,
-			@JsonProperty("dataDestInternalName") final @Nullable String dataDestInternalName,
+			@JsonProperty("dataSource") final @NonNull String dataSource,
+			@JsonProperty("dataDest") final @Nullable String dataDest,
 			@JsonProperty("bpartner") final JsonRequestBPartnerLocationAndContact bpartner,
 			@JsonProperty("billBPartner") final JsonRequestBPartnerLocationAndContact billBPartner,
 			@JsonProperty("dropShipBPartner") final JsonRequestBPartnerLocationAndContact dropShipBPartner,
@@ -246,16 +247,16 @@ public final class JsonOLCandCreateRequest
 			@JsonProperty("presetDateInvoiced") final @Nullable LocalDate presetDateInvoiced,
 			@JsonProperty("presetDateShipped") final @Nullable LocalDate presetDateShipped,
 			@JsonProperty("paymentInfo") final @Nullable JsonPaymentInfo paymentInfo,
-			@JsonProperty("OrderDocType") final @Nullable OrderDocType orderDocType,
-			@JsonProperty("PaymentRule") final @Nullable JSONPaymentRule paymentRule,
+			@JsonProperty("orderDocType") final @Nullable OrderDocType orderDocType,
+			@JsonProperty("paymentRule") final @Nullable JSONPaymentRule paymentRule,
 			@JsonProperty("salesPartnerCode") final @Nullable String salesPartnerCode,
 			@JsonProperty("shipper") final @Nullable String shipper)
 	{
 		this.org = org;
 		this.externalLineId = externalLineId;
 		this.externalHeaderId = externalHeaderId;
-		this.dataSourceInternalName = dataSourceInternalName;
-		this.dataDestInternalName = dataDestInternalName;
+		this.dataSource = dataSource;
+		this.dataDest = dataDest;
 		this.bpartner = bpartner;
 		this.billBPartner = billBPartner;
 		this.dropShipBPartner = dropShipBPartner;
@@ -297,7 +298,8 @@ public final class JsonOLCandCreateRequest
 		Check.assumeNotNull(product, "product may not be null; this={}", this);
 		Check.assumeNotNull(bpartner, "bpartner may not be null; this={}", this);
 
-		if (!"DEST.de.metas.invoicecandidate".equals(dataDestInternalName)) // TODO extract constant
+
+		if (!"DEST.de.metas.invoicecandidate".equals(dataDest)) // TODO extract constant //TODO fix this
 		{
 			Check.assumeNotNull(dateRequired,
 					"dateRequired may not be null, unless dataDestInternalName={}; this={}",
@@ -372,9 +374,14 @@ public final class JsonOLCandCreateRequest
 				.build();
 	}
 
+
 	public enum OrderDocType
 	{
-		SalesOrder("SalesOrder"), PrepayOrder("PrepayOrder");
+		@ApiEnum("Specifies if the order will be a standard one")
+		SalesOrder("SalesOrder"),
+
+		@ApiEnum("Specifies if the order will be prepaid")
+		PrepayOrder("PrepayOrder");
 
 		@Getter
 		private final String code;

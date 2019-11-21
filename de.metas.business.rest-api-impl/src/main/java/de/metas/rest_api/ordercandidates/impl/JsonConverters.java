@@ -13,19 +13,25 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.impex.InputDataSourceId;
 import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentRule;
 import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
+import de.metas.rest_api.ordercandidates.request.JsonPaymentInfo;
 import de.metas.rest_api.ordercandidates.response.JsonOLCand;
 import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.ordercandidates.response.JsonResponseBPartnerLocationAndContact;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.DocTypeService;
+import de.metas.rest_api.utils.MissingPropertyException;
+import de.metas.rest_api.utils.MissingResourceException;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -64,6 +70,7 @@ class JsonConverters
 	{
 		this.currencyService = currencyService;
 		this.docTypeService = docTypeService;
+
 	}
 
 	public final OLCandCreateRequestBuilder fromJson(
@@ -89,16 +96,45 @@ class JsonConverters
 				? masterdataProvider.getWarehouseIdByValue(request.getWarehouseDestCode())
 				: null;
 
+		final String dataSourceIdentifier = request.getDataSource();
+
+		if (Check.isEmpty(dataSourceIdentifier))
+		{
+			throw new MissingPropertyException("dataSource", request);
+		}
+
+		final InputDataSourceId dataSourceId = masterdataProvider.getDataSourceId(dataSourceIdentifier);
+
+		final String dataDestIdentifier = request.getDataDest();
+
+		if (Check.isEmpty(dataDestIdentifier))
+		{
+			throw new MissingPropertyException("dataDest", request);
+		}
+
+		final InputDataSourceId dataDestId = masterdataProvider.getDataSourceId(dataDestIdentifier);
+
+		final ShipperId shipperId = masterdataProvider.getShipperId(request);
+
+		final BPartnerId salesRepId = masterdataProvider.getSalesRepId(request);
+
+		if (salesRepId == null)
+		{
+			throw MissingResourceException.builder().resourceName("salesPartnerCode").parentResource(request).build();
+		}
+
+		final PaymentRule paymentRule = masterdataProvider.getPaymentRule(request);
+
+
+		JsonPaymentInfo paymentInfo = request.getPaymentInfo();
 		return OLCandCreateRequest.builder()
 				//
 				.orgId(orgId)
 				//
-				.dataSourceInternalName(request.getDataSourceInternalName())
-				.dataDestInternalName(request.getDataDestInternalName())
+				.dataSourceId(dataSourceId)
+				.dataDestId(dataDestId)
 				.externalLineId(request.getExternalLineId())
 				.externalHeaderId(request.getExternalHeaderId())
-				//
-				.dataDestInternalName(request.getDataDestInternalName())
 				//
 				.bpartner(masterdataProvider.getCreateBPartnerInfo(request.getBpartner(), orgId))
 				.billBPartner(masterdataProvider.getCreateBPartnerInfo(request.getBillBPartner(), orgId))
@@ -110,7 +146,8 @@ class JsonConverters
 				.dateOrdered(request.getDateOrdered())
 				.dateRequired(request.getDateRequired())
 				//
-				.docTypeInvoiceId(docTypeService.getDocTypeId(request.getInvoiceDocType(), orgId))
+				.docTypeInvoiceId(docTypeService.getInvoiceDocTypeId(request.getInvoiceDocType(), orgId))
+				.docTypeOrderId(docTypeService.getOrderDocTypeId(request.getOrderDocType(), orgId))
 				.presetDateInvoiced(request.getPresetDateInvoiced())
 				//
 				.presetDateShipped(request.getPresetDateShipped())
@@ -129,6 +166,12 @@ class JsonConverters
 				.discount(Percent.ofNullable(request.getDiscount()))
 				//
 				.warehouseDestId(warehouseDestId)
+
+				.shipperId(shipperId)
+
+				.paymentRule(paymentRule)
+
+				.salesRepId(salesRepId)
 		//
 		;
 	}

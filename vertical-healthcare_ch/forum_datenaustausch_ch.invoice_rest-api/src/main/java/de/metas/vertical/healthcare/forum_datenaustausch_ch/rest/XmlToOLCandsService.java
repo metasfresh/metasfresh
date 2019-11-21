@@ -247,8 +247,8 @@ public class XmlToOLCandsService
 	{
 		final JsonOLCandCreateRequestBuilder requestBuilder = JsonOLCandCreateRequest
 				.builder()
-				.dataSourceInternalName(RestApiConstants.INPUT_SOURCE_INTERAL_NAME)
-				.dataDestInternalName(InvoiceCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME);
+				.dataSource("int-" +RestApiConstants.INPUT_SOURCE_INTERAL_NAME)
+				.dataDest("int-" +InvoiceCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME);
 
 		final String invoiceRecipientEAN = extractRecipientEAN(xmlInvoice);
 		final HighLevelContext context = HighLevelContext.builder()

@@ -352,7 +352,7 @@ public class CreateInvoiceCandidatesService
 			return;
 		}
 
-		candidate.invoiceDocTypeId(docTypeService.getDocTypeId(docType, orgId));
+		candidate.invoiceDocTypeId(docTypeService.getInvoiceDocTypeId(docType, orgId));
 	}
 
 	private void syncBPartnerToCandidate(

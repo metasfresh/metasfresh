@@ -1,10 +1,16 @@
 package de.metas.rest_api.ordercandidates.impl;
 
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_Bill_BPartner_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_Bill_Location_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_C_BPartner_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_C_BPartner_Location_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_C_OLCand_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_DropShip_BPartner_ID;
+import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_DropShip_Location_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
-import static de.metas.ordercandidate.model.I_C_OLCand.*;
 
 import java.math.BigDecimal;
 import java.net.URI;
@@ -311,8 +317,8 @@ public class OrderCandidatesRestControllerImplTest
 	public void testDateOrdered(@Nullable final LocalDate dateOrdered)
 	{
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
-				.dataSourceInternalName(DATA_SOURCE_INTERNALNAME)
-				.dataDestInternalName(DATA_DEST_INVOICECANDIDATE)
+				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
+				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 				.dateOrdered(dateOrdered)
 				.dateRequired(LocalDate.of(2019, Month.SEPTEMBER, 5))
 				.qty(new BigDecimal("66"))
@@ -348,8 +354,8 @@ public class OrderCandidatesRestControllerImplTest
 	public void error_NoBPartnerFound()
 	{
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
-				.dataSourceInternalName(DATA_SOURCE_INTERNALNAME)
-				.dataDestInternalName(DATA_DEST_INVOICECANDIDATE)
+				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
+				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 				.dateRequired(LocalDate.of(2019, Month.SEPTEMBER, 5))
 				.qty(new BigDecimal("66"))
 				.externalHeaderId("externalHeaderId")
@@ -406,8 +412,8 @@ public class OrderCandidatesRestControllerImplTest
 		startInterceptors();
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
-				.dataSourceInternalName(DATA_SOURCE_INTERNALNAME)
-				.dataDestInternalName(DATA_DEST_INVOICECANDIDATE)
+				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
+				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 				.dateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 10))
 				.dateRequired(LocalDate.of(2019, Month.SEPTEMBER, 15))
 				.qty(new BigDecimal("66"))
@@ -461,8 +467,8 @@ public class OrderCandidatesRestControllerImplTest
 		//
 		//
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
-				.dataSourceInternalName(DATA_SOURCE_INTERNALNAME)
-				.dataDestInternalName(DATA_DEST_INVOICECANDIDATE)
+				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
+				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 				.dateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 10))
 				.dateRequired(LocalDate.of(2019, Month.SEPTEMBER, 15))
 				.qty(new BigDecimal("66"))
@@ -572,8 +578,8 @@ public class OrderCandidatesRestControllerImplTest
 		startInterceptors();
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
-				.dataSourceInternalName(DATA_SOURCE_INTERNALNAME)
-				.dataDestInternalName(DATA_DEST_INVOICECANDIDATE)
+				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
+				.dataDest("int-" +DATA_DEST_INVOICECANDIDATE)
 				.dateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 10))
 				.dateRequired(LocalDate.of(2019, Month.SEPTEMBER, 15))
 				.qty(new BigDecimal("66"))

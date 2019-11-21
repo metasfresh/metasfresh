@@ -1,6 +1,7 @@
 package de.metas.rest_api.ordercandidates.request;
 
 import de.pentabyte.springfox.ApiEnum;
+import lombok.Getter;
 
 /*
  * #%L
@@ -28,9 +29,18 @@ public enum JSONPaymentRule
 {
 
 	@ApiEnum("Specifies that the order will have paymentRule = Paypal")
-	Paypal,
+	Paypal("L"),
 
 	@ApiEnum("Specifies that the order will have paymentRule = On Credit")
-	OnCredit;
+	OnCredit("P");
+
+	@Getter
+	private final String code;
+
+	JSONPaymentRule(final String code)
+	{
+		this.code = code;
+	}
+
 
 }
