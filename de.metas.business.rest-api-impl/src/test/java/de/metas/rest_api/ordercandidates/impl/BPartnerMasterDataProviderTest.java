@@ -175,7 +175,7 @@ public class BPartnerMasterDataProviderTest
 		saveRecord(bpartnerRecord);
 
 		final I_C_BPartner_Location bpLocationRecord = newInstance(I_C_BPartner_Location.class);
-		bpLocationRecord.setC_BPartner(bpartnerRecord);
+		bpLocationRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
 		bpLocationRecord.setGLN("jsonBPartnerLocation.GLN");
 		saveRecord(bpLocationRecord);
 
@@ -212,7 +212,7 @@ public class BPartnerMasterDataProviderTest
 		saveRecord(bpartnerRecord);
 
 		final I_C_BPartner_Location bpLocationRecord = newInstance(I_C_BPartner_Location.class);
-		bpLocationRecord.setC_BPartner(bpartnerRecord);
+		bpLocationRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
 		bpLocationRecord.setGLN("jsonBPartnerLocation.GLN");
 		saveRecord(bpLocationRecord);
 
@@ -245,7 +245,7 @@ public class BPartnerMasterDataProviderTest
 		saveRecord(locationRecord);
 
 		final I_C_BPartner_Location bpLocationRecord = newInstance(I_C_BPartner_Location.class);
-		bpLocationRecord.setC_BPartner(bpartnerRecord);
+		bpLocationRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
 		bpLocationRecord.setC_Location(locationRecord);
 		bpLocationRecord.setGLN("jsonBPartnerLocation.GLN");
 		saveRecord(bpLocationRecord);
@@ -323,7 +323,7 @@ public class BPartnerMasterDataProviderTest
 		saveRecord(locationRecord);
 
 		final I_C_BPartner_Location bPartnerLocationRecord = newInstance(I_C_BPartner_Location.class);
-		bPartnerLocationRecord.setC_BPartner(bPartnerRecord);
+		bPartnerLocationRecord.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
 		bPartnerLocationRecord.setC_Location(locationRecord);
 		bPartnerLocationRecord.setExternalId("ExternalId");
 		bPartnerLocationRecord.setGLN("GLN");

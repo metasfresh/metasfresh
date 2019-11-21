@@ -129,7 +129,7 @@ public class SalesInvoicePaymentStatusRepository
 				.createQueryBuilder(I_C_BPartner_Location.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner_Location.COLUMN_GLN, locatorGln)
-				.andCollect(I_C_BPartner_Location.COLUMN_C_BPartner_ID)
+				.andCollect(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, I_C_BPartner.class)
 				.addCompareFilter(I_C_BPartner.COLUMNNAME_AD_OrgBP_ID, Operator.GREATER, 0)
 				.addOnlyActiveRecordsFilter()
 				.create()
