@@ -220,7 +220,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docOutboundLogRecord.setDateLastPrint(null);
 
 		final DocStatus docStatus = docActionBL.getDocStatusOrNull(reference);
-		docOutboundLogRecord.setDocStatus(docStatus.getCode());
+		docOutboundLogRecord.setDocStatus(DocStatus.toCodeOrNull(docStatus));
 
 		docOutboundLogRecord.setDocumentNo(archiveRecord.getName());
 

@@ -1,5 +1,6 @@
 package de.metas.order.impl;
 
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
 import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
 
 import java.math.BigDecimal;
@@ -297,11 +298,8 @@ final class OrderLinePriceCalculator
 
 		final boolean isSOTrx = order.isSOTrx();
 		final int productId = orderLine.getM_Product_ID();
-		int bpartnerId = orderLine.getC_BPartner_ID();
-		if (bpartnerId <= 0)
-		{
-			bpartnerId = order.getC_BPartner_ID();
-		}
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(firstGreaterThanZero(orderLine.getC_BPartner_ID(), order.getC_BPartner_ID()));
 
 		final LocalDate date = OrderLineBL.getPriceDate(orderLine, order);
 
@@ -318,7 +316,7 @@ final class OrderLinePriceCalculator
 
 		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(
 				ProductId.ofRepoId(productId),
-				BPartnerId.ofRepoId(bpartnerId),
+				bpartnerId,
 				qtyInPriceUOM,
 				SOTrx.ofBoolean(isSOTrx));
 		pricingCtx.setPriceDate(date);

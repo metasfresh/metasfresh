@@ -63,7 +63,7 @@ public class DocOutboundUtils
 
 		final TableRecordReference reference = TableRecordReference.ofReferenced(docOutboundLog);
 		final DocStatus docStatus = documentBL.getDocStatusOrNull(reference);
-		docOutboundLogLineRecord.setDocStatus(docStatus.getCode());
+		docOutboundLogLineRecord.setDocStatus(DocStatus.toCodeOrNull(docStatus));
 
 		final int doctypeID = documentBL.getC_DocType_ID(ctx, docOutboundLog.getAD_Table_ID(), docOutboundLog.getRecord_ID());
 		docOutboundLogLineRecord.setC_DocType_ID(doctypeID);

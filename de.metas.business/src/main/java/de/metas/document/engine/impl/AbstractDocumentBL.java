@@ -307,7 +307,11 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	@Override
 	public DocStatus getDocStatusOrNull(final Object documentObj)
 	{
-		final IDocument doc = getDocument(documentObj);
+		final IDocument doc = getDocumentOrNull(documentObj);
+		if (doc == null)
+		{
+			return null;
+		}
 		final DocStatus docStatus = DocStatus.ofNullableCode(doc.getDocStatus());
 		return docStatus;
 	}
