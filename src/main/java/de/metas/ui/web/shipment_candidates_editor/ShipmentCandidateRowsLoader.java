@@ -17,10 +17,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
@@ -113,7 +113,9 @@ final class ShipmentCandidateRowsLoader
 
 	public ShipmentCandidateRows load()
 	{
-		final Collection<I_M_ShipmentSchedule> records = shipmentScheduleBL.getByIdsOutOfTrx(shipmentScheduleIds).values();
+		final Collection<I_M_ShipmentSchedule> records = shipmentScheduleBL
+				.getByIdsOutOfTrx(shipmentScheduleIds, I_M_ShipmentSchedule.class)
+				.values();
 
 		final ImmutableSet<OrderAndLineId> salesOrderAndLineIds = extractSalesOrderAndLineId(records);
 		this.salesOrderLines = ordersRepo.getOrderLinesByIds(salesOrderAndLineIds);
@@ -161,6 +163,7 @@ final class ShipmentCandidateRowsLoader
 				.customer(extractCustomer(record))
 				.warehouse(extractWarehouse(record))
 				.product(extractProduct(record))
+				.packingDescription(record.getPackDescription())
 				.preparationDate(extractPreparationTime(record))
 				//
 				.qtyOrdered(qtyOrdered)
