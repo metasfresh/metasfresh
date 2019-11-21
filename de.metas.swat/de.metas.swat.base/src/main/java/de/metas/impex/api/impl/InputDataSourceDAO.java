@@ -1,5 +1,7 @@
 package de.metas.impex.api.impl;
 
+import java.util.Optional;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -33,16 +35,18 @@ import org.compiere.util.Env;
 
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.api.InputDataSourceCreateRequest;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 
 public class InputDataSourceDAO implements IInputDataSourceDAO
 {
 	@Override
-	public int retrieveInputDataSourceId(final String internalName)
+	public int retrieveInputDataSourceIdByInternalName(final String internalName)
 	{
 		return retrieveInputDataSource(Env.getCtx(), internalName, /* throwEx */true, ITrx.TRXNAME_None)
 				.getAD_InputDataSource_ID();
@@ -99,6 +103,32 @@ public class InputDataSourceDAO implements IInputDataSourceDAO
 			newInputDataSource.setName(request.getName());
 			InterfaceWrapperHelper.save(newInputDataSource);
 		}
+	}
+
+	@Override
+	public Optional<InputDataSourceId> retrieveInputDataSourceIdByExternalId(final ExternalId externalId)
+	{
+		final InputDataSourceId inputDataSourceId = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_InputDataSource.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_InputDataSource.COLUMNNAME_ExternalId, externalId.getValue())
+				.create()
+				.firstIdOnly(InputDataSourceId::ofRepoIdOrNull);
+
+		return Optional.of(inputDataSourceId);
+	}
+
+	@Override
+	public Optional<InputDataSourceId> retrieveInputDataSourceIdByValue(final String value)
+	{
+		final InputDataSourceId inputDataSourceId = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_InputDataSource.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_InputDataSource.COLUMNNAME_Value, value)
+				.create()
+				.firstIdOnly(InputDataSourceId::ofRepoIdOrNull);
+
+		return Optional.of(inputDataSourceId);
 	}
 
 }
