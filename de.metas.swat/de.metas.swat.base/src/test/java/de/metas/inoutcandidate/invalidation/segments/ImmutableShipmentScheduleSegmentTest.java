@@ -35,8 +35,8 @@ public class ImmutableShipmentScheduleSegmentTest
 	{
 		final ImmutableShipmentScheduleSegment segment = ImmutableShipmentScheduleSegment.builder().build();
 		assertThat(segment.getAttributes()).isEmpty();
-		assertThat(segment.getC_BPartner_IDs()).isEmpty();
-		assertThat(segment.getM_Locator_IDs()).isEmpty();
-		assertThat(segment.getM_Product_IDs()).isEmpty();
+		assertThat(segment.getBpartnerIds()).isEmpty();
+		assertThat(segment.getLocatorIds()).isEmpty();
+		assertThat(segment.getProductIds()).isEmpty();
 	}
 }

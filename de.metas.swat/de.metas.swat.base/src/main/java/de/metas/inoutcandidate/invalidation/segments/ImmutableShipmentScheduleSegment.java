@@ -1,8 +1,10 @@
 package de.metas.inoutcandidate.invalidation.segments;
 
+import java.util.Collections;
 import java.util.Set;
 
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
@@ -12,54 +14,66 @@ import lombok.Value;
  * @author tsa
  *
  */
-@Builder
 @Value
 public class ImmutableShipmentScheduleSegment implements IShipmentScheduleSegment
 {
-	/**
-	 * Never {@code null}. Empty collection means "not constrained on any products".
-	 */
-	@Singular
-	private final Set<Integer> M_Product_IDs;
+	public static ImmutableShipmentScheduleSegment copyOf(@NonNull final IShipmentScheduleSegment from)
+	{
+		return from instanceof ImmutableShipmentScheduleSegment
+				? (ImmutableShipmentScheduleSegment)from
+				: new ImmutableShipmentScheduleSegment(from);
+	}
 
-	/**
-	 * Never {@code null}. Empty collection means "not constrained on any bPartners".
-	 */
-	@Singular
-	private final Set<Integer> C_BPartner_IDs;
+	Set<Integer> productIds;
+	Set<Integer> bpartnerIds;
+	Set<Integer> billBPartnerIds;
+	Set<Integer> locatorIds;
+	Set<ShipmentScheduleAttributeSegment> attributes;
 
-	@Singular
-	private final Set<Integer> Bill_BPartner_IDs;
+	@Builder(toBuilder = true)
+	private ImmutableShipmentScheduleSegment(
+			@NonNull @Singular final Set<Integer> productIds,
+			@NonNull @Singular final Set<Integer> bpartnerIds,
+			@NonNull @Singular final Set<Integer> billBPartnerIds,
+			@NonNull @Singular final Set<Integer> locatorIds,
+			@NonNull @Singular final Set<ShipmentScheduleAttributeSegment> attributes)
+	{
+		this.productIds = Collections.unmodifiableSet(productIds);
+		this.bpartnerIds = Collections.unmodifiableSet(bpartnerIds);
+		this.billBPartnerIds = Collections.unmodifiableSet(billBPartnerIds);
+		this.locatorIds = Collections.unmodifiableSet(locatorIds);
+		this.attributes = Collections.unmodifiableSet(attributes);
+	}
 
-	/**
-	 * Never {@code null}. Empty collection means "not constrained on any locators".
-	 */
-	@Singular
-	private final Set<Integer> M_Locator_IDs;
-
-	/**
-	 * Never {@code null}. Empty collection means "not constrained on any attributes".
-	 */
-	@Singular
-	private final Set<ShipmentScheduleAttributeSegment> attributeSegments;
+	private ImmutableShipmentScheduleSegment(final IShipmentScheduleSegment from)
+	{
+		this.productIds = Collections.unmodifiableSet(from.getProductIds());
+		this.bpartnerIds = Collections.unmodifiableSet(from.getBpartnerIds());
+		this.billBPartnerIds = Collections.unmodifiableSet(from.getBillBPartnerIds());
+		this.locatorIds = Collections.unmodifiableSet(from.getLocatorIds());
+		this.attributes = Collections.unmodifiableSet(from.getAttributes());
+	}
 
 	public static class ImmutableShipmentScheduleSegmentBuilder
 	{
-		public ImmutableShipmentScheduleSegmentBuilder anyC_BPartner_ID()
+		public ImmutableShipmentScheduleSegmentBuilder anyBPartner()
 		{
-			C_BPartner_ID(ANY);
+			bpartnerIds.clear();
+			bpartnerId(ANY);
 			return this;
 		}
 
-		public ImmutableShipmentScheduleSegmentBuilder anyM_Product_ID()
+		public ImmutableShipmentScheduleSegmentBuilder anyProduct()
 		{
-			M_Product_ID(ANY);
+			productIds.clear();
+			productId(ANY);
 			return this;
 		}
 
-		public ImmutableShipmentScheduleSegmentBuilder anyM_Locator_ID()
+		public ImmutableShipmentScheduleSegmentBuilder anyLocator()
 		{
-			M_Locator_ID(ANY);
+			locatorIds.clear();
+			locatorId(ANY);
 			return this;
 		}
 	}

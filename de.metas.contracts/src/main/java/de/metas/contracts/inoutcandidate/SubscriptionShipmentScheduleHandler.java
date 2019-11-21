@@ -176,9 +176,9 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		final List<LocatorId> locatorIds = warehouseDAO.getLocatorIds(warehouseId);
 
 		final ImmutableShipmentScheduleSegment segment = ImmutableShipmentScheduleSegment.builder()
-				.M_Product_ID(subscriptionLine.getC_Flatrate_Term().getM_Product_ID())
-				.C_BPartner_ID(subscriptionLine.getDropShip_BPartner_ID())
-				.M_Locator_IDs(LocatorId.toRepoIds(locatorIds))
+				.productId(subscriptionLine.getC_Flatrate_Term().getM_Product_ID())
+				.bpartnerId(subscriptionLine.getDropShip_BPartner_ID())
+				.locatorIds(LocatorId.toRepoIds(locatorIds))
 				.build();
 		return segment;
 	}

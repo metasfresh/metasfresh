@@ -52,19 +52,19 @@ public class HUShipmentScheduleInvalidateBL extends ShipmentScheduleInvalidateBL
 	{
 		final ShipmentScheduleSegmentBuilder storageSegmentBuilder = ShipmentScheduleSegments.builder();
 		storageSegmentBuilder
-				.addM_Product_ID(inoutLine.getM_Product_ID())
-				.addM_Locator_ID(inoutLine.getM_Locator_ID())
-				.addM_AttributeSetInstance_ID(inoutLine.getM_AttributeSetInstance_ID());
+				.productId(inoutLine.getM_Product_ID())
+				.locatorId(inoutLine.getM_Locator_ID())
+				.attributeSetInstanceId(inoutLine.getM_AttributeSetInstance_ID());
 
 		final List<I_M_HU> husForInOutLine = huAssignmentDAO.retrieveTopLevelHUsForModel(inoutLine);
 		if (husForInOutLine.isEmpty())
 		{
-			storageSegmentBuilder.addC_BPartner_ID(0); // don't restrict to any partner
+			storageSegmentBuilder.bpartnerId(0); // don't restrict to any partner
 		}
 
 		for (final I_M_HU hu : husForInOutLine)
 		{
-			storageSegmentBuilder.addC_BPartner_ID(hu.getC_BPartner_ID());
+			storageSegmentBuilder.bpartnerId(hu.getC_BPartner_ID());
 		}
 
 		final IShipmentScheduleSegment storageSegment = storageSegmentBuilder.build();
@@ -87,21 +87,21 @@ public class HUShipmentScheduleInvalidateBL extends ShipmentScheduleInvalidateBL
 
 				// note that the C_BPartner_ID might still be 0. If any one of several IDs is 0, then there won't be a restriction.
 				final I_M_HU tu = pickedNotDeliveredRecord.getM_TU_HU();
-				storageSegmentBuilder.addC_BPartner_ID(tu.getC_BPartner_ID());
+				storageSegmentBuilder.bpartnerId(tu.getC_BPartner_ID());
 			}
 		}
 
 		if (!maybeCanRestrictToCertainPartners)
 		{
 			// we are sure that we didn't find any C_BPartner_ID. Add one 0 explicitly (required by the logic in ShipmentScheduleDAO).
-			storageSegmentBuilder.addC_BPartner_ID(0); //
+			storageSegmentBuilder.bpartnerId(0); //
 		}
 
 		// finalize the builder and create the segment
 		final IShipmentScheduleSegment storageSegment = storageSegmentBuilder
-				.addM_Product_ID(schedule.getM_Product_ID())
-				.addWarehouseId(shipmentScheduleEffectiveBL.getWarehouseId(schedule))
-				.addM_AttributeSetInstance_ID(schedule.getM_AttributeSetInstance_ID())
+				.productId(schedule.getM_Product_ID())
+				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(schedule))
+				.attributeSetInstanceId(schedule.getM_AttributeSetInstance_ID())
 				.build();
 		return storageSegment;
 	}

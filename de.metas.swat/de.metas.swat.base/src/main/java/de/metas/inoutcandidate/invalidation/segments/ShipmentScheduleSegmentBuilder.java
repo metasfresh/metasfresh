@@ -49,32 +49,32 @@ public final class ShipmentScheduleSegmentBuilder
 	public ImmutableShipmentScheduleSegment build()
 	{
 		return ImmutableShipmentScheduleSegment.builder()
-				.M_Product_IDs(productIds)
-				.M_Locator_IDs(locatorIds)
-				.C_BPartner_IDs(bpartnerIds)
-				.attributeSegments(attributeSegments)
+				.productIds(productIds)
+				.locatorIds(locatorIds)
+				.bpartnerIds(bpartnerIds)
+				.attributes(attributeSegments)
 				.build();
 	}
 
-	public ShipmentScheduleSegmentBuilder addM_Product_ID(final int productId)
+	public ShipmentScheduleSegmentBuilder productId(final int productId)
 	{
 		productIds.add(productId);
 		return this;
 	}
 
-	public ShipmentScheduleSegmentBuilder addC_BPartner_ID(final int bpartnerId)
+	public ShipmentScheduleSegmentBuilder bpartnerId(final int bpartnerId)
 	{
 		bpartnerIds.add(bpartnerId);
 		return this;
 	}
 
-	public ShipmentScheduleSegmentBuilder addM_Locator_ID(final int locatorId)
+	public ShipmentScheduleSegmentBuilder locatorId(final int locatorId)
 	{
 		locatorIds.add(locatorId);
 		return this;
 	}
 
-	public ShipmentScheduleSegmentBuilder addM_Locator(final I_M_Locator locator)
+	public ShipmentScheduleSegmentBuilder locator(final I_M_Locator locator)
 	{
 		if (locator == null)
 		{
@@ -84,31 +84,36 @@ public final class ShipmentScheduleSegmentBuilder
 		return this;
 	}
 
-	public ShipmentScheduleSegmentBuilder addWarehouseId(@NonNull final WarehouseId warehouseId)
+	public ShipmentScheduleSegmentBuilder warehouseId(@NonNull final WarehouseId warehouseId)
 	{
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 		final List<LocatorId> locatorIds = warehouseDAO.getLocatorIds(warehouseId);
 		for (final LocatorId locatorId : locatorIds)
 		{
-			addM_Locator_ID(locatorId.getRepoId());
+			locatorId(locatorId.getRepoId());
 		}
 
 		return this;
 	}
 
-	public ShipmentScheduleSegmentBuilder addWarehouseIdIfNotNull(WarehouseId warehouseId)
+	public ShipmentScheduleSegmentBuilder warehouseIdIfNotNull(WarehouseId warehouseId)
 	{
 		if (warehouseId == null)
 		{
 			return this;
 		}
-		return addWarehouseId(warehouseId);
+		return warehouseId(warehouseId);
 	}
 
-	public ShipmentScheduleSegmentBuilder addM_AttributeSetInstance_ID(final int M_AttributeSetInstance_ID)
+	public ShipmentScheduleSegmentBuilder attributeSetInstanceId(final int M_AttributeSetInstance_ID)
 	{
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(M_AttributeSetInstance_ID);
+		return attributeSetInstanceId(asiId);
+	}
+
+	private ShipmentScheduleSegmentBuilder attributeSetInstanceId(@NonNull final AttributeSetInstanceId asiId)
+	{
 		final ShipmentScheduleAttributeSegment attributeSegment = ShipmentScheduleAttributeSegment.ofAttributeSetInstanceId(asiId);
 		attributeSegments.add(attributeSegment);
 		return this;

@@ -34,11 +34,13 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
+import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleAttributeSegment;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -104,7 +106,7 @@ public class ShipmentScheduleSegmentFromHU implements IShipmentScheduleSegment
 	}
 
 	@Override
-	public Set<Integer> getM_Product_IDs()
+	public Set<Integer> getProductIds()
 	{
 		if (productIdsRO != null)
 		{
@@ -125,13 +127,13 @@ public class ShipmentScheduleSegmentFromHU implements IShipmentScheduleSegment
 	}
 
 	@Override
-	public Set<Integer> getC_BPartner_IDs()
+	public Set<Integer> getBpartnerIds()
 	{
 		return bpartnersIdsRO;
 	}
 
 	@Override
-	public Set<Integer> getM_Locator_IDs()
+	public Set<Integer> getLocatorIds()
 	{
 		return locatorsIdsRO;
 	}
@@ -139,5 +141,17 @@ public class ShipmentScheduleSegmentFromHU implements IShipmentScheduleSegment
 	public boolean hasQtyOnHandChanges()
 	{
 		return hasQtyOnHandChanges;
+	}
+
+	@Override
+	public Set<Integer> getBillBPartnerIds()
+	{
+		return ImmutableSet.of();
+	}
+
+	@Override
+	public Set<ShipmentScheduleAttributeSegment> getAttributes()
+	{
+		return ImmutableSet.of();
 	}
 }

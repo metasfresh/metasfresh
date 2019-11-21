@@ -78,10 +78,10 @@ public class M_Shipment_Constraint
 	private static IShipmentScheduleSegment createStorageSegment(final I_M_Shipment_Constraint constraint)
 	{
 		return ImmutableShipmentScheduleSegment.builder()
-				.anyC_BPartner_ID()
-				.Bill_BPartner_ID(constraint.getBill_BPartner_ID())
-				.anyM_Product_ID()
-				.anyM_Locator_ID()
+				.anyBPartner()
+				.billBPartnerId(constraint.getBill_BPartner_ID())
+				.anyProduct()
+				.anyLocator()
 				.build();
 	}
 }

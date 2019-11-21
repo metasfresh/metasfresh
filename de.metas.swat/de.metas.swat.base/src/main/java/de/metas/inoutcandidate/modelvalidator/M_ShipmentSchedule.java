@@ -193,11 +193,11 @@ public class M_ShipmentSchedule
 		final BPartnerId newBPartnerId = shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule);
 
 		final IShipmentScheduleSegment storageSegment = ShipmentScheduleSegments.builder()
-				.addM_Product_ID(shipmentSchedule.getM_Product_ID())
-				.addC_BPartner_ID(BPartnerId.toRepoId(newBPartnerId))
-				.addC_BPartner_ID(BPartnerId.toRepoId(oldBpartnerId))
-				.addM_AttributeSetInstance_ID(shipmentSchedule.getM_AttributeSetInstance_ID())
-				.addWarehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
+				.productId(shipmentSchedule.getM_Product_ID())
+				.bpartnerId(BPartnerId.toRepoId(newBPartnerId))
+				.bpartnerId(BPartnerId.toRepoId(oldBpartnerId))
+				.attributeSetInstanceId(shipmentSchedule.getM_AttributeSetInstance_ID())
+				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
 				.build();
 
 		final IShipmentScheduleInvalidateBL invalidSchedulesInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);

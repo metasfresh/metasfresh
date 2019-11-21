@@ -177,11 +177,11 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	protected IShipmentScheduleSegment createSegmentForInOutLine(final int bPartnerId, @NonNull final I_M_InOutLine inoutLine)
 	{
 		return ShipmentScheduleSegments.builder()
-				.addC_BPartner_ID(0) // we can't restrict the segment to the inOut-partner, because we don't know if the qty could in theory be reallocated to a *different* partner.
+				.bpartnerId(0) // we can't restrict the segment to the inOut-partner, because we don't know if the qty could in theory be reallocated to a *different* partner.
 				// So we have to notify *all* partners' segments.
-				.addM_Product_ID(inoutLine.getM_Product_ID())
-				.addM_Locator_ID(inoutLine.getM_Locator_ID())
-				.addM_AttributeSetInstance_ID(inoutLine.getM_AttributeSetInstance_ID())
+				.productId(inoutLine.getM_Product_ID())
+				.locatorId(inoutLine.getM_Locator_ID())
+				.attributeSetInstanceId(inoutLine.getM_AttributeSetInstance_ID())
 				.build();
 	}
 
@@ -211,10 +211,10 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		final int bpartnerId = 0;
 
 		return ShipmentScheduleSegments.builder()
-				.addC_BPartner_ID(bpartnerId)
-				.addM_Product_ID(schedule.getM_Product_ID())
-				.addWarehouseId(shipmentScheduleEffectiveBL.getWarehouseId(schedule))
-				.addM_AttributeSetInstance_ID(schedule.getM_AttributeSetInstance_ID())
+				.bpartnerId(bpartnerId)
+				.productId(schedule.getM_Product_ID())
+				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(schedule))
+				.attributeSetInstanceId(schedule.getM_AttributeSetInstance_ID())
 				.build();
 	}
 
@@ -226,10 +226,10 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		// So we have to notify *all* partners' segments.
 		final int bpartnerId = 0;
 		final IShipmentScheduleSegment segment = ShipmentScheduleSegments.builder()
-				.addC_BPartner_ID(bpartnerId)
-				.addM_Product_ID(orderLine.getM_Product_ID())
-				.addWarehouseIdIfNotNull(WarehouseId.ofRepoIdOrNull(orderLine.getM_Warehouse_ID()))
-				.addM_AttributeSetInstance_ID(orderLine.getM_AttributeSetInstance_ID())
+				.bpartnerId(bpartnerId)
+				.productId(orderLine.getM_Product_ID())
+				.warehouseIdIfNotNull(WarehouseId.ofRepoIdOrNull(orderLine.getM_Warehouse_ID()))
+				.attributeSetInstanceId(orderLine.getM_AttributeSetInstance_ID())
 				.build();
 		notifySegmentChanged(segment);
 	}
@@ -299,14 +299,30 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 
 	private Stream<IShipmentScheduleSegment> explodeByPickingBOMs(final IShipmentScheduleSegment segment)
 	{
+		if (segment.isInvalid())
+		{
+			return Stream.empty();
+		}
+
+		if (segment.isAnyProduct())
+		{
+			return Stream.of(segment);
+		}
+
 		// TODO
 		return Stream.of(segment);
-//		final PickingBOMsReversedIndex pickingBOMsReversedIndex = pickingBOMService.getPickingBOMsReversedIndex();
 //		
 //		final Set<IShipmentScheduleSegment> result = new HashSet<>();
 //		result.add(segment);
-//		segment.
-//		pickingBOMsReversedIndex.getBOMProductIdsByComponentId(segment.get)
+//
+//		final PickingBOMsReversedIndex pickingBOMsReversedIndex = pickingBOMService.getPickingBOMsReversedIndex();
+//		for(final Integer productRepoId : segment.getProductIds())
+//		{
+//			final ProductId productId = ProductId.ofRepoId(productRepoId);
+//			
+////			return ImmutableShipmentScheduleSegment.builder()
+////					.pro
+//		}
 	}
 
 }

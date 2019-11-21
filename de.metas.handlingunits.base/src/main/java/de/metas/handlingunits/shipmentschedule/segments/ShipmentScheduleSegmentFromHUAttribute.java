@@ -105,27 +105,27 @@ public class ShipmentScheduleSegmentFromHUAttribute implements IShipmentSchedule
 			return;
 		}
 
-		productIds = huSegment.getM_Product_IDs();
-		bpartnerIds = huSegment.getC_BPartner_IDs();
-		locatorIds = huSegment.getM_Locator_IDs();
+		productIds = huSegment.getProductIds();
+		bpartnerIds = huSegment.getBpartnerIds();
+		locatorIds = huSegment.getLocatorIds();
 	}
 
 	@Override
-	public Set<Integer> getM_Product_IDs()
+	public Set<Integer> getProductIds()
 	{
 		loadIfNeeded();
 		return productIds;
 	}
 
 	@Override
-	public Set<Integer> getC_BPartner_IDs()
+	public Set<Integer> getBpartnerIds()
 	{
 		loadIfNeeded();
 		return bpartnerIds;
 	}
 
 	@Override
-	public Set<Integer> getM_Locator_IDs()
+	public Set<Integer> getLocatorIds()
 	{
 		loadIfNeeded();
 		return locatorIds;
@@ -138,4 +138,9 @@ public class ShipmentScheduleSegmentFromHUAttribute implements IShipmentSchedule
 		return attributeSegments;
 	}
 
+	@Override
+	public Set<Integer> getBillBPartnerIds()
+	{
+		return ImmutableSet.of();
+	}
 }

@@ -24,8 +24,6 @@ package de.metas.inoutcandidate.invalidation.segments;
 
 import java.util.Set;
 
-import com.google.common.collect.ImmutableSet;
-
 import de.metas.storage.IStorageQuery;
 import de.metas.storage.IStorageRecord;
 
@@ -45,20 +43,66 @@ public interface IShipmentScheduleSegment
 {
 	Integer ANY = null;
 
-	Set<Integer> getM_Product_IDs();
-
-	Set<Integer> getM_Locator_IDs();
-
-	Set<Integer> getC_BPartner_IDs();
-
-	default Set<Integer> getBill_BPartner_IDs()
+	default boolean isInvalid()
 	{
-		return ImmutableSet.of();
+		return isNoProducts() || isNoLocators() || isNoBPartners();
 	}
 
-	default Set<ShipmentScheduleAttributeSegment> getAttributes()
+	Set<Integer> getProductIds();
+
+	default boolean isNoProducts()
 	{
-		return ImmutableSet.of();
+		final Set<Integer> productIds = getProductIds();
+		return productIds == null || productIds.isEmpty();
 	}
 
+	default boolean isAnyProduct()
+	{
+		final Set<Integer> productIds = getProductIds();
+		return productIds != null
+				? productIds.contains(0) || productIds.contains(-1) || productIds.contains(ANY)
+				: false;
+	}
+
+	Set<Integer> getBpartnerIds();
+
+	default boolean isNoBPartners()
+	{
+		final Set<Integer> bpartnerIds = getBpartnerIds();
+		return bpartnerIds == null || bpartnerIds.isEmpty();
+	}
+
+	default boolean isAnyBPartner()
+	{
+		final Set<Integer> bpartnerIds = getBpartnerIds();
+		return bpartnerIds != null
+				? bpartnerIds.contains(0) || bpartnerIds.contains(-1) || bpartnerIds.contains(ANY)
+				: false;
+	}
+
+	Set<Integer> getLocatorIds();
+
+	default boolean isNoLocators()
+	{
+		final Set<Integer> locatorIds = getLocatorIds();
+		return locatorIds == null || locatorIds.isEmpty();
+	}
+
+	Set<Integer> getBillBPartnerIds();
+
+	default boolean isAnyBillBPartner()
+	{
+		final Set<Integer> billBPartnerIds = getBillBPartnerIds();
+		return billBPartnerIds.isEmpty() || billBPartnerIds.contains(0) || billBPartnerIds.contains(-1) || billBPartnerIds.contains(ANY);
+	}
+
+	default boolean isAnyLocator()
+	{
+		final Set<Integer> locatorIds = getLocatorIds();
+		return locatorIds != null
+				? locatorIds.contains(0) || locatorIds.contains(-1) || locatorIds.contains(ANY)
+				: false;
+	}
+
+	Set<ShipmentScheduleAttributeSegment> getAttributes();
 }

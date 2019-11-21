@@ -29,10 +29,13 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
+import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleAttributeSegment;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
@@ -100,29 +103,40 @@ public class ShipmentScheduleSegmentFromHUStorage implements IShipmentScheduleSe
 		}
 
 		productIds = CollectionUtils.asSet(huStorage.getM_Product_ID());
-		bpartnerIds = huSegment.getC_BPartner_IDs();
-		locatorIds = huSegment.getM_Locator_IDs();
+		bpartnerIds = huSegment.getBpartnerIds();
+		locatorIds = huSegment.getLocatorIds();
 	}
 
 	@Override
-	public Set<Integer> getM_Product_IDs()
+	public Set<Integer> getProductIds()
 	{
 		loadIfNeeded();
 		return productIds;
 	}
 
 	@Override
-	public Set<Integer> getC_BPartner_IDs()
+	public Set<Integer> getBpartnerIds()
 	{
 		loadIfNeeded();
 		return bpartnerIds;
 	}
 
 	@Override
-	public Set<Integer> getM_Locator_IDs()
+	public Set<Integer> getLocatorIds()
 	{
 		loadIfNeeded();
 		return locatorIds;
 	}
 
+	@Override
+	public Set<Integer> getBillBPartnerIds()
+	{
+		return ImmutableSet.of();
+	}
+
+	@Override
+	public Set<ShipmentScheduleAttributeSegment> getAttributes()
+	{
+		return ImmutableSet.of();
+	}
 }

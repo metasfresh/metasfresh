@@ -916,9 +916,9 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			for (final ProductId pickingBOMProductId : pickingBOMProductIds)
 			{
 				final ImmutableShipmentScheduleSegment segment = ImmutableShipmentScheduleSegment.builder()
-						.anyC_BPartner_ID()
-						.M_Product_ID(pickingBOMProductId.getRepoId())
-						.M_Locator_IDs(locatorRepoIds)
+						.anyBPartner()
+						.productId(pickingBOMProductId.getRepoId())
+						.locatorIds(locatorRepoIds)
 						.build();
 
 				segments.add(segment);

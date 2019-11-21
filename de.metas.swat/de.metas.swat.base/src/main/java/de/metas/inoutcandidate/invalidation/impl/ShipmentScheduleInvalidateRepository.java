@@ -328,26 +328,16 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	 * Build {@link I_M_ShipmentSchedule} where clause based on given segment.
 	 *
 	 * @param ssAlias {@link I_M_ShipmentSchedule#Table_Name}'s alias with trailing dot
-	 * @param storageSegment
+	 * @param segment
 	 * @param sqlParams output SQL parameters
 	 * @return where clause or <code>null</code>
 	 */
-	private String buildShipmentScheduleWhereClause(final String ssAlias, final IShipmentScheduleSegment storageSegment, final List<Object> sqlParams)
+	private String buildShipmentScheduleWhereClause(
+			final String ssAlias,
+			final IShipmentScheduleSegment segment,
+			final List<Object> sqlParams)
 	{
-		final Set<Integer> productIds = storageSegment.getM_Product_IDs();
-		if (productIds == null || productIds.isEmpty())
-		{
-			return null;
-		}
-
-		final Set<Integer> bpartnerIds = storageSegment.getC_BPartner_IDs();
-		if (bpartnerIds == null || bpartnerIds.isEmpty())
-		{
-			return null;
-		}
-
-		final Set<Integer> locatorIds = storageSegment.getM_Locator_IDs();
-		if (locatorIds == null || locatorIds.isEmpty())
+		if (segment.isInvalid())
 		{
 			return null;
 		}
@@ -357,9 +347,10 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 		//
 		// Products
-		final boolean resetAllProducts = productIds.contains(0) || productIds.contains(-1) || productIds.contains(IShipmentScheduleSegment.ANY);
-		if (!resetAllProducts)
+		if (!segment.isAnyProduct())
 		{
+			final Set<Integer> productIds = segment.getProductIds();
+
 			final String productColumnName = ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID;
 			whereClause.append("\n\t AND ");
 			whereClause.append("(").append(DB.buildSqlList(productColumnName, productIds, sqlParams)).append(")");
@@ -369,9 +360,10 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		// BPartners
 		// NOTE: If we were asked to reset for BPartner=none (i.e. value 0, -1 or null) then we shall reset for all of them,
 		// because the QOH from this segment could be used by ALL
-		final boolean resetAllBPartners = bpartnerIds.contains(0) || bpartnerIds.contains(-1) || bpartnerIds.contains(IShipmentScheduleSegment.ANY);
-		if (!resetAllBPartners)
+		if (!segment.isAnyBPartner())
 		{
+			final Set<Integer> bpartnerIds = segment.getBpartnerIds();
+
 			final String bpartnerColumnName = "COALESCE(" + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Override_ID + ", " + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_ID + ")";
 			whereClause.append("\n\t AND ");
 			whereClause.append("(").append(DB.buildSqlList(bpartnerColumnName, bpartnerIds, sqlParams)).append(")");
@@ -379,10 +371,10 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 		//
 		// Bill BPartners
-		final Set<Integer> billBPartnerIds = storageSegment.getBill_BPartner_IDs();
-		final boolean resetAllBillBPartners = billBPartnerIds.isEmpty() || billBPartnerIds.contains(0) || billBPartnerIds.contains(-1) || billBPartnerIds.contains(IShipmentScheduleSegment.ANY);
-		if (!resetAllBillBPartners)
+		if (!segment.isAnyBillBPartner())
 		{
+			final Set<Integer> billBPartnerIds = segment.getBillBPartnerIds();
+
 			final String billBPartnerColumnName = ssAlias + I_M_ShipmentSchedule.COLUMNNAME_Bill_BPartner_ID;
 			whereClause.append("\n\t AND ");
 			whereClause.append("(").append(DB.buildSqlList(billBPartnerColumnName, billBPartnerIds, sqlParams)).append(")");
@@ -391,9 +383,10 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		//
 		// Locators
 		// NOTE: same as for bPartners if no particular locator is specified, it means "all of them"
-		final boolean resetAllLocators = locatorIds.contains(0) || locatorIds.contains(-1) || locatorIds.contains(IShipmentScheduleSegment.ANY);
-		if (!resetAllLocators)
+		if (!segment.isAnyLocator())
 		{
+			final Set<Integer> locatorIds = segment.getLocatorIds();
+
 			final String warehouseColumnName = "COALESCE(" + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID + ", " + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID + ")";
 			whereClause.append("\n\t AND ");
 			whereClause.append(" EXISTS (select 1 from " + I_M_Locator.Table_Name + " loc"
@@ -405,7 +398,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 
 		//
 		// Attributes (if any)
-		final Set<ShipmentScheduleAttributeSegment> attributeSegments = storageSegment.getAttributes();
+		final Set<ShipmentScheduleAttributeSegment> attributeSegments = segment.getAttributes();
 		final String attributeSegmentsWhereClause = buildAttributeInstanceWhereClause(attributeSegments, sqlParams);
 		if (!Check.isEmpty(attributeSegmentsWhereClause, true))
 		{

@@ -36,7 +36,7 @@ public class M_AttributeInstance
 				AttributeId.ofRepoId(ai.getM_Attribute_ID()));
 
 		final ImmutableShipmentScheduleSegment storageSegment = ImmutableShipmentScheduleSegment.builder()
-				.attributeSegment(attributeSegment)
+				.attribute(attributeSegment)
 				.build();
 
 		Services.get(IShipmentScheduleInvalidateBL.class).notifySegmentChanged(storageSegment);
