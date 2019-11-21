@@ -75,7 +75,7 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.ZonedDateTime, captionKey = "PreparationDate")
 	private final ZonedDateTime preparationDate;
 
-	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Quantity, captionKey =  "QtyOrdered")
+	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Quantity, captionKey = "QtyOrdered")
 	private final BigDecimal qtyOrdered;
 
 	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "C_UOM_ID")
@@ -101,6 +101,7 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 	private final Quantity qtyToDeliverStockInitial;
 	private final BigDecimal qtyToDeliverCatchOverrideInitial;
 	private final AttributeSetInstanceId asiIdInitial;
+	private final int salesOrderLineNo;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<ShipmentCandidateRow> values;
 	private final ImmutableMap<String, ViewEditorRenderMode> fieldNameAndJsonValues;
@@ -114,6 +115,7 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 	private ShipmentCandidateRow(
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@Nullable final LookupValue salesOrder,
+			final int salesOrderLineNo,
 			@NonNull final LookupValue customer,
 			@NonNull final LookupValue warehouse,
 			@NonNull final LookupValue product,
@@ -132,6 +134,7 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 			@NonNull final LookupValue asi)
 	{
 		this.salesOrder = salesOrder;
+		this.salesOrderLineNo = salesOrderLineNo;
 		this.customer = customer;
 		this.warehouse = warehouse;
 		this.product = product;
@@ -202,6 +205,15 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 		return result.build();
 	}
 
+	public String getSalesOrderDisplayNameOrEmpty()
+	{
+		return salesOrder != null ? salesOrder.getDisplayName() : "";
+	}
+
+	public int getSalesOrderLineNo()
+	{
+		return salesOrderLineNo;
+	}
 
 	public ShipmentCandidateRow withChanges(@NonNull final ShipmentCandidateRowUserChangeRequest userChanges)
 	{

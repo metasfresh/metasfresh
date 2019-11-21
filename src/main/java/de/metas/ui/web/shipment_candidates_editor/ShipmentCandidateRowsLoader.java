@@ -121,6 +121,8 @@ final class ShipmentCandidateRowsLoader
 		final ImmutableList<ShipmentCandidateRow> rows = records
 				.stream()
 				.map(this::toShipmentCandidateRow)
+				.sorted(Comparator.comparing(ShipmentCandidateRow::getSalesOrderDisplayNameOrEmpty)
+						.thenComparing(ShipmentCandidateRow::getSalesOrderLineNo))
 				.collect(ImmutableList.toImmutableList());
 
 		return ShipmentCandidateRows.builder()
@@ -155,6 +157,7 @@ final class ShipmentCandidateRowsLoader
 		return ShipmentCandidateRow.builder()
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
 				.salesOrder(extractSalesOrder(record))
+				.salesOrderLineNo(extractSalesOrderLineNo(record))
 				.customer(extractCustomer(record))
 				.warehouse(extractWarehouse(record))
 				.product(extractProduct(record))
