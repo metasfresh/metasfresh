@@ -101,7 +101,7 @@ public class ImportPriceListSchemaLinesFromAttachment extends JavaProcess implem
 			}
 
 			final CreatePriceListSchemaRequest priceListSchemaRequest = CreatePriceListSchemaRequest.builder()
-					.discountSchemaId(PricingConditionsId.ofDiscountSchemaId(getRecord_ID()))
+					.discountSchemaId(PricingConditionsId.ofRepoId(getRecord_ID()))
 					.seqNo(getIntValue(split[INDEX_SeqNo]))
 					.productId(getProductId(split[INDEX_Product]))
 					.productCategoryId(getProductCategoryId(split[INDEX_Product_Category]))
@@ -195,7 +195,7 @@ public class ImportPriceListSchemaLinesFromAttachment extends JavaProcess implem
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		if (priceListSchemaRepository.hasAnyLines(PricingConditionsId.ofDiscountSchemaId(context.getSingleSelectedRecordId())))
+		if (priceListSchemaRepository.hasAnyLines(PricingConditionsId.ofRepoId(context.getSingleSelectedRecordId())))
 		{
 			return ProcessPreconditionsResolution.reject("The Price List Schema Must have no Lines."); // todo translate this
 		}

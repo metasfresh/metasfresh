@@ -35,7 +35,7 @@ public class PricingConditionsBreakId
 {
 	public static final PricingConditionsBreakId of(final int discountSchemaId, final int discountSchemaBreakId)
 	{
-		return new PricingConditionsBreakId(PricingConditionsId.ofDiscountSchemaId(discountSchemaId), discountSchemaBreakId);
+		return new PricingConditionsBreakId(PricingConditionsId.ofRepoId(discountSchemaId), discountSchemaBreakId);
 	}
 
 	public static final PricingConditionsBreakId ofOrNull(final int discountSchemaId, final int discountSchemaBreakId)
@@ -89,11 +89,11 @@ public class PricingConditionsBreakId
 
 	public boolean matchingDiscountSchemaId(final int discountSchemaId)
 	{
-		return pricingConditionsId.getDiscountSchemaId() == discountSchemaId;
+		return pricingConditionsId.getRepoId() == discountSchemaId;
 	}
 
 	public int getDiscountSchemaId()
 	{
-		return pricingConditionsId.getDiscountSchemaId();
+		return pricingConditionsId.getRepoId();
 	}
 }
