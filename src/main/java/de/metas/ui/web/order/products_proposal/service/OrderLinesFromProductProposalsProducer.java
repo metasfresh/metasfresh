@@ -137,14 +137,14 @@ public final class OrderLinesFromProductProposalsProducer
 	{
 
 		final PlainHUPackingAware huPackingAware = new PlainHUPackingAware();
-		huPackingAware.setC_BPartner_ID(order.getC_BPartner_ID());
+		huPackingAware.setBpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()));
 		huPackingAware.setInDispute(false);
 
 		final UomId uomId = productBL.getStockUOMId(fromRow.getProductId());
-		huPackingAware.setM_Product_ID(fromRow.getProductId().getRepoId());
-		huPackingAware.setC_UOM_ID(uomId.getRepoId());
+		huPackingAware.setProductId(fromRow.getProductId());
+		huPackingAware.setUomId(uomId);
 		// huPackingAware.setM_AttributeSetInstance_ID(...);
-		huPackingAware.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(fromRow.getPackingMaterialId()));
+		huPackingAware.setPiItemProductId(fromRow.getPackingMaterialId());
 
 		return huPackingAware;
 	}
