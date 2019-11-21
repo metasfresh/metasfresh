@@ -59,6 +59,8 @@ public interface IHUPIItemProductBL extends ISingletonService
 	 */
 	boolean isVirtualHUPIItemProduct(I_M_HU_PI_Item_Product piip);
 
+	boolean isInfiniteCapacity(HUPIItemProductId id);
+
 	/**
 	 * @return builder used to create the display name
 	 */
