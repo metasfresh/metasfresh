@@ -1072,7 +1072,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=591853
 
 -- 2019-11-20T11:25:37.037Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Tab_ID,IsDisplayed,DisplayLength,IsSameLine,IsHeading,IsFieldOnly,IsEncrypted,AD_Client_ID,IsActive,Created,CreatedBy,IsReadOnly,Updated,UpdatedBy,AD_Field_ID,IsDisplayedGrid,AD_Column_ID,Name,AD_Org_ID,EntityType) VALUES (542121,'N',255,'N','N','N','N',0,'Y',TO_TIMESTAMP('2019-11-20 13:25:36','YYYY-MM-DD HH24:MI:SS'),100,'N',TO_TIMESTAMP('2019-11-20 13:25:36','YYYY-MM-DD HH24:MI:SS'),100,591854,'N',569597,'Product Value',0,'D')
+INSERT INTO AD_Field (AD_Tab_ID,IsDisplayed,DisplayLength,IsSameLine,IsHeading,IsFieldOnly,IsEncrypted,AD_Client_ID,IsActive,Created,CreatedBy,IsReadOnly,Updated,UpdatedBy,AD_Field_ID,IsDisplayedGrid,AD_Column_ID,Name,AD_Org_ID,EntityType) VALUES (542121,'N',255,'N','N','N','N',0,'Y',TO_TIMESTAMP('2019-11-20 13:25:36','YYYY-MM-DD HH24:MI:SS'),100,'N',TO_TIMESTAMP('2019-11-20 13:25:36','YYYY-MM-DD HH24:MI:SS'),100,591854,'N',54606,'Product Value',0,'D')
 ;
 
 -- 2019-11-20T11:25:37.039Z
