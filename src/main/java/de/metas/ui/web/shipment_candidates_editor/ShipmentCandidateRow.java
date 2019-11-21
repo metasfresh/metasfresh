@@ -33,6 +33,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -69,24 +70,27 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "M_Warehouse_ID")
 	private final LookupValue warehouse;
 
-	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "M_Product_ID")
+	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.ExtraLarge, captionKey = "M_Product_ID")
 	private final LookupValue product;
 
-	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.ZonedDateTime, captionKey = "PreparationDate")
+	@ViewColumn(seqNo = 45, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Medium, captionKey = "PackDescription")
+	private final String packingDescription;
+
+	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.ZonedDateTime, widgetSize = WidgetSize.Small, captionKey = "PreparationDate")
 	private final ZonedDateTime preparationDate;
 
-	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Quantity, captionKey = "QtyOrdered")
+	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Quantity, widgetSize = WidgetSize.Small, captionKey = "QtyOrdered")
 	private final BigDecimal qtyOrdered;
 
 	@ViewColumn(seqNo = 70, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "C_UOM_ID")
 	private final LookupValue uom;
 
 	public static final String FIELD_qtyToDeliverStockOverride = "qtyToDeliverStockOverride";
-	@ViewColumn(seqNo = 80, widgetType = DocumentFieldWidgetType.Quantity, fieldName = FIELD_qtyToDeliverStockOverride, captionKey = "QtyToDeliver_Override", editor = ViewEditorRenderMode.ALWAYS)
+	@ViewColumn(seqNo = 80, widgetType = DocumentFieldWidgetType.Quantity, fieldName = FIELD_qtyToDeliverStockOverride, widgetSize = WidgetSize.Small, captionKey = "QtyToDeliver_Override", editor = ViewEditorRenderMode.ALWAYS)
 	private final BigDecimal qtyToDeliverStockOverride;
 
 	public static final String FIELD_qtyToDeliverCatchOverride = "qtyToDeliverCatchOverride";
-	@ViewColumn(seqNo = 90, widgetType = DocumentFieldWidgetType.Quantity, fieldName = FIELD_qtyToDeliverCatchOverride, captionKey = "QtyToDeliverCatch_Override", editor = ViewEditorRenderMode.ALWAYS)
+	@ViewColumn(seqNo = 90, widgetType = DocumentFieldWidgetType.Quantity, fieldName = FIELD_qtyToDeliverCatchOverride, widgetSize = WidgetSize.Small, captionKey = "QtyToDeliverCatch_Override", editor = ViewEditorRenderMode.ALWAYS)
 	private final BigDecimal qtyToDeliverCatchOverride;
 
 	@ViewColumn(seqNo = 100, widgetType = DocumentFieldWidgetType.Lookup, widgetSize = WidgetSize.Small, captionKey = "Catch_UOM_ID")
@@ -119,6 +123,7 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 			@NonNull final LookupValue customer,
 			@NonNull final LookupValue warehouse,
 			@NonNull final LookupValue product,
+			@Nullable final String packingDescription,
 			@NonNull final ZonedDateTime preparationDate,
 			@NonNull final BigDecimal qtyOrdered,
 			@NonNull final LookupValue uom,
@@ -138,6 +143,7 @@ public final class ShipmentCandidateRow implements IViewRow, WebuiASIEditingInfo
 		this.customer = customer;
 		this.warehouse = warehouse;
 		this.product = product;
+		this.packingDescription = !Check.isEmpty(packingDescription, true) ? packingDescription.trim() : null;
 		this.preparationDate = preparationDate;
 
 		this.qtyOrdered = qtyOrdered;
