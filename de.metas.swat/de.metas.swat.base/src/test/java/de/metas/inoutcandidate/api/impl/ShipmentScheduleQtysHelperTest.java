@@ -1,5 +1,7 @@
 package de.metas.inoutcandidate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -15,9 +17,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.OlAndSched;
@@ -55,7 +56,7 @@ public class ShipmentScheduleQtysHelperTest
 
 	private String closedStatusMessage;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -65,16 +66,35 @@ public class ShipmentScheduleQtysHelperTest
 		closedStatusMessage = msgBL.getMsg(Env.getCtx(), ShipmentScheduleQtysHelper.MSG_ClosedStatus);
 	}
 
+	private static I_M_ShipmentSchedule createShipmentSchedule(final BigDecimal qty)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
+		shipmentSchedule.setQtyOrdered_Calculated(qty);
+		shipmentSchedule.setAD_User_ID(123);
+		shipmentSchedule.setAD_Org_ID(0);
+		shipmentSchedule.setAD_Table_ID(0);
+		shipmentSchedule.setBPartnerAddress("address");
+		shipmentSchedule.setC_BPartner_ID(0);
+		shipmentSchedule.setBill_BPartner_ID(0);
+		shipmentSchedule.setC_BPartner_Location_ID(0);
+		shipmentSchedule.setQtyReserved(qty);
+		shipmentSchedule.setDeliveryRule(DeliveryRule.AVAILABILITY.getCode());
+
+		save(shipmentSchedule);
+
+		return shipmentSchedule;
+	}
+
 	/**
 	 * set qtyToDeliver_Override to 10, qtyToDeliver is still on 0
 	 */
 	@Test
 	public void testQtyToDeliver1()
 	{
-		I_M_ShipmentSchedule sched = ShipmentScheduleTestBase.createShipmentSchedule(new BigDecimal("14"));
+		I_M_ShipmentSchedule sched = createShipmentSchedule(new BigDecimal("14"));
 		sched.setQtyToDeliver_Override(new BigDecimal("10"));
 		ShipmentScheduleQtysHelper.setQtyToDeliverForDiscardedShipmentSchedule(sched);
-		Assert.assertEquals("Invalid qtyToDeliver", BigDecimal.ZERO, sched.getQtyToDeliver());
+		assertThat(sched.getQtyToDeliver()).as("qtyToDeliver").isZero();
 	}
 
 	/**
@@ -83,11 +103,11 @@ public class ShipmentScheduleQtysHelperTest
 	@Test
 	public void testQtyToDeliver2()
 	{
-		I_M_ShipmentSchedule sched = ShipmentScheduleTestBase.createShipmentSchedule(new BigDecimal("14"));
+		I_M_ShipmentSchedule sched = createShipmentSchedule(new BigDecimal("14"));
 		sched.setQtyToDeliver_Override(new BigDecimal("10"));
 		sched.setDeliveryRule(DeliveryRule.FORCE.getCode());
 		ShipmentScheduleQtysHelper.setQtyToDeliverForDiscardedShipmentSchedule(sched);
-		Assert.assertEquals("Invalid qtyToDeliver", BigDecimal.valueOf(10), sched.getQtyToDeliver());
+		assertThat(sched.getQtyToDeliver()).as("qtyToDeliver").isEqualByComparingTo("10");
 	}
 
 	/**
@@ -96,10 +116,10 @@ public class ShipmentScheduleQtysHelperTest
 	@Test
 	public void testQtyToDeliver3()
 	{
-		I_M_ShipmentSchedule sched = ShipmentScheduleTestBase.createShipmentSchedule(new BigDecimal("14"));
+		I_M_ShipmentSchedule sched = createShipmentSchedule(new BigDecimal("14"));
 		sched.setDeliveryRule(DeliveryRule.FORCE.getCode());
 		ShipmentScheduleQtysHelper.setQtyToDeliverForDiscardedShipmentSchedule(sched);
-		Assert.assertEquals("Invalid qtyToDeliver", BigDecimal.valueOf(14), sched.getQtyToDeliver());
+		assertThat(sched.getQtyToDeliver()).as("qtyToDeliver").isEqualByComparingTo("14");
 	}
 
 	/**
@@ -108,17 +128,17 @@ public class ShipmentScheduleQtysHelperTest
 	@Test
 	public void testQtyToDeliver4()
 	{
-		I_M_ShipmentSchedule sched = ShipmentScheduleTestBase.createShipmentSchedule(new BigDecimal("14"));
+		I_M_ShipmentSchedule sched = createShipmentSchedule(new BigDecimal("14"));
 		sched.setQtyToDeliver_Override(new BigDecimal("10"));
 		ShipmentScheduleQtysHelper.setQtyToDeliverForDiscardedShipmentSchedule(sched);
-		Assert.assertEquals("Invalid qtyToDeliver", BigDecimal.valueOf(0), sched.getQtyToDeliver());
+		assertThat(sched.getQtyToDeliver()).as("qtyToDeliver").isZero();
 	}
 
 	@Test
 	public void test_updateQtyToDeliver_LineCandidate()
 	{
 		final BigDecimal qtyOrdered = new BigDecimal("14");
-		final I_M_ShipmentSchedule sched = ShipmentScheduleTestBase.createShipmentSchedule(qtyOrdered);
+		final I_M_ShipmentSchedule sched = createShipmentSchedule(qtyOrdered);
 		final TableRecordReference orderReference = TableRecordReference.of(I_C_Order.Table_Name, 10);
 
 		final DeliveryGroupCandidate deliveryGroupCandidate = DeliveryGroupCandidate.builder()
@@ -155,7 +175,7 @@ public class ShipmentScheduleQtysHelperTest
 		final BigDecimal qtyOrdered = new BigDecimal("14");
 		final BigDecimal qtyToDeliver_Override = new BigDecimal("10");
 
-		final I_M_ShipmentSchedule sched = ShipmentScheduleTestBase.createShipmentSchedule(qtyOrdered);
+		final I_M_ShipmentSchedule sched = createShipmentSchedule(qtyOrdered);
 		sched.setQtyToDeliver_Override(qtyToDeliver_Override);
 		sched.setDeliveryRule(DeliveryRule.FORCE.getCode());
 
@@ -192,7 +212,7 @@ public class ShipmentScheduleQtysHelperTest
 	{
 		final BigDecimal qtyToDeliver_Override = new BigDecimal("10");
 		final BigDecimal qtyOrdered = new BigDecimal("14");
-		final I_M_ShipmentSchedule sched = ShipmentScheduleTestBase.createShipmentSchedule(qtyOrdered);
+		final I_M_ShipmentSchedule sched = createShipmentSchedule(qtyOrdered);
 		sched.setQtyToDeliver_Override(qtyToDeliver_Override);
 		sched.setDeliveryRule(DeliveryRule.FORCE.getCode());
 
@@ -212,7 +232,7 @@ public class ShipmentScheduleQtysHelperTest
 	{
 		final BigDecimal qtyToDeliver_Override = new BigDecimal("10");
 		final BigDecimal qtyOrdered = new BigDecimal("14");
-		final I_M_ShipmentSchedule sched = ShipmentScheduleTestBase.createShipmentSchedule(qtyOrdered);
+		final I_M_ShipmentSchedule sched = createShipmentSchedule(qtyOrdered);
 		sched.setQtyToDeliver_Override(qtyToDeliver_Override);
 		sched.setDeliveryRule(DeliveryRule.FORCE.getCode());
 

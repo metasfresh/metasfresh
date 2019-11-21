@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_OrderLine;
@@ -50,6 +51,7 @@ import org.eevolution.model.X_PP_Order;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.WorkingTime;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -58,6 +60,7 @@ import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -205,7 +208,8 @@ public class PPOrderBL implements IPPOrderBL
 	@Override
 	public Quantity getQtyReceived(@NonNull final PPOrderId ppOrderId)
 	{
-		final I_PP_Order ppOrder = Services.get(IPPOrderDAO.class).getById(ppOrderId);
+		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
+		final I_PP_Order ppOrder = ppOrdersRepo.getById(ppOrderId);
 		return getQtyReceived(ppOrder);
 	}
 
@@ -416,6 +420,22 @@ public class PPOrderBL implements IPPOrderBL
 		final PPOrderRouting orderRouting = orderRoutingRepo.getByOrderId(orderId);
 		orderRouting.voidIt();
 		orderRoutingRepo.save(orderRouting);
+	}
+
+	@Override
+	public Optional<QtyCalculationsBOM> getOpenPickingOrderBOM(@NonNull final PPOrderId pickingOrderId)
+	{
+		final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
+		final IPPOrderBOMBL ppOrderBOMsService = Services.get(IPPOrderBOMBL.class);
+
+		final I_PP_Order pickingOrder = ppOrdersRepo.getById(pickingOrderId);
+		final DocStatus pickingOrderDocStatus = DocStatus.ofCode(pickingOrder.getDocStatus());
+		if (!pickingOrderDocStatus.isCompleted())
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(ppOrderBOMsService.getQtyCalculationsBOM(pickingOrder));
 	}
 
 }

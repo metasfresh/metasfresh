@@ -37,8 +37,8 @@ import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.location.ICountryAreaBL;
@@ -120,7 +120,7 @@ public abstract class AbstractFlatrateTermTest
 		setupMasterData();
 		initialize();
 
-		Services.registerService(IShipmentScheduleBL.class, ShipmentScheduleBL.newInstanceForUnitTesting());
+		Services.registerService(IShipmentScheduleUpdater.class, ShipmentScheduleUpdater.newInstanceForUnitTesting());
 	}
 
 	protected void initialize()

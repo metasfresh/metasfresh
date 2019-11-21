@@ -13,21 +13,20 @@ package de.metas.allocation.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+// import static org.hamcrest.Matchers.comparesEqualTo;
+// import static org.hamcrest.Matchers.is;
+// import static org.junit.Assert.assertThat;
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -46,11 +45,10 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationBL;
@@ -68,13 +66,10 @@ import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.api.impl.PlainPaymentDAO;
 import de.metas.util.Services;
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class AllocationBLTest
 {
-	/** Watches current test and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-	
-	@BeforeClass
+	@BeforeAll
 	public static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
@@ -86,7 +81,7 @@ public class AllocationBLTest
 
 	protected IPaymentBL paymentBL;
 
-	@Before
+	@BeforeEach
 	public final void beforeTest()
 	{
 		AdempiereTestHelper.get().init();
@@ -146,11 +141,11 @@ public class AllocationBLTest
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
 		invoice.setC_Currency_ID(currencyEUR.getRepoId());
 		db.save(invoice);
-		
+
 		final I_C_AllocationHdr alloc = Services.get(IAllocationBL.class).autoAllocateAvailablePayments(invoice);
-		assertThat(alloc, nullValue());
+		assertThat(alloc).isNull();
 	}
-	
+
 	@Test
 	public void test_AllocateForLine_PartiallyPaid()
 	{
@@ -192,18 +187,17 @@ public class AllocationBLTest
 		Assert.assertTrue(invoice.getGrandTotal().compareTo(Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoice)) == 0);
 
 		final I_C_AllocationHdr alloc = Services.get(IAllocationBL.class).autoAllocateAvailablePayments(invoice);
-		assertThat(alloc, notNullValue());
+		assertThat(alloc).isNotNull();
 
 		final List<I_C_AllocationLine> lines = Services.get(IAllocationDAO.class).retrieveLines(alloc);
-		assertThat(lines.size(), is(1));
-		
-		assertThat(lines.get(0).getC_Invoice_ID(), is(invoice.getC_Invoice_ID()));
-		assertThat(lines.get(0).getC_Payment_ID(), is(payment1.getC_Payment_ID()));
-		assertThat(lines.get(0).getAmount(), comparesEqualTo(new BigDecimal("10"))); // payAmt of payment1
-		
-		assertThat(
-				Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoice),
-				comparesEqualTo(invoice.getGrandTotal().subtract(payment1.getPayAmt())));
+		assertThat(lines).hasSize(1);
+
+		assertThat(lines.get(0).getC_Invoice_ID()).isEqualTo(invoice.getC_Invoice_ID());
+		assertThat(lines.get(0).getC_Payment_ID()).isEqualTo(payment1.getC_Payment_ID());
+		assertThat(lines.get(0).getAmount()).isEqualByComparingTo("10"); // payAmt of payment1
+
+		assertThat(Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoice))
+				.isEqualByComparingTo(invoice.getGrandTotal().subtract(payment1.getPayAmt()));
 	}
 
 	@Test
@@ -273,22 +267,22 @@ public class AllocationBLTest
 		Assert.assertTrue(invoice.getGrandTotal().compareTo(Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoice)) == 0);
 
 		final I_C_AllocationHdr alloc = Services.get(IAllocationBL.class).autoAllocateAvailablePayments(invoice);
-		assertThat(alloc, notNullValue());
+		assertThat(alloc).isNotNull();
 
 		final List<I_C_AllocationLine> lines = Services.get(IAllocationDAO.class).retrieveLines(alloc);
-		assertThat(lines.size(), is(3));
+		assertThat(lines).hasSize(3);
 
-		assertThat(lines.get(0).getC_Invoice_ID(), is(invoice.getC_Invoice_ID()));
-		assertThat(lines.get(0).getC_Payment_ID(), is(payment1.getC_Payment_ID()));
-		assertThat(lines.get(0).getAmount(), comparesEqualTo(new BigDecimal("10"))); // payAmt of payment1
+		assertThat(lines.get(0).getC_Invoice_ID()).isEqualTo(invoice.getC_Invoice_ID());
+		assertThat(lines.get(0).getC_Payment_ID()).isEqualTo(payment1.getC_Payment_ID());
+		assertThat(lines.get(0).getAmount()).isEqualByComparingTo("10"); // payAmt of payment1
 
-		assertThat(lines.get(1).getC_Invoice_ID(), is(invoice.getC_Invoice_ID()));
-		assertThat(lines.get(1).getC_Payment_ID(), is(payment2.getC_Payment_ID()));
-		assertThat(lines.get(1).getAmount(), comparesEqualTo(new BigDecimal("40"))); // payAmt of payment2
+		assertThat(lines.get(1).getC_Invoice_ID()).isEqualTo(invoice.getC_Invoice_ID());
+		assertThat(lines.get(1).getC_Payment_ID()).isEqualTo(payment2.getC_Payment_ID());
+		assertThat(lines.get(1).getAmount()).isEqualByComparingTo("40"); // payAmt of payment2
 
-		assertThat(lines.get(2).getC_Invoice_ID(), is(invoice.getC_Invoice_ID()));
-		assertThat(lines.get(2).getC_Payment_ID(), is(payment3.getC_Payment_ID()));
-		assertThat(lines.get(2).getAmount(), comparesEqualTo(new BigDecimal("50"))); // payAmt of payment2
+		assertThat(lines.get(2).getC_Invoice_ID()).isEqualTo(invoice.getC_Invoice_ID());
+		assertThat(lines.get(2).getC_Payment_ID()).isEqualTo(payment3.getC_Payment_ID());
+		assertThat(lines.get(2).getAmount()).isEqualByComparingTo("50"); // payAmt of payment2
 
 		Assert.assertTrue(BigDecimal.ZERO.compareTo(Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoice)) == 0);
 	}
@@ -357,26 +351,26 @@ public class AllocationBLTest
 		payment3.setC_Currency_ID(currencyEUR.getRepoId());
 		InterfaceWrapperHelper.save(payment3);
 
-		assertThat(Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoice), comparesEqualTo(invoice.getGrandTotal())); // guard
+		assertThat(Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoice)).isEqualByComparingTo(invoice.getGrandTotal()); // guard
 
 		final I_C_AllocationHdr alloc = Services.get(IAllocationBL.class).autoAllocateAvailablePayments(invoice);
-		assertThat(alloc, notNullValue());
+		assertThat(alloc).isNotNull();
 
 		final List<I_C_AllocationLine> lines = Services.get(IAllocationDAO.class).retrieveLines(alloc);
-		assertThat(lines.size(), is(3));
+		assertThat(lines).hasSize(3);
 
-		assertThat(lines.get(0).getC_Invoice_ID(), is(invoice.getC_Invoice_ID()));
-		assertThat(lines.get(0).getC_Payment_ID(), is(payment1.getC_Payment_ID()));
-		assertThat(lines.get(0).getAmount(), comparesEqualTo(new BigDecimal("10"))); // payAmt of payment1
+		assertThat(lines.get(0).getC_Invoice_ID()).isEqualTo(invoice.getC_Invoice_ID());
+		assertThat(lines.get(0).getC_Payment_ID()).isEqualTo(payment1.getC_Payment_ID());
+		assertThat(lines.get(0).getAmount()).isEqualByComparingTo("10"); // payAmt of payment1
 
-		assertThat(lines.get(1).getC_Invoice_ID(), is(invoice.getC_Invoice_ID()));
-		assertThat(lines.get(1).getC_Payment_ID(), is(payment2.getC_Payment_ID()));
-		assertThat(lines.get(1).getAmount(), comparesEqualTo(new BigDecimal("40"))); // payAmt of payment2
+		assertThat(lines.get(1).getC_Invoice_ID()).isEqualTo(invoice.getC_Invoice_ID());
+		assertThat(lines.get(1).getC_Payment_ID()).isEqualTo(payment2.getC_Payment_ID());
+		assertThat(lines.get(1).getAmount()).isEqualByComparingTo("40"); // payAmt of payment2
 
-		assertThat(lines.get(2).getC_Invoice_ID(), is(invoice.getC_Invoice_ID()));
-		assertThat(lines.get(2).getC_Payment_ID(), is(payment3.getC_Payment_ID()));
-		assertThat(lines.get(2).getAmount(), comparesEqualTo(new BigDecimal("50"))); // partial payAmt of payment2
+		assertThat(lines.get(2).getC_Invoice_ID()).isEqualTo(invoice.getC_Invoice_ID());
+		assertThat(lines.get(2).getC_Payment_ID()).isEqualTo(payment3.getC_Payment_ID());
+		assertThat(lines.get(2).getAmount()).isEqualByComparingTo("50"); // partial payAmt of payment2
 
-		assertThat(Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoice), comparesEqualTo(BigDecimal.ZERO));
+		assertThat(Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoice)).isZero();
 	}
 }

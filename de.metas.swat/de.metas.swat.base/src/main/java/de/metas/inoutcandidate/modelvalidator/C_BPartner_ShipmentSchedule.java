@@ -7,8 +7,8 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.lang.SOTrx;
@@ -54,6 +54,6 @@ public class C_BPartner_ShipmentSchedule
 		// note that we do not need to invalidate the current sched explicitly..
 		// it will be updated as part of the segment, unless it has delivery rule force..
 		// and if it has that rule, then the partner change makes no difference to it, anyways.
-		Services.get(IShipmentScheduleInvalidateBL.class).invalidateSegmentForShipmentSchedule(sched);
+		Services.get(IShipmentScheduleInvalidateBL.class).notifySegmentChangedForShipmentSchedule(sched);
 	}
 }

@@ -48,19 +48,18 @@ import org.compiere.model.ModelValidator;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
+import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.storage.IStorageBL;
-import de.metas.storage.IStorageSegment;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -193,17 +192,16 @@ public class M_ShipmentSchedule
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final BPartnerId newBPartnerId = shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule);
 
-		final IStorageBL storageBL = Services.get(IStorageBL.class);
-		final IStorageSegment storageSegment = storageBL.createStorageSegmentBuilder()
-				.addM_Product_ID(shipmentSchedule.getM_Product_ID())
-				.addC_BPartner_ID(BPartnerId.toRepoId(newBPartnerId))
-				.addC_BPartner_ID(BPartnerId.toRepoId(oldBpartnerId))
-				.addM_AttributeSetInstance_ID(shipmentSchedule.getM_AttributeSetInstance_ID())
-				.addWarehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
+		final IShipmentScheduleSegment storageSegment = ShipmentScheduleSegments.builder()
+				.productId(shipmentSchedule.getM_Product_ID())
+				.bpartnerId(BPartnerId.toRepoId(newBPartnerId))
+				.bpartnerId(BPartnerId.toRepoId(oldBpartnerId))
+				.attributeSetInstanceId(shipmentSchedule.getM_AttributeSetInstance_ID())
+				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
 				.build();
 
-		final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
-		invalidSchedulesRepo.invalidateStorageSegments(ImmutableList.of(storageSegment));
+		final IShipmentScheduleInvalidateBL invalidSchedulesInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
+		invalidSchedulesInvalidator.invalidateStorageSegment(storageSegment);
 	}
 
 	/**
@@ -236,7 +234,7 @@ public class M_ShipmentSchedule
 
 		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
 		invalidSchedulesService.invalidateShipmentSchedule(shipmentScheduleId); // 08746: make sure that at any rate, the sched itself is invalidated
-		invalidSchedulesService.invalidateSegmentForShipmentSchedule(schedule);
+		invalidSchedulesService.notifySegmentChangedForShipmentSchedule(schedule);
 	}
 
 	@ModelChange( //
@@ -256,8 +254,8 @@ public class M_ShipmentSchedule
 		headerAggregationKeys.add(scheduleOld.getHeaderAggregationKey());
 		headerAggregationKeys.add(schedule.getHeaderAggregationKey());
 
-		final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
-		invalidSchedulesRepo.invalidateForHeaderAggregationKeys(headerAggregationKeys);
+		final IShipmentScheduleInvalidateBL invalidSchedulesInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
+		invalidSchedulesInvalidator.invalidateForHeaderAggregationKeys(headerAggregationKeys);
 	}
 
 	/**
@@ -308,8 +306,8 @@ public class M_ShipmentSchedule
 		}
 
 		final I_C_Order order = orderLine.getC_Order();
-		final boolean orderNotCompleted = !Services.get(IDocumentBL.class).isDocumentCompleted(order);
-		if (orderNotCompleted)
+		final DocStatus orderDocStatus = DocStatus.ofNullableCodeOrUnknown(order.getDocStatus());
+		if (!orderDocStatus.isCompleted())
 		{
 			// issue https://github.com/metasfresh/metasfresh/issues/3815
 			return; // don't update e.g. an order that was closed just now, while the async shipment-schedule creation took place.

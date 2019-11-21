@@ -1,7 +1,5 @@
 package de.metas.inoutcandidate.modelvalidator;
 
-import java.util.Collection;
-
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -17,20 +15,17 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.cache.CacheMgt;
 import de.metas.inoutcandidate.agg.key.impl.ShipmentScheduleKeyValueHandler;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuilder;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.impl.DefaultCandidateProcessor;
 import de.metas.inoutcandidate.spi.impl.OnlyOneOpenInvoiceCandProcessor;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.storage.IStorageListeners;
-import de.metas.storage.IStorageSegment;
-import de.metas.storage.StorageListenerAdapter;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -89,22 +84,11 @@ public final class InOutCandidateValidator implements ModelValidator
 		// This fix a problem where another module calls "Services.get(IShipmentScheduleBL.class)"
 		// and then this validator overwrites the already configured IShipmentScheduleBL with a new instance
 		Check.assume(Services.isAutodetectServices(), "Assuming that Services.isAutodetectServices() is true");
-		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-
-		shipmentScheduleBL.registerCandidateProcessor(new DefaultCandidateProcessor());
-		shipmentScheduleBL.registerCandidateProcessor(new OnlyOneOpenInvoiceCandProcessor());
+		final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
+		shipmentScheduleUpdater.registerCandidateProcessor(new DefaultCandidateProcessor());
+		shipmentScheduleUpdater.registerCandidateProcessor(new OnlyOneOpenInvoiceCandProcessor());
 
 		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(OrderLineShipmentScheduleHandler.class);
-
-		Services.get(IStorageListeners.class).addStorageListener(new StorageListenerAdapter()
-		{
-			@Override
-			public void onStorageSegmentChanged(final Collection<IStorageSegment> storageSegments)
-			{
-				final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
-				invalidSchedulesRepo.invalidateStorageSegments(storageSegments);
-			}
-		});
 
 		setupCaching();
 	}
@@ -173,8 +157,8 @@ public final class InOutCandidateValidator implements ModelValidator
 				final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 				shipmentSchedulePA.setIsDiplayedForProduct(productId, display);
 
-				final IShipmentScheduleInvalidateRepository shipmentScheduleInvalidateRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
-				shipmentScheduleInvalidateRepo.invalidateForProduct(productId);
+				final IShipmentScheduleInvalidateBL shipmentScheduleInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
+				shipmentScheduleInvalidator.invalidateForProduct(productId);
 			}
 		}
 	}

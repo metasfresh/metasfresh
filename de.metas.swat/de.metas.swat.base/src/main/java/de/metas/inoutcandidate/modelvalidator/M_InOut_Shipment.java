@@ -29,7 +29,7 @@ import org.compiere.model.ModelValidator;
 
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
-import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.util.Services;
 
 @Interceptor(I_M_InOut.class)
@@ -66,7 +66,7 @@ public class M_InOut_Shipment
 
 		final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
 		shipmentScheduleInvalidateBL.invalidateJustForLines(shipment); // make sure that at least the lines themselves are invalidated
-		shipmentScheduleInvalidateBL.invalidateSegmentsForLines(shipment);
+		shipmentScheduleInvalidateBL.notifySegmentsChangedForShipment(shipment);
 	}
 
 	@ModelChange(//

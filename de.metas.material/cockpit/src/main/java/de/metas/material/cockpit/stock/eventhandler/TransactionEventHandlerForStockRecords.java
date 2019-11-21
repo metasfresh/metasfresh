@@ -1,7 +1,5 @@
 package de.metas.material.cockpit.stock.eventhandler;
 
-import lombok.NonNull;
-
 import java.util.Collection;
 
 import org.springframework.context.annotation.Profile;
@@ -20,6 +18,8 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
+import de.metas.product.ProductId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -77,10 +77,11 @@ public class TransactionEventHandlerForStockRecords
 		final EventDescriptor eventDescriptor = event.getEventDescriptor();
 
 		final StockDataRecordIdentifier identifier = StockDataRecordIdentifier.builder()
-				.productDescriptor(materialDescriptor)
-				.warehouseId(materialDescriptor.getWarehouseId())
 				.clientId(eventDescriptor.getClientId())
 				.orgId(eventDescriptor.getOrgId())
+				.warehouseId(materialDescriptor.getWarehouseId())
+				.productId(ProductId.ofRepoId(materialDescriptor.getProductId()))
+				.storageAttributesKey(materialDescriptor.getStorageAttributesKey())
 				.build();
 
 		final StockChangeSourceInfo stockChangeSourceInfo = StockChangeSourceInfo.ofTransactionId(event.getTransactionId());

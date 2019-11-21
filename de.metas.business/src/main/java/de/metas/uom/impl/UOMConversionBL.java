@@ -2,7 +2,6 @@ package de.metas.uom.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -33,9 +32,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-import de.metas.quantity.Quantitys;
 import org.adempiere.exceptions.NoUOMConversionException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.slf4j.Logger;
 
@@ -47,6 +44,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.IUOMDAO;

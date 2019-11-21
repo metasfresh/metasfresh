@@ -37,8 +37,8 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -180,6 +180,6 @@ public class M_ShipmentSchedule
 
 		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
 		invalidSchedulesService.invalidateShipmentSchedule(shipmentScheduleId); // 08746: make sure that at any rate, the schedule itself is invalidated, even if it has delivery rule "force"
-		invalidSchedulesService.invalidateSegmentForShipmentSchedule(shipmentSchedule);
+		invalidSchedulesService.notifySegmentChangedForShipmentSchedule(shipmentSchedule);
 	}
 }
