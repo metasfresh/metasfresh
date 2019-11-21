@@ -691,6 +691,56 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000098, SeqNo=52, Updated=now(), UpdatedBy=1
 UPDATE AD_TreeNodeMM SET Parent_ID=1000098, SeqNo=53, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541374 AND AD_Tree_ID=10
 ;
 
+-- 2019-11-21T10:42:57.235Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy,WhereClause) VALUES (0,540511,0,540273,TO_TIMESTAMP('2019-11-21 12:42:57','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Y','AD_InputDataSource_Unique_Value','N',TO_TIMESTAMP('2019-11-21 12:42:57','YYYY-MM-DD HH24:MI:SS'),100,'IsActive = ''Y''')
+;
+
+-- 2019-11-21T10:42:57.237Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Index_Table_ID, t.ErrorMsg, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Index_Table t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Index_Table_ID=540511 AND NOT EXISTS (SELECT 1 FROM AD_Index_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Index_Table_ID=t.AD_Index_Table_ID)
+;
+
+-- 2019-11-21T10:43:37.511Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,544986,540978,540511,0,TO_TIMESTAMP('2019-11-21 12:43:37','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',10,TO_TIMESTAMP('2019-11-21 12:43:37','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2019-11-21T10:43:46.186Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,569590,540979,540511,0,TO_TIMESTAMP('2019-11-21 12:43:46','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',20,TO_TIMESTAMP('2019-11-21 12:43:46','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2019-11-21T10:43:47.098Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+CREATE UNIQUE INDEX AD_InputDataSource_Unique_Value ON AD_InputDataSource (AD_Org_ID,Value) WHERE IsActive = 'Y'
+;
+
+-- 2019-11-21T10:44:16.483Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy,WhereClause) VALUES (0,540512,0,540273,TO_TIMESTAMP('2019-11-21 12:44:16','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Y','AD_InputDataSource_Unique_ExternalId','N',TO_TIMESTAMP('2019-11-21 12:44:16','YYYY-MM-DD HH24:MI:SS'),100,'IsActive = ''Y''')
+;
+
+-- 2019-11-21T10:44:16.487Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Index_Table_ID, t.ErrorMsg, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Index_Table t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Index_Table_ID=540512 AND NOT EXISTS (SELECT 1 FROM AD_Index_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Index_Table_ID=t.AD_Index_Table_ID)
+;
+
+-- 2019-11-21T10:44:26.321Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,544985,540980,540512,0,TO_TIMESTAMP('2019-11-21 12:44:26','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',10,TO_TIMESTAMP('2019-11-21 12:44:26','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2019-11-21T10:44:32.903Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,569591,540981,540512,0,TO_TIMESTAMP('2019-11-21 12:44:32','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',20,TO_TIMESTAMP('2019-11-21 12:44:32','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2019-11-21T10:44:34.250Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+CREATE UNIQUE INDEX AD_InputDataSource_Unique_ExternalId ON AD_InputDataSource (AD_Client_ID,ExternalId) WHERE IsActive = 'Y'
+;
+
 
 
 
