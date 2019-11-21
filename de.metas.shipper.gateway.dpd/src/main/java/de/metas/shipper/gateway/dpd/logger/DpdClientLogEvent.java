@@ -35,6 +35,12 @@ import javax.annotation.Nullable;
 @Builder
 public class DpdClientLogEvent
 {
+	/**
+	 * Regexp explanation: .*? means ungreedy (while .* means greedy).
+	 */
+	public static final String PARCELLABELS_PDF_REGEX = "(?m)<parcellabelsPDF>(.*?\\s*?)</parcellabelsPDF>";
+	public static final String PARCELLABELS_PDF_REPLACEMENT_TEXT = "<parcellabelsPDF>PDF TEXT REMOVED!</parcellabelsPDF>";
+
 	int deliveryOrderRepoId;
 	DpdClientConfig config;
 	Marshaller marshaller;
@@ -77,7 +83,10 @@ public class DpdClientLogEvent
 		{
 			final StringResult result = new StringResult();
 			marshaller.marshal(element, result);
-			return result.toString();
+
+			// remove the pdfdata since it's long and useless and we also attach it to the PO record
+			final String s = result.toString();
+			return s.replaceAll(PARCELLABELS_PDF_REGEX, PARCELLABELS_PDF_REPLACEMENT_TEXT);
 		}
 		catch (final Exception ex)
 		{
