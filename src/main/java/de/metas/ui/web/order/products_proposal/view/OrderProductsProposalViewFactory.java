@@ -103,12 +103,13 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 						ProductsProposalRow.class,
 						key.getViewDataType(),
 						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Product),
+						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Qty),
+						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_PackDescription),
 						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_ASI),
-						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_IsCampaignPrice),
+						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_LastShipmentDays),
 						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Price),
 						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Currency),
-						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Qty),
-						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_LastShipmentDays))
+						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_IsCampaignPrice))
 				//
 				.build();
 	}
@@ -209,9 +210,9 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 	private void createOrderLines(final ProductsProposalView view)
 	{
 		OrderLinesFromProductProposalsProducer.builder()
-		.orderId(view.getOrderId().get())
-		.rows(view.getRowsWithQtySet())
-		.build()
-		.produce();
+				.orderId(view.getOrderId().get())
+				.rows(view.getRowsWithQtySet())
+				.build()
+				.produce();
 	}
 }
