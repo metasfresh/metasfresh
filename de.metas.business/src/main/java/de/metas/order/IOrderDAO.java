@@ -105,6 +105,8 @@ public interface IOrderDAO extends ISingletonService
 
 	List<I_C_OrderLine> retrieveOrderLines(OrderId orderId);
 
+	<T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(OrderId orderId, Class<T> modelClass);
+
 	/** @return all C_OrderLine_IDs for given order, including the inactive ones */
 	List<Integer> retrieveAllOrderLineIds(I_C_Order order);
 
