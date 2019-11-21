@@ -1392,10 +1392,9 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public boolean isActionPriceAllowed(@NonNull final BPartnerId bpartnerId)
+	public boolean isCampaignPriceAllowed(@NonNull final BPartnerId bpartnerId)
 	{
 		final I_C_BPartner bpartner = getById(bpartnerId);
-
 		return bpartner.isAllowActionPrice();
 	}
 

@@ -62,7 +62,7 @@ public class CampaignPricingRule implements IPricingRule
 			return false;
 		}
 
-		if (!bpartnersRepo.isActionPriceAllowed(bpartnerId))
+		if (!bpartnersRepo.isCampaignPriceAllowed(bpartnerId))
 		{
 			logger.debug("Not applying because the partner is not allowed to receive campaign prices");
 			return false;
