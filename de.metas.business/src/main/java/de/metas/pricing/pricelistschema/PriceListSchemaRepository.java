@@ -55,7 +55,7 @@ public class PriceListSchemaRepository
 		schemaLine.setConversionDate(request.getConversionDate());
 		schemaLine.setList_Base(request.getList_Base());
 
-		schemaLine.setC_ConversionType_ID(getRepoIdOrDefault(request.getC_ConversionType_ID()));
+		schemaLine.setC_ConversionType_ID(getRepoIdOrDefault(request.getConversionTypeId()));
 		schemaLine.setLimit_AddAmt(request.getLimit_AddAmt());
 		schemaLine.setLimit_Base(request.getLimit_Base());
 		schemaLine.setLimit_Discount(request.getLimit_Discount());

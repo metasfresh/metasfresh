@@ -67,7 +67,7 @@ public class CreatePriceListSchemaRequest
 	@NonNull
 	String list_Base;
 	@NonNull
-	CurrencyConversionTypeId c_ConversionType_ID;
+	CurrencyConversionTypeId conversionTypeId;
 
 	@NonNull
 	BigDecimal limit_AddAmt;

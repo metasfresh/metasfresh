@@ -115,7 +115,7 @@ public class ImportPriceListSchemaLinesFromAttachment extends JavaProcess implem
 					.conversionDate(SystemTime.asTimestamp())
 					.list_Base(X_M_DiscountSchemaLine.LIST_BASE_Listenpreis)
 
-					.c_ConversionType_ID(DEFAULT_CONVERSION_TYPE_ID)
+					.conversionTypeId(DEFAULT_CONVERSION_TYPE_ID)
 					.limit_AddAmt(BigDecimal.ZERO)
 					.limit_Base(X_M_DiscountSchemaLine.LIMIT_BASE_Mindestpreis)
 					.limit_Discount(BigDecimal.ZERO)
