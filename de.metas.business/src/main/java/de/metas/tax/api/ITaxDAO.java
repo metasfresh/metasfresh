@@ -23,6 +23,7 @@ package de.metas.tax.api;
  */
 
 import java.sql.Timestamp;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.compiere.model.I_C_BPartner;
@@ -79,8 +80,7 @@ public interface ITaxDAO extends ISingletonService
 
 	ITranslatableString getTaxCategoryNameById(TaxCategoryId id);
 
-	@Nullable
-	TaxCategoryId getTaxCategoryIdByNameOrNull(@Nullable String name);
+	Optional<TaxCategoryId> getTaxCategoryIdByName(@Nullable String name);
 
 	@Builder
 	@Value

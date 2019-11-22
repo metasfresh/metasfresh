@@ -155,7 +155,7 @@ public class ImportPriceListSchemaLinesFromAttachment extends JavaProcess implem
 	@Nullable
 	private TaxCategoryId getTaxCategoryId(final String name)
 	{
-		return taxDAO.getTaxCategoryIdByNameOrNull(name);
+		return taxDAO.getTaxCategoryIdByName(name).orElse(null);
 	}
 
 	@Nullable

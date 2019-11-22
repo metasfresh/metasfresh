@@ -26,6 +26,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
@@ -200,18 +201,19 @@ public class TaxDAO implements ITaxDAO
 				.getColumnTrl(I_C_TaxCategory.COLUMNNAME_Name, taxCategory.getName());
 	}
 
-	@Nullable
 	@Override
-	public TaxCategoryId getTaxCategoryIdByNameOrNull(@Nullable final String name)
+	public Optional<TaxCategoryId> getTaxCategoryIdByName(@Nullable final String name)
 	{
 		if (name == null)
 		{
-			return null;
+			return Optional.empty();
 		}
 
-		return queryBL.createQueryBuilder(I_C_TaxCategory.class)
+		final TaxCategoryId taxCategoryId = queryBL.createQueryBuilder(I_C_TaxCategory.class)
 				.addEqualsFilter(I_C_TaxCategory.COLUMN_Name, name)
 				.create()
 				.firstId(TaxCategoryId::ofRepoIdOrNull);
+
+		return Optional.ofNullable(taxCategoryId);
 	}
 }
