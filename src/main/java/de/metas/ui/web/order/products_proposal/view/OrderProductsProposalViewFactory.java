@@ -104,7 +104,8 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_LastShipmentDays),
 						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Price),
 						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Currency),
-						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_IsCampaignPrice))
+						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_IsCampaignPrice),
+						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Description))
 				//
 				.build();
 	}

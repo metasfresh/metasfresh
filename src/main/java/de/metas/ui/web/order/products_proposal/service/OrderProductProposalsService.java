@@ -93,6 +93,7 @@ public class OrderProductProposalsService
 				.priceActual(record.getPriceActual())
 				.qtyEnteredCU(record.getQtyEntered())
 				.qtyEnteredTU(record.getQtyEnteredTU().intValue())
+				.description(record.getDescription())
 				.build();
 	}
 }

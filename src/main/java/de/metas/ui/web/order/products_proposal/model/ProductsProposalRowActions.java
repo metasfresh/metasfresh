@@ -49,6 +49,10 @@ public class ProductsProposalRowActions
 			{
 				builder.price(Optional.of(fieldChangeRequest.getValueAsBigDecimal(BigDecimal.ZERO)));
 			}
+			else if (ProductsProposalRow.FIELD_Description.equals(fieldName))
+			{
+				builder.description(Optional.ofNullable(fieldChangeRequest.getValueAsString(null)));
+			}
 		}
 
 		return builder.build();

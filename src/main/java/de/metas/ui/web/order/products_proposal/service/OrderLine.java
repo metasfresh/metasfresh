@@ -55,6 +55,8 @@ public class OrderLine
 
 	int qtyEnteredTU;
 
+	String description;
+
 	boolean isMatching(
 			@NonNull final ProductId productId,
 			@Nullable final HUPIItemProductId packingMaterialId)

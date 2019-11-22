@@ -143,6 +143,8 @@ public final class OrderLinesFromProductProposalsProducer
 		// IMPORTANT: manual price is always true because we want to make sure the price the sales guy saw in proposals list is the price which gets into order line
 		newOrderLine.setIsManualPrice(true);
 		newOrderLine.setPriceEntered(price.getUserEnteredPriceValue());
+
+		newOrderLine.setDescription(fromRow.getDescription());
 	}
 
 	private IHUPackingAware createHUPackingAware(
