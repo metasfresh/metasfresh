@@ -118,7 +118,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 			@NonNull final Class<T> clazz)
 	{
 		final OrderId orderId = OrderId.ofRepoIdOrNull(order.getC_Order_ID());
-		if(orderId == null)
+		if (orderId == null)
 		{
 			return ImmutableList.of();
 		}
@@ -133,7 +133,15 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	@Override
 	public List<I_C_OrderLine> retrieveOrderLines(final OrderId orderId)
 	{
-		return retrieveOrderLines(Env.getCtx(), orderId, ITrx.TRXNAME_ThreadInherited, I_C_OrderLine.class);
+		return retrieveOrderLines(orderId, I_C_OrderLine.class);
+	}
+
+	@Override
+	public <T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(
+			@NonNull final OrderId orderId,
+			@NonNull final Class<T> modelClass)
+	{
+		return retrieveOrderLines(Env.getCtx(), orderId, ITrx.TRXNAME_ThreadInherited, modelClass);
 	}
 
 	// tsa: commented out because it's not safe to cache the list of order lines and return it without even cloning.

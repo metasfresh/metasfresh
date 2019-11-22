@@ -151,6 +151,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	Map<ShipmentScheduleId, I_M_ShipmentSchedule> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids);
 
+	<T extends I_M_ShipmentSchedule> Map<ShipmentScheduleId, T> getByIdsOutOfTrx(Set<ShipmentScheduleId> ids, Class<T> modelType);
+
 	BPartnerId getBPartnerId(I_M_ShipmentSchedule schedule);
 
 	WarehouseId getWarehouseId(I_M_ShipmentSchedule schedule);
