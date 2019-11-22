@@ -439,6 +439,11 @@
     align-items: center;
     flex-direction: row;
     flex:1;
+    width: 100%;
+    border: 1px solid $brand-border-color;
+    margin-left: 0;
+    margin-right: 0;
+    padding-top: 15px;
 
      > * {
         margin:0;
