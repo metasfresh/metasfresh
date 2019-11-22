@@ -93,14 +93,14 @@ public class BasePLVProductsProposalViewFactory extends ProductsProposalViewFact
 		final PriceListVersionId basePriceListVersionId = parentView.getBasePriceListVersionIdOrFail();
 
 		final ProductsProposalRowsData rowsData = ProductsProposalRowsLoader.builder()
+				.bpartnerProductStatsService(bpartnerProductStatsService)
+				//
 				.priceListVersionId(basePriceListVersionId)
 				.productIdsToExclude(parentView.getProductIds())
-				.bpartnerProductStatsService(bpartnerProductStatsService)
 				.bpartnerId(parentView.getBpartnerId().orElse(null))
 				.soTrx(parentView.getSoTrx())
-				.orderId(parentView.getOrderId().orElse(null))
-				.build()
-				.load();
+				//
+				.build().load();
 
 		final ProductsProposalView view = ProductsProposalView.builder()
 				.windowId(getWindowId())

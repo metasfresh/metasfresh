@@ -12,6 +12,8 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.HUPackingAwareCopy.ASICopyMode;
@@ -19,10 +21,11 @@ import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.OrderLineHUPackingAware;
 import de.metas.adempiere.gui.search.impl.PlainHUPackingAware;
-import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.ui.web.order.products_proposal.model.ProductProposalPrice;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
@@ -88,9 +91,38 @@ public final class OrderLinesFromProductProposalsProducer
 		final Properties ctx = Env.getCtx();
 		final I_C_Order order = ordersRepo.getById(orderId);
 
+		final ImmutableMap<OrderLineId, I_C_OrderLine> existingOrderLines = Maps.uniqueIndex(
+				ordersRepo.retrieveOrderLines(orderId, I_C_OrderLine.class),
+				orderLineRecord -> OrderLineId.ofRepoId(orderLineRecord.getC_OrderLine_ID()));
+
 		for (final ProductsProposalRow row : rows)
 		{
-			OrderFastInput.addOrderLine(ctx, order, orderLine -> updateOrderLine(order, orderLine, row));
+			final I_C_OrderLine existingOrderLine = row.getExistingOrderLineId() != null
+					? existingOrderLines.get(row.getExistingOrderLineId())
+					: null;
+			if (existingOrderLine == null)
+			{
+				if (row.isQtySet())
+				{
+					OrderFastInput.addOrderLine(ctx, order, orderLine -> updateOrderLine(order, orderLine, row));
+				}
+				else
+				{
+					// if qty is not set, don't create the row
+				}
+			}
+			else
+			{
+				if (row.isQtySet())
+				{
+					updateOrderLine(order, existingOrderLine, row);
+					ordersRepo.save(existingOrderLine);
+				}
+				else
+				{
+					ordersRepo.delete(existingOrderLine);
+				}
+			}
 		}
 	}
 
@@ -111,6 +143,8 @@ public final class OrderLinesFromProductProposalsProducer
 		// IMPORTANT: manual price is always true because we want to make sure the price the sales guy saw in proposals list is the price which gets into order line
 		newOrderLine.setIsManualPrice(true);
 		newOrderLine.setPriceEntered(price.getUserEnteredPriceValue());
+
+		newOrderLine.setDescription(fromRow.getDescription());
 	}
 
 	private IHUPackingAware createHUPackingAware(
@@ -137,14 +171,14 @@ public final class OrderLinesFromProductProposalsProducer
 	{
 
 		final PlainHUPackingAware huPackingAware = new PlainHUPackingAware();
-		huPackingAware.setC_BPartner_ID(order.getC_BPartner_ID());
+		huPackingAware.setBpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()));
 		huPackingAware.setInDispute(false);
 
 		final UomId uomId = productBL.getStockUOMId(fromRow.getProductId());
-		huPackingAware.setM_Product_ID(fromRow.getProductId().getRepoId());
-		huPackingAware.setC_UOM_ID(uomId.getRepoId());
+		huPackingAware.setProductId(fromRow.getProductId());
+		huPackingAware.setUomId(uomId);
 		// huPackingAware.setM_AttributeSetInstance_ID(...);
-		huPackingAware.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(fromRow.getPackingMaterialId()));
+		huPackingAware.setPiItemProductId(fromRow.getPackingMaterialId());
 
 		return huPackingAware;
 	}

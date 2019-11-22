@@ -1,30 +1,19 @@
 package de.metas.ui.web.order.products_proposal.view;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_PriceList;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPGroupId;
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.product.stats.BPartnerProductStatsService;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.ITranslatableString;
-import de.metas.lang.SOTrx;
-import de.metas.location.CountryId;
-import de.metas.money.CurrencyId;
-import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
-import de.metas.pricing.PriceListId;
-import de.metas.pricing.PriceListVersionId;
-import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.rules.campaign_price.CampaignPriceService;
-import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProvider;
 import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProviders;
@@ -35,7 +24,9 @@ import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_De
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ShowProductsSoldToOtherCustomers;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList;
+import de.metas.ui.web.order.products_proposal.service.Order;
 import de.metas.ui.web.order.products_proposal.service.OrderLinesFromProductProposalsProducer;
+import de.metas.ui.web.order.products_proposal.service.OrderProductProposalsService;
 import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
@@ -73,15 +64,19 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 	public static final String WINDOW_ID_STRING = "orderProductsProposal";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
+	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+	private final OrderProductProposalsService orderProductProposalsService;
 	private final BPartnerProductStatsService bpartnerProductStatsService;
 	private final CampaignPriceService campaignPriceService;
 
 	public OrderProductsProposalViewFactory(
+			@NonNull final OrderProductProposalsService orderProductProposalsService,
 			@NonNull final BPartnerProductStatsService bpartnerProductStatsService,
 			@NonNull final CampaignPriceService campaignPriceService)
 	{
 		super(WINDOW_ID);
 
+		this.orderProductProposalsService = orderProductProposalsService;
 		this.bpartnerProductStatsService = bpartnerProductStatsService;
 		this.campaignPriceService = campaignPriceService;
 	}
@@ -103,12 +98,14 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 						ProductsProposalRow.class,
 						key.getViewDataType(),
 						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Product),
+						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Qty),
+						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_PackDescription),
 						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_ASI),
-						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_IsCampaignPrice),
+						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_LastShipmentDays),
 						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Price),
 						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Currency),
-						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Qty),
-						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_LastShipmentDays))
+						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_IsCampaignPrice),
+						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Description))
 				//
 				.build();
 	}
@@ -116,70 +113,55 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 	@Override
 	protected ProductsProposalRowsLoader createRowsLoaderFromRecord(@NonNull final TableRecordReference recordRef)
 	{
-		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
-		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
-
 		recordRef.assertTableName(I_C_Order.Table_Name);
 		final OrderId orderId = OrderId.ofRepoId(recordRef.getRecord_ID());
+		return createRowsLoaderFromOrderId(orderId);
+	}
 
-		final I_C_Order orderRecord = ordersRepo.getById(orderId);
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID());
-		final SOTrx soTrx = SOTrx.ofBoolean(orderRecord.isSOTrx());
+	private ProductsProposalRowsLoader createRowsLoaderFromOrderId(@NonNull final OrderId orderId)
+	{
+		final Order order = orderProductProposalsService.getOrderById(orderId);
 
-		final PriceListId priceListId = PriceListId.ofRepoId(orderRecord.getM_PriceList_ID());
-		final LocalDate date = TimeUtil.asLocalDate(orderRecord.getDatePromised());
-		final PriceListVersionId priceListVersionId = priceListsRepo.retrievePriceListVersionId(priceListId, date);
-
-		final CampaignPriceProvider campaignPriceProvider = createCampaignPriceProvider(priceListId, bpartnerId, date, soTrx);
+		final CampaignPriceProvider campaignPriceProvider = createCampaignPriceProvider(order);
 
 		return ProductsProposalRowsLoader.builder()
 				.bpartnerProductStatsService(bpartnerProductStatsService)
 				.campaignPriceProvider(campaignPriceProvider)
-				.priceListVersionId(priceListVersionId)
-				.orderId(orderId)
-				.bpartnerId(bpartnerId)
-				.soTrx(soTrx)
+				//
+				.priceListVersionId(order.getPriceListVersionId())
+				.order(order)
+				.bpartnerId(order.getBpartnerId())
+				.soTrx(order.getSoTrx())
 				.build();
 	}
 
-	private CampaignPriceProvider createCampaignPriceProvider(
-			@NonNull final PriceListId priceListId,
-			@NonNull final BPartnerId bpartnerId,
-			@NonNull final LocalDate date,
-			@NonNull final SOTrx soTrx)
+	private CampaignPriceProvider createCampaignPriceProvider(@NonNull final Order order)
 	{
-		if (!soTrx.isSales())
+		if (!order.getSoTrx().isSales())
 		{
 			return CampaignPriceProviders.none();
 		}
 
-		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
-
-		if (!bpartnersRepo.isActionPriceAllowed(bpartnerId))
+		if (order.getCountryId() == null)
 		{
 			return CampaignPriceProviders.none();
 		}
 
-		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
-		final I_M_PriceList priceList = priceListsRepo.getById(priceListId);
-		final PricingSystemId pricingSystemId = priceListsRepo.getPricingSystemId(priceListId);
-		final CountryId countryId = CountryId.ofRepoIdOrNull(priceList.getC_Country_ID());
-		if (countryId == null)
+		if (!bpartnersRepo.isCampaignPriceAllowed(order.getBpartnerId()))
 		{
 			return CampaignPriceProviders.none();
 		}
-		final CurrencyId currencyId = CurrencyId.ofRepoId(priceList.getC_Currency_ID());
 
-		final BPGroupId bpGroupId = bpartnersRepo.getBPGroupIdByBPartnerId(bpartnerId);
+		final BPGroupId bpGroupId = bpartnersRepo.getBPGroupIdByBPartnerId(order.getBpartnerId());
 
 		return CampaignPriceProviders.standard()
 				.campaignPriceService(campaignPriceService)
-				.bpartnerId(bpartnerId)
+				.bpartnerId(order.getBpartnerId())
 				.bpGroupId(bpGroupId)
-				.pricingSystemId(pricingSystemId)
-				.countryId(countryId)
-				.currencyId(currencyId)
-				.date(date)
+				.pricingSystemId(order.getPricingSystemId())
+				.countryId(order.getCountryId())
+				.currencyId(order.getCurrencyId())
+				.date(TimeUtil.asLocalDate(order.getDatePromised()))
 				.build();
 	}
 
@@ -209,9 +191,9 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 	private void createOrderLines(final ProductsProposalView view)
 	{
 		OrderLinesFromProductProposalsProducer.builder()
-		.orderId(view.getOrderId().get())
-		.rows(view.getRowsWithQtySet())
-		.build()
-		.produce();
+				.orderId(view.getOrderId().get())
+				.rows(view.getAllRows())
+				.build()
+				.produce();
 	}
 }

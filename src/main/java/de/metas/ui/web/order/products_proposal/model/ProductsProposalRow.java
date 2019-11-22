@@ -11,9 +11,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.i18n.ITranslatableString;
+import de.metas.order.OrderLineId;
 import de.metas.pricing.ProductPriceId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
+import de.metas.ui.web.order.products_proposal.service.Order;
+import de.metas.ui.web.order.products_proposal.service.OrderLine;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
@@ -64,32 +68,37 @@ public class ProductsProposalRow implements IViewRow
 	@Getter
 	private final LookupValue product;
 
-	public static final String FIELD_ASI = "asi";
-	@ViewColumn(seqNo = 20, fieldName = FIELD_ASI, captionKey = "M_AttributeSetInstance_ID", widgetType = DocumentFieldWidgetType.Text)
-	@Getter
-	private final ProductASIDescription asiDescription;
-
-	public static final String FIELD_IsCampaignPrice = "isCampaignPrice";
-	@ViewColumn(displayed = false, fieldName = FIELD_IsCampaignPrice, captionKey = "IsCampaignPrice", widgetType = DocumentFieldWidgetType.YesNo)
-	private final boolean isCampaignPrice;
-
-	public static final String FIELD_Price = "price";
-	@ViewColumn(seqNo = 40, fieldName = FIELD_Price, captionKey = "Price", widgetType = DocumentFieldWidgetType.Amount)
-	private final BigDecimal userEnteredPrice;
-
-	public static final String FIELD_Currency = "currency";
-	@ViewColumn(seqNo = 50, fieldName = FIELD_Currency, captionKey = "C_Currency_ID", widgetType = DocumentFieldWidgetType.Text)
-	private final String currencyCodeStr;
-
 	public static final String FIELD_Qty = "qty";
-	@ViewColumn(seqNo = 60, fieldName = FIELD_Qty, captionKey = "Qty", widgetType = DocumentFieldWidgetType.Quantity, editor = ViewEditorRenderMode.ALWAYS)
+	@ViewColumn(seqNo = 20, fieldName = FIELD_Qty, captionKey = "Qty", widgetType = DocumentFieldWidgetType.Quantity, editor = ViewEditorRenderMode.ALWAYS)
 	@Getter
 	private final BigDecimal qty;
 
+	public static final String FIELD_PackDescription = "PackDescription";
+	@ViewColumn(seqNo = 30, fieldName = FIELD_PackDescription, widgetType = DocumentFieldWidgetType.Text)
+	@Getter
+	private final ITranslatableString packingDescription;
+
+	public static final String FIELD_ASI = "asi";
+	@ViewColumn(seqNo = 40, fieldName = FIELD_ASI, captionKey = "M_AttributeSetInstance_ID", widgetType = DocumentFieldWidgetType.Text)
+	@Getter
+	private final ProductASIDescription asiDescription;
+
 	public static final String FIELD_LastShipmentDays = "lastShipmentDays";
-	@ViewColumn(seqNo = 70, fieldName = FIELD_LastShipmentDays, captionKey = "LastShipmentDays", widgetType = DocumentFieldWidgetType.Integer)
+	@ViewColumn(seqNo = 50, fieldName = FIELD_LastShipmentDays, captionKey = "LastShipmentDays", widgetType = DocumentFieldWidgetType.Integer)
 	@Getter
 	private final Integer lastShipmentDays;
+
+	public static final String FIELD_Price = "price";
+	@ViewColumn(seqNo = 60, fieldName = FIELD_Price, captionKey = "Price", widgetType = DocumentFieldWidgetType.Amount)
+	private final BigDecimal userEnteredPrice;
+
+	public static final String FIELD_Currency = "currency";
+	@ViewColumn(seqNo = 61, fieldName = FIELD_Currency, captionKey = "C_Currency_ID", widgetType = DocumentFieldWidgetType.Text)
+	private final String currencyCodeStr;
+
+	public static final String FIELD_IsCampaignPrice = "isCampaignPrice";
+	@ViewColumn(seqNo = 70, fieldName = FIELD_IsCampaignPrice, captionKey = "IsCampaignPrice", widgetType = DocumentFieldWidgetType.YesNo)
+	private final boolean isCampaignPrice;
 
 	public static final String FIELD_BPartner = "bpartner";
 	@ViewColumn(displayed = false, fieldName = FIELD_BPartner, captionKey = "C_BPartner_ID", widgetType = DocumentFieldWidgetType.Lookup)
@@ -99,6 +108,11 @@ public class ProductsProposalRow implements IViewRow
 	@ViewColumn(displayed = false, fieldName = FIELD_LastSalesInvoiceDate, captionKey = "LastSalesInvoiceDate", widgetType = DocumentFieldWidgetType.LocalDate)
 	@Getter
 	private final LocalDate lastSalesInvoiceDate;
+
+	public static final String FIELD_Description = "description";
+	@ViewColumn(displayed = false, fieldName = FIELD_Description, captionKey = "Description", widgetType = DocumentFieldWidgetType.Text, editor = ViewEditorRenderMode.ALWAYS)
+	@Getter
+	private final String description;
 
 	private final DocumentId id;
 	@Getter
@@ -110,10 +124,14 @@ public class ProductsProposalRow implements IViewRow
 	@Getter
 	private final ProductProposalPrice price;
 
+	@Getter
+	private OrderLineId existingOrderLineId;
+
 	private final ViewRowFieldNameAndJsonValuesHolder<ProductsProposalRow> values;
 	private static final ImmutableMap<String, ViewEditorRenderMode> EDITOR_RENDER_MODES = ImmutableMap.<String, ViewEditorRenderMode> builder()
 			.put(FIELD_Qty, ViewEditorRenderMode.ALWAYS)
 			.put(FIELD_Price, ViewEditorRenderMode.ALWAYS)
+			.put(FIELD_Description, ViewEditorRenderMode.ALWAYS)
 			.build();
 
 	@Builder(toBuilder = true)
@@ -121,20 +139,24 @@ public class ProductsProposalRow implements IViewRow
 			@NonNull final DocumentId id,
 			@Nullable final LookupValue bpartner,
 			@NonNull final LookupValue product,
+			@Nullable final ITranslatableString packingDescription,
 			@Nullable final HUPIItemProductId packingMaterialId,
 			@Nullable final ProductASIDescription asiDescription,
 			@NonNull final ProductProposalPrice price,
 			@Nullable final BigDecimal qty,
 			@Nullable final Integer lastShipmentDays,
 			@Nullable final LocalDate lastSalesInvoiceDate,
+			@Nullable final String description,
 			@Nullable final ProductPriceId productPriceId,
-			@Nullable final ProductPriceId copiedFromProductPriceId)
+			@Nullable final ProductPriceId copiedFromProductPriceId,
+			@Nullable final OrderLineId existingOrderLineId)
 	{
 		this.id = id;
 
 		this.bpartner = bpartner;
 
 		this.product = product;
+		this.packingDescription = packingDescription;
 		this.packingMaterialId = packingMaterialId;
 		this.asiDescription = asiDescription != null ? asiDescription : ProductASIDescription.NONE;
 
@@ -148,8 +170,12 @@ public class ProductsProposalRow implements IViewRow
 		this.lastShipmentDays = lastShipmentDays;
 		this.lastSalesInvoiceDate = lastSalesInvoiceDate;
 
+		this.description = description;
+
 		this.productPriceId = productPriceId;
 		this.copiedFromProductPriceId = copiedFromProductPriceId;
+
+		this.existingOrderLineId = existingOrderLineId;
 
 		this.values = ViewRowFieldNameAndJsonValuesHolder.builder(ProductsProposalRow.class)
 				.viewEditorRenderModeByFieldName(EDITOR_RENDER_MODES)
@@ -246,5 +272,27 @@ public class ProductsProposalRow implements IViewRow
 		}
 
 		return true;
+	}
+
+	public ProductsProposalRow withExistingOrderLine(@Nullable final Order order)
+	{
+		if (order == null)
+		{
+			return this;
+		}
+
+		final OrderLine existingOrderLine = order.getFirstMatchingOrderLine(getProductId(), getPackingMaterialId()).orElse(null);
+		if (existingOrderLine == null)
+		{
+			return this;
+		}
+
+		return toBuilder()
+				.qty(existingOrderLine.isPackingMaterialWithInfiniteCapacity()
+						? existingOrderLine.getQtyEnteredCU()
+						: BigDecimal.valueOf(existingOrderLine.getQtyEnteredTU()))
+				.existingOrderLineId(existingOrderLine.getOrderLineId())
+				.description(existingOrderLine.getDescription())
+				.build();
 	}
 }

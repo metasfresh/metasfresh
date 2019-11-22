@@ -21,7 +21,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.lang.SOTrx;
-import de.metas.order.OrderId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -30,6 +29,7 @@ import de.metas.ui.web.order.products_proposal.campaign_price.CampaignPriceProvi
 import de.metas.ui.web.order.products_proposal.filters.ProductsProposalViewFilter;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.RowUpdate;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowChangeRequest.UserChange;
+import de.metas.ui.web.order.products_proposal.service.Order;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
 import de.metas.ui.web.view.template.IEditableRowsData;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -78,7 +78,7 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 	private final Optional<PriceListVersionId> basePriceListVersionId;
 
 	@Getter
-	private final Optional<OrderId> orderId;
+	private final Optional<Order> order;
 	@Getter
 	private final Optional<BPartnerId> bpartnerId;
 	@Getter
@@ -93,7 +93,7 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 			//
 			@Nullable final PriceListVersionId singlePriceListVersionId,
 			@Nullable final PriceListVersionId basePriceListVersionId,
-			@Nullable final OrderId orderId,
+			@Nullable final Order order,
 			@Nullable final BPartnerId bpartnerId,
 			@NonNull final SOTrx soTrx,
 			//
@@ -104,7 +104,7 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 
 		this.singlePriceListVersionId = Optional.ofNullable(singlePriceListVersionId);
 		this.basePriceListVersionId = Optional.ofNullable(basePriceListVersionId);
-		this.orderId = Optional.ofNullable(orderId);
+		this.order = Optional.ofNullable(order);
 		this.bpartnerId = Optional.ofNullable(bpartnerId);
 		this.soTrx = soTrx;
 
@@ -251,7 +251,8 @@ public class ProductsProposalRowsData implements IEditableRowsData<ProductsPropo
 				.price(createPrice(request.getProductId(), request.getPriceListPrice()))
 				.lastShipmentDays(request.getLastShipmentDays())
 				.copiedFromProductPriceId(request.getCopiedFromProductPriceId())
-				.build();
+				.build()
+				.withExistingOrderLine(order.orElse(null));
 	}
 
 	private synchronized void addRow(final ProductsProposalRow row)
