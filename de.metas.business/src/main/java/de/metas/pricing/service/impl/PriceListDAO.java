@@ -12,6 +12,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -234,7 +235,7 @@ public class PriceListDAO implements IPriceListDAO
 	@Override
 	public I_M_PriceList_Version retrievePriceListVersionOrNull(
 			@NonNull final org.compiere.model.I_M_PriceList priceList,
-			@NonNull final LocalDate date,
+			@NonNull final ZonedDateTime date,
 			final Boolean processed)
 	{
 		final Properties ctx = getCtx(priceList);
@@ -246,7 +247,7 @@ public class PriceListDAO implements IPriceListDAO
 	@Override
 	public I_M_PriceList_Version retrievePriceListVersionOrNull(
 			final PriceListId priceListId,
-			final LocalDate date,
+			final ZonedDateTime date,
 			final Boolean processed)
 	{
 		return retrievePriceListVersionOrNull(Env.getCtx(), priceListId, date, processed);
@@ -255,7 +256,7 @@ public class PriceListDAO implements IPriceListDAO
 	@Override
 	public PriceListVersionId retrievePriceListVersionIdOrNull(
 			@NonNull final PriceListId priceListId,
-			@NonNull final LocalDate date,
+			@NonNull final ZonedDateTime date,
 			@Nullable final Boolean processed)
 	{
 		final I_M_PriceList_Version plv = retrievePriceListVersionOrNull(Env.getCtx(), priceListId, date, processed);
@@ -266,7 +267,7 @@ public class PriceListDAO implements IPriceListDAO
 	public I_M_PriceList_Version retrievePriceListVersionOrNull(
 			@CacheCtx @NonNull final Properties ctx,
 			@NonNull final PriceListId priceListId,
-			@NonNull final LocalDate date,
+			@NonNull final ZonedDateTime date,
 			@Nullable final Boolean processed)
 	{
 		Check.assumeNotNull(date, "Param 'date' is not null; other params: priceListId={}, processed={}, ctx={}", priceListId, processed, ctx);
@@ -356,7 +357,7 @@ public class PriceListDAO implements IPriceListDAO
 		if (onlyProcessed)
 		{
 			filter// same processed value
-			.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_Processed, onlyProcessed);
+					.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_Processed, onlyProcessed);
 		}
 
 		// by validFrom, ascending.
@@ -448,7 +449,7 @@ public class PriceListDAO implements IPriceListDAO
 				.addFiltersUnboxed(createPriceProductQueryFilter(date));
 
 		queryBuilder.orderBy()
-		.addColumn(I_M_ProductPrice.COLUMNNAME_M_Product_ID);
+				.addColumn(I_M_ProductPrice.COLUMNNAME_M_Product_ID);
 
 		return queryBuilder.create()
 				.stream()
@@ -553,34 +554,46 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
-	public I_M_PriceList_Version getBasePriceListVersionForPricingCalculationOrNull(@NonNull final PriceListVersionId priceListVersionId)
+	public I_M_PriceList_Version getBasePriceListVersionForPricingCalculationOrNull(@NonNull final PriceListVersionId priceListVersionId,
+			@NonNull ZonedDateTime promisedDate)
 	{
 		final I_M_PriceList_Version priceListVersion = getPriceListVersionById(priceListVersionId);
-		return getBasePriceListVersionForPricingCalculationOrNull(priceListVersion);
+		return getBasePriceListVersionForPricingCalculationOrNull(priceListVersion, promisedDate);
 	}
 
 	@Override
-	public I_M_PriceList_Version getBasePriceListVersionForPricingCalculationOrNull(@NonNull final I_M_PriceList_Version priceListVersion)
+	public I_M_PriceList_Version getBasePriceListVersionForPricingCalculationOrNull(@NonNull final I_M_PriceList_Version priceListVersion,
+			@NonNull ZonedDateTime date)
 	{
-		final PriceListVersionId basePriceListVersionId = getBasePriceListVersionIdForPricingCalculationOrNull(priceListVersion);
+		final PriceListVersionId basePriceListVersionId = getBasePriceListVersionIdForPricingCalculationOrNull(priceListVersion, date);
 		return basePriceListVersionId != null
 				? getPriceListVersionById(basePriceListVersionId)
-						: null;
+				: null;
 	}
 
 	@Override
-	public /* static */PriceListVersionId getBasePriceListVersionIdForPricingCalculationOrNull(@NonNull final I_M_PriceList_Version priceListVersion)
+	public /* static */PriceListVersionId getBasePriceListVersionIdForPricingCalculationOrNull(@NonNull final I_M_PriceList_Version priceListVersion,
+			@NonNull ZonedDateTime date)
 	{
-		return priceListVersion.isFallbackToBasePriceListPrices()
-				? PriceListVersionId.ofRepoIdOrNull(priceListVersion.getM_Pricelist_Version_Base_ID())
-						: null;
+
+		final I_M_PriceList priceList = getById(priceListVersion.getM_PriceList_ID());
+
+		final int basePriceListRecordId = priceList.getBasePriceList_ID();
+
+		if (basePriceListRecordId <= 0)
+		{
+			return null;
+		}
+
+		return retrievePriceListVersionIdOrNull(PriceListId.ofRepoId(basePriceListRecordId), date);
 	}
 
 	@Override
-	public PriceListVersionId getBasePriceListVersionIdForPricingCalculationOrNull(@NonNull final PriceListVersionId priceListVersionId)
+	public PriceListVersionId getBasePriceListVersionIdForPricingCalculationOrNull(@NonNull final PriceListVersionId priceListVersionId,
+			@NonNull ZonedDateTime date)
 	{
 		final I_M_PriceList_Version priceListVersion = getPriceListVersionById(priceListVersionId);
-		return getBasePriceListVersionIdForPricingCalculationOrNull(priceListVersion);
+		return getBasePriceListVersionIdForPricingCalculationOrNull(priceListVersion, date);
 	}
 
 	@Override
@@ -649,10 +662,10 @@ public class PriceListDAO implements IPriceListDAO
 		}
 
 		Services.get(IQueryBL.class)
-		.createQueryBuilder(I_M_ProductPrice.class)
-		.addInArrayFilter(I_M_ProductPrice.COLUMN_M_ProductPrice_ID, productPriceIds)
-		.create()
-		.delete();
+				.createQueryBuilder(I_M_ProductPrice.class)
+				.addInArrayFilter(I_M_ProductPrice.COLUMN_M_ProductPrice_ID, productPriceIds)
+				.create()
+				.delete();
 	}
 
 	@Override
@@ -712,7 +725,7 @@ public class PriceListDAO implements IPriceListDAO
 					ITrx.TRXNAME_ThreadInherited //
 					, "select M_PriceList_Version_CopyFromBase(p_M_PriceList_Version_ID:=?, p_AD_User_ID:=?)" //
 					, new Object[] { newCustomerPLVId, userId.getRepoId() } //
-					);
+			);
 
 		}
 		finally
@@ -724,12 +737,12 @@ public class PriceListDAO implements IPriceListDAO
 	private void cloneASIs(final PriceListVersionId newPLVId)
 	{
 		Services.get(IQueryBL.class)
-		.createQueryBuilder(I_M_ProductPrice.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
-		.addEqualsFilter(I_M_ProductPrice.COLUMN_M_PriceList_Version_ID, newPLVId)
-		.addEqualsFilter(I_M_ProductPrice.COLUMN_IsAttributeDependant, true)
-		.create()
-		.iterateAndStream()
-		.forEach(this::cloneASI);
+				.createQueryBuilder(I_M_ProductPrice.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+				.addEqualsFilter(I_M_ProductPrice.COLUMN_M_PriceList_Version_ID, newPLVId)
+				.addEqualsFilter(I_M_ProductPrice.COLUMN_IsAttributeDependant, true)
+				.create()
+				.iterateAndStream()
+				.forEach(this::cloneASI);
 	}
 
 	private void cloneASI(final I_M_ProductPrice productPrice)

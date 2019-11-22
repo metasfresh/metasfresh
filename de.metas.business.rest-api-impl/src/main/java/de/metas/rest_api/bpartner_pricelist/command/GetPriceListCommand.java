@@ -1,6 +1,6 @@
 package de.metas.rest_api.bpartner_pricelist.command;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_PriceList;
@@ -61,7 +61,7 @@ public class GetPriceListCommand
 	private final IdentifierString bpartnerIdentifier;
 	private final SOTrx soTrx;
 	private final String countryCode;
-	private final LocalDate date;
+	private final ZonedDateTime date;
 
 	// context/state
 	private CountryId countryId;
@@ -76,7 +76,7 @@ public class GetPriceListCommand
 			@NonNull final IdentifierString bpartnerIdentifier,
 			@NonNull final SOTrx soTrx,
 			@NonNull final String countryCode,
-			@NonNull final LocalDate date)
+			@NonNull final ZonedDateTime date)
 	{
 		this.servicesFacade = servicesFacade;
 

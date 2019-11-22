@@ -3,7 +3,7 @@ package de.metas.order.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
@@ -11,6 +11,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.X_C_OrderLine;
+import org.compiere.util.TimeUtil;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -300,7 +301,7 @@ final class OrderLinePriceCalculator
 			bpartnerId = order.getC_BPartner_ID();
 		}
 
-		final LocalDate date = OrderLineBL.getPriceDate(orderLine, order);
+		final ZonedDateTime date = OrderLineBL.getPriceDate(orderLine, order);
 
 		final BigDecimal qtyInPriceUOM;
 		if (request.getQtyOverride() != null)
@@ -319,7 +320,7 @@ final class OrderLinePriceCalculator
 				orderLine.getPrice_UOM_ID(),  // task 06942
 				qtyInPriceUOM,
 				isSOTrx);
-		pricingCtx.setPriceDate(date);
+		pricingCtx.setPriceDate(TimeUtil.asLocalDate(date));
 
 		// 03152: setting the 'ol' to allow the subscription system to compute the right price
 		pricingCtx.setReferencedObject(orderLine);
