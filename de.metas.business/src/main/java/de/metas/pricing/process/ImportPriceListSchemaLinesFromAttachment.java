@@ -86,6 +86,27 @@ public class ImportPriceListSchemaLinesFromAttachment extends JavaProcess implem
 	private final CurrencyConversionTypeId DEFAULT_CONVERSION_TYPE_ID = CurrencyConversionTypeId.ofRepoId(114); // no idea from where this 114 comes, but this is what i've got
 
 	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
+	{
+		if (context.isNoSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+
+		if (!context.isSingleSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+
+		if (priceListSchemaRepository.hasAnyLines(PricingConditionsId.ofRepoId(context.getSingleSelectedRecordId())))
+		{
+			return ProcessPreconditionsResolution.reject("The Price List Schema Must have no Lines."); // todo translate this
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
+
+	@Override
 	protected String doIt() throws Exception
 	{
 		final List<String> lines = readAttachmentLines();
@@ -102,12 +123,12 @@ public class ImportPriceListSchemaLinesFromAttachment extends JavaProcess implem
 
 			final CreatePriceListSchemaRequest priceListSchemaRequest = CreatePriceListSchemaRequest.builder()
 					.discountSchemaId(PricingConditionsId.ofRepoId(getRecord_ID()))
-					.seqNo(getIntValue(split[INDEX_SeqNo]))
+					.seqNo(NumberUtils.asIntOrZero(split[INDEX_SeqNo]))
 					.productId(getProductId(split[INDEX_Product]))
 					.productCategoryId(getProductCategoryId(split[INDEX_Product_Category]))
 					.bPartnerId(getBPartnerId(split[INDEX_Business_Partner]))
 					.taxCategoryId(getTaxCategoryId(split[INDEX_Tax_Category]))
-					.std_AddAmt(getDecimalValue(split[INDEX_Std_Price_Surcharge_Amt]))
+					.std_AddAmt(NumberUtils.asBigDecimal(split[INDEX_Std_Price_Surcharge_Amt]))
 					.std_Rounding(split[INDEX_Standard_Price_Rounding])
 					.taxCategoryTargetId(getTaxCategoryId(split[INDEX_Target_Taxcategory]))
 
@@ -141,17 +162,6 @@ public class ImportPriceListSchemaLinesFromAttachment extends JavaProcess implem
 		return MSG_OK;
 	}
 
-	@NonNull
-	private BigDecimal getDecimalValue(final String s)
-	{
-		return new BigDecimal(s);
-	}
-
-	private int getIntValue(final String val)
-	{
-		return getDecimalValue(val).intValue();
-	}
-
 	@Nullable
 	private TaxCategoryId getTaxCategoryId(final String name)
 	{
@@ -180,26 +190,5 @@ public class ImportPriceListSchemaLinesFromAttachment extends JavaProcess implem
 	{
 		final AttachmentEntryDataResource attachment = attachmentEntryService.retrieveDataResource(p_AD_AttachmentEntry_ID);
 		return IOUtils.readLines(attachment.getInputStream(), StandardCharsets.UTF_8);
-	}
-
-	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
-	{
-		if (context.isNoSelection())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
-		}
-
-		if (!context.isSingleSelection())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
-		}
-
-		if (priceListSchemaRepository.hasAnyLines(PricingConditionsId.ofRepoId(context.getSingleSelectedRecordId())))
-		{
-			return ProcessPreconditionsResolution.reject("The Price List Schema Must have no Lines."); // todo translate this
-		}
-
-		return ProcessPreconditionsResolution.accept();
 	}
 }
