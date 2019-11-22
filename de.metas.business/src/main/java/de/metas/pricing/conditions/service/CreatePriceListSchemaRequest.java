@@ -54,18 +54,11 @@ public class CreatePriceListSchemaRequest
 
 	@Nullable
 	TaxCategoryId taxCategoryId;
-	@NonNull
-	BigDecimal std_AddAmt;
-	@NonNull
-	String std_Rounding;
 	@Nullable
 	TaxCategoryId taxCategoryTargetId;
 
 	@NonNull
 	LocalDate conversionDate;
-
-	@NonNull
-	String list_Base;
 	@NonNull
 	CurrencyConversionTypeId conversionTypeId;
 
@@ -85,6 +78,8 @@ public class CreatePriceListSchemaRequest
 	@NonNull
 	BigDecimal list_AddAmt;
 	@NonNull
+	String list_Base;
+	@NonNull
 	BigDecimal list_Discount;
 	@NonNull
 	BigDecimal list_MaxAmt;
@@ -94,6 +89,8 @@ public class CreatePriceListSchemaRequest
 	String list_Rounding;
 
 	@NonNull
+	BigDecimal std_AddAmt;
+	@NonNull
 	String std_Base;
 	@NonNull
 	BigDecimal std_Discount;
@@ -101,4 +98,6 @@ public class CreatePriceListSchemaRequest
 	BigDecimal std_MaxAmt;
 	@NonNull
 	BigDecimal std_MinAmt;
+	@NonNull
+	String std_Rounding;
 }
