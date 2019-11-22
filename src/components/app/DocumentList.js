@@ -474,22 +474,26 @@ export class DocumentList extends Component {
       refDocId: refId,
       refTabId,
       refRowIds,
-    }).then(response => {
-      this.mounted &&
-        this.setState(
-          {
-            data: {
-              ...response.data,
+    })
+      .then(response => {
+        this.mounted &&
+          this.setState(
+            {
+              data: {
+                ...response.data,
+              },
+              viewId: response.data.viewId,
+              triggerSpinner: false,
             },
-            viewId: response.data.viewId,
-            triggerSpinner: false,
-          },
-          () => {
-            this.connectWebSocket(response.data.viewId);
-            this.getData(response.data.viewId, page, sort);
-          }
-        );
-    });
+            () => {
+              this.connectWebSocket(response.data.viewId);
+              this.getData(response.data.viewId, page, sort);
+            }
+          );
+      })
+      .catch(() => {
+        this.setState({ triggerSpinner: false });
+      });
   };
 
   /**
@@ -504,27 +508,31 @@ export class DocumentList extends Component {
       windowType,
       viewId,
       filtersActive.toIndexedSeq().toArray()
-    ).then(response => {
-      const viewId = response.data.viewId;
+    )
+      .then(response => {
+        const viewId = response.data.viewId;
 
-      if (isIncluded) {
-        dispatch(setListIncludedView({ windowType, viewId }));
-      }
+        if (isIncluded) {
+          dispatch(setListIncludedView({ windowType, viewId }));
+        }
 
-      this.mounted &&
-        this.setState(
-          {
-            data: {
-              ...response.data,
+        this.mounted &&
+          this.setState(
+            {
+              data: {
+                ...response.data,
+              },
+              viewId: viewId,
+              triggerSpinner: false,
             },
-            viewId: viewId,
-            triggerSpinner: false,
-          },
-          () => {
-            this.getData(viewId, page, sort, locationAreaSearch);
-          }
-        );
-    });
+            () => {
+              this.getData(viewId, page, sort, locationAreaSearch);
+            }
+          );
+      })
+      .catch(() => {
+        this.setState({ triggerSpinner: false });
+      });
   };
 
   /**
@@ -560,94 +568,98 @@ export class DocumentList extends Component {
       page: page,
       pageLength: this.pageLength,
       orderBy: sortingQuery,
-    }).then(response => {
-      const result = List(response.data.result);
-      result.hashCode();
+    })
+      .then(response => {
+        const result = List(response.data.result);
+        result.hashCode();
 
-      const resultById = {};
-      const selection = getSelectionDirect(selections, windowType, viewId);
-      const forceSelection =
-        (type === 'includedView' || isIncluded) &&
-        response.data &&
-        result.size > 0 &&
-        (selection.length === 0 ||
-          !doesSelectionExist({
+        const resultById = {};
+        const selection = getSelectionDirect(selections, windowType, viewId);
+        const forceSelection =
+          (type === 'includedView' || isIncluded) &&
+          response.data &&
+          result.size > 0 &&
+          (selection.length === 0 ||
+            !doesSelectionExist({
+              data: {
+                ...response.data,
+                result,
+              },
+              rowDataMap: Map({ 1: result }),
+              selected: selection,
+            }));
+
+        result.map(row => {
+          const parsed = parseToDisplay(row.fieldsByName);
+          resultById[`${row.id}`] = parsed;
+          row.fieldsByName = parsed;
+        });
+
+        const pageColumnInfosByFieldName = response.data.columnsByFieldName;
+        mergeColumnInfosIntoViewRows(
+          pageColumnInfosByFieldName,
+          response.data.result
+        );
+
+        if (this.mounted) {
+          const newState = {
             data: {
               ...response.data,
               result,
+              resultById,
             },
             rowDataMap: Map({ 1: result }),
-            selected: selection,
-          }));
+            pageColumnInfosByFieldName: pageColumnInfosByFieldName,
+            triggerSpinner: false,
+          };
 
-      result.map(row => {
-        const parsed = parseToDisplay(row.fieldsByName);
-        resultById[`${row.id}`] = parsed;
-        row.fieldsByName = parsed;
-      });
-
-      const pageColumnInfosByFieldName = response.data.columnsByFieldName;
-      mergeColumnInfosIntoViewRows(
-        pageColumnInfosByFieldName,
-        response.data.result
-      );
-
-      if (this.mounted) {
-        const newState = {
-          data: {
-            ...response.data,
-            result,
-            resultById,
-          },
-          rowDataMap: Map({ 1: result }),
-          pageColumnInfosByFieldName: pageColumnInfosByFieldName,
-          triggerSpinner: false,
-        };
-
-        if (response.data.filters) {
-          newState.filtersActive = filtersToMap(response.data.filters);
-        }
-
-        // we have map search results
-        if (
-          locationAreaSearch ||
-          (newState.filtersActive &&
-            newState.filtersActive.has(`location-area-search`))
-        ) {
-          this.getLocationData(resultById);
-        }
-
-        this.setState({ ...newState }, () => {
-          if (forceSelection && response.data && result && result.size > 0) {
-            const selection = [result.get(0).id];
-
-            dispatch(
-              selectTableItems({
-                windowType,
-                viewId,
-                ids: selection,
-              })
-            );
+          if (response.data.filters) {
+            newState.filtersActive = filtersToMap(response.data.filters);
           }
-        });
 
-        // process modal specific
-        const {
-          parentViewId,
-          parentWindowId,
-          headerProperties,
-        } = response.data;
-        dispatch(
-          updateRawModal(windowType, {
+          // we have map search results
+          if (
+            locationAreaSearch ||
+            (newState.filtersActive &&
+              newState.filtersActive.has(`location-area-search`))
+          ) {
+            this.getLocationData(resultById);
+          }
+
+          this.setState({ ...newState }, () => {
+            if (forceSelection && response.data && result && result.size > 0) {
+              const selection = [result.get(0).id];
+
+              dispatch(
+                selectTableItems({
+                  windowType,
+                  viewId,
+                  ids: selection,
+                })
+              );
+            }
+          });
+
+          // process modal specific
+          const {
             parentViewId,
             parentWindowId,
             headerProperties,
-          })
-        );
-      }
+          } = response.data;
+          dispatch(
+            updateRawModal(windowType, {
+              parentViewId,
+              parentWindowId,
+              headerProperties,
+            })
+          );
+        }
 
-      dispatch(indicatorState('saved'));
-    });
+        dispatch(indicatorState('saved'));
+      })
+      .catch(() => {
+        this.setState({ triggerSpinner: false });
+      });
   };
 
   getLocationData = resultById => {
