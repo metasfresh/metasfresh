@@ -177,7 +177,7 @@ public class ImportPriceListSchemaLinesFromAttachment extends JavaProcess implem
 	@Nullable
 	private ProductCategoryId getProductCategoryId(final String value)
 	{
-		return productDAO.retrieveProductCategoryIdByCategoryValueOrNull(value);
+		return productDAO.retrieveProductCategoryIdByCategoryValue(value).orElse(null);
 	}
 
 	@Nullable

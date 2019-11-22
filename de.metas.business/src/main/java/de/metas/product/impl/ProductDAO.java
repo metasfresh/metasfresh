@@ -34,6 +34,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -178,9 +179,8 @@ public class ProductDAO implements IProductDAO
 		return ProductId.ofRepoIdOrNull(productRepoId);
 	}
 
-	@Nullable
 	@Override
-	public ProductCategoryId retrieveProductCategoryIdByCategoryValueOrNull(final String categoryValue)
+	public Optional<ProductCategoryId> retrieveProductCategoryIdByCategoryValue(final String categoryValue)
 	{
 		final int productCategoryRepoId = queryBL
 				.createQueryBuilder(I_M_Product_Category.class)
@@ -189,7 +189,7 @@ public class ProductDAO implements IProductDAO
 				.create()
 				.firstIdOnly();
 
-		return ProductCategoryId.ofRepoIdOrNull(productCategoryRepoId);
+		return Optional.ofNullable(ProductCategoryId.ofRepoIdOrNull(productCategoryRepoId));
 	}
 
 	@Override

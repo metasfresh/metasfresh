@@ -27,6 +27,7 @@ import static de.metas.util.lang.CoalesceUtil.coalesce;
  */
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -84,8 +85,7 @@ public interface IProductDAO extends ISingletonService
 
 	ProductId retrieveProductIdBy(ProductQuery query);
 
-	@Nullable
-	ProductCategoryId retrieveProductCategoryIdByCategoryValueOrNull(String categoryValue);
+	Optional<ProductCategoryId> retrieveProductCategoryIdByCategoryValue(String categoryValue);
 
 	@Value
 	public static class ProductQuery
