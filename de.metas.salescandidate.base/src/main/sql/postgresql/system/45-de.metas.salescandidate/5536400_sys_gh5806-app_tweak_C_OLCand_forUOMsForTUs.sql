@@ -68,7 +68,7 @@ INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Ind
 
 -- 2019-11-20T14:23:43.173Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-CREATE UNIQUE INDEX C_OLCand_External_ID ON C_OLCand (COALESCE(ExternalHeaderId,''),COALESCE(ExternalLineId,''),AD_Org_ID) WHERE IsActive='Y'
+CREATE UNIQUE INDEX C_OLCand_External_ID ON C_OLCand (ExternalHeaderId,ExternalLineId,AD_Org_ID) WHERE IsActive='Y'
 ;
 
 -- 2019-11-21T13:04:16.982Z
@@ -139,5 +139,51 @@ UPDATE AD_Field SET DisplayLogic='@IsManualDiscount/''N''@=''Y''',Updated=TO_TIM
 -- 2019-11-21T16:07:38.629Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Field SET DisplayLogic='@PriceDifference/null@!=null',Updated=TO_TIMESTAMP('2019-11-21 17:07:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=555186
+;
+
+
+-- 2019-11-22T15:38:56.303Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,544946,0,TO_TIMESTAMP('2019-11-22 16:38:56','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','erforderlich','I',TO_TIMESTAMP('2019-11-22 16:38:56','YYYY-MM-DD HH24:MI:SS'),100,'REQUIRED')
+;
+
+-- 2019-11-22T15:38:56.306Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Message_ID=544946 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
+;
+
+-- 2019-11-22T15:38:59.135Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2019-11-22 16:38:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=544946
+;
+
+-- 2019-11-22T15:39:05.791Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='required',Updated=TO_TIMESTAMP('2019-11-22 16:39:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=544946
+;
+
+-- 2019-11-22T15:47:08.151Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Index_Table SET Description='The ExternalLineId and ExternalHeaderId are specified, they need to be unique per AD_Org_ID',Updated=TO_TIMESTAMP('2019-11-22 16:47:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540509
+;
+
+-- 2019-11-22T15:47:11.289Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Index_Column SET ColumnSQL='',Updated=TO_TIMESTAMP('2019-11-22 16:47:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Column_ID=540973
+;
+
+-- 2019-11-22T15:47:14.166Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Index_Column SET ColumnSQL='',Updated=TO_TIMESTAMP('2019-11-22 16:47:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Column_ID=540974
+;
+
+-- 2019-11-22T15:47:16.609Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DROP INDEX IF EXISTS c_olcand_external_id
+;
+
+-- 2019-11-22T15:47:16.611Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+CREATE UNIQUE INDEX C_OLCand_External_ID ON C_OLCand (ExternalHeaderId,ExternalLineId,AD_Org_ID) WHERE IsActive='Y'
 ;
 
