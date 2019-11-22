@@ -5,9 +5,12 @@ import java.time.format.DateTimeFormatter;
 
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -38,6 +41,8 @@ public class M_PricelistVersion_TabCallout extends TabCalloutAdapter
 	@Override
 	public void onNew(@NonNull final ICalloutRecord calloutRecord)
 	{
+		final IPriceListDAO pricelistDAO = Services.get(IPriceListDAO.class);
+
 		final I_M_PriceList_Version version = calloutRecord.getModel(I_M_PriceList_Version.class);
 
 		if (!Check.isEmpty(version.getName()))
@@ -47,7 +52,19 @@ public class M_PricelistVersion_TabCallout extends TabCalloutAdapter
 		}
 
 		final LocalDate today = SystemTime.asLocalDate();
-		version.setName(today.format(DateTimeFormatter.ISO_LOCAL_DATE));
+		final String formattedDate = today.format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+		final I_M_PriceList pricelist = pricelistDAO.getById(version.getM_PriceList_ID());
+
+		final String pricelsitName = pricelist.getName();
+
+		final String plvName = new StringBuilder()
+				.append(pricelsitName)
+				.append(" ")
+				.append(formattedDate)
+				.toString();
+
+		version.setName(plvName);
 	}
 
 }
