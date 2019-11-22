@@ -3,6 +3,7 @@ package de.metas.edi.esb.bean.invoic;
 import org.apache.camel.CamelContext;
 
 import de.metas.edi.esb.commons.Util;
+import de.metas.edi.esb.pojo.common.MeasurementUnit;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,6 +34,8 @@ import lombok.Value;
 @Builder
 public class StepComInvoicSettings
 {
+	private static final String ANY_MEASUREMENTUNIT = "<ANY>";
+
 	public static StepComInvoicSettings forReceiverGLN(
 			@NonNull final CamelContext context,
 			@NonNull final String recipientGLN)
@@ -42,7 +45,7 @@ public class StepComInvoicSettings
 				.applicationRef(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.applicationRef", "INVOIC"))
 				.partnerId(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.partnerId"))
 				.testIndicator(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.testIndicator", "T"))
-				.invoicORSE(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN."+ recipientGLN +".invoic.ORSE", "true"))
+				.invoicORSE(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.ORSE", "true"))
 
 				.invoicBUYRAddressName1Required(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.BUYR.AddressName1.required", "true"))
 				.invoicBUYRGLNRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.BUYR.GLN.required", "true"))
@@ -58,6 +61,7 @@ public class StepComInvoicSettings
 
 				.invoicLineEANCRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.EANC.required", "false"))
 				.invoicLineGTINRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.GTIN.required", "false"))
+				.invoicLineRequiredMEASUREMENTUNIT(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.MEASUREMENTUNIT.required", ANY_MEASUREMENTUNIT))
 				.build();
 	}
 
@@ -83,4 +87,18 @@ public class StepComInvoicSettings
 
 	boolean invoicLineEANCRequired;
 	boolean invoicLineGTINRequired;
+
+	String invoicLineRequiredMEASUREMENTUNIT;
+
+	public boolean isInvoicLineMEASUREMENTUNITRequired()
+	{
+		return !Util.isEmpty(invoicLineRequiredMEASUREMENTUNIT);
+	}
+
+	public boolean isMeasurementUnitAllowed(@NonNull final MeasurementUnit measurementUnit)
+	{
+		return Util.isEmpty(invoicLineRequiredMEASUREMENTUNIT)
+				|| ANY_MEASUREMENTUNIT.equals(invoicLineRequiredMEASUREMENTUNIT)
+				|| invoicLineRequiredMEASUREMENTUNIT.equals(measurementUnit.name());
+	}
 }

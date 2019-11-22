@@ -10,12 +10,12 @@ package de.metas.edi.esb.commons;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,7 +36,6 @@ public class FixedTimeSource implements TimeSource
 		{
 			ts = System.currentTimeMillis();
 		}
-
 		return ts;
 	}
 
@@ -45,16 +44,7 @@ public class FixedTimeSource implements TimeSource
 		ts = millis;
 	}
 
-	/**
-	 *
-	 * @param year
-	 * @param month month (from 0 to 11)
-	 * @param day
-	 * @param hour
-	 * @param minute
-	 * @param sec
-	 */
-	public void setTime(final int year, final int month, final int day, final int hour, final int minute, final int sec)
+	public FixedTimeSource setTime(final int year, final int month, final int day, final int hour, final int minute, final int sec)
 	{
 		final Calendar cal = Calendar.getInstance();
 		cal.set(Calendar.YEAR, year);
@@ -66,5 +56,6 @@ public class FixedTimeSource implements TimeSource
 		cal.set(Calendar.MILLISECOND, 0);
 
 		ts = cal.getTimeInMillis();
+		return this;
 	}
 }

@@ -237,7 +237,7 @@ public class StepComXMLInvoicBean
 			final EDICctopInvoicVType invoice,
 			final HEADERXrech headerXrech,
 			final DecimalFormat decimalFormat,
-			final StepComInvoicSettings receiverSettings)
+			final StepComInvoicSettings settings)
 	{
 		invoice.getEDICctopInvoic500V().sort(Comparator.comparing(EDICctopInvoic500VType::getLine));
 		final String documentId = headerXrech.getDOCUMENTID();
@@ -258,7 +258,7 @@ public class StepComXMLInvoicBean
 				detailXrech.getDPRIN1().add(productInfo);
 			}
 
-			if (receiverSettings.isInvoicLineGTINRequired())
+			if (settings.isInvoicLineGTINRequired())
 			{
 				final String gtin = ValidationHelper.validateString(xmlCctopInvoic500V.getGTIN(),
 						"@FillMandatory@ @C_InvoiceLine_ID@=" + xmlCctopInvoic500V.getLine() + " @GTIN@");
@@ -291,7 +291,7 @@ public class StepComXMLInvoicBean
 				detailXrech.getDPRIN1().add(dprin1);
 			}
 
-			if (receiverSettings.isInvoicLineEANCRequired())
+			if (settings.isInvoicLineEANCRequired())
 			{
 				final String eanCU = ValidationHelper.validateString(xmlCctopInvoic500V.getEANCU(),
 						"@FillMandatory@ @C_InvoiceLine_ID@=" + xmlCctopInvoic500V.getLine() + " @EANCU@");
@@ -337,9 +337,16 @@ public class StepComXMLInvoicBean
 			invoicedQuantity.setDOCUMENTID(documentId);
 			invoicedQuantity.setLINENUMBER(lineNumber);
 			invoicedQuantity.setQUANTITYQUAL(QuantityQual.INVO.name());
-			final MeasurementUnit measurementUnit = MeasurementUnit.fromMetasfreshUOM(xmlCctopInvoic500V.getEancomUom());
-			if (measurementUnit != null)
+
+			if (settings.isInvoicLineMEASUREMENTUNITRequired())
 			{
+				final String eanComUom = ValidationHelper.validateString(xmlCctopInvoic500V.getEancomUom(),
+						"@FillMandatory@ @C_InvoiceLine_ID@=" + xmlCctopInvoic500V.getLine() + " @C_UOM_ID@");
+				final MeasurementUnit measurementUnit = MeasurementUnit.fromMetasfreshUOM(eanComUom);
+				if (!settings.isMeasurementUnitAllowed(measurementUnit))
+				{
+					throw new RuntimeCamelException("@C_InvoiceLine_ID@=" + xmlCctopInvoic500V.getLine() + " @C_UOM_ID@=" + settings.getInvoicLineRequiredMEASUREMENTUNIT() + " @REQUIRED@");
+				}
 				invoicedQuantity.setMEASUREMENTUNIT(measurementUnit.name());
 			}
 			invoicedQuantity.setQUANTITY(formatNumber(xmlCctopInvoic500V.getQtyInvoiced(), decimalFormat));

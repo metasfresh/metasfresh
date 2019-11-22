@@ -557,7 +557,7 @@
 			<xsd:element maxOccurs="1" minOccurs="1" name="IsManualPrice" type="YES-NO" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="M_Product_ID" type="EDI_M_Product_Lookup_UPC_vType" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="PriceEntered" type="xsd:decimal" />
-			<xsd:element maxOccurs="1" minOccurs="1" name="Qty" type="xsd:decimal" />
+			<xsd:element maxOccurs="1" minOccurs="1" name="QtyEntered" type="xsd:decimal" />
 			<xsd:element maxOccurs="1" minOccurs="1" name="Line" type="xsd:integer" />
 			<xsd:element maxOccurs="1" minOccurs="1" name="POReference" type="xsd:string" />
 			<xsd:element maxOccurs="1" minOccurs="0" name="HandOver_Location_ID" type="EDI_Imp_C_BPartner_Location_Lookup_GLNType" />

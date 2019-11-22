@@ -59,6 +59,7 @@ import de.metas.edi.esb.pojo.order.compudata.H000;
 import de.metas.edi.esb.pojo.order.compudata.H100;
 import de.metas.edi.esb.pojo.order.compudata.P100;
 import de.metas.edi.esb.route.AbstractEDIRoute;
+import lombok.NonNull;
 
 public abstract class AbstractEDIOrdersBean
 {
@@ -70,7 +71,7 @@ public abstract class AbstractEDIOrdersBean
 	private static final ObjectFactory factory = Constants.JAXB_ObjectFactory;
 
 	public List<Message> createXMLDocument(@Body final List<Object> ediLines,
-			@ExchangeProperty(value = Exchange.FILE_NAME) final String CamelFileName,
+			@ExchangeProperty(value = Exchange.FILE_NAME) final String camelFileName,
 			@ExchangeProperty(value = AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern) final String EDIMessageDatePattern,
 			@ExchangeProperty(value = AbstractEDIRoute.EDI_ORDER_ADClientValue) final String ADClientValue,
 			@ExchangeProperty(value = AbstractEDIRoute.EDI_ORDER_ADOrgID) final BigInteger ADOrgID,
@@ -82,16 +83,24 @@ public abstract class AbstractEDIOrdersBean
 	{
 		final List<OrderEDI> ediDocuments = convertToOrderEDIs(ediLines);
 
-		final EDIConfigurationContext ctx = new EDIConfigurationContext(CamelFileName,
-				EDIMessageDatePattern, ADClientValue, ADOrgID,
-				ADInputDataDestination_InternalName, ADInputDataSourceID, ADUserEnteredByID, DeliveryRule, DeliveryViaRule);
+		final EDIConfigurationContext ctx = new EDIConfigurationContext(
+				camelFileName,
+				EDIMessageDatePattern,
+				ADClientValue, ADOrgID,
+				ADInputDataDestination_InternalName,
+				ADInputDataSourceID,
+				ADUserEnteredByID,
+				DeliveryRule,
+				DeliveryViaRule);
 
 		return createOLCandMessages(ctx, ediDocuments);
 	}
 
 	protected abstract List<OrderEDI> convertToOrderEDIs(List<Object> ediLines);
 
-	private List<Message> createOLCandMessages(final EDIConfigurationContext ctx, final List<OrderEDI> ediDocuments)
+	private List<Message> createOLCandMessages(
+			@NonNull final EDIConfigurationContext ctx,
+			@NonNull final List<OrderEDI> ediDocuments)
 	{
 		final List<Message> olCandMessages = new ArrayList<Message>();
 		for (final OrderEDI ediDocument : ediDocuments)
@@ -185,7 +194,7 @@ public abstract class AbstractEDIOrdersBean
 
 		final BigDecimal qty = new BigDecimal(trimString(p100.getOrderQty()))
 				.multiply(qtyItemCapacity); // qty = orderQty * CUPerTU
-		olcand.setQty(qty);
+		olcand.setQtyEntered(qty);
 
 		final BigDecimal priceEntered = new BigDecimal(trimString(p100.getBuyerPrice()));
 		olcand.setPriceEntered(priceEntered);
