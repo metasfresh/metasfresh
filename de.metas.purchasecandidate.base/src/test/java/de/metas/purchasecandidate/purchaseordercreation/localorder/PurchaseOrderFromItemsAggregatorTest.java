@@ -3,6 +3,7 @@ package de.metas.purchasecandidate.purchaseordercreation.localorder;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -24,6 +25,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
+import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.grossprofit.ProfitPriceActualFactory;
@@ -113,7 +115,11 @@ public class PurchaseOrderFromItemsAggregatorTest
 		vendor.setName("Vendor");
 		save(vendor);
 
-		final ProductAndCategoryAndManufacturerId product = ProductAndCategoryAndManufacturerId.of(20, 30, 35);
+		final I_M_Product productRecord = newInstance(I_M_Product.class);
+		productRecord.setC_UOM_ID(EACH.getC_UOM_ID());
+		saveRecord(productRecord);
+
+		final ProductAndCategoryAndManufacturerId product = ProductAndCategoryAndManufacturerId.of(productRecord.getM_Product_ID(), 30, 35);
 
 		final VendorProductInfo vendorProductInfo = VendorProductInfo.builder()
 				.product(product)
