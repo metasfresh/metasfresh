@@ -185,10 +185,7 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 			@NonNull final PlainHUPackingAware huPackingAware,
 			@NonNull final BigDecimal quickInputQty)
 	{
-		final I_M_HU_PI_Item_Product piItemProduct = extractHUPIItemProductOrNull(huPackingAware);
-
-		final IHUPIItemProductBL piPIItemProductBL = Services.get(IHUPIItemProductBL.class);
-		if (piItemProduct == null || piPIItemProductBL.isVirtualHUPIItemProduct(piItemProduct) || piItemProduct.isInfiniteCapacity())
+		if (isInfiniteCapacityTU(huPackingAware))
 		{
 			huPackingAware.setQty(quickInputQty);
 			huPackingAware.setQtyTU(BigDecimal.ONE);
@@ -209,6 +206,15 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 		return piItemProductId != null
 				? piPIItemProductBL.getById(piItemProductId)
 				: null;
+	}
+
+	@Override
+	public boolean isInfiniteCapacityTU(final IHUPackingAware huPackingAware)
+	{
+		final IHUPIItemProductBL piItemProductBL = Services.get(IHUPIItemProductBL.class);
+
+		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNone(huPackingAware.getM_HU_PI_Item_Product_ID());
+		return piItemProductBL.isInfiniteCapacity(piItemProductId);
 	}
 
 	private I_C_UOM extractUOMOrNull(final IHUPackingAware huPackingAware)

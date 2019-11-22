@@ -126,6 +126,23 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 	}
 
 	@Override
+	public boolean isInfiniteCapacity(@NonNull final HUPIItemProductId id)
+	{
+		if (id.isVirtualHU())
+		{
+			return true;
+		}
+
+		final I_M_HU_PI_Item_Product piip = getById(id);
+		if (piip == null)
+		{
+			return true;
+		}
+
+		return piip.isInfiniteCapacity();
+	}
+
+	@Override
 	public void deleteForItem(final I_M_HU_PI_Item packingInstructionsItem)
 	{
 		final List<I_M_HU_PI_Item_Product> products = Services.get(IHUPIItemProductDAO.class).retrievePIMaterialItemProducts(packingInstructionsItem);
