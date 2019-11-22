@@ -34,6 +34,8 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.Comparator;
 
+import javax.xml.datatype.XMLGregorianCalendar;
+
 import org.apache.camel.Exchange;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.lang.Nullable;
@@ -49,6 +51,7 @@ import de.metas.edi.esb.jaxb.metasfresh.EDIExpCBPartnerLocationType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
 import de.metas.edi.esb.jaxb.stepcom.desadv.DETAILXlief;
+import de.metas.edi.esb.jaxb.stepcom.desadv.DMARK1;
 import de.metas.edi.esb.jaxb.stepcom.desadv.DPRDE1;
 import de.metas.edi.esb.jaxb.stepcom.desadv.DPRIN1;
 import de.metas.edi.esb.jaxb.stepcom.desadv.DQUAN1;
@@ -71,6 +74,7 @@ import de.metas.edi.esb.pojo.desadv.stepcom.qualifier.DateQual;
 import de.metas.edi.esb.pojo.desadv.stepcom.qualifier.DiscrepencyCode;
 import de.metas.edi.esb.pojo.desadv.stepcom.qualifier.DocumentFunction;
 import de.metas.edi.esb.pojo.desadv.stepcom.qualifier.DocumentType;
+import de.metas.edi.esb.pojo.desadv.stepcom.qualifier.IdentificationQual;
 import de.metas.edi.esb.pojo.desadv.stepcom.qualifier.PackIdentificationQual;
 import de.metas.edi.esb.pojo.desadv.stepcom.qualifier.PackagingLevel;
 import de.metas.edi.esb.pojo.desadv.stepcom.qualifier.ProductDescQual;
@@ -138,7 +142,7 @@ public class StepComXMLDesadvBean
 
 		mapAddresses(xmlDesadv, header, supplierGln);
 
-		mapPackaging(xmlDesadv, header, settings, decimalFormat);
+		mapPackaging(xmlDesadv, header, settings, decimalFormat, dateFormat);
 
 		final TRAILR trailr = DESADV_objectFactory.createTRAILR();
 		trailr.setDOCUMENTID(documentId);
@@ -174,7 +178,8 @@ public class StepComXMLDesadvBean
 			@NonNull final EDIExpDesadvType xmlDesadv,
 			@NonNull final HEADERXlief header,
 			@NonNull final StepComDesadvSettings settings,
-			@NonNull final DecimalFormat decimalFormat)
+			@NonNull final DecimalFormat decimalFormat,
+			@NonNull final String dateFormat)
 	{
 		final PACKINXlief packIn = DESADV_objectFactory.createPACKINXlief();
 		packIn.setDOCUMENTID(header.getDOCUMENTID());
@@ -210,7 +215,7 @@ public class StepComXMLDesadvBean
 						ppack1.setIDENTIFICATIONCODE(Util.lpadZero(key.getSsccValue(), 18)/* if ssccRequired and we got here, then this is not null */);
 						packIn.getPPACK1().add(ppack1);
 
-						final DETAILXlief detailXlief = createDETAILXlief(packIn.getDOCUMENTID(), xmlDesadv, ediExpDesadvLineType, settings, decimalFormat);
+						final DETAILXlief detailXlief = createDETAILXlief(packIn.getDOCUMENTID(), xmlDesadv, ediExpDesadvLineType, settings, decimalFormat, dateFormat);
 						ppack1.getDETAIL().add(detailXlief);
 
 						detailAdded = true;
@@ -225,14 +230,14 @@ public class StepComXMLDesadvBean
 
 						if (!detailAdded)
 						{
-							final DETAILXlief detailXlief = createDETAILXlief(packIn.getDOCUMENTID(), xmlDesadv, ediExpDesadvLineType, settings, decimalFormat);
+							final DETAILXlief detailXlief = createDETAILXlief(packIn.getDOCUMENTID(), xmlDesadv, ediExpDesadvLineType, settings, decimalFormat, dateFormat);
 							ppack1.getDETAIL().add(detailXlief);
 						}
 					}
 				}
 				else // we can add the detail directly to packIn
 				{
-					final DETAILXlief detail = createDETAILXlief(packIn.getDOCUMENTID(), xmlDesadv, ediExpDesadvLineType, settings, decimalFormat);
+					final DETAILXlief detail = createDETAILXlief(packIn.getDOCUMENTID(), xmlDesadv, ediExpDesadvLineType, settings, decimalFormat, dateFormat);
 					packIn.getDETAIL().add(detail);
 				}
 			}
@@ -260,7 +265,7 @@ public class StepComXMLDesadvBean
 					ppack1.setIDENTIFICATIONQUAL(PackIdentificationQual.SSCC.toString());
 					ppack1.setIDENTIFICATIONCODE(ssccValue);
 
-					final DETAILXlief detailXlief = createDETAILXlief(packIn.getDOCUMENTID(), xmlDesadv, ediExpDesadvLineType, settings, decimalFormat);
+					final DETAILXlief detailXlief = createDETAILXlief(packIn.getDOCUMENTID(), xmlDesadv, ediExpDesadvLineType, settings, decimalFormat, dateFormat);
 					ppack1.getDETAIL().add(detailXlief);
 					addDETAILXliefToPackInXlief = false; // because we already added detailXlief to ppack1
 
@@ -287,7 +292,7 @@ public class StepComXMLDesadvBean
 
 			if (addDETAILXliefToPackInXlief)
 			{
-				final DETAILXlief detailXlief = createDETAILXlief(packIn.getDOCUMENTID(), xmlDesadv, ediExpDesadvLineType, settings, decimalFormat);
+				final DETAILXlief detailXlief = createDETAILXlief(packIn.getDOCUMENTID(), xmlDesadv, ediExpDesadvLineType, settings, decimalFormat, dateFormat);
 				packIn.getDETAIL().add(detailXlief);
 			}
 
@@ -352,7 +357,8 @@ public class StepComXMLDesadvBean
 			final EDIExpDesadvType xmlDesadv,
 			final EDIExpDesadvLineType ediExpDesadvLineType,
 			final StepComDesadvSettings settings,
-			final DecimalFormat decimalFormat)
+			final DecimalFormat decimalFormat,
+			final String dateFormat)
 	{
 		final DETAILXlief detail = DESADV_objectFactory.createDETAILXlief();
 		detail.setDOCUMENTID(documentId);
@@ -508,13 +514,27 @@ public class StepComXMLDesadvBean
 		final BigDecimal quantityDiff = ediExpDesadvLineType.getQtyEntered().subtract(qtyDelivered);
 		if (quantityDiff.signum() != 0)
 		{
-			final DQVAR1 varianceQuantity = DESADV_objectFactory.createDQVAR1();
-			varianceQuantity.setDOCUMENTID(documentId);
-			varianceQuantity.setLINENUMBER(lineNumber);
-			varianceQuantity.setQUANTITY(formatNumber(quantityDiff, decimalFormat));
-			varianceQuantity.setDISCREPANCYCODE(getDiscrepancyCode(ediExpDesadvLineType.getIsSubsequentDeliveryPlanned(), quantityDiff).toString());
-			detail.setDQVAR1(varianceQuantity);
+			final DQVAR1 dqvar1 = DESADV_objectFactory.createDQVAR1();
+			dqvar1.setDOCUMENTID(documentId);
+			dqvar1.setLINENUMBER(lineNumber);
+			dqvar1.setQUANTITY(formatNumber(quantityDiff, decimalFormat));
+			dqvar1.setDISCREPANCYCODE(getDiscrepancyCode(ediExpDesadvLineType.getIsSubsequentDeliveryPlanned(), quantityDiff).toString());
+			detail.setDQVAR1(dqvar1);
 		}
+
+		if (settings.isDesadvLineDMARK1BestBeforeDateRequired())
+		{
+			final XMLGregorianCalendar bestBefore = validateObject(ediExpDesadvLineType.getBestBeforeDate(),
+					"@FillMandatory@ @EDI_DesadvLine_ID@=" + ediExpDesadvLineType.getLine() + " @BestBeforeDate@");
+
+			final DMARK1 dmark1 = DESADV_objectFactory.createDMARK1();
+			dmark1.setDOCUMENTID(documentId);
+			dmark1.setLINENUMBER(lineNumber);
+			dmark1.setIDENTIFICATIONQUAL(IdentificationQual.BATC.name());
+			dmark1.setIDENTIFICATIONDATE1(toFormattedStringDate(toDate(bestBefore), dateFormat));
+			detail.getDMARK1().add(dmark1);
+		}
+
 		return detail;
 	}
 
