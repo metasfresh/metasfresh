@@ -178,19 +178,21 @@ public abstract class AbstractEDIOrdersBean
 		final BigInteger line = new BigInteger(trimString(p100.getPositionNo()));
 		olcand.setLine(line);
 
+		final BigDecimal orderQty = new BigDecimal(trimString(p100.getOrderQty()));
 		final String CUperTU = trimString(p100.getCUperTU());
 		if (!Util.isEmpty(CUperTU))
 		{
 			final BigDecimal qtyItemCapacity = new BigDecimal(CUperTU);
 			olcand.setQtyItemCapacity(qtyItemCapacity);
+
+			// we have a bunch concrete examples where the CU-qty is orderQty * qtyItemCapacity
+			olcand.setQtyEntered(orderQty.multiply(qtyItemCapacity));
 		}
 		else
 		{ // if we don't have the CUperTU-info, then don't guess! metasfresh might have it in its masterdata
 			olcand.setQtyItemCapacity(null);
-
+			olcand.setQtyEntered(orderQty);
 		}
-		final BigDecimal qtyEntered = new BigDecimal(trimString(p100.getOrderQty()));
-		olcand.setQtyEntered(qtyEntered);
 
 		// UOM lookup
 		final String uom = trimString(p100.getOrderUnit());
