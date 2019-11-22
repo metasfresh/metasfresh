@@ -109,6 +109,11 @@ public class ProductsProposalRow implements IViewRow
 	@Getter
 	private final LocalDate lastSalesInvoiceDate;
 
+	public static final String FIELD_Description = "description";
+	@ViewColumn(displayed = false, fieldName = FIELD_Description, captionKey = "Description", widgetType = DocumentFieldWidgetType.Text, editor = ViewEditorRenderMode.ALWAYS)
+	@Getter
+	private final String description;
+
 	private final DocumentId id;
 	@Getter
 	private HUPIItemProductId packingMaterialId;
@@ -126,6 +131,7 @@ public class ProductsProposalRow implements IViewRow
 	private static final ImmutableMap<String, ViewEditorRenderMode> EDITOR_RENDER_MODES = ImmutableMap.<String, ViewEditorRenderMode> builder()
 			.put(FIELD_Qty, ViewEditorRenderMode.ALWAYS)
 			.put(FIELD_Price, ViewEditorRenderMode.ALWAYS)
+			.put(FIELD_Description, ViewEditorRenderMode.ALWAYS)
 			.build();
 
 	@Builder(toBuilder = true)
@@ -140,6 +146,7 @@ public class ProductsProposalRow implements IViewRow
 			@Nullable final BigDecimal qty,
 			@Nullable final Integer lastShipmentDays,
 			@Nullable final LocalDate lastSalesInvoiceDate,
+			@Nullable final String description,
 			@Nullable final ProductPriceId productPriceId,
 			@Nullable final ProductPriceId copiedFromProductPriceId,
 			@Nullable final OrderLineId existingOrderLineId)
@@ -162,6 +169,8 @@ public class ProductsProposalRow implements IViewRow
 
 		this.lastShipmentDays = lastShipmentDays;
 		this.lastSalesInvoiceDate = lastSalesInvoiceDate;
+
+		this.description = description;
 
 		this.productPriceId = productPriceId;
 		this.copiedFromProductPriceId = copiedFromProductPriceId;
@@ -283,6 +292,7 @@ public class ProductsProposalRow implements IViewRow
 						? existingOrderLine.getQtyEnteredCU()
 						: BigDecimal.valueOf(existingOrderLine.getQtyEnteredTU()))
 				.existingOrderLineId(existingOrderLine.getOrderLineId())
+				.description(existingOrderLine.getDescription())
 				.build();
 	}
 }

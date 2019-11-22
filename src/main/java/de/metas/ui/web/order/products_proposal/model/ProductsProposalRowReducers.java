@@ -80,6 +80,11 @@ public class ProductsProposalRowReducers
 			newRowBuilder.price(newPrice);
 		}
 
+		if (request.getDescription() != null)
+		{
+			newRowBuilder.description(request.getDescription().orElse(null));
+		}
+
 		return newRowBuilder.build();
 	}
 

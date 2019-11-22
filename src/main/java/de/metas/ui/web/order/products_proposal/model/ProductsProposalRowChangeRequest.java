@@ -38,6 +38,7 @@ public interface ProductsProposalRowChangeRequest
 	{
 		Optional<BigDecimal> qty;
 		Optional<BigDecimal> price;
+		Optional<String> description;
 	}
 
 	@Value
