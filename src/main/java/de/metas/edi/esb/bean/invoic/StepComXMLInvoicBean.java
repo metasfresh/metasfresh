@@ -129,13 +129,13 @@ public class StepComXMLInvoicBean
 		final Document document = INVOIC_objectFactory.createDocument();
 		final Xrech4H xrech4H = INVOIC_objectFactory.createXrech4H();
 
-		final StepComInvoicSettings invoicSettings = StepComInvoicSettings.forReceiverGLN(exchange.getContext(), invoice.getReceivergln());
+		final StepComInvoicSettings settings = StepComInvoicSettings.forReceiverGLN(exchange.getContext(), invoice.getReceivergln());
 
 		final HEADERXrech headerXrech = INVOIC_objectFactory.createHEADERXrech();
-		headerXrech.setTESTINDICATOR(invoicSettings.getTestIndicator());
+		headerXrech.setTESTINDICATOR(settings.getTestIndicator());
 
-		headerXrech.setPARTNERID(invoicSettings.getPartnerId());
-		headerXrech.setAPPLICATIONREF(invoicSettings.getApplicationRef());
+		headerXrech.setPARTNERID(settings.getPartnerId());
+		headerXrech.setAPPLICATIONREF(settings.getApplicationRef());
 		headerXrech.setOWNERID(ownerId);
 		final String documentId = invoice.getInvoiceDocumentno();
 		headerXrech.setDOCUMENTID(documentId);
@@ -150,9 +150,9 @@ public class StepComXMLInvoicBean
 		final String dateFormat = (String)exchange.getProperty(AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern);
 		mapDates(invoice, headerXrech, dateFormat);
 
-		mapReferences(invoice, headerXrech, dateFormat);
+		mapReferences(invoice, headerXrech, dateFormat, settings);
 
-		mapAddresses(invoice, headerXrech, invoicSettings);
+		mapAddresses(invoice, headerXrech, settings);
 
 		final HCURR1 currency = INVOIC_objectFactory.createHCURR1();
 		currency.setDOCUMENTID(documentId);
@@ -164,7 +164,7 @@ public class StepComXMLInvoicBean
 
 		mapAlCh(invoice, headerXrech, decimalFormat);
 
-		mapDetails(invoice, headerXrech, decimalFormat, invoicSettings);
+		mapDetails(invoice, headerXrech, decimalFormat, settings);
 
 		final TRAILR docTrailer = INVOIC_objectFactory.createTRAILR();
 		docTrailer.setDOCUMENTID(documentId);
@@ -670,7 +670,7 @@ public class StepComXMLInvoicBean
 		return issiAddress;
 	}
 
-	private AddressQual mapAddressQual(final EancomLocationQual eancomLocationQual)
+	private AddressQual mapAddressQual(@NonNull final EancomLocationQual eancomLocationQual)
 	{
 		AddressQual addressQual = null;
 		switch (eancomLocationQual)
@@ -707,7 +707,8 @@ public class StepComXMLInvoicBean
 	private void mapReferences(
 			@NonNull final EDICctopInvoicVType invoice,
 			@NonNull final HEADERXrech headerXrech,
-			@NonNull final String dateFormat)
+			@NonNull final String dateFormat,
+			@NonNull final StepComInvoicSettings settings)
 	{
 		final HREFE1 buyerOrderRef = INVOIC_objectFactory.createHREFE1();
 		buyerOrderRef.setDOCUMENTID(headerXrech.getDOCUMENTID());
@@ -716,13 +717,15 @@ public class StepComXMLInvoicBean
 		buyerOrderRef.setREFERENCEDATE1(toFormattedStringDate(toDate(invoice.getDateOrdered()), dateFormat));
 		headerXrech.getHREFE1().add(buyerOrderRef);
 
-		final HREFE1 sellerOrderRef = INVOIC_objectFactory.createHREFE1();
-		sellerOrderRef.setDOCUMENTID(headerXrech.getDOCUMENTID());
-		sellerOrderRef.setREFERENCEQUAL(ReferenceQual.ORSE.name());
-		sellerOrderRef.setREFERENCE(invoice.getEDICctop111V().getCOrderID().toString());
-		sellerOrderRef.setREFERENCEDATE1(toFormattedStringDate(toDate(invoice.getDateOrdered()), dateFormat));
-		headerXrech.getHREFE1().add(sellerOrderRef);
-
+		if (settings.isInvoicORSE())
+		{
+			final HREFE1 sellerOrderRef = INVOIC_objectFactory.createHREFE1();
+			sellerOrderRef.setDOCUMENTID(headerXrech.getDOCUMENTID());
+			sellerOrderRef.setREFERENCEQUAL(ReferenceQual.ORSE.name());
+			sellerOrderRef.setREFERENCE(invoice.getEDICctop111V().getCOrderID().toString());
+			sellerOrderRef.setREFERENCEDATE1(toFormattedStringDate(toDate(invoice.getDateOrdered()), dateFormat));
+			headerXrech.getHREFE1().add(sellerOrderRef);
+		}
 		final HREFE1 despatchAdvRef = INVOIC_objectFactory.createHREFE1();
 		despatchAdvRef.setDOCUMENTID(headerXrech.getDOCUMENTID());
 		despatchAdvRef.setREFERENCEQUAL(ReferenceQual.DADV.name());
