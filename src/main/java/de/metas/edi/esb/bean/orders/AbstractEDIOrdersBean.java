@@ -23,7 +23,11 @@
 
 package de.metas.edi.esb.bean.orders;
 
+import static de.metas.edi.esb.commons.Util.createCalendarDate;
+import static de.metas.edi.esb.commons.Util.createJaxbMessage;
+import static de.metas.edi.esb.commons.Util.isEmpty;
 import static de.metas.edi.esb.commons.Util.resolveGenericLookup;
+import static de.metas.edi.esb.commons.Util.stripTrailingDecimalZeros;
 import static de.metas.edi.esb.commons.Util.trimString;
 
 import java.math.BigDecimal;
@@ -39,7 +43,6 @@ import org.apache.camel.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryRuleEnum;
 import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryViaRuleEnum;
 import de.metas.edi.esb.jaxb.metasfresh.EDIADOrgLookupBPLGLNVType;
@@ -160,11 +163,11 @@ public abstract class AbstractEDIOrdersBean
 		final P100 p100 = orderLine.getP100();
 
 		final String dateCandidateStr = trimString(h100.getMessageDate()); // TODO Check if this is it
-		olcand.setDateCandidate(Util.createCalendarDate(dateCandidateStr, ctx.getEDIMessageDatePattern()));
+		olcand.setDateCandidate(createCalendarDate(dateCandidateStr, ctx.getEDIMessageDatePattern()));
 
 		// task 06269: also get the desired delivery date from the customer (if set)
 		final String datePromisedStr = trimString(h100.getDeliveryDate());
-		olcand.setDatePromised(Util.createCalendarDate(datePromisedStr, ctx.getEDIMessageDatePattern()));
+		olcand.setDatePromised(createCalendarDate(datePromisedStr, ctx.getEDIMessageDatePattern()));
 
 		final COrderDeliveryRuleEnum deliveryRule = COrderDeliveryRuleEnum.fromValue(ctx.getDeliveryRule());
 		olcand.setDeliveryRule(deliveryRule);
@@ -180,18 +183,18 @@ public abstract class AbstractEDIOrdersBean
 
 		final BigDecimal orderQty = new BigDecimal(trimString(p100.getOrderQty()));
 		final String CUperTU = trimString(p100.getCUperTU());
-		if (!Util.isEmpty(CUperTU))
+		if (!isEmpty(CUperTU))
 		{
 			final BigDecimal qtyItemCapacity = new BigDecimal(CUperTU);
-			olcand.setQtyItemCapacity(qtyItemCapacity);
+			olcand.setQtyItemCapacity(stripTrailingDecimalZeros(qtyItemCapacity));
 
 			// we have a bunch concrete examples where the CU-qty is orderQty * qtyItemCapacity
-			olcand.setQtyEntered(orderQty.multiply(qtyItemCapacity));
+			olcand.setQtyEntered(stripTrailingDecimalZeros(orderQty.multiply(qtyItemCapacity)));
 		}
 		else
 		{ // if we don't have the CUperTU-info, then don't guess! metasfresh might have it in its masterdata
 			olcand.setQtyItemCapacity(null);
-			olcand.setQtyEntered(orderQty);
+			olcand.setQtyEntered(stripTrailingDecimalZeros(orderQty));
 		}
 
 		// UOM lookup
@@ -297,7 +300,7 @@ public abstract class AbstractEDIOrdersBean
 			olcand.setCCurrencyID(currencyLookup);
 		}
 
-		return Util.createJaxbMessage(
+		return createJaxbMessage(
 				AbstractEDIOrdersBean.factory.createEDIImpCOLCand(olcand),
 				camelContext);
 	}

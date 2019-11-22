@@ -109,15 +109,14 @@ public class StepComXMLOrdersBean extends AbstractEDIOrdersBean
 				}
 				case ORDR:
 				{
-
 					// using measurement unit from ORDR, supposing CUTU will not have measurement unit for now
 					if (!Util.isEmpty(dquan1.getMEASUREMENTUNIT()))
 					{
 						final MeasurementUnit measurementUnit = MeasurementUnit.valueOf(dquan1.getMEASUREMENTUNIT());
 
-						orderQty = add(orderQty, currentQty);
 						orderUnit = MeasurementUnit.fromEdiUOM(measurementUnit);
 					}
+					orderQty = add(orderQty, currentQty); // if there is no MEASUREMENTUNIT, the orderQty is most probably the TU-quantity
 					break;
 				}
 			}
