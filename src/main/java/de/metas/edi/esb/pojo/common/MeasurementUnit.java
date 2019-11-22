@@ -41,6 +41,7 @@ public enum MeasurementUnit
 			.put(PIEC.metasfreshUOM, PIEC)
 			.put(PACK.metasfreshUOM, PACK)
 			.put(CART.metasfreshUOM, CART)
+			.put(COLI.metasfreshUOM, COLI)
 			.build();
 
 	private static final Map<MeasurementUnit, String> edi2metasfresh = ImmutableMap.<MeasurementUnit, String> builder()
