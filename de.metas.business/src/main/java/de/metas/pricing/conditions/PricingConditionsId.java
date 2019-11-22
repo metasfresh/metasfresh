@@ -36,7 +36,6 @@ import javax.annotation.Nullable;
  */
 
 @Value
-// todo maybe this shouldn't be made repo id aware, but i wanna see with my eyes why it doesn't work!
 public class PricingConditionsId implements RepoIdAware
 {
 
