@@ -12,8 +12,6 @@ import org.springframework.stereotype.Component;
 
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
-import de.metas.pricing.PriceListId;
-import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.callout.M_PricelistVersion_TabCallout;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Services;
@@ -40,9 +38,9 @@ import de.metas.util.Services;
  * #L%
  */
 
-@Interceptor(I_M_PriceList_Version.class)
+@Interceptor(I_M_PriceList.class)
 @Component
-public class M_PriceList_Version
+public class M_PriceList
 {
 	@Init
 	public void registerCallouts()
@@ -51,35 +49,37 @@ public class M_PriceList_Version
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
-	public void assertBasePricingIsValid(final I_M_PriceList_Version plv)
+	public void assertBasePricingIsValid(final I_M_PriceList priceList)
 	{
 		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 
-		final PriceListVersionId basePriceListVersionId = priceListsRepo.getBasePriceListVersionIdForPricingCalculationOrNull(plv);
-		if (basePriceListVersionId != null)
+		// final PriceListVersionId basePriceListVersionId = priceListsRepo.getBasePriceListVersionIdForPricingCalculationOrNull(plv);
+		// if (basePriceListVersionId != null)
+		// {
+
+		final int basePriceListId = priceList.getBasePriceList_ID();
+		if (basePriceListId <= 0)
 		{
-			final I_M_PriceList basePriceList = priceListsRepo.getPriceListByPriceListVersionId(basePriceListVersionId);
+			// nothing to do
+			return;
+		}
+		final I_M_PriceList basePriceList = priceListsRepo.getById(basePriceListId);
 
-			final PriceListId priceListId = PriceListId.ofRepoId(plv.getM_PriceList_ID());
-			final I_M_PriceList priceList = priceListsRepo.getById(priceListId);
+		//
+		final CurrencyId baseCurrencyId = CurrencyId.ofRepoId(basePriceList.getC_Currency_ID());
+		final CurrencyId currencyId = CurrencyId.ofRepoId(priceList.getC_Currency_ID());
+		if (!CurrencyId.equals(baseCurrencyId, currencyId))
+		{
+			throw new AdempiereException("@PriceListAndBasePriceListCurrencyMismatchError@")
+					.markAsUserValidationError();
+		}
 
-			//
-			final CurrencyId baseCurrencyId = CurrencyId.ofRepoId(basePriceList.getC_Currency_ID());
-			final CurrencyId currencyId = CurrencyId.ofRepoId(priceList.getC_Currency_ID());
-			if (!CurrencyId.equals(baseCurrencyId, currencyId))
-			{
-				throw new AdempiereException("@PriceListAndBasePriceListCurrencyMismatchError@")
-						.markAsUserValidationError();
-			}
-
-			final CountryId baseCountryId = CountryId.ofRepoIdOrNull(basePriceList.getC_Country_ID());
-			final CountryId countryId = CountryId.ofRepoIdOrNull(priceList.getC_Country_ID());
-			if (!CountryId.equals(baseCountryId, countryId))
-			{
-				throw new AdempiereException("@PriceListAndBasePriceListCountryMismatchError@")
-						.markAsUserValidationError();
-			}
+		final CountryId baseCountryId = CountryId.ofRepoIdOrNull(basePriceList.getC_Country_ID());
+		final CountryId countryId = CountryId.ofRepoIdOrNull(priceList.getC_Country_ID());
+		if (!CountryId.equals(baseCountryId, countryId))
+		{
+			throw new AdempiereException("@PriceListAndBasePriceListCountryMismatchError@")
+					.markAsUserValidationError();
 		}
 	}
-
 }
