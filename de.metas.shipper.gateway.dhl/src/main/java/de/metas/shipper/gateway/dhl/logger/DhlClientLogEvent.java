@@ -22,8 +22,10 @@
 
 package de.metas.shipper.gateway.dhl.logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.oxm.Marshaller;
@@ -84,13 +86,22 @@ public class DhlClientLogEvent
 			final StringResult result = new StringResult();
 			marshaller.marshal(element, result);
 
-			// remove the pdfdata since it's long and useless and we also attach it to the PO record
-			return result.toString().replaceAll(LABEL_DATA_REGEX, LABEL_DATA_REPLACEMENT_TEXT);
+			return cleanupPdfData(result.toString());
 		}
 		catch (final Exception ex)
 		{
 			throw new AdempiereException("Failed converting " + element + " to String", ex);
 		}
+	}
+
+	/**
+	 * remove the pdfdata since it's long and useless and we also attach it to the PO record
+	 */
+	@NonNull
+	@VisibleForTesting
+	public String cleanupPdfData(@NonNull final String s)
+	{
+		return s.replaceAll(LABEL_DATA_REGEX, LABEL_DATA_REPLACEMENT_TEXT);
 	}
 
 }
