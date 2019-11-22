@@ -178,23 +178,25 @@ public abstract class AbstractEDIOrdersBean
 		final BigInteger line = new BigInteger(trimString(p100.getPositionNo()));
 		olcand.setLine(line);
 
-		final BigDecimal qtyItemCapacity; // following block decides the value of QtyItemCapacity
+		final String CUperTU = trimString(p100.getCUperTU());
+		if (!Util.isEmpty(CUperTU))
 		{
-			final String CUPerTU = trimString(p100.getCUperTU());
-			if (CUPerTU != null)
-			{
-				qtyItemCapacity = new BigDecimal(CUPerTU);
-			}
-			else
-			{
-				qtyItemCapacity = BigDecimal.ONE; // default assumption
-			}
+			final BigDecimal qtyItemCapacity = new BigDecimal(CUperTU);
+			olcand.setQtyItemCapacity(qtyItemCapacity);
 		}
-		olcand.setQtyItemCapacity(qtyItemCapacity);
+		else
+		{ // if we don't have the CUperTU-info, then don't guess! metasfresh might have it in its masterdata
+			olcand.setQtyItemCapacity(null);
 
-		final BigDecimal qty = new BigDecimal(trimString(p100.getOrderQty()))
-				.multiply(qtyItemCapacity); // qty = orderQty * CUPerTU
-		olcand.setQtyEntered(qty);
+		}
+		final BigDecimal qtyEntered = new BigDecimal(trimString(p100.getOrderQty()));
+		olcand.setQtyEntered(qtyEntered);
+
+		// UOM lookup
+		final String uom = trimString(p100.getOrderUnit());
+		final EDIImpCUOMLookupUOMSymbolType uomLookup = resolveGenericLookup(EDIImpCUOMLookupUOMSymbolType.class,
+				Constants.LOOKUP_TEMPLATE_X12DE355.createMandatoryValueLookup(uom));
+		olcand.setCUOMID(uomLookup);
 
 		final BigDecimal priceEntered = new BigDecimal(trimString(p100.getBuyerPrice()));
 		olcand.setPriceEntered(priceEntered);
@@ -283,14 +285,6 @@ public abstract class AbstractEDIOrdersBean
 					Constants.LOOKUP_TEMPLATE_UPC.createMandatoryValueLookup(upc),
 					Constants.LOOKUP_TEMPLATE_GLN.createNonMandatoryValueLookup(buyerGLN));
 			olcand.setMHUPIItemProductID(huPIIPLookup);
-		}
-
-		// UOM lookup
-		{
-			final String uom = trimString(p100.getOrderUnit());
-			final EDIImpCUOMLookupUOMSymbolType uomLookup = resolveGenericLookup(EDIImpCUOMLookupUOMSymbolType.class,
-					Constants.LOOKUP_TEMPLATE_X12DE355.createMandatoryValueLookup(uom));
-			olcand.setCUOMID(uomLookup);
 		}
 
 		// Currency lookup

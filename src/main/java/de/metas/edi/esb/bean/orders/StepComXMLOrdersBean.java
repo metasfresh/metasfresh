@@ -123,6 +123,10 @@ public class StepComXMLOrdersBean extends AbstractEDIOrdersBean
 			}
 		}
 
+		if (cutuQty != null)
+		{
+			p100.setCUperTU(cutuQty.toString());
+		}
 		if (orderQty != null)
 		{
 			p100.setOrderQty(orderQty.toString());
