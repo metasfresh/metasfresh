@@ -23,6 +23,7 @@ package de.metas.edi.api.impl;
  */
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -34,6 +35,8 @@ import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -66,6 +69,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.report.server.ReportConstants;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -223,21 +227,6 @@ public class DesadvBL implements IDesadvBL
 		return newDesadvLine;
 	}
 
-	/**
-	 * Sets the given line's <code>MovementQty</code> and <code>QtyDeliveredInUOM</code>.
-	 */
-	private void setQty(final I_EDI_DesadvLine desadvLine, final BigDecimal newMovementQty)
-	{
-
-		final ProductId productId = ProductId.ofRepoId(desadvLine.getM_Product_ID());
-
-		desadvLine.setMovementQty(newMovementQty);
-		desadvLine.setQtyDeliveredInUOM(uomConversionBL.convertFromProductUOM(
-				productId,
-				UomId.ofRepoId(desadvLine.getC_UOM_ID()),
-				newMovementQty));
-	}
-
 	private I_EDI_Desadv retrieveOrCreateDesadv(final I_C_Order order)
 	{
 		I_EDI_Desadv desadv = desadvDAO.retrieveMatchingDesadvOrNull(order.getPOReference(), InterfaceWrapperHelper.getContextAware(order));
@@ -392,6 +381,37 @@ public class DesadvBL implements IDesadvBL
 		setQty(desadvLine, newDesavLineQty);
 		InterfaceWrapperHelper.save(desadvLine);
 
+	}
+
+	/**
+	 * Sets the given line's <code>MovementQty</code> and <code>QtyDeliveredInUOM</code>.
+	 */
+	@VisibleForTesting
+	void setQty(final I_EDI_DesadvLine desadvLine, final BigDecimal newMovementQty)
+	{
+		desadvLine.setMovementQty(newMovementQty);
+
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
+		final UomId uomId = UomId.ofRepoId(desadvLine.getC_UOM_ID());
+
+		final BigDecimal qtyDeliveredInUOM;
+		if (uomDAO.isUOMForTUs(uomId))
+		{
+			qtyDeliveredInUOM = newMovementQty
+					.divide(desadvLine.getQtyItemCapacity(), RoundingMode.UP)
+					.setScale(0, RoundingMode.UP);
+		}
+		else
+		{
+			final ProductId productId = ProductId.ofRepoId(desadvLine.getM_Product_ID());
+			qtyDeliveredInUOM = uomConversionBL.convertFromProductUOM(
+					productId,
+					uomId,
+					newMovementQty);
+
+		}
+		desadvLine.setQtyDeliveredInUOM(qtyDeliveredInUOM);
 	}
 
 	@Override
