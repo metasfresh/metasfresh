@@ -4,24 +4,32 @@ import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
 
+import lombok.Getter;
+
 public enum MeasurementUnit
 {
-	KILO("KGM"), //
-	LITR("LTR"), //
-	METR("MTR"), //
-	SQMT("MTK"), //
-	CBMT("MTQ"), //
-	PIEC("PCE"), //
-	PACK("TU"), //
-	COLI("COLI"), //
-	DISP("DISP"), //
-	CART("KRT"); //
+	KILO("KGM", false), //
+	LITR("LTR", false), //
+	METR("MTR", false), //
+	SQMT("MTK", false), //
+	CBMT("MTQ", false), //
+	PIEC("PCE", false), //
+	PACK("TU", true), //
+	COLI("COLI", true), //
+	DISP("DISP", true), //
+	CART("KRT", true); //
 
 	private final String metasfreshUOM;
 
-	MeasurementUnit(String metasfreshUOM)
+	@Getter
+	private final boolean tuUOM;
+
+	MeasurementUnit(
+			String metasfreshUOM,
+			boolean tuUOM)
 	{
 		this.metasfreshUOM = metasfreshUOM;
+		this.tuUOM = tuUOM;
 	}
 
 	private static final Map<String, MeasurementUnit> metasfresh2edi = ImmutableMap.<String, MeasurementUnit> builder()
@@ -43,7 +51,7 @@ public enum MeasurementUnit
 			.put(CBMT, CBMT.metasfreshUOM)
 			.put(PIEC, PIEC.metasfreshUOM)
 			.put(PACK, PACK.metasfreshUOM)
-			.put(COLI, PIEC.metasfreshUOM) // (!) currently we don't need to export "COLI" or "DISP"
+			.put(COLI, COLI.metasfreshUOM)
 			.put(DISP, PIEC.metasfreshUOM) // (!)
 			.put(CART, CART.metasfreshUOM)
 			.build();

@@ -33,7 +33,7 @@ import org.apache.camel.model.ProcessorDefinition;
 import org.springframework.stereotype.Component;
 
 import de.metas.edi.esb.bean.orders.AbstractEDIOrdersBean;
-import de.metas.edi.esb.bean.orders.StepComXMLEDIOrdersBean;
+import de.metas.edi.esb.bean.orders.StepComXMLOrdersBean;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.stepcom.order.ObjectFactory;
@@ -97,7 +97,7 @@ public class StepComXMLOrdersRoute
 		// @formatter:off
 		ediToXMLOrdersRoute
 				.log(LoggingLevel.INFO, "Splitting XML document into individual C_OLCands...")
-				.split().method(StepComXMLEDIOrdersBean.class, AbstractEDIOrdersBean.METHOD_createXMLDocument)
+				.split().method(StepComXMLOrdersBean.class, AbstractEDIOrdersBean.METHOD_createXMLDocument)
 					//
 					// aggregate exchanges back to List after data is sent to metasfresh so that we can move the EDI document to DONE
 					//.aggregationStrategy(new EDIAggregationStrategy())

@@ -1,7 +1,8 @@
-package de.metas.edi.esb.commons;
+package de.metas.edi.esb.bean.invoic;
 
 import org.apache.camel.CamelContext;
 
+import de.metas.edi.esb.commons.Util;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -41,6 +42,7 @@ public class StepComInvoicSettings
 				.applicationRef(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.applicationRef", "INVOIC"))
 				.partnerId(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.partnerId"))
 				.testIndicator(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.testIndicator", "T"))
+				.invoicORSE(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN."+ recipientGLN +".invoic.ORSE", "true"))
 
 				.invoicBUYRAddressName1Required(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.BUYR.AddressName1.required", "true"))
 				.invoicBUYRGLNRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.BUYR.GLN.required", "true"))
@@ -54,7 +56,8 @@ public class StepComInvoicSettings
 				.invoicIVCECityRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.IVCE.City.required", "false"))
 				.invoicIVCEPostaCodeRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.IVCE.PostalCode.required", "false"))
 
-				.invoicLineEANCequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.EANC.required", "false"))
+				.invoicLineEANCRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.EANC.required", "false"))
+				.invoicLineGTINRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.line.GTIN.required", "false"))
 				.build();
 	}
 
@@ -63,6 +66,8 @@ public class StepComInvoicSettings
 	String partnerId;
 
 	String testIndicator;
+
+	boolean invoicORSE;
 
 	boolean invoicBUYRAddressName1Required;
 	boolean invoicBUYRGLNRequired;
@@ -76,5 +81,6 @@ public class StepComInvoicSettings
 	boolean invoicIVCECityRequired;
 	boolean invoicIVCEPostaCodeRequired;
 
-	boolean invoicLineEANCequired;
+	boolean invoicLineEANCRequired;
+	boolean invoicLineGTINRequired;
 }

@@ -27,7 +27,8 @@ import static de.metas.edi.esb.commons.Util.formatNumber;
 import static de.metas.edi.esb.commons.Util.toDate;
 import static de.metas.edi.esb.commons.Util.toFormattedStringDate;
 import static de.metas.edi.esb.commons.Util.trimAndTruncate;
-import static de.metas.edi.esb.commons.ValidationHelper.*;
+import static de.metas.edi.esb.commons.ValidationHelper.validateObject;
+import static de.metas.edi.esb.commons.ValidationHelper.validateString;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -35,9 +36,12 @@ import java.util.Comparator;
 
 import org.apache.camel.Exchange;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.lang.Nullable;
+
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimaps;
 
 import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.commons.StepComDesadvSettings;
 import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpCBPartnerLocationType;
@@ -76,6 +80,7 @@ import de.metas.edi.esb.pojo.desadv.stepcom.qualifier.ReferenceQual;
 import de.metas.edi.esb.route.AbstractEDIRoute;
 import de.metas.edi.esb.route.exports.StepComXMLDesadvRoute;
 import lombok.NonNull;
+import lombok.Value;
 
 public class StepComXMLDesadvBean
 {
@@ -113,24 +118,27 @@ public class StepComXMLDesadvBean
 		final String documentId = xmlDesadv.getDocumentNo();
 
 		// TODO instead of adding all the properties above to the exchange, add them to this settings instance
-		final StepComDesadvSettings receiverSettings = StepComDesadvSettings.forReceiverGLN(exchange.getContext(), xmlDesadv.getCBPartnerID().getEdiRecipientGLN());
+		final StepComDesadvSettings settings = StepComDesadvSettings.forReceiverGLN(exchange.getContext(), xmlDesadv.getCBPartnerID().getEdiRecipientGLN());
 
 		header.setDOCUMENTID(documentId);
-		header.setPARTNERID(receiverSettings.getPartnerId());
+		header.setPARTNERID(settings.getPartnerId());
 		header.setOWNERID(ownerId);
-		header.setTESTINDICATOR(receiverSettings.getTestIndicator());
+		header.setTESTINDICATOR(settings.getTestIndicator());
 		header.setMESSAGEREF(formatNumber(xmlDesadv.getSequenceNoAttr(), decimalFormat));
-		header.setAPPLICATIONREF(receiverSettings.getApplicationRef());
+		if (!Util.isEmpty(settings.getApplicationRef()))
+		{
+			header.setAPPLICATIONREF(settings.getApplicationRef());
+		}
 		header.setDOCUMENTTYP(DocumentType.DADV.toString());
 		header.setDOCUMENTFUNCTION(DocumentFunction.ORIG.toString());
 
 		mapDates(xmlDesadv, dateFormat, header);
 
-		mapHeaderReferences(xmlDesadv, dateFormat, header);
+		mapHeaderReferences(xmlDesadv, header, settings, dateFormat);
 
 		mapAddresses(xmlDesadv, header, supplierGln);
 
-		mapPackaging(xmlDesadv, header, receiverSettings, decimalFormat);
+		mapPackaging(xmlDesadv, header, settings, decimalFormat);
 
 		final TRAILR trailr = DESADV_objectFactory.createTRAILR();
 		trailr.setDOCUMENTID(documentId);
@@ -165,38 +173,123 @@ public class StepComXMLDesadvBean
 	private void mapPackaging(
 			@NonNull final EDIExpDesadvType xmlDesadv,
 			@NonNull final HEADERXlief header,
-			@NonNull final StepComDesadvSettings recipientSettings,
+			@NonNull final StepComDesadvSettings settings,
 			@NonNull final DecimalFormat decimalFormat)
 	{
-		final PACKINXlief packaging = DESADV_objectFactory.createPACKINXlief();
-		packaging.setDOCUMENTID(header.getDOCUMENTID());
-		final int orderLineCount = xmlDesadv.getEDIExpDesadvLine().size();
-		packaging.setPACKAGINGTOTAL(formatNumber(orderLineCount, decimalFormat));
+		final PACKINXlief packIn = DESADV_objectFactory.createPACKINXlief();
+		packIn.setDOCUMENTID(header.getDOCUMENTID());
 
 		String packagingCodeLUText = null;
+		final boolean ssccRequired = settings.isDesadvLineSSCCRequired();
+		final boolean packagingCodeTURequired = settings.isDesadvLinePackagingCodeTURequired();
+
+		final ImmutableListMultimap<PACKINXliefKey, EDIExpDesadvLineType> //
+		keyToPackages = Multimaps.index(
+				xmlDesadv.getEDIExpDesadvLine(),
+				line -> PACKINXliefKey.forLine(line, ssccRequired, packagingCodeTURequired));
+
+		final int distinctKeySize = keyToPackages.keySet().size();
+		final boolean ppack1Needed = ssccRequired || packagingCodeTURequired || distinctKeySize > 1;
+
+		final int packagingTotalNumber = ppack1Needed ? distinctKeySize : 0;
+		packIn.setPACKAGINGTOTAL(formatNumber(packagingTotalNumber, decimalFormat));
+
+		for (final PACKINXliefKey key : keyToPackages.keySet())
+		{
+			for (final EDIExpDesadvLineType ediExpDesadvLineType : keyToPackages.get(key))
+			{
+				if (ppack1Needed)
+				{
+					boolean detailAdded = false;
+					if (ssccRequired)
+					{
+						final PPACK1 ppack1 = createPPACK1(header);
+
+						ppack1.setPACKAGINGCODE(ediExpDesadvLineType.getMHUPackagingCodeLUText());
+						ppack1.setIDENTIFICATIONQUAL(PackIdentificationQual.SSCC.toString());
+						ppack1.setIDENTIFICATIONCODE(Util.lpadZero(key.getSsccValue(), 18)/* if ssccRequired and we got here, then this is not null */);
+						packIn.getPPACK1().add(ppack1);
+
+						final DETAILXlief detailXlief = createDETAILXlief(packIn.getDOCUMENTID(), xmlDesadv, ediExpDesadvLineType, settings, decimalFormat);
+						ppack1.getDETAIL().add(detailXlief);
+
+						detailAdded = true;
+					}
+					if (packagingCodeTURequired)
+					{
+						final PPACK1 ppack1 = createPPACK1(header);
+						ppack1.setPACKAGINGLEVEL(PackagingLevel.INNE.toString());
+
+						ppack1.setPACKAGINGCODE(key.getPackagingCodeTUText()/* if packagingCodeTURequired, then this is set */);
+						packIn.getPPACK1().add(ppack1);
+
+						if (!detailAdded)
+						{
+							final DETAILXlief detailXlief = createDETAILXlief(packIn.getDOCUMENTID(), xmlDesadv, ediExpDesadvLineType, settings, decimalFormat);
+							ppack1.getDETAIL().add(detailXlief);
+						}
+					}
+				}
+				else // we can add the detail directly to packIn
+				{
+					final DETAILXlief detail = createDETAILXlief(packIn.getDOCUMENTID(), xmlDesadv, ediExpDesadvLineType, settings, decimalFormat);
+					packIn.getDETAIL().add(detail);
+				}
+			}
+		}
 
 		for (final EDIExpDesadvLineType ediExpDesadvLineType : xmlDesadv.getEDIExpDesadvLine())
 		{
-			final PPACK1 packDetail = DESADV_objectFactory.createPPACK1();
-			packDetail.setDOCUMENTID(header.getDOCUMENTID());
-			// usually one, as per spec
-			packDetail.setPACKAGINGDETAIL(DEFAULT_PACK_DETAIL);
 
-			if (recipientSettings.isDesadvLinePackagingCodeTURequired())
+			boolean addDETAILXliefToPackInXlief = true;
+			if (ppack1Needed)
 			{
-				packDetail.setPACKAGINGLEVEL(PackagingLevel.INNE.toString());
-				final String packagingCodeTU = validateString(
-						ediExpDesadvLineType.getMHUPackagingCodeTUText(),
-						"@FillMandatory@ @EDI_DesadvLine_ID@=" + ediExpDesadvLineType.getLine() + " @M_HU_PackagingCode_TU_ID@");
-				packDetail.setPACKAGINGCODE(packagingCodeTU);
+				if (ssccRequired)
+				{
+					final PPACK1 ppack1 = createPPACK1(header);
+
+					// TODO: or the number of OLs we need need the number of different SSCC'ed LUs
+					final int orderLineCount = xmlDesadv.getEDIExpDesadvLine().size();
+					packIn.setPACKAGINGTOTAL(formatNumber(orderLineCount, decimalFormat));
+
+					final String ssccValue = validateString(
+							Util.removePrecedingZeros(ediExpDesadvLineType.getIPASSCC18()),
+							"@FillMandatory@ SSCC in @EDI_DesadvLine_ID@ " + ediExpDesadvLineType.getLine());
+
+					ppack1.setPACKAGINGCODE(ediExpDesadvLineType.getMHUPackagingCodeLUText());
+					ppack1.setIDENTIFICATIONQUAL(PackIdentificationQual.SSCC.toString());
+					ppack1.setIDENTIFICATIONCODE(ssccValue);
+
+					final DETAILXlief detailXlief = createDETAILXlief(packIn.getDOCUMENTID(), xmlDesadv, ediExpDesadvLineType, settings, decimalFormat);
+					ppack1.getDETAIL().add(detailXlief);
+					addDETAILXliefToPackInXlief = false; // because we already added detailXlief to ppack1
+
+					packIn.getPPACK1().add(ppack1);
+				}
+				else
+				{
+					packIn.setPACKAGINGTOTAL(formatNumber(0, decimalFormat));
+				}
+
+				if (packagingCodeTURequired)
+				{
+					final PPACK1 ppack1 = createPPACK1(header);
+					ppack1.setPACKAGINGLEVEL(PackagingLevel.INNE.toString());
+
+					final String packagingCodeTU = validateString(
+							ediExpDesadvLineType.getMHUPackagingCodeTUText(),
+							"@FillMandatory@ @EDI_DesadvLine_ID@=" + ediExpDesadvLineType.getLine() + " @M_HU_PackagingCode_TU_ID@");
+					ppack1.setPACKAGINGCODE(packagingCodeTU);
+					packIn.getPPACK1().add(ppack1);
+				}
+
 			}
 
-			packDetail.setIDENTIFICATIONQUAL(PackIdentificationQual.SSCC.toString());
-			final String sscc18Value = Util.removePrecedingZeros(ediExpDesadvLineType.getIPASSCC18());
-			packDetail.setIDENTIFICATIONCODE(sscc18Value);
-
-			mapDetail(packDetail, xmlDesadv, ediExpDesadvLineType, recipientSettings, decimalFormat);
-			packaging.getPPACK1().add(packDetail);
+			if (addDETAILXliefToPackInXlief)
+			{
+				final DETAILXlief detailXlief = createDETAILXlief(packIn.getDOCUMENTID(), xmlDesadv, ediExpDesadvLineType, settings, decimalFormat);
+				packIn.getDETAIL().add(detailXlief);
+			}
 
 			if (packagingCodeLUText == null)
 			{ // TODO only for now we assume they are all the same
@@ -204,23 +297,67 @@ public class StepComXMLDesadvBean
 			}
 		}
 
-		packaging.setPACKAGINGCODE(packagingCodeLUText);
-		packaging.setPACKAGINGLEVEL(PackagingLevel.OUTE.toString());
+		packIn.setPACKAGINGCODE(packagingCodeLUText);
+		packIn.setPACKAGINGLEVEL(PackagingLevel.OUTE.toString());
 
-		header.setPACKIN(packaging);
+		header.setPACKIN(packIn);
 	}
 
-	private void mapDetail(
-			@NonNull final PPACK1 packDetail,
-			@NonNull final EDIExpDesadvType xmlDesadv,
-			@NonNull final EDIExpDesadvLineType ediExpDesadvLineType,
-			@NonNull final StepComDesadvSettings receiverSettings,
+	@Value
+	private static class PACKINXliefKey
+	{
+		private static PACKINXliefKey forLine(
+				@NonNull final EDIExpDesadvLineType line,
+				final boolean ssccRequired,
+				final boolean packagingCodeTURequired)
+		{
+			final String ssccValue = ssccRequired
+					? validateString(
+							Util.removePrecedingZeros(line.getIPASSCC18()),
+							"@FillMandatory@ SSCC in @EDI_DesadvLine_ID@ " + line.getLine())
+					: "";
+
+			final String packagingCodeTU = packagingCodeTURequired
+					? validateString(
+							line.getMHUPackagingCodeTUText(),
+							"@FillMandatory@ @EDI_DesadvLine_ID@=" + line.getLine() + " @M_HU_PackagingCode_TU_ID@")
+					: "";
+
+			return new PACKINXliefKey(
+					ssccValue,
+					packagingCodeTU,
+					line.getMHUPackagingCodeLUText());
+		}
+
+		@Nullable
+		String ssccValue;
+
+		@Nullable
+		String packagingCodeTUText;
+
+		@Nullable
+		String packagingCodeLUText;
+	}
+
+	private PPACK1 createPPACK1(final HEADERXlief header)
+	{
+		final PPACK1 ppack1 = DESADV_objectFactory.createPPACK1();
+		ppack1.setDOCUMENTID(header.getDOCUMENTID());
+		ppack1.setPACKAGINGDETAIL(DEFAULT_PACK_DETAIL); // one, as per spec
+		return ppack1;
+	}
+
+	private DETAILXlief createDETAILXlief(
+			final String documentId,
+			final EDIExpDesadvType xmlDesadv,
+			final EDIExpDesadvLineType ediExpDesadvLineType,
+			final StepComDesadvSettings settings,
 			final DecimalFormat decimalFormat)
 	{
-		final String documentId = packDetail.getDOCUMENTID();
 		final DETAILXlief detail = DESADV_objectFactory.createDETAILXlief();
-		final String lineNumber = formatNumber(ediExpDesadvLineType.getLine(), decimalFormat);
 		detail.setDOCUMENTID(documentId);
+
+		final String lineNumber = formatNumber(ediExpDesadvLineType.getLine(), decimalFormat);
 		detail.setLINENUMBER(lineNumber);
 
 		if (StringUtils.isNotEmpty(ediExpDesadvLineType.getEANCU()))
@@ -289,7 +426,7 @@ public class StepComXMLDesadvBean
 			prodDescr.setPRODUCTDESCTEXT(trimAndTruncate(ediExpDesadvLineType.getProductDescription(), 512));
 			detail.getDPRDE1().add(prodDescr);
 		}
-		if (receiverSettings.isDesadvLinePRICRequired())
+		if (settings.isDesadvLinePRICRequired())
 		{
 			final BigDecimal priceActual = validateObject(ediExpDesadvLineType.getPriceActual(),
 					"@FillMandatory@ @EDI_DesadvLine_ID@=" + ediExpDesadvLineType.getLine() + " @PriceActual@");
@@ -325,21 +462,27 @@ public class StepComXMLDesadvBean
 			detail.getDQUAN1().add(cuTuQuantity);
 		}
 
-		if (receiverSettings.isDesadvLineORBU())
+		final boolean orbuOrderReference = settings.isDesadvLineORBUOrderReference();
+		final boolean orbuLineReference = settings.isDesadvLineORBUOrderLineReference();
+		if (orbuOrderReference || orbuLineReference)
 		{
 			final DREFE1 orderHeaderRef = DESADV_objectFactory.createDREFE1();
 			orderHeaderRef.setDOCUMENTID(documentId);
 			orderHeaderRef.setLINENUMBER(lineNumber);
 			orderHeaderRef.setREFERENCEQUAL(ReferenceQual.ORBU.toString());
-			orderHeaderRef.setREFERENCE(xmlDesadv.getPOReference());
-			if (receiverSettings.isDesadvLineORBUOrderLineReference())
+
+			if (orbuOrderReference)
+			{
+				orderHeaderRef.setREFERENCE(xmlDesadv.getPOReference());
+			}
+			if (orbuLineReference)
 			{
 				orderHeaderRef.setREFERENCELINE(lineNumber);
 			}
 			detail.getDREFE1().add(orderHeaderRef);
 		}
 
-		if (receiverSettings.isDesadvLineLIRN())
+		if (settings.isDesadvLineLIRN())
 		{
 			final DREFE1 orderLineRef = DESADV_objectFactory.createDREFE1();
 			orderLineRef.setDOCUMENTID(documentId);
@@ -359,7 +502,7 @@ public class StepComXMLDesadvBean
 			varianceQuantity.setDISCREPANCYCODE(getDiscrepancyCode(ediExpDesadvLineType.getIsSubsequentDeliveryPlanned(), quantityDiff).toString());
 			detail.setDQVAR1(varianceQuantity);
 		}
-		packDetail.getDETAIL().add(detail);
+		return detail;
 	}
 
 	private DQUAN1 createQuantityDetail(
@@ -420,8 +563,9 @@ public class StepComXMLDesadvBean
 
 	private void mapHeaderReferences(
 			@NonNull final EDIExpDesadvType xmlDesadv,
-			@NonNull final String dateFormat,
-			@NonNull final HEADERXlief header)
+			@NonNull final HEADERXlief header,
+			@NonNull final StepComDesadvSettings settings,
+			@NonNull final String dateFormat)
 	{
 		final String buyerReference = xmlDesadv.getPOReference();
 
@@ -432,13 +576,15 @@ public class StepComXMLDesadvBean
 		orderReference.setREFERENCEDATE1(toFormattedStringDate(toDate(xmlDesadv.getDateOrdered()), dateFormat));
 		header.getHREFE1().add(orderReference);
 
-		// ORIG same as ORBU for now
-		final HREFE1 origReference = DESADV_objectFactory.createHREFE1();
-		origReference.setDOCUMENTID(header.getDOCUMENTID());
-		origReference.setREFERENCEQUAL(ReferenceQual.ORIG.toString());
-		origReference.setREFERENCE(buyerReference);
-		origReference.setREFERENCEDATE1(toFormattedStringDate(toDate(xmlDesadv.getDateOrdered()), dateFormat));
-		header.getHREFE1().add(origReference);
+		if (!Util.isEmpty(settings.getDesadvHeaderORIGReference()))
+		{
+			final HREFE1 origReference = DESADV_objectFactory.createHREFE1();
+			origReference.setDOCUMENTID(header.getDOCUMENTID());
+			origReference.setREFERENCEQUAL(ReferenceQual.ORIG.toString());
+			origReference.setREFERENCE(settings.getDesadvHeaderORIGReference().trim());
+			origReference.setREFERENCEDATE1(toFormattedStringDate(toDate(xmlDesadv.getDateOrdered()), dateFormat));
+			header.getHREFE1().add(origReference);
+		}
 	}
 
 	private void mapDates(final EDIExpDesadvType xmlDesadv, final String dateFormat, final HEADERXlief header)

@@ -55,7 +55,7 @@ import de.metas.edi.esb.pojo.order.qualifier.ProductDescQual;
 import de.metas.edi.esb.pojo.order.qualifier.ProductQual;
 import de.metas.edi.esb.pojo.order.qualifier.QuantityQual;
 
-public class StepComXMLEDIOrdersBean extends AbstractEDIOrdersBean
+public class StepComXMLOrdersBean extends AbstractEDIOrdersBean
 {
 
 	@Override
@@ -90,7 +90,7 @@ public class StepComXMLEDIOrdersBean extends AbstractEDIOrdersBean
 		final P100 p100 = new P100();
 		p100.setPositionNo(detail.getLINENUMBER());
 
-		BigDecimal cutuQty = ZERO;
+		BigDecimal cutuQty = null;
 		BigDecimal orderQty = ZERO;
 		String orderUnit = StringUtils.EMPTY;
 
@@ -98,33 +98,36 @@ public class StepComXMLEDIOrdersBean extends AbstractEDIOrdersBean
 		for (final DQUAN1 dquan1 : detail.getDQUAN1())
 		{
 			final QuantityQual quantityQual = QuantityQual.valueOf(dquan1.getQUANTITYQUAL());
+			final BigDecimal currentQty = Util.toBigDecimal(dquan1.getQUANTITY());
+
 			switch (quantityQual)
 			{
 				case CUTU:
 				{
-					cutuQty = cutuQty.add(Util.toBigDecimal(dquan1.getQUANTITY()));
+					cutuQty = add(cutuQty, currentQty);
 					break;
 				}
 				case ORDR:
 				{
-					orderQty = orderQty.add(Util.toBigDecimal(dquan1.getQUANTITY()));
 
 					// using measurement unit from ORDR, supposing CUTU will not have measurement unit for now
 					if (!Util.isEmpty(dquan1.getMEASUREMENTUNIT()))
 					{
 						final MeasurementUnit measurementUnit = MeasurementUnit.valueOf(dquan1.getMEASUREMENTUNIT());
+
+						orderQty = add(orderQty, currentQty);
 						orderUnit = MeasurementUnit.fromEdiUOM(measurementUnit);
 					}
 					break;
 				}
 			}
 		}
-		if (cutuQty.compareTo(ZERO) == 0)
+
+		if (orderQty != null)
 		{
-			cutuQty = ONE;
+			p100.setOrderQty(orderQty.toString());
 		}
-		p100.setCuperTU(cutuQty.toString());
-		p100.setOrderQty(orderQty.toString());
+
 		p100.setOrderUnit(orderUnit);
 
 		// using only first price
@@ -191,6 +194,13 @@ public class StepComXMLEDIOrdersBean extends AbstractEDIOrdersBean
 			p100.setCurrency(currency);
 		}
 		return p100;
+	}
+
+	private BigDecimal add(BigDecimal augent1OrNull, final BigDecimal augent2)
+	{
+		return augent1OrNull == null
+				? augent2
+				: augent1OrNull.add(augent2);
 	}
 
 	private H100 mapToH100(final HEADERXbest header)

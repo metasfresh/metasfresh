@@ -41,7 +41,7 @@ public class P100 implements Serializable
 	private String supplierArtNo;
 	private String orderQty;
 	private String orderUnit;
-	private String cuperTU;
+	private String cUperTU;
 	private String currency;
 	private String buyerPrice;
 	private String buyerPriceTypCode;

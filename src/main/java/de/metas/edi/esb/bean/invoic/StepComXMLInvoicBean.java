@@ -39,7 +39,6 @@ import org.apache.camel.RuntimeCamelException;
 import org.apache.commons.lang.StringUtils;
 
 import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.commons.StepComInvoicSettings;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.ValidationHelper;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctop119VType;
@@ -259,62 +258,70 @@ public class StepComXMLInvoicBean
 				detailXrech.getDPRIN1().add(productInfo);
 			}
 
-			if (!Util.isEmpty(xmlCctopInvoic500V.getGTIN()))
+			if (receiverSettings.isInvoicLineGTINRequired())
 			{
-				final DPRIN1 productUpc = INVOIC_objectFactory.createDPRIN1();
-				productUpc.setDOCUMENTID(documentId);
-				productUpc.setLINENUMBER(lineNumber);
-				productUpc.setPRODUCTQUAL(ProductQual.GTIN.name());
-				productUpc.setPRODUCTID(xmlCctopInvoic500V.getGTIN());
-				detailXrech.getDPRIN1().add(productUpc);
-			}
-			if (!Util.isEmpty(xmlCctopInvoic500V.getEANTU()))
-			{
-				final DPRIN1 productUpc = INVOIC_objectFactory.createDPRIN1();
-				productUpc.setDOCUMENTID(documentId);
-				productUpc.setLINENUMBER(lineNumber);
-				productUpc.setPRODUCTQUAL(ProductQual.EANT.name());
-				productUpc.setPRODUCTID(xmlCctopInvoic500V.getEANTU());
-				detailXrech.getDPRIN1().add(productUpc);
-			}
-			if (!Util.isEmpty(xmlCctopInvoic500V.getUPCTU()))
-			{
-				final DPRIN1 productUpc = INVOIC_objectFactory.createDPRIN1();
-				productUpc.setDOCUMENTID(documentId);
-				productUpc.setLINENUMBER(lineNumber);
-				productUpc.setPRODUCTQUAL(ProductQual.UPCT.name());
-				productUpc.setPRODUCTID(xmlCctopInvoic500V.getUPCTU());
-				detailXrech.getDPRIN1().add(productUpc);
+				final String gtin = ValidationHelper.validateString(xmlCctopInvoic500V.getGTIN(),
+						"@FillMandatory@ @C_InvoiceLine_ID@=" + xmlCctopInvoic500V.getLine() + " @GTIN@");
+
+				final DPRIN1 dprin1 = INVOIC_objectFactory.createDPRIN1();
+				dprin1.setDOCUMENTID(documentId);
+				dprin1.setLINENUMBER(lineNumber);
+				dprin1.setPRODUCTQUAL(ProductQual.GTIN.name());
+				dprin1.setPRODUCTID(gtin);
+				detailXrech.getDPRIN1().add(dprin1);
 			}
 
-			if (receiverSettings.isInvoicLineEANCequired())
+			if (!Util.isEmpty(xmlCctopInvoic500V.getEANTU()))
+			{
+				final DPRIN1 dprin1 = INVOIC_objectFactory.createDPRIN1();
+				dprin1.setDOCUMENTID(documentId);
+				dprin1.setLINENUMBER(lineNumber);
+				dprin1.setPRODUCTQUAL(ProductQual.EANT.name());
+				dprin1.setPRODUCTID(xmlCctopInvoic500V.getEANTU());
+				detailXrech.getDPRIN1().add(dprin1);
+			}
+
+			if (!Util.isEmpty(xmlCctopInvoic500V.getUPCTU()))
+			{
+				final DPRIN1 dprin1 = INVOIC_objectFactory.createDPRIN1();
+				dprin1.setDOCUMENTID(documentId);
+				dprin1.setLINENUMBER(lineNumber);
+				dprin1.setPRODUCTQUAL(ProductQual.UPCT.name());
+				dprin1.setPRODUCTID(xmlCctopInvoic500V.getUPCTU());
+				detailXrech.getDPRIN1().add(dprin1);
+			}
+
+			if (receiverSettings.isInvoicLineEANCRequired())
 			{
 				final String eanCU = ValidationHelper.validateString(xmlCctopInvoic500V.getEANCU(),
 						"@FillMandatory@ @C_InvoiceLine_ID@=" + xmlCctopInvoic500V.getLine() + " @EANCU@");
 
-				final DPRIN1 productUpc = INVOIC_objectFactory.createDPRIN1();
-				productUpc.setDOCUMENTID(documentId);
-				productUpc.setLINENUMBER(lineNumber);
-				productUpc.setPRODUCTQUAL(ProductQual.EANC.name());
-				productUpc.setPRODUCTID(eanCU);
-				detailXrech.getDPRIN1().add(productUpc);
-			}
-			if (!Util.isEmpty(xmlCctopInvoic500V.getUPCTU()))
-			{
-				final DPRIN1 productUpc = INVOIC_objectFactory.createDPRIN1();
-				productUpc.setDOCUMENTID(documentId);
-				productUpc.setLINENUMBER(lineNumber);
-				productUpc.setPRODUCTQUAL(ProductQual.UPCT.name());
-				productUpc.setPRODUCTID(xmlCctopInvoic500V.getUPCTU());
-				detailXrech.getDPRIN1().add(productUpc);
+				final DPRIN1 dprin1 = INVOIC_objectFactory.createDPRIN1();
+				dprin1.setDOCUMENTID(documentId);
+				dprin1.setLINENUMBER(lineNumber);
+				dprin1.setPRODUCTQUAL(ProductQual.EANC.name());
+				dprin1.setPRODUCTID(eanCU);
+				detailXrech.getDPRIN1().add(dprin1);
 			}
 
-			final DPRIN1 productSupl = INVOIC_objectFactory.createDPRIN1();
-			productSupl.setDOCUMENTID(documentId);
-			productSupl.setLINENUMBER(lineNumber);
-			productSupl.setPRODUCTQUAL(ProductQual.SUPL.name());
-			productSupl.setPRODUCTID(xmlCctopInvoic500V.getValue());
-			detailXrech.getDPRIN1().add(productSupl);
+			if (!Util.isEmpty(xmlCctopInvoic500V.getUPCTU()))
+			{
+				final DPRIN1 dprin1 = INVOIC_objectFactory.createDPRIN1();
+				dprin1.setDOCUMENTID(documentId);
+				dprin1.setLINENUMBER(lineNumber);
+				dprin1.setPRODUCTQUAL(ProductQual.UPCT.name());
+				dprin1.setPRODUCTID(xmlCctopInvoic500V.getUPCTU());
+				detailXrech.getDPRIN1().add(dprin1);
+			}
+
+			{
+				final DPRIN1 dprin1 = INVOIC_objectFactory.createDPRIN1();
+				dprin1.setDOCUMENTID(documentId);
+				dprin1.setLINENUMBER(lineNumber);
+				dprin1.setPRODUCTQUAL(ProductQual.SUPL.name());
+				dprin1.setPRODUCTID(xmlCctopInvoic500V.getValue());
+				detailXrech.getDPRIN1().add(dprin1);
+			}
 
 			final DPRDE1 productDescr = INVOIC_objectFactory.createDPRDE1();
 			productDescr.setDOCUMENTID(documentId);

@@ -1,6 +1,8 @@
-package de.metas.edi.esb.commons;
+package de.metas.edi.esb.bean.desadv;
 
 import org.apache.camel.CamelContext;
+
+import de.metas.edi.esb.commons.Util;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -40,9 +42,12 @@ public class StepComDesadvSettings
 				.applicationRef(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.applicationRef", "DESADV"))
 				.partnerId(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.partnerId"))
 				.testIndicator(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.testIndicator", "T"))
+				.desadvHeaderORIGReference(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.header.ORIG.reference", ""))
 				.desadvLinePackagingCodeTURequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.packagingCodeTU.required", "false"))
-				.desadvLineORBU(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.ORBU", "false"))
-				.desadvLineORBUOrderLineReference(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.ORBU.orderLineReference", "false"))
+				.desadvLineSSCCRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.SSCC.required", "false"))
+				// .desadvLineORBU(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.ORBU", "false"))
+				.desadvLineORBUOrderReference(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.ORBU.orderReference", "false"))
+				.desadvLineORBUOrderLineReference(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.ORBU.orderLineReference", "true"))
 				.desadvLineLIRN(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.LIRN", "true"))
 				.desadvLinePRICRequired(Util.resolvePropertyAsBool(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.line.PRIC.required", "false"))
 				.build();
@@ -54,9 +59,13 @@ public class StepComDesadvSettings
 
 	String testIndicator;
 
+	String desadvHeaderORIGReference;
+
 	boolean desadvLinePackagingCodeTURequired;
 
-	boolean desadvLineORBU;
+	boolean desadvLineSSCCRequired;
+
+	boolean desadvLineORBUOrderReference;
 
 	boolean desadvLineORBUOrderLineReference;
 

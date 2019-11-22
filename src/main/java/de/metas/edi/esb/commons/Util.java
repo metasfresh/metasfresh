@@ -691,7 +691,6 @@ public final class Util
 	}
 
 	/**
-	 * @param str
 	 * @return resulting string with preceding zeros removed. Or null, if the input was <code>null</code>.
 	 * @see <a href="http://stackoverflow.com/questions/2800739/how-to-remove-leading-zeros-from-alphanumeric-text">Reference</a>
 	 */

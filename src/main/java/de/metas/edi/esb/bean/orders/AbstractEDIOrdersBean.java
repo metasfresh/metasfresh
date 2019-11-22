@@ -171,7 +171,7 @@ public abstract class AbstractEDIOrdersBean
 
 		final BigDecimal qtyItemCapacity; // following block decides the value of QtyItemCapacity
 		{
-			final String CUPerTU = trimString(p100.getCuperTU());
+			final String CUPerTU = trimString(p100.getCUperTU());
 			if (CUPerTU != null)
 			{
 				qtyItemCapacity = new BigDecimal(CUPerTU);
@@ -191,7 +191,7 @@ public abstract class AbstractEDIOrdersBean
 		olcand.setPriceEntered(priceEntered);
 
 		// Note that this price shall not be propagated to the order line, so C_OLCand.IsManual shall not be set to Y.
-		// We only need this price in metsfresh so we can detect discrepancies
+		// We only need this price in metasfresh so we can detect discrepancies
 		olcand.setIsManualPrice("N");
 
 		//

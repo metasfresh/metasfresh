@@ -28,7 +28,7 @@ public enum ReferenceQual
 	/** order number (buyer) */
 	ORBU,
 
-	/** order number (buyer) */
+	/** order number (seller) */
 	ORSE,
 
 	DNOT,
