@@ -27,6 +27,7 @@ import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.CreatePriceListSchemaRequest;
@@ -68,6 +69,8 @@ public class ImportPriceListSchemaLinesFromAttachment extends JavaProcess implem
 	@Param(parameterName = I_AD_AttachmentEntry.COLUMNNAME_AD_AttachmentEntry_ID, mandatory = true)
 	private AttachmentEntryId p_AD_AttachmentEntry_ID;
 
+	public static final String MSG_PRICE_LIST_SCHEMA_SHOULD_HAVE_NO_LINES = "de.metas.pricing.process.ImportPriceListSchemaLinesFromAttachment.PriceListSchemaShouldHaveNoLines";
+
 	private static final int INDEX_SeqNo = 0;
 	private static final int INDEX_Product = 1;
 	private static final int INDEX_Product_Category = 3;
@@ -101,7 +104,7 @@ public class ImportPriceListSchemaLinesFromAttachment extends JavaProcess implem
 
 		if (priceListSchemaRepository.hasAnyLines(PricingConditionsId.ofRepoId(context.getSingleSelectedRecordId())))
 		{
-			return ProcessPreconditionsResolution.reject("The Price List Schema Must have no Lines."); // todo translate this
+			return ProcessPreconditionsResolution.reject(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_PRICE_LIST_SCHEMA_SHOULD_HAVE_NO_LINES));
 		}
 
 		return ProcessPreconditionsResolution.accept();
