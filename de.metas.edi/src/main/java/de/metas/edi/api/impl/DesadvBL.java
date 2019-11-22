@@ -24,13 +24,19 @@ package de.metas.edi.api.impl;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
@@ -52,10 +58,13 @@ import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_SSCC;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeDAO;
+import de.metas.handlingunits.expiry.HUWithExpiryDates;
+import de.metas.handlingunits.expiry.HUWithExpiryDatesRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -63,6 +72,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.inout.IInOutDAO;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.process.ProcessInfo;
 import de.metas.product.IProductDAO;
@@ -93,6 +103,8 @@ public class DesadvBL implements IDesadvBL
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 	@Override
 	public I_EDI_Desadv addToDesadvCreateForOrderIfNotExist(final I_C_Order order)
@@ -251,7 +263,7 @@ public class DesadvBL implements IDesadvBL
 	}
 
 	@Override
-	public I_EDI_Desadv addToDesadvCreateForInOutIfNotExist(final I_M_InOut inOut)
+	public I_EDI_Desadv addToDesadvCreateForInOutIfNotExist(@NonNull final I_M_InOut inOut)
 	{
 		final I_EDI_Desadv desadv;
 
@@ -292,7 +304,9 @@ public class DesadvBL implements IDesadvBL
 				continue;
 			}
 
-			final I_EDI_DesadvLine desadvLine = InterfaceWrapperHelper.create(inOutLine.getC_OrderLine(), I_C_OrderLine.class).getEDI_DesadvLine();
+			final I_EDI_DesadvLine desadvLine = InterfaceWrapperHelper
+					.create(inOutLine.getC_OrderLine(), I_C_OrderLine.class)
+					.getEDI_DesadvLine();
 
 			final List<I_M_HU> topLevelHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(inOutLine);
 
@@ -301,33 +315,23 @@ public class DesadvBL implements IDesadvBL
 			if (topLevelHUs.size() == 1)
 			{
 				final I_M_HU hu = CollectionUtils.singleElement(topLevelHUs);
-				desadvLine.setM_HU_ID(hu.getM_HU_ID());
-
-				final AttributeId sscc18AttributeId = sscc18CodeDAO.retrieveSSCC18AttributeId();
-
-				final I_M_HU_Attribute sscc18HUAttribute = huAttributesDAO.retrieveAttribute(hu, sscc18AttributeId);
-				// don't throw an error; it might prevent users from creating shipments
-				// Check.errorIf(sscc18HUAttribute == null, "M_HU {} has no SSCC18 attrbute (tried to retrieve with M_Attribute = {})", hu, sscc18Attribute);
-				if (sscc18HUAttribute != null)
-				{
-					desadvLine.setIPA_SSCC18(sscc18HUAttribute.getValue());
-					desadvLine.setIsManual_IPA_SSCC18(false);
-				}
-
-				final int packagingCodeLU_ID = extractPackagingCodeId(hu);
-				desadvLine.setM_HU_PackagingCode_LU_ID(packagingCodeLU_ID);
-
-				final int packagingCodeTU_ID = CollectionUtils.extractSingleElementOrDefault(
-						huAssignmentDAO.retrieveTUHUsForModel(inOutLine),
-						this::extractPackagingCodeId,
-						-1);
-				desadvLine.setM_HU_PackagingCode_TU_ID(packagingCodeTU_ID);
+				addHUToDesadvLine(desadvLine, hu, inOutLine);
 			}
 
 			// check if we got the value
 			if (Check.isEmpty(desadvLine.getIPA_SSCC18(), true))
 			{
 				desadvLine.setIsManual_IPA_SSCC18(true); // someone will need to enter a manual SSCC18
+			}
+
+			if (desadvLine.getBestBeforeDate() == null)
+			{
+				final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inOutLine.getM_AttributeSetInstance_ID());
+				final ImmutableAttributeSet attributeSet = attributeDAO.getImmutableAttributeSetById(asiId);
+				if (attributeSet.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
+				{
+					attributeSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate);
+				}
 			}
 
 			final BigDecimal newMovementQty = desadvLine.getMovementQty().add(inOutLine.getMovementQty());
@@ -339,6 +343,40 @@ public class DesadvBL implements IDesadvBL
 		}
 
 		return desadv;
+	}
+
+	private void addHUToDesadvLine(
+			@NonNull final I_EDI_DesadvLine desadvLine,
+			@NonNull final I_M_HU hu,
+			@NonNull final I_M_InOutLine inOutLine)
+	{
+		desadvLine.setM_HU_ID(hu.getM_HU_ID());
+
+		final AttributeId sscc18AttributeId = sscc18CodeDAO.retrieveSSCC18AttributeId();
+
+		final HUWithExpiryDatesRepository huWithExpiryDatesRepository = SpringContextHolder.instance.getBean(HUWithExpiryDatesRepository.class);
+		final HUWithExpiryDates huWithExpiryDates = huWithExpiryDatesRepository.getById(HuId.ofRepoId(hu.getM_HU_ID()));
+
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(desadvLine.getAD_Org_ID()));
+		desadvLine.setBestBeforeDate(TimeUtil.asTimestamp(huWithExpiryDates.getBestBeforeDate(), timeZone));
+
+		final I_M_HU_Attribute sscc18HUAttribute = huAttributesDAO.retrieveAttribute(hu, sscc18AttributeId);
+		// don't throw an error; it might prevent users from creating shipments
+		// Check.errorIf(sscc18HUAttribute == null, "M_HU {} has no SSCC18 attrbute (tried to retrieve with M_Attribute = {})", hu, sscc18Attribute);
+		if (sscc18HUAttribute != null)
+		{
+			desadvLine.setIPA_SSCC18(sscc18HUAttribute.getValue());
+			desadvLine.setIsManual_IPA_SSCC18(false);
+		}
+
+		final int packagingCodeLU_ID = extractPackagingCodeId(hu);
+		desadvLine.setM_HU_PackagingCode_LU_ID(packagingCodeLU_ID);
+
+		final int packagingCodeTU_ID = CollectionUtils.extractSingleElementOrDefault(
+				huAssignmentDAO.retrieveTUHUsForModel(inOutLine),
+				this::extractPackagingCodeId,
+				-1);
+		desadvLine.setM_HU_PackagingCode_TU_ID(packagingCodeTU_ID);
 	}
 
 	private int extractPackagingCodeId(@NonNull final I_M_HU hu)

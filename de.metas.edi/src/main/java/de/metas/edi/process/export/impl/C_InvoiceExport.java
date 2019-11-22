@@ -88,7 +88,9 @@ public class C_InvoiceExport extends AbstractEdiDocExtensionExport<I_C_Invoice>
 
 			InterfaceWrapperHelper.save(document);
 
-			throw new AdempiereException(e);
+			throw AdempiereException
+					.wrapIfNeeded(e)
+					.markAsUserValidationError();
 		}
 
 		return Collections.emptyList();

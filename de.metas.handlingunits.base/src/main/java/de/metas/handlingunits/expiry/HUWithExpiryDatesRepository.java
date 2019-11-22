@@ -94,6 +94,16 @@ public class HUWithExpiryDatesRepository
 		return ofRecordOrNull(recordOrdNull);
 	}
 
+	public HUWithExpiryDates getById(@NonNull final HuId huId)
+	{
+		final I_M_HU_BestBefore_V recordOrdNull = queryBL.createQueryBuilder(I_M_HU_BestBefore_V.class)
+				.addEqualsFilter(I_M_HU_BestBefore_V.COLUMN_M_HU_ID, huId)
+				.create()
+				.firstOnly(I_M_HU_BestBefore_V.class);
+
+		return ofRecordOrNull(recordOrdNull);
+	}
+
 	public Iterator<HuId> getAllWithBestBeforeDate()
 	{
 		return handlingUnitsDAO.createHUQueryBuilder()

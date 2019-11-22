@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.NullAttributeValueCallout;
@@ -58,8 +59,8 @@ import lombok.NonNull;
 /**
  * Immutable {@link IAttributeSet} implementation.
  *
- * @author metas-dev <dev@metasfresh.com>
- *
+ * To get your instance for an {@link AttributeSetInstanceId},
+ * you can use {@link IAttributeDAO#getImmutableAttributeSetById(AttributeSetInstanceId)}.
  */
 public final class ImmutableAttributeSet implements IAttributeSet
 {
