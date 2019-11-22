@@ -4,6 +4,7 @@ import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.pricing.PricingSystemId;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
@@ -43,7 +44,7 @@ final class OLCandFactory
 				.pricingSystemId(PricingSystemId.ofRepoIdOrNull(record.getM_PricingSystem_ID()))
 				.deliveryRule(DeliveryRule.ofNullableCode(record.getDeliveryRule()))
 				.deliveryViaRule(DeliveryViaRule.ofNullableCode(record.getDeliveryViaRule()))
-				.shipperId(null)
+				.shipperId(ShipperId.ofRepoIdOrNull(record.getM_Shipper_ID()))
 				.build();
 	}
 }

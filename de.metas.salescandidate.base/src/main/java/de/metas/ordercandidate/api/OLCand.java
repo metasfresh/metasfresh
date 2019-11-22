@@ -15,6 +15,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.freighcost.FreightCostRule;
+import de.metas.invoice_gateway.spi.model.BPartnerId;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
@@ -104,6 +105,9 @@ public final class OLCand implements IProductPriceAware
 	@Getter
 	private final InvoiceRule invoiceRule;
 
+	@Getter
+	private final BPartnerId salesRepId;
+
 	@Builder
 	private OLCand(
 			@NonNull final IOLCandEffectiveValuesBL olCandEffectiveValuesBL,
@@ -157,6 +161,8 @@ public final class OLCand implements IProductPriceAware
 		this.pricingSystemId = pricingSystemId;
 
 		this.shipperId = shipperId;
+
+		this.salesRepId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_ID());
 	}
 
 	@Override

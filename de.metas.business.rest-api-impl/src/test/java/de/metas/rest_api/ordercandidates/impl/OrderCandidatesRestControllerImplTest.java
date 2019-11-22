@@ -72,8 +72,10 @@ import de.metas.rest_api.common.JsonErrorItem;
 import de.metas.rest_api.common.MetasfreshId;
 import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.common.SyncAdvise.IfNotExists;
+import de.metas.rest_api.ordercandidates.request.JSONPaymentRule;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
+import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest.OrderDocType;
 import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
 import de.metas.rest_api.ordercandidates.request.JsonProductInfo.Type;
 import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
@@ -586,6 +588,11 @@ public class OrderCandidatesRestControllerImplTest
 				.externalHeaderId("externalHeaderId")
 				.externalLineId("externalLineId")
 				.poReference("poRef")
+				.shipper("val-DPD")
+				.salesPartnerCode("billBPartner")
+				.paymentRule(JSONPaymentRule.Paypal)
+				.orderDocType(OrderDocType.PrepayOrder)
+
 				.product(JsonProductInfo.builder()
 						.code("productCode")
 						.name("productName")
